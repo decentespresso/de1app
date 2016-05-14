@@ -39,7 +39,6 @@ proc setup_environment {} {
 		borg systemui 0x1E02
 		borg screenorientation landscape
 
-
 		set helvetica_font [sdltk addfont "HelveticaNeue Light.ttf"]
 		puts "helvetica_font: $helvetica_font"
 		
@@ -59,6 +58,8 @@ proc setup_environment {} {
 		wm maxsize . $screen_size_width $screen_size_height
 		wm minsize . $screen_size_width $screen_size_height
 
+		source "bluetooth.tcl"
+
 	} else {
 		package require Tk
 		package require tkblt
@@ -76,10 +77,9 @@ proc setup_environment {} {
 		font create Sourcesans_30 -family {Source Sans Pro Bold} -size 50
 		font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
 
-		proc ble {args} {
-			puts "ble $args"
-		}
-
+		proc ble {args} { puts "ble $args" }
+		proc de1_send {x} { puts "de1_send '$x'" }
+		proc app_exit {} { exit	}		
 
 	}
 	. configure -bg black 
@@ -109,6 +109,9 @@ proc setup_images_for_other_pages {} {
 		.can create image {0 0} -anchor nw -image $name  -tag $name -state hidden
 	}
 
+	.can create text 10 10 -text "" -anchor nw -tag .t -fill #666666 -font Helv_8
+
+
 	.can create rect 0 0 1279 799 -fill {} -outline black -width 0 -tag .btn_screen -state hidden
 	.can create rect 124 294 422 693 -fill {} -outline black -width 0 -tag .btn_steam -state normal
 	.can create rect 492 278 822 708 -fill {} -outline black -width 0 -tag .btn_espresso -state normal
@@ -120,6 +123,8 @@ proc setup_images_for_other_pages {} {
 	.can bind .btn_water [platform_button_press] [list do_water]
 	.can bind .btn_settings [platform_button_press] [list do_settings]
 
+	.can bind .btn_settings [platform_button_press] [list app_exit]
+
 }
 
 proc run_de1_app {} {
@@ -128,48 +133,61 @@ proc run_de1_app {} {
 
 
 proc do_steam {} {
+	msg "Make steam"
 	after cancel steam_dismiss
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list steam_dismiss]
 	page_display_change "off" "steam"
+	de1_send "S"
 	after 2000 steam_dismiss
 }
 
 proc steam_dismiss {} {
+	msg "End steam"
 	after cancel steam_dismiss
+	de1_send " "
 	enable_all_four_buttons
 	page_display_change "steam" "off"
 }
 
 proc do_espresso {} {
+	msg "Make espresso"
 	after cancel espresso_dismiss
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list espresso_dismiss]
 	page_display_change "off" "espresso"
+	de1_send "E"
 	after 2000 espresso_dismiss
 }
 
 proc espresso_dismiss {} {
+	msg "End espresso"
 	after cancel espresso_dismiss
+	de1_send " "
 	enable_all_four_buttons
 	page_display_change "espresso" "off"
 }
 
 proc do_water {} {
+	msg "Make water"
 	after cancel water_dismiss
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list water_dismiss]
 	page_display_change "off" "water"
+	de1_send "W"
 	after 2000 water_dismiss
 }
 
 proc water_dismiss {} {
+	msg "End water"
 	after cancel water_dismiss
+	de1_send " "
 	enable_all_four_buttons
 	page_display_change "water" "off"
 }
 
 proc do_settings {} {
+	msg "Make settings"
 	after cancel settings_dismiss
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list settings_dismiss]
@@ -177,12 +195,11 @@ proc do_settings {} {
 }
 
 proc settings_dismiss {} {
+	msg "End settings"
 	after cancel settings_dismiss
 	enable_all_four_buttons
 	page_display_change "settings" "off"
 }
-
-
 
 proc disable_all_four_buttons {} {
 	.can itemconfigure ".btn_steam" -state hidden
@@ -200,8 +217,6 @@ proc enable_all_four_buttons {} {
 	.can itemconfigure .btn_screen -state hidden
 }
 
-
-
 proc page_display_change {page_to_hide page_to_show} {
 	foreach image $page_to_show	 {
 		.can itemconfigure $image -state normal
@@ -214,7 +229,15 @@ proc page_display_change {page_to_hide page_to_show} {
 
 setup_environment
 setup_images_for_first_page
+update
 setup_images_for_other_pages
-after 3000 run_de1_app
+update
+if {$android == 1} {
+	after 100 ble_connect_to_de1
+	
+} else {
+	after 100 run_de1_app
+}
+
 #pack .can
 vwait forever

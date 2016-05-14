@@ -205,7 +205,32 @@ proc platform_button_unpress {} {
 	return {<ButtonRelease-1>}
 }
 
+set cnt 0
+set debuglog {}					
+proc msg {text} {
 
+	if {$text == ""} {
+		return
+	}
+	puts $text
+
+	global debuglog 
+   	global cnt
+    incr cnt
+	lappend debuglog "$cnt: $text"
+ 	.can itemconfigure .t -text [join $debuglog \n]
+
+ 	if {[llength $debuglog] > 11} {
+		set debuglog [lrange $debuglog 1 end]
+	}
+
+    catch  {
+
+        #.t insert end "$text\n"
+        #set txt [.t get 1.0 end]
+        #tk::TextSetCursor .t {insert display lineend}
+   }
+}
 
 install_this_app_icon
 
