@@ -92,7 +92,7 @@ proc setup_environment {} {
 }
 
 proc setup_images_for_first_page {} {
-	image create photo splash -file "splash_screen_dark_brown.png"
+	image create photo splash -file "splash_screen.png"
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
 	update
@@ -215,6 +215,6 @@ proc page_display_change {page_to_hide page_to_show} {
 setup_environment
 setup_images_for_first_page
 setup_images_for_other_pages
-run_de1_app
+after 3000 run_de1_app
 #pack .can
 vwait forever
