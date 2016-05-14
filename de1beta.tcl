@@ -126,8 +126,6 @@ proc run_de1_app {} {
 	page_display_change "splash" "off"
 }
 
-proc do_pagename {name} {
-}
 
 proc do_steam {} {
 	after cancel steam_dismiss
@@ -171,18 +169,17 @@ proc water_dismiss {} {
 	page_display_change "water" "off"
 }
 
-proc do_setttings {} {
-	after cancel setttings_dismiss
+proc do_settings {} {
+	after cancel settings_dismiss
 	disable_all_four_buttons
-	.can bind .btn_screen [platform_button_press] [list setttings_dismiss]
-	page_display_change "off" "setttings"
-	after 2000 espresso_dismiss
+	.can bind .btn_screen [platform_button_press] [list settings_dismiss]
+	page_display_change "off" "settings"
 }
 
-proc setttings_dismiss {} {
-	after cancel setttings_dismiss
+proc settings_dismiss {} {
+	after cancel settings_dismiss
 	enable_all_four_buttons
-	page_display_change "setttings" "off"
+	page_display_change "settings" "off"
 }
 
 
