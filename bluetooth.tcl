@@ -30,13 +30,15 @@ proc de1_send {msg} {
 	set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
 	set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
 	set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
-	set res [ble characteristics $handle $magic1 0]
-	set res [ble services $handle]
-    set res [ble begin $handle]
-    ble begin $handle
-    lappend cmds [list ble write $handle $magic1 0 $magic2 0 "$msg"]
-	ble userdata $handle $cmds
-    ble execute $handle
+	#set res [ble characteristics $handle $magic1 0]
+	#set res [ble services $handle]
+    #set res [ble begin $handle]
+    #ble begin $handle
+    ble write $handle $magic1 0 $magic2 0 "$msg"
+    #exit
+    #lappend cmds [list ble write $handle $magic1 0 $magic2 0 "$msg"]
+	#ble userdata $handle $cmds
+    #ble execute $handle
 	set res [ble read $handle $magic1 0 $magic3 0]
 }
 
@@ -117,6 +119,8 @@ proc de1_ble_handler {event data} {
                     if {$runthis == 1} {
 					    set cmds [ble userdata $handle]
 					    if {$cmds ne {}} {
+							msg "running {*}$cmd"
+							#msg "didn't run $cmds"
 							set cmd [lindex $cmds 0]
 							set cmds [lrange $cmds 1 end]
 							{*}$cmd
@@ -147,9 +151,20 @@ proc de1_ble_handler {event data} {
 					#.t insert end "${event}: ${data}\n"
 				    set cmds [ble userdata $handle]
 				    if {$cmds ne {}} {
+						msg "X running $cmds"
+						#msg "didn't run $cmds"
+
+#ble begin $handle
+#set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
+#set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
+#ble write $handle $magic1 0 $magic2 0 "W"
+#ble execute $handle
+
 						set cmd [lindex $cmds 0]
 						set cmds [lrange $cmds 1 end]
 						{*}$cmd
+						msg "done"
+
 						#ble userdata $handle $cmds
 
 						# clear the userdata once it's been run

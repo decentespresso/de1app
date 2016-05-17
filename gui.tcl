@@ -232,5 +232,5 @@ proc msg {text} {
    }
 }
 
-install_this_app_icon
+#install_this_app_icon
 
