@@ -92,7 +92,7 @@ proc setup_environment {} {
 }
 
 proc setup_images_for_first_page {} {
-	image create photo splash -file "splash_screen.png"
+	image create photo splash -file "splash.png"
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
 	update
@@ -139,7 +139,7 @@ proc do_steam {} {
 	.can bind .btn_screen [platform_button_press] [list steam_dismiss]
 	page_display_change "off" "steam"
 	de1_send "S"
-	after 2000 steam_dismiss
+	#after 2000 steam_dismiss
 }
 
 proc steam_dismiss {} {
@@ -157,7 +157,7 @@ proc do_espresso {} {
 	.can bind .btn_screen [platform_button_press] [list espresso_dismiss]
 	page_display_change "off" "espresso"
 	de1_send "E"
-	after 2000 espresso_dismiss
+	#after 2000 espresso_dismiss
 }
 
 proc espresso_dismiss {} {
@@ -174,8 +174,8 @@ proc do_water {} {
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list water_dismiss]
 	page_display_change "off" "water"
-	de1_send "W"
-	after 2000 water_dismiss
+	de1_send "H"
+	#after 2000 water_dismiss
 }
 
 proc water_dismiss {} {
