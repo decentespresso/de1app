@@ -1,5 +1,16 @@
 #!/usr/local/bin/tclsh
 
+		proc load_android_wifi_settings {} {
+			#borg activity android.provider.settings.Settings.ACTION_WIFI_SE‌​TTINGS
+
+			#borg activity android.settings.WIFI_SETTINGS "" "text/html"
+			borg activity android.settings.WIFI_SETTINGS {} {} {} {} {}
+		}
+
+#load_android_wifi_settings
+#exit
+
+
 # decent doser UI based on Morphosis graphics
 source "[file dirname [info script]]/gui.tcl"
 cd "[file dirname [info script]]/"
@@ -123,7 +134,10 @@ proc setup_images_for_other_pages {} {
 	.can bind .btn_water [platform_button_press] [list do_water]
 	.can bind .btn_settings [platform_button_press] [list do_settings]
 
-	.can bind .btn_settings [platform_button_press] [list app_exit]
+	#.can bind .btn_settings [platform_button_press] [list app_exit]
+	.can bind .btn_settings [platform_button_press] [list load_android_wifi_settings]
+
+	
 
 }
 
@@ -226,18 +240,18 @@ proc page_display_change {page_to_hide page_to_show} {
 	}	
 }
 
-
 setup_environment
 setup_images_for_first_page
-update
+#update
 setup_images_for_other_pages
-update
+#update
 if {$android == 1} {
-	after 100 ble_connect_to_de1
+#	after 100 ble_connect_to_de1
 	
 } else {
 	after 100 run_de1_app
 }
+run_de1_app
 
 #pack .can
 vwait forever
