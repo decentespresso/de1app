@@ -71,6 +71,9 @@ proc remove_null_terminator {instr} {
 
 proc ble_connect_to_de1 {} {
 
+	borg spinner on
+	borg toast "Looking for a Decent Espresso Machine..." 1
+
 	set de1_address "C1:80:A7:32:CD:A3"
 
 	catch {
@@ -131,9 +134,9 @@ proc de1_ble_handler {event data} {
 						}
 					}
 
+					borg toast "Found!" 0
+					borg spinner off
 					run_de1_app
-
-
 			    }
 			}
 		    characteristic {

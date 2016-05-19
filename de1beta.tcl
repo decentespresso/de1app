@@ -1,15 +1,5 @@
 #!/usr/local/bin/tclsh
 
-		proc load_android_wifi_settings {} {
-			#borg activity android.provider.settings.Settings.ACTION_WIFI_SE‌​TTINGS
-
-			#borg activity android.settings.WIFI_SETTINGS "" "text/html"
-			borg activity android.settings.WIFI_SETTINGS {} {} {} {} {}
-		}
-
-#load_android_wifi_settings
-#exit
-
 
 # decent doser UI based on Morphosis graphics
 source "[file dirname [info script]]/gui.tcl"
@@ -239,6 +229,12 @@ proc page_display_change {page_to_hide page_to_show} {
 		.can itemconfigure $image -state hidden
 	}	
 }
+
+proc load_android_wifi_settings {} {
+	borg toast "Tap the \u25C0BACK\u25B6 BUTTON to return to\nDecent Espresso." 1
+	after 500 { borg activity android.settings.WIFI_SETTINGS {} {} {} {} {} }
+}
+
 
 setup_environment
 setup_images_for_first_page
