@@ -155,6 +155,13 @@ proc setup_images_for_first_page {} {
 	return
 }
 
+proc add_de1_button_text {args} {
+	set torun [concat [list .can create text] [lrange $args 1 end] -tag [lindex $args 0]]
+	puts $torun
+	eval $torun
+
+}
+
 
 proc setup_images_for_other_pages {} {
 
