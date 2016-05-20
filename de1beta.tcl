@@ -106,7 +106,7 @@ proc setup_environment {} {
 		wm maxsize . $screen_size_width $screen_size_height
 		wm minsize . $screen_size_width $screen_size_height
 
-		font create Helv_8 -family {Helvetica Neue Regular} -size 20
+		font create Helv_8 -family {Helvetica Neue Regular} -size 18
 		font create Helv_10_bold -family {Helvetica Neue Bold} -size 23
 		#font create Helvb_10 -family [list "HelveticaNeue" 5 bold] -size 19
 		#font create Helvb_10 -family {Helvetica Neue Regular} -size 19
