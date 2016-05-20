@@ -212,6 +212,8 @@ proc msg {text} {
 	if {$text == ""} {
 		return
 	}
+
+	#set text "$text ([::thread::id])"
 	puts $text
 
 	borg log 1 "decent" $text

@@ -1,5 +1,6 @@
 #!/usr/local/bin/tclsh
 
+package require Thread
 
 # decent doser UI based on Morphosis graphics
 cd "[file dirname [info script]]/"
@@ -378,12 +379,30 @@ proc load_android_wifi_settings {} {
 	after 500 { borg activity android.settings.WIFI_SETTINGS {} {} {} {} {} }
 }
 
+proc timer_test {} {
+	global last_timer_test
+	if {[info exists last_timer_test] != 1} {
+		set last_timer_test [clock milliseconds]
+		after 1000 timer_test
+		return
+	}
+
+	set newtimer [clock milliseconds]
+	set time_diff [expr {$newtimer - $last_timer_test - 1000}]
+
+	if {$time_diff > 100} {
+		msg "XXXX Delay on background timer test: ${time_diff}ms"
+	}
+
+	after 1000 timer_test
+	set last_timer_test $newtimer
+}
 
 setup_environment
 setup_images_for_first_page
-#msg "height: $height - width: $width"
-#update
 setup_images_for_other_pages
+timer_test
+	
 #update
 if {$android == 1} {
 	ble_connect_to_de1
@@ -392,6 +411,7 @@ if {$android == 1} {
 	after 100 run_de1_app
 }
 #run_de1_app
+
 
 #pack .can
 vwait forever
