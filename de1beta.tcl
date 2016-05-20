@@ -2,8 +2,10 @@
 
 
 # decent doser UI based on Morphosis graphics
-source "[file dirname [info script]]/gui.tcl"
 cd "[file dirname [info script]]/"
+source "gui.tcl"
+
+array set translation [read_binary_file "translation.tcl"]
 
 ##############################
 
@@ -26,6 +28,7 @@ set screen_size_height 800
 #set screen_size_height 1080
 
 proc language {} {
+	return "en"
 	return "fr"
 }
 
@@ -35,20 +38,14 @@ proc translate {english} {
 		return $english
 	}
 
-	array set translation {
-		{espresso} {fr espresso de espresso}
-		{hot water} {fr "eau chaude" de "heisses wasser"}
-		{steam} {fr "vapeur" de "dampf"}
-		{settings} {fr "paramètres" de "Einstellungen"}
+	global translation
 
-	}
-
-	if {[info exists translation($english)} {
+	if {[info exists translation($english)] == 1} {
 		# this word has been translated
 		array set available $translation($english)
-		if {[info exists available([language])} {
+		if {[info exists available([language])] == 1} {
 			# this word has been translated into the desired non-english language
-			return $available([language]
+			return $available([language])
 		}
 	} 
 
@@ -89,8 +86,8 @@ proc setup_environment {} {
 		set sourcesans_font [sdltk addfont "SourceSansPro-Regular.ttf"]
 		puts "sourcesans: $sourcesans_font"
 
-	    font create Helv_8 -family "HelveticaNeue" -size 4
-	    font create Helv_10 -family "Helvetica Neue" -size 5
+	    font create Helv_8 -family "HelveticaNeue" -size 12
+	    font create Helv_10_bold -family "Helvetica Neue" -size 16
 
 		font create Sourcesans_30 -family "Source Sans Pro" -size 10
 	    font create Sourcesans_20 -family "Source Sans Pro" -size 6
@@ -109,8 +106,8 @@ proc setup_environment {} {
 		wm maxsize . $screen_size_width $screen_size_height
 		wm minsize . $screen_size_width $screen_size_height
 
-		font create Helv_8 -family {Helvetica Neue Regular} -size 14
-		font create Helv_10 -family {Helvetica Neue Bold} -size 19
+		font create Helv_8 -family {Helvetica Neue Regular} -size 20
+		font create Helv_10_bold -family {Helvetica Neue Bold} -size 23
 		#font create Helvb_10 -family [list "HelveticaNeue" 5 bold] -size 19
 		#font create Helvb_10 -family {Helvetica Neue Regular} -size 19
 		#font create Helv_20 -family {Helvetica Neue Regular} -size 20
@@ -317,7 +314,7 @@ if {$android == 1} {
 	after 100 ble_connect_to_de1
 	
 } else {
-	after 1000 run_de1_app
+	after 10 run_de1_app
 }
 #run_de1_app
 
