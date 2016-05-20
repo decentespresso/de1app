@@ -214,13 +214,15 @@ proc msg {text} {
 	}
 	puts $text
 
+	borg log 1 "decent" $text
+
 	global debuglog 
    	global cnt
     incr cnt
 	lappend debuglog "$cnt: $text"
  	.can itemconfigure .t -text [join $debuglog \n]
 
- 	if {[llength $debuglog] > 50} {
+ 	if {[llength $debuglog] > 22} {
 		set debuglog [lrange $debuglog 1 end]
 	}
 

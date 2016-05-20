@@ -18,8 +18,8 @@ array set page_images {
 }
 
 
-set screen_size_width 1280
-set screen_size_height 800
+#set screen_size_width 1280
+#set screen_size_height 800
 #set screen_size_width 1280
 #set screen_size_height 720
 #set screen_size_width 2560
@@ -28,8 +28,16 @@ set screen_size_height 800
 #set screen_size_height 1080
 
 proc language {} {
-#	return "en"
-	return "fr"
+	# the UI language for Decent Espresso is set as the UI language that Android is currently operating in
+	global current_language
+	if {[info exists current_language] == 0} {
+		array set loc [borg locale]
+		set current_language $loc(language)
+	}
+
+	return $current_language
+	#return "en"
+	#return "fr"
 }
 
 proc translate {english} {
@@ -70,12 +78,49 @@ proc setup_environment {} {
 		namespace import blt::*
 		namespace import -force blt::tile::*
 
+		borg systemui 0x1E02
+		borg screenorientation landscape
+
 		wm attributes . -fullscreen 1
 		sdltk screensaver off
 
+		set width [winfo screenwidth .]
+		set height [winfo screenheight .]
+
 		# sets immersive mode
-		borg systemui 0x1E02
-		borg screenorientation landscape
+
+		#array set displaymetrics [borg displaymetrics]
+		if {$width > 2300} {
+			set screen_size_width 2560
+			if {$height > 1450} {
+				set screen_size_height 1600
+			} else {
+				set screen_size_height 1440
+			}
+		} elseif {$height > 2300} {
+			set screen_size_width 2560
+			if {$width > 1440} {
+				set screen_size_height 1600
+			} else {
+				set screen_size_height 1440
+			}
+		} elseif {$width == 1920} {
+			set screen_size_width 1920
+			set screen_size_height 1080
+		} elseif {$width == 1280} {
+			set screen_size_width 1280
+			if {$width > 720} {
+				set screen_size_height 800
+			} else {
+				set screen_size_height 720
+			}
+		} else {
+			# unknown resolution type, go with smallest
+			set screen_size_width 1280
+			set screen_size_height 720
+		}
+
+
 
 		set helvetica_font [sdltk addfont "HelveticaNeue Light.ttf"]
 		puts "helvetica_font: $helvetica_font"
@@ -86,8 +131,9 @@ proc setup_environment {} {
 		set sourcesans_font [sdltk addfont "SourceSansPro-Regular.ttf"]
 		puts "sourcesans: $sourcesans_font"
 
-	    font create Helv_8 -family "HelveticaNeue" -size 12
-	    font create Helv_10_bold -family "Helvetica Neue" -size 16
+	    font create Helv_4 -family "HelveticaNeue" -size 4
+	    font create Helv_8 -family "HelveticaNeue" -size 8
+	    font create Helv_10_bold -family "Helvetica Neue" -size 10
 
 		font create Sourcesans_30 -family "Source Sans Pro" -size 10
 	    font create Sourcesans_20 -family "Source Sans Pro" -size 6
@@ -99,6 +145,11 @@ proc setup_environment {} {
 		source "bluetooth.tcl"
 
 	} else {
+		set screen_size_width 1280
+		set screen_size_height 800
+		set screen_size_width 2560
+		set screen_size_height 1600
+
 		package require Tk
 		package require tkblt
 		namespace import blt::*
@@ -106,6 +157,7 @@ proc setup_environment {} {
 		wm maxsize . $screen_size_width $screen_size_height
 		wm minsize . $screen_size_width $screen_size_height
 
+		font create Helv_4 -family {Helvetica Neue Regular} -size 10
 		font create Helv_8 -family {Helvetica Neue Regular} -size 18
 		font create Helv_10_bold -family {Helvetica Neue Bold} -size 23
 		#font create Helvb_10 -family [list "HelveticaNeue" 5 bold] -size 19
@@ -116,6 +168,15 @@ proc setup_environment {} {
 		font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
 
 		proc ble {args} { puts "ble $args" }
+		proc borg {args} { 
+			if {[lindex $args 0] == "locale"} {
+				return [list "language" "en"]
+			} elseif {[lindex $args 0] == "log"} {
+				# do nothing
+			} else {
+				puts "borg $args"
+			}
+		}
 		proc de1_send {x} { puts "de1_send '$x'" }
 		proc de1_read {} { puts "de1_read" }
 		proc app_exit {} { exit	}		
@@ -140,11 +201,37 @@ proc skin_directory {} {
 
 }
 
+proc add_visual_item_to_context {context label_name} {
+	global existing_labels
+	#set context [lindex $args 0]
+	set existing_text_labels [ifexists existing_labels($context)]
+	lappend existing_text_labels $label_name
+	set existing_labels($context) $existing_text_labels
+}
+
 proc add_de1_command {bname tclcode x0 y0 x1 y1} {
 	set btn_name ".btn_$bname"
 	#set btn_name $bname
-	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state normal
+	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
 	.can bind $btn_name [platform_button_press] $tclcode
+	add_visual_item_to_context $bname $btn_name
+}
+
+set add_de1_button_text_cnt 0
+proc add_de1_button_text {args} {
+	global add_de1_button_text_cnt
+	incr add_de1_button_text_cnt
+
+	set context [lindex $args 0]
+
+	set label_name "${context}_$add_de1_button_text_cnt"
+
+	# keep track of what labels are displayed in what contexts
+	add_visual_item_to_context $context $label_name
+
+	set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
+	#puts $torun
+	eval $torun
 }
 
 proc setup_images_for_first_page {} {
@@ -155,12 +242,7 @@ proc setup_images_for_first_page {} {
 	return
 }
 
-proc add_de1_button_text {args} {
-	set torun [concat [list .can create text] [lrange $args 1 end] -tag [lindex $args 0]]
-	puts $torun
-	eval $torun
 
-}
 
 
 proc setup_images_for_other_pages {} {
@@ -177,35 +259,15 @@ proc setup_images_for_other_pages {} {
 	}
 
 	# debug log, will be invisible in release mode
-	.can create text 10 10 -text "" -anchor nw -tag .t -fill #666666 -font Helv_8 -width 500
+	.can create text 10 10 -text "" -anchor nw -tag .t -fill #666666 -font Helv_4 -width 1000
 
 	# set up the rectangles that define the finger tap zones and the associated command for each 
 	source "[skin_directory]/skin.tcl"
 
 	# rectangle to act as a button for the entire screen
 	.can create rect 0 0 $screen_size_width $screen_size_height -fill {} -outline black -width 0 -tag .btn_screen -state hidden
-
-
-	#add_de1_command "steam" do_steam 124 294 422 693
-	#add_de1_command "espresso" do_espresso 492 278 822 708
-	#add_de1_command "water" do_water 893 294 1192 693
-	#add_de1_command "exit" app_exit 1112 0 1279 160
-
-	#add_de1_command "steam" do_steam 210 612 808 1416
-	#add_de1_command "espresso" do_espresso 948 584 1606 1444
-	#add_de1_command "water" do_water 1748 616 2346 1414
-	#add_de1_command "exit" app_exit 2250 0 2558 284
-
-	#.can create rect 124 294 422 693 -fill {} -outline black -width 0 -tag .btn_steam -state normal
-	#.can create rect 492 278 822 708 -fill {} -outline black -width 0 -tag .btn_espresso -state normal
-	#.can create rect 893 294 1192 693 -fill {} -outline black -width 0 -tag .btn_water -state normal
-	#.can create rect 1112 0 1279 160 -fill {} -outline black -width 0 -tag .btn_settings -state normal
-
-	#.can bind .btn_steam [platform_button_press] [list do_steam]
-	#.can bind .btn_espresso [platform_button_press] [list do_espresso]
-	#.can bind .btn_water [platform_button_press] [list do_water]
-	#.can bind .btn_settings [platform_button_press] [list app_exit]
 }
+
 
 
 proc run_de1_app {} {
@@ -215,61 +277,51 @@ proc run_de1_app {} {
 
 proc do_steam {} {
 	msg "Make steam"
-	#after cancel steam_dismiss
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list steam_dismiss]
 	page_display_change "off" "steam"
 	de1_send "S"
-	#after 2000 steam_dismiss
 }
 
 proc steam_dismiss {} {
 	msg "End steam"
-	after cancel steam_dismiss
-	#de1_send " "
+	de1_send " "
 	enable_all_four_buttons
 	page_display_change "steam" "off"
 }
 
 proc do_espresso {} {
 	msg "Make espresso"
-	after cancel espresso_dismiss
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list espresso_dismiss]
 	page_display_change "off" "espresso"
 	de1_send "E"
-	#after 2000 espresso_dismiss
 }
 
 proc espresso_dismiss {} {
 	msg "End espresso"
-	after cancel espresso_dismiss
-	#de1_send " "
+	de1_send " "
 	enable_all_four_buttons
 	page_display_change "espresso" "off"
 }
 
 proc do_water {} {
 	msg "Make water"
-	after cancel water_dismiss
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list water_dismiss]
 	page_display_change "off" "water"
 	de1_send "H"
-	#after 2000 water_dismiss
 }
 
 proc water_dismiss {} {
 	msg "End water"
-	after cancel water_dismiss
-	#de1_send " "
+	de1_send " "
 	enable_all_four_buttons
 	page_display_change "water" "off"
 }
 
 proc do_settings {} {
 	msg "Make settings"
-	after cancel settings_dismiss
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list settings_dismiss]
 	page_display_change "off" "settings"
@@ -277,7 +329,6 @@ proc do_settings {} {
 
 proc settings_dismiss {} {
 	msg "End settings"
-	after cancel settings_dismiss
 	enable_all_four_buttons
 	page_display_change "settings" "off"
 }
@@ -305,6 +356,21 @@ proc page_display_change {page_to_hide page_to_show} {
 	foreach image $page_to_hide	 {
 		.can itemconfigure $image -state hidden
 	}	
+
+	global existing_labels
+	foreach {context labels} [array get existing_labels] {
+
+		foreach label $labels  {
+			if {$context == $page_to_show || $page_to_show == "off"} {
+				# leave these displayed
+				.can itemconfigure $label -state normal
+			} else {
+				# hide these labels 
+				.can itemconfigure $label -state hidden
+			}
+		}
+	}
+
 }
 
 proc load_android_wifi_settings {} {
@@ -315,14 +381,15 @@ proc load_android_wifi_settings {} {
 
 setup_environment
 setup_images_for_first_page
+#msg "height: $height - width: $width"
 #update
 setup_images_for_other_pages
 #update
 if {$android == 1} {
-	after 100 ble_connect_to_de1
+	ble_connect_to_de1
 	
 } else {
-	after 10 run_de1_app
+	after 100 run_de1_app
 }
 #run_de1_app
 
