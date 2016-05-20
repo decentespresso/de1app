@@ -28,7 +28,7 @@ set screen_size_height 800
 #set screen_size_height 1080
 
 proc language {} {
-	return "en"
+#	return "en"
 	return "fr"
 }
 
@@ -172,11 +172,12 @@ proc setup_images_for_other_pages {} {
 	# debug log, will be invisible in release mode
 	.can create text 10 10 -text "" -anchor nw -tag .t -fill #666666 -font Helv_8 -width 500
 
+	# set up the rectangles that define the finger tap zones and the associated command for each 
+	source "[skin_directory]/skin.tcl"
+
 	# rectangle to act as a button for the entire screen
 	.can create rect 0 0 $screen_size_width $screen_size_height -fill {} -outline black -width 0 -tag .btn_screen -state hidden
 
-	# set up the rectangles that define the finger tap zones and the associated command for each 
-	source "[skin_directory]/skin.tcl"
 
 	#add_de1_command "steam" do_steam 124 294 422 693
 	#add_de1_command "espresso" do_espresso 492 278 822 708
