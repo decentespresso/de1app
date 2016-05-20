@@ -220,7 +220,7 @@ proc msg {text} {
 	lappend debuglog "$cnt: $text"
  	.can itemconfigure .t -text [join $debuglog \n]
 
- 	if {[llength $debuglog] > 11} {
+ 	if {[llength $debuglog] > 50} {
 		set debuglog [lrange $debuglog 1 end]
 	}
 

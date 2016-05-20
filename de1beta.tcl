@@ -15,10 +15,50 @@ array set page_images {
 	"settings" "settings_on.png" \
 }
 
-proc setup_environment {} {
 
-	set screen_size_width 1280
-	set screen_size_height 800
+set screen_size_width 1280
+set screen_size_height 800
+#set screen_size_width 1280
+#set screen_size_height 720
+#set screen_size_width 2560
+#set screen_size_height 1600
+#set screen_size_width 1920
+#set screen_size_height 1080
+
+proc language {} {
+	return "fr"
+}
+
+proc translate {english} {
+
+	if {[language] == "en"} {
+		return $english
+	}
+
+	array set translation {
+		{espresso} {fr espresso de espresso}
+		{hot water} {fr "eau chaude" de "heisses wasser"}
+		{steam} {fr "vapeur" de "dampf"}
+		{settings} {fr "paramètres" de "Einstellungen"}
+
+	}
+
+	if {[info exists translation($english)} {
+		# this word has been translated
+		array set available $translation($english)
+		if {[info exists available([language])} {
+			# this word has been translated into the desired non-english language
+			return $available([language]
+		}
+	} 
+
+	# if no translation found, return the english text
+	return $english
+}
+
+proc setup_environment {} {
+	global screen_size_width
+	global screen_size_height
 
 	global android
 	set android 0
@@ -80,6 +120,7 @@ proc setup_environment {} {
 
 		proc ble {args} { puts "ble $args" }
 		proc de1_send {x} { puts "de1_send '$x'" }
+		proc de1_read {} { puts "de1_read" }
 		proc app_exit {} { exit	}		
 
 	}
@@ -92,8 +133,25 @@ proc setup_environment {} {
 	############################################
 }
 
+proc skin_directory {} {
+
+	global screen_size_width
+	global screen_size_height
+
+	set dir "skins/default/${screen_size_width}x${screen_size_height}"
+	return $dir
+
+}
+
+proc add_de1_command {bname tclcode x0 y0 x1 y1} {
+	set btn_name ".btn_$bname"
+	#set btn_name $bname
+	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state normal
+	.can bind $btn_name [platform_button_press] $tclcode
+}
+
 proc setup_images_for_first_page {} {
-	image create photo splash -file "splash.png"
+	image create photo splash -file "[skin_directory]/splash.png"
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
 	update
@@ -103,33 +161,47 @@ proc setup_images_for_first_page {} {
 
 proc setup_images_for_other_pages {} {
 
+	global screen_size_width
+	global screen_size_height
+
 	global page_images
 
+	# load each of the PNGs that get displayed for each espresso machine achivity
 	foreach {name pngfilename} [array get page_images] {
-		image create photo $name -file $pngfilename
+		image create photo $name -file "[skin_directory]/$pngfilename"
 		.can create image {0 0} -anchor nw -image $name  -tag $name -state hidden
 	}
 
-	.can create text 10 10 -text "" -anchor nw -tag .t -fill #666666 -font Helv_8
+	# debug log, will be invisible in release mode
+	.can create text 10 10 -text "" -anchor nw -tag .t -fill #666666 -font Helv_8 -width 500
 
+	# rectangle to act as a button for the entire screen
+	.can create rect 0 0 $screen_size_width $screen_size_height -fill {} -outline black -width 0 -tag .btn_screen -state hidden
 
-	.can create rect 0 0 1279 799 -fill {} -outline black -width 0 -tag .btn_screen -state hidden
-	.can create rect 124 294 422 693 -fill {} -outline black -width 0 -tag .btn_steam -state normal
-	.can create rect 492 278 822 708 -fill {} -outline black -width 0 -tag .btn_espresso -state normal
-	.can create rect 893 294 1192 693 -fill {} -outline black -width 0 -tag .btn_water -state normal
-	.can create rect 1112 0 1279 160 -fill {} -outline black -width 0 -tag .btn_settings -state normal
+	# set up the rectangles that define the finger tap zones and the associated command for each 
+	source "[skin_directory]/skin.tcl"
 
-	.can bind .btn_steam [platform_button_press] [list do_steam]
-	.can bind .btn_espresso [platform_button_press] [list do_espresso]
-	.can bind .btn_water [platform_button_press] [list do_water]
-	.can bind .btn_settings [platform_button_press] [list do_settings]
+	#add_de1_command "steam" do_steam 124 294 422 693
+	#add_de1_command "espresso" do_espresso 492 278 822 708
+	#add_de1_command "water" do_water 893 294 1192 693
+	#add_de1_command "exit" app_exit 1112 0 1279 160
 
+	#add_de1_command "steam" do_steam 210 612 808 1416
+	#add_de1_command "espresso" do_espresso 948 584 1606 1444
+	#add_de1_command "water" do_water 1748 616 2346 1414
+	#add_de1_command "exit" app_exit 2250 0 2558 284
+
+	#.can create rect 124 294 422 693 -fill {} -outline black -width 0 -tag .btn_steam -state normal
+	#.can create rect 492 278 822 708 -fill {} -outline black -width 0 -tag .btn_espresso -state normal
+	#.can create rect 893 294 1192 693 -fill {} -outline black -width 0 -tag .btn_water -state normal
+	#.can create rect 1112 0 1279 160 -fill {} -outline black -width 0 -tag .btn_settings -state normal
+
+	#.can bind .btn_steam [platform_button_press] [list do_steam]
+	#.can bind .btn_espresso [platform_button_press] [list do_espresso]
+	#.can bind .btn_water [platform_button_press] [list do_water]
 	#.can bind .btn_settings [platform_button_press] [list app_exit]
-	.can bind .btn_settings [platform_button_press] [list load_android_wifi_settings]
-
-	
-
 }
+
 
 proc run_de1_app {} {
 	page_display_change "splash" "off"
@@ -138,7 +210,7 @@ proc run_de1_app {} {
 
 proc do_steam {} {
 	msg "Make steam"
-	after cancel steam_dismiss
+	#after cancel steam_dismiss
 	disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list steam_dismiss]
 	page_display_change "off" "steam"
@@ -149,7 +221,7 @@ proc do_steam {} {
 proc steam_dismiss {} {
 	msg "End steam"
 	after cancel steam_dismiss
-	de1_send " "
+	#de1_send " "
 	enable_all_four_buttons
 	page_display_change "steam" "off"
 }
@@ -167,7 +239,7 @@ proc do_espresso {} {
 proc espresso_dismiss {} {
 	msg "End espresso"
 	after cancel espresso_dismiss
-	de1_send " "
+	#de1_send " "
 	enable_all_four_buttons
 	page_display_change "espresso" "off"
 }
@@ -185,7 +257,7 @@ proc do_water {} {
 proc water_dismiss {} {
 	msg "End water"
 	after cancel water_dismiss
-	de1_send " "
+	#de1_send " "
 	enable_all_four_buttons
 	page_display_change "water" "off"
 }
@@ -242,12 +314,12 @@ setup_images_for_first_page
 setup_images_for_other_pages
 #update
 if {$android == 1} {
-#	after 100 ble_connect_to_de1
+	after 100 ble_connect_to_de1
 	
 } else {
-	after 100 run_de1_app
+	after 1000 run_de1_app
 }
-run_de1_app
+#run_de1_app
 
 #pack .can
 vwait forever

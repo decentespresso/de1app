@@ -30,16 +30,18 @@ proc de1_send {msg} {
 	set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
 	set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
 	set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
+	ble write $handle $magic1 0 $magic2 0 "$msg"
 	#set res [ble characteristics $handle $magic1 0]
 	#set res [ble services $handle]
     #set res [ble begin $handle]
     #ble begin $handle
-    ble write $handle $magic1 0 $magic2 0 "$msg"
-    #exit
     #lappend cmds [list ble write $handle $magic1 0 $magic2 0 "$msg"]
 	#ble userdata $handle $cmds
     #ble execute $handle
-	set res [ble read $handle $magic1 0 $magic3 0]
+
+
+	#set res [ble read $handle $magic1 0 $magic3 0]
+	#after 1000 de1_read
 }
 
 
@@ -56,7 +58,7 @@ proc de1_read {} {
 	set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
 
 	set res [ble read $handle $magic1 0 $magic3 0]
-    ble execute $handle
+    #ble execute $handle
 }
 
 proc remove_null_terminator {instr} {
@@ -70,9 +72,6 @@ proc remove_null_terminator {instr} {
 }
 
 proc ble_connect_to_de1 {} {
-
-	borg spinner on
-	borg toast "Looking for a Decent Espresso Machine..." 1
 
 	set de1_address "C1:80:A7:32:CD:A3"
 
@@ -98,6 +97,7 @@ proc ble_connect_to_de1 {} {
 }
 
 proc de1_ble_handler {event data} {
+	puts "de1 ble_handler $event $data"
 	#msg "de1 ble_handler $event $data"
     dict with data {
 		switch -- $event {
@@ -122,8 +122,6 @@ proc de1_ble_handler {event data} {
                     if {$runthis == 1} {
 					    set cmds [ble userdata $handle]
 					    if {$cmds ne {}} {
-							msg "running {*}$cmd"
-							#msg "didn't run $cmds"
 							set cmd [lindex $cmds 0]
 							set cmds [lrange $cmds 1 end]
 							{*}$cmd
@@ -134,9 +132,9 @@ proc de1_ble_handler {event data} {
 						}
 					}
 
-					borg toast "Found!" 0
-					borg spinner off
 					run_de1_app
+
+
 			    }
 			}
 		    characteristic {
@@ -152,34 +150,34 @@ proc de1_ble_handler {event data} {
 				} elseif {$state eq "connected"} {
 					#msg "$data"
 					#.t insert end "${event}: ${data}\n"
-				    set cmds [ble userdata $handle]
-				    if {$cmds ne {}} {
-						msg "X running $cmds"
-						#msg "didn't run $cmds"
+					set run_this 0
+					if {$run_this == 1} {
+						msg "OBSOLETE"
+						return
 
-#ble begin $handle
-#set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
-#set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
-#ble write $handle $magic1 0 $magic2 0 "W"
-#ble execute $handle
+					    set cmds [ble userdata $handle]
+					    if {$cmds ne {}} {
+							set cmd [lindex $cmds 0]
+							set cmds [lrange $cmds 1 end]
+							{*}$cmd
+							#ble userdata $handle $cmds
 
-						set cmd [lindex $cmds 0]
-						set cmds [lrange $cmds 1 end]
-						{*}$cmd
-						msg "done"
-
-						#ble userdata $handle $cmds
-
-						# clear the userdata once it's been run
-						ble userdata $handle ""
-						de1_read
-				    } else {
-					    if {$access eq "r"} {
-					    	msg "Received from DE1: '[remove_null_terminator $value]'"
-							# change notification or read request
-							#de1_ble_new_value $cuuid $value
+							# clear the userdata once it's been run
+							ble userdata $handle ""
+							de1_read
 					    }
 					}
+
+				    if {$access eq "r"} {
+				    	msg "Received from DE1: '[remove_null_terminator $value]'"
+						# change notification or read request
+						#de1_ble_new_value $cuuid $value
+				    } elseif {$access eq "w"} {
+				    	msg "Confirmed wrote to DE1: '[remove_null_terminator $value]'"
+						# change notification or read request
+						#de1_ble_new_value $cuuid $value
+				    }
+
 				}
 		    }
 		    descriptor {
