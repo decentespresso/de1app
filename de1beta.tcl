@@ -29,6 +29,7 @@ array set page_images {
 #set screen_size_height 1080
 
 proc language {} {
+	return "fr"
 	# the UI language for Decent Espresso is set as the UI language that Android is currently operating in
 	global current_language
 	if {[info exists current_language] == 0} {
@@ -148,12 +149,14 @@ proc setup_environment {} {
 	} else {
 		set screen_size_width 1280
 		set screen_size_height 800
-		set screen_size_width 2560
-		set screen_size_height 1600
+		#set screen_size_width 2560
+		#set screen_size_height 1600
 
 		package require Tk
-		package require tkblt
-		namespace import blt::*
+		catch {
+			package require tkblt
+			namespace import blt::*
+		}
 
 		wm maxsize . $screen_size_width $screen_size_height
 		wm minsize . $screen_size_width $screen_size_height

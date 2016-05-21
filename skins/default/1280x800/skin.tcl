@@ -1,7 +1,7 @@
 
 # the STEAM buton and translatable text for it
 add_de1_button_text "steam" 255 573 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_button_text "steam" 255 598 -justify center -anchor "n" -text [translate "Capuccino, Latte, Macchiato, Cortado, Flat White"] -font Helv_8 -fill "#7f879a" -width 280
+add_de1_button_text "steam" 255 598 -justify center -anchor "n" -text [translate "Cappuccino, Latte, Macchiato, Cortado, Flat White"] -font Helv_8 -fill "#7f879a" -width 280
 add_de1_command "steam" do_steam 104 308 404 706 
 
 # the ESPRESSO buton and translatable text for it
