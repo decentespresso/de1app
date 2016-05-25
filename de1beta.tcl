@@ -149,12 +149,14 @@ proc setup_environment {} {
 	} else {
 		set screen_size_width 1280
 		set screen_size_height 800
-		#set screen_size_width 1280
-		#set screen_size_height 720
+		set screen_size_width 1280
+		set screen_size_height 720
+		set screen_size_width 1920
+		set screen_size_height 1080
 		#set screen_size_width 2560
 		#set screen_size_height 1440
-		set screen_size_width 2560
-		set screen_size_height 1600
+		#set screen_size_width 2560
+		#set screen_size_height 1600
 
 		package require Tk
 		catch {

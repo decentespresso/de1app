@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo OBSOLETE
+exit
+
 cd 2560x1600
 convert nothing_on.png -resize 1280x800!  ../1280x800/nothing_on.png
 convert espresso_on.png -resize 1280x800!  ../1280x800/espresso_on.png
