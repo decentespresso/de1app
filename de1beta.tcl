@@ -149,10 +149,10 @@ proc setup_environment {} {
 	} else {
 		set screen_size_width 1280
 		set screen_size_height 800
-		set screen_size_width 1280
-		set screen_size_height 720
-		set screen_size_width 1920
-		set screen_size_height 1080
+		#set screen_size_width 1280
+		#set screen_size_height 720
+		#set screen_size_width 1920
+		#set screen_size_height 1080
 		#set screen_size_width 2560
 		#set screen_size_height 1440
 		#set screen_size_width 2560
@@ -219,25 +219,58 @@ proc add_visual_item_to_context {context label_name} {
 	set existing_labels($context) $existing_text_labels
 }
 
-proc add_de1_command {bname tclcode x0 y0 x1 y1} {
-	set btn_name ".btn_$bname"
+set button_cnt 0
+proc add_btn_screen {displaycontext newcontext} {
+	global screen_size_width
+	global screen_size_height
+	global button_cnt
+	incr button_cnt
+	set btn_name ".btn_$displaycontext$button_cnt"
 	#set btn_name $bname
-	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+	#.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+	.can create rect 0 0 $screen_size_width $screen_size_height -fill {} -outline black -width 0 -tag $btn_name  -state hidden
+	#puts "binding $btn_name to switch to new context: '$newcontext'"
+
+	set tclcode [list page_display_change $displaycontext $newcontext]
 	.can bind $btn_name [platform_button_press] $tclcode
-	add_visual_item_to_context $bname $btn_name
+	add_visual_item_to_context $displaycontext $btn_name
 }
 
-set add_de1_button_text_cnt 0
-proc add_de1_button_text {args} {
-	global add_de1_button_text_cnt
-	incr add_de1_button_text_cnt
+proc add_de1_action {context tclcmd} {
+	global actions
+	if {[info exists actions(context)] == 1} {
+		lappend actions($context) $tclcmd
+	} else {
+		set actions($context) $tclcmd
+	}
+}
+
+proc add_de1_button {displaycontext newcontext x0 y0 x1 y1} {
+	global button_cnt
+	incr button_cnt
+	set btn_name ".btn_$displaycontext$button_cnt"
+	#set btn_name $bname
+	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+	#puts "binding $btn_name to switch to new context: '$newcontext'"
+
+	set tclcode [list page_display_change $displaycontext $newcontext]
+	.can bind $btn_name [platform_button_press] $tclcode
+	add_visual_item_to_context $displaycontext $btn_name
+}
+
+set text_cnt 0
+proc add_de1_text {args} {
+	global text_cnt
+	incr text_cnt
 
 	set context [lindex $args 0]
 
-	set label_name "${context}_$add_de1_button_text_cnt"
+	#puts "button context: '${context}'"
+	set label_name "${context}_$text_cnt"
 
 	# keep track of what labels are displayed in what contexts
 	add_visual_item_to_context $context $label_name
+	#puts "add_visual_item_to_context context:$context label_name:$label_name [lrange $args 1 end]"
 
 	set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
 	#puts $torun
@@ -275,7 +308,7 @@ proc setup_images_for_other_pages {} {
 	source "[skin_directory]/skin.tcl"
 
 	# rectangle to act as a button for the entire screen
-	.can create rect 0 0 $screen_size_width $screen_size_height -fill {} -outline black -width 0 -tag .btn_screen -state hidden
+	#.can create rect 0 0 $screen_size_width $screen_size_height -fill {} -outline black -width 0 -tag .btn_screen -state hidden
 }
 
 
@@ -287,60 +320,68 @@ proc run_de1_app {} {
 
 proc do_steam {} {
 	msg "Make steam"
-	disable_all_four_buttons
-	.can bind .btn_screen [platform_button_press] [list steam_dismiss]
-	page_display_change "off" "steam"
+	#disable_all_four_buttons
+	#.can bind .btn_screen [platform_button_press] [list steam_dismiss]
+	#page_display_change "off" "steam"
 	de1_send "S"
 }
 
 proc steam_dismiss {} {
 	msg "End steam"
 	de1_send " "
-	enable_all_four_buttons
-	page_display_change "steam" "off"
+	#enable_all_four_buttons
+	#page_display_change "steam" "off"
 }
 
 proc do_espresso {} {
 	msg "Make espresso"
-	disable_all_four_buttons
-	.can bind .btn_screen [platform_button_press] [list espresso_dismiss]
-	page_display_change "off" "espresso"
+	#disable_all_four_buttons
+	#.can bind .btn_screen [platform_button_press] [list espresso_dismiss]
+	#page_display_change "off" "espresso"
 	de1_send "E"
 }
 
 proc espresso_dismiss {} {
 	msg "End espresso"
 	de1_send " "
-	enable_all_four_buttons
-	page_display_change "espresso" "off"
+	#enable_all_four_buttons
+	#page_display_change "espresso" "off"
 }
 
 proc do_water {} {
 	msg "Make water"
-	disable_all_four_buttons
-	.can bind .btn_screen [platform_button_press] [list water_dismiss]
-	page_display_change "off" "water"
+	#disable_all_four_buttons
+	#.can bind .btn_screen [platform_button_press] [list water_dismiss]
+	#page_display_change "off" "water"
 	de1_send "H"
 }
 
 proc water_dismiss {} {
 	msg "End water"
 	de1_send " "
-	enable_all_four_buttons
-	page_display_change "water" "off"
+	#enable_all_four_buttons
+	#page_display_change "water" "off"
 }
+
+proc de1_stop_all {} {
+	msg "Stop any DE1 function"
+	de1_send " "
+	#enable_all_four_buttons
+	#page_display_change "espresso" "off"
+}
+
 
 proc do_settings {} {
 	msg "Make settings"
-	disable_all_four_buttons
+	#disable_all_four_buttons
 	.can bind .btn_screen [platform_button_press] [list settings_dismiss]
-	page_display_change "off" "settings"
+	#page_display_change "off" "settings"
 }
 
 proc settings_dismiss {} {
 	msg "End settings"
-	enable_all_four_buttons
-	page_display_change "settings" "off"
+	#enable_all_four_buttons
+	#age_display_change "settings" "off"
 }
 
 proc disable_all_four_buttons {} {
@@ -360,6 +401,7 @@ proc enable_all_four_buttons {} {
 }
 
 proc page_display_change {page_to_hide page_to_show} {
+	puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	foreach image $page_to_show	 {
 		.can itemconfigure $image -state normal
 	}	
@@ -367,20 +409,29 @@ proc page_display_change {page_to_hide page_to_show} {
 		.can itemconfigure $image -state hidden
 	}	
 
+
 	global existing_labels
 	foreach {context labels} [array get existing_labels] {
 
 		foreach label $labels  {
-			if {$context == $page_to_show || $page_to_show == "off"} {
+			if {$context == $page_to_show} {
 				# leave these displayed
+				#puts "showing $label"
 				.can itemconfigure $label -state normal
 			} else {
 				# hide these labels 
+				#puts "hiding $label"
 				.can itemconfigure $label -state hidden
 			}
 		}
 	}
 
+	global actions
+	if {[info exists actions($page_to_show)] == 1} {
+		foreach action $actions($page_to_show) {
+			eval $action
+		}
+	}
 }
 
 proc load_android_wifi_settings {} {
@@ -417,7 +468,7 @@ if {$android == 1} {
 	ble_connect_to_de1
 	
 } else {
-	after 100 run_de1_app
+	after 1 run_de1_app
 }
 #run_de1_app
 
