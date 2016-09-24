@@ -323,12 +323,12 @@ proc do_steam {} {
 	#disable_all_four_buttons
 	#.can bind .btn_screen [platform_button_press] [list steam_dismiss]
 	#page_display_change "off" "steam"
-	de1_send "S"
+	de1_send "\x03"
 }
 
 proc steam_dismiss {} {
 	msg "End steam"
-	de1_send " "
+	de1_send "\x02"
 	#enable_all_four_buttons
 	#page_display_change "steam" "off"
 }
@@ -338,12 +338,14 @@ proc do_espresso {} {
 	#disable_all_four_buttons
 	#.can bind .btn_screen [platform_button_press] [list espresso_dismiss]
 	#page_display_change "off" "espresso"
-	de1_send "E"
+	#de1_send "E"
+	de1_send "\x04"
 }
 
 proc espresso_dismiss {} {
 	msg "End espresso"
-	de1_send " "
+	de1_send "\x02"
+	#de1_send " "
 	#enable_all_four_buttons
 	#page_display_change "espresso" "off"
 }
@@ -353,19 +355,19 @@ proc do_water {} {
 	#disable_all_four_buttons
 	#.can bind .btn_screen [platform_button_press] [list water_dismiss]
 	#page_display_change "off" "water"
-	de1_send "H"
+	de1_send "\x06"
 }
 
 proc water_dismiss {} {
 	msg "End water"
-	de1_send " "
+	de1_send "\x02"
 	#enable_all_four_buttons
 	#page_display_change "water" "off"
 }
 
 proc de1_stop_all {} {
 	msg "Stop any DE1 function"
-	de1_send " "
+	de1_send "\x02"
 	#enable_all_four_buttons
 	#page_display_change "espresso" "off"
 }
