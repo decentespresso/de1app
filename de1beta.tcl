@@ -31,6 +31,7 @@ array set ::de1 {
 	sinstance 0
 	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
 	cinstance 0
+	timer_interval 500
 	pressure 0
 	flow 0
 	temperature 0
@@ -323,15 +324,14 @@ proc add_de1_text {args} {
 }
 
 proc add_de1_variable {args} {
-	#puts "inargs: '$args'"
-	#set label_name [add_de1_text $args]
-	set varcmd [lindex [pop args] 0]
-	#puts "varcmd: '$varcmd'"
+	set varcmd [lindex [unshift args] 0]
+	set lastcmd [unshift args]
+	if {$lastcmd != "-textvariable"} {
+		puts "WARNING: last -command needs to be -textvariable on a add_de1_variable line. You entered: '$lastcmd'"
+		return
+	}
 	set context [lindex $args 0]
-	#puts "inarg2: '$args'"
 	set label_name [eval add_de1_text $args]
-	#puts "label_name: $label_name"
-
 	add_variable_item_to_context $context $label_name $varcmd
 }
 
@@ -536,9 +536,10 @@ proc timer_test {} {
 		msg "XXXX Delay on background timer test: ${time_diff}ms"
 	}
 
-	after 1000 timer_test
+	after $::de1(timer_interval) timer_test
 	set last_timer_test $newtimer
 }
+
 
 proc update_onscreen_variables {} {
 	global current_context
@@ -548,13 +549,13 @@ proc update_onscreen_variables {} {
 		foreach label_to_update $labels_to_update {
 			set label_name [lindex $label_to_update 0]
 			set label_cmd [lindex $label_to_update 1]
-			msg "Updating $current_context : $label_name with: '$label_cmd'"
+			#msg "Updating $current_context : $label_name with: '$label_cmd'"
 			.can itemconfig $label_name -text [subst $label_cmd]
 		}
 	}
 
 
-	after 1000 update_onscreen_variables
+	after $::de1(timer_interval) update_onscreen_variables
 }
 
 setup_environment
@@ -562,7 +563,7 @@ setup_images_for_first_page
 setup_images_for_other_pages
 #timer_test
 
-after 1000 update_onscreen_variables
+after $::de1(timer_interval) update_onscreen_variables
 	
 #update
 if {$android == 1} {
