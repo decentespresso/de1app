@@ -2,12 +2,12 @@
 # the STEAM button and translatable text for it
 add_de1_text "off" 255 573 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "steam" 255 573 -text [translate "STEAMING"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "steam" 245 598 -justify right -anchor "ne" -text [translate "Timer:"] -font Helv_8 -fill "#7f879a" -width 260
-add_de1_text "steam" 247 598 -justify left -anchor "nw" -text "12 [translate seconds]" -font Helv_8 -fill "#2d3046" -width 260
-add_de1_text "steam" 245 622 -justify right -anchor "ne" -text [translate "Temperature:"] -font Helv_8 -fill "#7f879a" -width 260
-add_de1_text "steam" 247 622 -justify left -anchor "nw" -text [translate "145ºC"] -font Helv_8 -fill "#2d3046" -width 260
-add_de1_text "steam" 245 647 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260
-add_de1_text "steam" 247 647 -justify left -anchor "nw" -text "3.12 [translate bar]" -font Helv_8 -fill "#2d3046" -width 260
+add_de1_text "steam" 250 598 -justify right -anchor "ne" -text [translate "Timer:"] -font Helv_8 -fill "#7f879a" -width 260
+add_de1_text "steam" 252 598 -justify left -anchor "nw" -text "12 [translate seconds]" -font Helv_8 -fill "#2d3046" -width 260
+add_de1_text "steam" 250 622 -justify right -anchor "ne" -text [translate "Temperature:"] -font Helv_8 -fill "#7f879a" -width 260
+add_de1_text "steam" 252 622 -justify left -anchor "nw" -text [translate "145ºC"] -font Helv_8 -fill "#2d3046" -width 260
+add_de1_text "steam" 250 647 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260
+add_de1_text "steam" 252 647 -justify left -anchor "nw" -text "3.12 [translate bar]" -font Helv_8 -fill "#2d3046" -width 260
 
 add_de1_button "off" "steam" 105 306 404 708
 add_btn_screen "steam" "off"
@@ -32,15 +32,15 @@ add_de1_action "espresso" "do_espresso"
 ######################################################
 # the HOT WATER button and translatable text for it
 add_de1_text "off" 1024 573 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "water" 1024 573 -text [translate "POURING HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "water" 1016 598 -justify right -anchor "ne" -text [translate "Timer:"] -font Helv_8 -fill "#7f879a" -width 260
-add_de1_text "water" 1019 598 -justify left -anchor "nw" -text "12 [translate seconds]" -font Helv_8 -fill "#2d3046" -width 260
-add_de1_text "water" 1016 622 -justify right -anchor "ne" -text [translate "Temperature:"] -font Helv_8 -fill "#7f879a" -width 260
-add_de1_text "water" 1019 622 -justify left -anchor "nw" -text [translate "65.2ºC"] -font Helv_8 -fill "#2d3046" -width 260
-add_de1_text "water" 1016 647 -justify right -anchor "ne" -text [translate "Flow:"] -font Helv_8 -fill "#7f879a" -width 260
-add_de1_text "water" 1019 647 -justify left -anchor "nw" -text "1.12 [translate ml/sec]" -font Helv_8 -fill "#2d3046" -width 260
-add_de1_text "water" 1016 671 -justify right -anchor "ne" -text [translate "Total:"] -font Helv_8 -fill "#7f879a" -width 260
-add_de1_text "water" 1019 671 -justify left -anchor "nw" -text "94 [translate ml]" -font Helv_8 -fill "#2d3046" -width 260
+add_de1_text "water" 1029 573 -text [translate "POURING HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "water" 1026 597 -justify right -anchor "ne" -text [translate "Timer:"] -font Helv_8 -fill "#7f879a" -width 260
+add_de1_text "water" 1029 597 -justify left -anchor "nw" -text "12 [translate seconds]" -font Helv_8 -fill "#2d3046" -width 260
+add_de1_text "water" 1026 620 -justify right -anchor "ne" -text [translate "Temperature:"] -font Helv_8 -fill "#7f879a" -width 260
+add_de1_text "water" 1029 620 -justify left -anchor "nw" -text [translate "65.2ºC"] -font Helv_8 -fill "#2d3046" -width 260
+add_de1_text "water" 1026 645 -justify right -anchor "ne" -text [translate "Flow:"] -font Helv_8 -fill "#7f879a" -width 260
+add_de1_text "water" 1029 645 -justify left -anchor "nw" -text "1.12 [translate ml/sec]" -font Helv_8 -fill "#2d3046" -width 260
+add_de1_text "water" 1026 669 -justify right -anchor "ne" -text [translate "Total:"] -font Helv_8 -fill "#7f879a" -width 260
+add_de1_text "water" 1029 669 -justify left -anchor "nw" -text "94 [translate ml]" -font Helv_8 -fill "#2d3046" -width 260
 add_de1_button "off" "water" 874 308 1173 707
 add_btn_screen "water" "off"
 add_de1_action "water" "do_water"
@@ -49,6 +49,6 @@ add_de1_action "water" "do_water"
 add_de1_action "off" "de1_stop_all"
 
 # the SETTINGS button
-#add_de1_button "off" "settings" 1125 0 1279 142
-#add_de1_action "settings" "app_exit"
+add_de1_button "off" "settings" 1125 0 1279 142
+add_de1_action "settings" "app_exit"
 

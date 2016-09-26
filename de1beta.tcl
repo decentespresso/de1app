@@ -2,6 +2,24 @@
 
 package require Thread
 
+
+array set ::de1 {
+    found    0
+    scanning 1
+    device_handle 0
+	state "-"
+	de1_address "C5:80:EC:A5:F9:72"
+	suuid "0000A000-0000-1000-8000-00805F9B34FB"
+	sinstance 0
+	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
+	cinstance 0
+	pressure 0
+	flow 0
+	temperature 0
+	timer 0
+	volume 0
+}
+
 # decent doser UI based on Morphosis graphics
 cd "[file dirname [info script]]/"
 source "gui.tcl"
@@ -155,8 +173,8 @@ proc setup_environment {} {
 		#set screen_size_height 1080
 		#set screen_size_width 2560
 		#set screen_size_height 1440
-		#set screen_size_width 2560
-		#set screen_size_height 1600
+		set screen_size_width 2560
+		set screen_size_height 1600
 
 		package require Tk
 		catch {
@@ -211,9 +229,18 @@ proc skin_directory {} {
 
 }
 
+proc add_variable_item_to_context {label_name} {
+	global variable_labels
+	if {[info exists variable_labels] != 1} {
+		set variable_labels $label_name
+	} else {
+		lappend variable_labels $label_name
+	}
+}
+
+
 proc add_visual_item_to_context {context label_name} {
 	global existing_labels
-	#set context [lindex $args 0]
 	set existing_text_labels [ifexists existing_labels($context)]
 	lappend existing_text_labels $label_name
 	set existing_labels($context) $existing_text_labels
@@ -262,20 +289,21 @@ set text_cnt 0
 proc add_de1_text {args} {
 	global text_cnt
 	incr text_cnt
-
 	set context [lindex $args 0]
-
-	#puts "button context: '${context}'"
 	set label_name "${context}_$text_cnt"
 
 	# keep track of what labels are displayed in what contexts
 	add_visual_item_to_context $context $label_name
-	#puts "add_visual_item_to_context context:$context label_name:$label_name [lrange $args 1 end]"
-
 	set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
-	#puts $torun
 	eval $torun
+	return $label_name
 }
+
+proc add_de1_variable {args} {
+	set label_name [add_de1_text $args]
+	add_variable_item_to_context $context $label_name
+}
+
 
 proc setup_images_for_first_page {} {
 	image create photo splash -file "[skin_directory]/splash.png"

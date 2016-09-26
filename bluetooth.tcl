@@ -1,9 +1,20 @@
 
-array set ::de1 {
-    found    0
-    scanning 1
-    device_handle 0
-	state "-"
+#set de1_address "C5:80:EC:A5:F9:72"
+#set suuid "0000A000-0000-1000-8000-00805F9B34FB"
+#set sinstance 0
+#set cuuid "0000a001-0000-1000-8000-00805f9b34fb"
+#set cinstance 0
+
+
+
+proc de1_enable_a00d {} {
+	#set handle $::de1(device_handle)
+	ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)
+}
+
+proc de1_enable_a00e {} {
+	#set handle $::de1(device_handle)
+	ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)
 }
 
 proc app_exit {} {
@@ -11,15 +22,20 @@ proc app_exit {} {
 		msg "Closing de1"
 		ble close $::de1(device_handle)
 
-		set de1_address "C1:80:A7:32:CD:A3"
-		ble unpair $de1_address
+		ble unpair $::de1(de1_address)
 	}
 	exit
 }
 
+proc de1_enable {cuuid_to_enable} {
+	msg "Enabling DE1 notification: '$cuuid'"
+	ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $cuuid_to_enable $::de1(cinstance)
+}
+
 proc de1_send {msg} {
-	set handle $::de1(device_handle)
-	if {$handle == "0"} {
+	#set handle $::de1(device_handle)
+	#global suuid sinstance cuuid cinstance
+	if {$::de1(device_handle) == "0"} {
 		msg "error: de1 not connected"
 		return
 	}
@@ -27,10 +43,10 @@ proc de1_send {msg} {
 	set ::de1(state) -
 	msg "Sending to DE1: '$msg'"
 	
-	set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
-	set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
-	set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
-	ble write $handle $magic1 0 $magic2 0 "$msg"
+	#set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
+	#set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
+	#set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
+	ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance) "$msg"
 	#set res [ble characteristics $handle $magic1 0]
 	#set res [ble services $handle]
     #set res [ble begin $handle]
@@ -40,24 +56,27 @@ proc de1_send {msg} {
     #ble execute $handle
 
 
-	#set res [ble read $handle $magic1 0 $magic3 0]
+	#set res [ble read $handle $magic1 $sinstance $magic3 0]
 	#after 1000 de1_read
 }
 
 
 proc de1_read {} {
-	set handle $::de1(device_handle)
-	if {$handle == "0"} {
+	#set handle $::de1(device_handle)
+	#global suuid sinstance cuuid cinstance
+	if {$::de1(device_handle) == "0"} {
 		msg "error: de1 not connected"
 		return
 	}
 
 	set ::de1(state) -
-	set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
-	set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
-	set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
+	#set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
+	#set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
+	#set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
 
-	set res [ble read $handle $magic1 0 $magic3 0]
+	set res [ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
+	msg "Received from DE1: '$res'"
+	return $res
     #ble execute $handle
 }
 
@@ -74,10 +93,10 @@ proc remove_null_terminator {instr} {
 proc ble_connect_to_de1 {} {
 
 	#set de1_address "C1:80:A7:32:CD:A3"
-	set de1_address "C5:80:EC:A5:F9:72"
+	#globel de1_address
 
 	catch {
-		ble unpair $de1_address
+		ble unpair $::de1(de1_address)
 	}
 
 	if {$::de1(device_handle) != "0"} {
@@ -91,14 +110,14 @@ proc ble_connect_to_de1 {} {
     set ::de1_name "bPoint"
     set ::de1(scanning) 0
     set ::de1(device_handle) 0
-    ble connect $de1_address de1_ble_handler 
-    msg "Connecting to DE1 on $de1_address"
+    ble connect $::de1(de1_address) de1_ble_handler 
+    msg "Connecting to DE1 on $::de1(de1_address)"
 
     #after 10000 ble_try_again_to_connect_to_bpoint
 }
 
 proc de1_ble_handler {event data} {
-	puts "de1 ble_handler $event $data"
+	#puts "de1 ble_handler $event $data"
 	#msg "de1 ble_handler $event $data"
     dict with data {
 		switch -- $event {
@@ -119,9 +138,13 @@ proc de1_ble_handler {event data} {
 					set ::de1(device_handle) $handle
 					#msg "connected to de1 with handle $handle"
 
-                    set runthis 1
+					de1_enable_a00d
+					de1_enable_a00e
+
+                    set runthis 0
                     if {$runthis == 1} {
 					    set cmds [ble userdata $handle]
+					    msg "running $cmds"
 					    if {$cmds ne {}} {
 							set cmd [lindex $cmds 0]
 							set cmds [lrange $cmds 1 end]
@@ -138,16 +161,21 @@ proc de1_ble_handler {event data} {
 
 			    }
 			}
+			#a00d
+			#a00e
 		    characteristic {
 			    #.t insert end "${event}: ${data}\n"
-			    #msg "de1 characteristic ${event}: ${data}"
+			    #msg "de1 characteristic $state: ${event}: ${data}"
 			    #msg "connected to de1 with $handle "
-				if {($state eq "discovery") && ($properties & 0x10)} {
+				if {$state eq "discovery" && ($properties & 0x10)} {
+					# && ($properties & 0x10)
 				    # later turn on notifications
-				    set cmds [ble userdata $handle]
-				    lappend cmds [list ble enable $handle $suuid $sinstance \
-						      $cuuid $cinstance]
-				    ble userdata $handle $cmds
+
+				    # john don't enable all notifications
+				    #set cmds [ble userdata $handle]
+				    #lappend cmds [list ble enable $handle $suuid $sinstance $cuuid $cinstance]
+				    #msg "enabling $suuid $sinstance $cuuid $cinstance"
+				    #ble userdata $handle $cmds
 				} elseif {$state eq "connected"} {
 					#msg "$data"
 					#.t insert end "${event}: ${data}\n"
@@ -182,14 +210,23 @@ proc de1_ble_handler {event data} {
 				}
 		    }
 		    descriptor {
+		    	#msg "de1 descriptor $state: ${event}: ${data}"
 				if {$state eq "connected"} {
-				    set cmds [ble userdata $handle]
-				    if {$cmds ne {}} {
-						set cmd [lindex $cmds 0]
-						set cmds [lrange $cmds 1 end]
-						{*}$cmd
-						ble userdata $handle $cmds
-				    }
+
+					set run_this 0
+					if {$run_this == 1} {
+					    #set cmds [lindex [ble userdata $handle] 0]
+					    set lst [ble userdata $handle]
+					    set cmds [unshift lst]
+					    ble userdata $handle $lst
+					    msg "$cmds"
+					    if {$cmds ne {}} {
+							set cmd [lindex $cmds 0]
+							set cmds [lrange $cmds 1 end]
+							{*}$cmd
+							ble userdata $handle $cmds
+					    }
+					}
 				}
 		    }
 		}
@@ -201,3 +238,9 @@ proc de1_ble_handler {event data} {
 
 
 
+proc unshift { { stack "" } { n 1 } } {
+     set s [ uplevel 1 [ list set $stack ] ]
+     set data [ lrange $s end-[ expr { $n - 1 } ] end ]
+     uplevel 1 [ list set $stack [ lrange $s 0 end-$n ] ]
+     set data
+}
