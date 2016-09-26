@@ -36,11 +36,13 @@ array set ::de1 {
 	temperature 0
 	timer 0
 	volume 0
+	measurements "metric"
 }
 
 # decent doser UI based on Morphosis graphics
 cd "[file dirname [info script]]/"
 source "gui.tcl"
+source "vars.tcl"
 
 array set translation [read_binary_file "translation.tcl"]
 
@@ -248,13 +250,13 @@ proc skin_directory {} {
 }
 
 proc add_variable_item_to_context {context label_name varcmd} {
-	puts "varcmd: '$varcmd'"
+	#puts "varcmd: '$varcmd'"
 	global variable_labels
-	if {[info exists variable_labels($context)] != 1} {
-		set variable_labels($context) [list $label_name $varcmd]
-	} else {
+	#if {[info exists variable_labels($context)] != 1} {
+	#	set variable_labels($context) [list $label_name $varcmd]
+	#} else {
 		lappend variable_labels($context) [list $label_name $varcmd]
-	}
+	#}
 }
 
 
@@ -306,7 +308,7 @@ proc add_de1_button {displaycontext newcontext x0 y0 x1 y1} {
 
 set text_cnt 0
 proc add_de1_text {args} {
-	puts "args: '$args'"
+	#puts "args: '$args'"
 	global text_cnt
 	incr text_cnt
 	set context [lindex $args 0]
@@ -315,7 +317,7 @@ proc add_de1_text {args} {
 	# keep track of what labels are displayed in what contexts
 	add_visual_item_to_context $context $label_name
 	set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
-	puts "torun : '$torun'"
+	#puts "torun : '$torun'"
 	eval $torun
 	return $label_name
 }
@@ -324,11 +326,11 @@ proc add_de1_variable {args} {
 	#puts "inargs: '$args'"
 	#set label_name [add_de1_text $args]
 	set varcmd [lindex [pop args] 0]
-	puts "varcmd: '$varcmd'"
+	#puts "varcmd: '$varcmd'"
 	set context [lindex $args 0]
-	puts "inarg2: '$args'"
+	#puts "inarg2: '$args'"
 	set label_name [eval add_de1_text $args]
-	puts "label_name: $label_name"
+	#puts "label_name: $label_name"
 
 	add_variable_item_to_context $context $label_name $varcmd
 }
@@ -477,25 +479,6 @@ proc enable_all_four_buttons {} {
 	.can itemconfigure .btn_screen -state hidden
 }
 
-#####################################################################
-# de1 internal state live variables
-proc timer {} {
-	return [clock seconds]
-}
-
-proc flow {} {
-	return "$::de1(flow) [translate {ml/sec}]"
-}
-
-proc volume {} {
-	return "$::de1(volume) [translate {ml}]"
-}
-
-proc water_temperature {} {
-	return "$::de1(volume) ºC"
-}
-#####################################################################
-
 proc page_display_change {page_to_hide page_to_show} {
 	global current_context
 	set current_context $page_to_show
@@ -562,10 +545,12 @@ proc update_onscreen_variables {} {
 	global variable_labels
 	if {[info exists variable_labels($current_context)] == 1} {
 		set labels_to_update $variable_labels($current_context) 
-		set label_name [lindex $labels_to_update 0]
-		set label_cmd [lindex $labels_to_update 1]
-		msg "Updating $label_name with cmd: $label_cmd"
-		.can itemconfig $label_name -text [subst $label_cmd]
+		foreach label_to_update $labels_to_update {
+			set label_name [lindex $label_to_update 0]
+			set label_cmd [lindex $label_to_update 1]
+			msg "Updating $current_context : $label_name with: '$label_cmd'"
+			.can itemconfig $label_name -text [subst $label_cmd]
+		}
 	}
 
 

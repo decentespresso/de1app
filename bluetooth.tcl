@@ -1,4 +1,6 @@
 
+package provide de1_bluetooth
+
 #set de1_address "C5:80:EC:A5:F9:72"
 #set suuid "0000A000-0000-1000-8000-00805F9B34FB"
 #set sinstance 0
