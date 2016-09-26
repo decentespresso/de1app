@@ -6,7 +6,6 @@
 #set cinstance 0
 
 
-
 proc de1_enable_a00d {} {
 	#set handle $::de1(device_handle)
 	ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)
@@ -233,14 +232,4 @@ proc de1_ble_handler {event data} {
     }
 
     #msg "exited event"
-}
-
-
-
-
-proc unshift { { stack "" } { n 1 } } {
-     set s [ uplevel 1 [ list set $stack ] ]
-     set data [ lrange $s end-[ expr { $n - 1 } ] end ]
-     uplevel 1 [ list set $stack [ lrange $s 0 end-$n ] ]
-     set data
 }

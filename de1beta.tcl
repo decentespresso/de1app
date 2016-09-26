@@ -2,6 +2,24 @@
 
 package require Thread
 
+# from ~/DE1ProtoFirmware/src/Classes/APIDataTypes.hpp
+# struct PACKEDATTR T_ShotSample {
+#   U8 Delta;   // Time since last sample in 100ths of a sec
+#   T_ShotState State;
+# };
+#
+# struct PACKEDATTR T_ShotData {
+#   U64 TimeStamp;
+#   U32 ShotCount;  // This is the nth shot ever made on this machine
+#   U16 SampleCount;
+#   U8 StructVersion; // The version of this structure
+#   T_ShotDesc Description; // What the shot was intended to do
+#   T_ShotSample Samples[1000]; //Variable length, but maximum length is 1000 samples
+# };
+#
+# types defined in # from ~/DE1ProtoFirmware/types.hpp
+
+
 
 array set ::de1 {
     found    0
@@ -229,12 +247,13 @@ proc skin_directory {} {
 
 }
 
-proc add_variable_item_to_context {label_name} {
+proc add_variable_item_to_context {context label_name varcmd} {
+	puts "varcmd: '$varcmd'"
 	global variable_labels
-	if {[info exists variable_labels] != 1} {
-		set variable_labels $label_name
+	if {[info exists variable_labels($context)] != 1} {
+		set variable_labels($context) [list $label_name $varcmd]
 	} else {
-		lappend variable_labels $label_name
+		lappend variable_labels($context) [list $label_name $varcmd]
 	}
 }
 
@@ -287,6 +306,7 @@ proc add_de1_button {displaycontext newcontext x0 y0 x1 y1} {
 
 set text_cnt 0
 proc add_de1_text {args} {
+	puts "args: '$args'"
 	global text_cnt
 	incr text_cnt
 	set context [lindex $args 0]
@@ -295,13 +315,40 @@ proc add_de1_text {args} {
 	# keep track of what labels are displayed in what contexts
 	add_visual_item_to_context $context $label_name
 	set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
+	puts "torun : '$torun'"
 	eval $torun
 	return $label_name
 }
 
 proc add_de1_variable {args} {
-	set label_name [add_de1_text $args]
-	add_variable_item_to_context $context $label_name
+	#puts "inargs: '$args'"
+	#set label_name [add_de1_text $args]
+	set varcmd [lindex [pop args] 0]
+	puts "varcmd: '$varcmd'"
+	set context [lindex $args 0]
+	puts "inarg2: '$args'"
+	set label_name [eval add_de1_text $args]
+	puts "label_name: $label_name"
+
+	add_variable_item_to_context $context $label_name $varcmd
+}
+
+
+proc pop { { stack "" } { n 1 } } {
+     set s [ uplevel 1 [ list set $stack ] ]
+     incr n -1
+     set data [ lrange $s 0 $n ]
+     incr n
+     set s [ lrange $s $n end ]
+     uplevel 1 [ list set $stack $s ]
+     set data
+}
+
+proc unshift { { stack "" } { n 1 } } {
+     set s [ uplevel 1 [ list set $stack ] ]
+     set data [ lrange $s end-[ expr { $n - 1 } ] end ]
+     uplevel 1 [ list set $stack [ lrange $s 0 end-$n ] ]
+     set data
 }
 
 
@@ -430,7 +477,29 @@ proc enable_all_four_buttons {} {
 	.can itemconfigure .btn_screen -state hidden
 }
 
+#####################################################################
+# de1 internal state live variables
+proc timer {} {
+	return [clock seconds]
+}
+
+proc flow {} {
+	return "$::de1(flow) [translate {ml/sec}]"
+}
+
+proc volume {} {
+	return "$::de1(volume) [translate {ml}]"
+}
+
+proc water_temperature {} {
+	return "$::de1(volume) ºC"
+}
+#####################################################################
+
 proc page_display_change {page_to_hide page_to_show} {
+	global current_context
+	set current_context $page_to_show
+
 	puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	foreach image $page_to_show	 {
 		.can itemconfigure $image -state normal
@@ -488,10 +557,27 @@ proc timer_test {} {
 	set last_timer_test $newtimer
 }
 
+proc update_onscreen_variables {} {
+	global current_context
+	global variable_labels
+	if {[info exists variable_labels($current_context)] == 1} {
+		set labels_to_update $variable_labels($current_context) 
+		set label_name [lindex $labels_to_update 0]
+		set label_cmd [lindex $labels_to_update 1]
+		msg "Updating $label_name with cmd: $label_cmd"
+		.can itemconfig $label_name -text [subst $label_cmd]
+	}
+
+
+	after 1000 update_onscreen_variables
+}
+
 setup_environment
 setup_images_for_first_page
 setup_images_for_other_pages
-timer_test
+#timer_test
+
+after 1000 update_onscreen_variables
 	
 #update
 if {$android == 1} {
@@ -500,6 +586,8 @@ if {$android == 1} {
 } else {
 	after 1 run_de1_app
 }
+
+
 #run_de1_app
 
 

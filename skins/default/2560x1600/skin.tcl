@@ -34,7 +34,7 @@ add_de1_action "espresso" "do_espresso"
 add_de1_text "off" 2048 1146 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "water" 2058 1146 -text [translate "POURING HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "water" 2053 1194 -justify right -anchor "ne" -text [translate "Timer:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable {[timer]} "water" 2058 1194 -justify left -anchor "nw" -font Helv_8 -fill "#2d3046" -width 520
+add_de1_variable {[timer] [translate "seconds"]} "water" 2058 1194 -justify left -anchor "nw" -font Helv_8 -fill "#2d3046" -width 520
 add_de1_text "water" 2053 1240 -justify right -anchor "ne" -text [translate "Temperature:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable {[water_temperature]}  "water" 2058 1240 -justify left -anchor "nw" -font Helv_8 -fill "#2d3046" -width 520
 add_de1_text "water" 2053 1290 -justify right -anchor "ne" -text [translate "Flow:"] -font Helv_8 -fill "#7f879a" -width 520
