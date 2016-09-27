@@ -38,6 +38,8 @@ array set ::de1 {
 	timer 0
 	volume 0
 	measurements "metric"
+	wrote 0
+	cmdstack {}
 }
 
 set current_context "off"
@@ -419,11 +421,13 @@ proc do_espresso {} {
 	#page_display_change "off" "espresso"
 	#de1_send "E"
 	de1_send "\x04"
+	run_next_userdata_cmd
 }
 
 proc espresso_dismiss {} {
 	msg "End espresso"
 	de1_send "\x02"
+	run_next_userdata_cmd
 	#de1_send " "
 	#enable_all_four_buttons
 	#page_display_change "espresso" "off"

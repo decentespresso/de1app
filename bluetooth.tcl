@@ -7,15 +7,52 @@ package provide de1_bluetooth
 #set cuuid "0000a001-0000-1000-8000-00805f9b34fb"
 #set cinstance 0
 
+proc userdata_append {cmd} {
+	#set cmds [ble userdata $::de1(device_handle)]
+	#lappend cmds $cmd
+	#ble userdata $::de1(device_handle) $cmds
+	lappend ::de1(cmdstack) $cmd
+	run_next_userdata_cmd
+	#set ::de1(wrote) 1
+}
 
 proc de1_enable_a00d {} {
 	#set handle $::de1(device_handle)
-	ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)
+	#ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)
+
+	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
 }
 
 proc de1_enable_a00e {} {
 	#set handle $::de1(device_handle)
-	ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)
+	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
+	#ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)
+}
+
+proc run_next_userdata_cmd {} {
+	if {$::de1(wrote) == 1} {
+		msg "Do no write, already writing to DE1"
+		return
+	}
+
+	msg "run_next_userdata_cmd $::de1(device_handle)"
+	set cmds {}
+	
+#	catch {
+#		set cmds [ble userdata $::de1(device_handle)]
+#	}
+	if {$::de1(cmdstack) ne {}} {
+
+		set cmd [lindex $::de1(cmdstack) 0]
+		set cmds [lrange $::de1(cmdstack) 1 end]
+		msg "stack cmd: $cmd"
+		{*}$cmd
+		#ble userdata $::de1(device_handle) $cmds
+		set ::de1(cmdstack) $cmds
+		set ::de1(wrote) 1
+	} else {
+		msg "no userdata cmds to run"
+	}
 }
 
 proc app_exit {} {
@@ -47,7 +84,8 @@ proc de1_send {msg} {
 	#set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
 	#set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
 	#set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
-	ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance) "$msg"
+	#ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance) "$msg"
+	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance) "$msg"]
 	#set res [ble characteristics $handle $magic1 0]
 	#set res [ble services $handle]
     #set res [ble begin $handle]
@@ -75,9 +113,10 @@ proc de1_read {} {
 	#set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
 	#set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
 
-	set res [ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
-	msg "Received from DE1: '$res'"
-	return $res
+	userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
+	#set res [ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
+	#msg "Received from DE1: '$res'"
+	#return $res
     #ble execute $handle
 }
 
@@ -119,6 +158,7 @@ proc ble_connect_to_de1 {} {
 
 proc de1_ble_handler {event data} {
 	#puts "de1 ble_handler $event $data"
+	set ::de1(wrote) 0
 	msg "de1 ble_handler $event $data"
     dict with data {
 		switch -- $event {
@@ -139,23 +179,9 @@ proc de1_ble_handler {event data} {
 					set ::de1(device_handle) $handle
 					#msg "connected to de1 with handle $handle"
 
-					#de1_enable_a00d
+					de1_enable_a00d
 					de1_enable_a00e
-
-                    set runthis 0
-                    if {$runthis == 1} {
-					    set cmds [ble userdata $handle]
-					    msg "running $cmds"
-					    if {$cmds ne {}} {
-							set cmd [lindex $cmds 0]
-							set cmds [lrange $cmds 1 end]
-							{*}$cmd
-
-							#set ::skale(device_handle) $handle
-							msg "1) connected to de1 with handle $handle"
-							#msg "command type received: '$cmd'"
-						}
-					}
+					#run_next_userdata_cmd
 
 					run_de1_app
 
@@ -182,19 +208,20 @@ proc de1_ble_handler {event data} {
 					#.t insert end "${event}: ${data}\n"
 					set run_this 0
 					if {$run_this == 1} {
-						msg "OBSOLETE"
-						return
+						#msg "OBSOLETE"
+						#return
 
 					    set cmds [ble userdata $handle]
 					    if {$cmds ne {}} {
+
 							set cmd [lindex $cmds 0]
 							set cmds [lrange $cmds 1 end]
 							{*}$cmd
-							#ble userdata $handle $cmds
+							ble userdata $handle $cmds
 
 							# clear the userdata once it's been run
 							ble userdata $handle ""
-							de1_read
+							#de1_read
 					    }
 					}
 
@@ -208,6 +235,7 @@ proc de1_ble_handler {event data} {
 						#de1_ble_new_value $cuuid $value
 				    }
 
+				    #run_next_userdata_cmd
 				}
 		    }
 		    descriptor {
@@ -215,6 +243,8 @@ proc de1_ble_handler {event data} {
 				if {$state eq "connected"} {
 
 					set run_this 0
+					
+
 					if {$run_this == 1} {
 					    #set cmds [lindex [ble userdata $handle] 0]
 					    set lst [ble userdata $handle]
@@ -229,9 +259,11 @@ proc de1_ble_handler {event data} {
 					    }
 					}
 				}
+				#run_next_userdata_cmd
 		    }
 		}
     }
 
+	run_next_userdata_cmd
     #msg "exited event"
 }
