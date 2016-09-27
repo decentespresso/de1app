@@ -36,7 +36,7 @@ proc run_next_userdata_cmd {} {
 	}
 
 	#msg "run_next_userdata_cmd $::de1(device_handle)"
-	set cmds {}
+	#set cmds {}
 	
 #	catch {
 #		set cmds [ble userdata $::de1(device_handle)]
@@ -159,7 +159,7 @@ proc ble_connect_to_de1 {} {
 proc de1_ble_handler {event data} {
 	#puts "de1 ble_handler $event $data"
 	set ::de1(wrote) 0
-	msg "de1 ble_handler $event $data"
+	#msg "de1 ble_handler $event $data"
     dict with data {
 		switch -- $event {
 	    	#msg "-- device $name found at address $address"
@@ -182,14 +182,10 @@ proc de1_ble_handler {event data} {
 					de1_enable_a00d
 					de1_enable_a00e
 					#run_next_userdata_cmd
-
 					run_de1_app
-
-
 			    }
 			}
-			#a00d
-			#a00e
+
 		    characteristic {
 			    #.t insert end "${event}: ${data}\n"
 			    #msg "de1 characteristic $state: ${event}: ${data}"
@@ -233,6 +229,17 @@ proc de1_ble_handler {event data} {
 				    	msg "Confirmed wrote to DE1: '[remove_null_terminator $value]'"
 						# change notification or read request
 						#de1_ble_new_value $cuuid $value
+				    } elseif {$access eq "c"} {
+				    	#msg "Confirmed wrote to DE1: '[remove_null_terminator $value]'"
+						# change notification or read request
+						#de1_ble_new_value $cuuid $value
+						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
+							update_de1_shotvalue $value
+						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
+							# not currently parsing this
+							update_de1_state $value
+						}
+
 				    }
 
 				    #run_next_userdata_cmd
@@ -266,4 +273,96 @@ proc de1_ble_handler {event data} {
 
 	run_next_userdata_cmd
     #msg "exited event"
+}
+
+proc fast_write_open {fn parms} {
+    set f [open $fn $parms]
+    fconfigure $f -blocking 0
+    fconfigure $f -buffersize 1000000
+    return $f
+}
+
+proc write_binary_file {filename data} {
+    set fn [fast_write_open $filename w]
+    fconfigure $fn -translation binary
+    puts $fn $data 
+    close $fn
+    return 1
+}
+
+
+
+proc update_de1_shotvalue {packed} {
+
+	if {[string length $packed] < 7} {
+		msg "ERROR: short packed message"
+		return
+	}
+
+	set spec {
+		Delta char
+		GroupPressure {char {} {} {$val / 16.0}}
+		GroupFlow {char {} {} {$val / 16.0}}
+		MixTemp {short {} {} {$val / 256.0}}
+		HeadTemp {short {} {} {$val / 256.0}}
+	}
+
+   array set specarr $spec
+
+   	::fields::unpack $packed $spec ShotSample bigeendian
+	foreach {field val} [array get ShotSample] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 3]
+		if {$extra != ""} {
+			set ShotSample($field) [expr $extra]
+		}
+	}
+
+  	#msg "de1 internals: [array get ShotSample]"
+	if {[info exists ShotSample(Delta)] == 1} {
+		set ::de1(timer) [expr {$::de1(timer) + $ShotSample(Delta)}]
+		#msg "updated timer"
+	}
+	if {[info exists ShotSample(HeadTemp)] == 1} {
+		set ::de1(temperature) $ShotSample(HeadTemp)
+		#msg "updated temp"
+	}
+	if {[info exists ShotSample(GroupFlow)] == 1} {
+		set ::de1(flow) $ShotSample(GroupFlow)
+		set ::de1(volume) [expr {$::de1(volume) + ($ShotSample(GroupFlow) * ($ShotSample(Delta)/100.0) )}]
+
+		#msg "updated flow"
+	}
+	if {[info exists ShotSample(GroupPressure)] == 1} {
+		set ::de1(pressure) $ShotSample(GroupPressure)
+		#msg "updated pressure"
+	}
+}
+
+proc update_de1_state {statechar} {
+
+	set spec {
+		value char
+	}
+
+   	::fields::unpack $statechar $spec state bigeendian
+
+   	if {$state(value) != $::de1(state)} {
+	   	msg "state change: [array get state]"
+   		set ::de1(state) $state(value)
+   	}
+
+#    'NoState'          : 0,  # State is not relevant.
+#    'HeatWaterTank'    : 1,  # Cold water is not hot enough. Heating hot water tank.
+#    'HeatWaterHeater'  : 2,  # Warm up hot water heater for shot.
+#    'StabilizeMixTemp' : 3,  # Stabilize mix temp and get entire water path up to temperature.
+#    'PreInfuse'        : 4,  # Espresso only. Hot Water and Steam will skip this state.
+#    'Pour'             : 5,  # Used in all states.
+#    'Flush'            : 6   # Espresso only.
+
+   	if {$state(value) == 0} {
+   		if {$::de1(current_context) != "off"} {
+			page_display_change $::de1(current_context) "off"
+		}
+   	}
 }

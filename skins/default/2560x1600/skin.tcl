@@ -1,3 +1,5 @@
+set ::skindebug 0
+
 ######################################################
 # the STEAM button and translatable text for it
 add_de1_text "off" 510 1146 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 

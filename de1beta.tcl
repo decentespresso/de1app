@@ -2,20 +2,21 @@
 
 package require Thread
 
+# "\x01\x12\x13\x14\x15\x16\x17\x18\x19\x20\x21\x22\x23\x34\x35\x46"
+
 # from ~/DE1ProtoFirmware/src/Classes/APIDataTypes.hpp
 # struct PACKEDATTR T_ShotSample {
 #   U8 Delta;   // Time since last sample in 100ths of a sec
 #   T_ShotState State;
 # };
 #
-# struct PACKEDATTR T_ShotData {
-#   U64 TimeStamp;
-#   U32 ShotCount;  // This is the nth shot ever made on this machine
-#   U16 SampleCount;
-#   U8 StructVersion; // The version of this structure
-#   T_ShotDesc Description; // What the shot was intended to do
-#   T_ShotSample Samples[1000]; //Variable length, but maximum length is 1000 samples
+# struct PACKEDATTR T_ShotState {
+#   U8P4 GroupPressure; // Pressure at group
+#   U8P4 GroupFlow;     // Estimated Flow at group
+#   U16P8 MixTemp;      // Water Temperature entering group
+#   U16P8 HeadTemp;     // Temperature of water at showerhead or steam heater if in steam shot
 # };
+
 #
 # types defined in # from ~/DE1ProtoFirmware/types.hpp
 
@@ -40,14 +41,15 @@ array set ::de1 {
 	measurements "metric"
 	wrote 0
 	cmdstack {}
+	state 0
+	current_context "off"
 }
-
-set current_context "off"
 
 # decent doser UI based on Morphosis graphics
 cd "[file dirname [info script]]/"
 source "gui.tcl"
 source "vars.tcl"
+source "binary.tcl"
 
 array set translation [read_binary_file "translation.tcl"]
 
@@ -303,7 +305,14 @@ proc add_de1_button {displaycontext newcontext x0 y0 x1 y1} {
 	incr button_cnt
 	set btn_name ".btn_$displaycontext$button_cnt"
 	#set btn_name $bname
-	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+	global skindebug
+	set width 0
+	if {[info exists skindebug] == 1} {
+		if {$skindebug == 1} {
+			set width 1
+		}
+	}
+	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width $width -tag $btn_name -state hidden
 	#puts "binding $btn_name to switch to new context: '$newcontext'"
 
 	set tclcode [list page_display_change $displaycontext $newcontext]
@@ -404,6 +413,8 @@ proc do_steam {} {
 	#disable_all_four_buttons
 	#.can bind .btn_screen [platform_button_press] [list steam_dismiss]
 	#page_display_change "off" "steam"
+	set ::de1(timer) 0
+	set ::de1(volume) 0
 	de1_send "\x03"
 }
 
@@ -420,14 +431,17 @@ proc do_espresso {} {
 	#.can bind .btn_screen [platform_button_press] [list espresso_dismiss]
 	#page_display_change "off" "espresso"
 	#de1_send "E"
+	set ::de1(timer) 0
+	set ::de1(volume) 0
+
 	de1_send "\x04"
-	run_next_userdata_cmd
+	#run_next_userdata_cmd
 }
 
 proc espresso_dismiss {} {
 	msg "End espresso"
 	de1_send "\x02"
-	run_next_userdata_cmd
+	#run_next_userdata_cmd
 	#de1_send " "
 	#enable_all_four_buttons
 	#page_display_change "espresso" "off"
@@ -438,6 +452,8 @@ proc do_water {} {
 	#disable_all_four_buttons
 	#.can bind .btn_screen [platform_button_press] [list water_dismiss]
 	#page_display_change "off" "water"
+	set ::de1(timer) 0
+	set ::de1(volume) 0
 	de1_send "\x06"
 }
 
@@ -486,8 +502,8 @@ proc enable_all_four_buttons {} {
 }
 
 proc page_display_change {page_to_hide page_to_show} {
-	global current_context
-	set current_context $page_to_show
+	#global current_context
+	set ::de1(current_context) $page_to_show
 
 	puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	foreach image $page_to_show	 {
@@ -548,10 +564,12 @@ proc timer_test {} {
 
 
 proc update_onscreen_variables {} {
-	global current_context
+	#msg "updating"
+	#global current_context
+	
 	global variable_labels
-	if {[info exists variable_labels($current_context)] == 1} {
-		set labels_to_update $variable_labels($current_context) 
+	if {[info exists variable_labels($::de1(current_context))] == 1} {
+		set labels_to_update $variable_labels($::de1(current_context)) 
 		foreach label_to_update $labels_to_update {
 			set label_name [lindex $label_to_update 0]
 			set label_cmd [lindex $label_to_update 1]
@@ -560,7 +578,7 @@ proc update_onscreen_variables {} {
 		}
 	}
 
-
+	update
 	after $::de1(timer_interval) update_onscreen_variables
 }
 

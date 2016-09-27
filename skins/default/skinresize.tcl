@@ -40,6 +40,7 @@ exec convert tea_on.png -resize 1280x800!  ../1280x800/tea_on.png
 set newskin [read_file "skin.tcl"]
 set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin {add_de1_text \1 [expr {\2/2}] [expr {\3/2}] }]
 set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)\n} $newskin {add_de1_button \1 \2 [expr {\3/2}] [expr {\4/2}] [expr {\5/2}] [expr {\6/2}]\n}]
+set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin {add_de1_variable \1 [expr {\2/2}] [expr {\3/2}] }]
 set newskin [regsubex {\-width ([0-9]+)} $newskin {-width [expr {\1/2}]}]
 write_file "../1280x800/skin.tcl" $newskin 
 
@@ -57,6 +58,7 @@ exec convert tea_on.png -resize 1280x720!  ../1280x720/tea_on.png
 set newskin [read_file "skin.tcl"]
 set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin {add_de1_text \1 [expr {\2/2}] [expr {\3/2}] }]
 set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)\n} $newskin {add_de1_button \1 \2 [expr {\3/2}] [expr {\4/2}] [expr {\5/2}] [expr {\6/2}]\n}]
+set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin {add_de1_variable \1 [expr {\2/2}] [expr {\3/2}] }]
 set newskin [regsubex {\-width ([0-9]+)} $newskin {-width [expr {\1/2}]}]
 write_file "../1280x720/skin.tcl" $newskin 
 
@@ -72,6 +74,7 @@ exec convert tea_on.png -resize 1920x1080!  ../1920x1080/tea_on.png
 set newskin [read_file "skin.tcl"]
 set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin {add_de1_text \1 [expr {int(\2/1.33)}] [expr {int(\3/1.33)}] }]
 set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)\n} $newskin {add_de1_button \1 \2 [expr {int(\3/1.33)}] [expr {int(\4/1.33)}] [expr {int(\5/1.33)}] [expr {int(\6/1.33)}]\n}]
+set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin {add_de1_variable \1 [expr {int(\2/1.33)}] [expr {int(\3/1.33)}] }]
 set newskin [regsubex {\-width ([0-9]+)} $newskin {-width [expr {int(\1/1.33)}]}]
 write_file "../1920x1080/skin.tcl" $newskin 
 
