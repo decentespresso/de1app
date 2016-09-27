@@ -31,11 +31,11 @@ proc de1_enable_a00e {} {
 
 proc run_next_userdata_cmd {} {
 	if {$::de1(wrote) == 1} {
-		msg "Do no write, already writing to DE1"
+		#msg "Do no write, already writing to DE1"
 		return
 	}
 
-	msg "run_next_userdata_cmd $::de1(device_handle)"
+	#msg "run_next_userdata_cmd $::de1(device_handle)"
 	set cmds {}
 	
 #	catch {
@@ -51,7 +51,7 @@ proc run_next_userdata_cmd {} {
 		set ::de1(cmdstack) $cmds
 		set ::de1(wrote) 1
 	} else {
-		msg "no userdata cmds to run"
+		#msg "no userdata cmds to run"
 	}
 }
 
