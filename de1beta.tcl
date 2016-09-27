@@ -40,6 +40,8 @@ array set ::de1 {
 	measurements "metric"
 }
 
+set current_context "off"
+
 # decent doser UI based on Morphosis graphics
 cd "[file dirname [info script]]/"
 source "gui.tcl"

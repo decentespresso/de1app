@@ -119,7 +119,7 @@ proc ble_connect_to_de1 {} {
 
 proc de1_ble_handler {event data} {
 	#puts "de1 ble_handler $event $data"
-	#msg "de1 ble_handler $event $data"
+	msg "de1 ble_handler $event $data"
     dict with data {
 		switch -- $event {
 	    	#msg "-- device $name found at address $address"
@@ -139,7 +139,7 @@ proc de1_ble_handler {event data} {
 					set ::de1(device_handle) $handle
 					#msg "connected to de1 with handle $handle"
 
-					de1_enable_a00d
+					#de1_enable_a00d
 					de1_enable_a00e
 
                     set runthis 0
