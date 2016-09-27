@@ -44,6 +44,23 @@ set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin {ad
 set newskin [regsubex {\-width ([0-9]+)} $newskin {-width [expr {\1/2}]}]
 write_file "../1280x800/skin.tcl" $newskin 
 
+puts "Resizing skin 2560x1440 -> 1920x1200"
+exec convert nothing_on.png -resize 1920x1200!  ../1920x1200/nothing_on.png
+exec convert espresso_on.png -resize 1920x1200!  ../1920x1200/espresso_on.png
+exec convert settings_on.png -resize 1920x1200!  ../1920x1200/settings_on.png
+exec convert splash.png -resize 1920x1200!  ../1920x1200/splash.png
+exec convert steam_on.png -resize 1920x1200!  ../1920x1200/steam_on.png
+exec convert tea_on.png -resize 1920x1200!  ../1920x1200/tea_on.png
+
+set newskin [read_file "skin.tcl"]
+set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin {add_de1_text \1 [expr {int(\2/1.33)}] [expr {int(\3/1.33)}] }]
+set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)\n} $newskin {add_de1_button \1 \2 [expr {int(\3/1.33)}] [expr {int(\4/1.33)}] [expr {int(\5/1.33)}] [expr {int(\6/1.33)}]\n}]
+set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin {add_de1_variable \1 [expr {int(\2/1.33)}] [expr {int(\3/1.33)}] }]
+set newskin [regsubex {\-width ([0-9]+)} $newskin {-width [expr {int(\1/1.33)}]}]
+write_file "../1920x1200/skin.tcl" $newskin 
+
+
+
 cd ..
 
 cd 2560x1440
