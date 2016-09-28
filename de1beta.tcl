@@ -20,7 +20,11 @@ package require Thread
 #
 # types defined in # from ~/DE1ProtoFirmware/types.hpp
 
+# ray's DE1 address 
+# de1_address "EE:01:68:94:A5:48"
 
+# john's DE1
+#	de1_address "C5:80:EC:A5:F9:72"
 
 array set ::de1 {
     found    0

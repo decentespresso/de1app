@@ -174,6 +174,7 @@ proc de1_ble_handler {event data} {
 				    ble_connect_to_de1
 				} elseif {$state eq "connected"} {
 
+					msg "de1 connected $event $data"
 				    set ::de1(found) 1
 				    msg "Connected to DE1"
 					set ::de1(device_handle) $handle
