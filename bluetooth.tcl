@@ -71,6 +71,8 @@ proc de1_enable {cuuid_to_enable} {
 }
 
 proc de1_send {msg} {
+	delay_screen_saver
+	
 	#set handle $::de1(device_handle)
 	#global suuid sinstance cuuid cinstance
 	if {$::de1(device_handle) == "0"} {
@@ -301,11 +303,11 @@ proc update_de1_shotvalue {packed} {
 	}
 
 	set spec {
-		Delta char
-		GroupPressure {char {} {} {$val / 16.0}}
-		GroupFlow {char {} {} {$val / 16.0}}
-		MixTemp {short {} {} {$val / 256.0}}
-		HeadTemp {short {} {} {$val / 256.0}}
+		Delta {char {} {} {unsigned}}
+		GroupPressure {char {} {} {unsigned} {$val / 16.0}}
+		GroupFlow {char {} {} {unsigned} {$val / 16.0}}
+		MixTemp {short {} {} {unsigned} {$val / 256.0}}
+		HeadTemp {short {} {} {unsigned} {$val / 256.0}}
 	}
 
    array set specarr $spec
@@ -313,7 +315,7 @@ proc update_de1_shotvalue {packed} {
    	::fields::unpack $packed $spec ShotSample bigeendian
 	foreach {field val} [array get ShotSample] {
 		set specparts $specarr($field)
-		set extra [lindex $specparts 3]
+		set extra [lindex $specparts 4]
 		if {$extra != ""} {
 			set ShotSample($field) [expr $extra]
 		}

@@ -1,4 +1,10 @@
 
+proc random_pick {lst} {
+    set pick [expr {int(rand() * [llength $lst])}] 
+    return [lindex $lst $pick]
+}
+
+
 proc ifexists {fieldname2} {
     upvar $fieldname2 fieldname
     
@@ -208,6 +214,7 @@ proc platform_button_unpress {} {
 set cnt 0
 set debuglog {}					
 proc msg {text} {
+	return
 
 	if {$text == ""} {
 		return

@@ -27,11 +27,14 @@ package require Thread
 #	de1_address "C5:80:EC:A5:F9:72"
 
 array set ::de1 {
+	de1_address "C5:80:EC:A5:F9:72"
+	screen_saver_delay 3
+	screen_saver_change_interval 30
+	last_action_time 0
     found    0
     scanning 1
     device_handle 0
 	state "-"
-	de1_address "C5:80:EC:A5:F9:72"
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"
 	sinstance 0
 	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
@@ -65,6 +68,7 @@ array set page_images {
 	"steam" "steam_on.png" \
 	"water" "tea_on.png" \
 	"settings" "settings_on.png" \
+	"saver" "splash_antique_1.png" \
 }
 
 
@@ -76,6 +80,7 @@ array set page_images {
 #set screen_size_height 1600
 #set screen_size_width 1920
 #set screen_size_height 1080
+
 
 proc language {} {
 	#return "fr"
@@ -208,10 +213,10 @@ proc setup_environment {} {
 		#set screen_size_height 1080
 		#set screen_size_width 2560
 		#set screen_size_height 1440
-		#set screen_size_width 2560
-		#set screen_size_height 1600
-		set screen_size_width 1920
-		set screen_size_height 1200
+		set screen_size_width 2560
+		set screen_size_height 1600
+		#set screen_size_width 1920
+		#set screen_size_height 1200
 
 		package require Tk
 		catch {
@@ -242,7 +247,7 @@ proc setup_environment {} {
 				puts "borg $args"
 			}
 		}
-		proc de1_send {x} { puts "de1_send '$x'" }
+		proc de1_send {x} { delay_screen_saver;puts "de1_send '$x'" }
 		proc de1_read {} { puts "de1_read" }
 		proc app_exit {} { exit	}		
 
@@ -378,7 +383,9 @@ proc unshift { { stack "" } { n 1 } } {
 
 
 proc setup_images_for_first_page {} {
-	image create photo splash -file "[skin_directory]/splash.png"
+	set files [glob "[skin_directory]/splash_*.png"]
+	set splashpng [random_pick $files]
+	image create photo splash -file $splashpng
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
 	update
@@ -389,6 +396,7 @@ proc setup_images_for_first_page {} {
 
 
 proc setup_images_for_other_pages {} {
+	puts "setup_images_for_other_pages"
 
 	global screen_size_width
 	global screen_size_height
@@ -512,6 +520,12 @@ proc enable_all_four_buttons {} {
 }
 
 proc page_display_change {page_to_hide page_to_show} {
+
+	if {$page_to_hide == "saver"} {
+		after 1000 check_if_should_start_screen_saver
+		delay_screen_saver
+	}
+
 	#global current_context
 	set ::de1(current_context) $page_to_show
 
@@ -573,6 +587,42 @@ proc timer_test {} {
 }
 
 
+proc delay_screen_saver {} {
+	set ::de1(last_action_time) [clock seconds]
+}
+
+proc change_screen_saver_image {} {
+	if {$::de1(current_context) != "saver"} {
+		return
+	}
+	#msg "changing screen saver image"
+	set files [glob "[skin_directory]/splash_*.png"]
+	set splashpng [random_pick $files]
+	image delete saver
+	image create photo saver -file $splashpng
+	.can create image {0 0} -anchor nw -image saver  -tag saver -state normal
+	.can lower saver
+	after [expr {1000 * $::de1(screen_saver_change_interval)}] change_screen_saver_image
+}
+
+proc check_if_should_start_screen_saver {} {
+	#msg "check_if_should_start_screen_saver [clock seconds] > [expr {$::de1(last_action_time) + $::de1(screen_saver_delay)}]"
+	if {$::de1(last_action_time) == 0} {
+		after 1000 check_if_should_start_screen_saver
+		delay_screen_saver
+		return
+	}
+
+	if {$::de1(current_context) == "off" && [clock seconds] > [expr {$::de1(last_action_time) + $::de1(screen_saver_delay)}]} {
+		page_display_change "off" "saver"
+		de1_send "\x02"
+		#msg "start screen saver"
+		after [expr {1000 * $::de1(screen_saver_change_interval)}] change_screen_saver_image
+	} else {
+		after 1000 check_if_should_start_screen_saver
+	}
+}
+
 proc update_onscreen_variables {} {
 	#msg "updating"
 	#global current_context
@@ -598,6 +648,9 @@ setup_images_for_other_pages
 #timer_test
 
 after $::de1(timer_interval) update_onscreen_variables
+
+check_if_should_start_screen_saver
+
 	
 #update
 if {$android == 1} {

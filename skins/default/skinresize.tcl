@@ -34,6 +34,9 @@ exec convert nothing_on.png -resize 1280x800!  ../1280x800/nothing_on.png
 exec convert espresso_on.png -resize 1280x800!  ../1280x800/espresso_on.png
 exec convert settings_on.png -resize 1280x800!  ../1280x800/settings_on.png
 exec convert splash.png -resize 1280x800!  ../1280x800/splash.png
+exec convert splash_antique_1.png -resize 1280x800!  ../1280x800/splash_antique_1.png
+exec convert splash_antique_2.png -resize 1280x800!  ../1280x800/splash_antique_2.png
+exec convert splash_antique_3.png -resize 1280x800!  ../1280x800/splash_antique_3.png
 exec convert steam_on.png -resize 1280x800!  ../1280x800/steam_on.png
 exec convert tea_on.png -resize 1280x800!  ../1280x800/tea_on.png
 
@@ -49,6 +52,9 @@ exec convert nothing_on.png -resize 1920x1200!  ../1920x1200/nothing_on.png
 exec convert espresso_on.png -resize 1920x1200!  ../1920x1200/espresso_on.png
 exec convert settings_on.png -resize 1920x1200!  ../1920x1200/settings_on.png
 exec convert splash.png -resize 1920x1200!  ../1920x1200/splash.png
+exec convert splash_antique_1.png -resize 1920x1200!  ../1920x1200/splash_antique_1.png
+exec convert splash_antique_2.png -resize 1920x1200!  ../1920x1200/splash_antique_2.png
+exec convert splash_antique_3.png -resize 1920x1200!  ../1920x1200/splash_antique_3.png
 exec convert steam_on.png -resize 1920x1200!  ../1920x1200/steam_on.png
 exec convert tea_on.png -resize 1920x1200!  ../1920x1200/tea_on.png
 
@@ -69,6 +75,9 @@ exec convert nothing_on.png -resize 1280x720!  ../1280x720/nothing_on.png
 exec convert espresso_on.png -resize 1280x720!  ../1280x720/espresso_on.png
 exec convert settings_on.png -resize 1280x720!  ../1280x720/settings_on.png
 exec convert splash.png -resize 1280x720!  ../1280x720/splash.png
+exec convert splash_antique_1.png -resize 1280x720!  ../1280x720/splash_antique_1.png
+exec convert splash_antique_2.png -resize 1280x720!  ../1280x720/splash_antique_2.png
+exec convert splash_antique_3.png -resize 1280x720!  ../1280x720/splash_antique_3.png
 exec convert steam_on.png -resize 1280x720!  ../1280x720/steam_on.png
 exec convert tea_on.png -resize 1280x720!  ../1280x720/tea_on.png
 
@@ -85,6 +94,9 @@ exec convert nothing_on.png -resize 1920x1080!  ../1920x1080/nothing_on.png
 exec convert espresso_on.png -resize 1920x1080!  ../1920x1080/espresso_on.png
 exec convert settings_on.png -resize 1920x1080!  ../1920x1080/settings_on.png
 exec convert splash.png -resize 1920x1080!  ../1920x1080/splash.png
+exec convert splash_antique_1.png -resize 1920x1080!  ../1920x1080/splash_antique_1.png
+exec convert splash_antique_2.png -resize 1920x1080!  ../1920x1080/splash_antique_2.png
+exec convert splash_antique_3.png -resize 1920x1080!  ../1920x1080/splash_antique_3.png
 exec convert steam_on.png -resize 1920x1080!  ../1920x1080/steam_on.png
 exec convert tea_on.png -resize 1920x1080!  ../1920x1080/tea_on.png
 

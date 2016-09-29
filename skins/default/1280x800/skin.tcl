@@ -1,5 +1,7 @@
 set ::skindebug 0
 
+puts "loading default skin"
+
 ######################################################
 # the STEAM button and translatable text for it
 add_de1_text "off" 255 573 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
@@ -49,6 +51,9 @@ add_de1_action "water" "do_water"
 
 ######################################################
 add_de1_action "off" "de1_stop_all"
+
+add_btn_screen "saver" "off"
+add_btn_screen "splash" "off"
 
 # the SETTINGS button
 add_de1_button "off" "settings" 1125 0 1279 142
