@@ -1,24 +1,8 @@
 #!/usr/local/bin/tclsh
 
-package require Thread
-
-# "\x01\x12\x13\x14\x15\x16\x17\x18\x19\x20\x21\x22\x23\x34\x35\x46"
-
-# from ~/DE1ProtoFirmware/src/Classes/APIDataTypes.hpp
-# struct PACKEDATTR T_ShotSample {
-#   U8 Delta;   // Time since last sample in 100ths of a sec
-#   T_ShotState State;
-# };
-#
-# struct PACKEDATTR T_ShotState {
-#   U8P4 GroupPressure; // Pressure at group
-#   U8P4 GroupFlow;     // Estimated Flow at group
-#   U16P8 MixTemp;      // Water Temperature entering group
-#   U16P8 HeadTemp;     // Temperature of water at showerhead or steam heater if in steam shot
-# };
-
-#
-# types defined in # from ~/DE1ProtoFirmware/types.hpp
+#package require Thread
+#package require jpeg
+package require img::jpeg
 
 # ray's DE1 address 
 # de1_address "EE:01:68:94:A5:48"
@@ -28,29 +12,69 @@ package require Thread
 
 array set ::de1 {
 	de1_address "C5:80:EC:A5:F9:72"
-	screen_saver_delay 3
-	screen_saver_change_interval 30
 	last_action_time 0
     found    0
     scanning 1
     device_handle 0
-	state "-"
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"
 	sinstance 0
 	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
 	cinstance 0
 	timer_interval 500
 	pressure 0
+	group_temperature 88
+	steam_heater_temperature 135
 	flow 0
 	temperature 0
+	steam_temperature 0
 	timer 0
 	volume 0
-	measurements "metric"
 	wrote 0
 	cmdstack {}
 	state 0
+	substate 0
 	current_context "off"
 }
+
+array set ::settings {
+	screen_saver_delay 600
+	screen_saver_change_interval 60
+	measurements "metric"
+	steam_max_time 60
+	steam_temperature 160
+	water_max_time 45
+	water_temperature 75
+	espresso_max_time 42
+	espresso_temperature 92
+	espresso_pressure 9.2
+}
+
+array set ::de1_state {
+  Sleep \x01
+  Idle \x02
+  Busy \x03
+  Espresso \x04
+  Steam \x05
+  HotWater \x06
+  ShortCal \x07
+  SelfTest \x08
+  LongCal \x09
+  Descale \x10
+  FatalError \x11
+  Init \x12
+}
+
+array set ::de1_substate_types {
+	-   "starting"
+	0	"waiting"
+	1	"heating the water tank"
+	2	"warming the heater"
+	3	"perfecting the mix"
+	4	"preinfusion"
+	5	"pouring"
+	6	"flushing"
+}
+
 
 # decent doser UI based on Morphosis graphics
 cd "[file dirname [info script]]/"
@@ -68,7 +92,7 @@ array set page_images {
 	"steam" "steam_on.png" \
 	"water" "tea_on.png" \
 	"settings" "settings_on.png" \
-	"saver" "splash_antique_1.png" \
+	"saver" "splash_antique_1.jpg" \
 }
 
 
@@ -81,6 +105,11 @@ array set page_images {
 #set screen_size_width 1920
 #set screen_size_height 1080
 
+proc de1_substate_text {} {
+	set num $::de1(substate)
+	set substate_txt $::de1_substate_types($num)
+	return $substate_txt
+}
 
 proc language {} {
 	#return "fr"
@@ -181,22 +210,25 @@ proc setup_environment {} {
 		}
 
 
-
-		set helvetica_font [sdltk addfont "HelveticaNeue Light.ttf"]
-		puts "helvetica_font: $helvetica_font"
-		
-		set helvetica_bold_font [sdltk addfont "helvetica-neue-bold.ttf"]
-		puts "helveticab_font: $helvetica_bold_font"
-		
-		set sourcesans_font [sdltk addfont "SourceSansPro-Regular.ttf"]
-		puts "sourcesans: $sourcesans_font"
+		#set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
+		#set helvetica_bold_font [sdltk addfont "fonts/helvetica-neue-bold.ttf"]
+		#set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
+		global helvetica_bold_font2
+		set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
+		set helvetica_bold_font [sdltk addfont "fonts/SourceSansPro-Bold.ttf"]
+		set helvetica_bold_font2 [sdltk addfont "fonts/SourceSansPro-Semibold.ttf"]
+		#puts "helvetica_bold_font: $helvetica_bold_font2"
+		#set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
 
 	    font create Helv_4 -family "HelveticaNeue" -size 4
+	    font create Helv_7 -family "HelveticaNeue" -size 7
 	    font create Helv_8 -family "HelveticaNeue" -size 8
-	    font create Helv_10_bold -family "Helvetica Neue" -size 10
+	    
+	    font create Helv_9_bold -family "Source Sans Pro" -size 8 
+	    font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
 
-		font create Sourcesans_30 -family "Source Sans Pro" -size 10
-	    font create Sourcesans_20 -family "Source Sans Pro" -size 6
+		#font create Sourcesans_30 -family "Source Sans Pro" -size 10
+	    #font create Sourcesans_20 -family "Source Sans Pro" -size 6
 
 		sdltk touchtranslate 0
 		wm maxsize . $screen_size_width $screen_size_height
@@ -213,8 +245,8 @@ proc setup_environment {} {
 		#set screen_size_height 1080
 		#set screen_size_width 2560
 		#set screen_size_height 1440
-		set screen_size_width 2560
-		set screen_size_height 1600
+		#set screen_size_width 2560
+		#set screen_size_height 1600
 		#set screen_size_width 1920
 		#set screen_size_height 1200
 
@@ -228,8 +260,10 @@ proc setup_environment {} {
 		wm minsize . $screen_size_width $screen_size_height
 
 		font create Helv_4 -family {Helvetica Neue Regular} -size 10
-		font create Helv_8 -family {Helvetica Neue Regular} -size 18
+		#pngfont create Helv_7 -family {Helvetica Neue Regular} -size 14
+		font create Helv_8 -family {Helvetica Neue Regular} -size 20
 		font create Helv_10_bold -family {Helvetica Neue Bold} -size 23
+		font create Helv_9_bold -family {Helvetica Neue Bold} -size 18
 		#font create Helvb_10 -family [list "HelveticaNeue" 5 bold] -size 19
 		#font create Helvb_10 -family {Helvetica Neue Regular} -size 19
 		#font create Helv_20 -family {Helvetica Neue Regular} -size 20
@@ -327,7 +361,14 @@ proc add_de1_button {displaycontext newcontext x0 y0 x1 y1} {
 			set width 1
 		}
 	}
-	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width $width -tag $btn_name -state hidden
+	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+	if {[info exists skindebug] == 1} {
+		if {$skindebug == 1} {
+			.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden
+			add_visual_item_to_context $displaycontext ${btn_name}_lines
+		}
+	}
+
 	#puts "binding $btn_name to switch to new context: '$newcontext'"
 
 	set tclcode [list page_display_change $displaycontext $newcontext]
@@ -383,9 +424,9 @@ proc unshift { { stack "" } { n 1 } } {
 
 
 proc setup_images_for_first_page {} {
-	set files [glob "[skin_directory]/splash_*.png"]
+	set files [glob "[skin_directory]/splash_*.jpg"]
 	set splashpng [random_pick $files]
-	image create photo splash -file $splashpng
+	image create photo splash -file $splashpng -format jpeg
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
 	update
@@ -428,96 +469,72 @@ proc run_de1_app {} {
 
 proc do_steam {} {
 	msg "Make steam"
-	#disable_all_four_buttons
-	#.can bind .btn_screen [platform_button_press] [list steam_dismiss]
-	#page_display_change "off" "steam"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send "\x03"
+	de1_send $::de1_state(Steam)
 }
 
-proc steam_dismiss {} {
-	msg "End steam"
-	de1_send "\x02"
-	#enable_all_four_buttons
-	#page_display_change "steam" "off"
-}
+#proc steam_dismiss {} {
+#	msg "End steam"
+#	de1_send $::de1_state(Idle)
+#}
 
 proc do_espresso {} {
 	msg "Make espresso"
-	#disable_all_four_buttons
-	#.can bind .btn_screen [platform_button_press] [list espresso_dismiss]
-	#page_display_change "off" "espresso"
-	#de1_send "E"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 
-	de1_send "\x04"
+	de1_send $::de1_state(Espresso)
 	#run_next_userdata_cmd
 }
 
-proc espresso_dismiss {} {
-	msg "End espresso"
-	de1_send "\x02"
-	#run_next_userdata_cmd
-	#de1_send " "
-	#enable_all_four_buttons
-	#page_display_change "espresso" "off"
-}
+#proc espresso_dismiss {} {
+#	msg "End espresso"
+#	de1_send $::de1_state(Idle)
+#}
 
 proc do_water {} {
 	msg "Make water"
-	#disable_all_four_buttons
-	#.can bind .btn_screen [platform_button_press] [list water_dismiss]
-	#page_display_change "off" "water"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send "\x06"
+	de1_send $::de1_state(HotWater)
 }
 
-proc water_dismiss {} {
-	msg "End water"
-	de1_send "\x02"
-	#enable_all_four_buttons
-	#page_display_change "water" "off"
-}
+#proc water_dismiss {} {
+#	msg "End water"
+#	de1_send $::de1_state(Idle)
+#}
 
 proc de1_stop_all {} {
-	msg "Stop any DE1 function"
-	de1_send "\x02"
-	#enable_all_four_buttons
-	#page_display_change "espresso" "off"
+	msg "DE1 goes idle"
+	de1_send $::de1_state(Idle)
 }
 
 
-proc do_settings {} {
-	msg "Make settings"
-	#disable_all_four_buttons
-	.can bind .btn_screen [platform_button_press] [list settings_dismiss]
-	#page_display_change "off" "settings"
-}
+#proc do_settings {} {
+#	msg "Make settings"
+#	.can bind .btn_screen [platform_button_press] [list settings_dismiss]
+#}
 
-proc settings_dismiss {} {
-	msg "End settings"
-	#enable_all_four_buttons
-	#age_display_change "settings" "off"
-}
+#proc settings_dismiss {} {#
+#	msg "End settings"
+#}
 
-proc disable_all_four_buttons {} {
-	.can itemconfigure ".btn_steam" -state hidden
-	.can itemconfigure ".btn_espresso" -state hidden
-	.can itemconfigure ".btn_water" -state hidden
-	.can itemconfigure ".btn_settings" -state hidden
-	.can itemconfigure .btn_screen -state normal
-}
+#proc disable_all_four_buttons {} {
+#	.can itemconfigure ".btn_steam" -state hidden
+#	.can itemconfigure ".btn_espresso" -state hidden
+#	.can itemconfigure ".btn_water" -state hidden
+#	.can itemconfigure ".btn_settings" -state hidden
+#	.can itemconfigure .btn_screen -state normal
+#}
 
-proc enable_all_four_buttons {} {
-	.can itemconfigure ".btn_steam" -state normal
-	.can itemconfigure ".btn_espresso" -state normal
-	.can itemconfigure ".btn_water" -state normal
-	.can itemconfigure ".btn_settings" -state normal
-	.can itemconfigure .btn_screen -state hidden
-}
+#proc enable_all_four_buttons {} {
+#	.can itemconfigure ".btn_steam" -state normal
+#	.can itemconfigure ".btn_espresso" -state normal
+#	.can itemconfigure ".btn_water" -state normal
+#	.can itemconfigure ".btn_settings" -state normal
+#	.can itemconfigure .btn_screen -state hidden
+#}
 
 proc page_display_change {page_to_hide page_to_show} {
 
@@ -596,13 +613,13 @@ proc change_screen_saver_image {} {
 		return
 	}
 	#msg "changing screen saver image"
-	set files [glob "[skin_directory]/splash_*.png"]
+	set files [glob "[skin_directory]/splash_*.jpg"]
 	set splashpng [random_pick $files]
 	image delete saver
 	image create photo saver -file $splashpng
 	.can create image {0 0} -anchor nw -image saver  -tag saver -state normal
 	.can lower saver
-	after [expr {1000 * $::de1(screen_saver_change_interval)}] change_screen_saver_image
+	after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
 }
 
 proc check_if_should_start_screen_saver {} {
@@ -613,17 +630,21 @@ proc check_if_should_start_screen_saver {} {
 		return
 	}
 
-	if {$::de1(current_context) == "off" && [clock seconds] > [expr {$::de1(last_action_time) + $::de1(screen_saver_delay)}]} {
+	if {$::de1(current_context) == "off" && [clock seconds] > [expr {$::de1(last_action_time) + $::settings(screen_saver_delay)}]} {
 		page_display_change "off" "saver"
-		de1_send "\x02"
+		de1_send $::de1_state(Sleep)
 		#msg "start screen saver"
-		after [expr {1000 * $::de1(screen_saver_change_interval)}] change_screen_saver_image
+		after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
 	} else {
 		after 1000 check_if_should_start_screen_saver
 	}
 }
 
 proc update_onscreen_variables {} {
+
+	if {$::android == 0} {
+		set ::de1(substate) [expr {int(rand() * 6)}]
+	}
 	#msg "updating"
 	#global current_context
 	

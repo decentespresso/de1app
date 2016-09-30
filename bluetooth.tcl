@@ -58,7 +58,7 @@ proc run_next_userdata_cmd {} {
 proc app_exit {} {
 	catch {
 		msg "Closing de1"
-		ble close $::de1(device_handle)
+		#ble close $::de1(device_handle)
 
 		ble unpair $::de1(de1_address)
 	}
@@ -80,7 +80,7 @@ proc de1_send {msg} {
 		return
 	}
 
-	set ::de1(state) -
+	set ::de1(substate) -
 	msg "Sending to DE1: '$msg'"
 	
 	#set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
@@ -110,7 +110,7 @@ proc de1_read {} {
 		return
 	}
 
-	set ::de1(state) -
+	set ::de1(substate) -
 	#set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
 	#set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
 	#set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
@@ -240,7 +240,7 @@ proc de1_ble_handler {event data} {
 							update_de1_shotvalue $value
 						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
 							# not currently parsing this
-							update_de1_state $value
+							update_de1_substate $value
 						}
 
 				    }
@@ -342,7 +342,7 @@ proc update_de1_shotvalue {packed} {
 	}
 }
 
-proc update_de1_state {statechar} {
+proc update_de1_substate {statechar} {
 
 	set spec {
 		value char
@@ -350,9 +350,9 @@ proc update_de1_state {statechar} {
 
    	::fields::unpack $statechar $spec state bigeendian
 
-   	if {$state(value) != $::de1(state)} {
-	   	msg "state change: [array get state]"
-   		set ::de1(state) $state(value)
+   	if {$state(value) != $::de1(substate)} {
+	   	msg "substate change: [array get state]"
+   		set ::de1(substate) $state(value)
    	}
 
 #    'NoState'          : 0,  # State is not relevant.
@@ -364,6 +364,7 @@ proc update_de1_state {statechar} {
 #    'Flush'            : 6   # Espresso only.
 
    	if {$state(value) == 0} {
+   		# when the substate goes to 0 that means the current task is done, so indicate this by going back to the OFF state in the gui
    		if {$::de1(current_context) != "off"} {
 			page_display_change $::de1(current_context) "off"
 		}
