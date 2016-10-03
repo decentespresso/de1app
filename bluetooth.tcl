@@ -16,6 +16,12 @@ proc userdata_append {cmd} {
 	#set ::de1(wrote) 1
 }
 
+proc de1_enable_bluetooth_notifications {} {
+	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
+	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
+	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
+}
+
 proc de1_enable_a00d {} {
 	#set handle $::de1(device_handle)
 	#ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)
@@ -163,6 +169,13 @@ proc de1_ble_handler {event data} {
 	set ::de1(wrote) 0
 	#msg "de1 ble_handler $event $data"
     dict with data {
+
+    	catch {
+			if {$cuuid != "0000A00D-0000-1000-8000-00805F9B34FB"} {
+				msg "read from DE1: '$event $data'"
+			}
+		}
+
 		switch -- $event {
 	    	#msg "-- device $name found at address $address"
 		    connection {
@@ -182,9 +195,12 @@ proc de1_ble_handler {event data} {
 					set ::de1(device_handle) $handle
 					#msg "connected to de1 with handle $handle"
 
-					de1_enable_a00d
-					de1_enable_a00e
+					#de1_enable_a00d
+					#de1_enable_a00e
+					#de1_enable_a00f
+					de1_enable_bluetooth_notifications
 					#run_next_userdata_cmd
+					de1_send $::de1_state(Idle)
 					run_de1_app
 			    }
 			}
@@ -233,14 +249,19 @@ proc de1_ble_handler {event data} {
 						# change notification or read request
 						#de1_ble_new_value $cuuid $value
 				    } elseif {$access eq "c"} {
-				    	#msg "Confirmed wrote to DE1: '[remove_null_terminator $value]'"
+				    	
 						# change notification or read request
 						#de1_ble_new_value $cuuid $value
 						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
 							update_de1_shotvalue $value
 						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
-							# not currently parsing this
 							update_de1_substate $value
+							msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
+						} elseif {$cuuid == "0000A00F-0000-1000-8000-00805F9B34FB"} {
+							update_de1_state $value
+							msg "Confirmed a00f read from DE1: '[remove_null_terminator $value]'"
+						} else {
+							msg "Confirmed unknown read from DE1 $cuuid: '[remove_null_terminator $value]'"
 						}
 
 				    }
@@ -273,6 +294,8 @@ proc de1_ble_handler {event data} {
 		    }
 		}
     }
+
+
 
 	run_next_userdata_cmd
     #msg "exited event"
@@ -370,3 +393,31 @@ proc update_de1_substate {statechar} {
 		}
    	}
 }
+
+
+proc update_de1_state {statechar} {
+
+	set spec {
+		value char
+	}
+
+   	::fields::unpack $statechar $spec state bigeendian
+
+	msg "update_de1_state $state(value)"
+
+   	if {$state(value) != $::de1(state)} {
+	   	msg "state change: [array get state]"
+   		set ::de1(state) $state(value)
+   	}
+
+   	if {$state(value) == 2} {
+   		# when the state goes to 2 that means the current task is done, and we are back to idle
+   		if {$::de1(current_context) != "off"} {
+			page_display_change $::de1(current_context) "off"
+		}
+   	} elseif {$state(value) == 0} {
+   		# when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
+		page_display_change "sleep" "saver" 
+   	}
+}
+

@@ -33,35 +33,54 @@ array set ::de1 {
 	cmdstack {}
 	state 0
 	substate 0
-	current_context "off"
+	current_context ""
 }
 
 array set ::settings {
-	screen_saver_delay 600
+	screen_saver_delay 10
 	screen_saver_change_interval 60
 	measurements "metric"
-	steam_max_time 60
+	steam_max_time 47
 	steam_temperature 160
-	water_max_time 45
+	water_max_time 10
 	water_temperature 75
 	espresso_max_time 42
 	espresso_temperature 92
 	espresso_pressure 9.2
+	app_brightness 100
+	saver_brightness 30
 }
 
 array set ::de1_state {
-  Sleep \x01
-  Idle \x02
-  Busy \x03
-  Espresso \x04
-  Steam \x05
-  HotWater \x06
-  ShortCal \x07
-  SelfTest \x08
-  LongCal \x09
-  Descale \x10
-  FatalError \x11
-  Init \x12
+	Sleep \x00
+	WarmUp \x01
+	Idle \x02
+	Busy \x03
+	Espresso \x04
+	Steam \x05
+	HotWater \x06
+	ShortCal \x07
+	SelfTest \x08
+	LongCal \x09
+	Descale \x10
+	FatalError \x11
+	Init \x12
+}
+
+array set ::de1_num_state {
+  0 Sleep
+  1 WarmUp
+  2 Idle 
+  3 Busy 
+  4 Espresso 
+  5 Steam
+  6 HotWater
+  7 ShortCal
+  8 SelfTest
+  9 LongCal 
+  10 Descale
+  11 FatalError 
+  12 Init
 }
 
 array set ::de1_substate_types {
@@ -86,15 +105,6 @@ array set translation [read_binary_file "translation.tcl"]
 
 ##############################
 
-array set page_images {
-	"off" "nothing_on.png" \
-	"espresso" "espresso_on.png" \
-	"steam" "steam_on.png" \
-	"water" "tea_on.png" \
-	"settings" "settings_on.png" \
-	"saver" "splash_antique_1.jpg" \
-}
-
 
 #set screen_size_width 1280
 #set screen_size_height 800
@@ -104,6 +114,15 @@ array set page_images {
 #set screen_size_height 1600
 #set screen_size_width 1920
 #set screen_size_height 1080
+
+proc random_saver_file {} {
+	return [random_pick [glob "[saver_directory]/*.jpg"]]
+}
+
+proc random_splash_file {} {
+	return [random_pick [glob "[splash_directory]/*.jpg"]]
+}
+
 
 proc de1_substate_text {} {
 	set num $::de1(substate)
@@ -147,6 +166,7 @@ proc translate {english} {
 }
 
 proc setup_environment {} {
+	#puts "setup_environment"
 	global screen_size_width
 	global screen_size_height
 
@@ -163,6 +183,8 @@ proc setup_environment {} {
 		namespace import blt::*
 		namespace import -force blt::tile::*
 
+		#borg systemui 0x1E02
+		borg brightness $::settings(app_brightness)
 		borg systemui 0x1E02
 		borg screenorientation landscape
 
@@ -213,19 +235,29 @@ proc setup_environment {} {
 		#set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
 		#set helvetica_bold_font [sdltk addfont "fonts/helvetica-neue-bold.ttf"]
 		#set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
-		global helvetica_bold_font2
-		set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
-		set helvetica_bold_font [sdltk addfont "fonts/SourceSansPro-Bold.ttf"]
-		set helvetica_bold_font2 [sdltk addfont "fonts/SourceSansPro-Semibold.ttf"]
+		global helvetica_bold_font
+		set helvetica_font2 [sdltk addfont "fonts/HelveticaNeue Medium.ttf"]
+		set helvetica_bold_font [sdltk addfont "fonts/HelveticaNeueBd3.ttf"]
+		#set helvetica_font [sdltk addfont "fonts/HelveticaNeueHv.ttf"]
+		#set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
+		
+		#set helvetica_bold_font [sdltk addfont "fonts/SourceSansPro-Bold.ttf"]
+
+		#set helvetica_bold_font [sdltk addfont "fonts/HelveticaNeueBd.ttf"]
+		#set helvetica_bold_font [sdltk addfont "fonts/HelveticaNeueHv.ttf"]
+
+		#set helvetica_bold_font2 [sdltk addfont "fonts/SourceSansPro-Semibold.ttf"]
 		#puts "helvetica_bold_font: $helvetica_bold_font2"
 		#set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
 
 	    font create Helv_4 -family "HelveticaNeue" -size 4
-	    font create Helv_7 -family "HelveticaNeue" -size 7
+	    #font create Helv_7 -family "HelveticaNeue" -size 7
 	    font create Helv_8 -family "HelveticaNeue" -size 8
 	    
-	    font create Helv_9_bold -family "Source Sans Pro" -size 8 
-	    font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
+	    font create Helv_9_bold -family "HelveticaNeue3" -size 8 
+	    #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
+	    font create Helv_10_bold -family "HelveticaNeue3" -size 10 
+	    font create Helv_20_bold -family "HelveticaNeue3" -size 18
 
 		#font create Sourcesans_30 -family "Source Sans Pro" -size 10
 	    #font create Sourcesans_20 -family "Source Sans Pro" -size 6
@@ -237,18 +269,25 @@ proc setup_environment {} {
 		source "bluetooth.tcl"
 
 	} else {
+		set screen_size_width 1920
+		set screen_size_height 1200
+		set fontm 1.5
+
 		set screen_size_width 1280
 		set screen_size_height 800
-		#set screen_size_width 1280
-		#set screen_size_height 720
+		set fontm 1
+		
+		set screen_size_width 2560
+		set screen_size_height 1600
+		set fontm 2
+
 		#set screen_size_width 1920
 		#set screen_size_height 1080
-		#set screen_size_width 2560
-		#set screen_size_height 1440
-		#set screen_size_width 2560
-		#set screen_size_height 1600
-		#set screen_size_width 1920
-		#set screen_size_height 1200
+		#set fontm 1.5
+
+		#set screen_size_width 1280
+		#set screen_size_height 720
+		#set fontm 1
 
 		package require Tk
 		catch {
@@ -259,17 +298,15 @@ proc setup_environment {} {
 		wm maxsize . $screen_size_width $screen_size_height
 		wm minsize . $screen_size_width $screen_size_height
 
-		font create Helv_4 -family {Helvetica Neue Regular} -size 10
+		#font create Helv_4 -family {Helvetica Neue Regular} -size 10
 		#pngfont create Helv_7 -family {Helvetica Neue Regular} -size 14
-		font create Helv_8 -family {Helvetica Neue Regular} -size 20
-		font create Helv_10_bold -family {Helvetica Neue Bold} -size 23
-		font create Helv_9_bold -family {Helvetica Neue Bold} -size 18
-		#font create Helvb_10 -family [list "HelveticaNeue" 5 bold] -size 19
-		#font create Helvb_10 -family {Helvetica Neue Regular} -size 19
-		#font create Helv_20 -family {Helvetica Neue Regular} -size 20
-		
-		font create Sourcesans_30 -family {Source Sans Pro Bold} -size 50
-		font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
+		font create Helv_8 -family {Helvetica Neue Regular} -size [expr {int($fontm * 20)}]
+		font create Helv_10_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 23)}]
+		font create Helv_20_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 46)}]
+		font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 18)}]
+	
+		#font create Sourcesans_30 -family {Source Sans Pro Bold} -size 50
+		#font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
 
 		proc ble {args} { puts "ble $args" }
 		proc borg {args} { 
@@ -296,13 +333,25 @@ proc setup_environment {} {
 }
 
 proc skin_directory {} {
-
 	global screen_size_width
 	global screen_size_height
-
-	set dir "skins/default/${screen_size_width}x${screen_size_height}"
+	set dir "[file dirname [info script]]/skins/default/${screen_size_width}x${screen_size_height}"
+	#puts "skin_directory: $dir"
 	return $dir
+}
 
+proc saver_directory {} {
+	global screen_size_width
+	global screen_size_height
+	set dir "[file dirname [info script]]/saver/${screen_size_width}x${screen_size_height}"
+	return $dir
+}
+
+proc splash_directory {} {
+	global screen_size_width
+	global screen_size_height
+	set dir "[file dirname [info script]]/splash/${screen_size_width}x${screen_size_height}"
+	return $dir
 }
 
 proc add_variable_item_to_context {context label_name varcmd} {
@@ -424,9 +473,9 @@ proc unshift { { stack "" } { n 1 } } {
 
 
 proc setup_images_for_first_page {} {
-	set files [glob "[skin_directory]/splash_*.jpg"]
-	set splashpng [random_pick $files]
-	image create photo splash -file $splashpng -format jpeg
+	#set files [glob "[splash_directory]/*.jpg"]
+	#set splashpng [random_pick $files]
+	image create photo splash -file [random_splash_file] -format jpeg
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
 	update
@@ -437,21 +486,33 @@ proc setup_images_for_first_page {} {
 
 
 proc setup_images_for_other_pages {} {
-	puts "setup_images_for_other_pages"
+	#puts "setup_images_for_other_pages"
 
 	global screen_size_width
 	global screen_size_height
 
-	global page_images
+	#global page_images
+
+
+	array set page_images [list \
+		"off" "[skin_directory]/nothing_on.png" \
+		"espresso" "[skin_directory]/espresso_on.png" \
+		"steam" "[skin_directory]/steam_on.png" \
+		"water" "[skin_directory]/tea_on.png" \
+		"settings" "[skin_directory]/settings_on.png" \
+		"sleep" "[skin_directory]/sleep.jpg" \
+		"saver" [random_saver_file] \
+	]
+
 
 	# load each of the PNGs that get displayed for each espresso machine achivity
 	foreach {name pngfilename} [array get page_images] {
-		image create photo $name -file "[skin_directory]/$pngfilename"
+		image create photo $name -file $pngfilename
 		.can create image {0 0} -anchor nw -image $name  -tag $name -state hidden
 	}
 
 	# debug log, will be invisible in release mode
-	.can create text 10 10 -text "" -anchor nw -tag .t -fill #666666 -font Helv_4 -width 1000
+	.can create text 10 10 -text "" -anchor nw -tag .t -fill #000000 -font Helv_4 -width 1000
 
 	# set up the rectangles that define the finger tap zones and the associated command for each 
 	source "[skin_directory]/skin.tcl"
@@ -472,12 +533,12 @@ proc do_steam {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	de1_send $::de1_state(Steam)
-}
 
-#proc steam_dismiss {} {
-#	msg "End steam"
-#	de1_send $::de1_state(Idle)
-#}
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
+	}
+
+}
 
 proc do_espresso {} {
 	msg "Make espresso"
@@ -485,25 +546,24 @@ proc do_espresso {} {
 	set ::de1(volume) 0
 
 	de1_send $::de1_state(Espresso)
+
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
+	}
+
 	#run_next_userdata_cmd
 }
-
-#proc espresso_dismiss {} {
-#	msg "End espresso"
-#	de1_send $::de1_state(Idle)
-#}
 
 proc do_water {} {
 	msg "Make water"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	de1_send $::de1_state(HotWater)
-}
 
-#proc water_dismiss {} {
-#	msg "End water"
-#	de1_send $::de1_state(Idle)
-#}
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
+	}
+}
 
 proc de1_stop_all {} {
 	msg "DE1 goes idle"
@@ -511,42 +571,77 @@ proc de1_stop_all {} {
 }
 
 
-#proc do_settings {} {
-#	msg "Make settings"
-#	.can bind .btn_screen [platform_button_press] [list settings_dismiss]
-#}
+proc do_sleep {} {
+	msg "DE1 goes to sleep"
+	de1_send $::de1_state(Sleep)
+	
+	if {$::android == 0} {
+		after 5000 { page_display_change "sleep" "saver" }
+	} else {
+		# possible that we lost a ble packet, so display screen saver anyway
+		#after 20000 { page_display_change "sleep" "saver" }
+	}
+}
 
-#proc settings_dismiss {} {#
-#	msg "End settings"
-#}
+proc _do_settings {} {
 
-#proc disable_all_four_buttons {} {
-#	.can itemconfigure ".btn_steam" -state hidden
-#	.can itemconfigure ".btn_espresso" -state hidden
-#	.can itemconfigure ".btn_water" -state hidden
-#	.can itemconfigure ".btn_settings" -state hidden
-#	.can itemconfigure .btn_screen -state normal
-#}
-
-#proc enable_all_four_buttons {} {
-#	.can itemconfigure ".btn_steam" -state normal
-#	.can itemconfigure ".btn_espresso" -state normal
-#	.can itemconfigure ".btn_water" -state normal
-#	.can itemconfigure ".btn_settings" -state normal
-#	.can itemconfigure .btn_screen -state hidden
-#}
+}
 
 proc page_display_change {page_to_hide page_to_show} {
 
-	if {$page_to_hide == "saver"} {
-		after 1000 check_if_should_start_screen_saver
-		delay_screen_saver
+	if {$::de1(current_context) == $page_to_show} {
+		#
+		return 
 	}
+
+	delay_screen_saver
+
+	if {$page_to_hide == "saver"} {
+		#after 1000 check_if_should_start_screen_saver
+		#delay_screen_saver
+		#borg brightness $::settings(app_brightness)
+		#borg systemui 0x1E02
+		#borg brightness 100
+		#borg systemui 0x1E02
+	} elseif {$page_to_show == "sleep"} {
+		#borg brightness 60
+		#borg systemui 0x1E02
+	} elseif {$page_to_show == "saver"} {
+		#borg brightness 30
+		#borg systemui 0x1E02
+
+		#borg brightness $::settings(saver_brightness)
+		#borg systemui 0x1E02
+		#borg screenorientation landscape
+
+		#wm attributes . -fullscreen 1
+		#sdltk screensaver off
+		after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
+	} else {
+		#borg brightness 100
+		#borg systemui 0x1E02
+		#borg brightness $::settings(app_brightness)
+		#borg systemui 0x1E02
+		#borg screenorientation landscape
+
+		#wm attributes . -fullscreen 1
+		#sdltk screensaver off
+	}
+
+	# set the brightness in one place
+	if {$page_to_show == "saver" } {
+		borg brightness $::settings(saver_brightness)
+		borg systemui 0x1E02
+	} else {
+		borg brightness $::settings(app_brightness)
+		borg systemui 0x1E02
+	}
+
 
 	#global current_context
 	set ::de1(current_context) $page_to_show
 
-	puts "page_display_change hide:$page_to_hide show:$page_to_show"
+	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	foreach image $page_to_show	 {
 		.can itemconfigure $image -state normal
 	}	
@@ -609,20 +704,28 @@ proc delay_screen_saver {} {
 }
 
 proc change_screen_saver_image {} {
+	#msg "change_screen_saver_image"
 	if {$::de1(current_context) != "saver"} {
 		return
 	}
-	#msg "changing screen saver image"
-	set files [glob "[skin_directory]/splash_*.jpg"]
-	set splashpng [random_pick $files]
+	
+	#set files [glob "[saver_directory]/*.jpg"]
+	#set splashpng [random_pick $files]
+	#msg "changing screen saver image to $splashpng"
 	image delete saver
-	image create photo saver -file $splashpng
+	image create photo saver -file [random_saver_file]
 	.can create image {0 0} -anchor nw -image saver  -tag saver -state normal
 	.can lower saver
 	after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
 }
 
 proc check_if_should_start_screen_saver {} {
+
+	if {$::de1(current_context) == "saver"} {
+		after 1000 check_if_should_start_screen_saver
+		return
+	}
+
 	#msg "check_if_should_start_screen_saver [clock seconds] > [expr {$::de1(last_action_time) + $::de1(screen_saver_delay)}]"
 	if {$::de1(last_action_time) == 0} {
 		after 1000 check_if_should_start_screen_saver
@@ -631,10 +734,10 @@ proc check_if_should_start_screen_saver {} {
 	}
 
 	if {$::de1(current_context) == "off" && [clock seconds] > [expr {$::de1(last_action_time) + $::settings(screen_saver_delay)}]} {
-		page_display_change "off" "saver"
-		de1_send $::de1_state(Sleep)
+		page_display_change "off" "sleep"
+		#de1_send $::de1_state(Sleep)
 		#msg "start screen saver"
-		after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
+		#after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
 	} else {
 		after 1000 check_if_should_start_screen_saver
 	}
