@@ -15,7 +15,12 @@ add_de1_variable "steam" 1029 638 -justify left -anchor "nw" -font Helv_8 -text 
 add_de1_text "steam" 1026 663 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260 
 add_de1_variable "steam" 1029 663 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
 
-# what will be made when you press the steam button
+# 
+#add_de1_action "steam" "do_steam"
+# when it steam mode, tapping anywhere on the screen tells the DE1 to stop.
+add_de1_button "steam" "start_idle" 0 0 1280 800
+
+# STEAM related info to display when the espresso machine is idle
 add_de1_text "off" 1024 538 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off" 1026 578 -justify right -anchor "ne" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
 add_de1_variable "off" 1029 578 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[setting_steam_max_time_text]} 
@@ -24,9 +29,8 @@ add_de1_variable "off" 1029 603 -justify left -anchor "nw" -font Helv_8 -text "-
 add_de1_variable "off" 1026 628 -justify right -anchor "ne" -text "" -font Helv_8 -fill "#7f879a" -width 260  -textvariable {[steam_heater_action_text]} 
 add_de1_variable "off" 1029 628 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 260  -textvariable {[steam_heater_temperature_text]} 
 
-add_de1_button "off" "steam" 874 308 1173 707
-add_btn_screen "steam" "off"
-add_de1_action "steam" "do_steam"
+# when someone taps on the steam button
+add_de1_button "off" "start_steam" 874 308 1173 707
 
 ##############################################################################################################################################################################################################################################################################
 # the ESPRESSO button and translatable text for it
@@ -38,9 +42,13 @@ add_de1_text "espresso" 637 613 -justify right -anchor "ne" -text [translate "Au
 add_de1_variable "espresso" 640 613 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 260  -textvariable {[setting_espresso_max_time_text]} 
 add_de1_text "espresso" 637 638 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260 
 add_de1_variable "espresso" 640 638 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
-
 add_de1_text "espresso" 637 663 -justify right -anchor "ne" -text [translate "Brew Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
 add_de1_variable "espresso" 640 663 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watertemp_text]} 
+add_de1_button "espresso" "start_idle" 0 0 1280 800
+
+#add_btn_screen "espresso" "stop"
+#add_de1_action "espresso" "do_espresso"
+
 
 add_de1_text "off" 640 538 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off" 637 578 -justify right -anchor "ne" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
@@ -55,13 +63,11 @@ add_de1_variable "off" 640 628 -justify left -anchor "nw" -text "" -font Helv_8 
 
 add_de1_variable "off" 637 653 -justify right -anchor "ne" -text "" -font Helv_8 -fill "#7f879a" -width 260  -textvariable {[group_head_heater_action_text]} 
 add_de1_variable "off" 640 653 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[group_head_heater_temperature_text]} 
+add_de1_button "off" "start_espresso" 474 292 803 722
 
 
 #add_de1_text "espresso" 637 653 -justify right -anchor "ne" -text [translate "Flow:"] -font Helv_8 -fill "#7f879a" -width 260 
 #add_de1_variable "espresso" 640 653 -justify left -anchor "nw" -text "1.12 [translate ml/sec]" -font Helv_8 -text "-" -fill "#2d3046" -width 260  -textvariable {[waterflow_text]} 
-add_de1_button "off" "espresso" 474 292 803 722
-add_btn_screen "espresso" "off"
-add_de1_action "espresso" "do_espresso"
 
 ##############################################################################################################################################################################################################################################################################
 # the HOT WATER button and translatable text for it
@@ -74,6 +80,8 @@ add_de1_text "water" 250 613 -justify right -anchor "ne" -text [translate "Auto-
 add_de1_variable "water" 252 613 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[setting_water_max_time_text]} 
 add_de1_text "water" 250 638 -justify right -anchor "ne" -text [translate "Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
 add_de1_variable "water" 252 638 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[watertemp_text]} 
+add_de1_button "water" "start_idle" 0 0 1280 800
+
 
 add_de1_text "off" 255 538 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off" 250 578 -justify right -anchor "ne" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
@@ -85,30 +93,32 @@ add_de1_variable "off" 252 603 -justify left -anchor "nw" -font Helv_8 -fill "#4
 #add_de1_variable "water" 1029 628 -justify left -anchor "nw"  -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[waterflow_text]} 
 #add_de1_text "water" 1026 653 -justify right -anchor "ne" -text [translate "Total:"] -font Helv_8 -fill "#7f879a" -width 260 
 #add_de1_variable "water" 1029 653 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[watervolume_text]} 
-add_de1_button "off" "water" 105 306 404 708
-add_btn_screen "water" "off"
-add_de1_action "water" "do_water"
+add_de1_button "off" "start_water" 105 306 404 708
+#add_btn_screen "water" "stop"
+#add_de1_action "water" "start_water"
 
 ##############################################################################################################################################################################################################################################################################
 # when state change to "off", send the command to the DE1 to go idle
-add_de1_action "off" "de1_stop_all"
+#add_de1_action "off" "stop"
 
 # tapping the power button tells the DE1 to go to sleep, and it will after a few seconds, at which point we display the screen saver
-add_de1_button "off" "sleep" 0 0 200 200
+add_de1_button "off" "show_going_to_sleep_page" 0 0 200 200
 add_de1_text "sleep" 1250 725 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
-add_de1_action "sleep" "do_sleep"
+#add_de1_action "sleep" "do_sleep"
 
 add_de1_button "off" "exit" 400 0 875 250
-add_de1_action "exit" "app_exit"
+#add_de1_action "exit" "app_exit"
 
 
 # Sleeping cafe photo obtained under creative commons from https://www.flickr.com/photos/curious_e/16300930781/
 
 # turn the screen saver or splash screen off by tapping the page
-add_btn_screen "saver" "off"
-add_btn_screen "splash" "off"
+add_de1_button "saver" "start_idle" 0 0 1280 800
 
-# the SETTINGS button
-add_de1_button "off" "off" 1100 0 1300 200
-add_de1_action "settings" "do_settings"
+#add_btn_screen "saver" "off"
+#add_btn_screen "splash" "off"
+
+# the SETTINGS button currently exits the app
+add_de1_button "off" "app_exit" 1100 0 1300 200
+#add_de1_action "settings" "do_settings"
 

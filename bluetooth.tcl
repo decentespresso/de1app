@@ -19,7 +19,15 @@ proc userdata_append {cmd} {
 proc de1_enable_bluetooth_notifications {} {
 	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
 	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
-	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
+	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
+}
+
+proc poll_de1_state {} {
+	#userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
+	userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
+	#userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
+	after 1000 poll_de1_state
+	#userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
 }
 
 proc de1_enable_a00d {} {
@@ -51,7 +59,7 @@ proc run_next_userdata_cmd {} {
 
 		set cmd [lindex $::de1(cmdstack) 0]
 		set cmds [lrange $::de1(cmdstack) 1 end]
-		msg "stack cmd: $cmd"
+		#msg "stack cmd: $cmd"
 		{*}$cmd
 		#ble userdata $::de1(device_handle) $cmds
 		set ::de1(cmdstack) $cmds
@@ -170,11 +178,11 @@ proc de1_ble_handler {event data} {
 	#msg "de1 ble_handler $event $data"
     dict with data {
 
-    	catch {
-			if {$cuuid != "0000A00D-0000-1000-8000-00805F9B34FB"} {
-				msg "read from DE1: '$event $data'"
-			}
-		}
+    	#catch {
+	#		if {$cuuid != "0000A00D-0000-1000-8000-00805F9B34FB"} {
+	#			msg "read from DE1: '$event $data'"
+	#		}
+	#	}
 
 		switch -- $event {
 	    	#msg "-- device $name found at address $address"
@@ -198,9 +206,12 @@ proc de1_ble_handler {event data} {
 					#de1_enable_a00d
 					#de1_enable_a00e
 					#de1_enable_a00f
+					
 					de1_enable_bluetooth_notifications
+					poll_de1_state
 					#run_next_userdata_cmd
 					de1_send $::de1_state(Idle)
+
 					run_de1_app
 			    }
 			}
@@ -240,30 +251,30 @@ proc de1_ble_handler {event data} {
 					    }
 					}
 
-				    if {$access eq "r"} {
-				    	msg "Received from DE1: '[remove_null_terminator $value]'"
+				    if {$access eq "r" || $access eq "c"} {
+				    	#msg "Received from DE1: '[remove_null_terminator $value]'"
 						# change notification or read request
 						#de1_ble_new_value $cuuid $value
-				    } elseif {$access eq "w"} {
-				    	msg "Confirmed wrote to DE1: '[remove_null_terminator $value]'"
-						# change notification or read request
-						#de1_ble_new_value $cuuid $value
-				    } elseif {$access eq "c"} {
-				    	
 						# change notification or read request
 						#de1_ble_new_value $cuuid $value
 						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
 							update_de1_shotvalue $value
 						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
-							update_de1_substate $value
-							msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
-						} elseif {$cuuid == "0000A00F-0000-1000-8000-00805F9B34FB"} {
 							update_de1_state $value
-							msg "Confirmed a00f read from DE1: '[remove_null_terminator $value]'"
+							#update_de1_substate $value
+							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
+						} elseif {$cuuid == "0000A00F-0000-1000-8000-00805F9B34FB"} {
+							error
+							#update_de1_state $value
+							#msg "Confirmed a00f read from DE1: '[remove_null_terminator $value]'"
 						} else {
 							msg "Confirmed unknown read from DE1 $cuuid: '[remove_null_terminator $value]'"
 						}
 
+				    } elseif {$access eq "w"} {
+				    	msg "Confirmed wrote to DE1: '[remove_null_terminator $value]'"
+						# change notification or read request
+						#de1_ble_new_value $cuuid $value
 				    }
 
 				    #run_next_userdata_cmd
@@ -316,108 +327,4 @@ proc write_binary_file {filename data} {
     return 1
 }
 
-
-
-proc update_de1_shotvalue {packed} {
-
-	if {[string length $packed] < 7} {
-		msg "ERROR: short packed message"
-		return
-	}
-
-	set spec {
-		Delta {char {} {} {unsigned}}
-		GroupPressure {char {} {} {unsigned} {$val / 16.0}}
-		GroupFlow {char {} {} {unsigned} {$val / 16.0}}
-		MixTemp {short {} {} {unsigned} {$val / 256.0}}
-		HeadTemp {short {} {} {unsigned} {$val / 256.0}}
-	}
-
-   array set specarr $spec
-
-   	::fields::unpack $packed $spec ShotSample bigeendian
-	foreach {field val} [array get ShotSample] {
-		set specparts $specarr($field)
-		set extra [lindex $specparts 4]
-		if {$extra != ""} {
-			set ShotSample($field) [expr $extra]
-		}
-	}
-
-  	#msg "de1 internals: [array get ShotSample]"
-	if {[info exists ShotSample(Delta)] == 1} {
-		set ::de1(timer) [expr {$::de1(timer) + $ShotSample(Delta)}]
-		#msg "updated timer"
-	}
-	if {[info exists ShotSample(HeadTemp)] == 1} {
-		set ::de1(temperature) $ShotSample(HeadTemp)
-		#msg "updated temp"
-	}
-	if {[info exists ShotSample(GroupFlow)] == 1} {
-		set ::de1(flow) $ShotSample(GroupFlow)
-		set ::de1(volume) [expr {$::de1(volume) + ($ShotSample(GroupFlow) * ($ShotSample(Delta)/100.0) )}]
-
-		#msg "updated flow"
-	}
-	if {[info exists ShotSample(GroupPressure)] == 1} {
-		set ::de1(pressure) $ShotSample(GroupPressure)
-		#msg "updated pressure"
-	}
-}
-
-proc update_de1_substate {statechar} {
-
-	set spec {
-		value char
-	}
-
-   	::fields::unpack $statechar $spec state bigeendian
-
-   	if {$state(value) != $::de1(substate)} {
-	   	msg "substate change: [array get state]"
-   		set ::de1(substate) $state(value)
-   	}
-
-#    'NoState'          : 0,  # State is not relevant.
-#    'HeatWaterTank'    : 1,  # Cold water is not hot enough. Heating hot water tank.
-#    'HeatWaterHeater'  : 2,  # Warm up hot water heater for shot.
-#    'StabilizeMixTemp' : 3,  # Stabilize mix temp and get entire water path up to temperature.
-#    'PreInfuse'        : 4,  # Espresso only. Hot Water and Steam will skip this state.
-#    'Pour'             : 5,  # Used in all states.
-#    'Flush'            : 6   # Espresso only.
-
-   	if {$state(value) == 0} {
-   		# when the substate goes to 0 that means the current task is done, so indicate this by going back to the OFF state in the gui
-   		if {$::de1(current_context) != "off"} {
-			page_display_change $::de1(current_context) "off"
-		}
-   	}
-}
-
-
-proc update_de1_state {statechar} {
-
-	set spec {
-		value char
-	}
-
-   	::fields::unpack $statechar $spec state bigeendian
-
-	msg "update_de1_state $state(value)"
-
-   	if {$state(value) != $::de1(state)} {
-	   	msg "state change: [array get state]"
-   		set ::de1(state) $state(value)
-   	}
-
-   	if {$state(value) == 2} {
-   		# when the state goes to 2 that means the current task is done, and we are back to idle
-   		if {$::de1(current_context) != "off"} {
-			page_display_change $::de1(current_context) "off"
-		}
-   	} elseif {$state(value) == 0} {
-   		# when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
-		page_display_change "sleep" "saver" 
-   	}
-}
 

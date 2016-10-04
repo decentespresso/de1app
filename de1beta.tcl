@@ -4,6 +4,14 @@
 #package require jpeg
 package require img::jpeg
 
+# decent doser UI based on Morphosis graphics
+cd "[file dirname [info script]]/"
+source "pkgIndex.tcl"
+package require de1_vars 
+package require de1_gui 
+package require de1_binary
+package require de1_utils 
+
 # ray's DE1 address 
 # de1_address "EE:01:68:94:A5:48"
 
@@ -37,7 +45,7 @@ array set ::de1 {
 }
 
 array set ::settings {
-	screen_saver_delay 10
+	screen_saver_delay 1800
 	screen_saver_change_interval 60
 	measurements "metric"
 	steam_max_time 47
@@ -91,15 +99,9 @@ array set ::de1_substate_types {
 	3	"perfecting the mix"
 	4	"preinfusion"
 	5	"pouring"
-	6	"flushing"
+	6	"ending"
 }
-
-
-# decent doser UI based on Morphosis graphics
-cd "[file dirname [info script]]/"
-source "gui.tcl"
-source "vars.tcl"
-source "binary.tcl"
+array set ::de1_substate_types_reversed [reverse_array [array get de1 ::de1_substate_types]]
 
 array set translation [read_binary_file "translation.tcl"]
 
@@ -273,14 +275,14 @@ proc setup_environment {} {
 		set screen_size_height 1200
 		set fontm 1.5
 
-		set screen_size_width 1280
-		set screen_size_height 800
-		set fontm 1
-		
 		set screen_size_width 2560
 		set screen_size_height 1600
 		set fontm 2
 
+		set screen_size_width 1280
+		set screen_size_height 800
+		set fontm 1
+		
 		#set screen_size_width 1920
 		#set screen_size_height 1080
 		#set fontm 1.5
@@ -373,7 +375,7 @@ proc add_visual_item_to_context {context label_name} {
 }
 
 set button_cnt 0
-proc add_btn_screen {displaycontext newcontext} {
+proc add_btn_screen_obsolete {displaycontext newcontext} {
 	global screen_size_width
 	global screen_size_height
 	global button_cnt
@@ -398,7 +400,7 @@ proc add_de1_action {context tclcmd} {
 	}
 }
 
-proc add_de1_button {displaycontext newcontext x0 y0 x1 y1} {
+proc add_de1_button {displaycontext tclcode x0 y0 x1 y1} {
 	global button_cnt
 	incr button_cnt
 	set btn_name ".btn_$displaycontext$button_cnt"
@@ -420,7 +422,7 @@ proc add_de1_button {displaycontext newcontext x0 y0 x1 y1} {
 
 	#puts "binding $btn_name to switch to new context: '$newcontext'"
 
-	set tclcode [list page_display_change $displaycontext $newcontext]
+	#set tclcode [list page_display_change $displaycontext $newcontext]
 	.can bind $btn_name [platform_button_press] $tclcode
 	add_visual_item_to_context $displaycontext $btn_name
 }
@@ -528,20 +530,21 @@ proc run_de1_app {} {
 }
 
 
-proc do_steam {} {
-	msg "Make steam"
+proc start_steam {} {
+	msg "Tell DE1 to start making STEAM"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	de1_send $::de1_state(Steam)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
+		after 200 "update_de1_state $::de1_state(Steam)"
 	}
 
 }
 
-proc do_espresso {} {
-	msg "Make espresso"
+proc start_espresso {} {
+	msg "Tell DE1 to start making ESPRESSO"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 
@@ -549,42 +552,46 @@ proc do_espresso {} {
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
+		after 200 "update_de1_state $::de1_state(Espresso)"
 	}
 
 	#run_next_userdata_cmd
 }
 
-proc do_water {} {
-	msg "Make water"
+proc start_water {} {
+	msg "Tell DE1 to start making HOT WATER"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	de1_send $::de1_state(HotWater)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
+		after 200 "update_de1_state $::de1_state(HotWater)"
 	}
 }
 
-proc de1_stop_all {} {
-	msg "DE1 goes idle"
+proc start_idle {} {
+	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
+	
+	# change the substate to ending immediately to provide UI feedback
+	set ::de1(substate) 6
+
 	de1_send $::de1_state(Idle)
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
+		after 3200 "update_de1_state $::de1_state(Idle)"
+	}
 }
 
 
-proc do_sleep {} {
-	msg "DE1 goes to sleep"
+proc start_sleep {} {
+	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
 	de1_send $::de1_state(Sleep)
 	
 	if {$::android == 0} {
-		after 5000 { page_display_change "sleep" "saver" }
-	} else {
-		# possible that we lost a ble packet, so display screen saver anyway
-		#after 20000 { page_display_change "sleep" "saver" }
+		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
+		after 1000 "update_de1_state $::de1_state(Sleep)"
 	}
-}
-
-proc _do_settings {} {
-
 }
 
 proc page_display_change {page_to_hide page_to_show} {
@@ -593,39 +600,16 @@ proc page_display_change {page_to_hide page_to_show} {
 		#
 		return 
 	}
+	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
+		#
+		msg "discarding intermediate sleep/off state msg"
+		return 
+	}
 
 	delay_screen_saver
 
-	if {$page_to_hide == "saver"} {
-		#after 1000 check_if_should_start_screen_saver
-		#delay_screen_saver
-		#borg brightness $::settings(app_brightness)
-		#borg systemui 0x1E02
-		#borg brightness 100
-		#borg systemui 0x1E02
-	} elseif {$page_to_show == "sleep"} {
-		#borg brightness 60
-		#borg systemui 0x1E02
-	} elseif {$page_to_show == "saver"} {
-		#borg brightness 30
-		#borg systemui 0x1E02
-
-		#borg brightness $::settings(saver_brightness)
-		#borg systemui 0x1E02
-		#borg screenorientation landscape
-
-		#wm attributes . -fullscreen 1
-		#sdltk screensaver off
+	if {$page_to_show == "saver"} {
 		after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
-	} else {
-		#borg brightness 100
-		#borg systemui 0x1E02
-		#borg brightness $::settings(app_brightness)
-		#borg systemui 0x1E02
-		#borg screenorientation landscape
-
-		#wm attributes . -fullscreen 1
-		#sdltk screensaver off
 	}
 
 	# set the brightness in one place
@@ -703,6 +687,13 @@ proc delay_screen_saver {} {
 	set ::de1(last_action_time) [clock seconds]
 }
 
+proc show_going_to_sleep_page  {} {
+
+	page_display_change $::de1(current_context) "sleep"
+	start_sleep
+
+}
+
 proc change_screen_saver_image {} {
 	#msg "change_screen_saver_image"
 	if {$::de1(current_context) != "saver"} {
@@ -720,26 +711,26 @@ proc change_screen_saver_image {} {
 }
 
 proc check_if_should_start_screen_saver {} {
+	#msg "check_if_should_start_screen_saver $::de1(last_action_time)"
+	after 1000 check_if_should_start_screen_saver
 
 	if {$::de1(current_context) == "saver"} {
-		after 1000 check_if_should_start_screen_saver
+		#after 1000 check_if_should_start_screen_saver
 		return
 	}
 
 	#msg "check_if_should_start_screen_saver [clock seconds] > [expr {$::de1(last_action_time) + $::de1(screen_saver_delay)}]"
 	if {$::de1(last_action_time) == 0} {
-		after 1000 check_if_should_start_screen_saver
+		#after 1000 check_if_should_start_screen_saver
 		delay_screen_saver
 		return
 	}
 
 	if {$::de1(current_context) == "off" && [clock seconds] > [expr {$::de1(last_action_time) + $::settings(screen_saver_delay)}]} {
-		page_display_change "off" "sleep"
-		#de1_send $::de1_state(Sleep)
-		#msg "start screen saver"
-		#after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
-	} else {
-		after 1000 check_if_should_start_screen_saver
+		#page_display_change "off" "sleep"
+		show_going_to_sleep_page
+	#} else {
+		#after 1000 check_if_should_start_screen_saver
 	}
 }
 

@@ -1,4 +1,4 @@
-package provide binary 1.0
+package provide de1_binary 1.0
 
 # from http://wiki.tcl.tk/12148
 
@@ -191,5 +191,126 @@ proc bintest {} {
 }
 
 
+proc update_de1_shotvalue {packed} {
+
+  if {[string length $packed] < 7} {
+    msg "ERROR: short packed message"
+    return
+  }
+
+  set spec {
+    Delta {char {} {} {unsigned}}
+    GroupPressure {char {} {} {unsigned} {$val / 16.0}}
+    GroupFlow {char {} {} {unsigned} {$val / 16.0}}
+    MixTemp {short {} {} {unsigned} {$val / 256.0}}
+    HeadTemp {short {} {} {unsigned} {$val / 256.0}}
+  }
+
+   array set specarr $spec
+
+    ::fields::unpack $packed $spec ShotSample bigeendian
+  foreach {field val} [array get ShotSample] {
+    set specparts $specarr($field)
+    set extra [lindex $specparts 4]
+    if {$extra != ""} {
+      set ShotSample($field) [expr $extra]
+    }
+  }
+
+    #msg "de1 internals: [array get ShotSample]"
+  if {[info exists ShotSample(Delta)] == 1} {
+    set ::de1(timer) [expr {$::de1(timer) + $ShotSample(Delta)}]
+    #msg "updated timer"
+  }
+  if {[info exists ShotSample(HeadTemp)] == 1} {
+    set ::de1(temperature) $ShotSample(HeadTemp)
+    #msg "updated temp"
+  }
+  if {[info exists ShotSample(GroupFlow)] == 1} {
+    set ::de1(flow) $ShotSample(GroupFlow)
+    set ::de1(volume) [expr {$::de1(volume) + ($ShotSample(GroupFlow) * ($ShotSample(Delta)/100.0) )}]
+
+    #msg "updated flow"
+  }
+  if {[info exists ShotSample(GroupPressure)] == 1} {
+    set ::de1(pressure) $ShotSample(GroupPressure)
+    #msg "updated pressure"
+  }
+}
+
+
+proc update_de1_substate {statechar} {
+
+  set spec {
+    value char
+  }
+
+  ::fields::unpack $statechar $spec state bigeendian
+
+  if {$state(value) != $::de1(substate)} {
+    msg "substate change: [array get state]"
+    set ::de1(substate) $state(value)
+  }
+
+  #    'NoState'          : 0,  # State is not relevant.
+  #    'HeatWaterTank'    : 1,  # Cold water is not hot enough. Heating hot water tank.
+  #    'HeatWaterHeater'  : 2,  # Warm up hot water heater for shot.
+  #    'StabilizeMixTemp' : 3,  # Stabilize mix temp and get entire water path up to temperature.
+  #    'PreInfuse'        : 4,  # Espresso only. Hot Water and Steam will skip this state.
+  #    'Pour'             : 5,  # Used in all states.
+  #    'Flush'            : 6   # Espresso only.
+
+  if {$state(value) == 0} {
+    # when the substate goes to 0 that means the current task is done, so indicate this by going back to the OFF state in the gui
+    if {$::de1(current_context) != "off"} {
+      #page_display_change $::de1(current_context) "off"
+    }
+  }
+}
+
+
+proc update_de1_state {statechar} {
+
+  set spec {
+    state char
+    substate char
+  }
+
+  ::fields::unpack $statechar $spec msg bigeendian
+
+  #msg "update_de1_state $state(value)"
+
+  if {$msg(state) != $::de1(state)} {
+    msg "state change: [array get msg]"
+    set ::de1(state) $msg(state)
+  }
+
+  if {$msg(substate) != $::de1(substate)} {
+    msg "state change: [array get msg]"
+    set ::de1(substate) $msg(substate)
+  }
+
+  set textstate $::de1_num_state($msg(state))
+
+  if {$textstate == "Idle"} {
+    # when the state goes to 2 that means the current task is done, and we are back to idle
+    page_display_change $::de1(current_context) "off"
+  } elseif {$textstate == "Sleep"} {
+    # when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
+    page_display_change $::de1(current_context) "saver" 
+  } elseif {$textstate == "Steam"} {
+    # when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
+    page_display_change $::de1(current_context) "steam" 
+  } elseif {$textstate == "Espresso"} {
+    # when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
+    page_display_change $::de1(current_context) "espresso" 
+  } elseif {$textstate == "HotWater"} {
+    # when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
+    page_display_change $::de1(current_context) "water" 
+  }
+}
+
+
 
 #bintest
+
