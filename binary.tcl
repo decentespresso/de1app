@@ -198,8 +198,9 @@ proc update_de1_shotvalue {packed} {
     return
   }
 
+  # the timer stores hundreds of a second, so we take the half cycles, divide them by hertz/2 to get seconds, and then multiple that all by 100 to get 100ths of a second, stored as an int
   set spec {
-    Delta {char {} {} {unsigned}}
+    Timer {short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
     GroupPressure {char {} {} {unsigned} {$val / 16.0}}
     GroupFlow {char {} {} {unsigned} {$val / 16.0}}
     MixTemp {short {} {} {unsigned} {$val / 256.0}}
@@ -217,18 +218,25 @@ proc update_de1_shotvalue {packed} {
     }
   }
 
+  msg "update_de1_shotvalue [array get ShotSample]"
+
+
     #msg "de1 internals: [array get ShotSample]"
-  if {[info exists ShotSample(Delta)] == 1} {
-    set ::de1(timer) [expr {$::de1(timer) + $ShotSample(Delta)}]
-    #msg "updated timer"
+    set delta 0
+  if {[info exists ShotSample(Timer)] == 1} {
+    #set ::de1(timer) [expr {$::de1(timer) + $ShotSample(Delta)}]
+    set previous_timer $::de1(timer)
+    set ::de1(timer) $ShotSample(Timer)
+    set delta [expr {$::de1(timer) - $previous_timer}]
+    msg "updated timer to $::de1(timer) - delta=$delta"
   }
   if {[info exists ShotSample(HeadTemp)] == 1} {
     set ::de1(temperature) $ShotSample(HeadTemp)
     #msg "updated temp"
   }
-  if {[info exists ShotSample(GroupFlow)] == 1} {
+  if {[info exists ShotSample(GroupFlow)] == 1 && $delta != 0} {
     set ::de1(flow) $ShotSample(GroupFlow)
-    set ::de1(volume) [expr {$::de1(volume) + ($ShotSample(GroupFlow) * ($ShotSample(Delta)/100.0) )}]
+    set ::de1(volume) [expr {$::de1(volume) + ($ShotSample(GroupFlow) * ($delta/100.0) )}]
 
     #msg "updated flow"
   }
@@ -278,16 +286,21 @@ proc update_de1_state {statechar} {
 
   ::fields::unpack $statechar $spec msg bigeendian
 
-  #msg "update_de1_state $state(value)"
+  #msg "update_de1_state [array get msg]"
 
   if {$msg(state) != $::de1(state)} {
     msg "state change: [array get msg]"
     set ::de1(state) $msg(state)
   }
 
-  if {$msg(substate) != $::de1(substate)} {
-    msg "state change: [array get msg]"
-    set ::de1(substate) $msg(substate)
+  if {[info exists msg(substate)] == 1} {
+    if {$msg(substate) != 0} {
+      # substate of zero means no information, discard
+      if {$msg(substate) != $::de1(substate)} {
+        msg "substate change: [array get msg]"
+        set ::de1(substate) $msg(substate)
+      }
+    }
   }
 
   set textstate $::de1_num_state($msg(state))

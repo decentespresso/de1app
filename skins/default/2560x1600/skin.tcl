@@ -15,6 +15,14 @@ add_de1_variable "steam" 2058 1276 -justify left -anchor "nw" -font Helv_8 -text
 add_de1_text "steam" 2053 1326 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable "steam" 2058 1326 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 520 -textvariable {[pressure_text]} 
 
+if {[has_flowmeter] == 1} {
+	add_de1_text "steam" 2053 1376 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 520
+	add_de1_variable "steam" 2058 1376 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[watervolume_text]} 
+	add_de1_text "steam" 2053 1426 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 520
+	add_de1_variable "steam" 2058 1426 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[waterflow_text]} 
+}
+
+
 # 
 #add_de1_action "steam" "do_steam"
 # when it steam mode, tapping anywhere on the screen tells the DE1 to stop.
@@ -44,6 +52,14 @@ add_de1_text "espresso" 1275 1276 -justify right -anchor "ne" -text [translate "
 add_de1_variable "espresso" 1280 1276 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[pressure_text]} 
 add_de1_text "espresso" 1275 1326 -justify right -anchor "ne" -text [translate "Brew Temp:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable "espresso" 1280 1326 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[watertemp_text]} 
+
+if {[has_flowmeter] == 1} {
+	add_de1_text "espresso" 1275 1376 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 520
+	add_de1_variable "espresso" 1280 1376 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[watervolume_text]} 
+	add_de1_text "espresso" 1275 1426 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 520
+	add_de1_variable "espresso" 1280 1426 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[waterflow_text]} 
+}
+
 add_de1_button "espresso" "start_idle" 0 0 2560 1600
 
 #add_btn_screen "espresso" "stop"
@@ -80,7 +96,17 @@ add_de1_text "water" 500 1226 -justify right -anchor "ne" -text [translate "Auto
 add_de1_variable "water" 505 1226 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "-" -textvariable {[setting_water_max_time_text]} 
 add_de1_text "water" 500 1276 -justify right -anchor "ne" -text [translate "Temp:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable "water" 505 1276 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "-" -textvariable {[watertemp_text]} 
+
+if {[has_flowmeter] == 1} {
+	add_de1_text "water" 500 1326 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 520
+	add_de1_variable "water" 505 1326 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[watervolume_text]} 
+	add_de1_text "water" 500 1376 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 520
+	add_de1_variable "water" 505 1376 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[waterflow_text]} 
+}
+
 add_de1_button "water" "start_idle" 0 0 2560 1600
+
+
 
 
 add_de1_text "off" 510 1076 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
@@ -102,7 +128,7 @@ add_de1_button "off" "start_water" 210 612 808 1416
 #add_de1_action "off" "stop"
 
 # tapping the power button tells the DE1 to go to sleep, and it will after a few seconds, at which point we display the screen saver
-add_de1_button "off" "show_going_to_sleep_page" 0 0 400 400
+add_de1_button "off" "start_sleep" 0 0 400 400
 add_de1_text "sleep" 2500 1450 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
 #add_de1_action "sleep" "do_sleep"
 

@@ -42,11 +42,12 @@ array set ::de1 {
 	state 0
 	substate 0
 	current_context ""
+	hertz 50
 }
 
 array set ::settings {
 	screen_saver_delay 1800
-	screen_saver_change_interval 60
+	screen_saver_change_interval 600
 	measurements "metric"
 	steam_max_time 47
 	steam_temperature 160
@@ -61,7 +62,7 @@ array set ::settings {
 
 array set ::de1_state {
 	Sleep \x00
-	WarmUp \x01
+	GoingToSleep \x01
 	Idle \x02
 	Busy \x03
 	Espresso \x04
@@ -77,7 +78,7 @@ array set ::de1_state {
 
 array set ::de1_num_state {
   0 Sleep
-  1 WarmUp
+  1 GoingToSleep
   2 Idle 
   3 Busy 
   4 Espresso 
@@ -590,7 +591,8 @@ proc start_sleep {} {
 	
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
-		after 1000 "update_de1_state $::de1_state(Sleep)"
+		after 200 "update_de1_state $::de1_state(GoingToSleep)"
+		after 2000 "update_de1_state $::de1_state(Sleep)"
 	}
 }
 
@@ -732,6 +734,10 @@ proc check_if_should_start_screen_saver {} {
 	#} else {
 		#after 1000 check_if_should_start_screen_saver
 	}
+}
+
+proc has_flowmeter {} {
+	return 1
 }
 
 proc update_onscreen_variables {} {

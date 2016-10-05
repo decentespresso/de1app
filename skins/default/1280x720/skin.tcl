@@ -15,6 +15,14 @@ add_de1_variable "steam" 1029 574.2005742005741 -justify left -anchor "nw" -font
 add_de1_text "steam" 1026 596.7005967005966 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260 
 add_de1_variable "steam" 1029 596.7005967005966 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
 
+if {[has_flowmeter] == 1} {
+	add_de1_text "steam" 1026 619.2006192006191 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1029 619.2006192006191 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
+	add_de1_text "steam" 1026 641.7006417006417 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1029 641.7006417006417 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+}
+
+
 # 
 #add_de1_action "steam" "do_steam"
 # when it steam mode, tapping anywhere on the screen tells the DE1 to stop.
@@ -44,6 +52,14 @@ add_de1_text "espresso" 637 574.2005742005741 -justify right -anchor "ne" -text 
 add_de1_variable "espresso" 640 574.2005742005741 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
 add_de1_text "espresso" 637 596.7005967005966 -justify right -anchor "ne" -text [translate "Brew Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
 add_de1_variable "espresso" 640 596.7005967005966 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watertemp_text]} 
+
+if {[has_flowmeter] == 1} {
+	add_de1_text "espresso" 637 619.2006192006191 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 619.2006192006191 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
+	add_de1_text "espresso" 637 641.7006417006417 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 641.7006417006417 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+}
+
 add_de1_button "espresso" "start_idle" 0 0.0 1280 720.00072000072
 
 #add_btn_screen "espresso" "stop"
@@ -80,7 +96,17 @@ add_de1_text "water" 250 551.7005517005517 -justify right -anchor "ne" -text [tr
 add_de1_variable "water" 252 551.7005517005517 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[setting_water_max_time_text]} 
 add_de1_text "water" 250 574.2005742005741 -justify right -anchor "ne" -text [translate "Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
 add_de1_variable "water" 252 574.2005742005741 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[watertemp_text]} 
+
+if {[has_flowmeter] == 1} {
+	add_de1_text "water" 250 596.7005967005966 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 252 596.7005967005966 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
+	add_de1_text "water" 250 619.2006192006191 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 252 619.2006192006191 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+}
+
 add_de1_button "water" "start_idle" 0 0.0 1280 720.00072000072
+
+
 
 
 add_de1_text "off" 255 484.2004842004842 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
@@ -102,7 +128,7 @@ add_de1_button "off" "start_water" 105 275.4002754002754 404 637.2006372006372
 #add_de1_action "off" "stop"
 
 # tapping the power button tells the DE1 to go to sleep, and it will after a few seconds, at which point we display the screen saver
-add_de1_button "off" "show_going_to_sleep_page" 0 0.0 200 180.00018000018
+add_de1_button "off" "start_sleep" 0 0.0 200 180.00018000018
 add_de1_text "sleep" 1250 652.5006525006524 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
 #add_de1_action "sleep" "do_sleep"
 
