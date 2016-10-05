@@ -49,6 +49,12 @@ proc pressure {} {
 	return [expr {(rand() * 3.5)}]
 }
 
+proc accelerometer_angle {} {
+	return $::settings(accelerometer_angle)
+}
+
+
+
 proc group_head_heater_temperature {} {
 	if {$::android == 1} {
 		return $::de1(group_temperature)

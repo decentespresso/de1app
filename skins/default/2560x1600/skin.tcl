@@ -1,5 +1,8 @@
 set ::skindebug 0
 
+add_de1_variable "off" 100 2400 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 520 -textvariable {[accelerometer_angle_text]} 
+
+
 ##############################################################################################################################################################################################################################################################################
 # the STEAM button and translatable text for it
 add_de1_text "steam" 2048 1076 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 

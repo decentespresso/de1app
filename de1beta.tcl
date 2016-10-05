@@ -45,6 +45,9 @@ array set ::de1 {
 	hertz 50
 }
 
+global accelerometer
+set accelerometer 0
+
 array set ::settings {
 	screen_saver_delay 1800
 	screen_saver_change_interval 600
@@ -58,6 +61,7 @@ array set ::settings {
 	espresso_pressure 9.2
 	app_brightness 100
 	saver_brightness 30
+	accelerometer_angle 0
 }
 
 array set ::de1_state {
@@ -268,6 +272,10 @@ proc setup_environment {} {
 		sdltk touchtranslate 0
 		wm maxsize . $screen_size_width $screen_size_height
 		wm minsize . $screen_size_width $screen_size_height
+
+		borg sensor enable 0
+
+		after 100 accelerometer_read 
 
 		source "bluetooth.tcl"
 
@@ -582,6 +590,8 @@ proc start_idle {} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 3200 "update_de1_state $::de1_state(Idle)"
 	}
+
+	msg "sensors: [borg sensor list]"
 }
 
 
@@ -738,6 +748,25 @@ proc check_if_should_start_screen_saver {} {
 
 proc has_flowmeter {} {
 	return 1
+}
+
+proc accelerometer_read {} {
+	global accelerometer
+
+	#set e [borg sensor enable 0]
+	set e2 [borg sensor state 0]
+	if {$e2 != 1} {
+		borg sensor enable 0
+	}
+	#msg "accelerometer: $accelerometer"
+	set a [borg sensor get 0]
+	if {$accelerometer != $a && $accelerometer < 9.807} {
+		set accelerometer $a
+		set angle [expr {(180/3.141592654) * acos( $accelerometer / 9.807) }]
+		set $::settings(accelerometer_angle) $angle
+		#msg "accelerometer: $a"
+	}
+	after 100 accelerometer_read
 }
 
 proc update_onscreen_variables {} {
