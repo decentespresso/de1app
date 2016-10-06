@@ -12,11 +12,14 @@ package require de1_gui
 package require de1_binary
 package require de1_utils 
 
-# ray's DE1 address 
+# ray's DE1 address (usb key #?)
 # de1_address "EE:01:68:94:A5:48"
 
-# john's DE1
+# john's DE1 (usb key #2)
 #	de1_address "C5:80:EC:A5:F9:72"
+
+# USB KEY #1
+# de1_address C1:80:A7:32:CD:A3
 
 array set ::de1 {
 	de1_address "C5:80:EC:A5:F9:72"
@@ -75,9 +78,10 @@ array set ::de1_state {
 	ShortCal \x07
 	SelfTest \x08
 	LongCal \x09
-	Descale \x10
-	FatalError \x11
-	Init \x12
+	Descale \x0A
+	FatalError \x0B
+	Init \x0C
+	NewSleep \x0D
 }
 
 array set ::de1_num_state {
@@ -94,6 +98,7 @@ array set ::de1_num_state {
   10 Descale
   11 FatalError 
   12 Init
+  13 NewSleep
 }
 
 array set ::de1_substate_types {
@@ -273,9 +278,10 @@ proc setup_environment {} {
 		wm maxsize . $screen_size_width $screen_size_height
 		wm minsize . $screen_size_width $screen_size_height
 
-		borg sensor enable 0
-
-		after 100 accelerometer_read 
+		if {[flight_mode_enable] == 1} {
+			borg sensor enable 0
+			after 100 accelerometer_check 
+		}
 
 		source "bluetooth.tcl"
 
@@ -340,6 +346,13 @@ proc setup_environment {} {
 	############################################
 	# define the canvas
 	canvas .can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
+
+	if {[flight_mode_enable] == 1} {
+		if {$android == 1} {
+			.can bind . "<<SensorUpdate>>" [accelerometer_data_read]
+		}
+	}
+
 	############################################
 }
 
@@ -591,7 +604,7 @@ proc start_idle {} {
 		after 3200 "update_de1_state $::de1_state(Idle)"
 	}
 
-	msg "sensors: [borg sensor list]"
+	#msg "sensors: [borg sensor list]"
 }
 
 
@@ -750,7 +763,37 @@ proc has_flowmeter {} {
 	return 1
 }
 
-proc accelerometer_read {} {
+set accelerometer_read_count 0
+proc accelerometer_data_read {} {
+	global accelerometer_read_count
+	incr accelerometer_read_count
+
+	#set reads {}
+	#for {set x 0} {$x < 20} {incr x} {
+	#	set a [borg sensor get 0]
+	#	set xvalue [lindex [lindex $a 11] 0]
+	#	lappend reads $xvalue
+	#}
+	#msg "reads: $reads"
+
+	set a [borg sensor get 0]
+	set xvalue [lindex [lindex $a 11] 0]
+
+	if {$xvalue != "" && $xvalue < 9.807} {
+		set accelerometer $xvalue
+		set angle [expr {(180/3.141592654) * acos( $xvalue / 9.807) }]
+		return $angle
+	} else {
+		return -1
+	}
+
+}
+
+proc flight_mode_enable {} {
+	return 0
+}
+
+proc accelerometer_check {} {
 	global accelerometer
 
 	#set e [borg sensor enable 0]
@@ -758,15 +801,23 @@ proc accelerometer_read {} {
 	if {$e2 != 1} {
 		borg sensor enable 0
 	}
-	#msg "accelerometer: $accelerometer"
-	set a [borg sensor get 0]
-	if {$accelerometer != $a && $accelerometer < 9.807} {
-		set accelerometer $a
-		set angle [expr {(180/3.141592654) * acos( $accelerometer / 9.807) }]
-		set $::settings(accelerometer_angle) $angle
-		#msg "accelerometer: $a"
+	
+	set angle [accelerometer_data_read]
+	if {[flight_mode_enable] == 1} {
+		if {$angle != -1} {
+			if {$angle > 44 && $::settings(accelerometer_angle) <= 44 && $::de1_num_state($::de1(state)) == "Idle"} {
+				msg "espresso"
+				start_espresso
+			} elseif {$angle < 35 && $::settings(accelerometer_angle) >= 35 && $::de1_num_state($::de1(state)) == "Espresso"} {
+				
+				msg "idle"
+				start_idle
+			}
+			set ::settings(accelerometer_angle) $angle
+			#msg "accelerometer angle: $angle"
+		}
 	}
-	after 100 accelerometer_read
+	after 100 accelerometer_check
 }
 
 proc update_onscreen_variables {} {

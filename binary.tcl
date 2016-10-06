@@ -218,7 +218,7 @@ proc update_de1_shotvalue {packed} {
     }
   }
 
-  msg "update_de1_shotvalue [array get ShotSample]"
+  #msg "update_de1_shotvalue [array get ShotSample]"
 
 
     #msg "de1 internals: [array get ShotSample]"
@@ -228,7 +228,7 @@ proc update_de1_shotvalue {packed} {
     set previous_timer $::de1(timer)
     set ::de1(timer) $ShotSample(Timer)
     set delta [expr {$::de1(timer) - $previous_timer}]
-    msg "updated timer to $::de1(timer) - delta=$delta"
+    #msg "updated timer to $::de1(timer) - delta=$delta"
   }
   if {[info exists ShotSample(HeadTemp)] == 1} {
     set ::de1(temperature) $ShotSample(HeadTemp)

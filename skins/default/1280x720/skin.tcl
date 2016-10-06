@@ -1,5 +1,8 @@
 set ::skindebug 0
 
+#add_de1_variable "off" 10 598.5005985005985 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 260  -textvariable {[accelerometer_angle_text]} 
+
+
 ##############################################################################################################################################################################################################################################################################
 # the STEAM button and translatable text for it
 add_de1_text "steam" 1024 484.2004842004842 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
@@ -16,10 +19,10 @@ add_de1_text "steam" 1026 596.7005967005966 -justify right -anchor "ne" -text [t
 add_de1_variable "steam" 1029 596.7005967005966 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
 
 if {[has_flowmeter] == 1} {
-	add_de1_text "steam" 1026 619.2006192006191 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "steam" 1029 619.2006192006191 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
-	add_de1_text "steam" 1026 641.7006417006417 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "steam" 1029 641.7006417006417 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+	add_de1_text "steam" 1026 619.2006192006191 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1029 619.2006192006191 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+	add_de1_text "steam" 1026 641.7006417006417 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1029 641.7006417006417 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
 }
 
 
@@ -54,10 +57,10 @@ add_de1_text "espresso" 637 596.7005967005966 -justify right -anchor "ne" -text 
 add_de1_variable "espresso" 640 596.7005967005966 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watertemp_text]} 
 
 if {[has_flowmeter] == 1} {
-	add_de1_text "espresso" 637 619.2006192006191 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "espresso" 640 619.2006192006191 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
-	add_de1_text "espresso" 637 641.7006417006417 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "espresso" 640 641.7006417006417 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+	add_de1_text "espresso" 637 619.2006192006191 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 619.2006192006191 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+	add_de1_text "espresso" 637 641.7006417006417 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 641.7006417006417 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
 }
 
 add_de1_button "espresso" "start_idle" 0 0.0 1280 720.00072000072
@@ -98,10 +101,10 @@ add_de1_text "water" 250 574.2005742005741 -justify right -anchor "ne" -text [tr
 add_de1_variable "water" 252 574.2005742005741 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[watertemp_text]} 
 
 if {[has_flowmeter] == 1} {
-	add_de1_text "water" 250 596.7005967005966 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "water" 252 596.7005967005966 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
-	add_de1_text "water" 250 619.2006192006191 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "water" 252 619.2006192006191 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+	add_de1_text "water" 250 596.7005967005966 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 252 596.7005967005966 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+	add_de1_text "water" 250 619.2006192006191 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 252 619.2006192006191 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
 }
 
 add_de1_button "water" "start_idle" 0 0.0 1280 720.00072000072

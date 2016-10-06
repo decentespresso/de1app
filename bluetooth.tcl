@@ -60,7 +60,9 @@ proc run_next_userdata_cmd {} {
 		set cmd [lindex $::de1(cmdstack) 0]
 		set cmds [lrange $::de1(cmdstack) 1 end]
 		#msg "stack cmd: $cmd"
-		{*}$cmd
+		catch {
+			{*}$cmd
+		}
 		#ble userdata $::de1(device_handle) $cmds
 		set ::de1(cmdstack) $cmds
 		set ::de1(wrote) 1

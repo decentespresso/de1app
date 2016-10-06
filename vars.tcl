@@ -30,7 +30,7 @@ proc watervolume {} {
 
 proc steamtemp {} {
 	if {$::android == 1} {
-		return $::de1(steam_temperature)
+		return $::de1(temperature)
 	}
 	return [expr {int(140+(rand() * 20))}]
 }
@@ -53,6 +53,24 @@ proc accelerometer_angle {} {
 	return $::settings(accelerometer_angle)
 }
 
+set since_last_acc [clock milliseconds]
+set last_acc_count 0
+proc accelerometer_angle_text {} {
+	global accelerometer_read_count
+
+	global since_last_acc
+	global last_acc_count
+
+	set rate 0
+	set delta 0
+	catch {
+		set delta [expr {$accelerometer_read_count - $last_acc_count}]
+		set rate [expr {1000* ([clock milliseconds] - $since_last_acc}]
+	}
+	set since_last_acc [clock milliseconds]
+	set last_acc_count $accelerometer_read_count
+	return "$::settings(accelerometer_angle)º ($accelerometer_read_count) $rate events/second $delta events $rate"
+}
 
 
 proc group_head_heater_temperature {} {

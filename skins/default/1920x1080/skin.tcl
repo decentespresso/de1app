@@ -1,5 +1,8 @@
 set ::skindebug 0
 
+#add_de1_variable "off" 15.000003750000936 897.7499999887782 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390.00009750002437  -textvariable {[accelerometer_angle_text]} 
+
+
 ##############################################################################################################################################################################################################################################################################
 # the STEAM button and translatable text for it
 add_de1_text "steam" 1536.000384000096 726.2999999909213 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
@@ -16,10 +19,10 @@ add_de1_text "steam" 1539.7503849375962 895.0499999888119 -justify right -anchor
 add_de1_variable "steam" 1543.5003858750963 895.0499999888119 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 390.00009750002437  -textvariable {[pressure_text]} 
 
 if {[has_flowmeter] == 1} {
-	add_de1_text "steam" 1539.7503849375962 928.79999998839 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-	add_de1_variable "steam" 1543.5003858750963 928.79999998839 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[watervolume_text]} 
-	add_de1_text "steam" 1539.7503849375962 962.5499999879681 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-	add_de1_variable "steam" 1543.5003858750963 962.5499999879681 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[waterflow_text]} 
+	add_de1_text "steam" 1539.7503849375962 928.79999998839 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
+	add_de1_variable "steam" 1543.5003858750963 928.79999998839 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[waterflow_text]} 
+	add_de1_text "steam" 1539.7503849375962 962.5499999879681 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
+	add_de1_variable "steam" 1543.5003858750963 962.5499999879681 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[watervolume_text]} 
 }
 
 
@@ -54,10 +57,10 @@ add_de1_text "espresso" 956.2502390625597 895.0499999888119 -justify right -anch
 add_de1_variable "espresso" 960.0002400000599 895.0499999888119 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[watertemp_text]} 
 
 if {[has_flowmeter] == 1} {
-	add_de1_text "espresso" 956.2502390625597 928.79999998839 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-	add_de1_variable "espresso" 960.0002400000599 928.79999998839 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[watervolume_text]} 
-	add_de1_text "espresso" 956.2502390625597 962.5499999879681 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-	add_de1_variable "espresso" 960.0002400000599 962.5499999879681 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[waterflow_text]} 
+	add_de1_text "espresso" 956.2502390625597 928.79999998839 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
+	add_de1_variable "espresso" 960.0002400000599 928.79999998839 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[waterflow_text]} 
+	add_de1_text "espresso" 956.2502390625597 962.5499999879681 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
+	add_de1_variable "espresso" 960.0002400000599 962.5499999879681 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[watervolume_text]} 
 }
 
 add_de1_button "espresso" "start_idle" 0.0 0.0 1920.0004800001198 1079.9999999865001
@@ -98,10 +101,10 @@ add_de1_text "water" 375.0000937500234 861.2999999892338 -justify right -anchor 
 add_de1_variable "water" 378.75009468752364 861.2999999892338 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "-" -textvariable {[watertemp_text]} 
 
 if {[has_flowmeter] == 1} {
-	add_de1_text "water" 375.0000937500234 895.0499999888119 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-	add_de1_variable "water" 378.75009468752364 895.0499999888119 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[watervolume_text]} 
-	add_de1_text "water" 375.0000937500234 928.79999998839 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-	add_de1_variable "water" 378.75009468752364 928.79999998839 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[waterflow_text]} 
+	add_de1_text "water" 375.0000937500234 895.0499999888119 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
+	add_de1_variable "water" 378.75009468752364 895.0499999888119 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[waterflow_text]} 
+	add_de1_text "water" 375.0000937500234 928.79999998839 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
+	add_de1_variable "water" 378.75009468752364 928.79999998839 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[watervolume_text]} 
 }
 
 add_de1_button "water" "start_idle" 0.0 0.0 1920.0004800001198 1079.9999999865001
