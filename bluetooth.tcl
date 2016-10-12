@@ -177,7 +177,7 @@ proc ble_connect_to_de1 {} {
 proc de1_ble_handler {event data} {
 	#puts "de1 ble_handler $event $data"
 	set ::de1(wrote) 0
-	#msg "de1 ble_handler $event $data"
+	msg "de1 ble_handler $event $data"
     dict with data {
 
     	#catch {

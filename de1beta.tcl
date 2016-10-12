@@ -19,10 +19,10 @@ package require de1_utils
 #	de1_address "C5:80:EC:A5:F9:72"
 
 # USB KEY #1
-# de1_address C1:80:A7:32:CD:A3
+# de1_address "C1:80:A7:32:CD:A3"
 
 array set ::de1 {
-	de1_address "C5:80:EC:A5:F9:72"
+	de1_address "C1:80:A7:32:CD:A3"
 	last_action_time 0
     found    0
     scanning 1
