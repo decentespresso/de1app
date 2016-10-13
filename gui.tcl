@@ -216,7 +216,7 @@ proc platform_button_unpress {} {
 set cnt 0
 set debuglog {}					
 proc msg {text} {
-	#return
+	return
 
 	if {$text == ""} {
 		return

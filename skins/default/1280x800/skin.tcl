@@ -5,24 +5,44 @@ set ::skindebug 0
 
 ##############################################################################################################################################################################################################################################################################
 # the STEAM button and translatable text for it
-add_de1_text "steam" 1024 538 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_variable "steam" 1024 568 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
 
-# variables to display during steam
-add_de1_text "steam" 1026 588 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "steam" 1029 588 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[timer_text]} 
-add_de1_text "steam" 1026 613 -justify right -anchor "ne" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "steam" 1029 613 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[setting_steam_max_time_text]} 
-add_de1_text "steam" 1026 638 -justify right -anchor "ne" -text [translate "Steam Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "steam" 1029 638 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[steamtemp_text]} 
-add_de1_text "steam" 1026 663 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "steam" 1029 663 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
+if {[has_flowmeter] == 0} {
 
-if {[has_flowmeter] == 1} {
-	add_de1_text "steam" 1026 688 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "steam" 1029 688 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
-	add_de1_text "steam" 1026 713 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "steam" 1029 713 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
+	add_de1_text "steam" 1024 538 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+	add_de1_variable "steam" 1024 568 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
+
+	# variables to display during steam
+	add_de1_text "steam" 1026 588 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1029 588 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[timer_text]} 
+	add_de1_text "steam" 1026 613 -justify right -anchor "ne" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1029 613 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[setting_steam_max_time_text]} 
+	add_de1_text "steam" 1026 638 -justify right -anchor "ne" -text [translate "Steam Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1029 638 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[steamtemp_text]} 
+	add_de1_text "steam" 1026 663 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1029 663 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
+
+} else {
+	add_de1_text "steam" 895 320 -text [translate "STEAM"] -font Helv_15_bold -fill "#2d3046" -anchor "nw" 
+	add_de1_variable "steam" 895 350 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "nw" -textvariable {[translate [de1_substate_text]]} 
+
+	# variables to display during steam
+	add_de1_text "steam" 895 400 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width 260 
+
+	add_de1_text "steam" 895 425 -justify right -anchor "nw" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1155 425 -justify left -anchor "ne" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[timer][translate "s"]} 
+	add_de1_text "steam" 895 450 -justify right -anchor "nw" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1155 450 -justify left -anchor "ne" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[setting_steam_max_time][translate "s"]} 
+
+	add_de1_text "steam" 895 500 -justify right -anchor "nw" -text [translate "Characteristics"] -font Helv_8_bold -fill "#5a5d75" -width 260 
+	add_de1_text "steam" 895 525 -justify right -anchor "nw" -text [translate "Steam Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1155 525 -justify left -anchor "ne" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[steamtemp_text]} 
+	add_de1_text "steam" 895 550 -justify right -anchor "nw" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1155 550 -justify left -anchor "ne" -font Helv_8 -text "-" -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
+
+	add_de1_text "steam" 895 575 -justify right -anchor "nw" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1155 575 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+	add_de1_text "steam" 895 600 -justify right -anchor "nw" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "steam" 1155 600 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
 }
 
 
@@ -45,22 +65,66 @@ add_de1_button "off" "start_steam" 874 308 1173 707
 
 ##############################################################################################################################################################################################################################################################################
 # the ESPRESSO button and translatable text for it
-add_de1_text "espresso" 640 538 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_variable "espresso" 640 568 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
-add_de1_text "espresso" 637 588 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "espresso" 640 588 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[timer_text]} 
-add_de1_text "espresso" 637 613 -justify right -anchor "ne" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "espresso" 640 613 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 260  -textvariable {[setting_espresso_max_time_text]} 
-add_de1_text "espresso" 637 638 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "espresso" 640 638 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
-add_de1_text "espresso" 637 663 -justify right -anchor "ne" -text [translate "Brew Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "espresso" 640 663 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watertemp_text]} 
 
-if {[has_flowmeter] == 1} {
-	add_de1_text "espresso" 637 688 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "espresso" 640 688 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
-	add_de1_text "espresso" 637 713 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "espresso" 640 713 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
+if {[has_flowmeter] == 0} {
+
+	add_de1_text "espresso" 640 538 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+	add_de1_variable "espresso" 640 568 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
+
+
+	add_de1_text "espresso" 640 588 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 700 588 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[timer][translate "s"]} 
+
+	add_de1_text "espresso" 640 613 -justify right -anchor "ne" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 613 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 260  -textvariable {[setting_espresso_max_time][translate "s"]} 
+
+	add_de1_text "espresso" 640 638 -justify right -anchor "ne" -text [translate "Pre-infusion:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 638 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 260  -textvariable {[setting_espresso_max_time][translate "s"]} 
+
+	add_de1_text "espresso" 640 663 -justify right -anchor "ne" -text [translate "Pouring:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 663 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 260  -textvariable {[setting_espresso_max_time][translate "s"]} 
+
+	add_de1_text "espresso" 640 688 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 688 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
+	add_de1_text "espresso" 640 713 -justify right -anchor "ne" -text [translate "Basket Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 713 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watertemp_text]} 
+	add_de1_text "espresso" 640 738 -justify right -anchor "ne" -text [translate "Mix Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 640 738 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watertemp_text]} 
+
+} else {
+
+	add_de1_text "espresso" 490 310 -text [translate "ESPRESSO"] -font Helv_15_bold -fill "#2d3046" -anchor "nw" 
+	add_de1_variable "espresso" 490 340 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "nw" -textvariable {[translate [de1_substate_text]]} 
+
+	add_de1_text "espresso" 490 400 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width 260 
+
+	add_de1_text "espresso" 490 425 -justify right -anchor "nw" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 785 425 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[timer][translate "s"]} 
+
+	add_de1_text "espresso" 490 450 -justify right -anchor "nw" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 785 450 -justify left -anchor "ne" -text "" -font Helv_8  -fill "#42465c" -width 260  -textvariable {[setting_espresso_max_time][translate "s"]} 
+
+	add_de1_text "espresso" 490 475 -justify right -anchor "nw" -text [translate "Pre-infusion:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 785 475 -justify left -anchor "ne" -text "" -font Helv_8  -fill "#42465c" -width 260  -textvariable {4[translate "s"]} 
+
+	add_de1_text "espresso" 490 500 -justify right -anchor "nw" -text [translate "Pouring:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 785 500 -justify left -anchor "ne" -text "" -font Helv_8  -fill "#42465c" -width 260  -textvariable {0[translate "s"]} 
+
+
+	add_de1_text "espresso" 490 550 -justify right -anchor "nw" -text [translate "Characteristics"] -font Helv_8_bold -fill "#5a5d75" -width 260 
+
+	add_de1_text "espresso" 490 575 -justify right -anchor "nw" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 785 575 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[pressure_text]} 
+	add_de1_text "espresso" 490 600 -justify right -anchor "nw" -text [translate "Basket Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 785 600 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watertemp_text]} 
+	add_de1_text "espresso" 490 625 -justify right -anchor "nw" -text [translate "Mix Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 785 625 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watertemp_text]} 
+
+
+	add_de1_text "espresso" 490 650 -justify right -anchor "nw" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 785 650 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+	add_de1_text "espresso" 490 675 -justify right -anchor "nw" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "espresso" 785 675 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
 }
 
 add_de1_button "espresso" "start_idle" 0 0 1280 800
@@ -77,7 +141,7 @@ add_de1_text "off" 637 603 -justify right -anchor "ne" -text [translate "Pressur
 add_de1_variable "off" 640 603 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[setting_espresso_pressure_text]} 
 
 
-add_de1_text "off" 637 628 -justify right -anchor "ne" -text [translate "Brew Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
+add_de1_text "off" 637 628 -justify right -anchor "ne" -text [translate "Head Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
 add_de1_variable "off" 640 628 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 260  -textvariable {[setting_espresso_temperature_text]} 
 
 add_de1_variable "off" 637 653 -justify right -anchor "ne" -text "" -font Helv_8 -fill "#7f879a" -width 260  -textvariable {[group_head_heater_action_text]} 
@@ -90,21 +154,40 @@ add_de1_button "off" "start_espresso" 474 292 803 722
 
 ##############################################################################################################################################################################################################################################################################
 # the HOT WATER button and translatable text for it
-add_de1_text "water" 255 538 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_variable "water" 255 568 -text "" -font Helv_9_bold -fill "#73768f" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
+if {[has_flowmeter] == 0} {
+	add_de1_text "water" 255 538 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+	add_de1_variable "water" 255 568 -text "" -font Helv_9_bold -fill "#73768f" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
 
-add_de1_text "water" 250 588 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "water" 252 588 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[timer_text]} 
-add_de1_text "water" 250 613 -justify right -anchor "ne" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "water" 252 613 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[setting_water_max_time_text]} 
-add_de1_text "water" 250 638 -justify right -anchor "ne" -text [translate "Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
-add_de1_variable "water" 252 638 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[watertemp_text]} 
+	add_de1_text "water" 250 588 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 252 588 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[timer_text]z} 
+	add_de1_text "water" 250 613 -justify right -anchor "ne" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 252 613 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[setting_water_max_time_text]} 
+	add_de1_text "water" 250 638 -justify right -anchor "ne" -text [translate "Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 252 638 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[watertemp_text]} 
 
-if {[has_flowmeter] == 1} {
-	add_de1_text "water" 250 663 -justify right -anchor "ne" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "water" 252 663 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
-	add_de1_text "water" 250 688 -justify right -anchor "ne" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
-	add_de1_variable "water" 252 688 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
+} else {
+
+	add_de1_text "water" 120 320 -text [translate "HOT WATER"] -font Helv_15_bold -fill "#2d3046" -anchor "nw" 
+	add_de1_variable "water" 120 350 -text "" -font Helv_9_bold -fill "#73768f" -anchor "nw" -textvariable {[translate [de1_substate_text]]} 
+
+	add_de1_text "water" 120 400 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width 260 
+	#add_de1_text "water" 250 460 -justify right -anchor "center" -text [translate "- Time -"] -font Helv_10_bold -fill "#42465c" -width 260 
+	add_de1_text "water" 120 425 -justify right -anchor "nw" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 385 425 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[timer][translate "s"]} 
+	add_de1_text "water" 120 450 -justify right -anchor "nw" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 385 450 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[setting_water_max_time][translate "s"]} 
+
+	add_de1_text "water" 120 500 -justify right -anchor "nw" -text [translate "Characteristics"] -font Helv_8_bold -fill "#5a5d75" -width 260 
+	#add_de1_text "water" 250 560 -justify right -anchor "center" -text [translate "- Characteristics -"] -font Helv_10_bold -fill "#42465c" -width 260 
+
+	add_de1_text "water" 120 525 -justify right -anchor "nw" -text [translate "Temp:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 385 525 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width 260  -text "-" -textvariable {[watertemp_text]} 
+
+
+	add_de1_text "water" 120 550 -justify right -anchor "nw" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 385 550 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[waterflow_text]} 
+	add_de1_text "water" 120 575 -justify right -anchor "nw" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width 260 
+	add_de1_variable "water" 385 575 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 260  -textvariable {[watervolume_text]} 
 }
 
 add_de1_button "water" "start_idle" 0 0 1280 800

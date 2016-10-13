@@ -265,10 +265,12 @@ proc setup_environment {} {
 	    font create Helv_4 -family "HelveticaNeue" -size 4
 	    #font create Helv_7 -family "HelveticaNeue" -size 7
 	    font create Helv_8 -family "HelveticaNeue" -size 8
+	    font create Helv_8_bold -family "HelveticaNeue3" -size 8
 	    
 	    font create Helv_9_bold -family "HelveticaNeue3" -size 8 
 	    #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
 	    font create Helv_10_bold -family "HelveticaNeue3" -size 10 
+	    font create Helv_15_bold -family "HelveticaNeue3" -size 12 
 	    font create Helv_20_bold -family "HelveticaNeue3" -size 18
 
 		#font create Sourcesans_30 -family "Source Sans Pro" -size 10
@@ -318,7 +320,9 @@ proc setup_environment {} {
 		#font create Helv_4 -family {Helvetica Neue Regular} -size 10
 		#pngfont create Helv_7 -family {Helvetica Neue Regular} -size 14
 		font create Helv_8 -family {Helvetica Neue Regular} -size [expr {int($fontm * 20)}]
+		font create Helv_8_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 20)}] -underline 1
 		font create Helv_10_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 23)}]
+		font create Helv_15_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 28)}]
 		font create Helv_20_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 46)}]
 		font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 18)}]
 	
@@ -520,9 +524,9 @@ proc setup_images_for_other_pages {} {
 
 	array set page_images [list \
 		"off" "[skin_directory]/nothing_on.png" \
-		"espresso" "[skin_directory]/espresso_on.png" \
-		"steam" "[skin_directory]/steam_on.png" \
-		"water" "[skin_directory]/tea_on.png" \
+		"espresso" "[skin_directory]/espresso_on_plus.png" \
+		"steam" "[skin_directory]/steam_on_plus.png" \
+		"water" "[skin_directory]/tea_on_plus.png" \
 		"settings" "[skin_directory]/settings_on.png" \
 		"sleep" "[skin_directory]/sleep.jpg" \
 		"saver" [random_saver_file] \
@@ -823,7 +827,13 @@ proc accelerometer_check {} {
 proc update_onscreen_variables {} {
 
 	if {$::android == 0} {
-		set ::de1(substate) [expr {int(rand() * 6)}]
+		if {[expr {int(rand() * 100)}] > 70} {
+			incr ::de1(substate)
+		}
+		if {$::de1(substate) > 6} {
+			set ::de1(substate) 0
+		}
+		#set ::de1(substate) [expr {int(rand() * 6)}]
 	}
 	#msg "updating"
 	#global current_context
