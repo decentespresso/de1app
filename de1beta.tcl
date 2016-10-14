@@ -853,27 +853,32 @@ proc update_onscreen_variables {} {
 	after $::de1(timer_interval) update_onscreen_variables
 }
 
-setup_environment
-setup_images_for_first_page
-setup_images_for_other_pages
-#timer_test
+proc de1_ui_startup {} {
+	setup_environment
+	setup_images_for_first_page
+	setup_images_for_other_pages
+	#timer_test
 
-after $::de1(timer_interval) update_onscreen_variables
+	after $::de1(timer_interval) update_onscreen_variables
 
-check_if_should_start_screen_saver
+	check_if_should_start_screen_saver
 
-	
-#update
-if {$android == 1} {
-	ble_connect_to_de1
-	
-} else {
-	after 1 run_de1_app
+		
+	#update
+	if {$android == 1} {
+		ble_connect_to_de1
+		
+	} else {
+		after 1 run_de1_app
+	}
+
+
+	#run_de1_app
+
+
+	#pack .can
+	vwait forever
 }
 
 
-#run_de1_app
 
-
-#pack .can
-vwait forever
