@@ -218,7 +218,7 @@ proc update_de1_shotvalue {packed} {
     }
   }
 
-  msg "update_de1_shotvalue [array get ShotSample]"
+  #msg "update_de1_shotvalue [array get ShotSample]"
 
 
     #msg "de1 internals: [array get ShotSample]"
@@ -293,7 +293,8 @@ proc update_de1_state {statechar} {
   #msg "update_de1_state [array get msg]"
 
   if {$msg(state) != $::de1(state)} {
-    msg "state change: [array get msg]"
+    set textstate $::de1_num_state($msg(state))    
+    msg "state change: [array get msg] ($textstate)"
     set ::de1(state) $msg(state)
   }
 
@@ -310,20 +311,21 @@ proc update_de1_state {statechar} {
   set textstate $::de1_num_state($msg(state))
 
   if {$textstate == "Idle"} {
-    # when the state goes to 2 that means the current task is done, and we are back to idle
     page_display_change $::de1(current_context) "off"
+  } elseif {$textstate == "GoingToSleep"} {
+    page_display_change $::de1(current_context) "sleep" 
   } elseif {$textstate == "Sleep"} {
-    # when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
     page_display_change $::de1(current_context) "saver" 
   } elseif {$textstate == "Steam"} {
-    # when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
     page_display_change $::de1(current_context) "steam" 
   } elseif {$textstate == "Espresso"} {
-    # when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
     page_display_change $::de1(current_context) "espresso" 
   } elseif {$textstate == "HotWater"} {
-    # when the state goes to 9 that means the DE1 is asleep, so we should show our screen saver
     page_display_change $::de1(current_context) "water" 
+  } elseif {$textstate == "TankEmpty"} {
+    page_display_change $::de1(current_context) "tankempty" 
+  } elseif {$textstate == "FillingTank"} {
+    page_display_change $::de1(current_context) "tankfilling" 
   }
 }
 

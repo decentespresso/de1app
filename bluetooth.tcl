@@ -74,7 +74,7 @@ proc run_next_userdata_cmd {} {
 proc app_exit {} {
 
 	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
-	after 2000 {exit}
+	after 1000 {exit}
 	
 	catch {
 		msg "Closing de1"
@@ -186,7 +186,7 @@ proc de1_ble_handler {event data} {
 
     	catch {
 			if {$cuuid != "0000A00E-0000-1000-8000-00805F9B34FB"} {
-				msg "read from DE1: '$event $data'"
+				#msg "read from DE1: '$event $data'"
 			}
 		}
 

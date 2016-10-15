@@ -22,8 +22,10 @@ package require de1_utils
 # USB KEY #1
 # de1_address "C1:80:A7:32:CD:A3"
 
+#	de1_address "C1:80:A7:32:CD:A3"
+#	has_flowmeter 0
+
 array set ::de1 {
-	de1_address "C1:80:A7:32:CD:A3"
 	last_action_time 0
     found    0
     scanning 1
@@ -32,7 +34,6 @@ array set ::de1 {
 	sinstance 0
 	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
 	cinstance 0
-	timer_interval 500
 	pressure 0
 	head_temperature 0
 	mix_temperature 0
@@ -48,7 +49,6 @@ array set ::de1 {
 	voltage 110
 	has_catering_kit 0
 	has_plumbing_kit 0
-	has_flowmeter 0
 	max_pressure 10
 	max_flowrate 6
 	min_temperature 80
@@ -60,10 +60,14 @@ array set ::de1 {
 	hertz 50
 }
 
-global accelerometer
-set accelerometer 0
+#global accelerometer
+#set accelerometer 0
+#if {[flight_mode_enable] == 1} {#
+#	set accelerometer 1
+#}
 
 array set ::settings {
+	timer_interval 500
 	screen_saver_delay 1800
 	screen_saver_change_interval 600
 	measurements "metric"
@@ -76,12 +80,13 @@ array set ::settings {
 	espresso_pressure 9.2
 	app_brightness 100
 	saver_brightness 30
-	accelerometer_angle 0
-	speaking 0
+	accelerometer_angle 45
+	speaking 2
 	speaking_rate 1.5
 	speaking_pitch 1.0
 	sound_button_in 8
 	sound_button_out 11
+	flight_mode_enable 1
 }
 
 array set ::de1_state {
@@ -99,6 +104,8 @@ array set ::de1_state {
 	FatalError \x0B
 	Init \x0C
 	NewSleep \x0D
+	TankEmpty \x90
+	FillingTank \x91
 }
 
 array set ::de1_num_state {
@@ -116,6 +123,8 @@ array set ::de1_num_state {
   11 FatalError 
   12 Init
   13 NewSleep
+  144 TankEmpty
+  145 FillingTank
 }
 
 array set ::de1_substate_types {
@@ -297,11 +306,17 @@ proc setup_environment {} {
 		wm maxsize . $screen_size_width $screen_size_height
 		wm minsize . $screen_size_width $screen_size_height
 
-		if {[flight_mode_enable] == 1} {
+		if {$::settings(flight_mode_enable) == 1 && $::de1(has_flowmeter) == 1} {
 			borg sensor enable 0
-			after 100 accelerometer_check 
+			sdltk accelerometer 1
+			after 200 accelerometer_check 
 		}
 
+		if {$::de1(has_flowmeter) == 1} {
+			set ::settings(timer_interval) 250
+		}
+
+		# preload the speaking engine
 		borg speak { }
 
 		source "bluetooth.tcl"
@@ -370,11 +385,12 @@ proc setup_environment {} {
 	# define the canvas
 	canvas .can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
 
-	if {[flight_mode_enable] == 1} {
-		if {$android == 1} {
-			.can bind . "<<SensorUpdate>>" [accelerometer_data_read]
-		}
-	}
+	#if {$::settings(flight_mode_enable) == 1} {
+		#if {$android == 1} {
+		#	.can bind . "<<SensorUpdate>>" [accelerometer_data_read]
+		#}
+		#after 250 accelerometer_check
+	#}
 
 	############################################
 }
@@ -387,8 +403,7 @@ proc skin_directory {} {
 	if {$::de1(has_flowmeter) == 1} {
 		set skindir "skinsplus"
 	}
-	set dir "[file dirname [info script]]/skins/default/${screen_size_width}x${screen_size_height}"
-	puts "skin_directory: $dir"
+	set dir "[file dirname [info script]]/$skindir/default/${screen_size_width}x${screen_size_height}"
 	return $dir
 }
 
@@ -553,9 +568,10 @@ proc setup_images_for_other_pages {} {
 		"water" "[skin_directory]/tea_on.png" \
 		"settings" "[skin_directory]/settings_on.png" \
 		"sleep" "[skin_directory]/sleep.jpg" \
+		"tankfilling" "[skin_directory]/filling_tank.jpg" \
+		"tankempty" "[skin_directory]/fill_tank.jpg" \
 		"saver" [random_saver_file] \
 	]
-
 
 	# load each of the PNGs that get displayed for each espresso machine achivity
 	foreach {name pngfilename} [array get page_images] {
@@ -569,8 +585,6 @@ proc setup_images_for_other_pages {} {
 	# set up the rectangles that define the finger tap zones and the associated command for each 
 	source "[skin_directory]/skin.tcl"
 
-	# rectangle to act as a button for the entire screen
-	#.can create rect 0 0 $screen_size_width $screen_size_height -fill {} -outline black -width 0 -tag .btn_screen -state hidden
 }
 
 
@@ -735,7 +749,7 @@ proc timer_test {} {
 		msg "XXXX Delay on background timer test: ${time_diff}ms"
 	}
 
-	after $::de1(timer_interval) timer_test
+	after $::settings(timer_interval) timer_test
 	set last_timer_test $newtimer
 }
 
@@ -808,8 +822,17 @@ proc accelerometer_data_read {} {
 	#}
 	#msg "reads: $reads"
 
-	set a [borg sensor get 0]
-	set xvalue [lindex [lindex $a 11] 0]
+	#set a [borg sensor get 0]
+	#set a 
+
+	#set xvalue [lindex [lindex $a 11] 0]
+
+	mean_accelbuffer
+	set xvalue $::ACCEL(e3)
+
+	#msg "xvalue : $xvalue $::ACCEL(e1) $::ACCEL(e2) $::ACCEL(e3)"
+
+	return $xvalue;
 
 	if {$xvalue != "" && $xvalue < 9.807} {
 		set accelerometer $xvalue
@@ -821,12 +844,24 @@ proc accelerometer_data_read {} {
 
 }
 
-proc flight_mode_enable {} {
-	return 0
+#proc flight_mode_enable {} {
+#	return 1
+#}
+
+proc mean_accelbuffer {} {
+    #after cancel mean_accelbuffer
+    #after 250 mean_accelbuffer
+    foreach x {1 2 3} {
+        set list [sdltk accelbuffer $x]
+        set ::ACCEL(f$x) [::tcl::mathop::/ [::tcl::mathop::+ {*}$list] [llength $list]]
+        set ::ACCEL(e$x) [expr {$::ACCEL(f$x) / 364}]
+    }
+
+	set ::settings(accelerometer_angle) $::ACCEL(e3)
 }
 
 proc accelerometer_check {} {
-	global accelerometer
+	#global accelerometer
 
 	#set e [borg sensor enable 0]
 	set e2 [borg sensor state 0]
@@ -835,20 +870,18 @@ proc accelerometer_check {} {
 	}
 	
 	set angle [accelerometer_data_read]
-	if {[flight_mode_enable] == 1} {
-		if {$angle != -1} {
-			if {$angle > 50 && $::settings(accelerometer_angle) <= 50 && $::de1_num_state($::de1(state)) == "Idle"} {
-				#msg "espresso"
-				start_espresso
-			} elseif {$angle < 35 && $::settings(accelerometer_angle) >= 35 && $::de1_num_state($::de1(state)) == "Espresso"} {
-				#msg "idle"
-				start_idle
-			}
-			set ::settings(accelerometer_angle) $angle
-			#msg "accelerometer angle: $angle"
+
+	if {$::settings(flight_mode_enable) == 1} {
+		if {$angle > -30 && $::de1_num_state($::de1(state)) == "Idle"} {
+			#msg "espresso"
+			start_espresso
+		} elseif {$angle < -30 && $::de1_num_state($::de1(state)) == "Espresso"} {
+			#msg "idle"
+			start_idle
 		}
+		#msg "accelerometer angle: $angle"
 	}
-	after 100 accelerometer_check
+	after 200 accelerometer_check
 }
 
 proc update_onscreen_variables {} {
@@ -877,7 +910,7 @@ proc update_onscreen_variables {} {
 	}
 
 	update
-	after $::de1(timer_interval) update_onscreen_variables
+	after $::settings(timer_interval) update_onscreen_variables
 }
 
 proc say {txt sndnum} {
@@ -885,23 +918,40 @@ proc say {txt sndnum} {
 	if {$::android != 1} {
 		return
 	}
-	set cursor [borg content query content://media/internal/audio/media/]
-	while {[$cursor move 1]} {
-		array unset sapp
-		array set sapp [$cursor getrow]
-		set id $sapp(_id)
-		set data $sapp(_data)
-        set msg "$id : : $data"
-        #msg $msg
-        set sounds($id) $data
-        if {$id > 20} { break }
-    }	
+
+	set do_this 0
+	if {$do_this == 1} {
+		set cursor [borg content query content://media/internal/audio/media/]
+		while {[$cursor move 1]} {
+			array unset sapp
+			array set sapp [$cursor getrow]
+			set id $sapp(_id)
+			set data $sapp(_data)
+	        set msg "$id : : $data"
+	        if {[string first $data Keypress] != -1} {
+	        	msg $msg
+	        }
+	        set sounds($id) $data
+	        #if {$id > 20} { break }
+	    }	
+	}
 
 	if {$::settings(speaking) == 1 && $txt != ""} {
 		borg speak $txt {} $::settings(speaking_pitch) $::settings(speaking_rate)
 	} elseif {$::settings(speaking) == 2} {
 		catch {
-			borg beep $sounds($sndnum)
+			# sounds from https://android.googlesource.com/platform/frameworks/base/+/android-5.0.0_r2/data/sounds/effects/ogg?autodive=0%2F%2F%2F%2F%2F%2F
+			set path ""
+			if {$sndnum == 8} {
+				set path "/system/media/audio/ui/KeypressDelete.ogg"
+				#set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
+				set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
+			} elseif {$sndnum == 11} {
+				set path "/system/media/audio/ui/KeypressStandard.ogg"
+				set path "file://mnt/sdcard/de1beta/KeypressDelete_120.ogg"
+			}
+			borg beep $path
+			#borg beep $sounds($sndnum)
 		}
 	}
 }
@@ -912,7 +962,7 @@ proc de1_ui_startup {} {
 	setup_images_for_other_pages
 	#timer_test
 
-	after $::de1(timer_interval) update_onscreen_variables
+	after $::settings(timer_interval) update_onscreen_variables
 
 	check_if_should_start_screen_saver
 

@@ -50,7 +50,12 @@ proc pressure {} {
 }
 
 proc accelerometer_angle {} {
-	return $::settings(accelerometer_angle)
+	if {$::android == 0} {
+		set ::settings(accelerometer_angle) [expr {(rand() + $::settings(accelerometer_angle)) - 0.5}]
+	}
+	#msg "::settings(accelerometer_angle) : $::settings(accelerometer_angle)"
+	return [round_to_one_digits [expr {abs($::settings(accelerometer_angle))}]]
+
 }
 
 set since_last_acc [clock milliseconds]
@@ -119,22 +124,22 @@ proc steam_heater_temperature {} {
 proc steam_heater_action_text {} {
 	set delta [expr {int([steam_heater_temperature] - [setting_steam_temperature])}]
 	if {$delta < -2} {
-		return [translate "Heating:"]
+		return [translate "(Heating):"]
 	} elseif {$delta > 2} {
-		return [translate "Cooling:"]
+		return [translate "(Cooling):"]
 	} else {
-		return [translate "Ready:"]
+		return [translate "Heater:"]
 	}
 }
 
 proc group_head_heater_action_text {} {
 	set delta [expr {int([group_head_heater_temperature] - [setting_espresso_temperature])}]
 	if {$delta < -2} {
-		return [translate "Heating:"]
+		return [translate "(Heating):"]
 	} elseif {$delta > 2} {
-		return [translate "Cooling:"]
+		return [translate "(Cooling):"]
 	} else {
-		return [translate "Ready:"]
+		return [translate "Heater:"]
 	}
 }
 
@@ -268,22 +273,42 @@ proc setting_espresso_pressure_text {} {
 # conversion functions
 
 proc round_to_two_digits {in} {
-    set x [expr {round($in * 100.0)/100.0}]
+	set x 0
+    catch {
+    	set x [expr {round($in * 100.0)/100.0}]
+    }
+    return $x
 }
 
 proc round_to_one_digits {in} {
-    set x [expr {round($in * 10.0)/10.0}]
+	set x 0
+	catch {
+    	set x [expr {round($in * 10.0)/10.0}]
+    }
+    return $x
 }
 
 proc round_to_integer {in} {
-    set x [expr {round($in)}]
+	set x 0
+	catch {
+    	set x [expr {round($in)}]
+    }
+    return $x
 }
 
 proc celsius_to_fahrenheit {in} {
-	return [expr {32 + ($in * 1.8)}]
+	set x 0
+	catch {
+		set x [expr {32 + ($in * 1.8)}]
+	}
+	return $x
 }
 
 proc ml_to_oz {in} {
-	return [expr {$in * 0.033814}]
+	set x 0
+	catch {
+		set x [expr {$in * 0.033814}]
+	}
+	return $x
 }
 

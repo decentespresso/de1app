@@ -1,0 +1,6 @@
+package ifneeded de1_vars 1.0 [list source [file join "./" vars.tcl]]
+package ifneeded de1_binary 1.0 [list source [file join "./" binary.tcl]]
+package ifneeded de1_utils 1.0 [list source [file join "./" bluetooth.tcl]]
+package ifneeded de1_gui 1.0 [list source [file join "./" gui.tcl]]
+package ifneeded de1_utils 1.0 [list source [file join "./" utils.tcl]]
+package ifneeded de1_main 1.0 [list source [file join "./" main.tcl]]

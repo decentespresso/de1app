@@ -1,8 +1,8 @@
 #!/usr/local/bin/tclsh 
 
-# skin resizer for normal skins
+# skin resizer for plus skins
 
-cd /d/admin/code/de1beta/skins/default/2560x1600
+cd /d/admin/code/de1beta/skinsplus/default/2560x1600
 
 set fast 1
 
@@ -45,9 +45,12 @@ set dirs [list \
 
 # convert all the skin PNG files
 foreach {dir xdivisor ydivisor} $dirs {
-    puts "Making $dir skin $xdivisor / $ydivisor"
+    #puts -nonewline "Making $dir skin $xdivisor / $ydivisor"
+    puts -nonewline "Making $dir skin."
     if {$fast == 0} {
         foreach skinfile $skinfiles {
+            puts -nonewline "."
+            flush stdout
             exec convert $skinfile -resize $dir!  ../$dir/$skinfile &
         }
     }
@@ -61,5 +64,6 @@ foreach {dir xdivisor ydivisor} $dirs {
     #puts "xdivisor: $xdivisor"
     set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{\\1/$xdivisor\}\] "]
     write_file "../$dir/skin.tcl" $newskin 
+    puts "";
 
 }
