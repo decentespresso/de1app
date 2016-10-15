@@ -72,9 +72,13 @@ proc run_next_userdata_cmd {} {
 }
 
 proc app_exit {} {
+
+	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
+	after 2000 {exit}
+	
 	catch {
 		msg "Closing de1"
-		#ble close $::de1(device_handle)
+		ble close $::de1(device_handle)
 
 		ble unpair $::de1(de1_address)
 	}
@@ -177,14 +181,14 @@ proc ble_connect_to_de1 {} {
 proc de1_ble_handler {event data} {
 	#puts "de1 ble_handler $event $data"
 	set ::de1(wrote) 0
-	msg "de1 ble_handler $event $data"
+	#msg "de1 ble_handler $event $data"
     dict with data {
 
-    	#catch {
-	#		if {$cuuid != "0000A00D-0000-1000-8000-00805F9B34FB"} {
-	#			msg "read from DE1: '$event $data'"
-	#		}
-	#	}
+    	catch {
+			if {$cuuid != "0000A00E-0000-1000-8000-00805F9B34FB"} {
+				msg "read from DE1: '$event $data'"
+			}
+		}
 
 		switch -- $event {
 	    	#msg "-- device $name found at address $address"
@@ -209,10 +213,10 @@ proc de1_ble_handler {event data} {
 					#de1_enable_a00e
 					#de1_enable_a00f
 					
-					de1_enable_bluetooth_notifications
 					poll_de1_state
+					de1_enable_bluetooth_notifications
 					#run_next_userdata_cmd
-					de1_send $::de1_state(Idle)
+					#de1_send $::de1_state(Idle)
 
 					run_de1_app
 			    }

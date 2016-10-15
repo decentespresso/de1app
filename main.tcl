@@ -1,12 +1,13 @@
 #!/usr/local/bin/tclsh
 
+package provide de1_main 1.0
+
 #package require Thread
 #package require jpeg
 package require img::jpeg
 
 # decent doser UI based on Morphosis graphics
-cd "[file dirname [info script]]/"
-source "pkgIndex.tcl"
+
 package require de1_vars 
 package require de1_gui 
 package require de1_binary
@@ -33,11 +34,9 @@ array set ::de1 {
 	cinstance 0
 	timer_interval 500
 	pressure 0
-	group_temperature 88
-	steam_heater_temperature 135
+	head_temperature 0
+	mix_temperature 0
 	flow 0
-	temperature 0
-	steam_temperature 0
 	timer 0
 	volume 0
 	wrote 0
@@ -45,6 +44,19 @@ array set ::de1 {
 	state 0
 	substate 0
 	current_context ""
+	serial_number 0
+	voltage 110
+	has_catering_kit 0
+	has_plumbing_kit 0
+	has_flowmeter 0
+	max_pressure 10
+	max_flowrate 6
+	min_temperature 80
+	max_temperature 96
+	water_level_percent 0
+	water_heater_wattage 1500
+	steam_heater_wattage 1500
+	group_heater_wattage 500
 	hertz 50
 }
 
@@ -65,6 +77,11 @@ array set ::settings {
 	app_brightness 100
 	saver_brightness 30
 	accelerometer_angle 0
+	speaking 0
+	speaking_rate 1.5
+	speaking_pitch 1.0
+	sound_button_in 8
+	sound_button_out 11
 }
 
 array set ::de1_state {
@@ -285,6 +302,8 @@ proc setup_environment {} {
 			after 100 accelerometer_check 
 		}
 
+		borg speak { }
+
 		source "bluetooth.tcl"
 
 	} else {
@@ -363,8 +382,13 @@ proc setup_environment {} {
 proc skin_directory {} {
 	global screen_size_width
 	global screen_size_height
+
+	set skindir "skins"
+	if {$::de1(has_flowmeter) == 1} {
+		set skindir "skinsplus"
+	}
 	set dir "[file dirname [info script]]/skins/default/${screen_size_width}x${screen_size_height}"
-	#puts "skin_directory: $dir"
+	puts "skin_directory: $dir"
 	return $dir
 }
 
@@ -524,9 +548,9 @@ proc setup_images_for_other_pages {} {
 
 	array set page_images [list \
 		"off" "[skin_directory]/nothing_on.png" \
-		"espresso" "[skin_directory]/espresso_on_plus.png" \
-		"steam" "[skin_directory]/steam_on_plus.png" \
-		"water" "[skin_directory]/tea_on_plus.png" \
+		"espresso" "[skin_directory]/espresso_on.png" \
+		"steam" "[skin_directory]/steam_on.png" \
+		"water" "[skin_directory]/tea_on.png" \
 		"settings" "[skin_directory]/settings_on.png" \
 		"sleep" "[skin_directory]/sleep.jpg" \
 		"saver" [random_saver_file] \
@@ -625,6 +649,7 @@ proc start_sleep {} {
 
 proc page_display_change {page_to_hide page_to_show} {
 
+
 	if {$::de1(current_context) == $page_to_show} {
 		#
 		return 
@@ -634,6 +659,9 @@ proc page_display_change {page_to_hide page_to_show} {
 		msg "discarding intermediate sleep/off state msg"
 		return 
 	}
+
+	# signal the page change with a sound
+	say "" $::settings(sound_button_out)
 
 	delay_screen_saver
 
@@ -764,7 +792,7 @@ proc check_if_should_start_screen_saver {} {
 }
 
 proc has_flowmeter {} {
-	return 1
+	return $::de1(has_flowmeter)
 }
 
 set accelerometer_read_count 0
@@ -809,12 +837,11 @@ proc accelerometer_check {} {
 	set angle [accelerometer_data_read]
 	if {[flight_mode_enable] == 1} {
 		if {$angle != -1} {
-			if {$angle > 44 && $::settings(accelerometer_angle) <= 44 && $::de1_num_state($::de1(state)) == "Idle"} {
-				msg "espresso"
+			if {$angle > 50 && $::settings(accelerometer_angle) <= 50 && $::de1_num_state($::de1(state)) == "Idle"} {
+				#msg "espresso"
 				start_espresso
 			} elseif {$angle < 35 && $::settings(accelerometer_angle) >= 35 && $::de1_num_state($::de1(state)) == "Espresso"} {
-				
-				msg "idle"
+				#msg "idle"
 				start_idle
 			}
 			set ::settings(accelerometer_angle) $angle
@@ -853,6 +880,32 @@ proc update_onscreen_variables {} {
 	after $::de1(timer_interval) update_onscreen_variables
 }
 
+proc say {txt sndnum} {
+
+	if {$::android != 1} {
+		return
+	}
+	set cursor [borg content query content://media/internal/audio/media/]
+	while {[$cursor move 1]} {
+		array unset sapp
+		array set sapp [$cursor getrow]
+		set id $sapp(_id)
+		set data $sapp(_data)
+        set msg "$id : : $data"
+        #msg $msg
+        set sounds($id) $data
+        if {$id > 20} { break }
+    }	
+
+	if {$::settings(speaking) == 1 && $txt != ""} {
+		borg speak $txt {} $::settings(speaking_pitch) $::settings(speaking_rate)
+	} elseif {$::settings(speaking) == 2} {
+		catch {
+			borg beep $sounds($sndnum)
+		}
+	}
+}
+
 proc de1_ui_startup {} {
 	setup_environment
 	setup_images_for_first_page
@@ -865,7 +918,7 @@ proc de1_ui_startup {} {
 
 		
 	#update
-	if {$android == 1} {
+	if {$::android == 1} {
 		ble_connect_to_de1
 		
 	} else {

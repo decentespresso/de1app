@@ -190,11 +190,32 @@ proc install_this_app_icon {} {
 	package require base64
 	set icondata2 [read_binary_file "/mnt/sdcard/de1beta/de1_icon.png"]
 	set iconbase64b [::base64::encode -maxlen 0 $icondata2]
-	set appurl "file://mnt/sdcard/de1beta/de1beta.tcl"
+
+	set appurl "file://mnt/sdcard/de1beta/de1.tcl"
 	catch {
-		set x [borg shortcut add "DE1 beta" $appurl $iconbase64b]
+		set x [borg shortcut add "DE1 #1" $appurl $iconbase64b]
 		puts "shortcut added: '$x'"
 	}
+
+	set appurl "file://mnt/sdcard/de1beta/de1plus.tcl"
+	catch {
+		set x [borg shortcut add "DE1+ #1" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
+
+	set appurl "file://mnt/sdcard/de1beta/de1-2.tcl"
+	catch {
+		set x [borg shortcut add "DE1 #2" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
+	set appurl "file://mnt/sdcard/de1beta/de1plus-2.tcl"
+	catch {
+		set x [borg shortcut add "DE1+ #2" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
 }
 
 proc platform_button_press {} {
@@ -216,7 +237,7 @@ proc platform_button_unpress {} {
 set cnt 0
 set debuglog {}					
 proc msg {text} {
-	return
+	#return
 
 	if {$text == ""} {
 		return

@@ -30,14 +30,14 @@ proc watervolume {} {
 
 proc steamtemp {} {
 	if {$::android == 1} {
-		return $::de1(temperature)
+		return $::de1(head_temperature)
 	}
 	return [expr {int(140+(rand() * 20))}]
 }
 
 proc watertemp {} {
 	if {$::android == 1} {
-		return $::de1(temperature)
+		return $::de1(head_temperature)
 	}
 	return [expr {50+(rand() * 50)}]
 }
@@ -75,7 +75,7 @@ proc accelerometer_angle_text {} {
 
 proc group_head_heater_temperature {} {
 	if {$::android == 1} {
-		return $::de1(group_temperature)
+		return $::de1(head_temperature)
 	}
 
 	global fake_group_temperature
@@ -92,7 +92,7 @@ proc group_head_heater_temperature {} {
 
 proc steam_heater_temperature {} {
 	if {$::android == 1} {
-		return $::de1(steam_heater_temperature)
+		return $::de1(mix_temperature)
 	}
 
 	global fake_steam_temperature
@@ -175,7 +175,7 @@ proc steamtemp_text {} {
 }
 
 proc pressure_text {} {
-	return [subst {[round_to_two_digits [pressure]] [translate "bars"]}]
+	return [subst {[round_to_two_digits [pressure]] [translate "bar"]}]
 }
 
 
