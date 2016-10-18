@@ -11,7 +11,7 @@ add_de1_variable "steam" 1536.000384000096 766.799999990415 -text "" -font Helv_
 
 # variables to display during steam
 add_de1_text "steam" 1539.7503849375962 793.7999999900776 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "steam" 1543.5003858750963 793.7999999900776 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 390.00009750002437  -textvariable {[timer_text]} 
+add_de1_variable "steam" 1543.5003858750963 793.7999999900776 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 390.00009750002437  -textvariable {[steam_timer][translate "s"]} 
 add_de1_text "steam" 1539.7503849375962 827.5499999896557 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
 add_de1_variable "steam" 1543.5003858750963 827.5499999896557 -justify left -anchor "nw" -font Helv_8 -text "-" -fill "#42465c" -width 390.00009750002437  -textvariable {[setting_steam_max_time_text]} 
 add_de1_text "steam" 1539.7503849375962 861.2999999892338 -justify right -anchor "ne" -text [translate "Steam temp:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
@@ -44,7 +44,7 @@ add_de1_text "espresso" 960.0002400000599 726.2999999909213 -text [translate "ES
 add_de1_variable "espresso" 960.0002400000599 766.799999990415 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
 
 add_de1_text "espresso" 960.0002400000599 793.7999999900776 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "espresso" 963.7502409375602 793.7999999900776 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[timer][translate "s"]} 
+add_de1_variable "espresso" 963.7502409375602 793.7999999900776 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[pour_timer][translate "s"]} 
 
 add_de1_text "espresso" 960.0002400000599 827.5499999896557 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
 add_de1_variable "espresso" 963.7502409375602 827.5499999896557 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 390.00009750002437  -textvariable {[setting_espresso_max_time][translate "s"]} 
@@ -88,7 +88,7 @@ add_de1_text "water" 382.5000956250239 726.2999999909213 -text [translate "HOT W
 add_de1_variable "water" 382.5000956250239 766.799999990415 -text "" -font Helv_9_bold -fill "#73768f" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
 
 add_de1_text "water" 375.0000937500234 793.7999999900776 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "water" 378.75009468752364 793.7999999900776 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "-" -textvariable {[timer_text]} 
+add_de1_variable "water" 378.75009468752364 793.7999999900776 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "-" -textvariable {[water_timer][translate "s"]} 
 add_de1_text "water" 375.0000937500234 827.5499999896557 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
 add_de1_variable "water" 378.75009468752364 827.5499999896557 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "-" -textvariable {[setting_water_max_time_text]} 
 add_de1_text "water" 375.0000937500234 861.2999999892338 -justify right -anchor "ne" -text [translate "Water temp:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 

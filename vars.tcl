@@ -4,6 +4,11 @@ package provide de1_vars 1.0
 #############################
 # raw data from the DE1
 
+
+proc clear_timers {} {
+	unset -nocomplain ::timers
+}
+
 proc timer {} {
 	if {$::android == 1} {
 		return [expr {round($::de1(timer) / 100.0)}]
@@ -12,7 +17,49 @@ proc timer {} {
 	return [expr {[clock seconds] - $start_volume}]
 }
 
+proc event_timer_calculate {state destination_state previous_states} {
+
+	set eventtime [get_timer $state $destination_state]
+	foreach s $previous_states {
+		set beforetime [get_timer $state $s]
+		if {$beforetime != 0} {
+			break
+		}
+	}
+
+	set elapsed [expr {($eventtime - $beforetime)/100}]
+	if {$elapsed < 0} {
+		# this means that the event has not yet started
+		return 0
+	}
+
+	return $elapsed
+}
+
+proc preinfusion_timer {} {
+	return [event_timer_calculate "Espresso" "preinfusion" {"perfecting the mix" "warming the heater"} ]
+}
+
+
+proc pour_timer {} {
+	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "perfecting the mix" "warming the heater"} ]
+}
+
+
+proc steam_timer {} {
+	return [event_timer_calculate "Steam" "pouring" {"perfecting the mix" "warming the heater"} ]
+}
+
+proc water_timer {} {
+	return [event_timer_calculate "HotWater" "pouring" {"perfecting the mix" "warming the heater"} ]
+}
+
 proc waterflow {} {
+
+	if {$::de1(substate) != $::de1_substate_types_reversed(pouring) && $::de1(substate) != $::de1_substate_types_reversed(preinfusion)} {	
+		return 0
+	}
+
 	if {$::android == 1} {
 		return $::de1(flow)
 	}
@@ -21,6 +68,11 @@ proc waterflow {} {
 
 set start_volume [clock seconds]
 proc watervolume {} {
+	if {$::de1(substate) != $::de1_substate_types_reversed(pouring) && $::de1(substate) != $::de1_substate_types_reversed(preinfusion)} {	
+		return 0
+	}
+
+
 	if {$::android == 1} {
 		return $::de1(volume)
 	}
@@ -30,7 +82,7 @@ proc watervolume {} {
 
 proc steamtemp {} {
 	if {$::android == 1} {
-		return $::de1(head_temperature)
+		return $::de1(mix_temperature)
 	}
 	return [expr {int(140+(rand() * 20))}]
 }
@@ -43,6 +95,10 @@ proc watertemp {} {
 }
 
 proc pressure {} {
+	if {$::de1(substate) != $::de1_substate_types_reversed(pouring) && $::de1(substate) != $::de1_substate_types_reversed(preinfusion)} {	
+		return 0
+	}
+
 	if {$::android == 1} {
 		return $::de1(pressure)
 	}
@@ -76,7 +132,6 @@ proc accelerometer_angle_text {} {
 	set last_acc_count $accelerometer_read_count
 	return "$::settings(accelerometer_angle)º ($accelerometer_read_count) $rate events/second $delta events $rate"
 }
-
 
 proc group_head_heater_temperature {} {
 	if {$::android == 1} {
@@ -113,6 +168,24 @@ proc steam_heater_temperature {} {
 
 	return $fake_steam_temperature
 }
+proc water_mix_temperature {} {
+	if {$::android == 1} {
+		return $::de1(mix_temperature)
+	}
+
+	global fake_steam_temperature
+	if {[info exists fake_steam_temperature] != 1} {
+		set fake_steam_temperature 20
+	}
+
+	set fake_steam_temperature [expr {int($fake_steam_temperature + (rand() * 10))}]
+	if {$fake_steam_temperature > $::settings(steam_temperature)} {
+		set fake_steam_temperature $::settings(steam_temperature)
+	}
+
+
+	return $fake_steam_temperature
+}
 
 
 
@@ -120,6 +193,8 @@ proc steam_heater_temperature {} {
 
 #################
 # formatting DE1 numbers into pretty text
+
+
 
 proc steam_heater_action_text {} {
 	set delta [expr {int([steam_heater_temperature] - [setting_steam_temperature])}]
@@ -160,6 +235,16 @@ proc watervolume_text {} {
 		return [subst {[round_to_one_digits [watervolume]] [translate "ml"]}]
 	} else {
 		return [subst {[round_to_one_digits [ml_to_oz [watervolume]]] oz}]
+	}
+}
+
+
+
+proc mixtemp_text {} {
+	if {$::settings(measurements) == "metric"} {
+		return [subst {[round_to_one_digits [water_mix_temperature]]ºC}]
+	} else {
+		return [subst {[round_to_one_digits [celsius_to_fahrenheit [water_mix_temperature]]]ºF]}]
 	}
 }
 
@@ -311,4 +396,3 @@ proc ml_to_oz {in} {
 	}
 	return $x
 }
-

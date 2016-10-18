@@ -67,6 +67,7 @@ array set ::de1 {
 #}
 
 array set ::settings {
+	flying 0
 	timer_interval 500
 	screen_saver_delay 1800
 	screen_saver_change_interval 600
@@ -126,6 +127,8 @@ array set ::de1_num_state {
   144 TankEmpty
   145 FillingTank
 }
+array set ::de1_num_state_reversed [reverse_array ::de1_num_state]
+
 
 array set ::de1_substate_types {
 	-   "starting"
@@ -137,7 +140,7 @@ array set ::de1_substate_types {
 	5	"pouring"
 	6	"ending"
 }
-array set ::de1_substate_types_reversed [reverse_array [array get de1 ::de1_substate_types]]
+array set ::de1_substate_types_reversed [reverse_array ::de1_substate_types]
 
 array set translation [read_binary_file "translation.tcl"]
 
@@ -373,7 +376,7 @@ proc setup_environment {} {
 				puts "borg $args"
 			}
 		}
-		proc de1_send {x} { delay_screen_saver;puts "de1_send '$x'" }
+		proc de1_send {x} { clear_timers;delay_screen_saver;puts "de1_send '$x'" }
 		proc de1_read {} { puts "de1_read" }
 		proc app_exit {} { exit	}		
 
@@ -636,10 +639,11 @@ proc start_water {} {
 
 proc start_idle {} {
 	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
-	
-	# change the substate to ending immediately to provide UI feedback
-	set ::de1(substate) 6
 
+	# change the substate to ending immediately to provide UI feedback
+	#set ::de1(substate) 6
+
+	set ::settings(flying) 0
 	de1_send $::de1_state(Idle)
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
@@ -872,11 +876,17 @@ proc accelerometer_check {} {
 	set angle [accelerometer_data_read]
 
 	if {$::settings(flight_mode_enable) == 1} {
-		if {$angle > -30 && $::de1_num_state($::de1(state)) == "Idle"} {
-			#msg "espresso"
-			start_espresso
-		} elseif {$angle < -30 && $::de1_num_state($::de1(state)) == "Espresso"} {
-			#msg "idle"
+		if {$angle > -30} {
+			if {$::de1_num_state($::de1(state)) == "Idle"} {
+				start_espresso
+			} else {
+				if {$::de1_num_state($::de1(state)) == "Espresso"} {
+					# we're currently flying, so use the angle to change the flow/pressure
+				}
+			}
+			set ::settings(flying) 1
+		} elseif {$angle < -30 && $::settings(flying) == 1 && $::de1_num_state($::de1(state)) == "Espresso"} {
+			set ::settings(flying) 0
 			start_idle
 		}
 		#msg "accelerometer angle: $angle"
@@ -889,6 +899,8 @@ proc update_onscreen_variables {} {
 	if {$::android == 0} {
 		if {[expr {int(rand() * 100)}] > 70} {
 			incr ::de1(substate)
+	        set timerkey "$::de1(state)-$::de1(substate)"
+	        set ::timers($timerkey) [clock milliseconds]
 		}
 		if {$::de1(substate) > 6} {
 			set ::de1(substate) 0

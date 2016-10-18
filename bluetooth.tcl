@@ -91,6 +91,7 @@ proc de1_enable {cuuid_to_enable} {
 }
 
 proc de1_send {msg} {
+	#clear_timers
 	delay_screen_saver
 	
 	#set handle $::de1(device_handle)

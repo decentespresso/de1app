@@ -10,7 +10,7 @@ set ::skindebug 0
 	add_de1_text "steam" 1790 780 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width 520
 
 	add_de1_text "steam" 1790 830 -justify right -anchor "nw" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 520
-	add_de1_variable "steam" 2310 830 -justify left -anchor "ne" -font Helv_8 -text "-" -fill "#42465c" -width 520 -textvariable {[timer][translate "s"]} 
+	add_de1_variable "steam" 2310 830 -justify left -anchor "ne" -font Helv_8 -text "-" -fill "#42465c" -width 520 -textvariable {[steam_timer][translate "s"]} 
 	add_de1_text "steam" 1790 880 -justify right -anchor "nw" -text [translate "Auto-Off:"] -font Helv_8 -fill "#7f879a" -width 520
 	add_de1_variable "steam" 2310 880 -justify left -anchor "ne" -font Helv_8 -text "-" -fill "#42465c" -width 520 -textvariable {[setting_steam_max_time][translate "s"]} 
 
@@ -55,10 +55,10 @@ add_de1_button "off" "say [translate {steam}] $::settings(sound_button_out);star
 	add_de1_variable "espresso" 1570 890 -justify left -anchor "ne" -text "" -font Helv_8  -fill "#42465c" -width 520 -textvariable {[setting_espresso_max_time][translate "s"]} 
 
 	add_de1_text "espresso" 980 940 -justify right -anchor "nw" -text [translate "Preinfusion:"] -font Helv_8 -fill "#7f879a" -width 520
-	add_de1_variable "espresso" 1570 940 -justify left -anchor "ne" -text "" -font Helv_8  -fill "#42465c" -width 520 -textvariable {4[translate "s"]} 
+	add_de1_variable "espresso" 1570 940 -justify left -anchor "ne" -text "" -font Helv_8  -fill "#42465c" -width 520 -textvariable {[preinfusion_timer][translate "s"]} 
 
 	add_de1_text "espresso" 980 990 -justify right -anchor "nw" -text [translate "Pouring:"] -font Helv_8 -fill "#7f879a" -width 520
-	add_de1_variable "espresso" 1570 990 -justify left -anchor "ne" -text "" -font Helv_8  -fill "#42465c" -width 520 -textvariable {0[translate "s"]} 
+	add_de1_variable "espresso" 1570 990 -justify left -anchor "ne" -text "" -font Helv_8  -fill "#42465c" -width 520 -textvariable {[pour_timer][translate "s"]} 
 
 
 	add_de1_text "espresso" 980 1070 -justify right -anchor "nw" -text [translate "Characteristics"] -font Helv_8_bold -fill "#5a5d75" -width 520
@@ -68,7 +68,7 @@ add_de1_button "off" "say [translate {steam}] $::settings(sound_button_out);star
 	add_de1_text "espresso" 980 1170 -justify right -anchor "nw" -text [translate "Basket temp:"] -font Helv_8 -fill "#7f879a" -width 520
 	add_de1_variable "espresso" 1570 1170 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[watertemp_text]} 
 	add_de1_text "espresso" 980 1220 -justify right -anchor "nw" -text [translate "Mix temp:"] -font Helv_8 -fill "#7f879a" -width 520
-	add_de1_variable "espresso" 1570 1220 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[watertemp_text]} 
+	add_de1_variable "espresso" 1570 1220 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[mixtemp_text]} 
 
 
 	add_de1_text "espresso" 980 1270 -justify right -anchor "nw" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width 520
@@ -108,7 +108,7 @@ add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_out);
 	add_de1_text "water" 240 780 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width 520
 	#add_de1_text "water" 500 920 -justify right -anchor "center" -text [translate "- Time -"] -font Helv_10_bold -fill "#42465c" -width 520
 	add_de1_text "water" 240 830 -justify right -anchor "nw" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 520
-	add_de1_variable "water" 770 830 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width 520 -text "-" -textvariable {[timer][translate "s"]} 
+	add_de1_variable "water" 770 830 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width 520 -text "-" -textvariable {[water_timer][translate "s"]} 
 	add_de1_text "water" 240 880 -justify right -anchor "nw" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 520
 	add_de1_variable "water" 770 880 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width 520 -text "-" -textvariable {[setting_water_max_time][translate "s"]} 
 

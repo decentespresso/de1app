@@ -190,6 +190,19 @@ proc bintest {} {
 
 }
 
+proc get_timer {state substate} {
+
+  set timerkey "$::de1_num_state_reversed($state)-$::de1_substate_types_reversed($substate)"
+  set timer 0
+
+  catch {
+    set timer $::timers($timerkey)
+  }
+
+  puts "$timerkey - timer $state $substate : $timer [array get ::timers]"
+  return $timer
+}
+
 
 proc update_de1_shotvalue {packed} {
 
@@ -228,6 +241,12 @@ proc update_de1_shotvalue {packed} {
     set previous_timer $::de1(timer)
     set ::de1(timer) $ShotSample(Timer)
     set delta [expr {$::de1(timer) - $previous_timer}]
+
+    # save the time associated with each substate
+    set timerkey "$::de1(state)-$::de1(substate)"
+    set ::timers($timerkey) $::de1(timer)
+    #msg "timers: [array get ::timers]"
+
     #msg "updated timer to $::de1(timer) - delta=$delta"
   }
   if {[info exists ShotSample(HeadTemp)] == 1} {
@@ -250,37 +269,6 @@ proc update_de1_shotvalue {packed} {
   }
 }
 
-
-proc update_de1_substate {statechar} {
-
-  set spec {
-    value char
-  }
-
-  ::fields::unpack $statechar $spec state bigeendian
-
-  if {$state(value) != $::de1(substate)} {
-    msg "substate change: [array get state]"
-    set ::de1(substate) $state(value)
-  }
-
-  #    'NoState'          : 0,  # State is not relevant.
-  #    'HeatWaterTank'    : 1,  # Cold water is not hot enough. Heating hot water tank.
-  #    'HeatWaterHeater'  : 2,  # Warm up hot water heater for shot.
-  #    'StabilizeMixTemp' : 3,  # Stabilize mix temp and get entire water path up to temperature.
-  #    'PreInfuse'        : 4,  # Espresso only. Hot Water and Steam will skip this state.
-  #    'Pour'             : 5,  # Used in all states.
-  #    'Flush'            : 6   # Espresso only.
-
-  if {$state(value) == 0} {
-    # when the substate goes to 0 that means the current task is done, so indicate this by going back to the OFF state in the gui
-    if {$::de1(current_context) != "off"} {
-      #page_display_change $::de1(current_context) "off"
-    }
-  }
-}
-
-
 proc update_de1_state {statechar} {
 
   set spec {
@@ -296,6 +284,7 @@ proc update_de1_state {statechar} {
     set textstate $::de1_num_state($msg(state))    
     msg "state change: [array get msg] ($textstate)"
     set ::de1(state) $msg(state)
+    clear_timers
   }
 
   if {[info exists msg(substate)] == 1} {
@@ -304,7 +293,10 @@ proc update_de1_state {statechar} {
       if {$msg(substate) != $::de1(substate)} {
         msg "substate change: [array get msg]"
         set ::de1(substate) $msg(substate)
+
       }
+      set timerkey "$::de1(state)-$::de1(substate)"
+      set ::timers($timerkey) $::de1(timer)
     }
   }
 
