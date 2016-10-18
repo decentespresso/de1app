@@ -34,7 +34,8 @@ proc regsubex {regex in replace} {
 	return $result
 }
 
-set skinfiles { nothing_on.png espresso_on.png settings_on.png steam_on.png tea_on.png sleep.jpg fill_tank.jpg filling_tank.jpg }
+#set skinfiles { nothing_on.png espresso_on.png settings_on.png steam_on.png tea_on.png sleep.jpg fill_tank.jpg filling_tank.jpg }
+set skinfiles [concat [glob "*.jpg"] [glob "*.png"]] 
 set dirs [list \
     "1280x800" 2 2 \
     "1920x1200" 1.333333 1.333333 \
