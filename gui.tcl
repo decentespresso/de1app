@@ -1,5 +1,7 @@
 package provide de1_gui 1.0
 
+package require img::jpeg
+
 
 proc random_pick {lst} {
     set pick [expr {int(rand() * [llength $lst])}] 
@@ -278,5 +280,286 @@ proc msg {text} {
    }
 }
 
+
+
+proc add_variable_item_to_context {context label_name varcmd} {
+	#puts "varcmd: '$varcmd'"
+	global variable_labels
+	#if {[info exists variable_labels($context)] != 1} {
+	#	set variable_labels($context) [list $label_name $varcmd]
+	#} else {
+		lappend variable_labels($context) [list $label_name $varcmd]
+	#}
+}
+
+
+proc add_visual_item_to_context {context label_name} {
+	global existing_labels
+	set existing_text_labels [ifexists existing_labels($context)]
+	lappend existing_text_labels $label_name
+	set existing_labels($context) $existing_text_labels
+}
+
+set button_cnt 0
+proc add_btn_screen_obsolete {displaycontext newcontext} {
+	global screen_size_width
+	global screen_size_height
+	global button_cnt
+	incr button_cnt
+	set btn_name ".btn_$displaycontext$button_cnt"
+	#set btn_name $bname
+	#.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+	.can create rect 0 0 $screen_size_width $screen_size_height -fill {} -outline black -width 0 -tag $btn_name  -state hidden
+	#puts "binding $btn_name to switch to new context: '$newcontext'"
+
+	set tclcode [list page_display_change $displaycontext $newcontext]
+	.can bind $btn_name [platform_button_press] $tclcode
+	add_visual_item_to_context $displaycontext $btn_name
+}
+
+proc add_de1_action {context tclcmd} {
+	global actions
+	if {[info exists actions(context)] == 1} {
+		lappend actions($context) $tclcmd
+	} else {
+		set actions($context) $tclcmd
+	}
+}
+
+proc add_de1_button {displaycontext tclcode x0 y0 x1 y1} {
+	global button_cnt
+	incr button_cnt
+	set btn_name ".btn_$displaycontext$button_cnt"
+	#set btn_name $bname
+	global skindebug
+	set width 0
+	if {[info exists skindebug] == 1} {
+		if {$skindebug == 1} {
+			set width 1
+		}
+	}
+	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+	if {[info exists skindebug] == 1} {
+		if {$skindebug == 1} {
+			.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden
+			add_visual_item_to_context $displaycontext ${btn_name}_lines
+		}
+	}
+
+	#puts "binding $btn_name to switch to new context: '$newcontext'"
+
+	#set tclcode [list page_display_change $displaycontext $newcontext]
+	.can bind $btn_name [platform_button_press] $tclcode
+	add_visual_item_to_context $displaycontext $btn_name
+}
+
+set text_cnt 0
+proc add_de1_text {args} {
+	#puts "args: '$args'"
+	global text_cnt
+	incr text_cnt
+	set context [lindex $args 0]
+	set label_name "${context}_$text_cnt"
+
+	# keep track of what labels are displayed in what contexts
+	add_visual_item_to_context $context $label_name
+	set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
+	#puts "torun : '$torun'"
+	eval $torun
+	return $label_name
+}
+
+proc add_de1_variable {args} {
+	set varcmd [lindex [unshift args] 0]
+	set lastcmd [unshift args]
+	if {$lastcmd != "-textvariable"} {
+		puts "WARNING: last -command needs to be -textvariable on a add_de1_variable line. You entered: '$lastcmd'"
+		return
+	}
+	set context [lindex $args 0]
+	set label_name [eval add_de1_text $args]
+	add_variable_item_to_context $context $label_name $varcmd
+}
+
+
+
+
+proc delay_screen_saver {} {
+	set ::de1(last_action_time) [clock seconds]
+}
+
+proc show_going_to_sleep_page  {} {
+
+	page_display_change $::de1(current_context) "sleep"
+	start_sleep
+
+}
+
+proc change_screen_saver_image {} {
+	#msg "change_screen_saver_image"
+	if {$::de1(current_context) != "saver"} {
+		return
+	}
+	
+	#set files [glob "[saver_directory]/*.jpg"]
+	#set splashpng [random_pick $files]
+	#msg "changing screen saver image to $splashpng"
+	image delete saver
+	image create photo saver -file [random_saver_file]
+	.can create image {0 0} -anchor nw -image saver  -tag saver -state normal
+	.can lower saver
+	after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
+}
+
+proc check_if_should_start_screen_saver {} {
+	#msg "check_if_should_start_screen_saver $::de1(last_action_time)"
+	after 1000 check_if_should_start_screen_saver
+
+	if {$::de1(current_context) == "saver"} {
+		#after 1000 check_if_should_start_screen_saver
+		return
+	}
+
+	#msg "check_if_should_start_screen_saver [clock seconds] > [expr {$::de1(last_action_time) + $::de1(screen_saver_delay)}]"
+	if {$::de1(last_action_time) == 0} {
+		#after 1000 check_if_should_start_screen_saver
+		delay_screen_saver
+		return
+	}
+
+	if {$::de1(current_context) == "off" && [clock seconds] > [expr {$::de1(last_action_time) + $::settings(screen_saver_delay)}]} {
+		#page_display_change "off" "sleep"
+		show_going_to_sleep_page
+	#} else {
+		#after 1000 check_if_should_start_screen_saver
+	}
+}
+
+
+proc update_onscreen_variables {} {
+
+	if {$::android == 0} {
+		if {[expr {int(rand() * 100)}] > 70} {
+			incr ::de1(substate)
+	        set timerkey "$::de1(state)-$::de1(substate)"
+	        set ::timers($timerkey) [clock milliseconds]
+		}
+		if {$::de1(substate) > 6} {
+			set ::de1(substate) 0
+		}
+		#set ::de1(substate) [expr {int(rand() * 6)}]
+	}
+	#msg "updating"
+	#global current_context
+	
+	global variable_labels
+	if {[info exists variable_labels($::de1(current_context))] == 1} {
+		set labels_to_update $variable_labels($::de1(current_context)) 
+		foreach label_to_update $labels_to_update {
+			set label_name [lindex $label_to_update 0]
+			set label_cmd [lindex $label_to_update 1]
+			#msg "Updating $current_context : $label_name with: '$label_cmd'"
+			.can itemconfig $label_name -text [subst $label_cmd]
+		}
+	}
+
+	update
+	after $::settings(timer_interval) update_onscreen_variables
+}
+
+
+proc page_display_change {page_to_hide page_to_show} {
+
+
+	if {$::de1(current_context) == $page_to_show} {
+		#
+		return 
+	}
+	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
+		#
+		msg "discarding intermediate sleep/off state msg"
+		return 
+	}
+
+	# signal the page change with a sound
+	say "" $::settings(sound_button_out)
+
+	delay_screen_saver
+
+	if {$page_to_show == "saver"} {
+		after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
+	}
+
+	# set the brightness in one place
+	if {$page_to_show == "saver" } {
+		borg brightness $::settings(saver_brightness)
+		borg systemui 0x1E02
+	} else {
+		borg brightness $::settings(app_brightness)
+		borg systemui 0x1E02
+	}
+
+
+	#global current_context
+	set ::de1(current_context) $page_to_show
+
+	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
+	foreach image $page_to_show	 {
+		.can itemconfigure $image -state normal
+	}	
+	foreach image $page_to_hide	 {
+		.can itemconfigure $image -state hidden
+	}	
+
+
+	global existing_labels
+	foreach {context labels} [array get existing_labels] {
+
+		foreach label $labels  {
+			if {$context == $page_to_show} {
+				# leave these displayed
+				#puts "showing $label"
+				.can itemconfigure $label -state normal
+			} else {
+				# hide these labels 
+				#puts "hiding $label"
+				.can itemconfigure $label -state hidden
+			}
+		}
+	}
+
+	global actions
+	if {[info exists actions($page_to_show)] == 1} {
+		foreach action $actions($page_to_show) {
+			eval $action
+		}
+	}
+}
+
+
+proc setup_images_for_first_page {} {
+	#set files [glob "[splash_directory]/*.jpg"]
+	#set splashpng [random_pick $files]
+	image create photo splash -file [random_splash_file] -format jpeg
+	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
+	pack .can
+	update
+	return
+}
+
+proc run_de1_app {} {
+	page_display_change "splash" "off"
+}
+
+
+
+
+
+
 #install_this_app_icon
+
+
+
+
+
 

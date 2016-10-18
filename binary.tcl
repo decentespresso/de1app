@@ -199,7 +199,7 @@ proc get_timer {state substate} {
     set timer $::timers($timerkey)
   }
 
-  puts "$timerkey - timer $state $substate : $timer [array get ::timers]"
+  #puts "$timerkey - timer $state $substate : $timer [array get ::timers]"
   return $timer
 }
 
