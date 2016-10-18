@@ -271,6 +271,14 @@ proc skin_directory {} {
     if {$::de1(has_flowmeter) == 1} {
         set skindir "skinsplus"
     }
+
+    if {[info exists ::settings(creator)] == 1} {
+        if {$::settings(creator) == 1} {
+            set skindir "skinscreator"
+        }
+    }
+
+    #puts "skind: $skindir"
     set dir "[file dirname [info script]]/$skindir/default/${screen_size_width}x${screen_size_height}"
     return $dir
 }
