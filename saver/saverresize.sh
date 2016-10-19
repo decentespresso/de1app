@@ -2,13 +2,14 @@
 
 
 cd /d/admin/code/de1beta/saver/2560x1600
-dirs=( "1280x800" "1920x1200" "1920x1080" "1280x720"  "2560x1440" )
+dirs=( "1280x800" "1920x1200" "1920x1080" "1280x720"  "2560x1440" "2048x1440" "2048x1536" )
 
 echo "Resizing screen saver JPGs"
 
 for i in "${dirs[@]}"
 do
    	rm ../$i/*.jpg
+   	mkdir -p ../$i/
 	find . -name "*.jpg" -print0 -exec convert {} -quality 50 -resize $i! ../$i/{} \; &
 	#echo 
 done

@@ -33,6 +33,12 @@ proc random_splash_file {} {
     return [random_pick [glob "[splash_directory]/*.jpg"]]
 }
 
+proc pause {time} {
+    global pause_end
+    after $time set pause_end 1
+    vwait pause_end
+    unset -nocomplain pause_end
+}
 
 
 proc language {} {
@@ -96,11 +102,15 @@ proc setup_environment {} {
 
         wm attributes . -fullscreen 1
         sdltk screensaver off
+        
+        # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
+        pause 1000
 
         set width [winfo screenwidth .]
         set height [winfo screenheight .]
 
         # sets immersive mode
+        set fontm 1
 
         #array set displaymetrics [borg displaymetrics]
         if {$width > 2300} {
@@ -117,6 +127,14 @@ proc setup_environment {} {
             } else {
                 set screen_size_height 1440
             }
+        } elseif {$width == 2048 && $height == 1440} {
+            set screen_size_width 2048
+            set screen_size_height 1440
+            set fontm 2
+        } elseif {$width == 2048 && $height == 1536} {
+            set screen_size_width 2048
+            set screen_size_height 1536
+            set fontm 2
         } elseif {$width == 1920} {
             set screen_size_width 1920
             set screen_size_height 1080
@@ -156,16 +174,16 @@ proc setup_environment {} {
         #puts "helvetica_bold_font: $helvetica_bold_font2"
         #set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
 
-        font create Helv_4 -family "HelveticaNeue" -size 4
+        font create Helv_4 -family "HelveticaNeue" -size [expr {int($fontm * 4)}]
         #font create Helv_7 -family "HelveticaNeue" -size 7
-        font create Helv_8 -family "HelveticaNeue" -size 8
-        font create Helv_8_bold -family "HelveticaNeue3" -size 8
+        font create Helv_8 -family "HelveticaNeue" -size [expr {int($fontm * 8)}]
+        font create Helv_8_bold -family "HelveticaNeue3" -size [expr {int($fontm * 8)}]
         
-        font create Helv_9_bold -family "HelveticaNeue3" -size 8 
+        font create Helv_9_bold -family "HelveticaNeue3" -size [expr {int($fontm * 8)}] 
         #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
-        font create Helv_10_bold -family "HelveticaNeue3" -size 10 
-        font create Helv_15_bold -family "HelveticaNeue3" -size 12 
-        font create Helv_20_bold -family "HelveticaNeue3" -size 18
+        font create Helv_10_bold -family "HelveticaNeue3" -size [expr {int($fontm * 10)}] 
+        font create Helv_15_bold -family "HelveticaNeue3" -size [expr {int($fontm * 12)}] 
+        font create Helv_20_bold -family "HelveticaNeue3" -size [expr {int($fontm * 18)}]
 
         #font create Sourcesans_30 -family "Source Sans Pro" -size 10
         #font create Sourcesans_20 -family "Source Sans Pro" -size 6

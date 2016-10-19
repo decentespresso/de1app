@@ -4,7 +4,7 @@
 
 cd /d/admin/code/de1beta/skins/default/2560x1600
 
-set fast 1
+set fast 0
 
 proc fast_write_open {fn parms} {
     set f [open $fn $parms]
@@ -37,6 +37,8 @@ proc regsubex {regex in replace} {
 set skinfiles { nothing_on.png espresso_on.png settings_on.png steam_on.png tea_on.png sleep.jpg fill_tank.jpg filling_tank.jpg }
 set dirs [list \
     "1280x800" 2 2 \
+    "2048x1440" 1.25 1.11111 \
+    "2048x1536" 1.25 1.041666666 \
     "1920x1200" 1.333333 1.333333 \
     "1920x1080" 1.333333 1.4814814815 \
     "1280x720"  2 2.22222 \
