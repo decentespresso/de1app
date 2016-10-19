@@ -176,11 +176,16 @@ proc setup_environment {} {
 
         font create Helv_4 -family "HelveticaNeue" -size [expr {int($fontm * 4)}]
         #font create Helv_7 -family "HelveticaNeue" -size 7
+        font create Helv_6 -family "HelveticaNeue" -size [expr {int($fontm * 6)}]
+        font create Helv_6_bold -family "HelveticaNeue3" -size [expr {int($fontm * 6)}]
+        font create Helv_7 -family "HelveticaNeue" -size [expr {int($fontm * 7)}]
+        font create Helv_7_bold -family "HelveticaNeue3" -size [expr {int($fontm * 7)}]
         font create Helv_8 -family "HelveticaNeue" -size [expr {int($fontm * 8)}]
         font create Helv_8_bold -family "HelveticaNeue3" -size [expr {int($fontm * 8)}]
         
         font create Helv_9_bold -family "HelveticaNeue3" -size [expr {int($fontm * 8)}] 
         #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
+        font create Helv_10 -family "HelveticaNeue" -size [expr {int($fontm * 10)}] 
         font create Helv_10_bold -family "HelveticaNeue3" -size [expr {int($fontm * 10)}] 
         font create Helv_15_bold -family "HelveticaNeue3" -size [expr {int($fontm * 12)}] 
         font create Helv_20_bold -family "HelveticaNeue3" -size [expr {int($fontm * 18)}]
@@ -208,18 +213,20 @@ proc setup_environment {} {
         source "bluetooth.tcl"
 
     } else {
+
         set screen_size_width 1920
         set screen_size_height 1200
         set fontm 1.5
-
-        set screen_size_width 2560
-        set screen_size_height 1600
-        set fontm 2
 
         set screen_size_width 1280
         set screen_size_height 800
         set fontm 1
         
+        set screen_size_width 2560
+        set screen_size_height 1600
+        set fontm 2
+
+
         #set screen_size_width 1920
         #set screen_size_height 1080
         #set fontm 1.5
@@ -239,8 +246,13 @@ proc setup_environment {} {
 
         #font create Helv_4 -family {Helvetica Neue Regular} -size 10
         #pngfont create Helv_7 -family {Helvetica Neue Regular} -size 14
+        font create Helv_6 -family {Helvetica Neue Regular} -size [expr {int($fontm * 15)}]
+        font create Helv_6_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 15)}]
+        font create Helv_7 -family {Helvetica Neue Regular} -size [expr {int($fontm * 17)}]
+        font create Helv_7_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 17)}]
         font create Helv_8 -family {Helvetica Neue Regular} -size [expr {int($fontm * 20)}]
         font create Helv_8_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 20)}] -underline 1
+        font create Helv_10 -family {Helvetica Neue Regular} -size [expr {int($fontm * 23)}]
         font create Helv_10_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 23)}]
         font create Helv_15_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 28)}]
         font create Helv_20_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 46)}]

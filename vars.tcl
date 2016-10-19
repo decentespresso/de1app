@@ -4,6 +4,38 @@ package provide de1_vars 1.0
 #############################
 # raw data from the DE1
 
+proc espresso_frame_title {num} {
+	if {$num == 1} {
+		return "1) Ramp up pressure to 8.4 bar over 12 seconds"
+	} elseif {$num == 2} {
+		return "2) Hold pressure at 8.4 bars for 10 seconds"
+	} elseif {$num == 3} {
+		return "3) Maintain 1.2 ml/s flow rate for 30 seconds"
+	} elseif {$num == 4} {
+		return ""
+	} elseif {$num == 5} {
+		return ""
+	} elseif {$num == 6} {
+		return ""
+	}
+}
+
+proc espresso_frame_description {num} {
+	if {$num == 1} {
+		return "Gently go to 8.4 bar of pressure with a water mix temperature of 92ºC. Go to the next step after 10 seconds. temperature of 92ºC. Gently go to 8.4 bar of pressure with a water mix temperature of 92ºC. Go to the next step after 10 seconds. temperature of 92ºC. "
+	} elseif {$num == 2} {
+		return "Quickly go to 8.4 bar of pressure with a basket temperature of 90ºC. Go to the next step after 10 seconds."
+	} elseif {$num == 3} {
+		return "Automatically manage pressure to attain a flow rate of 1.2 ml/s at a water temperature of 88ºC.  End this step after 30 seconds."
+	} elseif {$num == 4} {
+		return ""
+	} elseif {$num == 5} {
+		return ""
+	} elseif {$num == 6} {
+		return ""
+	}
+}
+
 
 proc clear_timers {} {
 	unset -nocomplain ::timers

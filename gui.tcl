@@ -338,59 +338,72 @@ proc add_de1_action {context tclcmd} {
 	}
 }
 
-proc add_de1_button {displaycontext tclcode x0 y0 x1 y1} {
+proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1} {
 	global button_cnt
-	incr button_cnt
-	set btn_name ".btn_$displaycontext$button_cnt"
-	#set btn_name $bname
-	global skindebug
-	set width 0
-	if {[info exists skindebug] == 1} {
-		if {$skindebug == 1} {
-			set width 1
-		}
-	}
-	.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
-	if {[info exists skindebug] == 1} {
-		if {$skindebug == 1} {
-			.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden
-			add_visual_item_to_context $displaycontext ${btn_name}_lines
-		}
-	}
 
-	#puts "binding $btn_name to switch to new context: '$newcontext'"
+	foreach displaycontext $displaycontexts {
+		incr button_cnt
+		set btn_name ".btn_$displaycontext$button_cnt"
+		#set btn_name $bname
+		global skindebug
+		set width 0
+		if {[info exists skindebug] == 1} {
+			if {$skindebug == 1} {
+				set width 1
+			}
+		}
+		.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+		if {[info exists skindebug] == 1} {
+			if {$skindebug == 1} {
+				.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden
+				add_visual_item_to_context $displaycontext ${btn_name}_lines
+			}
+		}
 
-	#set tclcode [list page_display_change $displaycontext $newcontext]
-	.can bind $btn_name [platform_button_press] $tclcode
-	add_visual_item_to_context $displaycontext $btn_name
+		#puts "binding $btn_name to switch to new context: '$newcontext'"
+
+		#set tclcode [list page_display_change $displaycontext $newcontext]
+		.can bind $btn_name [platform_button_press] $tclcode
+		add_visual_item_to_context $displaycontext $btn_name
+	}
 }
 
 set text_cnt 0
 proc add_de1_text {args} {
-	#puts "args: '$args'"
 	global text_cnt
 	incr text_cnt
-	set context [lindex $args 0]
-	set label_name "${context}_$text_cnt"
-
-	# keep track of what labels are displayed in what contexts
-	add_visual_item_to_context $context $label_name
-	set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
-	#puts "torun : '$torun'"
-	eval $torun
-	return $label_name
+	set contexts [lindex $args 0]
+	foreach context $contexts {
+		set label_name "${context}_$text_cnt"
+		# keep track of what labels are displayed in what contexts
+		add_visual_item_to_context $context $label_name
+		set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
+		eval $torun
+	}
+	#return $label_names
 }
 
 proc add_de1_variable {args} {
+	global text_cnt
 	set varcmd [lindex [unshift args] 0]
 	set lastcmd [unshift args]
 	if {$lastcmd != "-textvariable"} {
 		puts "WARNING: last -command needs to be -textvariable on a add_de1_variable line. You entered: '$lastcmd'"
 		return
 	}
-	set context [lindex $args 0]
+	set contexts [lindex $args 0]
 	set label_name [eval add_de1_text $args]
-	add_variable_item_to_context $context $label_name $varcmd
+	foreach context $contexts {
+		incr text_cnt
+		foreach context $contexts {
+			set label_name "${context}_$text_cnt"
+			# keep track of what labels are displayed in what contexts
+			add_visual_item_to_context $context $label_name
+			set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
+			eval $torun
+			add_variable_item_to_context $context $label_name $varcmd
+		}
+	}
 }
 
 
@@ -480,8 +493,14 @@ proc update_onscreen_variables {} {
 }
 
 
+proc page_show {page_to_show} {
+	set page_to_hide $::de1(current_context)
+	return [page_display_change $page_to_hide $page_to_show] 
+}
 proc page_display_change {page_to_hide page_to_show} {
 
+	if {$page_to_hide == ""} {
+	}
 
 	if {$::de1(current_context) == $page_to_show} {
 		#
@@ -515,7 +534,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	#global current_context
 	set ::de1(current_context) $page_to_show
 
-	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
+	puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	foreach image $page_to_show	 {
 		.can itemconfigure $image -state normal
 	}	
