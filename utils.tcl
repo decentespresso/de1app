@@ -214,10 +214,6 @@ proc setup_environment {} {
 
     } else {
 
-        set screen_size_width 1920
-        set screen_size_height 1200
-        set fontm 1.5
-
 
         set screen_size_width 2560
         set screen_size_height 1600
@@ -226,6 +222,16 @@ proc setup_environment {} {
         set screen_size_width 1280
         set screen_size_height 800
         set fontm 1
+
+        set screen_size_width 1920
+        set screen_size_height 1200
+        set fontm 1.5
+
+        set screen_size_width 2048
+        set screen_size_height 1536
+        set fontm 1.7
+
+
         #set screen_size_width 1920
         #set screen_size_height 1080
         #set fontm 1.5

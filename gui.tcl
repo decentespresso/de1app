@@ -14,8 +14,14 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 	set gain [expr {$destrange * $range}]
 	set finalvalue [expr {$minval + $gain}]
 
+	if {$finalvalue < $minval} {
+		set finalvalue $minval
+	} elseif {$finalvalue > $maxval} {
+		set finalvalue $maxval
+	}
+
 	#set $var $finalvalue
-	puts "vertical slider $x $y  $x0 $y0  $x1 $y1 = $range = $finalvalue = $varname"
+	#msg "vertical slider $x $y $x0 $y0  $x1 $y1 = $range = $finalvalue = $varname"
 
 	eval set $varname $finalvalue
 
@@ -271,7 +277,7 @@ proc install_this_app_icon {} {
 proc platform_button_press {} {
 	global android 
 	if {$android == 1} {
-		return {<<FingerDown>>}
+		return {<ButtonPress-1>}
 	}
 	return {<ButtonPress-1>}
 }
@@ -279,7 +285,7 @@ proc platform_button_press {} {
 proc platform_finger_down {} {
 	global android 
 	if {$android == 1} {
-		return {<<FingerMove>>}
+		return {<Motion>}
 	}
 	return {<Motion>}
 }
