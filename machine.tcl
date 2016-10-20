@@ -141,6 +141,10 @@ proc de1_substate_text {} {
 
 
 
+proc next_espresso_step {} {
+	msg "Tell DE1 to move to the next step in espresso making"
+
+}
 
 proc start_steam {} {
 	msg "Tell DE1 to start making STEAM"

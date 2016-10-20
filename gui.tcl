@@ -199,6 +199,12 @@ proc install_this_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
+	set appurl "file://mnt/sdcard/de1beta/de1c.tcl"
+	catch {
+		set x [borg shortcut add "DE1-C #1" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
 	set appurl "file://mnt/sdcard/de1beta/de1plus.tcl"
 	catch {
 		set x [borg shortcut add "DE1+ #1" $appurl $iconbase64b]
@@ -492,6 +498,10 @@ proc update_onscreen_variables {} {
 	after $::settings(timer_interval) update_onscreen_variables
 }
 
+proc set_next_page {machinepage guipage} {
+	set key "machine:$machinepage"
+	set ::settings($key) $guipage
+}
 
 proc page_show {page_to_show} {
 	set page_to_hide $::de1(current_context)
@@ -501,6 +511,13 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	if {$page_to_hide == ""} {
 	}
+
+	set key "machine:$page_to_show"
+	if {[ifexists ::settings($key)] != ""} {
+		# in Creator mode there are different possible tabs to display for different states (such as preheat-cup vs hot water)
+		set page_to_show $::settings($key)
+	}
+
 
 	if {$::de1(current_context) == $page_to_show} {
 		#
@@ -536,6 +553,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	foreach image $page_to_show	 {
+		puts "showing $image [.can coords $image]"
 		.can itemconfigure $image -state normal
 	}	
 	foreach image $page_to_hide	 {
@@ -549,12 +567,13 @@ proc page_display_change {page_to_hide page_to_show} {
 		foreach label $labels  {
 			if {$context == $page_to_show} {
 				# leave these displayed
-				#puts "showing $label"
-				.can itemconfigure $label -state normal
+				set x [.can itemconfigure $label -state normal]
+				#puts "showing $label $x"
+				
 			} else {
 				# hide these labels 
-				#puts "hiding $label"
-				.can itemconfigure $label -state hidden
+				set x [.can itemconfigure $label -state hidden]
+				#puts "hiding $label $x"
 			}
 		}
 	}
