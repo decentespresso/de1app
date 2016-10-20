@@ -553,7 +553,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	foreach image $page_to_show	 {
-		puts "showing $image [.can coords $image]"
+		#puts "showing $image [.can coords $image]"
 		.can itemconfigure $image -state normal
 	}	
 	foreach image $page_to_hide	 {
