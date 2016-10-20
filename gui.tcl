@@ -3,6 +3,24 @@ package provide de1_gui 1.0
 package require img::jpeg
 
 
+proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
+	set yrange [expr {$y1 - $y0}]
+	set yoffset [expr {$y - $y0}]
+
+	set range [expr {($yoffset * 1.0)/$yrange}]
+
+
+	set destrange [expr {$maxval - $minval}]
+	set gain [expr {$destrange * $range}]
+	set finalvalue [expr {$minval + $gain}]
+
+	#set $var $finalvalue
+	puts "vertical slider $x $y  $x0 $y0  $x1 $y1 = $range = $finalvalue = $varname"
+
+	eval set $varname $finalvalue
+
+}
+
 proc random_pick {lst} {
     set pick [expr {int(rand() * [llength $lst])}] 
     return [lindex $lst $pick]
@@ -258,6 +276,14 @@ proc platform_button_press {} {
 	return {<ButtonPress-1>}
 }
 
+proc platform_finger_down {} {
+	global android 
+	if {$android == 1} {
+		return {<<FingerMove>>}
+	}
+	return {<Motion>}
+}
+
 proc platform_button_unpress {} {
 	global android 
 	if {$android == 1} {
@@ -319,22 +345,6 @@ proc add_visual_item_to_context {context label_name} {
 }
 
 set button_cnt 0
-proc add_btn_screen_obsolete {displaycontext newcontext} {
-	global screen_size_width
-	global screen_size_height
-	global button_cnt
-	incr button_cnt
-	set btn_name ".btn_$displaycontext$button_cnt"
-	#set btn_name $bname
-	#.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
-	.can create rect 0 0 $screen_size_width $screen_size_height -fill {} -outline black -width 0 -tag $btn_name  -state hidden
-	#puts "binding $btn_name to switch to new context: '$newcontext'"
-
-	set tclcode [list page_display_change $displaycontext $newcontext]
-	.can bind $btn_name [platform_button_press] $tclcode
-	add_visual_item_to_context $displaycontext $btn_name
-}
-
 proc add_de1_action {context tclcmd} {
 	global actions
 	if {[info exists actions(context)] == 1} {
@@ -344,7 +354,7 @@ proc add_de1_action {context tclcmd} {
 	}
 }
 
-proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1} {
+proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 	global button_cnt
 
 	foreach displaycontext $displaycontexts {
@@ -361,7 +371,7 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1} {
 		.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
 		if {[info exists skindebug] == 1} {
 			if {$skindebug == 1} {
-				.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden
+				.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden 
 				add_visual_item_to_context $displaycontext ${btn_name}_lines
 			}
 		}
@@ -369,7 +379,18 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1} {
 		#puts "binding $btn_name to switch to new context: '$newcontext'"
 
 		#set tclcode [list page_display_change $displaycontext $newcontext]
+
+		regsub {%x0} $tclcode $x0 tclcode
+		regsub {%x1} $tclcode $x1 tclcode
+		regsub {%y0} $tclcode $y0 tclcode
+		regsub {%y1} $tclcode $y1 tclcode
+
 		.can bind $btn_name [platform_button_press] $tclcode
+
+		if {[string first mousemove $options] != -1} {
+			puts "mousemove detected"
+			.can bind $btn_name [platform_finger_down] $tclcode
+		}
 		add_visual_item_to_context $displaycontext $btn_name
 	}
 }
@@ -386,8 +407,56 @@ proc add_de1_text {args} {
 		set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
 		eval $torun
 	}
-	#return $label_names
 }
+
+
+# derivced from sample code at http://wiki.tcl.tk/17067
+set widget_cnt 0
+proc add_de1_widget {args} {
+	global widget_cnt
+	set contexts [lindex $args 0]
+
+
+	foreach context $contexts {
+		incr widget_cnt
+		set label_name ".can.${context}_$widget_cnt"
+		add_visual_item_to_context $context $label_name
+
+		#scale $label_name -from 100 -to    0 -variable S(x1) -command "" -label "x1"  
+		set torun [concat [list [lindex $args 1] $label_name] [lrange $args 4 end] ]
+		eval $torun
+		puts $torun
+		.can create window [lindex $args 2] [lindex $args 3] -window $label_name -state hidden -anchor nw -tag $label_name 
+
+
+		puts "context: $context"
+	}
+return
+
+
+	foreach context $contexts {
+		incr widget_cnt
+		set label_name ".can.${context}_$widget_cnt"
+		# keep track of what labels are displayed in what contexts
+		add_visual_item_to_context $context $label_name
+
+		set torun [concat [list [lindex $args 1] $label_name] [lrange $args 4 end] ]
+		puts $torun
+		eval $torun
+		#set torun [concat place $label_name -x [lindex $args 2] -y [lindex $args 3] -state hidden]
+
+		.can create window 0 0  -window $label_name -anchor nw -state hidden
+
+		eval $torun
+		#.can create scale 100 100 500 500 -fill {} -outline black -width 1 -tag ${context}_lines -state hidden
+		puts $torun
+
+		#set torun [concat [list .can create [lindex $args 1]] [lrange $args 1 end] -tag $label_name -state hidden]
+		#puts $torun
+		#eval $torun
+	}
+}
+
 
 proc add_de1_variable {args} {
 	global text_cnt

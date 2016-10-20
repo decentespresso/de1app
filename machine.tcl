@@ -46,6 +46,7 @@ array set ::de1 {
 	steam_heater_wattage 1500
 	group_heater_wattage 500
 	hertz 50
+	preinfusion_flow_rate 2
 }
 
 #global accelerometer
