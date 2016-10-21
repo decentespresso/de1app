@@ -44,7 +44,7 @@ proc clear_timers {} {
 # amount of time that we've been on this page
 proc timer {} {
 	#if {$::android == 1} {
-	#	return [expr {round($::de1(timer) / 100.0)}]
+	#	return [expr {round($::settings(timer) / 100.0)}]
 	#}
 	global start_timer
 	return [expr {[clock seconds] - $start_timer}]
@@ -379,7 +379,21 @@ proc setting_espresso_pressure {} {
 	return $::settings(espresso_pressure)
 }
 proc setting_espresso_pressure_text {} {
-		return [subst {[round_to_one_digits [setting_espresso_pressure]] [translate "bar"]}]
+	return [subst {[round_to_one_digits [setting_espresso_pressure]] [translate "bar"]}]
+}
+
+proc setting_espresso_stop_pressure_text {} {
+	if {$::settings(preinfusion_stop_pressure) == 0} {
+		return ""
+	}
+	return [subst {[round_to_one_digits $::settings(preinfusion_stop_pressure)] [translate "bar"]}]
+}
+
+proc setting_espresso_stop_flow_text {} {
+	if {$::settings(preinfusion_stop_flow_rate) == 0} {
+		return ""
+	}
+	return [subst {[round_to_one_digits $::settings(preinfusion_stop_flow_rate)] [translate "ml/s"]}]
 }
 
 

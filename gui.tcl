@@ -1,8 +1,7 @@
 package provide de1_gui 1.0
 
 package require img::jpeg
-
-
+	
 proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 	set yrange [expr {$y1 - $y0}]
 	set yoffset [expr {$y - $y0}]
@@ -567,6 +566,8 @@ proc check_if_should_start_screen_saver {} {
 
 proc update_onscreen_variables {} {
 
+	#save_settings
+
 	if {$::android == 0} {
 		if {[expr {int(rand() * 100)}] > 70} {
 			incr ::de1(substate)
@@ -598,7 +599,7 @@ proc update_onscreen_variables {} {
 
 proc set_next_page {machinepage guipage} {
 	set key "machine:$machinepage"
-	set ::settings($key) $guipage
+	set ::nextpage($key) $guipage
 }
 
 proc page_show {page_to_show} {
@@ -611,7 +612,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	}
 
 	set key "machine:$page_to_show"
-	if {[ifexists ::settings($key)] != ""} {
+	if {[ifexists ::nextpage($key)] != ""} {
 		# in Creator mode there are different possible tabs to display for different states (such as preheat-cup vs hot water)
 		set page_to_show $::settings($key)
 	}
@@ -702,5 +703,25 @@ proc setup_images_for_first_page {} {
 proc run_de1_app {} {
 	page_display_change "splash" "off"
 }
+
+proc ui_startup {} {
+	load_settings
+	setup_environment
+	setup_images_for_first_page
+	setup_images_for_other_pages
+
+	after $::settings(timer_interval) update_onscreen_variables
+
+	check_if_should_start_screen_saver
+	if {$::android == 1} {
+		ble_connect_to_de1
+		
+	} else {
+		after 1 run_de1_app
+	}
+	vwait forever
+}
+
+
 
 install_this_app_icon

@@ -48,20 +48,7 @@ proc setup_images_for_other_pages {} {
 
 
 proc de1_ui_startup {} {
-	setup_environment
-	setup_images_for_first_page
-	setup_images_for_other_pages
-
-	after $::settings(timer_interval) update_onscreen_variables
-
-	check_if_should_start_screen_saver
-	if {$::android == 1} {
-		ble_connect_to_de1
-		
-	} else {
-		after 1 run_de1_app
-	}
-	vwait forever
+	return [ui_startup]
 }
 
 

@@ -46,18 +46,6 @@ array set ::de1 {
 	steam_heater_wattage 1500
 	group_heater_wattage 500
 	hertz 50
-	preinfusion_flow_rate 2
-	preinfusion_temperature 92
-	preinfusion_stop_flow_rate 1.5
-	preinfusion_stop_pressure 3
-	preinfusion_stop_volumetric 45 
-	preinfusion_stop_timeout 12
-	steam_temperature 160
-	steam_timeout 300
-	preheat_volume 50
-	preheat_temperature 95
-	water_volume 50
-	water_temperature 75
 }
 
 #global accelerometer
@@ -88,6 +76,18 @@ array set ::settings {
 	sound_button_in 8
 	sound_button_out 11
 	flight_mode_enable 0
+	preinfusion_flow_rate 2
+	preinfusion_temperature 92
+	preinfusion_stop_flow_rate 1.5
+	preinfusion_stop_pressure 0
+	preinfusion_stop_volumetric 45 
+	preinfusion_stop_timeout 12
+	steam_temperature 160
+	steam_timeout 300
+	preheat_volume 50
+	preheat_temperature 95
+	water_volume 50
+	water_temperature 75
 }
 
 array set ::de1_state {
@@ -200,6 +200,9 @@ proc start_water {} {
 
 proc start_idle {} {
 	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
+
+	# save the UI settings whenever we have done an operation
+	save_settings
 
 	# change the substate to ending immediately to provide UI feedback
 	#set ::de1(substate) 6

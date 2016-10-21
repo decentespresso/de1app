@@ -481,3 +481,49 @@ proc say {txt sndnum} {
         }
     }
 }
+
+
+proc fast_write_open {fn parms} {
+    set f [open $fn $parms]
+    fconfigure $f -blocking 0
+    fconfigure $f -buffersize 1000000
+    return $f
+}
+
+proc write_file {filename data} {
+    set fn [fast_write_open $filename w]
+    puts $fn $data 
+    close $fn
+    return 1
+}
+
+proc read_file {filename} {
+    set data ""
+    catch {
+        set fn [open $filename]
+        set data [read $fn]
+        close $fn
+    }
+    return $data
+}
+
+
+proc save_array_to_file {arrname fn} {
+    upvar $arrname item
+    set toexport2 {}
+    foreach k [lsort -dictionary [array names item]] {
+        set v $item($k)
+        append toexport2 [subst {[list $k] [list $v]\n}]
+    }
+    write_file $fn $toexport2
+}
+
+proc save_settings {} {
+    puts "saving settings"
+    save_array_to_file ::settings "settings.tdb"
+}
+
+proc load_settings {} {
+    puts "loading settings"
+    array set ::settings [read_file "settings.tdb"]
+}
