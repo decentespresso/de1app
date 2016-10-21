@@ -41,12 +41,13 @@ proc clear_timers {} {
 	unset -nocomplain ::timers
 }
 
+# amount of time that we've been on this page
 proc timer {} {
-	if {$::android == 1} {
-		return [expr {round($::de1(timer) / 100.0)}]
-	}
-	global start_volume
-	return [expr {[clock seconds] - $start_volume}]
+	#if {$::android == 1} {
+	#	return [expr {round($::de1(timer) / 100.0)}]
+	#}
+	global start_timer
+	return [expr {[clock seconds] - $start_timer}]
 }
 
 proc event_timer_calculate {state destination_state previous_states} {
@@ -98,7 +99,7 @@ proc waterflow {} {
 	return [expr {rand() * 15}]
 }
 
-set start_volume [clock seconds]
+set start_timer [clock seconds]
 proc watervolume {} {
 	if {$::de1(substate) != $::de1_substate_types_reversed(pouring) && $::de1(substate) != $::de1_substate_types_reversed(preinfusion)} {	
 		return 0
@@ -108,8 +109,8 @@ proc watervolume {} {
 	if {$::android == 1} {
 		return $::de1(volume)
 	}
-	global start_volume
-	return [expr {[clock seconds] - $start_volume}]
+	global start_timer
+	return [expr {[clock seconds] - $start_timer}]
 }
 
 proc steamtemp {} {
@@ -235,7 +236,7 @@ proc steam_heater_action_text {} {
 	} elseif {$delta > 2} {
 		return [translate "(Cooling):"]
 	} else {
-		return [translate "Heater:"]
+		return [translate "Heated:"]
 	}
 }
 
@@ -246,7 +247,7 @@ proc group_head_heater_action_text {} {
 	} elseif {$delta > 2} {
 		return [translate "(Cooling):"]
 	} else {
-		return [translate "Heater:"]
+		return [translate "Heated:"]
 	}
 }
 

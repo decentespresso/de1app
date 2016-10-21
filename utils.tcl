@@ -104,13 +104,15 @@ proc setup_environment {} {
         sdltk screensaver off
         
         # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
-        pause 1000
+        pause 100
 
         set width [winfo screenwidth .]
         set height [winfo screenheight .]
 
         # sets immersive mode
         set fontm 1
+
+        # john: it would make sense to save the previous screen size so that we can start up faster, without waiting for the chrome to disappear
 
         #array set displaymetrics [borg displaymetrics]
         if {$width > 2300} {
@@ -183,7 +185,8 @@ proc setup_environment {} {
         font create Helv_8 -family "HelveticaNeue" -size [expr {int($fontm * 8)}]
         font create Helv_8_bold -family "HelveticaNeue3" -size [expr {int($fontm * 8)}]
         
-        font create Helv_9_bold -family "HelveticaNeue3" -size [expr {int($fontm * 8)}] 
+        font create Helv_9 -family "HelveticaNeue" -size [expr {int($fontm * 9)}]
+        font create Helv_9_bold -family "HelveticaNeue3" -size [expr {int($fontm * 9)}] 
         #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
         font create Helv_10 -family "HelveticaNeue" -size [expr {int($fontm * 10)}] 
         font create Helv_10_bold -family "HelveticaNeue3" -size [expr {int($fontm * 10)}] 
@@ -215,14 +218,6 @@ proc setup_environment {} {
     } else {
 
 
-        set screen_size_width 2560
-        set screen_size_height 1600
-        set fontm 2
-        
-        set screen_size_width 1280
-        set screen_size_height 800
-        set fontm 1
-
         set screen_size_width 1920
         set screen_size_height 1200
         set fontm 1.5
@@ -231,6 +226,14 @@ proc setup_environment {} {
         set screen_size_height 1536
         set fontm 1.7
 
+        set screen_size_width 1280
+        set screen_size_height 800
+        set fontm 1
+
+        set screen_size_width 2560
+        set screen_size_height 1600
+        set fontm 2
+        
 
         #set screen_size_width 1920
         #set screen_size_height 1080
@@ -255,13 +258,15 @@ proc setup_environment {} {
         font create Helv_6_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 15)}]
         font create Helv_7 -family {Helvetica Neue Regular} -size [expr {int($fontm * 17)}]
         font create Helv_7_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 17)}]
-        font create Helv_8 -family {Helvetica Neue Regular} -size [expr {int($fontm * 20)}]
-        font create Helv_8_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 20)}] -underline 1
+        font create Helv_8 -family {Helvetica Neue Regular} -size [expr {int($fontm * 19)}]
+        font create Helv_8_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 19)}] -underline 1
+        font create Helv_9 -family {Helvetica Neue Regular} -size [expr {int($fontm * 20)}]
+        font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 21)}]
         font create Helv_10 -family {Helvetica Neue Regular} -size [expr {int($fontm * 23)}]
         font create Helv_10_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 23)}]
         font create Helv_15_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 28)}]
         font create Helv_20_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 46)}]
-        font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 18)}]
+        #font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 18)}]
     
         #font create Sourcesans_30 -family {Source Sans Pro Bold} -size 50
         #font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22

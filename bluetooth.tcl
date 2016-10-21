@@ -17,6 +17,7 @@ proc userdata_append {cmd} {
 }
 
 proc de1_enable_bluetooth_notifications {} {
+	msg "de1_enable_bluetooth_notifications"
 	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
 	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
 	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
@@ -156,7 +157,7 @@ proc remove_null_terminator {instr} {
 proc ble_connect_to_de1 {} {
 
 	#set de1_address "C1:80:A7:32:CD:A3"
-	#globel de1_address
+	#global de1_address
 
 	catch {
 		ble unpair $::de1(de1_address)
@@ -173,7 +174,10 @@ proc ble_connect_to_de1 {} {
     set ::de1_name "bPoint"
     set ::de1(scanning) 0
     set ::de1(device_handle) 0
-    ble connect $::de1(de1_address) de1_ble_handler 
+    
+    catch {
+    	ble connect $::de1(de1_address) de1_ble_handler 
+    }
     msg "Connecting to DE1 on $::de1(de1_address)"
 
     #after 10000 ble_try_again_to_connect_to_bpoint
@@ -182,7 +186,7 @@ proc ble_connect_to_de1 {} {
 proc de1_ble_handler {event data} {
 	#puts "de1 ble_handler $event $data"
 	set ::de1(wrote) 0
-	#msg "de1 ble_handler $event $data"
+	msg "de1 ble_handler $event $data"
     dict with data {
 
     	catch {

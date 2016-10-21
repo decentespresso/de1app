@@ -9,10 +9,9 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 
 	set range [expr {($yoffset * 1.0)/$yrange}]
 
-
 	set destrange [expr {$maxval - $minval}]
 	set gain [expr {$destrange * $range}]
-	set finalvalue [expr {$minval + $gain}]
+	set finalvalue [expr {$maxval - $gain}]
 
 	if {$finalvalue < $minval} {
 		set finalvalue $minval
@@ -229,6 +228,30 @@ proc install_this_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
+	set appurl "file://mnt/sdcard/de1beta/de1c-2.tcl"
+	catch {
+		set x [borg shortcut add "DE1-C #2" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
+	set appurl "file://mnt/sdcard/de1beta/de1c-3.tcl"
+	catch {
+		set x [borg shortcut add "DE1-C #3" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
+	set appurl "file://mnt/sdcard/de1beta/de1c-4.tcl"
+	catch {
+		set x [borg shortcut add "DE1-C #4" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
+	set appurl "file://mnt/sdcard/de1beta/de1c-2.tcl"
+	catch {
+		set x [borg shortcut add "DE1-C #2" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
 	set appurl "file://mnt/sdcard/de1beta/de1plus.tcl"
 	catch {
 		set x [borg shortcut add "DE1+ #1" $appurl $iconbase64b]
@@ -394,7 +417,7 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 		.can bind $btn_name [platform_button_press] $tclcode
 
 		if {[string first mousemove $options] != -1} {
-			puts "mousemove detected"
+			#puts "mousemove detected"
 			.can bind $btn_name [platform_finger_down] $tclcode
 		}
 		add_visual_item_to_context $displaycontext $btn_name
@@ -613,6 +636,10 @@ proc page_display_change {page_to_hide page_to_show} {
 		after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
 	}
 
+	# track the time entering into a page
+	global start_timer
+	set start_timer [clock seconds]
+
 	# set the brightness in one place
 	if {$page_to_show == "saver" } {
 		borg brightness $::settings(saver_brightness)
@@ -676,15 +703,4 @@ proc run_de1_app {} {
 	page_display_change "splash" "off"
 }
 
-
-
-
-
-
 install_this_app_icon
-
-
-
-
-
-

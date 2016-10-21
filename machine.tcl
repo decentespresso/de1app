@@ -47,6 +47,17 @@ array set ::de1 {
 	group_heater_wattage 500
 	hertz 50
 	preinfusion_flow_rate 2
+	preinfusion_temperature 92
+	preinfusion_stop_flow_rate 1.5
+	preinfusion_stop_pressure 3
+	preinfusion_stop_volumetric 45 
+	preinfusion_stop_timeout 12
+	steam_temperature 160
+	steam_timeout 300
+	preheat_volume 50
+	preheat_temperature 95
+	water_volume 50
+	water_temperature 75
 }
 
 #global accelerometer
