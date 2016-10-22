@@ -266,8 +266,36 @@ proc update_de1_shotvalue {packed} {
   if {[info exists ShotSample(GroupPressure)] == 1} {
     set ::de1(pressure) $ShotSample(GroupPressure)
     #msg "updated pressure"
+
+
   }
+
+  append_live_data_to_espresso_chart
+
 }
+
+proc append_live_data_to_espresso_chart {} {
+  if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {
+    # to keep the espresso charts going
+    if {[millitimer] < 500} { 
+      # need to make sure we don't append data from an earlier time, as that destroys the chart
+      return
+    }
+
+    if {[espresso_elapsed length] > 0} {
+      if {[espresso_elapsed range end end] > [expr {[millitimer]/1000.0}]} {
+        #puts "discarding chart data after timer reset"
+        return
+      }
+    }
+
+    espresso_elapsed append [expr {[millitimer]/1000.0}]
+    espresso_pressure append $::de1(pressure)
+    espresso_flow append $::de1(flow)
+    espresso_temperature_mix append $::de1(mix_temperature)
+    espresso_temperature_basket append $::de1(head_temperature)
+  }
+}  
 
 proc update_de1_state {statechar} {
 

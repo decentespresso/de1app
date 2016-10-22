@@ -177,6 +177,7 @@ proc setup_environment {} {
         #set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
 
         font create Helv_4 -family "HelveticaNeue" -size [expr {int($fontm * 4)}]
+        font create Helv_5 -family "HelveticaNeue" -size [expr {int($fontm * 5)}]
         #font create Helv_7 -family "HelveticaNeue" -size 7
         font create Helv_6 -family "HelveticaNeue" -size [expr {int($fontm * 6)}]
         font create Helv_6_bold -family "HelveticaNeue3" -size [expr {int($fontm * 6)}]
@@ -226,14 +227,18 @@ proc setup_environment {} {
         set screen_size_height 1536
         set fontm 1.7
 
-        set screen_size_width 1280
-        set screen_size_height 800
-        set fontm 1
+        set screen_size_width 1920
+        set screen_size_height 1200
+        set fontm 1.5
 
         set screen_size_width 2560
         set screen_size_height 1600
         set fontm 2
         
+        set screen_size_width 1280
+        set screen_size_height 800
+        set fontm 1
+
 
         #set screen_size_width 1920
         #set screen_size_height 1080
@@ -252,7 +257,8 @@ proc setup_environment {} {
         wm maxsize . $screen_size_width $screen_size_height
         wm minsize . $screen_size_width $screen_size_height
 
-        #font create Helv_4 -family {Helvetica Neue Regular} -size 10
+        font create Helv_4 -family {Helvetica Neue Regular} -size 10
+        font create Helv_5 -family {Helvetica Neue Regular} -size 12
         #pngfont create Helv_7 -family {Helvetica Neue Regular} -size 14
         font create Helv_6 -family {Helvetica Neue Regular} -size [expr {int($fontm * 15)}]
         font create Helv_6_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 15)}]

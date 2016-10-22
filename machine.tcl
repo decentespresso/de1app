@@ -37,7 +37,7 @@ array set ::de1 {
 	voltage 110
 	has_catering_kit 0
 	has_plumbing_kit 0
-	max_pressure 10
+	max_pressure 12
 	max_flowrate 6
 	min_temperature 80
 	max_temperature 96
@@ -47,6 +47,23 @@ array set ::de1 {
 	group_heater_wattage 500
 	hertz 50
 }
+
+
+catch {
+	package require tkblt
+}
+catch {
+	package require BLT
+}
+
+#namespace import blt::*
+#namespace import -force blt::tile::*
+
+blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_temperature_mix espresso_temperature_basket
+
+#espresso_elapsed append 0 1 2
+#espresso_pressure append 0 1 4
+# espresso_pressure espresso_temperature_mix espresso_temperature_basket
 
 #global accelerometer
 #set accelerometer 0
@@ -87,7 +104,6 @@ array set ::settings {
 	preheat_volume 50
 	preheat_temperature 95
 	water_volume 50
-	water_temperature 75
 }
 
 array set ::de1_state {
@@ -175,6 +191,8 @@ proc start_espresso {} {
 	msg "Tell DE1 to start making ESPRESSO"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
+
+	clear_espresso_chart
 
 	de1_send $::de1_state(Espresso)
 

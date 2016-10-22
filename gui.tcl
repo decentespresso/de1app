@@ -323,7 +323,7 @@ proc platform_button_unpress {} {
 set cnt 0
 set debuglog {}					
 proc msg {text} {
-	#return
+	return
 
 	if {$text == ""} {
 		return
@@ -447,17 +447,18 @@ proc add_de1_widget {args} {
 
 	foreach context $contexts {
 		incr widget_cnt
-		set label_name ".can.${context}_$widget_cnt"
-		add_visual_item_to_context $context $label_name
+		set name ".can.${context}_$widget_cnt"
+		add_visual_item_to_context $context $name
 
 		#scale $label_name -from 100 -to    0 -variable S(x1) -command "" -label "x1"  
-		set torun [concat [list [lindex $args 1] $label_name] [lrange $args 4 end] ]
+		set torun [concat [list [lindex $args 1] $name] [lrange $args 5 end] ]
 		eval $torun
-		puts $torun
-		.can create window [lindex $args 2] [lindex $args 3] -window $label_name -state hidden -anchor nw -tag $label_name 
 
-
-		puts "context: $context"
+		# the 4th parameter gives additional code to run when creating this widget
+		eval [lindex $args 4]
+		#puts $torun
+		.can create window [lindex $args 2] [lindex $args 3] -window $name -state hidden -anchor nw -tag $name 
+		#puts "context: $context"
 	}
 return
 
@@ -577,7 +578,10 @@ proc update_onscreen_variables {} {
 		if {$::de1(substate) > 6} {
 			set ::de1(substate) 0
 		}
-		#set ::de1(substate) [expr {int(rand() * 6)}]
+
+		if {$::de1(state) == 4} {
+			append_live_data_to_espresso_chart
+		}
 	}
 	#msg "updating"
 	#global current_context
@@ -606,6 +610,7 @@ proc page_show {page_to_show} {
 	set page_to_hide $::de1(current_context)
 	return [page_display_change $page_to_hide $page_to_show] 
 }
+
 proc page_display_change {page_to_hide page_to_show} {
 
 	if {$page_to_hide == ""} {
@@ -614,7 +619,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	set key "machine:$page_to_show"
 	if {[ifexists ::nextpage($key)] != ""} {
 		# in Creator mode there are different possible tabs to display for different states (such as preheat-cup vs hot water)
-		set page_to_show $::settings($key)
+		set page_to_show $::nextpage($key)
 	}
 
 
@@ -638,8 +643,11 @@ proc page_display_change {page_to_hide page_to_show} {
 	}
 
 	# track the time entering into a page
-	global start_timer
-	set start_timer [clock seconds]
+	clear_timers
+	#global start_timer
+	#set start_timer [clock seconds]
+	#global start_millitimer
+	#set start_millitimer [clock milliseconds]
 
 	# set the brightness in one place
 	if {$page_to_show == "saver" } {

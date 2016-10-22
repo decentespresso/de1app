@@ -4,6 +4,16 @@ package provide de1_vars 1.0
 #############################
 # raw data from the DE1
 
+proc clear_espresso_chart {} {
+
+	espresso_elapsed length 0
+	espresso_pressure length 0
+	espresso_flow length 0
+	espresso_temperature_mix length 0
+	espresso_temperature_basket length 0
+
+}	
+
 proc espresso_frame_title {num} {
 	if {$num == 1} {
 		return "1) Ramp up pressure to 8.4 bar over 12 seconds"
@@ -38,16 +48,23 @@ proc espresso_frame_description {num} {
 
 
 proc clear_timers {} {
+	global start_timer
+	global start_millitimer
+	set start_timer [clock seconds]
+	set start_millitimer [clock milliseconds]
 	unset -nocomplain ::timers
+	puts "clearing timers"
 }
 
 # amount of time that we've been on this page
 proc timer {} {
-	#if {$::android == 1} {
-	#	return [expr {round($::settings(timer) / 100.0)}]
-	#}
 	global start_timer
 	return [expr {[clock seconds] - $start_timer}]
+}
+
+proc millitimer {} {
+	global start_millitimer
+	return [expr {[clock milliseconds] - $start_millitimer}]
 }
 
 proc event_timer_calculate {state destination_state previous_states} {
@@ -93,13 +110,16 @@ proc waterflow {} {
 		return 0
 	}
 
-	if {$::android == 1} {
-		return $::de1(flow)
+	if {$::android == 0} {
+		set ::de1(flow) [expr {rand() * 5}]
 	}
-	return [expr {rand() * 15}]
+
+	return $::de1(flow)
+	
 }
 
 set start_timer [clock seconds]
+set start_millitimer [clock milliseconds]
 proc watervolume {} {
 	if {$::de1(substate) != $::de1_substate_types_reversed(pouring) && $::de1(substate) != $::de1_substate_types_reversed(preinfusion)} {	
 		return 0
@@ -114,17 +134,18 @@ proc watervolume {} {
 }
 
 proc steamtemp {} {
-	if {$::android == 1} {
-		return $::de1(mix_temperature)
+	if {$::android == 0} {
+		set ::de1(mix_temperature) [expr {int(140+(rand() * 20))}]
 	}
-	return [expr {int(140+(rand() * 20))}]
+	return $::de1(mix_temperature)
 }
 
 proc watertemp {} {
-	if {$::android == 1} {
-		return $::de1(head_temperature)
+	if {$::android == 0} {
+		set ::de1(head_temperature) [expr {80 + (rand() * 10)}]
 	}
-	return [expr {50+(rand() * 50)}]
+
+	return $::de1(head_temperature)
 }
 
 proc pressure {} {
@@ -132,10 +153,14 @@ proc pressure {} {
 		return 0
 	}
 
-	if {$::android == 1} {
-		return $::de1(pressure)
+	if {$::android == 0} {
+		set ::de1(pressure) [expr {rand() * 11}]
 	}
-	return [expr {(rand() * 3.5)}]
+
+	return $::de1(pressure)
+	#if {$::android == 1} {
+	#}
+	#return [expr {(rand() * 3.5)}]
 }
 
 proc accelerometer_angle {} {
@@ -167,57 +192,27 @@ proc accelerometer_angle_text {} {
 }
 
 proc group_head_heater_temperature {} {
-	if {$::android == 1} {
-		return $::de1(head_temperature)
+	if {$::android == 0} {
+		set ::de1(head_temperature) [expr {80 + (rand() * 15)}]
 	}
 
-	global fake_group_temperature
-	if {[info exists fake_group_temperature] != 1} {
-		set fake_group_temperature 20
-	}
-
-	set fake_group_temperature [expr {int($fake_group_temperature + (rand() * 5))}]
-	if {$fake_group_temperature > $::settings(espresso_temperature)} {
-		set fake_group_temperature $::settings(espresso_temperature)
-	}
-	return $fake_group_temperature
+	return $::de1(head_temperature)
 }
 
 proc steam_heater_temperature {} {
-	if {$::android == 1} {
-		return $::de1(mix_temperature)
+	if {$::android == 0} {
+		set ::de1(mix_temperature) [expr {140 + (rand() * 20)}]
 	}
 
-	global fake_steam_temperature
-	if {[info exists fake_steam_temperature] != 1} {
-		set fake_steam_temperature 20
-	}
+	return $::de1(mix_temperature)
 
-	set fake_steam_temperature [expr {int($fake_steam_temperature + (rand() * 10))}]
-	if {$fake_steam_temperature > $::settings(steam_temperature)} {
-		set fake_steam_temperature $::settings(steam_temperature)
-	}
-
-
-	return $fake_steam_temperature
 }
 proc water_mix_temperature {} {
-	if {$::android == 1} {
-		return $::de1(mix_temperature)
+	if {$::android == 0} {
+		set ::de1(mix_temperature) [expr {80 + (rand() * 15)}]
 	}
 
-	global fake_steam_temperature
-	if {[info exists fake_steam_temperature] != 1} {
-		set fake_steam_temperature 20
-	}
-
-	set fake_steam_temperature [expr {int($fake_steam_temperature + (rand() * 10))}]
-	if {$fake_steam_temperature > $::settings(steam_temperature)} {
-		set fake_steam_temperature $::settings(steam_temperature)
-	}
-
-
-	return $fake_steam_temperature
+	return $::de1(mix_temperature)
 }
 
 
