@@ -38,9 +38,9 @@ array set ::de1 {
 	has_catering_kit 0
 	has_plumbing_kit 0
 	max_pressure 12
-	max_flowrate 6
+	max_flowrate 10
 	min_temperature 80
-	max_temperature 96
+	max_temperature 99
 	water_level_percent 0
 	water_heater_wattage 1500
 	steam_heater_wattage 1500
@@ -59,7 +59,13 @@ catch {
 #namespace import blt::*
 #namespace import -force blt::tile::*
 
-blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_temperature_mix espresso_temperature_basket
+blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_temperature_mix espresso_temperature_basket espresso_state_change
+#espresso_elapsed append 0
+#espresso_pressure append 0
+#espresso_flow append 0
+#espresso_temperature_mix append 0
+#espresso_temperature_basket append 0
+#espresso_state_change append 0
 
 #espresso_elapsed append 0 1 2
 #espresso_pressure append 0 1 4
@@ -150,7 +156,7 @@ array set ::de1_substate_types {
 	-   "starting"
 	0	"waiting"
 	1	"heating the water tank"
-	2	"warming the heater"
+	2	"perfecting temperature"
 	3	"perfecting the mix"
 	4	"preinfusion"
 	5	"pouring"
@@ -192,7 +198,7 @@ proc start_espresso {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 
-	clear_espresso_chart
+	#clear_espresso_chart
 
 	de1_send $::de1_state(Espresso)
 

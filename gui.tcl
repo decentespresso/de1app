@@ -385,9 +385,8 @@ proc add_de1_action {context tclcmd} {
 proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 	global button_cnt
 
-	foreach displaycontext $displaycontexts {
 		incr button_cnt
-		set btn_name ".btn_$displaycontext$button_cnt"
+		set btn_name ".btn_$button_cnt"
 		#set btn_name $bname
 		global skindebug
 		set width 0
@@ -400,7 +399,7 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 		if {[info exists skindebug] == 1} {
 			if {$skindebug == 1} {
 				.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden 
-				add_visual_item_to_context $displaycontext ${btn_name}_lines
+				#add_visual_item_to_context $displaycontext ${btn_name}_lines
 			}
 		}
 
@@ -419,7 +418,13 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 			#puts "mousemove detected"
 			.can bind $btn_name [platform_finger_down] $tclcode
 		}
+
+	foreach displaycontext $displaycontexts {
 		add_visual_item_to_context $displaycontext $btn_name
+		if {[ifexists skindebug] == 1} {
+			add_visual_item_to_context $displaycontext ${btn_name}_lines
+		}
+
 	}
 }
 
@@ -428,13 +433,15 @@ proc add_de1_text {args} {
 	global text_cnt
 	incr text_cnt
 	set contexts [lindex $args 0]
+	set label_name "text_$text_cnt"
+	# keep track of what labels are displayed in what contexts
+	set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
+	eval $torun
+
 	foreach context $contexts {
-		set label_name "${context}_$text_cnt"
-		# keep track of what labels are displayed in what contexts
 		add_visual_item_to_context $context $label_name
-		set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
-		eval $torun
 	}
+
 }
 
 
@@ -444,47 +451,85 @@ proc add_de1_widget {args} {
 	global widget_cnt
 	set contexts [lindex $args 0]
 
+		incr widget_cnt
+		set widgettype [lindex $args 1]
+		#set widget ".can.${contexts}_widget_${widgettype}_$widget_cnt"
+		set widget ".can.widget_${widgettype}_$widget_cnt"
+		#add_visual_item_to_context $context $widget
+		set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
+		set errcode [catch { 
+			eval $torun
+		} err]
+
+		if {$errcode == 1} {
+			puts $err
+		}
+
+		# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
+		if {$widgettype == "graph" && $::android == 1} {
+			$widget grid configure -dashes "" -color #DDDDDD -hide 0 -minor 1 
+			$widget configure -relief flat
+		}
+
+		# the 4th parameter gives additional code to run when creating this widget, such as chart configuration instructions
+		set errcode [catch { 
+			eval [lindex $args 4]
+		} err]
+
+		if {$errcode == 1} {
+			puts $err
+		}
+		#.can create window [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state normal
+		#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
+		set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
+		#puts "winfo: [winfo children .can]"
+		
+	set ::tclwindows($widget) [lrange $args 2 3]
 
 	foreach context $contexts {
-		incr widget_cnt
-		set name ".can.${context}_$widget_cnt"
-		add_visual_item_to_context $context $name
-
-		#scale $label_name -from 100 -to    0 -variable S(x1) -command "" -label "x1"  
-		set torun [concat [list [lindex $args 1] $name] [lrange $args 5 end] ]
-		eval $torun
-
-		# the 4th parameter gives additional code to run when creating this widget
-		eval [lindex $args 4]
-		#puts $torun
-		.can create window [lindex $args 2] [lindex $args 3] -window $name -state hidden -anchor nw -tag $name 
-		#puts "context: $context"
-	}
-return
-
-
-	foreach context $contexts {
-		incr widget_cnt
-		set label_name ".can.${context}_$widget_cnt"
-		# keep track of what labels are displayed in what contexts
-		add_visual_item_to_context $context $label_name
-
-		set torun [concat [list [lindex $args 1] $label_name] [lrange $args 4 end] ]
-		puts $torun
-		eval $torun
-		#set torun [concat place $label_name -x [lindex $args 2] -y [lindex $args 3] -state hidden]
-
-		.can create window 0 0  -window $label_name -anchor nw -state hidden
-
-		eval $torun
-		#.can create scale 100 100 500 500 -fill {} -outline black -width 1 -tag ${context}_lines -state hidden
-		puts $torun
-
-		#set torun [concat [list .can create [lindex $args 1]] [lrange $args 1 end] -tag $label_name -state hidden]
-		#puts $torun
-		#eval $torun
+		puts "add_visual_item_to_context $context '$widget'"
+		add_visual_item_to_context $context $widget
 	}
 }
+
+# derivced from sample code at http://wiki.tcl.tk/17067
+set widget_cnt 0
+proc add_de1_widget_obs {args} {
+	global widget_cnt
+	set contexts [lindex $args 0]
+z
+
+	foreach context $contexts {
+		incr widget_cnt
+		set widgettype [lindex $args 1]
+		set widget ".can.${context}_${widgettype}_$widget_cnt"
+		add_visual_item_to_context $context $widget
+		set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
+		set errcode [catch { 
+			eval $torun
+		} err]
+
+		if {$errcode == 1} {
+			puts $err
+		}
+
+		# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
+		if {$widgettype == "graph" && $::android == 1} {
+			$widget grid configure -dashes "" -color #BBBBBB -hide 0 -minor 1
+		}
+
+		# the 4th parameter gives additional code to run when creating this widget, such as chart configuration instructions
+		set errcode [catch { 
+			eval [lindex $args 4]
+		} err]
+
+		if {$errcode == 1} {
+			puts $err
+		}
+		.can create window [lindex $args 2] [lindex $args 3] -window $widget -state hidden -anchor nw -tag $widget 
+	}
+}
+
 
 
 proc add_de1_variable {args} {
@@ -537,6 +582,7 @@ proc change_screen_saver_image {} {
 	image create photo saver -file [random_saver_file]
 	.can create image {0 0} -anchor nw -image saver  -tag saver -state normal
 	.can lower saver
+	update
 	after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
 }
 
@@ -663,38 +709,42 @@ proc page_display_change {page_to_hide page_to_show} {
 	set ::de1(current_context) $page_to_show
 
 	puts "page_display_change hide:$page_to_hide show:$page_to_show"
-	foreach image $page_to_show	 {
-		#puts "showing $image [.can coords $image]"
-		.can itemconfigure $image -state normal
-	}	
-	foreach image $page_to_hide	 {
-		.can itemconfigure $image -state hidden
-	}	
-
+	.can itemconfigure $page_to_show -state normal
+	.can itemconfigure $page_to_hide -state hidden
+	#update 
+	#pause 500
 
 	global existing_labels
-	foreach {context labels} [array get existing_labels] {
+	foreach label [ifexists existing_labels($page_to_hide)]  {
+		if {[lsearch -exact [ifexists existing_labels($page_to_show)] $label] != -1} {
+			#puts "item $label is on both $page_to_hide and $page_to_show"
+			continue
+		}
+		set x [.can itemconfigure $label -state hidden]
+	}
 
-		foreach label $labels  {
-			if {$context == $page_to_show} {
-				# leave these displayed
-				set x [.can itemconfigure $label -state normal]
-				#puts "showing $label $x"
-				
-			} else {
-				# hide these labels 
-				set x [.can itemconfigure $label -state hidden]
-				#puts "hiding $label $x"
-			}
+	foreach label [ifexists existing_labels($page_to_show)]  {
+		if {[lsearch -exact [ifexists existing_labels($page_to_hide)] $label] != -1} {
+			#puts "item $label is on both $page_to_hide and $page_to_show"
+			continue
+		}
+		if {[info exists ::tclwindows($label)] == 1} {
+			after 100 ".can itemconfigure $label -state normal"
+		} else {
+			.can itemconfigure $label -state normal
 		}
 	}
+
 
 	global actions
 	if {[info exists actions($page_to_show)] == 1} {
 		foreach action $actions($page_to_show) {
+			puts "actions: $action"
 			eval $action
 		}
 	}
+
+
 }
 
 

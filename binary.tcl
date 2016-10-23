@@ -274,7 +274,14 @@ proc update_de1_shotvalue {packed} {
 
 }
 
+set previous_de1_substate 0
+set state_change_chart_value 10000000
 proc append_live_data_to_espresso_chart {} {
+
+  
+    global previous_de1_substate
+    global state_change_chart_value
+
   if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {
     # to keep the espresso charts going
     if {[millitimer] < 500} { 
@@ -285,6 +292,7 @@ proc append_live_data_to_espresso_chart {} {
     if {[espresso_elapsed length] > 0} {
       if {[espresso_elapsed range end end] > [expr {[millitimer]/1000.0}]} {
         #puts "discarding chart data after timer reset"
+        clear_espresso_chart
         return
       }
     }
@@ -294,6 +302,14 @@ proc append_live_data_to_espresso_chart {} {
     espresso_flow append $::de1(flow)
     espresso_temperature_mix append $::de1(mix_temperature)
     espresso_temperature_basket append $::de1(head_temperature)
+    espresso_state_change append $state_change_chart_value
+
+    # if the state changes flip the value negative
+    if {$previous_de1_substate != $::de1(substate)} {
+      set previous_de1_substate $::de1(substate)
+      set state_change_chart_value [expr {$state_change_chart_value * -1}]
+    }
+
   }
 }  
 
@@ -321,6 +337,11 @@ proc update_de1_state {statechar} {
       if {$msg(substate) != $::de1(substate)} {
         msg "substate change: [array get msg]"
         set ::de1(substate) $msg(substate)
+
+        # if we are changing into preinfusion in espresso mode, reset the charts and the timer
+        if {$::de1(state) == $::de1_num_state_reversed(Espresso) && $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {
+          clear_espresso_chart
+        }
 
       }
       set timerkey "$::de1(state)-$::de1(substate)"

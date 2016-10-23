@@ -5,13 +5,16 @@ package provide de1_vars 1.0
 # raw data from the DE1
 
 proc clear_espresso_chart {} {
-
+	espresso_elapsed append 0
 	espresso_elapsed length 0
 	espresso_pressure length 0
 	espresso_flow length 0
 	espresso_temperature_mix length 0
 	espresso_temperature_basket length 0
+	espresso_state_change length 0
+	clear_timers
 
+	update
 }	
 
 proc espresso_frame_title {num} {
@@ -87,21 +90,21 @@ proc event_timer_calculate {state destination_state previous_states} {
 }
 
 proc preinfusion_timer {} {
-	return [event_timer_calculate "Espresso" "preinfusion" {"perfecting the mix" "warming the heater"} ]
+	return [event_timer_calculate "Espresso" "preinfusion" {"perfecting the mix" "perfecting temperature"} ]
 }
 
 
 proc pour_timer {} {
-	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "perfecting the mix" "warming the heater"} ]
+	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "perfecting the mix" "perfecting temperature"} ]
 }
 
 
 proc steam_timer {} {
-	return [event_timer_calculate "Steam" "pouring" {"perfecting the mix" "warming the heater"} ]
+	return [event_timer_calculate "Steam" "pouring" {"perfecting the mix" "perfecting temperature"} ]
 }
 
 proc water_timer {} {
-	return [event_timer_calculate "HotWater" "pouring" {"perfecting the mix" "warming the heater"} ]
+	return [event_timer_calculate "HotWater" "pouring" {"perfecting the mix" "perfecting temperature"} ]
 }
 
 proc waterflow {} {
