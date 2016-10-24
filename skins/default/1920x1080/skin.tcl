@@ -40,6 +40,7 @@ add_de1_text "settings_4" 232.5000581250145 742.4999999907188 -text [translate "
 add_de1_text "settings_4" 232.5000581250145 607.4999999924063 -text [translate "Name"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 300.00007500001874  -justify "center"
 add_de1_text "settings_4" 232.5000581250145 472.4999999940938 -text [translate "Serial number"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 300.00007500001874  -justify "center"
 add_de1_text "settings_4" 232.5000581250145 337.49999999578125 -text [translate "Wifi"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 300.00007500001874  -justify "center"
+add_de1_text "settings_4" 232.5000581250145 202.49999999746876 -text [translate "versions"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 300.00007500001874  -justify "center"
 
 
 add_de1_button "off" "set_next_page off settings_1; page_show settings_1" 1500.0003750000935 0.0 1920.0004800001198 337.49999999578125 

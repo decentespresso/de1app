@@ -40,6 +40,7 @@ add_de1_text "settings_4" 155 495.000495000495 -text [translate "ml vs oz"] -fon
 add_de1_text "settings_4" 155 405.000405000405 -text [translate "Name"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 200  -justify "center"
 add_de1_text "settings_4" 155 315.00031500031497 -text [translate "Serial number"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 200  -justify "center"
 add_de1_text "settings_4" 155 225.000225000225 -text [translate "Wifi"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 200  -justify "center"
+add_de1_text "settings_4" 155 135.000135000135 -text [translate "versions"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 200  -justify "center"
 
 
 add_de1_button "off" "set_next_page off settings_1; page_show settings_1" 1000 0.0 1280 225.000225000225 

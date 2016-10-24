@@ -483,6 +483,9 @@ proc add_de1_widget {args} {
 		#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
 		set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
 		#puts "winfo: [winfo children .can]"
+		#.can bind $windowname [platform_button_press] "msg click"
+		
+
 		
 	set ::tclwindows($widget) [lrange $args 2 3]
 
@@ -491,45 +494,6 @@ proc add_de1_widget {args} {
 		add_visual_item_to_context $context $widget
 	}
 }
-
-# derivced from sample code at http://wiki.tcl.tk/17067
-set widget_cnt 0
-proc add_de1_widget_obs {args} {
-	global widget_cnt
-	set contexts [lindex $args 0]
-z
-
-	foreach context $contexts {
-		incr widget_cnt
-		set widgettype [lindex $args 1]
-		set widget ".can.${context}_${widgettype}_$widget_cnt"
-		add_visual_item_to_context $context $widget
-		set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
-		set errcode [catch { 
-			eval $torun
-		} err]
-
-		if {$errcode == 1} {
-			puts $err
-		}
-
-		# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
-		if {$widgettype == "graph" && $::android == 1} {
-			$widget grid configure -dashes "" -color #BBBBBB -hide 0 -minor 1
-		}
-
-		# the 4th parameter gives additional code to run when creating this widget, such as chart configuration instructions
-		set errcode [catch { 
-			eval [lindex $args 4]
-		} err]
-
-		if {$errcode == 1} {
-			puts $err
-		}
-		.can create window [lindex $args 2] [lindex $args 3] -window $widget -state hidden -anchor nw -tag $widget 
-	}
-}
-
 
 
 proc add_de1_variable {args} {
@@ -689,7 +653,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	}
 
 	# track the time entering into a page
-	clear_timers
+	#clear_timers
 	#global start_timer
 	#set start_timer [clock seconds]
 	#global start_millitimer

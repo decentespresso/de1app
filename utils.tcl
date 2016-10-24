@@ -176,6 +176,7 @@ proc setup_environment {} {
         #puts "helvetica_bold_font: $helvetica_bold_font2"
         #set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
 
+        font create Helv_1 -family "HelveticaNeue" -size 1
         font create Helv_4 -family "HelveticaNeue" -size [expr {int($fontm * 4)}]
         font create Helv_5 -family "HelveticaNeue" -size [expr {int($fontm * 5)}]
         #font create Helv_7 -family "HelveticaNeue" -size 7
@@ -257,15 +258,17 @@ proc setup_environment {} {
         wm maxsize . $screen_size_width $screen_size_height
         wm minsize . $screen_size_width $screen_size_height
 
+        font create Helv_1 -family {Helvetica Neue Regular} -size 1
         font create Helv_4 -family {Helvetica Neue Regular} -size 10
         font create Helv_5 -family {Helvetica Neue Regular} -size 12
         #pngfont create Helv_7 -family {Helvetica Neue Regular} -size 14
-        font create Helv_6 -family {Helvetica Neue Regular} -size [expr {int($fontm * 15)}]
-        font create Helv_6_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 15)}]
-        font create Helv_7 -family {Helvetica Neue Regular} -size [expr {int($fontm * 17)}]
-        font create Helv_7_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 17)}]
+        font create Helv_6 -family {Helvetica Neue Regular} -size [expr {int($fontm * 14)}]
+        font create Helv_6_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 14)}]
+        font create Helv_7 -family {Helvetica Neue Regular} -size [expr {int($fontm * 16)}]
+        font create Helv_7_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 16)}]
         font create Helv_8 -family {Helvetica Neue Regular} -size [expr {int($fontm * 19)}]
-        font create Helv_8_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 19)}] -underline 1
+        font create Helv_8_bold_underline -family {Helvetica Neue Bold} -size [expr {int($fontm * 19)}] -underline 1
+        font create Helv_8_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 19)}]
         font create Helv_9 -family {Helvetica Neue Regular} -size [expr {int($fontm * 20)}]
         font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 21)}]
         font create Helv_10 -family {Helvetica Neue Regular} -size [expr {int($fontm * 23)}]
@@ -322,7 +325,7 @@ proc skin_directory {} {
         set skindir "skinscreator"
     }
 
-    puts "skind: $skindir"
+    #puts "skind: $skindir"
     set dir "[file dirname [info script]]/$skindir/default/${screen_size_width}x${screen_size_height}"
     return $dir
 }
@@ -558,6 +561,7 @@ proc skin_convert {indir} {
         foreach skinfile $skinfiles {
             if {[file exists "../$dir/$skinfile"] == 1} {
                 if {[file mtime $skinfile] < [file mtime "../$dir/$skinfile"]} {
+                    #puts "skipping $skinfile [file exists "../$dir/$skinfile"]"
                     # skip files that have not been modified.
                     continue
                 }
