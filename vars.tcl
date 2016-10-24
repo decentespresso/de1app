@@ -90,21 +90,21 @@ proc event_timer_calculate {state destination_state previous_states} {
 }
 
 proc preinfusion_timer {} {
-	return [event_timer_calculate "Espresso" "preinfusion" {"perfecting the mix" "perfecting temperature"} ]
+	return [event_timer_calculate "Espresso" "preinfusion" {"perfecting the mix" "final heating"} ]
 }
 
 
 proc pour_timer {} {
-	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "perfecting the mix" "perfecting temperature"} ]
+	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "perfecting the mix" "final heating"} ]
 }
 
 
 proc steam_timer {} {
-	return [event_timer_calculate "Steam" "pouring" {"perfecting the mix" "perfecting temperature"} ]
+	return [event_timer_calculate "Steam" "pouring" {"perfecting the mix" "final heating"} ]
 }
 
 proc water_timer {} {
-	return [event_timer_calculate "HotWater" "pouring" {"perfecting the mix" "perfecting temperature"} ]
+	return [event_timer_calculate "HotWater" "pouring" {"perfecting the mix" "final heating"} ]
 }
 
 proc waterflow {} {

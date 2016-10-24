@@ -25,7 +25,10 @@ proc setup_images_for_other_pages {} {
 		"espresso" "[skin_directory]/espresso_on.png" \
 		"steam" "[skin_directory]/steam_on.png" \
 		"water" "[skin_directory]/tea_on.png" \
-		"settings" "[skin_directory]/settings_on.png" \
+		"settings_1" "[skin_directory]/settings_1.png" \
+		"settings_2" "[skin_directory]/settings_2.png" \
+		"settings_3" "[skin_directory]/settings_3.png" \
+		"settings_4" "[skin_directory]/settings_4.png" \
 		"sleep" "[skin_directory]/sleep.jpg" \
 		"tankfilling" "[skin_directory]/filling_tank.jpg" \
 		"tankempty" "[skin_directory]/fill_tank.jpg" \

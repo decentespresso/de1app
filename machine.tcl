@@ -46,6 +46,10 @@ array set ::de1 {
 	steam_heater_wattage 1500
 	group_heater_wattage 500
 	hertz 50
+	steam_min_temperature 140
+	steam_max_temperature 170
+	water_min_temperature 20
+	water_max_temperature 95
 }
 
 
@@ -89,6 +93,14 @@ array set ::settings {
 	water_temperature 75
 	espresso_max_time 42
 	espresso_temperature 92
+	espresso_decline_time 25
+	preinfusion_time 10
+	pressure_goal 9
+	pressure_hold_time 10
+	pressure_end 4 
+	espresso_step_1 pressure
+	espresso_step_2 pressure
+	espresso_step_3 pressure
 	espresso_pressure 9.2
 	app_brightness 100
 	saver_brightness 30
@@ -156,7 +168,7 @@ array set ::de1_substate_types {
 	-   "starting"
 	0	"waiting"
 	1	"heating the water tank"
-	2	"perfecting temperature"
+	2	"final heating"
 	3	"perfecting the mix"
 	4	"preinfusion"
 	5	"pouring"

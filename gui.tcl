@@ -468,7 +468,7 @@ proc add_de1_widget {args} {
 		# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
 		if {$widgettype == "graph" && $::android == 1} {
 			$widget grid configure -dashes "" -color #DDDDDD -hide 0 -minor 1 
-			$widget configure -relief flat
+			$widget configure -borderwidth 0
 		}
 
 		# the 4th parameter gives additional code to run when creating this widget, such as chart configuration instructions
@@ -487,7 +487,7 @@ proc add_de1_widget {args} {
 	set ::tclwindows($widget) [lrange $args 2 3]
 
 	foreach context $contexts {
-		puts "add_visual_item_to_context $context '$widget'"
+		#puts "add_visual_item_to_context $context '$widget'"
 		add_visual_item_to_context $context $widget
 	}
 }

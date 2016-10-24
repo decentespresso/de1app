@@ -2,6 +2,84 @@ set ::skindebug 0
 
 #add_de1_variable "off" 20 1330 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 520 -textvariable {[accelerometer_angle_text]} 
 
+##############################################################################################################################################################################################################################################################################
+# SETTINGS page
+
+# tapping the logo exits the app
+add_de1_button "off" "exit" 800 0 1750 500
+
+# 1st batch of settings
+add_de1_widget "settings_1" scale 50 250 {} -to 0 -from 20 -background #eaeafa -borderwidth 1 -bigincrement 0.5 -resolution 0.1 -length 1000 -width 150 -variable ::settings(preinfusion_time) -font Helv_15_bold -sliderlength 100 -relief flat
+add_de1_text "settings_1" 240 1300 -text [translate "Preinfusion time"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+
+add_de1_widget "settings_1" scale 450 250 {} -to 0 -from 60 -background #eaeafa -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 1000 -width 150 -variable ::settings(pressure_hold_time) -font Helv_15_bold -sliderlength 100 -relief flat
+add_de1_text "settings_1" 640 1300 -text [translate "Hold time"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+
+add_de1_widget "settings_1" scale 850 250 {} -to 0 -from 60 -background #eaeafa -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 1000 -width 150 -variable ::settings(espresso_decline_time) -font Helv_15_bold -sliderlength 100 -relief flat
+add_de1_text "settings_1" 1040 1300 -text [translate "Decline time"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+
+add_de1_widget "settings_1" scale 1250 250 {} -to 0 -from 10 -background #eaeafa -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 1000 -width 150 -variable ::settings(pressure_goal) -font Helv_15_bold -sliderlength 100 -relief flat
+add_de1_text "settings_1" 1440 1300 -text [translate "Pressure goal"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+
+add_de1_widget "settings_1" scale 1650 250 {} -to 0 -from 10 -background #eaeafa -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 1000 -width 150 -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength 100 -relief flat
+add_de1_text "settings_1" 1840 1300 -text [translate "Final pressure"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+
+add_de1_widget "settings_1" scale 2050 250 {} -to $::de1(min_temperature) -from $::de1(max_temperature)  -background #eaeafa -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 1000 -width 150 -variable ::settings(espresso_temperature) -font Helv_15_bold -sliderlength 100 -relief flat
+add_de1_text "settings_1" 2240 1300 -text [translate "Temperature"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+
+
+add_de1_widget "settings_2" scale 50 250 {} -to $::de1(steam_min_temperature) -from $::de1(steam_max_temperature) -background #eaeafa -borderwidth 1 -bigincrement 0.5 -resolution 0.1 -length 1000 -width 200 -variable ::settings(steam_temperature) -font Helv_15_bold -sliderlength 100
+add_de1_text "settings_2" 310 1300 -text [translate "Steam temperature"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+
+add_de1_widget "settings_3" scale 50 250 {} -to $::de1(water_min_temperature) -from $::de1(water_max_temperature) -background #eaeafa -borderwidth 1 -bigincrement 0.5 -resolution 0.1 -length 1000 -width 200 -variable ::settings(water_temperature) -font Helv_15_bold -sliderlength 100
+add_de1_text "settings_3" 310 1300 -text [translate "Hot water temperature"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+
+
+add_de1_text "settings_4" 310 1300 -text [translate "Celsius vs Fahrenheit"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+add_de1_text "settings_4" 310 1100 -text [translate "ml vs oz"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+add_de1_text "settings_4" 310 900 -text [translate "Name"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+add_de1_text "settings_4" 310 700 -text [translate "Serial number"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+add_de1_text "settings_4" 310 500 -text [translate "Wifi"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 400 -justify "center"
+
+
+add_de1_button "off" "set_next_page off settings_1; page_show settings_1" 2000 0 2560 500
+add_de1_text "settings_1 settings_2 settings_3 settings_4" 2275 1520 -text [translate "Done"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
+
+# labels for PREHEAT tab on
+add_de1_text "settings_1" 330 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "settings_1" 960 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_1" 1590 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_1" 2215 100 -text [translate "OTHER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+
+# labels for ESPRESSO tab on
+add_de1_text "settings_2" 330 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_2" 960 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "settings_2" 1590 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_2" 2215 100 -text [translate "OTHER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+
+# labels for STEAM tab on
+add_de1_text "settings_3" 330 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_3" 960 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_3" 1590 100 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "settings_3" 2215 100 -text [translate "OTHER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+
+# labels for HOT WATER tab on
+add_de1_text "settings_4" 330 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_4" 960 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_4" 1590 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_4" 2215 100 -text [translate "OTHER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+
+# buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_1; page_show settings_1} 0 0 641 188
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_2; page_show settings_2} 642 0 1277 188
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_3; page_show settings_3} 1278 0 1904 188
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_4; page_show settings_4} 1905 0 2560 188
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {done}] $::settings(sound_button_out); save_settings; set_next_page off off; page_show off} 1905 1430 2560 1600
+
+
+
+##############################################################################################################################################################################################################################################################################
+
 
 ##############################################################################################################################################################################################################################################################################
 # the STEAM button and translatable text for it
@@ -125,8 +203,7 @@ add_de1_text "sleep" 2500 1450 -justify right -anchor "ne" -text [translate "Goi
 add_de1_button "sleep" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 2560 1600
 #add_de1_action "sleep" "do_sleep"
 
-add_de1_button "off" "exit" 800 0 1750 500
-#add_de1_action "exit" "app_exit"
+add_de1_action "exit" "app_exit"
 
 
 # Sleeping cafe photo obtained under creative commons from https://www.flickr.com/photos/curious_e/16300930781/

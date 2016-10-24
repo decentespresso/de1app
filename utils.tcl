@@ -314,17 +314,15 @@ proc skin_directory {} {
     global screen_size_height
 
     set skindir "skins"
-    if {$::de1(has_flowmeter) == 1} {
+    if {[ifexists ::de1(has_flowmeter)] == 1} {
         set skindir "skinsplus"
     }
 
-    if {[info exists ::settings(creator)] == 1} {
-        if {$::settings(creator) == 1} {
-            set skindir "skinscreator"
-        }
+    if {[ifexists ::creator] == 1} {
+        set skindir "skinscreator"
     }
 
-    #puts "skind: $skindir"
+    puts "skind: $skindir"
     set dir "[file dirname [info script]]/$skindir/default/${screen_size_width}x${screen_size_height}"
     return $dir
 }
@@ -532,4 +530,85 @@ proc save_settings {} {
 proc load_settings {} {
     puts "loading settings"
     array set ::settings [read_file "settings.tdb"]
+}
+
+
+proc skin_convert {indir} {
+    cd $indir
+    set skinfiles [concat [glob "*.jpg"] [glob "*.png"]] 
+    set dirs [list \
+        "1280x800" 2 2 \
+        "2048x1536" 1.25 1.041666666 \
+        "2048x1440" 1.25 1.11111 \
+        "1920x1200" 1.333333 1.333333 \
+        "1920x1080" 1.333333 1.4814814815 \
+        "1280x720"  2 2.22222 \
+        "2560x1440" 1 1.11111 \
+    ]
+    #set dirs [list \
+    #    "1280x800" 2 2 \
+    #]
+
+    # convert all the skin PNG files
+    foreach {dir xdivisor ydivisor} $dirs {
+        #puts -nonewline "Making $dir skin $xdivisor / $ydivisor"
+        set started 0
+
+
+        foreach skinfile $skinfiles {
+            if {[file exists "../$dir/$skinfile"] == 1} {
+                if {[file mtime $skinfile] < [file mtime "../$dir/$skinfile"]} {
+                    # skip files that have not been modified.
+                    continue
+                }
+            }
+
+            if {$started == 0} {
+                set started 1
+                puts -nonewline "Making $dir skin. $indir"
+            }
+
+
+            puts -nonewline "."
+            flush stdout
+            #puts "\n $skinfile [file extension $skinfile]"
+            if {[file extension $skinfile] == ".png"} {
+                # imagemagick sometimes creates a PNG that Tcl can't read, so we use OSX command line to read and write the PNG back, which fixes whatever problems it had
+                exec convert $skinfile  -resize $dir!  -format png24 ../$dir/$skinfile 
+                exec sips -s format png ../$dir/$skinfile  --out ../$dir/$skinfile 
+            } else {
+                exec convert $skinfile -resize $dir!  ../$dir/$skinfile 
+            }
+        }
+
+        set newskin [read_file "skin.tcl"]
+        #set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{\\1/$ydivisor\}\]"]
+        #set newskin [regsubex {\-length ([0-9]+)} $newskin "-length \[expr \{\\1/$xdivisor\}\]"]
+        
+        set newskin [regsubex {add_de1_widget (".*?") (.*?) ([0-9]+) ([0-9]+) } $newskin "add_de1_widget \\1 \\2 \[expr \{\\3/$xdivisor\}\] \[expr \{\\4/$ydivisor\}\] "]
+        set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_text \\1 \[expr \{\\2/$xdivisor\}\] \[expr \{\\3/$ydivisor\}\] "]
+        set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ?(".*?")?\n} $newskin "add_de1_button \\1 \\2 \[expr \{\\3/$xdivisor\}\] \[expr \{\\4/$ydivisor\}\] \[expr \{\\5/$xdivisor\}\] \[expr \{\\6/$ydivisor\}\] \\7\n"]
+        set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_variable \\1 \[expr \{\\2/$xdivisor\}\] \[expr \{\\3/$ydivisor\}\] "]
+        
+        # this the maximum text width for labels
+        #puts "xdivisor: $xdivisor"
+        set newskin [regsubex {\-linewidth ([0-9]+)} $newskin "-linewidth \[expr \{\\1/$xdivisor\}\] "]
+        set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{\\1/$xdivisor\}\] "]
+        set newskin [regsubex {\-length ([0-9]+)} $newskin "-length \[expr \{\\1/$ydivisor\}\] "]
+        set newskin [regsubex {\-height ([0-9]+)} $newskin "-height \[expr \{\\1/$ydivisor\}\] "]
+        write_file "../$dir/skin.tcl" $newskin 
+        
+        if {$started != 0} {
+            puts "";
+        }
+
+    }
+}
+
+
+proc regsubex {regex in replace} {
+    set escaped [string map {\[ \\[ \] \\] \$ \\$ \\ \\\\} $in]
+    regsub -all $regex $escaped $replace result
+    set result [subst $result]
+    return $result
 }
