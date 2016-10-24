@@ -711,6 +711,11 @@ proc page_display_change {page_to_hide page_to_show} {
 
 }
 
+proc update_de1_explanation_chart {} {
+	espresso_de1_explanation_chart_pressure length 0
+	espresso_de1_explanation_chart_elapsed length 0
+}
+
 
 proc setup_images_for_first_page {} {
 	#set files [glob "[splash_directory]/*.jpg"]

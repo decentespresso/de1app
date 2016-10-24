@@ -63,7 +63,8 @@ catch {
 #namespace import blt::*
 #namespace import -force blt::tile::*
 
-blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_temperature_mix espresso_temperature_basket espresso_state_change
+blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_temperature_mix espresso_temperature_basket espresso_state_change 
+blt::vector espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_elapsed
 #espresso_elapsed append 0
 #espresso_pressure append 0
 #espresso_flow append 0

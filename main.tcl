@@ -36,9 +36,11 @@ proc setup_images_for_other_pages {} {
 	]
 
 	# load each of the PNGs that get displayed for each espresso machine achivity
-	foreach {name pngfilename} [array get page_images] {
-		image create photo $name -file $pngfilename
-		.can create image {0 0} -anchor nw -image $name  -tag $name -state hidden
+	foreach {names pngfilename} [array get page_images] {
+		image create photo $names -file $pngfilename
+		foreach name $names {
+			.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden
+		}
 	}
 
 	# debug log, will be invisible in release mode
