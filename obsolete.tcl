@@ -25,3 +25,21 @@ proc timer_test {} {
 	after $::settings(timer_interval) timer_test
 	set last_timer_test $newtimer
 }
+
+
+    set do_this 0
+    if {$do_this == 1} {
+        set cursor [borg content query content://media/internal/audio/media/]
+        while {[$cursor move 1]} {
+            array unset sapp
+            array set sapp [$cursor getrow]
+            set id $sapp(_id)
+            set data $sapp(_data)
+            set msg "$id : : $data"
+            if {[string first $data Keypress] != -1} {
+                msg $msg
+            }
+            set sounds($id) $data
+            #if {$id > 20} { break }
+        }   
+    }

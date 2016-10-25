@@ -287,7 +287,7 @@ proc setup_environment {} {
             } elseif {[lindex $args 0] == "log"} {
                 # do nothing
             } else {
-                puts "borg $args"
+                #puts "borg $args"
             }
         }
         proc de1_send {x} { clear_timers;delay_screen_saver;puts "de1_send '$x'" }
@@ -452,34 +452,19 @@ proc say {txt sndnum} {
         return
     }
 
-    set do_this 0
-    if {$do_this == 1} {
-        set cursor [borg content query content://media/internal/audio/media/]
-        while {[$cursor move 1]} {
-            array unset sapp
-            array set sapp [$cursor getrow]
-            set id $sapp(_id)
-            set data $sapp(_data)
-            set msg "$id : : $data"
-            if {[string first $data Keypress] != -1} {
-                msg $msg
-            }
-            set sounds($id) $data
-            #if {$id > 20} { break }
-        }   
-    }
 
-    if {$::settings(speaking) == 1 && $txt != ""} {
+
+    if {$::settings(enable_spoken_prompts) == 1 && $txt != ""} {
         borg speak $txt {} $::settings(speaking_pitch) $::settings(speaking_rate)
-    } elseif {$::settings(speaking) == 2} {
+    } else {
         catch {
             # sounds from https://android.googlesource.com/platform/frameworks/base/+/android-5.0.0_r2/data/sounds/effects/ogg?autodive=0%2F%2F%2F%2F%2F%2F
             set path ""
-            if {$sndnum == 8} {
+            if {$sndnum == 11} {
                 set path "/system/media/audio/ui/KeypressDelete.ogg"
                 #set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
                 set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
-            } elseif {$sndnum == 11} {
+            } elseif {$sndnum == 8} {
                 set path "/system/media/audio/ui/KeypressStandard.ogg"
                 set path "file://mnt/sdcard/de1beta/KeypressDelete_120.ogg"
             }
@@ -573,13 +558,14 @@ proc skin_convert {indir} {
             }
 
 
-            puts -nonewline "."
+            puts -nonewline ".$skinfile."
             flush stdout
             #puts "\n $skinfile [file extension $skinfile]"
             if {[file extension $skinfile] == ".png"} {
                 # imagemagick sometimes creates a PNG that Tcl can't read, so we use OSX command line to read and write the PNG back, which fixes whatever problems it had
                 exec convert $skinfile  -resize $dir!  -format png24 ../$dir/$skinfile 
-                exec sips -s format png ../$dir/$skinfile  --out ../$dir/$skinfile 
+                #puts -nonewline "<-pngfixing."
+                #exec sips -s format png ../$dir/$skinfile  --out ../$dir/$skinfile 
             } else {
                 exec convert $skinfile -resize $dir!  ../$dir/$skinfile 
             }

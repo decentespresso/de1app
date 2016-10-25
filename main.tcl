@@ -37,6 +37,7 @@ proc setup_images_for_other_pages {} {
 
 	# load each of the PNGs that get displayed for each espresso machine achivity
 	foreach {names pngfilename} [array get page_images] {
+		puts $pngfilename
 		image create photo $names -file $pngfilename
 		foreach name $names {
 			.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden

@@ -551,8 +551,15 @@ proc change_screen_saver_image {} {
 }
 
 proc check_if_should_start_screen_saver {} {
+
+
 	#msg "check_if_should_start_screen_saver $::de1(last_action_time)"
 	after 1000 check_if_should_start_screen_saver
+
+	if {$::settings(screen_saver_delay) == 0} {
+		# screen saver is disabled
+		return
+	}
 
 	if {$::de1(current_context) == "saver"} {
 		#after 1000 check_if_should_start_screen_saver
@@ -566,7 +573,7 @@ proc check_if_should_start_screen_saver {} {
 		return
 	}
 
-	if {$::de1(current_context) == "off" && [clock seconds] > [expr {$::de1(last_action_time) + $::settings(screen_saver_delay)}]} {
+	if {$::de1(current_context) == "off" && [clock seconds] > [expr {$::de1(last_action_time) + (60*$::settings(screen_saver_delay))}]} {
 		#page_display_change "off" "sleep"
 		show_going_to_sleep_page
 	#} else {
@@ -711,9 +718,45 @@ proc page_display_change {page_to_hide page_to_show} {
 
 }
 
-proc update_de1_explanation_chart {} {
+proc update_de1_explanation_chart { {itemval {}} } {
+
+	#save_settings
+	#puts "update_de1_explanation_chart"
 	espresso_de1_explanation_chart_pressure length 0
 	espresso_de1_explanation_chart_elapsed length 0
+
+	set seconds 0
+
+	# preinfusion
+	if {$::settings(preinfusion_enabled) == 1} {
+		espresso_de1_explanation_chart_pressure append 0.5
+		espresso_de1_explanation_chart_elapsed append $seconds
+
+		incr seconds 10
+		espresso_de1_explanation_chart_pressure append 0.5
+		espresso_de1_explanation_chart_elapsed append $seconds
+	} else {
+		espresso_de1_explanation_chart_elapsed append $seconds
+		espresso_de1_explanation_chart_pressure append 0
+
+	}
+
+	# ramp up the pressure
+	set totalramptime [expr {round($::settings(espresso_pressure))}]
+	incr seconds $totalramptime
+	espresso_de1_explanation_chart_elapsed append $seconds
+	espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)
+
+	incr seconds $::settings(pressure_hold_time)
+	espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)
+	espresso_de1_explanation_chart_elapsed append $seconds
+
+	incr seconds $::settings(espresso_decline_time)
+	espresso_de1_explanation_chart_pressure append $::settings(pressure_end)
+	espresso_de1_explanation_chart_elapsed append $seconds
+
+
+	set ::settings(espresso_max_time) $seconds
 }
 
 

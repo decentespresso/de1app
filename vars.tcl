@@ -253,60 +253,55 @@ proc timer_text {} {
 	return [subst {[timer] [translate "seconds"]}]
 }
 
-proc waterflow_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_two_digits [waterflow]] [translate "ml/s"]}]
+proc return_liquid_measurement {in} {
+	if {$::settings(enable_fluid_ounces) != 1} {
+		return [subst {[round_to_two_digits $in] [translate "ml"]}]
 	} else {
-		return [subst {[round_to_two_digits [ml_to_oz [waterflow]]] "oz/s"}]
+		return [subst {[round_to_two_digits [ml_to_oz $in]] "oz"}]
 	}
 }
 
-proc watervolume_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_one_digits [watervolume]] [translate "ml"]}]
+proc return_flow_measurement {in} {
+	if {$::settings(enable_fluid_ounces) != 1} {
+		return [subst {[round_to_two_digits $in] [translate "ml/s"]}]
 	} else {
-		return [subst {[round_to_one_digits [ml_to_oz [watervolume]]] oz}]
+		return [subst {[round_to_two_digits [ml_to_oz $in]] "oz/s"}]
 	}
+}
+
+proc waterflow_text {} {
+	return [return_flow_measurement $::settings(enable_fluid_ounces)] 
+}
+
+proc watervolume_text {} {
+	return [return_liquid_measurement $::settings(watervolume)] 
 }
 
 
 
 proc mixtemp_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_one_digits [water_mix_temperature]]ºC}]
-	} else {
-		return [subst {[round_to_one_digits [celsius_to_fahrenheit [water_mix_temperature]]]ºF]}]
-	}
+	return [return_temperature_measurement [water_mix_temperature]]
 }
 
 proc watertemp_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_one_digits [watertemp]]ºC}]
-	} else {
-		return [subst {[round_to_one_digits [celsius_to_fahrenheit [watertemp]]]ºF]}]
-	}
+	return [return_temperature_measurement [watertemp]]
 }
 
 proc steamtemp_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_integer [steamtemp]]ºC}]
-	} else {
-		return [subst {[round_to_integer [celsius_to_fahrenheit [steamtemp]]]ºF]}]
-	}
+	return [return_temperature_measurement [steamtemp]]
 }
 
 proc pressure_text {} {
 	return [subst {[round_to_two_digits [pressure]] [translate "bar"]}]
 }
 
-
 #######################
 # settings
 proc setting_steam_max_time {} {
-	return $::settings(steam_max_time)
+	return [expr {round( $::settings(steam_max_time) )}]
 }
 proc setting_water_max_time {} {
-	return $::settings(water_max_time)
+	return [expr {round( $::settings(water_max_time) )}]
 }
 proc setting_espresso_max_time {} {
 	return $::settings(espresso_max_time)
@@ -332,45 +327,33 @@ proc setting_water_temperature {} {
 	return $::settings(water_temperature)
 }
 
-proc setting_steam_temperature_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_integer [setting_steam_temperature]]ºC}]
+proc return_temperature_measurement {in} {
+	if {$::settings(enable_fahrenheit) == 1} {
+		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
 	} else {
-		return [subst {[round_to_integer [celsius_to_fahrenheit [setting_steam_temperature]]]ºF]}]
+		return [subst {[round_to_integer $in]ºC}]
 	}
 }
+
+proc setting_steam_temperature_text {} {
+	return [return_temperature_measurement [setting_steam_temperature]]
+}
 proc setting_water_temperature_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_integer [setting_water_temperature]]ºC}]
-	} else {
-		return [subst {[round_to_integer [celsius_to_fahrenheit [setting_water_temperature]]]ºF]}]
-	}
+	return [return_temperature_measurement [setting_water_temperature]]
 }
 
 
 
 proc steam_heater_temperature_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_integer [steam_heater_temperature]]ºC}]
-	} else {
-		return [subst {[round_to_integer [celsius_to_fahrenheit [steam_heater_temperature]]]ºF]}]
-	}
+	return [return_temperature_measurement [steam_heater_temperature]]
 }
 
 proc group_head_heater_temperature_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_integer [group_head_heater_temperature]]ºC}]
-	} else {
-		return [subst {[round_to_integer [celsius_to_fahrenheit [group_head_heater_temperature]]]ºF]}]
-	}
+	return [return_temperature_measurement [group_head_heater_temperature]]
 }
 
 proc setting_espresso_temperature_text {} {
-	if {$::settings(measurements) == "metric"} {
-		return [subst {[round_to_integer [setting_espresso_temperature]]ºC}]
-	} else {
-		return [subst {[round_to_integer [celsius_to_fahrenheit [setting_espresso_temperature]]]ºF]}]
-	}
+	return [return_temperature_measurement [setting_espresso_temperature]]
 }
 
 proc setting_espresso_pressure {} {
@@ -391,10 +374,16 @@ proc setting_espresso_stop_flow_text {} {
 	if {$::settings(preinfusion_stop_flow_rate) == 0} {
 		return ""
 	}
-	return [subst {[round_to_one_digits $::settings(preinfusion_stop_flow_rate)] [translate "ml/s"]}]
+	return [subst {[return_flow_measurement $::settings(preinfusion_stop_flow_rate)]}]
 }
 
 
+proc graph_seconds_axis_format {nm val} {
+	if {$val == 0} {
+		return [translate "start"]
+	}
+	return "$val [translate {seconds}]"
+}
 
 
 
@@ -441,3 +430,4 @@ proc ml_to_oz {in} {
 	}
 	return $x
 }
+

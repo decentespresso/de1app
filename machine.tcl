@@ -50,6 +50,10 @@ array set ::de1 {
 	steam_max_temperature 170
 	water_min_temperature 20
 	water_max_temperature 95
+	water_time_min 1
+	water_time_max 60
+	steam_time_min 1
+	steam_time_max 120
 }
 
 
@@ -85,9 +89,10 @@ blt::vector espresso_de1_explanation_chart_pressure espresso_de1_explanation_cha
 array set ::settings {
 	flying 0
 	timer_interval 500
-	screen_saver_delay 1800
+	screen_saver_delay 60
 	screen_saver_change_interval 600
-	measurements "metric"
+	enable_fluid_ounces 0
+	enable_fahrenheit 1
 	steam_max_time 47
 	steam_temperature 160
 	water_max_time 10
@@ -95,8 +100,8 @@ array set ::settings {
 	espresso_max_time 42
 	espresso_temperature 92
 	espresso_decline_time 25
+	preinfusion_enabled 1
 	preinfusion_time 10
-	pressure_goal 9
 	pressure_hold_time 10
 	pressure_end 4 
 	espresso_step_1 pressure
@@ -106,7 +111,7 @@ array set ::settings {
 	app_brightness 100
 	saver_brightness 30
 	accelerometer_angle 45
-	speaking 2
+	enable_spoken_prompts 0
 	speaking_rate 1.5
 	speaking_pitch 1.0
 	sound_button_in 8
