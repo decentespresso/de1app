@@ -92,7 +92,7 @@ array set ::settings {
 	screen_saver_delay 60
 	screen_saver_change_interval 600
 	enable_fluid_ounces 0
-	enable_fahrenheit 1
+	enable_fahrenheit 0
 	steam_max_time 47
 	steam_temperature 160
 	water_max_time 10
@@ -111,6 +111,8 @@ array set ::settings {
 	app_brightness 100
 	saver_brightness 30
 	accelerometer_angle 45
+	flight_mode_angle 30
+	machine_name "pretty decent"
 	enable_spoken_prompts 0
 	speaking_rate 1.5
 	speaking_pitch 1.0

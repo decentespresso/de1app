@@ -269,11 +269,11 @@ proc setup_environment {} {
         font create Helv_8 -family {Helvetica Neue Regular} -size [expr {int($fontm * 19)}]
         font create Helv_8_bold_underline -family {Helvetica Neue Bold} -size [expr {int($fontm * 19)}] -underline 1
         font create Helv_8_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 19)}]
-        font create Helv_9 -family {Helvetica Neue Regular} -size [expr {int($fontm * 20)}]
+        font create Helv_9 -family {Helvetica Neue Regular} -size [expr {int($fontm * 23)}]
         font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 21)}]
         font create Helv_10 -family {Helvetica Neue Regular} -size [expr {int($fontm * 23)}]
         font create Helv_10_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 23)}]
-        font create Helv_15_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 28)}]
+        font create Helv_15_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 30)}]
         font create Helv_20_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 46)}]
         #font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 18)}]
     
@@ -426,7 +426,7 @@ proc accelerometer_check {} {
     set angle [accelerometer_data_read]
 
     if {$::settings(flight_mode_enable) == 1} {
-        if {$angle > -30} {
+        if {$angle > "$::settings(flight_mode_angle)"} {
             if {$::de1_num_state($::de1(state)) == "Idle"} {
                 start_espresso
             } else {
@@ -435,7 +435,7 @@ proc accelerometer_check {} {
                 }
             }
             set ::settings(flying) 1
-        } elseif {$angle < -30 && $::settings(flying) == 1 && $::de1_num_state($::de1(state)) == "Espresso"} {
+        } elseif {$angle < $::settings(flight_mode_angle) && $::settings(flying) == 1 && $::de1_num_state($::de1(state)) == "Espresso"} {
             set ::settings(flying) 0
             start_idle
         }
@@ -449,10 +449,8 @@ proc accelerometer_check {} {
 proc say {txt sndnum} {
 
     if {$::android != 1} {
-        return
+        #return
     }
-
-
 
     if {$::settings(enable_spoken_prompts) == 1 && $txt != ""} {
         borg speak $txt {} $::settings(speaking_pitch) $::settings(speaking_rate)
@@ -460,11 +458,11 @@ proc say {txt sndnum} {
         catch {
             # sounds from https://android.googlesource.com/platform/frameworks/base/+/android-5.0.0_r2/data/sounds/effects/ogg?autodive=0%2F%2F%2F%2F%2F%2F
             set path ""
-            if {$sndnum == 11} {
+            if {$sndnum == 8} {
                 set path "/system/media/audio/ui/KeypressDelete.ogg"
                 #set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
                 set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
-            } elseif {$sndnum == 8} {
+            } elseif {$sndnum == 11} {
                 set path "/system/media/audio/ui/KeypressStandard.ogg"
                 set path "file://mnt/sdcard/de1beta/KeypressDelete_120.ogg"
             }

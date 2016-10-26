@@ -1,4 +1,4 @@
-set ::skindebug 1
+set ::skindebug 0
 
 #add_de1_variable "off" 10 665 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 260  -textvariable {[accelerometer_angle_text]} 
 
@@ -10,38 +10,29 @@ add_de1_button "off" "exit" 400 0 875 250
 
 
 # 1st batch of settings
-#add_de1_widget "settings_1" scale 25 350 {} -to 0 -from 20 -background #FFFFFF -borderwidth 1 -bigincrement 0.5 -resolution 0.1 -length 300  -width 75  -variable ::settings(preinfusion_time) -font Helv_15_bold -sliderlength 100 -relief flat
-#add_de1_text "settings_1" 120 680 -text [translate "Preinfusion time"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 200  -justify "center"
-add_de1_widget "settings_1" checkbutton 40 390 {} -text [translate "Preinfusion"] -indicatoron true  -font Helv_15_bold -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(preinfusion_enabled) -command update_de1_explanation_chart
+add_de1_widget "settings_1" checkbutton 20 390 {} -text [translate "Preinfusion"] -indicatoron true  -font Helv_15_bold -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(preinfusion_enabled) -command update_de1_explanation_chart -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
+add_de1_widget "settings_1" scale 280 410 {} -to 1 -from 10 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 250  -width 75  -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_1" 340 662 -text [translate "Hold pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "nw" -width 300  -justify "left"
 
-add_de1_widget "settings_1" scale 280 407 {} -to 1 -from 10 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 250  -width 75  -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -foreground #4e85f4 -troughcolor #EEEEEE
-add_de1_text "settings_1" 340 662 -text [translate "Hold pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "nw" -width 190  -justify "left"
-
-add_de1_widget "settings_1" scale 425 375 {} -from 0 -to 60 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 400  -width 75  -variable ::settings(pressure_hold_time) -font Helv_10_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE
+add_de1_widget "settings_1" scale 425 375 {} -from 0 -to 60 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 400  -width 75  -variable ::settings(pressure_hold_time) -font Helv_10_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 add_de1_text "settings_1" 625 490 -text [translate "Hold time"] -font Helv_15_bold -fill "#2d3046" -anchor "n" -width 190  -justify "center"
 
-add_de1_widget "settings_1" scale 850 375 {} -from 0 -to 60 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 400  -width 75  -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE
+add_de1_widget "settings_1" scale 850 375 {} -from 0 -to 60 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 400  -width 75  -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 add_de1_text "settings_1" 1005 490 -text [translate "Decline time"] -font Helv_15_bold -fill "#2d3046" -anchor "n" -width 490  -justify "center"
 
-add_de1_widget "settings_1" scale 1113 492 {} -to 0 -from 10 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 165   -width 75  -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -foreground #4e85f4 -troughcolor #EEEEEE
-add_de1_text "settings_1" 1250 662 -text [translate "Final pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "ne" -width 190  -justify "left"
-
-#add_de1_text "settings_1" 775 550 -text [translate "Your Espresso Profile"] -font Helv_20_bold -fill "#5a5d75" -anchor "n" -width 600  -justify "center"
+add_de1_widget "settings_1" scale 1113 492 {} -to 0 -from 10 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 165   -width 75  -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_1" 1247 662 -text [translate "Final pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "ne" -width 350  -justify "left"
 
 add_de1_button "settings_1" {say [translate {temperature}] $::settings(sound_button_in);vertical_slider ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 0 430 225 700 "mousemove"
 add_de1_text "settings_1" 160 545  -text [translate "TEMP"] -font Helv_8 -fill "#7f879a" -anchor "center" 
 add_de1_variable "settings_1" 160 585 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 
-#add_de1_text "settings_1" 262 675  -text "(Step 1)" -font Helv_8 -fill "#7f879a" -anchor "center" -anchor ne
-#add_de1_text "settings_1" 825 675  -text "(Step 2)" -font Helv_8 -fill "#7f879a" -anchor "center" -anchor ne
-#add_de1_text "settings_1" 852 675  -text "(Step 3)" -font Helv_8 -fill "#7f879a" -anchor "center" -anchor nw 
-
 add_de1_widget "settings_1" graph 12 110 { 
 	update_de1_explanation_chart;
 	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth 5  -color #4e85f4  -smooth quadratic -pixels 15; 
 	$widget axis configure x -color #5a5d75 -tickfont Helv_6 -command graph_seconds_axis_format; 
-	$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max $::de1(max_pressure) -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12} -title [translate "pressure (bar)"] -titlefont Helv_8;
+	$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max $::de1(max_pressure) -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12} -title [translate "pressure (bar)"] -titlefont Helv_10;
 
 	bind $widget [platform_button_press] { 
 		say [translate {refresh chart}] $::settings(sound_button_out); 
@@ -49,54 +40,56 @@ add_de1_widget "settings_1" graph 12 110 {
 	} -plotbackground #EEEEEE -width 1250  -height 250  -borderwidth 1 -background #FFFFFF -plotrelief raised
 
 
-#add_de1_widget "settings_3" scale 25 125 {} -to $::de1(water_min_temperature) -from $::de1(water_max_temperature) -background #FFFFFF -borderwidth 1 -bigincrement 0.5 -resolution 0.1 -length 500  -width 100  -variable ::settings(water_temperature) -font Helv_15_bold -sliderlength 100
-#add_de1_text "settings_3" 155 680 -text [translate "Hot water temperature"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 200  -justify "center"
+add_de1_widget "settings_4" checkbutton 45 200 {} -text [translate "Use Fahrenheit"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_4" checkbutton 45 300 {} -text [translate "Use fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_4" checkbutton 45 400 {} -text [translate "Enable flight mode"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(flight_mode_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
-add_de1_text "settings_4" 45 125 -text [translate "Other"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_3" 675 125 -text [translate "Flight mode"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_widget "settings_4" scale 45 450 {} -from 1 -to 90 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(flight_mode_angle) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_4" 45 552 -text [translate "Flight mode: start angle"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
-add_de1_text "settings_4" 65 200 -text [translate "Version: 1.0 beta 4"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
-add_de1_text "settings_4" 65 250 -text [translate "Serial number"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_text "settings_4" 45 125 -text [translate "Other settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+
+add_de1_widget "settings_4" entry 670 190 {} -width 30  -font Helv_15_bold -bg #FFFFFF  -foreground #2d3046 -textvariable ::settings(machine_name) 
+add_de1_text "settings_4" 675 235 -text [translate "Name your machine"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+
+add_de1_text "settings_4" 675 125 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 675 300 -text [translate "Version: 1.0 beta 4"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_text "settings_4" 675 330 -text [translate "Serial number: 0000001"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+
 #add_de1_text "settings_4" 155 200 -text [translate "Wifi"] -font Helv_10_bold -fill "#2d3046" -anchor "left" -width 200  -justify "left"
-add_de1_text "settings_4" 695 350 -text [translate "Enable flight mode"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
-add_de1_text "settings_4" 695 400 -text [translate "Flight mode start angle"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
-add_de1_text "settings_4" 155 400 -text [translate "Name"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
-#enable_fluid_ounces
-add_de1_text "settings_4" 155 350 -text [translate "Use fluid ounces"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
-add_de1_text "settings_4" 155 400 -text [translate "Use Fahrenheit"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
 
 add_de1_text "settings_3" 45 125 -text [translate "Screen settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 675 125 -text [translate "Speaking"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-add_de1_widget "settings_3" scale 45 155 {} -from 0 -to 100 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(app_brightness) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE
-add_de1_text "settings_3" 45 262 -text [translate "App brightness"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_widget "settings_3" scale 45 155 {} -from 0 -to 100 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(app_brightness) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 45 262 -text [translate "App brightness"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
-add_de1_widget "settings_3" scale 45 290 {} -from 0 -to 100 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE
-add_de1_text "settings_3" 45 392 -text [translate "Screen saver brightness"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_widget "settings_3" scale 45 290 {} -from 0 -to 100 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 45 392 -text [translate "Screen saver brightness"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
-add_de1_widget "settings_3" scale 45 420 {} -from 0 -to 120 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(screen_saver_delay) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE
-add_de1_text "settings_3" 45 522 -text [translate "Screen saver delay"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_widget "settings_3" scale 45 420 {} -from 0 -to 120 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(screen_saver_delay) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 45 522 -text [translate "Screen saver delay"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
-add_de1_widget "settings_3" scale 45 550 {} -from 1 -to 120 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE
-add_de1_text "settings_3" 45 652 -text [translate "Screen saver change interval"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_widget "settings_3" scale 45 550 {} -from 1 -to 120 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 45 652 -text [translate "Screen saver change interval"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
-add_de1_widget "settings_3" checkbutton 675 200 {} -text [translate "Enable spoken prompts"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_spoken_prompts) 
+add_de1_widget "settings_3" checkbutton 675 200 {} -text [translate "Enable spoken prompts"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_spoken_prompts)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
-add_de1_widget "settings_3" scale 675 290 {} -from 0 -to 4 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length 550  -width 67  -variable ::settings(speaking_rate) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE
-add_de1_text "settings_3" 675 392 -text [translate "Speaking speed"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_widget "settings_3" scale 675 290 {} -from 0 -to 4 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length 550  -width 67  -variable ::settings(speaking_rate) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 675 392 -text [translate "Speaking speed"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
-add_de1_widget "settings_3" scale 675 420 {} -from 0 -to 3 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length 550  -width 67  -variable ::settings(speaking_pitch) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE
-add_de1_text "settings_3" 675 522 -text [translate "Speaking pitch"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_widget "settings_3" scale 675 420 {} -from 0 -to 3 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length 550  -width 67  -variable ::settings(speaking_pitch) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 675 522 -text [translate "Speaking pitch"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
 #add_de1_text "settings_3" 675 250 -text [translate "Tick sound"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 #add_de1_text "settings_3" 675 300 -text [translate "Tock sound"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
 
 
-add_de1_button "off" "set_next_page off settings_1; page_show settings_1" 1000 0 1280 250 
+add_de1_button "off" "after 300 update_de1_explanation_chart;set_next_page off settings_1; page_show settings_1" 1000 0 1280 250 
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 1137 760 -text [translate "Save"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 880 760 -text [translate "Cancel"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
 
@@ -106,14 +99,14 @@ add_de1_text "settings_1 settings_2 settings_3 settings_4" 880 760 -text [transl
 add_de1_text "settings_1" 165 50 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "settings_1" 480 50 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "settings_1" 795 50 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_1" 1107 50 -text [translate "OTHER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_1" 1107 50 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 ########################################
 # labels for WATER/STEAM tab on
 add_de1_text "settings_2" 165 50 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "settings_2" 480 50 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "settings_2" 795 50 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_2" 1107 50 -text [translate "OTHER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_2" 1107 50 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 add_de1_button "settings_2" {say [translate {water temperature}] $::settings(sound_button_in);vertical_slider ::settings(water_temperature) $::de1(water_min_temperature) $::de1(water_max_temperature) %x %y %x0 %y0 %x1 %y1} 25 340 285 630 "mousemove"
 add_de1_variable "settings_2" 190 660 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
@@ -130,10 +123,6 @@ add_de1_variable "settings_2" 1085 660 -text "" -font Helv_10_bold -fill "#2d304
 add_de1_text "settings_2" 115 140 -text [translate "Hot water"] -font Helv_15_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_2" 755 140 -text [translate "Steam"] -font Helv_15_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-#add_de1_widget "settings_2" scale 25 125 {} -to $::de1(steam_min_temperature) -from $::de1(steam_max_temperature) -background #FFFFFF -borderwidth 1 -bigincrement 0.5 -resolution 0.1 -length 500  -width 100  -variable ::settings(steam_temperature) -font Helv_15_bold -sliderlength 100
-#add_de1_text "settings_2" 155 680 -text [translate "Steam temperature"] -font Helv_10_bold -fill "#2d3046" -anchor "center" -width 200  -justify "center"
-
-
 
 ########################################
 
@@ -141,16 +130,16 @@ add_de1_text "settings_2" 755 140 -text [translate "Steam"] -font Helv_15_bold -
 add_de1_text "settings_3" 165 50 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "settings_3" 480 50 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "settings_3" 795 50 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "settings_3" 1107 50 -text [translate "OTHER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_3" 1107 50 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 # labels for HOT WATER tab on
 add_de1_text "settings_4" 165 50 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "settings_4" 480 50 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "settings_4" 795 50 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_4" 1107 50 -text [translate "OTHER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "settings_4" 1107 50 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_1; page_show settings_1} 0 0 320 94 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {after 300 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_1; page_show settings_1} 0 0 320 94 
 add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_2; page_show settings_2} 321 0 638 94 
 add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_3; page_show settings_3} 639 0 952 94 
 add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_4; page_show settings_4} 952 0 1280 94 
