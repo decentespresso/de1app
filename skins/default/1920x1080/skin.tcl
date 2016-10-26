@@ -35,7 +35,7 @@ add_de1_widget "settings_1" graph 18.000004500001122 148.49999999814375 {
 	$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max $::de1(max_pressure) -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12} -title [translate "pressure (bar)"] -titlefont Helv_10;
 
 	bind $widget [platform_button_press] { 
-		say [translate {refresh chart}] $::settings(sound_button_out); 
+		say [translate {refresh chart}] $::settings(sound_button_in); 
 		update_de1_explanation_chart} 
 	} -plotbackground #EEEEEE -width 1875.000468750117  -height 337.49999999578125  -borderwidth 1 -background #FFFFFF -plotrelief raised
 
@@ -89,7 +89,7 @@ add_de1_text "settings_3" 1012.5002531250632 705.3749999911829 -text [translate 
 
 
 
-add_de1_button "off" "after 300 update_de1_explanation_chart;set_next_page off settings_1; page_show settings_1" 1500.0003750000935 0.0 1920.0004800001198 337.49999999578125 
+add_de1_button "off" {after 300 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off settings_1; page_show settings_1} 1500.0003750000935 0.0 1920.0004800001198 337.49999999578125 
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 1706.2504265626064 1025.999999987175 -text [translate "Save"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 1320.0003300000824 1025.999999987175 -text [translate "Cancel"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
 
@@ -139,13 +139,13 @@ add_de1_text "settings_4" 1192.5002981250746 67.49999999915626 -text [translate 
 add_de1_text "settings_4" 1661.2504153126038 67.49999999915626 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {after 300 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_1; page_show settings_1} 0.0 0.0 480.75012018753 126.89999999841376 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_2; page_show settings_2} 481.50012037503006 0.0 957.7502394375598 126.89999999841376 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_3; page_show settings_3} 958.5002396250599 0.0 1428.0003570000893 126.89999999841376 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_out); set_next_page off settings_4; page_show settings_4} 1428.750357187589 0.0 1920.0004800001198 126.89999999841376 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {after 300 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_1; page_show settings_1} 0.0 0.0 480.75012018753 126.89999999841376 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_2; page_show settings_2} 481.50012037503006 0.0 957.7502394375598 126.89999999841376 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3} 958.5002396250599 0.0 1428.0003570000893 126.89999999841376 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4} 1428.750357187589 0.0 1920.0004800001198 126.89999999841376 
 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_out); save_settings; set_next_page off off; page_show off} 1512.0003780000943 965.2499999879344 1920.0004800001198 1079.9999999865001 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {cancel}] $::settings(sound_button_out); set_next_page off off; page_show off} 1128.7502821875705 965.2499999879344 1511.2503778125943 1079.9999999865001 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; set_next_page off off; page_show off} 1512.0003780000943 965.2499999879344 1920.0004800001198 1079.9999999865001 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; say [translate {cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1128.7502821875705 965.2499999879344 1511.2503778125943 1079.9999999865001 
 
 
 
