@@ -96,7 +96,9 @@ array set ::settings {
 	steam_max_time 47
 	steam_temperature 160
 	water_max_time 10
+	water_max_vol 500
 	water_temperature 75
+	minimum_water_before_refill 300
 	espresso_max_time 42
 	espresso_temperature 92
 	espresso_decline_time 25
@@ -122,9 +124,13 @@ array set ::settings {
 	preinfusion_flow_rate 2
 	preinfusion_temperature 92
 	preinfusion_stop_flow_rate 1.5
-	preinfusion_stop_pressure 0
-	preinfusion_stop_volumetric 45 
-	preinfusion_stop_timeout 12
+	preinfusion_stop_pressure 0.75
+	preinfusion_stop_volumetric 100 
+	preinfusion_stop_timeout 30
+	pressure_rampup_timeout 20
+	pressure_rampup_stop_volumetric 100
+	pressure_hold_stop_volumetric 200
+	decline_stop_volumetric 500
 	steam_temperature 160
 	steam_timeout 300
 	preheat_volume 50

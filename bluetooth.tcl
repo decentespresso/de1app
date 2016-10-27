@@ -7,6 +7,10 @@ package provide de1_bluetooth
 #set cuuid "0000a001-0000-1000-8000-00805f9b34fb"
 #set cinstance 0
 
+# a00b = hot water/steam settings
+# a00c = espresso frame settings
+
+
 proc userdata_append {cmd} {
 	#set cmds [ble userdata $::de1(device_handle)]
 	#lappend cmds $cmd
@@ -95,8 +99,6 @@ proc de1_send {msg} {
 	#clear_timers
 	delay_screen_saver
 	
-	#set handle $::de1(device_handle)
-	#global suuid sinstance cuuid cinstance
 	if {$::de1(device_handle) == "0"} {
 		msg "error: de1 not connected"
 		return
@@ -105,22 +107,34 @@ proc de1_send {msg} {
 	set ::de1(substate) -
 	msg "Sending to DE1: '$msg'"
 	
-	#set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
-	#set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
-	#set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
-	#ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance) "$msg"
 	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance) "$msg"]
-	#set res [ble characteristics $handle $magic1 0]
-	#set res [ble services $handle]
-    #set res [ble begin $handle]
-    #ble begin $handle
-    #lappend cmds [list ble write $handle $magic1 0 $magic2 0 "$msg"]
-	#ble userdata $handle $cmds
-    #ble execute $handle
+}
 
 
-	#set res [ble read $handle $magic1 $sinstance $magic3 0]
-	#after 1000 de1_read
+proc send_de1_shot_and_steam_settings {} {
+	msg "send_de1_shot_and_steam_settings"
+	return
+	de1_send_shot_frames
+	de1_send_steam_hotwater_settings
+
+}
+
+proc de1_send_shot_frames {} {
+	if {$::de1(device_handle) == "0"} {
+		msg "error: de1 not connected"
+		return
+	}
+
+	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "0000A00C-0000-1000-8000-00805F9B34FB" $::de1(cinstance) [return_de1_packed_shot_sample]]
+}
+
+proc de1_send_steam_hotwater_settings {} {
+	if {$::de1(device_handle) == "0"} {
+		msg "error: de1 not connected"
+		return
+	}
+
+	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "0000A00B-0000-1000-8000-00805F9B34FB" $::de1(cinstance) [return_de1_packed_steam_hotwater_settings]]
 }
 
 
@@ -186,7 +200,7 @@ proc ble_connect_to_de1 {} {
 proc de1_ble_handler {event data} {
 	#puts "de1 ble_handler $event $data"
 	set ::de1(wrote) 0
-	msg "de1 ble_handler $event $data"
+	#msg "de1 ble_handler $event $data"
     dict with data {
 
     	catch {
@@ -220,6 +234,7 @@ proc de1_ble_handler {event data} {
 					
 					poll_de1_state
 					de1_enable_bluetooth_notifications
+					#send_de1_shot_and_steam_settings
 					#run_next_userdata_cmd
 					#de1_send $::de1_state(Idle)
 

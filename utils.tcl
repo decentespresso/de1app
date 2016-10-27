@@ -510,6 +510,8 @@ proc save_array_to_file {arrname fn} {
 
 proc save_settings {} {
     puts "saving settings"
+
+    send_de1_shot_and_steam_settings
     save_array_to_file ::settings "settings.tdb"
 }
 

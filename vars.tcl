@@ -270,11 +270,11 @@ proc return_flow_measurement {in} {
 }
 
 proc waterflow_text {} {
-	return [return_flow_measurement $::settings(enable_fluid_ounces)] 
+	return [return_flow_measurement $::de1(flow)] 
 }
 
 proc watervolume_text {} {
-	return [return_liquid_measurement $::settings(watervolume)] 
+	return [return_liquid_measurement $::de1(volume)] 
 }
 
 

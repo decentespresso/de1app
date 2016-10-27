@@ -49,11 +49,10 @@ proc setup_images_for_other_pages {} {
 
 	# set up the rectangles that define the finger tap zones and the associated command for each 
 	source "[skin_directory]/skin.tcl"
-
 }
 
-
 proc de1_ui_startup {} {
+	bintest2
 	return [ui_startup]
 }
 
