@@ -49,6 +49,9 @@ proc espresso_frame_description {num} {
 	}
 }
 
+proc format_alarm_time { in } {
+	return [clock format [expr {57600 + round($in)}] -format {%H:%M}] 
+}
 
 proc clear_timers {} {
 	global start_timer

@@ -88,6 +88,8 @@ blt::vector espresso_de1_explanation_chart_pressure espresso_de1_explanation_cha
 
 array set ::settings {
 	flying 0
+	alarm_wake 21600
+	alarm_sleep 82800
 	timer_interval 500
 	screen_saver_delay 60
 	screen_saver_change_interval 600

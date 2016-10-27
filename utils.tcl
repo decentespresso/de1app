@@ -280,6 +280,7 @@ proc setup_environment {} {
         #font create Sourcesans_30 -family {Source Sans Pro Bold} -size 50
         #font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
 
+        proc send_de1_shot_and_steam_settings {} {}
         proc ble {args} { puts "ble $args" }
         proc borg {args} { 
             if {[lindex $args 0] == "locale"} {

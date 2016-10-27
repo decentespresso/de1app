@@ -56,6 +56,15 @@ add_de1_text "settings_4" 675 125 -text [translate "Information"] -font Helv_10_
 add_de1_text "settings_4" 675 300 -text [translate "Version: 1.0 beta 4"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 add_de1_text "settings_4" 675 330 -text [translate "Serial number: 0000001"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
+add_de1_button "settings_4" {say [translate {awake time}] $::settings(sound_button_in);vertical_slider ::settings(alarm_wake) 0 86400 %x %y %x0 %y0 %x1 %y1} 665 400 962 630 "mousemove"
+add_de1_text "settings_4" 850 610 -text [translate "Awake"] -font Helv_9 -fill "#2d3046" -anchor "center" -width 400  -justify "center"
+add_de1_variable "settings_4" 850 650 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_wake)]}
+
+add_de1_button "settings_4" {say [translate {sleep time}] $::settings(sound_button_in);vertical_slider ::settings(alarm_sleep) 0 86400 %x %y %x0 %y0 %x1 %y1} 962 400 1250 630 "mousemove"
+add_de1_text "settings_4" 1075 610 -text [translate "Asleep"] -font Helv_9 -fill "#2d3046" -anchor "center" -width 400  -justify "center"
+add_de1_variable "settings_4" 1075 650 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_sleep)]}
+
+
 #add_de1_text "settings_4" 155 200 -text [translate "Wifi"] -font Helv_10_bold -fill "#2d3046" -anchor "left" -width 200  -justify "left"
 
 
