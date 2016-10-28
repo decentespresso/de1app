@@ -215,6 +215,41 @@ proc install_this_app_icon {} {
 	set icondata2 [read_binary_file "/mnt/sdcard/de1beta/de1_icon.png"]
 	set iconbase64b [::base64::encode -maxlen 0 $icondata2]
 
+
+	set appurl "file://mnt/sdcard/de1beta/de1-5.tcl"
+	catch {
+		set x [borg shortcut add "DE1 #5" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
+	set appurl "file://mnt/sdcard/de1beta/de1plus-5.tcl"
+	catch {
+		set x [borg shortcut add "DE1+ #5" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
+	set appurl "file://mnt/sdcard/de1beta/de1c-5.tcl"
+	catch {
+		set x [borg shortcut add "DE1-C #5" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
+	set appurl "file://mnt/sdcard/de1beta/de1c-3.tcl"
+	catch {
+		set x [borg shortcut add "DE1-C #3" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
+
+return
+
+
+	set appurl "file://mnt/sdcard/de1beta/de1plus.tcl"
+	catch {
+		set x [borg shortcut add "DE1+ #1" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
 	set appurl "file://mnt/sdcard/de1beta/de1.tcl"
 	catch {
 		set x [borg shortcut add "DE1 #1" $appurl $iconbase64b]
@@ -233,30 +268,12 @@ proc install_this_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
-	set appurl "file://mnt/sdcard/de1beta/de1c-3.tcl"
-	catch {
-		set x [borg shortcut add "DE1-C #3" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
-
-	set appurl "file://mnt/sdcard/de1beta/de1c-4.tcl"
-	catch {
-		set x [borg shortcut add "DE1-C #4" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
 
 	set appurl "file://mnt/sdcard/de1beta/de1c-2.tcl"
 	catch {
 		set x [borg shortcut add "DE1-C #2" $appurl $iconbase64b]
 		puts "shortcut added: '$x'"
 	}
-
-	set appurl "file://mnt/sdcard/de1beta/de1plus.tcl"
-	catch {
-		set x [borg shortcut add "DE1+ #1" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
-
 
 	set appurl "file://mnt/sdcard/de1beta/de1-2.tcl"
 	catch {
@@ -293,6 +310,13 @@ proc install_this_app_icon {} {
 		set x [borg shortcut add "DE1+ #4" $appurl $iconbase64b]
 		puts "shortcut added: '$x'"
 	}
+
+	set appurl "file://mnt/sdcard/de1beta/de1c-4.tcl"
+	catch {
+		set x [borg shortcut add "DE1-C #4" $appurl $iconbase64b]
+		puts "shortcut added: '$x'"
+	}
+
 
 }
 
@@ -463,6 +487,8 @@ proc add_de1_widget {args} {
 
 		if {$errcode == 1} {
 			puts $err
+			puts "while running" 
+			puts $torun
 		}
 
 		# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
@@ -478,6 +504,8 @@ proc add_de1_widget {args} {
 
 		if {$errcode == 1} {
 			puts $err
+			puts "while running" 
+			puts [lindex $args 4]
 		}
 		#.can create window [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state normal
 		#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
@@ -794,4 +822,4 @@ proc ui_startup {} {
 
 
 
-install_this_app_icon
+#install_this_app_icon

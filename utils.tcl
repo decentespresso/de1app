@@ -510,9 +510,12 @@ proc save_array_to_file {arrname fn} {
 }
 
 proc save_settings {} {
-    puts "saving settings"
-
-    send_de1_shot_and_steam_settings
+    msg "saving settings"
+    #de1_send_steam_hotwater_settings
+    de1_send_shot_frames
+    #de1_read_hotwater
+    #de1_send_shot_frames
+    #send_de1_shot_and_steam_settings
     save_array_to_file ::settings "settings.tdb"
 }
 
@@ -576,17 +579,17 @@ proc skin_convert {indir} {
         #set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{\\1/$ydivisor\}\]"]
         #set newskin [regsubex {\-length ([0-9]+)} $newskin "-length \[expr \{\\1/$xdivisor\}\]"]
         
-        set newskin [regsubex {add_de1_widget (".*?") (.*?) ([0-9]+) ([0-9]+) } $newskin "add_de1_widget \\1 \\2 \[expr \{\\3/$xdivisor\}\] \[expr \{\\4/$ydivisor\}\] "]
-        set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_text \\1 \[expr \{\\2/$xdivisor\}\] \[expr \{\\3/$ydivisor\}\] "]
-        set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ?(".*?")?\n} $newskin "add_de1_button \\1 \\2 \[expr \{\\3/$xdivisor\}\] \[expr \{\\4/$ydivisor\}\] \[expr \{\\5/$xdivisor\}\] \[expr \{\\6/$ydivisor\}\] \\7\n"]
-        set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_variable \\1 \[expr \{\\2/$xdivisor\}\] \[expr \{\\3/$ydivisor\}\] "]
+        set newskin [regsubex {add_de1_widget (".*?") (.*?) ([0-9]+) ([0-9]+) } $newskin "add_de1_widget \\1 \\2 \[expr \{round(\\3/$xdivisor)\}\] \[expr \{round(\\4/$ydivisor)\}\] "]
+        set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_text \\1 \[expr \{round(\\2/$xdivisor)\}\] \[expr \{round(\\3/$ydivisor)\}\] "]
+        set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ?(".*?")?\n} $newskin "add_de1_button \\1 \\2 \[expr \{round(\\3/$xdivisor)\}\] \[expr \{round(\\4/$ydivisor)\}\] \[expr \{round(\\5/$xdivisor)\}\] \[expr \{round(\\6/$ydivisor)\}\] \\7\n"]
+        set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_variable \\1 \[expr \{round(\\2/$xdivisor)\}\] \[expr \{round(\\3/$ydivisor)\}\] "]
         
         # this the maximum text width for labels
         #puts "xdivisor: $xdivisor"
-        set newskin [regsubex {\-linewidth ([0-9]+)} $newskin "-linewidth \[expr \{\\1/$xdivisor\}\] "]
-        set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{\\1/$xdivisor\}\] "]
-        set newskin [regsubex {\-length ([0-9]+)} $newskin "-length \[expr \{\\1/$ydivisor\}\] "]
-        set newskin [regsubex {\-height ([0-9]+)} $newskin "-height \[expr \{\\1/$ydivisor\}\] "]
+        set newskin [regsubex {\-linewidth ([0-9]+)} $newskin "-linewidth \[expr \{round(\\1/$xdivisor)\}\] "]
+        set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{round(\\1/$xdivisor)\}\] "]
+        set newskin [regsubex {\-length ([0-9]+)} $newskin "-length \[expr \{round(\\1/$ydivisor)\}\] "]
+        set newskin [regsubex {\-height ([0-9]+)} $newskin "-height \[expr \{round(\\1/$ydivisor)\}\] "]
         write_file "../$dir/skin.tcl" $newskin 
         
         if {$started != 0} {
@@ -602,4 +605,9 @@ proc regsubex {regex in replace} {
     regsub -all $regex $escaped $replace result
     set result [subst $result]
     return $result
+}
+
+proc round_date_to_nearest_day {now} {
+    set rounded [clock format $now -format "%m/%d/%Y"]  
+    return [clock scan $rounded]
 }

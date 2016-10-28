@@ -112,9 +112,10 @@ proc de1_send {msg} {
 
 
 proc send_de1_shot_and_steam_settings {} {
-	msg "send_de1_shot_and_steam_settings"
 	return
-	de1_send_shot_frames
+	msg "send_de1_shot_and_steam_settings"
+	#return
+	#de1_send_shot_frames
 	de1_send_steam_hotwater_settings
 
 }
@@ -125,16 +126,45 @@ proc de1_send_shot_frames {} {
 		return
 	}
 
-	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "0000A00C-0000-1000-8000-00805F9B34FB" $::de1(cinstance) [return_de1_packed_shot_sample]]
+	set data [return_de1_packed_shot_sample]
+set data "012345678901234567890"
+	msg "de1_send_shot_frames of [string length $data] bytes: $data"
+
+#userdata_append [list ble begin $::de1(device_handle); ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0c) $::de1(cinstance) $data; ble execute $::de1(device_handle)]
+
+#ble begin $::de1(device_handle)
+ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0c) $::de1(cinstance) $data; 
+#ble execute $::de1(device_handle)
+
+#ble callback de1_ble_handler
+
+#ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0c) $::de1(cinstance) $data; 
+#ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0c) $::de1(cinstance) $data; 
+#ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0c) $::de1(cinstance) $data; 
+#ble execute $::de1(device_handle)
+
+#userdata_append [list ble begin $::de1(device_handle); ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0c) $::de1(cinstance) 1; ble execute $::de1(device_handle)]
+	#userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0c) $::de1(cinstance) $data]
+	#userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0c) $::de1(cinstance) $data]
+	#userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00c" $::de1(cinstance) [return_de1_packed_shot_sample]]
+	#userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance) "$msg"]
+	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
 }
 
 proc de1_send_steam_hotwater_settings {} {
+#return
+
 	if {$::de1(device_handle) == "0"} {
 		msg "error: de1 not connected"
 		return
 	}
 
-	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "0000A00B-0000-1000-8000-00805F9B34FB" $::de1(cinstance) [return_de1_packed_steam_hotwater_settings]]
+	set data [return_de1_packed_steam_hotwater_settings]
+	parse_binary_hotwater_desc $data arr2
+	msg "send de1_send_steam_hotwater_settings of [string length $data] bytes: $data  : [array get arr2]"
+	#ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data
+	#userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) "1"]
+	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
 }
 
 
@@ -152,6 +182,27 @@ proc de1_read {} {
 	#set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
 
 	userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
+	#set res [ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
+	#msg "Received from DE1: '$res'"
+	#return $res
+    #ble execute $handle
+}
+
+
+proc de1_read_hotwater {} {
+	#set handle $::de1(device_handle)
+	#global suuid sinstance cuuid cinstance
+	if {$::de1(device_handle) == "0"} {
+		msg "error: de1 not connected"
+		return
+	}
+
+	#set ::de1(substate) -
+	#set magic1 "0000A000-0000-1000-8000-00805F9B34FB"
+	#set magic2 "0000A002-0000-1000-8000-00805F9B34FB"
+	#set magic3 "0000a001-0000-1000-8000-00805f9b34fb"
+
+	userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance)]
 	#set res [ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
 	#msg "Received from DE1: '$res'"
 	#return $res
@@ -200,7 +251,7 @@ proc ble_connect_to_de1 {} {
 proc de1_ble_handler {event data} {
 	#puts "de1 ble_handler $event $data"
 	set ::de1(wrote) 0
-	#msg "de1 ble_handler $event $data"
+	msg "de1 ble_handler $event $data"
     dict with data {
 
     	catch {
@@ -285,6 +336,20 @@ proc de1_ble_handler {event data} {
 						#de1_ble_new_value $cuuid $value
 						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
 							update_de1_shotvalue $value
+						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
+							#update_de1_state $value
+							parse_binary_hotwater_desc $value arr2
+							msg "hotwater data received [string length $value] bytes: $value  : [array get arr2]"
+
+							#update_de1_substate $value
+							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
+						} elseif {$cuuid == "0000A00C-0000-1000-8000-00805F9B34FB"} {
+							#update_de1_state $value
+							parse_binary_shot_desc $value arr2
+							msg "shot data received [string length $value] bytes: $value  : [array get arr2]"
+
+							#update_de1_substate $value
+							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
 						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
 							update_de1_state $value
 							#update_de1_substate $value

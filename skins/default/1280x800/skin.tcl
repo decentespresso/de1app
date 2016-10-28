@@ -7,6 +7,7 @@ set ::skindebug 0
 
 # tapping the logo exits the app
 add_de1_button "off" "exit" 400 0 875 250 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 712 175 800 
 
 
 # 1st batch of settings
@@ -41,11 +42,21 @@ add_de1_widget "settings_1" graph 12 110 {
 
 
 add_de1_widget "settings_4" checkbutton 45 200 {} -text [translate "Use Fahrenheit"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_4" checkbutton 45 300 {} -text [translate "Use fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_4" checkbutton 45 400 {} -text [translate "Enable flight mode"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(flight_mode_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_4" checkbutton 45 250 {} -text [translate "Use fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_4" checkbutton 45 300 {} -text [translate "Enable flight mode"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(flight_mode_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
-add_de1_widget "settings_4" scale 45 450 {} -from 1 -to 90 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(flight_mode_angle) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_4" 45 552 -text [translate "Flight mode: start angle"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_widget "settings_4" scale 45 350 {} -from 1 -to 90 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 550  -width 67  -variable ::settings(flight_mode_angle) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_4" 45 452 -text [translate "Flight mode: start angle"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+
+add_de1_text "settings_4" 45 452 -text [translate "Flight mode: start angle"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
+add_de1_text "settings_4" 155 653 -text [translate "Clean: steam"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
+add_de1_text "settings_4" 497 653 -text [translate "Clean: espresso"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
+
+# future clean steam feature
+add_de1_button "settings_4" {} 15 603 295 703 
+# future clean espresso feature
+add_de1_button "settings_4" {} 350 603 630 703 
+
 
 add_de1_text "settings_4" 45 125 -text [translate "Other settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
@@ -63,12 +74,6 @@ add_de1_variable "settings_4" 850 650 -text "" -font Helv_10_bold -fill "#2d3046
 add_de1_button "settings_4" {say [translate {sleep time}] $::settings(sound_button_in);vertical_slider ::settings(alarm_sleep) 0 86400 %x %y %x0 %y0 %x1 %y1} 962 400 1250 630 "mousemove"
 add_de1_text "settings_4" 1075 610 -text [translate "Asleep"] -font Helv_9 -fill "#2d3046" -anchor "center" -width 400  -justify "center"
 add_de1_variable "settings_4" 1075 650 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_sleep)]}
-
-
-#add_de1_text "settings_4" 155 200 -text [translate "Wifi"] -font Helv_10_bold -fill "#2d3046" -anchor "left" -width 200  -justify "left"
-
-
-
 
 add_de1_text "settings_3" 45 125 -text [translate "Screen settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 675 125 -text [translate "Speaking"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -93,16 +98,9 @@ add_de1_text "settings_3" 675 392 -text [translate "Speaking speed"] -font Helv_
 add_de1_widget "settings_3" scale 675 420 {} -from 0 -to 3 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length 550  -width 67  -variable ::settings(speaking_pitch) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 add_de1_text "settings_3" 675 522 -text [translate "Speaking pitch"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
 
-#add_de1_text "settings_3" 675 250 -text [translate "Tick sound"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
-#add_de1_text "settings_3" 675 300 -text [translate "Tock sound"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 400  -justify "left"
-
-
-
 add_de1_button "off" {after 300 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off settings_1; page_show settings_1} 1000 0 1280 250 
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 1137 760 -text [translate "Save"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 880 760 -text [translate "Cancel"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
-
-
 
 # labels for PREHEAT tab on
 add_de1_text "settings_1" 165 50 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
@@ -132,7 +130,6 @@ add_de1_variable "settings_2" 1085 660 -text "" -font Helv_10_bold -fill "#2d304
 add_de1_text "settings_2" 115 140 -text [translate "Hot water"] -font Helv_15_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_2" 755 140 -text [translate "Steam"] -font Helv_15_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-
 ########################################
 
 # labels for STEAM tab on
@@ -155,6 +152,9 @@ add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {se
 
 add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; set_next_page off off; page_show off} 1008 715 1280 800 
 add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; say [translate {cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 752 715 1007 800 
+
+# END OF SETTINGS page
+##############################################################################################################################################################################################################################################################################
 
 
 
@@ -277,7 +277,6 @@ add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start
 
 # tapping the power button tells the DE1 to go to sleep, and it will after a few seconds, at which point we display the screen saver
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 200 200 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 712 175 800 
 
 add_de1_button "saver" "say [translate {awake}] $::settings(sound_button_in);start_idle" 0 0 1280 800 
 

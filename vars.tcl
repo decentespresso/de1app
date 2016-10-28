@@ -50,7 +50,7 @@ proc espresso_frame_description {num} {
 }
 
 proc format_alarm_time { in } {
-	return [clock format [expr {57600 + round($in)}] -format {%H:%M}] 
+	return [clock format [expr {[round_date_to_nearest_day [clock seconds]] + round($in)}] -format {%H:%M}] 
 }
 
 proc clear_timers {} {
@@ -141,9 +141,9 @@ proc watervolume {} {
 
 proc steamtemp {} {
 	if {$::android == 0} {
-		set ::de1(mix_temperature) [expr {int(140+(rand() * 20))}]
+		set ::de1(steam_heater_temperature) [expr {int(140+(rand() * 20))}]
 	}
-	return $::de1(mix_temperature)
+	return $::de1(steam_heater_temperature)
 }
 
 proc watertemp {} {
@@ -210,7 +210,7 @@ proc steam_heater_temperature {} {
 		set ::de1(mix_temperature) [expr {140 + (rand() * 20)}]
 	}
 
-	return $::de1(mix_temperature)
+	return $::de1(steam_heater_temperature)
 
 }
 proc water_mix_temperature {} {
@@ -243,9 +243,9 @@ proc steam_heater_action_text {} {
 
 proc group_head_heater_action_text {} {
 	set delta [expr {int([group_head_heater_temperature] - [setting_espresso_temperature])}]
-	if {$delta < -2} {
+	if {$delta < -5} {
 		return [translate "(Heating):"]
-	} elseif {$delta > 2} {
+	} elseif {$delta > 5} {
 		return [translate "(Cooling):"]
 	} else {
 		return [translate "Heated:"]

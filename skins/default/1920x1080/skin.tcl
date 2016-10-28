@@ -1,160 +1,160 @@
 set ::skindebug 0
 
-#add_de1_variable "off" 15.000003750000936 897.7499999887782 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390.00009750002437  -textvariable {[accelerometer_angle_text]} 
+#add_de1_variable "off" 15 898 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390  -textvariable {[accelerometer_angle_text]} 
 
 ##############################################################################################################################################################################################################################################################################
 # SETTINGS page
 
 # tapping the logo exits the app
-add_de1_button "off" "exit" 600.0001500000375 0.0 1312.500328125082 337.49999999578125 
+add_de1_button "off" "exit" 600 0 1313 337 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 961 263 1080 
 
 
 # 1st batch of settings
-add_de1_widget "settings_1" checkbutton 30.00000750000187 526.4999999934188 {} -text [translate "Preinfusion"] -indicatoron true  -font Helv_15_bold -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(preinfusion_enabled) -command update_de1_explanation_chart -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_1" checkbutton 30 526 {} -text [translate "Preinfusion"] -indicatoron true  -font Helv_15_bold -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(preinfusion_enabled) -command update_de1_explanation_chart -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
-add_de1_widget "settings_1" scale 420.0001050000262 553.4999999930812 {} -to 1 -from 10 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 337.49999999578125  -width 112.50002812500702  -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_1" 510.00012750003185 894.3749999888204 -text [translate "Hold pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "nw" -width 450.0001125000281  -justify "left"
+add_de1_widget "settings_1" scale 420 553 {} -to 1 -from 10 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 337  -width 113  -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_1" 510 894 -text [translate "Hold pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "nw" -width 450  -justify "left"
 
-add_de1_widget "settings_1" scale 637.5001593750397 506.2499999936719 {} -from 0 -to 60 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 539.9999999932501  -width 112.50002812500702  -variable ::settings(pressure_hold_time) -font Helv_10_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_1" 937.5002343750585 661.4999999917313 -text [translate "Hold time"] -font Helv_15_bold -fill "#2d3046" -anchor "n" -width 285.0000712500178  -justify "center"
+add_de1_widget "settings_1" scale 638 506 {} -from 0 -to 60 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 540  -width 113  -variable ::settings(pressure_hold_time) -font Helv_10_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_1" 938 661 -text [translate "Hold time"] -font Helv_15_bold -fill "#2d3046" -anchor "n" -width 285  -justify "center"
 
-add_de1_widget "settings_1" scale 1275.0003187500795 506.2499999936719 {} -from 0 -to 60 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 539.9999999932501  -width 112.50002812500702  -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_1" 1507.5003768750942 661.4999999917313 -text [translate "Decline time"] -font Helv_15_bold -fill "#2d3046" -anchor "n" -width 735.0001837500458  -justify "center"
+add_de1_widget "settings_1" scale 1275 506 {} -from 0 -to 60 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 540  -width 113  -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_1" 1508 661 -text [translate "Decline time"] -font Helv_15_bold -fill "#2d3046" -anchor "n" -width 735  -justify "center"
 
-add_de1_widget "settings_1" scale 1669.5004173751042 664.8749999916892 {} -to 0 -from 10 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 222.74999999721564   -width 112.50002812500702  -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_1" 1871.2504678126168 894.3749999888204 -text [translate "Final pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "ne" -width 525.0001312500327  -justify "left"
+add_de1_widget "settings_1" scale 1670 665 {} -to 0 -from 10 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 0.1 -length 223   -width 113  -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength 75 -relief flat -command update_de1_explanation_chart -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_1" 1871 894 -text [translate "Final pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "ne" -width 525  -justify "left"
 
-add_de1_button "settings_1" {say [translate {temperature}] $::settings(sound_button_in);vertical_slider ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 0.0 580.4999999927438 337.50008437502106 944.9999999881876 "mousemove"
-add_de1_text "settings_1" 240.00006000001497 735.7499999908032  -text [translate "TEMP"] -font Helv_8 -fill "#7f879a" -anchor "center" 
-add_de1_variable "settings_1" 240.00006000001497 789.7499999901281 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+add_de1_button "settings_1" {say [translate {temperature}] $::settings(sound_button_in);vertical_slider ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 0 580 338 945 "mousemove"
+add_de1_text "settings_1" 240 736  -text [translate "TEMP"] -font Helv_8 -fill "#7f879a" -anchor "center" 
+add_de1_variable "settings_1" 240 790 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 
-add_de1_widget "settings_1" graph 18.000004500001122 148.49999999814375 { 
+add_de1_widget "settings_1" graph 18 148 { 
 	update_de1_explanation_chart;
-	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth 7.500001875000468  -color #4e85f4  -smooth quadratic -pixels 15; 
+	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth 8  -color #4e85f4  -smooth quadratic -pixels 15; 
 	$widget axis configure x -color #5a5d75 -tickfont Helv_6 -command graph_seconds_axis_format; 
 	$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max $::de1(max_pressure) -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12} -title [translate "pressure (bar)"] -titlefont Helv_10;
 
 	bind $widget [platform_button_press] { 
 		say [translate {refresh chart}] $::settings(sound_button_in); 
 		update_de1_explanation_chart} 
-	} -plotbackground #EEEEEE -width 1875.000468750117  -height 337.49999999578125  -borderwidth 1 -background #FFFFFF -plotrelief raised
+	} -plotbackground #EEEEEE -width 1875  -height 337  -borderwidth 1 -background #FFFFFF -plotrelief raised
 
 
-add_de1_widget "settings_4" checkbutton 67.50001687500422 269.99999999662504 {} -text [translate "Use Fahrenheit"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_4" checkbutton 67.50001687500422 404.9999999949375 {} -text [translate "Use fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_4" checkbutton 67.50001687500422 539.9999999932501 {} -text [translate "Enable flight mode"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(flight_mode_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_4" checkbutton 68 270 {} -text [translate "Use Fahrenheit"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_4" checkbutton 68 337 {} -text [translate "Use fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_4" checkbutton 68 405 {} -text [translate "Enable flight mode"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(flight_mode_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
-add_de1_widget "settings_4" scale 67.50001687500422 607.4999999924063 {} -from 1 -to 90 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742.4999999907188  -width 101.25002531250632  -variable ::settings(flight_mode_angle) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_4" 67.50001687500422 745.8749999906767 -text [translate "Flight mode: start angle"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
+add_de1_widget "settings_4" scale 68 472 {} -from 1 -to 90 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742  -width 101  -variable ::settings(flight_mode_angle) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_4" 68 611 -text [translate "Flight mode: start angle"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
 
-add_de1_text "settings_4" 67.50001687500422 168.74999999789063 -text [translate "Other settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 68 611 -text [translate "Flight mode: start angle"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
+add_de1_text "settings_4" 233 882 -text [translate "Clean: steam"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
+add_de1_text "settings_4" 746 882 -text [translate "Clean: espresso"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
 
-add_de1_widget "settings_4" entry 1005.0002512500628 256.49999999679375 {} -width 45.00001125000281  -font Helv_15_bold -bg #FFFFFF  -foreground #2d3046 -textvariable ::settings(machine_name) 
-add_de1_text "settings_4" 1012.5002531250632 317.2499999960344 -text [translate "Name your machine"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
-
-add_de1_text "settings_4" 1012.5002531250632 168.74999999789063 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 1012.5002531250632 404.9999999949375 -text [translate "Version: 1.0 beta 4"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
-add_de1_text "settings_4" 1012.5002531250632 445.4999999944313 -text [translate "Serial number: 0000001"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
-
-add_de1_button "settings_4" {say [translate {awake time}] $::settings(sound_button_in);vertical_slider ::settings(alarm_wake) 0 86400 %x %y %x0 %y0 %x1 %y1} 997.5002493750623 539.9999999932501 1443.7503609375901 850.4999999893688 "mousemove"
-add_de1_text "settings_4" 1275.0003187500795 823.4999999897063 -text [translate "Awake"] -font Helv_9 -fill "#2d3046" -anchor "center" -width 600.0001500000375  -justify "center"
-add_de1_variable "settings_4" 1275.0003187500795 877.4999999890313 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_wake)]}
-
-add_de1_button "settings_4" {say [translate {sleep time}] $::settings(sound_button_in);vertical_slider ::settings(alarm_sleep) 0 86400 %x %y %x0 %y0 %x1 %y1} 1443.7503609375901 539.9999999932501 1875.000468750117 850.4999999893688 "mousemove"
-add_de1_text "settings_4" 1612.5004031251005 823.4999999897063 -text [translate "Asleep"] -font Helv_9 -fill "#2d3046" -anchor "center" -width 600.0001500000375  -justify "center"
-add_de1_variable "settings_4" 1612.5004031251005 877.4999999890313 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_sleep)]}
+# future clean steam feature
+add_de1_button "settings_4" {} 23 814 443 949 
+# future clean espresso feature
+add_de1_button "settings_4" {} 525 814 945 949 
 
 
-#add_de1_text "settings_4" 232.5000581250145 269.99999999662504 -text [translate "Wifi"] -font Helv_10_bold -fill "#2d3046" -anchor "left" -width 300.00007500001874  -justify "left"
+add_de1_text "settings_4" 68 169 -text [translate "Other settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
+add_de1_widget "settings_4" entry 1005 256 {} -width 45  -font Helv_15_bold -bg #FFFFFF  -foreground #2d3046 -textvariable ::settings(machine_name) 
+add_de1_text "settings_4" 1013 317 -text [translate "Name your machine"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
 
+add_de1_text "settings_4" 1013 169 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 1013 405 -text [translate "Version: 1.0 beta 4"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
+add_de1_text "settings_4" 1013 445 -text [translate "Serial number: 0000001"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
 
+add_de1_button "settings_4" {say [translate {awake time}] $::settings(sound_button_in);vertical_slider ::settings(alarm_wake) 0 86400 %x %y %x0 %y0 %x1 %y1} 998 540 1444 850 "mousemove"
+add_de1_text "settings_4" 1275 823 -text [translate "Awake"] -font Helv_9 -fill "#2d3046" -anchor "center" -width 600  -justify "center"
+add_de1_variable "settings_4" 1275 877 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_wake)]}
 
-add_de1_text "settings_3" 67.50001687500422 168.74999999789063 -text [translate "Screen settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_3" 1012.5002531250632 168.74999999789063 -text [translate "Speaking"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_button "settings_4" {say [translate {sleep time}] $::settings(sound_button_in);vertical_slider ::settings(alarm_sleep) 0 86400 %x %y %x0 %y0 %x1 %y1} 1444 540 1875 850 "mousemove"
+add_de1_text "settings_4" 1613 823 -text [translate "Asleep"] -font Helv_9 -fill "#2d3046" -anchor "center" -width 600  -justify "center"
+add_de1_variable "settings_4" 1613 877 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_sleep)]}
 
-add_de1_widget "settings_3" scale 67.50001687500422 209.24999999738438 {} -from 0 -to 100 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742.4999999907188  -width 101.25002531250632  -variable ::settings(app_brightness) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_3" 67.50001687500422 354.3749999955703 -text [translate "App brightness"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
+add_de1_text "settings_3" 68 169 -text [translate "Screen settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_3" 1013 169 -text [translate "Speaking"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-add_de1_widget "settings_3" scale 67.50001687500422 391.4999999951063 {} -from 0 -to 100 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742.4999999907188  -width 101.25002531250632  -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_3" 67.50001687500422 529.8749999933766 -text [translate "Screen saver brightness"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
+add_de1_widget "settings_3" scale 68 209 {} -from 0 -to 100 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742  -width 101  -variable ::settings(app_brightness) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 68 354 -text [translate "App brightness"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
 
-add_de1_widget "settings_3" scale 67.50001687500422 566.9999999929125 {} -from 0 -to 120 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742.4999999907188  -width 101.25002531250632  -variable ::settings(screen_saver_delay) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_3" 67.50001687500422 705.3749999911829 -text [translate "Screen saver delay"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
+add_de1_widget "settings_3" scale 68 391 {} -from 0 -to 100 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742  -width 101  -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 68 530 -text [translate "Screen saver brightness"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
 
-add_de1_widget "settings_3" scale 67.50001687500422 742.4999999907188 {} -from 1 -to 120 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742.4999999907188  -width 101.25002531250632  -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_3" 67.50001687500422 880.8749999889891 -text [translate "Screen saver change interval"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
+add_de1_widget "settings_3" scale 68 567 {} -from 0 -to 120 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742  -width 101  -variable ::settings(screen_saver_delay) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 68 705 -text [translate "Screen saver delay"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
 
-add_de1_widget "settings_3" checkbutton 1012.5002531250632 269.99999999662504 {} -text [translate "Enable spoken prompts"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_spoken_prompts)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_3" scale 68 742 {} -from 1 -to 120 -background #FFFFFF -borderwidth 1 -bigincrement 1 -resolution 1 -length 742  -width 101  -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 68 881 -text [translate "Screen saver change interval"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
 
-add_de1_widget "settings_3" scale 1012.5002531250632 391.4999999951063 {} -from 0 -to 4 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length 742.4999999907188  -width 101.25002531250632  -variable ::settings(speaking_rate) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_3" 1012.5002531250632 529.8749999933766 -text [translate "Speaking speed"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
+add_de1_widget "settings_3" checkbutton 1013 270 {} -text [translate "Enable spoken prompts"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_spoken_prompts)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
-add_de1_widget "settings_3" scale 1012.5002531250632 566.9999999929125 {} -from 0 -to 3 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length 742.4999999907188  -width 101.25002531250632  -variable ::settings(speaking_pitch) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_text "settings_3" 1012.5002531250632 705.3749999911829 -text [translate "Speaking pitch"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
+add_de1_widget "settings_3" scale 1013 391 {} -from 0 -to 4 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length 742  -width 101  -variable ::settings(speaking_rate) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 1013 530 -text [translate "Speaking speed"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
 
-#add_de1_text "settings_3" 1012.5002531250632 337.49999999578125 -text [translate "Tick sound"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
-#add_de1_text "settings_3" 1012.5002531250632 404.9999999949375 -text [translate "Tock sound"] -font Helv_10_bold -fill "#2d3046" -anchor "nw" -width 600.0001500000375  -justify "left"
+add_de1_widget "settings_3" scale 1013 567 {} -from 0 -to 3 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length 742  -width 101  -variable ::settings(speaking_pitch) -font Helv_10_bold -sliderlength 75 -relief flat -orient horizontal -foreground #4e85f4 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_text "settings_3" 1013 705 -text [translate "Speaking pitch"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 600  -justify "left"
 
-
-
-add_de1_button "off" {after 300 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off settings_1; page_show settings_1} 1500.0003750000935 0.0 1920.0004800001198 337.49999999578125 
-add_de1_text "settings_1 settings_2 settings_3 settings_4" 1706.2504265626064 1025.999999987175 -text [translate "Save"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
-add_de1_text "settings_1 settings_2 settings_3 settings_4" 1320.0003300000824 1025.999999987175 -text [translate "Cancel"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
-
-
+add_de1_button "off" {after 300 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off settings_1; page_show settings_1} 1500 0 1920 337 
+add_de1_text "settings_1 settings_2 settings_3 settings_4" 1706 1026 -text [translate "Save"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
+add_de1_text "settings_1 settings_2 settings_3 settings_4" 1320 1026 -text [translate "Cancel"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
 
 # labels for PREHEAT tab on
-add_de1_text "settings_1" 247.50006187501546 67.49999999915626 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "settings_1" 720.0001800000449 67.49999999915626 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_1" 1192.5002981250746 67.49999999915626 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_1" 1661.2504153126038 67.49999999915626 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_1" 248 67 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "settings_1" 720 67 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_1" 1193 67 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_1" 1661 67 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 ########################################
 # labels for WATER/STEAM tab on
-add_de1_text "settings_2" 247.50006187501546 67.49999999915626 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_2" 720.0001800000449 67.49999999915626 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "settings_2" 1192.5002981250746 67.49999999915626 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_2" 1661.2504153126038 67.49999999915626 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_2" 248 67 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_2" 720 67 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "settings_2" 1193 67 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_2" 1661 67 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
-add_de1_button "settings_2" {say [translate {water temperature}] $::settings(sound_button_in);vertical_slider ::settings(water_temperature) $::de1(water_min_temperature) $::de1(water_max_temperature) %x %y %x0 %y0 %x1 %y1} 37.50000937500234 458.9999999942625 427.5001068750267 850.4999999893688 "mousemove"
-add_de1_variable "settings_2" 285.0000712500178 890.9999999888626 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
+add_de1_button "settings_2" {say [translate {water temperature}] $::settings(sound_button_in);vertical_slider ::settings(water_temperature) $::de1(water_min_temperature) $::de1(water_max_temperature) %x %y %x0 %y0 %x1 %y1} 38 459 428 850 "mousemove"
+add_de1_variable "settings_2" 285 891 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
 
-add_de1_button "settings_2" {say [translate {water time}] $::settings(sound_button_in);vertical_slider ::settings(water_max_time) $::de1(water_time_min) $::de1(water_time_max) %x %y %x0 %y0 %x1 %y1} 428.25010706252675 337.49999999578125 937.5002343750585 850.4999999893688 "mousemove"
-add_de1_variable "settings_2" 675.0001687500421 890.9999999888626 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[round_to_integer $::settings(water_max_time)] [translate "seconds"]}
+add_de1_button "settings_2" {say [translate {water time}] $::settings(sound_button_in);vertical_slider ::settings(water_max_time) $::de1(water_time_min) $::de1(water_time_max) %x %y %x0 %y0 %x1 %y1} 428 337 938 850 "mousemove"
+add_de1_variable "settings_2" 675 891 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[round_to_integer $::settings(water_max_time)] [translate "seconds"]}
 
-add_de1_button "settings_2" {say [translate {steam temperature}] $::settings(sound_button_in);vertical_slider ::settings(steam_temperature) $::de1(steam_min_temperature) $::de1(steam_max_temperature) %x %y %x0 %y0 %x1 %y1} 997.5002493750623 458.9999999942625 1387.5003468750865 850.4999999893688 "mousemove"
-add_de1_variable "settings_2" 1230.0003075000768 890.9999999888626 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_temperature_measurement $::settings(steam_temperature)]}
+add_de1_button "settings_2" {say [translate {steam temperature}] $::settings(sound_button_in);vertical_slider ::settings(steam_temperature) $::de1(steam_min_temperature) $::de1(steam_max_temperature) %x %y %x0 %y0 %x1 %y1} 998 459 1388 850 "mousemove"
+add_de1_variable "settings_2" 1230 891 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_temperature_measurement $::settings(steam_temperature)]}
 
-add_de1_button "settings_2" {say [translate {steam time}] $::settings(sound_button_in);vertical_slider ::settings(steam_max_time) $::de1(steam_time_min) $::de1(steam_time_max) %x %y %x0 %y0 %x1 %y1} 1388.2503470625866 337.49999999578125 1875.000468750117 850.4999999893688 "mousemove"
-add_de1_variable "settings_2" 1627.5004068751016 890.9999999888626 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[round_to_integer $::settings(steam_max_time)] [translate "seconds"]}
+add_de1_button "settings_2" {say [translate {steam time}] $::settings(sound_button_in);vertical_slider ::settings(steam_max_time) $::de1(steam_time_min) $::de1(steam_time_max) %x %y %x0 %y0 %x1 %y1} 1388 337 1875 850 "mousemove"
+add_de1_variable "settings_2" 1628 891 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[round_to_integer $::settings(steam_max_time)] [translate "seconds"]}
 
-add_de1_text "settings_2" 172.50004312501076 188.9999999976375 -text [translate "Hot water"] -font Helv_15_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_2" 1132.5002831250706 188.9999999976375 -text [translate "Steam"] -font Helv_15_bold -fill "#7f879a" -justify "left" -anchor "nw"
-
+add_de1_text "settings_2" 173 189 -text [translate "Hot water"] -font Helv_15_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_2" 1133 189 -text [translate "Steam"] -font Helv_15_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
 ########################################
 
 # labels for STEAM tab on
-add_de1_text "settings_3" 247.50006187501546 67.49999999915626 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_3" 720.0001800000449 67.49999999915626 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_3" 1192.5002981250746 67.49999999915626 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "settings_3" 1661.2504153126038 67.49999999915626 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_3" 248 67 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_3" 720 67 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_3" 1193 67 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "settings_3" 1661 67 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 # labels for HOT WATER tab on
-add_de1_text "settings_4" 247.50006187501546 67.49999999915626 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_4" 720.0001800000449 67.49999999915626 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_4" 1192.5002981250746 67.49999999915626 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "settings_4" 1661.2504153126038 67.49999999915626 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "settings_4" 248 67 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_4" 720 67 -text [translate "WATER/STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_4" 1193 67 -text [translate "SCREEN/SOUNDS"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_4" 1661 67 -text [translate "OTHER/INFO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {after 300 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_1; page_show settings_1} 0.0 0.0 480.75012018753 126.89999999841376 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_2; page_show settings_2} 481.50012037503006 0.0 957.7502394375598 126.89999999841376 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3} 958.5002396250599 0.0 1428.0003570000893 126.89999999841376 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4} 1428.750357187589 0.0 1920.0004800001198 126.89999999841376 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {after 300 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_1; page_show settings_1} 0 0 481 127 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_2; page_show settings_2} 482 0 958 127 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3} 959 0 1428 127 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4} 1429 0 1920 127 
 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; set_next_page off off; page_show off} 1512.0003780000943 965.2499999879344 1920.0004800001198 1079.9999999865001 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; say [translate {cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1128.7502821875705 965.2499999879344 1511.2503778125943 1079.9999999865001 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; set_next_page off off; page_show off} 1512 965 1920 1080 
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; say [translate {cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1129 965 1511 1080 
+
+# END OF SETTINGS page
+##############################################################################################################################################################################################################################################################################
 
 
 
@@ -164,110 +164,110 @@ add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain 
 ##############################################################################################################################################################################################################################################################################
 # the STEAM button and translatable text for it
 
-add_de1_text "steam" 1536.000384000096 726.2999999909213 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_variable "steam" 1536.000384000096 766.799999990415 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
+add_de1_text "steam" 1536 726 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_variable "steam" 1536 767 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
 
 # variables to display during steam
-add_de1_text "steam" 1539.7503849375962 793.7999999900776 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "steam" 1543.5003858750963 793.7999999900776 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390.00009750002437  -textvariable {[steam_timer][translate "s"]} 
-add_de1_text "steam" 1539.7503849375962 827.5499999896557 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "steam" 1543.5003858750963 827.5499999896557 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390.00009750002437  -textvariable {[setting_steam_max_time_text]} 
-add_de1_text "steam" 1539.7503849375962 861.2999999892338 -justify right -anchor "ne" -text [translate "Steam temp:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "steam" 1543.5003858750963 861.2999999892338 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390.00009750002437  -textvariable {[steamtemp_text]} 
-#add_de1_text "steam" 1539.7503849375962 895.0499999888119 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-#add_de1_variable "steam" 1543.5003858750963 895.0499999888119 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390.00009750002437  -textvariable {[pressure_text]} 
+add_de1_text "steam" 1540 794 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "steam" 1544 794 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390  -textvariable {[steam_timer][translate "s"]} 
+add_de1_text "steam" 1540 828 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "steam" 1544 828 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390  -textvariable {[setting_steam_max_time_text]} 
+add_de1_text "steam" 1540 861 -justify right -anchor "ne" -text [translate "Steam temp:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "steam" 1544 861 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390  -textvariable {[steamtemp_text]} 
+#add_de1_text "steam" 1540 895 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 390 
+#add_de1_variable "steam" 1544 895 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390  -textvariable {[pressure_text]} 
 
 
 # 
 #add_de1_action "steam" "do_steam"
 # when it steam mode, tapping anywhere on the screen tells the DE1 to stop.
-add_de1_button "steam" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0.0 0.0 1920.0004800001198 1079.9999999865001 
+add_de1_button "steam" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0 0 1920 1080 
 
 # STEAM related info to display when the espresso machine is idle
-add_de1_text "off" 1536.000384000096 726.2999999909213 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "off" 1539.7503849375962 780.2999999902463 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "off" 1543.5003858750963 780.2999999902463 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390.00009750002437  -textvariable {[setting_steam_max_time_text]} 
-add_de1_text "off" 1539.7503849375962 814.0499999898244 -justify right -anchor "ne" -text [translate "Steam temp:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "off" 1543.5003858750963 814.0499999898244 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390.00009750002437  -textvariable {[setting_steam_temperature_text]} 
-add_de1_variable "off" 1539.7503849375962 847.7999999894025 -justify right -anchor "ne" -text "" -font Helv_8 -fill "#7f879a" -width 390.00009750002437  -textvariable {[steam_heater_action_text]} 
-add_de1_variable "off" 1543.5003858750963 847.7999999894025 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390.00009750002437  -textvariable {[steam_heater_temperature_text]} 
+add_de1_text "off" 1536 726 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off" 1540 780 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "off" 1544 780 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390  -textvariable {[setting_steam_max_time_text]} 
+add_de1_text "off" 1540 814 -justify right -anchor "ne" -text [translate "Steam temp:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "off" 1544 814 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390  -textvariable {[setting_steam_temperature_text]} 
+add_de1_variable "off" 1540 848 -justify right -anchor "ne" -text "" -font Helv_8 -fill "#7f879a" -width 390  -textvariable {[steam_heater_action_text]} 
+add_de1_variable "off" 1544 848 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 390  -textvariable {[steam_heater_temperature_text]} 
 
 # when someone taps on the steam button
-add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam" 1311.0003277500819 415.79999999480253 1759.5004398751098 954.4499999880694 
+add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam" 1311 416 1760 954 
 
 ##############################################################################################################################################################################################################################################################################
 # the ESPRESSO button and translatable text for it
 
-add_de1_text "espresso" 960.0002400000599 726.2999999909213 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_variable "espresso" 960.0002400000599 766.799999990415 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
+add_de1_text "espresso" 960 726 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_variable "espresso" 960 767 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
 
-add_de1_text "espresso" 960.0002400000599 793.7999999900776 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "espresso" 963.7502409375602 793.7999999900776 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[pour_timer][translate "s"]} 
+add_de1_text "espresso" 960 794 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "espresso" 964 794 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390  -textvariable {[pour_timer][translate "s"]} 
 
-add_de1_text "espresso" 960.0002400000599 827.5499999896557 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "espresso" 963.7502409375602 827.5499999896557 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 390.00009750002437  -textvariable {[setting_espresso_max_time_text]} 
+add_de1_text "espresso" 960 828 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "espresso" 964 828 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 390  -textvariable {[setting_espresso_max_time_text]} 
 
-add_de1_text "espresso" 960.0002400000599 861.2999999892338 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "espresso" 963.7502409375602 861.2999999892338 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[pressure_text]} 
+add_de1_text "espresso" 960 861 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "espresso" 964 861 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390  -textvariable {[pressure_text]} 
 
-add_de1_text "espresso" 960.0002400000599 895.0499999888119 -justify right -anchor "ne" -text [translate "Water temp:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "espresso" 963.7502409375602 895.0499999888119 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[watertemp_text]} 
+add_de1_text "espresso" 960 895 -justify right -anchor "ne" -text [translate "Water temp:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "espresso" 964 895 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390  -textvariable {[watertemp_text]} 
 
-add_de1_button "espresso" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0.0 0.0 1920.0004800001198 1079.9999999865001 
+add_de1_button "espresso" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0 0 1920 1080 
 
 #add_btn_screen "espresso" "stop"
 #add_de1_action "espresso" "do_espresso"
 
 
-add_de1_text "off" 960.0002400000599 726.2999999909213 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "off" 956.2502390625597 780.2999999902463 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "off" 960.0002400000599 780.2999999902463 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 390.00009750002437  -textvariable {[setting_espresso_max_time_text]} 
+add_de1_text "off" 960 726 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off" 956 780 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "off" 960 780 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 390  -textvariable {[setting_espresso_max_time_text]} 
 
-add_de1_text "off" 956.2502390625597 814.0499999898244 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "off" 960.0002400000599 814.0499999898244 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[setting_espresso_pressure_text]} 
+add_de1_text "off" 956 814 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "off" 960 814 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390  -textvariable {[setting_espresso_pressure_text]} 
 
 
-add_de1_text "off" 956.2502390625597 847.7999999894025 -justify right -anchor "ne" -text [translate "Water temp:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "off" 960.0002400000599 847.7999999894025 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 390.00009750002437  -textvariable {[setting_espresso_temperature_text]} 
+add_de1_text "off" 956 848 -justify right -anchor "ne" -text [translate "Water temp:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "off" 960 848 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 390  -textvariable {[setting_espresso_temperature_text]} 
 
-add_de1_variable "off" 956.2502390625597 881.5499999889806 -justify right -anchor "ne" -text "" -font Helv_8 -fill "#7f879a" -width 390.00009750002437  -textvariable {[group_head_heater_action_text]} 
-add_de1_variable "off" 960.0002400000599 881.5499999889806 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -textvariable {[group_head_heater_temperature_text]} 
+add_de1_variable "off" 956 882 -justify right -anchor "ne" -text "" -font Helv_8 -fill "#7f879a" -width 390  -textvariable {[group_head_heater_action_text]} 
+add_de1_variable "off" 960 882 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 390  -textvariable {[group_head_heater_temperature_text]} 
 
 # we spell espresso with two SSs so that it is pronounced like Italians say it
-add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);start_espresso" 711.0001777500444 394.1999999950725 1204.500301125075 974.6999999878163 
+add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);start_espresso" 711 394 1205 975 
 
 
-#add_de1_text "espresso" 956.2502390625597 881.5499999889806 -justify right -anchor "ne" -text [translate "Flow:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-#add_de1_variable "espresso" 960.0002400000599 881.5499999889806 -justify left -anchor "nw" -text "1.12 [translate ml/sec]" -font Helv_8 -text "" -fill "#2d3046" -width 390.00009750002437  -textvariable {[waterflow_text]} 
+#add_de1_text "espresso" 956 882 -justify right -anchor "ne" -text [translate "Flow:"] -font Helv_8 -fill "#7f879a" -width 390 
+#add_de1_variable "espresso" 960 882 -justify left -anchor "nw" -text "1.12 [translate ml/sec]" -font Helv_8 -text "" -fill "#2d3046" -width 390  -textvariable {[waterflow_text]} 
 
 ##############################################################################################################################################################################################################################################################################
 # the HOT WATER button and translatable text for it
-add_de1_text "water" 382.5000956250239 726.2999999909213 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_variable "water" 382.5000956250239 766.799999990415 -text "" -font Helv_9_bold -fill "#73768f" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
+add_de1_text "water" 383 726 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_variable "water" 383 767 -text "" -font Helv_9_bold -fill "#73768f" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
 
-add_de1_text "water" 375.0000937500234 793.7999999900776 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "water" 378.75009468752364 793.7999999900776 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "" -textvariable {[water_timer][translate "s"]} 
-add_de1_text "water" 375.0000937500234 827.5499999896557 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "water" 378.75009468752364 827.5499999896557 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "" -textvariable {[setting_water_max_time_text]} 
-add_de1_text "water" 375.0000937500234 861.2999999892338 -justify right -anchor "ne" -text [translate "Water temp:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "water" 378.75009468752364 861.2999999892338 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "" -textvariable {[watertemp_text]} 
+add_de1_text "water" 375 794 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "water" 379 794 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390  -text "" -textvariable {[water_timer][translate "s"]} 
+add_de1_text "water" 375 828 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "water" 379 828 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390  -text "" -textvariable {[setting_water_max_time_text]} 
+add_de1_text "water" 375 861 -justify right -anchor "ne" -text [translate "Water temp:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "water" 379 861 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390  -text "" -textvariable {[watertemp_text]} 
 
-add_de1_button "water" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0.0 0.0 1920.0004800001198 1079.9999999865001 
-
-
+add_de1_button "water" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0 0 1920 1080 
 
 
-add_de1_text "off" 382.5000956250239 726.2999999909213 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "off" 375.0000937500234 780.2999999902463 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "off" 378.75009468752364 780.2999999902463 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "" -textvariable {[setting_water_max_time_text]} 
-add_de1_text "off" 375.0000937500234 814.0499999898244 -justify right -anchor "ne" -text [translate "Temp:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-add_de1_variable "off" 378.75009468752364 814.0499999898244 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "" -textvariable {[setting_water_temperature_text]} 
 
-#add_de1_text "water" 1539.7503849375962 847.7999999894025 -justify right -anchor "ne" -text [translate "Flow:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-#add_de1_variable "water" 1543.5003858750963 847.7999999894025 -justify left -anchor "nw"  -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "" -textvariable {[waterflow_text]} 
-#add_de1_text "water" 1539.7503849375962 881.5499999889806 -justify right -anchor "ne" -text [translate "Total:"] -font Helv_8 -fill "#7f879a" -width 390.00009750002437 
-#add_de1_variable "water" 1543.5003858750963 881.5499999889806 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390.00009750002437  -text "" -textvariable {[watervolume_text]} 
-add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 157.50003937500983 413.09999999483625 606.0001515000379 955.7999999880526 
+
+add_de1_text "off" 383 726 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off" 375 780 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "off" 379 780 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390  -text "" -textvariable {[setting_water_max_time_text]} 
+add_de1_text "off" 375 814 -justify right -anchor "ne" -text [translate "Temp:"] -font Helv_8 -fill "#7f879a" -width 390 
+add_de1_variable "off" 379 814 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390  -text "" -textvariable {[setting_water_temperature_text]} 
+
+#add_de1_text "water" 1540 848 -justify right -anchor "ne" -text [translate "Flow:"] -font Helv_8 -fill "#7f879a" -width 390 
+#add_de1_variable "water" 1544 848 -justify left -anchor "nw"  -font Helv_8 -fill "#42465c" -width 390  -text "" -textvariable {[waterflow_text]} 
+#add_de1_text "water" 1540 882 -justify right -anchor "ne" -text [translate "Total:"] -font Helv_8 -fill "#7f879a" -width 390 
+#add_de1_variable "water" 1544 882 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 390  -text "" -textvariable {[watervolume_text]} 
+add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 158 413 606 956 
 #add_btn_screen "water" "stop"
 #add_de1_action "water" "start_water"
 
@@ -276,13 +276,12 @@ add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start
 #add_de1_action "off" "stop"
 
 # tapping the power button tells the DE1 to go to sleep, and it will after a few seconds, at which point we display the screen saver
-add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0.0 0.0 300.00007500001874 269.99999999662504 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0.0 961.199999987985 262.50006562501636 1079.9999999865001 
+add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 300 270 
 
-add_de1_button "saver" "say [translate {awake}] $::settings(sound_button_in);start_idle" 0.0 0.0 1920.0004800001198 1079.9999999865001 
+add_de1_button "saver" "say [translate {awake}] $::settings(sound_button_in);start_idle" 0 0 1920 1080 
 
-add_de1_text "sleep" 1875.000468750117 978.7499999877657 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
-add_de1_button "sleep" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0.0 0.0 1920.0004800001198 1079.9999999865001 
+add_de1_text "sleep" 1875 979 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
+add_de1_button "sleep" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 1920 1080 
 #add_de1_action "sleep" "do_sleep"
 
 add_de1_action "exit" "app_exit"
@@ -296,6 +295,6 @@ add_de1_action "exit" "app_exit"
 #add_btn_screen "splash" "off"
 
 # the SETTINGS button currently exits the app
-#add_de1_button "off" "app_exit" 1650.000412500103 0.0 1950.0004875001218 269.99999999662504 
+#add_de1_button "off" "app_exit" 1650 0 1950 270 
 #add_de1_action "settings" "do_settings"
 

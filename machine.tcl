@@ -21,6 +21,8 @@ array set ::de1 {
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"
 	sinstance 0
 	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
+	cuuid_0b "0000a00b-0000-1000-8000-00805f9b34fb"
+	cuuid_0c "0000a00c-0000-1000-8000-00805f9b34fb"
 	cinstance 0
 	pressure 0
 	head_temperature 0
@@ -54,6 +56,7 @@ array set ::de1 {
 	water_time_max 60
 	steam_time_min 1
 	steam_time_max 120
+	steam_heater_temperature 160
 }
 
 
@@ -122,7 +125,7 @@ array set ::settings {
 	speaking_pitch 1.0
 	sound_button_in 8
 	sound_button_out 11
-	flight_mode_enable 0
+	flight_mode_enable 1
 	preinfusion_flow_rate 2
 	preinfusion_temperature 92
 	preinfusion_stop_flow_rate 1.5
@@ -254,7 +257,7 @@ proc start_idle {} {
 	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
 	# save the UI settings whenever we have done an operation
-	save_settings
+	#save_settings
 
 	# change the substate to ending immediately to provide UI feedback
 	#set ::de1(substate) 6

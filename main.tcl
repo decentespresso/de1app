@@ -26,6 +26,7 @@ proc setup_images_for_other_pages {} {
 		"steam" "[skin_directory]/steam_on.png" \
 		"water" "[skin_directory]/tea_on.png" \
 		"settings_1" "[skin_directory]/settings_1.png" \
+		"settings_1a" "[skin_directory]/settings_1a.png" \
 		"settings_2" "[skin_directory]/settings_2.png" \
 		"settings_3" "[skin_directory]/settings_3.png" \
 		"settings_4" "[skin_directory]/settings_4.png" \

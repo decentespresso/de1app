@@ -80,6 +80,7 @@ proc fields::2form {spec array {endian ""}} {
 		   s {
 			   # short - 16bits low2high
 			   # Short - 16bits high2low
+			   set ty $t
 		   }
 		   
 		   w {
@@ -115,7 +116,9 @@ proc fields::2form {spec array {endian ""}} {
 		   append invars "\$$array\($name\) "
 	   }
 	   
-	   #puts "type: '$ty$s$count'"
+	   catch {
+	   	#msg "type: 'name=$name qual =$qual == $ty$s$count'"
+	   }
 	   append form $ty$s$count
    }
 
@@ -189,7 +192,7 @@ proc hotwater_steam_settings_spec {} {
 		TargetHotWaterVol {char {} {} {unsigned} {}}
 		TargetHotWaterLength {char {} {} {unsigned} {}}
 		TargetEspressoVol {char {} {} {unsigned} {}}
-		TargetGroupTemp {short {} {} {unsigned} {$val / 256.0}}
+		TargetGroupTemp {Short {} {} {unsigned} {$val / 256.0}}
 	}
 	return $spec
 }
@@ -268,7 +271,7 @@ proc convert_float_to_U16P8 {in} {
 	if {$in > 256} {
 		set in 256
 	}
-	return [expr {round($in * 256)}]
+	return [expr {round($in * 256.0)}]
 }
 
 proc convert_float_to_F8_1_7 {in} {
@@ -542,6 +545,23 @@ proc shot_sample_spec {} {
 
 }
 
+proc parse_binary_hotwater_desc {packed destarrname} {
+	upvar $destarrname ShotSample
+	unset -nocomplain ShotSample
+
+	set spec [hotwater_steam_settings_spec]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec ShotSample bigeendian
+	foreach {field val} [array get ShotSample] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set ShotSample($field) [expr $extra]
+		}
+	}
+}
+
 proc parse_binary_shot_desc {packed destarrname} {
 	upvar $destarrname ShotSample
 	unset -nocomplain ShotSample
@@ -604,6 +624,7 @@ proc update_de1_shotvalue {packed} {
 	SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
 	SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
 	FrameNumber {char {} {} {unsigned} {}}
+	SteamTemp {short {} {} {unsigned} {$val / 256.0}}
   }
 
    array set specarr $spec
@@ -637,11 +658,15 @@ proc update_de1_shotvalue {packed} {
   }
   if {[info exists ShotSample(HeadTemp)] == 1} {
 	set ::de1(head_temperature) $ShotSample(HeadTemp)
-	#msg "updated head temp"
+	#msg "updated head temp $ShotSample(HeadTemp)"
   }
   if {[info exists ShotSample(MixTemp)] == 1} {
 	set ::de1(mix_temperature) $ShotSample(MixTemp)
-	#msg "updated mix temp"
+	#msg "updated mix temp to $ShotSample(MixTemp)"
+  }
+  if {[info exists ShotSample(SteamTemp)] == 1} {
+	set ::de1(steam_heater_temperature) $ShotSample(SteamTemp)
+	#msg "updated mix temp to $ShotSample(MixTemp)"
   }
   if {[info exists ShotSample(GroupFlow)] == 1 && $delta != 0} {
 	set ::de1(flow) $ShotSample(GroupFlow)
