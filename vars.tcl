@@ -12,6 +12,9 @@ proc clear_espresso_chart {} {
 	espresso_temperature_mix length 0
 	espresso_temperature_basket length 0
 	espresso_state_change length 0
+	espresso_pressure_goal length 0
+	espresso_flow_goal length 0
+	espresso_temperature_goal length 0
 	clear_timers
 
 	update
@@ -59,6 +62,7 @@ proc clear_timers {} {
 	set start_timer [clock seconds]
 	set start_millitimer [clock milliseconds]
 	unset -nocomplain ::timers
+	unset -nocomplain ::substate_timers
 	puts "clearing timers"
 }
 
@@ -76,10 +80,11 @@ proc millitimer {} {
 proc event_timer_calculate {state destination_state previous_states} {
 
 	set eventtime [get_timer $state $destination_state]
+	 set beforetime 0
 	foreach s $previous_states {
-		set beforetime [get_timer $state $s]
-		if {$beforetime != 0} {
-			break
+		set thistime [get_timer $state $s]
+		if {$thistime > $beforetime} {
+			set beforetime $thistime
 		}
 	}
 
@@ -93,12 +98,12 @@ proc event_timer_calculate {state destination_state previous_states} {
 }
 
 proc preinfusion_timer {} {
-	return [event_timer_calculate "Espresso" "preinfusion" {"perfecting the mix" "final heating"} ]
+	return [event_timer_calculate "Espresso" "preinfusion" {"perfecting the mix" "final heating" "heating the water tank"} ]
 }
 
 
 proc pour_timer {} {
-	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "perfecting the mix" "final heating"} ]
+	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "perfecting the mix" "final heating" "heating the water tank"} ]
 }
 
 
@@ -111,13 +116,12 @@ proc water_timer {} {
 }
 
 proc waterflow {} {
-
 	if {$::de1(substate) != $::de1_substate_types_reversed(pouring) && $::de1(substate) != $::de1_substate_types_reversed(preinfusion)} {	
 		return 0
 	}
 
 	if {$::android == 0} {
-		set ::de1(flow) [expr {rand() * 5}]
+		set ::de1(flow) [expr {4 + (rand() * 2)}]
 	}
 
 	return $::de1(flow)
@@ -141,14 +145,15 @@ proc watervolume {} {
 
 proc steamtemp {} {
 	if {$::android == 0} {
-		set ::de1(steam_heater_temperature) [expr {int(140+(rand() * 20))}]
+		set ::de1(steam_heater_temperature) [expr {int(160+(rand() * 5))}]
 	}
 	return $::de1(steam_heater_temperature)
 }
 
 proc watertemp {} {
 	if {$::android == 0} {
-		set ::de1(head_temperature) [expr {80 + (rand() * 10)}]
+		set ::de1(head_temperature) [expr {$::settings(espresso_temperature) - 2.0 + (rand() * 4)}]
+		set ::de1(goal_temperature) $::settings(espresso_temperature)
 	}
 
 	return $::de1(head_temperature)
@@ -199,7 +204,7 @@ proc accelerometer_angle_text {} {
 
 proc group_head_heater_temperature {} {
 	if {$::android == 0} {
-		set ::de1(head_temperature) [expr {80 + (rand() * 15)}]
+		set ::de1(head_temperature) [expr {80 + (rand() * 15.0)}]
 	}
 
 	return $::de1(head_temperature)
@@ -207,7 +212,7 @@ proc group_head_heater_temperature {} {
 
 proc steam_heater_temperature {} {
 	if {$::android == 0} {
-		set ::de1(mix_temperature) [expr {140 + (rand() * 20)}]
+		set ::de1(mix_temperature) [expr {140 + (rand() * 20.0)}]
 	}
 
 	return $::de1(steam_heater_temperature)
@@ -215,7 +220,7 @@ proc steam_heater_temperature {} {
 }
 proc water_mix_temperature {} {
 	if {$::android == 0} {
-		set ::de1(mix_temperature) [expr {80 + (rand() * 15)}]
+		set ::de1(mix_temperature) [expr {80 + (rand() * 15.0)}]
 	}
 
 	return $::de1(mix_temperature)
@@ -260,7 +265,7 @@ proc return_liquid_measurement {in} {
 	if {$::settings(enable_fluid_ounces) != 1} {
 		return [subst {[round_to_two_digits $in] [translate "ml"]}]
 	} else {
-		return [subst {[round_to_two_digits [ml_to_oz $in]] "oz"}]
+		return [subst {[round_to_two_digits [ml_to_oz $in]] oz}]
 	}
 }
 
@@ -268,12 +273,12 @@ proc return_flow_measurement {in} {
 	if {$::settings(enable_fluid_ounces) != 1} {
 		return [subst {[round_to_two_digits $in] [translate "ml/s"]}]
 	} else {
-		return [subst {[round_to_two_digits [ml_to_oz $in]] "oz/s"}]
+		return [subst {[round_to_two_digits [ml_to_oz $in]] oz/s}]
 	}
 }
 
 proc waterflow_text {} {
-	return [return_flow_measurement $::de1(flow)] 
+	return [return_flow_measurement [waterflow]] 
 }
 
 proc watervolume_text {} {
@@ -330,11 +335,18 @@ proc setting_water_temperature {} {
 	return $::settings(water_temperature)
 }
 
+proc return_temperature_number {in} {
+	if {$::settings(enable_fahrenheit) == 1} {
+		return [round_to_one_digits [celsius_to_fahrenheit $in]]
+	} else {
+		return [round_to_one_digits $in]
+	}
+}
 proc return_temperature_measurement {in} {
 	if {$::settings(enable_fahrenheit) == 1} {
-		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+		return [subst {[round_to_one_digits [celsius_to_fahrenheit $in]]ºF}]
 	} else {
-		return [subst {[round_to_integer $in]ºC}]
+		return [subst {[round_to_one_digits $in]ºC}]
 	}
 }
 

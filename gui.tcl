@@ -352,7 +352,7 @@ proc platform_button_unpress {} {
 set cnt 0
 set debuglog {}					
 proc msg {text} {
-	#return
+	return
 
 	if {$text == ""} {
 		return
@@ -784,7 +784,7 @@ proc update_de1_explanation_chart { {itemval {}} } {
 	}
 
 	# ramp up the pressure
-	set totalramptime [expr {round($::settings(espresso_pressure))}]
+	set totalramptime [expr {round($::settings(espresso_pressure) * 0.5)}]
 	incr seconds $totalramptime
 	espresso_de1_explanation_chart_elapsed append $seconds
 	espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)

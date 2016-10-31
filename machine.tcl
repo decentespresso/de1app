@@ -44,7 +44,7 @@ array set ::de1 {
 	max_pressure 12
 	max_flowrate 10
 	min_temperature 80
-	max_temperature 99
+	max_temperature 100
 	goal_flow 2
 	goal_pressure 6
 	goal_temperature 90
@@ -234,7 +234,7 @@ proc start_espresso {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 
-	#clear_espresso_chart
+	clear_espresso_chart
 
 	de1_send $::de1_state(Espresso)
 

@@ -291,6 +291,10 @@ proc setup_environment {} {
                 #puts "borg $args"
             }
         }
+
+        proc de1_send_steam_hotwater_settings {} {}
+        proc de1_read_hotwater {} {return 90}
+        proc de1_send_shot_frames {} {}
         proc de1_send {x} { clear_timers;delay_screen_saver;puts "de1_send '$x'" }
         proc de1_read {} { puts "de1_read" }
         proc app_exit {} { exit }       

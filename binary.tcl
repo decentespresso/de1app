@@ -802,19 +802,20 @@ proc update_de1_shotvalue {packed} {
 
 	#msg "de1 internals: [array get ShotSample]"
 	set delta 0
-  if {[info exists ShotSample(Timer)] == 1} {
-	#set ::de1(timer) [expr {$::de1(timer) + $ShotSample(Delta)}]
+ if {[info exists ShotSample(Timer)] == 1} {
 	set previous_timer $::de1(timer)
 	set ::de1(timer) $ShotSample(Timer)
 	set delta [expr {$::de1(timer) - $previous_timer}]
-
-	# save the time associated with each substate
 	set timerkey "$::de1(state)-$::de1(substate)"
 	set ::timers($timerkey) $::de1(timer)
-	#msg "timers: [array get ::timers]"
-
-	#msg "updated timer to $::de1(timer) - delta=$delta"
   }
+	#set previous_timer $::de1(timer)
+	#set ::de1(timer) [clock milliseconds]
+	#set delta [expr {$::de1(timer) - $previous_timer}]
+	#set timerkey "$::de1(state)-$::de1(substate)"
+	#set ::timers($timerkey) $::de1(timer)
+
+
   if {[info exists ShotSample(HeadTemp)] == 1} {
 	set ::de1(head_temperature) $ShotSample(HeadTemp)
 	#msg "updated head temp $ShotSample(HeadTemp)"
@@ -883,17 +884,31 @@ proc append_live_data_to_espresso_chart {} {
 	espresso_elapsed append [expr {[millitimer]/1000.0}]
 	espresso_pressure append $::de1(pressure)
 	espresso_flow append $::de1(flow)
-	espresso_temperature_mix append $::de1(mix_temperature)
-	espresso_temperature_basket append $::de1(head_temperature)
+	espresso_temperature_mix append [return_temperature_number $::de1(mix_temperature)]
+	espresso_temperature_basket append [return_temperature_number $::de1(head_temperature)]
 	espresso_state_change append $state_change_chart_value
-	espresso_flow_goal append $::de1(goal_flow)
-	espresso_pressure_goal append $::de1(goal_pressure)
-	espresso_temperature_goal append $::de1(goal_temperature)
+
+	# don't chart goals at zero, instead take them off the chart
+	if {$::de1(goal_flow) == 0} {
+		espresso_flow_goal append -1
+	} else {
+		espresso_flow_goal append $::de1(goal_flow)
+	}
+
+	# don't chart goals at zero, instead take them off the chart
+	if {$::de1(goal_pressure) == 0} {
+		espresso_pressure_goal append -1
+	} else {
+		espresso_pressure_goal append $::de1(goal_pressure)
+	}
+
+	espresso_temperature_goal append [return_temperature_number $::de1(goal_temperature)]
 
 	# if the state changes flip the value negative
 	if {$previous_de1_substate != $::de1(substate)} {
-	  set previous_de1_substate $::de1(substate)
-	  set state_change_chart_value [expr {$state_change_chart_value * -1}]
+	  	set previous_de1_substate $::de1(substate)
+		#set ::substate_timers($previous_timer) [clock seconds]
+	  	set state_change_chart_value [expr {$state_change_chart_value * -1}]
 	}
 
   }
