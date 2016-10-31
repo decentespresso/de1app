@@ -289,7 +289,7 @@ proc convert_float_to_F8_1_7 {in} {
 }
 
 proc convert_float_to_U10P0 {in} {
-	return [expr {$in | 1024}]
+	return [expr {round($in) | 1024}]
 }
 
 proc make_shot_flag {enabled_features} {
@@ -318,7 +318,162 @@ proc make_shot_flag {enabled_features} {
 	return $num
 }
 
+
+proc parse_binary_shotdescheader {packed destarrname} {
+	upvar $destarrname ShotSample
+	unset -nocomplain ShotSample
+
+	set spec [spec_shotdescheader]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec ShotSample bigeendian
+	foreach {field val} [array get ShotSample] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set ShotSample($field) [expr $extra]
+		}
+	}
+}
+
+proc parse_binary_shotframe {packed destarrname} {
+	upvar $destarrname ShotSample
+	unset -nocomplain ShotSample
+
+	set spec [spec_shotframe]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec ShotSample bigeendian
+	foreach {field val} [array get ShotSample] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set ShotSample($field) [expr $extra]
+		}
+	}
+}
+
+proc spec_shotdescheader {} {
+	set spec {
+		HeaderV {char {} {} {unsigned} {}}
+		NumberOfFrames {char {} {} {unsigned} {}}
+		NumberOfPreinfuseFrames {char {} {} {unsigned} {}}
+		MinimumPressure {char {} {} {unsigned} {$val / 16.0}}
+		MaximumFlow {char {} {} {unsigned} {$val / 16.0}}
+	}
+
+}
+
+proc spec_shotframe {} {
+	set spec {
+		FrameToWrite {char {} {} {unsigned} {}}
+		Flag {char {} {} {unsigned} {}}
+		SetVal {char {} {} {unsigned} {$val / 16.0}}
+		Temp {char {} {} {unsigned} {$val / 2.0}}
+		FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
+		TriggerVal {char {} {} {unsigned} {$val / 16.0}}
+		MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+	}
+	return $spec
+}
+
+proc make_chunked_packed_shot_sample {hdrarrname framenames} {
+	upvar $hdrarrname hdrarr
+
+	set packed_header [::fields::pack [spec_shotdescheader] hdrarr]
+
+	set packed_frames {}
+
+	foreach framearrname $framenames {
+		upvar $framearrname $hdrarrname
+		lappend packed_frames [::fields::pack [spec_shotframe] $hdrarrname]
+	}
+	return [list $packed_header $packed_frames]
+}
+
+# return two values as a list, with the 1st being the packed header, and the 2nd value itself
+# being a list of packed frames
+proc return_chunked_de1_packed_shot_sample {} {
+
+	set hdr(HeaderV) 1
+	set hdr(MinimumPressure) 0
+	set hdr(MaximumFlow) [convert_float_to_U8P4 6]
+
+	if {$::settings(preinfusion_enabled) == 1} {
+		set hdr(NumberOfFrames) 4
+		set hdr(NumberOfPreinfuseFrames) 1
+
+		set frame1(FrameToWrite) 0
+		set frame1(Flag) [make_shot_flag {CtrlF DoCompare DC_GT IgnoreLimit}] 
+		set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
+		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+		set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_stop_timeout)]
+		set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
+		set frame1(MaxVol) [convert_float_to_U10P0 $::settings(preinfusion_stop_volumetric)]
+
+		set frame2(FrameToWrite) 1
+		set frame2(Flag) [make_shot_flag {DoCompare DC_GT IgnoreLimit}] 
+		set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_rampup_timeout)]
+		set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+		set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_rampup_stop_volumetric)]
+
+		set frame3(FrameToWrite) 2
+		set frame3(Flag) [make_shot_flag {IgnoreLimit}] 
+		set frame3(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+		set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_hold_time)]
+		set frame3(TriggerVal) 0
+		set frame3(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
+
+		set frame4(FrameToWrite) 3
+		set frame4(Flag) [make_shot_flag {IgnoreLimit Interpolate}] 
+		set frame4(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
+		set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+		set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
+		set frame4(TriggerVal) 0
+		set frame4(MaxVol) [convert_float_to_U10P0 $::settings(decline_stop_volumetric)]
+
+		return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3 frame4]]
+	} else {
+		set hdr(NumberOfFrames) 3
+		set hdr(NumberOfPreinfuseFrames) 0
+
+		set frame1(FrameToWrite) 0
+		set frame1(Flag) [make_shot_flag {DoCompare DC_GT IgnoreLimit}] 
+		set frame1(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+		set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_rampup_timeout)]
+		set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+		set frame1(MaxVol) [convert_float_to_U10P0 $::settings(pressure_rampup_stop_volumetric)]
+
+		set frame2(FrameToWrite) 1
+		set frame2(Flag) [make_shot_flag {IgnoreLimit}] 
+		set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_hold_time)]
+		set frame2(TriggerVal) 0
+		set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
+
+		set frame3(FrameToWrite) 2
+		set frame3(Flag) [make_shot_flag {IgnoreLimit Interpolate}] 
+		set frame3(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
+		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+		set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
+		set frame3(TriggerVal) 0
+		set frame3(MaxVol) [convert_float_to_U10P0 $::settings(decline_stop_volumetric)]
+
+		return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3]]
+	}
+
+}
+
+
+
 proc return_de1_packed_shot_sample {} {
+
+	#set ::settings(preinfusion_stop_pressure) 
 
 	set framenum 1
 	set arr(00_HeaderV) 1
@@ -477,73 +632,77 @@ proc shot_sample_spec {} {
 		01_Temp {char {} {} {unsigned} {$val / 2.0}}
 		01_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		01_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		01_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		01_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 
 		02_Flag {char {} {} {unsigned} {}}
 		02_SetVal {char {} {} {unsigned} {$val / 16.0}}
 		02_Temp {char {} {} {unsigned} {$val / 2.0}}
 		02_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		02_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		02_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		02_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 
 		03_Flag {char {} {} {unsigned} {}}
 		03_SetVal {char {} {} {unsigned} {$val / 16.0}}
 		03_Temp {char {} {} {unsigned} {$val / 2.0}}
 		03_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		03_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		03_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		03_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 
 		04_Flag {char {} {} {unsigned} {}}
 		04_SetVal {char {} {} {unsigned} {$val / 16.0}}
 		04_Temp {char {} {} {unsigned} {$val / 2.0}}
 		04_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		04_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		04_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		04_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 
 		05_Flag {char {} {} {unsigned} {}}
 		05_SetVal {char {} {} {unsigned} {$val / 16.0}}
 		05_Temp {char {} {} {unsigned} {$val / 2.0}}
 		05_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		05_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		05_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		05_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 
 		06_Flag {char {} {} {unsigned} {}}
 		06_SetVal {char {} {} {unsigned} {$val / 16.0}}
 		06_Temp {char {} {} {unsigned} {$val / 2.0}}
 		06_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		06_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		06_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		06_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 
 		07_Flag {char {} {} {unsigned} {}}
 		07_SetVal {char {} {} {unsigned} {$val / 16.0}}
 		07_Temp {char {} {} {unsigned} {$val / 2.0}}
 		07_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		07_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		07_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		07_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 
 		08_Flag {char {} {} {unsigned} {}}
 		08_SetVal {char {} {} {unsigned} {$val / 16.0}}
 		08_Temp {char {} {} {unsigned} {$val / 2.0}}
 		08_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		08_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		08_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		08_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 
 		09_Flag {char {} {} {unsigned} {}}
 		09_SetVal {char {} {} {unsigned} {$val / 16.0}}
 		09_Temp {char {} {} {unsigned} {$val / 2.0}}
 		09_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		09_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		09_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		09_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 
 		10_Flag {char {} {} {unsigned} {}}
 		10_SetVal {char {} {} {unsigned} {$val / 16.0}}
 		10_Temp {char {} {} {unsigned} {$val / 2.0}}
 		10_FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
 		10_TriggerVal {char {} {} {unsigned} {$val / 16.0}}
-		10_MaxVol {short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		10_MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 	}
 
 }
+
+
+
+
 
 proc parse_binary_hotwater_desc {packed destarrname} {
 	upvar $destarrname ShotSample
@@ -614,17 +773,17 @@ proc update_de1_shotvalue {packed} {
 
   # the timer stores hundreds of a second, so we take the half cycles, divide them by hertz/2 to get seconds, and then multiple that all by 100 to get 100ths of a second, stored as an int
   set spec {
-	Timer {short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
+	Timer {Short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
 	GroupPressure {char {} {} {unsigned} {$val / 16.0}}
 	GroupFlow {char {} {} {unsigned} {$val / 16.0}}
-	MixTemp {short {} {} {unsigned} {$val / 256.0}}
-	HeadTemp {short {} {} {unsigned} {$val / 256.0}}
-	SetMixTemp {short {} {} {unsigned} {$val / 256.0}}
-	SetHeadTemp {short {} {} {unsigned} {$val / 256.0}}
+	MixTemp {Short {} {} {unsigned} {$val / 256.0}}
+	HeadTemp {Short {} {} {unsigned} {$val / 256.0}}
+	SetMixTemp {Short {} {} {unsigned} {$val / 256.0}}
+	SetHeadTemp {Short {} {} {unsigned} {$val / 256.0}}
 	SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
 	SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
 	FrameNumber {char {} {} {unsigned} {}}
-	SteamTemp {short {} {} {unsigned} {$val / 256.0}}
+	SteamTemp {Short {} {} {unsigned} {$val / 256.0}}
   }
 
    array set specarr $spec
@@ -671,15 +830,28 @@ proc update_de1_shotvalue {packed} {
   if {[info exists ShotSample(GroupFlow)] == 1 && $delta != 0} {
 	set ::de1(flow) $ShotSample(GroupFlow)
 	set ::de1(volume) [expr {$::de1(volume) + ($ShotSample(GroupFlow) * ($delta/100.0) )}]
-
 	#msg "updated flow"
   }
+
   if {[info exists ShotSample(GroupPressure)] == 1} {
 	set ::de1(pressure) $ShotSample(GroupPressure)
 	#msg "updated pressure"
-
-
   }
+
+  if {[info exists ShotSample(SetGroupFlow)] == 1} {
+	set ::de1(goal_flow) $ShotSample(SetGroupFlow)
+	#msg "updated head flow $ShotSample(SetGroupFlow)"
+  }
+  if {[info exists ShotSample(SetGroupPressure)] == 1} {
+	set ::de1(goal_pressure) $ShotSample(SetGroupPressure)
+	#msg "updated head pressure $ShotSample(SetGroupPressure)"
+  }
+  if {[info exists ShotSample(SetHeadTemp)] == 1} {
+	set ::de1(goal_temperature) $ShotSample(SetHeadTemp)
+	#msg "updated head temp $ShotSample(SetHeadTemp)"
+  }
+
+
 
   append_live_data_to_espresso_chart
 
@@ -714,6 +886,9 @@ proc append_live_data_to_espresso_chart {} {
 	espresso_temperature_mix append $::de1(mix_temperature)
 	espresso_temperature_basket append $::de1(head_temperature)
 	espresso_state_change append $state_change_chart_value
+	espresso_flow_goal append $::de1(goal_flow)
+	espresso_pressure_goal append $::de1(goal_pressure)
+	espresso_temperature_goal append $::de1(goal_temperature)
 
 	# if the state changes flip the value negative
 	if {$previous_de1_substate != $::de1(substate)} {

@@ -511,9 +511,10 @@ proc save_array_to_file {arrname fn} {
 
 proc save_settings {} {
     msg "saving settings"
-    #de1_send_steam_hotwater_settings
+    de1_send_steam_hotwater_settings
+    de1_read_hotwater
+    
     de1_send_shot_frames
-    #de1_read_hotwater
     #de1_send_shot_frames
     #send_de1_shot_and_steam_settings
     save_array_to_file ::settings "settings.tdb"

@@ -1,6 +1,11 @@
 package provide de1_gui 1.0
 
 package require img::jpeg
+
+
+proc chart_refresh {} {
+
+}
 	
 proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 	set yrange [expr {$y1 - $y0}]
@@ -233,6 +238,7 @@ proc install_this_app_icon {} {
 		set x [borg shortcut add "DE1-C #5" $appurl $iconbase64b]
 		puts "shortcut added: '$x'"
 	}
+#return
 
 	set appurl "file://mnt/sdcard/de1beta/de1c-3.tcl"
 	catch {
@@ -241,7 +247,6 @@ proc install_this_app_icon {} {
 	}
 
 
-return
 
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus.tcl"
@@ -610,7 +615,13 @@ proc check_if_should_start_screen_saver {} {
 }
 
 
+proc update_chart {} {
+	espresso_elapsed notify now
+}
+
 proc update_onscreen_variables {} {
+
+	update_chart
 
 	#save_settings
 
@@ -683,6 +694,8 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	delay_screen_saver
 
+
+
 	if {$page_to_show == "saver"} {
 		after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
 	}
@@ -743,6 +756,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		}
 	}
 
+	after 100 update_chart
 
 }
 

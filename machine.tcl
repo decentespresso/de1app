@@ -23,6 +23,8 @@ array set ::de1 {
 	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
 	cuuid_0b "0000a00b-0000-1000-8000-00805f9b34fb"
 	cuuid_0c "0000a00c-0000-1000-8000-00805f9b34fb"
+	cuuid_0f "0000a00f-0000-1000-8000-00805f9b34fb"
+	cuuid_10 "0000A010-0000-1000-8000-00805F9B34FB"
 	cinstance 0
 	pressure 0
 	head_temperature 0
@@ -43,6 +45,9 @@ array set ::de1 {
 	max_flowrate 10
 	min_temperature 80
 	max_temperature 99
+	goal_flow 2
+	goal_pressure 6
+	goal_temperature 90
 	water_level_percent 0
 	water_heater_wattage 1500
 	steam_heater_wattage 1500
@@ -70,7 +75,7 @@ catch {
 #namespace import blt::*
 #namespace import -force blt::tile::*
 
-blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_temperature_mix espresso_temperature_basket espresso_state_change 
+blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_temperature_goal
 blt::vector espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_elapsed
 #espresso_elapsed append 0
 #espresso_pressure append 0
