@@ -123,6 +123,7 @@ array set ::settings {
 	app_brightness 100
 	saver_brightness 30
 	accelerometer_angle 45
+	goal_is_basket_temp 1
 	flight_mode_angle 30
 	machine_name "pretty decent"
 	enable_spoken_prompts 0

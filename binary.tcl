@@ -404,7 +404,12 @@ proc return_chunked_de1_packed_shot_sample {} {
 		set hdr(NumberOfPreinfuseFrames) 1
 
 		set frame1(FrameToWrite) 0
-		set frame1(Flag) [make_shot_flag {CtrlF DoCompare DC_GT IgnoreLimit}] 
+		
+		if {$::settings(goal_is_basket_temp) == 1} {
+			set frame1(Flag) [make_shot_flag {CtrlF DoCompare DC_GT IgnoreLimit}] 
+		} else {
+			set frame1(Flag) [make_shot_flag {CtrlF DoCompare DC_GT IgnoreLimit TMixTemp}] 
+		}
 		set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
 		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 		set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_stop_timeout)]
@@ -412,7 +417,11 @@ proc return_chunked_de1_packed_shot_sample {} {
 		set frame1(MaxVol) [convert_float_to_U10P0 $::settings(preinfusion_stop_volumetric)]
 
 		set frame2(FrameToWrite) 1
-		set frame2(Flag) [make_shot_flag {DoCompare DC_GT IgnoreLimit}] 
+		if {$::settings(goal_is_basket_temp) == 1} {
+			set frame2(Flag) [make_shot_flag {DoCompare DC_GT IgnoreLimit}] 
+		} else {
+			set frame2(Flag) [make_shot_flag {DoCompare DC_GT IgnoreLimit TMixTemp}] 
+		}
 		set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
 		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_rampup_timeout)]
@@ -420,7 +429,11 @@ proc return_chunked_de1_packed_shot_sample {} {
 		set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_rampup_stop_volumetric)]
 
 		set frame3(FrameToWrite) 2
-		set frame3(Flag) [make_shot_flag {IgnoreLimit}] 
+		if {$::settings(goal_is_basket_temp) == 1} {
+			set frame3(Flag) [make_shot_flag {IgnoreLimit}] 
+		} else {
+			set frame3(Flag) [make_shot_flag {IgnoreLimit TMixTemp}] 
+		}
 		set frame3(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
 		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 		set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_hold_time)]
@@ -428,7 +441,11 @@ proc return_chunked_de1_packed_shot_sample {} {
 		set frame3(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
 
 		set frame4(FrameToWrite) 3
-		set frame4(Flag) [make_shot_flag {IgnoreLimit Interpolate}] 
+		if {$::settings(goal_is_basket_temp) == 1} {
+			set frame4(Flag) [make_shot_flag {IgnoreLimit Interpolate}] 
+		} else {
+			set frame4(Flag) [make_shot_flag {IgnoreLimit Interpolate TMixTemp}] 
+		}
 		set frame4(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
 		set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 		set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
@@ -441,7 +458,14 @@ proc return_chunked_de1_packed_shot_sample {} {
 		set hdr(NumberOfPreinfuseFrames) 0
 
 		set frame1(FrameToWrite) 0
-		set frame1(Flag) [make_shot_flag {DoCompare DC_GT IgnoreLimit}] 
+		
+		if {$::settings(goal_is_basket_temp) == 1} {
+			set frame1(Flag) [make_shot_flag {DoCompare DC_GT IgnoreLimit}] 
+		} else {
+			set frame1(Flag) [make_shot_flag {DoCompare DC_GT IgnoreLimit TMixTemp}] 
+		}
+
+
 		set frame1(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
 		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 		set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_rampup_timeout)]
@@ -449,7 +473,11 @@ proc return_chunked_de1_packed_shot_sample {} {
 		set frame1(MaxVol) [convert_float_to_U10P0 $::settings(pressure_rampup_stop_volumetric)]
 
 		set frame2(FrameToWrite) 1
-		set frame2(Flag) [make_shot_flag {IgnoreLimit}] 
+		if {$::settings(goal_is_basket_temp) == 1} {
+			set frame2(Flag) [make_shot_flag {IgnoreLimit}] 
+		} else {
+			set frame2(Flag) [make_shot_flag {IgnoreLimit TMixTemp}] 
+		}
 		set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
 		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_hold_time)]
@@ -457,7 +485,11 @@ proc return_chunked_de1_packed_shot_sample {} {
 		set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
 
 		set frame3(FrameToWrite) 2
-		set frame3(Flag) [make_shot_flag {IgnoreLimit Interpolate}] 
+		if {$::settings(goal_is_basket_temp) == 1} {
+			set frame3(Flag) [make_shot_flag {IgnoreLimit Interpolate}] 
+		} else {
+			set frame3(Flag) [make_shot_flag {IgnoreLimit Interpolate TMixTemp}] 
+		}
 		set frame3(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
 		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 		set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
@@ -471,7 +503,7 @@ proc return_chunked_de1_packed_shot_sample {} {
 
 
 
-proc return_de1_packed_shot_sample {} {
+proc return_de1_packed_shot_sample_obsolete {} {
 
 	#set ::settings(preinfusion_stop_pressure) 
 
