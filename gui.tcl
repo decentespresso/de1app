@@ -836,4 +836,4 @@ proc ui_startup {} {
 
 
 
-install_this_app_icon
+#install_this_app_icon
