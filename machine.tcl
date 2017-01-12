@@ -53,7 +53,7 @@ array set ::de1 {
 	steam_heater_wattage 1500
 	group_heater_wattage 500
 	hertz 50
-	steam_min_temperature 140
+	steam_min_temperature 120
 	steam_max_temperature 170
 	water_min_temperature 20
 	water_max_temperature 95
