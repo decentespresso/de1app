@@ -1,6 +1,7 @@
 #!/usr/local/bin/tclsh
 
-cd "[file dirname [info script]]/"
+set homedir "[file dirname [info script]]/"
+cd $homedir
 source "pkgIndex.tcl"
 set de1(has_flowmeter) 0
 set ::de1(de1_address) "C1:80:A7:32:CD:A3"
