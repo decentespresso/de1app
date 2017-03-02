@@ -1,5 +1,14 @@
 package provide de1_utils 1.0
 
+
+proc homedir {} {
+    global home
+    if {[info exists home] != 1} {
+        set home [file normalize [file dirname [info script]]]
+    }
+    return $home
+}
+
 proc reverse_array {arrname} {
 	upvar $arrname arr
 	foreach {k v} [array get arr] {
@@ -31,6 +40,7 @@ proc random_saver_file {} {
 
 proc random_splash_file {} {
     return [random_pick [glob "[splash_directory]/*.jpg"]]
+    #return [random_pick [glob "/d/admin/code/dbeta/splash/1280x800/*.jpg"]]
 }
 
 proc pause {time} {
@@ -231,15 +241,15 @@ proc setup_environment {} {
         set screen_size_width 1920
         set screen_size_height 1200
         set fontm 1.5
+        
 
         set screen_size_width 2560
         set screen_size_height 1600
         set fontm 2
-        
+
         set screen_size_width 1280
         set screen_size_height 800
         set fontm 1
-
 
         #set screen_size_width 1920
         #set screen_size_height 1080
@@ -331,21 +341,45 @@ proc skin_directory {} {
     }
 
     #puts "skind: $skindir"
-    set dir "[file dirname [info script]]/$skindir/default/${screen_size_width}x${screen_size_height}"
+    #set dir "[file dirname [info script]]/$skindir/default/${screen_size_width}x${screen_size_height}"
+    set dir "[file dirname [info script]]/$skindir/default"
+    return $dir
+}
+
+
+proc skin_directory_graphics {} {
+    global screen_size_width
+    global screen_size_height
+
+    set skindir "[homedir]/skins"
+    if {[ifexists ::de1(has_flowmeter)] == 1} {
+        set skindir "[homedir]/skinsplus"
+    }
+
+    if {[ifexists ::creator] == 1} {
+        set skindir "[homedir]/skinscreator"
+    }
+
+    #puts "skind: $skindir"
+    set dir "$skindir/default/${screen_size_width}x${screen_size_height}"
+    #set dir "[file dirname [info script]]/$skindir/default"
     return $dir
 }
 
 proc saver_directory {} {
-    global screen_size_width
-    global screen_size_height
-    set dir "[file dirname [info script]]/saver/${screen_size_width}x${screen_size_height}"
-    return $dir
+    global saver_directory 
+    if {[info exists saver_directory] != 1} {
+        global screen_size_width
+        global screen_size_height
+        set saver_directory "[homedir]/saver/${screen_size_width}x${screen_size_height}"
+    }
+    return $saver_directory 
 }
 
 proc splash_directory {} {
     global screen_size_width
     global screen_size_height
-    set dir "[file dirname [info script]]/splash/${screen_size_width}x${screen_size_height}"
+    set dir "[homedir]/splash/${screen_size_width}x${screen_size_height}"
     return $dir
 }
 
@@ -529,6 +563,24 @@ proc load_settings {} {
     array set ::settings [read_file "settings.tdb"]
 }
 
+proc skin_xskale_factor {} {
+    global screen_size_width
+    return [expr {2560.0/$screen_size_width}]
+}
+
+proc skin_yskale_factor {} {
+    global screen_size_height
+    return [expr {1600.0/$screen_size_height}]
+}
+
+proc rescale_x_skin {in} {
+    return [expr {int($in / [skin_xskale_factor])}]
+}
+
+proc rescale_y_skin {in} {
+    return [expr {int($in / [skin_yskale_factor])}]
+}
+
 
 proc skin_convert {indir} {
     cd $indir
@@ -580,22 +632,19 @@ proc skin_convert {indir} {
             }
         }
 
-        set newskin [read_file "skin.tcl"]
-        #set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{\\1/$ydivisor\}\]"]
-        #set newskin [regsubex {\-length ([0-9]+)} $newskin "-length \[expr \{\\1/$xdivisor\}\]"]
+        #set newskin [read_file "skin.tcl"]
         
-        set newskin [regsubex {add_de1_widget (".*?") (.*?) ([0-9]+) ([0-9]+) } $newskin "add_de1_widget \\1 \\2 \[expr \{round(\\3/$xdivisor)\}\] \[expr \{round(\\4/$ydivisor)\}\] "]
-        set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_text \\1 \[expr \{round(\\2/$xdivisor)\}\] \[expr \{round(\\3/$ydivisor)\}\] "]
-        set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ?(".*?")?\n} $newskin "add_de1_button \\1 \\2 \[expr \{round(\\3/$xdivisor)\}\] \[expr \{round(\\4/$ydivisor)\}\] \[expr \{round(\\5/$xdivisor)\}\] \[expr \{round(\\6/$ydivisor)\}\] \\7\n"]
-        set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_variable \\1 \[expr \{round(\\2/$xdivisor)\}\] \[expr \{round(\\3/$ydivisor)\}\] "]
+        #set newskin [regsubex {add_de1_widget (".*?") (.*?) ([0-9]+) ([0-9]+) } $newskin "add_de1_widget \\1 \\2 \[expr \{round(\\3/$xdivisor)\}\] \[expr \{round(\\4/$ydivisor)\}\] "]
+        #set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_text \\1 \[expr \{round(\\2/$xdivisor)\}\] \[expr \{round(\\3/$ydivisor)\}\] "]
+        #set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ?(".*?")?\n} $newskin "add_de1_button \\1 \\2 \[expr \{round(\\3/$xdivisor)\}\] \[expr \{round(\\4/$ydivisor)\}\] \[expr \{round(\\5/$xdivisor)\}\] \[expr \{round(\\6/$ydivisor)\}\] \\7\n"]
+        #set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_variable \\1 \[expr \{round(\\2/$xdivisor)\}\] \[expr \{round(\\3/$ydivisor)\}\] "]
         
         # this the maximum text width for labels
-        #puts "xdivisor: $xdivisor"
-        set newskin [regsubex {\-linewidth ([0-9]+)} $newskin "-linewidth \[expr \{round(\\1/$xdivisor)\}\] "]
-        set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{round(\\1/$xdivisor)\}\] "]
-        set newskin [regsubex {\-length ([0-9]+)} $newskin "-length \[expr \{round(\\1/$ydivisor)\}\] "]
-        set newskin [regsubex {\-height ([0-9]+)} $newskin "-height \[expr \{round(\\1/$ydivisor)\}\] "]
-        write_file "../$dir/skin.tcl" $newskin 
+        #set newskin [regsubex {\-linewidth ([0-9]+)} $newskin "-linewidth \[expr \{round(\\1/$xdivisor)\}\] "]
+        #set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{round(\\1/$xdivisor)\}\] "]
+        #set newskin [regsubex {\-length ([0-9]+)} $newskin "-length \[expr \{round(\\1/$ydivisor)\}\] "]
+        #set newskin [regsubex {\-height ([0-9]+)} $newskin "-height \[expr \{round(\\1/$ydivisor)\}\] "]
+        #write_file "../$dir/skin.tcl" $newskin 
         
         if {$started != 0} {
             puts "";

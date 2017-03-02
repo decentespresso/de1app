@@ -6,6 +6,31 @@ package require img::jpeg
 proc chart_refresh {} {
 
 }
+
+
+proc add_de1_page {names apngfilename} {
+	set pngfilename "[skin_directory_graphics]/$apngfilename"
+	puts $pngfilename
+	image create photo $names -file $pngfilename
+	foreach name $names {
+		.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden
+	}
+}	
+
+proc set_de1_screen_saver_directory {{dirname {}}} {
+	global saver_directory
+	if {$dirname != ""} {
+		set saver_directory $dirname
+	}
+
+	set pngfilename [random_saver_file]
+	set names "saver"
+	puts $pngfilename
+	image create photo $names -file $pngfilename
+	foreach name $names {
+		.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden
+	}
+}	
 	
 proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 	set yrange [expr {$y1 - $y0}]
@@ -424,10 +449,14 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 				set width 1
 			}
 		}
-		.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+		set rx0 [rescale_x_skin $x0]
+		set rx1 [rescale_x_skin $x1]
+		set ry0 [rescale_y_skin $y0]
+		set ry1 [rescale_y_skin $y1]
+		.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
 		if {[info exists skindebug] == 1} {
 			if {$skindebug == 1} {
-				.can create rect $x0 $y0 $x1 $y1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden 
+				.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden 
 				#add_visual_item_to_context $displaycontext ${btn_name}_lines
 			}
 		}
@@ -436,10 +465,10 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 
 		#set tclcode [list page_display_change $displaycontext $newcontext]
 
-		regsub {%x0} $tclcode $x0 tclcode
-		regsub {%x1} $tclcode $x1 tclcode
-		regsub {%y0} $tclcode $y0 tclcode
-		regsub {%y1} $tclcode $y1 tclcode
+		regsub {%x0} $tclcode $rx0 tclcode
+		regsub {%x1} $tclcode $rx1 tclcode
+		regsub {%y0} $tclcode $ry0 tclcode
+		regsub {%y1} $tclcode $ry1 tclcode
 
 		.can bind $btn_name [platform_button_press] $tclcode
 
@@ -464,7 +493,9 @@ proc add_de1_text {args} {
 	set contexts [lindex $args 0]
 	set label_name "text_$text_cnt"
 	# keep track of what labels are displayed in what contexts
-	set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
+	set x [rescale_x_skin [lindex $args 1]]
+	set y [rescale_y_skin [lindex $args 2]]
+	set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
 	eval $torun
 
 	foreach context $contexts {
@@ -480,44 +511,46 @@ proc add_de1_widget {args} {
 	global widget_cnt
 	set contexts [lindex $args 0]
 
-		incr widget_cnt
-		set widgettype [lindex $args 1]
-		#set widget ".can.${contexts}_widget_${widgettype}_$widget_cnt"
-		set widget ".can.widget_${widgettype}_$widget_cnt"
-		#add_visual_item_to_context $context $widget
-		set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
-		set errcode [catch { 
-			eval $torun
-		} err]
+	incr widget_cnt
+	set widgettype [lindex $args 1]
+	#set widget ".can.${contexts}_widget_${widgettype}_$widget_cnt"
+	set widget ".can.widget_${widgettype}_$widget_cnt"
+	#add_visual_item_to_context $context $widget
+	set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
+	set errcode [catch { 
+		eval $torun
+	} err]
 
-		if {$errcode == 1} {
-			puts $err
-			puts "while running" 
-			puts $torun
-		}
+	if {$errcode == 1} {
+		puts $err
+		puts "while running" 
+		puts $torun
+	}
 
-		# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
-		if {$widgettype == "graph" && $::android == 1} {
-			$widget grid configure -dashes "" -color #DDDDDD -hide 0 -minor 1 
-			$widget configure -borderwidth 0
-		}
+	# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
+	if {$widgettype == "graph" && $::android == 1} {
+		$widget grid configure -dashes "" -color #DDDDDD -hide 0 -minor 1 
+		$widget configure -borderwidth 0
+	}
 
-		# the 4th parameter gives additional code to run when creating this widget, such as chart configuration instructions
-		set errcode [catch { 
-			eval [lindex $args 4]
-		} err]
+	# the 4th parameter gives additional code to run when creating this widget, such as chart configuration instructions
+	set errcode [catch { 
+		eval [lindex $args 4]
+	} err]
 
-		if {$errcode == 1} {
-			puts $err
-			puts "while running" 
-			puts [lindex $args 4]
-		}
-		#.can create window [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state normal
-		#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
-		set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
-		#puts "winfo: [winfo children .can]"
-		#.can bind $windowname [platform_button_press] "msg click"
-		
+	if {$errcode == 1} {
+		puts $err
+		puts "while running" 
+		puts [lindex $args 4]
+	}
+	#.can create window [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state normal
+	#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
+	set x [rescale_x_skin [lindex $args 2]]
+	set y [rescale_y_skin [lindex $args 3]]
+	set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden]
+	#puts "winfo: [winfo children .can]"
+	#.can bind $windowname [platform_button_press] "msg click"
+	
 
 		
 	set ::tclwindows($widget) [lrange $args 2 3]
@@ -545,7 +578,10 @@ proc add_de1_variable {args} {
 			set label_name "${context}_$text_cnt"
 			# keep track of what labels are displayed in what contexts
 			add_visual_item_to_context $context $label_name
-			set torun [concat [list .can create text] [lrange $args 1 end] -tag $label_name -state hidden]
+			set x [rescale_x_skin [lindex $args 1]]
+			set y [rescale_y_skin [lindex $args 2]]
+			set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
+			#puts $torun
 			eval $torun
 			add_variable_item_to_context $context $label_name $varcmd
 		}

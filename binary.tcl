@@ -619,8 +619,6 @@ proc return_de1_packed_shot_sample_obsolete {} {
 	set arr(10_FrameLen) 0
 	set arr(10_TriggerVal) 0
 	set arr(10_MaxVol) 0
-
-
 	return [make_packed_shot_sample arr]
 }
 
