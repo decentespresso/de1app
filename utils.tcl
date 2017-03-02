@@ -555,12 +555,18 @@ proc save_settings {} {
     de1_send_shot_frames
     #de1_send_shot_frames
     #send_de1_shot_and_steam_settings
-    save_array_to_file ::settings "settings.tdb"
+    save_array_to_file ::settings [settings_filename]
 }
 
 proc load_settings {} {
     puts "loading settings"
-    array set ::settings [read_file "settings.tdb"]
+    array set ::settings [read_file [settings_filename]]
+}
+
+proc settings_filename {} {
+    set fn "[file rootname [info script]]_settings.tdb"
+    #puts "sc: '$fn'"
+    return $fn
 }
 
 proc skin_xskale_factor {} {

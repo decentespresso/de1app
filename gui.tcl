@@ -10,7 +10,7 @@ proc chart_refresh {} {
 
 proc add_de1_page {names apngfilename} {
 	set pngfilename "[skin_directory_graphics]/$apngfilename"
-	puts $pngfilename
+	#puts $pngfilename
 	image create photo $names -file $pngfilename
 	foreach name $names {
 		.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden
@@ -25,13 +25,13 @@ proc set_de1_screen_saver_directory {{dirname {}}} {
 
 	set pngfilename [random_saver_file]
 	set names "saver"
-	puts $pngfilename
+	#puts $pngfilename
 	image create photo $names -file $pngfilename
 	foreach name $names {
 		.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden
 	}
 }	
-	
+
 proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 	set yrange [expr {$y1 - $y0}]
 	set yoffset [expr {$y - $y0}]

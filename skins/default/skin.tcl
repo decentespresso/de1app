@@ -9,14 +9,10 @@ add_de1_page "water" "tea_on.png"
 add_de1_page "sleep" "sleep.jpg"
 add_de1_page "tankfilling" "filling_tank.jpg"
 add_de1_page "tankempty" "fill_tank.jpg"
-
 set_de1_screen_saver_directory ""
-#[random_saver_file]
-
 
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/de1_skin_settings.tcl"
-
 
 ##############################################################################################################################################################################################################################################################################
 # OFF means the espresso machine is not currently doing anything.
@@ -72,9 +68,6 @@ add_de1_variable "off" 1280 1306 -justify left -anchor "nw" -text "" -font Helv_
 # we spell espresso with two SSs so that it is pronounced like Italians say it
 add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);start_espresso" 948 584 1606 1444
 
-
-
-##############################################################################################################################################################################################################################################################################
 # when state change to "off", send the command to the DE1 to go idle
 # tapping the power button tells the DE1 to go to sleep, and it will after a few seconds, at which point we display the screen saver
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 400 400
@@ -94,9 +87,7 @@ add_de1_variable "steam" 2058 1226 -justify left -anchor "nw" -font Helv_8 -text
 add_de1_text "steam" 2053 1276 -justify right -anchor "ne" -text [translate "Steam temp:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable "steam" 2058 1276 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 520 -textvariable {[steamtemp_text]} 
 
-
-# 
-# when it steam mode, tapping anywhere on the screen tells the DE1 to stop.
+# when in steam mode, tapping anywhere on the screen tells the DE1 to stop.
 add_de1_button "steam" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0 0 2560 1600
 
 

@@ -113,7 +113,7 @@ array set ::settings {
 	espresso_temperature 92
 	espresso_decline_time 25
 	preinfusion_enabled 1
-	preinfusion_time 10
+	preinfusion_time 5
 	pressure_hold_time 10
 	pressure_end 4 
 	espresso_step_1 pressure
@@ -132,12 +132,12 @@ array set ::settings {
 	sound_button_in 8
 	sound_button_out 11
 	flight_mode_enable 1
-	preinfusion_flow_rate 2
+	preinfusion_flow_rate 4
 	preinfusion_temperature 92
-	preinfusion_stop_flow_rate 1.5
-	preinfusion_stop_pressure 0.75
-	preinfusion_stop_volumetric 100 
-	preinfusion_stop_timeout 30
+	preinfusion_stop_flow_rate 1
+	preinfusion_stop_pressure 5
+	preinfusion_stop_volumetric 200 
+	preinfusion_stop_timeout 5
 	pressure_rampup_timeout 20
 	pressure_rampup_stop_volumetric 100
 	pressure_hold_stop_volumetric 200
