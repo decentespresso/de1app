@@ -9,7 +9,7 @@ add_de1_page "water" "tea_on.png"
 add_de1_page "sleep" "sleep.jpg"
 add_de1_page "tankfilling" "filling_tank.jpg"
 add_de1_page "tankempty" "fill_tank.jpg"
-set_de1_screen_saver_directory ""
+set_de1_screen_saver_directory "[homedir]/saver"
 
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/de1_skin_settings.tcl"

@@ -35,11 +35,11 @@ proc stacktrace {} {
 }
 
 proc random_saver_file {} {
-    return [random_pick [glob "[saver_directory]/*.jpg"]]
+    return [random_pick [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]]
 }
 
 proc random_splash_file {} {
-    return [random_pick [glob "[splash_directory]/*.jpg"]]
+    return [random_pick [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]]
     #return [random_pick [glob "/d/admin/code/dbeta/splash/1280x800/*.jpg"]]
 }
 
@@ -379,7 +379,7 @@ proc saver_directory {} {
 proc splash_directory {} {
     global screen_size_width
     global screen_size_height
-    set dir "[homedir]/splash/${screen_size_width}x${screen_size_height}"
+    set dir "[homedir]/splash"
     return $dir
 }
 
