@@ -8,8 +8,8 @@ proc chart_refresh {} {
 }
 
 
-proc add_de1_page {names apngfilename} {
-	set pngfilename "[skin_directory_graphics]/$apngfilename"
+proc add_de1_page {names pngfilename} {
+	#set pngfilename "[skin_directory_graphics]/$apngfilename"
 	#puts $pngfilename
 	image create photo $names -file $pngfilename
 	foreach name $names {

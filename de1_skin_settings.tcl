@@ -4,11 +4,11 @@
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
-add_de1_page "settings_1" "settings_1.png"
-add_de1_page "settings_1a" "settings_1a.png"
-add_de1_page "settings_2" "settings_2.png"
-add_de1_page "settings_3" "settings_3.png"
-add_de1_page "settings_4" "settings_4.png"
+add_de1_page "settings_1" "[skin_directory_graphics]/settings_1.png"
+add_de1_page "settings_1a" "[skin_directory_graphics]/settings_1a.png"
+add_de1_page "settings_2" "[skin_directory_graphics]/settings_2.png"
+add_de1_page "settings_3" "[skin_directory_graphics]/settings_3.png"
+add_de1_page "settings_4" "[skin_directory_graphics]/settings_4.png"
 
 
 ##############################################################################################################################################################################################################################################################################
