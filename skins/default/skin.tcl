@@ -1,4 +1,4 @@
-set ::skindebug 1
+set ::skindebug 0
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
@@ -12,7 +12,7 @@ add_de1_page "tankempty" "[skin_directory_graphics]/fill_tank.jpg"
 set_de1_screen_saver_directory "[homedir]/saver"
 
 # include the generic settings features for all DE1 skins.  
-source "[homedir]/de1_skin_settings.tcl"
+source "[homedir]/skins/default/de1_skin_settings.tcl"
 
 ##############################################################################################################################################################################################################################################################################
 # OFF means the espresso machine is not currently doing anything.

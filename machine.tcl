@@ -144,6 +144,7 @@ array set ::settings {
 	decline_stop_volumetric 500
 	steam_temperature 160
 	steam_timeout 300
+	skin "default"
 	preheat_volume 50
 	preheat_temperature 95
 	water_volume 50

@@ -347,6 +347,17 @@ proc skin_directory {} {
 }
 
 
+
+proc settings_directory_graphics {} {
+    z
+    global screen_size_width
+    global screen_size_height
+
+    set settingsdir "[homedir]/skins"
+    set dir "$settingsdir/default/${screen_size_width}x${screen_size_height}"
+    return $dir
+}
+
 proc skin_directory_graphics {} {
     global screen_size_width
     global screen_size_height
@@ -361,7 +372,7 @@ proc skin_directory_graphics {} {
     }
 
     #puts "skind: $skindir"
-    set dir "$skindir/default/${screen_size_width}x${screen_size_height}"
+    set dir "$skindir/$::settings(skin)/${screen_size_width}x${screen_size_height}"
     #set dir "[file dirname [info script]]/$skindir/default"
     return $dir
 }
@@ -621,7 +632,7 @@ proc skin_convert {indir} {
 
             if {$started == 0} {
                 set started 1
-                puts -nonewline "Making $dir skin. $indir"
+                puts -nonewline "Making $dir skin $indir"
             }
 
 
