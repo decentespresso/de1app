@@ -55,6 +55,35 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 
 }
 
+
+proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1} {
+	set yrange [expr {$y1 - $y0}]
+	set yoffset [expr {$y - $y0}]
+
+	set midpoint [expr {$y0 + ($yrange / 2)}]
+	set onequarterpoint [expr {$y0 + ($yrange / 4)}]
+	set threequarterpoint [expr {$y1 - ($yrange / 4)}]
+
+	set currentval [subst \$$varname]
+	set newval $currentval
+
+	if {$y < $onequarterpoint} {
+		set newval [expr "1.0 * \$$varname + $bigincrement"]
+	} elseif {$y < $midpoint} {
+		set newval [expr "1.0 * \$$varname + $smallincrement"]
+	} elseif {$y < $threequarterpoint} {
+		set newval [expr "1.0 * \$$varname - $smallincrement"]
+	} else {
+		set newval [expr "1.0 * \$$varname - $bigincrement"]
+	}
+
+	if {$newval <= $maxval && $newval >= $minval} {
+		set $varname $newval
+	}
+
+	return
+}
+
 proc random_pick {lst} {
     set pick [expr {int(rand() * [llength $lst])}] 
     return [lindex $lst $pick]
@@ -806,11 +835,11 @@ proc update_de1_explanation_chart { {itemval {}} } {
 	set seconds 0
 
 	# preinfusion
-	if {$::settings(preinfusion_enabled) == 1} {
+	if {$::settings(preinfusion_time) > 0} {
 		espresso_de1_explanation_chart_pressure append 0.5
 		espresso_de1_explanation_chart_elapsed append $seconds
 
-		incr seconds 10
+		set seconds [expr {$seconds + $::settings(preinfusion_time)}]
 		espresso_de1_explanation_chart_pressure append 0.5
 		espresso_de1_explanation_chart_elapsed append $seconds
 	} else {
@@ -820,16 +849,19 @@ proc update_de1_explanation_chart { {itemval {}} } {
 	}
 
 	# ramp up the pressure
-	set totalramptime [expr {round($::settings(espresso_pressure) * 0.5)}]
-	incr seconds $totalramptime
+	set totalramptime [expr {($::settings(espresso_pressure) * 0.3)}]
+	#incr seconds $totalramptime
+	set seconds [expr {$seconds + $totalramptime}]
 	espresso_de1_explanation_chart_elapsed append $seconds
 	espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)
 
-	incr seconds $::settings(pressure_hold_time)
+	#incr seconds $::settings(pressure_hold_time)
+	set seconds [expr {$seconds + $::settings(pressure_hold_time)}]
 	espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)
 	espresso_de1_explanation_chart_elapsed append $seconds
 
-	incr seconds $::settings(espresso_decline_time)
+	#incr seconds $::settings(espresso_decline_time)
+	set seconds [expr {$seconds + $::settings(espresso_decline_time)}]
 	espresso_de1_explanation_chart_pressure append $::settings(pressure_end)
 	espresso_de1_explanation_chart_elapsed append $seconds
 
