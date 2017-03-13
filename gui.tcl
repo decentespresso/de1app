@@ -533,6 +533,26 @@ proc add_de1_text {args} {
 
 }
 
+set image_cnt 0
+proc add_de1_image {args} {
+	global image_cnt
+	incr image_cnt
+	set contexts [lindex $args 0]
+	set label_name "image_$image_cnt"
+	# keep track of what labels are displayed in what contexts
+	set x [rescale_x_skin [lindex $args 1]]
+	set y [rescale_y_skin [lindex $args 2]]
+	set fn [lindex $args 3]
+
+	image create photo $label_name -file $fn
+	.can create image [list $x $y] -anchor nw -image $label_name -tag $label_name -state hidden 
+
+	foreach context $contexts {
+		add_visual_item_to_context $context $label_name
+	}
+
+}
+
 
 # derivced from sample code at http://wiki.tcl.tk/17067
 set widget_cnt 0

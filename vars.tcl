@@ -53,7 +53,11 @@ proc espresso_frame_description {num} {
 }
 
 proc format_alarm_time { in } {
-	return [clock format [expr {[round_date_to_nearest_day [clock seconds]] + round($in)}] -format {%H:%M}] 
+	if {$::settings(enable_ampm) == 1} {
+		return [clock format [expr {[round_date_to_nearest_day [clock seconds]] + round($in)}] -format {%l:%M %p}] 
+	} else {
+		return [clock format [expr {[round_date_to_nearest_day [clock seconds]] + round($in)}] -format {%H:%M}] 
+	}
 }
 
 proc clear_timers {} {
@@ -249,9 +253,9 @@ proc steam_heater_action_text {} {
 proc group_head_heater_action_text {} {
 	set delta [expr {int([group_head_heater_temperature] - [setting_espresso_temperature])}]
 	if {$delta < -5} {
-		return [translate "(Heating):"]
+		return [translate "Heating:"]
 	} elseif {$delta > 5} {
-		return [translate "(Cooling):"]
+		return [translate "Cooling:"]
 	} else {
 		return [translate "Heated:"]
 	}

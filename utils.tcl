@@ -636,33 +636,21 @@ proc skin_convert {indir} {
             }
 
 
-            puts -nonewline ".$skinfile."
+            puts -nonewline "/$skinfile"
             flush stdout
-            #puts "\n $skinfile [file extension $skinfile]"
             if {[file extension $skinfile] == ".png"} {
-                # imagemagick sometimes creates a PNG that Tcl can't read, so we use OSX command line to read and write the PNG back, which fixes whatever problems it had
                 exec convert $skinfile  -resize $dir!  -format png24 ../$dir/$skinfile 
-                #puts -nonewline "<-pngfixing."
-                #exec sips -s format png ../$dir/$skinfile  --out ../$dir/$skinfile 
             } else {
+
                 exec convert $skinfile -resize $dir!  ../$dir/$skinfile 
+                if {$skinfile == "icon.jpg"} {
+                    # icon files are reduced to 25% of the screen resolution
+                    exec convert ../$dir/$skinfile -resize 25%  ../$dir/$skinfile 
+                }
             }
         }
 
-        #set newskin [read_file "skin.tcl"]
-        
-        #set newskin [regsubex {add_de1_widget (".*?") (.*?) ([0-9]+) ([0-9]+) } $newskin "add_de1_widget \\1 \\2 \[expr \{round(\\3/$xdivisor)\}\] \[expr \{round(\\4/$ydivisor)\}\] "]
-        #set newskin [regsubex {add_de1_text (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_text \\1 \[expr \{round(\\2/$xdivisor)\}\] \[expr \{round(\\3/$ydivisor)\}\] "]
-        #set newskin [regsubex {add_de1_button (".*?") (.*?) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ?(".*?")?\n} $newskin "add_de1_button \\1 \\2 \[expr \{round(\\3/$xdivisor)\}\] \[expr \{round(\\4/$ydivisor)\}\] \[expr \{round(\\5/$xdivisor)\}\] \[expr \{round(\\6/$ydivisor)\}\] \\7\n"]
-        #set newskin [regsubex {add_de1_variable (".*?") ([0-9]+) ([0-9]+) } $newskin "add_de1_variable \\1 \[expr \{round(\\2/$xdivisor)\}\] \[expr \{round(\\3/$ydivisor)\}\] "]
-        
-        # this the maximum text width for labels
-        #set newskin [regsubex {\-linewidth ([0-9]+)} $newskin "-linewidth \[expr \{round(\\1/$xdivisor)\}\] "]
-        #set newskin [regsubex {\-width ([0-9]+)} $newskin "-width \[expr \{round(\\1/$xdivisor)\}\] "]
-        #set newskin [regsubex {\-length ([0-9]+)} $newskin "-length \[expr \{round(\\1/$ydivisor)\}\] "]
-        #set newskin [regsubex {\-height ([0-9]+)} $newskin "-height \[expr \{round(\\1/$ydivisor)\}\] "]
-        #write_file "../$dir/skin.tcl" $newskin 
-        
+
         if {$started != 0} {
             puts "";
         }

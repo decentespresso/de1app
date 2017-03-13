@@ -102,7 +102,9 @@ array set ::settings {
 	screen_saver_delay 60
 	screen_saver_change_interval 600
 	enable_fluid_ounces 0
+	timer_enable 0
 	enable_fahrenheit 0
+	enable_ampm 0
 	steam_max_time 47
 	steam_temperature 160
 	water_max_time 10
