@@ -1,3 +1,4 @@
+
 ##############################################################################################################################################################################################################################################################################
 # DECENT ESPRESSO DEFAULT SKIN
 ##############################################################################################################################################################################################################################################################################
@@ -18,7 +19,7 @@ add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);s
 
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 400 400
 add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2000 0 2560 500
-add_de1_variable "off" 1280 1236 -justify right -anchor "center" -text "" -font Helv_8 -fill "#7f879a" -width 520 -textvariable {[group_head_heating_text]} 
+add_de1_variable "off" 1280 1236 -justify right -anchor "center" -text "" -font Helv_8 -fill "#Ff272a" -width 520 -textvariable {[group_head_heating_text]} 
 
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is doing steam, hot water or espresso

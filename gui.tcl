@@ -551,6 +551,7 @@ proc add_de1_image {args} {
 		add_visual_item_to_context $context $label_name
 	}
 
+	return $label_name
 }
 
 

@@ -461,3 +461,51 @@ proc backup_settings {} {
 	unset -nocomplain ::settings_backup; 
 	array set ::settings_backup [array get ::settings]
 }
+
+proc skin_directories {} {
+	set dirs [glob -tails -directory "[homedir]/skins/" *]
+	return $dirs
+}
+
+proc fill_skin_listbox {widget} {
+	set cnt 0
+	set current_skin_number 0
+	foreach d [lsort -increasing [skin_directories]] {
+		if {$d == "CVS"} {
+			continue
+		}
+		$widget insert $cnt $d
+		if {$::settings(skin) == $d} {
+			set current_skin_number $cnt
+		}
+		incr cnt
+	}
+	$widget itemconfigure $current_skin_number -foreground blue
+
+	bind $widget <<ListboxSelect>> [list ::preview_tablet_skin %W] 	
+
+	set ::globals(tablet_styles_listbox) $widget
+}
+
+proc save_new_tablet_skin_setting {} {
+	set ::settings(skin) [$::globals(tablet_styles_listbox) get [$::globals(tablet_styles_listbox) curselection]]
+	puts "skin changed to '$::settings(skin)'"
+}
+
+proc preview_tablet_skin {w args} {
+	set ::settings(skin) [$::globals(tablet_styles_listbox) get [$::globals(tablet_styles_listbox) curselection]]
+	set skindir [$w get [$w curselection]]
+	set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
+	$::table_style_preview_image read $fn
+}
+
+proc ::cb_selectionChanged {w args} {
+	puts "lb $w $args = [$w curselection] = [$w get [$w curselection]]"
+	if { [$w curselection] == "" } {
+		# listbox has no selected items
+	} else {
+		# listbox has one or more selected items
+	}
+}
+
+

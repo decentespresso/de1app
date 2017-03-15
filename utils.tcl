@@ -243,13 +243,13 @@ proc setup_environment {} {
         set fontm 1.5
         
 
-        set screen_size_width 2560
-        set screen_size_height 1600
-        set fontm 2
-
         set screen_size_width 1280
         set screen_size_height 800
         set fontm 1
+
+        set screen_size_width 2560
+        set screen_size_height 1600
+        set fontm 2
 
         #set screen_size_width 1920
         #set screen_size_height 1080
@@ -342,7 +342,7 @@ proc skin_directory {} {
 
     #puts "skind: $skindir"
     #set dir "[file dirname [info script]]/$skindir/default/${screen_size_width}x${screen_size_height}"
-    set dir "[file dirname [info script]]/$skindir/default"
+    set dir "[file dirname [info script]]/$skindir/$::settings(skin)"
     return $dir
 }
 
@@ -354,7 +354,7 @@ proc settings_directory_graphics {} {
     global screen_size_height
 
     set settingsdir "[homedir]/skins"
-    set dir "$settingsdir/default/${screen_size_width}x${screen_size_height}"
+    set dir "$settingsdir/$::settings(skin)/${screen_size_width}x${screen_size_height}"
     return $dir
 }
 
@@ -373,6 +373,7 @@ proc skin_directory_graphics {} {
 
     #puts "skind: $skindir"
     set dir "$skindir/$::settings(skin)/${screen_size_width}x${screen_size_height}"
+    #puts "skindir '$skindir'"
     #set dir "[file dirname [info script]]/$skindir/default"
     return $dir
 }
