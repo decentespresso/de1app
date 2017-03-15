@@ -261,6 +261,13 @@ proc group_head_heater_action_text {} {
 	}
 }
 
+proc group_head_heating_text {} {
+	set delta [expr {int([group_head_heater_temperature] - [setting_espresso_temperature])}]
+	if {$delta < -5} {
+		return [translate "(heating)"]
+	}
+}
+
 proc timer_text {} {
 	return [subst {[timer] [translate "seconds"]}]
 }
