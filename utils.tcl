@@ -243,14 +243,14 @@ proc setup_environment {} {
         set fontm 1.5
         
 
-        set screen_size_width 1280
-        set screen_size_height 800
-        set fontm 1
-
         set screen_size_width 2560
         set screen_size_height 1600
         set fontm 2
 
+
+        set screen_size_width 1280
+        set screen_size_height 800
+        set fontm 1
         #set screen_size_width 1920
         #set screen_size_height 1080
         #set fontm 1.5
@@ -378,6 +378,26 @@ proc skin_directory_graphics {} {
     return $dir
 }
 
+
+proc defaultskin_directory_graphics {} {
+    global screen_size_width
+    global screen_size_height
+
+    set skindir "[homedir]/skins"
+    if {[ifexists ::de1(has_flowmeter)] == 1} {
+        set skindir "[homedir]/skinsplus"
+    }
+
+    if {[ifexists ::creator] == 1} {
+        set skindir "[homedir]/skinscreator"
+    }
+
+    #puts "skind: $skindir"
+    set dir "$skindir/default/${screen_size_width}x${screen_size_height}"
+    #puts "skindir '$skindir'"
+    #set dir "[file dirname [info script]]/$skindir/default"
+    return $dir
+}
 proc saver_directory {} {
     global saver_directory 
     if {[info exists saver_directory] != 1} {
@@ -602,7 +622,7 @@ proc rescale_y_skin {in} {
 
 proc skin_convert {indir} {
     cd $indir
-    set skinfiles [concat [glob "*.jpg"] [glob "*.png"]] 
+    set skinfiles [glob "*.jpg"] 
     set dirs [list \
         "1280x800" 2 2 \
         "2048x1536" 1.25 1.041666666 \

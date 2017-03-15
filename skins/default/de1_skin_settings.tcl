@@ -4,11 +4,11 @@
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
-add_de1_page "settings_1" "[skin_directory_graphics]/settings_1.png"
-add_de1_page "settings_1a" "[skin_directory_graphics]/settings_1a.png"
-add_de1_page "settings_2" "[skin_directory_graphics]/settings_2.png"
-add_de1_page "settings_3" "[skin_directory_graphics]/settings_3.png"
-add_de1_page "settings_4" "[skin_directory_graphics]/settings_4.png"
+add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.jpg"
+add_de1_page "settings_1a" "[defaultskin_directory_graphics]/settings_1a.jpg"
+add_de1_page "settings_2" "[defaultskin_directory_graphics]/settings_2.jpg"
+add_de1_page "settings_3" "[defaultskin_directory_graphics]/settings_3.jpg"
+add_de1_page "settings_4" "[defaultskin_directory_graphics]/settings_4.jpg"
 
 
 ##############################################################################################################################################################################################################################################################################
@@ -75,8 +75,8 @@ add_de1_widget "settings_2" listbox 1330 340 {
 	fill_skin_listbox $widget
 	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 10 -width 44 -foreground #b2bad0
 
-add_de1_text "settings_2" 2250 1020 -text [translate "Load"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
-add_de1_button "settings_2" {save_new_tablet_skin_setting} 1980 950 2520 1100
+#add_de1_text "settings_2" 2250 1020 -text [translate "Load"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
+#add_de1_button "settings_2" {save_new_tablet_skin_setting} 1980 950 2520 1100
 
 
 add_de1_widget "settings_2" graph 30 950 { 

@@ -464,14 +464,21 @@ proc backup_settings {} {
 
 proc skin_directories {} {
 	set dirs [glob -tails -directory "[homedir]/skins/" *]
-	return $dirs
+	set dd {}
+	foreach d $dirs {
+		if {$d == "CVS" || $d == "example"} {
+			continue
+		}
+		lappend dd $d		
+	}
+	return $dd
 }
 
 proc fill_skin_listbox {widget} {
 	set cnt 0
 	set current_skin_number 0
 	foreach d [lsort -increasing [skin_directories]] {
-		if {$d == "CVS"} {
+		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
 		$widget insert $cnt $d
@@ -481,6 +488,8 @@ proc fill_skin_listbox {widget} {
 		incr cnt
 	}
 	$widget itemconfigure $current_skin_number -foreground blue
+
+	$widget selection set $current_skin_number
 
 	bind $widget <<ListboxSelect>> [list ::preview_tablet_skin %W] 	
 
@@ -498,14 +507,3 @@ proc preview_tablet_skin {w args} {
 	set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
 	$::table_style_preview_image read $fn
 }
-
-proc ::cb_selectionChanged {w args} {
-	puts "lb $w $args = [$w curselection] = [$w get [$w curselection]]"
-	if { [$w curselection] == "" } {
-		# listbox has no selected items
-	} else {
-		# listbox has one or more selected items
-	}
-}
-
-

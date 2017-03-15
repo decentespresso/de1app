@@ -17,8 +17,12 @@ proc setup_images_for_other_pages {} {
 }
 
 proc de1_ui_startup {} {
-	skin_convert "[homedir]/skins/default/2560x1600"
-	skin_convert "[homedir]/skins/instrumented/2560x1600"
+	foreach d [lsort -increasing [skin_directories]] {
+		skin_convert "[homedir]/skins/$d/2560x1600"
+	}
+
+	#skin_convert "[homedir]/skins/default/2560x1600"
+	#skin_convert "[homedir]/skins/instrumented/2560x1600"
 	cd [homedir]
 	return [ui_startup]
 }
