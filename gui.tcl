@@ -747,6 +747,11 @@ proc set_next_page {machinepage guipage} {
 	set ::nextpage($key) $guipage
 }
 
+proc page_to_show_when_off {page_to_show} {
+	set_next_page off $page_to_show
+	page_show $page_to_show
+}
+
 proc page_show {page_to_show} {
 	set page_to_hide $::de1(current_context)
 	return [page_display_change $page_to_hide $page_to_show] 

@@ -457,3 +457,7 @@ proc ml_to_oz {in} {
 	return $x
 }
 
+proc backup_settings {} {
+	unset -nocomplain ::settings_backup; 
+	array set ::settings_backup [array get ::settings]
+}
