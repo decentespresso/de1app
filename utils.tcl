@@ -639,6 +639,8 @@ proc skin_convert {indir} {
     #    "1280x800" 2 2 \
     #]
 
+
+
     # convert all the skin PNG files
     foreach {dir xdivisor ydivisor} $dirs {
         #puts -nonewline "Making $dir skin $xdivisor / $ydivisor"
@@ -659,6 +661,7 @@ proc skin_convert {indir} {
                 puts -nonewline "Making $dir skin $indir"
             }
 
+            file mkdir ../$dir
 
             puts -nonewline "/$skinfile"
             flush stdout
@@ -673,9 +676,9 @@ proc skin_convert {indir} {
                 }
                 if {$skinfile == "icon.jpg"} {
                     # icon files are reduced to 25% of the screen resolution
-                    catch {
+                    #catch {
                     	exec convert ../$dir/$skinfile -resize 25%  ../$dir/$skinfile 
-                    }
+                    #}
                 }
             }
         }
