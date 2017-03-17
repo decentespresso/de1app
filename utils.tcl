@@ -91,7 +91,7 @@ proc setup_environment {} {
     #puts "setup_environment"
     global screen_size_width
     global screen_size_height
-
+    global fontm
     global android
     set android 0
     catch {
@@ -243,14 +243,16 @@ proc setup_environment {} {
         set fontm 1.5
         
 
+
+
         set screen_size_width 2560
         set screen_size_height 1600
         set fontm 2
 
-
         set screen_size_width 1280
         set screen_size_height 800
         set fontm 1
+
         #set screen_size_width 1920
         #set screen_size_height 1080
         #set fontm 1.5
@@ -342,7 +344,7 @@ proc skin_directory {} {
 
     #puts "skind: $skindir"
     #set dir "[file dirname [info script]]/$skindir/default/${screen_size_width}x${screen_size_height}"
-    set dir "[file dirname [info script]]/$skindir/$::settings(skin)"
+    set dir "[homedir]/$skindir/$::settings(skin)"
     return $dir
 }
 
@@ -377,6 +379,7 @@ proc skin_directory_graphics {} {
     #set dir "[file dirname [info script]]/$skindir/default"
     return $dir
 }
+
 
 
 proc defaultskin_directory_graphics {} {
@@ -596,8 +599,8 @@ proc load_settings {} {
 }
 
 proc settings_filename {} {
-    set fn "[file rootname [info script]]_settings.tdb"
-    #puts "sc: '$fn'"
+    set fn "[homedir]/settings.tdb"
+    puts "sc: '$fn'"
     return $fn
 }
 
@@ -660,13 +663,19 @@ proc skin_convert {indir} {
             puts -nonewline "/$skinfile"
             flush stdout
             if {[file extension $skinfile] == ".png"} {
-                exec convert $skinfile  -resize $dir!  -format png24 ../$dir/$skinfile 
+                catch {
+                	exec convert $skinfile  -resize $dir!  -format png24 ../$dir/$skinfile 
+                }
             } else {
 
-                exec convert $skinfile -resize $dir!  ../$dir/$skinfile 
+                catch {
+                	exec convert $skinfile -resize $dir!  ../$dir/$skinfile 
+                }
                 if {$skinfile == "icon.jpg"} {
                     # icon files are reduced to 25% of the screen resolution
-                    exec convert ../$dir/$skinfile -resize 25%  ../$dir/$skinfile 
+                    catch {
+                    	exec convert ../$dir/$skinfile -resize 25%  ../$dir/$skinfile 
+                    }
                 }
             }
         }
@@ -690,4 +699,13 @@ proc regsubex {regex in replace} {
 proc round_date_to_nearest_day {now} {
     set rounded [clock format $now -format "%m/%d/%Y"]  
     return [clock scan $rounded]
+}
+
+proc load_font {name fn size} {
+	puts "load_font $name '$fn' $size"
+	if {$::android == 1} {
+		sdltk addfont $fn
+	} else {
+		font create $name -family $name -size [expr {int($size * $::fontm)}]
+	}
 }

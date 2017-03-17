@@ -11,6 +11,11 @@ add_de1_page "settings_3" "[defaultskin_directory_graphics]/settings_3.jpg"
 add_de1_page "settings_4" "[defaultskin_directory_graphics]/settings_4.jpg"
 
 
+# this is the message page
+set ::message_label [add_de1_text "message" 1280 750 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
+set ::message_button_label [add_de1_text "message" 1280 1090 -text [translate "Quit"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"]
+set ::message_button [add_de1_button "message" {say [translate {Quit}] $::settings(sound_button_in);exit} 980 990 1580 1190 ""]
+
 ##############################################################################################################################################################################################################################################################################
 
 #add_de1_button "settings_1 settings_2 settings_3 settings_4" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 1424 350 1600
@@ -22,10 +27,7 @@ add_de1_widget "settings_1" scale 47 850 {} -from 0 -to 10 -tickinterval 0  -sho
 add_de1_text "settings_1" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 add_de1_variable "settings_1" 50 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(preinfusion_time) [translate "seconds"]}
 
-
-
 #add_de1_variable "settings_1" 680 1325 -text [translate "Hold pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "nw" -width 600 -justify "left" -textvariable {[translate "Hold pressure:"] $::settings(espresso_pressure) [translate "bar"]}
-
 
 add_de1_text "settings_1" 615 755 -text [translate "2: hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 
@@ -235,7 +237,15 @@ add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {se
 add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4} 1905 0 2560 188
 
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; set_next_page off off; page_show off} 2016 1430 2560 1600
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; 
+	if {$::settings(skin) != $::settings_backup(skin) } {
+		.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+		set_next_page off message; page_show message
+	} else {
+		set_next_page off off; page_show off
+	}
+} 2016 1430 2560 1600
+#add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; set_next_page off off; page_show off} 2016 1430 2560 1600
 add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; say [translate {cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1505 1430 2015 1600
 
 # END OF SETTINGS page

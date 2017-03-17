@@ -468,43 +468,43 @@ proc add_de1_action {context tclcmd} {
 proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 	global button_cnt
 
-		incr button_cnt
-		set btn_name ".btn_$button_cnt"
-		#set btn_name $bname
-		global skindebug
-		set width 0
-		if {[info exists skindebug] == 1} {
-			if {$skindebug == 1} {
-				set width 1
-			}
+	incr button_cnt
+	set btn_name ".btn_$button_cnt"
+	#set btn_name $bname
+	global skindebug
+	set width 0
+	if {[info exists skindebug] == 1} {
+		if {$skindebug == 1} {
+			set width 1
 		}
-		set rx0 [rescale_x_skin $x0]
-		set rx1 [rescale_x_skin $x1]
-		set ry0 [rescale_y_skin $y0]
-		set ry1 [rescale_y_skin $y1]
-		.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
-		if {[info exists skindebug] == 1} {
-			if {$skindebug == 1} {
-				.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden 
-				#add_visual_item_to_context $displaycontext ${btn_name}_lines
-			}
+	}
+	set rx0 [rescale_x_skin $x0]
+	set rx1 [rescale_x_skin $x1]
+	set ry0 [rescale_y_skin $y0]
+	set ry1 [rescale_y_skin $y1]
+	.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+	if {[info exists skindebug] == 1} {
+		if {$skindebug == 1} {
+			.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden 
+			#add_visual_item_to_context $displaycontext ${btn_name}_lines
 		}
+	}
 
-		#puts "binding $btn_name to switch to new context: '$newcontext'"
+	#puts "binding $btn_name to switch to new context: '$newcontext'"
 
-		#set tclcode [list page_display_change $displaycontext $newcontext]
+	#set tclcode [list page_display_change $displaycontext $newcontext]
 
-		regsub {%x0} $tclcode $rx0 tclcode
-		regsub {%x1} $tclcode $rx1 tclcode
-		regsub {%y0} $tclcode $ry0 tclcode
-		regsub {%y1} $tclcode $ry1 tclcode
+	regsub {%x0} $tclcode $rx0 tclcode
+	regsub {%x1} $tclcode $rx1 tclcode
+	regsub {%y0} $tclcode $ry0 tclcode
+	regsub {%y1} $tclcode $ry1 tclcode
 
-		.can bind $btn_name [platform_button_press] $tclcode
+	.can bind $btn_name [platform_button_press] $tclcode
 
-		if {[string first mousemove $options] != -1} {
-			#puts "mousemove detected"
-			.can bind $btn_name [platform_finger_down] $tclcode
-		}
+	if {[string first mousemove $options] != -1} {
+		#puts "mousemove detected"
+		.can bind $btn_name [platform_finger_down] $tclcode
+	}
 
 	foreach displaycontext $displaycontexts {
 		add_visual_item_to_context $displaycontext $btn_name
@@ -513,6 +513,7 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 		}
 
 	}
+	return $btn_name
 }
 
 set text_cnt 0
@@ -530,7 +531,7 @@ proc add_de1_text {args} {
 	foreach context $contexts {
 		add_visual_item_to_context $context $label_name
 	}
-
+	return $label_name
 }
 
 set image_cnt 0
@@ -609,6 +610,7 @@ proc add_de1_widget {args} {
 		#puts "add_visual_item_to_context $context '$widget'"
 		add_visual_item_to_context $context $widget
 	}
+	return $widget 
 }
 
 
@@ -636,6 +638,7 @@ proc add_de1_variable {args} {
 			add_variable_item_to_context $context $label_name $varcmd
 		}
 	}
+	return $label_name
 }
 
 

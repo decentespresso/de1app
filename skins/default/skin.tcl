@@ -29,3 +29,6 @@ add_de1_variable "off" 1280 1236 -justify right -anchor "center" -text "" -font 
 
 # the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
 source "[homedir]/skins/default/standard_stop_buttons.tcl"
+
+#load_font "Northwood High" "[skin_directory]/sample.ttf" 60
+#set ::message_label [add_de1_text "message" 1280 500 -text "Messages" -font {Northwood High} -fill "#2d3046" -anchor "center"]
