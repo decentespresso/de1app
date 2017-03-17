@@ -6,6 +6,11 @@
 # you should replace the JPG graphics in the 2560x1600/ directory with your own graphics. 
 source "[homedir]/skins/default/standard_includes.tcl"
 
+# example of loading a custom font (you need to indicate the TTF file and the font size)
+#load_font "Northwood High" "[skin_directory]/sample.ttf" 60
+#add_de1_text "off" 1280 500 -text "An important message" -font {Northwood High} -fill "#2d3046" -anchor "center"
+
+
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
@@ -25,10 +30,6 @@ add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2000 0 
 
 ##############################################################################################################################################################################################################################################################################
 
-
-# example of loading a custom font (you need to indicate the TTF file and the font size)
-load_font "Northwood High" "[skin_directory]/sample.ttf" 60
-set ::message_label [add_de1_text "off" 1280 500 -text "An important message" -font {Northwood High} -fill "#2d3046" -anchor "center"]
 
 
 # the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.

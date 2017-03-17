@@ -24,6 +24,10 @@ add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start
 add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2000 0 2560 500
 add_de1_variable "off" 1280 1236 -justify right -anchor "center" -text "" -font Helv_8 -fill "#Ff272a" -width 520 -textvariable {[group_head_heating_text]} 
 
+# during espresso we show the current state of things and a timer
+add_de1_variable "espresso" 1280 1136 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
+add_de1_variable "espresso" 1285 1226 -justify left -anchor "center" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[pour_timer][translate "s"]} 
+
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is doing steam, hot water or espresso
 
