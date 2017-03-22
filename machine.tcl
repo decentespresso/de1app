@@ -276,7 +276,7 @@ proc start_idle {} {
 	de1_send $::de1_state(Idle)
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
-		after 3200 "update_de1_state $::de1_state(Idle)"
+		after 200 "update_de1_state $::de1_state(Idle)"
 	}
 
 	#msg "sensors: [borg sensor list]"
@@ -290,7 +290,7 @@ proc start_sleep {} {
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 "update_de1_state $::de1_state(GoingToSleep)"
-		after 2000 "update_de1_state $::de1_state(Sleep)"
+		after 800 "update_de1_state $::de1_state(Sleep)"
 	}
 }
 
