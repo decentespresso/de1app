@@ -624,8 +624,16 @@ proc rescale_y_skin {in} {
 
 
 proc skin_convert {indir} {
+    #puts "skin_convert: $indir"
     cd $indir
-    set skinfiles [glob "*.jpg"] 
+    set skinfiles {}
+    catch {
+        set skinfiles [glob "*.jpg"] 
+    }
+    if {$skinfiles == ""} {
+        puts "No jpg files found in '$indir'"
+        return
+    }
     set dirs [list \
         "1280x800" 2 2 \
         "2048x1536" 1.25 1.041666666 \

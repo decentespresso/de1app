@@ -464,6 +464,7 @@ proc backup_settings {} {
 
 proc skin_directories {} {
 	set dirs [glob -tails -directory "[homedir]/skins/" *]
+	#puts "skin_directories: $dirs"
 	set dd {}
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
