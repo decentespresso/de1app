@@ -11,28 +11,27 @@ source "[homedir]/skins/default/standard_includes.tcl"
 #add_de1_text "off" 1280 500 -text "An important message" -font {Northwood High} -fill "#2d3046" -anchor "center"
 
 
-# SKIN NAME: 8 BIT
-
-
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Orbitron Black" "[skin_directory]/orbitron-black.ttf" 21
+load_font "Manga speak 2" "[skin_directory]/Manga_speak_2.ttf" 26
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off water" 2048 1215 -text [translate "HOT WATER"] -font {Orbitron Black} -fill "#ffffff" -anchor "center" 
-add_de1_text "off espresso" 362 1215 -text [translate "ESPRESSO"] -font {Orbitron Black} -fill "#ffffff" -anchor "center" 
-add_de1_text "off steam" 1289 1215  -text [translate "STEAM"] -font {Orbitron Black} -fill "#ffffff" -anchor "center" 
+add_de1_text "off espresso" 272 313  -text [translate "ESPRESSO"] -font {Manga speak 2} -fill "#2a2829" -anchor "center" 
+add_de1_text "off steam" 865 313  -text [translate "STEAM"] -font {Manga speak 2} -fill "#2a2829" -anchor "center" 
+add_de1_text "off water" 1462 315 -text [translate "WATER"] -font {Manga speak 2} -fill "#2a2829" -anchor "center" 
+add_de1_text "off settings" 2305 445  -text [translate "SETTINGS"] -font {Manga speak 2} -fill "#2a2829" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
-add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);start_espresso" 95 270 725 1500
-add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 1750 270 2300 1500
-add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam" 975 270 1600 1500
+add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);start_espresso" 75 270 455 1350
+add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam" 630 270 1075 1350
+add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 1245 270 1650 1350
+
 
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
-add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 200 200
-add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2370 0 2559 200
+add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 750 1445 1900 1600
+add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 1850 270 2405 1350
 
 ##############################################################################################################################################################################################################################################################################
 
