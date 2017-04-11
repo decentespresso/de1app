@@ -39,7 +39,7 @@ add_de1_variable "off" 1275 1306 -justify right -anchor "ne" -text "" -font Helv
 add_de1_variable "off" 1280 1306 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[group_head_heater_temperature_text]} 
 
 # we spell espresso with two SSs so that it is pronounced like Italians say it
-add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);start_espresso" 948 584 1606 1444
+add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 948 584 1606 1444
 
 add_de1_text "off" 510 1076 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off" 500 1156 -justify right -anchor "ne" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width 520

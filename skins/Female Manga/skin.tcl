@@ -31,7 +31,7 @@ add_de1_text "off steam" 975 1495  -text [translate "STEAM"] -font {KG TRIBECA S
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
-add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);start_espresso" 5 295 660 1595
+add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 5 295 660 1595
 add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 1330 295 1950 1595
 add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam" 672 295 1320 1595
 

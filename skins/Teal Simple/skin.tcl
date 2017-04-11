@@ -24,7 +24,7 @@ add_de1_text "off settings" 2180 980  -text [translate "SETTINGS"] -font {Comfor
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
-add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);start_espresso" 200 450 650 1100
+add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 200 450 650 1100
 add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam" 770 450 1150 1100
 add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 1400 450 1750 1100
 

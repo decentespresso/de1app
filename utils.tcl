@@ -52,7 +52,7 @@ proc pause {time} {
 
 
 proc language {} {
-    #return "fr"
+    return "fr"
     # the UI language for Decent Espresso is set as the UI language that Android is currently operating in
     global current_language
     if {[info exists current_language] == 0} {
@@ -83,6 +83,8 @@ proc translate {english} {
     } 
 
     # if no translation found, return the english text
+    puts [subst {"$english" \{fr "$english" de "$english"\}}]
+
     return $english
 }
 
@@ -307,7 +309,7 @@ proc setup_environment {} {
         proc de1_send_steam_hotwater_settings {} {}
         proc de1_read_hotwater {} {return 90}
         proc de1_send_shot_frames {} {}
-        proc de1_send {x} { clear_timers;delay_screen_saver;puts "de1_send '$x'" }
+        proc de1_send {x} { clear_timers;delay_screen_saver; }
         proc de1_read {} { puts "de1_read" }
         proc app_exit {} { exit }       
 

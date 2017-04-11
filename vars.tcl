@@ -67,7 +67,7 @@ proc clear_timers {} {
 	set start_millitimer [clock milliseconds]
 	unset -nocomplain ::timers
 	unset -nocomplain ::substate_timers
-	puts "clearing timers"
+	#puts "clearing timers"
 }
 
 # amount of time that we've been on this page

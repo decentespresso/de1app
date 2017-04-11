@@ -814,7 +814,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	#global current_context
 	set ::de1(current_context) $page_to_show
 
-	puts "page_display_change hide:$page_to_hide show:$page_to_show"
+	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	.can itemconfigure $page_to_show -state normal
 	.can itemconfigure $page_to_hide -state hidden
 	#update 

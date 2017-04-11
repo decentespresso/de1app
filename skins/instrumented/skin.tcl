@@ -54,7 +54,7 @@ add_de1_variable "off" 1280 1350 -justify right -anchor "center" -text "" -font 
 #add_de1_variable "off" 1310 1136 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[group_head_heater_temperature_text]} 
 
 # we spell espresso with two SSs so that it is pronounced like Italians say it
-add_de1_button "off" "say [translate {esspresso}] $::settings(sound_button_in);start_espresso" 948 584 1606 1444
+add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 948 584 1606 1444
 
 # when state change to "off", send the command to the DE1 to go idle
 # tapping the power button tells the DE1 to go to sleep, and it will after a few seconds, at which point we display the screen saver
