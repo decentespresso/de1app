@@ -129,8 +129,8 @@ add_de1_widget "settings_4" entry 1340 380 {} -width [rescale_x_skin 60] -font H
 add_de1_text "settings_4" 1350 470 -text [translate "Name your machine"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 add_de1_text "settings_4" 1320 240 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 1350 600 -text [translate "Version: 1.0 beta 5"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
-add_de1_text "settings_4" 1350 660 -text [translate "Serial number: 0000001"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
+add_de1_text "settings_4" 1350 600 -text "[translate {Version:}] 1.0 beta 5" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
+add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 add_de1_button "settings_3" {say [translate {awake time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_wake) 0 86400 %x %y %x0 %y0 %x1 %y1} 1330 350 1650 700 ""
 add_de1_text "settings_3" 1505 740 -text [translate "Power on"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"

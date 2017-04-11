@@ -83,7 +83,10 @@ proc translate {english} {
     } 
 
     # if no translation found, return the english text
-    puts [subst {"$english" \{fr "$english" de "$english"\}}]
+    if {[info exists ::already_shown_trans($english)] != 1} {
+        puts [subst {"$english" \{fr "$english" de "$english"\ zh-hant "$english"\ zh-hans "$english"\}}]
+        set ::already_shown_trans($english) 1
+    }
 
     return $english
 }
