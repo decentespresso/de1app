@@ -476,6 +476,7 @@ proc skin_directories {} {
 }
 
 proc fill_skin_listbox {widget} {
+	puts "fill_skin_listbox" 
 	$widget delete 0 99999
 	set cnt 0
 	set current_skin_number 0
@@ -496,6 +497,7 @@ proc fill_skin_listbox {widget} {
 	bind $widget <<ListboxSelect>> [list ::preview_tablet_skin %W] 	
 
 	set ::globals(tablet_styles_listbox) $widget
+	preview_tablet_skin $widget
 }
 
 proc profile_directories {} {

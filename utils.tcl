@@ -84,7 +84,8 @@ proc translate {english} {
 
     # if no translation found, return the english text
     if {[info exists ::already_shown_trans($english)] != 1} {
-        puts [subst {"$english" \{fr "$english" de "$english"\ zh-hant "$english"\ zh-hans "$english"\}}]
+        set t [subst {"$english" \{fr "$english" de "$english"\ zh-hant "$english"\ zh-hans "$english"\}\n}]
+        append_file "[homedir]/translation.tcl" $t
         set ::already_shown_trans($english) 1
     }
 
@@ -246,18 +247,15 @@ proc setup_environment {} {
         set screen_size_width 1920
         set screen_size_height 1200
         set fontm 1.5
-        
-
-
 
         set screen_size_width 2560
         set screen_size_height 1600
         set fontm 2
 
+        
         set screen_size_width 1280
         set screen_size_height 800
         set fontm 1
-
         #set screen_size_width 1920
         #set screen_size_height 1080
         #set fontm 1.5
@@ -576,6 +574,13 @@ proc read_file {filename} {
     return $data
 }
 
+proc append_file {filename data} {
+    set fn [open $filename a]
+    puts $fn $data 
+    close $fn
+    return 1
+}
+
 
 proc save_array_to_file {arrname fn} {
     upvar $arrname item
@@ -620,11 +625,16 @@ proc skin_yskale_factor {} {
 }
 
 proc rescale_x_skin {in} {
+    #puts "rescale_x_skin $in / [skin_xskale_factor]"
     return [expr {int($in / [skin_xskale_factor])}]
 }
 
 proc rescale_y_skin {in} {
     return [expr {int($in / [skin_yskale_factor])}]
+}
+
+proc rescale_font {in} {
+    return [expr {int($in * $::fontm)}]
 }
 
 

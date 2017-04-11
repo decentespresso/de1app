@@ -125,7 +125,7 @@ add_de1_button "settings_4" {} 1900 890 2520 1080
 
 #add_de1_text "settings_4" 90 250 -text [translate "Other settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-add_de1_widget "settings_4" entry 1340 380 {} -width [rescale_x_skin 60] -font Helv_15_bold -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
+add_de1_widget "settings_4" entry 1340 380 {} -width 30 -font Helv_15_bold -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
 add_de1_text "settings_4" 1350 470 -text [translate "Name your machine"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 add_de1_text "settings_4" 1320 240 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -185,11 +185,11 @@ add_de1_widget "settings_3" checkbutton 1330 1000 {} -text [translate "Enable"] 
 #add_de1_text "settings_3" 1350 1045 -text [translate "Speaking pitch"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 #add_de1_button "off" {after 300 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off settings_1; page_show settings_1} 2000 0 2560 500
-add_de1_text "settings_1 settings_2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
-add_de1_text "settings_1 settings_2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
+add_de1_text "settings_1 settings_2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
+add_de1_text "settings_1 settings_2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
 
-add_de1_text "settings_2" 1025 1328 -text [translate "Save"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
-add_de1_widget "settings_2" entry 70 1285  {set ::globals(widget_profile_name_to_save) $widget} -width [rescale_x_skin 40] -font Helv_10 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_to_save) 
+add_de1_text "settings_2" 1025 1328 -text [translate "Save"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
+add_de1_widget "settings_2" entry 70 1285  {set ::globals(widget_profile_name_to_save) $widget} -width 20 -font Helv_10 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_to_save) 
 
 add_de1_button "settings_2" {say [translate {save}] $::settings(sound_button_in); save_profile} 740 1265 1260 1400
 add_de1_button "settings_2" {say [translate {trash}] $::settings(sound_button_in); delete_selected_profile; fill_profiles_listbox $::globals(profiles_listbox)} 1100 300 1270 500
@@ -253,7 +253,7 @@ add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {sa
 	}
 } 2016 1430 2560 1600
 #add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; set_next_page off off; page_show off} 2016 1430 2560 1600
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; say [translate {cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1505 1430 2015 1600
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox $::globals(profiles_listbox); fill_skin_listbox $::globals(tablet_styles_listbox); say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1505 1430 2015 1600
 
 # END OF SETTINGS page
 ##############################################################################################################################################################################################################################################################################
