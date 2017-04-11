@@ -84,7 +84,7 @@ proc translate {english} {
 
     # if no translation found, return the english text
     if {[info exists ::already_shown_trans($english)] != 1} {
-        set t [subst {"$english" \{fr "$english" de "$english"\ zh-hant "$english"\ zh-hans "$english"\}\n}]
+        set t [subst {"$english" \{fr "$english" de "$english"\ zh-hant "$english"\ zh-hans "$english"\}}]
         append_file "[homedir]/translation.tcl" $t
         set ::already_shown_trans($english) 1
     }
