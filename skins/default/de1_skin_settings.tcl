@@ -67,29 +67,31 @@ add_de1_widget "settings_1" graph 24 220 {
 		update_de1_explanation_chart} 
 	} -plotbackground #EEEEEE -width [rescale_x_skin 2375] -height [rescale_y_skin 500] -borderwidth 1 -background #FFFFFF -plotrelief raised
 
-add_de1_widget "settings_2" listbox 70 350 { 
-	$widget insert 0 {9 bar} {8.4 bar} {6 bar}
-	$widget itemconfigure 1 -foreground blue
-	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 8 -width 44 -foreground #b2bad0
+add_de1_widget "settings_2" listbox 70 340 { 
+	fill_profiles_listbox $widget
+	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 8 -width 39 -foreground #b2bad0
+
+set ::table_style_preview_image [add_de1_image "settings_2" 1330 960 "[skin_directory_graphics]/icon.jpg"]
 
 
 add_de1_widget "settings_2" listbox 1330 340 { 
 	fill_skin_listbox $widget
-	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 10 -width 44 -foreground #b2bad0
+	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 10 -width 45 -foreground #b2bad0
 
 #add_de1_text "settings_2" 2250 1020 -text [translate "Load"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
 #add_de1_button "settings_2" {save_new_tablet_skin_setting} 1980 950 2520 1100
 
 
-add_de1_widget "settings_2" graph 30 950 { 
+add_de1_widget "settings_2" graph 30 815 { 
 	update_de1_explanation_chart;
 	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth quadratic -pixels [rescale_x_skin 20]; 
 	$widget axis configure x -color #5a5d75 -tickfont Helv_6 -command graph_seconds_axis_format; 
 	$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max [expr { 0.4 + $::de1(max_pressure)}] -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12} -title "" -titlefont Helv_10 -titlecolor #5a5d75;
-	} -plotbackground #EEEEEE -width [rescale_x_skin 1235] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised
+	} -plotbackground #EEEEEE -width [rescale_x_skin 1100] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised
 
 set ::table_style_preview_image [add_de1_image "settings_2" 1330 960 "[skin_directory_graphics]/icon.jpg"]
 
+add_de1_variable "settings_2" 1198 1180 -text "" -font Helv_6 -fill "#5a5d75" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 
 #add_de1_widget "settings_4" checkbutton 90 500 {} -text [translate "Use fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 #add_de1_widget "settings_4" checkbutton 90 600 {} -text [translate "Enable flight mode"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(flight_mode_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
@@ -186,8 +188,13 @@ add_de1_widget "settings_3" checkbutton 1330 1000 {} -text [translate "Enable"] 
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
 
-add_de1_text "settings_2" 960 890 -text [translate "Load"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
-#add_de1_text "settings_1 settings_2 settings_3 settings_4" 1245 1520 -text [translate "Load"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
+add_de1_text "settings_2" 1025 1328 -text [translate "Save"] -font Helv_10_bold -fill "#eae9e9" -anchor "center"
+add_de1_widget "settings_2" entry 70 1285  {set ::globals(widget_profile_name_to_save) $widget} -width [rescale_x_skin 40] -font Helv_10 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_to_save) 
+
+add_de1_button "settings_2" {say [translate {save}] $::settings(sound_button_in); save_profile} 740 1265 1260 1400
+add_de1_button "settings_2" {say [translate {trash}] $::settings(sound_button_in); delete_selected_profile; fill_profiles_listbox $::globals(profiles_listbox)} 1100 300 1270 500
+
+
 
 # labels for PREHEAT tab on
 add_de1_text "settings_1" 330 100 -text [translate "PRESSURE"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 

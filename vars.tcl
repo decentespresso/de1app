@@ -463,7 +463,7 @@ proc backup_settings {} {
 }
 
 proc skin_directories {} {
-	set dirs [glob -tails -directory "[homedir]/skins/" *]
+	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/skins/" *]]
 	#puts "skin_directories: $dirs"
 	set dd {}
 	foreach d $dirs {
@@ -476,9 +476,10 @@ proc skin_directories {} {
 }
 
 proc fill_skin_listbox {widget} {
+	$widget delete 0 99999
 	set cnt 0
 	set current_skin_number 0
-	foreach d [lsort -increasing [skin_directories]] {
+	foreach d [lsort -dictionary -increasing [skin_directories]] {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
@@ -497,6 +498,58 @@ proc fill_skin_listbox {widget} {
 	set ::globals(tablet_styles_listbox) $widget
 }
 
+proc profile_directories {} {
+	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/profiles/" *]]
+	set dd {}
+	foreach d $dirs {
+		if {$d == "CVS" || $d == "example"} {
+			continue
+		}
+		lappend dd [file rootname $d]
+	}
+	return $dd
+}
+
+proc delete_selected_profile {} {
+
+	set todel $::settings(profile)
+	#puts "delete profile: $todel"
+	if {$todel == "default"} {
+		return
+	}
+
+	file delete "[homedir]/profiles/${todel}.tcl"
+	set ::settings(profile) "default"
+}
+
+proc fill_profiles_listbox {widget} {
+	#puts "fill_profiles_listbox"
+	set ::settings(profile_to_save) $::settings(profile)
+
+	$widget delete 0 99999
+	set cnt 0
+	set current_skin_number 0
+	set current_profile_number 0
+	foreach d [lsort -dictionary -increasing [profile_directories]] {
+		if {$d == "CVS" || $d == "example"} {
+			continue
+		}
+		$widget insert $cnt $d
+		if {$::settings(profile) == $d} {
+			set current_profile_number $cnt
+		}
+		incr cnt
+	}
+	$widget itemconfigure $current_profile_number -foreground blue
+
+	$widget selection set $current_profile_number
+
+	bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
+
+	set ::globals(profiles_listbox) $widget
+}
+
+
 proc save_new_tablet_skin_setting {} {
 	set ::settings(skin) [$::globals(tablet_styles_listbox) get [$::globals(tablet_styles_listbox) curselection]]
 	puts "skin changed to '$::settings(skin)'"
@@ -508,3 +561,56 @@ proc preview_tablet_skin {w args} {
 	set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
 	$::table_style_preview_image read $fn
 }
+
+proc preview_profile {w args} {
+	#return
+	set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
+	set profile [$w get [$w curselection]]
+	set ::settings(profle) $profile
+	set fn "[homedir]/profiles/${profile}.tcl"
+	#puts "preview_profile $profile"
+	load_settings_vars $fn
+	fill_profiles_listbox $::globals(profiles_listbox)
+	update_onscreen_variables
+}
+
+proc load_settings_vars {fn} {
+	foreach {k v} [read_file $fn] {
+		#puts "$k $v"
+		set ::settings($k) $v
+	}
+	update_de1_explanation_chart
+}
+
+proc save_settings_vars {fn varlist} {
+
+	set txt ""
+	foreach k $varlist {
+		set v $::settings($k)
+		append txt "[list $k] [list $v]\n"
+	}
+
+    write_file $fn $txt
+}
+
+proc save_profile {} {
+	if {$::settings(profile_to_save) == [translate "saved"]} {
+		return
+	}
+
+	set profile_vars { preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature }
+	set profile_name_to_save $::settings(profile_to_save) 
+	#puts "save profile: $profile_name_to_save"
+	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"
+	save_settings_vars $fn $profile_vars
+	set ::settings(profile) $profile_name_to_save
+	fill_profiles_listbox $::globals(profiles_listbox)
+	update_de1_explanation_chart
+	set ::settings(profile_to_save) [translate "Saved"]
+	after 1000 {
+		set ::settings(profile_to_save) $::settings(profile)
+	}
+}
+
+
+

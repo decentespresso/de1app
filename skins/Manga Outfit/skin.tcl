@@ -17,10 +17,10 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "Manga speak 2" "[skin_directory]/Manga_speak_2.ttf" 26
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off espresso" 272 313  -text [translate "ESPRESSO"] -font {Manga speak 2} -fill "#2a2829" -anchor "center" 
-add_de1_text "off steam" 865 313  -text [translate "STEAM"] -font {Manga speak 2} -fill "#2a2829" -anchor "center" 
-add_de1_text "off water" 1462 315 -text [translate "WATER"] -font {Manga speak 2} -fill "#2a2829" -anchor "center" 
-add_de1_text "off settings" 2305 445  -text [translate "SETTINGS"] -font {Manga speak 2} -fill "#2a2829" -anchor "center" 
+add_de1_text "off espresso" 272 100  -text [translate "ESPRESSO"] -font {Manga speak 2} -fill "#CCCCCC" -anchor "center" 
+add_de1_text "off steam" 865 100  -text [translate "STEAM"] -font {Manga speak 2} -fill "#CCCCCC" -anchor "center" 
+add_de1_text "off water" 1462 100 -text [translate "WATER"] -font {Manga speak 2} -fill "#CCCCCC" -anchor "center" 
+add_de1_text "off settings" 2055 100  -text [translate "SETTINGS"] -font {Manga speak 2} -fill "#CCCCCC" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)

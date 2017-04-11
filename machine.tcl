@@ -134,6 +134,7 @@ array set ::settings {
 	sound_button_in 8
 	sound_button_out 11
 	flight_mode_enable 1
+	profile default
 	preinfusion_flow_rate 4
 	preinfusion_temperature 92
 	preinfusion_stop_flow_rate 1
