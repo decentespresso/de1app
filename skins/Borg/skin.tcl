@@ -17,17 +17,17 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "Diablo" "[skin_directory]/diablo-light.ttf" 31
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off" 379 1375  -text [translate "ESPRESSO"] -font {Diablo} -fill "#fdd45b" -anchor "center" 
-add_de1_text "espresso" 1295 1355  -text [translate "ESPRESSO"] -font {Diablo} -fill "#fdd45b" -anchor "center" 
+add_de1_text "off" 379 1375  -text [translate "ESPRESSO"] -font {Diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "espresso" 1295 1355  -text [translate "ESPRESSO"] -font {Diablo} -fill "#a66220" -anchor "center" 
 
-add_de1_text "off" 970 1375  -text [translate "STEAM"] -font {Diablo} -fill "#fdd45b" -anchor "center" 
-add_de1_text "steam" 1295 1355  -text [translate "STEAM"] -font {Diablo} -fill "#fdd45b" -anchor "center" 
+add_de1_text "off" 975 1375  -text [translate "STEAM"] -font {Diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "steam" 1295 1355  -text [translate "STEAM"] -font {Diablo} -fill "#a66220" -anchor "center" 
 
-add_de1_text "off" 1550 1375 -text [translate "WATER"] -font {Diablo} -fill "#fdd45b" -anchor "center" 
-add_de1_text "water" 1295 1350 -text [translate "WATER"] -font {Diablo} -fill "#fdd45b" -anchor "center" 
+add_de1_text "off" 1550 1375 -text [translate "WATER"] -font {Diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "water" 1295 1350 -text [translate "WATER"] -font {Diablo} -fill "#a66220" -anchor "center" 
 
 
-add_de1_text "off settings" 2176 1375  -text [translate "SETTINGS"] -font {Diablo} -fill "#fdd45b" -anchor "center" 
+add_de1_text "off settings" 2177 1375  -text [translate "SETTINGS"] -font {Diablo} -fill "#a66220" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
@@ -37,7 +37,7 @@ add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start
 
 
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
-add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 2080 85 2300 225
+add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 2250 150 2490 335
 add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 1870 375 2500 1480
 
 ##############################################################################################################################################################################################################################################################################
