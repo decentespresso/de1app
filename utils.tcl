@@ -287,7 +287,7 @@ proc setup_environment {} {
         font create Helv_9 -family {Helvetica Neue Regular} -size [expr {int($fontm * 23)}]
         font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 21)}]
         font create Helv_10 -family {Helvetica Neue Regular} -size [expr {int($fontm * 23)}]
-        font create Helv_10_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 23)}]
+        font create Helv_10_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 25)}]
         font create Helv_15_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 30)}]
         font create Helv_20_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 46)}]
         #font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 18)}]
@@ -604,13 +604,13 @@ proc save_settings {} {
 }
 
 proc load_settings {} {
-    puts "loading settings"
+    #puts "loading settings"
     array set ::settings [read_file [settings_filename]]
 }
 
 proc settings_filename {} {
     set fn "[homedir]/settings.tdb"
-    puts "sc: '$fn'"
+    #puts "sc: '$fn'"
     return $fn
 }
 
@@ -728,10 +728,13 @@ proc round_date_to_nearest_day {now} {
 }
 
 proc load_font {name fn size} {
-	puts "load_font $name '$fn' $size"
+	#puts "$::android load_font $name '$fn' $size"
 	if {$::android == 1} {
+        #puts "sdltk addfont '$fn'"
 		sdltk addfont $fn
+        #puts "addfont finished"
 	} else {
-		font create $name -family $name -size [expr {int($size * $::fontm)}]
+		font create "$name" -family "$name" -size [expr {int($size * $::fontm)}]
+        puts "font create \"$name\" -family \"$name\" -size [expr {int($size * $::fontm)}]"
 	}
 }

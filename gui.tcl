@@ -890,9 +890,11 @@ proc update_de1_explanation_chart { {itemval {}} } {
 	espresso_de1_explanation_chart_elapsed append $seconds
 
 	#incr seconds $::settings(espresso_decline_time)
-	set seconds [expr {$seconds + $::settings(espresso_decline_time)}]
-	espresso_de1_explanation_chart_pressure append $::settings(pressure_end)
-	espresso_de1_explanation_chart_elapsed append $seconds
+	if {$::settings(espresso_decline_time) > 0} {
+		set seconds [expr {$seconds + $::settings(espresso_decline_time)}]
+		espresso_de1_explanation_chart_pressure append $::settings(pressure_end)
+		espresso_de1_explanation_chart_elapsed append $seconds
+	}
 	set ::settings(espresso_max_time) $seconds
 }
 

@@ -20,9 +20,9 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "Orbitron Black" "[skin_directory]/orbitron-black.ttf" 21
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off water" 2048 1215 -text [translate "HOT WATER"] -font {Orbitron Black} -fill "#ffffff" -anchor "center" 
-add_de1_text "off espresso" 362 1215 -text [translate "ESPRESSO"] -font {Orbitron Black} -fill "#ffffff" -anchor "center" 
-add_de1_text "off steam" 1289 1215  -text [translate "STEAM"] -font {Orbitron Black} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water" 2048 1215 -text [translate "HOT WATER"] -font {Orbitron} -fill "#ffffff" -anchor "center" 
+add_de1_text "off espresso" 362 1215 -text [translate "ESPRESSO"] -font {Orbitron} -fill "#ffffff" -anchor "center" 
+add_de1_text "off steam" 1289 1215  -text [translate "STEAM"] -font {Orbitron} -fill "#ffffff" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)

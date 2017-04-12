@@ -476,8 +476,9 @@ proc skin_directories {} {
 }
 
 proc fill_skin_listbox {widget} {
-	puts "fill_skin_listbox" 
+	#puts "fill_skin_listbox $widget" 
 	$widget delete 0 99999
+
 	set cnt 0
 	set current_skin_number 0
 	foreach d [lsort -dictionary -increasing [skin_directories]] {
@@ -490,7 +491,8 @@ proc fill_skin_listbox {widget} {
 		}
 		incr cnt
 	}
-	$widget itemconfigure $current_skin_number -foreground blue
+	
+	#$widget itemconfigure $current_skin_number -foreground blue
 
 	$widget selection set $current_skin_number
 
@@ -498,15 +500,32 @@ proc fill_skin_listbox {widget} {
 
 	set ::globals(tablet_styles_listbox) $widget
 	preview_tablet_skin $widget
+
+	#make_current_listbox_item_blue $widget
 }
 
+
+proc make_current_listbox_item_blue { widget } {
+
+	for {set x 0} {$x < [$widget index end]} {incr x} {
+		if {$x == [$widget curselection]} {
+			$widget itemconfigure $x -foreground #000000 -selectforeground #000000
+
+		} else {
+			$widget itemconfigure $x -foreground #b2bad0
+		}
+	}
+
+}
+
+
 proc profile_directories {} {
-	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/profiles/" *]]
+	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/profiles/" *.tcl]]
 	set dd {}
 	foreach d $dirs {
-		if {$d == "CVS" || $d == "example"} {
-			continue
-		}
+		#if {$d == "CVS" || $d == "example"} {
+		#	continue
+		#}
 		lappend dd [file rootname $d]
 	}
 	return $dd
@@ -522,15 +541,16 @@ proc delete_selected_profile {} {
 
 	file delete "[homedir]/profiles/${todel}.tcl"
 	set ::settings(profile) "default"
+	fill_profiles_listbox $::globals(profiles_listbox)
 }
 
 proc fill_profiles_listbox {widget} {
-	#puts "fill_profiles_listbox"
+
+	puts "fill_profiles_listbox $widget"
 	set ::settings(profile_to_save) $::settings(profile)
 
 	$widget delete 0 99999
 	set cnt 0
-	set current_skin_number 0
 	set current_profile_number 0
 	foreach d [lsort -dictionary -increasing [profile_directories]] {
 		if {$d == "CVS" || $d == "example"} {
@@ -539,16 +559,20 @@ proc fill_profiles_listbox {widget} {
 		$widget insert $cnt $d
 		if {$::settings(profile) == $d} {
 			set current_profile_number $cnt
+			#puts "current profile of '$d' is #$cnt"
 		}
 		incr cnt
 	}
-	$widget itemconfigure $current_profile_number -foreground blue
+	
+	#$widget itemconfigure $current_profile_number -foreground blue
+	$widget selection set $current_profile_number;
 
-	$widget selection set $current_profile_number
-
-	bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
+	#$widget selection set 3
+	#puts "$widget selection set $current_profile_number"
 
 	set ::globals(profiles_listbox) $widget
+	bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
+	make_current_listbox_item_blue $widget
 }
 
 
@@ -558,22 +582,26 @@ proc save_new_tablet_skin_setting {} {
 }
 
 proc preview_tablet_skin {w args} {
+
 	set ::settings(skin) [$::globals(tablet_styles_listbox) get [$::globals(tablet_styles_listbox) curselection]]
 	set skindir [$w get [$w curselection]]
 	set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
 	$::table_style_preview_image read $fn
+	make_current_listbox_item_blue $::globals(tablet_styles_listbox)
 }
 
 proc preview_profile {w args} {
-	#return
+	
 	set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
 	set profile [$w get [$w curselection]]
 	set ::settings(profle) $profile
 	set fn "[homedir]/profiles/${profile}.tcl"
 	#puts "preview_profile $profile"
 	load_settings_vars $fn
-	fill_profiles_listbox $::globals(profiles_listbox)
+	#fill_profiles_listbox $::globals(profiles_listbox)
+	set ::settings(profile_to_save) $::settings(profile)
 	update_onscreen_variables
+	make_current_listbox_item_blue $::globals(profiles_listbox)
 }
 
 proc load_settings_vars {fn} {

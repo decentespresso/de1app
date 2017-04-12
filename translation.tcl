@@ -63,3 +63,9 @@
 "Version:" {fr "Version:" de "Version:" zh-hant "Version:" zh-hans "Version:"}
 "Water temp:" {fr "Water temp:" de "Water temp:" zh-hant "Water temp:" zh-hans "Water temp:"}
 "water" {fr "water" de "water" zh-hant "water" zh-hans "water"}
+"saved" {fr "saved" de "saved" zh-hant "saved" zh-hans "saved"}
+"Saved" {fr "Saved" de "Saved" zh-hant "Saved" zh-hans "Saved"}
+"temperature" {fr "temperature" de "temperature" zh-hant "temperature" zh-hans "temperature"}
+"trash" {fr "trash" de "trash" zh-hant "trash" zh-hans "trash"}
+"WATER" {fr "WATER" de "WATER" zh-hant "WATER" zh-hans "WATER"}
+"SETTINGS" {fr "SETTINGS" de "SETTINGS" zh-hant "SETTINGS" zh-hans "SETTINGS"}
