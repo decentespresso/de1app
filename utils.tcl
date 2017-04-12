@@ -78,6 +78,7 @@ proc translate {english} {
         array set available $translation($english)
         if {[info exists available([language])] == 1} {
             # this word has been translated into the desired non-english language
+            #puts "$available([language])"
             return $available([language])
         }
     } 

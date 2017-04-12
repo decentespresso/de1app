@@ -546,7 +546,7 @@ proc delete_selected_profile {} {
 
 proc fill_profiles_listbox {widget} {
 
-	puts "fill_profiles_listbox $widget"
+	#puts "fill_profiles_listbox $widget"
 	set ::settings(profile_to_save) $::settings(profile)
 
 	$widget delete 0 99999

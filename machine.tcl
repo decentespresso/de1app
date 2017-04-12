@@ -205,7 +205,7 @@ array set ::de1_substate_types {
 }
 array set ::de1_substate_types_reversed [reverse_array ::de1_substate_types]
 
-array set translation [read_binary_file "[homedir]/translation.tcl"]
+array set translation [read_file "[homedir]/translation.tcl"]
 
 
 proc de1_substate_text {} {
