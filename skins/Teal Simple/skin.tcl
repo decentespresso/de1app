@@ -14,13 +14,13 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Comfortaa" "[skin_directory]/Comfortaa-Bold.ttf" 24
+load_font "Blogger Sans" "[skin_directory]/Blogger Sans.ttf" 24
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off espresso" 435 980  -text [translate "ESPRESSO"] -font {Comfortaa} -fill "#ffffff" -anchor "center" 
-add_de1_text "off steam" 965 980  -text [translate "STEAM"] -font {Comfortaa} -fill "#ffffff" -anchor "center" 
-add_de1_text "off water" 1565 980 -text [translate "WATER"] -font {Comfortaa} -fill "#ffffff" -anchor "center" 
-add_de1_text "off settings" 2180 980  -text [translate "SETTINGS"] -font {Comfortaa} -fill "#ffffff" -anchor "center" 
+add_de1_text "off espresso" 435 980  -text [translate "ESPRESSO"] -font {Blogger Sans} -fill "#ffffff" -anchor "center" 
+add_de1_text "off steam" 965 980  -text [translate "STEAM"] -font {Blogger Sans} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water" 1565 980 -text [translate "WATER"] -font {Blogger Sans} -fill "#ffffff" -anchor "center" 
+add_de1_text "off settings" 2180 980  -text [translate "SETTINGS"] -font {Blogger Sans} -fill "#ffffff" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)

@@ -17,18 +17,21 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "KG Les Bouquinistes de Paris" "[skin_directory]/KGLesBouquinistesdeParis.ttf" 45
-load_font "KG The Last Time" "[skin_directory]/KGTheLastTime.ttf" 45
-load_font "KG TRIBECA STAMP" "[skin_directory]/KGTribecaStamp.ttf" 45
+load_font "KG Les Bouquinistes de Paris" "[skin_directory]/KGLesBouquinistesdeParis.ttf" 47
+load_font "KG The Last Time" "[skin_directory]/KGTheLastTime.ttf" 47
+load_font "KG TRIBECA STAMP" "[skin_directory]/KGTribecaStamp.ttf" 47
+load_font "KG Havent Slept in Two Days Sha" "[skin_directory]/KGHaventSleptShadow.ttf" 47
+
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off water" 1600 1500 -text [translate "WATER"] -font {KG Les Bouquinistes de Paris} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water" 1635 1510 -text [translate "WATER"] -font {KG Les Bouquinistes de Paris} -fill "#ffffff" -anchor "center" 
 
-add_de1_text "off" 360 1500 -text [translate "ESPRESSO"] -font {KG The Last Time} -fill "#ff7f24" -anchor "center" 
-add_de1_text "espresso" 360 1500 -text [translate "ESPRESSO"] -font {KG The Last Time} -fill "#ff7f24" -anchor "center" 
+add_de1_text "off" 335 1500 -text [translate "ESPRESSO"] -font {KG The Last Time} -fill "#ff7f24" -anchor "center" 
+add_de1_text "espresso" 350 1500 -text [translate "ESPRESSO"] -font {KG The Last Time} -fill "#ff7f24" -anchor "center" 
 
-add_de1_text "off steam" 975 1495  -text [translate "STEAM"] -font {KG TRIBECA STAMP} -fill "#ffffff" -anchor "center" 
+add_de1_text "off steam" 985 1495  -text [translate "STEAM"] -font {KG TRIBECA STAMP} -fill "#ffffff" -anchor "center" 
 
+add_de1_text "off settings" 2275 1480  -text [translate "SETTINGS"] -font {KG Havent Slept in Two Days Sha} -fill "#cd0000" -anchor "center" 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
 add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 5 295 660 1595

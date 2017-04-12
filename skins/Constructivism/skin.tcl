@@ -17,7 +17,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Orbitron Black" "[skin_directory]/orbitron-black.ttf" 21
+load_font "Orbitron Black" "[skin_directory]/orbitron-black.ttf" 19
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off water" 2048 1215 -text [translate "HOT WATER"] -font {Orbitron} -fill "#ffffff" -anchor "center" 
@@ -26,13 +26,13 @@ add_de1_text "off steam" 1289 1215  -text [translate "STEAM"] -font {Orbitron} -
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
-add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 95 270 725 1500
-add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 1750 270 2300 1500
-add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam" 975 270 1600 1500
+add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 95 250 725 1300
+add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 1750 250 2300 1300
+add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam" 975 250 1600 1300
 
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
-add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 200 200
-add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2370 0 2559 200
+add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 200 190
+add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2220 1320 2559 1500
 
 ##############################################################################################################################################################################################################################################################################
 
