@@ -542,6 +542,8 @@ proc delete_selected_profile {} {
 	file delete "[homedir]/profiles/${todel}.tcl"
 	set ::settings(profile) "default"
 	fill_profiles_listbox $::globals(profiles_listbox)
+	preview_profile $::globals(profiles_listbox)
+
 }
 
 proc fill_profiles_listbox {widget} {
@@ -578,7 +580,7 @@ proc fill_profiles_listbox {widget} {
 
 proc save_new_tablet_skin_setting {} {
 	set ::settings(skin) [$::globals(tablet_styles_listbox) get [$::globals(tablet_styles_listbox) curselection]]
-	puts "skin changed to '$::settings(skin)'"
+	#puts "skin changed to '$::settings(skin)'"
 }
 
 proc preview_tablet_skin {w args} {

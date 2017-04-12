@@ -33,7 +33,7 @@ add_de1_text "settings_1" 615 755 -text [translate "2: hold"] -font Helv_10_bold
 
 
 add_de1_widget "settings_1" scale 610 850 {} -to 1 -from 10 -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 480] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_1" 685 1360 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -width 600 -justify "left" -textvariable {$::settings(espresso_pressure) [translate "bar"]}
+add_de1_variable "settings_1" 610 1335 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(espresso_pressure) [translate "bar"]}
 
 add_de1_widget "settings_1" scale 790 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 740] -width [rescale_y_skin 150] -variable ::settings(pressure_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 #add_de1_text "settings_1" 1250 980 -text [translate "Hold time"] -font Helv_15_bold -fill "#2d3046" -anchor "n" -width 380 -justify "center"
@@ -46,7 +46,7 @@ add_de1_widget "settings_1" scale 1600 850 {} -from 0 -to 60 -background #e4d1c1
 add_de1_variable "settings_1" 1605 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(espresso_decline_time) [translate "seconds"]}
 
 add_de1_widget "settings_1" scale 2360 850 {} -to 0 -from 10 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 480]  -width [rescale_y_skin 150] -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_1" 2435 1360 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -width 600 -justify "left" -textvariable {$::settings(pressure_end) [translate "bar"]}
+add_de1_variable "settings_1" 2510 1335 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {$::settings(pressure_end) [translate "bar"]}
 
 #add_de1_text "settings_1" 2495 1325 -text [translate "Final pressure"] -font Helv_15_bold -fill "#2d3046" -anchor "ne" -width 700 -justify "left"
 
@@ -108,8 +108,8 @@ add_de1_text "settings_4" 400 1300 -text [translate "Espresso"] -font Helv_10_bo
 add_de1_text "settings_4" 1000 1300 -text [translate "Steam"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
 
 add_de1_text "settings_4" 400 980 -text [translate "Update"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
-add_de1_text "settings_4" 1000 980 -text [translate "Reset"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
-add_de1_text "settings_4" 2270 980 -text [translate "Connect"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
+add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
+add_de1_text "settings_4" 2280 980 -text [translate "Connect"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center" -width 200 -justify "center"
 
 # future clean steam feature
 add_de1_button "settings_4" {} 30 1206 630 1406
@@ -178,7 +178,7 @@ add_de1_variable "settings_3" 670 790 -text "" -font Helv_8 -fill "#4e85f4" -anc
 #add_de1_widget "settings_3" checkbutton 1350 400 {} -text [translate "Enable spoken prompts"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_spoken_prompts)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
 add_de1_widget "settings_3" checkbutton 70 1000 {} -text [translate "Use Fahrenheit"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_3" checkbutton 500 1000 {} -text [translate "Use AM/PM"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_3" checkbutton 700 1000 {} -text [translate "Use AM/PM"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
 add_de1_widget "settings_3" checkbutton 1330 1000 {} -text [translate "Enable"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(timer_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
