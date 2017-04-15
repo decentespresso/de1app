@@ -587,7 +587,7 @@ proc preview_tablet_skin {w args} {
 
 	set ::settings(skin) [$::globals(tablet_styles_listbox) get [$::globals(tablet_styles_listbox) curselection]]
 	set skindir [$w get [$w curselection]]
-	#et ::settings(skin)
+	#set ::settings(skin)
 	set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
 	$::table_style_preview_image read $fn
 	make_current_listbox_item_blue $::globals(tablet_styles_listbox)
