@@ -17,8 +17,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "PressStart2P" "[skin_directory]/PressStart2P.ttf" 26
-
+load_font "eightbit" "[skin_directory]/eightbit.ttf" 26
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off water" 2150 1125 -text [translate "HOT WATER"] -font {PressStart2P} -fill "#ffffff" -anchor "center" 

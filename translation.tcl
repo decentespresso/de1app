@@ -5,7 +5,7 @@
 "App:" {fr "App:" de "App:" zh-hant "App:" zh-hans "App:" es "App:" it "App:" pt "App:"}
 "Auto off:" {fr "Arrêt dans:" de "Abschaltung in:" zh-hant "Auto off:" zh-hans "Auto off:" es "Apagado en:" it "Spegnimento in:" pt "Desligamento em:"}
 "awake" {fr "réveil" de "Aufwachen" zh-hant "awake" zh-hans "awake" es "reinicio" it "riattivare" pt "reactivação"}
-"bar" {fr "bars" de "Bar" zh-hant "bar" zh-hans "bar" es "bar" it "bar" pt "bar"}
+"bar" {fr "bars" de "Bar" zh-hant "bar" zh-hans "bar" es "bares" it "bar" pt "bars"}
 "Brightness" {fr "Luminosité" de "Helligkeit" zh-hant "Brightness" zh-hans "Brightness" es "Luminosidad" it "Luminosità" pt "Luminosidade"}
 "Cancel" {fr "Annuler" de "Abbrechen" zh-hant "Cancel" zh-hans "Cancel" es "Cancelar" it "Cancellare" pt "Anular"}
 "Change after:" {fr "Changer après:" de "Ändern nach:" zh-hant "Change after:" zh-hans "Change after:" es "Cambiar despues de:" it "Cambiare dopo:" pt "Alterar após:"}
@@ -21,17 +21,17 @@
 "Going to sleep" {fr "Mise en veille" de "In Ruhezustand versetzen" zh-hant "Going to sleep" zh-hans "Going to sleep" es "Poner en suspensión" it "Impostare in modalità sospensione" pt "Colocaçao em modo de vigília" }
 "Heated:" {fr "Chauffé:" de "Aufgeheizt:" zh-hant "Heated:" zh-hans "Heated:" es "Calentado:" it "Riscaldato:" pt "Aquecido:"}
 "HOT WATER" 	{fr "EAU CHAUDE" de "HEISSWASSER" es "AGUA CALIENTE" it "ACQUA CALDA" pt "ÁGUA QUENTE"}
-"Hot water" {fr "Eau chaude" de "Heisswasser" zh-hant "Hot water" zh-hans "Hot water" es "Agua caliente" it "Acgua calda" it "Água quente"}
+"Hot water" {fr "Eau chaude" de "Heisswasser" zh-hant "Hot water" zh-hans "Hot water" es "Agua caliente" it "Acgua calda" pt "Água quente"}
 "Information" {fr "Informations" de "Informationen" zh-hant "Information" zh-hans "Information" es "Informaciones" it "Informazioni" pt "Informação"}
-"MACHINE" {fr "MACHINE" de "MASCHINE" zh-hant "MACHINE" zh-hans "MACHINE" es "MÁQUINA" it "MACCHINA" pt "Máquina"}
+"MACHINE" {fr "MACHINE" de "MASCHINE" zh-hant "MACHINE" zh-hans "MACHINE" es "MÁQUINA" it "MACCHINA" pt "MÁQUINA"}
 "Measurements" {fr "Mesures" de "Messungen" zh-hant "Measurements" zh-hans "Measurements" es "Mediciones" it "Misurazione" pt "Mensurações"}
 "minutes" {fr "minutes" de "Minuten" zh-hant "minutes" zh-hans "minutes" es "minutos" it "minuti" pt "minutos"}
 "Name your machine" {fr "Nommez votre machine" de "Geben Sie Ihrer Maschine einen Namen" zh-hant "Name your machine" zh-hans "Name your machine" es "Nombre su máquina" it "Chiama la vostra macchina" pt "Nomeie seu máquina"}
 "Ok" {fr "Ok" de "Ok" zh-hant "Ok" zh-hans "Ok" es "Ok" it "Ok" pt "Ok"}
-"OTHER" {fr "AUTRE" de "ANDERE" zh-hant "OTHER" zh-hans "OTHER" es "OTRO" it "AlTRO" pt "OUTRO"}
+"OTHER" {fr "AUTRE" de "ANDERE" zh-hant "OTHER" zh-hans "OTHER" es "OTRO" it "ALTRO" pt "OUTRO"}
 "Please quit and restart this app to apply your changes." {fr "Veuillez quitter et redémarrer cette app pour que les changements puissent prendre effet." de "Bitte beenden und starten Sie diese App neu, damit die Änderungen wirksam werden können." zh-hant "Please quit and restart this app to apply your changes." zh-hans "Please quit and restart this app to apply your changes." es "Por favor cierra y reinicia esta app para aplicar sus modificaciones." it "Per favore, esca e riavvia la app per applicare le modifiche." pt "Por favor, encerre e reinicie o programa para aplicar as suas alterações."}
 "Power off" {fr "Éteindre" de "Ausschalten" zh-hant "Power off" zh-hans "Power off" es "Apagar" it "Spegnere" pt "Desligar"}
-"Power on" {fr "Allumer" de "Einschalten" zh-hant "Power on" zh-hans "Power on" es "Encender" it "Accendere" it "Ligar"}
+"Power on" {fr "Allumer" de "Einschalten" zh-hant "Power on" zh-hans "Power on" es "Encender" it "Accendere" pt "Ligar"}
 "PRESETS" {fr "PRÉRÉGLAGES" de "VOREINSTELLUNGEN" zh-hant "PRESETS" zh-hans "PRESETS" es "PREESTABLECIDOS" it "PREIMPOSTAZIONI" pt "PREDEFINIÇÕES"}
 "pressure (bar)" {fr "pression (bars)" de "Druck (Bar)" zh-hant "pressure (bar)" zh-hans "pressure (bar)" es "presión (bares)" it "pressione (bar)" pt "pressão (bar)"}
 "Pressure profiles" {fr "Profils de pression" de "Druckprofile" zh-hant "Pressure profiles" zh-hans "Pressure profiles" es "Perfiles de presión" it "Profili di pressione" pt "Perfis de pressão"}
@@ -45,14 +45,14 @@
 "Screen saver:" {fr "Écran de veille:" de "Bildschirmschoner:" zh-hant "Screen saver:" zh-hans "Screen saver:" es "Salvapantallas" it "Salvaschermo" pt "Protecção de ecrã"}
 "seconds" {fr "secondes" de "Sekunden" zh-hant "seconds" zh-hans "seconds" es "segundos" it "secondi" pt "segundos"}
 "Serial number:" {fr "Numéro de série:" de "Seriennummer:" zh-hant "Serial number:" zh-hans "Serial number:" es "Numéro de serie:" it "Numero di serie:" pt "Número de série:"}
-"settings" {fr "paramètres" de "Einstellungen" zh-hant "settings" zh-hans "settings" es "configuración" it "impostazioni" pt "definições"}
+"settings" {fr "paramètres" de "Einstellungen" zh-hant "settings" zh-hans "settings" es "configuración" it "impostazioni" pt "configurações"}
 "sleep" {fr "veille" de "Standby" zh-hant "sleep" zh-hans "sleep" es "suspensión" it "spegnimento" pt "vigília"}
 "Start after:" {fr "Démarrage après:" de "Start nach:" zh-hant "Start after:" zh-hans "Start after:" es "Empezar despues de:" it "Iniziare dopo:" pt "Iniciar após:"}
 "start" {fr "démarrage" de "Start" zh-hant "start" zh-hans "start" es "empezar" it "iniziare" pt "início"}
-"Steam temp:" {fr "Temp de la vapeur:" de "Dampftemp:" zh-hant "Steam temp:" zh-hans "Steam temp:" es "Temp del vapor:" it "Temp della vapore:" pt "Temp do vapor:"}
-"STEAM" {fr "VAPEUR" de "DAMPF" es "VAPOR" it "VAPORE" pt "VAPOR"}
+"Steam:" {fr "Vapeur:" de "Dampf:" zh-hant "Steam temp:" zh-hans "Steam temp:" es "Vapor:" it "Vapore:" pt "Vapor:"}
+"STEAM" 		{fr "VAPEUR" de "DAMPF" es "VAPOR" it "VAPORE" pt "VAPOR"}
 "steam" {fr "vapeur" de "Dampf" zh-hant "steam" zh-hans "steam" es "vapor" it "vapore" pt "vapor"}
-"Steam" {fr "Vapeur" de "Dampf" zh-hant "Steam" zh-hans "Steam" es "Vapor" it "Vapore" ipt "Vapor"}
+"Steam" {fr "Vapeur" de "Dampf" zh-hant "Steam" zh-hans "Steam" es "Vapor" it "Vapore" pt "Vapor"}
 "stop" {fr "arrêter" de "anhalten" zh-hant "stop" zh-hans "stop" es "parar" it "smettere" pt "parar"}
 "Tablet styles" {fr "Styles de tablette" de "Stile fürs Tablett" zh-hant "Tablet styles" zh-hans "Tablet styles" es "Estilos para la tableta" it "Stile per il tablet" pt "Estilos para o tablet"}
 "Temp:" {fr "Temp:" de "Temp:" zh-hant "Temp:" zh-hans "Temp:" es "Temp:" it "Temp:" pt "Temp:"}
@@ -61,16 +61,17 @@
 "Use AM/PM" {fr "Utiliser AM/PM" de "AM/PM verwenden" zh-hant "Use AM/PM" zh-hans "Use AM/PM" es "Usar AM/PM" it "Usare AM/PM" pt "Usar AM/PM"}
 "Use Fahrenheit" {fr "Utiliser Fahrenheit" de "Fahrenheit verwenden" zh-hant "Use Fahrenheit" zh-hans "Use Fahrenheit" es "Usar Fahrenheit" it "Usare Fahrenheit" pt "Usar Fahrenheit"}
 "Version:" {fr "Version:" de "Version:" zh-hant "Version:" zh-hans "Version:" es "Versión:" it "Versione:" pt "Versão:"}
-"Water temp:" {fr "Temp de l'eau:" de "Wassertemp:" zh-hant "Water temp:" zh-hans "Water temp:" es "Temp del agua:" it "Temp della acqua:" pt "Temp da água:"}
+"Water:" {fr "Eau:" de "Wasser:" zh-hant "Water temp:" zh-hans "Water temp:" es "Agua:" it "Acqua:" pt "Água:"}
 "water" {fr "eau" de "Wasser" zh-hant "water" zh-hans "water" es "agua" it "acqua" pt "água"}
-"ending" {fr "ending" de "ending" zh-hant "ending" zh-hans "ending"}
-"s" {fr "s" de "s" zh-hant "s" zh-hans "s"}
-"waiting" {fr "waiting" de "waiting" zh-hant "waiting" zh-hans "waiting"}
-"heating the water tank" {fr "heating the water tank" de "heating the water tank" zh-hant "heating the water tank" zh-hans "heating the water tank"}
-"final heating" {fr "final heating" de "final heating" zh-hant "final heating" zh-hans "final heating"}
-"perfecting the mix" {fr "perfecting the mix" de "perfecting the mix" zh-hant "perfecting the mix" zh-hans "perfecting the mix"}
-"(Cooling):" {fr "(Cooling):" de "(Cooling):" zh-hant "(Cooling):" zh-hans "(Cooling):"}
-"Power on" {fr "Power on" de "Power on" es "Power on" it "Power on" pt "Power on" zh-hant "Power on" zh-hans "Power on"}
-"Hot water" {fr "Hot water" de "Hot water" es "Hot water" it "Hot water" pt "Hot water" zh-hant "Hot water" zh-hans "Hot water"}
-"WATER" {fr "WATER" de "WATER" es "WATER" it "WATER" pt "WATER" zh-hant "WATER" zh-hans "WATER"}
-"SETTINGS" {fr "SETTINGS" de "SETTINGS" es "SETTINGS" it "SETTINGS" pt "SETTINGS" zh-hant "SETTINGS" zh-hans "SETTINGS"}
+"ending" {fr "conclusion" de "Beendung" zh-hant "ending" zh-hans "ending" es "completando" it "completando" pt "completando"}
+"s" {fr "s" de "s" zh-hant "s" zh-hans "s" es "s" it "s" es "s"}
+"waiting" {fr "attente" de "Warten" zh-hant "waiting" zh-hans "waiting" es "espera" it "attesa" pt "espera"}
+"heating the water tank" {fr "chauffage du réservoir d'eau" de "Erhitzen des Wasserbehälters" zh-hant "heating the water tank" zh-hans "heating the water tank" es "calentamiento del tanque de agua" it "riscaldamento del serbatoio d'acqua" pt "aquecimento do tanque de água"}
+"final heating" {fr "dernier chauffage" de "letzte Erhitzung" zh-hant "final heating" zh-hans "final heating" es "último calentamiento" it "ultimo riscaldamento" pt "último aquecimento"}
+"perfecting the mix" {fr "perfectionnement du mélange" de "Perfektionierung der Mischung" zh-hant "perfecting the mix" zh-hans "perfecting the mix" es "perfeccionando la mezcla" it "perfezionamento della mescolanza" pt "aperfeiçoa da mistura"}
+"(Cooling):" {fr "(Refroidissement):" de "(Abkühlung):" zh-hant "(Cooling):" zh-hans "(Cooling):" es "(Refrigeración):" it "(Raffreddamento):" pt "(Resfriamento):"}
+"Power on" {fr "Allumer" de "Einschalten" es "Encender" it "Accendere" pt "Ligar" zh-hant "Power on" zh-hans "Power on"}
+"Hot water" {fr "Eau chaude" de "Heisswasser" es "Agua caliente" it "Acqua calda" pt "Água quente" zh-hant "Hot water" zh-hans "Hot water"}
+"WATER" {fr "EAU" de "WASSER" es "AGUA" it "ACQUA" pt "ÁGUA" zh-hant "WATER" zh-hans "WATER"}
+"SETTINGS" {fr "PARAMÈTRES" de "EINSTELLUNGEN" es "CONFIGURACIÓN" it "IMPOSTAZIONI" pt "CONFIGURAÇÕES" zh-hant "SETTINGS" zh-hans "SETTINGS"}
+

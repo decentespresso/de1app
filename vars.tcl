@@ -587,6 +587,7 @@ proc preview_tablet_skin {w args} {
 
 	set ::settings(skin) [$::globals(tablet_styles_listbox) get [$::globals(tablet_styles_listbox) curselection]]
 	set skindir [$w get [$w curselection]]
+	#et ::settings(skin)
 	set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
 	$::table_style_preview_image read $fn
 	make_current_listbox_item_blue $::globals(tablet_styles_listbox)
@@ -594,9 +595,9 @@ proc preview_tablet_skin {w args} {
 
 proc preview_profile {w args} {
 	
-	set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
+	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
 	set profile [$w get [$w curselection]]
-	set ::settings(profle) $profile
+	set ::settings(profile) $profile
 	set fn "[homedir]/profiles/${profile}.tcl"
 	#puts "preview_profile $profile"
 	load_settings_vars $fn

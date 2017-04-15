@@ -52,7 +52,7 @@ proc pause {time} {
 
 
 proc language {} {
-    return "en"
+    #return "en"
     # the UI language for Decent Espresso is set as the UI language that Android is currently operating in
     global current_language
     if {[info exists current_language] == 0} {
@@ -732,8 +732,12 @@ proc load_font {name fn size} {
 	#puts "$::android load_font $name '$fn' $size"
 	if {$::android == 1} {
         #puts "sdltk addfont '$fn'"
-		sdltk addfont $fn
-        #puts "addfont finished"
+		set result [sdltk addfont $fn]
+        puts "addfont of '$fn' finished with fonts added: '$result'"
+        if {$name != $result} {
+            puts "Warning, font name used does not equal Android font name added: '$name' != '$result'"
+        }
+        font create $name -family $name -size [expr {int($fontm * $size)}]
 	} else {
 		font create "$name" -family "$name" -size [expr {int($size * $::fontm)}]
         puts "font create \"$name\" -family \"$name\" -size [expr {int($size * $::fontm)}]"
