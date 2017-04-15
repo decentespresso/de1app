@@ -17,13 +17,13 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "eightbit" "[skin_directory]/eightbit.ttf" 26
+load_font "eightbit" "[skin_directory]/eightbit.ttf" 24
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off water" 2150 1125 -text [translate "HOT WATER"] -font {PressStart2P} -fill "#ffffff" -anchor "center" 
-add_de1_text "off espresso" 455 1125 -text [translate "ESPRESSO"] -font {PressStart2P} -fill "#ffffff" -anchor "center" 
-add_de1_text "off" 1325 1125  -text [translate "STEAM"] -font {PressStart2P} -fill "#ffffff" -anchor "center" 
-add_de1_text "steam" 2055 1125  -text [translate "STEAM"] -font {PressStart2P} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water" 2150 1125 -text [translate "HOT WATER"] -font {eightbit} -fill "#ffffff" -anchor "center" 
+add_de1_text "off espresso" 455 1125 -text [translate "ESPRESSO"] -font {eightbit} -fill "#ffffff" -anchor "center" 
+add_de1_text "off" 1325 1125  -text [translate "STEAM"] -font {eightbit} -fill "#ffffff" -anchor "center" 
+add_de1_text "steam" 2055 1125  -text [translate "STEAM"] -font {eightbit} -fill "#ffffff" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
@@ -37,23 +37,20 @@ add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2250 0 
 
 #when Espresso is running this will show the geeky info
 
-add_de1_text "espresso" 1835 350 -text [translate "ESPRESSO"] -font PressStart2P -fill "#2d3046" -anchor "center" 
+add_de1_text "espresso" 1835 350 -text [translate "ESPRESSO"] -font eightbit -fill "#2d3046" -anchor "center" 
 add_de1_variable "espresso" 1850 420 -text "" -font PressStart2P_50 -fill "#ffffff" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
 
-add_de1_text "espresso" 1765 550 -justify right -anchor "ne" -text [translate "Elapsed:"] -font PressStart2P -fill "#ffffff" -width 520
-add_de1_variable "espresso" 1780 550 -justify left -anchor "nw" -text "" -font PressStart2P -fill "#ffffff" -width 520 -textvariable {[pour_timer][translate "s"]} 
+add_de1_text "espresso" 1765 550 -justify right -anchor "ne" -text [translate "Elapsed:"] -font eightbit -fill "#ffffff" -width 520
+add_de1_variable "espresso" 1780 550 -justify left -anchor "nw" -text "" -font eightbit -fill "#ffffff" -width 520 -textvariable {[pour_timer][translate "s"]} 
 
-add_de1_text "espresso" 1765 600 -justify right -anchor "ne" -text [translate "Auto off:"] -font PressStart2P -fill "#7f879a" -width 520
-add_de1_variable "espresso" 1755 600 -justify left -anchor "nw" -text "" -font PressStart2P  -fill "#42465c" -width 520 -textvariable {[setting_espresso_max_time_text]} 
+add_de1_text "espresso" 1765 600 -justify right -anchor "ne" -text [translate "Auto off:"] -font eightbit -fill "#7f879a" -width 520
+add_de1_variable "espresso" 1755 600 -justify left -anchor "nw" -text "" -font eightbit  -fill "#42465c" -width 520 -textvariable {[setting_espresso_max_time_text]} 
 
-add_de1_text "espresso" 1765 750 -justify right -anchor "ne" -text [translate "Pressure:"] -font PressStart2P -fill "#7f879a" -width 520
-add_de1_variable "espresso" 1755 750 -justify left -anchor "nw" -text "" -font PressStart2P -fill "#42465c" -width 520 -textvariable {[pressure_text]} 
+add_de1_text "espresso" 1765 750 -justify right -anchor "ne" -text [translate "Pressure:"] -font eightbit -fill "#7f879a" -width 520
+add_de1_variable "espresso" 1755 750 -justify left -anchor "nw" -text "" -font eightbit -fill "#42465c" -width 520 -textvariable {[pressure_text]} 
 
-add_de1_text "espresso" 1765 900 -justify right -anchor "ne" -text [translate "Water temp:"] -font PressStart2P -fill "#7f879a" -width 520
-add_de1_variable "espresso" 1755 900 -justify left -anchor "nw" -text "" -font PressStart2P -fill "#42465c" -width 520 -textvariable {[watertemp_text]} 
-
-
-
+add_de1_text "espresso" 1765 900 -justify right -anchor "ne" -text [translate "Water:"] -font eightbit -fill "#7f879a" -width 520
+add_de1_variable "espresso" 1755 900 -justify left -anchor "nw" -text "" -font eightbit -fill "#42465c" -width 520 -textvariable {[watertemp_text]} 
 
 ##############################################################################################################################################################################################################################################################################
 

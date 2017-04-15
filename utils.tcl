@@ -52,7 +52,7 @@ proc pause {time} {
 
 
 proc language {} {
-    #return "en"
+    return "en"
     # the UI language for Decent Espresso is set as the UI language that Android is currently operating in
     global current_language
     if {[info exists current_language] == 0} {
@@ -86,6 +86,7 @@ proc translate {english} {
     # if no translation found, return the english text
     if {[info exists ::already_shown_trans($english)] != 1} {
         set t [subst {"$english" \{fr "$english" de "$english"\ es "$english"\ it "$english"\ pt "$english"\ zh-hant "$english"\ zh-hans "$english"\}}]
+        puts "Appending new phrase: $english"
         append_file "[homedir]/translation.tcl" $t
         set ::already_shown_trans($english) 1
     }

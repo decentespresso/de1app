@@ -1,77 +1,82 @@
-"(heating)" {fr "(chauffage)" de "(Erhitzen)" zh-hant "(heating)" zh-hans "(heating)" es "(calentamiento)" it "(riscaldamento)" pt "(aquecimento)"}
-"1: preinfuse" {fr "1: préinfusion" de "1: Vorinfusion" zh-hant "1: preinfuse" zh-hans "1: preinfuse" es "1: preinfusión" it "1: preinfusione" pt "1: preinfusão"}
-"2: hold" {fr "2: maintien" de "2: Halten" zh-hant "2: hold" zh-hans "2: hold" es "2: mantener" it "2: mantenere" pt "2: manter"}
-"3: decline" {fr "3: déclin" de "3: Abnahme" zh-hant "3: decline" zh-hans "3: decline" es "3: descenso" it "3: riduzione" pt "3: redução"}
-"App:" {fr "App:" de "App:" zh-hant "App:" zh-hans "App:" es "App:" it "App:" pt "App:"}
-"Auto off:" {fr "Arrêt dans:" de "Abschaltung in:" zh-hant "Auto off:" zh-hans "Auto off:" es "Apagado en:" it "Spegnimento in:" pt "Desligamento em:"}
-"awake" {fr "réveil" de "Aufwachen" zh-hant "awake" zh-hans "awake" es "reinicio" it "riattivare" pt "reactivação"}
-"bar" {fr "bars" de "Bar" zh-hant "bar" zh-hans "bar" es "bares" it "bar" pt "bars"}
-"Brightness" {fr "Luminosité" de "Helligkeit" zh-hant "Brightness" zh-hans "Brightness" es "Luminosidad" it "Luminosità" pt "Luminosidade"}
-"Cancel" {fr "Annuler" de "Abbrechen" zh-hant "Cancel" zh-hans "Cancel" es "Cancelar" it "Cancellare" pt "Anular"}
-"Change after:" {fr "Changer après:" de "Ändern nach:" zh-hant "Change after:" zh-hans "Change after:" es "Cambiar despues de:" it "Cambiare dopo:" pt "Alterar após:"}
-"Clean" {fr "Nettoyer" de "Reinigen" zh-hant "Clean" zh-hans "Clean" es "Limpiar" it "Pulire" pt "Limpar"}
-"Connect" {fr "Connecter" de "Verbindung herstellen" zh-hant "Connect" zh-hans "Connect" es "Conectarse" it "Connettarsi" pt "Conectar"}
-"Connection" {fr "Connection" de "Verbindung" zh-hant "Connection" zh-hans "Connection" es "Conexión" it "Connessione" pt "Conexão"}
-"Elapsed:" {fr "Écoulé:" de "Verstrichen:" zh-hant "Elapsed:" zh-hans "Elapsed:" es "Transcurridos:" it "Transcorsi:" pt "Decorrido:"}
-"Enable" {fr "Activer" de "Aktivieren" zh-hant "Enable" zh-hans "Enable" es "Activar" it "Attivare" pt "Activar"}
-"ESPRESSO" 		{fr "EXPRESSO" de "ESPRESSO" es "EXPRESO" it "ESPRESSO" pt "EXPRESSO"}
-"Espresso" {fr "Expresso" de "Espresso" zh-hant "Espresso" zh-hans "Espresso" es "Expreso" it "Espresso" pt "Expresso"}
-"espresso" {fr "expresso" de "espresso" zh-hant "espresso" zh-hans "espresso" es "expreso" it "espresso" pt "expresso"}
-"Firmware" {fr "Firmware" de "Firmware" zh-hant "Firmware" zh-hans "Firmware" es "Firmware" it "Firmware" pt "Firmware"}
-"Going to sleep" {fr "Mise en veille" de "In Ruhezustand versetzen" zh-hant "Going to sleep" zh-hans "Going to sleep" es "Poner en suspensión" it "Impostare in modalità sospensione" pt "Colocaçao em modo de vigília" }
-"Heated:" {fr "Chauffé:" de "Aufgeheizt:" zh-hant "Heated:" zh-hans "Heated:" es "Calentado:" it "Riscaldato:" pt "Aquecido:"}
-"HOT WATER" 	{fr "EAU CHAUDE" de "HEISSWASSER" es "AGUA CALIENTE" it "ACQUA CALDA" pt "ÁGUA QUENTE"}
-"Hot water" {fr "Eau chaude" de "Heisswasser" zh-hant "Hot water" zh-hans "Hot water" es "Agua caliente" it "Acgua calda" pt "Água quente"}
-"Information" {fr "Informations" de "Informationen" zh-hant "Information" zh-hans "Information" es "Informaciones" it "Informazioni" pt "Informação"}
-"MACHINE" {fr "MACHINE" de "MASCHINE" zh-hant "MACHINE" zh-hans "MACHINE" es "MÁQUINA" it "MACCHINA" pt "MÁQUINA"}
-"Measurements" {fr "Mesures" de "Messungen" zh-hant "Measurements" zh-hans "Measurements" es "Mediciones" it "Misurazione" pt "Mensurações"}
-"minutes" {fr "minutes" de "Minuten" zh-hant "minutes" zh-hans "minutes" es "minutos" it "minuti" pt "minutos"}
-"Name your machine" {fr "Nommez votre machine" de "Geben Sie Ihrer Maschine einen Namen" zh-hant "Name your machine" zh-hans "Name your machine" es "Nombre su máquina" it "Chiama la vostra macchina" pt "Nomeie seu máquina"}
-"Ok" {fr "Ok" de "Ok" zh-hant "Ok" zh-hans "Ok" es "Ok" it "Ok" pt "Ok"}
-"OTHER" {fr "AUTRE" de "ANDERE" zh-hant "OTHER" zh-hans "OTHER" es "OTRO" it "ALTRO" pt "OUTRO"}
-"Please quit and restart this app to apply your changes." {fr "Veuillez quitter et redémarrer cette app pour que les changements puissent prendre effet." de "Bitte beenden und starten Sie diese App neu, damit die Änderungen wirksam werden können." zh-hant "Please quit and restart this app to apply your changes." zh-hans "Please quit and restart this app to apply your changes." es "Por favor cierra y reinicia esta app para aplicar sus modificaciones." it "Per favore, esca e riavvia la app per applicare le modifiche." pt "Por favor, encerre e reinicie o programa para aplicar as suas alterações."}
-"Power off" {fr "Éteindre" de "Ausschalten" zh-hant "Power off" zh-hans "Power off" es "Apagar" it "Spegnere" pt "Desligar"}
-"Power on" {fr "Allumer" de "Einschalten" zh-hant "Power on" zh-hans "Power on" es "Encender" it "Accendere" pt "Ligar"}
-"PRESETS" {fr "PRÉRÉGLAGES" de "VOREINSTELLUNGEN" zh-hant "PRESETS" zh-hans "PRESETS" es "PREESTABLECIDOS" it "PREIMPOSTAZIONI" pt "PREDEFINIÇÕES"}
-"pressure (bar)" {fr "pression (bars)" de "Druck (Bar)" zh-hant "pressure (bar)" zh-hans "pressure (bar)" es "presión (bares)" it "pressione (bar)" pt "pressão (bar)"}
-"Pressure profiles" {fr "Profils de pression" de "Druckprofile" zh-hant "Pressure profiles" zh-hans "Pressure profiles" es "Perfiles de presión" it "Profili di pressione" pt "Perfis de pressão"}
-"PRESSURE" {fr "PRESSION" de "DRUCK" zh-hant "PRESSURE" zh-hans "PRESSURE" es "PRESIÓN" it "PRESSIONE" pt "PRESSÃO"}
-"Pressure:" {fr "Pression:" de "Druck:" zh-hant "Pressure:" zh-hans "Pressure:" es "Presión:" it "Pressione:" pt "Pressão:"}
-"Quit" {fr "Quitter" de "Beenden" zh-hant "Quit" zh-hans "Quit" es "Cerrar" it "Chiudere" pt "Encerrar"}
-"Reset" {fr "Réinitialiser" de "Zurücksetzen" zh-hant "Reset" zh-hans "Reset" es "Reinicializar" it "Reinizializzazione" pt "Redefinir"}
-"Save" {fr "Sauvegarder" de "Speichern" zh-hant "Save" zh-hans "Save" es "Guardar" it "Salvare" pt "Salvar"}
-"save" {fr "sauvegarder" de "speichern" zh-hant "save" zh-hans "save" es "guardar" it "salvare" pt "salvar"}
-"Screen Saver" {fr "Écran de veille" de "Bildschirmschoner" zh-hant "Screen Saver" zh-hans "Screen Saver" es "Salvapantallas" it "Salvaschermo" pt "Protecção de Ecrã"}
-"Screen saver:" {fr "Écran de veille:" de "Bildschirmschoner:" zh-hant "Screen saver:" zh-hans "Screen saver:" es "Salvapantallas" it "Salvaschermo" pt "Protecção de ecrã"}
-"seconds" {fr "secondes" de "Sekunden" zh-hant "seconds" zh-hans "seconds" es "segundos" it "secondi" pt "segundos"}
-"Serial number:" {fr "Numéro de série:" de "Seriennummer:" zh-hant "Serial number:" zh-hans "Serial number:" es "Numéro de serie:" it "Numero di serie:" pt "Número de série:"}
-"settings" {fr "paramètres" de "Einstellungen" zh-hant "settings" zh-hans "settings" es "configuración" it "impostazioni" pt "configurações"}
-"sleep" {fr "veille" de "Standby" zh-hant "sleep" zh-hans "sleep" es "suspensión" it "spegnimento" pt "vigília"}
-"Start after:" {fr "Démarrage après:" de "Start nach:" zh-hant "Start after:" zh-hans "Start after:" es "Empezar despues de:" it "Iniziare dopo:" pt "Iniciar após:"}
-"start" {fr "démarrage" de "Start" zh-hant "start" zh-hans "start" es "empezar" it "iniziare" pt "início"}
-"Steam:" {fr "Vapeur:" de "Dampf:" zh-hant "Steam temp:" zh-hans "Steam temp:" es "Vapor:" it "Vapore:" pt "Vapor:"}
-"STEAM" 		{fr "VAPEUR" de "DAMPF" es "VAPOR" it "VAPORE" pt "VAPOR"}
-"steam" {fr "vapeur" de "Dampf" zh-hant "steam" zh-hans "steam" es "vapor" it "vapore" pt "vapor"}
-"Steam" {fr "Vapeur" de "Dampf" zh-hant "Steam" zh-hans "Steam" es "Vapor" it "Vapore" pt "Vapor"}
-"stop" {fr "arrêter" de "anhalten" zh-hant "stop" zh-hans "stop" es "parar" it "smettere" pt "parar"}
-"Tablet styles" {fr "Styles de tablette" de "Stile fürs Tablett" zh-hant "Tablet styles" zh-hans "Tablet styles" es "Estilos para la tableta" it "Stile per il tablet" pt "Estilos para o tablet"}
-"Temp:" {fr "Temp:" de "Temp:" zh-hant "Temp:" zh-hans "Temp:" es "Temp:" it "Temp:" pt "Temp:"}
-"Timer" {fr "Minuteur" de "Zeitschaltuhr" zh-hant "Timer" zh-hans "Timer" es "Temporizador" it "Contaminuti" pt "Temporizador"}
-"Update" {fr "Actualiser" de "Aktualisieren" zh-hant "Update" zh-hans "Update" es "Actualizar" it "Aggiornare" pt "Actualizar"}
-"Use AM/PM" {fr "Utiliser AM/PM" de "AM/PM verwenden" zh-hant "Use AM/PM" zh-hans "Use AM/PM" es "Usar AM/PM" it "Usare AM/PM" pt "Usar AM/PM"}
-"Use Fahrenheit" {fr "Utiliser Fahrenheit" de "Fahrenheit verwenden" zh-hant "Use Fahrenheit" zh-hans "Use Fahrenheit" es "Usar Fahrenheit" it "Usare Fahrenheit" pt "Usar Fahrenheit"}
-"Version:" {fr "Version:" de "Version:" zh-hant "Version:" zh-hans "Version:" es "Versión:" it "Versione:" pt "Versão:"}
-"Water:" {fr "Eau:" de "Wasser:" zh-hant "Water temp:" zh-hans "Water temp:" es "Agua:" it "Acqua:" pt "Água:"}
-"water" {fr "eau" de "Wasser" zh-hant "water" zh-hans "water" es "agua" it "acqua" pt "água"}
-"ending" {fr "conclusion" de "Beendung" zh-hant "ending" zh-hans "ending" es "completando" it "completando" pt "completando"}
-"s" {fr "s" de "s" zh-hant "s" zh-hans "s" es "s" it "s" es "s"}
-"waiting" {fr "attente" de "Warten" zh-hant "waiting" zh-hans "waiting" es "espera" it "attesa" pt "espera"}
-"heating the water tank" {fr "chauffage du réservoir d'eau" de "Erhitzen des Wasserbehälters" zh-hant "heating the water tank" zh-hans "heating the water tank" es "calentamiento del tanque de agua" it "riscaldamento del serbatoio d'acqua" pt "aquecimento do tanque de água"}
-"final heating" {fr "dernier chauffage" de "letzte Erhitzung" zh-hant "final heating" zh-hans "final heating" es "último calentamiento" it "ultimo riscaldamento" pt "último aquecimento"}
-"perfecting the mix" {fr "perfectionnement du mélange" de "Perfektionierung der Mischung" zh-hant "perfecting the mix" zh-hans "perfecting the mix" es "perfeccionando la mezcla" it "perfezionamento della mescolanza" pt "aperfeiçoa da mistura"}
-"(Cooling):" {fr "(Refroidissement):" de "(Abkühlung):" zh-hant "(Cooling):" zh-hans "(Cooling):" es "(Refrigeración):" it "(Raffreddamento):" pt "(Resfriamento):"}
-"Power on" {fr "Allumer" de "Einschalten" es "Encender" it "Accendere" pt "Ligar" zh-hant "Power on" zh-hans "Power on"}
-"Hot water" {fr "Eau chaude" de "Heisswasser" es "Agua caliente" it "Acqua calda" pt "Água quente" zh-hant "Hot water" zh-hans "Hot water"}
-"WATER" {fr "EAU" de "WASSER" es "AGUA" it "ACQUA" pt "ÁGUA" zh-hant "WATER" zh-hans "WATER"}
-"SETTINGS" {fr "PARAMÈTRES" de "EINSTELLUNGEN" es "CONFIGURACIÓN" it "IMPOSTAZIONI" pt "CONFIGURAÇÕES" zh-hant "SETTINGS" zh-hans "SETTINGS"}
-
+(heating) {fr (chauffage) de (Erhitzen) zh-hant （加熱中） zh-hans (heating) es (calentamiento) it (riscaldamento) pt (aquecimento) kr {(가열 중)} jp {(加熱中, ヒーティング)} ar (heating) hu (melegítés) tr (heating) th (heating) sv (heating) hu (melegítés) da (opvarmning)}
+{1: preinfuse} {fr {1: préinfusion} de {1: Vorinfusion} zh-hant １：預浸 zh-hans {1: preinfuse} es {1: preinfusión} it {1: preinfusione} pt {1: preinfusão} kr {1: 프리인퓨전} jp 1:プリインフュージョン ar {1: preinfuse} hu {1: előáztatás} tr {1: preinfuse} th {1: preinfuse} sv {1: preinfuse} hu {1: előáztatás} da {1: preinfusion}}
+{2: hold} {fr {2: maintien} de {2: Halten} zh-hant ２：持續 zh-hans {2: hold} es {2: mantener} it {2: mantieni} pt {2: manter} kr {2: 유지} jp 2:ホールド ar {2: hold} hu {2: hold} tr {2: hold} th {2: hold} sv {2: hold} hu {2: hold} da {2: hold}}
+{3: decline} {fr {3: déclin} de {3: Abnahme} zh-hant ３：回落 zh-hans {3: decline} es {3: descenso} it {3: riduci} pt {3: redução} kr {3: 감소} jp 3:減少 ar {3: decline} hu {3: decline} tr {3: decline} th {3: decline} sv {3: decline} hu {3: decline} da {3: reducer}}
+App: {fr App: de App: zh-hant 主程式： zh-hans App: es App: it App: pt App: kr App: jp App: ar App: hu App: tr App: th App: sv App: hu App: da App:}
+{Auto off:} {fr {Arrêt dans:} de {Abschaltung in:} zh-hant 自動關機： zh-hans {Auto off:} es {Apagado en:} it {Spegni dopo:} pt {Desligamento em:} kr {자동 Off} jp 自動オフ ar {Auto off:} hu {Auto off:} tr {Auto off:} th {Auto off:} sv {Auto off:} hu {Auto off:} da {Auto sluk:}}
+awake {fr réveil de Aufwachen zh-hant 起動 zh-hans awake es reinicio it riattiva pt reactivação kr {대기모드 해제} jp 待機モードㅏ解除 ar awake hu awake tr awake th awake sv vaken hu awake da opvågne}
+bar {fr bars de Bar zh-hant 壓力參數 zh-hans bar es bares it bar pt bars kr 압력 jp 圧力 ar bar hu bar tr bar th บาร์ sv bar hu bar da bar}
+Brightness {fr Luminosité de Helligkeit zh-hant 光量度 zh-hans Brightness es Luminosidad it Luminosità pt Luminosidade kr 밝기 jp 明るさ ar Brightness hu Fényerő tr Brightness th ความสว่าง sv Ljusstyrka hu Fényerő da Lysstyrke}
+Cancel {fr Annuler de Abbrechen zh-hant 取消 zh-hans Cancel es Cancelar it Annulla pt Anular kr 취소 jp 取り消し ar Cancel hu Mégsem tr Cancel th ยกเลิก sv avbryt hu Mégsem da Afbryde}
+{Change after:} {fr {Changer après:} de {Ändern nach:} zh-hant {變更：每 xx 分鐘} zh-hans {Change after:} es {Cambiar despues de:} it {Cambia dopo:} pt {Alterar após:} kr {:분 후 변경} jp :分後変更 ar {Change after:} hu {Change after:} tr {Change after:} th {Change after:} sv {Ändra efter:} hu {Change after:} da {Skift efter}}
+Clean {fr Nettoyer de Reinigen zh-hant 清洗 zh-hans Clean es Limpiar it Pulizia pt Limpar kr 청소하기 jp 掃除 ar Clean hu Tisztítás tr Clean th ทำความสะอาด sv Rengör hu Tisztítás da Rens}
+Connect {fr {Se connecter} de {Verbindung herstellen} zh-hant 連接主機 zh-hans Connect es Conectarse it Connetti pt Conectar kr 연결하기 jp コンタクトする ar Connect hu Kapcsolódás tr Connect th เชื่อมต่อ sv {Koppla upp} hu Kapcsolódás da Forbind}
+Connection {fr Connexion de Verbindung zh-hant 連接資訊 zh-hans Connection es Conexión it Connessione pt Conexão kr 연결 jp コンタクト ar Connection hu Kapcsolat tr Connection th การเชื่อมต่อ sv Uppkopplad hu Kapcsolat da Forbindelse}
+Elapsed: {fr Écoulé: de Verstrichen: zh-hant 已運行： zh-hans Elapsed: es Transcurridos: it Transcorsi: pt Decorrido: kr {경과 시간:} jp 経過 ar Elapsed: hu Elapsed: tr Elapsed: th Elapsed: sv Elapsed: hu Elapsed: da Forløbet}
+Enable {fr Activer de Aktivieren zh-hant 開 zh-hans Enable es Activar it Attiva pt Activar kr 활성화 jp 活性化 ar Enable hu Enable tr Enable th Enable sv Enable hu Enable da Aktiver}
+ESPRESSO {fr EXPRESSO de ESPRESSO es ESPRESSO it ESPRESSO pt EXPRESSO zh-hans ESPRESSO zh-hant 特濃咖啡 kr 에스프레소 jp エスプレッソ ar ESPRESSO hu ESZPRESSZÓ tr ESPRESSO th เอสเพรสโซ่ sv ESPRESSO hu ESZPRESSZÓ da ESPRESSO}
+Espresso {fr Expresso de Espresso zh-hant 特濃咖啡 zh-hans Espresso es ESPRESSO it Espresso pt Expresso kr 에스프레소 jp エスプレッソ ar Espresso hu Eszpresszó tr Espresso th เอสเพรสโซ่ sv Espresso hu Eszpresszó da Espresso}
+espresso {fr expresso de espresso zh-hant 特濃咖啡 zh-hans espresso es ESPRESSO it espresso pt expresso kr 에스프레소 jp エスプレッソ ar espresso hu eszpresszó tr espresso th เอสเพรสโซ่ sv espresso hu eszpresszó da espresso}
+Firmware {fr Firmware de Firmware zh-hant 韌體 zh-hans Firmware es Firmware it Firmware pt Firmware kr 펌웨어 jp ファームウェア ar Firmware hu Firmware tr Firmware th Firmware sv Firmware hu Firmware da Firmware}
+{Going to sleep} {fr {Mise en veille} de {In Ruhezustand versetzen} zh-hant 進入休眠 zh-hans {Going to sleep} es {Poner en suspensión} it {Modalità sospensione} pt {Colocaçao em modo de vigília} kr {절전모드 진입} jp 節電モード ar {Going to sleep} hu {Going to sleep} tr {Going to sleep} th {Going to sleep} sv {Going to sleep} hu {Going to sleep} da {Går i dvale}}
+Heated: {fr Chauffé: de Aufgeheizt: zh-hant 加熱完成： zh-hans Heated: es Calentado: it Pronto pt Aquecido: kr {:로 가열 완료} jp 加熱 ar Heated: hu Heated: tr Heated: th Heated: sv Klar: hu Heated: da Klar:}
+{HOT WATER} {fr {EAU CHAUDE} de HEISSWASSER es {AGUA CALIENTE} it {ACQUA CALDA} pt {ÁGUA QUENTE} zh-hans {HOT WATER} zh-hant 熱水 kr 온수 jp お湯 ar {HOT WATER} hu {HOT WATER} tr {HOT WATER} th น้ำร้อน sv {VARMT VATTEN} hu {HOT WATER} da {VARMT VAND}}
+{Hot water} {fr {Eau chaude} de Heisswasser es {Agua caliente} it {Acqua calda} pt {Água quente} zh-hant {Hot water} zh-hans {Hot water} kr 온수 jp お湯 ar {Hot water} hu {Hot water} tr {Hot water} th น้ำร้อน sv {Varmt vatten} hu {Hot water} da {Varmt vand}}
+Information {fr Informations de Informationen zh-hant 主機資料 zh-hans Information es Informaciones it Informazioni pt Informação kr 정보 jp インフォメーション ar Information hu Information tr Information th ข้อมูล sv Information hu Information da Information}
+MACHINE {fr MACHINE de MASCHINE zh-hant 主機 zh-hans MACHINE es MÁQUINA it MACCHINA pt MÁQUINA kr 머신 jp マシン ar MACHINE hu MACHINE tr MACHINE th MACHINE sv MASKIN hu MACHINE da MASKINE}
+Measurements {fr Mesures de Messungen zh-hant 數值單位 zh-hans Measurements es Mediciones it Parametri pt Mensurações kr {측정 단위 변경} jp 測定値 ar Measurements hu Measurements tr Measurements th Measurements sv Measurements hu Measurements da Målinger}
+minutes {fr minutes de Minuten zh-hant 分鐘 zh-hans minutes es minutos it minuti pt minutos kr 분 jp 分 ar minutes hu minutes tr minutes th นาที sv minuter hu minutes da minutter}
+{Name your machine} {fr {Nommez votre machine} de {Geben Sie Ihrer Maschine einen Namen} zh-hant 主機名稱 zh-hans {Name your machine} es {Nombre su máquina} it {Dai un nome alla tua macchina} pt {Nomeie seu máquina} kr {머신 이름 설정} jp マシン名前設定 ar {Name your machine} hu {Nevezd el a gépedet} tr {Name your machine} th ชื่อเครื่องของคุณ sv {Namnge din maskin} hu {Nevezd el a gépedet} da {Giv maskinen et navn}}
+Ok {fr Ok de Ok zh-hant 確定 zh-hans Ok es ok it Ok pt Ok kr Ok jp オッケー ar Ok hu Ok tr Ok th ตกลง sv Ok hu Ok da Ok}
+OTHER {fr AUTRE de ANDERE zh-hant 其他 zh-hans OTHER es OTRO it ALTRO pt OUTRO kr 기타 jp その他 ar OTHER hu EGYÉB tr OTHER th อื่นๆ sv OTHER hu EGYÉB da ANDRE}
+{Please quit and restart this app to apply your changes.} {fr {Veuillez quitter et redémarrer cette app pour que les changements puissent prendre effet.} de {Bitte beenden und starten Sie diese App neu, damit die Änderungen wirksam werden können.} zh-hant 請重啟本程式來套用新設定。 zh-hans {Please quit and restart this app to apply your changes.} es {Por reinicie la aplicación para aplicar sus modificaciones.} it {Per favore, esci e riavvia l'app per applicare le modifiche} pt {Por favor, encerre e reinicie o programa para aplicar as suas alterações.} kr {변경사항을 적용하기 위해 어플리케이션을 재시작하세요.} jp 変更を承認した後、アプリケーションを再起動してください。 ar {Please quit and restart this app to apply your changes.} hu {Please quit and restart this app to apply your changes.} tr {Please quit and restart this app to apply your changes.} th {Please quit and restart this app to apply your changes.} sv {Vänligen stäng och starta applikationen för att aktivera förändringarna} hu {Please quit and restart this app to apply your changes.} da {Venligst afslut og genstart denne app for at aktivere dine ændringer}}
+{Power off} {fr Éteindre de Ausschalten zh-hant 關機 zh-hans {Power off} es Apagar it Spegni pt Desligar kr {전원 Off} jp 電源オフ ar {Power off} hu Kikapcsolás tr {Power off} th {Power off} sv {Stäng av} hu Kikapcsolás da Sluk}
+{Power on} {fr Allumer de Einschalten es Encender it Accendi pt Ligar zh-hant {Power on} zh-hans {Power on} kr {전원 on } jp 電源オン ar {Power on} hu {Power on} tr {Power on} th {Power on} sv Start hu {Power on} da Tænd}
+PRESETS {fr PRÉRÉGLAGES de VOREINSTELLUNGEN zh-hant 預設 zh-hans PRESETS es PREESTABLECIDOS it {Opzioni predefinite} pt PREDEFINIÇÕES kr {사전 설정} jp 事前設定 ar PRESETS hu PRESETS tr PRESETS th PRESETS sv Inställningar hu PRESETS da Forudindstillinger}
+{pressure (bar)} {fr {pression (bars)} de {Druck (Bar)} zh-hant 壓力(bar) zh-hans {pressure (bar)} es {presión (bares)} it {pressione (bar)} pt {pressão (bar)} kr {압력 (bar)} jp 圧力(bar) ar {pressure (bar)} hu {nyomás (bar)} tr {pressure (bar)} th {แรงดัน (บาร์)} sv {tryck (bar)} hu {nyomás (bar)} da {tryk (bar)}}
+{Pressure profiles} {fr {Profils de pression} de Druckprofile zh-hant 壓力設定檔 zh-hans {Pressure profiles} es {Perfiles de presión} it {Profili di pressione} pt {Perfis de pressão} kr {압력 프로파일} jp 圧力プロファイル ar {Pressure profiles} hu Nyomásprofilok tr {Pressure profiles} th {Pressure profiles} sv {Pressure profiles} hu Nyomásprofilok da {Tryk profiler}}
+PRESSURE {fr PRESSION de DRUCK zh-hant 壓力 zh-hans PRESSURE es PRESIÓN it PRESSIONE pt PRESSÃO kr 압력 jp 圧力(bar) ar PRESSURE hu NYOMÁS tr PRESSURE th แรงดัน sv TRYCK hu NYOMÁS da TRYK}
+Pressure: {fr Pression: de Druck: zh-hant 壓力： zh-hans Pressure: es Presión: it Pressione: pt Pressão: kr 압력: jp 圧力(bar) ar Pressure: hu Nyomás: tr Pressure: th แรงดัน: sv Tryck: hu Nyomás: da Tryk:}
+Quit {fr Quitter de Beenden zh-hant 離開 zh-hans Quit es Cerrar it Esci pt Encerrar kr 나가기 jp 終了 ar Quit hu Kilép tr Quit th ออก sv Avsluta hu Kilép da Afslut}
+Reset {fr Réinitialiser de Zurücksetzen zh-hant 重設 zh-hans Reset es Reinicializar it Riavvia pt Redefinir kr 재설정 jp 再設定（リセット） ar Reset hu Reset tr Reset th Reset sv {Starta om} hu Reset da Reset}
+Save {fr Sauvegarder de Speichern zh-hant 儲存 zh-hans Save es Guardar it Salva pt Salvar kr 저장 jp セーブ ar Save hu Save tr Save th Save sv Spara hu Save da Gem}
+save {fr sauvegarder de speichern zh-hant 儲存 zh-hans save es guardar it salva pt salvar kr 저장 jp セーブ ar save hu save tr save th save sv spara hu save da gem}
+{Screen Saver} {fr {Écran de veille} de Bildschirmschoner zh-hant 屏幕保護 zh-hans {Screen Saver} es Salvapantallas it Salvaschermo pt {Protecção de Ecrã} kr 화면보호기 jp スクリーンセーバー ar {Screen Saver} hu {Screen Saver} tr {Screen Saver} th พักหน้าจอ sv Skärmsläckare hu {Screen Saver} da Pauseskærm}
+{Screen saver:} {fr {Écran de veille:} de Bildschirmschoner: zh-hant 屏幕保護： zh-hans {Screen saver:} es Salvapantallas it Salvaschermo pt {Protecção de ecrã} kr 화면보호기: jp スクリーンセーバー ar {Screen saver:} hu {Screen saver:} tr {Screen saver:} th พักหน้าจอ: sv Skärmsläckare: hu {Screen saver:} da Pauseskærm}
+seconds {fr secondes de Sekunden zh-hant 秒 zh-hans seconds es segundos it secondi pt segundos kr 초 jp 秒 ar seconds hu seconds tr seconds th วินาที sv sekunder hu seconds da sekunder}
+{Serial number:} {fr {Numéro de série:} de Seriennummer: zh-hant 序號 zh-hans {Serial number:} es {Numéro de serie:} it {Numero di serie:} pt {Número de série:} kr {시리얼 넘버} jp シリアルナンバー ar {Serial number:} hu {Serial number:} tr {Serial number:} th {Serial number:} sv Serienummer: hu {Serial number:} da Serienummer:}
+settings {fr paramètres de Einstellungen zh-hant 設定 zh-hans settings es configuración it impostazioni pt configurações kr 설정 jp 設定 ar settings hu settings tr settings th ตั้งค่า sv inställningar hu settings da indstillinger}
+sleep {fr veille de Standby zh-hant 休眠 zh-hans sleep es suspensión it sospensione pt vigília kr 대기모드 jp 待機モード ar sleep hu sleep tr sleep th sleep sv vila hu sleep da dvale}
+{Start after:} {fr {Démarrage après:} de {Start nach:} zh-hant {進入休眠：靜止 xx 分鐘後} zh-hans {Start after:} es {Empezar despues de:} it {Inizia dopo: } pt {Iniciar após:} kr {:후 시작} jp ：後スタート ar {Start after:} hu {Start after:} tr {Start after:} th {Start after:} sv {Start after:} hu {Start after:} da {Start efter:}}
+start {fr démarrage de Start zh-hant 開始 zh-hans start es empezar it {Inizia dopo: } pt início kr 시작 jp スタート ar start hu start tr start th เริ่ม sv starta hu start da start}
+Steam: {fr Vapeur: de Dampf: zh-hant 蒸汽： zh-hans {Steam temp:} es Vapor: it Vapore: pt Vapor: kr 스팀: jp スチーム： ar Steam: hu Steam: tr Steam: th {ไอน้ำ :} sv Ånga: hu Steam: da Damp:}
+STEAM {fr VAPEUR de DAMPF es VAPOR it VAPORE pt VAPOR zh-hans STEAM zh-hant 蒸汽 kr 스팀 jp スチーム ar STEAM hu STEAM tr STEAM th ไอน้ำ sv ÅNGA hu STEAM da DAMP}
+steam {fr vapeur de Dampf zh-hant 蒸汽 zh-hans steam es vapor it vapore pt vapor kr 스팀 jp スチーム ar steam hu steam tr steam th ไอน้ำ sv ånga hu steam da damp}
+Steam {fr Vapeur de Dampf zh-hant 蒸汽 zh-hans Steam es Vapor it Vapore pt Vapor kr 스팀 jp スチーム ar Steam hu Steam tr Steam th ไอน้ำ sv Ånga hu Steam da Damp}
+stop {fr arrêter de anhalten zh-hant 停止 zh-hans stop es parar it interrompi pt parar kr 멈춤 jp ストップ ar stop hu stop tr stop th หยุด sv stop hu stop da stop}
+{Tablet styles} {fr {Styles d'interface} de {Stile fürs Tablett} zh-hant 板面風格 zh-hans {Tablet styles} es {Estilos para la tableta} it {Stili per il tablet} pt {Estilos para o tablet} kr {태블릿 스타일} jp タブレットスタイル ar {Tablet styles} hu {Tablet styles} tr {Tablet styles} th {Tablet styles} sv {Tablet styles} hu {Tablet styles} da Skærmtemaer}
+Timer {fr Minuteur de Zeitschaltuhr zh-hant 計時器 zh-hans Timer es Temporizador it Timer pt Temporizador kr 타이머 jp タイマー ar Timer hu Timer tr Timer th ตั้งเวลา sv Timer hu Timer da Timer}
+Update {fr {Mise à jour} de Aktualisieren zh-hant 更新 zh-hans Update es Actualizar it Aggiorna pt Actualizar kr 업데이트 jp アップデート ar Update hu Update tr Update th Update sv Uppdatera hu Update da Opdater}
+{Use AM/PM} {fr {Utiliser AM/PM} de {AM/PM verwenden} zh-hant 使用AM/PＭ zh-hans {Use AM/PM} es {Usar AM/PM} it {Usa AM/PM} pt {Usar AM/PM} kr {AM/PM 사용} jp AM/PM使用 ar {Use AM/PM} hu {Use AM/PM} tr {Use AM/PM} th {ใช้ AM/PM} sv {Använd AM/PM} hu {Use AM/PM} da {Anvend AM/PM}}
+{Use Fahrenheit} {fr {Utiliser Fahrenheit} de {Fahrenheit verwenden} zh-hant 使用華氏 zh-hans {Use Fahrenheit} es {Usar Fahrenheit} it {Usa Fahrenheit} pt {Usar Fahrenheit} kr {화씨 사용} jp 華氏を使用 ar {Use Fahrenheit} hu {Use Fahrenheit} tr {Use Fahrenheit} th {ใช้ ฟาเรนไฮต์} sv {Använd Fahrenheit} hu {Use Fahrenheit} da {Anvend Fahrenheit}}
+Version: {fr Version: de Version: zh-hant 版本： zh-hans Version: es Versión: it Versione: pt Versão: kr 버전: jp バージョン ar Version: hu Version: tr Version: th Version: sv Version: hu Version: da Version:}
+Water: {fr Eau: de Wasser: zh-hant 水： zh-hans {Water temp:} es Agua: it Acqua: pt Água: kr 물: jp 水： ar Water: hu Water: tr Water: th น้ำ: sv Vatten: hu Water: da Vand:}
+water {fr eau de Wasser zh-hant 水 zh-hans water es agua it acqua pt água kr 물 jp 水 ar water hu water tr water th น้ำ sv vatten hu water da Vand:}
+ending {fr conclusion de Beendung zh-hant 結尾 zh-hans ending es completando it conclusione pt completando kr 완료 jp 完了 ar ending hu ending tr ending th ending sv ending hu ending da afslutning}
+s {fr s de s zh-hant 秒 zh-hans s es s it s es s pt s kr s jp Ｓ ar s hu s tr s th s sv s hu s da s}
+waiting {fr attente de Warten zh-hant 等待中 zh-hans waiting es espera it attendi pt espera kr 대기 jp 待機中 ar waiting hu waiting tr waiting th รอ sv väntar hu waiting da vente}
+{heating the water tank} {fr {chauffage du réservoir d'eau} de {Erhitzen des Wasserbehälters} zh-hant 水源加熱中 zh-hans {heating the water tank} es {calentamiento del tanque de agua} it {riscaldamento del serbatoio d'acqua} pt {aquecimento do tanque de água} kr {워터탱크 가열 중} jp タンクの水を加越する中 ar {heating the water tank} hu {heating the water tank} tr {heating the water tank} th {heating the water tank} sv {värmer vattentanken} hu {heating the water tank} da {opvarmer vandtanken}}
+{final heating} {fr {dernier chauffage} de {letzte Erhitzung} zh-hant 控溫 zh-hans {final heating} es {último calentamiento} it {riscaldamento finale} pt {último aquecimento} kr {최종 가열 중} jp 最終加越 ar {final heating} hu {final heating} tr {final heating} th {final heating} sv {final heating} hu {final heating} da {endelig temperering}}
+{perfecting the mix} {fr {perfectionnement du mélange} de {Perfektionierung der Mischung} zh-hant {perfecting the mix} zh-hans {perfecting the mix} es {perfeccionando la mezcla} it {il mix perfetto} pt {aperfeiçoa da mistura} kr {완벽한 온도로 믹싱 중} jp {perfecting the mix} ar {perfecting the mix} hu {perfecting the mix} tr {perfecting the mix} th {perfecting the mix} sv {perfecting the mix} hu {perfecting the mix} da {optimerer blandingen}}
+(Cooling): {fr (Refroidissement): de (Abkühlung): zh-hant (Cooling): zh-hans (Cooling): es (Refrigeración): it (Raffreddamento): pt (Resfriamento): kr (쿨링): jp （クーリング） ar (Cooling): hu (Cooling): tr (Cooling): th (Cooling): sv (Kyler): hu (Cooling): da (Afkøling)}
+{Power on} {fr Allumer de Einschalten es Encender it Accendi pt Ligar zh-hant {Power on} zh-hans {Power on} kr {전원 on } jp 電源オン ar {Power on} hu {Power on} tr {Power on} th {Power on} sv Start hu {Power on} da Tænd}
+{Hot water} {fr {Eau chaude} de Heisswasser es {Agua caliente} it {Acqua calda} pt {Água quente} zh-hant {Hot water} zh-hans {Hot water} kr 온수 jp お湯 ar {Hot water} hu {Hot water} tr {Hot water} th น้ำร้อน sv {Varmt vatten} hu {Hot water} da {Varmt vand}}
+WATER {fr EAU de WASSER es AGUA it ACQUA pt ÁGUA zh-hant WATER zh-hans WATER kr 물 jp 水 ar WATER hu WATER tr WATER th น้ำ sv VATTEN hu WATER da VAND}
+SETTINGS {fr PARAMÈTRES de EINSTELLUNGEN es CONFIGURACIÓN it IMPOSTAZIONI pt CONFIGURAÇÕES zh-hant SETTINGS zh-hans SETTINGS kr 설정 jp 設定 ar SETTINGS hu SETTINGS tr SETTINGS th ตั้งค่า sv INSTÄLLNINGAR hu SETTINGS da INDSTILLINGER}
+Water {fr Eau de Wasser zh-hant 水 zh-hans {Water temp} es Agua it Acqua pt Água kr 물 jp 水 ar Water hu Water tr Water th น้ำ sv Vatten hu Water da Vand}
+heating {fr heating de heating es heating it riscaldamento pt heating zh-hant heating zh-hans heating kr heating jp heating ar heating hu heating tr heating th heating sv heating hu heating da heating}
+stabilising {fr stabilising de stabilising es stabilising it stabilising pt stabilising zh-hant stabilising zh-hans stabilising kr stabilising jp stabilising ar stabilising hu stabilising tr stabilising th stabilising sv stabilising hu stabilising da stabilising}
+preinfusion {fr preinfusion de preinfusion es preinfusion it preinfusione pt preinfusion zh-hant preinfusion zh-hans preinfusion kr preinfusion jp preinfusion ar preinfusion hu preinfusion tr preinfusion th preinfusion sv preinfusion hu preinfusion da preinfusion}
+pouring {fr pouring de pouring es pouring it pouring pt pouring zh-hant pouring zh-hans pouring kr pouring jp pouring ar pouring hu pouring tr pouring th pouring sv pouring hu pouring da pouring}
+Saved {fr Saved de Saved es Saved it Saved pt Saved zh-hant Saved zh-hans Saved kr Saved jp Saved ar Saved hu Saved tr Saved th Saved sv Saved hu Saved da Saved}
+"refresh chart" {fr "refresh chart" de "refresh chart" es "refresh chart" it "refresh chart" pt "refresh chart" zh-hant "refresh chart" zh-hans "refresh chart"}

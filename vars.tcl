@@ -102,21 +102,21 @@ proc event_timer_calculate {state destination_state previous_states} {
 }
 
 proc preinfusion_timer {} {
-	return [event_timer_calculate "Espresso" "preinfusion" {"perfecting the mix" "final heating" "heating the water tank"} ]
+	return [event_timer_calculate "Espresso" "preinfusion" {"stabilising" "final heating" "heating"} ]
 }
 
 
 proc pour_timer {} {
-	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "perfecting the mix" "final heating" "heating the water tank"} ]
+	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "stabilising" "final heating" "heating"} ]
 }
 
 
 proc steam_timer {} {
-	return [event_timer_calculate "Steam" "pouring" {"perfecting the mix" "final heating"} ]
+	return [event_timer_calculate "Steam" "pouring" {"stabilising" "final heating"} ]
 }
 
 proc water_timer {} {
-	return [event_timer_calculate "HotWater" "pouring" {"perfecting the mix" "final heating"} ]
+	return [event_timer_calculate "HotWater" "pouring" {"stabilising" "final heating"} ]
 }
 
 proc waterflow {} {
@@ -246,7 +246,7 @@ proc steam_heater_action_text {} {
 	} elseif {$delta > 2} {
 		return [translate "(Cooling):"]
 	} else {
-		return [translate "Heated:"]
+		return [translate "Ready:"]
 	}
 }
 
@@ -257,7 +257,7 @@ proc group_head_heater_action_text {} {
 	} elseif {$delta > 5} {
 		return [translate "Cooling:"]
 	} else {
-		return [translate "Heated:"]
+		return [translate "Ready:"]
 	}
 }
 
@@ -627,7 +627,7 @@ proc save_settings_vars {fn varlist} {
 }
 
 proc save_profile {} {
-	if {$::settings(profile_to_save) == [translate "saved"]} {
+	if {$::settings(profile_to_save) == [translate "Saved"]} {
 		return
 	}
 

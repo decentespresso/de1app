@@ -196,9 +196,9 @@ array set ::de1_num_state_reversed [reverse_array ::de1_num_state]
 array set ::de1_substate_types {
 	-   "starting"
 	0	"waiting"
-	1	"heating the water tank"
+	1	"heating"
 	2	"final heating"
-	3	"perfecting the mix"
+	3	"stabilising"
 	4	"preinfusion"
 	5	"pouring"
 	6	"ending"
