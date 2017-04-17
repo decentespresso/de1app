@@ -109,7 +109,7 @@ add_de1_text "settings_4" 1000 1300 -text [translate "Steam"] -font Helv_10_bold
 
 add_de1_text "settings_4" 400 980 -text [translate "Update"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
 add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
-add_de1_text "settings_4" 2280 980 -text [translate "Connect"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center" -width 200 -justify "center"
+add_de1_text "settings_4" 2280 980 -text [translate "Pair"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center" -width 200 -justify "center"
 
 # future clean steam feature
 add_de1_button "settings_4" {} 30 1206 630 1406
@@ -151,7 +151,7 @@ add_de1_text "settings_3" 70 570 -text [translate "Screen Saver"] -font Helv_10_
 add_de1_text "settings_3" 70 920 -text [translate "Measurements"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 70 1140 -text [translate "Clean"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 70 820 -text [translate "Firmware"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 1320 820 -text [translate "Connection"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 1320 820 -text [translate "Available machines:"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
 
 
@@ -189,7 +189,7 @@ add_de1_widget "settings_3" checkbutton 1330 1000 {} -text [translate "Enable"] 
 #add_de1_text "settings_3" 1350 1045 -text [translate "Speaking pitch"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 #add_de1_button "off" {after 300 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off settings_1; page_show settings_1} 2000 0 2560 500
-add_de1_text "settings_1 settings_2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
+add_de1_text "settings_1 settings_2 settings_3 settings_4" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
 
 #add_de1_text "settings_2" 1025 1328 -text [translate "Save"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
