@@ -52,7 +52,7 @@ proc pause {time} {
 
 
 proc language {} {
-    return "zh-hant"
+    return "en"
     # the UI language for Decent Espresso is set as the UI language that Android is currently operating in
     global current_language
     if {[info exists current_language] == 0} {
