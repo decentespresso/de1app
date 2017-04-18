@@ -137,17 +137,18 @@ add_de1_text "settings_4" 1350 600 -text "[translate {Version:}] 1.0 beta 5" -fo
 add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 add_de1_button "settings_3" {say [translate {awake time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_wake) 0 86400 %x %y %x0 %y0 %x1 %y1} 1330 350 1650 700 ""
-add_de1_text "settings_3" 1505 740 -text [translate "Power on"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
+add_de1_text "settings_3" 1505 740 -text [translate "Heat up"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
 add_de1_variable "settings_3" 1505 805 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_wake)]}
 
 add_de1_button "settings_3" {say [translate {sleep time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_sleep) 0 86400 %x %y %x0 %y0 %x1 %y1} 1690 350 2010 700 ""
-add_de1_text "settings_3" 1840 740 -text [translate "Power off"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
+add_de1_text "settings_3" 1840 740 -text [translate "Cool down"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
 add_de1_variable "settings_3" 1840 805 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_sleep)]}
 
-add_de1_text "settings_3" 1330 250 -text [translate "Timer"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_3" 1330 250 -text [translate "Scheduler"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 2130 250 -text [translate "Hot water"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_3" 70 250 -text [translate "Brightness"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_3" 70 570 -text [translate "Screen Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_3" 70 250 -text [translate "Screen Brightness"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_3" 70 570 -text [translate "Energy Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_3" 670 570 -text [translate "Screen Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 70 920 -text [translate "Measurements"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 70 1140 -text [translate "Clean"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 70 820 -text [translate "Firmware"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -170,15 +171,16 @@ add_de1_widget "settings_3" scale 670 330 {} -from 0 -to 100 -background #e4d1c1
 add_de1_variable "settings_3" 670 470 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Screen saver:"] $::settings(saver_brightness)%}
 
 add_de1_widget "settings_3" scale 70 650 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 550] -width [rescale_y_skin 135] -variable ::settings(screen_saver_delay) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_3" 70 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Start after:"] $::settings(screen_saver_delay) [translate "minutes"]}
+add_de1_variable "settings_3" 70 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Cool down after:"] $::settings(screen_saver_delay) [translate "minutes"]}
 
 add_de1_widget "settings_3" scale 670 650 {} -from 1 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 550] -width [rescale_y_skin 135] -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_3" 670 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Change after:"] $::settings(screen_saver_change_interval) [translate "minutes"]}
+add_de1_variable "settings_3" 670 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Change every:"] $::settings(screen_saver_change_interval) [translate "minutes"]}
 
 #add_de1_widget "settings_3" checkbutton 1350 400 {} -text [translate "Enable spoken prompts"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_spoken_prompts)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
-add_de1_widget "settings_3" checkbutton 70 1000 {} -text [translate "Use Fahrenheit"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_3" checkbutton 700 1000 {} -text [translate "Use AM/PM"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_3" checkbutton 70 1000 {} -text [translate "Fahrenheit"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_3" checkbutton 500 1000 {} -text [translate "AM/PM"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_3" checkbutton 900 1000 {} -text [translate "1,234.56"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
 add_de1_widget "settings_3" checkbutton 1330 1000 {} -text [translate "Enable"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(timer_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
