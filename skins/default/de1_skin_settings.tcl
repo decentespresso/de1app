@@ -148,7 +148,7 @@ add_de1_text "settings_3" 1330 250 -text [translate "Scheduler"] -font Helv_10_b
 add_de1_text "settings_3" 2130 250 -text [translate "Hot water"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 70 250 -text [translate "Screen Brightness"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 70 570 -text [translate "Energy Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_3" 670 570 -text [translate "Screen Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_3" 690 570 -text [translate "Screen Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 70 920 -text [translate "Measurements"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 70 1140 -text [translate "Clean"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 70 820 -text [translate "Firmware"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -173,8 +173,8 @@ add_de1_variable "settings_3" 670 470 -text "" -font Helv_8 -fill "#4e85f4" -anc
 add_de1_widget "settings_3" scale 70 650 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 550] -width [rescale_y_skin 135] -variable ::settings(screen_saver_delay) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 add_de1_variable "settings_3" 70 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Cool down after:"] $::settings(screen_saver_delay) [translate "minutes"]}
 
-add_de1_widget "settings_3" scale 670 650 {} -from 1 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 550] -width [rescale_y_skin 135] -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_3" 670 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Change every:"] $::settings(screen_saver_change_interval) [translate "minutes"]}
+add_de1_widget "settings_3" scale 690 650 {} -from 1 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 530] -width [rescale_y_skin 135] -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_variable "settings_3" 690 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Change every:"] $::settings(screen_saver_change_interval) [translate "minutes"]}
 
 #add_de1_widget "settings_3" checkbutton 1350 400 {} -text [translate "Enable spoken prompts"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_spoken_prompts)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
