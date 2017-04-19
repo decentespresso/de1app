@@ -80,5 +80,12 @@ preinfusion {fr préinfusion de Vorinfusion es preinfusion it preinfusione pt pr
 pouring {fr extraction de pouring es pouring it estrazione pt pouring zh-hant 注水中 zh-hans 注水中 kr {추출 중} jp pouring ar pouring hu csapolás tr ekstraksiyon th pouring sv extraherar hu csapolás da ekstraherer fi annostaa ro extracție hi pouring pl pouring}
 Saved {fr Sauvegardé de gespeichert es Saved it Salvato pt Saved zh-hant 儲存成功 zh-hans 储存成功 kr 저장됨 jp Saved ar Saved hu Elmentve tr Kaydedildi th Saved sv Sparad hu Elmentve da Gemt fi Tallennettu ro salvat hi Saved pl Saved}
 "Pair" {fr "Pair" de "Pair" es "Pair" it "Pair" pt "Pair" zh-hant "Pair" zh-hans "Pair"}
+"Heat up" {fr "Heat up" de "Heat up" es "Heat up" it "Heat up" pt "Heat up" zh-hant "Heat up" zh-hans "Heat up"}
+"Cool down" {fr "Cool down" de "Cool down" es "Cool down" it "Cool down" pt "Cool down" zh-hant "Cool down" zh-hans "Cool down"}
+"Scheduler" {fr "Scheduler" de "Scheduler" es "Scheduler" it "Scheduler" pt "Scheduler" zh-hant "Scheduler" zh-hans "Scheduler"}
+"Screen Brightness" {fr "Screen Brightness" de "Screen Brightness" es "Screen Brightness" it "Screen Brightness" pt "Screen Brightness" zh-hant "Screen Brightness" zh-hans "Screen Brightness"}
+"Energy Saver" {fr "Energy Saver" de "Energy Saver" es "Energy Saver" it "Energy Saver" pt "Energy Saver" zh-hant "Energy Saver" zh-hans "Energy Saver"}
 "Available machines:" {fr "Available machines:" de "Available machines:" es "Available machines:" it "Available machines:" pt "Available machines:" zh-hant "Available machines:" zh-hans "Available machines:"}
-"Auto stop:" {fr "Auto stop:" de "Auto stop:" es "Auto stop:" it "Auto stop:" pt "Auto stop:" zh-hant "Auto stop:" zh-hans "Auto stop:"}
+"Fahrenheit" {fr "Fahrenheit" de "Fahrenheit" es "Fahrenheit" it "Fahrenheit" pt "Fahrenheit" zh-hant "Fahrenheit" zh-hans "Fahrenheit"}
+"AM/PM" {fr "AM/PM" de "AM/PM" es "AM/PM" it "AM/PM" pt "AM/PM" zh-hant "AM/PM" zh-hans "AM/PM"}
+"1.234,56" {fr "1.234,56" de "1.234,56" es "1.234,56" it "1.234,56" pt "1.234,56" zh-hant "1.234,56" zh-hans "1.234,56"}
