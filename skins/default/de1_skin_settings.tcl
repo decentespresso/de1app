@@ -71,12 +71,12 @@ set ::table_style_preview_image [add_de1_image "settings_2" 1330 960 "[skin_dire
 
 add_de1_widget "settings_2" listbox 70 340 { 
 	fill_profiles_listbox $widget
-	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 7 -width 37 -foreground #b2bad0  
+	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 7 -width 37 -foreground #b2bad0 -borderwidth 0
 
 
 add_de1_widget "settings_2" listbox 1330 340 { 
 	fill_skin_listbox $widget
-	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 9 -width 42 -foreground #b2bad0
+	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 9 -width 42 -foreground #b2bad0 -borderwidth 0
 
 
 
@@ -159,7 +159,7 @@ add_de1_text "settings_4" 1320 820 -text [translate "Available machines:"] -font
 add_de1_widget "settings_4" listbox 1320 900 { 
 	$widget insert 0 " C1:80:A7:32:CD:A3" " C5:80:EC:A5:F9:72" " F2:C3:43:60:AB:F5"
 	$widget itemconfigure 1 -foreground blue
-	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 7 -width 20 -foreground #b2bad0
+	} -background #f7f6ff -font Helv_10_bold -bd 0 -height 7 -width 20 -foreground #b2bad0 -borderwidth 0
 
 
 #add_de1_text "settings_3" 1350 250 -text [translate "Speaking"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -195,7 +195,7 @@ add_de1_text "settings_1 settings_2 settings_3 settings_4" 2275 1520 -text [tran
 add_de1_text "settings_1 settings_2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
 
 #add_de1_text "settings_2" 1025 1328 -text [translate "Save"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
-add_de1_widget "settings_2" entry 70 1290  {set ::globals(widget_profile_name_to_save) $widget} -width 38 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_to_save) 
+add_de1_widget "settings_2" entry 70 1290  {set ::globals(widget_profile_name_to_save) $widget} -width 38 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_to_save) 
 
 add_de1_button "settings_2" {say [translate {save}] $::settings(sound_button_in); save_profile} 1040 1265 1260 1400
 add_de1_button "settings_2" {say [translate {trash}] $::settings(sound_button_in); delete_selected_profile} 1100 300 1270 500

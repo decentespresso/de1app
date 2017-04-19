@@ -17,7 +17,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Orbitron" "[skin_directory]/orbitron.ttf" 19
+load_font "Orbitron" "[skin_directory]/orbitron.ttf" 19 9
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off water" 2048 1215 -text [translate "HOT WATER"] -font {Orbitron} -fill "#ffffff" -anchor "center" 

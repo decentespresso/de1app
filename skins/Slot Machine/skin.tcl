@@ -14,7 +14,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Casino Queen" "[skin_directory]/CASIQN.ttf" 30
+load_font "Casino Queen" "[skin_directory]/CASIQN.ttf" 30 30
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off" 562 1425  -text [translate "ESPRESSO"] -font {Casino Queen} -fill "#000000" -anchor "center" 

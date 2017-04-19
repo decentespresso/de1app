@@ -14,7 +14,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Manga speak 2" "[skin_directory]/Manga_speak_2.ttf" 26
+load_font "Manga speak 2" "[skin_directory]/Manga_speak_2.ttf" 26 26
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 272 100  -text [translate "ESPRESSO"] -font {Manga speak 2} -fill "#CCCCCC" -anchor "center" 

@@ -14,7 +14,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "League Gothic" "[skin_directory]/leaguegothic-regular-webfont.ttf" 60
+load_font "League Gothic" "[skin_directory]/leaguegothic-regular-webfont.ttf" 60 60
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off water" 1985 1250 -text [translate "HOT WATER"] -font {League Gothic} -fill "#eaf4e4" -anchor "center" 

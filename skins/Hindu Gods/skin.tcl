@@ -14,7 +14,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Samarkan" "[skin_directory]/SAMAN.ttf" 37
+load_font "Samarkan" "[skin_directory]/SAMAN.ttf" 37 30
 
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics

@@ -17,7 +17,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Heroes Legend" "[skin_directory]/Heroes Legend.ttf" 21
+load_font "Heroes Legend" "[skin_directory]/Heroes Legend.ttf" 21 21
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off " 1600 1495 -text [translate "HOT WATER"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 

@@ -14,20 +14,20 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Diablo" "[skin_directory]/diablo-light.ttf" 31
+load_font "diablolight" "[skin_directory]/diablolight.ttf" 31 31
 
-# these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off" 379 1375  -text [translate "ESPRESSO"] -font {Diablo} -fill "#a66220" -anchor "center" 
-add_de1_text "espresso" 1295 1355  -text [translate "ESPRESSO"] -font {Diablo} -fill "#a66220" -anchor "center" 
+# these 3 text labels are for the three main DE1 functions, and diablolight X,Y coordinates need to be adjusted for your skin graphics
+add_de1_text "off" 379 1375  -text [translate "ESPRESSO"] -font {diablolight} -fill "#a66220" -anchor "center" 
+add_de1_text "espresso" 1295 1355  -text [translate "ESPRESSO"] -font {diablolight} -fill "#a66220" -anchor "center" 
 
-add_de1_text "off" 975 1375  -text [translate "STEAM"] -font {Diablo} -fill "#a66220" -anchor "center" 
-add_de1_text "steam" 1295 1355  -text [translate "STEAM"] -font {Diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "off" 975 1375  -text [translate "STEAM"] -font {diablolight} -fill "#a66220" -anchor "center" 
+add_de1_text "steam" 1295 1355  -text [translate "STEAM"] -font {diablolight} -fill "#a66220" -anchor "center" 
 
-add_de1_text "off" 1550 1375 -text [translate "WATER"] -font {Diablo} -fill "#a66220" -anchor "center" 
-add_de1_text "water" 1295 1350 -text [translate "WATER"] -font {Diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "off" 1550 1375 -text [translate "WATER"] -font {diablolight} -fill "#a66220" -anchor "center" 
+add_de1_text "water" 1295 1350 -text [translate "WATER"] -font {diablolight} -fill "#a66220" -anchor "center" 
 
 
-add_de1_text "off settings" 2177 1375  -text [translate "SETTINGS"] -font {Diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "off settings" 2177 1375  -text [translate "SETTINGS"] -font {diablolight} -fill "#a66220" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)

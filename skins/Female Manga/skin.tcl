@@ -17,10 +17,10 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "KG Les Bouquinistes de Paris" "[skin_directory]/KGLesBouquinistesdeParis.ttf" 47
-load_font "KG The Last Time" "[skin_directory]/KGTheLastTime.ttf" 47
-load_font "KG TRIBECA STAMP" "[skin_directory]/KGTribecaStamp.ttf" 47
-load_font "KG Havent Slept in Two Days Sha" "[skin_directory]/KGHaventSleptShadow.ttf" 47
+load_font "KG Les Bouquinistes de Paris" "[skin_directory]/KGLesBouquinistesdeParis.ttf" 47 40
+load_font "KG The Last Time" "[skin_directory]/KGTheLastTime.ttf" 47 40
+load_font "KG TRIBECA STAMP" "[skin_directory]/KGTribecaStamp.ttf" 47 40
+load_font "KG Havent Slept in Two Days Sha" "[skin_directory]/KGHaventSleptShadow.ttf" 47 40
 
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
