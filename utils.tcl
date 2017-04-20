@@ -57,7 +57,8 @@ proc language {} {
     #catch {
         #puts "current_language: '$current_language'"
     #}
-    #return "en"
+    #set current_language "zh-hant"
+
     # the UI language for Decent Espresso is set as the UI language that Android is currently operating in
     if {[info exists current_language] == 0} {
         array set loc [borg locale]
@@ -104,7 +105,7 @@ proc translate {english} {
         if {[info exists ::already_shown_trans($english)] != 1} {
             set t [subst {"$english" \{fr "$english" de "$english"\ es "$english"\ it "$english"\ pt "$english"\ zh-hant "$english"\ zh-hans "$english"\}}]
             puts "Appending new phrase: $english"
-            append_file "[homedir]/translation.tcl" $t
+            #append_file "[homedir]/translation.tcl" $t
             set ::already_shown_trans($english) 1
         }
     }
@@ -199,12 +200,37 @@ proc setup_environment {} {
         #set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
         #set helvetica_bold_font [sdltk addfont "fonts/helvetica-neue-bold.ttf"]
         #set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
-        global helvetica_bold_font
-        set helvetica_font2 [sdltk addfont "fonts/HelveticaNeueLt.ttf"]
-        puts "helvetica_font2: $helvetica_font2"
 
-        set helvetica_bold_font [sdltk addfont "fonts/HelveticaNeueBd3.ttf"]
-        #set helvetica_font2 $helvetica_bold_font
+        global helvetica_bold_font
+        global helvetica_font
+
+        puts "setting up fonts for language [language]"
+        if {[language] == "th"} {
+            #set regularfont "sarabun"
+            #set boldfont "sarabunbold"
+            set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
+            set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
+            set fontm [expr {($fontm * 1.1)}]
+        #set fontm [expr {($fontm * 1.20)}]
+        } elseif {[language] == "zh-hant" || [language] == "zh-hans"} {
+            #set helvetica_font [sdltk addfont "fonts/DroidSansFallbackFull.ttf"]
+            #set helvetica_font [sdltk addfont "fonts/cwTeXQHei-Bold.ttf"]
+            
+            set helvetica_font [sdltk addfont "fonts/notosansasia.otf"]
+            #set helvetica_font [sdltk addfont "fonts/wts11.ttf"]
+            set helvetica_bold_font $helvetica_font
+            puts "loading asian otf font"
+            #set fontm [expr {($fontm * -)}]
+            #set fontm 3
+        } else {
+            set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
+            set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
+        }
+
+
+
+        #set helvetica_font $helvetica_bold_font
+        puts "helvetica_font: $helvetica_font : fontm: $fontm"
         puts "helvetica_bold_font: $helvetica_bold_font"
         #set helvetica_font [sdltk addfont "fonts/HelveticaNeueHv.ttf"]
         #set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
@@ -218,22 +244,22 @@ proc setup_environment {} {
         #puts "helvetica_bold_font: $helvetica_bold_font2"
         #set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
 
-        font create Helv_1 -family $helvetica_font2 -size 1
-        font create Helv_4 -family $helvetica_font2 -size [expr {int($fontm * 8)}]
-        font create Helv_5 -family $helvetica_font2 -size [expr {int($fontm * 10)}]
-        #font create Helv_7 -family $helvetica_font2 -size 7
-        font create Helv_6 -family $helvetica_font2 -size [expr {int($fontm * 12)}]
+        font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 20)}] 
+        font create Helv_10 -family $helvetica_font -size [expr {int($fontm * 20)}] 
+        font create Helv_1 -family $helvetica_font -size 1
+        font create Helv_4 -family $helvetica_font -size [expr {int($fontm * 8)}]
+        font create Helv_5 -family $helvetica_font -size [expr {int($fontm * 10)}]
+        #font create Helv_7 -family $helvetica_font -size 7
+        font create Helv_6 -family $helvetica_font -size [expr {int($fontm * 12)}]
         font create Helv_6_bold -family $helvetica_bold_font -size [expr {int($fontm * 12)}]
-        font create Helv_7 -family $helvetica_font2 -size [expr {int($fontm * 14)}]
+        font create Helv_7 -family $helvetica_font -size [expr {int($fontm * 14)}]
         font create Helv_7_bold -family $helvetica_bold_font -size [expr {int($fontm * 14)}]
         font create Helv_8 -family $helvetica_bold_font -size [expr {int($fontm * 16)}]
         font create Helv_8_bold -family $helvetica_bold_font -size [expr {int($fontm * 16)}]
         
-        font create Helv_9 -family $helvetica_font2 -size [expr {int($fontm * 18)}]
+        font create Helv_9 -family $helvetica_font -size [expr {int($fontm * 18)}]
         font create Helv_9_bold -family $helvetica_bold_font -size [expr {int($fontm * 18)}] 
         #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
-        font create Helv_10 -family $helvetica_font2 -size [expr {int($fontm * 20)}] 
-        font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 20)}] 
         font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
         font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 36)}]
 
@@ -299,24 +325,44 @@ proc setup_environment {} {
         wm maxsize . $screen_size_width $screen_size_height
         wm minsize . $screen_size_width $screen_size_height
 
-        font create Helv_1 -family {Helvetica Neue Regular} -size 1
-        font create Helv_4 -family {Helvetica Neue Regular} -size 10
-        font create Helv_5 -family {Helvetica Neue Regular} -size 12
-        #pngfont create Helv_7 -family {Helvetica Neue Regular} -size 14
-        font create Helv_6 -family {Helvetica Neue Regular} -size [expr {int($fontm * 14)}]
-        font create Helv_6_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 14)}]
-        font create Helv_7 -family {Helvetica Neue Regular} -size [expr {int($fontm * 16)}]
-        font create Helv_7_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 16)}]
-        font create Helv_8 -family {Helvetica Neue Regular} -size [expr {int($fontm * 19)}]
-        font create Helv_8_bold_underline -family {Helvetica Neue Bold} -size [expr {int($fontm * 19)}] -underline 1
-        font create Helv_8_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 19)}]
-        font create Helv_9 -family {Helvetica Neue Regular} -size [expr {int($fontm * 23)}]
-        font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 21)}]
-        font create Helv_10 -family {Helvetica Neue Regular} -size [expr {int($fontm * 23)}]
-        font create Helv_10_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 25)}]
-        font create Helv_15_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 30)}]
-        font create Helv_20_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 46)}]
-        #font create Helv_9_bold -family {Helvetica Neue Bold} -size [expr {int($fontm * 18)}]
+        #set regularfont "Helvetica Neue Regular"
+        #set boldfont "Helvetica Neue Bold"
+
+        set regularfont "notosansuiregular"
+        set boldfont "notosansuiregular"
+
+        if {[language] == "th"} {
+            set regularfont "sarabun"
+            set boldfont "sarabunbold"
+            #set fontm [expr {($fontm * 1.20)}]
+        } elseif {[language] == "zh-hant" || [language] == "zh-hans"} {
+            set regularfont "notosansuiregular"
+            set boldfont "notosansuibold"
+            #set fontm [expr {($fontm * 1.3)}]
+        }
+
+
+        puts "setarting up with langage: [language]"
+        set ::helvetica_font $regularfont
+
+        font create Helv_1 -family $regularfont -size 1
+        font create Helv_4 -family $regularfont -size 10
+        font create Helv_5 -family $regularfont -size 12
+        #pngfont create Helv_7 -family $regularfont -size 14
+        font create Helv_6 -family $regularfont -size [expr {int($fontm * 14)}]
+        font create Helv_6_bold -family $boldfont -size [expr {int($fontm * 14)}]
+        font create Helv_7 -family $regularfont -size [expr {int($fontm * 16)}]
+        font create Helv_7_bold -family $boldfont -size [expr {int($fontm * 16)}]
+        font create Helv_8 -family $regularfont -size [expr {int($fontm * 19)}]
+        font create Helv_8_bold_underline -family $boldfont -size [expr {int($fontm * 19)}] -underline 1
+        font create Helv_8_bold -family $boldfont -size [expr {int($fontm * 19)}]
+        font create Helv_9 -family $regularfont -size [expr {int($fontm * 23)}]
+        font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 21)}]
+        font create Helv_10 -family $regularfont -size [expr {int($fontm * 23)}]
+        font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 25)}]
+        font create Helv_15_bold -family $boldfont -size [expr {int($fontm * 30)}]
+        font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 46)}]
+        #font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 18)}]
     
         #font create Sourcesans_30 -family {Source Sans Pro Bold} -size 50
         #font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
@@ -757,18 +803,47 @@ proc load_font {name fn pcsize {androidsize {}} } {
     if {$androidsize == ""} {
         set androidsize $pcsize
     }
-    
-	#puts "$::android load_font $name '$fn' $size : fontm: $::fontm"
-	if {$::android == 1} {
-        #puts "sdltk addfont '$fn'"
-		set result [sdltk addfont $fn]
-        puts "addfont of '$fn' finished with fonts added: '$result'"
-        if {$name != $result} {
-            puts "Warning, font name used does not equal Android font name added: '$name' != '$result'"
+
+    puts "loadfont: [language]"
+ 
+    if {[language] == "zh-hant" || [language] == "zh-hans"} {
+
+        if {$::android == 1} {
+            font create $name -family $::helvetica_font -size [expr {int(1.0 * $::fontm * $androidsize)}]
+        } else {
+            font create "$name" -family $::helvetica_font -size [expr {int(1.0 * $pcsize * $::fontm)}]
+            puts "created font $name in $::helvetica_font"
         }
-        font create $name -family $name -size [expr {int(1.0 * $::fontm * $androidsize)}]
-	} else {
-		font create "$name" -family "$name" -size [expr {int(1.0 * $pcsize * $::fontm)}]
-        #puts "font create \"$name\" -family \"$name\" -size [expr {int($size * $::fontm)}]"
-	}
+        return
+    } elseif {[language] == "th"} {
+
+        if {$::android == 1} {
+            if {[info exists ::thai_fontname] != 1} {
+                set fn "[homedir]/fonts/sarabun.ttf"
+                set ::thai_fontname  [sdltk addfont $fn]
+            }
+            font create $name -family $::thai_fontname -size [expr {int(1.0 * $::fontm * $androidsize)}]
+        } else {
+            font create "$name" -family "sarabun" -size [expr {int(1.0 * $pcsize * $::fontm)}]
+            puts "created font $name in sarabun"
+        }
+        return
+    } else {
+
+
+        #puts "$::android load_font $name '$fn' $size : fontm: $::fontm"
+        if {$::android == 1} {
+            #puts "sdltk addfont '$fn'"
+            set result [sdltk addfont $fn]
+            puts "addfont of '$fn' finished with fonts added: '$result'"
+            if {$name != $result} {
+                puts "Warning, font name used does not equal Android font name added: '$name' != '$result'"
+            }
+            font create $name -family $name -size [expr {int(1.0 * $::fontm * $androidsize)}]
+        } else {
+            font create "$name" -family "$name" -size [expr {int(1.0 * $pcsize * $::fontm)}]
+            #puts "font create \"$name\" -family \"$name\" -size [expr {int($size * $::fontm)}]"
+        }
+
+    }
 }
