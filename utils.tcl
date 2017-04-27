@@ -54,6 +54,10 @@ proc pause {time} {
 proc language {} {
     global current_language
 
+    if {$::android != 1} {
+        return "fr"
+    }
+
     #catch {
         #puts "current_language: '$current_language'"
     #}
@@ -115,7 +119,7 @@ proc translate {english} {
 
 
 proc setup_environment {} {
-    puts "setup_environment"
+    #puts "setup_environment"
     global screen_size_width
     global screen_size_height
     global fontm
@@ -126,6 +130,7 @@ proc setup_environment {} {
         set android 1
     }
 
+    #puts "android: $android"
 
     if {$android == 1} {
         package require BLT
@@ -342,7 +347,7 @@ proc setup_environment {} {
         }
 
 
-        puts "setarting up with langage: [language]"
+        #   puts "setarting up with langage: [language]"
         set ::helvetica_font $regularfont
 
         font create Helv_1 -family $regularfont -size 1
