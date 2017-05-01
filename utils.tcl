@@ -55,7 +55,7 @@ proc language {} {
     global current_language
 
     if {$::android != 1} {
-        return "fr"
+        return "en"
     }
 
     #catch {
