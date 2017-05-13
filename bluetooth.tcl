@@ -154,7 +154,7 @@ proc de1_send_shot_frames {} {
 
 	#userdata_append de1_disable_bluetooth_notifications
 
-	set parts [return_chunked_de1_packed_shot_sample]
+	set parts [de1_packed_shot]
 	set header [lindex $parts 0]
 	parse_binary_shotdescheader $header arr2
 	msg "frame header of [string length $header] bytes parsed: $header [array get arr2]"

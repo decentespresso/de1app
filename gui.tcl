@@ -856,6 +856,11 @@ proc page_display_change {page_to_hide page_to_show} {
 
 proc update_de1_explanation_chart { {itemval {}} } {
 
+	if {$::settings(pressure_end) > $::settings(espresso_pressure)} {
+		# the end pressure is not allowed to be higher than the hold pressure
+		set ::settings(pressure_end) $::settings(espresso_pressure)
+	}
+
 	#save_settings
 	#puts "update_de1_explanation_chart"
 	espresso_de1_explanation_chart_pressure length 0
@@ -877,24 +882,37 @@ proc update_de1_explanation_chart { {itemval {}} } {
 
 	}
 
+	set approximate_ramptime [expr {($::settings(espresso_pressure) * 0.5)}]
+	set pressure_hold_time $::settings(pressure_hold_time)
+	set espresso_decline_time $::settings(espresso_decline_time)
+	if {$pressure_hold_time > $approximate_ramptime} {
+		set pressure_hold_time [expr {$pressure_hold_time - $approximate_ramptime}]
+	} elseif {$espresso_decline_time > $approximate_ramptime} {
+		set espresso_decline_time [expr {$espresso_decline_time - $approximate_ramptime}]
+	} else {
+		set approximate_ramptime 0
+	}	
+
 	# ramp up the pressure
-	set totalramptime [expr {($::settings(espresso_pressure) * 0.3)}]
-	#incr seconds $totalramptime
-	set seconds [expr {$seconds + $totalramptime}]
+	set seconds [expr {$seconds + $approximate_ramptime}]
 	espresso_de1_explanation_chart_elapsed append $seconds
 	espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)
 
-	#incr seconds $::settings(pressure_hold_time)
-	set seconds [expr {$seconds + $::settings(pressure_hold_time)}]
-	espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)
-	espresso_de1_explanation_chart_elapsed append $seconds
+	# hold the pressure
+	if {$::settings(pressure_hold_time) > 0} {
+		set seconds [expr {$seconds + $pressure_hold_time}]
+		espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)
+		espresso_de1_explanation_chart_elapsed append $seconds
+	}
 
-	#incr seconds $::settings(espresso_decline_time)
+	# decline pressure stage
 	if {$::settings(espresso_decline_time) > 0} {
-		set seconds [expr {$seconds + $::settings(espresso_decline_time)}]
+		set seconds [expr {$seconds + $espresso_decline_time}]
 		espresso_de1_explanation_chart_pressure append $::settings(pressure_end)
 		espresso_de1_explanation_chart_elapsed append $seconds
 	}
+
+	# save the total time
 	set ::settings(espresso_max_time) $seconds
 }
 
