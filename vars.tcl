@@ -311,8 +311,19 @@ proc steamtemp_text {} {
 }
 
 proc pressure_text {} {
-	return [subst {[round_to_two_digits [pressure]] [translate "bar"]}]
+	return [subst {[commify [round_to_two_digits [pressure]]] [translate "bar"]}]
 }
+
+
+proc commify {number}  {
+	set sep ,
+	 while {[regsub {^([-+]?\d+)(\d\d\d)} $number "\\1$sep\\2" number]} {}
+	if {[ifexists ::settings(enable_commanumbers)] == 1} {
+		set number [string map {. , , .} $number]
+	}
+	return $number
+}
+
 
 #######################
 # settings
@@ -386,14 +397,14 @@ proc setting_espresso_pressure {} {
 	return $::settings(espresso_pressure)
 }
 proc setting_espresso_pressure_text {} {
-	return [subst {[round_to_one_digits [setting_espresso_pressure]] [translate "bar"]}]
+	return [subst {[commify [round_to_one_digits [setting_espresso_pressure]]] [translate "bar"]}]
 }
 
 proc setting_espresso_stop_pressure_text {} {
 	if {$::settings(preinfusion_stop_pressure) == 0} {
 		return ""
 	}
-	return [subst {[round_to_one_digits $::settings(preinfusion_stop_pressure)] [translate "bar"]}]
+	return [subst {[commify [round_to_one_digits $::settings(preinfusion_stop_pressure)]] [translate "bar"]}]
 }
 
 proc setting_espresso_stop_flow_text {} {

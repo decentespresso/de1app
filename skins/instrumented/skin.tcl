@@ -96,7 +96,7 @@ add_de1_variable "espresso" 1285 1226 -justify left -anchor "nw" -text "" -font 
 add_de1_text "espresso" 1280 1276 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable "espresso" 1285 1276 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[pressure_text]} 
 
-add_de1_text "espresso" 1280 1326 -justify right -anchor "ne" -text [translate "Water"] -font Helv_8 -fill "#7f879a" -width 520
+add_de1_text "espresso" 1280 1326 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable "espresso" 1285 1326 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[watertemp_text]} 
 
 #add_de1_button "espresso" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0 0 2560 1600
@@ -111,7 +111,7 @@ add_de1_text "water" 500 1176 -justify right -anchor "ne" -text [translate "Elap
 add_de1_variable "water" 505 1176 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[water_timer][translate "s"]} 
 add_de1_text "water" 500 1226 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable "water" 505 1226 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[setting_water_max_time_text]} 
-add_de1_text "water" 500 1276 -justify right -anchor "ne" -text [translate "Water"] -font Helv_8 -fill "#7f879a" -width 520
+add_de1_text "water" 500 1276 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable "water" 505 1276 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[watertemp_text]} 
 
 #add_de1_button "water" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0 0 2560 1600
