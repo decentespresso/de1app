@@ -2,6 +2,7 @@
 # GENERIC DE1 SETTINGS page
 
 
+
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
 add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.jpg"
@@ -13,7 +14,7 @@ add_de1_page "settings_4" "[defaultskin_directory_graphics]/settings_4.jpg"
 
 # this is the message page
 set ::message_label [add_de1_text "message" 1280 750 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
-set ::message_button_label [add_de1_text "message" 1280 1090 -text [translate "Quit"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"]
+set ::message_button_label [add_de1_text "message" 1280 1090 -text [translate "Quit"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
 set ::message_button [add_de1_button "message" {say [translate {Quit}] $::settings(sound_button_in);exit} 980 990 1580 1190 ""]
 
 ##############################################################################################################################################################################################################################################################################
@@ -71,17 +72,17 @@ set ::table_style_preview_image [add_de1_image "settings_2" 1330 960 "[skin_dire
 
 add_de1_widget "settings_2" listbox 70 340 { 
 	fill_profiles_listbox $widget
-	} -background #f7f6ff -font Helv_10 -bd 0 -height 7 -width 37 -foreground #b2bad0 -borderwidth 0
+	} -background #fbfaff -font Helv_10 -bd 0 -height 6 -width 36 -foreground #d3dbf3 -borderwidth 0
 
 
 add_de1_widget "settings_2" listbox 1330 340 { 
 	fill_skin_listbox $widget
-	} -background #f7f6ff -font Helv_10 -bd 0 -height 9 -width 42 -foreground #b2bad0 -borderwidth 0
+	} -background #fbfaff -font Helv_10 -bd 0 -height 8 -width 42 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
 
 
 
 
-#add_de1_text "settings_2" 2250 1020 -text [translate "Load"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
+#add_de1_text "settings_2" 2250 1020 -text [translate "Load"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 #add_de1_button "settings_2" {save_new_tablet_skin_setting} 1980 950 2520 1100
 
 
@@ -104,12 +105,12 @@ add_de1_variable "settings_2" 1198 1180 -text "" -font Helv_6 -fill "#5a5d75" -a
 #add_de1_text "settings_4" 90 905 -text [translate "Flight mode: start angle"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 #add_de1_text "settings_4" 90 905 -text [translate "Flight mode: start angle"] -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
-add_de1_text "settings_4" 400 1300 -text [translate "Espresso"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
-add_de1_text "settings_4" 1000 1300 -text [translate "Steam"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
+add_de1_text "settings_4" 400 1300 -text [translate "Espresso"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "settings_4" 1000 1300 -text [translate "Steam"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
-add_de1_text "settings_4" 400 980 -text [translate "Update"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
-add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center"
-add_de1_text "settings_4" 2280 980 -text [translate "Pair"] -font Helv_10_bold -fill "#f9f9f9" -anchor "center" -width 200 -justify "center"
+add_de1_text "settings_4" 400 980 -text [translate "Update"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "settings_4" 2280 980 -text [translate "Pair"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -width 200 -justify "center"
 
 # future clean steam feature
 add_de1_button "settings_4" {} 30 1206 630 1406
@@ -129,8 +130,8 @@ add_de1_button "settings_4" {} 1900 890 2520 1080
 
 #add_de1_text "settings_4" 90 250 -text [translate "Other settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-add_de1_widget "settings_4" entry 1340 380 {} -width 30 -font Helv_15_bold -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
-add_de1_text "settings_4" 1350 470 -text [translate "Name your machine"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
+add_de1_widget "settings_4" entry 1340 380 {} -width 30 -font Helv_15 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
+add_de1_text "settings_4" 1350 480 -text [translate "Name your machine"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 add_de1_text "settings_4" 1320 240 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 1350 600 -text "[translate {Version:}] 1.0 beta 5" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
@@ -157,32 +158,33 @@ add_de1_text "settings_4" 1320 820 -text [translate "Available machines:"] -font
 
 
 add_de1_widget "settings_4" listbox 1320 900 { 
-	$widget insert 0 " C1:80:A7:32:CD:A3" " C5:80:EC:A5:F9:72" " F2:C3:43:60:AB:F5"
-	$widget itemconfigure 1 -foreground blue
-	} -background #f7f6ff -font Helv_10 -bd 0 -height 7 -width 20 -foreground #b2bad0 -borderwidth 0
+	fill_ble_listbox $widget
+	} -background #fbfaff -font Helv_10 -bd 0 -height 7 -width 20 -foreground #d3dbf3 -borderwidth 0
+
+
 
 
 #add_de1_text "settings_3" 1350 250 -text [translate "Speaking"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
 add_de1_widget "settings_3" scale 70 330 {} -from 0 -to 100 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 550] -width [rescale_y_skin 135] -variable ::settings(app_brightness) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_3" 70 470 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "App:"] $::settings(app_brightness)%}
+add_de1_variable "settings_3" 70 470 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "App:"] $::settings(app_brightness)%}
 
 add_de1_widget "settings_3" scale 670 330 {} -from 0 -to 100 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 550] -width [rescale_y_skin 135] -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_3" 670 470 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Screen saver:"] $::settings(saver_brightness)%}
+add_de1_variable "settings_3" 670 470 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Screen saver:"] $::settings(saver_brightness)%}
 
 add_de1_widget "settings_3" scale 70 650 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 550] -width [rescale_y_skin 135] -variable ::settings(screen_saver_delay) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_3" 70 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Cool down after:"] $::settings(screen_saver_delay) [translate "minutes"]}
+add_de1_variable "settings_3" 70 790 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Cool down after:"] $::settings(screen_saver_delay) [translate "minutes"]}
 
 add_de1_widget "settings_3" scale 690 650 {} -from 1 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 530] -width [rescale_y_skin 135] -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_3" 690 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Change every:"] $::settings(screen_saver_change_interval) [translate "minutes"]}
+add_de1_variable "settings_3" 690 790 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Change every:"] $::settings(screen_saver_change_interval) [translate "minutes"]}
 
 #add_de1_widget "settings_3" checkbutton 1350 400 {} -text [translate "Enable spoken prompts"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #2d3046 -variable ::settings(enable_spoken_prompts)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
-add_de1_widget "settings_3" checkbutton 70 1000 {} -text [translate "Fahrenheit"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_3" checkbutton 500 1000 {} -text [translate "AM/PM"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_3" checkbutton 900 1000 {} -text [translate "1.234,56"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_commanumbers)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_3" checkbutton 70 1000 {} -text [translate "Fahrenheit"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_3" checkbutton 500 1000 {} -text [translate "AM/PM"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_3" checkbutton 900 1000 {} -text [translate "1.234,56"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_commanumbers)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
-add_de1_widget "settings_3" checkbutton 1330 1000 {} -text [translate "Enable"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(timer_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_3" checkbutton 1330 1000 {} -text [translate "Enable"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(timer_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
 #add_de1_widget "settings_3" scale 1350 580 {} -from 0 -to 4 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1100] -width [rescale_y_skin 135] -variable ::settings(speaking_rate) -font Helv_10_bold -sliderlength [rescale_x_skin 75] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 #add_de1_text "settings_3" 1350 785 -text [translate "Speaking speed"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
@@ -191,8 +193,8 @@ add_de1_widget "settings_3" checkbutton 1330 1000 {} -text [translate "Enable"] 
 #add_de1_text "settings_3" 1350 1045 -text [translate "Speaking pitch"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 #add_de1_button "off" {after 300 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off settings_1; page_show settings_1} 2000 0 2560 500
-add_de1_text "settings_1 settings_2 settings_3 settings_4" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
-add_de1_text "settings_1 settings_2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
+add_de1_text "settings_1 settings_2 settings_3 settings_4" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "settings_1 settings_2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
 #add_de1_text "settings_2" 1025 1328 -text [translate "Save"] -font Helv_10_bold -fill "#f1f1f9" -anchor "center"
 add_de1_widget "settings_2" entry 70 1290  {set ::globals(widget_profile_name_to_save) $widget} -width 38 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_to_save) 
@@ -257,7 +259,7 @@ add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {sa
 	}
 } 2016 1430 2560 1600
 #add_de1_button "settings_1 settings_2 settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; set_next_page off off; page_show off} 2016 1430 2560 1600
-add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox $::globals(profiles_listbox); fill_skin_listbox $::globals(tablet_styles_listbox); say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1505 1430 2015 1600
+add_de1_button "settings_1 settings_2 settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_ble_listbox $::globals(ble_listbox); fill_profiles_listbox $::globals(profiles_listbox); fill_skin_listbox $::globals(tablet_styles_listbox); say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1505 1430 2015 1600
 
 # END OF SETTINGS page
 ##############################################################################################################################################################################################################################################################################

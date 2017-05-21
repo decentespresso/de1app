@@ -323,7 +323,7 @@ proc setting_water_max_time {} {
 	return [expr {round( $::settings(water_max_time) )}]
 }
 proc setting_espresso_max_time {} {
-	return $::settings(espresso_max_time)
+	return [expr {round( $::settings(espresso_max_time) )}]
 }
 proc setting_steam_max_time_text {} {
 	return [subst {[setting_steam_max_time] [translate "seconds"]}]
@@ -545,6 +545,40 @@ proc delete_selected_profile {} {
 	preview_profile $::globals(profiles_listbox)
 
 }
+
+
+
+proc fill_ble_listbox {widget} {
+
+	#puts "fill_profiles_listbox $widget"
+	#set ::settings(profile_to_save) $::settings(profile)
+
+	$widget delete 0 99999
+	set cnt 0
+	set current_ble_number 0
+	set ble_ids [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
+	foreach d [lsort -dictionary -increasing $ble_ids] {
+		$widget insert $cnt $d
+		if {[ifexists ::settings(de1_address)] == $d} {
+			set current_ble_number $cnt
+			#puts "current profile of '$d' is #$cnt"
+		}
+		incr cnt
+	}
+	
+	#$widget itemconfigure $current_profile_number -foreground blue
+	$widget selection set $current_ble_number;
+
+	#$widget selection set 3
+	#puts "$widget selection set $current_profile_number"
+
+	set ::globals(ble_listbox) $widget
+	
+	# john - probably makes sense for "pair" to occur on item tap
+	#bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
+	make_current_listbox_item_blue $widget
+}
+
 
 proc fill_profiles_listbox {widget} {
 
