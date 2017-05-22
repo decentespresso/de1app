@@ -1,5 +1,6 @@
 #!/usr/local/bin/tclsh
 
+package provide de1 1.0
 package provide de1_main 1.0
 package require de1_vars 
 package require de1_gui 
