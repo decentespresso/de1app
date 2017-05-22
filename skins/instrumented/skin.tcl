@@ -1,5 +1,5 @@
 
-package require de1 1.0
+package require de1plus 1.0
 
 source "[homedir]/skins/default/standard_includes.tcl"
 

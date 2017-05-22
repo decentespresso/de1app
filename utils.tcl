@@ -276,13 +276,15 @@ proc setup_environment {} {
         wm maxsize . $screen_size_width $screen_size_height
         wm minsize . $screen_size_width $screen_size_height
 
-        if {$::settings(flight_mode_enable) == 1 && $::de1(has_flowmeter) == 1} {
-            borg sensor enable 0
-            sdltk accelerometer 1
-            after 200 accelerometer_check 
+        if {$::settings(flight_mode_enable) == 1 && [de1plus] } {
+            if {[package require de1_plus] > 1} {
+                borg sensor enable 0
+                sdltk accelerometer 1
+                after 200 accelerometer_check 
+            }
         }
 
-        if {$::de1(has_flowmeter) == 1} {
+        if {[de1plus]} {
             set ::settings(timer_interval) 250
         }
 
@@ -306,14 +308,16 @@ proc setup_environment {} {
         set screen_size_height 1200
         set fontm 1.5
 
+        set screen_size_width 1280
+        set screen_size_height 800
+        set fontm 1
+
         set screen_size_width 2560
         set screen_size_height 1600
         set fontm 2
 
         
-        set screen_size_width 1280
-        set screen_size_height 800
-        set fontm 1
+
         #set screen_size_width 1920
         #set screen_size_height 1080
         #set fontm 1.5
@@ -416,13 +420,13 @@ proc skin_directory {} {
     global screen_size_height
 
     set skindir "skins"
-    if {[ifexists ::de1(has_flowmeter)] == 1} {
-        set skindir "skinsplus"
-    }
+    #if {[de1plus]} {
+        #set skindir "skinsplus"
+    #}
 
-    if {[ifexists ::creator] == 1} {
-        set skindir "skinscreator"
-    }
+    #if {[ifexists ::creator] == 1} {
+        #set skindir "skinscreator"
+    #}
 
     #puts "skind: $skindir"
     #set dir "[file dirname [info script]]/$skindir/default/${screen_size_width}x${screen_size_height}"
@@ -447,13 +451,13 @@ proc skin_directory_graphics {} {
     global screen_size_height
 
     set skindir "[homedir]/skins"
-    if {[ifexists ::de1(has_flowmeter)] == 1} {
-        set skindir "[homedir]/skinsplus"
-    }
+    #if {[ifexists ::de1(has_flowmeter)] == 1} {
+    #    set skindir "[homedir]/skinsplus"
+    #}
 
-    if {[ifexists ::creator] == 1} {
-        set skindir "[homedir]/skinscreator"
-    }
+    #if {[ifexists ::creator] == 1} {
+    #    set skindir "[homedir]/skinscreator"
+    #}
 
     #puts "skind: $skindir"
     set dir "$skindir/$::settings(skin)/${screen_size_width}x${screen_size_height}"
@@ -469,13 +473,13 @@ proc defaultskin_directory_graphics {} {
     global screen_size_height
 
     set skindir "[homedir]/skins"
-    if {[ifexists ::de1(has_flowmeter)] == 1} {
-        set skindir "[homedir]/skinsplus"
-    }
+    #if {[ifexists ::de1(has_flowmeter)] == 1} {
+    #    set skindir "[homedir]/skinsplus"
+    #}
 
-    if {[ifexists ::creator] == 1} {
-        set skindir "[homedir]/skinscreator"
-    }
+    #if {[ifexists ::creator] == 1} {
+    #    set skindir "[homedir]/skinscreator"
+    #}
 
     #puts "skind: $skindir"
     set dir "$skindir/default/${screen_size_width}x${screen_size_height}"
@@ -685,6 +689,13 @@ proc save_settings {} {
 proc load_settings {} {
     #puts "loading settings"
     array set ::settings [read_file [settings_filename]]
+
+    set skintcl [read_file "[skin_directory]/skin.tcl"]
+    if {![de1plus] && [string first "package require de1plus" $skintcl] != -1} {
+        puts "Error: incompatible DE1PLUS skin loaded on a DE1"
+        set ::settings(skin) "default"
+    }
+
 }
 
 proc settings_filename {} {

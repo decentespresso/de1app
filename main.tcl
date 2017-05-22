@@ -11,7 +11,9 @@ package require de1_machine
 ##############################
 
 proc setup_images_for_other_pages {} {
+	puts "setup_images_for_other_pages 1 [skin_directory]"
 	source "[skin_directory]/skin.tcl"
+	puts "setup_images_for_other_pages 2"
 	return
 }
 

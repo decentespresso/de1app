@@ -477,10 +477,18 @@ proc skin_directories {} {
 	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/skins/" *]]
 	#puts "skin_directories: $dirs"
 	set dd {}
+	set de1plus [de1plus]
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
+	    
+	    if {!$de1plus && [string first "package require de1plus" [read_file "[homedir]/skins/$d/skin.tcl"]] != -1} {
+	    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
+	    	#puts "Skipping $d"
+	    	continue
+	    }
+
 		lappend dd $d		
 	}
 	return $dd
@@ -693,4 +701,17 @@ proc save_profile {} {
 }
 
 
+proc de1plus {} {
+	#puts "x: [package present de1plus 1.0]"
+	set x 0
+	catch {
+		catch {
+			if {[package present de1plus 1.0] >= 1} {
+				set x 1
+			}
+		}
+	}
+	return $x
+
+}
 
