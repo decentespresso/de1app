@@ -626,17 +626,16 @@ proc add_de1_variable {args} {
 	set label_name [eval add_de1_text $args]
 	foreach context $contexts {
 		incr text_cnt
-		foreach context $contexts {
-			set label_name "${context}_$text_cnt"
-			# keep track of what labels are displayed in what contexts
-			add_visual_item_to_context $context $label_name
-			set x [rescale_x_skin [lindex $args 1]]
-			set y [rescale_y_skin [lindex $args 2]]
-			set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
-			#puts $torun
-			eval $torun
-			add_variable_item_to_context $context $label_name $varcmd
-		}
+		#set label_name "${context}_$text_cnt"
+
+		# keep track of what labels are displayed in what contexts
+		add_visual_item_to_context $context $label_name
+		set x [rescale_x_skin [lindex $args 1]]
+		set y [rescale_y_skin [lindex $args 2]]
+		set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
+		#puts $torun
+		eval $torun
+		add_variable_item_to_context $context $label_name $varcmd
 	}
 	return $label_name
 }
@@ -737,7 +736,7 @@ proc update_onscreen_variables {} {
 		foreach label_to_update $labels_to_update {
 			set label_name [lindex $label_to_update 0]
 			set label_cmd [lindex $label_to_update 1]
-			#msg "Updating $current_context : $label_name with: '$label_cmd'"
+			#puts "Updating $::de1(current_context) : $label_name with: '$label_cmd'"
 			.can itemconfig $label_name -text [subst $label_cmd]
 		}
 	}
