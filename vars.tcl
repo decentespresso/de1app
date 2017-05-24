@@ -483,11 +483,16 @@ proc skin_directories {} {
 			continue
 		}
 	    
-	    if {!$de1plus && [string first "package require de1plus" [read_file "[homedir]/skins/$d/skin.tcl"]] != -1} {
-	    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
-	    	#puts "Skipping $d"
-	    	continue
-	    }
+	    if {[string first "package require de1plus" [read_file "[homedir]/skins/$d/skin.tcl"]] != -1} {
+	    	if {!$de1plus} {
+		    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
+		    	#puts "Skipping $d"
+		    	continue
+		    }
+
+		    # keep track of which skins are DE1PLUS so we can display them differently in the listbox
+		    set ::de1plus_skins($d) 1
+		}
 
 		lappend dd $d		
 	}
@@ -507,6 +512,13 @@ proc fill_skin_listbox {widget} {
 		$widget insert $cnt $d
 		if {$::settings(skin) == $d} {
 			set current_skin_number $cnt
+		}
+
+		#puts "d: $d"
+		if {[ifexists ::de1plus_skins($d)] == 1} {
+			# mark skins that require the DE1PLUS model with a different color to highlight them
+			#puts "de1plus skin: $d"
+			$widget itemconfigure $cnt -background #F0F0FF
 		}
 		incr cnt
 	}
@@ -528,6 +540,7 @@ proc make_current_listbox_item_blue { widget } {
 
 	for {set x 0} {$x < [$widget index end]} {incr x} {
 		if {$x == [$widget curselection]} {
+			#puts "x: $x"
 			$widget itemconfigure $x -foreground #000000 -selectforeground #000000
 
 		} else {

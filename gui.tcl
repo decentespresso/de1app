@@ -707,9 +707,9 @@ proc update_chart {} {
 	espresso_elapsed notify now
 }
 
-proc update_onscreen_variables {} {
+proc update_onscreen_variables { {state {}} } {
 
-	update_chart
+	#update_chart
 
 	#save_settings
 
@@ -727,21 +727,31 @@ proc update_onscreen_variables {} {
 			append_live_data_to_espresso_chart
 		}
 	}
-	#msg "updating"
-	#global current_context
-	
+
+	#set x [clock milliseconds]
 	global variable_labels
+	set something_updated 0
 	if {[info exists variable_labels($::de1(current_context))] == 1} {
 		set labels_to_update $variable_labels($::de1(current_context)) 
 		foreach label_to_update $labels_to_update {
 			set label_name [lindex $label_to_update 0]
 			set label_cmd [lindex $label_to_update 1]
-			#puts "Updating $::de1(current_context) : $label_name with: '$label_cmd'"
-			.can itemconfig $label_name -text [subst $label_cmd]
+			set label_value [subst $label_cmd]
+			if {[ifexists ::labelcache($label_name)] != $label_value} {
+				.can itemconfig $label_name -text $label_value
+				set ::labelcache($label_name) $label_value
+				set something_updated 1
+			}
 		}
 	}
 
-	update
+	if {$something_updated == 1} {
+		update
+	}
+
+	#set y [clock milliseconds]
+	#puts "elapsed: [expr {$y - $x}] $something_updated"
+
 	after $::settings(timer_interval) update_onscreen_variables
 }
 
@@ -844,7 +854,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	global actions
 	if {[info exists actions($page_to_show)] == 1} {
 		foreach action $actions($page_to_show) {
-			puts "actions: $action"
+			#puts "actions: $action"
 			eval $action
 		}
 	}
@@ -853,7 +863,16 @@ proc page_display_change {page_to_hide page_to_show} {
 
 }
 
-proc update_de1_explanation_chart { {itemval {}} } {
+proc update_de1_explanation_chart_soon  { {context {}} } {
+	# we can optionally delay displaying the chart until data from the slider stops coming
+	update_de1_explanation_chart
+	#return
+	#after cancel update_de1_explanation_chart
+	#after 5 update_de1_explanation_chart
+}
+
+proc update_de1_explanation_chart { {context {}} } {
+#puts update_de1_explanation_chart
 
 	if {$::settings(pressure_end) > $::settings(espresso_pressure)} {
 		# the end pressure is not allowed to be higher than the hold pressure
