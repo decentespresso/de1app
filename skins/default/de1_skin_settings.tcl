@@ -80,8 +80,6 @@ add_de1_widget "settings_2" listbox 1330 340 {
 	} -background #fbfaff -font Helv_10 -bd 0 -height 8 -width 42 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
 
 
-
-
 #add_de1_text "settings_2" 2250 1020 -text [translate "Load"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 #add_de1_button "settings_2" {save_new_tablet_skin_setting} 1980 950 2520 1100
 

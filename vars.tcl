@@ -274,9 +274,9 @@ proc timer_text {} {
 
 proc return_liquid_measurement {in} {
 	if {$::settings(enable_fluid_ounces) != 1} {
-		return [subst {[round_to_two_digits $in] [translate "ml"]}]
+		return [subst {[round_to_integer $in] [translate "ml"]}]
 	} else {
-		return [subst {[round_to_two_digits [ml_to_oz $in]] oz}]
+		return [subst {[round_to_integer [ml_to_oz $in]] oz}]
 	}
 }
 

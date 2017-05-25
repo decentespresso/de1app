@@ -77,7 +77,11 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 		set newval [expr "1.0 * \$$varname - $bigincrement"]
 	}
 
-	if {$newval <= $maxval && $newval >= $minval} {
+	if {$newval > $maxval} {
+		set $varname $maxval
+	} elseif {$newval < $minval} {
+		set $varname $minval
+	} else {
 		set $varname $newval
 	}
 
