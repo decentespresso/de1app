@@ -360,21 +360,21 @@ add_de1_variable "espresso_3 espresso_3_zoom_pressure espresso_3_zoom_flow espre
 # settings for preheating a cup
 
 add_de1_text "preheat_1" 1390 775 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "preheat_1" 1390 865 -text [translate "PRE-HEAT CUP"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+add_de1_text "preheat_1 preheat_2 preheat_3" 1390 865 -text [translate "PRE-HEAT CUP"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
-add_de1_text "preheat_2" 1390 805 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "preheat_2" 1390 775 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
 
 add_de1_text "preheat_3" 1390 775 -text [translate "DONE"] -font Helv_20_bold -fill "#7f879a" -anchor "center" 
-add_de1_text "preheat_3" 1390 865 -text [translate "PRE-HEAT CUP"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+#add_de1_text "preheat_3" 1390 865 -text [translate "PRE-HEAT CUP"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
-add_de1_button "preheat_1 preheat_3" {say [translate {pre-heat cup}] $::settings(sound_button_in); set_next_page water preheat_2; start_water} 1030 210 2560 1400
+add_de1_button "preheat_1 preheat_3" {say [translate {pre-heat cup}] $::settings(sound_button_in); set ::settings(preheat_temperature) 90; set_next_page water preheat_2; start_water} 1030 210 2560 1400
 add_de1_button "preheat_2" {say [translate {stop}] $::settings(sound_button_in); set_next_page off preheat_3; start_idle} 0 189 2560 1600
 add_de1_button "preheat_3" {say "" $::settings(sound_button_in); set_next_page off preheat_1; start_idle} 0 210 1000 1400
 #add_de1_button "preheat_3" "set_next_page off preheat_1; page_show preheat_1" 0 189 2560 1422
 
 #add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(preheat_volume) 1 400 %x %y %x0 %y0 %x1 %y1} 0 210 550 1400 "mousemove"
 
-add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(preheat_volume) 10 1000 %x %y %x0 %y0 %x1 %y1} 200 410 900 1200 ""
+add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(preheat_volume) 10 1000 %x %y %x0 %y0 %x1 %y1;save_settings} 200 410 900 1200 ""
 
 #add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(preheat_volume) 1 400 %x %y %x0 %y0 %x1 %y1} 0 210 550 1400 ""
 
@@ -412,21 +412,37 @@ add_de1_variable "preheat_3" 2460 1270 -justify left -anchor "ne" -font Helv_8 -
 ##########################################################################################################################################################################################################################################################################
 # settings for dispensing hot water
 
-add_de1_text "water_1" 1390 1270 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
-add_de1_text "water_1" 1390 805 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "water" 1390 805 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "water_3" 1390 805 -text [translate "DONE"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
-add_de1_button "water_1" {say [translate {hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 210 2560 1100
+add_de1_text "water_1 water_3" 1390 1270 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
+#add_de1_text "water_1" 1390 805 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
+
+add_de1_text "water_1" 1390 775 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "water_1 water water_3" 1390 865 -text [translate "HOT WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+
+add_de1_text "water_3" 1390 775 -text [translate "DONE"] -font Helv_20_bold -fill "#7f879a" -anchor "center" 
+#add_de1_text "water_3" 1390 865 -text [translate "HOT WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+
+
+add_de1_text "water" 1390 775 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
+#add_de1_text "water_3" 1390 805 -text [translate "DONE"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
+add_de1_button "water_1 water_3" {say [translate {hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 210 2560 1100
 add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set_next_page off water_3 ; start_idle} 0 189 2560 1600
-add_de1_button "water_3" {set_next_page off water_1; page_show water_1} 0 189 2560 1422
-add_de1_button "water_1" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
+#add_de1_button "water_3" {set_next_page off water_1; page_show water_1} 0 189 2560 1422
+add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
 
 
-add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_volume) 1 400 %x %y %x0 %y0 %x1 %y1} 0 210 550 1400 "mousemove"
-add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1} 551 210 1029 1400 "mousemove"
+add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(water_volume) 10 1000 %x %y %x0 %y0 %x1 %y1;save_settings} 0 400 550 1200 ""
+add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 10 1 ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1;save_settings} 551 400 1029 1200 ""
 
-#add_de1_text "water_1" 70 250 -text [translate "1) Choose: how much water and how hot"] -font Helv_10 -fill "#5a5d75" -anchor "nw" -width 900
-add_de1_text "water_1" 1070 250 -text [translate "2) Water will pour into your cup"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
+#add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_volume) 1 400 %x %y %x0 %y0 %x1 %y1} 0 210 550 1400 "mousemove"
+#add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1} 551 210 1029 1400 "mousemove"
+
+add_de1_text "water_1" 70 250 -text [translate "1) Choose how much water and how hot"] -font Helv_10 -fill "#5a5d75" -anchor "nw" -width 900
+#add_de1_text "water_1" 1070 250 -text [translate "2) Water will pour into your cup"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
+
+add_de1_text "water_1" 1070 250 -text [translate "2) Hot water will pour out"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
+add_de1_text "water" 1070 250 -text [translate "2) Hot water is pouring out"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
+
+
 add_de1_text "water" 70 250 -text [translate "1) How much water"] -font Helv_9 -fill "#b1b9cd" -anchor "nw" -width [rescale_x_skin 900]
 
 add_de1_variable "water_1" 300 1250 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center"  -textvariable {[return_liquid_measurement $::settings(water_volume)]}
@@ -438,28 +454,29 @@ add_de1_variable "water" 300 1250 -text "" -font Helv_10_bold -fill "#7f879a" -a
 add_de1_text "water" 300 1300  -text [translate "VOLUME"] -font Helv_7 -fill "#b1b9cd" -anchor "center" 
 add_de1_variable "water" 755 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
 add_de1_text "water" 755 1300 -text [translate "TEMP"] -font Helv_7 -fill "#b1b9cd" -anchor "center" 
+add_de1_button "water_3" {say "" $::settings(sound_button_in); set_next_page off water_1; start_idle} 0 210 1000 1400
 
 # data card
-add_de1_text "water" 1100 280 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
-add_de1_text "water" 1100 330 -justify right -anchor "nw" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water" 1720 330 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_timer][translate "s"]} 
-add_de1_text "water" 1100 380 -justify right -anchor "nw" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water" 1720 380 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[setting_water_max_time][translate "s"]} 
+add_de1_text "water water_3" 1870 280 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
+add_de1_text "water water_3" 1870 330 -justify right -anchor "nw" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "water water_3" 2470 330 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_timer][translate "s"]} 
+add_de1_text "water water_3" 1870 380 -justify right -anchor "nw" -text [translate "Auto off:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "water water_3" 2470 380 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[setting_water_max_time][translate "s"]} 
 
-add_de1_text "water" 1100 1150 -justify right -anchor "nw" -text [translate "Characteristics"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
+add_de1_text "water water_3" 1870 1150 -justify right -anchor "nw" -text [translate "Characteristics"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 
-add_de1_text "water" 1100 1200 -justify right -anchor "nw" -text [translate "Water temp:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water" 1720 1200 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
-
-
-add_de1_text "water" 1100 1250 -justify right -anchor "nw" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water" 1720 1250 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
-add_de1_text "water" 1100 1300 -justify right -anchor "nw" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water" 1720 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+add_de1_text "water water_3" 1870 1200 -justify right -anchor "nw" -text [translate "Water temp:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "water water_3" 2470 1200 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
 
 
-add_de1_text "water_3" 1110 1270 -justify right -anchor "nw" -text [translate "Finished:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water_3" 1670 1270 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[timer][translate "s"]} 
+add_de1_text "water water_3" 1870 1250 -justify right -anchor "nw" -text [translate "Flow rate:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "water water_3" 2470 1250 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+add_de1_text "water water_3" 1870 1300 -justify right -anchor "nw" -text [translate "Volume:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "water water_3" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+
+
+add_de1_text "water_3" 1870 430 -justify right -anchor "nw" -text [translate "Finished:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "water_3" 2470 430 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[timer][translate "s"]} 
 
 
 
