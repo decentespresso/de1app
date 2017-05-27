@@ -297,6 +297,21 @@ proc watervolume_text {} {
 }
 
 
+proc espresso_goal_temp_text {} {
+	return [return_temperature_measurement $::de1(goal_temperature)]
+}
+
+proc diff_brew_temp_from_goal {} {
+	set diff [expr {[water_mix_temperature] - $::de1(goal_temperature)}]
+	return [return_delta_temperature_measurement $diff]
+}
+
+proc diff_espresso_temp_from_goal {} {
+	set diff [expr {[watertemp] - $::de1(goal_temperature)}]
+	return [return_delta_temperature_measurement $diff]
+}
+
+
 
 proc mixtemp_text {} {
 	return [return_temperature_measurement [water_mix_temperature]]
@@ -364,12 +379,27 @@ proc return_temperature_number {in} {
 		return [round_to_one_digits $in]
 	}
 }
+
 proc return_temperature_measurement {in} {
 	if {$::settings(enable_fahrenheit) == 1} {
 		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
 	} else {
 		return [subst {[round_to_integer $in]ºC}]
 	}
+}
+
+
+proc return_delta_temperature_measurement {in} {
+	if {$::settings(enable_fahrenheit) == 1} {
+		set t [subst {[round_to_one_digits [celsius_to_fahrenheit $in]]ºF}]
+	} else {
+		set t [subst {[round_to_one_digits $in]ºC}]
+	}
+
+	if {$in > 0} {
+		set t "+$t"
+	}
+	return $t
 }
 
 proc setting_steam_temperature_text {} {
