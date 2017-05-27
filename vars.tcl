@@ -311,6 +311,11 @@ proc diff_espresso_temp_from_goal {} {
 	return [return_delta_temperature_measurement $diff]
 }
 
+proc diff_group_temp_from_goal {} {
+	set diff [expr {[group_head_heater_temperature] - $::de1(goal_temperature)}]
+	return [return_delta_temperature_measurement $diff]
+}
+
 
 
 proc mixtemp_text {} {
