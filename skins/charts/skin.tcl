@@ -125,6 +125,8 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 1174 {
 	} -width [rescale_x_skin 1990] -height [rescale_y_skin 410]  -plotbackground #FFFFFF -borderwidth 0 -background #FFFFFF -plotrelief flat
 ####
 
+#add_de1_text "off espresso espresso_3" 43 225 -text [translate "PRESSURE:"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "nw"
+#add_de1_text "off espresso espresso_3" 43 677 -text [translate "FLOW:"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
 
 #######################
 # zoomed espresso
@@ -137,11 +139,17 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 70 {
 	$widget element create line_espresso_flow  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4 -smooth quadratic -pixels 0; 
 	$widget element create line_espresso_state_change_2 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #888888  -pixels 0; 
 
-	$widget yaxis configure -title [translate "PRESSURE:"] -hide 0
-	$widget y2axis configure -title [translate "FLOW:"] -hide 0
+	#$widget yaxis configure -title [translate "PRESSURE:"] -titlefont Helv_10 -titlecolor "#008c4c" -hide 0;
+	#$widget y2axis configure -title [translate "FLOW:"] -titlefont Helv_10 -titlecolor  "#206ad4" -hide 0;
+	#$widget yaxis configure -title [translate "PRESSURE:"] -titlefont Helv_10 -titlecolor "#008c4c" -hide 0;
+	#$widget y2axis -hide 0;
 	$widget axis configure x -color #5a5d75 -tickfont Helv_6; 
-	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max $::de1(max_pressure) -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}; 
-	$widget axis configure y2 -color #206ad4 -tickfont Helv_6 -min 0.0 -max $::de1(max_flowrate); 
+#	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0 -max 12 -gridminor yes -grid yes -subdivisions 1 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12} ;#-subdivisions 5; 
+	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max $::de1(max_pressure) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}
+	$widget axis configure y2 -color #206ad4 -tickfont Helv_6 -gridminor 0 -min 0.0 -max $::de1(max_flowrate) -majorticks {0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6} -hide 0; 
+	#$widget axis configure y -grid no ;
+	#$widget axis configure y2 -color #206ad4 -tickfont Helv_6 -min 0 -max 6 -gridminor no -grid no ;#-majorticks {0 1 2 3 4 5 6} ; 
+	#$widget grid configure -hide 1
 	bind $widget [platform_button_press] { 
 		say [translate {zoom back}] $::settings(sound_button_in); 
 		set_next_page espresso espresso; 
