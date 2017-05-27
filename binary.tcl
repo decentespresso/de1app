@@ -835,6 +835,8 @@ proc update_de1_state {statechar} {
 	page_display_change $::de1(current_context) "espresso" 
   } elseif {$textstate == "HotWater"} {
 	page_display_change $::de1(current_context) "water" 
+  } elseif {$textstate == "Refill"} {
+	page_display_change $::de1(current_context) "tankempty" 
   } elseif {$textstate == "TankEmpty"} {
 	page_display_change $::de1(current_context) "tankempty" 
   } elseif {$textstate == "FillingTank"} {

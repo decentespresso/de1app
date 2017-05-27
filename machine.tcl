@@ -42,7 +42,7 @@ array set ::de1 {
 	has_catering_kit 0
 	has_plumbing_kit 0
 	max_pressure 12
-	max_flowrate 10
+	max_flowrate 6
 	min_temperature 80
 	max_temperature 100
 	goal_flow 2
@@ -168,6 +168,7 @@ array set ::de1_state {
 	FatalError \x0B
 	Init \x0C
 	NewSleep \x0D
+	Refill \x11
 	TankEmpty \x90
 	FillingTank \x91
 }
@@ -187,6 +188,7 @@ array set ::de1_num_state {
   11 FatalError 
   12 Init
   13 NewSleep
+  17 Refill
   144 TankEmpty
   145 FillingTank
 }
