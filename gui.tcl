@@ -887,6 +887,7 @@ proc update_de1_explanation_chart { {context {}} } {
 	#save_settings
 	#puts "update_de1_explanation_chart"
 	espresso_de1_explanation_chart_pressure length 0
+	espresso_de1_explanation_chart_flow length 0
 	espresso_de1_explanation_chart_elapsed length 0
 
 	set seconds 0

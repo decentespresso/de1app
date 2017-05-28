@@ -26,7 +26,7 @@ add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);st
 
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 400 400
-add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2000 0 2560 500
+add_de1_button "off" {backup_settings; page_to_show_when_off $::settings(settings_profile_type)} 2000 0 2560 500
 add_de1_variable "off" 1280 1350 -justify right -anchor "center" -text "" -font Helv_8 -fill "#Ff272a" -width 520 -textvariable {[group_head_heating_text]} 
 
 # during espresso we show the current state of things and a timer
