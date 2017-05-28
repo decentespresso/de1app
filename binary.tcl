@@ -399,7 +399,7 @@ proc de1_packed_shot {} {
 	set hdr(MinimumPressure) 0
 	set hdr(MaximumFlow) [convert_float_to_U8P4 6]
 
-	if {$::settings(preinfusion_enabled) == 1} {
+	if {$::settings(preinfusion_time) > 0} {
 		set hdr(NumberOfFrames) 4
 		set hdr(NumberOfPreinfuseFrames) 1
 
@@ -700,6 +700,7 @@ proc update_de1_shotvalue {packed} {
 	#msg "updated mix temp to $ShotSample(MixTemp)"
   }
   if {[info exists ShotSample(GroupFlow)] == 1 && $delta != 0} {
+	set ::de1(flow_delta) [expr {$::de1(flow) - $ShotSample(GroupFlow)}]
 	set ::de1(flow) $ShotSample(GroupFlow)
 	set ::de1(volume) [expr {$::de1(volume) + ($ShotSample(GroupFlow) * ($delta/100.0) )}]
 	#msg "updated flow"
@@ -731,6 +732,9 @@ proc update_de1_shotvalue {packed} {
 
 set previous_de1_substate 0
 set state_change_chart_value 10000000
+set previous_espresso_flow 0
+set previous_espresso_flow_time [millitimer]
+
 proc append_live_data_to_espresso_chart {} {
 
   
@@ -752,23 +756,55 @@ proc append_live_data_to_espresso_chart {} {
 	  }
 	}
 
-	espresso_elapsed append [expr {[millitimer]/1000.0}]
+	set millitime [millitimer]
+
+	espresso_elapsed append [expr {$millitime/1000.0}]
 	espresso_pressure append $::de1(pressure)
 	espresso_flow append $::de1(flow)
+	espresso_flow_2x append [expr {2.0 * $::de1(flow)}]
+
+	#set elapsed_since_last [expr {$millitime - $::previous_espresso_flow_time}]
+	#puts "elapsed_since_last: $elapsed_since_last"
+	#set flow_delta [expr { 10 * ($::de1(flow)  - $::previous_espresso_flow) }]
+	set flow_delta [diff_flow_rate]
+	set negative_flow_delta_for_chart 0
+	if {$flow_delta > 0} {
+		set negative_flow_delta_for_chart [expr {6.0 - (10.0 * $flow_delta)}]
+		set negative_flow_delta_for_chart_2x [expr {12.0 - (10.0 * $flow_delta)}]
+		##espresso_flow_delta append [round_to_two_digits $negative_flow_delta_for_chart]
+		espresso_flow_delta_negative append $negative_flow_delta_for_chart
+		espresso_flow_delta_negative_2x append $negative_flow_delta_for_chart_2x
+		espresso_flow_delta append 0
+		#puts "negative flow_delta: $flow_delta ($negative_flow_delta_for_chart)"
+	} else {
+		espresso_flow_delta append [expr {abs(10*$flow_delta)}]
+		espresso_flow_delta_negative append 6
+		espresso_flow_delta_negative_2x append 12
+		#puts "flow_delta: $flow_delta ($negative_flow_delta_for_chart)"
+	}
+
+
+	set ::previous_espresso_flow $::de1(flow)
+
+	#espresso_flow_delta append  3
 	espresso_temperature_mix append [return_temperature_number $::de1(mix_temperature)]
 	espresso_temperature_basket append [return_temperature_number $::de1(head_temperature)]
 	espresso_state_change append $state_change_chart_value
 
+	set ::previous_espresso_flow_time $millitime
+
 	# don't chart goals at zero, instead take them off the chart
 	if {$::de1(goal_flow) == 0} {
-		espresso_flow_goal append -1
+		espresso_flow_goal append "-.1"
+		espresso_flow_goal_2x append "-.1"
 	} else {
 		espresso_flow_goal append $::de1(goal_flow)
+		espresso_flow_goal append [expr {2.0 * $::de1(goal_flow)}]
 	}
 
 	# don't chart goals at zero, instead take them off the chart
 	if {$::de1(goal_pressure) == 0} {
-		espresso_pressure_goal append -1
+		espresso_pressure_goal append "-.1"
 	} else {
 		espresso_pressure_goal append $::de1(goal_pressure)
 	}

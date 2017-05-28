@@ -386,6 +386,7 @@ proc install_this_app_icon {} {
 proc platform_button_press {} {
 	global android 
 	if {$android == 1} {
+		#return {<<FingerUp>>}
 		return {<ButtonPress-1>}
 	}
 	return {<ButtonPress-1>}

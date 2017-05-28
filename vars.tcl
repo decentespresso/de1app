@@ -9,11 +9,16 @@ proc clear_espresso_chart {} {
 	espresso_elapsed length 0
 	espresso_pressure length 0
 	espresso_flow length 0
+	espresso_flow_2x length 0
+	espresso_flow_delta length 0
+	espresso_flow_delta_negative length 0
+	espresso_flow_delta_negative_2x length 0
 	espresso_temperature_mix length 0
 	espresso_temperature_basket length 0
 	espresso_state_change length 0
 	espresso_pressure_goal length 0
 	espresso_flow_goal length 0
+	espresso_flow_goal_2x length 0
 	espresso_temperature_goal length 0
 	clear_timers
 
@@ -314,6 +319,19 @@ proc diff_espresso_temp_from_goal {} {
 proc diff_group_temp_from_goal {} {
 	set diff [expr {[group_head_heater_temperature] - $::de1(goal_temperature)}]
 	return [return_delta_temperature_measurement $diff]
+}
+
+proc diff_flow_rate {} {
+	if {$::android == 0} {
+		return [expr {3 - (rand() * 6)}]
+	}
+
+
+	return $::de1(flow_delta)
+}
+
+proc diff_flow_rate_text {} {
+	return [return_flow_measurement [diff_flow_rate]]
 }
 
 
