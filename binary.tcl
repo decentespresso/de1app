@@ -799,7 +799,7 @@ proc append_live_data_to_espresso_chart {} {
 		espresso_flow_goal_2x append "-.1"
 	} else {
 		espresso_flow_goal append $::de1(goal_flow)
-		espresso_flow_goal append [expr {2.0 * $::de1(goal_flow)}]
+		espresso_flow_goal_2x append [expr {2.0 * $::de1(goal_flow)}]
 	}
 
 	# don't chart goals at zero, instead take them off the chart
