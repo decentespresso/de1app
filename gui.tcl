@@ -864,6 +864,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		}
 	}
 
+	update_onscreen_variables
 	after 100 update_chart
 
 }
@@ -877,7 +878,6 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 }
 
 proc update_de1_explanation_chart { {context {}} } {
-#puts update_de1_explanation_chart
 
 	if {$::settings(pressure_end) > $::settings(espresso_pressure)} {
 		# the end pressure is not allowed to be higher than the hold pressure
@@ -887,7 +887,7 @@ proc update_de1_explanation_chart { {context {}} } {
 	#save_settings
 	#puts "update_de1_explanation_chart"
 	espresso_de1_explanation_chart_pressure length 0
-	espresso_de1_explanation_chart_flow length 0
+	#espresso_de1_explanation_chart_flow length 0
 	espresso_de1_explanation_chart_elapsed length 0
 
 	set seconds 0
@@ -934,6 +934,74 @@ proc update_de1_explanation_chart { {context {}} } {
 		set seconds [expr {$seconds + $espresso_decline_time}]
 		espresso_de1_explanation_chart_pressure append $::settings(pressure_end)
 		espresso_de1_explanation_chart_elapsed append $seconds
+	}
+
+	# save the total time
+	set ::settings(espresso_max_time) $seconds
+
+	if {[de1plus]} {
+		update_de1_plus_flow_explanation_chart
+	}
+}
+
+
+proc update_de1_plus_flow_explanation_chart { {context {}} } {
+
+	#if {$::settings(pressure_end) > $::settings(espresso_pressure)} {
+		# the end pressure is not allowed to be higher than the hold pressure
+		#set ::settings(pressure_end) $::settings(espresso_pressure)
+	#}
+
+	#save_settings
+	#puts "update_de1_explanation_chart"
+	#espresso_de1_explanation_chart_pressure length 0
+	espresso_de1_explanation_chart_flow length 0
+	espresso_de1_explanation_chart_elapsed_flow length 0
+
+	set seconds 0
+
+	# preinfusion
+	if {$::settings(flow_profile_preinfusion_time) > 0} {
+		espresso_de1_explanation_chart_flow append $::settings(flow_profile_preinfusion);
+		espresso_de1_explanation_chart_elapsed_flow append $seconds
+
+		set seconds [expr {$seconds + $::settings(flow_profile_preinfusion_time)}]
+		espresso_de1_explanation_chart_flow append $::settings(flow_profile_preinfusion);
+		espresso_de1_explanation_chart_elapsed_flow append $seconds
+	} else {
+		espresso_de1_explanation_chart_elapsed_flow append $seconds
+		espresso_de1_explanation_chart_flow append 0
+
+	}
+
+	set approximate_ramptime 3
+	set flow_profile_hold_time $::settings(flow_profile_hold_time)
+	set flow_profile_decline_time $::settings(flow_profile_decline_time)
+	if {$flow_profile_hold_time > $approximate_ramptime} {
+		set flow_profile_hold_time [expr {$flow_profile_hold_time - $approximate_ramptime}]
+	} elseif {$flow_profile_decline_time > $approximate_ramptime} {
+		set flow_profile_decline_time [expr {$flow_profile_decline_time - $approximate_ramptime}]
+	} else {
+		set approximate_ramptime 0
+	}	
+
+	# ramp up the flow
+	set seconds [expr {$seconds + $approximate_ramptime}]
+	espresso_de1_explanation_chart_elapsed_flow append $seconds
+	espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
+
+	# hold the flow
+	if {$::settings(pressure_hold_time) > 0} {
+		set seconds [expr {$seconds + $flow_profile_hold_time}]
+		espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_elapsed_flow append $seconds
+	}
+
+	# decline flow stage
+	if {$::settings(flow_profile_decline_time) > 0} {
+		set seconds [expr {$seconds + $flow_profile_decline_time}]
+		espresso_de1_explanation_chart_flow append $::settings(flow_profile_decline)
+		espresso_de1_explanation_chart_elapsed_flow append $seconds
 	}
 
 	# save the total time

@@ -130,7 +130,18 @@ proc waterflow {} {
 	}
 
 	if {$::android == 0} {
-		set ::de1(flow) [expr {4 + (rand() * 2)}]
+		if {[ifexists ::de1(flow)] == ""} {
+			set ::de1(flow) 3
+		}
+		if {$::de1(flow) > 5} {
+			set ::de1(flow) 4.5
+		}
+		if {$::de1(flow) < 1} {
+			set ::de1(flow) 1.5
+		}
+
+
+		set ::de1(flow) [expr {rand() + $::de1(flow) - 0.5}]
 	}
 
 	return $::de1(flow)
@@ -154,6 +165,7 @@ proc watervolume {} {
 
 proc steamtemp {} {
 	if {$::android == 0} {
+
 		set ::de1(steam_heater_temperature) [expr {int(160+(rand() * 5))}]
 	}
 	return $::de1(steam_heater_temperature)
@@ -161,10 +173,25 @@ proc steamtemp {} {
 
 proc watertemp {} {
 	if {$::android == 0} {
-		set ::de1(head_temperature) [expr {$::settings(espresso_temperature) - 2.0 + (rand() * 4)}]
+		#set ::de1(head_temperature) [expr {$::settings(espresso_temperature) - 2.0 + (rand() * 4)}]
 		set ::de1(goal_temperature) $::settings(espresso_temperature)
+
+		if {[ifexists ::de1(head_temperature)] == ""} {
+			set ::de1(head_temperature) $::de1(goal_temperature)
+		}
+		if {$::de1(head_temperature) < 80} {
+			set ::de1(head_temperature) $::de1(goal_temperature)
+		}
+		if {$::de1(head_temperature) > 95} {
+			set ::de1(head_temperature) $::de1(goal_temperature)
+		}
+
+		set ::de1(head_temperature) [expr {rand() + $::de1(head_temperature) - 0.5}]
+		#set ::de1(head_temperature) 90
+
 	}
 
+	#puts "::de1(head_temperature) $::de1(head_temperature)"
 	return $::de1(head_temperature)
 }
 
@@ -174,7 +201,19 @@ proc pressure {} {
 	}
 
 	if {$::android == 0} {
-		set ::de1(pressure) [expr {rand() * 11}]
+		if {[ifexists ::de1(pressure)] == ""} {
+			set ::de1(pressure) 5
+		}
+
+		if {$::de1(pressure) > 10} {
+			set ::de1(pressure) 9
+		}
+		if {$::de1(pressure) < 1} {
+			set ::de1(pressure) 5
+		}
+
+
+		set ::de1(pressure) [expr {rand() + $::de1(pressure) - 0.5}]
 	}
 
 	return $::de1(pressure)
@@ -212,9 +251,9 @@ proc accelerometer_angle_text {} {
 }
 
 proc group_head_heater_temperature {} {
-	if {$::android == 0} {
-		set ::de1(head_temperature) [expr {80 + (rand() * 15.0)}]
-	}
+	#if {$::android == 0} {
+		#set ::de1(head_temperature) [expr {80 + (rand() * 15.0)}]
+	#}
 
 	return $::de1(head_temperature)
 }
@@ -308,15 +347,29 @@ proc espresso_goal_temp_text {} {
 
 proc diff_brew_temp_from_goal {} {
 	set diff [expr {[water_mix_temperature] - $::de1(goal_temperature)}]
+	return [round_to_one_digits $diff]
+}
+
+proc diff_brew_temp_from_goal_text {} {
+	set diff [expr {[water_mix_temperature] - $::de1(goal_temperature)}]
 	return [return_delta_temperature_measurement $diff]
 }
 
 proc diff_espresso_temp_from_goal {} {
 	set diff [expr {[watertemp] - $::de1(goal_temperature)}]
+	return [round_to_one_digits $diff]
+}
+proc diff_espresso_temp_from_goal_text {} {
+	set diff [expr {[watertemp] - $::de1(goal_temperature)}]
 	return [return_delta_temperature_measurement $diff]
 }
 
 proc diff_group_temp_from_goal {} {
+	set diff [expr {[group_head_heater_temperature] - $::de1(goal_temperature)}]
+	return [round_to_one_digits $diff]
+}
+
+proc diff_group_temp_from_goal_text {} {
 	set diff [expr {[group_head_heater_temperature] - $::de1(goal_temperature)}]
 	return [return_delta_temperature_measurement $diff]
 }
@@ -404,10 +457,19 @@ proc return_temperature_number {in} {
 }
 
 proc return_temperature_measurement {in} {
-	if {$::settings(enable_fahrenheit) == 1} {
-		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+	if {[de1plus]} {
+		if {$::settings(enable_fahrenheit) == 1} {
+			return [subst {[round_to_one_digits [celsius_to_fahrenheit $in]]ºF}]
+		} else {
+			return [subst {[round_to_one_digits $in]ºC}]
+		}
 	} else {
-		return [subst {[round_to_integer $in]ºC}]
+		if {$::settings(enable_fahrenheit) == 1} {
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+		} else {
+			return [subst {[round_to_integer $in]ºC}]
+		}
+
 	}
 }
 
@@ -694,6 +756,14 @@ proc fill_profiles_listbox {widget} {
 	set ::globals(profiles_listbox) $widget
 	bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
 	make_current_listbox_item_blue $widget
+	#::preview_profile $widget
+
+		if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
+			set_next_page settings_2 "settings_2"; #page_show off
+		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+			set_next_page settings_2 "settings_2a"; #page_show off
+		}
+
 }
 
 
@@ -725,15 +795,33 @@ proc preview_profile {w args} {
 		set ::settings(profile_to_save) $::settings(profile)
 		update_onscreen_variables
 		make_current_listbox_item_blue $::globals(profiles_listbox)
+
+
+		if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
+			set_next_page off "settings_2"; #page_show off
+		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+			set_next_page off "settings_2a"; #page_show off
+		}
+		page_show off
+
 	}
 }
 
 proc load_settings_vars {fn} {
+	
+	# set the default profile type to use, this can be over-ridden by the saved profile
+	if {[de1plus]} {
+		set ::settings(settings_profile_type) "settings_profile_pressure"
+	} else {
+		set ::settings(settings_profile_type) "settings_1"
+	}
+
 	foreach {k v} [read_file $fn] {
 		#puts "$k $v"
 		set ::settings($k) $v
 	}
 	update_de1_explanation_chart
+
 }
 
 proc save_settings_vars {fn varlist} {
@@ -752,7 +840,7 @@ proc save_profile {} {
 		return
 	}
 
-	set profile_vars { preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature }
+	set profile_vars { preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time}
 	set profile_name_to_save $::settings(profile_to_save) 
 	#puts "save profile: $profile_name_to_save"
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"

@@ -76,8 +76,7 @@ catch {
 #namespace import blt::*
 #namespace import -force blt::tile::*
 
-blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_flow_2x espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal
-blt::vector espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed
+
 #espresso_elapsed append 0
 #espresso_pressure append 0
 #espresso_flow append 0
