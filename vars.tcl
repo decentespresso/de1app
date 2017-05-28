@@ -323,11 +323,11 @@ proc diff_group_temp_from_goal {} {
 
 proc diff_flow_rate {} {
 	if {$::android == 0} {
-		return [expr {3 - (rand() * 6)}]
+		return [round_to_one_digits [expr {3 - (rand() * 6)}]]
 	}
 
 
-	return $::de1(flow_delta)
+	return [round_to_one_digits $::de1(flow_delta)]
 }
 
 proc diff_flow_rate_text {} {
