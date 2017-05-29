@@ -643,33 +643,50 @@ proc update_de1_shotvalue {packed} {
   }
 
   # the timer stores hundreds of a second, so we take the half cycles, divide them by hertz/2 to get seconds, and then multiple that all by 100 to get 100ths of a second, stored as an int
-  set spec {
-	Timer {Short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
-	GroupPressure {char {} {} {unsigned} {$val / 16.0}}
-	GroupFlow {char {} {} {unsigned} {$val / 16.0}}
-	MixTemp {Short {} {} {unsigned} {$val / 256.0}}
-	HeadTemp {Short {} {} {unsigned} {$val / 256.0}}
-	SetMixTemp {Short {} {} {unsigned} {$val / 256.0}}
-	SetHeadTemp {Short {} {} {unsigned} {$val / 256.0}}
-	SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
-	SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
-	FrameNumber {char {} {} {unsigned} {}}
-	SteamTemp {Short {} {} {unsigned} {$val / 256.0}}
-  }
+#  set spec_obsolete {
+#	Timer {Short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
+#	GroupPressure {char {} {} {unsigned} {$val / 16.0}}
+#	GroupFlow {char {} {} {unsigned} {$val / 16.0}}
+#	MixTemp {Short {} {} {unsigned} {$val / 256.0}}
+#	HeadTemp {Short {} {} {unsigned} {$val / 256.0}}
+#	SetMixTemp {Short {} {} {unsigned} {$val / 256.0}}
+#	SetHeadTemp {Short {} {} {unsigned} {$val / 256.0}}
+#	SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
+#	SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
+#	FrameNumber {char {} {} {unsigned} {}}
+#	SteamTemp {Short {} {} {unsigned} {$val / 256.0}}
+#  }
 
-   array set specarr $spec
+	# HeatTemp is a 24bit number, which Tcl doesn't have, so we grab it as 3 chars and manually convert it to a number	
+  	set spec {
+		Timer {Short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
+		GroupPressure {Short {} {} {unsigned} {$val / 4096.0}}
+		GroupFlow {Short {} {} {unsigned} {$val / 4096.0}}
+		MixTemp {Short {} {} {unsigned} {$val / 256.0}}
+		HeadTemp1 {char {} {} {unsigned} {}}
+		HeadTemp2 {char {} {} {unsigned} {}}
+		HeadTemp3 {char {} {} {unsigned} {}}
+		SetMixTemp {Short {} {} {unsigned} {$val / 256.0}}
+		SetHeadTemp {Short {} {} {unsigned} {$val / 256.0}}
+		SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
+		SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
+		FrameNumber {char {} {} {unsigned} {}}
+		SteamTemp {chart {} {} {unsigned} {}}
+  	}
+   	array set specarr $spec
 
 	::fields::unpack $packed $spec ShotSample bigeendian
-  foreach {field val} [array get ShotSample] {
+  	foreach {field val} [array get ShotSample] {
 	set specparts $specarr($field)
 	set extra [lindex $specparts 4]
 	if {$extra != ""} {
-	  set ShotSample($field) [expr $extra]
+	  	set ShotSample($field) [expr $extra]
 	}
-  }
+}
+
+
 
   #msg "update_de1_shotvalue [array get ShotSample]"
-
 
 	#msg "de1 internals: [array get ShotSample]"
 	set delta 0
@@ -687,8 +704,10 @@ proc update_de1_shotvalue {packed} {
 	#set ::timers($timerkey) $::de1(timer)
 
 
-  if {[info exists ShotSample(HeadTemp)] == 1} {
-	set ::de1(head_temperature) $ShotSample(HeadTemp)
+  if {[info exists ShotSample(HeadTemp1)] == 1} {
+	set HeadTemp [expr { $ShotSample(HeadTemp1) + ($ShotSample(HeadTemp2) / 256.0) + ($ShotSample(HeadTemp3) / 65536.0) }]
+	#puts "HeadTemp: $HeadTemp"
+	set ::de1(head_temperature) $HeadTemp
 	#msg "updated head temp $ShotSample(HeadTemp)"
   }
   if {[info exists ShotSample(MixTemp)] == 1} {

@@ -379,12 +379,12 @@ proc diff_flow_rate {} {
 		return [round_to_one_digits [expr {3 - (rand() * 6)}]]
 	}
 
-
-	return [round_to_one_digits $::de1(flow_delta)]
+	return $::de1(flow_delta)
+	#return [round_to_one_digits $::de1(flow_delta)]
 }
 
 proc diff_flow_rate_text {} {
-	return [return_flow_measurement [diff_flow_rate]]
+	return [return_flow_measurement [round_to_one_digits [diff_flow_rate]]]
 }
 
 
@@ -669,10 +669,23 @@ proc make_current_listbox_item_blue { widget } {
 proc profile_directories {} {
 	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/profiles/" *.tcl]]
 	set dd {}
+	set de1plus [de1plus]
 	foreach d $dirs {
 		#if {$d == "CVS" || $d == "example"} {
 		#	continue
 		#}
+
+	    if {[string first "settings_profile_type settings_profile_flow" [read_file "[homedir]/profiles/$d"]] != -1} {
+	    	if {!$de1plus} {
+		    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
+		    	#puts "Skipping $d"
+		    	continue
+		    }
+		    puts "de1+ profile: $d"
+		    # keep track of which skins are DE1PLUS so we can display them differently in the listbox
+		    set ::de1plus_profile([file rootname $d]) 1
+		}
+
 		lappend dd [file rootname $d]
 	}
 	return $dd
@@ -744,6 +757,13 @@ proc fill_profiles_listbox {widget} {
 			set current_profile_number $cnt
 			#puts "current profile of '$d' is #$cnt"
 		}
+
+		if {[ifexists ::de1plus_profile($d)] == 1} {
+			# mark profiles that require the DE1PLUS model with a different color to highlight them
+			#puts "de1plus skin: $d"
+			$widget itemconfigure $cnt -background #F0F0FF
+		}
+
 		incr cnt
 	}
 	
@@ -758,11 +778,17 @@ proc fill_profiles_listbox {widget} {
 	make_current_listbox_item_blue $widget
 	#::preview_profile $widget
 
-		if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
-			set_next_page settings_2 "settings_2"; #page_show off
-		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
-			set_next_page settings_2 "settings_2a"; #page_show off
-		}
+		#if {[de1plus]} {
+			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
+			#set_next_page settings_2 "$::settings(settings_profile_type)_preview"; #page_show off
+			#page_show off
+		#}
+
+#		if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
+	#		set_next_page settings_2 "settings_2"; #page_show off
+		#} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+		#	set_next_page settings_2 "settings_2a"; #page_show off
+		#}
 
 }
 
@@ -790,19 +816,35 @@ proc preview_profile {w args} {
 		set ::settings(profile) $profile
 		set fn "[homedir]/profiles/${profile}.tcl"
 		#puts "preview_profile $profile"
+
+			# for importing De1 profiles that don't have this feature.
+		set ::settings(preinfusion_flow_rate) 4
+
 		load_settings_vars $fn
 		#fill_profiles_listbox $::globals(profiles_listbox)
 		set ::settings(profile_to_save) $::settings(profile)
-		update_onscreen_variables
+
 		make_current_listbox_item_blue $::globals(profiles_listbox)
 
+		if {[de1plus]} {
+			#puts "current context: $::de1(current_context) "
 
-		if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
-			set_next_page off "settings_2"; #page_show off
-		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
-			set_next_page off "settings_2a"; #page_show off
+			set_next_page settings_2 $::settings(settings_profile_type)_preview;
+			page_show settings_2
+
+			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
+			#page_show off
+			#puts "set_next_page off $::settings(settings_profile_type)_preview;"
+		} else {
+			set ::settings(settings_profile_type) "settings_1"
 		}
-		page_show off
+		update_onscreen_variables
+
+		#if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
+		#	set_next_page off "settings_2"; #page_show off
+		#} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+	#		set_next_page off "settings_2a"; #page_show off
+	#	}
 
 	}
 }
@@ -840,7 +882,7 @@ proc save_profile {} {
 		return
 	}
 
-	set profile_vars { preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time}
+	set profile_vars { preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate}
 	set profile_name_to_save $::settings(profile_to_save) 
 	#puts "save profile: $profile_name_to_save"
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"

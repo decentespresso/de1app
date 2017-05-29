@@ -142,6 +142,7 @@ array set ::settings {
 	sound_button_out 11
 	flight_mode_enable 1
 	profile default
+	flow_profile_minimum_pressure 4
 	preinfusion_flow_rate 4
 	preinfusion_temperature 92
 	preinfusion_stop_flow_rate 1
@@ -241,7 +242,6 @@ proc start_steam {} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		after 200 "update_de1_state $::de1_state(Steam)"
 	}
-
 }
 
 proc start_espresso {} {
