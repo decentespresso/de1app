@@ -62,7 +62,7 @@ array set ::de1 {
 	water_time_max 60
 	steam_time_min 1
 	steam_time_max 120
-	steam_heater_temperature 160
+	steam_heater_temperature 170
 }
 
 
@@ -107,7 +107,7 @@ array set ::settings {
 	enable_ampm 0
 	settings_1_page settings_1
 	steam_max_time 47
-	steam_temperature 160
+	steam_temperature 170
 	water_max_time 10
 	water_max_vol 500
 	water_temperature 75
