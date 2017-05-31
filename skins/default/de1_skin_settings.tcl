@@ -129,6 +129,7 @@ add_de1_widget "settings_profile_flow" graph 24 220 {
 ############################
 # advanced flow profiling
 #add_de1_text "settings_profile_advanced" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left"
+add_de1_text "settings_profile_advanced" 330 1100 -text "Temperature" -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 ############################
 
