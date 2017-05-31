@@ -15,21 +15,25 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Samarkan" "[skin_directory]/SAMAN.ttf" 37 30
+load_font "samark" "[skin_directory]/samark.ttf" 32
 
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off" 380 1455  -text [translate "ESPRESSO"] -font {Samarkan} -fill "#DDDDDD" -anchor "center" 
-add_de1_text "espresso" 1300 1350  -text [translate "ESPRESSO"] -font {Samarkan} -fill "#DDDDDD" -anchor "center" 
+add_de1_text "off" 380 1455  -text [translate "ESPRESSO"] -font {samark} -fill "#ffffff" -anchor "center" 
+add_de1_text "espresso" 1300 1350  -text [translate "ESPRESSO"] -font {samark} -fill "#ffffff" -anchor "center" 
 
-add_de1_text "off" 1012 1455  -text [translate "STEAM"] -font {Samarkan} -fill "#DDDDDD" -anchor "center" 
-add_de1_text "steam" 1300 1450  -text [translate "STEAM"] -font {Samarkan} -fill "#DDDDDD" -anchor "center" 
 
-add_de1_text "off" 1585 1455 -text [translate "WATER"] -font {Samarkan} -fill "#DDDDDD" -anchor "center" 
-add_de1_text "water" 1300 1350 -text [translate "WATER"] -font {Samarkan} -fill "#DDDDDD" -anchor "center" 
+add_de1_text "off" 1012 1455  -text [translate "STEAM"] -font {samark} -fill "#ffffff" -anchor "center" 
+add_de1_text "steam" 1300 1450  -text [translate "STEAM"] -font {samark} -fill "#ffffff" -anchor "center" 
 
-add_de1_text "off" 2186 1455  -text [translate "SETTINGS"] -font {Samarkan} -fill "#DDDDDD" -anchor "center" 
-add_de1_text "settings" 1300 1350  -text [translate "SETTINGS"] -font {Samarkan} -fill "#DDDDDD" -anchor "center" 
+
+add_de1_text "off" 1585 1455 -text [translate "HOT WATER"] -font {samark} -fill "#ffffff" -anchor "center" 
+add_de1_text "water" 1300 1350 -text [translate "HOT WATER"] -font {samark} -fill "#ffffff" -anchor "center" 
+
+
+add_de1_text "off" 2186 1455  -text [translate "SETTINGS"] -font {samark} -fill "#ffffff" -anchor "center" 
+add_de1_text "settings" 1300 1350  -text [translate "SETTINGS"] -font {samark} -fill "#ffffff" -anchor "center" 
+
 
 
 

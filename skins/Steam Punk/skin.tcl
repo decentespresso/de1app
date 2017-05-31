@@ -15,13 +15,13 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "Rothenburg Decorative" "[skin_directory]/RothenburgDecorative.ttf" 33 33
+load_font "rothenburgd" "[skin_directory]/rothenburgd.ttf" 33
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off espresso" 420 1508  -text [translate "Espresso"] -font {Rothenburg Decorative} -fill "#ffffff" -anchor "center" 
-add_de1_text "off steam" 1290 1508  -text [translate "Steam"] -font {Rothenburg Decorative} -fill "#ffffff" -anchor "center" 
-add_de1_text "off water" 2115 1508 -text [translate "Water"] -font {Rothenburg Decorative} -fill "#ffffff" -anchor "center" 
-add_de1_text "off settings" 1945 150  -text [translate "Settings"] -font {Rothenburg Decorative} -fill "#ffffff" -anchor "center" 
+add_de1_text "off espresso" 420 1508  -text [translate "Espresso"] -font {rothenburgd} -fill "#ffffff" -anchor "center" 
+add_de1_text "off steam" 1290 1508  -text [translate "Steam"] -font {rothenburgd} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water" 2115 1508 -text [translate "Water"] -font {rothenburgd} -fill "#ffffff" -anchor "center" 
+add_de1_text "off settings" 1965 150  -text [translate "Settings"] -font {rothenburgd} -fill "#ffffff" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
