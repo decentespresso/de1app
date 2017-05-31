@@ -205,7 +205,7 @@ array set ::de1_num_state_reversed [reverse_array ::de1_num_state]
 
 array set ::de1_substate_types {
 	-   "starting"
-	0	"waiting"
+	0	"ready"
 	1	"heating"
 	2	"final heating"
 	3	"stabilising"

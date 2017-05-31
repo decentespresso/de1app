@@ -896,7 +896,7 @@ proc update_de1_explanation_chart { {context {}} } {
 	if {$::settings(preinfusion_time) > 0} {
 		set preinfusion_pressure 0.5
 		if {[de1plus]} {
-			set preinfusion_pressure [expr {$::settings(preinfusion_flow_rate) / 2.0}]
+			set preinfusion_pressure [expr {$::settings(preinfusion_flow_rate) / 6.0}]
 		}
 
 		espresso_de1_explanation_chart_pressure append $preinfusion_pressure
@@ -967,11 +967,11 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 
 	# preinfusion
 	if {$::settings(flow_profile_preinfusion_time) > 0} {
-		espresso_de1_explanation_chart_flow append $::settings(flow_profile_preinfusion);
+		espresso_de1_explanation_chart_flow append $::settings(preinfusion_flow_rate);
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 
 		set seconds [expr {$seconds + $::settings(flow_profile_preinfusion_time)}]
-		espresso_de1_explanation_chart_flow append $::settings(flow_profile_preinfusion);
+		espresso_de1_explanation_chart_flow append $::settings(preinfusion_flow_rate);
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 	} else {
 		espresso_de1_explanation_chart_elapsed_flow append $seconds

@@ -23,9 +23,11 @@ load_font "orbitron" "[skin_directory]/orbitron.ttf" 19
 
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off water" 2048 1215 -text [translate "HOT WATER"] -font {orbitron} -fill "#ffffff" -anchor "center" 
-add_de1_text "off espresso" 362 1215 -text [translate "ESPRESSO"] -font {orbitron} -fill "#ffffff" -anchor "center" 
-add_de1_text "off steam" 1289 1215  -text [translate "STEAM"] -font {orbitron} -fill "#ffffff" -anchor "center" 
+if {[language] != "en"} {
+	add_de1_text "off water" 2048 1215 -text [translate "HOT WATER"] -font {orbitron} -fill "#ffffff" -anchor "center" 
+	add_de1_text "off espresso" 362 1215 -text [translate "ESPRESSO"] -font {orbitron} -fill "#ffffff" -anchor "center" 
+	add_de1_text "off steam" 1289 1215  -text [translate "STEAM"] -font {orbitron} -fill "#ffffff" -anchor "center" 
+}
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)

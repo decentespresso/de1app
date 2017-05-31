@@ -146,7 +146,7 @@ proc setup_environment {} {
         sdltk screensaver off
         
         # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
-        pause 100
+        pause 200
 
         set width [winfo screenwidth .]
         set height [winfo screenheight .]
@@ -199,7 +199,9 @@ proc setup_environment {} {
             set screen_size_height 720
         }
 
-        set fontm [expr {$screen_size_width / 2560.0}]
+        set fontm [expr {1280.0 / ($screen_size_width)}]
+        set fontm .5
+        #set fontm [expr {2560.0 / $screen_size_width}]
         #set fontm 1
 
         #set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]

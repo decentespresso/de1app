@@ -166,7 +166,7 @@ proc watervolume {} {
 proc steamtemp {} {
 	if {$::android == 0} {
 
-		set ::de1(steam_heater_temperature) [expr {int(160+(rand() * 5))}]
+		set ::de1(steam_heater_temperature) [expr {(160+(rand() * 5))}]
 	}
 	return $::de1(steam_heater_temperature)
 }
@@ -347,7 +347,7 @@ proc espresso_goal_temp_text {} {
 
 proc diff_brew_temp_from_goal {} {
 	set diff [expr {[water_mix_temperature] - $::de1(goal_temperature)}]
-	return [round_to_one_digits $diff]
+	return $diff
 }
 
 proc diff_brew_temp_from_goal_text {} {
@@ -357,7 +357,7 @@ proc diff_brew_temp_from_goal_text {} {
 
 proc diff_espresso_temp_from_goal {} {
 	set diff [expr {[watertemp] - $::de1(goal_temperature)}]
-	return [round_to_one_digits $diff]
+	return $diff
 }
 proc diff_espresso_temp_from_goal_text {} {
 	set diff [expr {[watertemp] - $::de1(goal_temperature)}]
@@ -366,7 +366,7 @@ proc diff_espresso_temp_from_goal_text {} {
 
 proc diff_group_temp_from_goal {} {
 	set diff [expr {[group_head_heater_temperature] - $::de1(goal_temperature)}]
-	return [round_to_one_digits $diff]
+	return $diff
 }
 
 proc diff_group_temp_from_goal_text {} {
@@ -376,7 +376,7 @@ proc diff_group_temp_from_goal_text {} {
 
 proc diff_flow_rate {} {
 	if {$::android == 0} {
-		return [round_to_one_digits [expr {3 - (rand() * 6)}]]
+		return [expr {3 - (rand() * 6)}]
 	}
 
 	return $::de1(flow_delta)
@@ -450,9 +450,9 @@ proc setting_water_temperature {} {
 
 proc return_temperature_number {in} {
 	if {$::settings(enable_fahrenheit) == 1} {
-		return [round_to_one_digits [celsius_to_fahrenheit $in]]
+		return [celsius_to_fahrenheit $in]
 	} else {
-		return [round_to_one_digits $in]
+		return $in
 	}
 }
 
@@ -681,7 +681,7 @@ proc profile_directories {} {
 		    	#puts "Skipping $d"
 		    	continue
 		    }
-		    puts "de1+ profile: $d"
+		    #puts "de1+ profile: $d"
 		    # keep track of which skins are DE1PLUS so we can display them differently in the listbox
 		    set ::de1plus_profile([file rootname $d]) 1
 		}
