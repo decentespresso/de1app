@@ -879,9 +879,11 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 
 proc update_de1_explanation_chart { {context {}} } {
 
-	if {$::settings(pressure_end) > $::settings(espresso_pressure)} {
-		# the end pressure is not allowed to be higher than the hold pressure
-		set ::settings(pressure_end) $::settings(espresso_pressure)
+	if {![de1plus]} {
+		if {$::settings(pressure_end) > $::settings(espresso_pressure)} {
+			# the end pressure is not allowed to be higher than the hold pressure
+			set ::settings(pressure_end) $::settings(espresso_pressure)
+		}
 	}
 
 	#save_settings
@@ -911,8 +913,12 @@ proc update_de1_explanation_chart { {context {}} } {
 
 	}
 
+
 	set approximate_ramptime [expr {($::settings(espresso_pressure) * 0.5)}]
-	set pressure_hold_time $::settings(pressure_hold_time)
+	set pressure_hold_time $::settings(espresso_hold_time)
+
+	puts "pressure_hold_time: $pressure_hold_time"
+
 	set espresso_decline_time $::settings(espresso_decline_time)
 	if {$pressure_hold_time > $approximate_ramptime} {
 		set pressure_hold_time [expr {$pressure_hold_time - $approximate_ramptime}]
@@ -920,6 +926,7 @@ proc update_de1_explanation_chart { {context {}} } {
 		set espresso_decline_time [expr {$espresso_decline_time - $approximate_ramptime}]
 	} else {
 		set approximate_ramptime 0
+
 	}	
 
 	# ramp up the pressure
@@ -928,7 +935,7 @@ proc update_de1_explanation_chart { {context {}} } {
 	espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)
 
 	# hold the pressure
-	if {$::settings(pressure_hold_time) > 0} {
+	if {$pressure_hold_time > 0} {
 		set seconds [expr {$seconds + $pressure_hold_time}]
 		espresso_de1_explanation_chart_pressure append $::settings(espresso_pressure)
 		espresso_de1_explanation_chart_elapsed append $seconds
@@ -970,7 +977,7 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 		espresso_de1_explanation_chart_flow append $::settings(preinfusion_flow_rate);
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 
-		set seconds [expr {$seconds + $::settings(flow_profile_preinfusion_time)}]
+		set seconds [expr {$seconds + $::settings(preinfusion_time)}]
 		espresso_de1_explanation_chart_flow append $::settings(preinfusion_flow_rate);
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 	} else {
@@ -980,12 +987,12 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 	}
 
 	set approximate_ramptime 3
-	set flow_profile_hold_time $::settings(flow_profile_hold_time)
-	set flow_profile_decline_time $::settings(flow_profile_decline_time)
+	set flow_profile_hold_time $::settings(espresso_hold_time)
+	set espresso_decline_time $::settings(espresso_decline_time)
 	if {$flow_profile_hold_time > $approximate_ramptime} {
 		set flow_profile_hold_time [expr {$flow_profile_hold_time - $approximate_ramptime}]
-	} elseif {$flow_profile_decline_time > $approximate_ramptime} {
-		set flow_profile_decline_time [expr {$flow_profile_decline_time - $approximate_ramptime}]
+	} elseif {$espresso_decline_time > $approximate_ramptime} {
+		set espresso_decline_time [expr {$espresso_decline_time - $approximate_ramptime}]
 	} else {
 		set approximate_ramptime 0
 	}	
@@ -996,15 +1003,15 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 	espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
 
 	# hold the flow
-	if {$::settings(pressure_hold_time) > 0} {
+	if {$flow_profile_hold_time > 0} {
 		set seconds [expr {$seconds + $flow_profile_hold_time}]
 		espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 	}
 
 	# decline flow stage
-	if {$::settings(flow_profile_decline_time) > 0} {
-		set seconds [expr {$seconds + $flow_profile_decline_time}]
+	if {$espresso_decline_time > 0} {
+		set seconds [expr {$seconds + $espresso_decline_time}]
 		espresso_de1_explanation_chart_flow append $::settings(flow_profile_decline)
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 	}
@@ -1048,4 +1055,4 @@ proc ui_startup {} {
 
 
 
-#install_this_app_icon
+install_this_app_icon

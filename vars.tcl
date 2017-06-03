@@ -793,6 +793,62 @@ proc fill_profiles_listbox {widget} {
 }
 
 
+
+proc fill_profile_steps_listbox {widget} {
+
+	#puts "fill_profiles_listbox $widget"
+	#set ::settings(profile_to_save) $::settings(profile)
+
+	$widget delete 0 99999
+	set cnt 0
+	set current_profile_number 0
+
+
+	set steps [list  "Preinfusion" "Hold" "Decline"]
+
+	foreach d $steps {
+		#if {$d == "CVS" || $d == "example"} {
+		#	continue
+		#}
+		$widget insert $cnt $d
+		if {$::settings(profile) == $d} {
+			set current_profile_number $cnt
+			#puts "current profile of '$d' is #$cnt"
+		}
+
+		if {[ifexists ::de1plus_profile($d)] == 1} {
+			# mark profiles that require the DE1PLUS model with a different color to highlight them
+			#puts "de1plus skin: $d"
+			$widget itemconfigure $cnt -background #F0F0FF
+		}
+
+		incr cnt
+	}
+	
+	#$widget itemconfigure $current_profile_number -foreground blue
+	$widget selection set $current_profile_number;
+
+	#$widget selection set 3
+	#puts "$widget selection set $current_profile_number"
+
+	set ::globals(widget_profile_step_name) $widget
+	bind $widget <<ListboxSelect>> [list ::preview_profile_step %W] 	
+	make_current_listbox_item_blue $widget
+	#::preview_profile $widget
+
+		#if {[de1plus]} {
+			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
+			#set_next_page settings_2 "$::settings(settings_profile_type)_preview"; #page_show off
+			#page_show off
+		#}
+
+#		if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
+	#		set_next_page settings_2 "settings_2"; #page_show off
+		#} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+		#	set_next_page settings_2 "settings_2a"; #page_show off
+		#}
+
+}
 proc save_new_tablet_skin_setting {} {
 	set ::settings(skin) [$::globals(tablet_styles_listbox) get [$::globals(tablet_styles_listbox) curselection]]
 	#puts "skin changed to '$::settings(skin)'"
@@ -806,6 +862,48 @@ proc preview_tablet_skin {w args} {
 		set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
 		$::table_style_preview_image read $fn
 		make_current_listbox_item_blue $::globals(tablet_styles_listbox)
+	}
+}
+
+
+proc preview_profile_step {w args} {
+	catch {
+
+		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
+		set profile_step [$w get [$w curselection]]
+		set ::settings(profile_step) $profile_step
+		#set fn "[homedir]/profiles/${profile}.tcl"
+		#puts "preview_profile $profile"
+
+			# for importing De1 profiles that don't have this feature.
+		#set ::settings(preinfusion_flow_rate) 4
+
+		#load_settings_vars $fn
+		#fill_profiles_listbox $::globals(profiles_listbox)
+		#set ::settings(profile_to_save) $::settings(profile)
+
+		make_current_listbox_item_blue $::globals(widget_profile_step_name)
+
+		#if {[de1plus]} {
+			#puts "current context: $::de1(current_context) "
+
+			#set_next_page settings_2 $::settings(settings_profile_type)_preview;
+			#page_show settings_2
+
+			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
+			#page_show off
+			#puts "set_next_page off $::settings(settings_profile_type)_preview;"
+		#} else {
+		#	set ::settings(settings_profile_type) "settings_1"
+		#}
+		update_onscreen_variables
+
+		#if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
+		#	set_next_page off "settings_2"; #page_show off
+		#} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+	#		set_next_page off "settings_2a"; #page_show off
+	#	}
+
 	}
 }
 
@@ -882,7 +980,7 @@ proc save_profile {} {
 		return
 	}
 
-	set profile_vars { preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate}
+	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate}
 	set profile_name_to_save $::settings(profile_to_save) 
 	#puts "save profile: $profile_name_to_save"
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"

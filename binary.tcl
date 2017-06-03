@@ -436,7 +436,7 @@ proc de1_packed_shot_flow {} {
 		set frame1(MaxVol) [convert_float_to_U10P0 90]
 
 		# exit preinfusion if your pressure is above the pressure goal, no matter what
-		set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+		set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
 
 
 		# compress
@@ -453,7 +453,7 @@ proc de1_packed_shot_flow {} {
 		set frame3(Flag) [make_shot_flag "CtrlF IgnoreLimit $mixtempflag"] 
 		set frame3(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_hold)]
 		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(flow_profile_hold_time)]
+		set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
 		set frame3(TriggerVal) 0
 		set frame3(MaxVol) [convert_float_to_U10P0 99]
 
@@ -462,7 +462,7 @@ proc de1_packed_shot_flow {} {
 		set frame4(Flag) [make_shot_flag "CtrlF IgnoreLimit Interpolate $mixtempflag"] 
 		set frame4(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_decline)]
 		set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(flow_profile_decline_time)]
+		set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
 		set frame4(TriggerVal) 0
 		set frame4(MaxVol) [convert_float_to_U10P0 99]
 
@@ -538,7 +538,7 @@ proc de1_packed_shot {} {
 
 		if {![de1plus]} {
 			# exit preinfusion if your pressure is above the pressure goal, no matter what
-			set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+			set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
 		} else {
 			set frame1(TriggerVal) [convert_float_to_U8P4 4]
 		}

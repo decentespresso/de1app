@@ -49,10 +49,12 @@ if {[de1plus]} {
 
 
 add_de1_text "settings_1 settings_profile_pressure" 615 755 -text [translate "2: hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-add_de1_widget "settings_1 settings_profile_pressure" scale 610 850 {} -to 1 -from 10 -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+set maxpressure 10
+if {[de1plus]} { set maxpressure 12 }
+add_de1_widget "settings_1 settings_profile_pressure" scale 610 850 {} -to 1 -from $maxpressure -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 add_de1_variable "settings_1 settings_profile_pressure" 610 1335 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[commify $::settings(espresso_pressure)] [translate "bar"]}
-add_de1_widget "settings_1 settings_profile_pressure" scale 790 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 740] -width [rescale_y_skin 150] -variable ::settings(pressure_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_1 settings_profile_pressure" 790 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(pressure_hold_time) [translate "seconds"]}
+add_de1_widget "settings_1 settings_profile_pressure" scale 790 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 740] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_variable "settings_1 settings_profile_pressure" 790 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(espresso_hold_time) [translate "seconds"]}
 
 add_de1_text "settings_1 settings_profile_pressure" 1605 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 add_de1_widget "settings_1 settings_profile_pressure" scale 1600 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 735] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
@@ -93,19 +95,25 @@ add_de1_variable "settings_profile_flow" 220 1000 -text "" -font Helv_10_bold -f
 add_de1_text "settings_profile_flow" 615 755 -text [translate "2: hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 add_de1_widget "settings_profile_flow" scale 610 850 {} -to 0 -from 5 -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 470] -width [rescale_y_skin 150] -variable ::settings(flow_profile_hold) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 add_de1_variable "settings_profile_flow" 610 1335 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}
-add_de1_widget "settings_profile_flow" scale 790 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 740] -width [rescale_y_skin 150] -variable ::settings(flow_profile_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_profile_flow" 790 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(flow_profile_hold_time) [translate "seconds"]}
+add_de1_widget "settings_profile_flow" scale 790 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 740] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_variable "settings_profile_flow" 790 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(espresso_hold_time) [translate "seconds"]}
 
 #add_de1_widget "settings_profile_flow" scale 790 1100 {} -from 4 -to 10 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 740] -width [rescale_y_skin 150] -variable ::settings(flow_profile_minimum_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_widget "settings_profile_flow" scale 1380 1020 {} -from 10 -to 0 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 300] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_widget "settings_profile_pressure settings_profile_flow" scale 390 1070 {} -from $maxpressure -to 1 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 250] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_variable "settings_profile_pressure settings_profile_flow" 560 1335 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {$::settings(preinfusion_stop_pressure) [translate "bar"]}
+add_de1_text "settings_profile_pressure settings_profile_flow" 290 1335 -text [translate "or"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 400 -justify "center" 
+
+
+add_de1_widget "settings_profile_flow" scale 1380 1020 {} -from $maxpressure -to 1 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 300] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 add_de1_variable "settings_profile_flow" 1530 1335 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {$::settings(espresso_pressure) [translate "bar start"]}
+
 
 add_de1_text "settings_profile_flow" 1605 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 add_de1_widget "settings_profile_flow" scale 2360 850 {} -to 0 -from 5 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 470]  -width [rescale_y_skin 150] -variable ::settings(flow_profile_decline) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 add_de1_variable "settings_profile_flow" 2510 1335 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_decline)]}
 
-add_de1_widget "settings_profile_flow" scale 1600 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 735] -width [rescale_y_skin 150] -variable ::settings(flow_profile_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-add_de1_variable "settings_profile_flow" 1605 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(flow_profile_decline_time) [translate "seconds"]}
+add_de1_widget "settings_profile_flow" scale 1600 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 735] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+add_de1_variable "settings_profile_flow" 1605 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(espresso_decline_time) [translate "seconds"]}
 
 #add_de1_button "settings_profile_flow" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 2404 210 2550 665 ""
 #add_de1_variable "settings_profile_flow" 2460 690 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
@@ -129,7 +137,55 @@ add_de1_widget "settings_profile_flow" graph 24 220 {
 ############################
 # advanced flow profiling
 #add_de1_text "settings_profile_advanced" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left"
-add_de1_text "settings_profile_advanced" 330 1100 -text "Temperature" -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_profile_advanced" 70 230 -text "Step" -font Helv_10_bold -fill "#5a5d75" -anchor "nw" 
+add_de1_text "settings_profile_advanced" 960 230 -text "Temperature" -font Helv_10_bold -fill "#5a5d75" -anchor "nw" 
+add_de1_text "settings_profile_advanced" 1580 230 -text "Water speed" -font Helv_10_bold -fill "#5a5d75" -anchor "nw" 
+
+add_de1_text "settings_profile_advanced" 240 1318 -text "Add" -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_profile_advanced" 740 1318 -text "Remove" -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+
+add_de1_text "settings_profile_advanced" 960 820 -text "Exit when" -font Helv_10_bold -fill "#5a5d75" -anchor "nw" 
+add_de1_text "settings_profile_advanced" 1960 820 -text "Maximum" -font Helv_10_bold -fill "#5a5d75" -anchor "nw" 
+
+add_de1_widget "settings_profile_advanced" listbox 70 320 { 
+	fill_profile_steps_listbox $widget
+
+	} -background #fbfaff -font Helv_10 -bd 0 -height 11 -width 30 -foreground #d3dbf3 -borderwidth 0
+
+
+add_de1_widget "settings_profile_advanced" entry 70 1100  {set ::globals(widget_profile_step_save) $widget} -width 38 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_step) 
+
+add_de1_text "settings_profile_advanced" 1055 744 -text "90º" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+add_de1_text "settings_profile_advanced" 1360 744 -text "portafilter" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+add_de1_text "settings_profile_advanced" 1685 744 -text "4 ml/s" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+add_de1_text "settings_profile_advanced" 2345 744 -text "smooth" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+add_de1_text "settings_profile_advanced" 1840 710 -text [translate "or"] -font Helv_7 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+
+add_de1_text "settings_profile_advanced" 1070 1340 -text "6.4 bar" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+#add_de1_text "settings_profile_advanced" 1810 1340 -text "5 ml/s" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+add_de1_text "settings_profile_advanced" 2090 1340 -text "60 ml" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+add_de1_text "settings_profile_advanced" 2385 1340 -text "30s" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+
+add_de1_text "settings_profile_advanced" 1360 680 -text [translate "goal"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 1685 680 -text [translate "flow"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 2010 680 -text [translate "pressure"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 2345 680 -text [translate "transition"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+
+
+add_de1_text "settings_profile_advanced" 1180 1270 -text [translate "or"] -font Helv_7 -fill "#7f879a" -anchor "nw" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 1666 1270 -text [translate "or"] -font Helv_7 -fill "#7f879a" -anchor "nw" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 1426 1270 -text [translate "or"] -font Helv_7 -fill "#7f879a" -anchor "nw" -width 400 -justify "center" 
+
+add_de1_text "settings_profile_advanced" 1070 1260 -text [translate "over"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 1320 1260 -text [translate "under"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+
+
+add_de1_text "settings_profile_advanced" 1570 1260 -text [translate "over"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 1820 1260 -text [translate "under"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+
+
+add_de1_text "settings_profile_advanced" 2085 1260 -text [translate "volume"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 2384 1260 -text [translate "time"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 
 ############################
 

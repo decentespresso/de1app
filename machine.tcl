@@ -118,6 +118,7 @@ array set ::settings {
 	preinfusion_enabled 1
 	preinfusion_time 5
 	pressure_hold_time 10
+	espresso_hold_time 10
 	flow_profile_preinfusion 4
 	flow_profile_hold 2
 	flow_profile_decline 1.2
@@ -147,6 +148,7 @@ array set ::settings {
 	preinfusion_temperature 92
 	preinfusion_stop_flow_rate 1
 	preinfusion_stop_pressure 5
+	profile_step ""
 	preinfusion_stop_volumetric 200 
 	preinfusion_stop_timeout 5
 	pressure_rampup_timeout 20
