@@ -150,15 +150,33 @@ add_de1_text "settings_profile_advanced" 1960 820 -text "Maximum" -font Helv_10_
 add_de1_widget "settings_profile_advanced" listbox 70 320 { 
 	fill_profile_steps_listbox $widget
 
-	} -background #fbfaff -font Helv_10 -bd 0 -height 11 -width 30 -foreground #d3dbf3 -borderwidth 0
+} -background #fbfaff -font Helv_10 -bd 0 -height 11 -width 30 -foreground #d3dbf3 -borderwidth 0
 
 
-add_de1_widget "settings_profile_advanced" entry 70 1100  {set ::globals(widget_profile_step_save) $widget} -width 38 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_step) 
+add_de1_widget "settings_profile_advanced" entry 70 1100  {set ::globals(widget_profile_step_save) $widget} -width 35 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_step) 
 
-add_de1_text "settings_profile_advanced" 1055 744 -text "90º" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
-add_de1_text "settings_profile_advanced" 1360 744 -text "portafilter" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
-add_de1_text "settings_profile_advanced" 1685 744 -text "4 ml/s" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
-add_de1_text "settings_profile_advanced" 2345 744 -text "smooth" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+#add_de1_text "settings_profile_advanced" 1055 744 -text "90º" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+add_de1_button "settings_profile_advanced" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 .1 ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 980 310 1120 680 ""
+add_de1_variable "settings_profile_advanced" 1055 744 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+
+
+#add_de1_text "settings_profile_advanced" 1360 744 -text "portafilter" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
+add_de1_button "settings_profile_advanced" {say [translate {boiler}] $::settings(sound_button_in);set ::settings(temperature_target) "boiler"; update_onscreen_variables} 1200 310 1360 680 ""
+add_de1_button "settings_profile_advanced" {say [translate {portafilter}] $::settings(sound_button_in);set ::settings(temperature_target) "portafilter"; update_onscreen_variables} 1361 310 1550 680 ""
+add_de1_variable "settings_profile_advanced" 1360 744 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate $::settings(temperature_target)]}
+
+add_de1_button "settings_profile_advanced" {say [translate {boiler}] $::settings(sound_button_in);set ::settings(flow_rate_transition) "fast"; update_onscreen_variables} 2200 310 2350 680 ""
+add_de1_button "settings_profile_advanced" {say [translate {portafilter}] $::settings(sound_button_in);set ::settings(flow_rate_transition) "smooth"; update_onscreen_variables} 2351 310 2500 680 ""
+add_de1_variable "settings_profile_advanced" 2345 744 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate $::settings(flow_rate_transition)]}
+
+add_de1_button "settings_profile_advanced" {say [translate {boiler}] $::settings(sound_button_in);set ::settings(water_speed_type) "flow"; vertical_clicker 1 .1 ::settings(flow_profile_hold) 0 6 %x %y %x0 %y0 %x1 %y1; update_onscreen_variables} 1580 410 1800 680 ""
+add_de1_button "settings_profile_advanced" {say [translate {portafilter}] $::settings(sound_button_in);set ::settings(water_speed_type) "pressure"; vertical_clicker 1 .1 ::settings(espresso_pressure) 0 12 %x %y %x0 %y0 %x1 %y1; update_onscreen_variables} 1900 380 2120 680 ""
+add_de1_variable "settings_profile_advanced" 1690 844 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate $::settings(water_speed_type)]}
+add_de1_variable "settings_profile_advanced" 1694 744 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable {[if {$::settings(water_speed_type) == "flow"} {return $::settings(flow_profile_hold)} else { return "" }] }
+add_de1_variable "settings_profile_advanced" 2010 744 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[if {$::settings(water_speed_type) == "pressure"} {return $::settings(espresso_pressure)} else { return "" }] }
+
+
+#add_de1_text "settings_profile_advanced" 2345 744 -text "smooth" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
 add_de1_text "settings_profile_advanced" 1840 710 -text [translate "or"] -font Helv_7 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 
 add_de1_text "settings_profile_advanced" 1070 1340 -text "6.4 bar" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
@@ -166,8 +184,8 @@ add_de1_text "settings_profile_advanced" 1070 1340 -text "6.4 bar" -font Helv_10
 add_de1_text "settings_profile_advanced" 2090 1340 -text "60 ml" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
 add_de1_text "settings_profile_advanced" 2385 1340 -text "30s" -font Helv_10_bold -fill "#4e85f4" -anchor "center" 
 
-add_de1_text "settings_profile_advanced" 1360 680 -text [translate "goal"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-add_de1_text "settings_profile_advanced" 1685 680 -text [translate "flow"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 1360 680 -text [translate "target"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_profile_advanced" 1694 680 -text [translate "flow"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_profile_advanced" 2010 680 -text [translate "pressure"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_profile_advanced" 2345 680 -text [translate "transition"] -font Helv_8 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 

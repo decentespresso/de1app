@@ -138,6 +138,9 @@ array set ::settings {
 	machine_name "pretty decent"
 	enable_spoken_prompts 0
 	speaking_rate 1.5
+	temperature_target "portafilter"
+	flow_rate_transition "smooth"
+	water_speed_type "flow"
 	speaking_pitch 1.0
 	sound_button_in 8
 	sound_button_out 11

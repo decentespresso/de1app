@@ -82,9 +82,10 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 	} elseif {$newval < $minval} {
 		set $varname $minval
 	} else {
-		set $varname $newval
+		set $varname [round_to_two_digits $newval]
 	}
 
+	update_onscreen_variables
 	return
 }
 
@@ -917,7 +918,7 @@ proc update_de1_explanation_chart { {context {}} } {
 	set approximate_ramptime [expr {($::settings(espresso_pressure) * 0.5)}]
 	set pressure_hold_time $::settings(espresso_hold_time)
 
-	puts "pressure_hold_time: $pressure_hold_time"
+	#puts "pressure_hold_time: $pressure_hold_time"
 
 	set espresso_decline_time $::settings(espresso_decline_time)
 	if {$pressure_hold_time > $approximate_ramptime} {
