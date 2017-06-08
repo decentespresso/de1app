@@ -243,6 +243,11 @@ add_de1_widget "settings_profile_flow_preview settings_profile_advanced_preview"
 	} -plotbackground #EEEEEE -width [rescale_x_skin 1100] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised
 
 
+add_de1_widget "settings_4" listbox 60 310 { 
+	fill_history_listbox $widget
+	} -background #fbfaff -font Helv_10 -bd 0 -height 6 -width 38 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
+
+
 
 #set ::table_style_preview_image [add_de1_image "settings_2" 1330 960 "[skin_directory_graphics]/icon.jpg"]
 
@@ -281,7 +286,7 @@ add_de1_button "settings_4" {} 1900 890 2520 1080
 
 add_de1_widget "settings_4" entry 1340 380 {} -width 30 -font Helv_15 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
 add_de1_text "settings_4" 1350 480 -text [translate "Name your machine"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
-
+add_de1_text "settings_4" 60 240 -text [translate "History"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 1320 240 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 1350 600 -text "[translate {Version:}] 1.0 beta 5" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"

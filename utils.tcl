@@ -269,6 +269,7 @@ proc setup_environment {} {
         #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
         font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
         font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
+        font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
         font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 36)}]
 
         #font create Sourcesans_30 -family "Source Sans Pro" -size 10
@@ -374,6 +375,7 @@ proc setup_environment {} {
         font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 25)}]
         font create Helv_15 -family $regularfont -size [expr {int($fontm * 30)}]
         font create Helv_15_bold -family $boldfont -size [expr {int($fontm * 30)}]
+        font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]
         font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 46)}]
         #font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 18)}]
     
@@ -702,8 +704,9 @@ proc load_settings {} {
     blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_flow_2x espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal
     blt::vector espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow
 
-    espresso_temperature_goal append [expr {$::settings(espresso_temperature) - 5}]
-    espresso_elapsed append 0    
+    #espresso_temperature_goal append [expr {$::settings(espresso_temperature) - 5}]
+    #espresso_elapsed append 0    
+    clear_espresso_chart
 
 }
 

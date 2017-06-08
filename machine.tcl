@@ -125,6 +125,7 @@ array set ::settings {
 	flow_profile_hold_time 8
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
+	history_saved ""
 	pressure_end 4 
 	espresso_step_1 pressure
 	espresso_step_2 pressure
@@ -251,6 +252,7 @@ proc start_steam {} {
 
 proc start_espresso {} {
 	msg "Tell DE1 to start making ESPRESSO"
+	set ::settings(history_saved) ""
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 

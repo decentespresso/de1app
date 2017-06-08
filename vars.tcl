@@ -5,7 +5,6 @@ package provide de1_vars 1.0
 # raw data from the DE1
 
 proc clear_espresso_chart {} {
-	espresso_elapsed append 0
 	espresso_elapsed length 0
 	espresso_pressure length 0
 	espresso_flow length 0
@@ -20,6 +19,22 @@ proc clear_espresso_chart {} {
 	espresso_flow_goal length 0
 	espresso_flow_goal_2x length 0
 	espresso_temperature_goal length 0
+
+	espresso_elapsed append 0
+	espresso_pressure append 0
+	espresso_flow append 0
+	espresso_flow_2x append 0
+	espresso_flow_delta append 0
+	espresso_flow_delta_negative append 0
+	espresso_flow_delta_negative_2x append 0
+	espresso_temperature_mix append [expr {$::settings(espresso_temperature) - 5}]
+	espresso_temperature_basket append [expr {$::settings(espresso_temperature) - 5}]
+	espresso_state_change append 0
+	espresso_pressure_goal append 0
+	espresso_flow_goal append 0
+	espresso_flow_goal_2x append 0
+	espresso_temperature_goal append [expr {$::settings(espresso_temperature)}]
+
 	clear_timers
 
 	update
@@ -614,6 +629,26 @@ proc skin_directories {} {
 	return $dd
 }
 
+
+proc fill_history_listbox {widget} {
+	#puts "fill_skin_listbox $widget" 
+	$widget delete 0 99999
+
+	set cnt 0
+	set current_skin_number 0
+	foreach d [history_directories] {
+		$widget insert $cnt [clock format $d]
+		incr cnt
+	}
+
+	#$widget selection set $current_skin_number
+
+	bind $widget <<ListboxSelect>> [list ::preview_history %W] 	
+
+	set ::globals(history_listbox) $widget
+	preview_history $widget
+}
+
 proc fill_skin_listbox {widget} {
 	#puts "fill_skin_listbox $widget" 
 	$widget delete 0 99999
@@ -663,6 +698,17 @@ proc make_current_listbox_item_blue { widget } {
 		}
 	}
 
+}
+
+
+
+proc history_directories {} {
+	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/history/" *.shot]]
+	set dd {}
+	foreach d $dirs {
+		lappend dd [file rootname $d]
+	}
+	return [lsort -dictionary -increasing $dd]
 }
 
 
@@ -907,6 +953,30 @@ proc preview_profile_step {w args} {
 	}
 }
 
+
+proc preview_history {w args} {
+	catch {
+		set profile [lindex [history_directories] [$w curselection] [$w curselection]]
+		puts "history item: $profile [$w curselection]"
+
+		set fn "[homedir]/history/${profile}.tcl"
+
+		# need to code this
+		#load_settings_vars $fn
+		array set props [read_file $fn]
+
+		array set ::settings $props(settings)
+
+		espresso_elapsed length 0; espresso_elapsed append $props(espresso_elapsed)
+		espresso_pressure length 0; espresso_pressure append $props(espresso_pressure)
+		espresso_flow length 0; espresso_flow append $props(espresso_flow)
+		espresso_temperature_basket length 0; espresso_temperature_basket append $props(espresso_temperature_basket)
+		espresso_temperature_mix length 0; espresso_temperature_mix append $props(espresso_temperature_mix)
+
+		make_current_listbox_item_blue $::globals(history_listbox)
+	}
+}
+
 proc preview_profile {w args} {
 	catch {
 		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
@@ -1009,3 +1079,40 @@ proc de1plus {} {
 
 }
 
+proc save_this_espresso_to_history {} {
+	if {[ifexists ::settings(history_saved)] != 1} {
+
+		set name [clock format [clock seconds]]
+		set clock [clock seconds]
+		set espresso_data {}
+		set espresso_data "name [list $name]\n"
+		set espresso_data "clock $clock\n"
+		set espresso_data "settings [array get ::settings]\n"
+		append espresso_data "espresso_elapsed [espresso_elapsed range 0 end]\n"
+		append espresso_data "espresso_pressure [espresso_pressure range 0 end]\n"
+		append espresso_data "espresso_flow [espresso_flow range 0 end]\n"
+		append espresso_data "espresso_temperature_basket [espresso_temperature_basket range 0 end]\n"
+		append espresso_data "espresso_temperature_mix [espresso_temperature_mix range 0 end]\n"
+
+		set fn "[homedir]/history/$clock.shot"
+
+		if {[espresso_elapsed length] > 5} {
+			# only save shots that have at least 5 data points
+	    	write_file $fn $espresso_data
+			puts "save_this_espresso_to_history"
+	    }
+
+	    set ::settings(history_saved) 1
+	}
+}
+
+
+proc espresso_history_save_from_gui {} {
+	if {$::settings(history_saved) != 1} { 
+		set state [translate "SAVE"] 
+	} else {
+		set state [translate "DONE"]
+	}; 
+	save_this_espresso_to_history; 
+	return $state
+}

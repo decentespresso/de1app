@@ -217,11 +217,11 @@ add_de1_text "sleep" 2500 1450 -justify right -anchor "ne" -text [translate "Goi
 # setting button 
 add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed steam_1 water_1 preheat_1 steam_3 water_3 preheat_3" {after 700 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off $::settings(settings_profile_type); page_show off} 2285 1424 2560 1600
 
-add_de1_text "off off_zoomed" 2285 400 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "espresso espresso_zoomed" 2285 400 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "espresso_3 espresso_3_zoomed" 2285 400 -text [translate "DONE"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off off_zoomed" 2280 400 -text [translate "START"] -font Helv_18_bold -fill "#2d3046" -anchor "center" 
+add_de1_variable "espresso espresso_zoomed" 2280 400 -text [translate "STOP"] -font Helv_18_bold -fill "#2d3046" -anchor "center"  -textvariable "STOP"
 add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed espresso espresso_zoomed" 2285 470 -text [translate "ESPRESSO"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed" 2285 520 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[de1_substate_text]} 
+add_de1_variable "espresso_3 espresso_3_zoomed" 2280 400 -text [translate "DONE"] -font Helv_18_bold -fill "#2d3046" -anchor "center" -textvariable {[espresso_history_save_from_gui]} 
 
 
 
@@ -299,7 +299,7 @@ add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed" {say [translate {ri
 #.g configure -width 50 -font ConsoleFont 
 
 add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in);set_next_page off espresso_3; start_idle;} 2020 200 2560 630
-add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_button_in);set_next_page off espresso_3_zoomed; start_idle;} 2020 200 2560 630
+add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed; start_idle;} 2020 200 2560 630
 		
 
 
