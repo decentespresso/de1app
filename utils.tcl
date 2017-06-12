@@ -269,7 +269,7 @@ proc setup_environment {} {
         #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
         font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
         font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
-        font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
+        font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 32)}] 
         font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 36)}]
 
         #font create Sourcesans_30 -family "Source Sans Pro" -size 10
