@@ -221,11 +221,13 @@ add_de1_text "off off_zoomed" 2280 390 -text [translate "START"] -font Helv_20_b
 add_de1_variable "espresso espresso_zoomed" 2280 390 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center"  -textvariable "STOP"
 add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed espresso espresso_zoomed" 2285 470 -text [translate "ESPRESSO"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed" 2285 520 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[de1_substate_text]} 
-add_de1_variable "espresso_3 espresso_3_zoomed" 2280 390 -text [translate "DONE"] -font Helv_18_bold -fill "#2d3046" -anchor "center" -textvariable {[espresso_history_save_from_gui]} 
+add_de1_variable "espresso_3 espresso_3_zoomed" 2280 390 -text [translate "RESTART"] -font Helv_18_bold -fill "#2d3046" -anchor "center" -textvariable {[espresso_history_save_from_gui]} 
 
 
+# future feature
+# add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed" 2285 718 -text [translate "Rinse"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
 
-add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed" 2285 718 -text [translate "Rinse"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
+
 #add_de1_text "espresso_3 espresso_3_zoom_pressure espresso_3_zoom_flow espresso_3_zoom_temperature" 2205 715 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
 
 #add_de1_variable "off off_zoomed" 2300 1360 -justify right -anchor "ne" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[group_head_heater_action_text]} 
@@ -280,7 +282,10 @@ add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed" 2285 718 -text [trans
 
 # make and stop espresso button
 add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed" {say [translate {espresso}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 200 2560 630
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed" {say [translate {rinse}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 631 2560 825
+
+# future feature
+# add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed" {say [translate {rinse}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 631 2560 825
+
 #add_de1_button "espresso_3 espresso_3_zoom_pressure espresso_3_zoom_flow espresso_3_zoom_temperature" {say [translate {rinse}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 1900 621 2560 855
 #add_de1_button "off" {say "" $::settings(sound_button_in);vertical_slider ::settings(preinfusion_flow_rate) 0.1 6 %x %y %x0 %y0 %x1 %y1} 0 320 400 830 "mousemove"
 #add_de1_button "off" {say "" $::settings(sound_button_in);vertical_slider ::settings(preinfusion_temperature) 80 96 %x %y %x0 %y0 %x1 %y1} 401 320 700 830 "mousemove"
@@ -407,7 +412,7 @@ add_de1_text "preheat_1 preheat_2 preheat_3" 1390 865 -text [translate "PRE-HEAT
 
 add_de1_text "preheat_2" 1390 775 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
 
-add_de1_text "preheat_3" 1390 775 -text [translate "DONE"] -font Helv_20_bold -fill "#7f879a" -anchor "center" 
+add_de1_text "preheat_3" 1390 775 -text [translate "RESTART"] -font Helv_20_bold -fill "#7f879a" -anchor "center" 
 #add_de1_text "preheat_3" 1390 865 -text [translate "PRE-HEAT CUP"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
 add_de1_button "preheat_1 preheat_3" {say [translate {pre-heat cup}] $::settings(sound_button_in); set ::settings(preheat_temperature) 90; set_next_page water preheat_2; start_water} 1030 210 2560 1400
@@ -455,13 +460,15 @@ add_de1_variable "preheat_3" 2460 1270 -justify left -anchor "ne" -font Helv_8 -
 ##########################################################################################################################################################################################################################################################################
 # settings for dispensing hot water
 
-add_de1_text "water_1 water_3" 1390 1270 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
+# future feature
+# add_de1_text "water_1 water_3" 1390 1270 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
+
 #add_de1_text "water_1" 1390 805 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
 
 add_de1_text "water_1" 1390 775 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "water_1 water water_3" 1390 865 -text [translate "HOT WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
-add_de1_text "water_3" 1390 775 -text [translate "DONE"] -font Helv_20_bold -fill "#7f879a" -anchor "center" 
+add_de1_text "water_3" 1390 775 -text [translate "RESTART"] -font Helv_20_bold -fill "#7f879a" -anchor "center" 
 #add_de1_text "water_3" 1390 865 -text [translate "HOT WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
 
@@ -535,7 +542,7 @@ add_de1_text "steam_1 steam_3" 1390 1270 -text [translate "Rinse"] -font Helv_10
 
 add_de1_text "steam_1" 1390 775 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "steam" 1390 775 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "steam_3" 1390 775 -text [translate "DONE"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "steam_3" 1390 775 -text [translate "RESTART"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "steam_1 steam steam_3" 1390 865 -text [translate "STEAM"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
 #add_de1_text "steam_1" 1390 790 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 

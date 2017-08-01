@@ -1111,7 +1111,7 @@ proc espresso_history_save_from_gui {} {
 	if {$::settings(history_saved) != 1} { 
 		set state [translate "SAVE"] 
 	} else {
-		set state [translate "DONE"]
+		set state [translate "RESTART"]
 	}; 
 	save_this_espresso_to_history; 
 	return $state

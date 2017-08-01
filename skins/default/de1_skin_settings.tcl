@@ -6,10 +6,12 @@
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
 
+add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.jpg"
+
 if {[de1plus]} {
-	add_de1_page "settings_profile_pressure settings_1" "[defaultskin_directory_graphics]/settings_1p.jpg"
-	add_de1_page "settings_profile_flow" "[defaultskin_directory_graphics]/settings_1pa.jpg"
-	add_de1_page "settings_profile_advanced" "[defaultskin_directory_graphics]/settings_1pb.jpg"
+	add_de1_page "settings_profile_pressure settings_2a" "[defaultskin_directory_graphics]/settings_2a.jpg"
+	add_de1_page "settings_profile_flow" "[defaultskin_directory_graphics]/settings_2b.jpg"
+	add_de1_page "settings_profile_advanced" "[defaultskin_directory_graphics]/settings_2c.jpg"
 	if {$::settings(settings_profile_type) == "settings_1"} {
 		# this happens if you switch to the de1 gui, which then saves the de1 settings default, so we need to reset it to this de1+ default
 		set ::settings(settings_profile_type) "settings_profile_pressure"
@@ -243,9 +245,10 @@ add_de1_widget "settings_profile_flow_preview settings_profile_advanced_preview"
 	} -plotbackground #EEEEEE -width [rescale_x_skin 1100] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised
 
 
-add_de1_widget "settings_4" listbox 60 310 { 
-	fill_history_listbox $widget
-	} -background #fbfaff -font Helv_10 -bd 0 -height 6 -width 38 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
+#add_de1_text "settings_4" 60 240 -text [translate "History"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+#add_de1_widget "settings_4" listbox 60 310 { 
+#	fill_history_listbox $widget
+#	} -background #fbfaff -font Helv_10 -bd 0 -height 6 -width 38 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
 
 
 
@@ -286,18 +289,18 @@ add_de1_button "settings_4" {} 1900 890 2520 1080
 
 add_de1_widget "settings_4" entry 1340 380 {} -width 30 -font Helv_15 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
 add_de1_text "settings_4" 1350 480 -text [translate "Name your machine"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
-add_de1_text "settings_4" 60 240 -text [translate "History"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 1320 240 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 1350 600 -text "[translate {Version:}] 1.0 beta 5" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
-add_de1_button "settings_3" {say [translate {awake time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_wake) 0 86400 %x %y %x0 %y0 %x1 %y1} 1330 340 1650 820 ""
-add_de1_text "settings_3" 1505 880 -text [translate "Heat up"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
-add_de1_variable "settings_3" 1505 970 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_wake)]}
-
-add_de1_button "settings_3" {say [translate {sleep time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_sleep) 0 86400 %x %y %x0 %y0 %x1 %y1} 1690 340 2010 820 ""
-add_de1_text "settings_3" 1840 880 -text [translate "Cool down"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
-add_de1_variable "settings_3" 1840 970 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_sleep)]}
+# future feature to have scheduled power up/down
+#add_de1_widget "settings_3" checkbutton 1330 252 {} -text [translate "Scheduler"] -indicatoron true  -font Helv_10_bold -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(timer_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+#add_de1_button "settings_3" {say [translate {awake time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_wake) 0 86400 %x %y %x0 %y0 %x1 %y1} 1330 340 1650 820 ""
+#add_de1_text "settings_3" 1505 880 -text [translate "Heat up"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
+#add_de1_variable "settings_3" 1505 970 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_wake)]}
+#add_de1_button "settings_3" {say [translate {sleep time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_sleep) 0 86400 %x %y %x0 %y0 %x1 %y1} 1690 340 2010 820 ""
+#add_de1_text "settings_3" 1840 880 -text [translate "Cool down"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
+#add_de1_variable "settings_3" 1840 970 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_sleep)]}
 
 add_de1_text "settings_3" 2310 880 -text [translate "Temperature"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
 
@@ -343,7 +346,6 @@ add_de1_widget "settings_3" checkbutton 70 1080 {} -text [translate "Fluid ounce
 add_de1_widget "settings_3" checkbutton 690 1080 {} -text [translate "1.234,56"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_commanumbers)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
 
-add_de1_widget "settings_3" checkbutton 1330 252 {} -text [translate "Scheduler"] -indicatoron true  -font Helv_10_bold -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(timer_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
 #add_de1_widget "settings_3" scale 1350 580 {} -from 0 -to 4 -background #FFFFFF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1100] -width [rescale_y_skin 135] -variable ::settings(speaking_rate) -font Helv_10_bold -sliderlength [rescale_x_skin 75] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
 #add_de1_text "settings_3" 1350 785 -text [translate "Speaking speed"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
