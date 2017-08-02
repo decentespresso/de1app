@@ -17,15 +17,15 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "renaissance" "[skin_directory]/renaissance.ttf" 20
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off" 342 1485  -text [translate "Espresso"] -font {renaissance} -fill "#a7534e" -anchor "center" 
-add_de1_text "Espresso" 342 1485  -text [translate "Espresso"] -font {musicos} -fill "#a7534e" -anchor "center" 
+add_de1_text "off" 342 1485  -text [translate "ESPRESSO"] -font {renaissance} -fill "#a7534e" -anchor "center" 
+add_de1_text "espresso" 342 1485  -text [translate "ESPRESSO"] -font {renaissance} -fill "#a7534e" -anchor "center" 
 
-add_de1_text "off" 958 1485  -text [translate "Steam"] -font {renaissance} -fill "#a7534e" -anchor "center" 
-add_de1_text "Steam" 958 1485  -text [translate "Steam"] -font {musicos} -fill "#a7534e" -anchor "center" 
+add_de1_text "off" 958 1485  -text [translate "STEAM"] -font {renaissance} -fill "#a7534e" -anchor "center" 
+add_de1_text "steam" 958 1485  -text [translate "STEAM"] -font {renaissance} -fill "#a7534e" -anchor "center" 
 
 
-add_de1_text "off" 1558 1485 -text [translate "Hot Water"] -font {renaissance} -fill "#a7534e" -anchor "center" 
-add_de1_text "Hot Water" 1558 1485  -text [translate "Hot Water"] -font {musicos} -fill "#a7534e" -anchor "center" 
+add_de1_text "off" 1558 1485 -text [translate "HOT WATER"] -font {renaissance} -fill "#a7534e" -anchor "center" 
+add_de1_text "water" 1558 1485  -text [translate "HOT WATER"] -font {renaissance} -fill "#a7534e" -anchor "center" 
 
 add_de1_text "off" 2208 1485  -text [translate "SETTINGS"] -font {renaissance} -fill "#a7534e" -anchor "center" 
 
