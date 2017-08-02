@@ -44,6 +44,7 @@ add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 2290 100 -text [translate
 add_de1_text "off espresso espresso_3" 405 100 -text [translate "PRE-HEAT CUP"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "off espresso espresso_3" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off espresso espresso_3" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "off_zoomed espresso_3_zoomed espresso_zoomed" 2350 90 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "off espresso espresso_3" 2290 100 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 # labels for STEAM tab on
@@ -62,6 +63,7 @@ add_de1_text "water water_1 water_3" 2290 100 -text [translate "HOT WATER"] -fon
 add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {pre-heat}] $::settings(sound_button_in); set_next_page off preheat_1; page_show preheat_1} 0 0 641 188
 add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {espresso}] $::settings(sound_button_in); set_next_page off off; page_show off} 642 0 1277 188
 add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {steam}] $::settings(sound_button_in); set_next_page off steam_1; page_show steam_1} 1278 0 1904 188
+add_de1_button "off_zoomed espresso_3_zoomed espresso_zoomed" {say [translate {steam}] $::settings(sound_button_in); set_next_page off steam_1; page_show steam_1} 2020 0 2550 180
 add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {water}] $::settings(sound_button_in); set_next_page off water_1; page_show water_1} 1905 0 2560 188
 
 # when the espresso machine is doing something, the top tabs have to first stop that function, then the tab can change
@@ -217,11 +219,14 @@ add_de1_text "sleep" 2500 1450 -justify right -anchor "ne" -text [translate "Goi
 # setting button 
 add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed steam_1 water_1 preheat_1 steam_3 water_3 preheat_3" {after 700 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off $::settings(settings_profile_type); page_show off} 2285 1424 2560 1600
 
-add_de1_text "off off_zoomed" 2280 390 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
-add_de1_variable "espresso espresso_zoomed" 2280 390 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center"  -textvariable "STOP"
-add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed espresso espresso_zoomed" 2285 470 -text [translate "ESPRESSO"] -font Helv_10 -fill "#7f879a" -anchor "center" 
-add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed" 2285 520 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[de1_substate_text]} 
-add_de1_variable "espresso_3 espresso_3_zoomed" 2280 390 -text [translate "RESTART"] -font Helv_18_bold -fill "#2d3046" -anchor "center" -textvariable {[espresso_history_save_from_gui]} 
+add_de1_text "off off_zoomed" 2290 430 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
+add_de1_variable "espresso espresso_zoomed" 2290 430 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center"  -textvariable "STOP"
+add_de1_variable "espresso_3 espresso_3_zoomed" 2290 430 -text [translate "RESTART"] -font Helv_18_bold -fill "#2d3046" -anchor "center" -textvariable {[espresso_history_save_from_gui]} 
+
+add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed espresso espresso_zoomed" 2295 510 -text [translate "ESPRESSO"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed espresso espresso_zoomed" 2295 560 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[de1_substate_text]} 
+
+#add_de1_variable "espresso espresso_zoomed" 2060 740 -text "" -font Helv_8_bold -fill "#2d3046" -anchor "nw" -textvariable {[string toupper [translate [de1_substate_text]]]} 
 
 
 # future feature
@@ -281,7 +286,9 @@ add_de1_variable "espresso_3 espresso_3_zoomed" 2280 390 -text [translate "RESTA
 # making espresso now
 
 # make and stop espresso button
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed" {say [translate {espresso}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 200 2560 630
+add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed" {say [translate {espresso}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 200 2560 730
+add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in);set_next_page off espresso_3; start_idle;} 2020 200 2560 730
+add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed; start_idle;} 2020 200 2560 730
 
 # future feature
 # add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed" {say [translate {rinse}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 631 2560 825
@@ -303,8 +310,6 @@ add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed" {say [translate {es
 #graph .g -title "Graph of Flow Rate and Total Weight" 
 #.g configure -width 50 -font ConsoleFont 
 
-add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in);set_next_page off espresso_3; start_idle;} 2020 200 2560 630
-add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed; start_idle;} 2020 200 2560 630
 		
 
 
@@ -337,7 +342,6 @@ add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_butto
 
 ##########################################################################################################################################################################################################################################################################
 # data card displayed during espresso making
-add_de1_variable "espresso espresso_zoomed" 2060 710 -text "" -font Helv_8_bold -fill "#2d3046" -anchor "nw" -textvariable {[string toupper [translate [de1_substate_text]]]} 
 
 add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed" 2060 800 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_7_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed" 2060 840 -justify right -anchor "nw" -text [translate "Goal:"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
@@ -477,7 +481,9 @@ add_de1_text "water" 1390 775 -text [translate "STOP"] -font Helv_20_bold -fill 
 add_de1_button "water_1 water_3" {say [translate {hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 210 2560 1100
 add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set_next_page off water_3 ; start_idle} 0 189 2560 1600
 #add_de1_button "water_3" {set_next_page off water_1; page_show water_1} 0 189 2560 1422
-add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
+
+# future feature
+#add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
 
 
 add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(water_volume) 10 1000 %x %y %x0 %y0 %x1 %y1;save_settings} 0 400 550 1200 ""
@@ -537,7 +543,9 @@ add_de1_variable "water_3" 2470 430 -justify left -anchor "ne" -font Helv_8 -tex
 ##########################################################################################################################################################################################################################################################################
 # settings for steam
 
-add_de1_text "steam_1 steam_3" 1390 1270 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
+# future feature
+#add_de1_text "steam_1 steam_3" 1390 1270 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
+
 #add_de1_text "steam_3" 2180 1280 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
 
 add_de1_text "steam_1" 1390 775 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
@@ -550,7 +558,10 @@ add_de1_text "steam_1 steam steam_3" 1390 865 -text [translate "STEAM"] -font He
 #add_de1_text "steam_2" 1390 805 -text [translate "DONE"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
 #add_de1_text "steam_3" 1390 805 -text [translate "DONE"] -font Helv_20_bold -fill "#7f879a" -anchor "center" 
 add_de1_button "steam_1 steam_3" {say [translate {steam}] $::settings(sound_button_in); start_steam} 1030 210 2560 1100
-add_de1_button "steam_1" {say [translate {rinse}] $::settings(sound_button_in); start_steam} 1030 1101 1760 1400
+
+# future feature
+#add_de1_button "steam_1" {say [translate {rinse}] $::settings(sound_button_in); start_steam} 1030 1101 1760 1400
+
 add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle} 0 189 2560 1600
 add_de1_button "steam_3" {say "" $::settings(sound_button_in); set_next_page off steam_1; start_idle} 0 210 1000 1400
 #add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); set_next_page off steam_1; page_show steam_1} 0 189 1810 1422
