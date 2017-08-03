@@ -345,7 +345,7 @@ proc de1_ble_handler {event data} {
 					#run_next_userdata_cmd
 					#de1_send $::de1_state(Idle)
 
-					run_de1_app
+					#run_de1_app
 			    } else {
 			    	msg "unknown connection msg: $data"
 			    }

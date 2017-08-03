@@ -412,7 +412,7 @@ proc platform_button_unpress {} {
 set cnt 0
 set debuglog {}					
 proc msg {text} {
-	return
+	#return
 
 	if {$text == ""} {
 		return
@@ -420,6 +420,7 @@ proc msg {text} {
 
 	#set text "$text ([::thread::id])"
 	puts $text
+return
 
 	borg log 1 "decent" $text
 
@@ -1047,6 +1048,8 @@ proc ui_startup {} {
 	check_if_should_start_screen_saver
 	if {$::android == 1} {
 		ble_connect_to_de1
+		puts "ran ble_connect_to_de1"
+		after 1 run_de1_app
 		
 	} else {
 		after 1 run_de1_app
@@ -1054,6 +1057,4 @@ proc ui_startup {} {
 	vwait forever
 }
 
-
-
-install_this_app_icon
+#install_this_app_icon
