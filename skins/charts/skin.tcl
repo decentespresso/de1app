@@ -33,6 +33,9 @@ set_de1_screen_saver_directory "[homedir]/saver"
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/skins/default/de1_skin_settings.tcl"
 
+# indicate whether we are connected to the DE1+ or not
+add_de1_variable "off" 2060 740 -justify left -anchor "nw" -text "asdf" -font Helv_10 -fill "#666666" -width 520 -textvariable {[de1_connected_state]} 
+
 
 # labels for PREHEAT tab on
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 405 100 -text [translate "PRE-HEAT CUP"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 

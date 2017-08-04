@@ -289,6 +289,8 @@ proc ble_connect_to_de1 {} {
     set ::de1_name "bPoint"
     set ::de1(scanning) 0
     set ::de1(device_handle) 0
+    #set ::de1(connecting) 1
+    set ::de1(last_ping) [clock seconds]
     
     catch {
     	ble connect $::de1(de1_address) de1_ble_handler 
@@ -307,6 +309,8 @@ proc de1_ble_handler {event data} {
 	set previous_wrote [ifexists ::de1(wrote)]
 	set ::de1(wrote) 0
 
+	set ::de1(last_ping) [clock seconds]
+
     dict with data {
 
 		switch -- $event {
@@ -321,6 +325,7 @@ proc de1_ble_handler {event data} {
 				    msg "de1 disconnected"
 				    #ble reconnect $::de1(device_handle)
 				    ble_connect_to_de1
+				    set ::de1(found) 0
 				} elseif {$state eq "discovery"} {
 					msg "1"
 					#ble_connect_to_de1

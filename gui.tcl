@@ -714,11 +714,38 @@ proc update_chart {} {
 	espresso_elapsed notify now
 }
 
+proc de1_connected_state {} {
+	if {$::android == 0} {
+		return [translate "Disconnected"]
+	}
+
+	if {$::de1(found) == 1} {
+		return [translate "Connected"]
+	} else {
+		if {$::de1(device_handle) == 0} {
+			return [translate "Connecting"]
+		} else {
+			return [translate "Disconnected"]
+		}
+	}
+}
+
+
 proc update_onscreen_variables { {state {}} } {
 
 	#update_chart
 
 	#save_settings
+
+	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
+	if {$since_last_ping > 10} {
+		set ::de1(last_ping) [clock seconds]
+		if {$::android == 1} {
+			set ::de1(found) 0
+			ble_connect_to_de1
+		}
+
+	}
 
 	if {$::android == 0} {
 		if {[expr {int(rand() * 100)}] > 70} {

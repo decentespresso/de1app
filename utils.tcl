@@ -140,7 +140,12 @@ proc setup_environment {} {
         #borg systemui 0x1E02
         borg brightness $::settings(app_brightness)
         borg systemui 0x1E02
-        borg screenorientation landscape
+
+        # force the screen into landscape if it isn't yet
+        msg "orientation: [borg screenorientation]"
+        if {[borg screenorientation] != "landscape" && [borg screenorientation] != "reverselandscape"} {
+            borg screenorientation landscape
+        }
 
         wm attributes . -fullscreen 1
         sdltk screensaver off

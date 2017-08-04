@@ -62,9 +62,9 @@ array set ::de1 {
 	water_time_max 60
 	steam_time_min 1
 	steam_time_max 120
+	last_ping 0
 	steam_heater_temperature 170
 }
-
 
 catch {
 	package require tkblt
