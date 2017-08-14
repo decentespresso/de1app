@@ -14,7 +14,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "chap" "[skin_directory]/chap.ttf" 28
+load_font "chap" "[skin_directory]/chap.ttf" 22
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off" 535 1070  -text [translate "ESPRESSO"] -font {chap} -fill "#7d1517" -anchor "center" 

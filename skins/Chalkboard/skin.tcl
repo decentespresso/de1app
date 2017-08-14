@@ -14,7 +14,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
-load_font "chaldust" "[skin_directory]/chaldust.ttf" 26
+load_font "chaldust" "[skin_directory]/chaldust.ttf" 22
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 410 1400  -text [translate "ESPRESSO"] -font {chaldust} -fill "#f9f9f9" -anchor "center" 

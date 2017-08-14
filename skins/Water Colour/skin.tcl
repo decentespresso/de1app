@@ -21,7 +21,7 @@ add_de1_text "off" 395 1400  -text [translate "ESPRESSO"] -font {gruss} -fill "#
 add_de1_text "off" 1280 1400  -text [translate "STEAM"] -font {gruss} -fill "#6d6d6d" -anchor "center" 
 add_de1_text "off" 2150 1400 -text [translate "HOT WATER"] -font {gruss} -fill "#6d6d6d" -anchor "center" 
 
-add_de1_text "off" 2100 160 -text [translate "SETTINGS"] -font {gruss} -fill "#6d6d6d" -anchor "center" 
+add_de1_text "off" 2015 160 -text [translate "SETTINGS"] -font {gruss} -fill "#6d6d6d" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
