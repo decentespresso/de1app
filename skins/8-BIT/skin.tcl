@@ -41,18 +41,18 @@ add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2250 0 
 
 add_de1_text "espresso" 1835 350 -text [translate "ESPRESSO"] -font pixel -fill "#2d3046" -anchor "center" 
 
-add_de1_variable "espresso" 1852 420 -text "" -font pixel -fill "#ffffff" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
+add_de1_variable "espresso" 1845 420 -text "" -font pixel -fill "#ffffff" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
 
-add_de1_text "espresso" 1850 535 -justify right -anchor "ne" -text [translate "Elapsed:"] -font pixel2 -fill "#ffffff" -width 520
-add_de1_variable "espresso" 1875 535 -justify left -anchor "nw" -text "" -font pixel2 -fill "#ffffff" -width 520 -textvariable {[pour_timer][translate "s"]} 
+add_de1_text "espresso" 1850 535 -justify right -anchor "ne" -text [translate "Elapsed:"] -font pixel2 -fill "#2d3046" -width 520
+add_de1_variable "espresso" 1875 535 -justify left -anchor "nw" -text "" -font pixel2 -fill "#42465c" -width 520 -textvariable {[pour_timer][translate "s"]} 
 
-add_de1_text "espresso" 1850 650 -justify right -anchor "ne" -text [translate "Auto off:"] -font pixel2 -fill "#7f879a" -width 520
+add_de1_text "espresso" 1850 650 -justify right -anchor "ne" -text [translate "Auto off:"] -font pixel2 -fill "#2d3046" -width 520
 add_de1_variable "espresso" 1875 650 -justify left -anchor "nw" -text "" -font pixel2  -fill "#42465c" -width 520 -textvariable {[setting_espresso_max_time_text]} 
 
-add_de1_text "espresso" 1850 750 -justify right -anchor "ne" -text [translate "Pressure:"] -font pixel2 -fill "#7f879a" -width 520
+add_de1_text "espresso" 1850 750 -justify right -anchor "ne" -text [translate "Pressure:"] -font pixel2 -fill "#2d3046" -width 520
 add_de1_variable "espresso" 1875 750 -justify left -anchor "nw" -text "" -font pixel2 -fill "#42465c" -width 520 -textvariable {[pressure_text]} 
 
-add_de1_text "espresso" 1850 850 -justify right -anchor "ne" -text [translate "Water temp:"] -font pixel2 -fill "#7f879a" -width 520
+add_de1_text "espresso" 1850 850 -justify right -anchor "ne" -text [translate "Water temp:"] -font pixel2 -fill "#2d3046" -width 520
 add_de1_variable "espresso" 1875 850 -justify left -anchor "nw" -text "" -font pixel2 -fill "#42465c" -width 520 -textvariable {[watertemp_text]} 
 \
 ##############################################################################################################################################################################################################################################################################
