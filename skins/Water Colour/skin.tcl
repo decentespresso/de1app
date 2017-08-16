@@ -17,11 +17,11 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "gruss" "[skin_directory]/gruss.ttf" 38
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off" 395 1400  -text [translate "ESPRESSO"] -font {gruss} -fill "#ca3b3b" -anchor "center" 
-add_de1_text "off" 1280 1400  -text [translate "STEAM"] -font {gruss} -fill "#d69a27" -anchor "center" 
-add_de1_text "off" 2150 1400 -text [translate "HOT WATER"] -font {gruss} -fill "#1388be" -anchor "center" 
+add_de1_text "off" 395 1400  -text [translate "ESPRESSO"] -font {gruss} -fill "#cc3333" -anchor "center" 
+add_de1_text "off" 1280 1400  -text [translate "STEAM"] -font {gruss} -fill "#996600" -anchor "center" 
+add_de1_text "off" 2150 1400 -text [translate "HOT WATER"] -font {gruss} -fill "#006699" -anchor "center" 
 
-add_de1_text "off" 2015 160 -text [translate "SETTINGS"] -font {gruss} -fill "#21292d" -anchor "center" 
+add_de1_text "off" 2015 160 -text [translate "SETTINGS"] -font {gruss} -fill "#000000" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
@@ -32,7 +32,7 @@ add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start
 
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 11 15 1150 250
-add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 1925 15 2555 250
+add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 1880 15 2555 250
 
 ##############################################################################################################################################################################################################################################################################
 
