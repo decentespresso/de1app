@@ -17,10 +17,25 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "DSEraserCyr" "[skin_directory]/DSEraserCyr.ttf" 20 
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off espresso" 977 405  -text [translate "ESPRESSO"] -font {DSEraserCyr} -fill "#000000" -anchor "center" 
-add_de1_text "off steam" 1605 635 -text [translate "STEAM"] -font {DSEraserCyr} -fill "#000000" -anchor "center" 
-add_de1_text "off water" 880 980 -text [translate "HOT WATER"] -font {DSEraserCyr} -fill "#000000" -anchor "center" 
-add_de1_text "off settings" 1550 1440 -text [translate "SETTINGS"] -font {DSEraserCyr} -fill "#000000" -anchor "center" 
+add_de1_text "off espresso" 977 405  -text [translate "Ah, 
+nothin' 
+like 
+Espresso 
+to start 
+the 
+day"] -font {DSEraserCyr} -fill "#7a542f" -anchor "center" 
+
+add_de1_text "off steam" 1605 635 -text [translate "Bloody hell! 
+The STEAM
+is busted"] -font {DSEraserCyr} -fill "#1f72c7" -anchor "center" 
+
+add_de1_text "off water" 880 980 -text [translate "And there's
+HOT WATER
+all over
+the floor!"] -font {DSEraserCyr} -fill "#ff1717" -anchor "center" 
+
+add_de1_text "off settings" 1550 1440 -text [translate "No problem, 
+I can FIX this"] -font {DSEraserCyr} -fill "#000000" -anchor "center" 
 
 
 
