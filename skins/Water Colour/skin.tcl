@@ -17,11 +17,11 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "gruss" "[skin_directory]/gruss.ttf" 38
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off" 395 1400  -text [translate "ESPRESSO"] -font {gruss} -fill "#6d6d6d" -anchor "center" 
-add_de1_text "off" 1280 1400  -text [translate "STEAM"] -font {gruss} -fill "#6d6d6d" -anchor "center" 
-add_de1_text "off" 2150 1400 -text [translate "HOT WATER"] -font {gruss} -fill "#6d6d6d" -anchor "center" 
+add_de1_text "off" 395 1400  -text [translate "ESPRESSO"] -font {gruss} -fill "#ca3b3b" -anchor "center" 
+add_de1_text "off" 1280 1400  -text [translate "STEAM"] -font {gruss} -fill "#d69a27" -anchor "center" 
+add_de1_text "off" 2150 1400 -text [translate "HOT WATER"] -font {gruss} -fill "#1388be" -anchor "center" 
 
-add_de1_text "off" 2015 160 -text [translate "SETTINGS"] -font {gruss} -fill "#6d6d6d" -anchor "center" 
+add_de1_text "off" 2015 160 -text [translate "SETTINGS"] -font {gruss} -fill "#21292d" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
