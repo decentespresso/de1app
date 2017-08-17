@@ -280,11 +280,11 @@ proc install_this_app_icon {} {
 	set iconbase64b [::base64::encode -maxlen 0 $icondata2]
 
 
-	set appurl "file://mnt/sdcard/de1beta/de1-5.tcl"
-	catch {
-		set x [borg shortcut add "DE1 #5" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1-5.tcl"
+	#catch {
+	#	set x [borg shortcut add "DE1 #5" $appurl $iconbase64b]
+	#	puts "shortcut added: '$x'"
+	#}
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus-5.tcl"
 	catch {
@@ -292,18 +292,18 @@ proc install_this_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
-	set appurl "file://mnt/sdcard/de1beta/de1c-5.tcl"
-	catch {
-		set x [borg shortcut add "DE1-C #5" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1c-5.tcl"
+	#catch {
+		#set x [borg shortcut add "DE1-C #5" $appurl $iconbase64b]
+		#puts "shortcut added: '$x'"
+	#}
 #return
 
-	set appurl "file://mnt/sdcard/de1beta/de1c-3.tcl"
-	catch {
-		set x [borg shortcut add "DE1-C #3" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1c-3.tcl"
+	#catch {
+	#	set x [borg shortcut add "DE1-C #3" $appurl $iconbase64b]
+	#	puts "shortcut added: '$x'"
+	#}
 
 
 
@@ -320,30 +320,30 @@ proc install_this_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
-	set appurl "file://mnt/sdcard/de1beta/de1c.tcl"
-	catch {
-		set x [borg shortcut add "DE1-C #1" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1c.tcl"
+	#catch {
+	#	set x [borg shortcut add "DE1-C #1" $appurl $iconbase64b]
+	#	puts "shortcut added: '$x'"
+	#}
 
-	set appurl "file://mnt/sdcard/de1beta/de1c-2.tcl"
-	catch {
-		set x [borg shortcut add "DE1-C #2" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1c-2.tcl"
+	#catch {
+	#	set x [borg shortcut add "DE1-C #2" $appurl $iconbase64b]
+	#	puts "shortcut added: '$x'"
+	#}
 
 
-	set appurl "file://mnt/sdcard/de1beta/de1c-2.tcl"
-	catch {
-		set x [borg shortcut add "DE1-C #2" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1c-2.tcl"
+	#catch {
+	#	set x [borg shortcut add "DE1-C #2" $appurl $iconbase64b]
+	#	puts "shortcut added: '$x'"
+	#}
 
-	set appurl "file://mnt/sdcard/de1beta/de1-2.tcl"
-	catch {
-		set x [borg shortcut add "DE1 #2" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1-2.tcl"
+	#catch {
+	#	set x [borg shortcut add "DE1 #2" $appurl $iconbase64b]
+	#	puts "shortcut added: '$x'"
+	#}
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus-2.tcl"
 	catch {
@@ -351,11 +351,11 @@ proc install_this_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
-	set appurl "file://mnt/sdcard/de1beta/de1-3.tcl"
-	catch {
-		set x [borg shortcut add "DE1 #3" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1-3.tcl"
+	#catch {
+	#	set x [borg shortcut add "DE1 #3" $appurl $iconbase64b]
+	#	puts "shortcut added: '$x'"
+	#}
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus-3.tcl"
 	catch {
@@ -363,11 +363,11 @@ proc install_this_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
-	set appurl "file://mnt/sdcard/de1beta/de1-4.tcl"
-	catch {
-		set x [borg shortcut add "DE1 #4" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1-4.tcl"
+	#catch {
+	#	set x [borg shortcut add "DE1 #4" $appurl $iconbase64b]
+	#	puts "shortcut added: '$x'"
+	#}
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus-4.tcl"
 	catch {
@@ -375,11 +375,11 @@ proc install_this_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
-	set appurl "file://mnt/sdcard/de1beta/de1c-4.tcl"
-	catch {
-		set x [borg shortcut add "DE1-C #4" $appurl $iconbase64b]
-		puts "shortcut added: '$x'"
-	}
+	#set appurl "file://mnt/sdcard/de1beta/de1c-4.tcl"
+	#catch {
+	#	set x [borg shortcut add "DE1-C #4" $appurl $iconbase64b]
+	#	puts "shortcut added: '$x'"
+	#}
 
 
 }
