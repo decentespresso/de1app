@@ -276,8 +276,10 @@ proc read_binary_file {filename} {
 
 proc install_this_app_icon {} {
 	package require base64
-	set icondata2 [read_binary_file "/mnt/sdcard/de1beta/de1_icon_v2.png"]
-	set iconbase64b [::base64::encode -maxlen 0 $icondata2]
+	set icondata_de1 [read_binary_file "/mnt/sdcard/de1beta/de1_icon_v2.png"]
+	set icondata_de1plus [read_binary_file "/mnt/sdcard/de1beta/de1plus_icon_v2.png"]
+	set iconbase64_de1 [::base64::encode -maxlen 0 $icondata_de1]
+	set iconbase64_de1plus [::base64::encode -maxlen 0 $icondata_de1plus]
 
 
 	#set appurl "file://mnt/sdcard/de1beta/de1-5.tcl"
@@ -288,7 +290,7 @@ proc install_this_app_icon {} {
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus-5.tcl"
 	catch {
-		set x [borg shortcut add "DE1+ #5" $appurl $iconbase64b]
+		set x [borg shortcut add "DE1+ #5" $appurl $iconbase64_de1plus]
 		puts "shortcut added: '$x'"
 	}
 
@@ -310,13 +312,13 @@ proc install_this_app_icon {} {
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus.tcl"
 	catch {
-		set x [borg shortcut add "DE1+ #1" $appurl $iconbase64b]
+		set x [borg shortcut add "DE1+ #1" $appurl $iconbase64_de1plus]
 		puts "shortcut added: '$x'"
 	}
 
 	set appurl "file://mnt/sdcard/de1beta/de1.tcl"
 	catch {
-		set x [borg shortcut add "DE1 #1" $appurl $iconbase64b]
+		set x [borg shortcut add "DE1 #1" $appurl $iconbase64_de1]
 		puts "shortcut added: '$x'"
 	}
 
@@ -347,7 +349,7 @@ proc install_this_app_icon {} {
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus-2.tcl"
 	catch {
-		set x [borg shortcut add "DE1+ #2" $appurl $iconbase64b]
+		set x [borg shortcut add "DE1+ #2" $appurl $iconbase64_de1plus]
 		puts "shortcut added: '$x'"
 	}
 
@@ -359,7 +361,7 @@ proc install_this_app_icon {} {
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus-3.tcl"
 	catch {
-		set x [borg shortcut add "DE1+ #3" $appurl $iconbase64b]
+		set x [borg shortcut add "DE1+ #3" $appurl $iconbase64_de1plus]
 		puts "shortcut added: '$x'"
 	}
 
@@ -371,7 +373,7 @@ proc install_this_app_icon {} {
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus-4.tcl"
 	catch {
-		set x [borg shortcut add "DE1+ #4" $appurl $iconbase64b]
+		set x [borg shortcut add "DE1+ #4" $appurl $iconbase64_de1plus]
 		puts "shortcut added: '$x'"
 	}
 
