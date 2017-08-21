@@ -276,7 +276,7 @@ proc read_binary_file {filename} {
 
 proc install_this_app_icon {} {
 	package require base64
-	set icondata2 [read_binary_file "/mnt/sdcard/de1beta/de1_icon.png"]
+	set icondata2 [read_binary_file "/mnt/sdcard/de1beta/de1_icon_v2.png"]
 	set iconbase64b [::base64::encode -maxlen 0 $icondata2]
 
 
