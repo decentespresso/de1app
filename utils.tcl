@@ -53,7 +53,7 @@ proc pause {time} {
 
 proc language {} {
     global current_language
-
+#return "kr"
     if {$::android != 1} {
         return "en"
     }
