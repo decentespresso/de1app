@@ -812,11 +812,14 @@ proc page_display_change {page_to_hide page_to_show} {
 			#puts "item $label is on both $page_to_hide and $page_to_show"
 			continue
 		}
-		if {[info exists ::tclwindows($label)] == 1} {
-			after 100 ".can itemconfigure $label -state normal"
-		} else {
+
+		# john not sure what the delay here is used for, and seems like a worringly hack
+		# so 8/22/17 disabled to see what breaks
+		#if {[info exists ::tclwindows($label)] == 1} {
+		#	after 100 ".can itemconfigure $label -state normal"
+		#} else {
 			.can itemconfigure $label -state normal
-		}
+		#}
 	}
 
 
