@@ -1,7 +1,6 @@
 
 package provide de1_bluetooth
 
-#set de1_address "C5:80:EC:A5:F9:72"
 #set suuid "0000A000-0000-1000-8000-00805F9B34FB"
 #set sinstance 0
 #set cuuid "0000a001-0000-1000-8000-00805f9b34fb"
@@ -110,7 +109,9 @@ proc app_exit {} {
 		msg "Closing de1"
 		ble close $::de1(device_handle)
 
-		ble unpair $::de1(de1_address)
+		#ble unpair $::de1(de1_address)
+		ble unpair $::settings(bluetooth_address)
+		
 	}
 	exit
 }
@@ -269,13 +270,17 @@ proc remove_null_terminator {instr} {
 	return [string range $instr 0 $pos]
 }
 
+proc ble_find_de1s {} {
+	ble start [ble scanner de1_ble_handler]
+}
+
 proc ble_connect_to_de1 {} {
 
 	#set de1_address "C1:80:A7:32:CD:A3"
 	#global de1_address
 
 	catch {
-		ble unpair $::de1(de1_address)
+		ble unpair $::settings(bluetooth_address)
 	}
 
 	if {$::de1(device_handle) != "0"} {
@@ -293,9 +298,9 @@ proc ble_connect_to_de1 {} {
     set ::de1(last_ping) [clock seconds]
     
     catch {
-    	ble connect $::de1(de1_address) de1_ble_handler 
+    	ble connect $::settings(bluetooth_address) de1_ble_handler 
     }
-    msg "Connecting to DE1 on $::de1(de1_address)"
+    msg "Connecting to DE1 on $::settings(bluetooth_address)"
 
     #after 10000 ble_try_again_to_connect_to_bpoint
 }
@@ -315,6 +320,21 @@ proc de1_ble_handler {event data} {
 
 		switch -- $event {
 	    	#msg "-- device $name found at address $address"
+		    scan {
+		    	#puts "-- device $name found at address $address"
+				if {[string first DE1 $name] != -1} {
+				    # found a de1
+				    
+				    lappend ::de1_bluetooth_list $address
+				    set ::de1_bluetooth_list [lsort -unique $::de1_bluetooth_list]
+
+				    #puts "de1 bluetooth found with address '$address'"
+					catch {
+						#puts "filling $::ble_listbox_widget"
+						fill_ble_listbox $::ble_listbox_widget
+					}
+				#}
+		    #}
 		    connection {
 		    	msg "2"
 		    	#msg "connection: $data"

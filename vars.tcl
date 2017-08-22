@@ -753,7 +753,7 @@ proc delete_selected_profile {} {
 }
 
 
-
+set de1_bluetooth_list {}
 proc fill_ble_listbox {widget} {
 
 	#puts "fill_profiles_listbox $widget"
@@ -762,10 +762,17 @@ proc fill_ble_listbox {widget} {
 	$widget delete 0 99999
 	set cnt 0
 	set current_ble_number 0
-	set ble_ids [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
-	foreach d [lsort -dictionary -increasing $ble_ids] {
+
+	#set ble_ids [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
+	#lappend ::de1_bluetooth_list $address
+
+	if {$::android == 0} {	
+		set ::de1_bluetooth_list [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
+	}
+
+	foreach d [lsort -dictionary -increasing $::de1_bluetooth_list] {
 		$widget insert $cnt $d
-		if {[ifexists ::settings(de1_address)] == $d} {
+		if {[ifexists ::settings(bluetooth_address)] == $d} {
 			set current_ble_number $cnt
 			#puts "current profile of '$d' is #$cnt"
 		}
@@ -779,6 +786,8 @@ proc fill_ble_listbox {widget} {
 	#puts "$widget selection set $current_profile_number"
 
 	set ::globals(ble_listbox) $widget
+
+	bind $widget <<ListboxSelect>> [list ::change_bluetooth_device %W] 	
 	
 	# john - probably makes sense for "pair" to occur on item tap
 	#bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
@@ -976,6 +985,29 @@ proc preview_history {w args} {
 		make_current_listbox_item_blue $::globals(history_listbox)
 	}
 }
+
+
+proc change_bluetooth_device {w args} {
+	if {$w == ""} {
+		return
+	}
+	#catch {
+		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
+		set profile [$w get [$w curselection]]
+		if {$profile == $::settings(bluetooth_address)} {
+			# if no change in setting, do nothing.
+			return
+		}
+		set ::settings(bluetooth_address) $profile
+		save_settings; 
+
+		.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+		set_next_page off message; page_show message
+
+	#}
+}
+
+
 
 proc preview_profile {w args} {
 	catch {
