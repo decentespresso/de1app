@@ -1029,14 +1029,14 @@ proc preview_profile {w args} {
 		if {[de1plus]} {
 			#puts "current context: $::de1(current_context) "
 
-			set_next_page settings_2 $::settings(settings_profile_type)_preview;
+			set_next_page settings_2 $::settings(settings_profile_type);
 			page_show settings_2
 
 			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
 			#page_show off
 			#puts "set_next_page off $::settings(settings_profile_type)_preview;"
 		} else {
-			set ::settings(settings_profile_type) "settings_1"
+			set ::settings(settings_profile_type) "settings_2"
 		}
 		update_onscreen_variables
 

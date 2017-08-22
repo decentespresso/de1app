@@ -630,6 +630,12 @@ proc de1_connected_state {} {
 	}
 
 	if {$::de1(found) == 1} {
+
+		set elapsed [expr {[clock seconds] - $::de1(last_ping)}]
+		# only show the "connected" message for 5 seconds
+		if {$elapsed > 3} {
+			return ""
+		}
 		return [translate "Connected"]
 	} else {
 		if {$::de1(device_handle) == 0} {
@@ -742,7 +748,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	delay_screen_saver
 
-
+	puts "page_display_change $page_to_show"
 
 	if {$page_to_show == "saver"} {
 		after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
@@ -775,12 +781,30 @@ proc page_display_change {page_to_hide page_to_show} {
 	#pause 500
 
 	global existing_labels
-	foreach label [ifexists existing_labels($page_to_hide)]  {
-		if {[lsearch -exact [ifexists existing_labels($page_to_show)] $label] != -1} {
-			#puts "item $label is on both $page_to_hide and $page_to_show"
-			continue
+	#puts ---
+	set hide_all_labels_first_for_safety 1
+	if {$hide_all_labels_first_for_safety == 1} {
+		foreach {page labels} [array get existing_labels]  {
+			foreach label $labels {
+				if {[lsearch -exact [ifexists existing_labels($page_to_show)] $label] != -1} {
+					#puts "item $label is on both $page_to_hide and $page_to_show"
+					continue
+				}
+
+				if {[.can itemcget $label -state] != "hidden"} {
+					#puts "setting $label to hidden"
+					set x [.can itemconfigure $label -state hidden]
+				}
+			}
 		}
-		set x [.can itemconfigure $label -state hidden]
+	} else {
+		foreach label [ifexists existing_labels($page_to_hide)]  {
+			if {[lsearch -exact [ifexists existing_labels($page_to_show)] $label] != -1} {
+				#puts "item $label is on both $page_to_hide and $page_to_show"
+				continue
+			}
+			set x [.can itemconfigure $label -state hidden]
+		}
 	}
 
 	foreach label [ifexists existing_labels($page_to_show)]  {
