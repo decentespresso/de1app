@@ -26,7 +26,7 @@ proc de1_enable_bluetooth_notifications {} {
 	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
 }
 
-proc de1_disable_bluetooth_notifications {} {
+proc de1_enable_bluetooth_notifications {} {
 	msg "de1_enable_bluetooth_notifications"
 	userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
 	userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
@@ -146,10 +146,14 @@ proc send_de1_shot_and_steam_settings {} {
 }
 
 proc de1_send_shot_frames {} {
+
+
 	if {$::de1(device_handle) == "0"} {
 		msg "error: de1 not connected"
 		return
 	}
+
+	de1_disable_bluetooth_notifications	
 
 	msg ======================================
 
@@ -178,6 +182,7 @@ proc de1_send_shot_frames {} {
 		#userdata_append [list ble_write_010 $packed_frame]
 	}
 
+	de1_enable_bluetooth_notifications
 
 	return
 }
@@ -202,6 +207,8 @@ proc de1_send_steam_hotwater_settings {} {
 		return
 	}
 
+	de1_disable_bluetooth_notifications	
+
 	set data [return_de1_packed_steam_hotwater_settings]
 	parse_binary_hotwater_desc $data arr2
 	msg "send de1_send_steam_hotwater_settings of [string length $data] bytes: $data  : [array get arr2]"
@@ -210,6 +217,8 @@ proc de1_send_steam_hotwater_settings {} {
 	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
 	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
 	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
+
+	de1_enable_bluetooth_notifications
 }
 
 
@@ -361,6 +370,9 @@ proc de1_ble_handler {event data} {
 					#de1_enable_a00e
 					#de1_enable_a00f
 					
+					de1_send_shot_frames
+					de1_send_steam_hotwater_settings					
+
 					de1_enable_bluetooth_notifications
 					#de1_disable_bluetooth_notifications
 					# need to re-enable!!!!

@@ -1148,3 +1148,13 @@ proc espresso_history_save_from_gui {} {
 	save_this_espresso_to_history; 
 	return $state
 }
+
+proc seconds_text {num} {
+	if {$num == 0} {
+		return [translate "off"]
+	} elseif {$num == 1} {
+		return [subst {$num [translate "second"]}]
+	} else {
+		return [subst {$num [translate "seconds"]}]
+	}
+}
