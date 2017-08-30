@@ -26,8 +26,8 @@ proc de1_enable_bluetooth_notifications {} {
 	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
 }
 
-proc de1_enable_bluetooth_notifications {} {
-	msg "de1_enable_bluetooth_notifications"
+proc de1_disable_bluetooth_notifications {} {
+	msg "de1_disable_bluetooth_notifications"
 	userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
 	userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
 	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
@@ -153,7 +153,7 @@ proc de1_send_shot_frames {} {
 		return
 	}
 
-	de1_disable_bluetooth_notifications	
+	#de1_disable_bluetooth_notifications	
 
 	msg ======================================
 
@@ -165,8 +165,7 @@ proc de1_send_shot_frames {} {
 	msg "frame header of [string length $header] bytes parsed: $header [array get arr2]"
 	#userdata_append [list after 300 ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0f) $::de1(cinstance) $header]
 	userdata_append [list ble_write_00f $header]
-	userdata_append [list ble_write_00f $header]
-	userdata_append [list ble_write_00f $header]
+	#userdata_append [list ble_write_00f $header]
 	#userdata_append [list ble_write_00f $header]
 
 	set cnt 0
@@ -176,13 +175,11 @@ proc de1_send_shot_frames {} {
 		parse_binary_shotframe $packed_frame arr3
 		msg "frame #$cnt data parsed [string length $packed_frame] bytes: $packed_frame  : [array get arr3]"
 		userdata_append [list ble_write_010 $packed_frame]
-		userdata_append [list ble_write_010 $packed_frame]
-		userdata_append [list ble_write_010 $packed_frame]
 		#userdata_append [list ble_write_010 $packed_frame]
 		#userdata_append [list ble_write_010 $packed_frame]
 	}
 
-	de1_enable_bluetooth_notifications
+	#de1_enable_bluetooth_notifications
 
 	return
 }
@@ -199,6 +196,19 @@ proc ble_write_00f {packed_frame} {
 	#ble execute $::de1(device_handle); 
 }
 
+proc save_settings_to_de1 {} {
+	if {$::de1(device_handle) == "0"} {
+		msg "error: de1 not connected"
+		return
+	}
+
+	de1_disable_bluetooth_notifications	
+	de1_send_steam_hotwater_settings
+	de1_send_shot_frames
+	de1_enable_bluetooth_notifications
+
+}
+
 proc de1_send_steam_hotwater_settings {} {
 #return
 
@@ -207,7 +217,6 @@ proc de1_send_steam_hotwater_settings {} {
 		return
 	}
 
-	de1_disable_bluetooth_notifications	
 
 	set data [return_de1_packed_steam_hotwater_settings]
 	parse_binary_hotwater_desc $data arr2
@@ -215,10 +224,9 @@ proc de1_send_steam_hotwater_settings {} {
 	#ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data
 	#userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) "1"]
 	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
-	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
-	userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
+	#userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
+	#userdata_append [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
 
-	de1_enable_bluetooth_notifications
 }
 
 
@@ -303,6 +311,7 @@ proc ble_connect_to_de1 {} {
     set ::de1_name "bPoint"
     set ::de1(scanning) 0
     set ::de1(device_handle) 0
+    set ::de1(connect_time) 0
     #set ::de1(connecting) 1
     set ::de1(last_ping) [clock seconds]
     
@@ -354,6 +363,7 @@ proc de1_ble_handler {event data} {
 				    msg "de1 disconnected"
 				    #ble reconnect $::de1(device_handle)
 				    ble_connect_to_de1
+
 				    set ::de1(found) 0
 				} elseif {$state eq "discovery"} {
 					msg "1"
@@ -362,6 +372,8 @@ proc de1_ble_handler {event data} {
 
 					msg "de1 connected $event $data"
 				    set ::de1(found) 1
+				    set ::de1(connect_time) [clock seconds]
+
 				    msg "Connected to DE1"
 					set ::de1(device_handle) $handle
 					#msg "connected to de1 with handle $handle"
@@ -370,8 +382,8 @@ proc de1_ble_handler {event data} {
 					#de1_enable_a00e
 					#de1_enable_a00f
 					
-					de1_send_shot_frames
 					de1_send_steam_hotwater_settings					
+					de1_send_shot_frames
 
 					de1_enable_bluetooth_notifications
 					#de1_disable_bluetooth_notifications

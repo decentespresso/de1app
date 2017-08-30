@@ -1,4 +1,4 @@
-set ::skindebug 1
+set ::skindebug 0
 
 package require de1plus 1.0
 
@@ -34,7 +34,7 @@ set_de1_screen_saver_directory "[homedir]/saver"
 source "[homedir]/skins/default/de1_skin_settings.tcl"
 
 # indicate whether we are connected to the DE1+ or not
-add_de1_variable "off" 2060 740 -justify left -anchor "nw" -text "asdf" -font Helv_10 -fill "#666666" -width 520 -textvariable {[de1_connected_state]} 
+add_de1_variable "off" 2060 740 -justify left -anchor "nw" -text "" -font Helv_10 -fill "#666666" -width 520 -textvariable {[de1_connected_state]} 
 
 
 # labels for PREHEAT tab on

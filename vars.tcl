@@ -1014,6 +1014,7 @@ proc preview_profile {w args} {
 		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
 		set profile [$w get [$w curselection]]
 		set ::settings(profile) $profile
+		set ::settings(profile_notes) ""
 		set fn "[homedir]/profiles/${profile}.tcl"
 		#puts "preview_profile $profile"
 
@@ -1082,7 +1083,7 @@ proc save_profile {} {
 		return
 	}
 
-	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate}
+	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature}
 	set profile_name_to_save $::settings(profile_to_save) 
 	#puts "save profile: $profile_name_to_save"
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"

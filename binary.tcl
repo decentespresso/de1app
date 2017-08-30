@@ -891,7 +891,12 @@ set previous_espresso_flow_time [millitimer]
 
 proc append_live_data_to_espresso_chart {} {
 
-  
+    if {$::de1_num_state($::de1(state)) != "Espresso"} {
+    	# we only store chart data during espresso
+    	# we could theoretically store this data during steam as well, if we want to have charts of steaming temperature and pressure
+    	return 
+    }
+
 	global previous_de1_substate
 	global state_change_chart_value
 

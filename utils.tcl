@@ -66,6 +66,7 @@ proc language {} {
     # the UI language for Decent Espresso is set as the UI language that Android is currently operating in
     if {[info exists current_language] == 0} {
         array set loc [borg locale]
+
         set current_language $loc(language)
         if {$loc(language) == "zh"} {
             # chinese traditional vs simplified is only differentiated by the country associated with it
@@ -74,6 +75,9 @@ proc language {} {
             } else {
                 set current_language "zh-hans"
             }
+        } elseif {$loc(language) == "ko"} {
+            # not sure why Androir deviates from KR standard for korean
+            set current_language "kr"
         }
 
         #set current_language "fr"
@@ -221,14 +225,16 @@ proc setup_environment {} {
             #set regularfont "sarabun"
             #set boldfont "sarabunbold"
             set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
+            puts "helvetica_font: $helvetica_font"
             set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
-            set fontm [expr {($fontm * 1.1)}]
+            set fontm [expr {($fontm * 1.2)}]
         #set fontm [expr {($fontm * 1.20)}]
-        } elseif {[language] == "zh-hant" || [language] == "zh-hans"} {
+        } elseif {[language] == "zh-hant" || [language] == "zh-hans" || [language] == "kr"} {
             #set helvetica_font [sdltk addfont "fonts/DroidSansFallbackFull.ttf"]
             #set helvetica_font [sdltk addfont "fonts/cwTeXQHei-Bold.ttf"]
             
-            set helvetica_font [sdltk addfont "fonts/notosansasia.otf"]
+            set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+            puts "helvetica_font: $helvetica_font"
             #set helvetica_font [sdltk addfont "fonts/wts11.ttf"]
             set helvetica_bold_font $helvetica_font
             puts "loading asian otf font"
@@ -236,6 +242,7 @@ proc setup_environment {} {
             #set fontm 3
         } else {
             set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
+            puts "helvetica_font: $helvetica_font"
             set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
         }
 
@@ -388,7 +395,7 @@ proc setup_environment {} {
         #font create Sourcesans_30 -family {Source Sans Pro Bold} -size 50
         #font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
 
-        proc send_de1_shot_and_steam_settings {} {}
+        #proc send_de1_shot_and_steam_settings {} {}
         proc ble {args} { puts "ble $args" }
         proc borg {args} { 
             if {[lindex $args 0] == "locale"} {
@@ -400,9 +407,10 @@ proc setup_environment {} {
             }
         }
 
-        proc de1_send_steam_hotwater_settings {} {}
-        proc de1_read_hotwater {} {return 90}
-        proc de1_send_shot_frames {} {}
+        proc save_settings_to_de1 {} {}
+        #proc de1_send_steam_hotwater_settings {} {}
+        #proc de1_read_hotwater {} {return 90}
+        #proc de1_send_shot_frames {} {}
         proc de1_send {x} { clear_timers;delay_screen_saver; }
         proc de1_read {} { puts "de1_read" }
         proc app_exit {} { exit }       
@@ -687,13 +695,13 @@ proc save_array_to_file {arrname fn} {
 
 proc save_settings {} {
     msg "saving settings"
-    de1_send_steam_hotwater_settings
-    de1_read_hotwater
-    
-    de1_send_shot_frames
-    #de1_send_shot_frames
-    #send_de1_shot_and_steam_settings
     save_array_to_file ::settings [settings_filename]
+
+    save_settings_to_de1
+
+    # john not sure what this is for since we're receiving hot water notifications
+    #de1_read_hotwater
+    
 }
 
 proc load_settings {} {

@@ -151,7 +151,7 @@ add_de1_text "settings_2c" 1960 820 -text "Maximum" -font Helv_10_bold -fill "#5
 add_de1_widget "settings_2c" listbox 70 320 { 
 	fill_profile_steps_listbox $widget
 
-} -background #fbfaff -font Helv_10 -bd 0 -height 11 -width 30 -foreground #d3dbf3 -borderwidth 0
+} -background #fbfaff -font Helv_10 -bd 0 -height 10 -width 32 -foreground #d3dbf3 -borderwidth 0
 
 
 add_de1_widget "settings_2c" entry 70 1100  {set ::globals(widget_profile_step_save) $widget} -width 35 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_step) 
@@ -202,19 +202,18 @@ add_de1_text "settings_2c" 2384 1260 -text [translate "time"] -font Helv_8 -fill
 
 ############################
 
-
-set ::table_style_preview_image [add_de1_image "settings_1" 1330 960 "[skin_directory_graphics]/icon.jpg"]
+set ::table_style_preview_image [add_de1_image "settings_3" 1860 310 "[skin_directory_graphics]/icon.jpg"]
 
 add_de1_widget "settings_1" listbox 50 310 { 
 	fill_profiles_listbox $widget
-	} -background #fbfaff -font Helv_10 -bd 0 -height 9 -width 36 -foreground #d3dbf3 -borderwidth 0
+	} -background #fbfaff -font Helv_10 -bd 0 -height 16 -width 36 -foreground #d3dbf3 -borderwidth 0
 
 
-add_de1_widget "settings_1" listbox 1310 310 { 
+add_de1_widget "settings_3" listbox 1310 310 { 
 	fill_skin_listbox $widget
-	} -background #fbfaff -font Helv_10 -bd 0 -height 9 -width 42 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
+	} -background #fbfaff -font Helv_10 -bd 0 -height 15 -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
 
-add_de1_widget "settings_1" graph 30 950 { 
+add_de1_widget "settings_1" graph 1330 300 { 
 	set ::preview_graph_pressure $widget
 	update_de1_explanation_chart;
 	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth quadratic -pixels [rescale_x_skin 20]; 
@@ -233,7 +232,7 @@ add_de1_widget "settings_2a settings_2b" graph 30 815 {
 	} -plotbackground #EEEEEE -width [rescale_x_skin 1100] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised
 
 
-add_de1_variable "settings_1" 1198 1350 -text "" -font Helv_6 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+add_de1_variable "settings_1" 2460 670 -text "" -font Helv_6 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 
 add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -284,7 +283,7 @@ if {$scheduler_enabled == 1} {
 add_de1_text "settings_3" 2310 880 -text [translate "Temperature"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
 
 
-add_de1_text "settings_3" 2130 250 -text [translate "Hot water"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_3" 70 1120 -text [translate "Hot water"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 70 250 -text [translate "Screen Brightness"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 70 570 -text [translate "Energy Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 690 570 -text [translate "Screen Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -334,17 +333,25 @@ add_de1_widget "settings_3" checkbutton 690 1080 {} -text [translate "1.234,56"]
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
-add_de1_widget "settings_1" entry 70 1440  {set ::globals(widget_profile_name_to_save) $widget} -width 38 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_to_save) 
 
-add_de1_button "settings_1" {say [translate {save}] $::settings(sound_button_in); save_profile} 1040 1410 1260 1570
-add_de1_button "settings_1" {say [translate {cancel}] $::settings(sound_button_in); delete_selected_profile} 1100 300 1260 500
+add_de1_button "settings_1" {say [translate {save}] $::settings(sound_button_in); save_profile} 2300 1220 2550 1410
+add_de1_button "settings_1" {say [translate {cancel}] $::settings(sound_button_in); delete_selected_profile} 1100 280 1300 500
 
 set settings_label1 [translate "PRESSURE"]
 set settings_label2 [translate "Pressure profiles"]
 
 
-add_de1_text "settings_1" 50 220 -text $settings_label2 -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
-add_de1_text "settings_1" 1310 220 -text [translate "Tablet styles"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+#add_de1_text "settings_1" 50 220 -text $settings_label2 -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
+add_de1_text "settings_1" 50 230 -text [translate "Load a preset"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
+add_de1_text "settings_1" 1360 230 -text [translate "Preview"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
+add_de1_text "settings_1" 1360 830 -text [translate "Description"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
+add_de1_text "settings_1" 1360 1240 -text [translate "Name and save"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
+add_de1_widget "settings_1" multiline_entry 1360 900 {} -width 40 -height 4 -font Helv_9  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_notes) 
+add_de1_widget "settings_1" entry 1360 1310  {set ::globals(widget_profile_name_to_save) $widget} -width 32 -font Helv_9  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_to_save) 
+
+
+add_de1_text "settings_3" 1310 220 -text [translate "Tablet styles"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+
 
 
 

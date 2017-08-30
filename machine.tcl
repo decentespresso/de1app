@@ -145,6 +145,7 @@ array set ::settings {
 	speaking_pitch 1.0
 	sound_button_in 8
 	sound_button_out 11
+	profile_notes {}
 	flight_mode_enable 1
 	profile default
 	flow_profile_minimum_pressure 4

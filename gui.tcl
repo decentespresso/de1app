@@ -1,8 +1,5 @@
 package provide de1_gui 1.0
 
-package require img::jpeg
-
-
 proc chart_refresh {} {
 
 }
@@ -11,9 +8,10 @@ proc chart_refresh {} {
 proc add_de1_page {names pngfilename} {
 	#set pngfilename "[skin_directory_graphics]/$apngfilename"
 	#puts $pngfilename
+	#package require tksvg
 	image create photo $names -file $pngfilename
 	foreach name $names {
-		.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden
+		.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden 
 	}
 }	
 
@@ -626,17 +624,18 @@ proc update_chart {} {
 
 proc de1_connected_state {} {
 	if {$::android == 0} {
-		return [translate "Disconnected"]
+		return ""
+		#return [translate "Disconnected"]
 	}
 
 	if {$::de1(found) == 1} {
 
-		set elapsed [expr {[clock seconds] - $::de1(last_ping)}]
+		set elapsed [expr {[clock seconds] - $::de1(connect_time)}]
 		# only show the "connected" message for 5 seconds
 		if {$elapsed > 3} {
 			return ""
 		}
-		return [translate "Connected"]
+		return "[translate Connected] $elapsed - $::de1(last_ping)"
 	} else {
 		if {$::de1(device_handle) == 0} {
 			return [translate "Connecting"]
@@ -654,11 +653,11 @@ proc update_onscreen_variables { {state {}} } {
 	#save_settings
 
 	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
-	if {$since_last_ping > 10} {
+	if {$since_last_ping > 3} {
 		set ::de1(last_ping) [clock seconds]
 		if {$::android == 1} {
 			set ::de1(found) 0
-			ble_find_de1s
+			#ble_find_de1s
 			ble_connect_to_de1
 		}
 
@@ -1027,5 +1026,108 @@ proc ui_startup {} {
 	}
 	vwait forever
 }
+
+# from https://wiki.tcl-lang.org/25189
+snit::widget multiline_entry {
+    delegate option * to text
+    delegate method * to text
+
+    # On/Off options
+    option -yscroll -default no
+    option -xscroll -default no
+    option -allowtab -default no
+    option -readonly -default no
+
+    # Miscellaneous options
+    option -textvariable -default 0
+
+    constructor { args } {
+        install text using text $win.txt
+        grid $win.txt -row 0 -column 0 -sticky nswe
+
+        $self configurelist $args
+
+        if { [$win cget -yscroll] } {
+            $win.txt configure -yscrollcommand [list $win.vsb set]
+            ttk::scrollbar $win.vsb -command [list $win.txt yview]
+            grid $win.vsb -row 0 -column 1 -sticky nsw
+        }
+
+        if { [$win cget -xscroll] } {
+            $win.txt configure -xscrollcommand [list $win.hsb set]
+            ttk::scrollbar $win.hsb -orient horizontal -command [list $win.txt xview]
+            grid $win.hsb -row 1 -column 0 -sticky we
+        }
+
+        grid rowconfigure $win 0 -weight 1
+        grid columnconfigure $win 0 -weight 1
+
+        if {[$win cget -textvariable] != 0} {
+            set varName [$win cget -textvariable]
+            upvar 3 $varName v
+            $win.txt insert 1.0 $v
+            $win.txt mark set insert 1.0
+            trace add variable v write [list $self setContent]
+            trace add variable v read [list $self getContent]
+        }
+
+        bind $win <FocusIn> [list focus $win.txt]
+
+        if { !$options(-allowtab) } {
+            bind $win.txt <Shift-Tab> [list $self focusPrev]
+            bind $win.txt <Tab> [list $self focusNext]
+        }
+
+        if { $options(-readonly) } {
+            bind $win.txt <KeyPress>        break
+            bind $win.txt <ButtonRelease-2> break
+
+            bind $win.txt <Down>  continue
+            bind $win.txt <Up>    continue
+            bind $win.txt <Prior> continue
+            bind $win.txt <Next>  continue
+            bind $win.txt <Left>  continue
+            bind $win.txt <Right> continue
+        }
+    }
+
+    method getTextWidget {} {
+        return $win.txt
+    }
+
+    method focusPrev {} {
+        focus [tk_focusPrev $win]
+
+        return -code break
+    }
+
+    method focusNext {} {
+        focus [tk_focusNext $win.txt]
+
+        return -code break
+    }
+
+    method setContent { name element op} {
+        upvar 1 $name x
+
+        $win.txt delete 1.0 end
+
+        if { [array exists x] } {
+            $win.txt insert 1.0 $x($element)
+        } else {
+            $win.txt insert 1.0 $x
+        }
+    }
+
+    method getContent { name element op } {
+        upvar 1 $name x
+
+        if { [array exists x] } {
+            set x($element) [$win.txt get 1.0 "end-1 char"]
+        } else {
+            set x [$win.txt get 1.0 "end-1 char"]
+        }
+    }
+ }
 
 install_this_app_icon
