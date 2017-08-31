@@ -36,9 +36,11 @@ proc de1_disable_bluetooth_notifications {} {
 
 proc poll_de1_state {} {
 
+	puts "poll_de1_state"
+
 	#de1_enable_bluetooth_notifications
 
-	#userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
+	userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
 	userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
 
 	#userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
@@ -116,7 +118,7 @@ proc app_exit {} {
 	exit
 }
 
-proc de1_enable {cuuid_to_enable} {
+proc de1_enable_obsolete {cuuid_to_enable} {
 	msg "Enabling DE1 notification: '$cuuid'"
 	ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $cuuid_to_enable $::de1(cinstance)
 }
@@ -288,7 +290,7 @@ proc remove_null_terminator {instr} {
 }
 
 proc ble_find_de1s {} {
-	ble start [ble scanner de1_ble_handler]
+	userdata_append [list ble start [ble scanner de1_ble_handler]]
 }
 
 proc ble_connect_to_de1 {} {
@@ -298,6 +300,7 @@ proc ble_connect_to_de1 {} {
 
 	catch {
 		ble unpair $::settings(bluetooth_address)
+
 	}
 
 	if {$::de1(device_handle) != "0"} {
@@ -306,6 +309,10 @@ proc ble_connect_to_de1 {} {
 		}
 	}
 
+	if {$::settings(bluetooth_address) == ""} {
+		# if no bluetooth address set, then don't try to connect
+		return ""
+	}
 
 	set ::de1(found) 0	
     set ::de1_name "bPoint"
@@ -313,7 +320,6 @@ proc ble_connect_to_de1 {} {
     set ::de1(device_handle) 0
     set ::de1(connect_time) 0
     #set ::de1(connecting) 1
-    set ::de1(last_ping) [clock seconds]
     
     catch {
     	ble connect $::settings(bluetooth_address) de1_ble_handler 
@@ -321,6 +327,14 @@ proc ble_connect_to_de1 {} {
     msg "Connecting to DE1 on $::settings(bluetooth_address)"
 
     #after 10000 ble_try_again_to_connect_to_bpoint
+}
+
+proc append_to_de1_bluetooth_list {address} {
+	lappend ::de1_bluetooth_list $address
+	set ::de1_bluetooth_list [lsort -unique $::de1_bluetooth_list]
+	catch {
+		fill_ble_listbox $::ble_listbox_widget
+	}
 }
 
 proc de1_ble_handler {event data} {
@@ -332,7 +346,7 @@ proc de1_ble_handler {event data} {
 	set previous_wrote [ifexists ::de1(wrote)]
 	set ::de1(wrote) 0
 
-	set ::de1(last_ping) [clock seconds]
+	#set ::de1(last_ping) [clock seconds]
 
     dict with data {
 
@@ -341,18 +355,9 @@ proc de1_ble_handler {event data} {
 		    scan {
 		    	#puts "-- device $name found at address $address"
 				if {[string first DE1 $name] != -1} {
-				    # found a de1
-				    
-				    lappend ::de1_bluetooth_list $address
-				    set ::de1_bluetooth_list [lsort -unique $::de1_bluetooth_list]
-
-				    #puts "de1 bluetooth found with address '$address'"
-					catch {
-						#puts "filling $::ble_listbox_widget"
-						fill_ble_listbox $::ble_listbox_widget
-					}
-				#}
-		    #}
+					append_to_de1_bluetooth_list $address
+				}
+		    }
 		    connection {
 		    	msg "2"
 		    	#msg "connection: $data"
@@ -362,6 +367,7 @@ proc de1_ble_handler {event data} {
 				    #ble start [ble scanner ble_generic_handler]
 				    msg "de1 disconnected"
 				    #ble reconnect $::de1(device_handle)
+				    #ble_find_de1s
 				    ble_connect_to_de1
 
 				    set ::de1(found) 0
@@ -373,22 +379,25 @@ proc de1_ble_handler {event data} {
 					msg "de1 connected $event $data"
 				    set ::de1(found) 1
 				    set ::de1(connect_time) [clock seconds]
+				    set ::de1(last_ping) [clock seconds]
 
 				    msg "Connected to DE1"
 					set ::de1(device_handle) $handle
+					append_to_de1_bluetooth_list $address
+
 					#msg "connected to de1 with handle $handle"
 
 					#de1_enable_a00d
 					#de1_enable_a00e
 					#de1_enable_a00f
-					
+					de1_disable_bluetooth_notifications
 					de1_send_steam_hotwater_settings					
 					de1_send_shot_frames
-
 					de1_enable_bluetooth_notifications
+					start_idle
 					#de1_disable_bluetooth_notifications
 					# need to re-enable!!!!
-					poll_de1_state
+					#poll_de1_state
 					#
 					#send_de1_shot_and_steam_settings
 					#run_next_userdata_cmd
@@ -424,6 +433,7 @@ proc de1_ble_handler {event data} {
 
 				    if {$access eq "r" || $access eq "c"} {
 				    	#msg "rc: $data"
+
 				    	#msg "Received from DE1: '[remove_null_terminator $value]'"
 						# change notification or read request
 						#de1_ble_new_value $cuuid $value
@@ -432,6 +442,7 @@ proc de1_ble_handler {event data} {
 
 
 						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
+						    set ::de1(last_ping) [clock seconds]
 							update_de1_shotvalue $value
 							#msg "shotvalue" 
 							if {$previous_wrote == 1} {
@@ -441,6 +452,7 @@ proc de1_ble_handler {event data} {
 								return
 							}
 						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
+						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_hotwater_desc $value arr2
 							msg "hotwater data received [string length $value] bytes: $value  : [array get arr2]"
@@ -448,18 +460,22 @@ proc de1_ble_handler {event data} {
 							#update_de1_substate $value
 							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
 						} elseif {$cuuid == "0000A00C-0000-1000-8000-00805F9B34FB"} {
+						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_shot_desc $value arr2
 							msg "shot data received [string length $value] bytes: $value  : [array get arr2]"
 						} elseif {$cuuid == "0000A00F-0000-1000-8000-00805F9B34FB"} {
+						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_shotdescheader $value arr2
 							msg "READ shot header success: [string length $value] bytes: $value  : [array get arr2]"
 						} elseif {$cuuid == "0000A010-0000-1000-8000-00805F9B34FB"} {
+						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_shotframe $value arr2
 							msg "shot frame received [string length $value] bytes: $value  : [array get arr2]"
 						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
+						    set ::de1(last_ping) [clock seconds]
 							update_de1_state $value
 							#update_de1_substate $value
 							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
@@ -472,6 +488,7 @@ proc de1_ble_handler {event data} {
 						}
 
 				    } elseif {$access eq "w"} {
+
 				    	if {$cuuid == $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3				    		
 					    	msg "Confirmed shot frame written to DE1: '$value' : [array get arr3]"

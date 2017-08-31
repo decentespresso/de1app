@@ -251,6 +251,8 @@ proc setup_environment {} {
         #set helvetica_font $helvetica_bold_font
         puts "helvetica_font: $helvetica_font : fontm: $fontm"
         puts "helvetica_bold_font: $helvetica_bold_font"
+        puts "1c"
+
         #set helvetica_font [sdltk addfont "fonts/HelveticaNeueHv.ttf"]
         #set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
         
@@ -306,7 +308,9 @@ proc setup_environment {} {
         # preload the speaking engine
         borg speak { }
 
+        puts "1d"
         source "bluetooth.tcl"
+        puts "1e"
 
     } else {
 
@@ -414,6 +418,7 @@ proc setup_environment {} {
         proc de1_send {x} { clear_timers;delay_screen_saver; }
         proc de1_read {} { puts "de1_read" }
         proc app_exit {} { exit }       
+        set ::de1(connect_time) [clock seconds]
 
     }
     . configure -bg black 

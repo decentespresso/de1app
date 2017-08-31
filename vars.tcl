@@ -753,7 +753,7 @@ proc delete_selected_profile {} {
 }
 
 
-set de1_bluetooth_list {}
+#set de1_bluetooth_list {}
 proc fill_ble_listbox {widget} {
 
 	#puts "fill_profiles_listbox $widget"
@@ -768,6 +768,7 @@ proc fill_ble_listbox {widget} {
 
 	if {$::android == 0} {	
 		set ::de1_bluetooth_list [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
+		set ::de1_bluetooth_list ""
 	}
 
 	foreach d [lsort -dictionary -increasing $::de1_bluetooth_list] {
@@ -993,6 +994,10 @@ proc change_bluetooth_device {w args} {
 	}
 	#catch {
 		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
+		if {[$w curselection] == ""} {
+			# no current selection
+			return ""
+		}
 		set profile [$w get [$w curselection]]
 		if {$profile == $::settings(bluetooth_address)} {
 			# if no change in setting, do nothing.

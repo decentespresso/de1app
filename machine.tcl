@@ -66,6 +66,9 @@ array set ::de1 {
 	steam_heater_temperature 170
 }
 
+set ::de1(last_ping) [clock seconds]
+set ::de1_bluetooth_list {}
+
 catch {
 	package require tkblt
 }

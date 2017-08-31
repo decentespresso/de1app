@@ -622,25 +622,44 @@ proc update_chart {} {
 	espresso_elapsed notify now
 }
 
-proc de1_connected_state {} {
+proc de1_connected_state { {hide_delay 0} } {
+
+	set hide_delay 0
+
+	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
+	set elapsed [expr {[clock seconds] - $::de1(connect_time)}]
+
 	if {$::android == 0} {
-		return ""
+
+		if {$elapsed > $hide_delay && $hide_delay != 0} {
+			return ""
+		} else {
+			return "[translate Connected]"
+			#return "[translate Connected]: $elapsed"
+		}
 		#return [translate "Disconnected"]
 	}
 
 	if {$::de1(found) == 1} {
 
-		set elapsed [expr {[clock seconds] - $::de1(connect_time)}]
-		# only show the "connected" message for 5 seconds
-		if {$elapsed > 3} {
+		if {$elapsed > $hide_delay && $hide_delay != 0} {
+			# only show the "connected" message for 5 seconds
 			return ""
 		}
-		return "[translate Connected] $elapsed - $::de1(last_ping)"
+		#return "[translate Connected] : $elapsed"
+		return "[translate Connected]"
+		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_bluetooth_list"
 	} else {
 		if {$::de1(device_handle) == 0} {
-			return [translate "Connecting"]
+			return "[translate Connecting] : $elapsed"
+			#return "[translate Connecting] $elapsed [translate seconds] - $since_last_ping elapsed - last ping: $::de1(last_ping) $::de1_bluetooth_list"
 		} else {
-			return [translate "Disconnected"]
+			if {$since_last_ping > 10} {
+				ble_find_de1s
+				ble_connect_to_de1
+			}
+			return [subst {[translate "Disconnected"] : $since_last_ping}]
+			#return [subst {[translate "Disconnected"] $since_last_ping seconds - last ping $::de1(last_ping) $::de1_bluetooth_list}]
 		}
 	}
 }
@@ -654,11 +673,11 @@ proc update_onscreen_variables { {state {}} } {
 
 	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
 	if {$since_last_ping > 3} {
-		set ::de1(last_ping) [clock seconds]
+		#set ::de1(last_ping) [clock seconds]
 		if {$::android == 1} {
 			set ::de1(found) 0
 			#ble_find_de1s
-			ble_connect_to_de1
+			#ble_connect_to_de1
 		}
 
 	}
@@ -722,8 +741,8 @@ proc page_show {page_to_show} {
 
 proc page_display_change {page_to_hide page_to_show} {
 
-	if {$page_to_hide == ""} {
-	}
+	#if {$page_to_hide == ""} {
+	#}
 
 	set key "machine:$page_to_show"
 	if {[ifexists ::nextpage($key)] != ""} {
@@ -787,12 +806,10 @@ proc page_display_change {page_to_hide page_to_show} {
 			foreach label $labels {
 				if {[lsearch -exact [ifexists existing_labels($page_to_show)] $label] != -1} {
 					#puts "item $label is on both $page_to_hide and $page_to_show"
-					continue
-				}
-
-				if {[.can itemcget $label -state] != "hidden"} {
+					.can itemconfigure $label -state normal
+				} elseif {[.can itemcget $label -state] != "hidden"} {
 					#puts "setting $label to hidden"
-					set x [.can itemconfigure $label -state hidden]
+					.can itemconfigure $label -state hidden
 				}
 			}
 		}
@@ -805,21 +822,21 @@ proc page_display_change {page_to_hide page_to_show} {
 			set x [.can itemconfigure $label -state hidden]
 		}
 	}
-
-	foreach label [ifexists existing_labels($page_to_show)]  {
-		if {[lsearch -exact [ifexists existing_labels($page_to_hide)] $label] != -1} {
+	update
+	#foreach label [ifexists existing_labels($page_to_show)]  {
+	#	if {[lsearch -exact [ifexists existing_labels($page_to_hide)] $label] != -1} {
 			#puts "item $label is on both $page_to_hide and $page_to_show"
-			continue
-		}
+	#		continue
+	#	}
 
 		# john not sure what the delay here is used for, and seems like a worringly hack
 		# so 8/22/17 disabled to see what breaks
 		#if {[info exists ::tclwindows($label)] == 1} {
 		#	after 100 ".can itemconfigure $label -state normal"
 		#} else {
-			.can itemconfigure $label -state normal
+			#.can itemconfigure $label -state normal
 		#}
-	}
+	#}
 
 
 	global actions
@@ -1010,6 +1027,10 @@ proc run_de1_app {} {
 proc ui_startup {} {
 	load_settings
 	setup_environment
+	if {$::android == 1} {
+		ble_find_de1s
+		ble_connect_to_de1
+	}
 	setup_images_for_first_page
 	setup_images_for_other_pages
 
@@ -1017,7 +1038,8 @@ proc ui_startup {} {
 
 	check_if_should_start_screen_saver
 	if {$::android == 1} {
-		ble_connect_to_de1
+		#ble_find_de1s
+		#ble_connect_to_de1
 		puts "ran ble_connect_to_de1"
 		after 1 run_de1_app
 		
@@ -1130,4 +1152,4 @@ snit::widget multiline_entry {
     }
  }
 
-install_this_app_icon
+#install_this_app_icon
