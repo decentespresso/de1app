@@ -640,7 +640,7 @@ proc de1_connected_state { {hide_delay 0} } {
 		#return [translate "Disconnected"]
 	}
 
-	if {$::de1(found) == 1} {
+	if {$since_last_ping < 5} {
 
 		if {$elapsed > $hide_delay && $hide_delay != 0} {
 			# only show the "connected" message for 5 seconds
@@ -651,15 +651,19 @@ proc de1_connected_state { {hide_delay 0} } {
 		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_bluetooth_list"
 	} else {
 		if {$::de1(device_handle) == 0} {
+			#return "[translate Connecting]"
 			return "[translate Connecting] : $elapsed"
-			#return "[translate Connecting] $elapsed [translate seconds] - $since_last_ping elapsed - last ping: $::de1(last_ping) $::de1_bluetooth_list"
 		} else {
 			if {$since_last_ping > 10} {
+				
 				ble_find_de1s
 				ble_connect_to_de1
 			}
+
+			if {$since_last_ping > 600} {
+				return [subst {[translate "Disconnected"]}]
+			} 
 			return [subst {[translate "Disconnected"] : $since_last_ping}]
-			#return [subst {[translate "Disconnected"] $since_last_ping seconds - last ping $::de1(last_ping) $::de1_bluetooth_list}]
 		}
 	}
 }
@@ -671,16 +675,16 @@ proc update_onscreen_variables { {state {}} } {
 
 	#save_settings
 
-	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
-	if {$since_last_ping > 3} {
+	#set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
+	#if {$since_last_ping > 3} {
 		#set ::de1(last_ping) [clock seconds]
-		if {$::android == 1} {
-			set ::de1(found) 0
+		#if {$::android == 1} {
+			#set ::de1(found) 0
 			#ble_find_de1s
 			#ble_connect_to_de1
-		}
+		#}
 
-	}
+	#}
 
 	if {$::android == 0} {
 		if {[expr {int(rand() * 100)}] > 70} {
@@ -1152,4 +1156,4 @@ snit::widget multiline_entry {
     }
  }
 
-#install_this_app_icon
+install_this_app_icon

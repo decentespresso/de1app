@@ -314,11 +314,11 @@ proc ble_connect_to_de1 {} {
 		return ""
 	}
 
-	set ::de1(found) 0	
+	#set ::de1(found) 0	
     set ::de1_name "bPoint"
     set ::de1(scanning) 0
     set ::de1(device_handle) 0
-    set ::de1(connect_time) 0
+    set ::de1(connect_time) [clock seconds]
     #set ::de1(connecting) 1
     
     catch {
@@ -370,14 +370,14 @@ proc de1_ble_handler {event data} {
 				    #ble_find_de1s
 				    ble_connect_to_de1
 
-				    set ::de1(found) 0
+				    #set ::de1(found) 0
 				} elseif {$state eq "discovery"} {
 					msg "1"
 					#ble_connect_to_de1
 				} elseif {$state eq "connected"} {
 
 					msg "de1 connected $event $data"
-				    set ::de1(found) 1
+				    #set ::de1(found) 1
 				    set ::de1(connect_time) [clock seconds]
 				    set ::de1(last_ping) [clock seconds]
 
