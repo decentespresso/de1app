@@ -418,6 +418,7 @@ proc setup_environment {} {
         proc de1_send {x} { clear_timers;delay_screen_saver; }
         proc de1_read {} { puts "de1_read" }
         proc app_exit {} { exit }       
+        proc ble_find_de1s {} { puts "ble_find_de1s" }
         set ::de1(connect_time) [clock seconds]
 
     }

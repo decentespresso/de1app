@@ -1,4 +1,4 @@
-set ::skindebug 0
+set ::skindebug 1
 
 #package require dea1plus 1.0
 

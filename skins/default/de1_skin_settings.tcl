@@ -297,9 +297,11 @@ add_de1_text "settings_4" 1320 820 -text [translate "Available machines:"] -font
 add_de1_widget "settings_4" listbox 1320 900 { 
 	set ::ble_listbox_widget $widget
 	fill_ble_listbox $widget
-} -background #fbfaff -font Helv_15 -bd 0 -height 5 -width 32 -foreground #d3dbf3 -borderwidth 0
+} -background #fbfaff -font Helv_15 -bd 0 -height 5 -width 16 -foreground #d3dbf3 -borderwidth 0
 
-
+# bluetooth scan
+add_de1_text "settings_4" 2230 980 -text [translate "Search"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_button "settings_4" {set ::de1_bluetooth_list ""; say [translate {search}] $::settings(sound_button_in); ble_find_de1s} 1910 890 2550 1080
 
 set enable_spoken_buttons 0
 if {$enable_spoken_buttons == 1} {

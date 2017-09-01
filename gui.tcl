@@ -652,12 +652,16 @@ proc de1_connected_state { {hide_delay 0} } {
 	} else {
 		if {$::de1(device_handle) == 0} {
 			#return "[translate Connecting]"
-			return "[translate Connecting] : $elapsed"
+			if {$elapsed > 600} {
+				return "[translate Connecting]"
+			} else {
+				return "[translate Connecting] : $elapsed"
+			}
 		} else {
 			if {$since_last_ping > 10} {
 				
-				ble_find_de1s
-				ble_connect_to_de1
+				#ble_find_de1s
+				#ble_connect_to_de1
 			}
 
 			if {$since_last_ping > 600} {
@@ -1032,7 +1036,7 @@ proc ui_startup {} {
 	load_settings
 	setup_environment
 	if {$::android == 1} {
-		ble_find_de1s
+		#ble_find_de1s
 		ble_connect_to_de1
 	}
 	setup_images_for_first_page

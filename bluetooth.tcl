@@ -315,10 +315,10 @@ proc ble_connect_to_de1 {} {
 	}
 
 	#set ::de1(found) 0	
-    set ::de1_name "bPoint"
+    set ::de1_name "DE1"
     set ::de1(scanning) 0
     set ::de1(device_handle) 0
-    set ::de1(connect_time) [clock seconds]
+    set ::de1(connect_time) 0
     #set ::de1(connecting) 1
     
     catch {
