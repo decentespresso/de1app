@@ -21,6 +21,7 @@ array set ::de1 {
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"
 	sinstance 0
 	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
+	cuuid_0a "0000a00a-0000-1000-8000-00805f9b34fb"
 	cuuid_0b "0000a00b-0000-1000-8000-00805f9b34fb"
 	cuuid_0c "0000a00c-0000-1000-8000-00805f9b34fb"
 	cuuid_0f "0000a00f-0000-1000-8000-00805f9b34fb"
@@ -44,6 +45,7 @@ array set ::de1 {
 	has_plumbing_kit 0
 	max_pressure 12
 	max_flowrate 6
+	version "1.0"
 	min_temperature 80
 	max_temperature 100
 	goal_flow 2

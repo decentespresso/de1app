@@ -1160,4 +1160,4 @@ snit::widget multiline_entry {
     }
  }
 
-install_this_app_icon
+#install_this_app_icon

@@ -182,6 +182,17 @@ proc make_packed_steam_hotwater_settings {arrname} {
 	return [::fields::pack [hotwater_steam_settings_spec] arr]
 }
 
+proc version_spec {} {
+	set spec {
+		APIVersion {Short {} {} {unsigned} {$val / 1.0}}
+		BLEFWMajor {Short {} {} {unsigned} {$val / 1.0}}
+		BLEFWMinor {Short {} {} {unsigned} {$val / 1.0}}
+		P0BLECommits {Short {} {} {unsigned} {$val / 1.0}}
+		BLESha {char {} {} {unsigned} {$val / 1.0}}
+		Dirty {char {} {} {unsigned} {$val / 1.0}}
+	}
+	return $spec
+}
 
 proc hotwater_steam_settings_spec {} {
 	set spec {
@@ -710,6 +721,24 @@ proc shot_sample_spec {} {
 
 }
 
+
+proc parse_binary_version_desc {packed destarrname} {
+	upvar $destarrname Version
+	unset -nocomplain Version
+
+	set spec [version_spec]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec Version bigeendian
+	foreach {field val} [array get Version] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set Version($field) [expr $extra]
+		}
+	}
+}
+
 proc parse_binary_hotwater_desc {packed destarrname} {
 	upvar $destarrname ShotSample
 	unset -nocomplain ShotSample
@@ -769,6 +798,10 @@ proc get_timer {state substate} {
   return $timer
 }
 
+proc use_old_ble_spec {} {
+	return 1
+}
+
 
 proc update_de1_shotvalue {packed} {
 
@@ -777,20 +810,20 @@ proc update_de1_shotvalue {packed} {
 	return
   }
 
-  # the timer stores hundreds of a second, so we take the half cycles, divide them by hertz/2 to get seconds, and then multiple that all by 100 to get 100ths of a second, stored as an int
-#  set spec_obsolete {
-#	Timer {Short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
-#	GroupPressure {char {} {} {unsigned} {$val / 16.0}}
-#	GroupFlow {char {} {} {unsigned} {$val / 16.0}}
-#	MixTemp {Short {} {} {unsigned} {$val / 256.0}}
-#	HeadTemp {Short {} {} {unsigned} {$val / 256.0}}
-#	SetMixTemp {Short {} {} {unsigned} {$val / 256.0}}
-#	SetHeadTemp {Short {} {} {unsigned} {$val / 256.0}}
-#	SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
-#	SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
-#	FrameNumber {char {} {} {unsigned} {}}
-#	SteamTemp {Short {} {} {unsigned} {$val / 256.0}}
-#  }
+  	# the timer stores hundreds of a second, so we take the half cycles, divide them by hertz/2 to get seconds, and then multiple that all by 100 to get 100ths of a second, stored as an int
+	set spec_old {
+		Timer {Short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
+		GroupPressure {char {} {} {unsigned} {$val / 16.0}}
+		GroupFlow {char {} {} {unsigned} {$val / 16.0}}
+		MixTemp {Short {} {} {unsigned} {$val / 256.0}}
+		HeadTemp {Short {} {} {unsigned} {$val / 256.0}}
+		SetMixTemp {Short {} {} {unsigned} {$val / 256.0}}
+		SetHeadTemp {Short {} {} {unsigned} {$val / 256.0}}
+		SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
+		SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
+		FrameNumber {char {} {} {unsigned} {}}
+		SteamTemp {Short {} {} {unsigned} {$val / 256.0}}
+	}
 
 	# HeatTemp is a 24bit number, which Tcl doesn't have, so we grab it as 3 chars and manually convert it to a number	
   	set spec {
@@ -808,9 +841,15 @@ proc update_de1_shotvalue {packed} {
 		FrameNumber {char {} {} {unsigned} {}}
 		SteamTemp {chart {} {} {unsigned} {}}
   	}
-   	array set specarr $spec
 
-	::fields::unpack $packed $spec ShotSample bigeendian
+  	if {[use_old_ble_spec] == 1} {
+	   	array set specarr $spec_old
+		::fields::unpack $packed $spec_old ShotSample bigeendian
+	} else {
+	   	array set specarr $spec
+		::fields::unpack $packed $spec ShotSample bigeendian
+	}
+
   	foreach {field val} [array get ShotSample] {
 	set specparts $specarr($field)
 	set extra [lindex $specparts 4]
@@ -839,12 +878,18 @@ proc update_de1_shotvalue {packed} {
 	#set ::timers($timerkey) $::de1(timer)
 
 
-  if {[info exists ShotSample(HeadTemp1)] == 1} {
-	set HeadTemp [expr { $ShotSample(HeadTemp1) + ($ShotSample(HeadTemp2) / 256.0) + ($ShotSample(HeadTemp3) / 65536.0) }]
-	#puts "HeadTemp: $HeadTemp"
-	set ::de1(head_temperature) $HeadTemp
-	#msg "updated head temp $ShotSample(HeadTemp)"
-  }
+  	if {[use_old_ble_spec] == 1} {
+		set HeadTemp $ShotSample(HeadTemp)
+		set ::de1(head_temperature) $HeadTemp
+	} else {
+	  	if {[info exists ShotSample(HeadTemp1)] == 1} {
+			set HeadTemp [expr { $ShotSample(HeadTemp1) + ($ShotSample(HeadTemp2) / 256.0) + ($ShotSample(HeadTemp3) / 65536.0) }]
+		}
+		#puts "HeadTemp: $HeadTemp"
+		set ::de1(head_temperature) $HeadTemp
+		#msg "updated head temp $ShotSample(HeadTemp)"
+	}
+
   if {[info exists ShotSample(MixTemp)] == 1} {
 	set ::de1(mix_temperature) $ShotSample(MixTemp)
 	#msg "updated mix temp to $ShotSample(MixTemp)"
@@ -878,10 +923,7 @@ proc update_de1_shotvalue {packed} {
 	#msg "updated head temp $ShotSample(SetHeadTemp)"
   }
 
-
-
   append_live_data_to_espresso_chart
-
 }
 
 set previous_de1_substate 0

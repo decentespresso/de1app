@@ -34,6 +34,12 @@ proc de1_disable_bluetooth_notifications {} {
 }
 
 
+proc read_de1_version {} {
+	puts "read_de1_version"
+	userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00a" $::de1(cinstance)]
+}
+
+
 proc poll_de1_state {} {
 
 	puts "poll_de1_state"
@@ -253,6 +259,15 @@ proc de1_read {} {
 }
 
 
+proc de1_read_version {} {
+	if {$::de1(device_handle) == "0"} {
+		msg "error: de1 not connected"
+		return
+	}
+
+	userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0a) $::de1(cinstance)]
+}
+
 proc de1_read_hotwater {} {
 	if {$::de1(device_handle) == "0"} {
 		msg "error: de1 not connected"
@@ -387,17 +402,16 @@ proc de1_ble_handler {event data} {
 
 					#msg "connected to de1 with handle $handle"
 
-					#de1_enable_a00d
-					#de1_enable_a00e
-					#de1_enable_a00f
-					de1_disable_bluetooth_notifications
-					de1_send_steam_hotwater_settings					
-					de1_send_shot_frames
-					de1_enable_bluetooth_notifications
-					start_idle
+					#de1_disable_bluetooth_notifications
+					read_de1_version
+					#de1_send_steam_hotwater_settings					
+					#de1_send_shot_frames
+					#de1_enable_bluetooth_notifications
+					#poll_de1_state
+					#start_idle
+
 					#de1_disable_bluetooth_notifications
 					# need to re-enable!!!!
-					#poll_de1_state
 					#
 					#send_de1_shot_and_steam_settings
 					#run_next_userdata_cmd
@@ -414,7 +428,7 @@ proc de1_ble_handler {event data} {
 
 		    characteristic {
 			    #.t insert end "${event}: ${data}\n"
-			    #msg "de1 characteristic $state: ${event}: ${data}"
+			    msg "de1 characteristic $state: ${event}: ${data}"
 			    #msg "connected to de1 with $handle "
 				if {$state eq "discovery"} {
 					msg "1"
@@ -451,6 +465,12 @@ proc de1_ble_handler {event data} {
 								set ::de1(wrote) 1
 								return
 							}
+						} elseif {$cuuid == "0000A00A-0000-1000-8000-00805F9B34FB"} {
+						    set ::de1(last_ping) [clock seconds]
+							#update_de1_state $value
+							parse_binary_version_desc $value arr2
+							msg "version data received [string length $value] bytes: $value  : [array get arr2]"
+							set ::de1(version) [array get arr2]
 						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value

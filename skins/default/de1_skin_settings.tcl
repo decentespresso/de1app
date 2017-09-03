@@ -232,7 +232,7 @@ add_de1_widget "settings_2a settings_2b" graph 30 815 {
 	} -plotbackground #EEEEEE -width [rescale_x_skin 1100] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised
 
 
-add_de1_variable "settings_1" 2460 670 -text "" -font Helv_6 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+add_de1_variable "settings_1" 2470 670 -text "" -font Helv_6 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 
 add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -242,7 +242,10 @@ add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold 
 #add_de1_text "settings_4" 2280 980 -text [translate "Pair"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -width 200 -justify "center"
 
 # future clean steam feature
-add_de1_button "settings_4" {} 30 1206 630 1406
+add_de1_button "settings_4" {} 30 1206 1260 1406
+
+# future descale button
+add_de1_button "settings_4" {} 640 1206 630 1406
 
 # future clean espresso feature
 #add_de1_button "settings_4" {} 640 1206 1260 1406
@@ -264,7 +267,7 @@ add_de1_button "settings_4" {} 640 890 1260 1080
 add_de1_widget "settings_4" entry 1340 380 {} -width 30 -font Helv_15 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
 add_de1_text "settings_4" 1350 480 -text [translate "Name your machine"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 add_de1_text "settings_4" 1320 240 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 1350 600 -text "[translate {Version:}] 1.0 beta 6" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
+add_de1_variable "settings_4" 1350 600 -text "[translate {Version:}] $::de1(version)" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left" -textvariable "[translate {DE1 Version:}] $::de1(version)" 
 #add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 # future feature to have scheduled power up/down
