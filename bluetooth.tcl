@@ -402,13 +402,13 @@ proc de1_ble_handler {event data} {
 
 					#msg "connected to de1 with handle $handle"
 
-					#de1_disable_bluetooth_notifications
-					read_de1_version
-					#de1_send_steam_hotwater_settings					
-					#de1_send_shot_frames
-					#de1_enable_bluetooth_notifications
+					de1_disable_bluetooth_notifications
+					#read_de1_version
+					de1_send_steam_hotwater_settings					
+					de1_send_shot_frames
 					#poll_de1_state
-					#start_idle
+					de1_enable_bluetooth_notifications
+					start_idle
 
 					#de1_disable_bluetooth_notifications
 					# need to re-enable!!!!

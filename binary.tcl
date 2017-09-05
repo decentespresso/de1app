@@ -799,7 +799,7 @@ proc get_timer {state substate} {
 }
 
 proc use_old_ble_spec {} {
-	return 1
+	return 0
 }
 
 
