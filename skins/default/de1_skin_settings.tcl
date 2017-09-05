@@ -69,11 +69,20 @@ add_de1_variable "settings_2 settings_2a" 1605 1000 -text "" -font Helv_10_bold 
 add_de1_variable "settings_2 settings_2a" 2510 1335 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[commify $::settings(pressure_end)] [translate "bar"]}
 
 if {[de1plus]} {
-	add_de1_button "settings_2 settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 .1 ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 2404 210 2550 665 ""
-	add_de1_variable "settings_2 settings_2a settings_2b" 2460 690 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+	if {$::settings(enable_fahrenheit) == 1} {
+		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.555556 0.0555556 ::settings(espresso_temperature) 80 98 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
+	} else {
+		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 .1 ::settings(espresso_temperature) 80 98 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
+	}
+	add_de1_variable "settings_2a settings_2b" 2478 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+
 } else {
-	add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 2404 210 2550 665 ""
-	add_de1_variable "settings_2" 2475 620 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+	if {$::settings(enable_fahrenheit) == 1} {
+		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.555556 0.555556 ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
+	} else {
+		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
+	}
+	add_de1_variable "settings_2" 2478 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 }
 
 add_de1_widget "settings_2 settings_2a" graph 24 220 { 
@@ -432,7 +441,12 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 
 #add_de1_button "settings_3" {say [translate {water temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(water_temperature) $::de1(water_min_temperature) $::de1(water_max_temperature) %x %y %x0 %y0 %x1 %y1} 2130 340 2500 820 ""
 
-add_de1_widget "settings_3" scale 50 1200 {} -from 60 -to 99 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1150] -width [rescale_y_skin 135] -variable ::settings(water_temperature) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+if {$::settings(enable_fahrenheit) == 1} {
+	add_de1_widget "settings_3" scale 50 1200 {} -from 60 -to 99 -background #e4d1c1 -borderwidth 1 -bigincrement 0.555556 -showvalue 0 -resolution 0.555556 -length [rescale_x_skin 1150] -width [rescale_y_skin 135] -variable ::settings(water_temperature) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+} else {
+	add_de1_widget "settings_3" scale 50 1200 {} -from 60 -to 99 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1150] -width [rescale_y_skin 135] -variable ::settings(water_temperature) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+}
+
 #add_de1_variable "settings_3" 310 1350 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
 add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Temperature:"] [return_temperature_measurement $::settings(water_temperature)]}
 
