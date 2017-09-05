@@ -73,7 +73,7 @@ if {[de1plus]} {
 	add_de1_variable "settings_2 settings_2a settings_2b" 2460 690 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 } else {
 	add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 2404 210 2550 665 ""
-	add_de1_variable "settings_2" 2460 690 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+	add_de1_variable "settings_2" 2475 620 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 }
 
 add_de1_widget "settings_2 settings_2a" graph 24 220 { 
