@@ -160,7 +160,7 @@ add_de1_text "settings_2c" 1960 820 -text "Maximum" -font Helv_10_bold -fill "#5
 add_de1_widget "settings_2c" listbox 70 320 { 
 	fill_profile_steps_listbox $widget
 
-} -background #fbfaff -font Helv_10 -bd 0 -height 10 -width 32 -foreground #d3dbf3 -borderwidth 0
+} -background #fbfaff -font Helv_10 -bd 0 -height 10 -width 30 -foreground #d3dbf3 -borderwidth 0
 
 
 add_de1_widget "settings_2c" entry 70 1100  {set ::globals(widget_profile_step_save) $widget} -width 35 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_step) 
