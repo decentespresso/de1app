@@ -658,13 +658,9 @@ proc de1_connected_state { {hide_delay 0} } {
 				return "[translate Connecting] : $elapsed"
 			}
 		} else {
-			if {$since_last_ping > 10} {
-				
+			if {$since_last_ping > 59} {
 				#ble_find_de1s
 				#ble_connect_to_de1
-			}
-
-			if {$since_last_ping > 600} {
 				return [subst {[translate "Disconnected"]}]
 			} 
 			return [subst {[translate "Disconnected"] : $since_last_ping}]

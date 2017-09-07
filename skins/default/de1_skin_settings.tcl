@@ -74,7 +74,7 @@ if {[de1plus]} {
 	} else {
 		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 .1 ::settings(espresso_temperature) 80 98 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
 	}
-	add_de1_variable "settings_2a settings_2b" 2478 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+	add_de1_variable "settings_2a settings_2b" 2478 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 
 } else {
 	if {$::settings(enable_fahrenheit) == 1} {
@@ -82,7 +82,7 @@ if {[de1plus]} {
 	} else {
 		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) 80 95 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
 	}
-	add_de1_variable "settings_2" 2478 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+	add_de1_variable "settings_2" 2478 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 }
 
 add_de1_widget "settings_2 settings_2a" graph 24 220 { 
@@ -241,7 +241,7 @@ add_de1_widget "settings_2a settings_2b" graph 30 815 {
 	} -plotbackground #EEEEEE -width [rescale_x_skin 1100] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised
 
 
-add_de1_variable "settings_1" 2470 660 -text "" -font Helv_6 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+add_de1_variable "settings_1" 2478 660 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 
 add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -276,7 +276,7 @@ add_de1_button "settings_4" {} 640 890 1260 1080
 add_de1_widget "settings_4" entry 1340 380 {} -width 30 -font Helv_15 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
 add_de1_text "settings_4" 1350 480 -text [translate "Name your machine"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 add_de1_text "settings_4" 1320 240 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_variable "settings_4" 1350 600 -text "[translate {Version:}] $::de1(version)" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left" -textvariable "[translate {DE1 Version:}] $::de1(version)" 
+add_de1_variable "settings_4" 1350 600 -text "[translate {Version:}] $::de1(version)" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
 #add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 # future feature to have scheduled power up/down

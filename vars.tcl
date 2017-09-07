@@ -46,7 +46,7 @@ proc espresso_frame_title {num} {
 	} elseif {$num == 2} {
 		return "2) Hold pressure at 8.4 bars for 10 seconds"
 	} elseif {$num == 3} {
-		return "3) Maintain 1.2 ml/s flow rate for 30 seconds"
+		return "3) Maintain 1.2 mL/s flow rate for 30 seconds"
 	} elseif {$num == 4} {
 		return ""
 	} elseif {$num == 5} {
@@ -62,7 +62,7 @@ proc espresso_frame_description {num} {
 	} elseif {$num == 2} {
 		return "Quickly go to 8.4 bar of pressure with a basket temperature of 90ºC. Go to the next step after 10 seconds."
 	} elseif {$num == 3} {
-		return "Automatically manage pressure to attain a flow rate of 1.2 ml/s at a water temperature of 88ºC.  End this step after 30 seconds."
+		return "Automatically manage pressure to attain a flow rate of 1.2 mL/s at a water temperature of 88ºC.  End this step after 30 seconds."
 	} elseif {$num == 4} {
 		return ""
 	} elseif {$num == 5} {
@@ -341,7 +341,7 @@ proc return_liquid_measurement {in} {
 
 proc return_flow_measurement {in} {
 	if {$::settings(enable_fluid_ounces) != 1} {
-		return [subst {[round_to_two_digits $in] [translate "ml/s"]}]
+		return [subst {[round_to_two_digits $in] [translate "mL/s"]}]
 	} else {
 		return [subst {[round_to_two_digits [ml_to_oz $in]] oz/s}]
 	}
@@ -463,6 +463,13 @@ proc setting_water_temperature {} {
 	return $::settings(water_temperature)
 }
 
+proc return_html_temperature_units {} {
+	if {$::settings(enable_fahrenheit) == 1} {
+		return "ºF"
+	} else {
+		return "ºC"
+	}
+}
 proc return_temperature_number {in} {
 	if {$::settings(enable_fahrenheit) == 1} {
 		return [celsius_to_fahrenheit $in]
