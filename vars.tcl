@@ -1167,7 +1167,23 @@ proc seconds_text {num} {
 		return [translate "off"]
 	} elseif {$num == 1} {
 		return [subst {$num [translate "second"]}]
+	} elseif {$num == 60} {
+		return [translate "1 minute"]
 	} else {
 		return [subst {$num [translate "seconds"]}]
+	}
+}
+
+proc minutes_text {num} {
+	if {$num == 0} {
+		return [translate "off"]
+	} elseif {$num == 60} {
+		return [translate "1 hour"]
+	} elseif {$num == 120} {
+		return [translate "2 hours"]
+	} elseif {$num == 1} {
+		return [subst {$num [translate "minute"]}]
+	} else {
+		return [subst {$num [translate "minutes"]}]
 	}
 }

@@ -583,7 +583,7 @@ proc change_screen_saver_image {} {
 	.can create image {0 0} -anchor nw -image saver  -tag saver -state normal
 	.can lower saver
 	update
-	after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
+	after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
 }
 
 proc check_if_should_start_screen_saver {} {
@@ -773,7 +773,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	puts "page_display_change $page_to_show"
 
 	if {$page_to_show == "saver"} {
-		after [expr {1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
+		after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
 	}
 
 	# track the time entering into a page

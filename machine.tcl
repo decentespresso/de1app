@@ -105,7 +105,7 @@ array set ::settings {
 	alarm_sleep 82800
 	timer_interval 500
 	screen_saver_delay 60
-	screen_saver_change_interval 600
+	screen_saver_change_interval 10
 	enable_fluid_ounces 0
 	timer_enable 0
 	enable_fahrenheit 0
