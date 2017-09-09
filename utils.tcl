@@ -903,3 +903,12 @@ proc load_font {name fn pcsize {androidsize {}} } {
 
     }
 }
+
+
+proc list_remove_element {list toremove} {
+    set newlist [lsearch -all -inline -not -exact $list $toremove]
+    #puts "remove  :'$toremove'"
+    #puts "oldlist  :$list"
+    #puts "newlist: '$newlist'"
+    return $newlist
+}

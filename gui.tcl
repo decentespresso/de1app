@@ -641,15 +641,18 @@ proc de1_connected_state { {hide_delay 0} } {
 	}
 
 	if {$since_last_ping < 5} {
-
+		borg spinner off
 		if {$elapsed > $hide_delay && $hide_delay != 0} {
 			# only show the "connected" message for 5 seconds
 			return ""
 		}
 		#return "[translate Connected] : $elapsed"
+		borg toast "[translate Connected]"
 		return "[translate Connected]"
 		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_bluetooth_list"
 	} else {
+		borg toast "[translate Disconnected]"
+		borg spinner on
 		if {$::de1(device_handle) == 0} {
 			#return "[translate Connecting]"
 			if {$elapsed > 600} {
@@ -662,7 +665,7 @@ proc de1_connected_state { {hide_delay 0} } {
 				#ble_find_de1s
 				#ble_connect_to_de1
 				return [subst {[translate "Disconnected"]}]
-			} 
+			}
 			return [subst {[translate "Disconnected"] : $since_last_ping}]
 		}
 	}

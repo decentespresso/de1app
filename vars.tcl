@@ -1187,3 +1187,57 @@ proc minutes_text {num} {
 		return [subst {$num [translate "minutes"]}]
 	}
 }
+
+proc scentone_choice {english_aroma} {
+	if {[lsearch -exact $::settings(scentone) $english_aroma] == -1} {
+		return [translate $english_aroma]
+	} else {
+		return [subst {\[ \[ \[ [translate $english_aroma] \] \] \]}]
+	}
+}
+
+proc scentone_toggle {english_aroma} {
+	if {[lsearch -exact $::settings(scentone) $english_aroma] == -1} {
+		lappend ::settings(scentone) $english_aroma
+		set ::settings(scentone) [lsort $::settings(scentone)]
+	} else {
+		set ::settings(scentone) [lsort -unique [list_remove_element $::settings(scentone) $english_aroma]]
+	}
+	update_onscreen_variables
+}
+
+proc scentone_category {english_category} {
+
+	set english_aroma_list $::scentone($english_category)
+
+	foreach english_aroma $english_aroma_list {
+		if {[lsearch -exact $::settings(scentone) $english_aroma] != -1} {
+			return [subst {\[ \[ \[ [translate $english_category] \] \] \]}]
+		}
+	}
+	return [translate $english_category]
+}
+
+proc scentone_selected { {category {}} } {
+	#puts "scent one: '$::settings(scentone)'"
+
+	set returnlist {}
+	foreach selected $::settings(scentone) {
+		if {$category == ""} {
+			# if this is a complete list of all selected aromas
+			lappend returnlist [translate $selected]
+		} else {
+			# if this is only the selected aromas for a subcategory
+			if {[lsearch -exact $::scentone($category) $selected] != -1} {
+				lappend returnlist [translate $selected]
+			}
+		}
+
+	}
+
+	if {$returnlist == "" } {
+		return ""
+	}
+	return [subst {[join [lsort $returnlist] ", "]}]
+}
+

@@ -1,6 +1,7 @@
 
-#######################
+##############################################
 # scent one aroma system
+##############################################
 
 add_de1_page "scentone_1" "[skin_directory_graphics]/scentone_1.jpg"
 add_de1_page "scentone_tropical" "[skin_directory_graphics]/scentone_tropical.jpg"
@@ -19,43 +20,235 @@ add_de1_button "espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {say
 add_de1_text "scentone_1 scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "scentone_1 scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
+# saving an exiting from each of the aroma categories
 add_de1_button "scentone_1" {say [translate {save}] $::settings(sound_button_in); set_next_page off espresso_3; page_show off } 2016 1406 2560 1600
 add_de1_button "scentone_1" {say [translate {save}] $::settings(sound_button_in); set_next_page off espresso_3; page_show off } 1505 1406 2015 1600
 add_de1_button "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" {say [translate {save}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 2016 1406 2560 1600
 add_de1_button "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" {say [translate {save}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 1505 1406 2015 1600
 
+add_de1_variable "scentone_1" 20 20 -text "" -font Helv_15_bold -width 880 -fill "#999999" -anchor "nw" -textvariable {[scentone_selected]} 
 
-###
+
+##################################################################################################################################################################################################################
 # main scentone categories
 
-# row 1
-add_de1_text "scentone_1" 300 800 -text [translate "Tropical fruit"] -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
-add_de1_text "scentone_1" 830 800 -text [translate "Berry"] -font Helv_10_bold -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
-add_de1_text "scentone_1" 1370 800 -text [translate "Citrus"] -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
-add_de1_text "scentone_1" 1850 800 -text [translate "Stone fruit"] -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
-add_de1_text "scentone_1" 2280 800 -text [translate "Nut & cereal"] -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
+set ::scentone(Tropical\ fruit) {"Guava" "Mangosteen" "Mango" "Banana" "Coconut" "Passion fruit" "Watermelon" "Papaya" "Tropical fruits" "Pineapple" "Melon" "Lychee"}
+set ::scentone(Berry) {"Strawberry" "Blueberry" "Raspberry" "Cranberry" "Blackberry" "Acai berry" "Black currant" "White grape" "Muscat grape" "Red grape"}
+set ::scentone(Citrus) {"Pomegranate" "Aloe" "Lemon" "Orange" "Lime" "Yuzu" "Grapefruit" "Chinese pear" "Apple" "Quince"}
+set ::scentone(Stone\ fruit) {"Acerola" "Light cherry" "Dark cherry" "Peach" "Plum" "Apricot"}
+set ::scentone(Nut\ &\ cereal) {"Hazelnut" "Walnut" "Pine nut" "Almond" "Peanut" "Pistachio" "Sesame" "Red bean" "Malt" "Toasted rice" "Roasted"}
+set ::scentone(Chocolate\ &\ caramel) {"Caramel" "Brown sugar" "Honey" "Maple syrup" "Milk chocolate" "Dark chocolate" "Mocha" "Cream" "Butter" "Yogurt" "Vanilla"}
+set ::scentone(Flower\ &\ herb) {"Pine" "Hawthorn" "Earl grey" "Rose" "Jasmin" "Acacia" "Elderflower" "Lavender" "Bergamot" "Chrysanthemum" "Hibiscus" "Eucalyptus"}
+set ::scentone(Spice) {"Basil" "Thyme" "Cinnamon" "Nutmeg" "Clove" "Cardamon" "Star anise" "Cumin" "Black pepper" "Garlic" "Ginger"}
+set ::scentone(Vegetable) {"Date" "Pumpkin" "Tomato" "Cucumber" "Mushroom" "Taro" "Arrowroot" "Ginseng" "Paprika"}
+set ::scentone(Savory) {"Cheddar" "Soy sauce" "Mustard" "Mayonnaise" "Musk" "Amber" "Smoke" "Beef"}
 
-# row 2
-add_de1_text "scentone_1" 300 1380 -text [translate "Chocolate & caramel"] -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
-add_de1_text "scentone_1" 830 1380 -text [translate "Flower & herb"] -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
-add_de1_text "scentone_1" 1370 1380 -text [translate "Spice"] -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
-add_de1_text "scentone_1" 1931 1380 -text [translate "Vegetable"] -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
-add_de1_text "scentone_1" 2330 1380 -text [translate "Savory"] -font Helv_9_bold -fill "#BBBBBB" -anchor "center"
+# row 1 text labels 
+add_de1_variable "scentone_1" 300 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Tropical fruit"]} 
+add_de1_variable "scentone_1" 830 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Berry" ]} 
+add_de1_variable "scentone_1" 1370 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Citrus" ]} 
+add_de1_variable "scentone_1" 1850 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Stone fruit" ]} 
+add_de1_variable "scentone_1" 2280 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Nut & cereal" ]} 
 
-# row 1 
+# row 2 text labels 
+add_de1_variable "scentone_1" 300 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Chocolate & caramel" ]} 
+add_de1_variable "scentone_1" 830 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Flower & herb" ]} 
+add_de1_variable "scentone_1" 1370 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Spice" ]} 
+add_de1_variable "scentone_1" 1931 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Vegetable" ]} 
+add_de1_variable "scentone_1" 2330 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_category "Savory" ]} 
+
+# row 1 tap areas
 add_de1_button "scentone_1" {say [translate {Tropical fruit}] $::settings(sound_button_in); set_next_page off scentone_tropical; page_show off } 15 290 520 860
 add_de1_button "scentone_1" {say [translate {Berry}] $::settings(sound_button_in); set_next_page off scentone_berry; page_show off } 522 290 1100 860
 add_de1_button "scentone_1" {say [translate {Citrus}] $::settings(sound_button_in); set_next_page off scentone_citrus; page_show off } 1102 290 1660 860
 add_de1_button "scentone_1" {say [translate {Stone fruit}] $::settings(sound_button_in); set_next_page off scentone_stone; page_show off } 1662 290 2050 860
 add_de1_button "scentone_1" {say [translate {Nut & cereal}] $::settings(sound_button_in); set_next_page off scentone_cereal; page_show off } 2052 290 2550 860
-# row 2
+
+# row 2 tap areas
 add_de1_button "scentone_1" {say [translate {Chocolate & caramel}] $::settings(sound_button_in); set_next_page off scentone_chocolate; page_show off } 15 862 560 1400
 add_de1_button "scentone_1" {say [translate {Flower & herb}] $::settings(sound_button_in); set_next_page off scentone_flower; page_show off } 562 862 1070 1400
 add_de1_button "scentone_1" {say [translate {Spice}] $::settings(sound_button_in); set_next_page off scentone_spice; page_show off } 1072 862 1690 1400
 add_de1_button "scentone_1" {say [translate {Vegetable}] $::settings(sound_button_in); set_next_page off scentone_vegetable; page_show off } 1692 862 2140 1400
 add_de1_button "scentone_1" {say [translate {Savory}] $::settings(sound_button_in); set_next_page off scentone_savory; page_show off } 2142 862 2550 1400
-###
+##################################################################################################################################################################################################################
 
-set_next_page off scentone_1
-#######################
+##################################################################################################################################################################################################################
+# tropical fruits
 
+#add_de1_variable "scentone_tropical" 50 100 -text "" -font Helv_15_bold -fill "#999999" -anchor "nw" -textvariable {[translate "Tropical fruit"]} 
+add_de1_variable "scentone_tropical" 20 20 -text "" -font Helv_15_bold -width 880 -fill "#999999" -anchor "nw" -textvariable {[scentone_selected "Tropical fruit"]} 
+
+# row 1 text labels 
+add_de1_variable "scentone_tropical" 220 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Guava"]} 
+add_de1_variable "scentone_tropical" 680 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Mangosteen"]} 
+add_de1_variable "scentone_tropical" 1080 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Mango"]} 
+add_de1_variable "scentone_tropical" 1450 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Banana"]} 
+add_de1_variable "scentone_tropical" 1900 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Coconut"]} 
+add_de1_variable "scentone_tropical" 2300 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Passion fruit"]} 
+
+# row 2 text labels 
+add_de1_variable "scentone_tropical" 260 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Watermelon"]} 
+add_de1_variable "scentone_tropical" 660 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Papaya"]} 
+add_de1_variable "scentone_tropical" 1090 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Tropical fruits"]} 
+add_de1_variable "scentone_tropical" 1480 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Pineapple"]} 
+add_de1_variable "scentone_tropical" 1900 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Melon"]} 
+add_de1_variable "scentone_tropical" 2300 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Lychee"]} 
+
+# row 1 tap areas
+add_de1_button "scentone_tropical" {say [translate {Guava}] $::settings(sound_button_in); scentone_toggle "Guava"} 15 290 470 860
+add_de1_button "scentone_tropical" {say [translate {Mangosteen}] $::settings(sound_button_in); scentone_toggle "Mangosteen" } 472 290 870 860
+add_de1_button "scentone_tropical" {say [translate {Mango}] $::settings(sound_button_in); scentone_toggle "Mango" } 872 290 1270 860
+add_de1_button "scentone_tropical" {say [translate {Banana}] $::settings(sound_button_in); scentone_toggle "Banana" } 1272 290 1700 860
+add_de1_button "scentone_tropical" {say [translate {Coconut}] $::settings(sound_button_in); scentone_toggle "Coconut" } 1702 290 2100 860
+add_de1_button "scentone_tropical" {say [translate {Passion fruit}] $::settings(sound_button_in); scentone_toggle "Passion fruit" } 2102 290 2550 860
+
+# row 2 tap areas
+add_de1_button "scentone_tropical" {say [translate {Watermelon}] $::settings(sound_button_in); scentone_toggle "Watermelon" } 15 862 450 1400
+add_de1_button "scentone_tropical" {say [translate {Papaya}] $::settings(sound_button_in); scentone_toggle "Papaya" } 452 862 876 1400
+add_de1_button "scentone_tropical" {say [translate {Tropical fruits}] $::settings(sound_button_in); scentone_toggle "Tropical fruits" } 878 862 1300 1400
+add_de1_button "scentone_tropical" {say [translate {Pineapple}] $::settings(sound_button_in); scentone_toggle "Pineapple" } 1302 862 1750 1400
+add_de1_button "scentone_tropical" {say [translate {Melon}] $::settings(sound_button_in); scentone_toggle "Melon" } 1752 862 2130 1400
+add_de1_button "scentone_tropical" {say [translate {Lychee}] $::settings(sound_button_in); scentone_toggle "Lychee" } 2132 862 2550 1400
+##################################################################################################################################################################################################################
+
+##################################################################################################################################################################################################################
+# berry fruits
+
+#add_de1_variable "scentone_tropical" 50 100 -text "" -font Helv_15_bold -fill "#999999" -anchor "nw" -textvariable {[translate "Tropical fruit"]} 
+add_de1_variable "scentone_berry" 20 20 -text "" -font Helv_15_bold -width 900 -fill "#999999" -anchor "nw" -textvariable {[scentone_selected "Berry"]} 
+
+# row 1 text labels 
+add_de1_variable "scentone_berry" 285 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Strawberry"]} 
+add_de1_variable "scentone_berry" 800 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Blueberry"]} 
+add_de1_variable "scentone_berry" 1310 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Raspberry"]} 
+add_de1_variable "scentone_berry" 1740 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Cranberry"]} 
+add_de1_variable "scentone_berry" 2300 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Blackberry"]} 
+
+# row 2 text labels 
+add_de1_variable "scentone_berry" 304 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Acai berry"]} 
+add_de1_variable "scentone_berry" 820 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Black currant"]} 
+add_de1_variable "scentone_berry" 1300 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "White grape"]} 
+add_de1_variable "scentone_berry" 1760 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Muscat grape"]} 
+add_de1_variable "scentone_berry" 2270 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Red grape"]} 
+
+# row 1 tap areas
+add_de1_button "scentone_berry" {say [translate {Strawberry}] $::settings(sound_button_in); scentone_toggle "Strawberry"} 15 290 508 860
+add_de1_button "scentone_berry" {say [translate {Blueberry}] $::settings(sound_button_in); scentone_toggle "Blueberry" } 510 290 1060 860
+add_de1_button "scentone_berry" {say [translate {Raspberry}] $::settings(sound_button_in); scentone_toggle "Raspberry" } 1062 290 1560 860
+add_de1_button "scentone_berry" {say [translate {Cranberry}] $::settings(sound_button_in); scentone_toggle "Cranberry" } 1562 290 2060 860
+add_de1_button "scentone_berry" {say [translate {Blackberry}] $::settings(sound_button_in); scentone_toggle "Blackberry" } 2062 290 2558 860
+
+# row 2 tap areas
+add_de1_button "scentone_berry" {say [translate {Acai berry}] $::settings(sound_button_in); scentone_toggle "Acai berry" } 15 862 570 1400
+add_de1_button "scentone_berry" {say [translate {Black currant}] $::settings(sound_button_in); scentone_toggle "Black currant" } 572 862 1050 1400
+add_de1_button "scentone_berry" {say [translate {White grape}] $::settings(sound_button_in); scentone_toggle "White grape" } 1052 862 1550 1400
+add_de1_button "scentone_berry" {say [translate {Muscat grape}] $::settings(sound_button_in); scentone_toggle "Muscat grape" } 1552 862 2000 1400
+add_de1_button "scentone_berry" {say [translate {Red grape}] $::settings(sound_button_in); scentone_toggle "Red grape" } 2002 862 2550 1400
+##################################################################################################################################################################################################################
+
+
+##################################################################################################################################################################################################################
+# citrus fruits
+
+add_de1_variable "scentone_citrus" 20 20 -text "" -font Helv_15_bold -width 880 -fill "#999999" -anchor "nw" -textvariable {[scentone_selected "Citrus"]} 
+
+# row 1 text labels 
+add_de1_variable "scentone_citrus" 300 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Pomegranate"]} 
+add_de1_variable "scentone_citrus" 700 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Aloe"]} 
+add_de1_variable "scentone_citrus" 1160 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Lemon"]} 
+add_de1_variable "scentone_citrus" 1752 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Orange"]} 
+add_de1_variable "scentone_citrus" 2268 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Lime"]} 
+
+# row 2 text labels 
+add_de1_variable "scentone_citrus" 422 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Yuzu"]} 
+add_de1_variable "scentone_citrus" 960 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Grapefruit"]} 
+add_de1_variable "scentone_citrus" 1422 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Chinese pear"]} 
+add_de1_variable "scentone_citrus" 1800 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Apple"]} 
+add_de1_variable "scentone_citrus" 2160 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Quince"]} 
+
+# row 1 tap areas
+add_de1_button "scentone_citrus" {say [translate {Pomegranate}] $::settings(sound_button_in); scentone_toggle "Pomegranate"} 15 290 500 860
+add_de1_button "scentone_citrus" {say [translate {Aloe}] $::settings(sound_button_in); scentone_toggle "Aloe" } 502 290 880 860
+add_de1_button "scentone_citrus" {say [translate {Lemon}] $::settings(sound_button_in); scentone_toggle "Lemon" } 882 290 1460 860
+add_de1_button "scentone_citrus" {say [translate {Orange}] $::settings(sound_button_in); scentone_toggle "Orange" } 1462 290 2006 860
+add_de1_button "scentone_citrus" {say [translate {Lime}] $::settings(sound_button_in); scentone_toggle "Lime" } 2006 290 2558 860
+
+# row 2 tap areas
+add_de1_button "scentone_citrus" {say [translate {Yuzu}] $::settings(sound_button_in); scentone_toggle "Yuzu" } 15 862 670 1400
+add_de1_button "scentone_citrus" {say [translate {Grapefruit}] $::settings(sound_button_in); scentone_toggle "Grapefruit" } 672 862 1230 1400
+add_de1_button "scentone_citrus" {say [translate {Chinese pear}] $::settings(sound_button_in); scentone_toggle "Chinese pear" } 1232 862 1620 1400
+add_de1_button "scentone_citrus" {say [translate {Apple}] $::settings(sound_button_in); scentone_toggle "Apple" } 1622 862 2000 1400
+add_de1_button "scentone_citrus" {say [translate {Quince}] $::settings(sound_button_in); scentone_toggle "Quince" } 2002 862 2550 1400
+##################################################################################################################################################################################################################
+
+
+##################################################################################################################################################################################################################
+# stone fruits
+
+add_de1_variable "scentone_stone" 20 20 -text "" -font Helv_15_bold -width 880 -fill "#999999" -anchor "nw" -textvariable {[scentone_selected "Stone fruit"]} 
+
+# row 1 text labels 
+add_de1_variable "scentone_stone" 500 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Acerola"]} 
+add_de1_variable "scentone_stone" 1350 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Light cherry"]} 
+add_de1_variable "scentone_stone" 2120 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Dark cherry"]} 
+
+# row 2 text labels 
+add_de1_variable "scentone_stone" 470 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Peach"]} 
+add_de1_variable "scentone_stone" 1330 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Plum"]} 
+add_de1_variable "scentone_stone" 2130 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Apricot"]} 
+
+# row 1 tap areas
+add_de1_button "scentone_stone" {say [translate {Acerola}] $::settings(sound_button_in); scentone_toggle "Acerola"} 15 290 900 860
+add_de1_button "scentone_stone" {say [translate {Light cherry}] $::settings(sound_button_in); scentone_toggle "Light cherry" } 902 290 1770 860
+add_de1_button "scentone_stone" {say [translate {Dark cherry}] $::settings(sound_button_in); scentone_toggle "Dark cherry" } 1772 290 2550 860
+
+# row 2 tap areas
+add_de1_button "scentone_stone" {say [translate {Peach}] $::settings(sound_button_in); scentone_toggle "Peach" } 15 862 920 1400
+add_de1_button "scentone_stone" {say [translate {Plum}] $::settings(sound_button_in); scentone_toggle "Plum" } 922 862 1700 1400
+add_de1_button "scentone_stone" {say [translate {Apricot}] $::settings(sound_button_in); scentone_toggle "Apricot" } 1702 862 2550 1400
+##################################################################################################################################################################################################################
+
+
+##################################################################################################################################################################################################################
+# tropical fruits
+
+#add_de1_variable "scentone_tropical" 50 100 -text "" -font Helv_15_bold -fill "#999999" -anchor "nw" -textvariable {[translate "Tropical fruit"]} 
+add_de1_variable "scentone_cereal" 20 20 -text "" -font Helv_15_bold -width 880 -fill "#999999" -anchor "nw" -textvariable {[scentone_selected "Nut & cereal"]} 
+
+# row 1 text labels 
+add_de1_variable "scentone_cereal" 275 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Hazelnut"]} 
+add_de1_variable "scentone_cereal" 685 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Walnut"]} 
+add_de1_variable "scentone_cereal" 1060 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Pine nut"]} 
+add_de1_variable "scentone_cereal" 1450 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Almond"]} 
+add_de1_variable "scentone_cereal" 1850 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Peanut"]} 
+add_de1_variable "scentone_cereal" 2285 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Pistachio"]} 
+
+# row 2 text labels 
+add_de1_variable "scentone_cereal" 350 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Watermelon"]} 
+add_de1_variable "scentone_cereal" 850 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Red bean"]} 
+add_de1_variable "scentone_cereal" 1310 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Malt"]} 
+add_de1_variable "scentone_cereal" 1790 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Toasted rice"]} 
+add_de1_variable "scentone_cereal" 2265 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Roasted"]} 
+
+# row 1 tap areas
+add_de1_button "scentone_cereal" {say [translate {Hazelnut}] $::settings(sound_button_in); scentone_toggle "Hazelnut"} 15 290 484 860
+add_de1_button "scentone_cereal" {say [translate {Walnut}] $::settings(sound_button_in); scentone_toggle "Walnut" } 486 290 860 860
+add_de1_button "scentone_cereal" {say [translate {Pine nut}] $::settings(sound_button_in); scentone_toggle "Pine nut" } 862 290 1260 860
+add_de1_button "scentone_cereal" {say [translate {Almond}] $::settings(sound_button_in); scentone_toggle "Almond" } 1262 290 1650 860
+add_de1_button "scentone_cereal" {say [translate {Peanut}] $::settings(sound_button_in); scentone_toggle "Peanut" } 1652 290 2050 860
+add_de1_button "scentone_cereal" {say [translate {Pistachio}] $::settings(sound_button_in); scentone_toggle "Pistachio" } 2052 290 2550 860
+
+# row 2 tap areas
+add_de1_button "scentone_cereal" {say [translate {Sesame}] $::settings(sound_button_in); scentone_toggle "Sesame" } 15 862 634 1400
+add_de1_button "scentone_cereal" {say [translate {Red bean}] $::settings(sound_button_in); scentone_toggle "Red bean" } 636 862 1060 1400
+add_de1_button "scentone_cereal" {say [translate {Malt}] $::settings(sound_button_in); scentone_toggle "Malt" } 1062 862 1525 1400
+add_de1_button "scentone_cereal" {say [translate {Toasted rice}] $::settings(sound_button_in); scentone_toggle "Toasted rice" } 1527 862 2000 1400
+add_de1_button "scentone_cereal" {say [translate {Roasted}] $::settings(sound_button_in); scentone_toggle "Roasted" } 2002 862 2550 1400
+##################################################################################################################################################################################################################
+
+
+#####################################################################
+# end
+#####################################################################
+
+set_next_page off scentone_cereal
