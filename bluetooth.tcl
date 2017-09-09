@@ -21,15 +21,20 @@ proc userdata_append {cmd} {
 
 proc de1_enable_bluetooth_notifications {} {
 	msg "de1_enable_bluetooth_notifications"
-	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
-	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
+	de1_enable_state_notifications
+	de1_enable_temp_notifications
+	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
+	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
 	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
 }
 
 proc de1_disable_bluetooth_notifications {} {
 	msg "de1_disable_bluetooth_notifications"
-	userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
-	userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
+	de1_disable_state_notifications
+	de1_disable_temp_notifications
+
+	#userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
+	#userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
 	#userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00f" $::de1(cinstance)]
 }
 
@@ -54,17 +59,22 @@ proc poll_de1_state {} {
 	#userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
 }
 
-proc de1_enable_a00d {} {
-	#set handle $::de1(device_handle)
-	#ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)
-
+# temp changes
+proc de1_enable_temp_notifications {} {
 	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
 }
 
-proc de1_enable_a00e {} {
-	#set handle $::de1(device_handle)
+# status changes
+proc de1_enable_state_notifications {} {
 	userdata_append [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
-	#ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)
+}
+
+proc de1_disable_temp_notifications {} {
+	userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
+}
+
+proc de1_disable_state_notifications {} {
+	userdata_append [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
 }
 
 proc run_next_userdata_cmd {} {
@@ -399,25 +409,16 @@ proc de1_ble_handler {event data} {
 				    msg "Connected to DE1"
 					set ::de1(device_handle) $handle
 					append_to_de1_bluetooth_list $address
-
 					#msg "connected to de1 with handle $handle"
 
-					de1_disable_bluetooth_notifications
-					#read_de1_version
+					de1_disable_temp_notifications
+					read_de1_version
 					de1_send_steam_hotwater_settings					
 					de1_send_shot_frames
-					#poll_de1_state
-					de1_enable_bluetooth_notifications
+					de1_enable_state_notifications
 					start_idle
+					de1_enable_temp_notifications
 
-					#de1_disable_bluetooth_notifications
-					# need to re-enable!!!!
-					#
-					#send_de1_shot_and_steam_settings
-					#run_next_userdata_cmd
-					#de1_send $::de1_state(Idle)
-
-					#run_de1_app
 			    } else {
 			    	msg "unknown connection msg: $data"
 			    }
