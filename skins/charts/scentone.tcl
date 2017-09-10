@@ -251,30 +251,30 @@ add_de1_button "scentone_cereal" {say [translate {Roasted}] $::settings(sound_bu
 # chocolate and caramel
 
 #add_de1_variable "scentone_tropical" 50 100 -text "" -font Helv_15_bold -fill "#999999" -anchor "nw" -textvariable {[translate "Tropical fruit"]} 
-add_de1_variable "scentone_chocolate" 20 20 -text "" -font Helv_15_bold -width 880 -fill "#999999" -anchor "nw" -textvariable {[scentone_selected "Nut & cereal"]} 
+add_de1_variable "scentone_chocolate" 20 20 -text "" -font Helv_15_bold -width 880 -fill "#999999" -anchor "nw" -textvariable {[scentone_selected "Chocolate\ &\ caramel"]} 
 
 # row 1 text labels 
-add_de1_variable "scentone_chocolate" 345 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Caramel"]} 
-add_de1_variable "scentone_chocolate" 920 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Brown sugar"]} 
-add_de1_variable "scentone_chocolate" 1250 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Honey"]} 
-add_de1_variable "scentone_chocolate" 1550 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Maple syrup"]} 
-add_de1_variable "scentone_chocolate" 1880 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Milk chocolate"]} 
-add_de1_variable "scentone_chocolate" 2275 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Dark chocolate"]} 
+add_de1_variable "scentone_chocolate" 218 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Dark chocolate"]} 
+add_de1_variable "scentone_chocolate" 680 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Caramel"]} 
+add_de1_variable "scentone_chocolate" 1120 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Honey"]} 
+add_de1_variable "scentone_chocolate" 1550 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Brown sugar"]} 
+add_de1_variable "scentone_chocolate" 1950 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Maple syrup"]} 
+add_de1_variable "scentone_chocolate" 2320 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Milk chocolate"]} 
 
 # row 2 text labels 
-add_de1_variable "scentone_chocolate" 290 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Watermelon"]} 
+add_de1_variable "scentone_chocolate" 290 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Mocha"]} 
 add_de1_variable "scentone_chocolate" 840 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Cream"]} 
 add_de1_variable "scentone_chocolate" 1360 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Butter"]} 
 add_de1_variable "scentone_chocolate" 1840 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Yogurt"]} 
 add_de1_variable "scentone_chocolate" 2280 1380 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Vanilla"]} 
 
 # row 1 tap areas
-add_de1_button "scentone_chocolate" {say [translate {Caramel}] $::settings(sound_button_in); scentone_toggle "Caramel"} 15 290 630 860
-add_de1_button "scentone_chocolate" {say [translate {Brown sugar}] $::settings(sound_button_in); scentone_toggle "Brown sugar" } 862 290 1120 860
-add_de1_button "scentone_chocolate" {say [translate {Honey}] $::settings(sound_button_in); scentone_toggle "Honey" } 1122 290 1400 860
-add_de1_button "scentone_chocolate" {say [translate {Maple syrup}] $::settings(sound_button_in); scentone_toggle "Maple syrup" } 1402 290 1700 860
-add_de1_button "scentone_chocolate" {say [translate {Milk chocolate}] $::settings(sound_button_in); scentone_toggle "Milk chocolate" } 1702 290 2100 860
-add_de1_button "scentone_chocolate" {say [translate {Dark chocolate}] $::settings(sound_button_in); scentone_toggle "Dark chocolate" } 2102 290 2550 860
+add_de1_button "scentone_chocolate" {say [translate {Dark chocolate}] $::settings(sound_button_in); scentone_toggle "Dark chocolate" } 10 290 400 860
+add_de1_button "scentone_chocolate" {say [translate {Caramel}] $::settings(sound_button_in); scentone_toggle "Caramel"} 402 290 984 860
+add_de1_button "scentone_chocolate" {say [translate {Honey}] $::settings(sound_button_in); scentone_toggle "Honey" } 986 290 1280 860
+add_de1_button "scentone_chocolate" {say [translate {Brown sugar}] $::settings(sound_button_in); scentone_toggle "Brown sugar" } 1282 290 1816 860
+add_de1_button "scentone_chocolate" {say [translate {Maple syrup}] $::settings(sound_button_in); scentone_toggle "Maple syrup" } 1818 290 2100 860
+add_de1_button "scentone_chocolate" {say [translate {Milk chocolate}] $::settings(sound_button_in); scentone_toggle "Milk chocolate" } 2102 290 2550 860
 
 # row 2 tap areas
 add_de1_button "scentone_chocolate" {say [translate {Mocha}] $::settings(sound_button_in); scentone_toggle "Mocha" } 15 862 590 1400

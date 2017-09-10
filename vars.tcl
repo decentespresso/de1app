@@ -1236,8 +1236,17 @@ proc scentone_selected { {category {}} } {
 	}
 
 	if {$returnlist == "" } {
-		return ""
+		if {$category == ""} {
+			return ""
+		} else {
+			return [translate $category]
+		}
 	}
-	return [subst {[join [lsort $returnlist] ", "]}]
+	if {$category != ""} {
+		return [subst {[translate $category] : [join [lsort $returnlist] ", "]}]
+	} else {
+		return [subst {[join [lsort $returnlist] ", "]}]
+	}
+
 }
 
