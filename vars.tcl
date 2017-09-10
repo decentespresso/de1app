@@ -341,9 +341,9 @@ proc return_liquid_measurement {in} {
 
 proc return_flow_measurement {in} {
 	if {$::settings(enable_fluid_ounces) != 1} {
-		return [subst {[round_to_two_digits $in] [translate "mL/s"]}]
+		return [subst {[round_to_one_digits $in] [translate "mL/s"]}]
 	} else {
-		return [subst {[round_to_two_digits [ml_to_oz $in]] oz/s}]
+		return [subst {[round_to_one_digits [ml_to_oz $in]] oz/s}]
 	}
 }
 
@@ -417,7 +417,7 @@ proc steamtemp_text {} {
 }
 
 proc pressure_text {} {
-	return [subst {[commify [round_to_two_digits [pressure]]] [translate "bar"]}]
+	return [subst {[commify [round_to_one_digits [pressure]]] [translate "bar"]}]
 }
 
 
@@ -1237,15 +1237,15 @@ proc scentone_selected { {category {}} } {
 
 	if {$returnlist == "" } {
 		if {$category == ""} {
-			return ""
+			return [translate "Categories"]
 		} else {
 			return [translate $category]
 		}
 	}
 	if {$category != ""} {
-		return [subst {[translate $category] : [join [lsort $returnlist] ", "]}]
+		return [subst {[translate $category] : [join [lsort $returnlist] ", "].}]
 	} else {
-		return [subst {[join [lsort $returnlist] ", "]}]
+		return [subst {[join [lsort $returnlist] ", "].}]
 	}
 
 }
