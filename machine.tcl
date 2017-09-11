@@ -32,6 +32,7 @@ array set ::de1 {
 	mix_temperature 0
 	flow 0
 	flow_delta 0
+	pressure_delta 0
 	timer 0
 	volume 0
 	wrote 0
@@ -55,6 +56,7 @@ array set ::de1 {
 	water_heater_wattage 1500
 	steam_heater_wattage 1500
 	group_heater_wattage 500
+	maxpressure 10
 	hertz 50
 	steam_min_temperature 120
 	steam_max_temperature 170
@@ -70,6 +72,10 @@ array set ::de1 {
 
 set ::de1(last_ping) [clock seconds]
 set ::de1_bluetooth_list {}
+
+if {[de1plus]} { 
+	set ::de1(maxpressure) 12 
+}
 
 catch {
 	package require tkblt
@@ -128,6 +134,7 @@ array set ::settings {
 	flow_profile_hold 2
 	flow_profile_decline 1.2
 	flow_profile_hold_time 8
+	enable_negative_flow_charts 0
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
 	history_saved ""
@@ -156,9 +163,10 @@ array set ::settings {
 	profile default
 	flow_profile_minimum_pressure 4
 	preinfusion_flow_rate 4
+	preinfusion_flow_rate2 4
 	preinfusion_temperature 92
 	preinfusion_stop_flow_rate 1
-	preinfusion_stop_pressure 5
+	preinfusion_stop_pressure 4
 	profile_step ""
 	preinfusion_stop_volumetric 200 
 	preinfusion_stop_timeout 5

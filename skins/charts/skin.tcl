@@ -93,6 +93,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 267 {
 	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color #69fdb3  -smooth quadratic -pixels 0 -dashes {5 5}; 
 	$widget element create line_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #40dc94  -smooth quadratic -pixels 0; 
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #888888  -pixels 0 ; 
+	$widget element create line_espresso_pressure_delta  -xdata espresso_elapsed -ydata espresso_pressure_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #40dc94 -pixels 0 -smooth quadratic 
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 ; 
 	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max $::de1(max_pressure) -subdivisions 5 -majorticks {1 3 5 7 9 11}
@@ -108,8 +109,8 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
 		page_show $::de1(current_context);
 	} 
 	$widget element create line_espresso_flow_goal  -xdata espresso_elapsed -ydata espresso_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color #7aaaff -smooth quadratic -pixels 0  -dashes {5 5}; 
-	$widget element create line_espresso_flow  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4 -smooth quadratic -pixels 0; 
-	$widget element create line_espresso_flow_delta  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth quadratic -dashes {4 2}; 
+	$widget element create line_espresso_flow  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 12] -color #4e85f4 -smooth quadratic -pixels 0; 
+	$widget element create line_espresso_flow_delta  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth quadratic 
 	#$widget element create line_espresso_flow_delta_negative  -xdata espresso_elapsed -ydata espresso_flow_delta_negative -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth quadratic -dashes {4 2}; 
 	$widget element create line_espresso_state_change_2 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #888888  -pixels 0; 
 	$widget axis configure x -color #206ad4 -tickfont Helv_6 ; 
@@ -128,7 +129,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 1174 {
 	} 
 
 	$widget element create line_espresso_temperature_goal -xdata espresso_elapsed -ydata espresso_temperature_goal -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #ffa5a6 -smooth quadratic -pixels 0 -dashes {5 5}; 
-	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth quadratic -pixels 0; 
+	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 12] -color #e73249 -smooth quadratic -pixels 0; 
 	#$widget element create line_espresso_state_change_3 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #888888  -pixels 0; 
 	$widget axis configure x -color #e73249 -tickfont Helv_6; 
 	#$widget axis configure y -color #e73249 -tickfont Helv_6 -subdivisions 2 -min [expr {[return_temperature_number $::settings(espresso_temperature)] - 5}] -max [expr {[return_temperature_number $::settings(espresso_temperature)] + 5}]; 
@@ -161,13 +162,14 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 74 {
 		page_show $::de1(current_context)
 	} 
 	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #69fdb3  -smooth quadratic -pixels 0 -dashes {5 5}; 
-	$widget element create line2_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #40dc94  -smooth quadratic -pixels 0; 
+	$widget element create line2_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 12] -color #40dc94  -smooth quadratic -pixels 0; 
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #888888  -pixels 0 ; 
-	$widget element create line_espresso_flow_delta_1  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth quadratic -dashes {4 2}; 
+	$widget element create line_espresso_flow_delta_1  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth quadratic 
+	$widget element create line_espresso_pressure_delta_1  -xdata espresso_elapsed -ydata espresso_pressure_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #40dc94 -pixels 0 -smooth quadratic 
 	#$widget element create line_espresso_flow_delta_negative_1  -xdata espresso_elapsed -ydata espresso_flow_delta_negative_2x -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth quadratic -dashes {4 2}; 
 
 	$widget element create line_espresso_flow_goal_2x  -xdata espresso_elapsed -ydata espresso_flow_goal_2x -symbol none -label "" -linewidth [rescale_x_skin 8] -color #7aaaff -smooth quadratic -pixels 0  -dashes {5 5}; 
-	$widget element create line_espresso_flow_2x  -xdata espresso_elapsed -ydata espresso_flow_2x -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4 -smooth quadratic -pixels 0; 
+	$widget element create line_espresso_flow_2x  -xdata espresso_elapsed -ydata espresso_flow_2x -symbol none -label "" -linewidth [rescale_x_skin 12] -color #4e85f4 -smooth quadratic -pixels 0; 
 	#$widget element create line_espresso_state_change_2 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #888888  -pixels 0; 
 	$widget axis configure x -color #5a5d75 -tickfont Helv_7_bold; 
 	$widget axis configure y -color #008c4c -tickfont Helv_7_bold -min 0.0 -max $::de1(max_pressure) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}  -hide 0;
@@ -260,12 +262,12 @@ add_de1_button "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zo
 
 
 # the "go to sleep" button and the whole-screen button for coming back awake
-add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4 off_zoomed espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); start_sleep} 2014 1424 2284 1600
+add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4 off_zoomed espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); start_sleep} 2014 1442 2284 1600
 add_de1_button "saver" {say [translate {awake}] $::settings(sound_button_in); start_idle} 0 0 2560 1600
-add_de1_text "sleep" 2500 1450 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
+add_de1_text "sleep" 2500 1440 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
 
-# setting button 
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed steam_1 water_1 preheat_1 steam_3 water_3 preheat_3 off_zoomed_temperature espresso_3_zoomed_temperature" {after 700 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off "settings_1"; page_show off} 2285 1424 2560 1600
+# settings button 
+add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed steam_1 water_1 preheat_1 steam_3 water_3 preheat_3 off_zoomed_temperature espresso_3_zoomed_temperature" {after 700 update_de1_explanation_chart;unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off "settings_1"; page_show off} 2285 1442 2560 1600
 
 add_de1_text "off off_zoomed off_zoomed_temperature" 2290 390 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" 
 add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" 2290 390 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center"  -textvariable "STOP"
@@ -338,7 +340,7 @@ add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_
 # making espresso now
 
 # make and stop espresso button
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 200 2560 660
+add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 200 2560 730
 add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in);set_next_page off espresso_3; start_idle;} 2020 200 2560 730
 add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed; start_idle;} 2020 200 2560 730
 add_de1_button "espresso_zoomed_temperature" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed_temperature; start_idle;} 2020 200 2560 730
@@ -396,52 +398,56 @@ add_de1_button "espresso_zoomed_temperature" {say [translate {stop}] $::settings
 ##########################################################################################################################################################################################################################################################################
 # data card displayed during espresso making
 
-add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 720 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_7_bold -fill "#5a5d75" -width [rescale_x_skin 520]
+set pos_top 720
+set spacer 35
+#set paragraph 20
 
-add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 760 -justify right -anchor "nw" -text [translate "goal"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 760 -justify left -anchor "nw" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[espresso_goal_temp_text]} 
+add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 $pos_top -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_7_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 
-add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 795 -justify right -anchor "nw" -text [translate "coffee"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 795 -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[watertemp_text]} 
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2520 795 -justify left -anchor "ne" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[round_to_one_digits [diff_espresso_temp_from_goal]]} 
+add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2165 [expr {$pos_top + (1 * $spacer)}] -justify right -anchor "nw" -text [translate "goal"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[espresso_goal_temp_text]} 
 
-add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 830 -justify right -anchor "nw" -text [translate "water"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 830 -justify left -anchor "nw" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[mixtemp_text]} 
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2520 830 -justify left -anchor "ne" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[round_to_one_digits [diff_brew_temp_from_goal]]} 
+add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2165 [expr {$pos_top + (2 * $spacer)}] -justify right -anchor "nw" -text [translate "coffee"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[watertemp_text]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2510 [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "ne" -text "" -font Helv_7 -fill "#bec7db" -width [rescale_x_skin 520] -textvariable {[return_delta_temperature_measurement [diff_espresso_temp_from_goal]]} 
 
-add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 865 -justify right -anchor "nw" -text [translate "metal"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 865 -justify left -anchor "nw" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[group_head_heater_temperature_text]} 
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2520 865 -justify left -anchor "ne" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[round_to_one_digits [diff_group_temp_from_goal]]} 
+add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2165 [expr {$pos_top + (3 * $spacer)}] -justify right -anchor "nw" -text [translate "water"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[mixtemp_text]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2510 [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "ne" -font Helv_7 -fill "#bec7db" -width [rescale_x_skin 520] -textvariable {[return_delta_temperature_measurement [diff_brew_temp_from_goal]]} 
 
-add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 920 -justify right -anchor "nw" -text [translate "Flow"] -font Helv_7_bold -fill "#5a5d75" -width [rescale_x_skin 520]
+add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2165 [expr {$pos_top + (4 * $spacer)}] -justify right -anchor "nw" -text [translate "metal"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (4 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[group_head_heater_temperature_text]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2510 [expr {$pos_top + (4 * $spacer)}] -justify left -anchor "ne" -font Helv_7 -fill "#bec7db" -width [rescale_x_skin 520] -textvariable {[return_delta_temperature_measurement [diff_group_temp_from_goal]]} 
+
+add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (5.5 * $spacer)}] -justify right -anchor "nw" -text [translate "Flow"] -font Helv_7_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 
 #add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 960 -justify right -anchor "nw" -text [translate "rate:"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 990 -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (6.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 #add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2320 920 -justify left -anchor "ne" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[round_to_one_digits [diff_flow_rate]]} 
 
 
 #add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 1000 -justify right -anchor "nw" -text [translate "volume:"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 1025 -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[watervolume_text] [translate "total"]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (7.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[watervolume_text] [translate "total"]} 
 #add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 1040 -justify right -anchor "nw" -text [translate "pressure: (bar)"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 955 -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (8.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
 
 
-add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 1085 -justify right -anchor "nw" -text [translate "Time"] -font Helv_7_bold -fill "#5a5d75" -width [rescale_x_skin 520]
+add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (10 * $spacer)}] -justify right -anchor "nw" -text [translate "Time"] -font Helv_7_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 
 #add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 1130 -justify right -anchor "nw" -text [translate "elapsed"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 1125 -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[timer][translate "s"] [translate "elapsed"]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (11 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[timer][translate "s"] [translate "elapsed"]} 
 
 #add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 1130 -justify right -anchor "nw" -text [translate "auto off"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 1130 -justify left -anchor "nw" -text "" -font Helv_7  -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[setting_espresso_max_time][translate "s"]} 
 
 #add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 1170 -justify right -anchor "nw" -text [translate "preinfusion"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 1160 -justify left -anchor "nw" -text "" -font Helv_7  -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[preinfusion_timer][translate "s"] [translate "preinfusion"]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (12 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7  -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[preinfusion_timer][translate "s"] [translate "preinfusion"]} 
 
 #add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2140 1210 -justify right -anchor "nw" -text [translate "pouring"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 1195 -justify left -anchor "nw" -text "" -font Helv_7  -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[pour_timer][translate "s"] [translate "pouring"]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (13 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7  -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[pour_timer][translate "s"] [translate "pouring"]} 
 
 #add_de1_text "off espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" 2060 1245 -justify right -anchor "nw" -text [translate "done"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "off espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" 2060 1230 -justify left -anchor "nw" -font Helv_7 -text "" -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[timer][translate "s"] [translate "done"]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -text "" -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[done_timer][translate "s"] [translate "done"]} 
 
 
 
@@ -686,3 +692,5 @@ add_de1_variable "steam" 2470 1300 -justify left -anchor "ne" -text "" -font Hel
 
 
 ##########################################################################################################################################################################################################################################################################
+
+set_next_page off settings_2a

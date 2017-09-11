@@ -885,13 +885,14 @@ proc update_de1_explanation_chart { {context {}} } {
 	set seconds 0
 
 	# preinfusion
+	set preinfusion_pressure 0.5
 	if {$::settings(preinfusion_time) > 0} {
-		set preinfusion_pressure 0.5
 		if {[de1plus]} {
-			set preinfusion_pressure [expr {$::settings(preinfusion_flow_rate) / 6.0}]
+			#set preinfusion_pressure [expr {$::settings(preinfusion_flow_rate) / 6.0}]
+			set preinfusion_pressure $::settings(preinfusion_stop_pressure)
 		}
 
-		espresso_de1_explanation_chart_pressure append $preinfusion_pressure
+		espresso_de1_explanation_chart_pressure append 0.1
 		espresso_de1_explanation_chart_elapsed append $seconds
 
 		set seconds [expr {$seconds + $::settings(preinfusion_time)}]
@@ -900,11 +901,12 @@ proc update_de1_explanation_chart { {context {}} } {
 	} else {
 		espresso_de1_explanation_chart_elapsed append $seconds
 		espresso_de1_explanation_chart_pressure append 0
+		#set ::settings(preinfusion_stop_pressure) 4
 
 	}
 
 	set espresso_pressure $::settings(espresso_pressure)
-	set approximate_ramptime [expr {($espresso_pressure * 0.5)}]
+	set approximate_ramptime [expr {(abs($espresso_pressure - $preinfusion_pressure) * 0.5)}]
 	set pressure_hold_time $::settings(espresso_hold_time)
 
 	#puts "approximate_ramptime: $approximate_ramptime / pressure_hold_time: $pressure_hold_time"

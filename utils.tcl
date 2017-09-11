@@ -720,9 +720,11 @@ proc load_settings {} {
         set ::settings(skin) "default"
     }
 
+    blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal
+    blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow
 
-    blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_flow_2x espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal
-    blt::vector espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow
+    # experimental chargts showing flow from the top, or 2x normal size
+    blt::vector espresso_flow_delta_negative espresso_flow_delta_negative_2x
 
     #espresso_temperature_goal append [expr {$::settings(espresso_temperature) - 5}]
     #espresso_elapsed append 0    

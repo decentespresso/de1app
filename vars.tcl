@@ -9,6 +9,7 @@ proc clear_espresso_chart {} {
 	espresso_pressure length 0
 	espresso_flow length 0
 	espresso_flow_2x length 0
+	espresso_pressure_delta length 0
 	espresso_flow_delta length 0
 	espresso_flow_delta_negative length 0
 	espresso_flow_delta_negative_2x length 0
@@ -24,6 +25,7 @@ proc clear_espresso_chart {} {
 	espresso_pressure append 0
 	espresso_flow append 0
 	espresso_flow_2x append 0
+	espresso_pressure_delta append 0
 	espresso_flow_delta append 0
 	espresso_flow_delta_negative append 0
 	espresso_flow_delta_negative_2x append 0
@@ -128,6 +130,10 @@ proc preinfusion_timer {} {
 
 proc pour_timer {} {
 	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "stabilising" "final heating" "heating"} ]
+}
+
+proc done_timer {} {
+	return [event_timer_calculate "Idle" "ready" {"pouring" "preinfusion" "stabilising" "final heating" "heating"} ]
 }
 
 
@@ -389,13 +395,20 @@ proc diff_group_temp_from_goal_text {} {
 	return [return_delta_temperature_measurement $diff]
 }
 
+proc diff_pressure {} {
+	if {$::android == 0} {
+		return [expr {3 - (rand() * 6)}]
+	}
+
+	return $::de1(pressure_delta)
+}
+
 proc diff_flow_rate {} {
 	if {$::android == 0} {
 		return [expr {3 - (rand() * 6)}]
 	}
 
 	return $::de1(flow_delta)
-	#return [round_to_one_digits $::de1(flow_delta)]
 }
 
 proc diff_flow_rate_text {} {
@@ -497,10 +510,18 @@ proc return_temperature_measurement {in} {
 
 
 proc return_delta_temperature_measurement {in} {
-	if {$::settings(enable_fahrenheit) == 1} {
-		set t [subst {[round_to_one_digits [celsius_to_fahrenheit $in]]ºF}]
+	if {[de1plus]} {
+		if {$::settings(enable_fahrenheit) == 1} {
+			set t [subst {[round_to_one_digits [celsius_to_fahrenheit $in]]ºF}]
+		} else {
+			set t [subst {[round_to_one_digits $in]ºC}]
+		}
 	} else {
-		set t [subst {[round_to_one_digits $in]ºC}]
+		if {$::settings(enable_fahrenheit) == 1} {
+			set t [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+		} else {
+			set t [subst {[round_to_integer $in]ºC}]
+		}
 	}
 
 	if {$in > 0} {
@@ -1161,6 +1182,31 @@ proc espresso_history_save_from_gui {} {
 	save_this_espresso_to_history; 
 	return $state
 }
+
+proc preinfusion_seconds_text {num} {
+	if {$num == 0} {
+		return [translate "off"]
+	} elseif {$num == 1} {
+		return [subst {$num [translate "second"]}]
+	} elseif {$num == 60} {
+		return [translate "Up to 1 minute"]
+	} else {
+		return [subst {[translate {Up to}] $num [translate "seconds"]}]
+	}
+}
+
+proc seconds_text {num} {
+	if {$num == 0} {
+		return [translate "off"]
+	} elseif {$num == 1} {
+		return [subst {$num [translate "second"]}]
+	} elseif {$num == 60} {
+		return [translate "1 minute"]
+	} else {
+		return [subst {$num [translate "seconds"]}]
+	}
+}
+
 
 proc seconds_text {num} {
 	if {$num == 0} {
