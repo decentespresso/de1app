@@ -42,6 +42,8 @@ proc clear_espresso_chart {} {
 	update
 }	
 
+
+
 proc espresso_frame_title {num} {
 	if {$num == 1} {
 		return "1) Ramp up pressure to 8.4 bar over 12 seconds"
@@ -54,7 +56,7 @@ proc espresso_frame_title {num} {
 	} elseif {$num == 5} {
 		return ""
 	} elseif {$num == 6} {
-		return ""
+			return ""
 	}
 }
 
@@ -72,6 +74,7 @@ proc espresso_frame_description {num} {
 	} elseif {$num == 6} {
 		return ""
 	}
+
 }
 
 proc format_alarm_time { in } {
@@ -113,6 +116,8 @@ proc event_timer_calculate {state destination_state previous_states} {
 			set beforetime $thistime
 		}
 	}
+
+	
 
 	set elapsed [expr {($eventtime - $beforetime)/100}]
 	if {$elapsed < 0} {
@@ -749,10 +754,11 @@ proc profile_directories {} {
 		#	continue
 		#}
 
-	    if {[string first "settings_profile_type settings_profile_flow" [read_file "[homedir]/profiles/$d"]] != -1} {
+		set filecontents [read_file "[homedir]/profiles/$d"]
+	    if {[string first "settings_profile_type settings_2b" $filecontents] != -1 || [string first "settings_profile_type settings_2c" $filecontents] != -1 || [string first "settings_profile_type settings_profile_flow" $filecontents] != -1 || [string first "settings_profile_type settings_profile_advanced" $filecontents] != -1} {
 	    	if {!$de1plus} {
 		    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
-		    	#puts "Skipping $d"
+		    	puts "Skipping $d"
 		    	continue
 		    }
 		    #puts "de1+ profile: $d"
@@ -795,8 +801,8 @@ proc fill_ble_listbox {widget} {
 	#lappend ::de1_bluetooth_list $address
 
 	if {$::android == 0} {	
-		set ::de1_bluetooth_list [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
-		set ::de1_bluetooth_list ""
+		#set ::de1_bluetooth_list [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
+		#set ::de1_bluetooth_list ""
 	}
 
 	foreach d [lsort -dictionary -increasing $::de1_bluetooth_list] {
@@ -1061,16 +1067,24 @@ proc preview_profile {w args} {
 		make_current_listbox_item_blue $::globals(profiles_listbox)
 
 		if {[de1plus]} {
-			#puts "current context: $::de1(current_context) "
-
-			set_next_page settings_2 $::settings(settings_profile_type);
-			page_show settings_2
+			
+			if {$::settings(settings_profile_type) == "settings_2" || $::settings(settings_profile_type) == "settings_profile_pressure"} {
+				set ::settings(settings_profile_type) "settings_2a"
+			} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+				set ::settings(settings_profile_type) "settings_2b"
+			}
+			#set_next_page off $::settings(settings_profile_type);
+			#page_show off
 
 			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
 			#page_show off
 			#puts "set_next_page off $::settings(settings_profile_type)_preview;"
 		} else {
 			set ::settings(settings_profile_type) "settings_2"
+
+			if {$::settings(settings_profile_type) == "settings_2a"} {
+				set ::settings(settings_profile_type) "settings_2"
+			}
 		}
 		update_onscreen_variables
 
@@ -1087,9 +1101,9 @@ proc load_settings_vars {fn} {
 	
 	# set the default profile type to use, this can be over-ridden by the saved profile
 	if {[de1plus]} {
-		set ::settings(settings_profile_type) "settings_profile_pressure"
+		set ::settings(settings_profile_type) "settings_2a"
 	} else {
-		set ::settings(settings_profile_type) "settings_1"
+		set ::settings(settings_profile_type) "settings_2"
 	}
 
 	foreach {k v} [read_file $fn] {
@@ -1116,7 +1130,8 @@ proc save_profile {} {
 		return
 	}
 
-	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure pressure_hold_time espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature}
+#pressure_hold_time
+	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature}
 	set profile_name_to_save $::settings(profile_to_save) 
 	#puts "save profile: $profile_name_to_save"
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"
@@ -1127,6 +1142,9 @@ proc save_profile {} {
 	set ::settings(profile_to_save) [translate "Saved"]
 	after 1000 {
 		set ::settings(profile_to_save) $::settings(profile)
+
+		# moves the cursor to the end of the seletion after showing the "saved" message.
+		after 1000 $::globals(widget_profile_name_to_save) icursor 999
 	}
 }
 
@@ -1137,7 +1155,7 @@ proc de1plus {} {
 	catch {
 		catch {
 			if {[package present de1plus 1.0] >= 1} {
-				set x 1
+			set x 1
 			}
 		}
 	}
@@ -1183,6 +1201,13 @@ proc espresso_history_save_from_gui {} {
 	return $state
 }
 
+proc bar_or_off_text {num} {
+	if {$num == 0} {
+		return [translate "off"]
+	} else {
+		return [subst {$num [translate "bar"]}]
+	}
+}
 proc preinfusion_seconds_text {num} {
 	if {$num == 0} {
 		return [translate "off"]

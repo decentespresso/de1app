@@ -1,5 +1,6 @@
 package provide de1_machine 1.0
 
+#set ::debugging 0
 
 # ray's DE1 address (usb key #?)
 # de1_address "EE:01:68:94:A5:48"
@@ -37,6 +38,8 @@ array set ::de1 {
 	volume 0
 	wrote 0
 	cmdstack {}
+	connect_time 0
+	water_level 0
 	state 0
 	substate 0
 	current_context ""
@@ -50,6 +53,7 @@ array set ::de1 {
 	min_temperature 80
 	max_temperature 100
 	goal_flow 2
+	GroupPressure 0
 	goal_pressure 6
 	goal_temperature 90
 	water_level_percent 0
@@ -257,7 +261,7 @@ proc start_steam {} {
 	msg "Tell DE1 to start making STEAM"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send $::de1_state(Steam)
+	de1_send "make steam" $::de1_state(Steam)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -273,7 +277,7 @@ proc start_espresso {} {
 
 	clear_espresso_chart
 
-	de1_send $::de1_state(Espresso)
+	de1_send "make espresso" $::de1_state(Espresso)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
@@ -287,7 +291,7 @@ proc start_water {} {
 	msg "Tell DE1 to start making HOT WATER"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send $::de1_state(HotWater)
+	de1_send "make hot water" $::de1_state(HotWater)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
@@ -305,7 +309,7 @@ proc start_idle {} {
 	#set ::de1(substate) 6
 
 	set ::settings(flying) 0
-	de1_send $::de1_state(Idle)
+	de1_send "go idle" $::de1_state(Idle)
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 "update_de1_state $::de1_state(Idle)"
@@ -317,7 +321,7 @@ proc start_idle {} {
 
 proc start_sleep {} {
 	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
-	de1_send $::de1_state(Sleep)
+	de1_send "go to sleep" $::de1_state(Sleep)
 	
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}

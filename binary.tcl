@@ -193,6 +193,13 @@ proc version_spec {} {
 	}
 	return $spec
 }
+proc waterlevel_spec {} {
+	set spec {
+		Level {Short {} {} {unsigned} {$val / 256.0}}
+		StartFillLevel {Short {} {} {unsigned} {$val / 256.0}}
+	}
+	return $spec
+}
 
 proc hotwater_steam_settings_spec {} {
 	set spec {
@@ -349,6 +356,40 @@ proc make_shot_flag {enabled_features} {
 	return $num
 }
 
+proc parse_shot_flag {num} {
+
+	set enabled_features {}
+
+	if {[expr {$num & 0x01}] } {
+		lappend enabled_features "CtrlF"
+	} 
+
+	if {[expr {$num & 0x02}] } {
+		lappend enabled_features "DoCompare"
+	} 
+
+	if {[expr {$num & 0x04}] } {
+		lappend enabled_features "DC_GT"
+	} 
+
+	if {[expr {$num & 0x08}] } {
+		lappend enabled_features "DC_CompF"
+	} 
+
+	if {[expr {$num & 0x10}] } {
+		lappend enabled_features "TMixTemp"
+	} 
+
+	if {[expr {$num & 0x20}] } {
+		lappend enabled_features "Interpolate"
+	} 
+
+	if {[expr {$num & 0x40}] } {
+		lappend enabled_features "IgnoreLimit"
+	}
+	return $enabled_features
+}
+
 
 proc parse_binary_shotdescheader {packed destarrname} {
 	upvar $destarrname ShotSample
@@ -450,7 +491,7 @@ proc de1_packed_shot_flow {} {
 		set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
 
 
-		# compress
+		# pressure rise
 		set frame2(FrameToWrite) 1
 		set frame2(Flag) [make_shot_flag "DoCompare DC_GT IgnoreLimit $mixtempflag"] 
 		set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
@@ -515,7 +556,7 @@ proc de1_packed_shot_flow {} {
 # being a list of packed frames
 proc de1_packed_shot {} {
 
-	if {[de1plus] && [ifexists ::settings(settings_profile_type)] == "settings_profile_flow"} {
+	if {[de1plus] && [ifexists ::settings(settings_profile_type)] == "settings_2b"} {
 		return [de1_packed_shot_flow]
 	}
 
@@ -568,7 +609,7 @@ proc de1_packed_shot {} {
 		set frame2(Flag) [make_shot_flag "IgnoreLimit $mixtempflag"] 
 		set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
 		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_hold_time)]
+		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
 		set frame2(TriggerVal) 0
 		set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
 
@@ -738,6 +779,22 @@ proc parse_binary_version_desc {packed destarrname} {
 		}
 	}
 }
+proc parse_binary_water_level {packed destarrname} {
+	upvar $destarrname Waterlevel
+	unset -nocomplain Waterlevel
+
+	set spec [waterlevel_spec]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec Waterlevel bigeendian
+	foreach {field val} [array get Waterlevel] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set Waterlevel($field) [expr $extra]
+		}
+	}
+}
 
 proc parse_binary_hotwater_desc {packed destarrname} {
 	upvar $destarrname ShotSample
@@ -798,10 +855,6 @@ proc get_timer {state substate} {
   return $timer
 }
 
-proc use_old_ble_spec {} {
-	return 0
-}
-
 
 proc update_de1_shotvalue {packed} {
 
@@ -851,12 +904,18 @@ proc update_de1_shotvalue {packed} {
 	}
 
   	foreach {field val} [array get ShotSample] {
-	set specparts $specarr($field)
-	set extra [lindex $specparts 4]
-	if {$extra != ""} {
-	  	set ShotSample($field) [expr $extra]
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+		  	set ShotSample($field) [expr $extra]
+		}
 	}
-}
+
+  	if {[info exists ShotSample(SteamTemp)] != 1} {
+  		# if we get no steam temp then this is the old BLE spec and auto-adjust to doing so, but discard this first temperature report as part of this auto-adjusting
+	 	set ::ble_spec 0.9
+	 	return
+	 }
 
 
 
@@ -882,22 +941,22 @@ proc update_de1_shotvalue {packed} {
 		set HeadTemp $ShotSample(HeadTemp)
 		set ::de1(head_temperature) $HeadTemp
 	} else {
-	  	if {[info exists ShotSample(HeadTemp1)] == 1} {
+	  	#if {[info exists ShotSample(HeadTemp1)] == 1} {
 			set HeadTemp [expr { $ShotSample(HeadTemp1) + ($ShotSample(HeadTemp2) / 256.0) + ($ShotSample(HeadTemp3) / 65536.0) }]
-		}
+			set ::de1(head_temperature) $HeadTemp
+		#}
 		#puts "HeadTemp: $HeadTemp"
-		set ::de1(head_temperature) $HeadTemp
 		#msg "updated head temp $ShotSample(HeadTemp)"
 	}
 
-  if {[info exists ShotSample(MixTemp)] == 1} {
+  #if {[info exists ShotSample(MixTemp)] == 1} {
 	set ::de1(mix_temperature) $ShotSample(MixTemp)
 	#msg "updated mix temp to $ShotSample(MixTemp)"
-  }
-  if {[info exists ShotSample(SteamTemp)] == 1} {
+  #}
+  #if {[info exists ShotSample(SteamTemp)] == 1} {
 	set ::de1(steam_heater_temperature) $ShotSample(SteamTemp)
 	#msg "updated mix temp to $ShotSample(MixTemp)"
-  }
+  #}
   if {[info exists ShotSample(GroupFlow)] == 1 && $delta != 0} {
 	set ::de1(flow_delta) [expr {$::de1(flow) - $ShotSample(GroupFlow)}]
 	set ::de1(flow) $ShotSample(GroupFlow)
@@ -905,27 +964,28 @@ proc update_de1_shotvalue {packed} {
 	#msg "updated flow"
   }
 
-  if {[info exists ShotSample(GroupPressure)] == 1} {
-	set ::de1(pressure) $ShotSample(GroupPressure)
+  #if {[info exists ShotSample(GroupPressure)] == 1} {
+	#set ::de1(pressure) $ShotSample(GroupPressure)
 	#msg "updated pressure"
 	if {$delta != 0} {
-		set ::de1(pressure_delta) [expr {$::de1(GroupPressure) - $ShotSample(GroupPressure)}]
+
+		set ::de1(pressure_delta) [expr {$::de1(pressure) - $ShotSample(GroupPressure)}]
 		set ::de1(pressure) $ShotSample(GroupPressure)
 	}
-  }
+  #}
 
-  if {[info exists ShotSample(SetGroupFlow)] == 1} {
+  #if {[info exists ShotSample(SetGroupFlow)] == 1} {
 	set ::de1(goal_flow) $ShotSample(SetGroupFlow)
 	#msg "updated head flow $ShotSample(SetGroupFlow)"
-  }
-  if {[info exists ShotSample(SetGroupPressure)] == 1} {
+  #}
+  #if {[info exists ShotSample(SetGroupPressure)] == 1} {
 	set ::de1(goal_pressure) $ShotSample(SetGroupPressure)
 	#msg "updated head pressure $ShotSample(SetGroupPressure)"
-  }
-  if {[info exists ShotSample(SetHeadTemp)] == 1} {
+  #}
+  #if {[info exists ShotSample(SetHeadTemp)] == 1} {
 	set ::de1(goal_temperature) $ShotSample(SetHeadTemp)
 	#msg "updated head temp $ShotSample(SetHeadTemp)"
-  }
+  #}
 
   append_live_data_to_espresso_chart
 }
@@ -1094,7 +1154,10 @@ proc update_de1_state {statechar} {
   }
 }
 
-
-
-#bintest
-
+set ble_spec 1.0
+proc use_old_ble_spec {} {
+	if {$::ble_spec < 1.0} {
+		return 1
+	}
+	return 0
+}

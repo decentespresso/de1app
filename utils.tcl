@@ -81,7 +81,7 @@ proc language {} {
         }
 
         #set current_language "fr"
-        puts "current_language: '$current_language' [array get loc]"
+        #puts "current_language: '$current_language' [array get loc]"
 
     }
 
@@ -220,12 +220,12 @@ proc setup_environment {} {
         global helvetica_bold_font
         global helvetica_font
 
-        puts "setting up fonts for language [language]"
+        #puts "setting up fonts for language [language]"
         if {[language] == "th"} {
             #set regularfont "sarabun"
             #set boldfont "sarabunbold"
             set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
-            puts "helvetica_font: $helvetica_font"
+            #puts "helvetica_font: $helvetica_font"
             set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
             set fontm [expr {($fontm * 1.2)}]
         #set fontm [expr {($fontm * 1.20)}]
@@ -234,15 +234,15 @@ proc setup_environment {} {
             #set helvetica_font [sdltk addfont "fonts/cwTeXQHei-Bold.ttf"]
             
             set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-            puts "helvetica_font: $helvetica_font"
+            #puts "helvetica_font: $helvetica_font"
             #set helvetica_font [sdltk addfont "fonts/wts11.ttf"]
             set helvetica_bold_font $helvetica_font
-            puts "loading asian otf font"
+            #puts "loading asian otf font"
             #set fontm [expr {($fontm * -)}]
             #set fontm 3
         } else {
             set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
-            puts "helvetica_font: $helvetica_font"
+            #puts "helvetica_font: $helvetica_font"
             set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
         }
 
@@ -400,7 +400,7 @@ proc setup_environment {} {
         #font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
 
         #proc send_de1_shot_and_steam_settings {} {}
-        proc ble {args} { puts "ble $args" }
+        proc ble {args} { puts "    ble $args"; return 1 }
         proc borg {args} { 
             if {[lindex $args 0] == "locale"} {
                 return [list "language" "en"]
@@ -411,15 +411,19 @@ proc setup_environment {} {
             }
         }
 
-        proc save_settings_to_de1 {} {}
+        #proc save_settings_to_de1 {} {}
         #proc de1_send_steam_hotwater_settings {} {}
         #proc de1_read_hotwater {} {return 90}
         #proc de1_send_shot_frames {} {}
-        proc de1_send {x} { clear_timers;delay_screen_saver; }
-        proc de1_read {} { puts "de1_read" }
-        proc app_exit {} { exit }       
-        proc ble_find_de1s {} { puts "ble_find_de1s" }
-        set ::de1(connect_time) [clock seconds]
+
+        #proc de1_send {x} { clear_timers;delay_screen_saver; }
+        #proc de1_read {} { puts "de1_read" }
+        #proc app_exit {} { exit }       
+        #proc ble_find_de1s {} { puts "ble_find_de1s" }
+        #set ::de1(connect_time) [clock seconds]
+
+        source "bluetooth.tcl"
+
 
     }
     . configure -bg black 
@@ -702,7 +706,6 @@ proc save_array_to_file {arrname fn} {
 proc save_settings {} {
     msg "saving settings"
     save_array_to_file ::settings [settings_filename]
-
     save_settings_to_de1
 
     # john not sure what this is for since we're receiving hot water notifications
@@ -864,7 +867,7 @@ proc load_font {name fn pcsize {androidsize {}} } {
             font create $name -family $::helvetica_font -size [expr {int(1.0 * $::fontm * $androidsize)}]
         } else {
             font create "$name" -family $::helvetica_font -size [expr {int(1.0 * $pcsize * $::fontm)}]
-            puts "created font $name in $::helvetica_font"
+            #puts "created font $name in $::helvetica_font"
         }
         return
     } elseif {[language] == "th"} {
@@ -877,7 +880,7 @@ proc load_font {name fn pcsize {androidsize {}} } {
             font create $name -family $::thai_fontname -size [expr {int(1.0 * $::fontm * $androidsize)}]
         } else {
             font create "$name" -family "sarabun" -size [expr {int(1.0 * $pcsize * $::fontm)}]
-            puts "created font $name in sarabun"
+            #puts "created font $name in sarabun"
         }
         return
     } else {

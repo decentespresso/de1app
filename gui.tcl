@@ -18,7 +18,7 @@ proc add_de1_page {names pngfilename} {
 proc set_de1_screen_saver_directory {{dirname {}}} {
 	global saver_directory
 	if {$dirname != ""} {
-		set saver_directory $dirname
+	set saver_directory $dirname
 	}
 
 	set pngfilename [random_saver_file]
@@ -318,8 +318,37 @@ proc platform_button_unpress {} {
 }
 
 set cnt 0
-set debuglog {}					
+set debugcnt 0
+set ::debuglog {}					
 proc msg {text} {
+#z
+
+	incr ::debugcnt
+	#catch {
+	if {[info exists ::debugging] == 1} {
+		if {$::debugging == 1} {
+
+			set ::debuglog "$::debugcnt) $text\n$::debuglog"
+			#return
+			set loglines [split $::debuglog "\n"]
+			if {[llength $loglines] > 35} {
+				unshift loglines
+				set ::debuglog [join $loglines \n]
+				#set ::debuglog [join [lrange $loglines 0 [expr {[llength loglines] - 1}] \n]]
+				#pop 
+				#set loglines [split $::debuglog "\n"]
+			}
+			return
+
+	        $::debugwidget insert end "$text\n"
+	        set txt [$::debugwidget get 1.0 end]
+	        tk::TextSetCursor $::debugwidget {insert display lineend}
+	        #append ::debuglog $text\n
+	        return
+
+		}
+	}
+	#}
 	#return
 
 	if {$text == ""} {
@@ -622,6 +651,7 @@ proc update_chart {} {
 	espresso_elapsed notify now
 }
 
+
 proc de1_connected_state { {hide_delay 0} } {
 
 	set hide_delay 0
@@ -640,24 +670,35 @@ proc de1_connected_state { {hide_delay 0} } {
 		#return [translate "Disconnected"]
 	}
 
-	if {$since_last_ping < 5} {
-		borg spinner off
+	if {$since_last_ping < 2} {
+		#borg spinner off
 		if {$elapsed > $hide_delay && $hide_delay != 0} {
 			# only show the "connected" message for 5 seconds
 			return ""
 		}
 		#return "[translate Connected] : $elapsed"
-		borg toast "[translate Connected]"
+		#borg toast "[translate Connected]"
+		#borg toast "[translate Connected]"
 		return "[translate Connected]"
 		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_bluetooth_list"
 	} else {
-		borg toast "[translate Disconnected]"
-		borg spinner on
+		#borg toast "[translate Disconnected]"
+		#borg spinner on
 		if {$::de1(device_handle) == 0} {
 			#return "[translate Connecting]"
 			if {$elapsed > 600} {
+				if {$::scanning == 1} {
+					return "[translate Scanning]"
+				} elseif {$::scanning == -1} {
+					return "[translate Starting]"
+				}
 				return "[translate Connecting]"
 			} else {
+				if {$::scanning == 1} {
+					return "[translate Scanning] : $elapsed"
+				} else {
+					return "[translate Connecting] : $elapsed"
+				}
 				return "[translate Connecting] : $elapsed"
 			}
 		} else {
@@ -732,6 +773,7 @@ proc update_onscreen_variables { {state {}} } {
 }
 
 proc set_next_page {machinepage guipage} {
+	msg "set_next_page $machinepage $guipage"
 	set key "machine:$machinepage"
 	set ::nextpage($key) $guipage
 }
@@ -773,7 +815,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	delay_screen_saver
 
-	puts "page_display_change $page_to_show"
+	msg "page_display_change $page_to_show"
 
 	if {$page_to_show == "saver"} {
 		after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
@@ -971,7 +1013,12 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 	set seconds 0
 
 	# preinfusion
-	if {$::settings(flow_profile_preinfusion_time) > 0} {
+	if {$::settings(preinfusion_time) > 0} {
+		espresso_de1_explanation_chart_flow append 0
+		espresso_de1_explanation_chart_elapsed_flow append $seconds
+
+		set seconds [expr {$::settings(preinfusion_flow_rate)/4}]
+
 		espresso_de1_explanation_chart_flow append $::settings(preinfusion_flow_rate);
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 
@@ -979,10 +1026,34 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 		espresso_de1_explanation_chart_flow append $::settings(preinfusion_flow_rate);
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 	} else {
-		espresso_de1_explanation_chart_elapsed_flow append $seconds
 		espresso_de1_explanation_chart_flow append 0
+		espresso_de1_explanation_chart_elapsed_flow append $seconds
 
+		set seconds [expr {$::settings(flow_profile_hold)/4}]
+		#espresso_de1_explanation_chart_elapsed_flow append $seconds
+		#espresso_de1_explanation_chart_flow append 0
 	}
+
+	if {$::settings(espresso_pressure) > 0 && $::settings(espresso_pressure) > $::settings(preinfusion_stop_pressure)} {
+		# assume 2 bar per second rise time, and a flow rate of 6 ml/s when rising
+		if {$::settings(preinfusion_time) == 0} {
+			set time_to_rise_pressure [expr {$::settings(espresso_pressure) / 2}]
+		} else {
+			set time_to_rise_pressure [expr {($::settings(espresso_pressure) - $::settings(preinfusion_stop_pressure)) / 2}]
+		}
+		if {$time_to_rise_pressure > 0} {
+			set seconds [expr {$seconds + (( 6 - $::settings(flow_profile_hold) ) / 1)}]
+
+			espresso_de1_explanation_chart_flow append 6
+			espresso_de1_explanation_chart_elapsed_flow append $seconds
+
+			set seconds [expr {$seconds + $time_to_rise_pressure}]
+
+			espresso_de1_explanation_chart_flow append 6
+			espresso_de1_explanation_chart_elapsed_flow append $seconds
+		} 
+	}
+	
 
 	set approximate_ramptime 3
 	set flow_profile_hold_time $::settings(espresso_hold_time)
@@ -1036,10 +1107,10 @@ proc run_de1_app {} {
 proc ui_startup {} {
 	load_settings
 	setup_environment
-	if {$::android == 1} {
-		#ble_find_de1s
-		ble_connect_to_de1
-	}
+	ble_find_de1s
+	#if {$::android == 1} {
+		#ble_connect_to_de1
+	#}
 	setup_images_for_first_page
 	setup_images_for_other_pages
 
@@ -1049,12 +1120,14 @@ proc ui_startup {} {
 	if {$::android == 1} {
 		#ble_find_de1s
 		#ble_connect_to_de1
-		puts "ran ble_connect_to_de1"
-		after 1 run_de1_app
+		#puts "ran ble_connect_to_de1"
+		#after 1 run_de1_app
 		
 	} else {
-		after 1 run_de1_app
+		#after 1 run_de1_app
 	}
+	#after 1 run_de1_app
+	run_de1_app
 	vwait forever
 }
 
@@ -1161,4 +1234,4 @@ snit::widget multiline_entry {
     }
  }
 
-install_this_app_icon
+#install_this_app_icon
