@@ -39,7 +39,7 @@ array set ::de1 {
 	wrote 0
 	cmdstack {}
 	connect_time 0
-	water_level 0
+	water_level 30
 	state 0
 	substate 0
 	current_context ""
@@ -121,11 +121,10 @@ array set ::settings {
 	enable_fahrenheit 0
 	enable_ampm 0
 	settings_1_page settings_1
-	steam_max_time 47
 	steam_temperature 170
 	water_max_time 10
 	water_max_vol 500
-	water_temperature 75
+	water_temperature 80
 	minimum_water_before_refill 300
 	espresso_max_time 42
 	espresso_temperature 92

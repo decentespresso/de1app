@@ -33,34 +33,37 @@ set ::message_button [add_de1_button "message" {say [translate {Quit}] $::settin
 
 ##############################################################################################################################################################################################################################################################################
 
-############################
-# pressure controlled shots
-#add_de1_text "settings_2 settings_2a" 890 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-
-#	add_de1_variable "settings_2a settings_2b" 47 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_pressure_widget $::preinfusion_pressure_widget_label $::preinfusion_flow_widget $::preinfusion_flow_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
-
-set_next_page off settings_2a
-
 if {[de1plus]} { 
+
+	############################
+	# puressure  controlled shots
 
 	# preinfusing
 	add_de1_text "settings_2a settings_2b" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		add_de1_widget "settings_2a settings_2b" scale 47 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2a settings_2b" 47 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_pressure_widget $::preinfusion_pressure_widget_label $::preinfusion_flow_widget $::preinfusion_flow_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
+		# pressure profile preinfusion
+		add_de1_widget "settings_2a" scale 47 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+		add_de1_variable "settings_2a" 47 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_pressure_widget $::preinfusion_pressure_widget_label $::preinfusion_pressure_flow_widget $::preinfusion_pressure_flow_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
 
-	set ::preinfusion_pressure_widget [add_de1_widget "settings_2a settings_2b" scale 670 850 {} -from $::de1(maxpressure) -to 0.1 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 475] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 ]
-	set ::preinfusion_pressure_widget_label [add_de1_variable "settings_2a settings_2b" 820 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[translate "Until $::settings(preinfusion_stop_pressure) bar"]}]
+		set ::preinfusion_pressure_widget [add_de1_widget "settings_2a" scale 670 850 {} -from $::de1(maxpressure) -to 0.1 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 475] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 ]
+		set ::preinfusion_pressure_widget_label [add_de1_variable "settings_2a" 820 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[translate "Until $::settings(preinfusion_stop_pressure) bar"]}]
+		set ::preinfusion_pressure_flow_widget [add_de1_widget "settings_2a" scale 47 1115 {} -to $::de1(max_flowrate) -from 0.1 -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 -orient horizontal ]
+		set ::preinfusion_pressure_flow_widget_label [add_de1_variable "settings_2a" 47 1265 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
 
-	set ::preinfusion_flow_widget [add_de1_widget "settings_2a settings_2b" scale 47 1115 {} -to $::de1(max_flowrate) -from 0.1 -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 -orient horizontal ]
-	set ::preinfusion_flow_widget_label [add_de1_variable "settings_2a settings_2b" 47 1265 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
+		# flow profile preinfusion
+		add_de1_widget "settings_2b" scale 47 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 470] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+		add_de1_variable "settings_2b" 47 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_flow_widget $::preinfusion_flow_widget_label $::preinfusion_flow_pressure_widget $::preinfusion_flow_pressure_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
+		set ::preinfusion_flow_widget [add_de1_widget "settings_2b" scale 47 1115 {} -to $::de1(max_flowrate) -from 0.1 -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 470] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 -orient horizontal ]
+		set ::preinfusion_flow_widget_label [add_de1_variable "settings_2b" 47 1265 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
+		set ::preinfusion_flow_pressure_widget [add_de1_widget "settings_2b" scale 540 850 {} -from $::de1(maxpressure) -to 0.1 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 475] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 ]
+		set ::preinfusion_flow_pressure_widget_label [add_de1_variable "settings_2b" 690 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[translate "Until $::settings(preinfusion_stop_pressure) bar"]}]
 
 
-	add_de1_widget "settings_2a" scale 892 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-	add_de1_variable "settings_2 settings_2a" 892 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_hold_time) [list $::espresso_pressure_widget $::espresso_pressure_widget_label]; seconds_text $::settings(espresso_hold_time)]}
+	add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+		add_de1_widget "settings_2a" scale 892 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+		add_de1_variable "settings_2 settings_2a" 892 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_hold_time) [list $::espresso_pressure_widget $::espresso_pressure_widget_label]; seconds_text $::settings(espresso_hold_time)]}
 
-	set ::espresso_pressure_widget [add_de1_widget "settings_2a" scale 1516 850 {} -to 0 -from $::de1(maxpressure) -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0]
-	set ::espresso_pressure_widget_label [add_de1_variable "settings_2 settings_2a" 1667 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[commify $::settings(espresso_pressure)] [translate "bar"]}]
+		set ::espresso_pressure_widget [add_de1_widget "settings_2a" scale 1516 850 {} -to 0 -from $::de1(maxpressure) -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0]
+		set ::espresso_pressure_widget_label [add_de1_variable "settings_2 settings_2a" 1667 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[commify $::settings(espresso_pressure)] [translate "bar"]}]
 	
 
 	add_de1_text "settings_2 settings_2a" 1730 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
@@ -80,16 +83,10 @@ if {[de1plus]} {
 
 	############################
 	# flow controlled shots
-	#add_de1_text "settings_2b" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left"
-	#add_de1_widget "settings_2b" scale 47 850 {} -to 0 -from $::de1(max_flowrate) -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 470] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-	#add_de1_variable "settings_2b" 47 1335 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}
 
-	#add_de1_widget "settings_2b" scale 220 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 330] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-	#add_de1_variable "settings_2b" 220 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(preinfusion_time) [translate "seconds"]}
-
-	add_de1_text "settings_2b" 890 755 -text [translate "2: rise"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left"
-		add_de1_widget "settings_2b" scale 890 850 {} -from $::de1(maxpressure) -to 0 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 475] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2b" 890 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[bar_or_off_text $::settings(espresso_pressure)]}
+	add_de1_text "settings_2b" 760 755 -text [translate "2: rise"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left"
+		add_de1_widget "settings_2b" scale 760 850 {} -from $::de1(maxpressure) -to 0 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 475] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+		add_de1_variable "settings_2b" 760 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[bar_or_off_text $::settings(espresso_pressure)]}
 
 	add_de1_text "settings_2b" 1185 755 -text [translate "3: hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 		add_de1_widget "settings_2b" scale 1185 850 {} -from 0 -to 60 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 460] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
@@ -294,12 +291,14 @@ add_de1_button "settings_4" {} 640 890 1260 1080
 
 #add_de1_text "settings_4" 90 250 -text [translate "Other settings"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-add_de1_variable "settings_4" 1350 320 -text "" -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water level:"] [round_to_one_digits $::de1(water_level)][translate mm]}
 
-add_de1_widget "settings_4" entry 1340 380 {} -width 30 -font Helv_15 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
-add_de1_text "settings_4" 1350 480 -text [translate "Name your machine"] -font Helv_8 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
-add_de1_text "settings_4" 1320 240 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_variable "settings_4" 1350 550 -text "[translate {Version:}] $::de1(version)" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 500 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
+#add_de1_widget "settings_4" entry 1320 320 {} -width 30 -font Helv_15 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
+#add_de1_text "settings_4" 1320 420 -text [translate "Name your machine"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+
+add_de1_variable "settings_4" 1320 320 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water level:"] [round_to_one_digits $::de1(water_level)][translate mm]}
+
+add_de1_text "settings_4" 1320 250 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_variable "settings_4" 1320 400 -text "[translate {Version:}] $::de1(version)" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 500 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
 #add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 # future feature to have scheduled power up/down
@@ -318,14 +317,14 @@ if {$scheduler_enabled == 1} {
 #add_de1_text "settings_3" 2310 880 -text [translate "Temperature"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
 
 
-add_de1_text "settings_3" 50 1120 -text [translate "Hot water"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+#add_de1_text "settings_3" 50 1120 -text [translate "Hot water"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 50 220 -text [translate "Screen Brightness"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 50 540 -text [translate "Energy Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 680 540 -text [translate "Screen Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 50 860 -text [translate "Measurements"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 50 1140 -text [translate "Maintenance"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 50 820 -text [translate "Firmware"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 1320 820 -text [translate "Available machines:"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 1320 820 -text [translate "Connect:"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
 
 
@@ -335,7 +334,7 @@ add_de1_widget "settings_4" listbox 1320 900 {
 } -background #fbfaff -font Helv_15 -bd 0 -height 5 -width 16 -foreground #d3dbf3 -borderwidth 0
 
 # bluetooth scan
-add_de1_text "settings_4" 2230 980 -text [translate "Search"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+#add_de1_text "settings_4" 2230 980 -text [translate "Search"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_button "settings_4" {set ::de1_bluetooth_list ""; say [translate {search}] $::settings(sound_button_in); ble_find_de1s} 1910 890 2550 1080
 
 set enable_spoken_buttons 0
@@ -467,14 +466,14 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 
 #add_de1_button "settings_3" {say [translate {water temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(water_temperature) $::de1(water_min_temperature) $::de1(water_max_temperature) %x %y %x0 %y0 %x1 %y1} 2130 340 2500 820 ""
 
-if {$::settings(enable_fahrenheit) == 1} {
-	add_de1_widget "settings_3" scale 50 1200 {} -from 60 -to 99 -background #e4d1c1 -borderwidth 1 -bigincrement 0.555556 -showvalue 0 -resolution 0.555556 -length [rescale_x_skin 1150] -width [rescale_y_skin 135] -variable ::settings(water_temperature) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-} else {
-	add_de1_widget "settings_3" scale 50 1200 {} -from 60 -to 99 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1150] -width [rescale_y_skin 135] -variable ::settings(water_temperature) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
-}
+#if {$::settings(enable_fahrenheit) == 1} {
+#	add_de1_widget "settings_3" scale 50 1200 {} -from 60 -to 99 -background #e4d1c1 -borderwidth 1 -bigincrement 0.555556 -showvalue 0 -resolution 0.555556 -length [rescale_x_skin 1150] -width [rescale_y_skin 135] -variable ::settings(water_temperature) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+#} else {
+#	add_de1_widget "settings_3" scale 50 1200 {} -from 60 -to 99 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1150] -width [rescale_y_skin 135] -variable ::settings(water_temperature) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 
+#}
 
 #add_de1_variable "settings_3" 310 1350 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
-add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Temperature:"] [return_temperature_measurement $::settings(water_temperature)]}
+#add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Temperature:"] [return_temperature_measurement $::settings(water_temperature)]}
 
 
 

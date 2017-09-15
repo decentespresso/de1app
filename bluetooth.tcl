@@ -266,11 +266,12 @@ proc de1_send_steam_hotwater_settings {} {
 
 	#puts ">>>> Sending BLE hot water/steam settings"
 	set data [return_de1_packed_steam_hotwater_settings]
-	userdata_append "Set water/steam settings" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
+	parse_binary_hotwater_desc $data arr2
+	userdata_append "Set water/steam settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
 	#puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 	
 	# for testing parser/deparser
-	#parse_binary_hotwater_desc $data arr2
+	
 	#msg "send de1_send_steam_hotwater_settings of [string length $data] bytes: $data  : [array get arr2]"
 
 }
@@ -413,7 +414,7 @@ proc append_to_de1_bluetooth_list {address} {
 	}
 }
 
-proc de1_ble_handler {event data} {
+proc de1_ble_handler { event data } {
 	#msg "de1 ble_handler $event $data"
 	#set ::de1(wrote) 0
 	#msg "ble event: $event"
@@ -653,7 +654,7 @@ proc de1_ble_handler {event data} {
 		}
 	}
 
-run_next_userdata_cmd
+	run_next_userdata_cmd
 
     #msg "exited event"
 }

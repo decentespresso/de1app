@@ -706,7 +706,7 @@ proc save_array_to_file {arrname fn} {
 proc save_settings {} {
     msg "saving settings"
     save_array_to_file ::settings [settings_filename]
-    save_settings_to_de1
+    #save_settings_to_de1
 
     # john not sure what this is for since we're receiving hot water notifications
     #de1_read_hotwater
@@ -721,6 +721,11 @@ proc load_settings {} {
     if {![de1plus] && [string first "package require de1plus" $skintcl] != -1} {
         puts "Error: incompatible DE1PLUS skin loaded on a DE1"
         set ::settings(skin) "default"
+    }
+
+    if {![de1plus]} {
+        set settings(water_temperature) 80
+        set settings(water_volume) 100
     }
 
     blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal

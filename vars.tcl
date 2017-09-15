@@ -277,9 +277,12 @@ proc accelerometer_angle_text {} {
 }
 
 proc group_head_heater_temperature {} {
-	#if {$::android == 0} {
-		#set ::de1(head_temperature) [expr {80 + (rand() * 15.0)}]
-	#}
+
+	
+	if {$::android == 0} {
+		# slowly have the water level drift
+		set ::de1(water_level) [expr {$::de1(water_level) + (.3*(rand() - 0.5))}]
+	}
 
 	return $::de1(head_temperature)
 }

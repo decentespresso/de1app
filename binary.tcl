@@ -165,11 +165,12 @@ proc ::fields::format {spec endian args} {
 
 proc return_de1_packed_steam_hotwater_settings {} {
 
+	puts "xx $::settings(water_volume)"
 	set arr(SteamSettings) [expr {0 & 0x80 & 0x40}]
 	set arr(TargetSteamTemp) [convert_float_to_U8P0 $::settings(steam_temperature)]
-	set arr(TargetSteamLength) [convert_float_to_U8P0 $::settings(steam_max_time)]
+	set arr(TargetSteamLength) [convert_float_to_U8P0 $::settings(steam_timeout)]
 	set arr(TargetHotWaterTemp) [convert_float_to_U8P0 $::settings(water_temperature)]
-	set arr(TargetHotWaterVol) [convert_float_to_U8P0 $::settings(water_max_vol)]
+	set arr(TargetHotWaterVol) [convert_float_to_U8P0 $::settings(water_volume)]
 	set arr(TargetHotWaterLength) [convert_float_to_U8P0 $::settings(water_max_time)]
 	set arr(TargetEspressoVol) [convert_float_to_U8P0 $::settings(minimum_water_before_refill)]
 	set arr(TargetGroupTemp) [convert_float_to_U16P8 $::settings(espresso_temperature)]
@@ -588,7 +589,7 @@ proc de1_packed_shot {} {
 		set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
 		set frame1(MaxVol) [convert_float_to_U10P0 90]
 
-		if {![de1plus]} {
+		if {[de1plus]} {
 			# exit preinfusion if your pressure is above the pressure goal, no matter what
 			set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
 		} else {
@@ -1056,7 +1057,7 @@ proc append_live_data_to_espresso_chart {} {
 	}
 
 	set pressure_delta [diff_pressure]
-	espresso_pressure_delta append [expr {abs ($pressure_delta)}]
+	espresso_pressure_delta append [expr {abs ($pressure_delta) / $millitime}]
 
 	set ::previous_espresso_flow $::de1(flow)
 	set ::previous_espresso_pressure $::de1(pressure)
