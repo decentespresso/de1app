@@ -1234,4 +1234,24 @@ snit::widget multiline_entry {
     }
  }
 
+proc canvas_hide { widgetlist } {
+	foreach widget $widgetlist {
+		.can itemconfigure $widget -state hidden
+	}
+}
+
+proc canvas_show { widgetlist } {
+	foreach widget $widgetlist {
+		.can itemconfigure $widget -state normal
+	}
+}
+
+proc canvas_hide_if_zero { testvar widgetlist } {
+	if {$testvar == 0} {
+		canvas_hide $widgetlist
+	} else {
+		canvas_show $widgetlist
+	}
+}
+
 #install_this_app_icon

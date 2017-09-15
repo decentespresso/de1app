@@ -1208,6 +1208,9 @@ proc bar_or_off_text {num} {
 		return [subst {$num [translate "bar"]}]
 	}
 }
+
+
+
 proc preinfusion_seconds_text {num} {
 	if {$num == 0} {
 		return [translate "off"]
