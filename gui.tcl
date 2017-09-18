@@ -1022,57 +1022,63 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 		espresso_de1_explanation_chart_flow append $::settings(preinfusion_flow_rate);
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 
+		set likely_pressure_attained_during_preinfusion [expr {(($::settings(preinfusion_flow_rate) * $::settings(preinfusion_time)) - 5) / 10}]
+		set pressure_gained_needed [expr {$::settings(preinfusion_stop_pressure) - $likely_pressure_attained_during_preinfusion}]
+
 		set seconds [expr {$seconds + $::settings(preinfusion_time)}]
 		espresso_de1_explanation_chart_flow append $::settings(preinfusion_flow_rate);
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
+
+#puts "g: $::settings(preinfusion_guarantee)"
+		#puts "likely_pressure_attained_during_preinfusion: $likely_pressure_attained_during_preinfusion / $::settings(preinfusion_guarantee) / pressure_gained_needed $pressure_gained_needed"
+		if {$pressure_gained_needed > 0 && $::settings(preinfusion_guarantee) != 0} {
+			# assume 2 bar per second rise time, and a flow rate of 6 ml/s when rising
+			set time_to_rise_pressure [expr {$pressure_gained_needed / 2}]
+
+			#puts "time_to_rise_pressure: $time_to_rise_pressure"
+			#set rise_hold_time [expr {($::settings(espresso_pressure) - $likely_pressure_attained_during_preinfusion) }]
+			set seconds [expr {$seconds + $time_to_rise_pressure}]
+			espresso_de1_explanation_chart_flow append 6
+			espresso_de1_explanation_chart_elapsed_flow append $seconds
+
+			if {$::settings(flow_profile_hold) > 0} {
+				set pressure_drop_needed [expr {6 - $::settings(flow_profile_hold)}]
+			} else {
+				set pressure_drop_needed 3
+			}
+			set seconds [expr {$seconds + (($pressure_drop_needed + $time_to_rise_pressure) / 2)}]
+			espresso_de1_explanation_chart_flow append 6
+			espresso_de1_explanation_chart_elapsed_flow append $seconds
+		}
 	} else {
+		set seconds [expr {$::settings(flow_profile_hold)/4}]
 		espresso_de1_explanation_chart_flow append 0
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 
-		set seconds [expr {$::settings(flow_profile_hold)/4}]
-		#espresso_de1_explanation_chart_elapsed_flow append $seconds
+	#espresso_de1_explanation_chart_elapsed_flow append $seconds
 		#espresso_de1_explanation_chart_flow append 0
-	}
-
-	if {$::settings(espresso_pressure) > 0 && $::settings(espresso_pressure) > $::settings(preinfusion_stop_pressure)} {
-		# assume 2 bar per second rise time, and a flow rate of 6 ml/s when rising
-		if {$::settings(preinfusion_time) == 0} {
-			set time_to_rise_pressure [expr {$::settings(espresso_pressure) / 2}]
-		} else {
-			set time_to_rise_pressure [expr {($::settings(espresso_pressure) - $::settings(preinfusion_stop_pressure)) / 2}]
-		}
-		if {$time_to_rise_pressure > 0} {
-			set seconds [expr {$seconds + (( 6 - $::settings(flow_profile_hold) ) / 1)}]
-
-			espresso_de1_explanation_chart_flow append 6
-			espresso_de1_explanation_chart_elapsed_flow append $seconds
-
-			set seconds [expr {$seconds + $time_to_rise_pressure}]
-
-			espresso_de1_explanation_chart_flow append 6
-			espresso_de1_explanation_chart_elapsed_flow append $seconds
-		} 
 	}
 	
 
 	set approximate_ramptime 3
 	set flow_profile_hold_time $::settings(espresso_hold_time)
 	set espresso_decline_time $::settings(espresso_decline_time)
-	if {$flow_profile_hold_time > $approximate_ramptime} {
-		set flow_profile_hold_time [expr {$flow_profile_hold_time - $approximate_ramptime}]
-	} elseif {$espresso_decline_time > $approximate_ramptime} {
-		set espresso_decline_time [expr {$espresso_decline_time - $approximate_ramptime}]
-	} else {
-		set approximate_ramptime 0
-	}	
+		#set flow_profile_hold_time [expr {$flow_profile_hold_time - $approximate_ramptime}]
+		#puts "flow_profile_hold_time: $flow_profile_hold_time"
+	#if {$flow_profile_hold_time > $approximate_ramptime} {
+	#	puts "113"
+	#} else {
+	#	puts "114"
+#		set approximate_ramptime 5
+	#}	
 
 	# ramp up the flow
-	set seconds [expr {$seconds + $approximate_ramptime}]
-	espresso_de1_explanation_chart_elapsed_flow append $seconds
-	espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
-
-	# hold the flow
 	if {$flow_profile_hold_time > 0} {
+		set seconds [expr {$seconds + $approximate_ramptime}]
+		espresso_de1_explanation_chart_elapsed_flow append $seconds
+		espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
+
+		# hold the flow
 		set seconds [expr {$seconds + $flow_profile_hold_time}]
 		espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
 		espresso_de1_explanation_chart_elapsed_flow append $seconds

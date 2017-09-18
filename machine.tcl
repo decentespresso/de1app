@@ -153,6 +153,7 @@ array set ::settings {
 	flight_mode_angle 30
 	machine_name "pretty decent"
 	enable_spoken_prompts 0
+	preinfusion_guarantee 1
 	speaking_rate 1.5
 	scentone {}
 	temperature_target "portafilter"
