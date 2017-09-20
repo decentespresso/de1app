@@ -8,6 +8,8 @@ proc clear_espresso_chart {} {
 	espresso_elapsed length 0
 	espresso_pressure length 0
 	espresso_flow length 0
+	espresso_flow_weight length 0
+	espresso_flow_weight_2x length 0
 	espresso_flow_2x length 0
 	espresso_pressure_delta length 0
 	espresso_flow_delta length 0
@@ -24,6 +26,8 @@ proc clear_espresso_chart {} {
 	espresso_elapsed append 0
 	espresso_pressure append 0
 	espresso_flow append 0
+	espresso_flow_weight append 0
+	espresso_flow_weight_2x append 0
 	espresso_flow_2x append 0
 	espresso_pressure_delta append 0
 	espresso_flow_delta append 0
@@ -361,12 +365,45 @@ proc return_flow_measurement {in} {
 	}
 }
 
+proc return_weight_measurement {in} {
+	if {$::settings(enable_fluid_ounces) != 1} {
+		return [subst {[round_to_one_digits $in] [translate "g"]}]
+	} else {
+		return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
+	}
+}
+
 proc waterflow_text {} {
 	return [return_flow_measurement [waterflow]] 
 }
 
 proc watervolume_text {} {
+	if {$::android == 0} {
+		return [return_flow_measurement [expr {3 - (rand() * 20)}]]
+	}
+
 	return [return_liquid_measurement $::de1(volume)] 
+}
+
+proc waterweightflow_text {} {
+	if {$::android == 0} {
+		return [return_flow_measurement [expr {(rand() * 6)}]]
+	}
+
+	if {$::de1(scale_weight_rate) == ""} {
+		return ""
+	}
+	return [return_flow_measurement $::de1(scale_weight_rate)]
+}
+
+proc waterweight_text {} {
+	if {$::android == 0} {
+		return [return_weight_measurement [expr {round((rand() * 20))}]]
+	}
+	if {$::de1(scale_weight) == ""} {
+		return ""
+	}
+	return [return_weight_measurement $::de1(scale_weight)]
 }
 
 
@@ -1017,6 +1054,7 @@ proc preview_history {w args} {
 		espresso_elapsed length 0; espresso_elapsed append $props(espresso_elapsed)
 		espresso_pressure length 0; espresso_pressure append $props(espresso_pressure)
 		espresso_flow length 0; espresso_flow append $props(espresso_flow)
+		espresso_flow_weight length 0; espresso_flow_weight append $props(espresso_flow_weight)
 		espresso_temperature_basket length 0; espresso_temperature_basket append $props(espresso_temperature_basket)
 		espresso_temperature_mix length 0; espresso_temperature_mix append $props(espresso_temperature_mix)
 
@@ -1178,6 +1216,7 @@ proc save_this_espresso_to_history {} {
 		append espresso_data "espresso_elapsed [espresso_elapsed range 0 end]\n"
 		append espresso_data "espresso_pressure [espresso_pressure range 0 end]\n"
 		append espresso_data "espresso_flow [espresso_flow range 0 end]\n"
+		append espresso_data "espresso_flow_weight [espresso_flow_weight range 0 end]\n"
 		append espresso_data "espresso_temperature_basket [espresso_temperature_basket range 0 end]\n"
 		append espresso_data "espresso_temperature_mix [espresso_temperature_mix range 0 end]\n"
 

@@ -19,6 +19,7 @@ array set ::de1 {
     found    0
     scanning 1
     device_handle 0
+    skale_device_handle 0
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"
 	sinstance 0
 	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
@@ -44,6 +45,8 @@ array set ::de1 {
 	substate 0
 	current_context ""
 	serial_number 0
+	scale_weight {}
+	scale_weight_rate {}
 	voltage 110
 	has_catering_kit 0
 	has_plumbing_kit 0
@@ -122,6 +125,7 @@ array set ::settings {
 	enable_ampm 0
 	settings_1_page settings_1
 	steam_temperature 170
+	skale_bluetooth_address {}
 	water_max_time 10
 	water_max_vol 500
 	water_temperature 80
@@ -278,6 +282,10 @@ proc start_espresso {} {
 	clear_espresso_chart
 
 	de1_send "make espresso" $::de1_state(Espresso)
+
+	if {$::de1(skale_device_handle) != 0} {
+		skale_tare
+	}
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}

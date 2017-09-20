@@ -46,7 +46,7 @@ if {[de1plus]} {
 		add_de1_variable "settings_2a" 47 1000 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_pressure_widget $::preinfusion_pressure_widget_label $::preinfusion_pressure_flow_widget $::preinfusion_pressure_flow_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
 
 		set ::preinfusion_pressure_widget [add_de1_widget "settings_2a" scale 670 850 {} -from [expr {$::de1(maxpressure) - 1}] -to 0.1 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 475] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 ]
-		set ::preinfusion_pressure_widget_label [add_de1_variable "settings_2a" 820 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[translate "> $::settings(preinfusion_stop_pressure) bar"]}]
+		set ::preinfusion_pressure_widget_label [add_de1_variable "settings_2a" 820 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[translate "< $::settings(preinfusion_stop_pressure) bar"]}]
 
 
 		set ::preinfusion_pressure_flow_widget [add_de1_widget "settings_2a" scale 47 1115 {} -to $::de1(max_flowrate) -from 0.1 -tickinterval 0  -showvalue 0 -background #e4d1c1  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 -orient horizontal ]
@@ -63,7 +63,7 @@ if {[de1plus]} {
 		
 		set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 790 1345 { } -command update_de1_explanation_chart_soon -height 0 -width 2 -padx 0 -pady 0 -text {} -indicatoron true -font Helv_6  -anchor ne -foreground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0]
 		set ::preinfusion_flow_pressure_guarantee_label [add_de1_text "settings_2b" 775 1337 -text [translate "guarantee"] -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "right"]
-		set ::preinfusion_flow_pressure_guarantee [add_de1_button "settings_2b" {say [translate {Guarantee}] $::settings(sound_button_in); set ::settings(preinfusion_guarantee) [expr {!$::settings(preinfusion_guarantee)}]; update_de1_explanation_chart_soon } 240 1337 780 1400 ""]
+		set ::preinfusion_flow_pressure_guarantee [add_de1_button "settings_2b" {say [translate {Force}] $::settings(sound_button_in); set ::settings(preinfusion_guarantee) [expr {!$::settings(preinfusion_guarantee)}]; update_de1_explanation_chart_soon } 240 1337 780 1400 ""]
 
 
 	add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
@@ -306,7 +306,7 @@ add_de1_button "settings_4" {} 640 890 1260 1080
 #add_de1_widget "settings_4" entry 1320 320 {} -width 30 -font Helv_15 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(machine_name) 
 #add_de1_text "settings_4" 1320 420 -text [translate "Name your machine"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
-add_de1_variable "settings_4" 1320 320 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water level:"] [round_to_one_digits $::de1(water_level)][translate mm]}
+add_de1_variable "settings_4" 1320 340 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water level:"] [round_to_integer $::de1(water_level)][translate mm]}
 
 add_de1_text "settings_4" 1320 250 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_variable "settings_4" 1320 400 -text "[translate {Version:}] $::de1(version)" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 500 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
@@ -464,7 +464,7 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); fill_ble_listbox $::ble_listbox_widget; set_next_page off settings_4; page_show settings_4} 1905 0 2560 188
 
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {save}] $::settings(sound_button_in); save_settings; 
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {save_settings_to_de1; say [translate {save}] $::settings(sound_button_in); save_settings; 
 	if {$::settings(skin) != $::settings_backup(skin) } {
 		.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 		set_next_page off message; page_show message

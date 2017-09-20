@@ -1027,6 +1027,8 @@ proc append_live_data_to_espresso_chart {} {
 	espresso_elapsed append [expr {$millitime/1000.0}]
 	espresso_pressure append $::de1(pressure)
 	espresso_flow append $::de1(flow)
+	espresso_flow_weight append [expr {10 * $::de1(scale_weight_rate)}]
+	espresso_flow_weight_2x append [expr {20 * $::de1(scale_weight_rate)}]
 	espresso_flow_2x append [expr {2.0 * $::de1(flow)}]
 
 	#set elapsed_since_last [expr {$millitime - $::previous_espresso_flow_time}]

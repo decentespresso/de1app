@@ -1031,9 +1031,12 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 
 #puts "g: $::settings(preinfusion_guarantee)"
 		#puts "likely_pressure_attained_during_preinfusion: $likely_pressure_attained_during_preinfusion / $::settings(preinfusion_guarantee) / pressure_gained_needed $pressure_gained_needed"
-		if {$pressure_gained_needed > 0 && $::settings(preinfusion_guarantee) != 0} {
+		if {$::settings(preinfusion_guarantee) != 0} {
 			# assume 2 bar per second rise time, and a flow rate of 6 ml/s when rising
 			set time_to_rise_pressure [expr {$pressure_gained_needed / 2}]
+			if {$time_to_rise_pressure < 1} {
+				set time_to_rise_pressure 1
+			}
 
 			#puts "time_to_rise_pressure: $time_to_rise_pressure"
 			#set rise_hold_time [expr {($::settings(espresso_pressure) - $likely_pressure_attained_during_preinfusion) }]
@@ -1260,4 +1263,4 @@ proc canvas_hide_if_zero { testvar widgetlist } {
 	}
 }
 
-#install_this_app_icon
+install_this_app_icon

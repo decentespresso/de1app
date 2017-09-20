@@ -728,7 +728,7 @@ proc load_settings {} {
         set settings(water_volume) 100
     }
 
-    blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal
+    blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_flow_weight espresso_flow_weight_2x espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal
     blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow
 
     # experimental chargts showing flow from the top, or 2x normal size

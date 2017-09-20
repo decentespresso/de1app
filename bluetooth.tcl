@@ -42,8 +42,41 @@ proc poll_de1_state {} {
 	#userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
 }
 
+
+
+proc skale_tare {} {
+	set tare [binary decode hex "10"]
+	set ::de1(scale_weight) 0
+	set ::de1(scale_weight_rate) 0
+
+	userdata_append "enable Skale weight notifications" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
+}
+
+proc skale_enable_weight_notifications {} {
+	userdata_append "enable Skale weight notifications" [list ble enable $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" "0" "0000EF81-0000-1000-8000-00805F9B34FB" "0"]
+}
+
+
+proc skale_enable_button_notifications {} {
+	userdata_append "enable Skale button notifications" [list ble enable $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" "0" "0000EF82-0000-1000-8000-00805F9B34FB" "0"]
+}
+
+proc skale_enable_grams {} {
+	set grams [binary decode hex "03"]
+	userdata_append "Skale : enable grams" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $grams]
+}
+
+proc skale_enable_lcd {} {
+	set screenon [binary decode hex "ED"]
+	set displayweight [binary decode hex "EC"]
+	userdata_append "Skale : enable LCD" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $screenon]
+	userdata_append "Skale : display weight on LCD" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $displayweight]
+}
+
+
 # temp changes
 proc de1_enable_temp_notifications {} {
+	#return
 	#userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
 	#return
 	userdata_append "enable de1 temp notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
@@ -132,8 +165,13 @@ proc run_next_userdata_cmd {} {
 			msg "BLE command queue is now empty"
 		}
 
+		catch {
+			#after cancel $::bletimeoutid
+		}
+		#set ::bletimeoutid [after 5000 run_next_userdata_cmd]
+
 	} else {
-		#msg "no userdata cmds to run"
+		msg "no userdata cmds to run"
 	}
 }
 
@@ -349,7 +387,13 @@ proc ble_find_de1s {} {
 	}
 	
 	#puts "ble_find_de1s"
+	after 3000 stop_scanner
 	ble start $::ble_scanner
+}
+
+proc stop_scanner {} {
+	ble stop $::ble_scanner
+	#userdata_append "stop scanning" [list ble stop $::ble_scanner]
 }
 
 proc ble_connect_to_de1 {} {
@@ -364,15 +408,12 @@ proc ble_connect_to_de1 {} {
 	}
 
 
-	#set de1_address "C1:80:A7:32:CD:A3"
-	#global de1_address
     set ::de1(connect_time) 0
     set ::de1(scanning) 0
     set ::de1(device_handle) 0
 
 	catch {
 		ble unpair $::settings(bluetooth_address)
-
 	}
 
 	if {$::de1(device_handle) != "0"} {
@@ -386,16 +427,32 @@ proc ble_connect_to_de1 {} {
 		return ""
 	}
 
-	#set ::de1(found) 0	
     set ::de1_name "DE1"
-    #set ::de1(connecting) 1
-    
-    #catch {
-		ble connect $::settings(bluetooth_address) de1_ble_handler
-    #}
+	set ::currently_connecting_de1_handle [ble connect $::settings(bluetooth_address) de1_ble_handler]
     msg "Connecting to DE1 on $::settings(bluetooth_address)"
+    return 1
+}
 
-    #after 10000 ble_try_again_to_connect_to_bpoint
+proc ble_connect_to_skale {} {
+
+	catch {
+		ble unpair $::settings(skale_bluetooth_address)
+	}
+
+	if {$::de1(skale_device_handle) != "0"} {
+		catch {
+			ble close $::de1(skale_device_handle)
+		}
+	}
+
+	if {$::settings(skale_bluetooth_address) == ""} {
+		# if no bluetooth address set, then don't try to connect
+		return ""
+	}
+
+	set ::currently_connecting_skale_handle [ble connect $::settings(skale_bluetooth_address) de1_ble_handler]
+    msg "Connecting to Skale on $::settings(skale_bluetooth_address)"
+	return 1
 }
 
 proc append_to_de1_bluetooth_list {address} {
@@ -427,6 +484,7 @@ proc de1_ble_handler { event data } {
 
     dict with data {
 
+
 		switch -- $event {
 	    	#msg "-- device $name found at address $address"
 		    scan {
@@ -434,25 +492,61 @@ proc de1_ble_handler { event data } {
 				if {[string first DE1 $name] != -1} {
 					append_to_de1_bluetooth_list $address
 					if {$address == $::settings(bluetooth_address) && $::scanning != 0} {
-						ble stop $::ble_scanner
+						#ble stop $::ble_scanner
 						#set ::scanning 0
 						#ble_connect_to_de1
 					}
+				} elseif {[string first Skale $name] != -1} {
+					set ::settings(skale_bluetooth_address) $address					
+					save_settings
+				} else {
+					msg "-- device $name found at address $address ($data)"
 				}
 		    }
 		    connection {
 		    	#msg "2"
 		    	#msg "connection: $data"
 				if {$state eq "disconnected"} {
-				    # fall back to scanning
-				    #ble close $handle
-				    #ble start [ble scanner ble_generic_handler]
-				    msg "de1 disconnected"
-				    #ble reconnect $::de1(device_handle)
-				    #ble_find_de1s
-				    #ble_connect_to_de1
+					if {$address == $::settings(bluetooth_address)} {
+					    # fall back to scanning
+					    
 
-				    #set ::de1(found) 0
+			    		set ::de1(wrote) 0
+			    		set ::de1(cmdstack) {}
+				    	if {$::de1(device_handle) != 0} {
+						    ble close $::de1(device_handle)
+						}
+
+						catch {
+					    	ble close $::currently_connecting_de1_handle
+					    }
+
+					    #ble start [ble scanner ble_generic_handler]
+					    msg "de1 disconnected"
+					    #ble reconnect $::de1(device_handle)
+					    #ble_find_de1s
+					    set ::de1(device_handle) 0
+					    #userdata_append "reconnect to DE1" [list ble reconnect $::handle]
+					    ble_connect_to_de1
+					    #run_next_userdata_cmd
+
+					    #set ::de1(found) 0
+				    } elseif {$address == $::settings(skale_bluetooth_address)} {
+			    		set ::de1(wrote) 0
+				    	msg "skale disconnected"
+				    	if {$::de1(skale_device_handle) != 0} {
+				    		ble close $::de1(skale_device_handle)
+				    	}
+						catch {
+					    	ble close $::currently_connecting_skale_handle
+					    }
+
+				    	#userdata_append "reconnect to Skale" ble_connect_to_skale
+				    	set ::de1(skale_device_handle) 0
+				    	#userdata_append "reconnect to Skale" [list ble reconnect $handle]
+				    	ble_connect_to_skale
+				    	#run_next_userdata_cmd
+				    }
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1
 					msg "scanning"
@@ -460,6 +554,11 @@ proc de1_ble_handler { event data } {
 					ble stop $::ble_scanner
 					if {$::scanning != 0} {
 						ble_connect_to_de1
+
+						if {$::settings(skale_bluetooth_address) != ""} {
+							#userdata_append "connect to Skale" ble_connect_to_skale
+							ble_connect_to_skale
+						}
 					}
 					set ::scanning 0
 				} elseif {$state eq "discovery"} {
@@ -467,8 +566,10 @@ proc de1_ble_handler { event data } {
 					#ble_connect_to_de1
 				} elseif {$state eq "connected"} {
 
-					if {$::de1(device_handle) == 0} {
+					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
 						msg "de1 connected $event $data"
+			    		set ::de1(wrote) 0
+			    		set ::de1(cmdstack) {}
 					    #set ::de1(found) 1
 					    set ::de1(connect_time) [clock seconds]
 					    set ::de1(last_ping) [clock seconds]
@@ -477,16 +578,27 @@ proc de1_ble_handler { event data } {
 						set ::de1(device_handle) $handle
 						append_to_de1_bluetooth_list $address
 						#msg "connected to de1 with handle $handle"
-
-						de1_disable_temp_notifications
+						
+						de1_enable_temp_notifications
+						#de1_disable_temp_notifications
 						de1_enable_state_notifications
 						read_de1_version
 						de1_send_steam_hotwater_settings					
 						de1_enable_water_level_notifications
 						de1_send_shot_frames
 						#start_idle
-						de1_enable_temp_notifications
-						run_next_userdata_cmd
+						
+						#run_next_userdata_cmd
+					} elseif {$::de1(skale_device_handle) == 0 && $address == $::settings(skale_bluetooth_address)} {
+			    		set ::de1(wrote) 0
+						msg "skale connected $event $data"
+						set ::de1(skale_device_handle) $handle
+						skale_enable_lcd
+						skale_enable_weight_notifications
+						skale_enable_button_notifications
+						skale_enable_grams
+						skale_tare 
+						#run_next_userdata_cmd
 					} else {
 						msg "doubled connection notification, already connected with "
 					}
@@ -522,7 +634,10 @@ proc de1_ble_handler { event data } {
 				    	#msg "rc: $data"
 				    	if {$access eq "r"} {
 				    		set ::de1(wrote) 0
+				    		run_next_userdata_cmd
 				    	}
+				    		#set ::de1(wrote) 0
+				    		#run_next_userdata_cmd
 
 				    	#msg "Received from DE1: '[remove_null_terminator $value]'"
 						# change notification or read request
@@ -551,7 +666,7 @@ proc de1_ble_handler { event data } {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_version_desc $value arr2
-							msg "version data received [string length $value] bytes: $value  : [array get arr2]"
+							msg "version data received [string length $value] bytes: $value  : [array get arr2] / $event $data"
 							set ::de1(version) [array get arr2]
 						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
@@ -591,6 +706,44 @@ proc de1_ble_handler { event data } {
 							msg "error"
 							#update_de1_state $value
 							#msg "Confirmed a00f read from DE1: '[remove_null_terminator $value]'"
+
+						} elseif {$cuuid eq "0000EF81-0000-1000-8000-00805F9B34FB"} {
+					        binary scan $value cus1cu t0 t1 t2 t3 t4 t5
+							set thisweight [expr {$t1 / 10.0}]
+							if {$thisweight < 0} {
+								skale_tare
+							}
+							#set ::de1(scale_weight) $thisweight
+							#set ::de1(weight_val) $thisweight
+
+							set tempflow [expr { $thisweight - $::de1(scale_weight) }]
+							set flow [expr {($::de1(scale_weight_rate) * 0.9) + ($tempflow * 0.1)}]
+							if {$flow < 0} {
+								set flow 0
+							}
+							set ::de1(scale_weight_rate) $flow
+							set ::de1(scale_weight) $thisweight
+							msg "weight received: $thisweight : flow: $tempflow"
+
+
+						} elseif {$cuuid eq "0000EF82-0000-1000-8000-00805F9B34FB"} {
+							set t0 {}
+					        #set t1 {}
+					        binary scan $value cucucucucucu t0 t1
+							msg "- Skale button pressed: $t0 (DE1 state: $::de1(state) = $::de1_num_state($::de1(state))"
+
+						    if {$t0 == 1} {
+								skale_tare
+							} elseif {$t0 == 2} {
+								 if {$::de1_num_state($::de1(state)) == "Espresso"} {
+								 	say [translate {Stop}] $::settings(sound_button_in)
+								 	start_idle
+							 	} else {
+							 		say [translate {Espresso}] $::settings(sound_button_in)
+									start_espresso
+								}
+							}
+
 						} else {
 							msg "Confirmed unknown read from DE1 $cuuid: '$value'"
 						}
@@ -599,12 +752,19 @@ proc de1_ble_handler { event data } {
 
 				    } elseif {$access eq "w"} {
 						set ::de1(wrote) 0
+				    	run_next_userdata_cmd
 
 				    	if {$cuuid == $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3				    		
 					    	msg "Confirmed shot frame written to DE1: '$value' : [array get arr3]"
 			    		} else {
-					    	msg "Confirmed wrote to $cuuid of DE1: '$value'"
+					    	if {$address == $::settings(bluetooth_address)} {
+					    		msg "Confirmed wrote to $cuuid of DE1: '$value'"
+				    		} elseif {$address == $::settings(skale_bluetooth_address)} {
+					    		msg "Confirmed wrote to $cuuid of Skale: '$value'"
+				    		} else {
+					    		msg "Confirmed wrote to $cuuid of unknown device: '$value'"
+				    		}
 			    		}
 						
 						#set ::de1(wrote) 0
@@ -620,6 +780,8 @@ proc de1_ble_handler { event data } {
 				    #run_next_userdata_cmd
 				}
 		    }
+		    service {
+		    }
 		    descriptor {
 		    	#msg "de1 descriptor $state: ${event}: ${data}"
 				if {$state eq "connected"} {
@@ -627,6 +789,7 @@ proc de1_ble_handler { event data } {
 				    if {$access eq "w"} {
 				    	set ::de1(wrote) 0
 				    	msg "WRITE confirmed: $data"
+						run_next_userdata_cmd
 				    }
 
 					set run_this 0
@@ -645,7 +808,7 @@ proc de1_ble_handler { event data } {
 					    }
 					}
 				}
-				#run_next_userdata_cmd
+				
 		    }
 
 		    default {
@@ -654,7 +817,7 @@ proc de1_ble_handler { event data } {
 		}
 	}
 
-	run_next_userdata_cmd
+	#run_next_userdata_cmd
 
     #msg "exited event"
 }
