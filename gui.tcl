@@ -924,6 +924,15 @@ proc update_de1_explanation_chart { {context {}} } {
 	#espresso_de1_explanation_chart_flow length 0
 	espresso_de1_explanation_chart_elapsed length 0
 
+	espresso_de1_explanation_chart_pressure_1 length 0
+	espresso_de1_explanation_chart_elapsed_1 length 0
+	espresso_de1_explanation_chart_pressure_2 length 0
+	espresso_de1_explanation_chart_elapsed_2 length 0
+	espresso_de1_explanation_chart_pressure_3 length 0
+	espresso_de1_explanation_chart_elapsed_3 length 0
+
+
+
 	set seconds 0
 
 	# preinfusion
@@ -937,7 +946,12 @@ proc update_de1_explanation_chart { {context {}} } {
 		espresso_de1_explanation_chart_pressure append 0.1
 		espresso_de1_explanation_chart_elapsed append $seconds
 
-		set seconds [expr {$seconds + $::settings(preinfusion_time)}]
+		set seconds [expr {-.01  + $seconds + $::settings(preinfusion_time)}]
+		espresso_de1_explanation_chart_pressure append $preinfusion_pressure
+		espresso_de1_explanation_chart_elapsed append $seconds
+
+		# these 0.01 add/remove is to force the chart library to put two dots in to keep the curves all moving the same way
+		set seconds [expr {.01  + $seconds}]
 		espresso_de1_explanation_chart_pressure append $preinfusion_pressure
 		espresso_de1_explanation_chart_elapsed append $seconds
 	} else {
@@ -947,8 +961,19 @@ proc update_de1_explanation_chart { {context {}} } {
 
 	}
 
+	# color coding the preinfusion section
+	espresso_de1_explanation_chart_pressure_1 append espresso_de1_explanation_chart_pressure
+	espresso_de1_explanation_chart_elapsed_1 append espresso_de1_explanation_chart_elapsed
+	espresso_de1_explanation_chart_pressure_2 append espresso_de1_explanation_chart_pressure
+	espresso_de1_explanation_chart_elapsed_2 append espresso_de1_explanation_chart_elapsed
+	espresso_de1_explanation_chart_pressure_3 append espresso_de1_explanation_chart_pressure
+	espresso_de1_explanation_chart_elapsed_3 append espresso_de1_explanation_chart_elapsed
+
+
 	set espresso_pressure $::settings(espresso_pressure)
-	set approximate_ramptime [expr {(abs($espresso_pressure - $preinfusion_pressure) * 0.5)}]
+
+	# the 0.1 added is to avoid having a rampup of zero which causes the chart library to remove one of the plotted dots
+	set approximate_ramptime [expr {0.01 + (abs($espresso_pressure - $preinfusion_pressure) * 0.5)}]
 	set pressure_hold_time $::settings(espresso_hold_time)
 
 	#puts "approximate_ramptime: $approximate_ramptime / pressure_hold_time: $pressure_hold_time"
@@ -969,16 +994,26 @@ proc update_de1_explanation_chart { {context {}} } {
 
 	#}	
 
-	# ramp up the pressure
+	# ramp up the pressure - 
 	set seconds [expr {$seconds + $approximate_ramptime}]
 	espresso_de1_explanation_chart_elapsed append $seconds
 	espresso_de1_explanation_chart_pressure append $espresso_pressure
+
+	espresso_de1_explanation_chart_elapsed_2 append $seconds
+	espresso_de1_explanation_chart_pressure_2 append $espresso_pressure
+	espresso_de1_explanation_chart_elapsed_3 append $seconds
+	espresso_de1_explanation_chart_pressure_3 append $espresso_pressure
 
 	# hold the pressure
 	if {$pressure_hold_time > 0} {
 		set seconds [expr {$seconds + $pressure_hold_time}]
 		espresso_de1_explanation_chart_pressure append $espresso_pressure
 		espresso_de1_explanation_chart_elapsed append $seconds
+
+		espresso_de1_explanation_chart_pressure_2 append $espresso_pressure
+		espresso_de1_explanation_chart_elapsed_2 append $seconds
+		espresso_de1_explanation_chart_pressure_3 append $espresso_pressure
+		espresso_de1_explanation_chart_elapsed_3 append $seconds
 	}
 
 	# decline pressure stage
@@ -986,6 +1021,9 @@ proc update_de1_explanation_chart { {context {}} } {
 		set seconds [expr {$seconds + $espresso_decline_time}]
 		espresso_de1_explanation_chart_pressure append $::settings(pressure_end)
 		espresso_de1_explanation_chart_elapsed append $seconds
+
+		espresso_de1_explanation_chart_pressure_3 append $::settings(pressure_end)
+		espresso_de1_explanation_chart_elapsed_3 append $seconds
 	}
 
 	# save the total time
@@ -1010,12 +1048,23 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 	espresso_de1_explanation_chart_flow length 0
 	espresso_de1_explanation_chart_elapsed_flow length 0
 
+	espresso_de1_explanation_chart_flow_1 length 0
+	espresso_de1_explanation_chart_elapsed_flow_1 length 0
+	espresso_de1_explanation_chart_flow_2 length 0
+	espresso_de1_explanation_chart_elapsed_flow_2 length 0
+	espresso_de1_explanation_chart_flow_3 length 0
+	espresso_de1_explanation_chart_elapsed_flow_3 length 0
+
 	set seconds 0
 
 	# preinfusion
 	if {$::settings(preinfusion_time) > 0} {
 		espresso_de1_explanation_chart_flow append 0
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
+
+		#espresso_de1_explanation_chart_elapsed_flow_1 append $seconds
+
+
 
 		set seconds [expr {$::settings(preinfusion_flow_rate)/4}]
 
@@ -1061,7 +1110,19 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 	#espresso_de1_explanation_chart_elapsed_flow append $seconds
 		#espresso_de1_explanation_chart_flow append 0
 	}
-	
+
+	# color coding the preinfusion section
+	espresso_de1_explanation_chart_flow_1 append espresso_de1_explanation_chart_flow
+	espresso_de1_explanation_chart_elapsed_flow_1 append espresso_de1_explanation_chart_elapsed_flow
+	espresso_de1_explanation_chart_flow_2 append espresso_de1_explanation_chart_flow
+	espresso_de1_explanation_chart_elapsed_flow_2 append espresso_de1_explanation_chart_elapsed_flow
+	espresso_de1_explanation_chart_flow_3 append espresso_de1_explanation_chart_flow
+	espresso_de1_explanation_chart_elapsed_flow_3 append espresso_de1_explanation_chart_elapsed_flow
+
+		#espresso_de1_explanation_chart_flow append 0
+		#espresso_de1_explanation_chart_elapsed_flow append $seconds
+
+
 
 	set approximate_ramptime 3
 	set flow_profile_hold_time $::settings(espresso_hold_time)
@@ -1080,11 +1141,22 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 		set seconds [expr {$seconds + $approximate_ramptime}]
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 		espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
+		
+		espresso_de1_explanation_chart_elapsed_flow_2 append $seconds
+		espresso_de1_explanation_chart_flow_2 append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_elapsed_flow_3 append $seconds
+		espresso_de1_explanation_chart_flow_3 append $::settings(flow_profile_hold)
 
 		# hold the flow
 		set seconds [expr {$seconds + $flow_profile_hold_time}]
 		espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
+		
+		espresso_de1_explanation_chart_flow_2 append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_elapsed_flow_2 append $seconds
+		espresso_de1_explanation_chart_flow_3 append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_elapsed_flow_3 append $seconds
+
 	}
 
 	# decline flow stage
@@ -1092,6 +1164,10 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 		set seconds [expr {$seconds + $espresso_decline_time}]
 		espresso_de1_explanation_chart_flow append $::settings(flow_profile_decline)
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
+		
+
+		espresso_de1_explanation_chart_flow_3 append $::settings(flow_profile_decline)
+		espresso_de1_explanation_chart_elapsed_flow_3 append $seconds
 	}
 
 	# save the total time
