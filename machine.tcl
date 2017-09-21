@@ -113,6 +113,9 @@ catch {
 #}
 
 array set ::settings {
+	color_stage_1 "#c8e7d5"
+	color_stage_2 "#efdec2"
+	color_stage_3 "#dbcce1"
 	flying 0
 	alarm_wake 21600
 	alarm_sleep 82800
@@ -155,6 +158,9 @@ array set ::settings {
 	accelerometer_angle 45
 	goal_is_basket_temp 1
 	flight_mode_angle 30
+	display_pressure_delta_line 0
+	display_flow_delta_line 1
+	display_weight_delta_line 1
 	machine_name "pretty decent"
 	enable_spoken_prompts 0
 	preinfusion_guarantee 1

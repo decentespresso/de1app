@@ -103,7 +103,8 @@ proc de1_disable_state_notifications {} {
 
 # water level 
 proc de1_enable_water_level_notifications {} {
-	userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A011" $::de1(cinstance)]
+	#return
+	userdata_append "enable de1 water level notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A011" $::de1(cinstance)]
 }
 
 proc de1_disable_water_level_notifications {} {
@@ -118,7 +119,7 @@ proc run_next_userdata_cmd {} {
 			return
 		}
 	}
-	if {$::de1(device_handle) == "0"} {
+	if {$::de1(device_handle) == "0" && $::de1(skale_device_handle) == "0"} {
 		#msg "error: de1 not connected"
 		return
 	}
@@ -497,10 +498,12 @@ proc de1_ble_handler { event data } {
 						#ble_connect_to_de1
 					}
 				} elseif {[string first Skale $name] != -1} {
-					set ::settings(skale_bluetooth_address) $address					
-					save_settings
+					if {$::settings(skale_bluetooth_address) != $address} {
+						set ::settings(skale_bluetooth_address) $address					
+						save_settings
+					}
 				} else {
-					msg "-- device $name found at address $address ($data)"
+					#msg "-- device $name found at address $address ($data)"
 				}
 		    }
 		    connection {
@@ -579,26 +582,27 @@ proc de1_ble_handler { event data } {
 						append_to_de1_bluetooth_list $address
 						#msg "connected to de1 with handle $handle"
 						
-						de1_enable_temp_notifications
-						#de1_disable_temp_notifications
 						de1_enable_state_notifications
+						start_idle
 						read_de1_version
 						de1_send_steam_hotwater_settings					
 						de1_enable_water_level_notifications
 						de1_send_shot_frames
-						#start_idle
+						de1_enable_temp_notifications
 						
 						#run_next_userdata_cmd
 					} elseif {$::de1(skale_device_handle) == 0 && $address == $::settings(skale_bluetooth_address)} {
-			    		set ::de1(wrote) 0
 						msg "skale connected $event $data"
+			    		set ::de1(wrote) 0
 						set ::de1(skale_device_handle) $handle
-						skale_enable_lcd
-						skale_enable_weight_notifications
 						skale_enable_button_notifications
 						skale_enable_grams
+						skale_enable_lcd
 						skale_tare 
+						skale_enable_weight_notifications
+
 						#run_next_userdata_cmd
+
 					} else {
 						msg "doubled connection notification, already connected with "
 					}
@@ -650,7 +654,8 @@ proc de1_ble_handler { event data } {
 						    set ::de1(last_ping) [clock seconds]
 							update_de1_shotvalue $value
 							#msg "shotvalue" 
-
+							#set ::de1(wrote) 0
+							#run_next_userdata_cmd
 							set do_this 0
 							if {$do_this == 1} {
 								# this tries to handle bad write situations, but it might have side effects if it is not working correctly.
@@ -668,6 +673,10 @@ proc de1_ble_handler { event data } {
 							parse_binary_version_desc $value arr2
 							msg "version data received [string length $value] bytes: $value  : [array get arr2] / $event $data"
 							set ::de1(version) [array get arr2]
+
+							set ::de1(wrote) 0
+							run_next_userdata_cmd
+
 						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							parse_binary_water_level $value arr2
@@ -702,6 +711,9 @@ proc de1_ble_handler { event data } {
 							update_de1_state $value
 							#update_de1_substate $value
 							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
+							set ::de1(wrote) 0
+							run_next_userdata_cmd
+
 						} elseif {$cuuid == "0000A00F-0000-1000-8000-00805F9B34FB"} {
 							msg "error"
 							#update_de1_state $value
@@ -723,7 +735,7 @@ proc de1_ble_handler { event data } {
 							}
 							set ::de1(scale_weight_rate) $flow
 							set ::de1(scale_weight) $thisweight
-							msg "weight received: $thisweight : flow: $tempflow"
+							#msg "weight received: $thisweight : flow: $tempflow"
 
 
 						} elseif {$cuuid eq "0000EF82-0000-1000-8000-00805F9B34FB"} {

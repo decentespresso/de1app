@@ -476,80 +476,56 @@ proc de1_packed_shot_flow {} {
 		set mixtempflag "TMixTemp"
 	}
 
-	#if {$::settings(preinfusion_time) > 0} {
-		set hdr(NumberOfFrames) 4
-		set hdr(NumberOfPreinfuseFrames) 1
+	set hdr(NumberOfFrames) 4
+	set hdr(NumberOfPreinfuseFrames) 1
 
-		# preinfusion
-		set frame1(FrameToWrite) 0
-		set frame1(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-		set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
-		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
-		set frame1(MaxVol) [convert_float_to_U10P0 90]
+	# preinfusion
+	set frame1(FrameToWrite) 0
+	set frame1(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
+	set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
+	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
+	set frame1(MaxVol) [convert_float_to_U10P0 90]
 
-		# exit preinfusion if your pressure is above the pressure goal, no matter what
-		set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
+	# exit preinfusion if your pressure is above the pressure goal, no matter what
+	set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
 
 
-		# pressure rise
-		set frame2(FrameToWrite) 1
-		set frame2(Flag) [make_shot_flag "DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-		set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame2(FrameLen) [convert_float_to_F8_1_7 20]
-		set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-		set frame2(MaxVol) [convert_float_to_U10P0 99]
+	# pressure rise
+	set frame2(FrameToWrite) 1
+	set frame2(Flag) [make_shot_flag "DoCompare DC_GT IgnoreLimit $mixtempflag"] 
+	set frame2(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
+	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
+	set frame2(MaxVol) [convert_float_to_U10P0 99]
+	if {$::settings(preinfusion_guarantee) == 1} {
+		set frame2(FrameLen) [convert_float_to_F8_1_7 10]
+	} else {
+		# a length of zero means the DE1+ will skip this frame
+		set frame2(FrameLen) [convert_float_to_F8_1_7 0]
+	}
+	
 
-		# hold
-		set frame3(FrameToWrite) 2
-		set frame3(Flag) [make_shot_flag "CtrlF IgnoreLimit $mixtempflag"] 
-		set frame3(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_hold)]
-		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
-		set frame3(TriggerVal) 0
-		set frame3(MaxVol) [convert_float_to_U10P0 99]
+	# hold
+	set frame3(FrameToWrite) 2
+	set frame3(Flag) [make_shot_flag "CtrlF IgnoreLimit $mixtempflag"] 
+	set frame3(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_hold)]
+	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
+	set frame3(TriggerVal) 0
+	set frame3(MaxVol) [convert_float_to_U10P0 99]
 
-		# decline
-		set frame4(FrameToWrite) 3
-		set frame4(Flag) [make_shot_flag "CtrlF IgnoreLimit Interpolate $mixtempflag"] 
-		set frame4(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_decline)]
-		set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
-		set frame4(TriggerVal) 0
-		set frame4(MaxVol) [convert_float_to_U10P0 99]
+	# decline
+	set frame4(FrameToWrite) 3
+	set frame4(Flag) [make_shot_flag "CtrlF IgnoreLimit Interpolate $mixtempflag"] 
+	set frame4(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_decline)]
+	set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
+	set frame4(TriggerVal) 0
+	set frame4(MaxVol) [convert_float_to_U10P0 99]
 
-		return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3 frame4]]
-	#} else {
-	#	set hdr(NumberOfFrames) 3
-	#	set hdr(NumberOfPreinfuseFrames) 0
+	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3 frame4]]
 
-	#	set frame1(FrameToWrite) 0
-	#	set frame1(Flag) [make_shot_flag "DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-	#	set frame1(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-	#	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	#	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_rampup_timeout)]
-	#	set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-	#	set frame1(MaxVol) [convert_float_to_U10P0 $::settings(pressure_rampup_stop_volumetric)]
-
-	#	set frame2(FrameToWrite) 1
-	#	set frame2(Flag) [make_shot_flag "IgnoreLimit $mixtempflag"] 
-	#	set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-	#	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	#	set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_hold_time)]
-	#	set frame2(TriggerVal) 0
-	#	set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
-
-	#	set frame3(FrameToWrite) 2
-	#	set frame3(Flag) [make_shot_flag "IgnoreLimit Interpolate $mixtempflag"] 
-	#	set frame3(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
-	#	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	#	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
-	#	set frame3(TriggerVal) 0
-	#	set frame3(MaxVol) [convert_float_to_U10P0 $::settings(decline_stop_volumetric)]
-
-	#	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3]]
-	#}
 }
 
 
@@ -571,89 +547,50 @@ proc de1_packed_shot {} {
 		set mixtempflag "TMixTemp"
 	}
 
-	#if {$::settings(preinfusion_time) > 0} {
-		set hdr(NumberOfFrames) 3
-		set hdr(NumberOfPreinfuseFrames) 1
+	set hdr(NumberOfFrames) 3
+	set hdr(NumberOfPreinfuseFrames) 1
 
-		# preinfusion
-		set frame1(FrameToWrite) 0
-		set frame1(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-		
-		if {[de1plus]} {
-			set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
-			#set frame1(SetVal) [convert_float_to_U8P4 3]
-		} else {
-			set frame1(SetVal) [convert_float_to_U8P4 4]
-		}
-		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
-		set frame1(MaxVol) [convert_float_to_U10P0 90]
+	# preinfusion
+	set frame1(FrameToWrite) 0
+	set frame1(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
+	
+	if {[de1plus]} {
+		set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
+		#set frame1(SetVal) [convert_float_to_U8P4 3]
+	} else {
+		set frame1(SetVal) [convert_float_to_U8P4 4]
+	}
+	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
+	set frame1(MaxVol) [convert_float_to_U10P0 90]
 
-		if {[de1plus]} {
-			# exit preinfusion if your pressure is above the pressure goal, no matter what
-			set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
-		} else {
-			set frame1(TriggerVal) [convert_float_to_U8P4 4]
-		}
+	if {[de1plus]} {
+		# exit preinfusion if your pressure is above the pressure goal, no matter what
+		set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
+	} else {
+		set frame1(TriggerVal) [convert_float_to_U8P4 4]
+	}
 
-		# compress
-		#set frame2(FrameToWrite) 1
-		#set frame2(Flag) [make_shot_flag "DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-		#set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-		#set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		#set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_rampup_timeout)]
-		#set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-		#set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_rampup_stop_volumetric)]
+	# hold
+	set frame2(FrameToWrite) 1
+	set frame2(Flag) [make_shot_flag "IgnoreLimit $mixtempflag"] 
+	set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
+	set frame2(TriggerVal) 0
+	set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
 
-		# hold
-		set frame2(FrameToWrite) 1
-		set frame2(Flag) [make_shot_flag "IgnoreLimit $mixtempflag"] 
-		set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
-		set frame2(TriggerVal) 0
-		set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
+	# decline
+	set frame3(FrameToWrite) 2
+	set frame3(Flag) [make_shot_flag "IgnoreLimit Interpolate $mixtempflag"] 
+	set frame3(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
+	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
+	set frame3(TriggerVal) 0
+	set frame3(MaxVol) [convert_float_to_U10P0 $::settings(decline_stop_volumetric)]
 
-		# decline
-		set frame3(FrameToWrite) 2
-		set frame3(Flag) [make_shot_flag "IgnoreLimit Interpolate $mixtempflag"] 
-		set frame3(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
-		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-		set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
-		set frame3(TriggerVal) 0
-		set frame3(MaxVol) [convert_float_to_U10P0 $::settings(decline_stop_volumetric)]
+	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3]]
 
-		return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3]]
-	#} else {
-	#	set hdr(NumberOfFrames) 3
-	#	set hdr(NumberOfPreinfuseFrames) 0
-
-	#	set frame1(FrameToWrite) 0
-	#	set frame1(Flag) [make_shot_flag "DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-	#	set frame1(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-	#	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	#	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_rampup_timeout)]
-	#	set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-	#	set frame1(MaxVol) [convert_float_to_U10P0 $::settings(pressure_rampup_stop_volumetric)]
-
-	#	set frame2(FrameToWrite) 1
-	#	set frame2(Flag) [make_shot_flag "IgnoreLimit $mixtempflag"] 
-	#	set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-	#	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	#	set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(pressure_hold_time)]
-	#	set frame2(TriggerVal) 0
-	#	set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
-
-	#	set frame3(FrameToWrite) 2
-	#	set frame3(Flag) [make_shot_flag "IgnoreLimit Interpolate $mixtempflag"] 
-	#	set frame3(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
-	#	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	#	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
-	#	set frame3(TriggerVal) 0
-	#	set frame3(MaxVol) [convert_float_to_U10P0 $::settings(decline_stop_volumetric)]
-
-	#	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3]]
-	#}
 }
 
 
@@ -1027,9 +964,13 @@ proc append_live_data_to_espresso_chart {} {
 	espresso_elapsed append [expr {$millitime/1000.0}]
 	espresso_pressure append $::de1(pressure)
 	espresso_flow append $::de1(flow)
-	espresso_flow_weight append [expr {10 * $::de1(scale_weight_rate)}]
-	espresso_flow_weight_2x append [expr {20 * $::de1(scale_weight_rate)}]
 	espresso_flow_2x append [expr {2.0 * $::de1(flow)}]
+
+	if {$::de1(scale_weight_rate) != ""} {
+		# if a bluetooth scale is recording shot weight, graph it along with the flow meterr 
+		espresso_flow_weight append [expr {10 * $::de1(scale_weight_rate)}]
+		espresso_flow_weight_2x append [expr {20 * $::de1(scale_weight_rate)}]
+	}
 
 	#set elapsed_since_last [expr {$millitime - $::previous_espresso_flow_time}]
 	#puts "elapsed_since_last: $elapsed_since_last"
