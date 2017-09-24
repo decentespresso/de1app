@@ -49,7 +49,7 @@ proc skale_tare {} {
 	set ::de1(scale_weight) 0
 	set ::de1(scale_weight_rate) 0
 
-	userdata_append "enable Skale weight notifications" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
+	userdata_append "Skale: tare" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
 }
 
 proc skale_enable_weight_notifications {} {
@@ -499,8 +499,11 @@ proc de1_ble_handler { event data } {
 					}
 				} elseif {[string first Skale $name] != -1} {
 					if {$::settings(skale_bluetooth_address) != $address} {
+						msg "-- Saving new Skale bluetooth address"
 						set ::settings(skale_bluetooth_address) $address					
 						save_settings
+					} else {
+						msg "-- Alreadey Configured Skale found"
 					}
 				} else {
 					#msg "-- device $name found at address $address ($data)"
@@ -680,8 +683,7 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							parse_binary_water_level $value arr2
-							#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
-							#msg "water level [array get arr2]"
+							msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
 							set ::de1(water_level) $arr2(Level)
 						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
@@ -737,25 +739,38 @@ proc de1_ble_handler { event data } {
 							set ::de1(scale_weight) $thisweight
 							#msg "weight received: $thisweight : flow: $tempflow"
 
+							# (beta) stop shot-at-weight feature
+							if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
+								if {$::de1_num_state($::de1(state)) == "Espresso"} {
+									if {$::de1(scale_autostop_triggered) == 0 && $thisweight > [expr {$::settings(final_desired_shot_weight) * .97}]} {
+									 	start_idle
+									 	say [translate {Stop}] $::settings(sound_button_in)
+
+									 	# immediately set the DE1 state as if it were idle so that we don't repeatedly ask the DE1 to stop as we still get weight increases. There might be a slight delay between asking the DE1 to stop and it stopping.
+									 	set ::de1(scale_autostop_triggered) 1
+									}
+								}
+							}
 
 						} elseif {$cuuid eq "0000EF82-0000-1000-8000-00805F9B34FB"} {
 							set t0 {}
 					        #set t1 {}
 					        binary scan $value cucucucucucu t0 t1
-							msg "- Skale button pressed: $t0 (DE1 state: $::de1(state) = $::de1_num_state($::de1(state))"
+							msg "- Skale button pressed: $t0 : DE1 state: $::de1(state) = $::de1_num_state($::de1(state)) "
 
 						    if {$t0 == 1} {
 								skale_tare
 							} elseif {$t0 == 2} {
-								 if {$::de1_num_state($::de1(state)) == "Espresso"} {
-								 	say [translate {Stop}] $::settings(sound_button_in)
-								 	start_idle
-							 	} else {
-							 		say [translate {Espresso}] $::settings(sound_button_in)
-									start_espresso
+								if {$::settings(skale_square_button_starts_espresso) == 1} {
+									 if {$::de1_num_state($::de1(state)) == "Espresso"} {
+									 	say [translate {Stop}] $::settings(sound_button_in)
+									 	start_idle
+								 	} else {
+								 		say [translate {Espresso}] $::settings(sound_button_in)
+										start_espresso
+									}
 								}
 							}
-
 						} else {
 							msg "Confirmed unknown read from DE1 $cuuid: '$value'"
 						}
@@ -769,6 +784,25 @@ proc de1_ble_handler { event data } {
 				    	if {$cuuid == $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3				    		
 					    	msg "Confirmed shot frame written to DE1: '$value' : [array get arr3]"
+						} elseif {$cuuid eq "0000EF80-0000-1000-8000-00805F9B34FB"} {
+							set tare [binary decode hex "10"]
+							set grams [binary decode hex "03"]
+							set screenon [binary decode hex "ED"]
+							set displayweight [binary decode hex "EC"]
+							if {$value == $tare } {
+								msg "- Skale: tare confirmed"
+
+								# after a tare, we can now use the autostop mechanism
+								set ::de1(scale_autostop_triggered) 0
+							} elseif {$value == $grams } {
+								msg "- Skale: grams confirmed"
+							} elseif {$value == $screenon } {
+								msg "- Skale: screen on confirmed"
+							} elseif {$value == $displayweight } {
+								msg "- Skale: display weight confirmed"
+							} else {
+								msg "- Skale write received: $value vs '$tare'"
+							}
 			    		} else {
 					    	if {$address == $::settings(bluetooth_address)} {
 					    		msg "Confirmed wrote to $cuuid of DE1: '$value'"

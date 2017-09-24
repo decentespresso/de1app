@@ -115,7 +115,7 @@ catch {
 array set ::settings {
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
-	color_stage_3 "#dbcce1"
+	color_stage_3 "#edceca"
 	flying 0
 	alarm_wake 21600
 	alarm_sleep 82800
@@ -128,12 +128,15 @@ array set ::settings {
 	enable_ampm 0
 	settings_1_page settings_1
 	steam_temperature 170
+	settings_profile_type "settings_2"
 	skale_bluetooth_address {}
 	water_max_time 10
 	water_max_vol 500
 	water_temperature 80
 	minimum_water_before_refill 300
+	final_desired_shot_weight 36
 	espresso_max_time 42
+	skale_square_button_starts_espresso 0
 	espresso_temperature 92
 	espresso_decline_time 25
 	preinfusion_enabled 1
@@ -290,6 +293,8 @@ proc start_espresso {} {
 	de1_send "make espresso" $::de1_state(Espresso)
 
 	if {$::de1(skale_device_handle) != 0} {
+		# this variable prevents the stop trigger from happening until the Tare has succeeded.
+		set ::de1(scale_autostop_triggered) 1
 		skale_tare
 	}
 

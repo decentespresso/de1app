@@ -1,5 +1,7 @@
 set ::skindebug 0
-set ::debugging 0
+set ::debugging 1
+
+puts "debugging: $::debugging"
 
 #package require dea1plus 1.0
 
@@ -105,7 +107,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 267 {
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #888888  -pixels 0 ; 
 	
 	if {$::settings(display_pressure_delta_line) == 1} {
-		$widget element create line_espresso_pressure_delta2  -xdata espresso_elapsed -ydata espresso_pressure_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #40dc94 -pixels 0 -smooth quadratic 
+		#$widget element create line_espresso_pressure_delta2  -xdata espresso_elapsed -ydata espresso_pressure_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #40dc94 -pixels 0 -smooth quadratic 
 	}
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 ; 
@@ -167,7 +169,8 @@ add_de1_text "off espresso espresso_3" 43 220 -text [translate "Pressure (bar) :
 add_de1_text "off espresso espresso_3" 43 677 -text [translate "Flow (mL/s) :"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
 add_de1_text "off espresso espresso_3" 43 1128 -text [translate "Temperature ([return_html_temperature_units]) :"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
 
-add_de1_widget "off espresso espresso_3" scale 2528 694 {} -from 60 -to 0 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -foreground #0000FF -troughcolor #ffffff -borderwidth 0  -highlightthickness 0 
+# water level sensor 
+add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2528 694 {} -from 60 -to 0 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -foreground #0000FF -troughcolor #ffffff -borderwidth 0  -highlightthickness 0 
 
 source "[homedir]/skins/charts/scentone.tcl"
 

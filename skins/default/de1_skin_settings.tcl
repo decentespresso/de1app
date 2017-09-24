@@ -62,7 +62,8 @@ if {[de1plus]} {
 		set ::preinfusion_flow_pressure_widget [add_de1_widget "settings_2b" scale 47 1115 {} -from 0.1 -to [expr {$::de1(maxpressure) - 1}]  -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 -orient horizontal ]
 		set ::preinfusion_flow_pressure_widget_label [add_de1_variable "settings_2b" 47 1265 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {< $::settings(preinfusion_stop_pressure) [translate bar]}]
 	
-		set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 347 1265 { } -command update_de1_explanation_chart_soon -padx 0 -pady 0 -bg #FFFFFF -text [translate "rise"] -indicatoron true -font Helv_10_bold  -anchor nw -foreground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF]
+		set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 347 1265 { } -command update_de1_explanation_chart_soon -padx 0 -pady 0 -bg #FFFFFF -text [translate "rise"] -indicatoron true -font Helv_10_bold  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF]
+
 		#set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 620 1270 { } -command update_de1_explanation_chart_soon -height 0 -width 2 -padx 0 -pady 0 -text {} -indicatoron true -font Helv_6  -anchor ne -foreground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0]
 		#set ::preinfusion_flow_pressure_guarantee_label [add_de1_text "settings_2b" 615 1265 -text [translate "force"] -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "right"]
 		#set ::preinfusion_flow_pressure_guarantee [add_de1_button "settings_2b" {say [translate {Force}] $::settings(sound_button_in); set ::settings(preinfusion_guarantee) [expr {!$::settings(preinfusion_guarantee)}]; update_de1_explanation_chart_soon } 240 1337 780 1400 ""]
@@ -131,6 +132,12 @@ if {[de1plus]} {
 
 	############################
 
+	# (beta) weight based shot ending, only displayed if a skale is connected
+	if {$::settings(skale_bluetooth_address) != ""} {
+		add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+		add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 550]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor #EEEEEE -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
+	}
 
 } else {
 
@@ -248,14 +255,14 @@ add_de1_text "settings_2c" 2384 1260 -text [translate "time"] -font Helv_8 -fill
 
 set ::table_style_preview_image [add_de1_image "settings_3" 1860 310 "[skin_directory_graphics]/icon.jpg"]
 
-add_de1_widget "settings_1" listbox 50 310 { 
+add_de1_widget "settings_1" listbox 50 305 { 
 	fill_profiles_listbox $widget
-	} -background #fbfaff -font Helv_10 -bd 0 -height 15 -width 36 -foreground #d3dbf3 -borderwidth 0
+	} -background #fbfaff -font Helv_10 -bd 0 -height 16 -width 36 -foreground #d3dbf3 -borderwidth 0
 
 
-add_de1_widget "settings_3" listbox 1310 310 { 
+add_de1_widget "settings_3" listbox 1310 305 { 
 	fill_skin_listbox $widget
-	} -background #fbfaff -font Helv_10 -bd 0 -height 15 -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
+	} -background #fbfaff -font Helv_10 -bd 0 -height 16 -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
 
 add_de1_widget "settings_1" graph 1330 300 { 
 	set ::preview_graph_pressure $widget
