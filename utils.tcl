@@ -143,7 +143,14 @@ proc setup_environment {} {
 
         #borg systemui 0x1E02
         borg brightness $::settings(app_brightness)
-        borg systemui 0x1E02
+
+        # from https://developer.android.com/reference/android/view/View.html#SYSTEM_UI_FLAG_IMMERSIVE
+        set SYSTEM_UI_FLAG_IMMERSIVE_STICKY 0x00001000
+        set SYSTEM_UI_FLAG_FULLSCREEN 0x00000004
+        set SYSTEM_UI_FLAG_HIDE_NAVIGATION 0x00000002
+        set SYSTEM_UI_FLAG_IMMERSIVE 0x00000800
+        set android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY | $SYSTEM_UI_FLAG_IMMERSIVE_STICKY | $SYSTEM_UI_FLAG_HIDE_NAVIGATION}]
+        borg systemui $android_full_screen_flags
 
         # force the screen into landscape if it isn't yet
         msg "orientation: [borg screenorientation]"

@@ -503,7 +503,7 @@ proc de1_ble_handler { event data } {
 						set ::settings(skale_bluetooth_address) $address					
 						save_settings
 					} else {
-						msg "-- Alreadey Configured Skale found"
+						msg "-- Already Configured Skale found"
 					}
 				} else {
 					#msg "-- device $name found at address $address ($data)"
@@ -741,8 +741,9 @@ proc de1_ble_handler { event data } {
 
 							# (beta) stop shot-at-weight feature
 							if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
-								if {$::de1_num_state($::de1(state)) == "Espresso"} {
-									if {$::de1(scale_autostop_triggered) == 0 && $thisweight > [expr {$::settings(final_desired_shot_weight) * .97}]} {
+								if {$::de1_num_state($::de1(state)) == "Espresso" && $::de1(timer) > 10} {
+									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) * $::settings(final_desired_shot_weight_percentage_to_stop)}]]} {
+										msg "Weight based Espresso stop was triggered at ${thisweight}g > $::settings(final_desired_shot_weight)g "
 									 	start_idle
 									 	say [translate {Stop}] $::settings(sound_button_in)
 
