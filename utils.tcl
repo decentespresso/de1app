@@ -301,7 +301,7 @@ proc setup_environment {} {
         wm minsize . $screen_size_width $screen_size_height
 
         if {$::settings(flight_mode_enable) == 1 && [de1plus] } {
-            if {[package require de1_plus] > 1} {
+            if {[package require de1plus] > 1} {
                 borg sensor enable 0
                 sdltk accelerometer 1
                 after 200 accelerometer_check 

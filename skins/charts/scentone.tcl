@@ -16,7 +16,8 @@ add_de1_page "scentone_vegetable" "[skin_directory_graphics]/scentone_vegetable.
 add_de1_page "scentone_savory" "[skin_directory_graphics]/scentone_savory.jpg"
 
 
-add_de1_button "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {say [translate {scent one}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off} 2100 1300 2460 1440
+add_de1_button "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {say [translate {scent one}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off} 2014 1300 2284 1440
+#2014 1442 2284 1600
 
 add_de1_text "scentone_1 scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "scentone_1 scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"

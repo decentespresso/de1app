@@ -205,7 +205,8 @@ add_de1_text "settings_2c" 1960 820 -text "Maximum" -font Helv_10_bold -fill "#5
 add_de1_widget "settings_2c" listbox 70 320 { 
 	fill_profile_steps_listbox $widget
 
-} -background #fbfaff -font Helv_10 -bd 0 -height 10 -width 30 -foreground #d3dbf3 -borderwidth 0
+} -background #fbfaff -font Helv_10 -bd 0 -height 10 -width 30 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+
 
 
 add_de1_widget "settings_2c" entry 70 1100  {set ::globals(widget_profile_step_save) $widget} -width 35 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_step) 
@@ -260,12 +261,15 @@ set ::table_style_preview_image [add_de1_image "settings_3" 1860 310 "[skin_dire
 
 add_de1_widget "settings_1" listbox 50 305 { 
 	fill_profiles_listbox $widget
-	} -background #fbfaff -font Helv_10 -bd 0 -height 16 -width 36 -foreground #d3dbf3 -borderwidth 0
+	} -background #fbfaff -font Helv_9 -bd 0 -height 16 -width 36 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
 
 add_de1_widget "settings_3" listbox 1310 305 { 
 	fill_skin_listbox $widget
-	} -background #fbfaff -font Helv_10 -bd 0 -height 16 -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief raised
+	} -background #fbfaff -font Helv_9 -bd 0 -height 16 -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+	#-selectbackground #c0c4e1 -highlightcolor #FFFFFF -highlightbackground #FF00FF  -selectforeground #FF0000
+	#-selectbackground #FFFFFF -highlightcolor #FFFFFF -highlightbackground #FFFFFF  -selectforeground #FFFFFF
+	#
 
 add_de1_widget "settings_1" graph 1330 300 { 
 	set ::preview_graph_pressure $widget
@@ -283,10 +287,10 @@ add_de1_widget "settings_1b" graph 1330 300 {
 	$widget axis configure x -color #5a5d75 -tickfont Helv_6 -command graph_seconds_axis_format; 
 	$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 6.5 -majorticks {0 1 2 3 4 5 6} -title [translate "flow rate"] -titlefont Helv_8 -titlecolor #5a5d75;
 	bind $widget [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off 	} 
-	} -plotbackground $chart_background_color -width [rescale_x_skin 1100] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised 
+	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised 
 
 
-add_de1_variable "settings_1" 2470 660 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+add_de1_variable "settings_1" 2466 660 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
 
 add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -358,11 +362,11 @@ add_de1_text "settings_4" 1320 820 -text [translate "Connect:"] -font Helv_10_bo
 add_de1_widget "settings_4" listbox 1320 900 { 
 	set ::ble_listbox_widget $widget
 	fill_ble_listbox $widget
-} -background #fbfaff -font Helv_15 -bd 0 -height 5 -width 16 -foreground #d3dbf3 -borderwidth 0
+} -background #fbfaff -font Helv_15 -bd 0 -height 5 -width 16 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 # bluetooth scan
 #add_de1_text "settings_4" 2230 980 -text [translate "Search"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-add_de1_button "settings_4" {set ::de1_bluetooth_list ""; say [translate {search}] $::settings(sound_button_in); ble_find_de1s} 1910 890 2550 1080
+#add_de1_button "settings_4" {set ::de1_bluetooth_list ""; say [translate {search}] $::settings(sound_button_in); ble_find_de1s} 1910 890 2550 1080
 
 set enable_spoken_buttons 0
 if {$enable_spoken_buttons == 1} {
@@ -388,10 +392,14 @@ add_de1_widget "settings_3" scale 690 620 {} -from 1 -to 120 -background #e4d1c1
 add_de1_variable "settings_3" 690 760 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Change every:"] [minutes_text $::settings(screen_saver_change_interval)]}
 
 
-add_de1_widget "settings_3" checkbutton 70 940 {} -text [translate "Fahrenheit"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_3" checkbutton 690 940 {} -text [translate "AM/PM"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_3" checkbutton 70 1000 {} -text [translate "Fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_3" checkbutton 690 1000 {} -text [translate "1.234,56"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_commanumbers)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+#		set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 347 1265 { } -command update_de1_explanation_chart_soon -padx 0 -pady 0 -bg #FFFFFF -text [translate "rise"] -indicatoron true -font Helv_10_bold  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF]
+
+
+
+add_de1_widget "settings_3" checkbutton 70 940 {} -text [translate "Fahrenheit"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
+add_de1_widget "settings_3" checkbutton 690 940 {} -text [translate "AM/PM"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+add_de1_widget "settings_3" checkbutton 70 1000 {} -text [translate "Fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4 -relief flat  
+add_de1_widget "settings_3" checkbutton 690 1000 {} -text [translate "1.234,56"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_commanumbers)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -409,11 +417,14 @@ add_de1_text "settings_1" 50 230 -text [translate "Load a preset"] -font Helv_10
 add_de1_text "settings_1" 1360 230 -text [translate "Preview"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_text "settings_1" 1360 830 -text [translate "Description"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_text "settings_1" 1360 1240 -text [translate "Name and save"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
-add_de1_widget "settings_1" multiline_entry 1360 900 {} -width 40 -height 4 -font Helv_9  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_notes) 
+add_de1_widget "settings_1" multiline_entry 1360 900 {} -width 40 -height 4 -font Helv_9  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
+# -selectbackground #c0c4e1
+
+
 add_de1_widget "settings_1" entry 1360 1310  {
 	set ::globals(widget_profile_name_to_save) $widget
 	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); save_profile; }
-} -width 32 -font Helv_9  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_to_save) 
+} -width 32 -font Helv_9  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_to_save) -relief flat  -highlightthickness 1 -highlightcolor #000000 
 
 
 add_de1_text "settings_3" 1310 220 -text [translate "Tablet styles"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -530,3 +541,5 @@ proc setting_profile_type_to_text { in } {
 		return [translate "PROFILE"]
 	}
 }
+
+#set_next_page off settings_3
