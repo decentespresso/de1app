@@ -4,14 +4,14 @@
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
 
-add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.jpg"
+add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.png"
 
 if {[de1plus]} {
 
-	add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.jpg"
-	add_de1_page "settings_2a" "[defaultskin_directory_graphics]/settings_2a.jpg"
-	add_de1_page "settings_2b" "[defaultskin_directory_graphics]/settings_2b.jpg"
-	add_de1_page "settings_2c" "[defaultskin_directory_graphics]/settings_2c.jpg"
+	add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.png"
+	add_de1_page "settings_2a" "[defaultskin_directory_graphics]/settings_2a.png"
+	add_de1_page "settings_2b" "[defaultskin_directory_graphics]/settings_2b.png"
+	add_de1_page "settings_2c" "[defaultskin_directory_graphics]/settings_2c.png"
 
 	if {$::settings(settings_profile_type) == "settings_2"} {
 		# this happens if you switch to the de1 gui, which then saves the de1 settings default, so we need to reset it to this de1+ default
@@ -19,12 +19,12 @@ if {[de1plus]} {
 	}
 } else {
 	set ::settings(settings_profile_type) "settings_2"
-	add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.jpg"
-	add_de1_page "settings_2" "[defaultskin_directory_graphics]/settings_2.jpg"
+	add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.png"
+	add_de1_page "settings_2" "[defaultskin_directory_graphics]/settings_2.png"
 }
 
-add_de1_page "settings_3" "[defaultskin_directory_graphics]/settings_3.jpg"
-add_de1_page "settings_4" "[defaultskin_directory_graphics]/settings_4.jpg"
+add_de1_page "settings_3" "[defaultskin_directory_graphics]/settings_3.png"
+add_de1_page "settings_4" "[defaultskin_directory_graphics]/settings_4.png"
 
 # this is the message page
 set ::message_label [add_de1_text "message" 1280 750 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]

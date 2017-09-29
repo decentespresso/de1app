@@ -782,16 +782,18 @@ proc rescale_font {in} {
 proc skin_convert {indir} {
     #puts "skin_convert: $indir"
     cd $indir
-    set skinfiles {}
-    catch {
-        set skinfiles [glob "*.jpg"] 
-    }
+    #set skinfiles {}
+    set skinfiles [concat [glob -nocomplain "*.png"] [glob -nocomplain  "*.jpg"]]
+
     if {$skinfiles == ""} {
         puts "No jpg files found in '$indir'"
         return
     }
     set dirs [list \
         "1280x800" 2 2 \
+    ]
+
+    set nondirs [list \
         "2048x1536" 1.25 1.041666666 \
         "2048x1440" 1.25 1.11111 \
         "1920x1200" 1.333333 1.333333 \
@@ -799,6 +801,7 @@ proc skin_convert {indir} {
         "1280x720"  2 2.22222 \
         "2560x1440" 1 1.11111 \
     ]
+
     #set dirs [list \
     #    "1280x800" 2 2 \
     #]
@@ -831,7 +834,7 @@ proc skin_convert {indir} {
             flush stdout
             if {[file extension $skinfile] == ".png"} {
                 catch {
-                	exec convert $skinfile  -resize $dir!  -format png24 ../$dir/$skinfile 
+                	exec convert $skinfile  -resize $dir!  -format png8 ../$dir/$skinfile 
                 }
             } else {
 

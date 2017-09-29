@@ -130,6 +130,7 @@ array set ::settings {
 	settings_1_page settings_1
 	steam_temperature 170
 	settings_profile_type "settings_2"
+	steam_max_time 120
 	skale_bluetooth_address {}
 	bluetooth_address {}
 	water_max_time 10

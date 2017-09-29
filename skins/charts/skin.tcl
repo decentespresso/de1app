@@ -7,32 +7,34 @@ puts "debugging: $::debugging"
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
-add_de1_page "off espresso_3" "[skin_directory_graphics]/espresso_1.jpg"
-#add_de1_page "espresso_3" "[skin_directory_graphics]/espresso_3.jpg"
-add_de1_page "off_zoomed off_zoomed_temperature espresso_3_zoomed espresso_3_zoomed_temperature" "[skin_directory_graphics]/espresso_1_zoomed.jpg"
-#add_de1_page "espresso_3_zoomed espresso_3_zoomed_temperature" "[skin_directory_graphics]/espresso_3_zoomed.jpg"
+add_de1_page "off espresso_3" "[skin_directory_graphics]/espresso_1.png"
+#add_de1_page "espresso_3" "[skin_directory_graphics]/espresso_3.png"
+add_de1_page "off_zoomed off_zoomed_temperature espresso_3_zoomed espresso_3_zoomed_temperature" "[skin_directory_graphics]/espresso_1_zoomed.png"
+#add_de1_page "espresso_3_zoomed espresso_3_zoomed_temperature" "[skin_directory_graphics]/espresso_3_zoomed.png"
 
-add_de1_page "espresso" "[skin_directory_graphics]/espresso_2.jpg"
-add_de1_page "espresso_zoomed espresso_zoomed_temperature" "[skin_directory_graphics]/espresso_2_zoomed.jpg" 
+add_de1_page "espresso" "[skin_directory_graphics]/espresso_2.png"
+add_de1_page "espresso_zoomed espresso_zoomed_temperature" "[skin_directory_graphics]/espresso_2_zoomed.png" 
 
-add_de1_page "steam" "[skin_directory_graphics]/steam_2.jpg"
-add_de1_page "steam_1" "[skin_directory_graphics]/steam_1.jpg"
-add_de1_page "steam_3" "[skin_directory_graphics]/steam_3.jpg"
+add_de1_page "steam" "[skin_directory_graphics]/steam_2.png"
+add_de1_page "steam_1" "[skin_directory_graphics]/steam_1.png"
+add_de1_page "steam_3" "[skin_directory_graphics]/steam_3.png"
 
-add_de1_page "water" "[skin_directory_graphics]/water_2.jpg"
-add_de1_page "water_1" "[skin_directory_graphics]/water_1.jpg"
-add_de1_page "water_3" "[skin_directory_graphics]/water_3.jpg"
+add_de1_page "water" "[skin_directory_graphics]/water_2.png"
+add_de1_page "water_1" "[skin_directory_graphics]/water_1.png"
+add_de1_page "water_3" "[skin_directory_graphics]/water_3.png"
 
-add_de1_page "preheat_1" "[skin_directory_graphics]/preheat_1.jpg"
-add_de1_page "preheat_2" "[skin_directory_graphics]/preheat_2.jpg"
-add_de1_page "preheat_3" "[skin_directory_graphics]/preheat_3.jpg"
-add_de1_page "preheat_4" "[skin_directory_graphics]/preheat_4.jpg"
+add_de1_page "preheat_1" "[skin_directory_graphics]/preheat_1.png"
+add_de1_page "preheat_2" "[skin_directory_graphics]/preheat_2.png"
+add_de1_page "preheat_3" "[skin_directory_graphics]/preheat_3.png"
+add_de1_page "preheat_4" "[skin_directory_graphics]/preheat_4.png"
 
 # most skins will not bother replacing these graphics
 add_de1_page "sleep" "[defaultskin_directory_graphics]/sleep.jpg"
 add_de1_page "tankfilling" "[defaultskin_directory_graphics]/filling_tank.jpg"
 add_de1_page "tankempty" "[defaultskin_directory_graphics]/fill_tank.jpg"
-add_de1_page "message" "[defaultskin_directory_graphics]/settings_message.jpg"
+add_de1_page "message" "[defaultskin_directory_graphics]/settings_message.png"
+add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning.jpg"
+add_de1_page "descaling" "[defaultskin_directory_graphics]/descaling.jpg"
 
 set_de1_screen_saver_directory "[homedir]/saver"
 
@@ -170,7 +172,7 @@ add_de1_text "off espresso espresso_3" 43 677 -text [translate "Flow (mL/s) :"] 
 add_de1_text "off espresso espresso_3" 43 1128 -text [translate "Temperature ([return_html_temperature_units]) :"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
 
 # water level sensor 
-add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2528 694 {} -from 60 -to 0 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -foreground #0000FF -troughcolor #ffffff -borderwidth 0  -highlightthickness 0 
+add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2528 694 {} -from 50 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -foreground #0000FF -troughcolor #ffffff -borderwidth 0  -highlightthickness 0 
 
 source "[homedir]/skins/charts/scentone.tcl"
 

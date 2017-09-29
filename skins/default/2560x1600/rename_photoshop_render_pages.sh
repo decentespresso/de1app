@@ -1,6 +1,16 @@
 #!/bin/bash
 
-# jpeg versions
+convert ~/Desktop/settings_pages_all0000.png settings_1.png
+convert ~/Desktop/settings_pages_all0001.png settings_2.png
+convert ~/Desktop/settings_pages_all0002.png settings_2a.png
+convert ~/Desktop/settings_pages_all0003.png settings_2b.png
+convert ~/Desktop/settings_pages_all0004.png settings_2c.png
+convert ~/Desktop/settings_pages_all0005.png settings_3.png
+convert ~/Desktop/settings_pages_all0006.png settings_4.png
+convert ~/Desktop/settings_pages_all0007.png settings_message.png
+
+return
+
 
 mv -f ~/Desktop/settings_pages_all0000.jpg settings_1.jpg
 mv -f ~/Desktop/settings_pages_all0001.jpg settings_2.jpg
