@@ -76,7 +76,7 @@ proc skale_enable_lcd {} {
 
 # temp changes
 proc de1_enable_temp_notifications {} {
-	#return
+	#are return
 	#userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
 	#return
 	userdata_append "enable de1 temp notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
@@ -547,11 +547,8 @@ proc de1_ble_handler { event data } {
 					    	ble close $::currently_connecting_skale_handle
 					    }
 
-				    	#userdata_append "reconnect to Skale" ble_connect_to_skale
 				    	set ::de1(skale_device_handle) 0
-				    	#userdata_append "reconnect to Skale" [list ble reconnect $handle]
 				    	ble_connect_to_skale
-				    	#run_next_userdata_cmd
 				    }
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1
@@ -585,15 +582,15 @@ proc de1_ble_handler { event data } {
 						append_to_de1_bluetooth_list $address
 						#msg "connected to de1 with handle $handle"
 						
-						de1_enable_state_notifications
-						start_idle
+						de1_enable_water_level_notifications
+
 						read_de1_version
 						de1_send_steam_hotwater_settings					
-						de1_enable_water_level_notifications
 						de1_send_shot_frames
+						de1_enable_state_notifications
+						start_idle
 						de1_enable_temp_notifications
 						
-						#run_next_userdata_cmd
 					} elseif {$::de1(skale_device_handle) == 0 && $address == $::settings(skale_bluetooth_address)} {
 						msg "skale connected $event $data"
 			    		set ::de1(wrote) 0
