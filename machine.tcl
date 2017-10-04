@@ -122,6 +122,8 @@ array set ::settings {
 	drink_notes {}
 	grinder_dose_weight 18
 	drink_weight 36
+	drink_tds 10
+	drink_ey 20
 	alarm_wake 21600
 	alarm_sleep 82800
 	timer_interval 500

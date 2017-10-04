@@ -65,8 +65,8 @@ add_de1_text "describe_espresso" 50 320 -text [translate "Grinder:"] -font Helv_
 	add_de1_widget "describe_espresso" entry 310 480 {} -width 30 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_setting) 
 
 	set slider_trough_color #EAEAEA
-	add_de1_text "describe_espresso" 300 570 -text [translate "Dose:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
-	add_de1_widget "describe_espresso" scale 310 570 {} -to 30 -from 1 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 680]  -width [rescale_y_skin 80] -variable ::settings(grinder_dose_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_text "describe_espresso" 300 580 -text [translate "Dose:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
+	add_de1_widget "describe_espresso" scale 310 570 {} -to 30 -from 5 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 680]  -width [rescale_y_skin 80] -variable ::settings(grinder_dose_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "describe_espresso" 1000 580 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_weight_measurement $::settings(grinder_dose_weight)]}
 
 
@@ -91,18 +91,23 @@ add_de1_text "describe_espresso" 50 700 -text [translate "Beans:"] -font Helv_8_
 add_de1_text "describe_espresso" 1300 320 -text [translate "Drink:"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
 	add_de1_text "describe_espresso" 1600 400 -text [translate "Weight:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" scale 1610 390 {} -to 100 -from 1 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 680]  -width [rescale_y_skin 80] -variable ::settings(drink_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_widget "describe_espresso" scale 1610 390 {} -to 60 -from 10 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 680]  -width [rescale_y_skin 80] -variable ::settings(drink_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "describe_espresso" 2300 400 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_weight_measurement $::settings(drink_weight)]}
 
-	add_de1_text "describe_espresso" 1600 560 -text [translate "TDS:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" entry 1610 560 {} -width 30 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(drink_tds) 
+	add_de1_text "describe_espresso" 1600 490 -text [translate "TDS:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_widget "describe_espresso" scale 1610 480 {} -to 14 -from 6 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 680]  -width [rescale_y_skin 80] -variable ::settings(drink_tds) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "describe_espresso" 2300 490 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_percent $::settings(drink_tds)]}
 
-	add_de1_text "describe_espresso" 1600 650 -text [translate "EY:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" entry 1610 650 {} -width 30 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(drink_ey) 
+	add_de1_text "describe_espresso" 1600 580 -text [translate "EY:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_widget "describe_espresso" scale 1610 570 {} -to 24 -from 14 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 680]  -width [rescale_y_skin 80] -variable ::settings(drink_ey) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "describe_espresso" 2300 580 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_percent $::settings(drink_ey)]}
 
-	add_de1_text "describe_espresso" 1600 740 -text [translate "Notes:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" multiline_entry 1610 740 {} -width 30 -height 3 -font Helv_9  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(drink_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
+	add_de1_text "describe_espresso" 1600 680 -text [translate "Notes:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_widget "describe_espresso" multiline_entry 1610 680 {} -width 30 -height 3 -font Helv_9  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(drink_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
+
+
+add_de1_text "describe_espresso" 1300 950 -text [translate "Flavors:"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
 
 ##################################################################################################################################################################################################################

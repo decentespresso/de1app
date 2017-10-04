@@ -373,6 +373,10 @@ proc return_weight_measurement {in} {
 	}
 }
 
+proc return_percent {in} {
+	return [subst {[round_to_one_digits $in]%}]
+}
+
 proc return_stop_at_weight_measurement {in} {
 	if {$in == 0} {
 		return [translate "off"]
