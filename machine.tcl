@@ -118,6 +118,10 @@ array set ::settings {
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"
 	flying 0
+	bean_notes {}
+	drink_notes {}
+	grinder_dose_weight 18
+	drink_weight 36
 	alarm_wake 21600
 	alarm_sleep 82800
 	timer_interval 500
@@ -217,7 +221,10 @@ array set ::de1_state {
 	Descale \x0A
 	FatalError \x0B
 	Init \x0C
-	NewSleep \x0D
+	NoRequest \x0D
+    SkipToNext \x0E
+    HotWaterRinse \x0F
+    SteamRinse \x10
 	Refill \x11
 	TankEmpty \x90
 	FillingTank \x91
@@ -237,11 +244,18 @@ array set ::de1_num_state {
   10 Descale
   11 FatalError 
   12 Init
-  13 NewSleep
+  13 NoRequest
+  14 SkipToNext
+  15 HotWaterRinse
+  16 SteamRinse
   17 Refill
   144 TankEmpty
   145 FillingTank
 }
+
+
+
+
 array set ::de1_num_state_reversed [reverse_array ::de1_num_state]
 
 
@@ -274,6 +288,44 @@ proc next_espresso_step {} {
 }
 
 
+proc start_decaling {} {
+
+	msg "Tell DE1 to start DESCALING"
+	set ::de1(timer) 0
+	set ::de1(volume) 0
+	de1_send "descale" $::de1_state(Descale)
+
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
+		#after 200 "update_de1_state $::de1_state(Descale)"
+		after 200 [list update_de1_state $::de1_state(Descale)]
+	}
+}
+
+proc start_hot_water_rinse {} {
+	msg "Tell DE1 to start HOT WATER RINSE"
+	set ::de1(timer) 0
+	set ::de1(volume) 0
+	de1_send "hot water rinse" $::de1_state(HotWaterRinse)
+
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
+		after 200 [list update_de1_state $::de1_state(HotWaterRinse)]
+	}
+}
+
+proc start_steam_rinse {} {
+	msg "Tell DE1 to start STEAM RINSE"
+	set ::de1(timer) 0
+	set ::de1(volume) 0
+	de1_send "steam rinse" $::de1_state(SteamRinse)
+
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
+		after 200 [list update_de1_state $::de1_state(SteamRinse)]
+	}
+}
+
 proc start_steam {} {
 	msg "Tell DE1 to start making STEAM"
 	set ::de1(timer) 0
@@ -282,7 +334,7 @@ proc start_steam {} {
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
-		after 200 "update_de1_state $::de1_state(Steam)"
+		after 200 [list update_de1_state $::de1_state(Steam)]
 	}
 }
 
@@ -291,6 +343,9 @@ proc start_espresso {} {
 	set ::settings(history_saved) ""
 	set ::de1(timer) 0
 	set ::de1(volume) 0
+
+	# clear any description of the previous espresso
+	set ::settings(scentone) ""
 
 	clear_espresso_chart
 
@@ -304,7 +359,7 @@ proc start_espresso {} {
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
-		after 200 "update_de1_state $::de1_state(Espresso)"
+		after 200 [list update_de1_state $::de1_state(Espresso)]
 	}
 
 	#run_next_userdata_cmd
@@ -318,7 +373,7 @@ proc start_water {} {
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
-		after 200 "update_de1_state $::de1_state(HotWater)"
+		after 200 [list update_de1_state $::de1_state(HotWater)]
 	}
 }
 
@@ -335,7 +390,7 @@ proc start_idle {} {
 	de1_send "go idle" $::de1_state(Idle)
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
-		after 200 "update_de1_state $::de1_state(Idle)"
+		after 200 [list update_de1_state $::de1_state(Idle)]
 	}
 
 	#msg "sensors: [borg sensor list]"
@@ -348,8 +403,8 @@ proc start_sleep {} {
 	
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
-		after 200 "update_de1_state $::de1_state(GoingToSleep)"
-		after 800 "update_de1_state $::de1_state(Sleep)"
+		after 200 [list update_de1_state $::de1_state(GoingToSleep)]
+		after 800 [list update_de1_state $::de1_state(Sleep)]
 	}
 }
 

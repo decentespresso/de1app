@@ -934,3 +934,8 @@ proc list_remove_element {list toremove} {
     #puts "newlist: '$newlist'"
     return $newlist
 }
+
+proc web_browser {url} {
+    msg "Browser '$url'"
+    borg activity android.intent.action.VIEW $url text/html
+}
