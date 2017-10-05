@@ -120,10 +120,14 @@ array set ::settings {
 	flying 0
 	bean_notes {}
 	drink_notes {}
-	grinder_dose_weight 18
-	drink_weight 36
-	drink_tds 10
-	drink_ey 20
+	grinder_dose_weight 0
+	drink_weight 0
+	espresso_enjoyment 50
+	espresso_aftertaste 0
+	espresso_acidity 0
+	espresso_sweetness 0
+	drink_tds 0
+	drink_ey 0
 	alarm_wake 21600
 	alarm_sleep 82800
 	timer_interval 500

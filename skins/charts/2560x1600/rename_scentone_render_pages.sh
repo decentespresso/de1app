@@ -15,6 +15,7 @@ convert ~/Desktop/scentone_all0009.png scentone_vegetable.jpg
 convert ~/Desktop/scentone_all0010.png scentone_savory.jpg
 
 convert ~/Desktop/scentone_all0011.png describe_espresso.jpg
+convert ~/Desktop/scentone_all0012.png describe_espresso2.jpg
 
 
 return
