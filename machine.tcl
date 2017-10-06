@@ -119,7 +119,7 @@ array set ::settings {
 	color_stage_3 "#edceca"
 	flying 0
 	bean_notes {}
-	drink_notes {}
+	espresso_notes {}
 	grinder_dose_weight 0
 	drink_weight 0
 	espresso_enjoyment 50
@@ -133,6 +133,7 @@ array set ::settings {
 	enable_fluid_ounces 0
 	timer_enable 0
 	has_refractometer 1
+	my_name ""
 	has_scale 1
 	enable_fahrenheit 0
 	enable_ampm 0
@@ -282,9 +283,8 @@ array set translation [read_file "[homedir]/translation.tcl"]
 proc de1_substate_text {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
-	return $substate_txt
+	return [translate $substate_txt]
 }
-
 
 
 proc next_espresso_step {} {
@@ -351,6 +351,10 @@ proc start_espresso {} {
 
 	# clear any description of the previous espresso
 	set ::settings(scentone) ""
+	set ::settings(espresso_notes) ""
+	set ::settings(drink_tds) 0
+	set ::settings(drink_weight) 0
+	set ::settings(drink_ey) 0
 
 	clear_espresso_chart
 

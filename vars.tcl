@@ -367,7 +367,7 @@ proc return_flow_measurement {in} {
 
 proc return_weight_measurement {in} {
 	if {$::settings(enable_fluid_ounces) != 1} {
-		return [subst {[round_to_one_digits $in] [translate "g"]}]
+		return [subst {[round_to_one_digits $in][translate "g"]}]
 	} else {
 		return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
 	}
@@ -397,7 +397,7 @@ proc return_stop_at_weight_measurement {in} {
 		return [translate "off"]
 	} else {
 		if {$::settings(enable_fluid_ounces) != 1} {
-			return [subst {[round_to_one_digits $in] [translate "g"]}]
+			return [subst {[round_to_one_digits $in][translate "g"]}]
 		} else {
 			return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
 		}
@@ -1264,12 +1264,40 @@ proc save_this_espresso_to_history {} {
 }
 
 
+proc start_text_if_espresso_ready {} {
+	set num $::de1(substate)
+	set substate_txt $::de1_substate_types($num)
+	if {$substate_txt == "ready"} {
+		return [translate "START"]
+	}
+	return [translate "WAIT"]
+
+}
+
+proc stop_text_if_espresso_stoppable {} {
+	set num $::de1(substate)
+	set substate_txt $::de1_substate_types($num)
+	if {$substate_txt != "ending"} {
+		return [translate "STOP"]
+	}
+	return [translate "WAIT"]
+
+}
+
+
+
 proc espresso_history_save_from_gui {} {
-	if {$::settings(history_saved) != 1} { 
-		set state [translate "SAVE"] 
+	set num $::de1(substate)
+	set substate_txt $::de1_substate_types($num)
+	if {$substate_txt != "ready"} {
+		set state [translate "WAIT"]
 	} else {
-		set state [translate "RESTART"]
-	}; 
+		if {$::settings(history_saved) != 1} { 
+			set state [translate "SAVING"] 
+		} else {
+			set state [translate "RESTART"]
+		}; 
+	}
 	save_this_espresso_to_history; 
 	return $state
 }
