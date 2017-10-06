@@ -123,9 +123,6 @@ array set ::settings {
 	grinder_dose_weight 0
 	drink_weight 0
 	espresso_enjoyment 50
-	espresso_aftertaste 0
-	espresso_acidity 0
-	espresso_sweetness 0
 	drink_tds 0
 	drink_ey 0
 	alarm_wake 21600
@@ -135,6 +132,8 @@ array set ::settings {
 	screen_saver_change_interval 10
 	enable_fluid_ounces 0
 	timer_enable 0
+	has_refractometer 0
+	has_scale 0
 	enable_fahrenheit 0
 	enable_ampm 0
 	settings_1_page settings_1
@@ -163,7 +162,7 @@ array set ::settings {
 	enable_negative_flow_charts 0
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
-	final_desired_shot_weight_percentage_to_stop .95
+	final_desired_shot_weight_percentage_to_stop .93
 	history_saved ""
 	pressure_end 4 
 	espresso_step_1 pressure

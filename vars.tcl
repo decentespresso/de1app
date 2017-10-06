@@ -1395,3 +1395,18 @@ proc scentone_selected { {category {}} } {
 
 }
 
+
+proc scentone_translated_selection { } {
+	#puts "scent one: '$::settings(scentone)'"
+
+	set returnlist {}
+	foreach selected $::settings(scentone) {
+		lappend returnlist [translate $selected]
+	}
+
+	if {$returnlist == ""} {
+		return ""
+	}
+
+	return [join [lsort $returnlist] ", "].
+}

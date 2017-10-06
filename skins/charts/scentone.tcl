@@ -21,26 +21,21 @@ add_de1_page "describe_espresso2" "[skin_directory_graphics]/describe_espresso2.
 
 
 #add_de1_button "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {say [translate {scent one}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off} 2014 1300 2284 1440
-add_de1_button "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off} 2014 1300 2284 1440
+#add_de1_button "off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off} 2014 1300 2284 1440
 
 #2014 1442 2284 1600
 
-add_de1_text "scentone_1" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-add_de1_text "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-add_de1_text "scentone_1" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-add_de1_text "scentone_1" 1245 1520 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
 #add_de1_text "scentone_1 scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 1760 1520 -text [translate "Scent One"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
 
 # saving an exiting from each of the aroma categories
 
-add_de1_button "describe_espresso" {say [translate {save}] $::settings(sound_button_in); save_this_espresso_to_history; set_next_page off espresso_3; page_show off } 2016 1406 2560 1600
-add_de1_button "describe_espresso" {say [translate {cancel}] $::settings(sound_button_in); set_next_page off espresso_3; page_show off } 1505 1406 2015 1600
+add_de1_text "describe_espresso describe_espresso2" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "describe_espresso describe_espresso2" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
-add_de1_text "describe_espresso" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-add_de1_text "describe_espresso" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-
+add_de1_button "describe_espresso describe_espresso2" {say [translate {save}] $::settings(sound_button_in); save_this_espresso_to_history; set_next_page off espresso_3; page_show off } 2016 1406 2560 1600
+add_de1_button "describe_espresso describe_espresso2" {say [translate {cancel}] $::settings(sound_button_in); set_next_page off espresso_3; page_show off } 1505 1406 2015 1600
 
 add_de1_button "describe_espresso" {say [translate {Scent One}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 2016 1206 2560 1400
 
@@ -53,40 +48,46 @@ add_de1_button "scentone_tropical scentone_berry scentone_citrus scentone_stone 
 add_de1_button "scentone_1" {say [translate {Scent One}] $::settings(sound_button_in); web_browser "https://decentespresso.com/scentone" } 10 1406 560 1600
 add_de1_button "scentone_1" {say [translate {clear}] $::settings(sound_button_in); set ::settings(scentone) "" } 990 1406 1500 1600
 
+add_de1_text "scentone_1" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "scentone_1" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "scentone_1" 1245 1520 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+
+
 ##################################################################################################################################################################################################################
 # main espresso description page
 
+set slider_trough_color1 #e2e2e2 
+set slider_trough_color2 #f3f3f3 
+
 # from http://www.iconarchive.com/show/shiny-smiley-icons-by-iconicon.html
 add_de1_text "describe_espresso" 50 360 -text [translate "Enjoyment:"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	set slider_trough_color1 #e2e2e2 
 	add_de1_widget "describe_espresso" scale 300 430 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 1000]  -width [rescale_y_skin 150] -variable ::settings(espresso_enjoyment) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color1 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "describe_espresso" 1300 580 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {$::settings(espresso_enjoyment)}
 
 
 
-add_de1_text "describe_espresso" 50 700 -text [translate "Details (optional):"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	set slider_trough_color2 #f3f3f3 
+#add_de1_text "describe_espresso" 50 700 -text [translate "Details (optional):"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
-	add_de1_text "describe_espresso" 90 780 -text [translate "Sweetness:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" scale 90 830 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_y_skin 150] -variable ::settings(espresso_sweetness) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "describe_espresso" 760 980 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_sweetness)]}
+#	add_de1_text "describe_espresso" 90 780 -text [translate "Sweetness:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+#	add_de1_widget "describe_espresso" scale 90 830 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_y_skin 150] -variable ::settings(espresso_sweetness) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+#	add_de1_variable "describe_espresso" 760 980 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_sweetness)]}
 
-	add_de1_text "describe_espresso" 90 1010 -text [translate "Acidity:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" scale 90 1060 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_y_skin 150] -variable ::settings(espresso_acidity) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "describe_espresso" 760 1210 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_acidity)]}
+#	add_de1_text "describe_espresso" 90 1010 -text [translate "Acidity:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+#	add_de1_widget "describe_espresso" scale 90 1060 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_y_skin 150] -variable ::settings(espresso_acidity) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+#	add_de1_variable "describe_espresso" 760 1210 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_acidity)]}
 
-	add_de1_text "describe_espresso" 830 780 -text [translate "Aftertaste:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" scale 830 830 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_y_skin 150] -variable ::settings(espresso_aftertaste) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "describe_espresso" 1500 980 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_aftertaste)]}
+#	add_de1_text "describe_espresso" 830 780 -text [translate "Aftertaste:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+#	add_de1_widget "describe_espresso" scale 830 830 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_y_skin 150] -variable ::settings(espresso_aftertaste) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+#	add_de1_variable "describe_espresso" 1500 980 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_aftertaste)]}
 
-	add_de1_text "describe_espresso" 830 1010 -text [translate "Notes:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" multiline_entry 830 1060 {} -width 24 -height 5 -font Helv_9  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(drink_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
+	add_de1_text "describe_espresso" 50 700 -text [translate "Notes:"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+	add_de1_widget "describe_espresso" multiline_entry 50 780 {} -width 52 -height 9 -font Helv_9  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(drink_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 
 
 add_de1_text "describe_espresso2" 50 320 -text [translate "Grinder:"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
-	set_next_page off describe_espresso
 	add_de1_text "describe_espresso2" 300 400 -text [translate "Model:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
 	add_de1_widget "describe_espresso2" entry 310 390 {} -width 30 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_model) 
 
@@ -119,30 +120,36 @@ add_de1_text "describe_espresso2" 50 700 -text [translate "Beans:"] -font Helv_8
 	add_de1_widget "describe_espresso2" multiline_entry 310 1090 {} -width 30 -height 3 -font Helv_9  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(bean_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 
-add_de1_text "describe_espresso" 1610 360 -text [translate "Technical: (optional)"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+if {$::settings(has_refractometer) == 1 || $::settings(has_scale) == 1} {
+	add_de1_text "describe_espresso" 1610 360 -text [translate "Technical: (optional)"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+}
 
-	add_de1_text "describe_espresso" 1650 440 -text [translate "Weight:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" scale 1650 490 {} -to 60 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 150] -variable ::settings(drink_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "describe_espresso" 2500 640 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(drink_weight)]}
+	if {$::settings(has_scale) == 1} {
+		add_de1_text "describe_espresso" 1650 440 -text [translate "Weight:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+		add_de1_widget "describe_espresso" scale 1650 490 {} -to 60 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 150] -variable ::settings(drink_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "describe_espresso" 2500 640 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(drink_weight)]}
+	}
 
-	add_de1_text "describe_espresso" 1650 670 -text [translate "TDS:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" scale 1650 720 {} -to 14 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 150] -variable ::settings(drink_tds) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "describe_espresso" 2500 870 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_tds)]}
+	if {$::settings(has_refractometer) == 1} {
+		add_de1_text "describe_espresso" 1650 670 -text [translate "TDS:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+		add_de1_widget "describe_espresso" scale 1650 720 {} -to 14 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 150] -variable ::settings(drink_tds) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "describe_espresso" 2500 870 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_tds)]}
 
-	add_de1_text "describe_espresso" 1650 900 -text [translate "EY:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" scale 1650 950 {} -to 24 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 150] -variable ::settings(drink_ey) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "describe_espresso" 2500 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_ey)]}
-
+		add_de1_text "describe_espresso" 1650 900 -text [translate "EY:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+		add_de1_widget "describe_espresso" scale 1650 950 {} -to 24 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 150] -variable ::settings(drink_ey) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "describe_espresso" 2500 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_ey)]}
+	}
 
 
 add_de1_text "describe_espresso" 1610 1230 -text [translate "Flavors:"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+add_de1_variable "describe_espresso" 1610 1280 -text "" -font Helv_6 -width 200 -fill "#7f879a" -anchor "nw" -textvariable {[scentone_translated_selection]} 
 
 
 ##################################################################################################################################################################################################################
 
 
 ##################################################################################################################################################################################################################
-# main scentone categories
+# describe your espresso
 
 add_de1_text "describe_espresso" 640 230 -text [translate "This espresso"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
 add_de1_text "describe_espresso" 1920 230 -text [translate "Your setup"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
@@ -150,7 +157,18 @@ add_de1_text "describe_espresso" 1920 230 -text [translate "Your setup"] -font H
 add_de1_text "describe_espresso2" 640 230 -text [translate "This espresso"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
 add_de1_text "describe_espresso2" 1920 230 -text [translate "Your setup"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
 
-add_de1_text "describe_espresso" 1280 90 -text [translate "Describe your espresso"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso" 1280 90 -text [translate "Describe this espresso"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso2" 1280 90 -text [translate "Describe your setup"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
+
+add_de1_button "describe_espresso2" {say [translate {this espresso}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off} 0 0 1250 300
+add_de1_button "describe_espresso" {say [translate {your setup}] $::settings(sound_button_in); set_next_page off describe_espresso2; page_show off} 1290 0 2560 300
+
+
+##################################################################################################################################################################################################################
+# main scentone categories
+
+
+
 add_de1_variable "scentone_1" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected]} 
 
 set ::scentone(Tropical\ fruit) {"Guava" "Mangosteen" "Mango" "Banana" "Coconut" "Passion fruit" "Watermelon" "Papaya" "Tropical fruits" "Pineapple" "Melon" "Lychee"}

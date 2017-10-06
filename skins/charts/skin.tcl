@@ -7,10 +7,10 @@ puts "debugging: $::debugging"
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
-add_de1_page "off espresso_3" "[skin_directory_graphics]/espresso_1.png"
-#add_de1_page "espresso_3" "[skin_directory_graphics]/espresso_3.png"
-add_de1_page "off_zoomed off_zoomed_temperature espresso_3_zoomed espresso_3_zoomed_temperature" "[skin_directory_graphics]/espresso_1_zoomed.png"
-#add_de1_page "espresso_3_zoomed espresso_3_zoomed_temperature" "[skin_directory_graphics]/espresso_3_zoomed.png"
+add_de1_page "off" "[skin_directory_graphics]/espresso_1.png"
+add_de1_page "espresso_3" "[skin_directory_graphics]/espresso_3.png"
+add_de1_page "off_zoomed off_zoomed_temperature" "[skin_directory_graphics]/espresso_1_zoomed.png"
+add_de1_page "espresso_3_zoomed espresso_3_zoomed_temperature" "[skin_directory_graphics]/espresso_3_zoomed.png"
 
 add_de1_page "espresso" "[skin_directory_graphics]/espresso_2.png"
 add_de1_page "espresso_zoomed espresso_zoomed_temperature" "[skin_directory_graphics]/espresso_2_zoomed.png" 
@@ -42,6 +42,8 @@ set_de1_screen_saver_directory "[homedir]/saver"
 source "[homedir]/skins/default/de1_skin_settings.tcl"
 
 
+set ::current_espresso_page "off"
+
 # labels for PREHEAT tab on
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 405 100 -text [translate "PRE-HEAT CUP"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
@@ -69,14 +71,14 @@ add_de1_text "water water_1 water_3" 2290 100 -text [translate "HOT WATER"] -fon
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
 add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {pre-heat}] $::settings(sound_button_in); set_next_page off preheat_1; page_show preheat_1} 0 0 641 188
-add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {espresso}] $::settings(sound_button_in); set_next_page off off; page_show off} 642 0 1277 188
+add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {espresso}] $::settings(sound_button_in); set_next_page off $::current_espresso_page; page_show off} 642 0 1277 188
 add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {steam}] $::settings(sound_button_in); set_next_page off steam_1; page_show steam_1} 1278 0 1904 188
 add_de1_button "off_zoomed espresso_3_zoomed espresso_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {steam}] $::settings(sound_button_in); set_next_page off steam_1; page_show steam_1} 2020 0 2550 180
 add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {water}] $::settings(sound_button_in); set_next_page off water_1; page_show water_1} 1905 0 2560 188
 
 # when the espresso machine is doing something, the top tabs have to first stop that function, then the tab can change
 add_de1_button "preheat_2 steam water espresso espresso_3" {say [translate {pre-heat}] $::settings(sound_button_in);set_next_page off preheat_1; start_idle} 0 0 641 188
-add_de1_button "preheat_2 steam water espresso espresso_3" {say [translate {espresso}] $::settings(sound_button_in);set_next_page off off; start_idle} 642 0 1277 188
+add_de1_button "preheat_2 steam water espresso espresso_3" {say [translate {espresso}] $::settings(sound_button_in);set ::current_espresso_page off; set_next_page $::current_espresso_page off; start_idle} 642 0 1277 188
 add_de1_button "preheat_2 steam water espresso espresso_3" {say [translate {steam}] $::settings(sound_button_in);set_next_page off steam_1; start_idle} 1278 0 1904 188
 add_de1_button "preheat_2 steam water espresso espresso_3" {say [translate {water}] $::settings(sound_button_in);set_next_page off water_1; start_idle} 1905 0 2560 188
 
@@ -384,10 +386,10 @@ add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_
 # making espresso now
 
 # make and stop espresso button
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 200 2560 730
-add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in);set_next_page off espresso_3; start_idle;} 2020 200 2560 730
-add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed; start_idle;} 2020 200 2560 730
-add_de1_button "espresso_zoomed_temperature" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed_temperature; start_idle;} 2020 200 2560 730
+add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set ::current_espresso_page espresso_3; set_next_page off espresso_3; start_espresso} 2020 200 2560 680
+add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in);set_next_page off espresso_3; start_idle;} 2020 200 2560 680
+add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed; start_idle;} 2020 200 2560 680
+add_de1_button "espresso_zoomed_temperature" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed_temperature; start_idle;} 2020 200 2560 680
 
 # future feature
 # add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed" {say [translate {rinse}] $::settings(sound_button_in);set_next_page off espresso_3; start_espresso} 2020 631 2560 825
@@ -486,6 +488,7 @@ add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoom
 	add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2510 [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "ne" -font Helv_7 -fill $lightest -width [rescale_x_skin 520] -textvariable {[return_delta_temperature_measurement [diff_group_temp_from_goal]]} 
 
 
+add_de1_button "espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off} 2220 684 2560 900
 
 #add_de1_variable "espresso" 2500 1220 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[mixtemp_text]} 
 #add_de1_variable "espresso_zoom_pressure" 2500 1220 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[mixtemp_text]} 
