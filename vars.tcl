@@ -1274,6 +1274,16 @@ proc start_text_if_espresso_ready {} {
 
 }
 
+proc restart_text_if_espresso_ready {} {
+	set num $::de1(substate)
+	set substate_txt $::de1_substate_types($num)
+	if {$substate_txt == "ready"} {
+		return [translate "RESTART"]
+	}
+	return [translate "WAIT"]
+
+}
+
 proc stop_text_if_espresso_stoppable {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
