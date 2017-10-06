@@ -132,8 +132,8 @@ array set ::settings {
 	screen_saver_change_interval 10
 	enable_fluid_ounces 0
 	timer_enable 0
-	has_refractometer 0
-	has_scale 0
+	has_refractometer 1
+	has_scale 1
 	enable_fahrenheit 0
 	enable_ampm 0
 	settings_1_page settings_1
