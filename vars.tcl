@@ -82,6 +82,7 @@ proc espresso_frame_description {num} {
 }
 
 proc set_alarms_for_de1_wake_sleep {} {
+	# first clear existing timers
 	if {[info exists ::alarms_for_de1_wake] == 1} {
 		after cancel $::alarms_for_de1_wake
 		unset ::alarms_for_de1_wake
@@ -91,6 +92,7 @@ proc set_alarms_for_de1_wake_sleep {} {
 		unset ::alarms_for_de1_sleep
 	}
 
+	# if the timers are active, then find the next alarm time and set an alarm to wake in that many milliseconds from now
 	if {$::settings(scheduler_enable) == 1} {
 		set wake_seconds [expr {[next_alarm_time $::settings(scheduler_wake)] - [clock seconds]}]
 		set ::alarms_for_de1_wake [after [expr {1000 * $wake_seconds}] scheduler_wake]
@@ -106,13 +108,17 @@ proc set_alarms_for_de1_wake_sleep {} {
 proc scheduler_wake {} {
 	msg "Scheduled wake occured at [clock format [clock seconds]]"
 	start_idle
-	after 5000 set_alarms_for_de1_wake_sleep
+
+	# after alarm has occured go ahead and set the alarm for tommorrow
+	after 2000 set_alarms_for_de1_wake_sleep
 }
 
 proc scheduler_sleep {} {
 	msg "Scheduled sleep occured at [clock format [clock seconds]]"
 	start_sleep
-	after 5000 set_alarms_for_de1_wake_sleep
+
+	# after alarm has occured go ahead and set the alarm for tommorrow
+	after 2000 set_alarms_for_de1_wake_sleep
 }
 
 

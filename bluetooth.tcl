@@ -42,9 +42,45 @@ proc poll_de1_state {} {
 	#userdata_append [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid) $::de1(cinstance)]
 }
 
+proc skale_timer_start {} {
+	if {$de1(skale_device_handle) == 0} {
+		return 
+	}
+	set tare [binary decode hex "DD"]
+	set ::de1(scale_weight) 0
+	set ::de1(scale_weight_rate) 0
+
+	userdata_append "Skale: time start" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
+}
+
+proc skale_timer_stop {} {
+	if {$de1(skale_device_handle) == 0} {
+		return 
+	}
+	set tare [binary decode hex "D1"]
+	set ::de1(scale_weight) 0
+	set ::de1(scale_weight_rate) 0
+
+	userdata_append "Skale: timer stop" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
+}
+
+proc skale_timer_off {} {
+	if {$de1(skale_device_handle) == 0} {
+		return 
+	}
+	set tare [binary decode hex "D0"]
+	set ::de1(scale_weight) 0
+	set ::de1(scale_weight_rate) 0
+
+	userdata_append "Skale: timer stop" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
+}
+
 
 
 proc skale_tare {} {
+	if {$de1(skale_device_handle) == 0} {
+		return 
+	}
 	set tare [binary decode hex "10"]
 	set ::de1(scale_weight) 0
 	set ::de1(scale_weight_rate) 0
@@ -53,20 +89,32 @@ proc skale_tare {} {
 }
 
 proc skale_enable_weight_notifications {} {
+	if {$de1(skale_device_handle) == 0} {
+		return 
+	}
 	userdata_append "enable Skale weight notifications" [list ble enable $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" "0" "0000EF81-0000-1000-8000-00805F9B34FB" "0"]
 }
 
 
 proc skale_enable_button_notifications {} {
+	if {$de1(skale_device_handle) == 0} {
+		return 
+	}
 	userdata_append "enable Skale button notifications" [list ble enable $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" "0" "0000EF82-0000-1000-8000-00805F9B34FB" "0"]
 }
 
 proc skale_enable_grams {} {
+	if {$de1(skale_device_handle) == 0} {
+		return 
+	}
 	set grams [binary decode hex "03"]
 	userdata_append "Skale : enable grams" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $grams]
 }
 
 proc skale_enable_lcd {} {
+	if {$de1(skale_device_handle) == 0} {
+		return 
+	}
 	set screenon [binary decode hex "ED"]
 	set displayweight [binary decode hex "EC"]
 	userdata_append "Skale : enable LCD" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $screenon]
@@ -598,6 +646,7 @@ proc de1_ble_handler { event data } {
 						skale_enable_button_notifications
 						skale_enable_grams
 						skale_enable_lcd
+						skale_timer_off
 						skale_tare 
 						skale_enable_weight_notifications
 
@@ -738,7 +787,8 @@ proc de1_ble_handler { event data } {
 
 							# (beta) stop shot-at-weight feature
 							if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
-								if {$::de1_num_state($::de1(state)) == "Espresso" && $::de1(timer) > 10} {
+								if {$::de1_num_state($::de1(state)) == "Espresso" && $::de1(substate) == $::de1_substate_types_reversed(pouring)} {
+
 									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) * $::settings(final_desired_shot_weight_percentage_to_stop)}]]} {
 										msg "Weight based Espresso stop was triggered at ${thisweight}g > $::settings(final_desired_shot_weight)g "
 									 	start_idle

@@ -956,6 +956,14 @@ proc append_live_data_to_espresso_chart {} {
 	  if {[espresso_elapsed range end end] > [expr {[millitimer]/1000.0}]} {
 		#puts "discarding chart data after timer reset"
 		clear_espresso_chart
+
+		if {$::de1(skale_device_handle) != 0} {
+			# this variable prevents the stop trigger from happening until the Tare has succeeded.
+			set ::de1(scale_autostop_triggered) 1
+			skale_tare
+			skale_timer_start
+		}
+
 		return
 	  }
 	}

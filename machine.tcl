@@ -364,6 +364,7 @@ proc start_espresso {} {
 		# this variable prevents the stop trigger from happening until the Tare has succeeded.
 		set ::de1(scale_autostop_triggered) 1
 		skale_tare
+		skale_timer_off
 	}
 
 	if {$::android == 0} {
