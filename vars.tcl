@@ -81,11 +81,56 @@ proc espresso_frame_description {num} {
 
 }
 
+proc set_alarms_for_de1_wake_sleep {} {
+	if {[info exists ::alarms_for_de1_wake] == 1} {
+		after cancel $::alarms_for_de1_wake
+		unset ::alarms_for_de1_wake
+	}
+	if {[info exists ::alarms_for_de1_sleep] == 1} {
+		after cancel $::alarms_for_de1_sleep
+		unset ::alarms_for_de1_sleep
+	}
+
+	if {$::settings(scheduler_enable) == 1} {
+		set wake_seconds [expr {[next_alarm_time $::settings(scheduler_wake)] - [clock seconds]}]
+		set ::alarms_for_de1_wake [after [expr {1000 * $wake_seconds}] scheduler_wake]
+
+		set sleep_seconds [expr {[next_alarm_time $::settings(scheduler_sleep)] - [clock seconds]}]
+		set ::alarms_for_de1_sleep [after [expr {1000 * $sleep_seconds}] scheduler_sleep]
+
+		msg "Wake schedule set for [next_alarm_time $::settings(scheduler_wake)] in $wake_seconds seconds"
+		msg "Sleep schedule set for [next_alarm_time $::settings(scheduler_sleep)] in $sleep_seconds seconds"
+	}
+}
+
+proc scheduler_wake {} {
+	msg "Scheduled wake occured at [clock format [clock seconds]]"
+	start_idle
+	after 5000 set_alarms_for_de1_wake_sleep
+}
+
+proc scheduler_sleep {} {
+	msg "Scheduled sleep occured at [clock format [clock seconds]]"
+	start_sleep
+	after 5000 set_alarms_for_de1_wake_sleep
+}
+
+
+proc next_alarm_time { in } {
+	set alarm [expr {[round_date_to_nearest_day [clock seconds]] + round($in)}]
+	if {$alarm < [clock seconds] } {
+		# if the alarm time has passed, set it for tomorrow
+		set alarm [expr {$alarm + 86400} ]
+	}
+	return $alarm
+}
+
+
 proc format_alarm_time { in } {
 	if {$::settings(enable_ampm) == 1} {
-		return [clock format [expr {[round_date_to_nearest_day [clock seconds]] + round($in)}] -format {%l:%M %p}] 
+		return [clock format [next_alarm_time $in] -format {%l:%M %p}] 
 	} else {
-		return [clock format [expr {[round_date_to_nearest_day [clock seconds]] + round($in)}] -format {%H:%M}] 
+		return [clock format [next_alarm_time $in] -format {%H:%M}] 
 	}
 }
 

@@ -333,17 +333,25 @@ add_de1_text "settings_4" 1320 250 -text [translate "Information"] -font Helv_10
 add_de1_variable "settings_4" 1320 400 -text "[translate {Version:}] $::de1(version)" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 500 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
 #add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
+#set_next_page off settings_3
+
 # future feature to have scheduled power up/down
-set scheduler_enabled 0
+set scheduler_enabled 1
 if {$scheduler_enabled == 1} {
-	add_de1_widget "settings_3" checkbutton 1330 252 {} -text [translate "Scheduler"] -indicatoron true  -font Helv_10_bold -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(timer_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-	add_de1_button "settings_3" {say [translate {awake time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_wake) 0 86400 %x %y %x0 %y0 %x1 %y1} 1330 340 1650 820 ""
-	add_de1_text "settings_3" 1505 880 -text [translate "Heat up"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
-	add_de1_variable "settings_3" 1505 970 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_wake)]}
-	add_de1_button "settings_3" {say [translate {sleep time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_sleep) 0 86400 %x %y %x0 %y0 %x1 %y1} 1690 340 2010 820 ""
-	add_de1_text "settings_3" 1840 880 -text [translate "Cool down"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
-	add_de1_variable "settings_3" 1840 970 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_sleep)]}
-	add_de1_text "settings_3" 1400 250 -text [translate "Scheduler"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+	#add_de1_text "settings_3" 50 1115 -text [translate "Scheduler"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+	add_de1_widget "settings_3" checkbutton 50 1120 {} -text [translate "Scheduler"] -indicatoron true  -font Helv_10_bold -bg #FFFFFF -anchor nw -foreground #7f879a -variable ::settings(scheduler_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+	#add_de1_button "settings_3" {say [translate {awake time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_wake) 0 86400 %x %y %x0 %y0 %x1 %y1} 1330 340 1650 820 ""
+	#add_de1_text "settings_3" 50 1200 -text [translate "Heat up"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+	#add_de1_widget "settings_3" scale 50 1160 {} -from 0 -to 86400 -background #FFFFFF -borderwidth 1 -bigincrement 600 -resolution 60 -length [rescale_x_skin 1100] -width [rescale_y_skin 135] -variable ::settings(alarm_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 75] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+	add_de1_widget "settings_3" scale 50 1210 {} -from 0 -to 86340 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 60 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+	add_de1_variable "settings_3" 50 1350 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -textvariable {[translate "Heat up:"] [format_alarm_time $::settings(scheduler_wake)]}
+
+	add_de1_widget "settings_3" scale 670 1210 {} -from 0 -to 86340 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 60 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+	add_de1_variable "settings_3" 670 1350 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -textvariable {[translate "Cool down:"] [format_alarm_time $::settings(scheduler_sleep)]}
+	set_alarms_for_de1_wake_sleep
+	#add_de1_button "settings_3" {say [translate {sleep time}] $::settings(sound_button_in);vertical_clicker 600 60 ::settings(alarm_sleep) 0 86400 %x %y %x0 %y0 %x1 %y1} 1690 340 2010 820 ""
+	#add_de1_text "settings_3" 50 1300 -text [translate "Cool down"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+	#add_de1_variable "settings_3" 1840 970 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "center" -textvariable {[format_alarm_time $::settings(alarm_sleep)]}
 }
 
 #add_de1_text "settings_3" 2310 880 -text [translate "Temperature"] -font Helv_9 -fill "#7f879a" -anchor "center" -width 800 -justify "center"
@@ -492,7 +500,7 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); fill_ble_listbox $::ble_listbox_widget; set_next_page off settings_4; page_show settings_4} 1905 0 2560 188
 
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {save_settings_to_de1; say [translate {save}] $::settings(sound_button_in); save_settings; 
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; 
 	if {$::settings(skin) != $::settings_backup(skin) } {
 		.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 		set_next_page off message; page_show message

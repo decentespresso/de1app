@@ -125,13 +125,13 @@ array set ::settings {
 	espresso_enjoyment 50
 	drink_tds 0
 	drink_ey 0
-	alarm_wake 21600
-	alarm_sleep 82800
+	scheduler_enable 0
+	scheduler_wake 3600
+	scheduler_sleep 6000
 	timer_interval 500
 	screen_saver_delay 60
 	screen_saver_change_interval 10
 	enable_fluid_ounces 0
-	timer_enable 0
 	has_refractometer 1
 	my_name ""
 	has_scale 1
