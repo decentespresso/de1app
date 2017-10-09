@@ -956,14 +956,6 @@ proc append_live_data_to_espresso_chart {} {
 	  if {[espresso_elapsed range end end] > [expr {[millitimer]/1000.0}]} {
 		#puts "discarding chart data after timer reset"
 		clear_espresso_chart
-
-		if {$::de1(skale_device_handle) != 0} {
-			# this variable prevents the stop trigger from happening until the Tare has succeeded.
-			set ::de1(scale_autostop_triggered) 1
-			skale_tare
-			skale_timer_start
-		}
-
 		return
 	  }
 	}
@@ -1043,10 +1035,25 @@ proc append_live_data_to_espresso_chart {} {
 	  	set previous_de1_substate $::de1(substate)
 		#set ::substate_timers($previous_timer) [clock seconds]
 	  	set state_change_chart_value [expr {$state_change_chart_value * -1}]
+
+			skale_tare
+			skale_timer_start
+
+		if {$previous_de1_substate == 0 || $previous_de1_substate == 1 || $previous_de1_substate == 2 || $previous_de1_substate == 3} {
+			# tare the scale when the espresso starts and start the shot timer
+			skale_tare
+			skale_timer_start
+		} elseif {($previous_de1_substate == 4 || $previous_de1_substate == 5) && $::de1(substate) != 5} {
+			# shot is ended, so turn timer off
+			skale_timer_off
+		}
+
+
 	}
 
   }
 }  
+
 
 proc update_de1_state {statechar} {
 

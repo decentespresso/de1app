@@ -1318,7 +1318,7 @@ proc save_this_espresso_to_history {} {
 proc start_text_if_espresso_ready {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
-	if {$substate_txt == "ready"} {
+	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		return [translate "START"]
 	}
 	return [translate "WAIT"]
@@ -1328,7 +1328,7 @@ proc start_text_if_espresso_ready {} {
 proc restart_text_if_espresso_ready {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
-	if {$substate_txt == "ready"} {
+	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		return [translate "RESTART"]
 	}
 	return [translate "WAIT"]

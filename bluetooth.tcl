@@ -46,11 +46,10 @@ proc skale_timer_start {} {
 	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
-	set tare [binary decode hex "DD"]
-	set ::de1(scale_weight) 0
-	set ::de1(scale_weight_rate) 0
 
-	userdata_append "Skale: time start" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
+	set timeron [binary decode hex "DD"]
+	userdata_append "Skale : timer start" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $timeron]
+
 }
 
 proc skale_timer_stop {} {
@@ -729,7 +728,7 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							parse_binary_water_level $value arr2
-							msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
+							#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
 							set ::de1(water_level) $arr2(Level)
 						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]

@@ -1,5 +1,5 @@
 set ::skindebug 0
-set ::debugging 0
+set ::debugging 1
 
 puts "debugging: $::debugging"
 
@@ -729,6 +729,4 @@ add_de1_text "steam" 1870 1300 -justify right -anchor "nw" -text [translate "Vol
 add_de1_variable "steam" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
 
-
-##########################################################################################################################################################################################################################################################################
 
