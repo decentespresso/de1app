@@ -300,7 +300,7 @@ add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold 
 #add_de1_text "settings_4" 2280 980 -text [translate "Pair"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -width 200 -justify "center"
 
 # future clean steam feature
-add_de1_button "settings_4" {} 30 1206 638 1406
+add_de1_button "settings_4" {say [translate {clean}] $::settings(sound_button_in); start_cleaning}  30 1206 638 1406
 
 # future descale button
 add_de1_button "settings_4" {say [translate {descale}] $::settings(sound_button_in); start_decaling} 645 1206 1260 1406

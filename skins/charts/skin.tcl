@@ -1,4 +1,4 @@
-set ::skindebug 1
+set ::skindebug 0
 set ::debugging 0
 
 puts "debugging: $::debugging"
@@ -302,7 +302,7 @@ add_de1_button "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zo
 
 
 # the "go to sleep" button and the whole-screen button for coming back awake
-add_de1_button "saver descaling" {say [translate {awake}] $::settings(sound_button_in); start_idle} 0 0 2560 1600
+add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); start_idle} 0 0 2560 1600
 
 if {$::debugging == 1} {
 #	add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4 off_zoomed espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); start_sleep} 2014 1442 2284 1600

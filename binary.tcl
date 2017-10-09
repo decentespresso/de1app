@@ -1100,17 +1100,14 @@ proc update_de1_state {statechar} {
 	page_display_change $::de1(current_context) "water" 
   } elseif {$textstate == "Refill"} {
 	page_display_change $::de1(current_context) "tankempty" 
-  } elseif {$textstate == "TankEmpty"} {
-	page_display_change $::de1(current_context) "tankempty" 
   } elseif {$textstate == "SteamRinse"} {
 	page_display_change $::de1(current_context) "steamrinse" 
   } elseif {$textstate == "HotWaterRinse"} {
 	page_display_change $::de1(current_context) "hotwaterrinse" 
   } elseif {$textstate == "Descale"} {
-  	puts "descalings"
 	page_display_change $::de1(current_context) "descaling" 
-  } elseif {$textstate == "FillingTank"} {
-	page_display_change $::de1(current_context) "tankfilling" 
+  } elseif {$textstate == "Clean"} {
+	page_display_change $::de1(current_context) "cleaning" 
   }
 }
 

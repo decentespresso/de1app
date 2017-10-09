@@ -43,7 +43,7 @@ proc poll_de1_state {} {
 }
 
 proc skale_timer_start {} {
-	if {$de1(skale_device_handle) == 0} {
+	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
 	set tare [binary decode hex "DD"]
@@ -54,7 +54,7 @@ proc skale_timer_start {} {
 }
 
 proc skale_timer_stop {} {
-	if {$de1(skale_device_handle) == 0} {
+	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
 	set tare [binary decode hex "D1"]
@@ -65,7 +65,7 @@ proc skale_timer_stop {} {
 }
 
 proc skale_timer_off {} {
-	if {$de1(skale_device_handle) == 0} {
+	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
 	set tare [binary decode hex "D0"]
@@ -78,7 +78,7 @@ proc skale_timer_off {} {
 
 
 proc skale_tare {} {
-	if {$de1(skale_device_handle) == 0} {
+	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
 	set tare [binary decode hex "10"]
@@ -89,7 +89,7 @@ proc skale_tare {} {
 }
 
 proc skale_enable_weight_notifications {} {
-	if {$de1(skale_device_handle) == 0} {
+	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
 	userdata_append "enable Skale weight notifications" [list ble enable $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" "0" "0000EF81-0000-1000-8000-00805F9B34FB" "0"]
@@ -97,14 +97,14 @@ proc skale_enable_weight_notifications {} {
 
 
 proc skale_enable_button_notifications {} {
-	if {$de1(skale_device_handle) == 0} {
+	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
 	userdata_append "enable Skale button notifications" [list ble enable $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" "0" "0000EF82-0000-1000-8000-00805F9B34FB" "0"]
 }
 
 proc skale_enable_grams {} {
-	if {$de1(skale_device_handle) == 0} {
+	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
 	set grams [binary decode hex "03"]
@@ -112,7 +112,7 @@ proc skale_enable_grams {} {
 }
 
 proc skale_enable_lcd {} {
-	if {$de1(skale_device_handle) == 0} {
+	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
 	set screenon [binary decode hex "ED"]

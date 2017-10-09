@@ -232,9 +232,9 @@ array set ::de1_state {
     HotWaterRinse \x0F
     SteamRinse \x10
 	Refill \x11
-	TankEmpty \x90
-	FillingTank \x91
+    Clean \x12
 }
+
 
 array set ::de1_num_state {
   0 Sleep
@@ -255,8 +255,7 @@ array set ::de1_num_state {
   15 HotWaterRinse
   16 SteamRinse
   17 Refill
-  144 TankEmpty
-  145 FillingTank
+  18 Clean
 }
 
 
@@ -304,6 +303,21 @@ proc start_decaling {} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		#after 200 "update_de1_state $::de1_state(Descale)"
 		after 200 [list update_de1_state $::de1_state(Descale)]
+	}
+}
+
+
+proc start_cleaning {} {
+
+	msg "Tell DE1 to start CLEANING"
+	set ::de1(timer) 0
+	set ::de1(volume) 0
+	de1_send "descale" $::de1_state(Clean)
+
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
+		#after 200 "update_de1_state $::de1_state(Descale)"
+		after 200 [list update_de1_state $::de1_state(Clean)]
 	}
 }
 

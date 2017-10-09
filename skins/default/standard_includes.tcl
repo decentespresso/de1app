@@ -14,6 +14,7 @@ add_de1_page "tankempty" "[defaultskin_directory_graphics]/fill_tank.jpg"
 add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning_on.jpg"
 add_de1_page "message" "[defaultskin_directory_graphics]/settings_message.png"
 add_de1_page "descaling" "[defaultskin_directory_graphics]/descaling.jpg"
+add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning.jpg"
 
 set_de1_screen_saver_directory "[homedir]/saver"
 
