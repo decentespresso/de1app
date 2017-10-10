@@ -166,22 +166,33 @@ proc ::fields::format {spec endian args} {
 
 proc return_de1_packed_steam_hotwater_settings {} {
 
-	puts "xx $::settings(water_volume)"
+	#puts "xx $::settings(water_volume)"
 	set arr(SteamSettings) [expr {0 & 0x80 & 0x40}]
 	set arr(TargetSteamTemp) [convert_float_to_U8P0 $::settings(steam_temperature)]
 	set arr(TargetSteamLength) [convert_float_to_U8P0 $::settings(steam_timeout)]
 	set arr(TargetHotWaterTemp) [convert_float_to_U8P0 $::settings(water_temperature)]
 	set arr(TargetHotWaterVol) [convert_float_to_U8P0 $::settings(water_volume)]
-	set arr(TargetHotWaterLength) [convert_float_to_U8P0 $::settings(water_max_time)]
-	set arr(TargetEspressoVol) [convert_float_to_U8P0 $::settings(minimum_water_before_refill)]
+	set arr(TargetHotWaterLength) [convert_float_to_U8P0 $::settings(water_time_max)]
+	set arr(TargetEspressoVol) [convert_float_to_U8P0 $::settings(espresso_typical_volume)]
 	set arr(TargetGroupTemp) [convert_float_to_U16P8 $::settings(espresso_temperature)]
 	return [make_packed_steam_hotwater_settings arr]
 }
 
 
+proc return_de1_packed_waterlevel_settings {} {
+	set arr(Level) [convert_float_to_U16P8 0]
+	set arr(StartFillLevel) [convert_float_to_U16P8 $::settings(water_refill_point)]
+	return [make_packed_waterlevel_settings arr]
+}
+
 proc make_packed_steam_hotwater_settings {arrname} {
 	upvar $arrname arr
 	return [::fields::pack [hotwater_steam_settings_spec] arr]
+}
+
+proc make_packed_waterlevel_settings {arrname} {
+	upvar $arrname arr
+	return [::fields::pack [waterlevel_spec] arr]
 }
 
 proc version_spec {} {
@@ -794,7 +805,7 @@ proc get_timer {state substate} {
   return $timer
 }
 
-
+set ::previous_FrameNumber 0
 proc update_de1_shotvalue {packed} {
 
   if {[string length $packed] < 7} {
@@ -869,6 +880,14 @@ proc update_de1_shotvalue {packed} {
 		set timerkey "$::de1(state)-$::de1(substate)"
 		set ::timers($timerkey) $::de1(timer)
 	}
+
+
+	if {$::previous_FrameNumber != [ifexists ShotSample(FrameNumber)]} {
+		# draw a vertical line at each frame change
+		set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
+	}
+	set ::previous_FrameNumber [ifexists ShotSample(FrameNumber)]
+
 	#set previous_timer $::de1(timer)
 	#set ::de1(timer) [clock milliseconds]
 	#set delta [expr {$::de1(timer) - $previous_timer}]
@@ -942,180 +961,203 @@ proc append_live_data_to_espresso_chart {} {
     	return 
     }
 
-	global previous_de1_substate
-	global state_change_chart_value
+#@	global previous_de1_substate
+	#global state_change_chart_value
 
-  if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {
-	# to keep the espresso charts going
-	if {[millitimer] < 500} { 
-	  # need to make sure we don't append data from an earlier time, as that destroys the chart
-	  return
-	}
+  	if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {
+		# to keep the espresso charts going
+		#if {[millitimer] < 500} { 
+		  # need to make sure we don't append data from an earlier time, as that destroys the chart
+		 # return
+		#}
 
-	if {[espresso_elapsed length] > 0} {
-	  if {[espresso_elapsed range end end] > [expr {[millitimer]/1000.0}]} {
-		#puts "discarding chart data after timer reset"
-		clear_espresso_chart
-		return
-	  }
-	}
+		#if {[espresso_elapsed length] > 0} {
+		  #if {[espresso_elapsed range end end] > [expr {[millitimer]/1000.0}]} {
+			#puts "discarding chart data after timer reset"
+			#clear_espresso_chart
+			#return
+		  #}
+		#}
 
-	set millitime [millitimer]
+		set millitime [millitimer]
 
-	espresso_elapsed append [expr {$millitime/1000.0}]
-	espresso_pressure append $::de1(pressure)
-	espresso_flow append $::de1(flow)
-	espresso_flow_2x append [expr {2.0 * $::de1(flow)}]
+		if {$::de1(substate) == 4 || $::de1(substate) == 5} {
 
-	if {$::de1(scale_weight_rate) != ""} {
-		# if a bluetooth scale is recording shot weight, graph it along with the flow meterr 
-		espresso_flow_weight append [expr {10 * $::de1(scale_weight_rate)}]
-		espresso_flow_weight_2x append [expr {20 * $::de1(scale_weight_rate)}]
-	}
+			espresso_elapsed append [expr {$millitime/1000.0}]
+			espresso_pressure append $::de1(pressure)
+			espresso_flow append $::de1(flow)
+			espresso_flow_2x append [expr {2.0 * $::de1(flow)}]
 
-	#set elapsed_since_last [expr {$millitime - $::previous_espresso_flow_time}]
-	#puts "elapsed_since_last: $elapsed_since_last"
-	#set flow_delta [expr { 10 * ($::de1(flow)  - $::previous_espresso_flow) }]
-	set flow_delta [diff_flow_rate]
-	set negative_flow_delta_for_chart 0
-	if {$flow_delta > 0} {
+			if {$::de1(scale_weight_rate) != ""} {
+				# if a bluetooth scale is recording shot weight, graph it along with the flow meterr 
+				espresso_flow_weight append [expr {10 * $::de1(scale_weight_rate)}]
+				espresso_flow_weight_2x append [expr {20 * $::de1(scale_weight_rate)}]
+			}
 
-	    if {$::settings(enable_negative_flow_charts) == 1} {
-			# experimental chart from the top
-			set negative_flow_delta_for_chart [expr {6.0 - (10.0 * $flow_delta)}]
-			set negative_flow_delta_for_chart_2x [expr {12.0 - (10.0 * $flow_delta)}]
-			espresso_flow_delta_negative append $negative_flow_delta_for_chart
-			espresso_flow_delta_negative_2x append $negative_flow_delta_for_chart_2x
+			#set elapsed_since_last [expr {$millitime - $::previous_espresso_flow_time}]
+			#puts "elapsed_since_last: $elapsed_since_last"
+			#set flow_delta [expr { 10 * ($::de1(flow)  - $::previous_espresso_flow) }]
+			set flow_delta [diff_flow_rate]
+			set negative_flow_delta_for_chart 0
+			if {$flow_delta > 0} {
+
+			    if {$::settings(enable_negative_flow_charts) == 1} {
+					# experimental chart from the top
+					set negative_flow_delta_for_chart [expr {6.0 - (10.0 * $flow_delta)}]
+					set negative_flow_delta_for_chart_2x [expr {12.0 - (10.0 * $flow_delta)}]
+					espresso_flow_delta_negative append $negative_flow_delta_for_chart
+					espresso_flow_delta_negative_2x append $negative_flow_delta_for_chart_2x
+				}
+
+				espresso_flow_delta append 0
+				#puts "negative flow_delta: $flow_delta ($negative_flow_delta_for_chart)"
+			} else {
+				espresso_flow_delta append [expr {abs(10*$flow_delta)}]
+
+			    if {$::settings(enable_negative_flow_charts) == 1} {
+					espresso_flow_delta_negative append 6
+					espresso_flow_delta_negative_2x append 12
+					#puts "flow_delta: $flow_delta ($negative_flow_delta_for_chart)"
+				}
+			}
+
+			set pressure_delta [diff_pressure]
+			espresso_pressure_delta append [expr {abs ($pressure_delta) / $millitime}]
+
+			set ::previous_espresso_flow $::de1(flow)
+			set ::previous_espresso_pressure $::de1(pressure)
+
+			espresso_temperature_mix append [return_temperature_number $::de1(mix_temperature)]
+			espresso_temperature_basket append [return_temperature_number $::de1(head_temperature)]
+			espresso_state_change append $::state_change_chart_value
+
+			set ::previous_espresso_flow_time $millitime
+
+			# don't chart goals at zero, instead take them off the chart
+			if {$::de1(goal_flow) == 0} {
+				espresso_flow_goal append "-1"
+				espresso_flow_goal_2x append "-1"
+			} else {
+				espresso_flow_goal append $::de1(goal_flow)
+				espresso_flow_goal_2x append [expr {2.0 * $::de1(goal_flow)}]
+			}
+
+			# don't chart goals at zero, instead take them off the chart
+			if {$::de1(goal_pressure) == 0} {
+				espresso_pressure_goal append "-1"
+			} else {
+				espresso_pressure_goal append $::de1(goal_pressure)
+			}
+
+			espresso_temperature_goal append [return_temperature_number $::de1(goal_temperature)]
+
+
 		}
-
-		espresso_flow_delta append 0
-		#puts "negative flow_delta: $flow_delta ($negative_flow_delta_for_chart)"
-	} else {
-		espresso_flow_delta append [expr {abs(10*$flow_delta)}]
-
-	    if {$::settings(enable_negative_flow_charts) == 1} {
-			espresso_flow_delta_negative append 6
-			espresso_flow_delta_negative_2x append 12
-			#puts "flow_delta: $flow_delta ($negative_flow_delta_for_chart)"
-		}
-	}
-
-	set pressure_delta [diff_pressure]
-	espresso_pressure_delta append [expr {abs ($pressure_delta) / $millitime}]
-
-	set ::previous_espresso_flow $::de1(flow)
-	set ::previous_espresso_pressure $::de1(pressure)
-
-	espresso_temperature_mix append [return_temperature_number $::de1(mix_temperature)]
-	espresso_temperature_basket append [return_temperature_number $::de1(head_temperature)]
-	espresso_state_change append $state_change_chart_value
-
-	set ::previous_espresso_flow_time $millitime
-
-	# don't chart goals at zero, instead take them off the chart
-	if {$::de1(goal_flow) == 0} {
-		espresso_flow_goal append "-.1"
-		espresso_flow_goal_2x append "-.1"
-	} else {
-		espresso_flow_goal append $::de1(goal_flow)
-		espresso_flow_goal_2x append [expr {2.0 * $::de1(goal_flow)}]
-	}
-
-	# don't chart goals at zero, instead take them off the chart
-	if {$::de1(goal_pressure) == 0} {
-		espresso_pressure_goal append "-.1"
-	} else {
-		espresso_pressure_goal append $::de1(goal_pressure)
-	}
-
-	espresso_temperature_goal append [return_temperature_number $::de1(goal_temperature)]
-
-	# if the state changes flip the value negative
-	if {$previous_de1_substate != $::de1(substate)} {
-	  	set previous_de1_substate $::de1(substate)
-		#set ::substate_timers($previous_timer) [clock seconds]
-	  	set state_change_chart_value [expr {$state_change_chart_value * -1}]
-
-			skale_tare
-			skale_timer_start
-
-		if {$previous_de1_substate == 0 || $previous_de1_substate == 1 || $previous_de1_substate == 2 || $previous_de1_substate == 3} {
-			# tare the scale when the espresso starts and start the shot timer
-			skale_tare
-			skale_timer_start
-		} elseif {($previous_de1_substate == 4 || $previous_de1_substate == 5) && $::de1(substate) != 5} {
-			# shot is ended, so turn timer off
-			skale_timer_off
-		}
-
-
-	}
-
-  }
+  	}
 }  
 
 
+#set ::previous_textstate ""
 proc update_de1_state {statechar} {
 
-  set spec {
-	state char
-	substate char
-  }
+	set spec {
+		state char
+		substate char
+	}
 
-  ::fields::unpack $statechar $spec msg bigeendian
+	::fields::unpack $statechar $spec msg bigeendian
 
-  #msg "update_de1_state [array get msg]"
+	msg "update_de1_state [array get msg]"
 
-  if {$msg(state) != $::de1(state)} {
-	set textstate $::de1_num_state($msg(state))    
-	msg "state change: [array get msg] ($textstate)"
-	set ::de1(state) $msg(state)
-	clear_timers
-  }
+	set textstate [ifexists ::de1_num_state($msg(state))]
+	if {$msg(state) != $::de1(state)} {
+		msg "state change: $::de1(state) [array get msg] ($textstate)"
+		set ::de1(state) $msg(state)
+		clear_timers
+	}
 
-  if {[info exists msg(substate)] == 1} {
-	#if {$msg(substate) != 0} {
+
+  	if {[info exists msg(substate)] == 1} {
+		set current_de1_substate $msg(substate)
+		set ::previous_de1_substate [ifexists de1(substate)]
+
 	  # substate of zero means no information, discard
-	  if {$msg(substate) != $::de1(substate)} {
-		msg "substate change: [array get msg]"
-		set ::de1(substate) $msg(substate)
+	  	if {$msg(substate) != $::de1(substate)} {
+			msg "substate change: [array get msg]"
 
-		# if we are changing into preinfusion in espresso mode, reset the charts and the timer
-		if {$::de1(state) == $::de1_num_state_reversed(Espresso) && $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {
-		  clear_espresso_chart
+			if {$textstate == "Espresso"} {
+				set skale_retare_enable 1
+				if {$skale_retare_enable == 1 } {
+					# this logic is not yet working right
+					if {$current_de1_substate == 4 || ($current_de1_substate == 5 && $::previous_de1_substate != 4)} {
+						# tare the scale when the espresso starts and start the shot timer
+						#skale_tare
+						#skale_timer_off
+						if {$::timer_running == 0} {
+							clear_timers
+							skale_tare
+							skale_timer_start
+							#set ::timer_running 1
+						}
+					} elseif {$current_de1_substate != 5 || $current_de1_substate == 4} {
+						# shot is ended, so turn timer off
+						if {$::timer_running == 1} {
+							#set ::timer_running 0
+							skale_timer_stop
+							stop_timers
+						}
+					}
+				}
+			}
+
+			set ::de1(substate) $msg(substate)
+
+	  	}
+	  	set timerkey "$::de1(state)-$::de1(substate)"
+	  	set ::timers($timerkey) $::de1(timer)
+
+		#if {$current_de1_substate == 5 && $::previous_de1_substate == 4} {
+			# mark the point at which preinfusion transitions to pouring
+			#set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
+		#}
+		set ::previous_de1_substate $::de1(substate)
+
+		#set ::substate_timers($previous_timer) [clock seconds]
+		#set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
+
+
+	}
+
+	#set textstate $::de1_num_state($msg(state))
+	#if {$::previous_textstate != $::previous_textstate} {
+		if {$textstate == "Idle"} {
+			page_display_change $::de1(current_context) "off"
+		} elseif {$textstate == "GoingToSleep"} {
+			page_display_change $::de1(current_context) "sleep" 
+		} elseif {$textstate == "Sleep"} {
+			page_display_change $::de1(current_context) "saver" 
+		} elseif {$textstate == "Steam"} {
+			page_display_change $::de1(current_context) "steam" 
+		} elseif {$textstate == "Espresso"} {
+			page_display_change $::de1(current_context) "espresso" 
+		} elseif {$textstate == "HotWater"} {
+			page_display_change $::de1(current_context) "water" 
+		} elseif {$textstate == "Refill"} {
+			page_display_change $::de1(current_context) "tankempty" 
+		} elseif {$textstate == "SteamRinse"} {
+			page_display_change $::de1(current_context) "steamrinse" 
+		} elseif {$textstate == "HotWaterRinse"} {
+			page_display_change $::de1(current_context) "hotwaterrinse" 
+		} elseif {$textstate == "Descale"} {
+			page_display_change $::de1(current_context) "descaling" 
+		} elseif {$textstate == "Clean"} {
+			page_display_change $::de1(current_context) "cleaning" 
 		}
-
-	  }
-	  set timerkey "$::de1(state)-$::de1(substate)"
-	  set ::timers($timerkey) $::de1(timer)
+	#} else {
+	#	update
 	#}
-  }
 
-  set textstate $::de1_num_state($msg(state))
-
-  if {$textstate == "Idle"} {
-	page_display_change $::de1(current_context) "off"
-  } elseif {$textstate == "GoingToSleep"} {
-	page_display_change $::de1(current_context) "sleep" 
-  } elseif {$textstate == "Sleep"} {
-	page_display_change $::de1(current_context) "saver" 
-  } elseif {$textstate == "Steam"} {
-	page_display_change $::de1(current_context) "steam" 
-  } elseif {$textstate == "Espresso"} {
-	page_display_change $::de1(current_context) "espresso" 
-  } elseif {$textstate == "HotWater"} {
-	page_display_change $::de1(current_context) "water" 
-  } elseif {$textstate == "Refill"} {
-	page_display_change $::de1(current_context) "tankempty" 
-  } elseif {$textstate == "SteamRinse"} {
-	page_display_change $::de1(current_context) "steamrinse" 
-  } elseif {$textstate == "HotWaterRinse"} {
-	page_display_change $::de1(current_context) "hotwaterrinse" 
-  } elseif {$textstate == "Descale"} {
-	page_display_change $::de1(current_context) "descaling" 
-  } elseif {$textstate == "Clean"} {
-	page_display_change $::de1(current_context) "cleaning" 
-  }
+	#set ::previous_textstate $textstate
 }
 
 set ble_spec 1.0

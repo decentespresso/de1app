@@ -670,7 +670,7 @@ proc de1_connected_state { {hide_delay 0} } {
 		#return [translate "Disconnected"]
 	}
 
-	if {$since_last_ping < 2} {
+	if {$since_last_ping < 5} {
 		#borg spinner off
 		if {$elapsed > $hide_delay && $hide_delay != 0} {
 			# only show the "connected" message for 5 seconds
@@ -731,14 +731,50 @@ proc update_onscreen_variables { {state {}} } {
 	#}
 
 	if {$::android == 0} {
-		if {[expr {int(rand() * 100)}] > 70} {
-			incr ::de1(substate)
-	        set timerkey "$::de1(state)-$::de1(substate)"
-	        set ::timers($timerkey) [clock milliseconds]
+
+		if {[expr {int(rand() * 100)}] > 92} {
+			set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
 		}
-		if {$::de1(substate) > 6} {
-			set ::de1(substate) 0
+
+		if {$::de1(state) == 2} {
+			# idle
+			if {$::de1(substate) == 0} {
+				if {[expr {int(rand() * 100)}] > 92} {
+					# occasionally set the de1 to heating mode
+					#set ::de1(substate) 1
+					update_de1_state "$::de1_state(Idle)\x1"
+				}
+			} else {
+				if {[expr {int(rand() * 100)}] > 90} {
+					# occasionally set the de1 to heating mode
+					#set ::de1(substate) 0
+					update_de1_state "$::de1_state(Idle)\x0"
+				}
+			}
+		} elseif {$::de1(state) == 4} {
+			# espresso
+			if {$::de1(substate) == 0} {
+			} elseif {$::de1(substate) < 4} {
+				if {[expr {int(rand() * 100)}] > 90} {
+					# occasionally set the de1 to heating mode
+					#set ::de1(substate) 4
+					update_de1_state "$::de1_state(Espresso)\x4"
+				}
+			} elseif {$::de1(substate) == 4} {
+				if {[expr {int(rand() * 100)}] > 99} {
+					# occasionally set the de1 to heating mode
+					#set ::de1(substate) 5
+					update_de1_state "$::de1_state(Espresso)\x5"
+				}
+			} 
 		}
+
+        set timerkey "$::de1(state)-$::de1(substate)"
+        set ::timers($timerkey) [clock milliseconds]
+
+		#if {$::de1(substate) > 6} {
+		#	set ::de1(substate) 0
+		#}
 
 		if {$::de1(state) == 4} {
 			append_live_data_to_espresso_chart

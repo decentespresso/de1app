@@ -5,6 +5,7 @@ package provide de1_vars 1.0
 # raw data from the DE1
 
 proc clear_espresso_chart {} {
+	msg "clear_espresso_chart"
 	espresso_elapsed length 0
 	espresso_pressure length 0
 	espresso_flow length 0
@@ -36,9 +37,9 @@ proc clear_espresso_chart {} {
 	espresso_temperature_mix append [expr {$::settings(espresso_temperature) - 5}]
 	espresso_temperature_basket append [expr {$::settings(espresso_temperature) - 5}]
 	espresso_state_change append 0
-	espresso_pressure_goal append 0
-	espresso_flow_goal append 0
-	espresso_flow_goal_2x append 0
+	espresso_pressure_goal append -1
+	espresso_flow_goal append -1
+	espresso_flow_goal_2x append -1
 	espresso_temperature_goal append [expr {$::settings(espresso_temperature)}]
 
 	clear_timers
@@ -140,20 +141,34 @@ proc format_alarm_time { in } {
 	}
 }
 
+set ::timer_running 0
+
+proc stop_timers {} {
+	msg "stop_timers"
+	set ::timer_running 0
+}
+
 proc clear_timers {} {
+	msg "clear_timers"
 	global start_timer
 	global start_millitimer
 	set start_timer [clock seconds]
 	set start_millitimer [clock milliseconds]
 	unset -nocomplain ::timers
 	unset -nocomplain ::substate_timers
+	set ::timer_running 1
 	#puts "clearing timers"
 }
 
 # amount of time that we've been on this page
+set ::timer [clock seconds]
 proc timer {} {
 	global start_timer
-	return [expr {[clock seconds] - $start_timer}]
+	if {$::timer_running == 1} {
+		set ::timer [clock seconds]
+	}	
+	#return $timer
+	return [expr {$::timer - $start_timer}]
 }
 
 proc millitimer {} {
@@ -1284,6 +1299,11 @@ proc de1plus {} {
 	}
 	return $x
 
+}
+
+proc save_espresso_rating_to_history {} {
+	unset -nocomplain ::settings(history_saved)
+	save_this_espresso_to_history
 }
 
 proc save_this_espresso_to_history {} {

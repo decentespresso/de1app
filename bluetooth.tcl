@@ -52,7 +52,10 @@ proc skale_timer_start {} {
 
 }
 
+
+
 proc skale_timer_stop {} {
+
 	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
@@ -64,6 +67,7 @@ proc skale_timer_stop {} {
 }
 
 proc skale_timer_off {} {
+
 	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
@@ -71,7 +75,7 @@ proc skale_timer_off {} {
 	set ::de1(scale_weight) 0
 	set ::de1(scale_weight_rate) 0
 
-	userdata_append "Skale: timer stop" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
+	userdata_append "Skale: timer off" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
 }
 
 
@@ -148,7 +152,7 @@ proc de1_disable_state_notifications {} {
 	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
 }
 
-# water level 
+# water level notifications
 proc de1_enable_water_level_notifications {} {
 	#return
 	userdata_append "enable de1 water level notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A011" $::de1(cinstance)]
@@ -157,6 +161,21 @@ proc de1_enable_water_level_notifications {} {
 proc de1_disable_water_level_notifications {} {
 	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A011" $::de1(cinstance)]
 }
+
+proc de1_send_waterlevel_settings {} {
+	#puts ">>>> Sending BLE hot water/steam settings"
+	set data [return_de1_packed_waterlevel_settings]
+	parse_binary_water_level $data arr2
+	userdata_append "Set water level settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_11) $::de1(cinstance) $data]
+	#puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+	
+	# for testing parser/deparser
+	
+	#msg "send de1_send_steam_hotwater_settings of [string length $data] bytes: $data  : [array get arr2]"
+
+}
+
+
 
 proc run_next_userdata_cmd {} {
 	if {$::android == 1} {
@@ -342,12 +361,6 @@ proc save_settings_to_de1 {} {
 }
 
 proc de1_send_steam_hotwater_settings {} {
-#return
-
-	#if {$::de1(device_handle) == "0"} {
-	#	msg "error: de1 not connected"
-	#	return
-	#}
 
 
 	#puts ">>>> Sending BLE hot water/steam settings"
@@ -630,13 +643,13 @@ proc de1_ble_handler { event data } {
 						#msg "connected to de1 with handle $handle"
 						
 						de1_enable_water_level_notifications
-
 						read_de1_version
 						de1_send_steam_hotwater_settings					
 						de1_send_shot_frames
+						de1_send_waterlevel_settings
 						de1_enable_state_notifications
-						start_idle
 						de1_enable_temp_notifications
+						start_idle
 						
 					} elseif {$::de1(skale_device_handle) == 0 && $address == $::settings(skale_bluetooth_address)} {
 						msg "skale connected $event $data"
@@ -728,7 +741,7 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							parse_binary_water_level $value arr2
-							#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
+							msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
 							set ::de1(water_level) $arr2(Level)
 						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
@@ -831,6 +844,9 @@ proc de1_ble_handler { event data } {
 				    	if {$cuuid == $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3				    		
 					    	msg "Confirmed shot frame written to DE1: '$value' : [array get arr3]"
+				    	} elseif {$cuuid == $::de1(cuuid_11)} {
+							parse_binary_water_level $value arr2
+							msg "water level write confirmed [string length $value] bytes: $value  : [array get arr2]"
 						} elseif {$cuuid eq "0000EF80-0000-1000-8000-00805F9B34FB"} {
 							set tare [binary decode hex "10"]
 							set grams [binary decode hex "03"]

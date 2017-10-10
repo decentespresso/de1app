@@ -28,6 +28,7 @@ array set ::de1 {
 	cuuid_0c "0000a00c-0000-1000-8000-00805f9b34fb"
 	cuuid_0f "0000a00f-0000-1000-8000-00805f9b34fb"
 	cuuid_10 "0000A010-0000-1000-8000-00805F9B34FB"
+	cuuid_11 "0000A011-0000-1000-8000-00805F9B34FB"
 	cinstance 0
 	pressure 0
 	head_temperature 0
@@ -71,7 +72,6 @@ array set ::de1 {
 	water_min_temperature 20
 	water_max_temperature 95
 	water_time_min 1
-	water_time_max 60
 	steam_time_min 1
 	steam_time_max 120
 	last_ping 0
@@ -117,12 +117,14 @@ array set ::settings {
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"
+	water_refill_point 2
 	flying 0
 	bean_notes {}
 	espresso_notes {}
+	water_time_max 60
 	grinder_dose_weight 0
 	drink_weight 0
-	espresso_enjoyment 50
+	espresso_enjoyment 0
 	drink_tds 0
 	drink_ey 0
 	scheduler_enable 0
@@ -146,7 +148,6 @@ array set ::settings {
 	water_max_time 10
 	water_max_vol 500
 	water_temperature 80
-	minimum_water_before_refill 300
 	final_desired_shot_weight 36
 	espresso_max_time 42
 	skale_square_button_starts_espresso 0
@@ -160,6 +161,7 @@ array set ::settings {
 	flow_profile_hold 2
 	flow_profile_decline 1.2
 	flow_profile_hold_time 8
+	espresso_typical_volume 200
 	enable_negative_flow_charts 0
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
@@ -363,27 +365,31 @@ proc start_espresso {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 
+	############
 	# clear any description of the previous espresso
 	set ::settings(scentone) ""
+	set ::settings(espresso_enjoyment) 0
 	set ::settings(espresso_notes) ""
 	set ::settings(drink_tds) 0
 	set ::settings(drink_weight) 0
 	set ::settings(drink_ey) 0
-
-	clear_espresso_chart
+	############
 
 	de1_send "make espresso" $::de1_state(Espresso)
+
+	clear_espresso_chart
 
 	if {$::de1(skale_device_handle) != 0} {
 		# this variable prevents the stop trigger from happening until the Tare has succeeded.
 		set ::de1(scale_autostop_triggered) 1
 		skale_tare
 		skale_timer_off
+		#skale_timer_start
 	}
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
-		after 200 [list update_de1_state $::de1_state(Espresso)]
+		after 200 [list update_de1_state "$::de1_state(Espresso)\x1"]
 	}
 
 	#run_next_userdata_cmd

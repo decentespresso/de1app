@@ -48,7 +48,7 @@ add_de1_button "scentone_1" {say [translate {Scent One}] $::settings(sound_butto
 add_de1_button "scentone_1" {say [translate {reset}] $::settings(sound_button_in); set ::settings(scentone) "" } 1505 1406 2015 1600
 add_de1_button "scentone_1" {say [translate {save}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off } 2016 1406 2560 1600
 
-add_de1_button "describe_espresso describe_espresso2" {say [translate {save}] $::settings(sound_button_in); save_settings; save_this_espresso_to_history; 
+add_de1_button "describe_espresso describe_espresso2" {say [translate {save}] $::settings(sound_button_in); save_settings; save_espresso_rating_to_history; 
 	if {$::settings(has_scale) != $::settings_backup(has_scale) || $::settings(has_refractometer) != $::settings_backup(has_refractometer) } {
 		.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 		set_next_page off message; page_show message

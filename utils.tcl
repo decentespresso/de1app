@@ -241,9 +241,10 @@ proc setup_environment {} {
             #set helvetica_font [sdltk addfont "fonts/cwTeXQHei-Bold.ttf"]
             
             set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+            #NotoSansCJKjp-Bold
             #puts "helvetica_font: $helvetica_font"
             #set helvetica_font [sdltk addfont "fonts/wts11.ttf"]
-            set helvetica_bold_font $helvetica_font
+            set helvetica_bold_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Bold.otf"] 0]
             #puts "loading asian otf font"
             #set fontm [expr {($fontm * -)}]
             #set fontm 3
