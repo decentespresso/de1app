@@ -42,9 +42,7 @@ proc clear_espresso_chart {} {
 	espresso_flow_goal_2x append -1
 	espresso_temperature_goal append [expr {$::settings(espresso_temperature)}]
 
-	clear_timers
-
-	update
+	#update
 }	
 
 
@@ -141,39 +139,134 @@ proc format_alarm_time { in } {
 	}
 }
 
-set ::timer_running 0
+proc start_timer_preinfusion {} {
+	set ::timers(preinfusion_start) [clock milliseconds]
+}
+
+proc stop_timer_preinfusion {} {
+	set ::timers(preinfusion_stop) [clock milliseconds]
+
+}
+
+proc start_timer_pour {} {
+	set ::timers(pour_start) [clock milliseconds]
+}
+
+proc stop_timer_pour {} {
+	set ::timers(pour_stop) [clock milliseconds]
+
+}
 
 proc stop_timers {} {
-	msg "stop_timers"
+	#msg "stop_timers"
 	set ::timer_running 0
+	set ::timers(stop) [clock milliseconds]
+	#stop_timer_preinfusion
+	#stop_timer_pour
+	#set ::substate_timers(stop) [clock milliseconds]
+}
+
+proc start_timers {} {
+	#msg "stop_timers"
+	clear_timers
+	set ::timer_running 1
+	set ::timers(start) [clock milliseconds]
+	#set ::timers(millistart) [clock milliseconds]
+	#set ::substate_timers(millistart) [clock milliseconds]
 }
 
 proc clear_timers {} {
-	msg "clear_timers"
-	global start_timer
-	global start_millitimer
-	set start_timer [clock seconds]
-	set start_millitimer [clock milliseconds]
+	#msg "clear_timers"
+	#global start_timer
+	#global start_millitimer
+	#set ::start_timer [clock seconds]
+	#set ::start_millitimer [clock milliseconds]
+	#set now [clock seconds]
+
 	unset -nocomplain ::timers
+	set ::timers(start) 0
+	#set ::timers(millistart) 0
+	set ::timers(stop) 0
+
 	unset -nocomplain ::substate_timers
-	set ::timer_running 1
+	set ::substate_timers(start) 0
+	set ::substate_timers(stop) 0
+
+	set ::timers(preinfusion_start) 0
+	set ::timers(preinfusion_stop) 0
+
+	set ::timers(pour_start) 0
+	set ::timers(pour_stop) 0
+
+	set ::timer_running 0
 	#puts "clearing timers"
 }
 
+clear_timers
+#stop_timers
+
+
 # amount of time that we've been on this page
-set ::timer [clock seconds]
+#set ::timer [clock seconds]
 proc timer {} {
-	global start_timer
-	if {$::timer_running == 1} {
-		set ::timer [clock seconds]
-	}	
+	#global start_timer
+	#if {$::timer_running == 1} {
+	#	set ::timer [clock seconds]
+	#}	
 	#return $timer
-	return [expr {$::timer - $start_timer}]
+	return [expr {([clock milliseconds] - $::timers(start) )/1000}]
 }
 
 proc millitimer {} {
-	global start_millitimer
-	return [expr {[clock milliseconds] - $start_millitimer}]
+	return [expr {([clock milliseconds] - $::timers(start))}]
+	#global start_millitimer
+	#return [expr {[clock milliseconds] - $start_millitimer}]
+}
+
+proc elapsed_timer {} {
+	if {$::timers(start) == 0} {
+		return 0
+	} elseif {$::timers(stop) == 0} {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(start))/1000}]
+	} else {
+		# stop occured, so show that.
+		return [expr {($::timers(stop) - $::timers(start))/1000}]
+	}
+}
+
+proc preinfusion_timer {} {
+	if {$::timers(preinfusion_start) == 0} {
+		return 0
+	} elseif {$::timers(preinfusion_stop) == 0} {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(preinfusion_start))/1000}]
+	} else {
+		# stop occured, so show that.
+		return [expr {($::timers(preinfusion_stop) - $::timers(preinfusion_start))/1000}]
+	}
+}
+
+
+proc pour_timer {} {
+	if {$::timers(pour_start) == 0} {
+		return 0
+	} elseif {$::timers(pour_stop) == 0} {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(pour_start))/1000}]
+	} else {
+		# stop occured, so show that.
+		return [expr {($::timers(pour_stop) - $::timers(pour_start))/1000}]
+	}
+}
+
+proc done_timer {} {
+	if {$::timers(stop) == 0} {
+		return 0
+	} else {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(stop))/1000}]
+	}
 }
 
 proc event_timer_calculate {state destination_state previous_states} {
@@ -198,26 +291,28 @@ proc event_timer_calculate {state destination_state previous_states} {
 	return $elapsed
 }
 
-proc preinfusion_timer {} {
-	return [event_timer_calculate "Espresso" "preinfusion" {"stabilising" "final heating" "heating"} ]
-}
+#proc preinfusion_timer {} {
+#	return [event_timer_calculate "Espresso" "preinfusion" {"stabilising" "final heating" "heating"} ]
+#}
 
 
-proc pour_timer {} {
-	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "stabilising" "final heating" "heating"} ]
-}
+#proc pour_timer {} {
+#	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "stabilising" "final heating" "heating"} ]
+#}
 
-proc done_timer {} {
-	return [event_timer_calculate "Idle" "ready" {"pouring" "preinfusion" "stabilising" "final heating" "heating"} ]
-}
+#proc done_timer {} {
+#	return [event_timer_calculate "Idle" "ready" {"pouring" "preinfusion" "stabilising" "final heating" "heating"} ]
+#}
 
 
 proc steam_timer {} {
-	return [event_timer_calculate "Steam" "pouring" {"stabilising" "final heating"} ]
+	return [pour_timer]
+	#return [event_timer_calculate "Steam" "pouring" {"stabilising" "final heating"} ]
 }
 
 proc water_timer {} {
-	return [event_timer_calculate "HotWater" "pouring" {"stabilising" "final heating"} ]
+	return [pour_timer]
+	#return [event_timer_calculate "HotWater" "pouring" {"stabilising" "final heating"} ]
 }
 
 proc waterflow {} {
@@ -476,7 +571,7 @@ proc waterflow_text {} {
 
 proc watervolume_text {} {
 	if {$::android == 0} {
-		return [return_flow_measurement [expr {3 - (rand() * 20)}]]
+		return [return_liquid_measurement [expr {3 - (rand() * 20)}]]
 	}
 
 	return [return_liquid_measurement $::de1(volume)] 

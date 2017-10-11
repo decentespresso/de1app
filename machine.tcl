@@ -130,7 +130,7 @@ array set ::settings {
 	scheduler_enable 0
 	scheduler_wake 3600
 	scheduler_sleep 6000
-	timer_interval 500
+	timer_interval 1000
 	screen_saver_delay 60
 	screen_saver_change_interval 10
 	enable_fluid_ounces 0
@@ -304,7 +304,7 @@ proc start_decaling {} {
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		#after 200 "update_de1_state $::de1_state(Descale)"
-		after 200 [list update_de1_state $::de1_state(Descale)]
+		after 200 [list update_de1_state "$::de1_state(Descale)\x5"]
 	}
 }
 
@@ -319,7 +319,7 @@ proc start_cleaning {} {
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		#after 200 "update_de1_state $::de1_state(Descale)"
-		after 200 [list update_de1_state $::de1_state(Clean)]
+		after 200 [list update_de1_state "$::de1_state(Clean)\x5"]
 	}
 }
 
@@ -331,7 +331,7 @@ proc start_hot_water_rinse {} {
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
-		after 200 [list update_de1_state $::de1_state(HotWaterRinse)]
+		after 200 [list update_de1_state "$::de1_state(HotWaterRinse)\x5"]
 	}
 }
 
@@ -343,7 +343,7 @@ proc start_steam_rinse {} {
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
-		after 200 [list update_de1_state $::de1_state(SteamRinse)]
+		after 200 [list update_de1_state "$::de1_state(SteamRinse)\x5"]
 	}
 }
 
@@ -355,7 +355,7 @@ proc start_steam {} {
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
-		after 200 [list update_de1_state $::de1_state(Steam)]
+		after 200 [list update_de1_state "$::de1_state(Steam)\x5"]
 	}
 }
 
@@ -378,6 +378,8 @@ proc start_espresso {} {
 	de1_send "make espresso" $::de1_state(Espresso)
 
 	clear_espresso_chart
+	clear_timers
+	#start_timers
 
 	if {$::de1(skale_device_handle) != 0} {
 		# this variable prevents the stop trigger from happening until the Tare has succeeded.
@@ -403,7 +405,7 @@ proc start_water {} {
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
-		after 200 [list update_de1_state $::de1_state(HotWater)]
+		after 200 [list update_de1_state "$::de1_state(HotWater)\x5"]
 	}
 }
 
@@ -420,7 +422,7 @@ proc start_idle {} {
 	de1_send "go idle" $::de1_state(Idle)
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
-		after 200 [list update_de1_state $::de1_state(Idle)]
+		after 200 [list update_de1_state "$::de1_state(Idle)\x0"]
 	}
 
 	#msg "sensors: [borg sensor list]"
@@ -433,8 +435,8 @@ proc start_sleep {} {
 	
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
-		after 200 [list update_de1_state $::de1_state(GoingToSleep)]
-		after 800 [list update_de1_state $::de1_state(Sleep)]
+		after 200 [list update_de1_state "$::de1_state(GoingToSleep)\x0"]
+		after 800 [list update_de1_state "$::de1_state(Sleep)\x0"]
 	}
 }
 

@@ -309,9 +309,9 @@ proc setup_environment {} {
             }
         }
 
-        if {[de1plus]} {
-            set ::settings(timer_interval) 250
-        }
+        #if {[de1plus]} {
+        #    set ::settings(timer_interval) 1000
+        #}
 
         # preload the speaking engine
         borg speak { }
@@ -322,6 +322,7 @@ proc setup_environment {} {
 
     } else {
 
+        expr {srand([clock milliseconds])}
 
         set screen_size_width 1920
         set screen_size_height 1200

@@ -1073,59 +1073,65 @@ proc update_de1_state {statechar} {
 	if {$msg(state) != $::de1(state)} {
 		msg "state change: $::de1(state) [array get msg] ($textstate)"
 		set ::de1(state) $msg(state)
-		clear_timers
 	}
 
 
   	if {[info exists msg(substate)] == 1} {
 		set current_de1_substate $msg(substate)
-		set ::previous_de1_substate [ifexists de1(substate)]
+		#set ::previous_de1_substate [ifexists de1(substate)]
 
 	  # substate of zero means no information, discard
 	  	if {$msg(substate) != $::de1(substate)} {
-			msg "substate change: [array get msg]"
+			#msg "substate change: [array get msg]"
 
-			if {$textstate == "Espresso"} {
-				set skale_retare_enable 1
-				if {$skale_retare_enable == 1 } {
-					# this logic is not yet working right
-					if {$current_de1_substate == 4 || ($current_de1_substate == 5 && $::previous_de1_substate != 4)} {
-						# tare the scale when the espresso starts and start the shot timer
-						#skale_tare
-						#skale_timer_off
-						if {$::timer_running == 0} {
-							clear_timers
-							skale_tare
-							skale_timer_start
-							#set ::timer_running 1
-						}
-					} elseif {$current_de1_substate != 5 || $current_de1_substate == 4} {
-						# shot is ended, so turn timer off
-						if {$::timer_running == 1} {
-							#set ::timer_running 0
-							skale_timer_stop
-							stop_timers
-						}
+			#if {$textstate == "Espresso"} {
+
+				if {$current_de1_substate == 4 || ($current_de1_substate == 5 && $::previous_de1_substate != 4)} {
+					# tare the scale when the espresso starts and start the shot timer
+					#skale_tare
+					#skale_timer_off
+					if {$::timer_running == 0} {
+						#start_timers
+						skale_tare
+						skale_timer_start
+						start_timers
+						#set ::timer_running 1
+					}
+					
+				} elseif {$current_de1_substate != 5 || $current_de1_substate == 4} {
+					# shot is ended, so turn timer off
+					if {$::timer_running == 1} {
+						#set ::timer_running 0
+						skale_timer_stop
+						stop_timers
 					}
 				}
-			}
+			#}
 
 			set ::de1(substate) $msg(substate)
 
 	  	}
-	  	set timerkey "$::de1(state)-$::de1(substate)"
-	  	set ::timers($timerkey) $::de1(timer)
+	  	#set state_timerkey "$::de1(state)-$::de1(substate)"
+	  	#set substate_timerkey "$::de1(state)-$::de1(substate)"
+	  	#set now [clock seconds]
+	  	#set ::timers($state_timerkey) $now
+	  	#set ::substate_timers($timerkey) $now
 
-		#if {$current_de1_substate == 5 && $::previous_de1_substate == 4} {
-			# mark the point at which preinfusion transitions to pouring
-			#set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
-		#}
+		if {$::previous_de1_substate == 4} {
+			stop_timer_preinfusion
+		} elseif {$::previous_de1_substate == 5} {
+			stop_timer_pour
+		}
+		
+		if {$current_de1_substate == 4} {
+			start_timer_preinfusion
+		} elseif {$current_de1_substate == 5} {
+			start_timer_pour
+		}
+		
 		set ::previous_de1_substate $::de1(substate)
-
 		#set ::substate_timers($previous_timer) [clock seconds]
 		#set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
-
-
 	}
 
 	#set textstate $::de1_num_state($msg(state))

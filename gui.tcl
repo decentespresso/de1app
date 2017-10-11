@@ -742,12 +742,11 @@ proc update_onscreen_variables { {state {}} } {
 				if {[expr {int(rand() * 100)}] > 92} {
 					# occasionally set the de1 to heating mode
 					#set ::de1(substate) 1
-					update_de1_state "$::de1_state(Idle)\x1"
+					#update_de1_state "$::de1_state(Idle)\x1"
 				}
 			} else {
 				if {[expr {int(rand() * 100)}] > 90} {
 					# occasionally set the de1 to heating mode
-					#set ::de1(substate) 0
 					update_de1_state "$::de1_state(Idle)\x0"
 				}
 			}
@@ -755,13 +754,13 @@ proc update_onscreen_variables { {state {}} } {
 			# espresso
 			if {$::de1(substate) == 0} {
 			} elseif {$::de1(substate) < 4} {
-				if {[expr {int(rand() * 100)}] > 90} {
+				if {[expr {int(rand() * 100)}] > 80} {
 					# occasionally set the de1 to heating mode
 					#set ::de1(substate) 4
 					update_de1_state "$::de1_state(Espresso)\x4"
 				}
 			} elseif {$::de1(substate) == 4} {
-				if {[expr {int(rand() * 100)}] > 99} {
+				if {[expr {int(rand() * 100)}] > 80} {
 					# occasionally set the de1 to heating mode
 					#set ::de1(substate) 5
 					update_de1_state "$::de1_state(Espresso)\x5"
@@ -780,6 +779,14 @@ proc update_onscreen_variables { {state {}} } {
 			append_live_data_to_espresso_chart
 		}
 	}
+
+	# update the timers
+  	set state_timerkey "$::de1(state)"
+  	set substate_timerkey "$::de1(state)-$::de1(substate)"
+  	set now [clock seconds]
+  	set ::timers($state_timerkey) $now
+  	set ::substate_timers($timerkey) $now
+
 
 	#set x [clock milliseconds]
 	global variable_labels
@@ -1235,7 +1242,8 @@ proc ui_startup {} {
 	setup_images_for_first_page
 	setup_images_for_other_pages
 
-	after $::settings(timer_interval) update_onscreen_variables
+	#after $::settings(timer_interval) 
+	update_onscreen_variables
 
 	check_if_should_start_screen_saver
 	if {$::android == 1} {
