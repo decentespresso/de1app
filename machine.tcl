@@ -79,7 +79,6 @@ array set ::de1 {
 }
 
 set ::de1(last_ping) [clock seconds]
-set ::de1_bluetooth_list {}
 
 if {[de1plus]} { 
 	set ::de1(maxpressure) 12 
@@ -128,6 +127,7 @@ array set ::settings {
 	drink_tds 0
 	drink_ey 0
 	scheduler_enable 0
+	max_ble_connect_attempts 3
 	scheduler_wake 3600
 	scheduler_sleep 6000
 	timer_interval 1000
@@ -173,7 +173,7 @@ array set ::settings {
 	espresso_step_3 pressure
 	espresso_pressure 9.2
 	app_brightness 100
-	saver_brightness 30
+	saver_brightness 0
 	accelerometer_angle 45
 	goal_is_basket_temp 1
 	flight_mode_angle 30
@@ -214,6 +214,10 @@ array set ::settings {
 	preheat_temperature 95
 	water_volume 50
 }
+
+# default the listbox to the currently set ble addresses
+set ::de1_bluetooth_list $settings(bluetooth_address)
+set ::skale_bluetooth_list $settings(skale_bluetooth_address)
 
 array set ::de1_state {
 	Sleep \x00
@@ -299,7 +303,7 @@ proc start_decaling {} {
 	msg "Tell DE1 to start DESCALING"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send "descale" $::de1_state(Descale)
+	de1_send_state "descale" $::de1_state(Descale)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -314,7 +318,7 @@ proc start_cleaning {} {
 	msg "Tell DE1 to start CLEANING"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send "descale" $::de1_state(Clean)
+	de1_send_state "descale" $::de1_state(Clean)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -327,7 +331,7 @@ proc start_hot_water_rinse {} {
 	msg "Tell DE1 to start HOT WATER RINSE"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send "hot water rinse" $::de1_state(HotWaterRinse)
+	de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -339,7 +343,7 @@ proc start_steam_rinse {} {
 	msg "Tell DE1 to start STEAM RINSE"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send "steam rinse" $::de1_state(SteamRinse)
+	de1_send_state "steam rinse" $::de1_state(SteamRinse)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -351,7 +355,7 @@ proc start_steam {} {
 	msg "Tell DE1 to start making STEAM"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send "make steam" $::de1_state(Steam)
+	de1_send_state "make steam" $::de1_state(Steam)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -375,7 +379,7 @@ proc start_espresso {} {
 	set ::settings(drink_ey) 0
 	############
 
-	de1_send "make espresso" $::de1_state(Espresso)
+	de1_send_state "make espresso" $::de1_state(Espresso)
 
 	clear_espresso_chart
 	clear_timers
@@ -401,7 +405,7 @@ proc start_water {} {
 	msg "Tell DE1 to start making HOT WATER"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send "make hot water" $::de1_state(HotWater)
+	de1_send_state "make hot water" $::de1_state(HotWater)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
@@ -412,6 +416,19 @@ proc start_water {} {
 proc start_idle {} {
 	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
+
+	if {$::de1(device_handle) == 0} {
+		update_de1_state "$::de1_state(Idle)\x0"
+		ble_connect_to_de1
+		ble_connect_to_skale
+		return
+	}
+
+	if {$::de1(skale_device_handle) == 0} {
+		ble_connect_to_skale
+	}
+
+
 	# save the UI settings whenever we have done an operation
 	#save_settings
 
@@ -419,7 +436,7 @@ proc start_idle {} {
 	#set ::de1(substate) 6
 
 	set ::settings(flying) 0
-	de1_send "go idle" $::de1_state(Idle)
+	de1_send_state "go idle" $::de1_state(Idle)
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 [list update_de1_state "$::de1_state(Idle)\x0"]
@@ -431,7 +448,7 @@ proc start_idle {} {
 
 proc start_sleep {} {
 	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
-	de1_send "go to sleep" $::de1_state(Sleep)
+	de1_send_state "go to sleep" $::de1_state(Sleep)
 	
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}

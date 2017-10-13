@@ -197,12 +197,12 @@ proc make_packed_waterlevel_settings {arrname} {
 
 proc version_spec {} {
 	set spec {
-		APIVersion {Short {} {} {unsigned} {$val / 1.0}}
-		BLEFWMajor {Short {} {} {unsigned} {$val / 1.0}}
-		BLEFWMinor {Short {} {} {unsigned} {$val / 1.0}}
-		P0BLECommits {Short {} {} {unsigned} {$val / 1.0}}
-		BLESha {char {} {} {unsigned} {$val / 1.0}}
-		Dirty {char {} {} {unsigned} {$val / 1.0}}
+		FW {Short {} {} {unsigned} {$val / 1.0}}
+		BLE1 {Short {} {} {unsigned} {$val / 1.0}}
+		BLE2 {Short {} {} {unsigned} {$val / 1.0}}
+		BLE3 {Short {} {} {unsigned} {$val / 1.0}}
+		BLE4 {char {} {} {unsigned} {$val / 1.0}}
+		VC {char {} {} {unsigned} {$val / 1.0}}
 	}
 	return $spec
 }
@@ -792,7 +792,7 @@ proc bintest2 {} {
 
 }
 
-proc get_timer {state substate} {
+proc obsolete_get_timer {state substate} {
 
   set timerkey "$::de1_num_state_reversed($state)-$::de1_substate_types_reversed($substate)"
   set timer 0
@@ -1057,21 +1057,37 @@ proc append_live_data_to_espresso_chart {} {
 }  
 
 
-#set ::previous_textstate ""
-proc update_de1_state {statechar} {
+
+proc parse_state_change {packed destarrname} {
+	upvar $destarrname ShotSample
+	unset -nocomplain ShotSample
 
 	set spec {
 		state char
 		substate char
 	}
+	array set specarr $spec
 
-	::fields::unpack $statechar $spec msg bigeendian
+   	::fields::unpack $packed $spec ShotSample bigeendian
+	foreach {field val} [array get ShotSample] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set ShotSample($field) [expr $extra]
+		}
+	}
+}
 
-	msg "update_de1_state [array get msg]"
+#set ::previous_textstate ""
+proc update_de1_state {statechar} {
+	#::fields::unpack $statechar $spec msg bigeendian
+	parse_state_change $statechar msg
+
+	#msg "update_de1_state [array get msg]"
 
 	set textstate [ifexists ::de1_num_state($msg(state))]
 	if {$msg(state) != $::de1(state)} {
-		msg "state change: $::de1(state) [array get msg] ($textstate)"
+		msg "applying DE1 state change: $::de1(state) [array get msg] ($textstate)"
 		set ::de1(state) $msg(state)
 	}
 

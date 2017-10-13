@@ -106,7 +106,7 @@ proc set_dose_goal_weight {weight} {
 	global current_weight_setting
 	set current_weight_setting $weight
 	.can itemconfig .current_setting_grams_label -text [round_one_digits $weight]
-	update
+	#update
 }
 
 
@@ -559,7 +559,7 @@ proc add_de1_widget {args} {
 
 
 proc add_de1_variable {args} {
-	global text_cnt
+	#global text_cnt
 	set varcmd [lindex [unshift args] 0]
 	set lastcmd [unshift args]
 	if {$lastcmd != "-textvariable"} {
@@ -568,17 +568,19 @@ proc add_de1_variable {args} {
 	}
 	set contexts [lindex $args 0]
 	set label_name [eval add_de1_text $args]
+
+	set x [rescale_x_skin [lindex $args 1]]
+	set y [rescale_y_skin [lindex $args 2]]
+	set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
+	#puts $torun
+	eval $torun
+	incr ::text_cnt
+
 	foreach context $contexts {
-		incr text_cnt
 		#set label_name "${context}_$text_cnt"
 
 		# keep track of what labels are displayed in what contexts
-		add_visual_item_to_context $context $label_name
-		set x [rescale_x_skin [lindex $args 1]]
-		set y [rescale_y_skin [lindex $args 2]]
-		set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
-		#puts $torun
-		eval $torun
+		#add_visual_item_to_context $context $label_name
 		add_variable_item_to_context $context $label_name $varcmd
 	}
 	return $label_name
@@ -768,8 +770,8 @@ proc update_onscreen_variables { {state {}} } {
 			} 
 		}
 
-        set timerkey "$::de1(state)-$::de1(substate)"
-        set ::timers($timerkey) [clock milliseconds]
+        #set timerkey "$::de1(state)-$::de1(substate)"
+        #set ::timers($timerkey) [clock milliseconds]
 
 		#if {$::de1(substate) > 6} {
 		#	set ::de1(substate) 0
@@ -781,11 +783,11 @@ proc update_onscreen_variables { {state {}} } {
 	}
 
 	# update the timers
-  	set state_timerkey "$::de1(state)"
-  	set substate_timerkey "$::de1(state)-$::de1(substate)"
-  	set now [clock seconds]
-  	set ::timers($state_timerkey) $now
-  	set ::substate_timers($timerkey) $now
+  	#set state_timerkey "$::de1(state)"
+  	#set substate_timerkey "$::de1(state)-$::de1(substate)"
+  	#set now [clock seconds]
+  	#set ::timers($state_timerkey) $now
+  	#set ::substate_timers($timerkey) $now
 
 
 	#set x [clock milliseconds]
@@ -887,60 +889,37 @@ proc page_display_change {page_to_hide page_to_show} {
 	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	.can itemconfigure $page_to_show -state normal
 	.can itemconfigure $page_to_hide -state hidden
-	#update 
-	#pause 500
 
-	global existing_labels
-	#puts ---
-	set hide_all_labels_first_for_safety 1
-	if {$hide_all_labels_first_for_safety == 1} {
-		foreach {page labels} [array get existing_labels]  {
-			foreach label $labels {
-				if {[lsearch -exact [ifexists existing_labels($page_to_show)] $label] != -1} {
-					#puts "item $label is on both $page_to_hide and $page_to_show"
-					.can itemconfigure $label -state normal
-				} elseif {[.can itemcget $label -state] != "hidden"} {
-					#puts "setting $label to hidden"
-					.can itemconfigure $label -state hidden
-				}
-			}
+	set these_labels [ifexists ::existing_labels($page_to_show)]
+
+	if {[info exists ::all_labels] != 1} {
+		set ::all_labels {}
+		foreach {page labels} [array get ::existing_labels]  {
+			set ::all_labels [concat $::all_labels $labels]
 		}
-	} else {
-		foreach label [ifexists existing_labels($page_to_hide)]  {
-			if {[lsearch -exact [ifexists existing_labels($page_to_show)] $label] != -1} {
-				#puts "item $label is on both $page_to_hide and $page_to_show"
-				continue
-			}
-			set x [.can itemconfigure $label -state hidden]
+		set ::all_labels [lsort -unique $::all_labels]
+	}
+
+	foreach label $::all_labels {
+		if {[.can itemcget $label -state] != "hidden"} {
+			.can itemconfigure $label -state hidden
 		}
 	}
-	update
-	#foreach label [ifexists existing_labels($page_to_show)]  {
-	#	if {[lsearch -exact [ifexists existing_labels($page_to_hide)] $label] != -1} {
-			#puts "item $label is on both $page_to_hide and $page_to_show"
-	#		continue
-	#	}
 
-		# john not sure what the delay here is used for, and seems like a worringly hack
-		# so 8/22/17 disabled to see what breaks
-		#if {[info exists ::tclwindows($label)] == 1} {
-		#	after 100 ".can itemconfigure $label -state normal"
-		#} else {
-			#.can itemconfigure $label -state normal
-		#}
-	#}
-
+	foreach label $these_labels {
+		.can itemconfigure $label -state normal
+	}
 
 	global actions
 	if {[info exists actions($page_to_show)] == 1} {
 		foreach action $actions($page_to_show) {
-			#puts "actions: $action"
 			eval $action
 		}
 	}
 
+	update
 	update_onscreen_variables
-	after 100 update_chart
+	#after 100 update_chart
 
 }
 

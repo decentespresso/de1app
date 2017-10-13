@@ -269,7 +269,9 @@ proc done_timer {} {
 	}
 }
 
-proc event_timer_calculate {state destination_state previous_states} {
+proc obsolete_event_timer_calculate {state destination_state previous_states} {
+
+
 
 	set eventtime [get_timer $state $destination_state]
 	 set beforetime 0
@@ -447,6 +449,9 @@ proc group_head_heater_temperature {} {
 	if {$::android == 0} {
 		# slowly have the water level drift
 		set ::de1(water_level) [expr {$::de1(water_level) + (.3*(rand() - 0.5))}]
+		#puts -nonewline .
+		#flush stdout
+		#update
 	}
 
 	return $::de1(head_temperature)
@@ -526,6 +531,14 @@ proc return_flow_measurement {in} {
 	}
 }
 
+proc return_flow_weight_measurement {in} {
+	if {$::settings(enable_fluid_ounces) != 1} {
+		return [subst {[round_to_one_digits $in] [translate "g/s"]}]
+	} else {
+		return [subst {[round_to_one_digits [ml_to_oz $in]] oz/s}]
+	}
+}
+
 proc return_weight_measurement {in} {
 	if {$::settings(enable_fluid_ounces) != 1} {
 		return [subst {[round_to_one_digits $in][translate "g"]}]
@@ -565,6 +578,18 @@ proc return_stop_at_weight_measurement {in} {
 	}
 }
 
+
+proc preinfusion_volume {} {
+
+	return_liquid_measurement 0
+
+}
+
+proc pour_volume {} {
+	return_liquid_measurement 0
+
+}
+
 proc waterflow_text {} {
 	return [return_flow_measurement [waterflow]] 
 }
@@ -579,13 +604,13 @@ proc watervolume_text {} {
 
 proc waterweightflow_text {} {
 	if {$::android == 0} {
-		return [return_flow_measurement [expr {(rand() * 6)}]]
+		return [return_flow_weight_measurement [expr {(rand() * 6)}]]
 	}
 
 	if {$::de1(scale_weight_rate) == ""} {
 		return ""
 	}
-	return [return_flow_measurement $::de1(scale_weight_rate)]
+	return [return_flow_weight_measurement $::de1(scale_weight_rate)]
 }
 
 proc waterweight_text {} {
@@ -596,6 +621,18 @@ proc waterweight_text {} {
 		return ""
 	}
 	return [return_weight_measurement $::de1(scale_weight)]
+}
+
+
+proc waterweight_label_text {} {
+	if {$::android == 0} {
+		return [translate "Weight"]
+	}
+
+	if {$::de1(scale_weight) == ""} {
+		return ""
+	}
+	return [translate "Weight"]
 }
 
 
@@ -747,24 +784,27 @@ proc return_temperature_measurement {in} {
 
 
 proc return_delta_temperature_measurement {in} {
-	if {[de1plus]} {
-		if {$::settings(enable_fahrenheit) == 1} {
-			set t [subst {[round_to_one_digits [celsius_to_fahrenheit $in]]ºF}]
-		} else {
-			set t [subst {[round_to_one_digits $in]ºC}]
-		}
-	} else {
-		if {$::settings(enable_fahrenheit) == 1} {
-			set t [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
-		} else {
-			set t [subst {[round_to_integer $in]ºC}]
-		}
+	set num {}
+	set label {ºC}
+
+	if {$::settings(enable_fahrenheit) == 1} {
+		set label "ºF"
+		set num [celsius_to_fahrenheit $in]
 	}
 
-	if {$in > 0} {
+	if {[de1plus]} {
+		set num [round_to_one_digits $num]
+	} else {
+		set num [round_to_integer $num]
+	}
+
+	set t {}
+	if {$num > 0.0} {
 		set t "+$t"
 	}
-	return $t
+
+	set s "$t$num$label"
+	return $s
 }
 
 proc setting_steam_temperature_text {} {
@@ -1020,11 +1060,12 @@ proc delete_selected_profile {} {
 
 
 #set de1_bluetooth_list {}
-proc fill_ble_listbox {widget} {
+proc fill_ble_listbox {} {
 
 	#puts "fill_profiles_listbox $widget"
 	#set ::settings(profile_to_save) $::settings(profile)
 
+	set widget $::ble_listbox_widget
 	$widget delete 0 99999
 	set cnt 0
 	set current_ble_number 0
@@ -1052,9 +1093,37 @@ proc fill_ble_listbox {widget} {
 	#$widget selection set 3
 	#puts "$widget selection set $current_profile_number"
 
-	set ::globals(ble_listbox) $widget
+	#set ::globals(ble_listbox) $widget
 
 	bind $widget <<ListboxSelect>> [list ::change_bluetooth_device %W] 	
+	
+	# john - probably makes sense for "pair" to occur on item tap
+	#bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
+	make_current_listbox_item_blue $widget
+}
+
+proc fill_ble_skale_listbox {} {
+
+	set widget $::ble_skale_listbox_widget
+	$widget delete 0 99999
+	set cnt 0
+	set current_ble_number 0
+
+	#puts "skales: $::skale_bluetooth_list"
+
+	foreach d [lsort -dictionary -increasing $::skale_bluetooth_list] {
+		$widget insert $cnt $d
+		if {[ifexists ::settings(skale_bluetooth_address)] == $d} {
+			set current_ble_number $cnt
+		}
+		incr cnt
+	}
+	
+	$widget selection set $current_ble_number;
+
+	#set ::globals(ble_skale_listbox) $widget
+
+	bind $widget <<ListboxSelect>> [list ::change_skale_bluetooth_device %W] 	
 	
 	# john - probably makes sense for "pair" to occur on item tap
 	#bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
@@ -1259,24 +1328,42 @@ proc change_bluetooth_device {w args} {
 	if {$w == ""} {
 		return
 	}
-	#catch {
-		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
-		if {[$w curselection] == ""} {
-			# no current selection
-			return ""
-		}
-		set profile [$w get [$w curselection]]
-		if {$profile == $::settings(bluetooth_address)} {
-			# if no change in setting, do nothing.
-			return
-		}
-		set ::settings(bluetooth_address) $profile
-		save_settings; 
+	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
+	if {[$w curselection] == ""} {
+		# no current selection
+		return ""
+	}
+	set profile [$w get [$w curselection]]
+	if {$profile == $::settings(bluetooth_address)} {
+		# if no change in setting, do nothing.
+		return
+	}
+	set ::settings(bluetooth_address) $profile
+	save_settings; 
 
-		.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
-		set_next_page off message; page_show message
+	.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+	set_next_page off message; page_show message
+}
 
-	#}
+
+proc change_skale_bluetooth_device {w args} {
+	if {$w == ""} {
+		return
+	}
+	if {[$w curselection] == ""} {
+		# no current selection
+		return ""
+	}
+	set profile [$w get [$w curselection]]
+	if {$profile == $::settings(skale_bluetooth_address)} {
+		# if no change in setting, do nothing.
+		return
+	}
+	set ::settings(skale_bluetooth_address) $profile
+	save_settings; 
+
+	.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+	set_next_page off message; page_show message
 }
 
 

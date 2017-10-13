@@ -1,6 +1,9 @@
 
 package provide de1_bluetooth
 
+set ::failed_attempt_count_connecting_to_de1 0
+set ::successful_de1_connection_count 0
+
 #set suuid "0000A000-0000-1000-8000-00805F9B34FB"
 #set sinstance 0
 #set cuuid "0000a001-0000-1000-8000-00805f9b34fb"
@@ -238,7 +241,7 @@ proc run_next_userdata_cmd {} {
 		#set ::bletimeoutid [after 5000 run_next_userdata_cmd]
 
 	} else {
-		msg "no userdata cmds to run"
+		#msg "no userdata cmds to run"
 	}
 }
 
@@ -258,12 +261,12 @@ proc app_exit {} {
 	exit
 }
 
-proc de1_enable_obsolete {cuuid_to_enable} {
-	msg "Enabling DE1 notification: '$cuuid'"
-	ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $cuuid_to_enable $::de1(cinstance)
-}
+#proc de1_enable_obsolete {cuuid_to_enable} {
+#	msg "Enabling DE1 notification: '$cuuid'"
+#	ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $cuuid_to_enable $::de1(cinstance)
+#}
 
-proc de1_send {comment msg} {
+proc de1_send_state {comment msg} {
 	#clear_timers
 	delay_screen_saver
 	
@@ -496,6 +499,16 @@ proc ble_connect_to_de1 {} {
 
 proc ble_connect_to_skale {} {
 
+	if {$::settings(skale_bluetooth_address) == ""} {
+		msg "No Skale BLE address in settings, so not connecting to it"
+	}
+
+	if {$::de1(device_handle) == 0} {
+		#msg "No DE1 connected, so delay connecting to Skale"
+		after 2000 ble_connect_to_skale
+		return
+	}
+
 	catch {
 		ble unpair $::settings(skale_bluetooth_address)
 	}
@@ -528,7 +541,25 @@ proc append_to_de1_bluetooth_list {address} {
 	msg "Scan found DE1: $address"
 	set ::de1_bluetooth_list $newlist
 	catch {
-		fill_ble_listbox $::ble_listbox_widget
+		fill_ble_listbox
+	}
+}
+
+
+proc append_to_skale_bluetooth_list {address} {
+	msg "append_to_skale_bluetooth_list $address"
+	set newlist $::skale_bluetooth_list
+	lappend newlist $address
+	set newlist [lsort -unique $newlist]
+
+	if {[llength $newlist] == [llength $::skale_bluetooth_list]} {
+		return
+	}
+
+	msg "Scan found Skale: $address"
+	set ::skale_bluetooth_list $newlist
+	catch {
+		fill_ble_skale_listbox 
 	}
 }
 
@@ -552,19 +583,20 @@ proc de1_ble_handler { event data } {
 		    	#msg "-- device $name found at address $address ($data)"
 				if {[string first DE1 $name] != -1} {
 					append_to_de1_bluetooth_list $address
-					if {$address == $::settings(bluetooth_address) && $::scanning != 0} {
+					#if {$address == $::settings(bluetooth_address) && $::scanning != 0} {
 						#ble stop $::ble_scanner
 						#set ::scanning 0
 						#ble_connect_to_de1
-					}
+					#}
 				} elseif {[string first Skale $name] != -1} {
-					if {$::settings(skale_bluetooth_address) != $address} {
-						msg "-- Saving new Skale bluetooth address"
-						set ::settings(skale_bluetooth_address) $address					
-						save_settings
-					} else {
-						msg "-- Already Configured Skale found"
-					}
+					append_to_skale_bluetooth_list $address
+					#if {$::settings(skale_bluetooth_address) != $address} {
+					#	msg "-- Saving new Skale bluetooth address"
+					#	set ::settings(skale_bluetooth_address) $address					
+					#	save_settings
+					#} else {
+					#	msg "-- Already Configured Skale found"
+					#}
 				} else {
 					#msg "-- device $name found at address $address ($data)"
 				}
@@ -576,7 +608,6 @@ proc de1_ble_handler { event data } {
 					if {$address == $::settings(bluetooth_address)} {
 					    # fall back to scanning
 					    
-
 			    		set ::de1(wrote) 0
 			    		set ::de1(cmdstack) {}
 				    	if {$::de1(device_handle) != 0} {
@@ -587,16 +618,23 @@ proc de1_ble_handler { event data } {
 					    	ble close $::currently_connecting_de1_handle
 					    }
 
-					    #ble start [ble scanner ble_generic_handler]
-					    msg "de1 disconnected"
-					    #ble reconnect $::de1(device_handle)
-					    #ble_find_de1s
-					    set ::de1(device_handle) 0
-					    #userdata_append "reconnect to DE1" [list ble reconnect $::handle]
-					    ble_connect_to_de1
-					    #run_next_userdata_cmd
 
-					    #set ::de1(found) 0
+					    msg "de1 disconnected"
+					    set ::de1(device_handle) 0
+
+					    incr ::failed_attempt_count_connecting_to_de1
+					    if {$::failed_attempt_count_connecting_to_de1 > $::settings(max_ble_connect_attempts) && $::successful_de1_connection_count > 0} {
+					    	# if we have previously been connected to a DE1 but now can't connect, then make the UI go to Sleep
+					    	# and we'll try again to reconnect when the user taps the screen to leave sleep mode
+
+					    	# set this to zero so that when we come back from sleep we try several times to connect
+					    	set ::failed_attempt_count_connecting_to_de1 0
+
+					    	update_de1_state "$::de1_state(Sleep)\x0"
+					    } else {
+						    ble_connect_to_de1
+					    }
+
 				    } elseif {$address == $::settings(skale_bluetooth_address)} {
 			    		set ::de1(wrote) 0
 				    	msg "skale disconnected"
@@ -608,13 +646,16 @@ proc de1_ble_handler { event data } {
 					    }
 
 				    	set ::de1(skale_device_handle) 0
-				    	ble_connect_to_skale
+
+				    	#if {$::de1(device_handle) != 0} {
+				    		ble_connect_to_skale
+				    	#}
 				    }
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1
 					msg "scanning"
 				} elseif {$state eq "idle"} {
-					ble stop $::ble_scanner
+					#ble stop $::ble_scanner
 					if {$::scanning != 0} {
 						ble_connect_to_de1
 
@@ -631,6 +672,11 @@ proc de1_ble_handler { event data } {
 
 					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
 						msg "de1 connected $event $data"
+						
+						incr ::successful_de1_connection_count
+						set ::failed_attempt_count_connecting_to_de1 0
+
+
 			    		set ::de1(wrote) 0
 			    		set ::de1(cmdstack) {}
 					    #set ::de1(found) 1
@@ -647,12 +693,13 @@ proc de1_ble_handler { event data } {
 						de1_send_steam_hotwater_settings					
 						de1_send_shot_frames
 						de1_send_waterlevel_settings
-						de1_enable_state_notifications
 						de1_enable_temp_notifications
+						de1_enable_state_notifications
 						start_idle
 						
 					} elseif {$::de1(skale_device_handle) == 0 && $address == $::settings(skale_bluetooth_address)} {
 						msg "skale connected $event $data"
+						append_to_skale_bluetooth_list $address
 			    		set ::de1(wrote) 0
 						set ::de1(skale_device_handle) $handle
 						skale_enable_button_notifications
@@ -741,7 +788,7 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							parse_binary_water_level $value arr2
-							msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
+							#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
 							set ::de1(water_level) $arr2(Level)
 						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
@@ -868,7 +915,13 @@ proc de1_ble_handler { event data } {
 							}
 			    		} else {
 					    	if {$address == $::settings(bluetooth_address)} {
-					    		msg "Confirmed wrote to $cuuid of DE1: '$value'"
+								if {$cuuid == "0000A002-0000-1000-8000-00805F9B34FB"} {
+									parse_state_change $value arr
+						    		msg "Confirmed state change: '[array get arr]'"
+								} else {
+						    		msg "Confirmed wrote to $cuuid of DE1: '$value'"
+								}
+
 				    		} elseif {$address == $::settings(skale_bluetooth_address)} {
 					    		msg "Confirmed wrote to $cuuid of Skale: '$value'"
 				    		} else {
@@ -896,8 +949,15 @@ proc de1_ble_handler { event data } {
 				if {$state eq "connected"} {
 
 				    if {$access eq "w"} {
+						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
+					    	msg "Confirmed: BLE temperature notifications: $data"
+						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
+					    	msg "Confirmed: BLE state change notifications"
+						} else {
+					    	msg "DESCRIPTOR UNKNOWN WRITE confirmed: $data"
+						}
+
 				    	set ::de1(wrote) 0
-				    	msg "WRITE confirmed: $data"
 						run_next_userdata_cmd
 				    }
 
