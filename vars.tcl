@@ -1287,6 +1287,7 @@ proc preview_profile_step {w args} {
 		#} else {
 		#	set ::settings(settings_profile_type) "settings_1"
 		#}
+		
 		update_onscreen_variables
 
 		#if {$::settings(settings_profile_type) == "settings_profile_pressure"} {

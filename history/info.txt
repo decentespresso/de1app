@@ -1,0 +1,1 @@
+This "history" directory stores every espresso shot you make.

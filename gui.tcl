@@ -586,68 +586,77 @@ proc add_de1_variable {args} {
 	return $label_name
 }
 
+proc stop_screen_saver_timer {} {
 
+	if {[info exists ::screen_saver_alarm_handle] == 1} {
+		after cancel $::screen_saver_alarm_handle
+		unset -nocomplain ::screen_saver_alarm_handle
+		msg "unset old saver alarm"
+	}
+
+}
 
 
 proc delay_screen_saver {} {
-	set ::de1(last_action_time) [clock seconds]
+
+	stop_screen_saver_timer
+
+	#puts "cont: $::de1(current_context)"
+
+	if {$::settings(screen_saver_delay) != 0 } {
+		set ::screen_saver_alarm_handle [after [expr {60 * 1000 * $::settings(screen_saver_delay)}] "show_going_to_sleep_page"]
+	}
+
+	#msg "delay_screen_saver: [ifexists ::screen_saver_alarm_handle] [after_info]"
+}
+
+proc after_info {} {
+
+	set t {}
+	foreach id [after info] {
+		append t $id:[after info $id]\n
+	}
+	return $t
 }
 
 proc show_going_to_sleep_page  {} {
+
+	if {$::de1_num_state($::de1(state)) != "Idle"} {
+		# never go to sleep if the DE1 is not idle
+		msg "delaying screen saver because de1 is not idle"
+		delay_screen_saver
+		return
+	}
+
+	puts "show_going_to_sleep_page"
+ 	if {$::de1(current_context) == "sleep" || $::de1(current_context) == "saver"} {
+ 		return
+ 	}
 
 	page_display_change $::de1(current_context) "sleep"
 	start_sleep
 
 }
 
-proc change_screen_saver_image {} {
-	#msg "change_screen_saver_image"
-	if {$::de1(current_context) != "saver"} {
-		return
+proc change_screen_saver_img {} {
+	msg "change_screen_saver_img $::de1(current_context)"
+	#if {$::de1(current_context) == "saver"} {
+		image delete saver
+		image create photo saver -file [random_saver_file]
+		puts "XXxXxXX"
+		.can create image {0 0} -anchor nw -image saver  -tag saver -state normal
+		.can lower saver
+		#update
+	#}#
+
+	if {[info exists ::change_screen_saver_image_handle] == 1} {
+		after cancel $::change_screen_saver_image_handle
+		unset -nocomplain ::change_screen_saver_image_handle
 	}
-	
-	#set files [glob "[saver_directory]/*.jpg"]
-	#set splashpng [random_pick $files]
-	#msg "changing screen saver image to $splashpng"
-	image delete saver
-	image create photo saver -file [random_saver_file]
-	.can create image {0 0} -anchor nw -image saver  -tag saver -state normal
-	.can lower saver
-	update
-	after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
+
+	#set ::change_screen_saver_image_handle [after 1000 change_screen_saver_image]
+	set ::change_screen_saver_image_handle [after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_img]
 }
-
-proc check_if_should_start_screen_saver {} {
-
-
-	#msg "check_if_should_start_screen_saver $::de1(last_action_time)"
-	after 1000 check_if_should_start_screen_saver
-
-	if {$::settings(screen_saver_delay) == 0} {
-		# screen saver is disabled
-		return
-	}
-
-	if {$::de1(current_context) == "saver"} {
-		#after 1000 check_if_should_start_screen_saver
-		return
-	}
-
-	#msg "check_if_should_start_screen_saver [clock seconds] > [expr {$::de1(last_action_time) + $::de1(screen_saver_delay)}]"
-	if {$::de1(last_action_time) == 0} {
-		#after 1000 check_if_should_start_screen_saver
-		delay_screen_saver
-		return
-	}
-
-	if {$::de1(current_context) == "off" && [clock seconds] > [expr {$::de1(last_action_time) + (60*$::settings(screen_saver_delay))}]} {
-		#page_display_change "off" "sleep"
-		show_going_to_sleep_page
-	#} else {
-		#after 1000 check_if_should_start_screen_saver
-	}
-}
-
 
 proc update_chart {} {
 	espresso_elapsed notify now
@@ -814,7 +823,11 @@ proc update_onscreen_variables { {state {}} } {
 	#set y [clock milliseconds]
 	#puts "elapsed: [expr {$y - $x}] $something_updated"
 
-	after $::settings(timer_interval) update_onscreen_variables
+	if {[info exists ::update_onscreen_variables_alarm_handle] == 1} {
+		after cancel $::update_onscreen_variables_alarm_handle
+		unset ::update_onscreen_variables_alarm_handle
+	}
+	set ::update_onscreen_variables_alarm_handle [after $::settings(timer_interval) update_onscreen_variables]
 }
 
 proc set_next_page {machinepage guipage} {
@@ -838,6 +851,8 @@ proc page_display_change {page_to_hide page_to_show} {
 	#if {$page_to_hide == ""} {
 	#}
 
+	delay_screen_saver
+
 	set key "machine:$page_to_show"
 	if {[ifexists ::nextpage($key)] != ""} {
 		# in Creator mode there are different possible tabs to display for different states (such as preheat-cup vs hot water)
@@ -858,13 +873,12 @@ proc page_display_change {page_to_hide page_to_show} {
 	# signal the page change with a sound
 	say "" $::settings(sound_button_out)
 
-	delay_screen_saver
 
 	msg "page_display_change $page_to_show"
 
-	if {$page_to_show == "saver"} {
-		after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
-	}
+	#if {$page_to_show == "saver"} {
+	#	after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
+	#}
 
 	# track the time entering into a page
 	#clear_timers
@@ -917,7 +931,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		}
 	}
 
-	update
+	#update
 	update_onscreen_variables
 	#after 100 update_chart
 
@@ -1223,8 +1237,10 @@ proc ui_startup {} {
 
 	#after $::settings(timer_interval) 
 	update_onscreen_variables
+	delay_screen_saver
+	change_screen_saver_img
 
-	check_if_should_start_screen_saver
+	#check_if_should_start_screen_saver
 	if {$::android == 1} {
 		#ble_find_de1s
 		#ble_connect_to_de1

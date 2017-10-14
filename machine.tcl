@@ -15,7 +15,6 @@ package provide de1_machine 1.0
 #	has_flowmeter 0
 
 array set ::de1 {
-	last_action_time 0
     found    0
     scanning 1
     device_handle 0
@@ -130,7 +129,7 @@ array set ::settings {
 	max_ble_connect_attempts 3
 	scheduler_wake 3600
 	scheduler_sleep 6000
-	timer_interval 1000
+	timer_interval 100
 	screen_saver_delay 60
 	screen_saver_change_interval 10
 	enable_fluid_ounces 0
@@ -447,6 +446,8 @@ proc start_idle {} {
 
 
 proc start_sleep {} {
+	change_screen_saver_img
+	stop_screen_saver_timer
 	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
 	de1_send_state "go to sleep" $::de1_state(Sleep)
 	
