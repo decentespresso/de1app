@@ -724,7 +724,7 @@ proc setting_steam_max_time {} {
 	return [expr {round( $::settings(steam_max_time) )}]
 }
 proc setting_water_max_time {} {
-	return [expr {round( $::settings(water_max_time) )}]
+	return [expr {round( $::settings(water_time_max) )}]
 }
 proc setting_espresso_max_time {} {
 	return [expr {round( $::settings(espresso_max_time) )}]
@@ -1497,13 +1497,24 @@ proc save_this_espresso_to_history {} {
 		set espresso_data {}
 		set espresso_data "name [list $name]\n"
 		set espresso_data "clock $clock\n"
-		set espresso_data "settings [array get ::settings]\n"
-		append espresso_data "espresso_elapsed [espresso_elapsed range 0 end]\n"
-		append espresso_data "espresso_pressure [espresso_pressure range 0 end]\n"
-		append espresso_data "espresso_flow [espresso_flow range 0 end]\n"
-		append espresso_data "espresso_flow_weight [espresso_flow_weight range 0 end]\n"
-		append espresso_data "espresso_temperature_basket [espresso_temperature_basket range 0 end]\n"
-		append espresso_data "espresso_temperature_mix [espresso_temperature_mix range 0 end]\n"
+		#set espresso_data "settings [array get ::settings]\n"
+
+		append espresso_data "espresso_elapsed {[espresso_elapsed range 0 end]}\n"
+		append espresso_data "espresso_pressure {[espresso_pressure range 0 end]}\n"
+		append espresso_data "espresso_flow {[espresso_flow range 0 end]}\n"
+		append espresso_data "espresso_flow_weight {[espresso_flow_weight range 0 end]}\n"
+		append espresso_data "espresso_temperature_basket {[espresso_temperature_basket range 0 end]}\n"
+		append espresso_data "espresso_temperature_mix {[espresso_temperature_mix range 0 end]}\n"
+
+		# format settings nicely so that it is easier to read and parse
+		append espresso_data "settings {\n"
+	    foreach k [lsort -dictionary [array names ::settings]] {
+	        set v $::settings($k)
+	        append espresso_data [subst {\t[list $k] [list $v]\n}]
+	    }
+	    append espresso_data "}\n"
+
+
 
 		set fn "[homedir]/history/$clock.shot"
 

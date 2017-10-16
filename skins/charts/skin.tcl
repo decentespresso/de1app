@@ -173,7 +173,39 @@ add_de1_text "off espresso espresso_3" 43 677 -text [translate "Flow (mL/s) :"] 
 add_de1_text "off espresso espresso_3" 43 1128 -text [translate "Temperature ([return_html_temperature_units]) :"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
 
 # water level sensor 
-add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2528 694 {} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -foreground #0000FF -troughcolor #ffffff -borderwidth 0  -highlightthickness 0 
+add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2528 694 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #ffffff -borderwidth 0  -highlightthickness 0
+
+# causes the water level widget to change between colors (blinking) at an inreasing rate as the water level goes lower
+proc water_level_color_check {widget} {
+	if {[info exists ::water_level_color_check_count] != 1} {
+		set ::water_level_color_check_count  0
+	}
+	incr ::water_level_color_check_count 
+	set colors [list  "#7ad2ff"  "#98eeff"]
+	if {$::water_level_color_check_count > [expr {-1 + [llength $colors]}] } {
+		set ::water_level_color_check_count 0
+	}
+
+	if {$::de1(water_level) > $::settings(waterlevel_blink_start_level)} {
+		# check the water rate infrequently if there is enough water and don't blink it
+		set color "#7ad2ff"
+		set blinkrate 5000
+	} else {
+		set color [lindex $colors $::water_level_color_check_count]
+		if {$::de1(water_level) > 10} {
+			set blinkrate 2000
+		} elseif {$::de1(water_level) > 7} {
+			set blinkrate 1000
+		} elseif {$::de1(water_level) > 5} {
+			set blinkrate 500
+		} else {
+			set blinkrate 250
+		}
+	}
+
+	$widget configure -background $color
+	after $blinkrate water_level_color_check $widget
+}
 
 source "[homedir]/skins/charts/scentone.tcl"
 

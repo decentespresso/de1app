@@ -999,6 +999,13 @@ proc append_live_data_to_espresso_chart {} {
 			#set flow_delta [expr { 10 * ($::de1(flow)  - $::previous_espresso_flow) }]
 			set flow_delta [diff_flow_rate]
 			set negative_flow_delta_for_chart 0
+
+
+			if {$::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {				
+				# don't track flow rate delta during preinfusion because the puck is absorbing water, and so the numbers aren't useful (likely just pump variability)
+				set flow_delta 0
+			}
+
 			if {$flow_delta > 0} {
 
 			    if {$::settings(enable_negative_flow_charts) == 1} {

@@ -41,7 +41,7 @@ array set ::de1 {
 	cmdstack {}
 	scale_autostop_triggered 1
 	connect_time 0
-	water_level 30
+	water_level 10
 	state 0
 	substate 0
 	current_context ""
@@ -121,6 +121,7 @@ array set ::settings {
 	espresso_notes {}
 	water_time_max 60
 	grinder_dose_weight 0
+	waterlevel_blink_start_level 15
 	drink_weight 0
 	espresso_enjoyment 0
 	drink_tds 0
@@ -144,7 +145,6 @@ array set ::settings {
 	steam_max_time 120
 	skale_bluetooth_address {}
 	bluetooth_address {}
-	water_max_time 10
 	water_max_vol 500
 	water_temperature 80
 	final_desired_shot_weight 36
@@ -201,13 +201,13 @@ array set ::settings {
 	preinfusion_stop_pressure 4
 	profile_step ""
 	preinfusion_stop_volumetric 200 
-	preinfusion_stop_timeout 5
+	preinfusion_stop_timeout 30
 	pressure_rampup_timeout 20
 	pressure_rampup_stop_volumetric 100
 	pressure_hold_stop_volumetric 200
 	decline_stop_volumetric 500
 	steam_temperature 160
-	steam_timeout 300
+	steam_timeout 120
 	skin "default"
 	preheat_volume 50
 	preheat_temperature 95
