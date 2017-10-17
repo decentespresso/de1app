@@ -508,9 +508,9 @@ proc add_de1_widget {args} {
 
 	incr widget_cnt
 	set widgettype [lindex $args 1]
-	#set widget ".can.${contexts}_widget_${widgettype}_$widget_cnt"
+
 	set widget ".can.widget_${widgettype}_$widget_cnt"
-	#add_visual_item_to_context $context $widget
+
 	set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
 	set errcode [catch { 
 		eval $torun
@@ -542,7 +542,7 @@ proc add_de1_widget {args} {
 	#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
 	set x [rescale_x_skin [lindex $args 2]]
 	set y [rescale_y_skin [lindex $args 3]]
-	set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden]
+	set windowname [.can create window  $x $y -window $widget  -anchor nw -tag [list all2 $widget] -state hidden]
 	#puts "winfo: [winfo children .can]"
 	#.can bind $windowname [platform_button_press] "msg click"
 	
@@ -855,45 +855,31 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	set key "machine:$page_to_show"
 	if {[ifexists ::nextpage($key)] != ""} {
-		# in Creator mode there are different possible tabs to display for different states (such as preheat-cup vs hot water)
+		# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
 		set page_to_show $::nextpage($key)
 	}
 
 
 	if {$::de1(current_context) == $page_to_show} {
-		#
 		return 
 	}
 	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
-		#
 		msg "discarding intermediate sleep/off state msg"
 		return 
 	}
 
 	# signal the page change with a sound
 	say "" $::settings(sound_button_out)
-
-
 	msg "page_display_change $page_to_show"
-
-	#if {$page_to_show == "saver"} {
-	#	after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_image
-	#}
-
-	# track the time entering into a page
-	#clear_timers
-	#global start_timer
-	#set start_timer [clock seconds]
-	#global start_millitimer
-	#set start_millitimer [clock milliseconds]
+	#set start [clock milliseconds]
 
 	# set the brightness in one place
 	if {$page_to_show == "saver" } {
 		borg brightness $::settings(saver_brightness)
-		borg systemui 0x1E02
+		borg systemui $::android_full_screen_flags
 	} else {
 		borg brightness $::settings(app_brightness)
-		borg systemui 0x1E02
+		borg systemui $::android_full_screen_flags
 	}
 
 
@@ -901,8 +887,8 @@ proc page_display_change {page_to_hide page_to_show} {
 	set ::de1(current_context) $page_to_show
 
 	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
-	.can itemconfigure $page_to_show -state normal
 	.can itemconfigure $page_to_hide -state hidden
+	.can itemconfigure $page_to_show -state normal
 
 	set these_labels [ifexists ::existing_labels($page_to_show)]
 
@@ -924,6 +910,10 @@ proc page_display_change {page_to_hide page_to_show} {
 		.can itemconfigure $label -state normal
 	}
 
+	#set end [clock milliseconds]
+	#puts "elapsed: [expr {$end - $start}]"
+	update
+
 	global actions
 	if {[info exists actions($page_to_show)] == 1} {
 		foreach action $actions($page_to_show) {
@@ -931,8 +921,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		}
 	}
 
-	#update
-	update_onscreen_variables
+	#update_onscreen_variables
 	#after 100 update_chart
 
 }
