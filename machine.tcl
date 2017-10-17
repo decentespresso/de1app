@@ -41,7 +41,7 @@ array set ::de1 {
 	cmdstack {}
 	scale_autostop_triggered 1
 	connect_time 0
-	water_level 10
+	water_level 30
 	state 0
 	substate 0
 	current_context ""
@@ -122,6 +122,8 @@ array set ::settings {
 	water_time_max 60
 	grinder_dose_weight 0
 	waterlevel_blink_start_level 15
+	waterlevel_indicator_on 1
+	waterlevel_indicator_blink 1
 	drink_weight 0
 	espresso_enjoyment 0
 	drink_tds 0
@@ -136,6 +138,9 @@ array set ::settings {
 	enable_fluid_ounces 0
 	has_refractometer 1
 	my_name ""
+	display_group_head_delta_number 0
+	display_espresso_water_delta_number 0
+	display_fluid_ounces_option 0
 	has_scale 1
 	enable_fahrenheit 0
 	enable_ampm 0
@@ -183,7 +188,7 @@ array set ::settings {
 	enable_spoken_prompts 0
 	preinfusion_guarantee 1
 	speaking_rate 1.5
-	scentone {}
+	rate_espresso_on 1
 	temperature_target "portafilter"
 	flow_rate_transition "smooth"
 	water_speed_type "flow"

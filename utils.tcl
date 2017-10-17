@@ -901,8 +901,6 @@ proc load_font {name fn pcsize {androidsize {}} } {
         }
         return
     } else {
-
-
         #puts "$::android load_font $name '$fn' $size : fontm: $::fontm"
         if {$::android == 1} {
             #puts "sdltk addfont '$fn'"
@@ -939,3 +937,8 @@ proc web_browser {url} {
     msg "Browser '$url'"
     borg activity android.intent.action.VIEW $url text/html
 }
+
+proc font_width {untranslated_txt font} {
+    return [font measure $font -displayof .can [translate $untranslated_txt]]
+}
+

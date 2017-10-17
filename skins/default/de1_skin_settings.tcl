@@ -343,10 +343,10 @@ add_de1_variable "settings_4" 1320 400 -text "[translate {Version:}] $::de1(vers
 
 # scheduled power up/down
 add_de1_widget "settings_3" checkbutton 50 1120 {} -text [translate "Scheduler"] -padx 0 -pady 0 -indicatoron true  -font Helv_10_bold -bg #FFFFFF -anchor nw -foreground #7f879a -variable ::settings(scheduler_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
-add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 86340 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 60 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -textvariable {[translate "Heat up:"] [format_alarm_time $::settings(scheduler_wake)]}
 
-add_de1_widget "settings_3" scale 670 1200 {} -from 0 -to 86340 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 60 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+add_de1_widget "settings_3" scale 670 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 add_de1_variable "settings_3" 670 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -textvariable {[translate "Cool down:"] [format_alarm_time $::settings(scheduler_sleep)]}
 set_alarms_for_de1_wake_sleep
 
@@ -408,9 +408,12 @@ add_de1_variable "settings_3" 690 760 -text "" -font Helv_7 -fill "#4e85f4" -anc
 
 
 add_de1_widget "settings_3" checkbutton 70 940 {} -text [translate "Fahrenheit"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
-add_de1_widget "settings_3" checkbutton 690 940 {} -text [translate "AM/PM"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-add_de1_widget "settings_3" checkbutton 70 1000 {} -text [translate "Fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4 -relief flat  
-add_de1_widget "settings_3" checkbutton 690 1000 {} -text [translate "1.234,56"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_commanumbers)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+add_de1_widget "settings_3" checkbutton 70 1000 {} -text [translate "AM/PM"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+add_de1_widget "settings_3" checkbutton 690 940 {} -text [translate "1.234,56"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_commanumbers)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+
+if {$::settings(display_fluid_ounces_option) == 1} {
+	add_de1_widget "settings_3" checkbutton 690 1000 {} -text [translate "Fluid ounces"] -indicatoron true  -font Helv_10 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fluid_ounces)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4 -relief flat  
+}
 
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"

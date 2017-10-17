@@ -784,12 +784,13 @@ proc return_temperature_measurement {in} {
 
 
 proc return_delta_temperature_measurement {in} {
-	set num {}
-	set label {ºC}
 
 	if {$::settings(enable_fahrenheit) == 1} {
 		set label "ºF"
 		set num [celsius_to_fahrenheit $in]
+	} else {
+		set label {ºC}
+		set num $in
 	}
 
 	if {[de1plus]} {
