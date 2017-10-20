@@ -808,10 +808,11 @@ proc obsolete_get_timer {state substate} {
 set ::previous_FrameNumber 0
 proc update_de1_shotvalue {packed} {
 
-  if {[string length $packed] < 7} {
-	msg "ERROR: short packed message"
-	return
-  }
+	if {[string length $packed] < 7} {
+		# this should never happen
+		msg "ERROR: short packed message"
+		return
+	}
 
   	# the timer stores hundreds of a second, so we take the half cycles, divide them by hertz/2 to get seconds, and then multiple that all by 100 to get 100ths of a second, stored as an int
 	set spec_old {
@@ -867,85 +868,66 @@ proc update_de1_shotvalue {packed} {
 	 	return
 	 }
 
+	#msg "update_de1_shotvalue [array get ShotSample]"
 
-
-  #msg "update_de1_shotvalue [array get ShotSample]"
-
-	#msg "de1 internals: [array get ShotSample]"
+	#this is the number of milliseconds between BLE updates
 	set delta 0
-	if {[info exists ShotSample(Timer)] == 1} {
-		set previous_timer $::de1(timer)
-		set ::de1(timer) $ShotSample(Timer)
-		set delta [expr {$::de1(timer) - $previous_timer}]
-		set timerkey "$::de1(state)-$::de1(substate)"
-		set ::timers($timerkey) $::de1(timer)
+
+	#set ::de1(timer) $ShotSample(Timer)
+	if {[info exists ::previous_timer] != 1} {
+		# we throw out the first shot sample update because we don't have a previous time to copare it to, to calculate difference-between-updates
+		msg "previous timer was undefined so settings to $ShotSample(Timer)"
+		set ::previous_timer $ShotSample(Timer)
+		return
+	} elseif {$::previous_timer == 0} {
+		msg "previous timer was zero so settings to $ShotSample(Timer)"
+		set ::previous_timer $ShotSample(Timer)
+		return
 	}
 
+	set delta [expr {$ShotSample(Timer) - $::previous_timer}]
+	set ::previous_timer $ShotSample(Timer)
 
 	if {$::previous_FrameNumber != [ifexists ShotSample(FrameNumber)]} {
 		# draw a vertical line at each frame change
 		set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
+
 	}
 	set ::previous_FrameNumber [ifexists ShotSample(FrameNumber)]
 
-	#set previous_timer $::de1(timer)
-	#set ::de1(timer) [clock milliseconds]
-	#set delta [expr {$::de1(timer) - $previous_timer}]
-	#set timerkey "$::de1(state)-$::de1(substate)"
-	#set ::timers($timerkey) $::de1(timer)
-
-
   	if {[use_old_ble_spec] == 1} {
-		set HeadTemp $ShotSample(HeadTemp)
-		set ::de1(head_temperature) $HeadTemp
+		set ::de1(head_temperature) $ShotSample(HeadTemp)
 	} else {
-	  	#if {[info exists ShotSample(HeadTemp1)] == 1} {
-			set HeadTemp [expr { $ShotSample(HeadTemp1) + ($ShotSample(HeadTemp2) / 256.0) + ($ShotSample(HeadTemp3) / 65536.0) }]
-			set ::de1(head_temperature) $HeadTemp
-		#}
-		#puts "HeadTemp: $HeadTemp"
-		#msg "updated head temp $ShotSample(HeadTemp)"
+		set ::de1(head_temperature) [expr { $ShotSample(HeadTemp1) + ($ShotSample(HeadTemp2) / 256.0) + ($ShotSample(HeadTemp3) / 65536.0) }]
 	}
 
-  #if {[info exists ShotSample(MixTemp)] == 1} {
 	set ::de1(mix_temperature) $ShotSample(MixTemp)
-	#msg "updated mix temp to $ShotSample(MixTemp)"
-  #}
-  #if {[info exists ShotSample(SteamTemp)] == 1} {
 	set ::de1(steam_heater_temperature) $ShotSample(SteamTemp)
-	#msg "updated mix temp to $ShotSample(MixTemp)"
-  #}
-  if {[info exists ShotSample(GroupFlow)] == 1 && $delta != 0} {
+
+	set water_volume_dispensed_since_last_update [expr {$ShotSample(GroupFlow) * ($delta/100.0)}]
+	if {$water_volume_dispensed_since_last_update < 0} {
+		msg "WARNING negative water volume dispensed: $water_volume_dispensed_since_last_update"
+
+	}
+	set ::de1(volume) [expr {$::de1(volume) + $water_volume_dispensed_since_last_update}]
+	if {$::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
+		set ::de1(preinfusion_volume) [expr {$::de1(preinfusion_volume) + $water_volume_dispensed_since_last_update}]
+	} elseif {$::de1(substate) == $::de1_substate_types_reversed(pouring) } {	
+		set ::de1(pour_volume) [expr {$::de1(pour_volume) + $water_volume_dispensed_since_last_update}]
+	}
+
 	set ::de1(flow_delta) [expr {$::de1(flow) - $ShotSample(GroupFlow)}]
 	set ::de1(flow) $ShotSample(GroupFlow)
-	set ::de1(volume) [expr {$::de1(volume) + ($ShotSample(GroupFlow) * ($delta/100.0) )}]
-	#msg "updated flow"
-  }
+	
+	set ::de1(pressure_delta) [expr {$::de1(pressure) - $ShotSample(GroupPressure)}]
+	set ::de1(pressure) $ShotSample(GroupPressure)
 
-  #if {[info exists ShotSample(GroupPressure)] == 1} {
-	#set ::de1(pressure) $ShotSample(GroupPressure)
-	#msg "updated pressure"
-	if {$delta != 0} {
 
-		set ::de1(pressure_delta) [expr {$::de1(pressure) - $ShotSample(GroupPressure)}]
-		set ::de1(pressure) $ShotSample(GroupPressure)
-	}
-  #}
-
-  #if {[info exists ShotSample(SetGroupFlow)] == 1} {
 	set ::de1(goal_flow) $ShotSample(SetGroupFlow)
-	#msg "updated head flow $ShotSample(SetGroupFlow)"
-  #}
-  #if {[info exists ShotSample(SetGroupPressure)] == 1} {
 	set ::de1(goal_pressure) $ShotSample(SetGroupPressure)
-	#msg "updated head pressure $ShotSample(SetGroupPressure)"
-  #}
-  #if {[info exists ShotSample(SetHeadTemp)] == 1} {
 	set ::de1(goal_temperature) $ShotSample(SetHeadTemp)
-	#msg "updated head temp $ShotSample(SetHeadTemp)"
-  #}
 
-  append_live_data_to_espresso_chart
+	append_live_data_to_espresso_chart
 }
 
 set previous_de1_substate 0
@@ -990,8 +972,8 @@ proc append_live_data_to_espresso_chart {} {
 
 			if {$::de1(scale_weight_rate) != ""} {
 				# if a bluetooth scale is recording shot weight, graph it along with the flow meterr 
-				espresso_flow_weight append [expr {10 * $::de1(scale_weight_rate)}]
-				espresso_flow_weight_2x append [expr {20 * $::de1(scale_weight_rate)}]
+				espresso_flow_weight append $::de1(scale_weight_rate)
+				espresso_flow_weight_2x append [expr {2 * $::de1(scale_weight_rate)}]
 			}
 
 			#set elapsed_since_last [expr {$millitime - $::previous_espresso_flow_time}]
@@ -1134,11 +1116,6 @@ proc update_de1_state {statechar} {
 			set ::de1(substate) $msg(substate)
 
 	  	}
-	  	#set state_timerkey "$::de1(state)-$::de1(substate)"
-	  	#set substate_timerkey "$::de1(state)-$::de1(substate)"
-	  	#set now [clock seconds]
-	  	#set ::timers($state_timerkey) $now
-	  	#set ::substate_timers($timerkey) $now
 
 		if {$::previous_de1_substate == 4} {
 			stop_timer_preinfusion
@@ -1153,8 +1130,6 @@ proc update_de1_state {statechar} {
 		}
 		
 		set ::previous_de1_substate $::de1(substate)
-		#set ::substate_timers($previous_timer) [clock seconds]
-		#set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
 	}
 
 	#set textstate $::de1_num_state($msg(state))

@@ -126,7 +126,14 @@ set SYSTEM_UI_FLAG_IMMERSIVE_STICKY 0x00001000
 set SYSTEM_UI_FLAG_FULLSCREEN 0x00000004
 set SYSTEM_UI_FLAG_HIDE_NAVIGATION 0x00000002
 set SYSTEM_UI_FLAG_IMMERSIVE 0x00000800
-set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY | $SYSTEM_UI_FLAG_IMMERSIVE_STICKY | $SYSTEM_UI_FLAG_HIDE_NAVIGATION}]
+set SYSTEM_UI_FLAG_LAYOUT_STABLE 0x00000100
+set SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION 0x00000200
+set SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN 0x00000400
+
+set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_LAYOUT_STABLE | $SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_IMMERSIVE}]
+
+#set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_IMMERSIVE}]
+#set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY}]
 
 proc setup_environment {} {
     #puts "setup_environment"
@@ -149,7 +156,7 @@ proc setup_environment {} {
 
         #borg systemui 0x1E02
         borg brightness $::settings(app_brightness)
-        borg systemui $android_full_screen_flags
+        borg systemui $::android_full_screen_flags
 
         # force the screen into landscape if it isn't yet
         msg "orientation: [borg screenorientation]"
@@ -216,6 +223,7 @@ proc setup_environment {} {
 
         set fontm [expr {1280.0 / ($screen_size_width)}]
         set fontm .5
+        set ::fontw 1
         #set fontm [expr {2560.0 / $screen_size_width}]
         #set fontm 1
 
@@ -343,7 +351,7 @@ proc setup_environment {} {
         set screen_size_height 800
         set fontm 1
 
-
+        set ::fontw 2
         
 
         #set screen_size_width 1920
@@ -938,6 +946,21 @@ proc web_browser {url} {
 }
 
 proc font_width {untranslated_txt font} {
-    return [font measure $font -displayof .can [translate $untranslated_txt]]
+    set x [font measure $font -displayof .can [translate $untranslated_txt]]
+    #if {$::android != 1} {    
+        # not sure why font measurements are half off on osx but not on android
+        return [expr {2 * $x}]
+    #}
+    return $x
 }
 
+proc array_item_difference {arr1 arr2 keylist} {
+    upvar $arr1 a1
+    upvar $arr2 a2
+    foreach k $keylist {
+        if {[ifexists a1($k)] != [ifexists a2($k)]} {
+            return 1
+        }
+    }
+    return 0
+}

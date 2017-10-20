@@ -42,6 +42,10 @@ proc clear_espresso_chart {} {
 	espresso_flow_goal_2x append -1
 	espresso_temperature_goal append [expr {$::settings(espresso_temperature)}]
 
+	catch {
+		# update the Y axis on the temperature chart, each time that we make an espresso, in case the goal temperature changed
+		update_temperature_charts_y_axis
+	}
 	#update
 }	
 
@@ -334,7 +338,8 @@ proc waterflow {} {
 		}
 
 
-		set ::de1(flow) [expr {rand() + $::de1(flow) - 0.5}]
+		set ::de1(flow) [expr {(.1 * (rand() - 0.5)) + $::de1(flow)}]		
+		#set ::de1(flow) [expr {rand() + $::de1(flow) - 0.5}]
 	}
 
 	return $::de1(flow)
@@ -379,7 +384,8 @@ proc watertemp {} {
 			set ::de1(head_temperature) $::de1(goal_temperature)
 		}
 
-		set ::de1(head_temperature) [expr {rand() + $::de1(head_temperature) - 0.5}]
+		#set ::de1(head_temperature) [expr {rand() + $::de1(head_temperature) - 0.5}]
+		set ::de1(head_temperature) [expr {(.2 * (rand() - 0.6)) + $::de1(head_temperature)}]		
 		#set ::de1(head_temperature) 90
 
 	}
@@ -406,7 +412,7 @@ proc pressure {} {
 		}
 
 
-		set ::de1(pressure) [expr {rand() + $::de1(pressure) - 0.5}]
+		set ::de1(pressure) [expr {(.5 * (rand() - 0.5)) + $::de1(pressure)}]
 	}
 
 	return $::de1(pressure)
@@ -448,7 +454,7 @@ proc group_head_heater_temperature {} {
 	
 	if {$::android == 0} {
 		# slowly have the water level drift
-		set ::de1(water_level) [expr {$::de1(water_level) + (.3*(rand() - 0.5))}]
+		set ::de1(water_level) [expr {$::de1(water_level) + (.1*(rand() - 0.5))}]
 		#puts -nonewline .
 		#flush stdout
 		#update
@@ -467,7 +473,13 @@ proc steam_heater_temperature {} {
 }
 proc water_mix_temperature {} {
 	if {$::android == 0} {
-		set ::de1(mix_temperature) [expr {80 + (rand() * 15.0)}]
+		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
+			if {$::de1(mix_temperature) == "" || $::de1(mix_temperature) < 85 || $::de1(mix_temperature) > 99} {
+				set ::de1(mix_temperature) 94
+			}
+			set ::de1(mix_temperature) [expr {$::de1(mix_temperature) + ((rand() - 0.5) * .3) }]
+		}
+			#return [return_flow_weight_measurement [expr {(rand() * 6)}]]
 	}
 
 	return $::de1(mix_temperature)
@@ -571,23 +583,20 @@ proc return_stop_at_weight_measurement {in} {
 		return [translate "off"]
 	} else {
 		if {$::settings(enable_fluid_ounces) != 1} {
-			return [subst {[round_to_one_digits $in][translate "g"]}]
+			return [subst {[round_to_integer $in][translate "g"]}]
 		} else {
-			return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
+			return [subst {[round_to_integer [ml_to_oz $in]] oz}]
 		}
 	}
 }
 
 
 proc preinfusion_volume {} {
-
-	return_liquid_measurement 0
-
+	return_liquid_measurement [round_to_integer $::de1(preinfusion_volume)]
 }
 
 proc pour_volume {} {
-	return_liquid_measurement 0
-
+	return_liquid_measurement [round_to_integer $::de1(pour_volume)]
 }
 
 proc waterflow_text {} {
@@ -596,15 +605,30 @@ proc waterflow_text {} {
 
 proc watervolume_text {} {
 	if {$::android == 0} {
-		return [return_liquid_measurement [expr {3 - (rand() * 20)}]]
+		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
+			if {$::de1(volume) == ""} {
+				set ::de1(volume) 0
+			}
+			set ::de1(volume) [expr {$::de1(volume) + (rand() * .27) }]
+		}
 	}
 
-	return [return_liquid_measurement $::de1(volume)] 
+	# we sum these two numbers so that we don't have a rounding error that a user might find offensive (ie, "preinfusion + pour = total" ALWAYS) 
+	return [return_liquid_measurement [expr {[round_to_integer $::de1(preinfusion_volume)] + [round_to_integer $::de1(pour_volume)]}]] 
 }
 
 proc waterweightflow_text {} {
 	if {$::android == 0} {
-		return [return_flow_weight_measurement [expr {(rand() * 6)}]]
+		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
+			if {$::de1(scale_weight_rate) == ""} {
+				set ::de1(scale_weight_rate) 3
+			}
+			set ::de1(scale_weight_rate) [expr {$::de1(scale_weight_rate) + ((rand() - 0.5) * .3) }]
+			if {$::de1(scale_weight_rate) < 0} {
+				set ::de1(scale_weight_rate) 1
+			}
+		}
+			#return [return_flow_weight_measurement [expr {(rand() * 6)}]]
 	}
 
 	if {$::de1(scale_weight_rate) == ""} {
@@ -613,9 +637,34 @@ proc waterweightflow_text {} {
 	return [return_flow_weight_measurement $::de1(scale_weight_rate)]
 }
 
+proc finalwaterweight_text {} {
+	if {$::de1(scale_weight) == ""} {
+		return ""
+	}
+	return [return_weight_measurement $::de1(final_water_weight)]
+}
+
+proc dump_stack {a b c} {
+	msg ---
+	msg [stacktrace]
+}
+
+#trace add variable de1(final_water_weight) write dump_stack
+
 proc waterweight_text {} {
 	if {$::android == 0} {
-		return [return_weight_measurement [expr {round((rand() * 20))}]]
+
+		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
+			if {$::de1(scale_weight) == ""} {
+				set ::de1(scale_weight) 3
+			}
+			set ::de1(scale_weight) [expr {$::de1(scale_weight) + (rand() * .1) }]
+			set ::de1(final_water_weight) $::de1(scale_weight)
+		} else {
+			set ::de1(scale_weight) 0
+		}
+
+		#return [return_weight_measurement [expr {round((rand() * 20))}]]
 	}
 	if {$::de1(scale_weight) == ""} {
 		return ""
@@ -623,15 +672,17 @@ proc waterweight_text {} {
 	return [return_weight_measurement $::de1(scale_weight)]
 }
 
-
 proc waterweight_label_text {} {
+	if {$::de1(scale_weight) == ""} {
+		# setting this to negative will cause the progress bar to disappear 
+		return ""
+	}
+
 	if {$::android == 0} {
 		return [translate "Weight"]
 	}
 
-	if {$::de1(scale_weight) == ""} {
-		return ""
-	}
+
 	return [translate "Weight"]
 }
 
@@ -640,9 +691,12 @@ proc espresso_goal_temp_text {} {
 	return [return_temperature_measurement $::de1(goal_temperature)]
 }
 
+set ::diff_brew_temp_from_goal 0
+set ::positive_diff_brew_temp_from_goal 0
 proc diff_brew_temp_from_goal {} {
-	set diff [expr {[water_mix_temperature] - $::de1(goal_temperature)}]
-	return $diff
+	set ::diff_brew_temp_from_goal [expr {[water_mix_temperature] - $::de1(goal_temperature)}]
+	set ::positive_diff_brew_temp_from_goal [expr {abs($::diff_brew_temp_from_goal)}]
+	return $::diff_brew_temp_from_goal
 }
 
 proc diff_brew_temp_from_goal_text {} {
@@ -1491,6 +1545,7 @@ proc save_espresso_rating_to_history {} {
 }
 
 proc save_this_espresso_to_history {} {
+
 	if {[ifexists ::settings(history_saved)] != 1} {
 
 		set name [clock format [clock seconds]]
@@ -1498,6 +1553,8 @@ proc save_this_espresso_to_history {} {
 		set espresso_data {}
 		set espresso_data "name [list $name]\n"
 		set espresso_data "clock $clock\n"
+		#set espresso_data "final_espresso_weight $::de1(final_espresso_weight)\n"
+
 		#set espresso_data "settings [array get ::settings]\n"
 
 		append espresso_data "espresso_elapsed {[espresso_elapsed range 0 end]}\n"
@@ -1511,6 +1568,14 @@ proc save_this_espresso_to_history {} {
 		append espresso_data "settings {\n"
 	    foreach k [lsort -dictionary [array names ::settings]] {
 	        set v $::settings($k)
+	        append espresso_data [subst {\t[list $k] [list $v]\n}]
+	    }
+	    append espresso_data "}\n"
+
+	    # things associated with the machine itself
+		append espresso_data "machine {\n"
+	    foreach k [lsort -dictionary [array names ::de1]] {
+	        set v $::de1($k)
 	        append espresso_data [subst {\t[list $k] [list $v]\n}]
 	    }
 	    append espresso_data "}\n"

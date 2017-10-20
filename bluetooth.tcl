@@ -63,8 +63,8 @@ proc skale_timer_stop {} {
 		return 
 	}
 	set tare [binary decode hex "D1"]
-	set ::de1(scale_weight) 0
-	set ::de1(scale_weight_rate) 0
+	#set ::de1(scale_weight) 0
+	#set ::de1(scale_weight_rate) 0
 
 	userdata_append "Skale: timer stop" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
 }
@@ -75,8 +75,8 @@ proc skale_timer_off {} {
 		return 
 	}
 	set tare [binary decode hex "D0"]
-	set ::de1(scale_weight) 0
-	set ::de1(scale_weight_rate) 0
+	#set ::de1(scale_weight) 0
+	#set ::de1(scale_weight_rate) 0
 
 	userdata_append "Skale: timer off" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
 }
@@ -90,6 +90,11 @@ proc skale_tare {} {
 	set tare [binary decode hex "10"]
 	set ::de1(scale_weight) 0
 	set ::de1(scale_weight_rate) 0
+
+	# if this was a scheduled tare, indicate that the tare has completed
+	unset -nocomplain ::scheduled_skale_tare_id
+
+	#set ::de1(final_espresso_weight) 0
 
 	userdata_append "Skale: tare" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $tare]
 }
@@ -602,8 +607,6 @@ proc de1_ble_handler { event data } {
 				}
 		    }
 		    connection {
-		    	#msg "2"
-		    	#msg "connection: $data"
 				if {$state eq "disconnected"} {
 					if {$address == $::settings(bluetooth_address)} {
 					    # fall back to scanning
@@ -695,8 +698,9 @@ proc de1_ble_handler { event data } {
 						de1_send_waterlevel_settings
 						de1_enable_temp_notifications
 						de1_enable_state_notifications
+						set_next_page off off
 						start_idle
-						
+
 					} elseif {$::de1(skale_device_handle) == 0 && $address == $::settings(skale_bluetooth_address)} {
 						msg "skale connected $event $data"
 						append_to_skale_bluetooth_list $address
@@ -829,24 +833,32 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq "0000EF81-0000-1000-8000-00805F9B34FB"} {
 					        binary scan $value cus1cu t0 t1 t2 t3 t4 t5
 							set thisweight [expr {$t1 / 10.0}]
-							if {$thisweight < 0} {
-								skale_tare
+							if {$thisweight < 0 && $::de1_num_state($::de1(state)) == "Idle"} {
+								# one second after the negative weights have stopped, automatically do a tare
+								if {[info exists ::scheduled_skale_tare_id] == 1} {
+									after cancel $::scheduled_skale_tare_id
+								}
+								set ::scheduled_skale_tare_id [after 1000 skale_tare]
 							}
-							#set ::de1(scale_weight) $thisweight
-							#set ::de1(weight_val) $thisweight
 
 							set tempflow [expr { $thisweight - $::de1(scale_weight) }]
 							set flow [expr {($::de1(scale_weight_rate) * 0.9) + ($tempflow * 0.1)}]
 							if {$flow < 0} {
 								set flow 0
 							}
-							set ::de1(scale_weight_rate) $flow
+
+							# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
+							set ::de1(scale_weight_rate) [expr {10 * $flow}]
+							
 							set ::de1(scale_weight) $thisweight
 							#msg "weight received: $thisweight : flow: $tempflow"
 
+
 							# (beta) stop shot-at-weight feature
-							if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
-								if {$::de1_num_state($::de1(state)) == "Espresso" && $::de1(substate) == $::de1_substate_types_reversed(pouring)} {
+							if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)) } {
+								set ::de1(final_water_weight) [expr { 1 + $thisweight }]
+
+								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
 
 									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) * $::settings(final_desired_shot_weight_percentage_to_stop)}]]} {
 										msg "Weight based Espresso stop was triggered at ${thisweight}g > $::settings(final_desired_shot_weight)g "

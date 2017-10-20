@@ -11,7 +11,7 @@ proc add_de1_page {names pngfilename} {
 	#package require tksvg
 	image create photo $names -file $pngfilename
 	foreach name $names {
-		.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden 
+		.can create image {0 0} -anchor nw -image $names -tag [list pages $name] -state hidden 
 	}
 }	
 
@@ -26,7 +26,7 @@ proc set_de1_screen_saver_directory {{dirname {}}} {
 	#puts $pngfilename
 	image create photo $names -file $pngfilename
 	foreach name $names {
-		.can create image {0 0} -anchor nw -image $names  -tag $name -state hidden
+		.can create image {0 0} -anchor nw -image $names  -tag [list saver $name] -state hidden
 	}
 }	
 
@@ -150,7 +150,7 @@ proc up_down_button_create {actionscript btn_images img_loc key_loc buttontype {
 	image create photo ${up_png}_img -file $up_png
 	image create photo ${down_png}_img -file $down_png
 	.can create image [list $img_xloc $img_yloc] -anchor nw -image ${down_png}_img  -tag $down_png -state hidden
-	.can create image [list $img_xloc $img_yloc] -anchor nw -image ${up_png}_img  -tag $up_png
+	.can create image [list $img_xloc $img_yloc] -anchor nw -image ${up_png}_img  -tag $up_png -state hidden
 	
 
 	set rect "${up_png}_rect"
@@ -542,7 +542,7 @@ proc add_de1_widget {args} {
 	#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
 	set x [rescale_x_skin [lindex $args 2]]
 	set y [rescale_y_skin [lindex $args 3]]
-	set windowname [.can create window  $x $y -window $widget  -anchor nw -tag [list all2 $widget] -state hidden]
+	set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden]
 	#puts "winfo: [winfo children .can]"
 	#.can bind $windowname [platform_button_press] "msg click"
 	
@@ -639,12 +639,11 @@ proc show_going_to_sleep_page  {} {
 }
 
 proc change_screen_saver_img {} {
-	msg "change_screen_saver_img $::de1(current_context)"
+	#msg "change_screen_saver_img $::de1(current_context)"
 	#if {$::de1(current_context) == "saver"} {
 		image delete saver
 		image create photo saver -file [random_saver_file]
-		puts "XXxXxXX"
-		.can create image {0 0} -anchor nw -image saver  -tag saver -state normal
+		.can create image {0 0} -anchor nw -image saver  -tag saver -state hidden
 		.can lower saver
 		#update
 	#}#
@@ -743,7 +742,7 @@ proc update_onscreen_variables { {state {}} } {
 
 	if {$::android == 0} {
 
-		if {[expr {int(rand() * 100)}] > 92} {
+		if {[expr {int(rand() * 100)}] > 95} {
 			set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
 		}
 
@@ -876,10 +875,12 @@ proc page_display_change {page_to_hide page_to_show} {
 	# set the brightness in one place
 	if {$page_to_show == "saver" } {
 		borg brightness $::settings(saver_brightness)
-		borg systemui $::android_full_screen_flags
+		borg systemui $::android_full_screen_flags  
 	} else {
 		borg brightness $::settings(app_brightness)
-		borg systemui $::android_full_screen_flags
+
+		# let the Android controls show for 5 seconds, and if the user doesn't use them in that time, then hide them
+		after 5000 borg systemui $::android_full_screen_flags
 	}
 
 
@@ -888,6 +889,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	.can itemconfigure $page_to_hide -state hidden
+	#.can itemconfigure [list "pages" "splash" "saver"] -state hidden
 	.can itemconfigure $page_to_show -state normal
 
 	set these_labels [ifexists ::existing_labels($page_to_show)]
@@ -910,9 +912,9 @@ proc page_display_change {page_to_hide page_to_show} {
 		.can itemconfigure $label -state normal
 	}
 
+	update
 	#set end [clock milliseconds]
 	#puts "elapsed: [expr {$end - $start}]"
-	update
 
 	global actions
 	if {[info exists actions($page_to_show)] == 1} {
@@ -1223,6 +1225,7 @@ proc ui_startup {} {
 	#}
 	setup_images_for_first_page
 	setup_images_for_other_pages
+	.can itemconfigure splash -state hidden
 
 	#after $::settings(timer_interval) 
 	update_onscreen_variables
@@ -1366,5 +1369,26 @@ proc canvas_hide_if_zero { testvar widgetlist } {
 		canvas_show $widgetlist
 	}
 }
+
+proc binary_to_canvas_state {binval} {
+	if {$binval == 1} {
+		set state normal
+	} else {
+		set state hidden 
+	}
+	return $state
+}
+
+proc show_hide_from_variable {widgetids n1 n2 op} {
+	if {$n2 != ""} {
+		set val [expr "$$n1\($n2)"]
+	}
+
+	set state [binary_to_canvas_state $val]
+	foreach widget $widgetids {
+		.can itemconfigure $widget -state $state 
+	}
+}
+
 
 install_this_app_icon

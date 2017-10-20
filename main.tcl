@@ -2,6 +2,7 @@
 
 package require img::jpeg
 package require snit
+package require BWidget
 
 package provide de1 1.0
 package provide de1_main 1.0

@@ -14,6 +14,7 @@ package provide de1_machine 1.0
 #	de1_address "C1:80:A7:32:CD:A3"
 #	has_flowmeter 0
 
+
 array set ::de1 {
     found    0
     scanning 1
@@ -47,7 +48,8 @@ array set ::de1 {
 	current_context ""
 	serial_number 0
 	scale_weight {}
-	scale_weight_rate {}
+	scale_weight_rate 0
+	final_water_weight 0
 	voltage 110
 	has_catering_kit 0
 	has_plumbing_kit 0
@@ -70,6 +72,8 @@ array set ::de1 {
 	steam_max_temperature 170
 	water_min_temperature 20
 	water_max_temperature 95
+	preinfusion_volume 0
+	pour_volume 0
 	water_time_min 1
 	steam_time_min 1
 	steam_time_max 120
@@ -138,8 +142,10 @@ array set ::settings {
 	enable_fluid_ounces 0
 	has_refractometer 1
 	my_name ""
+	espresso_chart_over 3
+	espresso_chart_under 10
 	display_group_head_delta_number 0
-	display_espresso_water_delta_number 0
+	display_espresso_water_delta_number 1
 	display_fluid_ounces_option 0
 	has_scale 1
 	enable_fahrenheit 0
@@ -182,13 +188,13 @@ array set ::settings {
 	goal_is_basket_temp 1
 	flight_mode_angle 30
 	display_pressure_delta_line 0
-	display_flow_delta_line 1
-	display_weight_delta_line 1
+	display_flow_delta_line 0
+	display_weight_delta_line 0
 	machine_name "pretty decent"
 	enable_spoken_prompts 0
 	preinfusion_guarantee 1
 	speaking_rate 1.5
-	rate_espresso_on 1
+	display_rate_espresso 0
 	temperature_target "portafilter"
 	flow_rate_transition "smooth"
 	water_speed_type "flow"
@@ -372,6 +378,11 @@ proc start_espresso {} {
 	set ::settings(history_saved) ""
 	set ::de1(timer) 0
 	set ::de1(volume) 0
+	set ::de1(preinfusion_volume) 0
+	set ::de1(pour_volume) 0
+
+	# only works if a BLE scale is attached
+	set ::de1(final_espresso_weight) 0	
 
 	############
 	# clear any description of the previous espresso
