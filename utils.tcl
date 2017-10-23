@@ -280,6 +280,8 @@ proc setup_environment {} {
         #puts "helvetica_bold_font: $helvetica_bold_font2"
         #set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
 
+        font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
+        font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
         font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 19)}] 
         font create Helv_10 -family $helvetica_font -size [expr {int($fontm * 19)}] 
         font create Helv_1 -family $helvetica_font -size 1
@@ -406,6 +408,8 @@ proc setup_environment {} {
         font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 21)}]
         font create Helv_10 -family $regularfont -size [expr {int($fontm * 23)}]
         font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 25)}]
+        font create Helv_12 -family $regularfont -size [expr {int($fontm * 27)}]
+        font create Helv_12_bold -family $boldfont -size [expr {int($fontm * 30)}]
         font create Helv_15 -family $regularfont -size [expr {int($fontm * 30)}]
         font create Helv_15_bold -family $boldfont -size [expr {int($fontm * 30)}]
         font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]

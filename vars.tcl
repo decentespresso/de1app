@@ -103,8 +103,8 @@ proc set_alarms_for_de1_wake_sleep {} {
 		set sleep_seconds [expr {[next_alarm_time $::settings(scheduler_sleep)] - [clock seconds]}]
 		set ::alarms_for_de1_sleep [after [expr {1000 * $sleep_seconds}] scheduler_sleep]
 
-		msg "Wake schedule set for [next_alarm_time $::settings(scheduler_wake)] in $wake_seconds seconds"
-		msg "Sleep schedule set for [next_alarm_time $::settings(scheduler_sleep)] in $sleep_seconds seconds"
+		#msg "Wake schedule set for [next_alarm_time $::settings(scheduler_wake)] in $wake_seconds seconds"
+		#msg "Sleep schedule set for [next_alarm_time $::settings(scheduler_sleep)] in $sleep_seconds seconds"
 	}
 }
 
@@ -541,6 +541,10 @@ proc return_flow_measurement {in} {
 	} else {
 		return [subst {[round_to_one_digits [ml_to_oz $in]] oz/s}]
 	}
+}
+
+proc return_pressure_measurement {in} {
+	return [subst {[commify [round_to_one_digits $in]] [translate " bar"]}]
 }
 
 proc return_flow_weight_measurement {in} {
@@ -1051,10 +1055,10 @@ proc make_current_listbox_item_blue { widget } {
 	for {set x 0} {$x < [$widget index end]} {incr x} {
 		if {$x == [$widget curselection]} {
 			#puts "x: $x"
-			$widget itemconfigure $x -foreground #000000 -selectforeground #000000
+			$widget itemconfigure $x -foreground #000000 -selectforeground #000000  -background #c0c4e1
 
 		} else {
-			$widget itemconfigure $x -foreground #b2bad0
+			$widget itemconfigure $x -foreground #b2bad0 -background #fbfaff
 		}
 	}
 
@@ -1238,67 +1242,256 @@ proc fill_profiles_listbox {widget} {
 
 }
 
+proc copy_pressure_profile_to_advanced_profile {} {
+	set preinfusion [list \
+		name [translate "preinfusion"] \
+		temperature $::settings(espresso_temperature) \
+		sensor "coffee" \
+		pump "flow" \
+		transition "fast" \
+		pressure 1 \
+		flow $::settings(preinfusion_flow_rate) \
+		seconds $::settings(preinfusion_time) \
+		volume $::settings(preinfusion_stop_volumetric) \
+		exit_if "1" \
+		exit_type "pressure_over" \
+		exit_pressure_over $::settings(preinfusion_stop_pressure) \
+	]
+
+	set hold [list \
+		name [translate "rise and hold"] \
+		temperature $::settings(espresso_temperature) \
+		sensor "coffee" \
+		pump "pressure" \
+		transition "fast" \
+		pressure $::settings(espresso_pressure) \
+		seconds $::settings(espresso_hold_time) \
+		volume $::settings(pressure_hold_stop_volumetric) \
+		exit_if 0 \
+	]
+
+	set decline [list \
+		name [translate "decline"] \
+		temperature $::settings(espresso_temperature) \
+		sensor "coffee" \
+		pump "pressure" \
+		transition "smooth" \
+		pressure $::settings(pressure_end) \
+		seconds $::settings(espresso_decline_time) \
+		volume $::settings(decline_stop_volumetric) \
+		exit_if 0 \
+	]
+
+	set ::settings(advanced_shot) [list $preinfusion $hold $decline]
+}
 
 
-proc fill_profile_steps_listbox {widget} {
+proc copy_flow_profile_to_advanced_profile {} {
+	puts "copy_flow_profile_to_advanced_profile"
+	set preinfusion [list \
+		name [translate "preinfusion"] \
+		temperature $::settings(espresso_temperature) \
+		sensor "coffee" \
+		pump "flow" \
+		transition "fast" \
+		pressure 1 \
+		flow $::settings(preinfusion_flow_rate) \
+		seconds $::settings(preinfusion_time) \
+		volume $::settings(preinfusion_stop_volumetric) \
+		exit_if "1" \
+		exit_type "pressure_over" \
+		exit_pressure_over $::settings(preinfusion_stop_pressure) \
+	]
 
-	#puts "fill_profiles_listbox $widget"
-	#set ::settings(profile_to_save) $::settings(profile)
+	set hold [list \
+		name [translate "hold"] \
+		temperature $::settings(espresso_temperature) \
+		sensor "coffee" \
+		pump "flow" \
+		transition "fast" \
+		flow $::settings(flow_profile_hold) \
+		seconds $::settings(espresso_hold_time) \
+		volume $::settings(flow_hold_stop_volumetric) \
+		exit_if 0 \
+	]
+
+	set decline [list \
+		name [translate "decline"] \
+		temperature $::settings(espresso_temperature) \
+		sensor "coffee" \
+		pump "flow" \
+		transition "smooth" \
+		flow $::settings(flow_profile_decline) \
+		seconds $::settings(flow_profile_decline) \
+		volume $::settings(flow_decline_stop_volumetric) \
+		exit_if 0 \
+	]
+
+	if {$::settings(preinfusion_guarantee) == 1} {
+		set rise [list \
+			name [translate "rise"] \
+			temperature $::settings(espresso_temperature) \
+			sensor "coffee" \
+			pump "pressure" \
+			transition "fast" \
+			pressure $::settings(espresso_pressure) \
+			seconds $::settings(espresso_hold_time) \
+			volume $::settings(pressure_hold_stop_volumetric) \
+			exit_if 0 \
+		]
+
+		set ::settings(advanced_shot) [list $preinfusion $rise $hold $decline]
+
+	} else {
+		set ::settings(advanced_shot) [list $preinfusion $hold $decline]
+	}
+	puts "adv: $::settings(advanced_shot)"
+
+}
+
+proc fill_advanced_profile_steps_listbox {} {
+
+	set widget $::advanced_shot_steps_widget
+	#set cs [$::advanced_shot_steps_widget curselection]
+	set cs [ifexists ::current_step_number]
 
 	$widget delete 0 99999
 	set cnt 0
 	set current_profile_number 0
 
+	if {$::settings(advanced_shot) == ""} {
+		#copy_pressure_profile_to_advanced_profile
+	}
 
-	set steps [list  "Preinfusion" "Hold" "Decline"]
+	#set steps [list  "Preinfusion" "Hold" "Decline"]
 
-	foreach d $steps {
-		#if {$d == "CVS" || $d == "example"} {
-		#	continue
-		#}
-		$widget insert $cnt $d
-		if {$::settings(profile) == $d} {
-			set current_profile_number $cnt
+	#set cnt 0
+
+	set current_profile_number 0
+
+	foreach step $::settings(advanced_shot) {
+		unset -nocomplain props
+		array set props $step
+
+		set name $props(name)
+		$widget insert $cnt "[expr {1 + $cnt}]. $name"
+		#if {$::settings(profile) == $name} {
+		#	set current_profile_number $cnt
 			#puts "current profile of '$d' is #$cnt"
-		}
-
-		if {[ifexists ::de1plus_profile($d)] == 1} {
-			# mark profiles that require the DE1PLUS model with a different color to highlight them
-			#puts "de1plus skin: $d"
-			$widget itemconfigure $cnt -background #F0F0FF
-		}
+		#}
 
 		incr cnt
 	}
 	
-	#$widget itemconfigure $current_profile_number -foreground blue
-	$widget selection set $current_profile_number;
-
-	#$widget selection set 3
-	#puts "$widget selection set $current_profile_number"
+	if {$cs == ""} {
+		$::advanced_shot_steps_widget selection set 0;
+		set ::current_step_number 0
+	} else {
+		$::advanced_shot_steps_widget selection set $cs;
+	}
+	#puts "sel: $::advanced_shot_steps_widget:[$::advanced_shot_steps_widget curselection]"
 
 	set ::globals(widget_profile_step_name) $widget
-	bind $widget <<ListboxSelect>> [list ::preview_profile_step %W] 	
-	make_current_listbox_item_blue $widget
-	#::preview_profile $widget
+	bind $widget <<ListboxSelect>> [list ::load_advanced_profile_step %W] 	
+	
+	load_advanced_profile_step $widget
+	#.can focus $widget
+	update
+}
 
-		#if {[de1plus]} {
-			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
-			#set_next_page settings_2 "$::settings(settings_profile_type)_preview"; #page_show off
-			#page_show off
-		#}
+proc load_advanced_profile_step {w args} {
+	set stepnum [$::advanced_shot_steps_widget curselection]
+	set ::current_step_number $stepnum
+	#if {$stepnum == ""} {
+	#	set stepnum 0
+	#}
 
-#		if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
-	#		set_next_page settings_2 "settings_2"; #page_show off
-		#} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
-		#	set_next_page settings_2 "settings_2a"; #page_show off
-		#}
+	#set stepnum [current_adv_step]
+
+	unset -nocomplain ::current_adv_step
+	array set ::current_adv_step [lindex $::settings(advanced_shot) $stepnum]
+	#puts [array get ::current_adv_step]
+
+	make_current_listbox_item_blue $::advanced_shot_steps_widget
+
+	set ::profile_step_name_to_add $::current_adv_step(name)
+	set ::current_step_number $stepnum
+
+	#make_current_listbox_item_blue $::advanced_shot_steps_widget
+	#update_onscreen_variables
+	#puts "selected: [current_adv_step]"
+}
+
+proc current_adv_step {} {
+	return $::current_step_number
+
+	set stepnum [$::advanced_shot_steps_widget curselection]
+	if {$stepnum == ""} {
+		puts "blank seleted"
+		set stepnum 0
+	}
+	puts "stepnum: $stepnum"
+	return $stepnum
+}
+
+proc change_current_adv_shot_step_name {} {
+	puts "change_current_adv_shot_step_name"
+	set ::current_adv_step(name) "$::profile_step_name_to_add"
+	save_current_adv_shot_step
+	fill_advanced_profile_steps_listbox
 
 }
+
+proc save_current_adv_shot_step {} {
+	set ::settings(advanced_shot) [lreplace $::settings(advanced_shot) [current_adv_step] [current_adv_step]  [array get ::current_adv_step]]
+}
+
+proc delete_current_adv_step {} {
+	set ::settings(advanced_shot) [lreplace $::settings(advanced_shot)  [current_adv_step] [current_adv_step]]
+	fill_advanced_profile_steps_listbox
+}
+
+# inserts a new step immediately after the currently seleted one, with all the same settings except for a different name
+proc add_to_current_adv_step {} {
+	set newlist {} 
+	set cnt 0
+	set stepnum [current_adv_step]
+	set name $::profile_step_name_to_add
+	if {$name == ""} {
+		set name [translate "step"]
+	}
+	foreach s $::settings(advanced_shot) {
+		lappend newlist $s
+		if {$cnt == $stepnum} {
+			array set x $s
+			set x(name) $name
+			lappend newlist [array get x]
+		}
+		incr cnt
+	}
+
+	if {$newlist == {}} {
+		set newlist [list [list name $name]]
+	}
+
+	set ::settings(advanced_shot) $newlist
+	fill_advanced_profile_steps_listbox
+
+	#$::advanced_shot_steps_widget selection set $stepnum;
+	$::advanced_shot_steps_widget selection clear $::current_step_number;;
+	incr ::current_step_number
+	$::advanced_shot_steps_widget selection set $::current_step_number;
+	$::advanced_shot_steps_widget activate $::current_step_number;
+#	$::advanced_shot_steps_widget activate $stepnum;
+	make_current_listbox_item_blue $::advanced_shot_steps_widget
+
+}
+
+
 proc save_new_tablet_skin_setting {} {
 	set ::settings(skin) [$::globals(tablet_styles_listbox) get [$::globals(tablet_styles_listbox) curselection]]
-	#puts "skin changed to '$::settings(skin)'"
 }
+
 
 proc preview_tablet_skin {w args} {
 	catch {
@@ -1310,50 +1503,6 @@ proc preview_tablet_skin {w args} {
 		make_current_listbox_item_blue $::globals(tablet_styles_listbox)
 	}
 }
-
-
-proc preview_profile_step {w args} {
-	catch {
-
-		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
-		set profile_step [$w get [$w curselection]]
-		set ::settings(profile_step) $profile_step
-		#set fn "[homedir]/profiles/${profile}.tcl"
-		#puts "preview_profile $profile"
-
-			# for importing De1 profiles that don't have this feature.
-		#set ::settings(preinfusion_flow_rate) 4
-
-		#load_settings_vars $fn
-		#fill_profiles_listbox $::globals(profiles_listbox)
-		#set ::settings(profile_to_save) $::settings(profile)
-
-		make_current_listbox_item_blue $::globals(widget_profile_step_name)
-
-		#if {[de1plus]} {
-			#puts "current context: $::de1(current_context) "
-
-			#set_next_page settings_2 $::settings(settings_profile_type)_preview;
-			#page_show settings_2
-
-			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
-			#page_show off
-			#puts "set_next_page off $::settings(settings_profile_type)_preview;"
-		#} else {
-		#	set ::settings(settings_profile_type) "settings_1"
-		#}
-		
-		update_onscreen_variables
-
-		#if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
-		#	set_next_page off "settings_2"; #page_show off
-		#} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
-	#		set_next_page off "settings_2a"; #page_show off
-	#	}
-
-	}
-}
-
 
 proc preview_history {w args} {
 	catch {
@@ -1506,16 +1655,15 @@ proc save_profile {} {
 		return
 	}
 
-#pressure_hold_time
 	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature}
 	set profile_name_to_save $::settings(profile_to_save) 
-	#puts "save profile: $profile_name_to_save"
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"
 	save_settings_vars $fn $profile_vars
 	set ::settings(profile) $profile_name_to_save
 	fill_profiles_listbox $::globals(profiles_listbox)
 	update_de1_explanation_chart
 	set ::settings(profile_to_save) [translate "Saved"]
+
 	after 1000 {
 		set ::settings(profile_to_save) $::settings(profile)
 

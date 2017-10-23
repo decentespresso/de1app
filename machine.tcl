@@ -16,6 +16,7 @@ package provide de1_machine 1.0
 
 
 array set ::de1 {
+	advanced_shot_moveone_enabled 1
     found    0
     scanning 1
     device_handle 0
@@ -123,6 +124,7 @@ array set ::settings {
 	flying 0
 	bean_notes {}
 	espresso_notes {}
+	advanced_shot {}
 	water_time_max 60
 	grinder_dose_weight 0
 	waterlevel_blink_start_level 15
@@ -216,6 +218,8 @@ array set ::settings {
 	pressure_rampup_timeout 20
 	pressure_rampup_stop_volumetric 100
 	pressure_hold_stop_volumetric 200
+	flow_hold_stop_volumetric 200
+	flow_decline_stop_volumetric 200
 	decline_stop_volumetric 500
 	steam_temperature 160
 	steam_timeout 120

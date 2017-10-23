@@ -591,7 +591,7 @@ proc stop_screen_saver_timer {} {
 	if {[info exists ::screen_saver_alarm_handle] == 1} {
 		after cancel $::screen_saver_alarm_handle
 		unset -nocomplain ::screen_saver_alarm_handle
-		msg "unset old saver alarm"
+		#msg "unset old saver alarm"
 	}
 
 }
