@@ -34,13 +34,13 @@ proc clear_espresso_chart {} {
 	espresso_flow_delta append 0
 	espresso_flow_delta_negative append 0
 	espresso_flow_delta_negative_2x append 0
-	espresso_temperature_mix append [expr {$::settings(espresso_temperature) - 5}]
-	espresso_temperature_basket append [expr {$::settings(espresso_temperature) - 5}]
+	espresso_temperature_mix append $::settings(espresso_temperature)
+	espresso_temperature_basket append $::settings(espresso_temperature)
 	espresso_state_change append 0
 	espresso_pressure_goal append -1
 	espresso_flow_goal append -1
 	espresso_flow_goal_2x append -1
-	espresso_temperature_goal append [expr {$::settings(espresso_temperature)}]
+	espresso_temperature_goal append $::settings(espresso_temperature)
 
 	catch {
 		# update the Y axis on the temperature chart, each time that we make an espresso, in case the goal temperature changed
@@ -826,9 +826,14 @@ proc return_temperature_number {in} {
 proc return_temperature_measurement {in} {
 	if {[de1plus]} {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_one_digits [celsius_to_fahrenheit $in]]ºF}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
 		} else {
-			return [subst {[round_to_one_digits $in]ºC}]
+			if {[round_to_half_integer $in] == [round_to_integer $in]} {
+				# don't display a .0 on the number if it's not needed
+				return [subst {[round_to_integer $in]ºC}]
+			} else {
+				return [subst {[round_to_half_integer $in]ºC}]
+			}
 		}
 	} else {
 		if {$::settings(enable_fahrenheit) == 1} {
@@ -1256,6 +1261,9 @@ proc copy_pressure_profile_to_advanced_profile {} {
 		exit_if "1" \
 		exit_type "pressure_over" \
 		exit_pressure_over $::settings(preinfusion_stop_pressure) \
+		exit_pressure_under 0 \
+		exit_flow_over 6 \
+		exit_flow_under 0 \
 	]
 
 	set hold [list \
@@ -1268,6 +1276,10 @@ proc copy_pressure_profile_to_advanced_profile {} {
 		seconds $::settings(espresso_hold_time) \
 		volume $::settings(pressure_hold_stop_volumetric) \
 		exit_if 0 \
+		exit_pressure_over 11 \
+		exit_pressure_under 0 \
+		exit_flow_over 6 \
+		exit_flow_under 0 \
 	]
 
 	set decline [list \
@@ -1280,9 +1292,14 @@ proc copy_pressure_profile_to_advanced_profile {} {
 		seconds $::settings(espresso_decline_time) \
 		volume $::settings(decline_stop_volumetric) \
 		exit_if 0 \
+		exit_pressure_over 11 \
+		exit_pressure_under 0 \
+		exit_flow_over 6 \
+		exit_flow_under 0 \
 	]
 
 	set ::settings(advanced_shot) [list $preinfusion $hold $decline]
+	set ::current_step_number 0
 }
 
 
@@ -1301,6 +1318,9 @@ proc copy_flow_profile_to_advanced_profile {} {
 		exit_if "1" \
 		exit_type "pressure_over" \
 		exit_pressure_over $::settings(preinfusion_stop_pressure) \
+		exit_pressure_under 0 \
+		exit_flow_over 6 \
+		exit_flow_under 0 \
 	]
 
 	set hold [list \
@@ -1313,6 +1333,10 @@ proc copy_flow_profile_to_advanced_profile {} {
 		seconds $::settings(espresso_hold_time) \
 		volume $::settings(flow_hold_stop_volumetric) \
 		exit_if 0 \
+		exit_pressure_over 11 \
+		exit_pressure_under 0 \
+		exit_flow_over 6 \
+		exit_flow_under 0 \
 	]
 
 	set decline [list \
@@ -1325,6 +1349,10 @@ proc copy_flow_profile_to_advanced_profile {} {
 		seconds $::settings(flow_profile_decline) \
 		volume $::settings(flow_decline_stop_volumetric) \
 		exit_if 0 \
+		exit_pressure_over 11 \
+		exit_pressure_under 0 \
+		exit_flow_over 6 \
+		exit_flow_under 0 \
 	]
 
 	if {$::settings(preinfusion_guarantee) == 1} {
@@ -1338,6 +1366,10 @@ proc copy_flow_profile_to_advanced_profile {} {
 			seconds $::settings(espresso_hold_time) \
 			volume $::settings(pressure_hold_stop_volumetric) \
 			exit_if 0 \
+			exit_pressure_over 11 \
+			exit_pressure_under 0 \
+			exit_flow_over 6 \
+			exit_flow_under 0 \
 		]
 
 		set ::settings(advanced_shot) [list $preinfusion $rise $hold $decline]
@@ -1345,7 +1377,8 @@ proc copy_flow_profile_to_advanced_profile {} {
 	} else {
 		set ::settings(advanced_shot) [list $preinfusion $hold $decline]
 	}
-	puts "adv: $::settings(advanced_shot)"
+	#puts "adv: $::settings(advanced_shot)"
+	set ::current_step_number 0
 
 }
 
@@ -1410,16 +1443,11 @@ proc load_advanced_profile_step {w args} {
 
 	unset -nocomplain ::current_adv_step
 	array set ::current_adv_step [lindex $::settings(advanced_shot) $stepnum]
-	#puts [array get ::current_adv_step]
 
 	make_current_listbox_item_blue $::advanced_shot_steps_widget
 
 	set ::profile_step_name_to_add $::current_adv_step(name)
 	set ::current_step_number $stepnum
-
-	#make_current_listbox_item_blue $::advanced_shot_steps_widget
-	#update_onscreen_variables
-	#puts "selected: [current_adv_step]"
 }
 
 proc current_adv_step {} {
@@ -1435,11 +1463,10 @@ proc current_adv_step {} {
 }
 
 proc change_current_adv_shot_step_name {} {
-	puts "change_current_adv_shot_step_name"
+	#puts "change_current_adv_shot_step_name"
 	set ::current_adv_step(name) "$::profile_step_name_to_add"
 	save_current_adv_shot_step
 	fill_advanced_profile_steps_listbox
-
 }
 
 proc save_current_adv_shot_step {} {
@@ -1580,13 +1607,11 @@ proc preview_profile {w args} {
 		set ::settings(profile) $profile
 		set ::settings(profile_notes) ""
 		set fn "[homedir]/profiles/${profile}.tcl"
-		#puts "preview_profile $profile"
 
-			# for importing De1 profiles that don't have this feature.
+		# for importing De1 profiles that don't have this feature.
 		set ::settings(preinfusion_flow_rate) 4
 
 		load_settings_vars $fn
-		#fill_profiles_listbox $::globals(profiles_listbox)
 		set ::settings(profile_to_save) $::settings(profile)
 
 		make_current_listbox_item_blue $::globals(profiles_listbox)
@@ -1598,12 +1623,7 @@ proc preview_profile {w args} {
 			} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
 				set ::settings(settings_profile_type) "settings_2b"
 			}
-			#set_next_page off $::settings(settings_profile_type);
-			#page_show off
 
-			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
-			#page_show off
-			#puts "set_next_page off $::settings(settings_profile_type)_preview;"
 		} else {
 			set ::settings(settings_profile_type) "settings_2"
 
@@ -1612,13 +1632,6 @@ proc preview_profile {w args} {
 			}
 		}
 		update_onscreen_variables
-
-		#if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
-		#	set_next_page off "settings_2"; #page_show off
-		#} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
-	#		set_next_page off "settings_2a"; #page_show off
-	#	}
-
 	}
 }
 
@@ -1926,4 +1939,8 @@ proc scentone_translated_selection { } {
 	}
 
 	return [join [lsort $returnlist] ", "].
+}
+
+proc round_to_half_integer {in} {
+	return [expr {int($in * 2) / 2.0}]
 }

@@ -62,6 +62,10 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 	set onequarterpoint [expr {$y0 + ($yrange / 4)}]
 	set threequarterpoint [expr {$y1 - ($yrange / 4)}]
 
+	if {[info exists $varname] != 1} {
+		# if the variable doesn't yet exist, initiialize it with a zero value
+		set $varname 0
+	}
 	set currentval [subst \$$varname]
 	set newval $currentval
 
@@ -93,13 +97,20 @@ proc random_pick {lst} {
 }
 
 
-proc ifexists {fieldname2} {
+proc ifexists {fieldname2 {defvalue {}} } {
     upvar $fieldname2 fieldname
     
     if {[info exists fieldname] == 1} {
 	    return [subst "\$fieldname"]
+    } else {
+    	if {$defvalue != ""} {
+    		set fieldname $defvalue
+    		return $defvalue
+    	} else {
+    		return ""
+    	}
     }
-    return ""
+    #return $defvalue
 }
 
 proc set_dose_goal_weight {weight} {

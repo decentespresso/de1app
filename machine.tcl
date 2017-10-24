@@ -213,14 +213,14 @@ array set ::settings {
 	preinfusion_stop_flow_rate 1
 	preinfusion_stop_pressure 4
 	profile_step ""
-	preinfusion_stop_volumetric 200 
+	preinfusion_stop_volumetric 100 
 	preinfusion_stop_timeout 30
 	pressure_rampup_timeout 20
 	pressure_rampup_stop_volumetric 100
-	pressure_hold_stop_volumetric 200
-	flow_hold_stop_volumetric 200
-	flow_decline_stop_volumetric 200
-	decline_stop_volumetric 500
+	pressure_hold_stop_volumetric 100
+	flow_hold_stop_volumetric 100
+	flow_decline_stop_volumetric 100
+	pressure_decline_stop_volumetric 100
 	steam_temperature 160
 	steam_timeout 120
 	skin "default"
