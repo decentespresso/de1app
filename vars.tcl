@@ -1202,15 +1202,15 @@ proc fill_profiles_listbox {widget} {
 
 	$widget delete 0 99999
 	set cnt 0
-	set current_profile_number 0
+	set ::current_profile_number 0
 	foreach d [lsort -dictionary -increasing [profile_directories]] {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
 		$widget insert $cnt $d
 		if {$::settings(profile) == $d} {
-			set current_profile_number $cnt
-			#puts "current profile of '$d' is #$cnt"
+			set ::current_profile_number $cnt
+			puts "current profile of '$d' is #$cnt"
 		}
 
 		if {[ifexists ::de1plus_profile($d)] == 1} {
@@ -1223,7 +1223,8 @@ proc fill_profiles_listbox {widget} {
 	}
 	
 	#$widget itemconfigure $current_profile_number -foreground blue
-	$widget selection set $current_profile_number;
+	$widget selection set $::current_profile_number;
+	#$widget activate $::current_profile_number;
 
 	#$widget selection set 3
 	#puts "$widget selection set $current_profile_number"
@@ -1346,7 +1347,7 @@ proc copy_flow_profile_to_advanced_profile {} {
 		pump "flow" \
 		transition "smooth" \
 		flow $::settings(flow_profile_decline) \
-		seconds $::settings(flow_profile_decline) \
+		seconds $::settings(espresso_decline_time) \
 		volume $::settings(flow_decline_stop_volumetric) \
 		exit_if 0 \
 		exit_pressure_over 11 \
@@ -1362,8 +1363,8 @@ proc copy_flow_profile_to_advanced_profile {} {
 			sensor "coffee" \
 			pump "pressure" \
 			transition "fast" \
-			pressure $::settings(espresso_pressure) \
-			seconds $::settings(espresso_hold_time) \
+			pressure $::settings(preinfusion_stop_pressure) \
+			seconds $::settings(flow_rise_timeout) \
 			volume $::settings(pressure_hold_stop_volumetric) \
 			exit_if 0 \
 			exit_pressure_over 11 \
@@ -1601,8 +1602,15 @@ proc change_skale_bluetooth_device {w args} {
 
 
 proc preview_profile {w args} {
-	catch {
+	#catch {
 		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
+		#puts "w: $w '[$w curselection]'"
+		if {[$w curselection] == ""} {
+			$w selection set $::current_profile_number
+			puts "setting profile to $::current_profile_number"
+			#set profile $::current_profile_number
+		}
+
 		set profile [$w get [$w curselection]]
 		set ::settings(profile) $profile
 		set ::settings(profile_notes) ""
@@ -1632,7 +1640,7 @@ proc preview_profile {w args} {
 			}
 		}
 		update_onscreen_variables
-	}
+	#}
 }
 
 proc load_settings_vars {fn} {

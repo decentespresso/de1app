@@ -134,6 +134,7 @@ array set ::settings {
 	espresso_enjoyment 0
 	drink_tds 0
 	drink_ey 0
+	flow_rise_timeout 10
 	scheduler_enable 0
 	max_ble_connect_attempts 3
 	scheduler_wake 3600

@@ -192,7 +192,7 @@ add_de1_text "settings_2c" 960 234 -text "1: Temperature" -font Helv_9_bold -fil
 add_de1_text "settings_2c" 1580 234 -text "2: Pump" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
 add_de1_text "settings_2c" 960 830 -text "3: Duration" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
-add_de1_widget "settings_2c" checkbutton 1524 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -bg #FFFFFF -anchor nw -foreground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
+add_de1_widget "settings_2c" checkbutton 1524 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -bg #FFFFFF -anchor nw -foreground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -command save_current_adv_shot_step
 
 
 add_de1_widget "settings_2c" listbox 70 310 { 
@@ -212,8 +212,6 @@ add_de1_widget "settings_2c" entry 70 1282  {
 
 add_de1_button "settings_2c" {say [translate {delete}] $::settings(sound_button_in); delete_current_adv_step} 740 250 920 500
 add_de1_button "settings_2c" {say [translate {add}] $::settings(sound_button_in); add_to_current_adv_step} 740 1200 920 1400
-
-
 
 add_de1_text "settings_2c" 1070 680 -text [translate "goal"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1070 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement [ifexists ::current_adv_step(temperature)]]}
