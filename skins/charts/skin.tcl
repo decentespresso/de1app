@@ -357,7 +357,7 @@ if {$::debugging == 1} {
 add_de1_text "sleep" 2500 1440 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
 
 # settings button 
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed steam_1 water_1 preheat_1 steam_3 water_3 preheat_3 off_zoomed_temperature espresso_3_zoomed_temperature" {unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off "settings_1"; page_show off; } 2285 1420 2560 1600
+add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed steam_1 water_1 preheat_1 steam_3 water_3 preheat_3 off_zoomed_temperature espresso_3_zoomed_temperature" { say [translate {settings}] $::settings(sound_button_in); show_settings } 2285 1420 2560 1600
 
 add_de1_variable "off off_zoomed off_zoomed_temperature" 2290 390 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
 add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" 2290 390 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center" -textvariable {[stop_text_if_espresso_stoppable]} 

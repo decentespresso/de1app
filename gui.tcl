@@ -79,6 +79,8 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 		set newval [expr "1.0 * \$$varname - $bigincrement"]
 	}
 
+	set newval [round_to_two_digits $newval]
+
 	if {$newval > $maxval} {
 		set $varname $maxval
 	} elseif {$newval < $minval} {
@@ -844,6 +846,12 @@ proc set_next_page {machinepage guipage} {
 	msg "set_next_page $machinepage $guipage"
 	set key "machine:$machinepage"
 	set ::nextpage($key) $guipage
+}
+
+proc show_settings {} {
+	backup_settings; 
+	page_to_show_when_off $::active_settings_tab
+	scheduler_feature_hide_show_refresh
 }
 
 proc page_to_show_when_off {page_to_show} {
