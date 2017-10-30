@@ -1291,7 +1291,7 @@ proc copy_pressure_profile_to_advanced_profile {} {
 		transition "smooth" \
 		pressure $::settings(pressure_end) \
 		seconds $::settings(espresso_decline_time) \
-		volume $::settings(decline_stop_volumetric) \
+		volume $::settings(pressure_decline_stop_volumetric) \
 		exit_if 0 \
 		exit_pressure_over 11 \
 		exit_pressure_under 0 \
@@ -1435,11 +1435,12 @@ proc fill_advanced_profile_steps_listbox {} {
 
 proc load_advanced_profile_step {w args} {
 	set stepnum [$::advanced_shot_steps_widget curselection]
-	set ::current_step_number $stepnum
-	#if {$stepnum == ""} {
-	#	set stepnum 0
-	#}
+	if {$stepnum == ""} {
+		#set stepnum
+		return
+	}
 
+	set ::current_step_number $stepnum
 	#set stepnum [current_adv_step]
 
 	unset -nocomplain ::current_adv_step

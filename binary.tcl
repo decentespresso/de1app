@@ -599,7 +599,7 @@ proc de1_packed_shot {} {
 	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
 	set frame3(TriggerVal) 0
-	set frame3(MaxVol) [convert_float_to_U10P0 $::settings(decline_stop_volumetric)]
+	set frame3(MaxVol) [convert_float_to_U10P0 $::settings(pressure_decline_stop_volumetric)]
 
 	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3]]
 

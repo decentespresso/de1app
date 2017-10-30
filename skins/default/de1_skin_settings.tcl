@@ -189,11 +189,11 @@ add_de1_widget "settings_2 settings_2a" graph 24 220 {
 ############################
 # advanced flow profiling
 add_de1_text "settings_2c" 70 230 -text "Steps" -font Helv_10_bold -fill "#7f879a" -anchor "nw" 
-add_de1_text "settings_2c" 960 234 -text "1: Temperature" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
-add_de1_text "settings_2c" 1580 234 -text "2: Pump" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
+add_de1_text "settings_2c" 984 240 -text "1: Temperature" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
+add_de1_text "settings_2c" 1600 240 -text "2: Pump" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
-add_de1_text "settings_2c" 960 830 -text "3: Duration" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
-add_de1_widget "settings_2c" checkbutton 1524 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -bg #FFFFFF -anchor nw -foreground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -command save_current_adv_shot_step
+add_de1_text "settings_2c" 984 830 -text "3: Duration" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
+add_de1_widget "settings_2c" checkbutton 1544 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 
 
 
 add_de1_widget "settings_2c" listbox 70 310 { 
@@ -204,11 +204,11 @@ add_de1_widget "settings_2c" listbox 70 310 {
 
 
 
-add_de1_text "settings_2c" 80 1222 -text [translate "Insert a step"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
+add_de1_text "settings_2c" 70 1222 -text [translate "Insert a step"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_widget "settings_2c" entry 70 1282  {
 	set ::globals(widget_profile_step_save) $widget
 	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); change_current_adv_shot_step_name; }
-	} -width 28 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::profile_step_name_to_add
+	} -width 27 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::profile_step_name_to_add
 
 
 add_de1_button "settings_2c" {say [translate {delete}] $::settings(sound_button_in); delete_current_adv_step} 740 250 920 500

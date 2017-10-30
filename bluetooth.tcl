@@ -497,9 +497,16 @@ proc ble_connect_to_de1 {} {
 	}
 
     set ::de1_name "DE1"
-	set ::currently_connecting_de1_handle [ble connect $::settings(bluetooth_address) de1_ble_handler]
-    msg "Connecting to DE1 on $::settings(bluetooth_address)"
-    return 1
+	catch {
+		set ::currently_connecting_de1_handle [ble connect $::settings(bluetooth_address) de1_ble_handler]
+    	msg "Connecting to DE1 on $::settings(bluetooth_address)"
+    	return 1
+    }
+
+
+	msg "Failed to BLE connect for some reason"
+	return 0    
+    
 }
 
 proc ble_connect_to_skale {} {
@@ -841,14 +848,15 @@ proc de1_ble_handler { event data } {
 								set ::scheduled_skale_tare_id [after 1000 skale_tare]
 							}
 
-							set tempflow [expr { $thisweight - $::de1(scale_weight) }]
-							set flow [expr {($::de1(scale_weight_rate) * 0.9) + ($tempflow * 0.1)}]
+							# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
+							set tempflow [expr { 10 * ($thisweight - $::de1(scale_weight)) }]
+
+							set flow [expr {($::de1(scale_weight_rate) * 0.95) + ($tempflow * 0.05)}]
 							if {$flow < 0} {
 								set flow 0
 							}
 
-							# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
-							set ::de1(scale_weight_rate) [expr {10 * $flow}]
+							set ::de1(scale_weight_rate) $flow
 							
 							set ::de1(scale_weight) $thisweight
 							#msg "weight received: $thisweight : flow: $tempflow"
