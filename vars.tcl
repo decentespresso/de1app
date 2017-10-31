@@ -828,6 +828,23 @@ proc return_temperature_measurement {in} {
 		if {$::settings(enable_fahrenheit) == 1} {
 			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
 		} else {
+			return [subst {[round_to_one_digits $in]ºC}]
+		}
+	} else {
+		if {$::settings(enable_fahrenheit) == 1} {
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+		} else {
+			return [subst {[round_to_integer $in]ºC}]
+		}
+
+	}
+}
+
+proc return_temperature_setting {in} {
+	if {[de1plus]} {
+		if {$::settings(enable_fahrenheit) == 1} {
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+		} else {
 			if {[round_to_half_integer $in] == [round_to_integer $in]} {
 				# don't display a .0 on the number if it's not needed
 				return [subst {[round_to_integer $in]ºC}]
@@ -1951,5 +1968,9 @@ proc scentone_translated_selection { } {
 }
 
 proc round_to_half_integer {in} {
-	return [expr {int($in * 2) / 2.0}]
+	set r 0
+	catch {
+		set r [expr {int($in * 2) / 2.0}]
+	}
+	return $r
 }

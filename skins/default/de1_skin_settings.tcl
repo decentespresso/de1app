@@ -89,12 +89,11 @@ if {[de1plus]} {
 		set ::espresso_pressure_decline_widget_label [add_de1_variable "settings_2 settings_2a" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(pressure_end)]}]
 
 	if {$::settings(enable_fahrenheit) == 1} {
-		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.55 0.055 ::settings(espresso_temperature) 80 100 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
+		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.55 0.055 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
 	} else {
-		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker .5 .5 ::settings(espresso_temperature) 80 100 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
+		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker .5 .5 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
 	}
-	add_de1_variable "settings_2a settings_2b" 2470 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
-
+	add_de1_variable "settings_2a settings_2b" 2470 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
 
 	############################
 	# flow controlled shots
@@ -160,11 +159,11 @@ if {[de1plus]} {
 
 
 	if {$::settings(enable_fahrenheit) == 1} {
-		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.555556 0.555556 ::settings(espresso_temperature) 80 100 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
+		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.555556 0.555556 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
 	} else {
-		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) 80 100 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
+		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
 	}
-	add_de1_variable "settings_2" 2470 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+	add_de1_variable "settings_2" 2470 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
 
 }
 
@@ -215,12 +214,12 @@ add_de1_button "settings_2c" {say [translate {delete}] $::settings(sound_button_
 add_de1_button "settings_2c" {say [translate {add}] $::settings(sound_button_in); add_to_current_adv_step} 740 1200 920 1400
 
 add_de1_text "settings_2c" 1070 680 -text [translate "goal"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_variable "settings_2c" 1070 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_measurement [ifexists ::current_adv_step(temperature)]]}
-	add_de1_button "settings_2c" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker .5 .5 ::current_adv_step(temperature) 80 100 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 980 310 1150 640 ""
+	add_de1_variable "settings_2c" 1070 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_setting [ifexists ::current_adv_step(temperature)]]}
+	add_de1_button "settings_2c" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker .5 .5 ::current_adv_step(temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 980 310 1150 640 ""
 
 add_de1_text "settings_2c" 1380 680 -text [translate "sensor"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" { say [translate {sensor}] $::settings(sound_button_in); if {$::current_adv_step(sensor) == "water"} {  set ::current_adv_step(sensor) "coffee" } else { set ::current_adv_step(sensor) "water" }; save_current_adv_shot_step } 1200 310 1550 680 ""
-	add_de1_variable "settings_2c" 1380 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate $::current_adv_step(sensor)]}
+	add_de1_variable "settings_2c" 1380 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate [ifexists ::current_adv_step(sensor)]]}
 
 add_de1_text "settings_2c" 1710 680 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 2010 680 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
@@ -235,12 +234,12 @@ add_de1_text "settings_2c" 2010 680 -text [translate "pressure"] -font Helv_6 -f
 
 add_de1_text "settings_2c" 2345 680 -text [translate "transition"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" {say [translate {boiler}] $::settings(sound_button_in); if {$::current_adv_step(transition) == "fast"} {  set ::current_adv_step(transition) "smooth" } else { set ::current_adv_step(transition) "fast" }; save_current_adv_shot_step } 2200 310 2500 680 ""
-	add_de1_variable "settings_2c" 2345 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate $::current_adv_step(transition)]}
+	add_de1_variable "settings_2c" 2345 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate [ifexists ::current_adv_step(transition)]]}
 
 
 add_de1_text "settings_2c" 1090 1270 -text [translate "time"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 1 1 ::current_adv_step(seconds) 0 250 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 980 900 1210 1240 ""
-	add_de1_variable "settings_2c" 1090 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[seconds_text [round_to_integer $::current_adv_step(seconds)]]}
+	add_de1_variable "settings_2c" 1090 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[seconds_text [round_to_integer [ifexists ::current_adv_step(seconds)]]]}
 
 add_de1_text "settings_2c" 1360 1270 -text [translate "volume"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 1 1 ::current_adv_step(volume) 0 250 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1260 900 1500 1240 ""
@@ -302,7 +301,7 @@ add_de1_widget "settings_1b" graph 1330 300 {
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised 
 
 
-add_de1_variable "settings_1" 2466 660 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(espresso_temperature)]}
+add_de1_variable "settings_1" 2466 660 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
 
 add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -370,14 +369,13 @@ add_de1_text "settings_4" 1920 898 -text [translate "Scale"] -font Helv_8_bold -
 # advanced features that are normally disabled
 set pos_top 340
 set spacer 66
-
-add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (0 * $spacer)}] {} -text [translate "Show water level"] -indicatoron true  -font Helv_9 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_on)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font Helv_9 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Rate your espresso shots"] -indicatoron true  -font Helv_9 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_rate_espresso)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font Helv_9 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-#add_de1_widget "settings_4" checkbutton 60 540 {} -text [translate "Show group head temperature difference"] -indicatoron true  -font Helv_9 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_group_head_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font Helv_9 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Chart flow rate changes"] -indicatoron true  -font Helv_9 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_flow_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+set optionfont "Helv_9"
+add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (0 * $spacer)}] {} -text [translate "Show water level"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_on)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Rate your espresso shots"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_rate_espresso)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+add_de1_widget "settings_4" checkbutton 60 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Chart flow rate changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_flow_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
 
 
@@ -518,7 +516,7 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::active_settings_tab "settings_4"} 1905 0 2560 188
 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; 
-		if {[array_item_difference ::settings ::settings_backup "skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line"] == 1 } {
+		if {[array_item_difference ::settings ::settings_backup "skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line allow_unheated_water"] == 1 } {
 			.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 			set_next_page off message; page_show message
 		} else {

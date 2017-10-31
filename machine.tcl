@@ -127,6 +127,8 @@ array set ::settings {
 	advanced_shot {}
 	water_time_max 60
 	grinder_dose_weight 0
+	allow_unheated_water 1
+	minimum_water_temperature 1
 	waterlevel_blink_start_level 15
 	waterlevel_indicator_on 1
 	waterlevel_indicator_blink 1

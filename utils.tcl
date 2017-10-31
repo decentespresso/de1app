@@ -846,11 +846,15 @@ proc skin_convert {indir} {
             if {[file extension $skinfile] == ".png"} {
                 catch {
                 	exec convert $skinfile  -resize $dir!  -format png8 ../$dir/$skinfile 
+                    
+                    # additional optional PNG compression step 
+                    #exec zopflipng -q --iterations=1 -y   ../$dir/$skinfile   ../$dir/$skinfile 
+                    
                 }
             } else {
 
                 catch {
-                	exec convert $skinfile -resize $dir!  ../$dir/$skinfile 
+                	exec convert $skinfile -resize $dir!  -quality 90 ../$dir/$skinfile 
                 }
                 if {$skinfile == "icon.jpg"} {
                     # icon files are reduced to 25% of the screen resolution
