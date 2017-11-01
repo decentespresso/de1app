@@ -482,7 +482,7 @@ proc ble_connect_to_de1 {} {
     set ::de1(device_handle) 0
 
 	catch {
-		ble unpair $::settings(bluetooth_address)
+		#ble unpair $::settings(bluetooth_address)
 	}
 
 	if {$::de1(device_handle) != "0"} {
@@ -513,27 +513,22 @@ proc ble_connect_to_skale {} {
 
 	if {$::settings(skale_bluetooth_address) == ""} {
 		msg "No Skale BLE address in settings, so not connecting to it"
+		return
+	}
+
+	if {$::de1(skale_device_handle) != "0"} {
+		msg "Skale already connected, so not reconnecting to it"
+		return
 	}
 
 	if {$::de1(device_handle) == 0} {
 		#msg "No DE1 connected, so delay connecting to Skale"
-		after 2000 ble_connect_to_skale
+		after 1000 ble_connect_to_skale
 		return
 	}
 
 	catch {
-		ble unpair $::settings(skale_bluetooth_address)
-	}
-
-	if {$::de1(skale_device_handle) != "0"} {
-		catch {
-			ble close $::de1(skale_device_handle)
-		}
-	}
-
-	if {$::settings(skale_bluetooth_address) == ""} {
-		# if no bluetooth address set, then don't try to connect
-		return ""
+		#ble unpair $::settings(skale_bluetooth_address)
 	}
 
 	set ::currently_connecting_skale_handle [ble connect $::settings(skale_bluetooth_address) de1_ble_handler]
@@ -656,10 +651,7 @@ proc de1_ble_handler { event data } {
 					    }
 
 				    	set ::de1(skale_device_handle) 0
-
-				    	#if {$::de1(device_handle) != 0} {
-				    		ble_connect_to_skale
-				    	#}
+			    		ble_connect_to_skale
 				    }
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1
@@ -669,7 +661,7 @@ proc de1_ble_handler { event data } {
 					if {$::scanning != 0} {
 						ble_connect_to_de1
 
-						if {$::settings(skale_bluetooth_address) != ""} {
+						if {$::de1(skale_device_handle) == 0 && $::settings(skale_bluetooth_address) != ""} {
 							#userdata_append "connect to Skale" ble_connect_to_skale
 							ble_connect_to_skale
 						}

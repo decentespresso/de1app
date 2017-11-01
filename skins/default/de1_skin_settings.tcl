@@ -192,7 +192,7 @@ add_de1_text "settings_2c" 984 240 -text "1: Temperature" -font Helv_9_bold -fil
 add_de1_text "settings_2c" 1600 240 -text "2: Pump" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
 add_de1_text "settings_2c" 984 830 -text "3: Duration" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
-add_de1_widget "settings_2c" checkbutton 1544 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 
+add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -selectcolor #7f879a 
 
 
 add_de1_widget "settings_2c" listbox 70 310 { 
@@ -249,23 +249,23 @@ add_de1_text "settings_2c" 1360 1270 -text [translate "volume"] -font Helv_6 -fi
 add_de1_text "settings_2c" 1654 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 1654 1270 -text [translate "goes over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1654 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_over"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_over) 11] } else  { return "-" } ] }
-	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); if { [ifexists ::current_adv_step(exit_type)] != "pressure_over" } { set ::current_adv_step(exit_type) "pressure_over" } else { vertical_clicker .1 .1 ::current_adv_step(exit_pressure_over) 0 6 %x %y %x0 %y0 %x1 %y1 }; save_current_adv_shot_step; } 1540 900 1750 1240 ""
+	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_over" } { set ::current_adv_step(exit_type) "pressure_over" } else { vertical_clicker .1 .1 ::current_adv_step(exit_pressure_over) 0 6 %x %y %x0 %y0 %x1 %y1 }; save_current_adv_shot_step; } 1540 900 1750 1240 ""
 
 add_de1_text "settings_2c" 1890 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 1890 1270 -text [translate "goes under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1890 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_under"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_under) 0] } else  { return "-" } ] }
-	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); if { [ifexists ::current_adv_step(exit_type)] != "pressure_under" } { set ::current_adv_step(exit_type) "pressure_under" } else { vertical_clicker .1 .1 ::current_adv_step(exit_pressure_under) 0 6 %x %y %x0 %y0 %x1 %y1}; save_current_adv_shot_step; } 1790 900 1990 1240 ""
+	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_under" } { set ::current_adv_step(exit_type) "pressure_under" } else { vertical_clicker .1 .1 ::current_adv_step(exit_pressure_under) 0 6 %x %y %x0 %y0 %x1 %y1}; save_current_adv_shot_step; } 1790 900 1990 1240 ""
 
 
 add_de1_text "settings_2c" 2144 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 2144 1270 -text [translate "goes over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 2144 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_over"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_over) 6]} else  { return "-" } ] }
-	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); if {[ifexists ::current_adv_step(exit_type)] != "flow_over" } { set ::current_adv_step(exit_type) "flow_over" } else { vertical_clicker .1 .1 ::current_adv_step(exit_flow_over) 0 6 %x %y %x0 %y0 %x1 %y1}; save_current_adv_shot_step; } 2020 900 2230 1240 ""
+	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if {[ifexists ::current_adv_step(exit_type)] != "flow_over" } { set ::current_adv_step(exit_type) "flow_over" } else { vertical_clicker .1 .1 ::current_adv_step(exit_flow_over) 0 6 %x %y %x0 %y0 %x1 %y1}; save_current_adv_shot_step; } 2020 900 2230 1240 ""
 
 add_de1_text "settings_2c" 2394 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 2394 1270 -text [translate "goes under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 2394 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_under"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_under) 0] } else  { return "-" } ] }
-	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); if { [ifexists ::current_adv_step(exit_type)] != "flow_under" } { set ::current_adv_step(exit_type) "flow_under" } else { vertical_clicker .1 .1 ::current_adv_step(exit_flow_under) 0 6 %x %y %x0 %y0 %x1 %y1}; save_current_adv_shot_step; } 2270 900 2500 1240 ""
+	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "flow_under" } { set ::current_adv_step(exit_type) "flow_under" } else { vertical_clicker .1 .1 ::current_adv_step(exit_flow_under) 0 6 %x %y %x0 %y0 %x1 %y1}; save_current_adv_shot_step; } 2270 900 2500 1240 ""
 
 
 
@@ -342,7 +342,7 @@ proc scheduler_feature_hide_show_refresh {} {
 }
 
 # scheduled power up/down
-add_de1_widget "settings_3" checkbutton 50 1120 {} -text [translate "Scheduler"] -padx 0 -pady 0 -indicatoron true  -font Helv_10_bold -bg #FFFFFF -anchor nw -foreground #7f879a -variable ::settings(scheduler_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -command scheduler_feature_hide_show_refresh
+add_de1_widget "settings_3" checkbutton 44 1120 {} -text [translate "Scheduler"] -padx 0 -pady 0 -indicatoron true  -font Helv_10_bold -bg #FFFFFF -anchor nw -foreground #7f879a -variable ::settings(scheduler_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -command scheduler_feature_hide_show_refresh
 	set scheduler_widget_id1 [add_de1_widget "settings_3_manual" scale 50 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 	set scheduler_widget_id2 [add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -textvariable {[translate "Heat up:"] [format_alarm_time $::settings(scheduler_wake)]}]
 	set scheduler_widget_id3 [add_de1_widget "settings_3_manual" scale 670 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
@@ -556,5 +556,5 @@ proc setting_profile_type_to_text { in } {
 	}
 }
 
-#set_next_page off settings_2c
+set_next_page off settings_2c
 

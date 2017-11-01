@@ -439,15 +439,14 @@ proc start_idle {} {
 	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
 
+	if {$::de1(skale_device_handle) == 0 && $::settings(skale_bluetooth_address) != ""} {
+		ble_connect_to_skale
+	}
+
 	if {$::de1(device_handle) == 0} {
 		update_de1_state "$::de1_state(Idle)\x0"
 		ble_connect_to_de1
-		ble_connect_to_skale
 		return
-	}
-
-	if {$::de1(skale_device_handle) == 0} {
-		ble_connect_to_skale
 	}
 
 
