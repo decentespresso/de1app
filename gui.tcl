@@ -351,11 +351,15 @@ proc msg {text} {
 				#pop 
 				#set loglines [split $::debuglog "\n"]
 			}
+
+	        puts $text
+
 			return
 
 	        $::debugwidget insert end "$text\n"
 	        set txt [$::debugwidget get 1.0 end]
 	        tk::TextSetCursor $::debugwidget {insert display lineend}
+
 	        #append ::debuglog $text\n
 	        return
 
@@ -522,12 +526,14 @@ proc add_de1_widget {args} {
 	incr widget_cnt
 	set widgettype [lindex $args 1]
 
-	set widget ".can.widget_${widgettype}_$widget_cnt"
+	set widget ".can.w_${widgettype}_$widget_cnt"
 
+	set errcode 0
 	set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
-	set errcode [catch { 
+	#msg $torun
+	#set errcode [catch { 
 		eval $torun
-	} err]
+	#} err]
 
 	if {$errcode == 1} {
 		puts $err
@@ -852,6 +858,7 @@ proc show_settings {} {
 	backup_settings; 
 	page_to_show_when_off $::active_settings_tab
 	scheduler_feature_hide_show_refresh
+	preview_profile 
 }
 
 proc page_to_show_when_off {page_to_show} {

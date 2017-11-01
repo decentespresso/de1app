@@ -1016,8 +1016,10 @@ proc skin_directories {} {
 }
 
 
-proc fill_history_listbox {widget} {
+proc fill_history_listbox {} {
 	#puts "fill_skin_listbox $widget" 
+	set widget $::globals(history_listbox)
+
 	$widget delete 0 99999
 
 	set cnt 0
@@ -1031,12 +1033,12 @@ proc fill_history_listbox {widget} {
 
 	bind $widget <<ListboxSelect>> [list ::preview_history %W] 	
 
-	set ::globals(history_listbox) $widget
-	preview_history $widget
+	preview_history
 }
 
-proc fill_skin_listbox {widget} {
+proc fill_skin_listbox {} {
 	#puts "fill_skin_listbox $widget" 
+	set widget $::globals(tablet_styles_listbox)
 	$widget delete 0 99999
 
 	set cnt 0
@@ -1062,13 +1064,10 @@ proc fill_skin_listbox {widget} {
 	#$widget itemconfigure $current_skin_number -foreground blue
 
 	$widget selection set $current_skin_number
+	make_current_listbox_item_blue $widget
 
-	bind $widget <<ListboxSelect>> [list ::preview_tablet_skin %W] 	
+	preview_tablet_skin
 
-	set ::globals(tablet_styles_listbox) $widget
-	preview_tablet_skin $widget
-
-	#make_current_listbox_item_blue $widget
 }
 
 
@@ -1134,8 +1133,8 @@ proc delete_selected_profile {} {
 
 	file delete "[homedir]/profiles/${todel}.tcl"
 	set ::settings(profile) "default"
-	fill_profiles_listbox $::globals(profiles_listbox)
-	preview_profile $::globals(profiles_listbox)
+	fill_profiles_listbox 
+	#preview_profile 
 
 }
 
@@ -1176,10 +1175,7 @@ proc fill_ble_listbox {} {
 
 	#set ::globals(ble_listbox) $widget
 
-	bind $widget <<ListboxSelect>> [list ::change_bluetooth_device %W] 	
-	
 	# john - probably makes sense for "pair" to occur on item tap
-	#bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
 	make_current_listbox_item_blue $widget
 }
 
@@ -1190,8 +1186,6 @@ proc fill_ble_skale_listbox {} {
 	set cnt 0
 	set current_ble_number 0
 
-	#puts "skales: $::skale_bluetooth_list"
-
 	foreach d [lsort -dictionary -increasing $::skale_bluetooth_list] {
 		$widget insert $cnt $d
 		if {[ifexists ::settings(skale_bluetooth_address)] == $d} {
@@ -1201,30 +1195,25 @@ proc fill_ble_skale_listbox {} {
 	}
 	
 	$widget selection set $current_ble_number;
-
-	#set ::globals(ble_skale_listbox) $widget
-
-	bind $widget <<ListboxSelect>> [list ::change_skale_bluetooth_device %W] 	
 	
-	# john - probably makes sense for "pair" to occur on item tap
-	#bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
 	make_current_listbox_item_blue $widget
 }
 
 
-proc fill_profiles_listbox {widget} {
-
-	#puts "fill_profiles_listbox $widget"
+proc fill_profiles_listbox {} {
+	set widget  $::globals(profiles_listbox)
 	set ::settings(profile_to_save) $::settings(profile)
 
 	$widget delete 0 99999
 	set cnt 0
 	set ::current_profile_number 0
+
 	foreach d [lsort -dictionary -increasing [profile_directories]] {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
-		$widget insert $cnt $d
+		$widget insert $cnt $d -text "$d"
+		#puts "$widget insert $cnt $d"
 		if {$::settings(profile) == $d} {
 			set ::current_profile_number $cnt
 			puts "current profile of '$d' is #$cnt"
@@ -1233,36 +1222,18 @@ proc fill_profiles_listbox {widget} {
 		if {[ifexists ::de1plus_profile($d)] == 1} {
 			# mark profiles that require the DE1PLUS model with a different color to highlight them
 			#puts "de1plus skin: $d"
-			$widget itemconfigure $cnt -background #F0F0FF
+			#catch {
+				$widget itemconfigure $cnt -background #F0F0FF
+			#}
 		}
 
 		incr cnt
 	}
 	
-	#$widget itemconfigure $current_profile_number -foreground blue
 	$widget selection set $::current_profile_number;
-	#$widget activate $::current_profile_number;
-
-	#$widget selection set 3
-	#puts "$widget selection set $current_profile_number"
-
 	set ::globals(profiles_listbox) $widget
-	bind $widget <<ListboxSelect>> [list ::preview_profile %W] 	
 	make_current_listbox_item_blue $widget
-	#::preview_profile $widget
-
-		#if {[de1plus]} {
-			#set_next_page off "$::settings(settings_profile_type)_preview"; #page_show off
-			#set_next_page settings_2 "$::settings(settings_profile_type)_preview"; #page_show off
-			#page_show off
-		#}
-
-#		if {$::settings(settings_profile_type) == "settings_profile_pressure"} {
-	#		set_next_page settings_2 "settings_2"; #page_show off
-		#} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
-		#	set_next_page settings_2 "settings_2a"; #page_show off
-		#}
-
+	preview_profile 
 }
 
 proc copy_pressure_profile_to_advanced_profile {} {
@@ -1403,21 +1374,10 @@ proc copy_flow_profile_to_advanced_profile {} {
 proc fill_advanced_profile_steps_listbox {} {
 
 	set widget $::advanced_shot_steps_widget
-	#set cs [$::advanced_shot_steps_widget curselection]
 	set cs [ifexists ::current_step_number]
 
 	$widget delete 0 99999
 	set cnt 0
-	set current_profile_number 0
-
-	if {$::settings(advanced_shot) == ""} {
-		#copy_pressure_profile_to_advanced_profile
-	}
-
-	#set steps [list  "Preinfusion" "Hold" "Decline"]
-
-	#set cnt 0
-
 	set current_profile_number 0
 
 	foreach step $::settings(advanced_shot) {
@@ -1426,11 +1386,6 @@ proc fill_advanced_profile_steps_listbox {} {
 
 		set name $props(name)
 		$widget insert $cnt "[expr {1 + $cnt}]. $name"
-		#if {$::settings(profile) == $name} {
-		#	set current_profile_number $cnt
-			#puts "current profile of '$d' is #$cnt"
-		#}
-
 		incr cnt
 	}
 	
@@ -1440,17 +1395,35 @@ proc fill_advanced_profile_steps_listbox {} {
 	} else {
 		$::advanced_shot_steps_widget selection set $cs;
 	}
-	#puts "sel: $::advanced_shot_steps_widget:[$::advanced_shot_steps_widget curselection]"
 
-	set ::globals(widget_profile_step_name) $widget
-	bind $widget <<ListboxSelect>> [list ::load_advanced_profile_step %W] 	
-	
-	load_advanced_profile_step $widget
-	#.can focus $widget
+	#load_advanced_profile_step
 	update
 }
 
-proc load_advanced_profile_step {w args} {
+# on androwish some listbox selctions are causing multiple cascading events, and we don't know why
+# this is a work around that assumes that each cascading event will happen within 100ms of each others
+set time_of_last_listbox_event [clock milliseconds]
+proc check_for_multiple_listbox_events_bug {} {
+
+	set now [clock milliseconds]
+	set diff [expr {$now - $::time_of_last_listbox_event}]
+	set ::time_of_last_listbox_event $now
+
+	if {$diff < 100} {
+		#msg "duplicate listbox event detected"
+		return 1
+	}
+
+	return 0
+}
+
+proc load_advanced_profile_step {} {
+	msg "load_advanced_profile_step [clock milliseconds]"
+
+	if {[check_for_multiple_listbox_events_bug] == 1} {
+		return
+	}
+
 	set stepnum [$::advanced_shot_steps_widget curselection]
 	if {$stepnum == ""} {
 		#set stepnum
@@ -1539,8 +1512,18 @@ proc save_new_tablet_skin_setting {} {
 }
 
 
-proc preview_tablet_skin {w args} {
+proc preview_tablet_skin {} {
+	if {[check_for_multiple_listbox_events_bug] == 1} {
+		return
+	}
 	catch {
+	#error "prev"
+		msg "preview_tablet_skin"
+		set w $::globals(tablet_styles_listbox)
+		if {[$w curselection] == ""} {
+			msg "no current skin selection"
+			return
+		}
 		set skindir [$w get [$w curselection]]
 		set ::settings(skin) $skindir
 		#set ::settings(skin)
@@ -1571,14 +1554,14 @@ proc preview_history {w args} {
 		espresso_temperature_mix length 0; espresso_temperature_mix append $props(espresso_temperature_mix)
 
 		make_current_listbox_item_blue $::globals(history_listbox)
+		
 	}
 }
 
 
 proc change_bluetooth_device {w args} {
-	if {$w == ""} {
-		return
-	}
+
+	set w $::ble_listbox_widget
 	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
 	if {[$w curselection] == ""} {
 		# no current selection
@@ -1618,9 +1601,20 @@ proc change_skale_bluetooth_device {w args} {
 }
 
 
-
-proc preview_profile {w args} {
+set preview_profile_counter 0
+proc preview_profile {} {
+	if {[check_for_multiple_listbox_events_bug] == 1} {
+		return
+	}
 	#catch {
+		msg "preview_profile: [clock milliseconds]"
+
+		incr ::preview_profile_counter
+		set w $::globals(profiles_listbox)
+	    #msg "$::preview_profile_counter : $w vs $win"
+
+	    #$w selection set active
+
 		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
 		#puts "w: $w '[$w curselection]'"
 		if {[$w curselection] == ""} {
@@ -1629,7 +1623,9 @@ proc preview_profile {w args} {
 			#set profile $::current_profile_number
 		}
 
+		#set profile [$w get [$w curselection]]
 		set profile [$w get [$w curselection]]
+		#set profile [$w get active]
 		set ::settings(profile) $profile
 		set ::settings(profile_notes) ""
 		set fn "[homedir]/profiles/${profile}.tcl"
@@ -1658,11 +1654,15 @@ proc preview_profile {w args} {
 			}
 		}
 		update_onscreen_variables
+
+		catch {
+			break
+		}
 	#}
 }
 
 proc load_settings_vars {fn} {
-	
+	#error "load_settings_vars"
 	# set the default profile type to use, this can be over-ridden by the saved profile
 	if {[de1plus]} {
 		set ::settings(settings_profile_type) "settings_2a"
@@ -1699,7 +1699,7 @@ proc save_profile {} {
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"
 	save_settings_vars $fn $profile_vars
 	set ::settings(profile) $profile_name_to_save
-	fill_profiles_listbox $::globals(profiles_listbox)
+	fill_profiles_listbox 
 	update_de1_explanation_chart
 	set ::settings(profile_to_save) [translate "Saved"]
 
