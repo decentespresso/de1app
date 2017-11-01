@@ -1396,7 +1396,7 @@ proc fill_advanced_profile_steps_listbox {} {
 		$::advanced_shot_steps_widget selection set $cs;
 	}
 
-	#load_advanced_profile_step
+	load_advanced_profile_step
 	update
 }
 
@@ -1559,7 +1559,7 @@ proc preview_history {w args} {
 }
 
 
-proc change_bluetooth_device {w args} {
+proc change_bluetooth_device {} {
 
 	set w $::ble_listbox_widget
 	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]

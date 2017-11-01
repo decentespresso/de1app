@@ -1,5 +1,5 @@
 set ::skindebug 0
-set ::debugging 1
+set ::debugging 0
 
 puts "debugging: $::debugging"
 
