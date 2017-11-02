@@ -404,7 +404,7 @@ add_de1_widget "settings_4" listbox 1320 950 {
 
 add_de1_widget "settings_4" listbox 1920 950 { 
 		set ::ble_skale_listbox_widget $widget
-		bind $widget <<ListboxSelect>> [list ::change_skale_bluetooth_device] 	
+		bind $widget <<ListboxSelect>> ::change_skale_bluetooth_device
 		fill_ble_skale_listbox
 	} -background #fbfaff -font Helv_15 -bd 0 -height 5 -width 16 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 

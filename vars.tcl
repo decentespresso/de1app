@@ -1580,7 +1580,9 @@ proc change_bluetooth_device {} {
 }
 
 
-proc change_skale_bluetooth_device {w args} {
+proc change_skale_bluetooth_device {} {
+	set w $::ble_skale_listbox_widget
+
 	if {$w == ""} {
 		return
 	}
