@@ -90,10 +90,16 @@ proc language {} {
     #return "fr"
 }
 
+proc translation_langs {} {
+    return {fr de it es pt zh-hans zh-hant kr jp ar hu tr th da sv hu fi ro hi pl no sk gr}
+
+}
+
+
 proc translate {english} {
 
     if {[language] == "en"} {
-        return $english
+        #return $english
     }
 
     global translation
@@ -111,8 +117,13 @@ proc translate {english} {
     # if no translation found, return the english text
     if {$::android != 1} {
         if {[info exists ::already_shown_trans($english)] != 1} {
-            set t [subst {"$english" \{fr "$english" de "$english"\ es "$english"\ it "$english"\ pt "$english"\ zh-hant "$english"\ zh-hans "$english"\}}]
-            puts "Appending new phrase: $english"
+            set t [subst {"$english" \{}]
+            foreach l [translation_langs] {
+                set translation($l) $english
+                append t [subst {$l "$english" }]
+            }
+            append t "\}"
+            #puts "Appending new phrase: $english"
             #append_file "[homedir]/translation.tcl" $t
             set ::already_shown_trans($english) 1
         }
@@ -485,7 +496,7 @@ proc skin_directory {} {
 
 
 proc settings_directory_graphics {} {
-    z
+    
     global screen_size_width
     global screen_size_height
 
