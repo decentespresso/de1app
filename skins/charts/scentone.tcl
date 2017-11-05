@@ -37,12 +37,12 @@ add_de1_text "describe_espresso describe_espresso2" 1760 1520 -text [translate "
 add_de1_button "describe_espresso" {say [translate {Scent One}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 2016 1206 2560 1400
 
 #add_de1_button "scentone_1" {say [translate {cancel}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off } 1505 1406 2015 1600
-add_de1_button "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" {say [translate {save}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 2016 1406 2560 1600
 #add_de1_button "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" {say [translate {save}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 1505 1406 2015 1600
 
 add_de1_text "scentone_1" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "scentone_1" 1760 1520 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_button "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" {say [translate {save}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 2016 1406 2560 1600
 
 add_de1_button "scentone_1" {say [translate {Scent One}] $::settings(sound_button_in); web_browser "https://decentespresso.com/scentone" } 10 1406 560 1600
 add_de1_button "scentone_1" {say [translate {reset}] $::settings(sound_button_in); set ::settings(scentone) "" } 1505 1406 2015 1600

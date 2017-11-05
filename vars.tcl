@@ -1071,7 +1071,7 @@ proc fill_skin_listbox {} {
 }
 
 
-proc make_current_listbox_item_blue { widget } {
+proc make_current_listbox_item_blue { widget} {
 
 	for {set x 0} {$x < [$widget index end]} {incr x} {
 		if {$x == [$widget curselection]} {
@@ -1110,7 +1110,7 @@ proc profile_directories {} {
 	    if {[string first "settings_profile_type settings_2b" $filecontents] != -1 || [string first "settings_profile_type settings_2c" $filecontents] != -1 || [string first "settings_profile_type settings_profile_flow" $filecontents] != -1 || [string first "settings_profile_type settings_profile_advanced" $filecontents] != -1} {
 	    	if {!$de1plus} {
 		    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
-		    	puts "Skipping $d"
+		    	#puts "Skipping $d"
 		    	continue
 		    }
 		    #puts "de1+ profile: $d"
@@ -1212,19 +1212,11 @@ proc fill_profiles_listbox {} {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
-		$widget insert $cnt $d -text "$d"
+		$widget insert $cnt $d 
 		#puts "$widget insert $cnt $d"
 		if {$::settings(profile) == $d} {
 			set ::current_profile_number $cnt
-			puts "current profile of '$d' is #$cnt"
-		}
-
-		if {[ifexists ::de1plus_profile($d)] == 1} {
-			# mark profiles that require the DE1PLUS model with a different color to highlight them
-			#puts "de1plus skin: $d"
-			#catch {
-				$widget itemconfigure $cnt -background #F0F0FF
-			#}
+			#puts "current profile of '$d' is #$cnt"
 		}
 
 		incr cnt
@@ -1232,7 +1224,7 @@ proc fill_profiles_listbox {} {
 	
 	$widget selection set $::current_profile_number;
 	set ::globals(profiles_listbox) $widget
-	make_current_listbox_item_blue $widget
+	make_current_listbox_item_blue $widget 
 	preview_profile 
 }
 
@@ -1293,7 +1285,7 @@ proc copy_pressure_profile_to_advanced_profile {} {
 
 
 proc copy_flow_profile_to_advanced_profile {} {
-	puts "copy_flow_profile_to_advanced_profile"
+	#puts "copy_flow_profile_to_advanced_profile"
 	set preinfusion [list \
 		name [translate "preinfusion"] \
 		temperature $::settings(espresso_temperature) \
@@ -1404,6 +1396,8 @@ proc fill_advanced_profile_steps_listbox {} {
 # this is a work around that assumes that each cascading event will happen within 100ms of each others
 set time_of_last_listbox_event [clock milliseconds]
 proc check_for_multiple_listbox_events_bug {} {
+	msg "::de1(current_context) $::de1(current_context)"
+	return 0
 
 	set now [clock milliseconds]
 	set diff [expr {$now - $::time_of_last_listbox_event}]
@@ -1418,11 +1412,15 @@ proc check_for_multiple_listbox_events_bug {} {
 }
 
 proc load_advanced_profile_step {} {
-	msg "load_advanced_profile_step [clock milliseconds]"
+	#msg "load_advanced_profile_step [clock milliseconds]"
 
-	if {[check_for_multiple_listbox_events_bug] == 1} {
-		return
+	if {$::de1(current_context) != "settings_2c"} {
+		return 
 	}
+
+	#if {[check_for_multiple_listbox_events_bug] == 1} {
+	#	return
+	#}
 
 	set stepnum [$::advanced_shot_steps_widget curselection]
 	if {$stepnum == ""} {
@@ -1513,9 +1511,13 @@ proc save_new_tablet_skin_setting {} {
 
 
 proc preview_tablet_skin {} {
-	if {[check_for_multiple_listbox_events_bug] == 1} {
-		return
+	if {$::de1(current_context) != "settings_3"} {
+		return 
 	}
+
+	#if {[check_for_multiple_listbox_events_bug] == 1} {
+	#	return
+	#}
 	catch {
 	#error "prev"
 		msg "preview_tablet_skin"
@@ -1605,11 +1607,15 @@ proc change_skale_bluetooth_device {} {
 
 set preview_profile_counter 0
 proc preview_profile {} {
-	if {[check_for_multiple_listbox_events_bug] == 1} {
-		return
+	if {$::de1(current_context) != "settings_1"} {
+		return 
 	}
+
+	#if {[check_for_multiple_listbox_events_bug] == 1} {
+	#	return
+	#}
 	#catch {
-		msg "preview_profile: [clock milliseconds]"
+		#msg "preview_profile: [clock milliseconds]"
 
 		incr ::preview_profile_counter
 		set w $::globals(profiles_listbox)
@@ -1688,7 +1694,12 @@ proc save_settings_vars {fn varlist} {
 		append txt "[list $k] [list $v]\n"
 	}
 
-    write_file $fn $txt
+	set success 0
+	catch {
+	    write_file $fn $txt
+	    set success 1
+	}
+	return $success
 }
 
 proc save_profile {} {
@@ -1699,17 +1710,26 @@ proc save_profile {} {
 	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature}
 	set profile_name_to_save $::settings(profile_to_save) 
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"
-	save_settings_vars $fn $profile_vars
-	set ::settings(profile) $profile_name_to_save
-	fill_profiles_listbox 
-	update_de1_explanation_chart
-	set ::settings(profile_to_save) [translate "Saved"]
+	if {[save_settings_vars $fn $profile_vars] == 1} {
+		set ::settings(profile) $profile_name_to_save
+		fill_profiles_listbox 
+		update_de1_explanation_chart
+		set ::settings(profile_to_save) [translate "Saved"]
 
-	after 1000 {
-		set ::settings(profile_to_save) $::settings(profile)
+		after 1000 {
+			set ::settings(profile_to_save) $::settings(profile)
 
-		# moves the cursor to the end of the seletion after showing the "saved" message.
-		after 1000 $::globals(widget_profile_name_to_save) icursor 999
+			# moves the cursor to the end of the seletion after showing the "saved" message.
+			$::globals(widget_profile_name_to_save) icursor 999
+		}
+	} else {
+		set ::settings(profile_to_save) [translate "Invalid name"]
+		after 2000 {
+			set ::settings(profile_to_save) $::settings(profile)
+
+			# moves the cursor to the end of the seletion after showing the "saved" message.
+			$::globals(widget_profile_name_to_save) icursor 999
+		}
 	}
 }
 

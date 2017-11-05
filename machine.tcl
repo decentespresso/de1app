@@ -16,6 +16,7 @@ package provide de1_machine 1.0
 
 
 array set ::de1 {
+	water_refill_point 2
 	advanced_shot_moveone_enabled 1
     found    0
     scanning 1

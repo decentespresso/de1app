@@ -1,10 +1,10 @@
 espresso_hold_time 8
-preinfusion_time 15
+preinfusion_time 10
 espresso_pressure 9.0
 espresso_decline_time 20
 pressure_end 6.0
 espresso_temperature 91.78
-settings_profile_type settings_2a
+settings_profile_type settings_2
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6
 flow_profile_hold 4.0
