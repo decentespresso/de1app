@@ -185,11 +185,11 @@ add_de1_widget "settings_2 settings_2a" graph 24 220 {
 
 ############################
 # advanced flow profiling
-add_de1_text "settings_2c" 70 230 -text "Steps" -font Helv_10_bold -fill "#7f879a" -anchor "nw" 
-add_de1_text "settings_2c" 984 240 -text "1: Temperature" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
-add_de1_text "settings_2c" 1600 240 -text "2: Pump" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
+add_de1_text "settings_2c" 70 230 -text [translate "Steps"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" 
+add_de1_text "settings_2c" 984 240 -text [translate "1: Temperature"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
+add_de1_text "settings_2c" 1600 240 -text [translate "2: Pump"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
-add_de1_text "settings_2c" 984 830 -text "3: Duration" -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
+add_de1_text "settings_2c" 984 830 -text [translate "3: Duration"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
 #add_de1_variable "settings_2c" 2238 830 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {$::settings(settings_profile_type)}
 
@@ -529,7 +529,8 @@ add_de1_text "settings_4" 1590 100 -text [translate "OTHER"] -font Helv_10_bold 
 add_de1_text "settings_4" 2215 100 -text [translate "MACHINE"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; fill_skin_listbox; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::active_settings_tab "settings_1"} 0 0 641 188
+#fill_skin_listbox; 
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::active_settings_tab "settings_1"} 0 0 641 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type)} 642 0 1277 188 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::active_settings_tab "settings_3"} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::active_settings_tab "settings_4"} 1905 0 2560 188

@@ -810,9 +810,9 @@ proc setting_water_temperature {} {
 
 proc return_html_temperature_units {} {
 	if {$::settings(enable_fahrenheit) == 1} {
-		return "ºF"
+		return "°F"
 	} else {
-		return "ºC"
+		return "°C"
 	}
 }
 proc return_temperature_number {in} {
