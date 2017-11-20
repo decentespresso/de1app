@@ -23,10 +23,9 @@ load_font "pixel2" "[skin_directory]/pixel.ttf" 18
 #load_font "eightbit" "[skin_directory]/eightbit.ttf" 24 12
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off water" 2150 1125 -text [translate "HOT WATER"] -font {pixel} -fill "#ffffff" -anchor "center" 
-add_de1_text "off espresso" 455 1125 -text [translate "ESPRESSO"] -font {pixel} -fill "#ffffff" -anchor "center" 
-add_de1_text "off" 1325 1125  -text [translate "STEAM"] -font {pixel} -fill "#ffffff" -anchor "center" 
-add_de1_text "steam" 2055 1125  -text [translate "STEAM"] -font {pixel} -fill "#ffffff" -anchor "center" 
+add_de1_text "off espresso" 455 1100 -text [translate "ESPRESSO"] -font {pixel} -fill "#ffffff" -anchor "center" 
+add_de1_text "off steam" 1318 1100  -text [translate "STEAM"] -font {pixel} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water" 2110 1100 -text [translate "HOT WATER"] -font {pixel} -fill "#ffffff" -anchor "center" 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
 add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 75 385 775 1250
@@ -37,24 +36,6 @@ add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 300 270
 add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2250 0 2560 270
 
-#when Espresso is running this will show the geeky info
-
-add_de1_text "espresso" 1835 350 -text [translate "ESPRESSO"] -font pixel -fill "#2d3046" -anchor "center" 
-
-add_de1_variable "espresso" 1845 420 -text "" -font pixel -fill "#ffffff" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
-
-add_de1_text "espresso" 1850 535 -justify right -anchor "ne" -text [translate "Elapsed:"] -font pixel2 -fill "#2d3046" -width 520
-add_de1_variable "espresso" 1875 535 -justify left -anchor "nw" -text "" -font pixel2 -fill "#42465c" -width 520 -textvariable {[pour_timer][translate "s"]} 
-
-add_de1_text "espresso" 1850 650 -justify right -anchor "ne" -text [translate "Auto off:"] -font pixel2 -fill "#2d3046" -width 520
-add_de1_variable "espresso" 1875 650 -justify left -anchor "nw" -text "" -font pixel2  -fill "#42465c" -width 520 -textvariable {[setting_espresso_max_time_text]} 
-
-add_de1_text "espresso" 1850 750 -justify right -anchor "ne" -text [translate "Pressure:"] -font pixel2 -fill "#2d3046" -width 520
-add_de1_variable "espresso" 1875 750 -justify left -anchor "nw" -text "" -font pixel2 -fill "#42465c" -width 520 -textvariable {[pressure_text]} 
-
-add_de1_text "espresso" 1850 850 -justify right -anchor "ne" -text [translate "Water temp:"] -font pixel2 -fill "#2d3046" -width 520
-add_de1_variable "espresso" 1875 850 -justify left -anchor "nw" -text "" -font pixel2 -fill "#42465c" -width 520 -textvariable {[watertemp_text]} 
-\
 ##############################################################################################################################################################################################################################################################################
 
 # the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.

@@ -2,10 +2,29 @@ set ::skindebug 0
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
-add_de1_page "off" "[skin_directory_graphics]/nothing_on.jpg"
-add_de1_page "espresso" "[skin_directory_graphics]/espresso_on.jpg"
-add_de1_page "steam" "[skin_directory_graphics]/steam_on.jpg"
-add_de1_page "water" "[skin_directory_graphics]/tea_on.jpg"
+if {[file exists "[skin_directory_graphics]/nothing_on.png"]} {
+	add_de1_page "off" "[skin_directory_graphics]/nothing_on.png"
+} else {
+	add_de1_page "off" "[skin_directory_graphics]/nothing_on.jpg"
+}
+
+if {[file exists "[skin_directory_graphics]/espresso_on.png"]} {
+	add_de1_page "espresso" "[skin_directory_graphics]/espresso_on.png"
+} else {
+	add_de1_page "espresso" "[skin_directory_graphics]/espresso_on.jpg"
+}
+
+if {[file exists "[skin_directory_graphics]/steam_on.png"]} {
+	add_de1_page "steam" "[skin_directory_graphics]/steam_on.png"
+} else {
+	add_de1_page "steam" "[skin_directory_graphics]/steam_on.jpg"
+}
+
+if {[file exists "[skin_directory_graphics]/tea_on.png"]} {
+	add_de1_page "water" "[skin_directory_graphics]/tea_on.png"
+} else {
+	add_de1_page "water" "[skin_directory_graphics]/tea_on.jpg"
+}
 
 # most skins will not bother replacing these graphics
 add_de1_page "sleep" "[defaultskin_directory_graphics]/sleep.jpg"

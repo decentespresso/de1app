@@ -683,7 +683,7 @@ proc update_chart {} {
 
 proc de1_connected_state { {hide_delay 0} } {
 
-	set hide_delay 0
+	set hide_delay $::settings(display_connected_msg_seconds)
 
 	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
 	set elapsed [expr {[clock seconds] - $::de1(connect_time)}]
@@ -701,6 +701,11 @@ proc de1_connected_state { {hide_delay 0} } {
 
 	if {$since_last_ping < 5} {
 		#borg spinner off
+
+		if {$::de1(substate) != 0} {
+			return [translate Wait]
+		}
+
 		if {$elapsed > $hide_delay && $hide_delay != 0} {
 			# only show the "connected" message for 5 seconds
 			return ""
@@ -708,7 +713,7 @@ proc de1_connected_state { {hide_delay 0} } {
 		#return "[translate Connected] : $elapsed"
 		#borg toast "[translate Connected]"
 		#borg toast "[translate Connected]"
-		return "[translate Connected]"
+		return [translate Connected]
 		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_bluetooth_list"
 	} else {
 		#borg toast "[translate Disconnected]"
