@@ -544,7 +544,7 @@ proc return_flow_measurement {in} {
 }
 
 proc return_pressure_measurement {in} {
-	return [subst {[commify [round_to_one_digits $in]] [translate " bar"]}]
+	return [subst {[commify [round_to_one_digits $in]] [translate "bar"]}]
 }
 
 proc return_flow_weight_measurement {in} {
@@ -1866,9 +1866,9 @@ proc preinfusion_seconds_text {num} {
 	if {$num == 0} {
 		return [translate "off"]
 	} elseif {$num == 1} {
-		return [subst {[translate {<}] $num [translate "second"]}]
+		return [subst {< $num [translate "second"]}]
 	} else {
-		return [subst {[translate {<}] $num [translate "seconds"]}]
+		return [subst {> $num [translate "seconds"]}]
 	}
 }
 

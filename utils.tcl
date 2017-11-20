@@ -53,7 +53,7 @@ proc pause {time} {
 
 proc language {} {
     global current_language
-#return "kr"
+#return "en"
     if {$::android != 1} {
         return "en"
     }
@@ -98,8 +98,12 @@ proc translation_langs {} {
 
 proc translate {english} {
 
+    if {$english == ""} { 
+        return "" 
+    }
+
     if {[language] == "en"} {
-        #return $english
+        return $english
     }
 
     global translation
@@ -123,8 +127,9 @@ proc translate {english} {
                 append t [subst {$l "$english" }]
             }
             append t "\}"
-            #puts "Appending new phrase: $english"
-            #append_file "[homedir]/translation.tcl" $t
+            puts "Appending new phrase: $english"
+            msg [stacktrace]
+            append_file "[homedir]/translation.tcl" $t
             set ::already_shown_trans($english) 1
         }
     }
