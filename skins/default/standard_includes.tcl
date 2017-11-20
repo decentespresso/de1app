@@ -30,8 +30,8 @@ if {[file exists "[skin_directory_graphics]/tea_on.png"]} {
 add_de1_page "sleep" "[defaultskin_directory_graphics]/sleep.jpg"
 add_de1_page "tankfilling" "[defaultskin_directory_graphics]/filling_tank.jpg"
 add_de1_page "tankempty" "[defaultskin_directory_graphics]/fill_tank.jpg"
-add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning_on.jpg"
-add_de1_page "message" "[defaultskin_directory_graphics]/settings_message.png"
+add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning.jpg"
+add_de1_page "message" "[defaultskin_directory_graphics]/settings_message.jpg"
 add_de1_page "descaling" "[defaultskin_directory_graphics]/descaling.jpg"
 add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning.jpg"
 
