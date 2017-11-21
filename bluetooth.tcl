@@ -170,6 +170,18 @@ proc de1_disable_water_level_notifications {} {
 	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A011" $::de1(cinstance)]
 }
 
+# firmware update command notifications (not writing new fw, this is for erasing and switching firmware)
+proc de1_enable_maprequest_notifications {} {
+	userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A009" $::de1(cinstance)]
+}
+
+
+proc start_firmware_update {} {
+	de1_enable_maprequest_notifications
+	
+}
+
+
 proc de1_send_waterlevel_settings {} {
 	#puts ">>>> Sending BLE hot water/steam settings"
 	set data [return_de1_packed_waterlevel_settings]
