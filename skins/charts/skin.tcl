@@ -52,29 +52,29 @@ source "[homedir]/skins/default/de1_skin_settings.tcl"
 set ::current_espresso_page "off"
 
 # labels for PREHEAT tab on
-add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 405 100 -text [translate "PRE-HEAT CUP"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 2290 100 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 # labels for ESPRESSO tab on
-add_de1_text "off espresso espresso_3" 405 100 -text [translate "PRE-HEAT CUP"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "off espresso espresso_3" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "off espresso espresso_3" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off espresso espresso_3" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "off_zoomed espresso_3_zoomed espresso_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2350 90 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "off espresso espresso_3" 2290 100 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "off espresso espresso_3" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 # labels for STEAM tab on
-add_de1_text "steam steam_1 steam_3" 405 100 -text [translate "PRE-HEAT CUP"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "steam steam_1 steam_3" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "steam steam_1 steam_3" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "steam steam_1 steam_3" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "steam steam_1 steam_3" 2290 100 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "steam steam_1 steam_3" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 # labels for HOT WATER tab on
-add_de1_text "water water_1 water_3" 405 100 -text [translate "PRE-HEAT CUP"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "water water_1 water_3" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "water water_1 water_3" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 add_de1_text "water water_1 water_3" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "water water_1 water_3" 2290 100 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "water water_1 water_3" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
 add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4" {say [translate {pre-heat}] $::settings(sound_button_in); set_next_page off preheat_1; page_show preheat_1} 0 0 641 188
@@ -482,7 +482,7 @@ if {$::settings(display_rate_espresso) == 1} {
 # settings for preheating a cup
 
 add_de1_variable "preheat_1" 1390 775 -text [translate "START"] -font Helv_20_bold -fill "#2d3046" -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
-add_de1_text "preheat_1 preheat_2 preheat_3" 1390 865 -text [translate "PRE-HEAT CUP"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+add_de1_text "preheat_1 preheat_2 preheat_3" 1390 865 -text [translate "FLUSH"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 add_de1_variable "preheat_2" 1390 775 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
 add_de1_variable "preheat_3" 1390 775 -text [translate "RESTART"] -font Helv_20_bold -fill "#7f879a" -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
 
@@ -491,14 +491,14 @@ add_de1_button "preheat_2" {say [translate {stop}] $::settings(sound_button_in);
 add_de1_button "preheat_3" {say "" $::settings(sound_button_in); set_next_page off preheat_1; start_idle} 0 210 1000 1400
 add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(preheat_volume) 10 1000 %x %y %x0 %y0 %x1 %y1;save_settings} 200 410 900 1200 ""
 
-add_de1_text "preheat_1" 70 250 -text [translate "1) Settings"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 900]
-add_de1_text "preheat_2 preheat_3" 70 250 -text [translate "1) Settings"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 900]
-add_de1_text "preheat_1" 1070 250 -text [translate "2) Hot water will pour out"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
+add_de1_text "preheat_1" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 900]
+add_de1_text "preheat_2 preheat_3" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 900]
+add_de1_text "preheat_1" 1070 250 -text [translate "2) The group head will pour hot water out"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
 add_de1_text "preheat_2" 1070 250 -text [translate "2) Hot water is pouring out"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
-add_de1_text "preheat_3 " 1070 250 -text [translate "2) Hot water will pour out"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 650]
+add_de1_text "preheat_3 " 1070 250 -text [translate "2) The group head will pour hot water out"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 650]
 
-add_de1_text "preheat_1" 1840 250 -text [translate "3) Your cup is now warm"] -font Helv_9 -fill "#b1b9cd" -anchor "nw" -width [rescale_x_skin 680]
-add_de1_text "preheat_3" 1840 250 -text [translate "3) Your cup is now warm"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 680]
+add_de1_text "preheat_1" 1840 250 -text [translate "3) Your group head is now clean"] -font Helv_9 -fill "#b1b9cd" -anchor "nw" -width [rescale_x_skin 680]
+add_de1_text "preheat_3" 1840 250 -text [translate "3) Your group head is now clean"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 680]
 
 add_de1_variable "preheat_1" 540 1250 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_liquid_measurement $::settings(preheat_volume)]}
 add_de1_variable "preheat_2 preheat_3" 540 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -textvariable {[return_liquid_measurement $::settings(preheat_volume)]}

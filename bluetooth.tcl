@@ -178,7 +178,7 @@ proc de1_enable_maprequest_notifications {} {
 
 proc start_firmware_update {} {
 	de1_enable_maprequest_notifications
-	
+
 }
 
 
@@ -546,7 +546,7 @@ proc ble_connect_to_skale {} {
 	}
 
 	catch {
-		ble unpair $::settings(skale_bluetooth_address)
+		#ble unpair $::settings(skale_bluetooth_address)
 	}
 
 	if {[catch {
@@ -662,6 +662,9 @@ proc de1_ble_handler { event data } {
 					    msg "de1 disconnected"
 					    set ::de1(device_handle) 0
 
+					    # temporarily disable this feature as it's not clear that it's needed.
+					    set ::settings(max_ble_connect_attempts) 99999999
+					    
 					    incr ::failed_attempt_count_connecting_to_de1
 					    if {$::failed_attempt_count_connecting_to_de1 > $::settings(max_ble_connect_attempts) && $::successful_de1_connection_count > 0} {
 					    	# if we have previously been connected to a DE1 but now can't connect, then make the UI go to Sleep
