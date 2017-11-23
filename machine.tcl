@@ -45,6 +45,9 @@ array set ::de1 {
 	scale_autostop_triggered 1
 	connect_time 0
 	water_level 30
+	firmware_kb_uploaded 0
+	firmware_update_size 0
+	firmware_update_button_label "Update"
 	state 0
 	substate 0
 	current_context ""
@@ -196,6 +199,7 @@ array set ::settings {
 	flight_mode_angle 30
 	display_pressure_delta_line 0
 	display_flow_delta_line 0
+	stress_test 0
 	display_weight_delta_line 0
 	machine_name "pretty decent"
 	enable_spoken_prompts 0
@@ -376,6 +380,12 @@ proc start_steam {} {
 	set ::de1(volume) 0
 	de1_send_state "make steam" $::de1_state(Steam)
 
+	if {$::settings(stress_test) == 1} {
+		set ::idle_next_step start_steam
+	}
+
+
+
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		after 200 [list update_de1_state "$::de1_state(Steam)\x5"]
@@ -422,6 +432,11 @@ proc start_espresso {} {
 		after 200 [list update_de1_state "$::de1_state(Espresso)\x1"]
 	}
 
+	if {$::settings(stress_test) == 1} {
+		set ::idle_next_step start_espresso
+	}
+
+
 	#run_next_userdata_cmd
 }
 
@@ -435,6 +450,11 @@ proc start_water {} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 [list update_de1_state "$::de1_state(HotWater)\x5"]
 	}
+
+	if {$::settings(stress_test) == 1} {
+		set ::idle_next_step start_water
+	}
+
 }
 
 proc start_idle {} {
@@ -457,6 +477,12 @@ proc start_idle {} {
 
 	# change the substate to ending immediately to provide UI feedback
 	#set ::de1(substate) 6
+
+	if {$::settings(stress_test) == 1} {
+		# pressing stop on any step will stop the stress test
+		unset -nocomplain ::idle_next_step 
+	}
+
 
 	set ::settings(flying) 0
 	de1_send_state "go idle" $::de1_state(Idle)

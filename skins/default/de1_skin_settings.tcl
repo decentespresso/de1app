@@ -312,9 +312,12 @@ add_de1_variable "settings_1" 2466 660 -text "" -font Helv_7 -fill "#7f879a" -an
 
 add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+ 
+add_de1_variable "settings_4" 1650 1300 -text [translate "Update"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -textvariable {[translate $::de1(firmware_update_button_label)]} 
+add_de1_variable "settings_4" 2506 1140 -font Helv_8 -fill "#7f879a" -anchor "ne" -width 500 -justify "right" -textvariable {[firmware_uploaded_label]} 
 
-add_de1_text "settings_4" 400 980 -text [translate "Update"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+
+#add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 #add_de1_text "settings_4" 2280 980 -text [translate "Pair"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -width 200 -justify "center"
 
 # clean feature
@@ -324,18 +327,18 @@ add_de1_button "settings_4" {say [translate {clean}] $::settings(sound_button_in
 add_de1_button "settings_4" {say [translate {descale}] $::settings(sound_button_in); start_decaling} 645 1206 1260 1406
 
 # firmware update
-add_de1_button "settings_4" {} 30 890 630 1080
+add_de1_button "settings_4" {start_firmware_update} 1300 1206 1915 1406
 
 # firmware reset
-add_de1_button "settings_4" {} 640 890 1260 1080
+#add_de1_button "settings_4" {} 640 890 1260 1080
 
 # firmware reset
 #add_de1_button "settings_4" {} 1900 890 2520 1080
 
-add_de1_variable "settings_4" 1320 340 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water level:"] [round_to_integer $::de1(water_level)][translate mm]}
+add_de1_variable "settings_4" 1310 320 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water level:"] [round_to_integer $::de1(water_level)][translate mm]}
 
-add_de1_text "settings_4" 1320 250 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_variable "settings_4" 1320 400 -text "[translate {Version:}] $::de1(version)" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 500 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
+add_de1_text "settings_4" 1310 220 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_variable "settings_4" 1310 380 -text "[translate {Version:}] $::de1(version)" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 500 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
 #add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
 
 #set_next_page off settings_3
@@ -367,49 +370,55 @@ add_de1_text "settings_3" 50 540 -text [translate "Energy Saver"] -font Helv_10_
 add_de1_text "settings_3" 680 540 -text [translate "Screen Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 50 860 -text [translate "Measurements"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 50 1140 -text [translate "Maintenance"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 50 820 -text [translate "Firmware"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 1320 820 -text [translate "Connect"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 1320 898 -text [translate "Espresso machine"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 1320 1140 -text [translate "Firmware"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 1310 650 -text [translate "Connect"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 1310 730 -text [translate "Espresso machine"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
 
 if {[de1plus]} {
-	add_de1_text "settings_4" 1920 898 -text [translate "Scale"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+	add_de1_text "settings_4" 1920 730 -text [translate "Scale"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-	add_de1_widget "settings_4" listbox 1920 950 { 
+	add_de1_widget "settings_4" listbox 1920 800 { 
 			set ::ble_skale_listbox_widget $widget
 			bind $widget <<ListboxSelect>> ::change_skale_bluetooth_device
 			fill_ble_skale_listbox
-		} -background #fbfaff -font Helv_15 -bd 0 -height 5 -width 16 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+		} -background #fbfaff -font Helv_15 -bd 0 -height 3 -width 16 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 }
+
+set_next_page off settings_4
 
 if {[de1plus]} {
 
 	# advanced features that are normally disabled
-	add_de1_text "settings_4" 50 250 -text [translate "Optional features"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-	set pos_top 336
-	set spacer 60
-	set optionfont "Helv_8"
+	add_de1_text "settings_4" 50 220 -text [translate "Optional features"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+	set pos_top 320
+	set spacer 90
+	set optionfont "Helv_9"
 	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (0 * $spacer)}] {} -text [translate "Show water level"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_on)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Rate your espresso shots"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_rate_espresso)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Chart flow rate changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_flow_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Rate your espresso shots"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_rate_espresso)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Stress test"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (6 * $spacer)}] {} -text [translate "Chart flow rate changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_flow_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
 	if {$::settings(skale_bluetooth_address) != ""} {
-		add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (6 * $spacer)}] {} -text [translate "Chart weight changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_weight_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+		add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (7 * $spacer)}] {} -text [translate "Chart weight changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_weight_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	}
+
+
 }
 
 
 
 
-add_de1_widget "settings_4" listbox 1320 950 { 
+add_de1_widget "settings_4" listbox 1310 800 { 
 		set ::ble_listbox_widget $widget
 		bind $::ble_listbox_widget <<ListboxSelect>> ::change_bluetooth_device
 		fill_ble_listbox
-	} -background #fbfaff -font Helv_15 -bd 0 -height 5 -width 16 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+	} -background #fbfaff -font Helv_15 -bd 0 -height 3 -width 16 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 # bluetooth scan
 #add_de1_text "settings_4" 2230 980 -text [translate "Search"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"

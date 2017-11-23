@@ -915,6 +915,13 @@ proc page_display_change {page_to_hide page_to_show} {
 	}
 
 
+	if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {
+		set todo $::idle_next_step 
+		unset -nocomplain ::idle_next_step 
+		eval $todo
+	}
+
+
 	#global current_context
 	set ::de1(current_context) $page_to_show
 

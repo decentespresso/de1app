@@ -1,4 +1,4 @@
-set ::skindebug 0
+set ::skindebug 1
 set ::debugging 0
 
 puts "debugging: $::debugging"
@@ -489,7 +489,7 @@ add_de1_variable "preheat_3" 1390 775 -text [translate "RESTART"] -font Helv_20_
 add_de1_button "preheat_1 preheat_3" {say [translate {pre-heat cup}] $::settings(sound_button_in); set ::settings(preheat_temperature) 90; set_next_page water preheat_2; start_water} 1030 210 2560 1400
 add_de1_button "preheat_2" {say [translate {stop}] $::settings(sound_button_in); set_next_page off preheat_3; start_idle} 0 189 2560 1600
 add_de1_button "preheat_3" {say "" $::settings(sound_button_in); set_next_page off preheat_1; start_idle} 0 210 1000 1400
-add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(preheat_volume) 10 1000 %x %y %x0 %y0 %x1 %y1;save_settings} 200 410 900 1200 ""
+add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(preheat_volume) 10 1000 %x %y %x0 %y0 %x1 %y1;save_settings; de1_send_steam_hotwater_settings} 200 410 900 1200 ""
 
 add_de1_text "preheat_1" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 900]
 add_de1_text "preheat_2 preheat_3" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 900]
@@ -531,8 +531,8 @@ add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set
 # future feature
 #add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
 
-add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(water_volume) 10 1000 %x %y %x0 %y0 %x1 %y1;save_settings} 0 400 550 1200 ""
-add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 10 1 ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1;save_settings} 551 400 1029 1200 ""
+add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(water_volume) 10 1000 %x %y %x0 %y0 %x1 %y1;save_settings; de1_send_steam_hotwater_settings} 0 400 550 1200 ""
+add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 10 1 ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1;save_settings; de1_send_steam_hotwater_settings} 551 400 1029 1200 ""
 
 #add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_volume) 1 400 %x %y %x0 %y0 %x1 %y1} 0 210 550 1400 "mousemove"
 #add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1} 551 210 1029 1400 "mousemove"
@@ -611,7 +611,7 @@ add_de1_button "steam_1 steam_3" {say [translate {steam}] $::settings(sound_butt
 
 add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle} 0 189 2560 1600
 add_de1_button "steam_3" {say "" $::settings(sound_button_in); set_next_page off steam_1; start_idle} 0 210 1000 1400
-add_de1_button "steam_1" {say "" $::settings(sound_button_in);vertical_clicker 10 1 ::settings(steam_timeout) 1 300 %x %y %x0 %y0 %x1 %y1;save_settings} 200 400 900 1200 ""
+add_de1_button "steam_1" {say "" $::settings(sound_button_in);vertical_clicker 10 1 ::settings(steam_timeout) 1 300 %x %y %x0 %y0 %x1 %y1;save_settings; de1_send_steam_hotwater_settings} 200 400 900 1200 ""
 
 
 add_de1_text "steam_1" 70 250 -text [translate "1) Choose auto-off time"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 900]

@@ -178,7 +178,27 @@ proc de1_enable_maprequest_notifications {} {
 
 proc start_firmware_update {} {
 	de1_enable_maprequest_notifications
+	set ::de1(firmware_update_button_label) [translate "Updating"]
+	set ::de1(firmware_kb_uploaded) 0
+	set fwfile "[homedir]/fw/bootfwupdate.dat"
+	set ::de1(firmware_update_size) [file size $fwfile]
 
+	if {$::android != 1} {
+		after 100 firmware_upload_next
+	}
+
+}
+
+proc firmware_upload_next {} {
+	msg "firmware_upload_next $::de1(firmware_kb_uploaded)"
+	if {$::android != 1} {
+		set ::de1(firmware_kb_uploaded) [expr {$::de1(firmware_kb_uploaded) + 1600}]
+		if  {$::de1(firmware_kb_uploaded) >= $::de1(firmware_update_size)} {
+			set ::de1(firmware_update_button_label) [translate "Updated"]
+		} else {
+			after 100 firmware_upload_next
+		}
+	}
 }
 
 
