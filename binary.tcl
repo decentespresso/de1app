@@ -195,6 +195,48 @@ proc make_packed_waterlevel_settings {arrname} {
 	return [::fields::pack [waterlevel_spec] arr]
 }
 
+proc make_packed_maprequest {arrname} {
+	upvar $arrname arr
+	return [::fields::pack [maprequest_spec] arr]
+}
+
+
+proc make_U24P0 {val} {
+ 	set arr(hi)  [expr {($val >> 16) & 0xFF}]
+  	set arr(mid) [expr {($val >> 8 ) & 0xFF}]
+  	set arr(lo)  [expr {($val      ) & 0xFF}]
+	return [::fields::pack [U24P0_spec] arr]
+}
+
+proc make_U24P0_3_chars {val} {
+ 	set hi  [expr {($val >> 16) & 0xFF}]
+  	set mid [expr {($val >> 8 ) & 0xFF}]
+  	set lo  [expr {($val      ) & 0xFF}]
+	return [list $hi $mid $lo]
+}
+
+proc U24P0_spec {} {
+	set spec {
+		hi {char {} {} {unsigned} {}}
+		mid {char {} {} {unsigned} {}}
+		low {char {} {} {unsigned} {}}
+	}
+	return $spec
+}
+
+proc maprequest_spec {} {
+	set spec {
+		WindowIncrement {Short {} {} {unsigned} {$val / 1.0}}
+		FWToErase {char {} {} {unsigned} {}}
+		FWToMap {char {} {} {unsigned} {}}
+		FirstError1 {char {} {} {unsigned} {}}
+		FirstError2 {char {} {} {unsigned} {}}
+		FirstError3 {char {} {} {unsigned} {}}
+	}
+	return $spec
+
+}
+
 proc version_spec {} {
 	set spec {
 		FW {Short {} {} {unsigned} {$val / 1.0}}
@@ -898,7 +940,8 @@ proc update_de1_shotvalue {packed} {
   	if {[use_old_ble_spec] == 1} {
 		set ::de1(head_temperature) $ShotSample(HeadTemp)
 	} else {
-		set ::de1(head_temperature) [expr { $ShotSample(HeadTemp1) + ($ShotSample(HeadTemp2) / 256.0) + ($ShotSample(HeadTemp3) / 65536.0) }]
+		#set ::de1(head_temperature) [expr { $ShotSample(HeadTemp1) + ($ShotSample(HeadTemp2) / 256.0) + ($ShotSample(HeadTemp3) / 65536.0) }]
+		set ::de1(head_temperature) [convert_3_char_to_U24P16 $ShotSample(HeadTemp1) $ShotSample(HeadTemp2) $ShotSample(HeadTemp3)]
 	}
 
 	set ::de1(mix_temperature) $ShotSample(MixTemp)
@@ -928,6 +971,14 @@ proc update_de1_shotvalue {packed} {
 	set ::de1(goal_temperature) $ShotSample(SetHeadTemp)
 
 	append_live_data_to_espresso_chart
+}
+
+proc convert_3_char_to_U24P16 {char1 char2 char3} {
+	return [expr {$char1 + ($char2 / 256.0) + ($char3 / 65536.0) }]
+}
+
+proc convert_3_char_to_U24P0 {char1 char2 char3} {
+	return [expr {($char1 * 65536) + ($char2 * 256) + $char3}]
 }
 
 set previous_de1_substate 0

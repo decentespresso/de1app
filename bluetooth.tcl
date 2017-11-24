@@ -187,7 +187,24 @@ proc start_firmware_update {} {
 		after 100 firmware_upload_next
 	}
 
+	set arr(WindowIncrement) 0
+	set arr(FWToErase) 1
+	set arr(FWToMap) 1
+	set arr(FirstError1) 0
+	set arr(FirstError2) 0
+	set arr(FirstError3) 0
+	set data [make_packed_maprequest arr]
+
+	# it'd be useful here to test that the maprequest was correctly packed
+	#parse_binary_water_level $data arr2
+	userdata_append "Erase firmware: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A009" $::de1(cinstance) $data]
+
 }
+
+proc write_firmware_now {} {
+	msg "Start writing firmware now"
+}
+
 
 proc firmware_upload_next {} {
 	msg "firmware_upload_next $::de1(firmware_kb_uploaded)"
@@ -856,6 +873,13 @@ proc de1_ble_handler { event data } {
 							parse_binary_water_level $value arr2
 							#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
 							set ::de1(water_level) $arr2(Level)
+						} elseif {$cuuid == "0000A009-0000-1000-8000-00805F9B34FB"} {
+						    #set ::de1(last_ping) [clock seconds]
+							#parse_binary_water_level $value arr2
+							msg "firmware command ack received [string length $value] bytes: $value  : [array get arr2]"
+							#set ::de1(water_level) $arr2(Level)
+
+							write_firmware_now
 						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value

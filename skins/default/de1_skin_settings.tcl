@@ -386,7 +386,7 @@ if {[de1plus]} {
 
 }
 
-set_next_page off settings_4
+#set_next_page off settings_4
 
 if {[de1plus]} {
 
