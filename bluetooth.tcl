@@ -177,6 +177,17 @@ proc de1_enable_maprequest_notifications {} {
 
 
 proc start_firmware_update {} {
+
+	if {$::de1(currently_erasing_firmware) == 1} {
+		msg "Already erasing firmware"
+		return
+	}
+
+	if {$::de1(currently_updating_firmware) == 1} {
+		msg "Already updating firmware"
+		return
+	}
+
 	de1_enable_maprequest_notifications
 	set ::de1(firmware_update_button_label) [translate "Updating"]
 	set ::de1(firmware_kb_uploaded) 0
@@ -197,11 +208,13 @@ proc start_firmware_update {} {
 
 	# it'd be useful here to test that the maprequest was correctly packed
 	#parse_binary_water_level $data arr2
+	set ::de1(currently_erasing_firmware) 1
 	userdata_append "Erase firmware: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A009" $::de1(cinstance) $data]
 
 }
 
 proc write_firmware_now {} {
+	set ::de1(currently_updating_firmware) 1
 	msg "Start writing firmware now"
 }
 
@@ -875,11 +888,16 @@ proc de1_ble_handler { event data } {
 							set ::de1(water_level) $arr2(Level)
 						} elseif {$cuuid == "0000A009-0000-1000-8000-00805F9B34FB"} {
 						    #set ::de1(last_ping) [clock seconds]
-							#parse_binary_water_level $value arr2
-							msg "firmware command ack received [string length $value] bytes: $value  : [array get arr2]"
-							#set ::de1(water_level) $arr2(Level)
-
-							write_firmware_now
+							parse_map_request $value arr2
+							if {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 0} {
+								msg "BLE recv: finished erasing fw '[ifexists arr2(FWToMap)]'"
+								set ::de1(currently_erasing_firmware) 0
+								write_firmware_now
+							} elseif {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 1} { 
+								msg "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
+							} else {
+								msg "unknown firmware cmd ack recved: [string length $value] bytes: $value : [array get arr2]"
+							}
 						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value

@@ -754,6 +754,23 @@ proc shot_sample_spec {} {
 
 }
 
+proc parse_map_request {packed destarrname} {
+	upvar $destarrname Version
+	unset -nocomplain Version
+
+	set spec [maprequest_spec]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec Version bigeendian
+	foreach {field val} [array get Version] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set Version($field) [expr $extra]
+		}
+	}
+}
+
 
 proc parse_binary_version_desc {packed destarrname} {
 	upvar $destarrname Version
@@ -771,6 +788,8 @@ proc parse_binary_version_desc {packed destarrname} {
 		}
 	}
 }
+
+
 proc parse_binary_water_level {packed destarrname} {
 	upvar $destarrname Waterlevel
 	unset -nocomplain Waterlevel
