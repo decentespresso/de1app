@@ -131,6 +131,7 @@ array set ::settings {
 	advanced_shot {}
 	water_time_max 60
 	grinder_dose_weight 0
+	one_tap_mode 0
 	allow_unheated_water 1
 	minimum_water_temperature 80
 	waterlevel_blink_start_level 15
@@ -138,6 +139,10 @@ array set ::settings {
 	waterlevel_indicator_blink 1
 	drink_weight 0
 	espresso_enjoyment 0
+	god_espresso_pressure {}
+	god_espresso_temperature_basket {}
+	god_espresso_flow {}
+	god_espresso_flow_weight {}
 	drink_tds 0
 	drink_ey 0
 	display_connected_msg_seconds 5
@@ -205,7 +210,7 @@ array set ::settings {
 	enable_spoken_prompts 0
 	preinfusion_guarantee 1
 	speaking_rate 1.5
-	display_rate_espresso 0
+	display_rate_espresso 1
 	temperature_target "portafilter"
 	flow_rate_transition "smooth"
 	water_speed_type "flow"
@@ -354,11 +359,11 @@ proc start_hot_water_rinse {} {
 	msg "Tell DE1 to start HOT WATER RINSE"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
+	#de1_send_state "hot water rinse" $::de1_state(HotWater)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
-		after 200 [list update_de1_state "$::de1_state(HotWaterRinse)\x5"]
+		#after 200 [list update_de1_state "$::de1_state(HotWater)\x5"]
 	}
 }
 

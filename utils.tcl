@@ -741,6 +741,42 @@ proc save_array_to_file {arrname fn} {
     write_file $fn $toexport2
 }
 
+proc god_shot_save {} {
+    set ::settings(god_espresso_pressure) [espresso_pressure range 0 end]
+    set ::settings(god_espresso_temperature_basket) [espresso_temperature_basket range 0 end]
+    set ::settings(god_espresso_flow) [espresso_flow range 0 end]
+    set ::settings(god_espresso_flow_weight) [espresso_flow_weight range 0 end]
+
+    god_espresso_pressure length 0
+    god_espresso_temperature_basket length 0
+    god_espresso_flow length 0
+    god_espresso_flow_weight length 0
+
+    god_espresso_pressure append $::settings(god_espresso_pressure)
+    god_espresso_temperature_basket append $::settings(god_espresso_temperature_basket)
+    god_espresso_flow append $::settings(god_espresso_flow)
+    god_espresso_flow_weight append $::settings(god_espresso_flow_weight)
+
+    save_settings
+
+
+    #clear_espresso_chart
+}
+
+proc god_shot_clear {} {
+    set ::settings(god_espresso_pressure) {}
+    set ::settings(god_espresso_temperature_basket) {}
+    set ::settings(god_espresso_flow) {}
+    set ::settings(god_espresso_flow_weight) {}
+
+    god_espresso_pressure length 0
+    god_espresso_temperature_basket length 0
+    god_espresso_flow length 0
+    god_espresso_flow_weight length 0
+
+    save_settings
+}
+
 proc save_settings {} {
     msg "saving settings"
     save_array_to_file ::settings [settings_filename]
@@ -764,7 +800,7 @@ proc load_settings {} {
         set settings(water_volume) 100
     }
 
-    blt::vector create espresso_elapsed espresso_pressure espresso_flow espresso_flow_weight espresso_flow_weight_2x espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal
+    blt::vector create espresso_elapsed god_espresso_pressure espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal
     blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow 
     blt::vector create espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
     blt::vector create espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3

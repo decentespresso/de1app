@@ -26,6 +26,7 @@ proc clear_espresso_chart {} {
 
 	espresso_elapsed append 0
 	espresso_pressure append 0
+	#god_espresso_pressure append 0
 	espresso_flow append 0
 	espresso_flow_weight append 0
 	espresso_flow_weight_2x append 0
@@ -46,7 +47,36 @@ proc clear_espresso_chart {} {
 		# update the Y axis on the temperature chart, each time that we make an espresso, in case the goal temperature changed
 		update_temperature_charts_y_axis
 	}
-	#update
+
+	############################################################################################################
+	# god shot reference
+	god_espresso_pressure length 0
+	god_espresso_temperature_basket length 0
+	god_espresso_flow length 0
+	god_espresso_flow_weight length 0
+	god_espresso_flow_2x length 0
+	god_espresso_flow_weight_2x length 0
+
+	god_espresso_pressure append $::settings(god_espresso_pressure)
+	god_espresso_temperature_basket append $::settings(god_espresso_temperature_basket)
+
+	if {$::settings(god_espresso_flow) != {} } {
+		god_espresso_flow append $::settings(god_espresso_flow)
+
+		# in zoomed flow/pressure mode we chart flow/weight at 2x the normal Y axis, so we need to populate those vectors by hand
+		foreach flow $::settings(god_espresso_flow) {
+			god_espresso_flow_2x append [expr {2.0 * $flow}]
+		}
+	}
+
+	if {$::settings(god_espresso_flow_weight) != {} } {
+		god_espresso_flow_weight append $::settings(god_espresso_flow_weight)
+
+		foreach flow_weight $::settings(god_espresso_flow_weight) {
+			god_espresso_flow_weight_2x append [expr {2.0 * $flow_weight}]
+		}
+	}
+	############################################################################################################
 }	
 
 

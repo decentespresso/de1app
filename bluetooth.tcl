@@ -209,7 +209,7 @@ proc write_firmware_now {} {
 proc firmware_upload_next {} {
 	msg "firmware_upload_next $::de1(firmware_kb_uploaded)"
 	if {$::android != 1} {
-		set ::de1(firmware_kb_uploaded) [expr {$::de1(firmware_kb_uploaded) + 1600}]
+		set ::de1(firmware_kb_uploaded) [expr {$::de1(firmware_kb_uploaded) + 16}]
 		if  {$::de1(firmware_kb_uploaded) >= $::de1(firmware_update_size)} {
 			set ::de1(firmware_update_button_label) [translate "Updated"]
 		} else {

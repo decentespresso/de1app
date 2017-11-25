@@ -136,6 +136,15 @@ add_de1_text "describe_espresso2" 1340 560 -text [translate "Enable these featur
 
 
 
+	add_de1_text "describe_espresso2" 1340 850 -text [translate "God shot:"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+		add_de1_text "describe_espresso2" 1650 1016 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+		add_de1_text "describe_espresso2" 2250 1016 -text [translate "Erase"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+		add_de1_button "describe_espresso2" {say [translate {set}] $::settings(sound_button_in); god_shot_save; set_next_page off off; page_show off} 1300 900 1900 1116
+		add_de1_button "describe_espresso2" {say [translate {clear}] $::settings(sound_button_in); god_shot_clear; set_next_page off off; page_show off} 1910 900 2550 1116
+
+
+
+
 if {$::settings(has_refractometer) == 1 || $::settings(has_scale) == 1} {
 	add_de1_text "describe_espresso" 1630 360 -text [translate "Technical: (optional)"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 }
@@ -585,4 +594,4 @@ add_de1_button "scentone_savory" {say [translate {Beef}] $::settings(sound_butto
 # end
 #####################################################################
 
-#set_next_page off describe_espresso
+#set_next_page off describe_espresso2
