@@ -1,5 +1,5 @@
-set ::skindebug 0
-set ::debugging 0
+set ::skindebug 1
+set ::debugging 1
 
 puts "debugging: $::debugging"
 
@@ -51,6 +51,7 @@ source "[homedir]/skins/default/de1_skin_settings.tcl"
 
 set ::current_espresso_page "off"
 
+
 # labels for PREHEAT tab on
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
@@ -98,7 +99,8 @@ if {$::debugging == 1} {
 	set charts_width 400
 	add_de1_variable "off espresso espresso_3" 450 220 -text "" -font Helv_6 -fill "#5a5d75" -anchor "nw" -justify left -width 780 -textvariable {$::debuglog}
 }
-  
+
+
 #######################
 # 3 equal sized charts
 add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 267 { 
@@ -500,7 +502,7 @@ add_de1_variable "preheat_3" 1390 775 -text [translate "RESTART"] -font Helv_20_
 add_de1_button "preheat_1 preheat_3" {say [translate {pre-heat cup}] $::settings(sound_button_in); set ::settings(preheat_temperature) 90; set_next_page water preheat_2; start_water} 1030 210 2560 1400
 add_de1_button "preheat_2" {say [translate {stop}] $::settings(sound_button_in); set_next_page off preheat_3; start_idle} 0 189 2560 1600
 add_de1_button "preheat_3" {say "" $::settings(sound_button_in); set_next_page off preheat_1; start_idle} 0 210 1000 1400
-add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(preheat_volume) 10 250 %x %y %x0 %y0 %x1 %y1; save_settings; de1_send_steam_hotwater_settings} 200 410 900 1200 ""
+add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(preheat_volume) 10 250 %x %y %x0 %y0 %x1 %y1; save_settings; de1_send_steam_hotwater_settings} 100 510 900 1200 ""
 
 add_de1_text "preheat_1" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 900]
 add_de1_text "preheat_2 preheat_3" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 900]

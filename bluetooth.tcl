@@ -175,6 +175,10 @@ proc de1_enable_maprequest_notifications {} {
 	userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A009" $::de1(cinstance)]
 }
 
+proc fwfile {} {
+	return "[homedir]/fw/bootfwupdate.dat"
+}
+
 
 proc start_firmware_update {} {
 
@@ -190,9 +194,8 @@ proc start_firmware_update {} {
 
 	de1_enable_maprequest_notifications
 	set ::de1(firmware_update_button_label) [translate "Updating"]
-	set ::de1(firmware_kb_uploaded) 0
-	set fwfile "[homedir]/fw/bootfwupdate.dat"
-	set ::de1(firmware_update_size) [file size $fwfile]
+	set ::de1(firmware_bytes_uploaded) 0
+	set ::de1(firmware_update_size) [file size [fwfile]]
 
 	if {$::android != 1} {
 		after 100 firmware_upload_next
@@ -216,17 +219,46 @@ proc start_firmware_update {} {
 proc write_firmware_now {} {
 	set ::de1(currently_updating_firmware) 1
 	msg "Start writing firmware now"
+
+	set ::de1(firmware_update_binary) [read_binary_file [fwfile]]
+	set ::de1(firmware_bytes_uploaded) 0
+
+	firmware_upload_next
 }
 
 
 proc firmware_upload_next {} {
-	msg "firmware_upload_next $::de1(firmware_kb_uploaded)"
-	if {$::android != 1} {
-		set ::de1(firmware_kb_uploaded) [expr {$::de1(firmware_kb_uploaded) + 16}]
-		if  {$::de1(firmware_kb_uploaded) >= $::de1(firmware_update_size)} {
+	msg "firmware_upload_next $::de1(firmware_bytes_uploaded)"
+	if  {$::de1(firmware_bytes_uploaded) >= $::de1(firmware_update_size)} {
+		if {$::android != 1} {
 			set ::de1(firmware_update_button_label) [translate "Updated"]
 		} else {
+			set ::de1(firmware_update_button_label) [translate "Testing"]
+
+			unset -nocomplain ::de1(firmware_update_size)
+			unset -nocomplain ::de1(firmware_update_binary)
+			set ::de1(firmware_bytes_uploaded) 0
+
+			#write_FWMapRequest(self.FWMapRequest, 0, 0, 1, 0xFFFFFF, True)		
+			#def write_FWMapRequest(ctic, WindowIncrement=0, FWToErase=0, FWToMap=0, FirstError=0, withResponse=True):
+
+			set arr(WindowIncrement) 0
+			set arr(FWToErase) 0
+			set arr(FWToMap) 1
+			set arr(FirstError1) [expr 0xFF]
+			set arr(FirstError2) [expr 0xFF]
+			set arr(FirstError3) [expr 0xFF]
+			set data [make_packed_maprequest arr]
+			userdata_append "Find first error in firmware update: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A009" $::de1(cinstance) $data]
+		}
+	} else {
+
+		if {$::android != 1} {
 			after 100 firmware_upload_next
+		} else {
+			set data [string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]
+			userdata_append "Write [string length $data] bytes of firmware data" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A006" $::de1(cinstance) $data]
+			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 		}
 	}
 }
@@ -895,6 +927,15 @@ proc de1_ble_handler { event data } {
 								write_firmware_now
 							} elseif {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 1} { 
 								msg "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
+							} elseif {$::de1(currently_erasing_firmware) == 0 && [ifexists arr2(FWToErase)] == 0} { 
+								msg "BLE firmware find error BLE recv: '$value' [array get arr2]'"
+						
+								if {[ifexists arr2(FirstError1)] == [expr 0xFF] && [ifexists arr2(FirstError2)] == [expr 0xFF] && [ifexists arr2(FirstError3)] == [expr 0xFD]} {
+									set ::de1(firmware_update_button_label) [translate "Updated"]
+								} else {
+									set ::de1(firmware_update_button_label) [translate "Failed"]
+								}
+
 							} else {
 								msg "unknown firmware cmd ack recved: [string length $value] bytes: $value : [array get arr2]"
 							}
@@ -1035,10 +1076,12 @@ proc de1_ble_handler { event data } {
 								if {$cuuid == "0000A002-0000-1000-8000-00805F9B34FB"} {
 									parse_state_change $value arr
 						    		msg "Confirmed state change: '[array get arr]'"
+								} elseif {$cuuid == "0000A006-0000-1000-8000-00805F9B34FB"} {
+									msg "firmware write ack recved: [string length $value] bytes: $value : [array get arr2]"
+									firmware_upload_next
 								} else {
 						    		msg "Confirmed wrote to $cuuid of DE1: '$value'"
 								}
-
 				    		} elseif {$address == $::settings(skale_bluetooth_address)} {
 					    		msg "Confirmed wrote to $cuuid of Skale: '$value'"
 				    		} else {

@@ -363,6 +363,7 @@ proc setup_environment {} {
         set screen_size_height 1200
         set fontm 1.5
 
+
         set screen_size_width 2560
         set screen_size_height 1600
         set fontm 2
@@ -372,6 +373,8 @@ proc setup_environment {} {
         set fontm 1
 
         set ::fontw 2
+
+        #set ::fontw 1
         
 
         #set screen_size_width 1920
@@ -856,6 +859,7 @@ proc skin_convert {indir} {
     }
     set dirs [list \
         "1280x800" 2 2 \
+        "2048x1536" 1.25 1.041666666 \
     ]
 
     set nondirs [list \

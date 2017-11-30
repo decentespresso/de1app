@@ -47,7 +47,7 @@ array set ::de1 {
 	scale_autostop_triggered 1
 	connect_time 0
 	water_level 30
-	firmware_kb_uploaded 0
+	firmware_bytes_uploaded 0
 	firmware_update_size 0
 	firmware_update_button_label "Update"
 	state 0
@@ -176,7 +176,7 @@ array set ::settings {
 	water_max_vol 500
 	water_temperature 80
 	final_desired_shot_weight 36
-	espresso_max_time 42
+	espresso_max_time 60
 	skale_square_button_starts_espresso 0
 	espresso_temperature 92
 	espresso_decline_time 25

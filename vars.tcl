@@ -2029,10 +2029,10 @@ proc round_to_half_integer {in} {
 
 proc firmware_uploaded_label {} {
 
-	if {$::de1(firmware_kb_uploaded) == 0 || $::de1(firmware_update_size) == 0} {
+	if {$::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0} {
 		return ""
 	} else {
-		set percentage [expr {(100.0 * $::de1(firmware_kb_uploaded)) / $::de1(firmware_update_size)}]
+		set percentage [expr {(100.0 * $::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
 		#puts "percentage $percentage"
 		if {$percentage > 100} {
 			set percentage 100
