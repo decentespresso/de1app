@@ -859,7 +859,6 @@ proc skin_convert {indir} {
     }
     set dirs [list \
         "1280x800" 2 2 \
-        "2048x1536" 1.25 1.041666666 \
     ]
 
     set nondirs [list \
@@ -906,7 +905,7 @@ proc skin_convert {indir} {
                 	exec convert $skinfile  -resize $dir!  -format png8 ../$dir/$skinfile 
                     
                     # additional optional PNG compression step 
-                    #exec zopflipng -q --iterations=1 -y   ../$dir/$skinfile   ../$dir/$skinfile 
+                    exec zopflipng -q --iterations=1 -y   ../$dir/$skinfile   ../$dir/$skinfile 
                     
                 }
             } else {
@@ -1030,3 +1029,201 @@ proc array_item_difference {arr1 arr2 keylist} {
     }
     return 0
 }
+
+proc make_de1_dir {} {
+
+    set dirs {
+        /d/admin/code/de1/fonts/
+        /d/admin/code/de1/profiles/
+        /d/admin/code/de1/splash/
+        /d/admin/code/de1/splash/1280x800/
+        /d/admin/code/de1/saver/
+        /d/admin/code/de1/saver/1280x800/
+        /d/admin/code/de1/skins/
+        /d/admin/code/de1/skins/default/
+        /d/admin/code/de1/skins/default/1280x800/
+        /d/admin/code/de1/skins/Grafitti/
+        /d/admin/code/de1/skins/Grafitti/1280x800/
+        /d/admin/code/de1/skins/8-BIT/
+        /d/admin/code/de1/skins/8-BIT/1280x800/        
+        /d/admin/code/de1/skins/1960\'s/
+        /d/admin/code/de1/skins/1960\'s/1280x800/        
+        /d/admin/code/de1/skins/charts/
+        /d/admin/code/de1/skins/charts/1280x800/
+    }
+
+    foreach dir $dirs {
+        if {[file exists $dir] != 1} {
+            file mkdir $dir
+        }
+    }
+
+    set files {
+        binary.tcl
+        bluetooth.tcl
+        translation.tcl
+        de1plus.tcl         
+        gui.tcl
+        de1.tcl
+        machine.tcl
+        utils.tcl
+        main.tcl
+        vars.tcl
+        pkgIndex.tcl
+
+        fonts/NotoSansCJKjp-Bold.otf
+        fonts/NotoSansCJKjp-Regular.otf
+        fonts/notosansuibold.ttf
+        fonts/notosansuiregular.ttf
+        fonts/sarabun.ttf
+        fonts/sarabunbold.ttf
+
+        splash/1280x800/1960.jpg
+        splash/1280x800/8bit.jpg
+        splash/1280x800/aliens.jpg
+        splash/1280x800/chalkboard.jpg
+        splash/1280x800/circus.jpg
+        splash/1280x800/dark_choices.jpg
+        splash/1280x800/dark_comic.jpg
+        splash/1280x800/fashion_girls.jpg
+        splash/1280x800/grey_room.jpg
+        splash/1280x800/jackpot.jpg
+        splash/1280x800/jimshaw.jpg
+        splash/1280x800/leonardo.jpg
+        splash/1280x800/manga_girls.jpg
+        splash/1280x800/manga_outfits.jpg
+        splash/1280x800/modern.jpg
+        splash/1280x800/warhol.jpg
+        splash/1280x800/watercolor.jpg
+        splash/1280x800/wired_superheroes.jpg
+
+        skins/default/de1_skin_settings.tcl
+        skins/default/skin.tcl
+        skins/default/standard_includes.tcl
+        skins/default/standard_stop_buttons.tcl        
+
+        skins/8-BIT/skin.tcl
+        skins/8-BIT/pixel.ttf
+        skins/8-BIT/pixel2.ttf
+        skins/8-BIT/1280x800/espresso_on.png
+        skins/8-BIT/1280x800/icon.jpg
+        skins/8-BIT/1280x800/nothing_on.png
+        skins/8-BIT/1280x800/steam_on.png
+        skins/8-BIT/1280x800/tea_on.png        
+
+
+        skins/1960\'s/skin.tcl
+        skins/1960\'s/retrofont.ttf
+        skins/1960\'s/1280x800/espresso_on.png
+        skins/1960\'s/1280x800/icon.jpg
+        skins/1960\'s/1280x800/nothing_on.png
+        skins/1960\'s/1280x800/steam_on.png
+        skins/1960\'s/1280x800/tea_on.png        
+
+
+        skins/Grafitti/skin.tcl
+        skins/Grafitti/Grand\ Stylus.ttf
+        skins/Grafitti/1280x800/espresso_on.png
+        skins/Grafitti/1280x800/icon.jpg
+        skins/Grafitti/1280x800/nothing_on.png
+        skins/Grafitti/1280x800/steam_on.png
+        skins/Grafitti/1280x800/tea_on.png        
+
+        skins/charts/skin.tcl
+        skins/charts/scentone.tcl
+
+        skins/default/1280x800/nothing_on.png
+        skins/default/1280x800/espresso_on.png
+        skins/default/1280x800/steam_on.png
+        skins/default/1280x800/tea_on.png
+        skins/default/1280x800/sleep.jpg
+        skins/default/1280x800/filling_tank.jpg
+        skins/default/1280x800/fill_tank.jpg
+        skins/default/1280x800/cleaning.jpg
+        skins/default/1280x800/settings_message.jpg
+        skins/default/1280x800/descaling.jpg
+        skins/default/1280x800/settings_1.png
+        skins/default/1280x800/settings_2.png
+        skins/default/1280x800/settings_3.png
+        skins/default/1280x800/settings_4.png
+        skins/default/1280x800/icon.jpg
+
+        saver/1280x800/Black\ Steel.jpg
+        saver/1280x800/Cozy-Home.jpg
+        saver/1280x800/Floral.jpg
+        saver/1280x800/Lomen.jpg
+        saver/1280x800/alice.jpg
+        saver/1280x800/apartment.jpg
+        saver/1280x800/aztec.jpg
+        saver/1280x800/borg.jpg
+        saver/1280x800/cafe_girls.jpg
+        saver/1280x800/cities.jpg
+        saver/1280x800/cups.jpg
+        saver/1280x800/dark_choices.jpg
+        saver/1280x800/french_breakfast.jpg
+        saver/1280x800/graffiti_1.jpg
+        saver/1280x800/graffiti_2.jpg
+        saver/1280x800/graffiti_wall.jpg
+        saver/1280x800/greek_gods.jpg
+        saver/1280x800/hindu_gods.jpg
+        saver/1280x800/jim_shaw.jpg
+        saver/1280x800/manga_fashion.jpg
+        saver/1280x800/manga_girls.jpg
+        saver/1280x800/minimalism.jpg
+        saver/1280x800/scifi.jpg
+        saver/1280x800/sin_city.jpg
+        saver/1280x800/splash_noir.jpg
+        saver/1280x800/splash_rodent.jpg
+        saver/1280x800/splotch.jpg
+        saver/1280x800/steampunk_espresso.jpg
+        saver/1280x800/steampunk_latte.jpg
+        saver/1280x800/superheroes.jpg
+        saver/1280x800/three_women.jpg       
+
+        profiles/Flat\ 2.5\ mL\ per\ second\ shot\ for\ light\ roasts.tcl
+        profiles/Gentler\ but\ still\ traditional\ 8.4\ bar\ shot.tcl
+        profiles/Good\ flow\ profile\ for\ milky\ drinks.tcl
+        profiles/Good\ flow\ profile\ for\ straight\ espresso.tcl
+        profiles/Low\ pressure\ lever\ machine\ at\ 6\ bar.tcl
+        profiles/Powerful\ 10\ bar\ shot.tcl
+        profiles/Preinfuse\ then\ run\ for\ 45ml\ of\ water.tcl
+        profiles/Recommended\ traditional\ 9\ bar\ shot.tcl
+        profiles/Scott\ Rao\ recommends\ this\ as\ best\ overall.tcl
+        profiles/Slow\ preinfusion\ shot\ for\ very\ light\ roasts.tcl
+        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl
+        profiles/Traditional\ single-spring\ lever\ machine.tcl
+        profiles/Trendy\ 6\ bar\ low\ pressure\ shot.tcl
+        profiles/Two\ spring\ lever\ machine\ going\ to\ 9\ bar.tcl
+        profiles/Ultra\ traditional\ 9\ bar\ shot.tcl
+        profiles/default.tcl
+        profiles/e61\ classic\ at\ 9\ bar.tcl
+        profiles/e61\ with\ preinfusion\ at\ 9\ bar.tcl
+
+       
+    }
+
+    set srcdir "/d/admin/code/de1beta"
+    set destdir "/d/admin/code/de1"
+
+    foreach file $files {
+        set source "$srcdir/$file"
+        set dest "$destdir/$file"
+
+        if {[file exists $source] != 1} {
+            puts "File '$source' does not exist'"
+            continue
+        } 
+
+        if {[file exists $dest] == 1} {
+            if {[file mtime $source] == [file mtime $dest]} {
+                # files are identical, do not copy
+                continue
+            }
+        }
+
+        puts $file
+        file copy -force $source $dest
+    }
+
+}
+

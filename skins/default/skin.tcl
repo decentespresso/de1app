@@ -11,13 +11,13 @@ source "[homedir]/skins/default/standard_includes.tcl"
 # text and buttons to display when the DE1 is idle
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off" 510 1260 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "off" 1280 1260 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "off" 2048 1260 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off" 510 1240 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off" 1280 1240 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off" 2048 1240 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
-add_de1_text "water" 510 1076 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "steam" 2048 1076 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "espresso" 1280 1076 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "water" 510 1240 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "steam" 2048 1240 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "espresso" 1280 1240 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
 add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 210 612 808 1416
@@ -27,10 +27,10 @@ add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);st
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 400 400
 add_de1_button "off" { say [translate {settings}] $::settings(sound_button_in); show_settings } 2000 0 2560 500
-add_de1_variable "off" 1280 1350 -justify right -anchor "center" -text "" -font Helv_8 -fill "#Ff272a" -width 520 -textvariable {[group_head_heating_text]} 
+add_de1_variable "off" 1280 1320 -justify right -anchor "center" -text "" -font Helv_9_bold -fill "#7f879a" -width 520 -textvariable {[group_head_heating_text]} 
 
 # during espresso we show the current state of things and a timer
-add_de1_variable "espresso" 1280 1150 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
+add_de1_variable "espresso" 1280 1320 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
 
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is doing steam, hot water or espresso
