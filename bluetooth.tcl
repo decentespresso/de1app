@@ -258,8 +258,8 @@ proc firmware_upload_next {} {
 		} else {
 			set data [string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]
 			userdata_append "Write [string length $data] bytes of firmware data" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A006" $::de1(cinstance) $data]
-			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 		}
+		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 	}
 }
 

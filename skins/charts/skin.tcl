@@ -1,5 +1,5 @@
-set ::skindebug 1
-set ::debugging 1
+set ::skindebug 0
+set ::debugging 0
 
 puts "debugging: $::debugging"
 
@@ -450,9 +450,10 @@ add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" 2060 [expr {
 	if {$::settings(display_espresso_water_delta_number) == 1} {
 		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" 2510 [expr {$pos_top + (8 * $spacer)}] -justify left -anchor "ne" -font Helv_7 -fill $lightest -width [rescale_x_skin 520] -textvariable {[return_delta_temperature_measurement [diff_brew_temp_from_goal] ]} 
 		# thermometer widget from http://core.tcl.tk/bwidget/doc/bwidget/BWman/index.html
-	    add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2400 [expr {$pos_top + (9.2 * $spacer)}] {} -width 54 -height 8 -type normal  -variable ::positive_diff_brew_temp_from_goal -fg #ff8888 -bg #FFFFFF -maximum 10 -borderwidth 1 -relief flat
+	    add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2400 [expr {$pos_top + (9.2 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::positive_diff_brew_temp_from_goal -fg #ff8888 -bg #FFFFFF -maximum 10 -borderwidth 1 -relief flat
 	}
 #######################
+	#add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2528 694 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #ffffff -borderwidth 0  -highlightthickness 0
 
 
 
@@ -474,8 +475,8 @@ add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" 2510 [ex
 
 	if {$::settings(skale_bluetooth_address) != ""} {
 		set ::de1(scale_weight_rate) -1
-		add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar 2400 [expr {$pos_top + (8.3 * $spacer)}] {} -width 54 -height 8 -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg #FFFFFF -maximum 6 -borderwidth 1 -relief flat
-		add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2400 [expr {$pos_top + (13.8 * $spacer)}] {} -width 54 -height 8 -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg #FFFFFF -maximum 6 -borderwidth 1 -relief flat
+		add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar 2400 [expr {$pos_top + (8.3 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg #FFFFFF -maximum 6 -borderwidth 1 -relief flat
+		add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2400 [expr {$pos_top + (13.8 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg #FFFFFF -maximum 6 -borderwidth 1 -relief flat
 	}
 #######################
 

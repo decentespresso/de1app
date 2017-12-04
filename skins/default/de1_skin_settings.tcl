@@ -314,7 +314,13 @@ add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold 
 add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
  
 add_de1_variable "settings_4" 1650 1300 -text [translate "Update"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -textvariable {[translate $::de1(firmware_update_button_label)]} 
-add_de1_variable "settings_4" 2506 1140 -font Helv_8 -fill "#7f879a" -anchor "ne" -width 500 -justify "right" -textvariable {[firmware_uploaded_label]} 
+add_de1_variable "settings_4" 1860 1140 -font Helv_8 -fill "#7f879a" -anchor "ne" -width 500 -justify "right" -textvariable {[firmware_uploaded_label]} 
+
+# exit app feature
+add_de1_text "settings_4" 1960 1140 -text [translate "App"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 2280 1300 -text [translate "Exit"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
+add_de1_button "settings_4" {say [translate {exit}] $::settings(sound_button_in); app_exit} 1925 1206 2550 1406
+
 
 
 #add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -327,7 +333,7 @@ add_de1_button "settings_4" {say [translate {clean}] $::settings(sound_button_in
 add_de1_button "settings_4" {say [translate {descale}] $::settings(sound_button_in); start_decaling} 645 1206 1260 1406
 
 # firmware update
-add_de1_button "settings_4" {start_firmware_update} 1300 1206 1915 1406
+add_de1_button "settings_4" {start_firmware_update} 1300 1206 1900 1406
 
 # firmware reset
 #add_de1_button "settings_4" {} 640 890 1260 1080
