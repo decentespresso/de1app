@@ -977,8 +977,8 @@ proc de1_ble_handler { event data } {
 
 						} elseif {$cuuid eq "0000EF81-0000-1000-8000-00805F9B34FB"} {
 					        binary scan $value cus1cu t0 t1 t2 t3 t4 t5
-							set thisweight [expr {$t1 / 10.0}]
-							if {$thisweight < 0 && $::de1_num_state($::de1(state)) == "Idle"} {
+							set sensorweight [expr {$t1 / 10.0}]
+							if {$sensorweight < 0 && $::de1_num_state($::de1(state)) == "Idle"} {
 								# one second after the negative weights have stopped, automatically do a tare
 								if {[info exists ::scheduled_skale_tare_id] == 1} {
 									after cancel $::scheduled_skale_tare_id
@@ -986,10 +986,51 @@ proc de1_ble_handler { event data } {
 								set ::scheduled_skale_tare_id [after 1000 skale_tare]
 							}
 
-							# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
-							set tempflow [expr { 10 * ($thisweight - $::de1(scale_weight)) }]
+							set diff [expr {$::de1(scale_weight) - $sensorweight}]
+							if {$diff > 1} { 
+								set sensorweight $::de1(scale_weight)
+								# throw out big sudden changes
+							}
 
-							set flow [expr {($::de1(scale_weight_rate) * 0.95) + ($tempflow * 0.05)}]
+
+							set diffpercent 0
+							if {$::de1(scale_weight) != "" && $::de1(scale_weight) > 0} {
+								set diffpercent [expr {abs(1.0 * $diff / $sensorweight)}]
+								if {$diffpercent >= 1} {
+									set diffpercent 0.7
+								}
+							}
+							#set multiplier1 [expr {0.90 + ($diffpercent/10.0) }]
+							#set multiplier1 [expr {.0 - (0.1 * $diffpercent)}]
+
+							set multiplier1 0.9
+							#set multiplier1 $diffpercent
+							#if {$multiplier1 > 0.98} {
+								# don't go to far with the smoothing, as it slows the initial response too much
+							#	set multiplier1 0.98
+							#} elseif {$multiplier1 < 0.8} {
+								# don't go to far with the smoothing, as it slows the initial response too much
+							#	set multiplier1 0.8
+							#}
+
+							set multiplier2 [expr {1 - $multiplier1}];
+
+							set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
+
+
+							if {$diff != 0} {
+								msg "Diff: [round_to_two_digits $diff] - perc: [round_to_two_digits $diffpercent] - mult: [round_to_two_digits $multiplier1] - wt [round_to_two_digits $thisweight] - sen [round_to_two_digits $sensorweight]"
+							}
+
+
+							# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
+							set flow [expr { 10 * ($thisweight - $::de1(scale_weight)) }]
+
+							#set multiplier1 0.90;
+
+							#set diff [expr {$::de1(scale_weight) - $thisweight}]
+
+							#set flow [expr {($::de1(scale_weight_rate) * $multiplier1) + ($tempflow * $multiplier2)}]
 							if {$flow < 0} {
 								set flow 0
 							}
