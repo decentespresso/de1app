@@ -21,8 +21,8 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "Heroes Legend" "[skin_directory]/Heroes Legend.ttf" 18 18
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off " 1600 1495 -text [translate "HOT WATER"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
-add_de1_text "water" 744 1495 -text [translate "HOT WATER"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
+add_de1_text "off " 1600 1495 -text [translate "WATER"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
+add_de1_text "water" 744 1495 -text [translate "WATER"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
 
 
 add_de1_text "off" 350 1495 -text [translate "ESPRESSO"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 

@@ -1032,41 +1032,6 @@ proc array_item_difference {arr1 arr2 keylist} {
 
 proc make_de1_dir {} {
 
-    set nodirs {
-        /d/admin/code/de1/skins/Grafitti/
-        /d/admin/code/de1/skins/Grafitti/1280x800/
-        /d/admin/code/de1/skins/1960\'s/
-        /d/admin/code/de1/skins/1960\'s/1280x800/        
-    }
-
-    set dirs {
-        /d/admin/code/de1/fonts/
-        /d/admin/code/de1/profiles/
-        /d/admin/code/de1/splash/
-        /d/admin/code/de1/splash/1280x800/
-        /d/admin/code/de1/saver/
-        /d/admin/code/de1/saver/1280x800/
-        /d/admin/code/de1/skins/
-        /d/admin/code/de1/skins/default/
-        /d/admin/code/de1/skins/default/1280x800/
-        /d/admin/code/de1/skins/8-BIT/
-        /d/admin/code/de1/skins/8-BIT/1280x800/        
-        /d/admin/code/de1/skins/Teal\ Simple/
-        /d/admin/code/de1/skins/Teal\ Simple/1280x800/        
-        /d/admin/code/de1/skins/green\ cup/
-        /d/admin/code/de1/skins/green\ cup/1280x800/        
-        /d/admin/code/de1/skins/Three\ Women/
-        /d/admin/code/de1/skins/Three\ Women/1280x800/        
-        /d/admin/code/de1/skins/charts/
-        /d/admin/code/de1/skins/charts/1280x800/
-    }
-
-    foreach dir $dirs {
-        if {[file exists $dir] != 1} {
-            file mkdir $dir
-        }
-    }
-
     set nofiles {
 
         skins/1960\'s/skin.tcl
@@ -1144,21 +1109,35 @@ proc make_de1_dir {} {
         skins/8-BIT/1280x800/steam_on.png *
         skins/8-BIT/1280x800/tea_on.png *    
 
-        skins/Teal\ Simple/skin.tcl *
-        skins/Teal\ Simple/novocento.ttf *
-        skins/Teal\ Simple/1280x800/espresso_on.png *
-        skins/Teal\ Simple/1280x800/icon.jpg *
-        skins/Teal\ Simple/1280x800/nothing_on.png *
-        skins/Teal\ Simple/1280x800/steam_on.png *
-        skins/Teal\ Simple/1280x800/tea_on.png *    
+        skins/Teal\ Modern/skin.tcl *
+        skins/Teal\ Modern/novocento.ttf *
+        skins/Teal\ Modern/1280x800/espresso_on.png *
+        skins/Teal\ Modern/1280x800/icon.jpg *
+        skins/Teal\ Modern/1280x800/nothing_on.png *
+        skins/Teal\ Modern/1280x800/steam_on.png *
+        skins/Teal\ Modern/1280x800/tea_on.png *    
 
-        skins/green\ cup/skin.tcl *
-        skins/green\ cup/leaguegoth.ttf *
-        skins/green\ cup/1280x800/espresso_on.png *
-        skins/green\ cup/1280x800/icon.jpg *
-        skins/green\ cup/1280x800/nothing_on.png *
-        skins/green\ cup/1280x800/steam_on.png *
-        skins/green\ cup/1280x800/tea_on.png *    
+        skins/Green\ Cups/skin.tcl *
+        skins/Green\ Cups/leaguegoth.ttf *
+        skins/Green\ Cups/1280x800/espresso_on.png *
+        skins/Green\ Cups/1280x800/icon.jpg *
+        skins/Green\ Cups/1280x800/nothing_on.png *
+        skins/Green\ Cups/1280x800/steam_on.png *
+        skins/Green\ Cups/1280x800/tea_on.png *    
+
+        skins/Croissant/skin.tcl *
+        skins/Croissant/1280x800/espresso_on.png *
+        skins/Croissant/1280x800/icon.jpg *
+        skins/Croissant/1280x800/nothing_on.png *
+        skins/Croissant/1280x800/steam_on.png *
+        skins/Croissant/1280x800/tea_on.png *    
+
+        skins/Noir/skin.tcl *
+        skins/Noir/1280x800/espresso_on.png *
+        skins/Noir/1280x800/icon.jpg *
+        skins/Noir/1280x800/nothing_on.png *
+        skins/Noir/1280x800/steam_on.png *
+        skins/Noir/1280x800/tea_on.png *    
 
         skins/Three\ Women/skin.tcl *
         skins/Three\ Women/painthand.ttf *
@@ -1168,37 +1147,45 @@ proc make_de1_dir {} {
         skins/Three\ Women/1280x800/steam_on.png *
         skins/Three\ Women/1280x800/tea_on.png *    
 
-        skins/charts/skin.tcl 1
-        skins/charts/scentone.tcl 1
-        skins/charts/1280x800/espresso_1.png 1
-        skins/charts/1280x800/espresso_1_zoomed.png 1
-        skins/charts/1280x800/espresso_2.png 1
-        skins/charts/1280x800/espresso_2_zoomed.png 1
-        skins/charts/1280x800/espresso_3.png 1
-        skins/charts/1280x800/espresso_3_zoomed.png 1
-        skins/charts/1280x800/steam_1.png 1
-        skins/charts/1280x800/steam_2.png 1
-        skins/charts/1280x800/steam_3.png 1
-        skins/charts/1280x800/water_1.png 1
-        skins/charts/1280x800/water_2.png 1
-        skins/charts/1280x800/water_3.png 1
-        skins/charts/1280x800/preheat_1.png 1
-        skins/charts/1280x800/preheat_2.png 1
-        skins/charts/1280x800/preheat_3.png 1
-        skins/charts/1280x800/preheat_4.png 1
-        skins/charts/1280x800/scentone_1.jpg 1
-        skins/charts/1280x800/scentone_tropical.jpg 1
-        skins/charts/1280x800/scentone_berry.jpg 1
-        skins/charts/1280x800/scentone_citrus.jpg 1
-        skins/charts/1280x800/scentone_stone.jpg 1
-        skins/charts/1280x800/scentone_cereal.jpg 1
-        skins/charts/1280x800/scentone_chocolate.jpg 1
-        skins/charts/1280x800/scentone_flower.jpg 1
-        skins/charts/1280x800/scentone_spice.jpg 1
-        skins/charts/1280x800/scentone_vegetable.jpg 1
-        skins/charts/1280x800/scentone_savory.jpg 1
-        skins/charts/1280x800/describe_espresso.jpg 1
-        skins/charts/1280x800/describe_espresso2.jpg 1
+        skins/Rodent/skin.tcl *
+        skins/Rodent/Heroes\ Legend.ttf *
+        skins/Rodent/1280x800/espresso_on.png *
+        skins/Rodent/1280x800/icon.jpg *
+        skins/Rodent/1280x800/nothing_on.png *
+        skins/Rodent/1280x800/steam_on.png *
+        skins/Rodent/1280x800/tea_on.png *    
+
+        skins/Insight/skin.tcl 1
+        skins/Insight/scentone.tcl 1
+        skins/Insight/1280x800/espresso_1.png 1
+        skins/Insight/1280x800/espresso_1_zoomed.png 1
+        skins/Insight/1280x800/espresso_2.png 1
+        skins/Insight/1280x800/espresso_2_zoomed.png 1
+        skins/Insight/1280x800/espresso_3.png 1
+        skins/Insight/1280x800/espresso_3_zoomed.png 1
+        skins/Insight/1280x800/steam_1.png 1
+        skins/Insight/1280x800/steam_2.png 1
+        skins/Insight/1280x800/steam_3.png 1
+        skins/Insight/1280x800/water_1.png 1
+        skins/Insight/1280x800/water_2.png 1
+        skins/Insight/1280x800/water_3.png 1
+        skins/Insight/1280x800/preheat_1.png 1
+        skins/Insight/1280x800/preheat_2.png 1
+        skins/Insight/1280x800/preheat_3.png 1
+        skins/Insight/1280x800/preheat_4.png 1
+        skins/Insight/1280x800/scentone_1.jpg 1
+        skins/Insight/1280x800/scentone_tropical.jpg 1
+        skins/Insight/1280x800/scentone_berry.jpg 1
+        skins/Insight/1280x800/scentone_citrus.jpg 1
+        skins/Insight/1280x800/scentone_stone.jpg 1
+        skins/Insight/1280x800/scentone_cereal.jpg 1
+        skins/Insight/1280x800/scentone_chocolate.jpg 1
+        skins/Insight/1280x800/scentone_flower.jpg 1
+        skins/Insight/1280x800/scentone_spice.jpg 1
+        skins/Insight/1280x800/scentone_vegetable.jpg 1
+        skins/Insight/1280x800/scentone_savory.jpg 1
+        skins/Insight/1280x800/describe_espresso.jpg 1
+        skins/Insight/1280x800/describe_espresso2.jpg 1
 
         skins/default/1280x800/nothing_on.png *
         skins/default/1280x800/espresso_on.png *
@@ -1208,7 +1195,7 @@ proc make_de1_dir {} {
         skins/default/1280x800/filling_tank.jpg *
         skins/default/1280x800/fill_tank.jpg *
         skins/default/1280x800/cleaning.jpg *
-        skins/default/1280x800/settings_message.png  *
+        skins/default/1280x800/settings_message.jpg  *
         skins/default/1280x800/descaling.jpg *
         skins/default/1280x800/settings_1.png *
         skins/default/1280x800/settings_2.png 0
