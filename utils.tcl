@@ -1051,6 +1051,12 @@ proc make_de1_dir {} {
         /d/admin/code/de1/skins/default/1280x800/
         /d/admin/code/de1/skins/8-BIT/
         /d/admin/code/de1/skins/8-BIT/1280x800/        
+        /d/admin/code/de1/skins/Teal\ Simple/
+        /d/admin/code/de1/skins/Teal\ Simple/1280x800/        
+        /d/admin/code/de1/skins/green\ cup/
+        /d/admin/code/de1/skins/green\ cup/1280x800/        
+        /d/admin/code/de1/skins/Three\ Women/
+        /d/admin/code/de1/skins/Three\ Women/1280x800/        
         /d/admin/code/de1/skins/charts/
         /d/admin/code/de1/skins/charts/1280x800/
     }
@@ -1095,6 +1101,8 @@ proc make_de1_dir {} {
         main.tcl *
         vars.tcl *
         pkgIndex.tcl *
+        de1_icon_v2.png 0
+        de1plus_icon_v2.png 1
 
         fonts/NotoSansCJKjp-Bold.otf *
         fonts/NotoSansCJKjp-Regular.otf *
@@ -1136,8 +1144,61 @@ proc make_de1_dir {} {
         skins/8-BIT/1280x800/steam_on.png *
         skins/8-BIT/1280x800/tea_on.png *    
 
-        skins/charts/skin.tcl *
-        skins/charts/scentone.tcl *
+        skins/Teal\ Simple/skin.tcl *
+        skins/Teal\ Simple/novocento.ttf *
+        skins/Teal\ Simple/1280x800/espresso_on.png *
+        skins/Teal\ Simple/1280x800/icon.jpg *
+        skins/Teal\ Simple/1280x800/nothing_on.png *
+        skins/Teal\ Simple/1280x800/steam_on.png *
+        skins/Teal\ Simple/1280x800/tea_on.png *    
+
+        skins/green\ cup/skin.tcl *
+        skins/green\ cup/leaguegoth.ttf *
+        skins/green\ cup/1280x800/espresso_on.png *
+        skins/green\ cup/1280x800/icon.jpg *
+        skins/green\ cup/1280x800/nothing_on.png *
+        skins/green\ cup/1280x800/steam_on.png *
+        skins/green\ cup/1280x800/tea_on.png *    
+
+        skins/Three\ Women/skin.tcl *
+        skins/Three\ Women/painthand.ttf *
+        skins/Three\ Women/1280x800/espresso_on.png *
+        skins/Three\ Women/1280x800/icon.jpg *
+        skins/Three\ Women/1280x800/nothing_on.png *
+        skins/Three\ Women/1280x800/steam_on.png *
+        skins/Three\ Women/1280x800/tea_on.png *    
+
+        skins/charts/skin.tcl 1
+        skins/charts/scentone.tcl 1
+        skins/charts/1280x800/espresso_1.png 1
+        skins/charts/1280x800/espresso_1_zoomed.png 1
+        skins/charts/1280x800/espresso_2.png 1
+        skins/charts/1280x800/espresso_2_zoomed.png 1
+        skins/charts/1280x800/espresso_3.png 1
+        skins/charts/1280x800/espresso_3_zoomed.png 1
+        skins/charts/1280x800/steam_1.png 1
+        skins/charts/1280x800/steam_2.png 1
+        skins/charts/1280x800/steam_3.png 1
+        skins/charts/1280x800/water_1.png 1
+        skins/charts/1280x800/water_2.png 1
+        skins/charts/1280x800/water_3.png 1
+        skins/charts/1280x800/preheat_1.png 1
+        skins/charts/1280x800/preheat_2.png 1
+        skins/charts/1280x800/preheat_3.png 1
+        skins/charts/1280x800/preheat_4.png 1
+        skins/charts/1280x800/scentone_1.jpg 1
+        skins/charts/1280x800/scentone_tropical.jpg 1
+        skins/charts/1280x800/scentone_berry.jpg 1
+        skins/charts/1280x800/scentone_citrus.jpg 1
+        skins/charts/1280x800/scentone_stone.jpg 1
+        skins/charts/1280x800/scentone_cereal.jpg 1
+        skins/charts/1280x800/scentone_chocolate.jpg 1
+        skins/charts/1280x800/scentone_flower.jpg 1
+        skins/charts/1280x800/scentone_spice.jpg 1
+        skins/charts/1280x800/scentone_vegetable.jpg 1
+        skins/charts/1280x800/scentone_savory.jpg 1
+        skins/charts/1280x800/describe_espresso.jpg 1
+        skins/charts/1280x800/describe_espresso2.jpg 1
 
         skins/default/1280x800/nothing_on.png *
         skins/default/1280x800/espresso_on.png *
@@ -1147,10 +1208,13 @@ proc make_de1_dir {} {
         skins/default/1280x800/filling_tank.jpg *
         skins/default/1280x800/fill_tank.jpg *
         skins/default/1280x800/cleaning.jpg *
-        skins/default/1280x800/settings_message.jpg  *
+        skins/default/1280x800/settings_message.png  *
         skins/default/1280x800/descaling.jpg *
         skins/default/1280x800/settings_1.png *
-        skins/default/1280x800/settings_2.png *
+        skins/default/1280x800/settings_2.png 0
+        skins/default/1280x800/settings_2a.png 1
+        skins/default/1280x800/settings_2b.png 1
+        skins/default/1280x800/settings_2c.png 1
         skins/default/1280x800/settings_3.png *
         skins/default/1280x800/settings_4.png *
         skins/default/1280x800/icon.jpg *

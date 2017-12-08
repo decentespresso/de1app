@@ -17,18 +17,18 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "painthand" "[skin_directory]/painthand.ttf" 28
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off" 490 1180  -text [translate "ESPRESSO"] -font {painthand} -fill "#000000" -anchor "center" 
-add_de1_text "espresso" 490 1180  -text [translate "ESPRESSO"] -font {painthand} -fill "#000000" -anchor "center" 
+add_de1_text "off" 490 1180  -text [translate "ESPRESSO"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
+add_de1_text "espresso" 490 1180  -text [translate "ESPRESSO"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
 
 
 
-add_de1_text "off" 1311 1180  -text [translate "STEAM"] -font {painthand} -fill "#000000" -anchor "center" 
-add_de1_text "steam" 1311 1180  -text [translate "STEAM"] -font {painthand} -fill "#000000" -anchor "center" 
+add_de1_text "off" 1311 1180  -text [translate "STEAM"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
+add_de1_text "steam" 1311 1180  -text [translate "STEAM"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
 
 
 
-add_de1_text "off" 2147 1180 -text [translate "HOT WATER"] -font {painthand} -fill "#000000" -anchor "center" 
-add_de1_text "hot water" 2147 1180 -text [translate "HOT WATER"] -font {painthand} -fill "#000000" -anchor "center" 
+add_de1_text "off" 2147 1180 -text [translate "HOT WATER"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
+add_de1_text "hot water" 2147 1180 -text [translate "HOT WATER"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
 
 
 
