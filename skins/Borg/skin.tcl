@@ -20,17 +20,17 @@ load_font "diablo" "[skin_directory]/diablo.ttf" 29
 
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off" 379 1375  -text [translate "ESPRESSO"] -font {diablo} -fill "#a66220" -anchor "center" 
-add_de1_text "espresso" 1297 1355  -text [translate "ESPRESSO"] -font {diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "off" 379 1375  -text [translate "ESPRESSO"] -font {diablo} -fill "#61442a" -anchor "center" 
+#add_de1_text "espresso" 1297 1355  -text [translate "ESPRESSO"] -font {diablo} -fill "#a66220" -anchor "center" 
 
-add_de1_text "off" 977 1375  -text [translate "STEAM"] -font {diablo} -fill "#a66220" -anchor "center" 
-add_de1_text "steam" 1294 1355  -text [translate "STEAM"] -font {diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "off" 977 1375  -text [translate "STEAM"] -font {diablo} -fill "#61442a" -anchor "center" 
+#add_de1_text "steam" 1294 1355  -text [translate "STEAM"] -font {diablo} -fill "#a66220" -anchor "center" 
 
-add_de1_text "off" 1550 1375 -text [translate "HOT WATER"] -font {diablo} -fill "#a66220" -anchor "center" 
-add_de1_text "water" 1297 1350 -text [translate "HOT WATER"] -font {diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "off" 1550 1375 -text [translate "WATER"] -font {diablo} -fill "#61442a" -anchor "center" 
+#add_de1_text "water" 1297 1350 -text [translate "WATER"] -font {diablo} -fill "#a66220" -anchor "center" 
 
 
-add_de1_text "off settings" 2177 1375  -text [translate "SETTINGS"] -font {diablo} -fill "#a66220" -anchor "center" 
+add_de1_text "off settings" 2177 1375  -text [translate "SETTINGS"] -font {diablo} -fill "#61442a" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)

@@ -19,7 +19,7 @@ load_font "Birdy" "[skin_directory]/Birdy.ttf" 26
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off" 345 1450  -text [translate "ESPRESSO"] -font {Birdy} -fill "#f4f4f4" -anchor "center" 
 add_de1_text "off" 945 1450  -text [translate "STEAM"] -font {Birdy} -fill "#f4f4f4" -anchor "center" 
-add_de1_text "off" 1552 1450 -text [translate "HOT WATER"] -font {Birdy} -fill "#f4f4f4" -anchor "center" 
+add_de1_text "off" 1552 1450 -text [translate "WATER"] -font {Birdy} -fill "#f4f4f4" -anchor "center" 
 add_de1_text "off" 2215 1450  -text [translate "SETTINGS"] -font {Birdy} -fill "#f4f4f4" -anchor "center" 
 
 

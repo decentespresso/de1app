@@ -1100,6 +1100,46 @@ proc make_de1_dir {} {
         skins/default/standard_includes.tcl *
         skins/default/standard_stop_buttons.tcl *
 
+        skins/Antibes/skin.tcl *
+        skins/Antibes/moonflower.ttf *
+        skins/Antibes/1280x800/espresso_on.png *
+        skins/Antibes/1280x800/icon.jpg *
+        skins/Antibes/1280x800/nothing_on.png *
+        skins/Antibes/1280x800/steam_on.png *
+        skins/Antibes/1280x800/tea_on.png *    
+
+        skins/Borg/skin.tcl *
+        skins/Borg/diablo.ttf *
+        skins/Borg/1280x800/espresso_on.png *
+        skins/Borg/1280x800/icon.jpg *
+        skins/Borg/1280x800/nothing_on.png *
+        skins/Borg/1280x800/steam_on.png *
+        skins/Borg/1280x800/tea_on.png *    
+
+        skins/Aztec/skin.tcl *
+        skins/Aztec/aztec.ttf *
+        skins/Aztec/1280x800/espresso_on.png *
+        skins/Aztec/1280x800/icon.jpg *
+        skins/Aztec/1280x800/nothing_on.png *
+        skins/Aztec/1280x800/steam_on.png *
+        skins/Aztec/1280x800/tea_on.png *    
+
+        skins/Constructivism/skin.tcl *
+        skins/Constructivism/orbitron.ttf *
+        skins/Constructivism/1280x800/espresso_on.png *
+        skins/Constructivism/1280x800/icon.jpg *
+        skins/Constructivism/1280x800/nothing_on.png *
+        skins/Constructivism/1280x800/steam_on.png *
+        skins/Constructivism/1280x800/tea_on.png *    
+
+        skins/Roman\ Gods/skin.tcl *
+        skins/Roman\ Gods/renaissance.ttf *
+        skins/Roman\ Gods/1280x800/espresso_on.png *
+        skins/Roman\ Gods/1280x800/icon.jpg *
+        skins/Roman\ Gods/1280x800/nothing_on.png *
+        skins/Roman\ Gods/1280x800/steam_on.png *
+        skins/Roman\ Gods/1280x800/tea_on.png *    
+
         skins/8-BIT/skin.tcl *
         skins/8-BIT/pixel.ttf *
         skins/8-BIT/pixel2.ttf *
@@ -1154,6 +1194,14 @@ proc make_de1_dir {} {
         skins/Rodent/1280x800/nothing_on.png *
         skins/Rodent/1280x800/steam_on.png *
         skins/Rodent/1280x800/tea_on.png *    
+
+        skins/Diner/skin.tcl *
+        skins/Diner/bellerose.ttf *
+        skins/Diner/1280x800/espresso_on.png *
+        skins/Diner/1280x800/icon.jpg *
+        skins/Diner/1280x800/nothing_on.png *
+        skins/Diner/1280x800/steam_on.png *
+        skins/Diner/1280x800/tea_on.png *    
 
         skins/Insight/skin.tcl 1
         skins/Insight/scentone.tcl 1

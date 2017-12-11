@@ -538,7 +538,7 @@ add_de1_variable "water_1" 1390 775 -text [translate "START"] -font Helv_20_bold
 add_de1_variable "water_3" 1390 775 -text [translate "RESTART"] -font Helv_20_bold -fill "#7f879a" -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
 add_de1_variable "water" 1390 775 -text [translate "STOP"] -font Helv_20_bold -fill "#2d3046" -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
 
-add_de1_text "water_1 water water_3" 1390 865 -text [translate "HOT WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+add_de1_text "water_1 water water_3" 1390 865 -text [translate "WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 add_de1_button "water_1 water_3" {say [translate {hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 210 2560 1100
 add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set_next_page off water_3 ; start_idle} 0 189 2560 1600
 

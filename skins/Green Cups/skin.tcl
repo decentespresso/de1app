@@ -20,7 +20,7 @@ load_font "leaguegoth" "[skin_directory]/leaguegoth.ttf" 62
 
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off water" 1985 1250 -text [translate "HOT WATER"] -font {leaguegoth} -fill "#eaf4e4" -anchor "center" 
+add_de1_text "off water" 1985 1250 -text [translate "WATER"] -font {leaguegoth} -fill "#eaf4e4" -anchor "center" 
 add_de1_text "off espresso" 570 1250  -text [translate "ESPRESSO"] -font {leaguegoth} -fill "#eaf4e4" -anchor "center" 
 add_de1_text "off steam" 1275 1250  -text [translate "STEAM"] -font {leaguegoth} -fill "#eaf4e4" -anchor "center" 
 

@@ -19,7 +19,7 @@ load_font "starcraft" "[skin_directory]/starcraft.ttf" 18
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off" 380 1510  -text [translate "ESPRESSO"] -font {starcraft} -fill "#ffffff" -anchor "center" 
 add_de1_text "off" 1020 1510  -text [translate "STEAM"] -font {starcraft} -fill "#ffffff" -anchor "center" 
-add_de1_text "off" 1580 1510 -text [translate "HOT WATER"] -font {starcraft} -fill "#ffffff" -anchor "center" 
+add_de1_text "off" 1580 1510 -text [translate "WATER"] -font {starcraft} -fill "#ffffff" -anchor "center" 
 add_de1_text "off" 2200 1510  -text [translate "SETTINGS"] -font {starcraft} -fill "#ffffff" -anchor "center" 
 
 

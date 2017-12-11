@@ -19,7 +19,7 @@ load_font "chap" "[skin_directory]/chap.ttf" 22
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off" 535 1070  -text [translate "ESPRESSO"] -font {chap} -fill "#7d1517" -anchor "center" 
 add_de1_text "off" 1022 1070  -text [translate "STEAM"] -font {chap} -fill "#7d1517" -anchor "center" 
-add_de1_text "off" 1524 1070 -text [translate "HOT WATER"] -font {chap} -fill "#7d1517" -anchor "center" 
+add_de1_text "off" 1524 1070 -text [translate "WATER"] -font {chap} -fill "#7d1517" -anchor "center" 
 add_de1_text "off" 2025 1070 -text [translate "SETTINGS"] -font {chap} -fill "#7d1517" -anchor "center" 
 
 

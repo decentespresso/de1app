@@ -25,7 +25,7 @@ add_de1_text "off" 380 1455  -text [translate "ESPRESSO"] -font {samark} -fill "
 add_de1_text "off" 1012 1455  -text [translate "STEAM"] -font {samark} -fill "#ffffff" -anchor "center" 
 
 
-add_de1_text "off" 1585 1455 -text [translate "HOT WATER"] -font {samark} -fill "#ffffff" -anchor "center" 
+add_de1_text "off" 1585 1455 -text [translate "WATER"] -font {samark} -fill "#ffffff" -anchor "center" 
 
 
 add_de1_text "off" 2186 1455  -text [translate "SETTINGS"] -font {samark} -fill "#ffffff" -anchor "center" 

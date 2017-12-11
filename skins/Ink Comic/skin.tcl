@@ -30,7 +30,7 @@ The STEAM
 is busted"] -font {DSEraserCyr} -fill "#1f72c7" -anchor "center" 
 
 add_de1_text "off water" 880 980 -text [translate "And there's
-HOT WATER
+WATER
 all over
 the floor!"] -font {DSEraserCyr} -fill "#ff1717" -anchor "center" 
 

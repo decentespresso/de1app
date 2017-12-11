@@ -16,7 +16,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 # text and buttons to display when the DE1 is idle
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off water" 510 1076 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off water" 510 1076 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off steam" 2048 1076 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off espresso" 1280 1076 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 

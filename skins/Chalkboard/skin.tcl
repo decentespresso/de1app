@@ -19,7 +19,7 @@ load_font "chaldust" "[skin_directory]/chaldust.ttf" 22
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 410 1400  -text [translate "ESPRESSO"] -font {chaldust} -fill "#f9f9f9" -anchor "center" 
 add_de1_text "off steam" 1080 1400  -text [translate "STEAM"] -font {chaldust} -fill "#f9f9f9" -anchor "center" 
-add_de1_text "off water" 1748 1400 -text [translate "HOT WATER"] -font {chaldust} -fill "#f9f9f9" -anchor "center" 
+add_de1_text "off water" 1748 1400 -text [translate "WATER"] -font {chaldust} -fill "#f9f9f9" -anchor "center" 
 add_de1_text "off settings" 2247 1400  -text [translate "SETTINGS"] -font {chaldust} -fill "#f9f9f9" -anchor "center" 
 
 

@@ -24,8 +24,8 @@ add_de1_text "off" 958 1485  -text [translate "STEAM"] -font {renaissance} -fill
 add_de1_text "steam" 958 1485  -text [translate "STEAM"] -font {renaissance} -fill "#a7534e" -anchor "center" 
 
 
-add_de1_text "off" 1558 1485 -text [translate "HOT WATER"] -font {renaissance} -fill "#a7534e" -anchor "center" 
-add_de1_text "water" 1558 1485  -text [translate "HOT WATER"] -font {renaissance} -fill "#a7534e" -anchor "center" 
+add_de1_text "off" 1558 1485 -text [translate "WATER"] -font {renaissance} -fill "#a7534e" -anchor "center" 
+add_de1_text "water" 1558 1485  -text [translate "WATER"] -font {renaissance} -fill "#a7534e" -anchor "center" 
 
 add_de1_text "off" 2208 1485  -text [translate "SETTINGS"] -font {renaissance} -fill "#a7534e" -anchor "center" 
 

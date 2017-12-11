@@ -19,7 +19,7 @@ load_font "gruss" "[skin_directory]/gruss.ttf" 38
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off" 395 1400  -text [translate "ESPRESSO"] -font {gruss} -fill "#cc3333" -anchor "center" 
 add_de1_text "off" 1280 1400  -text [translate "STEAM"] -font {gruss} -fill "#996600" -anchor "center" 
-add_de1_text "off" 2150 1400 -text [translate "HOT WATER"] -font {gruss} -fill "#006699" -anchor "center" 
+add_de1_text "off" 2150 1400 -text [translate "WATER"] -font {gruss} -fill "#006699" -anchor "center" 
 
 add_de1_text "off" 2015 160 -text [translate "SETTINGS"] -font {gruss} -fill "#000000" -anchor "center" 
 

@@ -9,7 +9,7 @@ source "[homedir]/skins/default/standard_includes.tcl"
 # tapping the logo exits the app
 add_de1_button "off" "exit" 800 0 1750 500
 
-add_de1_text "off" 510 1076 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off" 510 1076 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off" 500 1156 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width 520
 add_de1_variable "off" 505 1156 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[setting_water_max_time_text]} 
 add_de1_text "off" 500 1206 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width 520
@@ -19,7 +19,7 @@ add_de1_variable "off" 505 1206 -justify left -anchor "nw" -font Helv_8 -fill "#
 add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 210 612 808 1416
 
 
-#add_de1_text "off" 510 1076 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+#add_de1_text "off" 510 1076 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 #add_de1_text "off" 500 1156 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width 520
 #add_de1_variable "off" 505 1156 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[setting_water_max_time_text]} 
 #add_de1_text "off" 500 1206 -justify right -anchor "ne" -text [translate "Temp:"] -font Helv_8 -fill "#7f879a" -width 520
@@ -106,8 +106,8 @@ add_de1_variable "espresso" 1285 1326 -justify left -anchor "nw" -text "" -font 
 
 
 ##############################################################################################################################################################################################################################################################################
-# the HOT WATER button and translatable text for it
-add_de1_text "water" 510 1076 -text [translate "HOT WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+# the WATER button and translatable text for it
+add_de1_text "water" 510 1076 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_variable "water" 510 1136 -text "" -font Helv_9_bold -fill "#73768f" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
 
 add_de1_text "water" 500 1176 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 520

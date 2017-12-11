@@ -22,7 +22,7 @@ load_font "Abadi MT Condensed Light" "[skin_directory]/ABALC.ttf" 36
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 325 1230  -text [translate "ESPRESSO"] -font {Abadi MT Condensed Light} -fill "#eaf4e4" -anchor "center" 
 add_de1_text "off steam" 920 1230  -text [translate "STEAM"] -font {Abadi MT Condensed Light} -fill "#eaf4e4" -anchor "center" 
-add_de1_text "off water" 1602 1230 -text [translate "HOT WATER"] -font {Abadi MT Condensed Light} -fill "#eaf4e4" -anchor "center" 
+add_de1_text "off water" 1602 1230 -text [translate "WATER"] -font {Abadi MT Condensed Light} -fill "#eaf4e4" -anchor "center" 
 
 add_de1_text "off settings" 2220 1230  -text [translate "SETTINGS"] -font {Abadi MT Condensed Light} -fill "#eaf4e4" -anchor "center" 
 

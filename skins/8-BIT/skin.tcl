@@ -25,7 +25,7 @@ load_font "pixel2" "[skin_directory]/pixel.ttf" 18
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 455 1100 -text [translate "ESPRESSO"] -font {pixel} -fill "#ffffff" -anchor "center" 
 add_de1_text "off steam" 1318 1100  -text [translate "STEAM"] -font {pixel} -fill "#ffffff" -anchor "center" 
-add_de1_text "off water" 2110 1100 -text [translate "HOT WATER"] -font {pixel} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water" 2110 1100 -text [translate "WATER"] -font {pixel} -fill "#ffffff" -anchor "center" 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
 add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 75 385 775 1250
