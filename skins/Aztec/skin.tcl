@@ -20,7 +20,7 @@ proc labels_on {} {
 	set ::water_label [translate "WATER"]
 	set ::settings_label [translate "SETTINGS"]
 	set ::off_label [translate "OFF"]
-	after 30000 labels_off
+	after 7000 labels_off
 }
 labels_on
 

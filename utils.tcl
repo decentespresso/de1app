@@ -902,7 +902,8 @@ proc skin_convert {indir} {
             flush stdout
             if {[file extension $skinfile] == ".png"} {
                 catch {
-                	exec convert $skinfile  -resize $dir!  -format png8 ../$dir/$skinfile 
+                    #-format png8
+                	exec convert $skinfile -strip -resize $dir!   ../$dir/$skinfile 
                     
                     # additional optional PNG compression step 
                     exec zopflipng -q --iterations=1 -y   ../$dir/$skinfile   ../$dir/$skinfile 
@@ -1248,7 +1249,9 @@ proc make_de1_dir {} {
         skins/default/1280x800/settings_1.png *
         skins/default/1280x800/settings_2.png 0
         skins/default/1280x800/settings_2a.png 1
+        skins/default/1280x800/settings_2a2.png 1
         skins/default/1280x800/settings_2b.png 1
+        skins/default/1280x800/settings_2b2.png 1
         skins/default/1280x800/settings_2c.png 1
         skins/default/1280x800/settings_3.png *
         skins/default/1280x800/settings_4.png *
