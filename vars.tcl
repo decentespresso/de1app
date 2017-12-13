@@ -1072,14 +1072,14 @@ proc fill_skin_listbox {} {
 	$widget delete 0 99999
 
 	set cnt 0
-	set current_skin_number 0
+	set ::current_skin_number 0
 	foreach d [lsort -dictionary -increasing [skin_directories]] {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
 		$widget insert $cnt $d
 		if {$::settings(skin) == $d} {
-			set current_skin_number $cnt
+			set ::current_skin_number $cnt
 		}
 
 		#puts "d: $d"
@@ -1093,8 +1093,9 @@ proc fill_skin_listbox {} {
 	
 	#$widget itemconfigure $current_skin_number -foreground blue
 
-	$widget selection set $current_skin_number
+	$widget selection set $::current_skin_number
 	make_current_listbox_item_blue $widget
+	#puts "current_skin_number: $::current_skin_number"
 
 	preview_tablet_skin
 
@@ -1548,21 +1549,34 @@ proc preview_tablet_skin {} {
 	#if {[check_for_multiple_listbox_events_bug] == 1} {
 	#	return
 	#}
-	catch {
+	#catch {
 	#error "prev"
 		msg "preview_tablet_skin"
 		set w $::globals(tablet_styles_listbox)
 		if {[$w curselection] == ""} {
 			msg "no current skin selection"
-			return
+			#set w 
+			#set skindir [$w get $::current_skin_number]
+			#return
+			$w selection set $::current_skin_number
 		}
 		set skindir [$w get [$w curselection]]
 		set ::settings(skin) $skindir
 		#set ::settings(skin)
-		set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
-		$::table_style_preview_image read $fn
+
+	    if {[info exists ::rescale_images_x_ratio] == 1} {
+			set fn "[homedir]/skins/$skindir/2560x1600/icon.jpg"
+			$::table_style_preview_image read $fn
+			puts "photoscale $::table_style_preview_image $::rescale_images_y_ratio $::rescale_images_x_ratio"
+			photoscale $::table_style_preview_image $::rescale_images_y_ratio $::rescale_images_x_ratio
+
+	    } else {
+			set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
+			$::table_style_preview_image read $fn
+	    }
+
 		make_current_listbox_item_blue $::globals(tablet_styles_listbox)
-	}
+	#}
 }
 
 proc preview_history {w args} {
@@ -1841,7 +1855,6 @@ proc start_text_if_espresso_ready {} {
 		return [translate "START"]
 	}
 	return [translate "WAIT"]
-
 }
 
 proc restart_text_if_espresso_ready {} {

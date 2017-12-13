@@ -15,7 +15,7 @@ proc labels_on {} {
 	set ::water_label [translate "WATER"]
 	set ::settings_label [translate "SETTINGS"]
 	set ::off_label [translate "OFF"]
-	after 30000 labels_off
+	after 10000 labels_off
 }
 labels_on
 
@@ -35,14 +35,17 @@ add_de1_variable "off" 150 1330  -font Helv_10_bold -fill "#888888" -anchor "cen
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
-add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso; after 2000 labels_on" 1600 950 2560 1550
-add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam; after 2000 labels_on" 1600 200 2560 900
-add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water; after 2000 labels_on" 450 600 1000 1100
+add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso; " 1600 950 2560 1550
+add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam; " 1600 200 2560 900
+add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water; " 450 600 1000 1100
 
 
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 1050 440 1590
 add_de1_button "off" {backup_settings; page_to_show_when_off settings_1; after 2000 labels_on} 0 0 1000 590
+
+# show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
+add_de1_variable "off" 1280 700 -justify left -anchor "nw" -text "" -font Helv_20_bold -fill "#DDDDDD" -width 1520 -textvariable {[de1_connected_state 5]} 
 
 ##############################################################################################################################################################################################################################################################################
 

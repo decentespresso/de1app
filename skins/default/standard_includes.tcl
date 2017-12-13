@@ -37,7 +37,5 @@ add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning.jpg"
 
 set_de1_screen_saver_directory "[homedir]/saver"
 
-add_de1_variable "off" 20 1520 -justify left -anchor "nw" -text "" -font Helv_10 -fill "#666666" -width 1520 -textvariable {[de1_connected_state 5]} 
-
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/skins/default/de1_skin_settings.tcl"

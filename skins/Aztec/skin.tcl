@@ -53,14 +53,18 @@ add_de1_variable "off" 1750 430  -text [translate "SETTINGS"] -font {aztec} -fil
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
-add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso; after 2000 labels_on" 30 450 650 1555
-add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam; after 2000 labels_on" 665 450 1270 1555
-add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water; after 2000 labels_on" 1290 450 1890 1555
+add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso; " 30 450 650 1555
+add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam; " 665 450 1270 1555
+add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water; " 1290 450 1890 1555
 
 
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 1300 170 2220 420
-add_de1_button "off" {backup_settings; page_to_show_when_off settings_1; after 2000 labels_on} 1920 450 2515 1555
+add_de1_button "off" {backup_settings; page_to_show_when_off settings_1; } 1920 450 2515 1555
+
+# show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
+add_de1_variable "off" 20 1520 -justify left -anchor "nw" -text "" -font aztec -fill "#FFFFFF" -width 1520 -textvariable {[de1_connected_state 5]} 
+
 
 ##############################################################################################################################################################################################################################################################################
 

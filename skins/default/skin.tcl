@@ -32,6 +32,9 @@ add_de1_variable "off" 1280 1320 -justify right -anchor "center" -text "" -font 
 # during espresso we show the current state of things and a timer
 add_de1_variable "espresso" 1280 1320 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
 
+# show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
+add_de1_variable "off" 20 1520 -justify left -anchor "nw" -text "" -font Helv_10 -fill "#666666" -width 1520 -textvariable {[de1_connected_state 5]} 
+
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is doing steam, hot water or espresso
 

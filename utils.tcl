@@ -35,11 +35,19 @@ proc stacktrace {} {
 }
 
 proc random_saver_file {} {
-    return [random_pick [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]]
+    if {[file exists "[saver_directory]/${::screen_size_width}x${::screen_size_height}/"] == 1} {
+        return [random_pick [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]]
+    } else {
+        return [random_pick [glob "[saver_directory]/2560x1600/*.jpg"]]
+    }
 }
 
 proc random_splash_file {} {
-    return [random_pick [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]]
+    if {[file exists "[splash_directory]/${::screen_size_width}x${::screen_size_height}/"] == 1} {
+        return [random_pick [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]]
+    } else {
+        return [random_pick [glob "[splash_directory]/2560x1600/*.jpg"]]
+    }
     #return [random_pick [glob "/d/admin/code/dbeta/splash/1280x800/*.jpg"]]
 }
 
@@ -237,8 +245,14 @@ proc setup_environment {} {
             set screen_size_height 720
         }
 
-        set fontm [expr {1280.0 / ($screen_size_width)}]
-        set fontm .5
+        if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
+            set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
+            set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
+        }
+
+        set fontm [expr {$screen_size_width / 1280.0}]
+        #set fontm [expr {1280.0 / ($screen_size_width)}]
+        #set fontm .5
         set ::fontw 1
         #set fontm [expr {2560.0 / $screen_size_width}]
         #set fontm 1
@@ -353,24 +367,30 @@ proc setup_environment {} {
 
         set screen_size_width 1920
         set screen_size_height 1200
-        set fontm 1.5
 
         set screen_size_width 2048
         set screen_size_height 1536
-        set fontm 1.7
 
         set screen_size_width 1920
         set screen_size_height 1200
-        set fontm 1.5
-
 
         set screen_size_width 2560
         set screen_size_height 1600
-        set fontm 2
+
+        set screen_size_width 1920
+        set screen_size_height 1200
+
+        set screen_size_width 640
+        set screen_size_height 480
 
         set screen_size_width 1280
         set screen_size_height 800
-        set fontm 1
+
+
+        set fontm [expr {$screen_size_width / 1280.0}]
+        #puts "fontm: $fontm"
+
+#set fonntm .5
 
         set ::fontw 2
 
@@ -393,6 +413,11 @@ proc setup_environment {} {
 
         wm maxsize . $screen_size_width $screen_size_height
         wm minsize . $screen_size_width $screen_size_height
+
+        if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
+            set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
+            set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
+        }
 
         #set regularfont "Helvetica Neue Regular"
         #set boldfont "Helvetica Neue Bold"
@@ -512,6 +537,10 @@ proc settings_directory_graphics {} {
 
     set settingsdir "[homedir]/skins"
     set dir "$settingsdir/$::settings(skin)/${screen_size_width}x${screen_size_height}"
+    
+    if {[info exists ::rescale_images_x_ratio] == 1} {
+        set dir "$settingsdir/$::settings(skin)/2560x1600"
+    }
     return $dir
 }
 
@@ -530,6 +559,10 @@ proc skin_directory_graphics {} {
 
     #puts "skind: $skindir"
     set dir "$skindir/$::settings(skin)/${screen_size_width}x${screen_size_height}"
+
+    if {[info exists ::rescale_images_x_ratio] == 1} {
+        set dir "$skindir/$::settings(skin)/2560x1600"
+    }
     #puts "skindir '$skindir'"
     #set dir "[file dirname [info script]]/$skindir/default"
     return $dir
@@ -552,6 +585,10 @@ proc defaultskin_directory_graphics {} {
 
     #puts "skind: $skindir"
     set dir "$skindir/default/${screen_size_width}x${screen_size_height}"
+    
+    if {[info exists ::rescale_images_x_ratio] == 1} {
+        set dir "$skindir/default/2560x1600"
+    }
     #puts "skindir '$skindir'"
     #set dir "[file dirname [info script]]/$skindir/default"
     return $dir

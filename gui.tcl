@@ -4,12 +4,44 @@ proc chart_refresh {} {
 
 }
 
+proc Double2Fraction { dbl {eps 0.000001}} {
+    for {set den 1} {$den<1024} {incr den} {
+        set num [expr {round($dbl*$den)}]
+        if {abs(double($num)/$den - $dbl) < $eps} break
+    }
+    list $num $den
+}
+
+
+proc photoscale {img sx {sy ""} } {
+    if { $sx == 1 && ($sy eq "" || $sy == 1) } {
+        return;   # Nothing to do!
+    }
+    
+    foreach {sx_m sx_f} [Double2Fraction $sx] break
+    if { $sy eq "" } {
+        foreach {sy sy_x sy_f} [list $sx $sx_m $sx_f] break;  # Multi-set!
+    } else {
+        foreach {sy_m sy_f} [Double2Fraction $sy] break
+    }
+    set tmp [image create photo]
+    $tmp copy $img -zoom $sx_m $sy_m -compositingrule set
+    $img blank
+    $img copy $tmp -shrink -subsample $sx_f $sy_f -compositingrule set
+    image delete $tmp
+}
 
 proc add_de1_page {names pngfilename} {
 	#set pngfilename "[skin_directory_graphics]/$apngfilename"
 	#puts $pngfilename
 	#package require tksvg
 	image create photo $names -file $pngfilename
+
+	if {[info exists ::rescale_images_x_ratio] == 1} {
+		puts "photoscale $names $::rescale_images_x_ratio $::rescale_images_y_ratio"
+		photoscale $names $::rescale_images_y_ratio $::rescale_images_x_ratio
+	}
+
 	foreach name $names {
 		.can create image {0 0} -anchor nw -image $names -tag [list pages $name] -state hidden 
 	}
@@ -24,7 +56,9 @@ proc set_de1_screen_saver_directory {{dirname {}}} {
 	set pngfilename [random_saver_file]
 	set names "saver"
 	#puts $pngfilename
-	image create photo $names -file $pngfilename
+	#image create photo $names -file $pngfilename
+	image create photo $names 
+
 	foreach name $names {
 		.can create image {0 0} -anchor nw -image $names  -tag [list saver $name] -state hidden
 	}
@@ -689,6 +723,14 @@ proc change_screen_saver_img {} {
 	#if {$::de1(current_context) == "saver"} {
 		image delete saver
 		image create photo saver -file [random_saver_file]
+
+
+		if {[info exists ::rescale_images_x_ratio] == 1} {
+			puts "photoscale saver $::rescale_images_x_ratio $::rescale_images_y_ratio"
+			photoscale saver $::rescale_images_y_ratio $::rescale_images_x_ratio
+		}
+
+
 		.can create image {0 0} -anchor nw -image saver  -tag saver -state hidden
 		.can lower saver
 		#update
@@ -718,9 +760,12 @@ proc de1_connected_state { {hide_delay 0} } {
 	if {$::android == 0} {
 
 		if {$elapsed > $hide_delay && $hide_delay != 0} {
+			if {$::de1(substate) != 0} {
+				return [translate Wait]
+			}
 			return ""
 		} else {
-			return "[translate Connected]"
+			return [translate Connected]
 			#return "[translate Connected]: $elapsed"
 		}
 		#return [translate "Disconnected"]
@@ -1271,6 +1316,12 @@ proc setup_images_for_first_page {} {
 	#set files [glob "[splash_directory]/*.jpg"]
 	#set splashpng [random_pick $files]
 	image create photo splash -file [random_splash_file] -format jpeg
+
+	if {[info exists ::rescale_images_x_ratio] == 1} {
+		puts "photoscale splash $::rescale_images_x_ratio $::rescale_images_y_ratio"
+		photoscale splash $::rescale_images_y_ratio $::rescale_images_x_ratio 
+	}
+
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
 	update

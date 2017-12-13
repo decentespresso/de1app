@@ -22,14 +22,14 @@ load_font "Heroes Legend" "[skin_directory]/Heroes Legend.ttf" 18 18
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off " 1600 1495 -text [translate "WATER"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
-add_de1_text "water" 744 1495 -text [translate "WATER"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
+#add_de1_text "water" 744 1495 -text [translate "WATER"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
 
 
 add_de1_text "off" 350 1495 -text [translate "ESPRESSO"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
-add_de1_text "espresso" 820 1495 -text [translate "ESPRESSO"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
+#add_de1_text "espresso" 820 1495 -text [translate "ESPRESSO"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
 
 add_de1_text "off" 970 1495  -text [translate "STEAM"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
-add_de1_text "steam" 955 1495  -text [translate "STEAM"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
+#add_de1_text "steam" 955 1495  -text [translate "STEAM"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
 
 
 add_de1_text "off settings" 2230 1495  -text [translate "SETTINGS"] -font {Heroes Legend} -fill "#ffffff" -anchor "center" 
@@ -44,6 +44,10 @@ add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 650 0 1900 135 
 add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 1953 221 2483 1541
+
+
+# show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
+add_de1_variable "off" 1280 180 -justify left -anchor "center" -text "" -font {Heroes Legend} -fill "#888888" -width 1520 -textvariable {[de1_connected_state 5]} 
 
 ##############################################################################################################################################################################################################################################################################
 

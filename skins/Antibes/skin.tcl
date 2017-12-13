@@ -32,6 +32,10 @@ add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 35 30 400 350
 add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2150 30 2500 395
 
+# show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
+add_de1_variable "off" 230 330 -justify left -anchor "center" -text "" -font moonflower -fill "#888888" -width 1520 -textvariable {[de1_connected_state 5]} 
+
+
 ##############################################################################################################################################################################################################################################################################
 
 # the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
