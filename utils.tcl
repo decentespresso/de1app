@@ -1070,28 +1070,6 @@ proc array_item_difference {arr1 arr2 keylist} {
 
 proc make_de1_dir {} {
 
-    set nofiles {
-
-        skins/1960\'s/skin.tcl
-        skins/1960\'s/retrofont.ttf
-        skins/1960\'s/1280x800/espresso_on.png
-        skins/1960\'s/1280x800/icon.jpg
-        skins/1960\'s/1280x800/nothing_on.png
-        skins/1960\'s/1280x800/steam_on.png
-        skins/1960\'s/1280x800/tea_on.png        
-
-
-        skins/Grafitti/skin.tcl
-        skins/Grafitti/Grand\ Stylus.ttf
-        skins/Grafitti/1280x800/espresso_on.png
-        skins/Grafitti/1280x800/icon.jpg
-        skins/Grafitti/1280x800/nothing_on.png
-        skins/Grafitti/1280x800/steam_on.png
-        skins/Grafitti/1280x800/tea_on.png        
-
-
-    }
-
     set files {
         binary.tcl *
         bluetooth.tcl *
@@ -1106,6 +1084,9 @@ proc make_de1_dir {} {
         pkgIndex.tcl *
         de1_icon_v2.png 0
         de1plus_icon_v2.png 1
+
+        history/info.txt *
+        fw/bootfwupdate.dat *
 
         fonts/NotoSansCJKjp-Bold.otf *
         fonts/NotoSansCJKjp-Regular.otf *
@@ -1133,10 +1114,70 @@ proc make_de1_dir {} {
         splash/1280x800/watercolor.jpg *
         splash/1280x800/wired_superheroes.jpg *
 
+        splash/2560x1600/1960.jpg *
+        splash/2560x1600/8bit.jpg *
+        splash/2560x1600/aliens.jpg *
+        splash/2560x1600/chalkboard.jpg *
+        splash/2560x1600/circus.jpg *
+        splash/2560x1600/dark_choices.jpg *
+        splash/2560x1600/dark_comic.jpg *
+        splash/2560x1600/fashion_girls.jpg *
+        splash/2560x1600/grey_room.jpg *
+        splash/2560x1600/jackpot.jpg *
+        splash/2560x1600/jimshaw.jpg *
+        splash/2560x1600/leonardo.jpg *
+        splash/2560x1600/manga_girls.jpg *
+        splash/2560x1600/manga_outfits.jpg *
+        splash/2560x1600/modern.jpg *
+        splash/2560x1600/warhol.jpg *
+        splash/2560x1600/watercolor.jpg *
+        splash/2560x1600/wired_superheroes.jpg *
+
         skins/default/de1_skin_settings.tcl *
         skins/default/skin.tcl *
         skins/default/standard_includes.tcl *
         skins/default/standard_stop_buttons.tcl *
+
+        skins/default/1280x800/nothing_on.png *
+        skins/default/1280x800/espresso_on.png *
+        skins/default/1280x800/steam_on.png *
+        skins/default/1280x800/tea_on.png *
+        skins/default/1280x800/sleep.jpg *
+        skins/default/1280x800/filling_tank.jpg *
+        skins/default/1280x800/fill_tank.jpg *
+        skins/default/1280x800/cleaning.jpg *
+        skins/default/1280x800/settings_message.jpg  *
+        skins/default/1280x800/descaling.jpg *
+        skins/default/1280x800/settings_1.png *
+        skins/default/1280x800/settings_2.png 0
+        skins/default/1280x800/settings_2a.png 1
+        skins/default/1280x800/settings_2a2.png 1
+        skins/default/1280x800/settings_2b.png 1
+        skins/default/1280x800/settings_2b2.png 1
+        skins/default/1280x800/settings_2c.png 1
+        skins/default/1280x800/settings_3.png *
+        skins/default/1280x800/settings_4.png *
+        skins/default/1280x800/icon.jpg *
+        skins/default/2560x1600/nothing_on.png *
+        skins/default/2560x1600/espresso_on.png *
+        skins/default/2560x1600/steam_on.png *
+        skins/default/2560x1600/tea_on.png *
+        skins/default/2560x1600/sleep.jpg *
+        skins/default/2560x1600/filling_tank.jpg *
+        skins/default/2560x1600/fill_tank.jpg *
+        skins/default/2560x1600/cleaning.jpg *
+        skins/default/2560x1600/settings_message.jpg  *
+        skins/default/2560x1600/descaling.jpg *
+        skins/default/2560x1600/settings_1.png *
+        skins/default/2560x1600/settings_2.png 0
+        skins/default/2560x1600/settings_2a.png 1
+        skins/default/2560x1600/settings_2a2.png 1
+        skins/default/2560x1600/settings_2b.png 1
+        skins/default/2560x1600/settings_2b2.png 1
+        skins/default/2560x1600/settings_2c.png 1
+        skins/default/2560x1600/settings_3.png *
+        skins/default/2560x1600/settings_4.png *
+        skins/default/2560x1600/icon.jpg *
 
         skins/Antibes/skin.tcl *
         skins/Antibes/moonflower.ttf *
@@ -1145,6 +1186,11 @@ proc make_de1_dir {} {
         skins/Antibes/1280x800/nothing_on.png *
         skins/Antibes/1280x800/steam_on.png *
         skins/Antibes/1280x800/tea_on.png *    
+        skins/Antibes/2560x1600/espresso_on.png *
+        skins/Antibes/2560x1600/icon.jpg *
+        skins/Antibes/2560x1600/nothing_on.png *
+        skins/Antibes/2560x1600/steam_on.png *
+        skins/Antibes/2560x1600/tea_on.png *    
 
         skins/Borg/skin.tcl *
         skins/Borg/diablo.ttf *
@@ -1153,6 +1199,11 @@ proc make_de1_dir {} {
         skins/Borg/1280x800/nothing_on.png *
         skins/Borg/1280x800/steam_on.png *
         skins/Borg/1280x800/tea_on.png *    
+        skins/Borg/2560x1600/espresso_on.png *
+        skins/Borg/2560x1600/icon.jpg *
+        skins/Borg/2560x1600/nothing_on.png *
+        skins/Borg/2560x1600/steam_on.png *
+        skins/Borg/2560x1600/tea_on.png *    
 
         skins/Aztec/skin.tcl *
         skins/Aztec/aztec.ttf *
@@ -1161,6 +1212,11 @@ proc make_de1_dir {} {
         skins/Aztec/1280x800/nothing_on.png *
         skins/Aztec/1280x800/steam_on.png *
         skins/Aztec/1280x800/tea_on.png *    
+        skins/Aztec/2560x1600/espresso_on.png *
+        skins/Aztec/2560x1600/icon.jpg *
+        skins/Aztec/2560x1600/nothing_on.png *
+        skins/Aztec/2560x1600/steam_on.png *
+        skins/Aztec/2560x1600/tea_on.png *    
 
         skins/Constructivism/skin.tcl *
         skins/Constructivism/orbitron.ttf *
@@ -1169,6 +1225,11 @@ proc make_de1_dir {} {
         skins/Constructivism/1280x800/nothing_on.png *
         skins/Constructivism/1280x800/steam_on.png *
         skins/Constructivism/1280x800/tea_on.png *    
+        skins/Constructivism/2560x1600/espresso_on.png *
+        skins/Constructivism/2560x1600/icon.jpg *
+        skins/Constructivism/2560x1600/nothing_on.png *
+        skins/Constructivism/2560x1600/steam_on.png *
+        skins/Constructivism/2560x1600/tea_on.png *    
 
         skins/Roman\ Gods/skin.tcl *
         skins/Roman\ Gods/renaissance.ttf *
@@ -1177,6 +1238,11 @@ proc make_de1_dir {} {
         skins/Roman\ Gods/1280x800/nothing_on.png *
         skins/Roman\ Gods/1280x800/steam_on.png *
         skins/Roman\ Gods/1280x800/tea_on.png *    
+        skins/Roman\ Gods/2560x1600/espresso_on.png *
+        skins/Roman\ Gods/2560x1600/icon.jpg *
+        skins/Roman\ Gods/2560x1600/nothing_on.png *
+        skins/Roman\ Gods/2560x1600/steam_on.png *
+        skins/Roman\ Gods/2560x1600/tea_on.png *    
 
         skins/8-BIT/skin.tcl *
         skins/8-BIT/pixel.ttf *
@@ -1186,6 +1252,11 @@ proc make_de1_dir {} {
         skins/8-BIT/1280x800/nothing_on.png *
         skins/8-BIT/1280x800/steam_on.png *
         skins/8-BIT/1280x800/tea_on.png *    
+        skins/8-BIT/2560x1600/espresso_on.png *
+        skins/8-BIT/2560x1600/icon.jpg *
+        skins/8-BIT/2560x1600/nothing_on.png *
+        skins/8-BIT/2560x1600/steam_on.png *
+        skins/8-BIT/2560x1600/tea_on.png *    
 
         skins/Teal\ Modern/skin.tcl *
         skins/Teal\ Modern/novocento.ttf *
@@ -1194,6 +1265,11 @@ proc make_de1_dir {} {
         skins/Teal\ Modern/1280x800/nothing_on.png *
         skins/Teal\ Modern/1280x800/steam_on.png *
         skins/Teal\ Modern/1280x800/tea_on.png *    
+        skins/Teal\ Modern/2560x1600/espresso_on.png *
+        skins/Teal\ Modern/2560x1600/icon.jpg *
+        skins/Teal\ Modern/2560x1600/nothing_on.png *
+        skins/Teal\ Modern/2560x1600/steam_on.png *
+        skins/Teal\ Modern/2560x1600/tea_on.png *    
 
         skins/Green\ Cups/skin.tcl *
         skins/Green\ Cups/leaguegoth.ttf *
@@ -1202,6 +1278,11 @@ proc make_de1_dir {} {
         skins/Green\ Cups/1280x800/nothing_on.png *
         skins/Green\ Cups/1280x800/steam_on.png *
         skins/Green\ Cups/1280x800/tea_on.png *    
+        skins/Green\ Cups/2560x1600/espresso_on.png *
+        skins/Green\ Cups/2560x1600/icon.jpg *
+        skins/Green\ Cups/2560x1600/nothing_on.png *
+        skins/Green\ Cups/2560x1600/steam_on.png *
+        skins/Green\ Cups/2560x1600/tea_on.png *    
 
         skins/Croissant/skin.tcl *
         skins/Croissant/1280x800/espresso_on.png *
@@ -1209,6 +1290,11 @@ proc make_de1_dir {} {
         skins/Croissant/1280x800/nothing_on.png *
         skins/Croissant/1280x800/steam_on.png *
         skins/Croissant/1280x800/tea_on.png *    
+        skins/Croissant/2560x1600/espresso_on.png *
+        skins/Croissant/2560x1600/icon.jpg *
+        skins/Croissant/2560x1600/nothing_on.png *
+        skins/Croissant/2560x1600/steam_on.png *
+        skins/Croissant/2560x1600/tea_on.png *    
 
         skins/Noir/skin.tcl *
         skins/Noir/1280x800/espresso_on.png *
@@ -1216,6 +1302,11 @@ proc make_de1_dir {} {
         skins/Noir/1280x800/nothing_on.png *
         skins/Noir/1280x800/steam_on.png *
         skins/Noir/1280x800/tea_on.png *    
+        skins/Noir/2560x1600/espresso_on.png *
+        skins/Noir/2560x1600/icon.jpg *
+        skins/Noir/2560x1600/nothing_on.png *
+        skins/Noir/2560x1600/steam_on.png *
+        skins/Noir/2560x1600/tea_on.png *    
 
         skins/Three\ Women/skin.tcl *
         skins/Three\ Women/painthand.ttf *
@@ -1224,6 +1315,11 @@ proc make_de1_dir {} {
         skins/Three\ Women/1280x800/nothing_on.png *
         skins/Three\ Women/1280x800/steam_on.png *
         skins/Three\ Women/1280x800/tea_on.png *    
+        skins/Three\ Women/2560x1600/espresso_on.png *
+        skins/Three\ Women/2560x1600/icon.jpg *
+        skins/Three\ Women/2560x1600/nothing_on.png *
+        skins/Three\ Women/2560x1600/steam_on.png *
+        skins/Three\ Women/2560x1600/tea_on.png *    
 
         skins/Rodent/skin.tcl *
         skins/Rodent/Heroes\ Legend.ttf *
@@ -1232,6 +1328,11 @@ proc make_de1_dir {} {
         skins/Rodent/1280x800/nothing_on.png *
         skins/Rodent/1280x800/steam_on.png *
         skins/Rodent/1280x800/tea_on.png *    
+        skins/Rodent/2560x1600/espresso_on.png *
+        skins/Rodent/2560x1600/icon.jpg *
+        skins/Rodent/2560x1600/nothing_on.png *
+        skins/Rodent/2560x1600/steam_on.png *
+        skins/Rodent/2560x1600/tea_on.png *    
 
         skins/Diner/skin.tcl *
         skins/Diner/bellerose.ttf *
@@ -1240,7 +1341,14 @@ proc make_de1_dir {} {
         skins/Diner/1280x800/nothing_on.png *
         skins/Diner/1280x800/steam_on.png *
         skins/Diner/1280x800/tea_on.png *    
+        skins/Diner/2560x1600/espresso_on.png *
+        skins/Diner/2560x1600/icon.jpg *
+        skins/Diner/2560x1600/nothing_on.png *
+        skins/Diner/2560x1600/steam_on.png *
+        skins/Diner/2560x1600/tea_on.png *    
 
+        skins/Insight/1280x800/icon.jpg *
+        skins/Insight/2560x1600/icon.jpg *
         skins/Insight/skin.tcl 1
         skins/Insight/scentone.tcl 1
         skins/Insight/1280x800/espresso_1.png 1
@@ -1272,27 +1380,35 @@ proc make_de1_dir {} {
         skins/Insight/1280x800/scentone_savory.jpg 1
         skins/Insight/1280x800/describe_espresso.jpg 1
         skins/Insight/1280x800/describe_espresso2.jpg 1
-
-        skins/default/1280x800/nothing_on.png *
-        skins/default/1280x800/espresso_on.png *
-        skins/default/1280x800/steam_on.png *
-        skins/default/1280x800/tea_on.png *
-        skins/default/1280x800/sleep.jpg *
-        skins/default/1280x800/filling_tank.jpg *
-        skins/default/1280x800/fill_tank.jpg *
-        skins/default/1280x800/cleaning.jpg *
-        skins/default/1280x800/settings_message.jpg  *
-        skins/default/1280x800/descaling.jpg *
-        skins/default/1280x800/settings_1.png *
-        skins/default/1280x800/settings_2.png 0
-        skins/default/1280x800/settings_2a.png 1
-        skins/default/1280x800/settings_2a2.png 1
-        skins/default/1280x800/settings_2b.png 1
-        skins/default/1280x800/settings_2b2.png 1
-        skins/default/1280x800/settings_2c.png 1
-        skins/default/1280x800/settings_3.png *
-        skins/default/1280x800/settings_4.png *
-        skins/default/1280x800/icon.jpg *
+        skins/Insight/2560x1600/espresso_1.png 1
+        skins/Insight/2560x1600/espresso_1_zoomed.png 1
+        skins/Insight/2560x1600/espresso_2.png 1
+        skins/Insight/2560x1600/espresso_2_zoomed.png 1
+        skins/Insight/2560x1600/espresso_3.png 1
+        skins/Insight/2560x1600/espresso_3_zoomed.png 1
+        skins/Insight/2560x1600/steam_1.png 1
+        skins/Insight/2560x1600/steam_2.png 1
+        skins/Insight/2560x1600/steam_3.png 1
+        skins/Insight/2560x1600/water_1.png 1
+        skins/Insight/2560x1600/water_2.png 1
+        skins/Insight/2560x1600/water_3.png 1
+        skins/Insight/2560x1600/preheat_1.png 1
+        skins/Insight/2560x1600/preheat_2.png 1
+        skins/Insight/2560x1600/preheat_3.png 1
+        skins/Insight/2560x1600/preheat_4.png 1
+        skins/Insight/2560x1600/scentone_1.jpg 1
+        skins/Insight/2560x1600/scentone_tropical.jpg 1
+        skins/Insight/2560x1600/scentone_berry.jpg 1
+        skins/Insight/2560x1600/scentone_citrus.jpg 1
+        skins/Insight/2560x1600/scentone_stone.jpg 1
+        skins/Insight/2560x1600/scentone_cereal.jpg 1
+        skins/Insight/2560x1600/scentone_chocolate.jpg 1
+        skins/Insight/2560x1600/scentone_flower.jpg 1
+        skins/Insight/2560x1600/scentone_spice.jpg 1
+        skins/Insight/2560x1600/scentone_vegetable.jpg 1
+        skins/Insight/2560x1600/scentone_savory.jpg 1
+        skins/Insight/2560x1600/describe_espresso.jpg 1
+        skins/Insight/2560x1600/describe_espresso2.jpg 1
 
         saver/1280x800/Black\ Steel.jpg *
         saver/1280x800/Cozy-Home.jpg *
@@ -1325,7 +1441,37 @@ proc make_de1_dir {} {
         saver/1280x800/steampunk_latte.jpg *
         saver/1280x800/superheroes.jpg *
         saver/1280x800/three_women.jpg *     
-
+        saver/2560x1600/Black\ Steel.jpg *
+        saver/2560x1600/Cozy-Home.jpg *
+        saver/2560x1600/Floral.jpg *
+        saver/2560x1600/Lomen.jpg *
+        saver/2560x1600/alice.jpg *
+        saver/2560x1600/apartment.jpg *
+        saver/2560x1600/aztec.jpg *
+        saver/2560x1600/borg.jpg *
+        saver/2560x1600/cafe_girls.jpg *
+        saver/2560x1600/cities.jpg *
+        saver/2560x1600/cups.jpg *
+        saver/2560x1600/dark_choices.jpg *
+        saver/2560x1600/french_breakfast.jpg *
+        saver/2560x1600/graffiti_1.jpg *
+        saver/2560x1600/graffiti_2.jpg *
+        saver/2560x1600/graffiti_wall.jpg *
+        saver/2560x1600/greek_gods.jpg *
+        saver/2560x1600/hindu_gods.jpg *
+        saver/2560x1600/jim_shaw.jpg *
+        saver/2560x1600/manga_fashion.jpg *
+        saver/2560x1600/manga_girls.jpg *
+        saver/2560x1600/minimalism.jpg *
+        saver/2560x1600/scifi.jpg *
+        saver/2560x1600/sin_city.jpg *
+        saver/2560x1600/splash_noir.jpg *
+        saver/2560x1600/splash_rodent.jpg *
+        saver/2560x1600/splotch.jpg *
+        saver/2560x1600/steampunk_espresso.jpg *
+        saver/2560x1600/steampunk_latte.jpg *
+        saver/2560x1600/superheroes.jpg *
+        saver/2560x1600/three_women.jpg *     
         profiles/Flat\ 2.5\ mL\ per\ second\ shot\ for\ light\ roasts.tcl *
         profiles/Gentler\ but\ still\ traditional\ 8.4\ bar\ shot.tcl *
         profiles/Good\ flow\ profile\ for\ milky\ drinks.tcl *
