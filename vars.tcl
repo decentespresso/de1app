@@ -1604,6 +1604,12 @@ proc preview_history {w args} {
 	}
 }
 
+proc save_settings_and_ask_to_restart_app {} {
+	save_settings; 
+	.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+	set_next_page off message; page_show message
+
+}
 
 proc change_bluetooth_device {} {
 
@@ -1619,10 +1625,8 @@ proc change_bluetooth_device {} {
 		return
 	}
 	set ::settings(bluetooth_address) $profile
-	#save_settings; 
 
-	#.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
-	#set_next_page off message; page_show message
+	save_settings_and_ask_to_restart_app
 }
 
 
@@ -1642,10 +1646,8 @@ proc change_skale_bluetooth_device {} {
 		return
 	}
 	set ::settings(skale_bluetooth_address) $profile
-	#save_settings; 
 
-	#.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
-	#set_next_page off message; page_show message
+	save_settings_and_ask_to_restart_app
 }
 
 

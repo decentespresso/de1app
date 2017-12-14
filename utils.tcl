@@ -250,9 +250,9 @@ proc setup_environment {} {
             set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
         }
 
-        set fontm [expr {$screen_size_width / 1280.0}]
+        #set fontm [expr {$screen_size_width / 1280.0}]
         #set fontm [expr {1280.0 / ($screen_size_width)}]
-        #set fontm .5
+        set fontm .5
         set ::fontw 1
         #set fontm [expr {2560.0 / $screen_size_width}]
         #set fontm 1
@@ -1087,6 +1087,9 @@ proc make_de1_dir {} {
 
         history/info.txt *
         fw/bootfwupdate.dat *
+        wallpaper/spy.jpg *
+        wallpaper/spy_2560x1600.jpg *
+        wallpaper/dark_two_de1p2.jpg *
 
         fonts/NotoSansCJKjp-Bold.otf *
         fonts/NotoSansCJKjp-Regular.otf *
@@ -1347,8 +1350,8 @@ proc make_de1_dir {} {
         skins/Diner/2560x1600/steam_on.png *
         skins/Diner/2560x1600/tea_on.png *    
 
-        skins/Insight/1280x800/icon.jpg *
-        skins/Insight/2560x1600/icon.jpg *
+        skins/Insight/1280x800/icon.jpg 1
+        skins/Insight/2560x1600/icon.jpg 1
         skins/Insight/skin.tcl 1
         skins/Insight/scentone.tcl 1
         skins/Insight/1280x800/espresso_1.png 1

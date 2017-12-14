@@ -1506,6 +1506,6 @@ proc show_hide_from_variable {widgetids n1 n2 op} {
 	}
 }
 
-install_de1_app_icon
-install_de1plus_app_icon
+#install_de1_app_icon
+#install_de1plus_app_icon
 #install_this_app_icon

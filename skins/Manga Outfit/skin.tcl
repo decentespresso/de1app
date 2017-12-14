@@ -34,7 +34,7 @@ add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start
 
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 750 1445 1900 1600
-add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 1850 222 2405 1350
+add_de1_button "off" {show_settings} 1850 222 2405 1350
 
 ##############################################################################################################################################################################################################################################################################
 
