@@ -550,7 +550,7 @@ proc ble_find_de1s {} {
 	}
 	
 	#puts "ble_find_de1s"
-	after 3000 stop_scanner
+	#after 3000 stop_scanner
 	ble start $::ble_scanner
 }
 
@@ -745,7 +745,8 @@ proc de1_ble_handler { event data } {
 					    set ::de1(device_handle) 0
 
 					    # temporarily disable this feature as it's not clear that it's needed.
-					    set ::settings(max_ble_connect_attempts) 99999999
+					    #set ::settings(max_ble_connect_attempts) 99999999
+					    #set ::settings(max_ble_connect_attempts) 10
 					    
 					    incr ::failed_attempt_count_connecting_to_de1
 					    if {$::failed_attempt_count_connecting_to_de1 > $::settings(max_ble_connect_attempts) && $::successful_de1_connection_count > 0} {
@@ -1187,3 +1188,16 @@ proc write_binary_file {filename data} {
 }
 
 
+proc scanning_state_text {} {
+	if {$::scanning == 1} {
+		return [translate "Scanning"]
+	}
+	return [translate "Scan"]
+}
+
+proc scanning_restart {} {
+	if {$::scanning == 1} {
+		return
+	}
+	ble start $::ble_scanner
+}
