@@ -2,38 +2,19 @@ set ::skindebug 0
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
-if {[file exists "[skin_directory_graphics]/nothing_on.png"]} {
-	add_de1_page "off" "[skin_directory_graphics]/nothing_on.png"
-} else {
-	add_de1_page "off" "[skin_directory_graphics]/nothing_on.jpg"
-}
-
-if {[file exists "[skin_directory_graphics]/espresso_on.png"]} {
-	add_de1_page "espresso" "[skin_directory_graphics]/espresso_on.png"
-} else {
-	add_de1_page "espresso" "[skin_directory_graphics]/espresso_on.jpg"
-}
-
-if {[file exists "[skin_directory_graphics]/steam_on.png"]} {
-	add_de1_page "steam" "[skin_directory_graphics]/steam_on.png"
-} else {
-	add_de1_page "steam" "[skin_directory_graphics]/steam_on.jpg"
-}
-
-if {[file exists "[skin_directory_graphics]/tea_on.png"]} {
-	add_de1_page "water" "[skin_directory_graphics]/tea_on.png"
-} else {
-	add_de1_page "water" "[skin_directory_graphics]/tea_on.jpg"
-}
+add_de1_page "off" "nothing_on.png"
+add_de1_page "espresso" "espresso_on.png"
+add_de1_page "steam" "steam_on.png"
+add_de1_page "water" "tea_on.png"
 
 # most skins will not bother replacing these graphics
-add_de1_page "sleep" "[defaultskin_directory_graphics]/sleep.jpg"
-add_de1_page "tankfilling" "[defaultskin_directory_graphics]/filling_tank.jpg"
-add_de1_page "tankempty" "[defaultskin_directory_graphics]/fill_tank.jpg"
-add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning.jpg"
-add_de1_page "message" "[defaultskin_directory_graphics]/settings_message.jpg"
-add_de1_page "descaling" "[defaultskin_directory_graphics]/descaling.jpg"
-add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning.jpg"
+add_de1_page "sleep" "sleep.jpg" "default"
+add_de1_page "tankfilling" "filling_tank.jpg" "default"
+add_de1_page "tankempty" "fill_tank.jpg" "default"
+add_de1_page "cleaning" "cleaning.jpg" "default"
+add_de1_page "message" "settings_message.jpg" "default"
+add_de1_page "descaling" "descaling.jpg" "default"
+add_de1_page "cleaning" "cleaning.jpg" "default"
 
 set_de1_screen_saver_directory "[homedir]/saver"
 

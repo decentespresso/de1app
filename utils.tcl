@@ -35,20 +35,92 @@ proc stacktrace {} {
 }
 
 proc random_saver_file {} {
-    if {[file exists "[saver_directory]/${::screen_size_width}x${::screen_size_height}/"] == 1} {
-        return [random_pick [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]]
-    } else {
-        return [random_pick [glob "[saver_directory]/2560x1600/*.jpg"]]
+    if {[info exists ::saver_files_cache] != 1} {
+        puts "building saver_files_cache"
+        set ::saver_files_cache {}
+ 
+        set savers {}
+        catch {
+            set savers [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+        }
+        if {$savers == ""} {
+            catch {
+                file mkdir "[saver_directory]/${::screen_size_width}x${::screen_size_height}/"
+            }
+
+            set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
+            set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
+
+            foreach fn [glob "[saver_directory]/2560x1600/*.jpg"] {
+                image create photo saver -file $fn
+                photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
+
+                set resized_filename "[saver_directory]/${::screen_size_width}x${::screen_size_height}/[file tail $fn]"
+                puts "saving resized image to: $resized_filename"
+                saver write $resized_filename   -format {jpeg -quality 50}
+            }
+        }
+
+        set ::saver_files_cache [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
     }
+    return [random_pick $::saver_files_cache]
+
 }
 
 proc random_splash_file {} {
-    if {[file exists "[splash_directory]/${::screen_size_width}x${::screen_size_height}/"] == 1} {
-        return [random_pick [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]]
-    } else {
-        return [random_pick [glob "[splash_directory]/2560x1600/*.jpg"]]
+    if {[info exists ::splash_files_cache] != 1} {
+        puts "building splash_files_cache"
+        set ::splash_files_cache {}
+ 
+        set savers {}
+        catch {
+            set savers [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+        }
+        if {$savers == ""} {
+            catch {
+                file mkdir "[splash_directory]/${::screen_size_width}x${::screen_size_height}/"
+            }
+
+            set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
+            set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
+
+            foreach fn [glob "[splash_directory]/2560x1600/*.jpg"] {
+                image create photo saver -file $fn
+                photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
+
+                set resized_filename "[splash_directory]/${::screen_size_width}x${::screen_size_height}/[file tail $fn]"
+                puts "saving resized image to: $resized_filename"
+                saver write $resized_filename   -format {jpeg -quality 50}
+            }
+        }
+
+        set ::splash_files_cache [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
     }
-    #return [random_pick [glob "/d/admin/code/dbeta/splash/1280x800/*.jpg"]]
+    return [random_pick $::splash_files_cache]
+
+}
+
+proc random_splash_file_obs {} {
+    if {[info exists ::splash_files_cache] != 1} {
+        puts "building splash_files_cache"
+        set ::splash_files_cache {}
+        if {[file exists "[splash_directory]/${::screen_size_width}x${::screen_size_height}/"] == 1} {
+            set files [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+        } else {
+            set files [glob "[splash_directory]/2560x1600/*.jpg"]
+        }
+
+        foreach file $files {
+            if {[string first $file resized] == -1} {
+                lappend ::splash_files_cache $file
+            }
+        }
+        puts "savers: $::splash_files_cache"
+
+    }
+
+    return [random_pick $::splash_files_cache]
+
 }
 
 proc pause {time} {
@@ -63,7 +135,8 @@ proc language {} {
     global current_language
 #return "en"
     if {$::android != 1} {
-        return "en"
+        #return "sk"
+        return en
     }
 
     #catch {
@@ -365,9 +438,6 @@ proc setup_environment {} {
 
         expr {srand([clock milliseconds])}
 
-        set screen_size_width 1920
-        set screen_size_height 1200
-
         set screen_size_width 2048
         set screen_size_height 1536
 
@@ -377,15 +447,28 @@ proc setup_environment {} {
         set screen_size_width 2560
         set screen_size_height 1600
 
-        set screen_size_width 1920
-        set screen_size_height 1200
-
         set screen_size_width 640
         set screen_size_height 480
+
+        set screen_size_width 1920
+        set screen_size_height 1080
 
         set screen_size_width 1280
         set screen_size_height 800
 
+        set screen_size_width 2048
+        set screen_size_height 1536
+
+
+
+        set screen_size_width 1280
+        set screen_size_height 800
+
+        set screen_size_width 640
+        set screen_size_height 480
+
+        set screen_size_width 1920
+        set screen_size_height 1200
 
         set fontm [expr {$screen_size_width / 1280.0}]
         #puts "fontm: $fontm"
@@ -725,12 +808,12 @@ proc say {txt sndnum} {
             # sounds from https://android.googlesource.com/platform/frameworks/base/+/android-5.0.0_r2/data/sounds/effects/ogg?autodive=0%2F%2F%2F%2F%2F%2F
             set path ""
             if {$sndnum == 8} {
-                set path "/system/media/audio/ui/KeypressDelete.ogg"
+                #set path "/system/media/audio/ui/KeypressDelete.ogg"
                 #set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
-                set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
+                set path "sounds/KeypressStandard_120.ogg"
             } elseif {$sndnum == 11} {
-                set path "/system/media/audio/ui/KeypressStandard.ogg"
-                set path "file://mnt/sdcard/de1beta/KeypressDelete_120.ogg"
+                #set path "/system/media/audio/ui/KeypressStandard.ogg"
+                set path "sounds/KeypressDelete_120.ogg"
             }
             borg beep $path
             #borg beep $sounds($sndnum)
@@ -1090,6 +1173,8 @@ proc make_de1_dir {} {
         wallpaper/spy.jpg *
         wallpaper/spy_2560x1600.jpg *
         wallpaper/dark_two_de1p2.jpg *
+        sounds/KeypressStandard_120.ogg *
+        sounds/KeypressDelete_120.ogg *
 
         fonts/NotoSansCJKjp-Bold.otf *
         fonts/NotoSansCJKjp-Regular.otf *

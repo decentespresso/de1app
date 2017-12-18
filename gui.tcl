@@ -4,6 +4,7 @@ proc chart_refresh {} {
 
 }
 
+
 proc Double2Fraction { dbl {eps 0.000001}} {
     for {set den 1} {$den<1024} {incr den} {
         set num [expr {round($dbl*$den)}]
@@ -14,6 +15,7 @@ proc Double2Fraction { dbl {eps 0.000001}} {
 
 
 proc photoscale {img sx {sy ""} } {
+	msg "photoscale $img $sx $sy"
     if { $sx == 1 && ($sy eq "" || $sy == 1) } {
         return;   # Nothing to do!
     }
@@ -31,15 +33,29 @@ proc photoscale {img sx {sy ""} } {
     image delete $tmp
 }
 
-proc add_de1_page {names pngfilename} {
-	#set pngfilename "[skin_directory_graphics]/$apngfilename"
-	#puts $pngfilename
-	#package require tksvg
-	image create photo $names -file $pngfilename
+proc add_de1_page {names filename {skin ""} } {
 
-	if {[info exists ::rescale_images_x_ratio] == 1} {
-		puts "photoscale $names $::rescale_images_x_ratio $::rescale_images_y_ratio"
-		photoscale $names $::rescale_images_y_ratio $::rescale_images_x_ratio
+	if {$skin == ""} {
+		set skin $::settings(skin)
+	}
+
+	set pngfilename "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/$filename"
+	set srcfilename "[homedir]/skins/$skin/2560x1600/$filename"
+
+	if {[file exists $pngfilename] != 1} {
+    	catch {
+    		file mkdir "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/"
+    	}
+
+        set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
+        set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
+
+		#msg "photoscale $names $::rescale_images_x_ratio $::rescale_images_y_ratio"
+		image create photo $names -file $srcfilename
+		photoscale $names $rescale_images_y_ratio $rescale_images_x_ratio
+		$names write $pngfilename  -format {jpeg -quality 90}
+	} else {
+		image create photo $names -file $pngfilename
 	}
 
 	foreach name $names {
@@ -53,7 +69,7 @@ proc set_de1_screen_saver_directory {{dirname {}}} {
 	set saver_directory $dirname
 	}
 
-	set pngfilename [random_saver_file]
+	#set pngfilename [random_saver_file]
 	set names "saver"
 	#puts $pngfilename
 	#image create photo $names -file $pngfilename
@@ -718,19 +734,21 @@ proc show_going_to_sleep_page  {} {
 
 }
 
+
+proc resized_filename {infile} {
+	set resized_filename "[file rootname $infile]-resized-${::screen_size_width}x${::screen_size_height}.jpg"
+	#set resized_filename "[file rootname $infile]-${::screen_size_width}x${::screen_size_height}.png"
+	return $resized_filename
+}
+
 proc change_screen_saver_img {} {
 	#msg "change_screen_saver_img $::de1(current_context)"
 	#if {$::de1(current_context) == "saver"} {
 		image delete saver
-		image create photo saver -file [random_saver_file]
 
+		set fn [random_saver_file]
 
-		if {[info exists ::rescale_images_x_ratio] == 1} {
-			puts "photoscale saver $::rescale_images_x_ratio $::rescale_images_y_ratio"
-			photoscale saver $::rescale_images_y_ratio $::rescale_images_x_ratio
-		}
-
-
+		image create photo saver -file $fn
 		.can create image {0 0} -anchor nw -image saver  -tag saver -state hidden
 		.can lower saver
 		#update
@@ -1313,15 +1331,9 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 
 
 proc setup_images_for_first_page {} {
-	#set files [glob "[splash_directory]/*.jpg"]
-	#set splashpng [random_pick $files]
-	image create photo splash -file [random_splash_file] -format jpeg
-
-	if {[info exists ::rescale_images_x_ratio] == 1} {
-		puts "photoscale splash $::rescale_images_x_ratio $::rescale_images_y_ratio"
-		photoscale splash $::rescale_images_y_ratio $::rescale_images_x_ratio 
-	}
-
+	
+	set fn [random_splash_file]
+	image create photo splash -file $fn 
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
 	update

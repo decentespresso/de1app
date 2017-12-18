@@ -1546,37 +1546,40 @@ proc preview_tablet_skin {} {
 		return 
 	}
 
-	#if {[check_for_multiple_listbox_events_bug] == 1} {
-	#	return
-	#}
-	#catch {
-	#error "prev"
-		msg "preview_tablet_skin"
-		set w $::globals(tablet_styles_listbox)
-		if {[$w curselection] == ""} {
-			msg "no current skin selection"
-			#set w 
-			#set skindir [$w get $::current_skin_number]
-			#return
-			$w selection set $::current_skin_number
-		}
-		set skindir [$w get [$w curselection]]
-		set ::settings(skin) $skindir
-		#set ::settings(skin)
 
-	    if {[info exists ::rescale_images_x_ratio] == 1} {
-			set fn "[homedir]/skins/$skindir/2560x1600/icon.jpg"
-			$::table_style_preview_image read $fn
-			puts "photoscale $::table_style_preview_image $::rescale_images_y_ratio $::rescale_images_x_ratio"
-			photoscale $::table_style_preview_image $::rescale_images_y_ratio $::rescale_images_x_ratio
+	msg "preview_tablet_skin"
+	set w $::globals(tablet_styles_listbox)
+	if {[$w curselection] == ""} {
+		msg "no current skin selection"
+		#set w 
+		#set skindir [$w get $::current_skin_number]
+		#return
+		$w selection set $::current_skin_number
+	}
+	set skindir [$w get [$w curselection]]
+	set ::settings(skin) $skindir
 
-	    } else {
-			set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
-			$::table_style_preview_image read $fn
-	    }
+	set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
+	if {[file exists $fn] != 1} {
+    	catch {
+    		file mkdir "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/"
+    	}
 
-		make_current_listbox_item_blue $::globals(tablet_styles_listbox)
-	#}
+		puts "creating $fn"
+        set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
+        set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
+
+		set src "[homedir]/skins/$skindir/2560x1600/icon.jpg"
+		$::table_style_preview_image read $src
+		photoscale $::table_style_preview_image $rescale_images_y_ratio $rescale_images_x_ratio
+		$::table_style_preview_image write $fn  -format {jpeg -quality 90}
+
+	} else {
+		set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
+		$::table_style_preview_image read $fn
+	}
+
+	make_current_listbox_item_blue $::globals(tablet_styles_listbox)
 }
 
 proc preview_history {w args} {

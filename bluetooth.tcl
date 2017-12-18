@@ -347,15 +347,26 @@ proc run_next_userdata_cmd {} {
 proc app_exit {} {
 
 	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
-	after 1000 {exit}
-	
+	after 10000 {exit}
+
 	catch {
 		msg "Closing de1"
 		ble close $::de1(device_handle)
+	}
 
+	catch {
+		msg "Closing skale"
+		#ble close $::de1(skale_device_handle)
+	}
+
+	catch {
+		ble stop $::ble_scanner
+	}
+	
+
+	catch {
 		#ble unpair $::de1(de1_address)
 		ble unpair $::settings(bluetooth_address)
-		
 	}
 	exit
 }
@@ -1190,14 +1201,19 @@ proc write_binary_file {filename data} {
 
 proc scanning_state_text {} {
 	if {$::scanning == 1} {
-		return [translate "Scanning"]
+		return [translate "Searching"]
 	}
-	return [translate "Scan"]
+	return [translate "Search"]
 }
 
 proc scanning_restart {} {
 	if {$::scanning == 1} {
 		return
 	}
+	if {$::android != 1} {
+		set ::scanning 1
+		after 3000 { set scanning 0 }
+	}
+
 	ble start $::ble_scanner
 }

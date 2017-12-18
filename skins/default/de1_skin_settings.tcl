@@ -4,20 +4,20 @@
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
 
-add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.png"
+add_de1_page "settings_1" "settings_1.png" "default"
 
 if {[de1plus]} {
 
-	add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.png"
+	add_de1_page "settings_1" "settings_1.png" "default"
 	
 	if {$::settings(skale_bluetooth_address) == ""} {
-		add_de1_page "settings_2a" "[defaultskin_directory_graphics]/settings_2a.png"
-		add_de1_page "settings_2b" "[defaultskin_directory_graphics]/settings_2b.png"
+		add_de1_page "settings_2a" "settings_2a.png" "default"
+		add_de1_page "settings_2b" "settings_2b.png" "default"
 	} else {
-		add_de1_page "settings_2a" "[defaultskin_directory_graphics]/settings_2a2.png"
-		add_de1_page "settings_2b" "[defaultskin_directory_graphics]/settings_2b2.png"
+		add_de1_page "settings_2a" "settings_2a2.png" "default"
+		add_de1_page "settings_2b" "settings_2b2.png" "default"
 	}
-	add_de1_page "settings_2c" "[defaultskin_directory_graphics]/settings_2c.png"
+	add_de1_page "settings_2c" "settings_2c.png" "default"
 
 	if {$::settings(settings_profile_type) == "settings_2"} {
 		# this happens if you switch to the de1 gui, which then saves the de1 settings default, so we need to reset it to this de1+ default
@@ -25,12 +25,12 @@ if {[de1plus]} {
 	}
 } else {
 	set ::settings(settings_profile_type) "settings_2"
-	add_de1_page "settings_1" "[defaultskin_directory_graphics]/settings_1.png"
-	add_de1_page "settings_2" "[defaultskin_directory_graphics]/settings_2.png"
+	add_de1_page "settings_1" "settings_1.png" "default"
+	add_de1_page "settings_2" "settings_2.png" "default"
 }
 
-add_de1_page "settings_3" "[defaultskin_directory_graphics]/settings_3.png"
-add_de1_page "settings_4" "[defaultskin_directory_graphics]/settings_4.png"
+add_de1_page "settings_3" "settings_3.png" "default"
+add_de1_page "settings_4" "settings_4.png" "default"
 
 set ::active_settings_tab settings_1
 
@@ -322,6 +322,8 @@ add_de1_text "settings_4" 1960 1140 -text [translate "App"] -font Helv_10_bold -
 add_de1_text "settings_4" 2280 1300 -text [translate "Exit"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
 add_de1_button "settings_4" {say [translate {exit}] $::settings(sound_button_in); app_exit} 1925 1206 2550 1406
 
+add_de1_variable "settings_4" 2350 696 -text {} -font Helv_8_bold -fill "#FFFFFF" -anchor "center"  -textvariable {[scanning_state_text]} 
+add_de1_button "settings_4" {say [translate {Scan}] $::settings(sound_button_in); scanning_restart} 2050 640 2550 750
 
 
 #add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -593,5 +595,5 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off settings_2c
+#set_next_page off settings_4
 
