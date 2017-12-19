@@ -43,9 +43,11 @@ proc add_de1_page {names filename {skin ""} } {
 	set srcfilename "[homedir]/skins/$skin/2560x1600/$filename"
 
 	if {[file exists $pngfilename] != 1} {
+		borg spinner on
     	catch {
     		file mkdir "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/"
     	}
+
 
         set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
         set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
@@ -53,7 +55,9 @@ proc add_de1_page {names filename {skin ""} } {
 		#msg "photoscale $names $::rescale_images_x_ratio $::rescale_images_y_ratio"
 		image create photo $names -file $srcfilename
 		photoscale $names $rescale_images_y_ratio $rescale_images_x_ratio
+		borg spinner off
 		$names write $pngfilename  -format {jpeg -quality 90}
+
 	} else {
 		image create photo $names -file $pngfilename
 	}
@@ -1518,6 +1522,6 @@ proc show_hide_from_variable {widgetids n1 n2 op} {
 	}
 }
 
-#install_de1_app_icon
-#install_de1plus_app_icon
+install_de1_app_icon
+install_de1plus_app_icon
 #install_this_app_icon

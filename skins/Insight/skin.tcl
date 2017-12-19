@@ -7,41 +7,41 @@ package require de1plus 1.0
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
-add_de1_page "off" "[skin_directory_graphics]/espresso_1.png"
-add_de1_page "off_zoomed off_zoomed_temperature" "[skin_directory_graphics]/espresso_1_zoomed.png"
+add_de1_page "off" "espresso_1.png"
+add_de1_page "off_zoomed off_zoomed_temperature" "espresso_1_zoomed.png"
 
 if {$::settings(display_rate_espresso) == 1} {
-	add_de1_page "espresso_3" "[skin_directory_graphics]/espresso_3.png"
-	add_de1_page "espresso_3_zoomed espresso_3_zoomed_temperature" "[skin_directory_graphics]/espresso_3_zoomed.png"
+	add_de1_page "espresso_3" "espresso_3.png"
+	add_de1_page "espresso_3_zoomed espresso_3_zoomed_temperature" "espresso_3_zoomed.png"
 } else {
 	# no need to display the heart icon after espresso is finished, if "Rate espresso" is disabled
-	add_de1_page "espresso_3" "[skin_directory_graphics]/espresso_1.png"
-	add_de1_page "espresso_3_zoomed espresso_3_zoomed_temperature" "[skin_directory_graphics]/espresso_1_zoomed.png"
+	add_de1_page "espresso_3" "espresso_1.png"
+	add_de1_page "espresso_3_zoomed espresso_3_zoomed_temperature" "espresso_1_zoomed.png"
 }
 
-add_de1_page "espresso" "[skin_directory_graphics]/espresso_2.png"
-add_de1_page "espresso_zoomed espresso_zoomed_temperature" "[skin_directory_graphics]/espresso_2_zoomed.png" 
+add_de1_page "espresso" "espresso_2.png"
+add_de1_page "espresso_zoomed espresso_zoomed_temperature" "espresso_2_zoomed.png" 
 
-add_de1_page "steam" "[skin_directory_graphics]/steam_2.png"
-add_de1_page "steam_1" "[skin_directory_graphics]/steam_1.png"
-add_de1_page "steam_3" "[skin_directory_graphics]/steam_3.png"
+add_de1_page "steam" "steam_2.png"
+add_de1_page "steam_1" "steam_1.png"
+add_de1_page "steam_3" "steam_3.png"
 
-add_de1_page "water" "[skin_directory_graphics]/water_2.png"
-add_de1_page "water_1" "[skin_directory_graphics]/water_1.png"
-add_de1_page "water_3" "[skin_directory_graphics]/water_3.png"
+add_de1_page "water" "water_2.png"
+add_de1_page "water_1" "water_1.png"
+add_de1_page "water_3" "water_3.png"
 
-add_de1_page "preheat_1" "[skin_directory_graphics]/preheat_1.png"
-add_de1_page "preheat_2" "[skin_directory_graphics]/preheat_2.png"
-add_de1_page "preheat_3" "[skin_directory_graphics]/preheat_3.png"
-add_de1_page "preheat_4" "[skin_directory_graphics]/preheat_4.png"
+add_de1_page "preheat_1" "preheat_1.png"
+add_de1_page "preheat_2" "preheat_2.png"
+add_de1_page "preheat_3" "preheat_3.png"
+add_de1_page "preheat_4" "preheat_4.png"
 
 # most skins will not bother replacing these graphics
-add_de1_page "sleep" "[defaultskin_directory_graphics]/sleep.jpg"
-add_de1_page "tankfilling" "[defaultskin_directory_graphics]/filling_tank.jpg"
-add_de1_page "tankempty" "[defaultskin_directory_graphics]/fill_tank.jpg"
-add_de1_page "message" "[defaultskin_directory_graphics]/settings_message.jpg"
-add_de1_page "cleaning" "[defaultskin_directory_graphics]/cleaning.jpg"
-add_de1_page "descaling" "[defaultskin_directory_graphics]/descaling.jpg"
+add_de1_page "sleep" "sleep.jpg" "default"
+add_de1_page "tankfilling" "filling_tank.jpg" "default"
+add_de1_page "tankempty" "fill_tank.jpg" "default"
+add_de1_page "message" "settings_message.jpg" "default"
+add_de1_page "cleaning" "cleaning.jpg" "default"
+add_de1_page "descaling" "descaling.jpg" "default"
 
 set_de1_screen_saver_directory "[homedir]/saver"
 

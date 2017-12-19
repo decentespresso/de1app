@@ -10,6 +10,9 @@ source "[homedir]/skins/default/standard_includes.tcl"
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
+add_de1_text "splash" 510 1240 -text [translate "START"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+
+
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off" 510 1240 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_text "off" 1280 1240 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 

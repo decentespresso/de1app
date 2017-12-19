@@ -35,6 +35,8 @@ proc stacktrace {} {
 }
 
 proc random_saver_file {} {
+
+
     if {[info exists ::saver_files_cache] != 1} {
         puts "building saver_files_cache"
         set ::saver_files_cache {}
@@ -52,11 +54,14 @@ proc random_saver_file {} {
             set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
             foreach fn [glob "[saver_directory]/2560x1600/*.jpg"] {
+                borg spinner on
                 image create photo saver -file $fn
                 photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
 
                 set resized_filename "[saver_directory]/${::screen_size_width}x${::screen_size_height}/[file tail $fn]"
                 puts "saving resized image to: $resized_filename"
+                borg spinner off
+
                 saver write $resized_filename   -format {jpeg -quality 50}
             }
         }
@@ -69,6 +74,7 @@ proc random_saver_file {} {
 
 proc random_splash_file {} {
     if {[info exists ::splash_files_cache] != 1} {
+
         puts "building splash_files_cache"
         set ::splash_files_cache {}
  
@@ -85,11 +91,13 @@ proc random_splash_file {} {
             set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
             foreach fn [glob "[splash_directory]/2560x1600/*.jpg"] {
+                borg spinner on
                 image create photo saver -file $fn
                 photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
 
                 set resized_filename "[splash_directory]/${::screen_size_width}x${::screen_size_height}/[file tail $fn]"
                 puts "saving resized image to: $resized_filename"
+                borg spinner off
                 saver write $resized_filename   -format {jpeg -quality 50}
             }
         }
@@ -110,11 +118,13 @@ proc random_splash_file_obs {} {
             set files [glob "[splash_directory]/2560x1600/*.jpg"]
         }
 
+        borg spinner on
         foreach file $files {
             if {[string first $file resized] == -1} {
                 lappend ::splash_files_cache $file
             }
         }
+        borg spinner off
         puts "savers: $::splash_files_cache"
 
     }

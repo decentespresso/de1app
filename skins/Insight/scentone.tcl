@@ -3,20 +3,20 @@
 # scent one aroma system
 ##############################################
 
-add_de1_page "scentone_1" "[skin_directory_graphics]/scentone_1.jpg"
-add_de1_page "scentone_tropical" "[skin_directory_graphics]/scentone_tropical.jpg"
-add_de1_page "scentone_berry" "[skin_directory_graphics]/scentone_berry.jpg"
-add_de1_page "scentone_citrus" "[skin_directory_graphics]/scentone_citrus.jpg"
-add_de1_page "scentone_stone" "[skin_directory_graphics]/scentone_stone.jpg"
-add_de1_page "scentone_cereal" "[skin_directory_graphics]/scentone_cereal.jpg"
-add_de1_page "scentone_chocolate" "[skin_directory_graphics]/scentone_chocolate.jpg"
-add_de1_page "scentone_flower" "[skin_directory_graphics]/scentone_flower.jpg"
-add_de1_page "scentone_spice" "[skin_directory_graphics]/scentone_spice.jpg"
-add_de1_page "scentone_vegetable" "[skin_directory_graphics]/scentone_vegetable.jpg"
-add_de1_page "scentone_savory" "[skin_directory_graphics]/scentone_savory.jpg"
+add_de1_page "scentone_1" "scentone_1.jpg"
+add_de1_page "scentone_tropical" "scentone_tropical.jpg"
+add_de1_page "scentone_berry" "scentone_berry.jpg"
+add_de1_page "scentone_citrus" "scentone_citrus.jpg"
+add_de1_page "scentone_stone" "scentone_stone.jpg"
+add_de1_page "scentone_cereal" "scentone_cereal.jpg"
+add_de1_page "scentone_chocolate" "scentone_chocolate.jpg"
+add_de1_page "scentone_flower" "scentone_flower.jpg"
+add_de1_page "scentone_spice" "scentone_spice.jpg"
+add_de1_page "scentone_vegetable" "scentone_vegetable.jpg"
+add_de1_page "scentone_savory" "scentone_savory.jpg"
 
-add_de1_page "describe_espresso" "[skin_directory_graphics]/describe_espresso.jpg"
-add_de1_page "describe_espresso2" "[skin_directory_graphics]/describe_espresso2.jpg"
+add_de1_page "describe_espresso" "describe_espresso.jpg"
+add_de1_page "describe_espresso2" "describe_espresso2.jpg"
 
 
 

@@ -16,7 +16,11 @@ package require de1_machine
 ##############################
 
 proc setup_images_for_other_pages {} {
+	borg spinner on
 	source "[skin_directory]/skin.tcl"
+	borg spinner off
+    borg systemui $::android_full_screen_flags
+
 	return
 }
 
