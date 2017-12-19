@@ -842,11 +842,11 @@ proc de1_ble_handler { event data } {
 						append_to_skale_bluetooth_list $address
 			    		set ::de1(wrote) 0
 						set ::de1(skale_device_handle) $handle
+						skale_enable_lcd
+						skale_tare 
 						skale_enable_button_notifications
 						skale_enable_grams
-						skale_enable_lcd
 						skale_timer_off
-						skale_tare 
 						skale_enable_weight_notifications
 
 						#run_next_userdata_cmd
