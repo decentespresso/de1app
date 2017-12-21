@@ -130,6 +130,9 @@ array set ::settings {
 	flying 0
 	bean_notes {}
 	espresso_notes {}
+	espresso_count 0
+	steaming_count 0
+	water_count 0
 	advanced_shot {}
 	water_time_max 60
 	grinder_dose_weight 0
@@ -387,6 +390,9 @@ proc start_steam {} {
 	set ::de1(volume) 0
 	de1_send_state "make steam" $::de1_state(Steam)
 
+	incr ::settings(steaming_count)
+	save_settings
+
 	if {$::settings(stress_test) == 1} {
 		set ::idle_next_step start_steam
 	}
@@ -424,6 +430,11 @@ proc start_espresso {} {
 
 	clear_espresso_chart
 	clear_timers
+
+	incr ::settings(espresso_count)
+	save_settings
+
+
 	#start_timers
 
 	if {$::de1(skale_device_handle) != 0} {
@@ -452,6 +463,10 @@ proc start_water {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	de1_send_state "make hot water" $::de1_state(HotWater)
+
+	incr ::settings(water_count)
+	save_settings
+
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}

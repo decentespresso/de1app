@@ -351,10 +351,6 @@ add_de1_text "settings_4" 1310 220 -text [translate "Information"] -font Helv_10
 	add_de1_variable "settings_4" 1310 450 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water count:"] [round_to_integer $::settings(water_count)]}
 	add_de1_variable "settings_4" 1310 500 -text "[translate {Version:}] $::de1(version)" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 500 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
 
-
-#set_next_page off settings_3
-
-
 proc scheduler_feature_hide_show_refresh {} {
 	if {$::de1(current_context) == "settings_3"} {
 		show_hide_from_variable $::scheduler_widgetids ::settings scheduler_enable write

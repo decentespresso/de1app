@@ -998,17 +998,17 @@ proc de1_ble_handler { event data } {
 								set ::scheduled_skale_tare_id [after 1000 skale_tare]
 							}
 
-							set multiplier1 0.9
+							set multiplier1 0.95
 							set diff [expr {$::de1(scale_weight) - $sensorweight}]
 							if {$::de1_num_state($::de1(state)) == "Idle"} {
 								# no smoothing when the machine is idle
 								set multiplier1 0
 							} elseif {$diff > 1} { 
-								set multiplier1 0.995
+								set multiplier1 0.998
 							} elseif {$diff > .5} { 
-								set multiplier1 0.98
+								set multiplier1 0.99
 							} elseif {$diff > .1} { 
-								set multiplier1 0.95
+								set multiplier1 0.98
 							}
 							set multiplier2 [expr {1 - $multiplier1}];
 							set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
