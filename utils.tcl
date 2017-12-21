@@ -1635,3 +1635,28 @@ proc make_de1_dir {} {
 
 }
 
+proc shot_history_export {} {
+
+    set dirs [lsort -dictionary [glob -tails -directory "[homedir]/history/" *.shot]]
+    set dd {}
+    foreach d $dirs {
+        array unset -nocomplain arr
+        set rootname [file tail $d]
+        array set arr [read_file "history/$d"]
+        puts "keys: [array names arr]"
+        set x 0
+        set lines {}
+        set lines [subst {espresso_elapsed, espresso_pressure, espresso_flow, espresso_flow_weight, espresso_temperature_basket, espresso_temperature_mix\n}]
+
+        for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
+            set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x]\n}]
+            append lines $line
+        }
+
+        set newfile "[file rootname $rootname].csv"
+        puts "$rootname, $newfile"
+        write_file "history/$newfile" $lines
+    }
+    return [lsort -dictionary -increasing $dd]
+
+}

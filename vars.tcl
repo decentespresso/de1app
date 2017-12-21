@@ -8,6 +8,7 @@ proc clear_espresso_chart {} {
 	msg "clear_espresso_chart"
 	espresso_elapsed length 0
 	espresso_pressure length 0
+	espresso_weight length 0
 	espresso_flow length 0
 	espresso_flow_weight length 0
 	espresso_flow_weight_2x length 0
@@ -27,6 +28,7 @@ proc clear_espresso_chart {} {
 	espresso_elapsed append 0
 	espresso_pressure append 0
 	#god_espresso_pressure append 0
+	espresso_weight append 0
 	espresso_flow append 0
 	espresso_flow_weight append 0
 	espresso_flow_weight_2x append 0
@@ -1817,6 +1819,7 @@ proc save_this_espresso_to_history {} {
 
 		append espresso_data "espresso_elapsed {[espresso_elapsed range 0 end]}\n"
 		append espresso_data "espresso_pressure {[espresso_pressure range 0 end]}\n"
+		append espresso_data "espresso_weight {[espresso_weight range 0 end]}\n"
 		append espresso_data "espresso_flow {[espresso_flow range 0 end]}\n"
 		append espresso_data "espresso_flow_weight {[espresso_flow_weight range 0 end]}\n"
 		append espresso_data "espresso_temperature_basket {[espresso_temperature_basket range 0 end]}\n"

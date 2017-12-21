@@ -1036,6 +1036,7 @@ proc append_live_data_to_espresso_chart {} {
 		if {$::de1(substate) == 4 || $::de1(substate) == 5} {
 
 			espresso_elapsed append [expr {$millitime/1000.0}]
+			espresso_weight append $::de1(scale_weight)
 			espresso_pressure append $::de1(pressure)
 			espresso_flow append $::de1(flow)
 			espresso_flow_2x append [expr {2.0 * $::de1(flow)}]
