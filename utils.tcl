@@ -239,6 +239,7 @@ set SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN 0x00000400
 
 set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_LAYOUT_STABLE | $SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_IMMERSIVE}]
 
+
 #set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_IMMERSIVE}]
 #set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY}]
 
@@ -262,8 +263,9 @@ proc setup_environment {} {
         namespace import -force blt::tile::*
 
         #borg systemui 0x1E02
-        borg brightness $::settings(app_brightness)
-        borg systemui $::android_full_screen_flags
+        #borg brightness 0
+        #borg brightness $::settings(app_brightness)
+        #borg systemui $::android_full_screen_flags
 
         # force the screen into landscape if it isn't yet
         msg "orientation: [borg screenorientation]"
@@ -469,16 +471,15 @@ proc setup_environment {} {
         set screen_size_width 2048
         set screen_size_height 1536
 
-
-
-        set screen_size_width 1280
-        set screen_size_height 800
-
         set screen_size_width 640
         set screen_size_height 480
 
         set screen_size_width 1920
         set screen_size_height 1200
+
+        set screen_size_width 1280
+        set screen_size_height 800
+
 
         set fontm [expr {$screen_size_width / 1280.0}]
         #puts "fontm: $fontm"
@@ -585,11 +586,12 @@ proc setup_environment {} {
 
 
     }
-    . configure -bg black 
+
 
 
     ############################################
     # define the canvas
+    . configure -bg black 
     canvas .can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
 
     #if {$::settings(flight_mode_enable) == 1} {
@@ -1163,36 +1165,7 @@ proc array_item_difference {arr1 arr2 keylist} {
 
 proc make_de1_dir {} {
 
-    set files {
-        binary.tcl *
-        bluetooth.tcl *
-        translation.tcl *
-        de1plus.tcl 1
-        de1.tcl 0
-        gui.tcl *
-        machine.tcl *
-        utils.tcl *
-        main.tcl *
-        vars.tcl *
-        pkgIndex.tcl *
-        de1_icon_v2.png 0
-        de1plus_icon_v2.png 1
-
-        history/info.txt *
-        fw/bootfwupdate.dat *
-        wallpaper/spy.jpg *
-        wallpaper/spy_2560x1600.jpg *
-        wallpaper/dark_two_de1p2.jpg *
-        sounds/KeypressStandard_120.ogg *
-        sounds/KeypressDelete_120.ogg *
-
-        fonts/NotoSansCJKjp-Bold.otf *
-        fonts/NotoSansCJKjp-Regular.otf *
-        fonts/notosansuibold.ttf *
-        fonts/notosansuiregular.ttf *
-        fonts/sarabun.ttf *
-        fonts/sarabunbold.ttf *
-
+    set not_these  {
         splash/1280x800/1960.jpg *
         splash/1280x800/8bit.jpg *
         splash/1280x800/aliens.jpg *
@@ -1230,6 +1203,41 @@ proc make_de1_dir {} {
         splash/2560x1600/warhol.jpg *
         splash/2560x1600/watercolor.jpg *
         splash/2560x1600/wired_superheroes.jpg *
+
+    }
+
+    set files {
+        binary.tcl *
+        bluetooth.tcl *
+        translation.tcl *
+        de1plus.tcl 1
+        de1.tcl 0
+        gui.tcl *
+        machine.tcl *
+        utils.tcl *
+        main.tcl *
+        vars.tcl *
+        pkgIndex.tcl *
+        de1_icon_v2.png 0
+        de1plus_icon_v2.png 1
+
+        history/info.txt *
+        fw/bootfwupdate.dat *
+        wallpaper/spy.jpg *
+        wallpaper/spy_2560x1600.jpg *
+        wallpaper/dark_two_de1p2.jpg *
+        sounds/KeypressStandard_120.ogg *
+        sounds/KeypressDelete_120.ogg *
+
+        fonts/NotoSansCJKjp-Bold.otf *
+        fonts/NotoSansCJKjp-Regular.otf *
+        fonts/notosansuibold.ttf *
+        fonts/notosansuiregular.ttf *
+        fonts/sarabun.ttf *
+        fonts/sarabunbold.ttf *
+
+        splash/1280x800/de1.jpg *
+        splash/2560x1600/de1.jpg *
 
         skins/default/de1_skin_settings.tcl *
         skins/default/skin.tcl *

@@ -1,7 +1,11 @@
 #!/bin/bash
 
-cd /d/admin/code/de1beta/splash/2560x1600
-dirs=( "1280x800" "1920x1200" "1920x1080" "1280x720" "2560x1440" "2048x1440" "2048x1536" )
+cd /d/admin/code/de1beta/splash
+#dirs=( "1280x800" "1920x1200" "1920x1080" "1280x720" "2560x1440" "2048x1440" "2048x1536" )
+convert 2560x1600/de1.jpg -quality 90 -resize 1280x800 1280x800/de1.jpg 
+exit
+
+dirs=( "1280x800"  )
 echo "Resizing splash JPGs"
 
 for i in "${dirs[@]}"

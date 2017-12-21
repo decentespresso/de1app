@@ -1340,6 +1340,8 @@ proc setup_images_for_first_page {} {
 	image create photo splash -file $fn 
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
+    #borg brightness 100
+
 	update
 	return
 }
