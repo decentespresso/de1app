@@ -344,11 +344,13 @@ add_de1_button "settings_4" {start_firmware_update} 1300 1206 1900 1406
 # firmware reset
 #add_de1_button "settings_4" {} 1900 890 2520 1080
 
-add_de1_variable "settings_4" 1310 320 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water level:"] [round_to_integer $::de1(water_level)][translate mm]}
-
 add_de1_text "settings_4" 1310 220 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_variable "settings_4" 1310 380 -text "[translate {Version:}] $::de1(version)" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 500 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
-#add_de1_text "settings_4" 1350 660 -text "[translate {Serial number:}] 0000001" -font Helv_9 -fill "#2d3046" -anchor "nw" -width 800 -justify "left"
+	add_de1_variable "settings_4" 1310 300 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water level:"] [round_to_integer $::de1(water_level)][translate mm]}
+	add_de1_variable "settings_4" 1310 350 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Espresso count:"] [round_to_integer $::settings(espresso_count)]}
+	add_de1_variable "settings_4" 1310 400 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Steaming count:"] [round_to_integer $::settings(steaming_count)]}
+	add_de1_variable "settings_4" 1310 450 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Water count:"] [round_to_integer $::settings(water_count)]}
+	add_de1_variable "settings_4" 1310 500 -text "[translate {Version:}] $::de1(version)" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 500 -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
+
 
 #set_next_page off settings_3
 
