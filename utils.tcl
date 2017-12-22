@@ -145,7 +145,7 @@ proc language {} {
     global current_language
 #return "en"
     if {$::android != 1} {
-        #return "sk"
+        return "sk"
         return en
     }
 
@@ -979,6 +979,15 @@ proc rescale_font {in} {
 }
 
 
+proc skin_convert_all {} {
+    skin_convert "[homedir]/saver/2560x1600"
+    skin_convert "[homedir]/splash/2560x1600"
+
+    foreach d [lsort -increasing [skin_directories]] {
+        skin_convert "[homedir]/skins/$d/2560x1600"
+    }
+}
+
 proc skin_convert {indir} {
     #puts "skin_convert: $indir"
     cd $indir
@@ -1527,7 +1536,8 @@ proc make_de1_dir {} {
         saver/1280x800/cities.jpg *
         saver/1280x800/cups.jpg *
         saver/1280x800/dark_choices.jpg *
-        saver/1280x800/french_breakfast.jpg *
+        saver/1280x800/green-cup.jpg *
+        saver/1280x800/photomanipulation.jpg *
         saver/1280x800/graffiti_1.jpg *
         saver/1280x800/graffiti_2.jpg *
         saver/1280x800/graffiti_wall.jpg *
@@ -1570,6 +1580,8 @@ proc make_de1_dir {} {
         saver/2560x1600/minimalism.jpg *
         saver/2560x1600/scifi.jpg *
         saver/2560x1600/sin_city.jpg *
+        saver/2560x1600/green-cup.jpg *
+        saver/2560x1600/photomanipulation.jpg *
         saver/2560x1600/splash_noir.jpg *
         saver/2560x1600/splash_rodent.jpg *
         saver/2560x1600/splotch.jpg *
