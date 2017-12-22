@@ -1223,9 +1223,8 @@ proc make_de1_dir {} {
 
         history/info.txt *
         fw/bootfwupdate.dat *
-        wallpaper/spy.jpg *
+        wallpaper/spy_1280x800.jpg *
         wallpaper/spy_2560x1600.jpg *
-        wallpaper/dark_two_de1p2.jpg *
         sounds/KeypressStandard_120.ogg *
         sounds/KeypressDelete_120.ogg *
 
