@@ -1215,5 +1215,6 @@ proc scanning_restart {} {
 		after 3000 { set scanning 0 }
 	}
 
+	set ::scanning 1
 	ble start $::ble_scanner
 }

@@ -195,7 +195,7 @@ array set ::settings {
 	enable_negative_flow_charts 0
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
-	final_desired_shot_weight_percentage_to_stop .93
+	final_desired_shot_weight_percentage_to_stop .88
 	history_saved ""
 	pressure_end 4 
 	espresso_step_1 pressure
@@ -484,10 +484,12 @@ proc start_idle {} {
 
 
 	if {$::de1(skale_device_handle) == 0 && $::settings(skale_bluetooth_address) != ""} {
+		scanning_restart
 		ble_connect_to_skale
 	}
 
 	if {$::de1(device_handle) == 0} {
+		scanning_restart
 		update_de1_state "$::de1_state(Idle)\x0"
 		ble_connect_to_de1
 		return
