@@ -566,6 +566,12 @@ proc ble_find_de1s {} {
 }
 
 proc stop_scanner {} {
+
+	if {$::scanning == 0} {
+		return
+	}
+	
+	set ::scanning 0
 	ble stop $::ble_scanner
 	#userdata_append "stop scanning" [list ble stop $::ble_scanner]
 }
@@ -837,6 +843,12 @@ proc de1_ble_handler { event data } {
 						set_next_page off off
 						start_idle
 
+			    		if {$::de1(skale_device_handle) != 0 || $::settings(skale_bluetooth_address) == ""} {
+							# if we're connected to both the scale and the DE1, stop scanning (or if there is not scale to connect to and we're connected to the de1)
+			    			stop_scanner
+			    		}
+
+
 					} elseif {$::de1(skale_device_handle) == 0 && $address == $::settings(skale_bluetooth_address)} {
 						msg "skale connected $event $data"
 						append_to_skale_bluetooth_list $address
@@ -848,6 +860,11 @@ proc de1_ble_handler { event data } {
 						skale_enable_grams
 						skale_timer_off
 						skale_enable_weight_notifications
+
+						if {$::de1(device_handle) != 0} {
+							# if we're connected to both the scale and the DE1, stop scanning
+							stop_scanner
+						}
 
 						#run_next_userdata_cmd
 
