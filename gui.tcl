@@ -1561,6 +1561,6 @@ proc water_level_color_check {widget} {
 }
 
 
-install_de1_app_icon
-install_de1plus_app_icon
+#install_de1_app_icon
+#install_de1plus_app_icon
 #install_this_app_icon
