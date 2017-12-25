@@ -145,7 +145,7 @@ proc language {} {
     global current_language
 #return "en"
     if {$::android != 1} {
-        return "sk"
+        #return "sk"
         return en
     }
 
@@ -1362,11 +1362,13 @@ proc make_de1_dir {} {
         skins/8-BIT/pixel.ttf *
         skins/8-BIT/pixel2.ttf *
         skins/8-BIT/1280x800/espresso_on.png *
+        skins/8-BIT/1280x800/espresso_on_plus.png *
         skins/8-BIT/1280x800/icon.jpg *
         skins/8-BIT/1280x800/nothing_on.png *
         skins/8-BIT/1280x800/steam_on.png *
         skins/8-BIT/1280x800/tea_on.png *    
         skins/8-BIT/2560x1600/espresso_on.png *
+        skins/8-BIT/2560x1600/espresso_on_plus.png *
         skins/8-BIT/2560x1600/icon.jpg *
         skins/8-BIT/2560x1600/nothing_on.png *
         skins/8-BIT/2560x1600/steam_on.png *
