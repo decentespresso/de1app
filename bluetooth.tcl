@@ -351,12 +351,16 @@ proc app_exit {} {
 
 	catch {
 		msg "Closing de1"
-		ble close $::de1(device_handle)
+		if {$::de1(device_handle) != 0} {
+			ble close $::de1(device_handle)
+		}
 	}
 
 	catch {
 		msg "Closing skale"
-		#ble close $::de1(skale_device_handle)
+		if {$::de1(skale_device_handle) != 0} {
+			ble close $::de1(skale_device_handle)
+		}
 	}
 
 	catch {
@@ -366,7 +370,7 @@ proc app_exit {} {
 
 	catch {
 		#ble unpair $::de1(de1_address)
-		ble unpair $::settings(bluetooth_address)
+		#ble unpair $::settings(bluetooth_address)
 	}
 	exit
 }
@@ -570,7 +574,7 @@ proc stop_scanner {} {
 	if {$::scanning == 0} {
 		return
 	}
-	
+
 	set ::scanning 0
 	ble stop $::ble_scanner
 	#userdata_append "stop scanning" [list ble stop $::ble_scanner]

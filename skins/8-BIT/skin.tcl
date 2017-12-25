@@ -47,7 +47,7 @@ source "[homedir]/skins/default/de1_skin_settings.tcl"
 # text and buttons to display when the DE1 is idle
 
 load_font "pixel" "[skin_directory]/pixel.ttf" 26
-load_font "pixel2" "[skin_directory]/pixel.ttf" 18
+load_font "pixel2" "[skin_directory]/pixel2.ttf" 16
 #load_font "eightbit" "[skin_directory]/eightbit.ttf" 24 12
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
@@ -115,7 +115,7 @@ if {[de1plus]} {
 
 
 	set pos_top 20
-	set spacer 70
+	set spacer 78
 	#set paragraph 20
 
 	set column1 060
@@ -131,11 +131,10 @@ if {[de1plus]} {
 	set lighter "#EEEEEE"
 	set lightest "#FFFFFF"
 
-	add_de1_text "espresso" $column1 [expr {$pos_top + (0 * $spacer)}] -justify right -anchor "nw" -text [translate "Time"] -font $font -fill $dark -width [rescale_x_skin 520]
-		add_de1_variable "espresso" $column1 [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "nw" -text "" -font $font  -fill $lighter -width [rescale_x_skin 520] -textvariable {[preinfusion_timer][translate "s"] [translate "preinfusion"]} 
-		add_de1_variable "espresso" $column1 [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font $font  -fill $lighter -width [rescale_x_skin 520] -textvariable {[pour_timer][translate "s"] [translate "pouring"]} 
-		add_de1_variable "espresso" $column1 [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -text "" -font $font -fill $lighter -width [rescale_x_skin 520] -textvariable {[elapsed_timer][translate "s"] [translate "total"]} 
-		#add_de1_variable "off" $column1 [expr {$pos_top + (4 * $spacer)}] -justify left -anchor "nw" -font $font -text "" -fill $lighter -width [rescale_x_skin 520] -textvariable {[done_timer][translate "s"] [translate "done"]} 
+	add_de1_text "espresso" $column1 [expr {$pos_top + (0 * $spacer)}] -justify right -anchor "nw" -text [translate "Time"] -font $font -fill $dark -width [rescale_x_skin 620]
+		add_de1_variable "espresso" $column1 [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "nw" -text "" -font $font  -fill $lighter -width [rescale_x_skin 620] -textvariable {[preinfusion_timer][translate "s"] [translate "preinfusion"]} 
+		add_de1_variable "espresso" $column1 [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font $font  -fill $lighter -width [rescale_x_skin 620] -textvariable {[pour_timer][translate "s"] [translate "pouring"]} 
+		add_de1_variable "espresso" $column1 [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -text "" -font $font -fill $lighter -width [rescale_x_skin 620] -textvariable {[elapsed_timer][translate "s"] [translate "total"]} 
 
 	add_de1_text "espresso" $column3 [expr {$pos_top + (0 * $spacer)}] -justify right -anchor "ne" -text [translate "Volume"] -font $font -fill $dark -width [rescale_x_skin 520]
 		add_de1_variable "espresso" $column3 [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "ne" -text "" -font $font  -fill $lighter -width [rescale_x_skin 520] -textvariable {[preinfusion_volume]} 
@@ -153,15 +152,15 @@ add_de1_text "espresso" $column1 [expr {$pos_top + (4.5 * $spacer)}] -justify ri
 
 #######################
 # weight
-add_de1_variable "espresso" $column3 [expr {$pos_top + (4.5 * $spacer)}] -justify right -anchor "ne" -font $font -fill $dark -width [rescale_x_skin 520] -textvariable {[waterweight_label_text]}
+add_de1_variable "espresso" $column3 [expr {$pos_top + (4.5 * $spacer)}] -justify right -anchor "ne" -font $font -fill $dark -width [rescale_x_skin 620] -textvariable {[waterweight_label_text]}
 	#add_de1_variable "off" $column3 [expr {$pos_top + (4 * $spacer)}] -justify left -anchor "ne" -text "" -font $font -fill $lighter -width [rescale_x_skin 520] -textvariable {[finalwaterweight_text]} 
-	add_de1_variable "espresso" $column3 [expr {$pos_top + (5.5 * $spacer)}] -justify left -anchor "ne" -text "" -font $font -fill $lighter -width [rescale_x_skin 520] -textvariable {[waterweight_text]} 
-	add_de1_variable "espresso" $column3 [expr {$pos_top + (6.5 * $spacer)}] -justify left -anchor "ne" -text "" -font $font -fill $lighter -width [rescale_x_skin 520] -textvariable {[waterweightflow_text]} 
+	add_de1_variable "espresso" $column3 [expr {$pos_top + (5.5 * $spacer)}] -justify left -anchor "ne" -text "" -font $font -fill $lighter -width [rescale_x_skin 620] -textvariable {[waterweight_text]} 
+	add_de1_variable "espresso" $column3 [expr {$pos_top + (6.5 * $spacer)}] -justify left -anchor "ne" -text "" -font $font -fill $lighter -width [rescale_x_skin 620] -textvariable {[waterweightflow_text]} 
 
 	if {$::settings(skale_bluetooth_address) != ""} {
 		set ::de1(scale_weight_rate) -1
-		add_de1_widget "off" ProgressBar 0 1580 {} -width [rescale_y_skin 2540] -height [rescale_x_skin 20] -type normal  -variable ::de1(scale_weight_rate) -fg #6b2c03 -bg #894419 -maximum 6 -borderwidth 1 -relief flat -troughcolor #894419
-
+		#add_de1_widget "off" ProgressBar 0 1580 {} -width [rescale_y_skin 2540] -height [rescale_x_skin 20] -type normal  -variable ::de1(scale_weight) -fg #6b2c03 -bg #894419 -maximum 2000 -borderwidth 1 -relief flat -troughcolor #894419
+		add_de1_widget "off" ProgressBar 0 1580 {} -width [rescale_y_skin 2540] -height [rescale_x_skin 20] -type normal  -variable ::de1(scale_weight_rate) -fg #6b2c03 -bg #894419 -maximum 1000 -borderwidth 1 -relief flat -troughcolor #894419
 		#add_de1_widget "off espresso" scale 306 656 {} -from $::de1(water_level_full_point) -to $::de1(water_level_empty_point) -background #ab6439 -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 78] -showvalue 0 -width [rescale_y_skin 286] -variable ::de1(scale_weight_rate) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 10] -relief flat -troughcolor #FFFFF0 -borderwidth 0  -highlightthickness 0
 	}
 #######################
