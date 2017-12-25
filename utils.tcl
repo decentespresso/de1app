@@ -1229,6 +1229,8 @@ proc make_de1_dir {} {
         pkgIndex.tcl *
         de1_icon_v2.png 0
         de1plus_icon_v2.png 1
+        create_de1_icon.tcl 0
+        create_de1plus_icon.tcl 1
 
         history/info.txt *
         fw/bootfwupdate.dat *
