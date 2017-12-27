@@ -51,7 +51,8 @@ array set ::de1 {
 	water_level 30
 	firmware_bytes_uploaded 0
 	firmware_update_size 0
-	firmware_update_button_label "Update"
+	firmware_update_button_label "Firmware Update"
+	app_update_button_label "Update"
 	state 0
 	substate 0
 	current_context ""
@@ -248,6 +249,11 @@ array set ::settings {
 	preheat_volume 50
 	preheat_temperature 95
 	water_volume 50
+}
+
+if {[de1plus]} {
+	# default de1plus skin
+	set ::settings(skin) "Insight"
 }
 
 # default the listbox to the currently set ble addresses

@@ -1,4 +1,4 @@
-set ::skindebug 0
+set ::skindebug 1
 set ::debugging 0
 
 puts "debugging: $::debugging"

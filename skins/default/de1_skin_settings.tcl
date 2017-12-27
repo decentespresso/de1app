@@ -314,11 +314,13 @@ add_de1_variable "settings_1" 2466 660 -text "" -font Helv_7 -fill "#7f879a" -an
 add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
  
-add_de1_variable "settings_4" 1650 1300 -text [translate "Update"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -textvariable {[translate $::de1(firmware_update_button_label)]} 
-add_de1_variable "settings_4" 1860 1140 -font Helv_8 -fill "#7f879a" -anchor "ne" -width 500 -justify "right" -textvariable {[firmware_uploaded_label]} 
+add_de1_variable "settings_4" 2270 534 -text "" -width [rescale_y_skin 400] -font Helv_8_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[translate $::de1(firmware_update_button_label)]} 
+add_de1_variable "settings_4" 2500 410 -font Helv_8 -fill "#7f879a" -anchor "ne" -width 500 -justify "right" -textvariable {[firmware_uploaded_label]} 
+
+add_de1_variable "settings_4" 1650 1300 -text [translate "Update"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -textvariable {[translate $::de1(app_update_button_label)]} 
+
 
 # exit app feature
-add_de1_text "settings_4" 1960 1140 -text [translate "App"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 2280 1300 -text [translate "Exit"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
 add_de1_button "settings_4" {say [translate {exit}] $::settings(sound_button_in); app_exit} 1925 1206 2550 1406
 
@@ -336,7 +338,10 @@ add_de1_button "settings_4" {say [translate {clean}] $::settings(sound_button_in
 add_de1_button "settings_4" {say [translate {descale}] $::settings(sound_button_in); start_decaling} 645 1206 1260 1406
 
 # firmware update
-add_de1_button "settings_4" {start_firmware_update} 1300 1206 1900 1406
+add_de1_button "settings_4" {start_firmware_update} 1930 460 2550 600
+
+# app update
+add_de1_button "settings_4" {start_app_update} 1300 1206 1900 1406
 
 # firmware reset
 #add_de1_button "settings_4" {} 640 890 1260 1080
@@ -349,7 +354,7 @@ add_de1_text "settings_4" 1310 220 -text [translate "Information"] -font Helv_10
 	add_de1_variable "settings_4" 1310 350 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" -textvariable {[translate "Espresso count:"] [round_to_integer $::settings(espresso_count)]}
 	add_de1_variable "settings_4" 1310 400 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" -textvariable {[translate "Steaming count:"] [round_to_integer $::settings(steaming_count)]}
 	add_de1_variable "settings_4" 1310 450 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" -textvariable {[translate "Water count:"] [round_to_integer $::settings(water_count)]}
-	add_de1_variable "settings_4" 1310 500 -text "[translate {Version:}] $::de1(version)" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1200] -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
+	add_de1_variable "settings_4" 1310 500 -text "[translate {Version:}] $::de1(version)" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 600] -justify "left" -textvariable {[translate {DE1 Version:}] $::de1(version)} 
 
 proc scheduler_feature_hide_show_refresh {} {
 	if {$::de1(current_context) == "settings_3"} {
@@ -377,7 +382,8 @@ add_de1_text "settings_3" 50 540 -text [translate "Energy Saver"] -font Helv_10_
 add_de1_text "settings_3" 680 540 -text [translate "Screen Saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 50 860 -text [translate "Measurements"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 50 1140 -text [translate "Maintenance"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 1320 1140 -text [translate "Firmware"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 1320 1140 -text [translate "App"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+#add_de1_text "settings_4" 1960 1140 -text [translate "App"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 1310 650 -text [translate "Connect"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_4" 1310 730 -text [translate "Espresso machine"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
@@ -593,5 +599,5 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off settings_4
+set_next_page off settings_4
 
