@@ -240,10 +240,10 @@ proc maprequest_spec {} {
 proc version_spec {} {
 	set spec {
 		FW {Short {} {} {unsigned} {$val / 1.0}}
-		BLE1 {Short {} {} {unsigned} {$val / 1.0}}
-		BLE2 {Short {} {} {unsigned} {$val / 1.0}}
-		BLE3 {Short {} {} {unsigned} {$val / 1.0}}
-		BLE4 {char {} {} {unsigned} {$val / 1.0}}
+		A {Short {} {} {unsigned} {$val / 1.0}}
+		B {Short {} {} {unsigned} {$val / 1.0}}
+		C {Short {} {} {unsigned} {$val / 1.0}}
+		D {char {} {} {unsigned} {$val / 1.0}}
 		VC {char {} {} {unsigned} {$val / 1.0}}
 	}
 	return $spec

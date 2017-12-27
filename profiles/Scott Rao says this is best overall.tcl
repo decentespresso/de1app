@@ -15,4 +15,5 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 3.5
 profile_notes {Author Scott Rao recommends this profile as being "best overall" in the appendix of his "Espresso Extraction" book.}
 water_temperature 76
+final_desired_shot_weight 32
 

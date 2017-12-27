@@ -1593,26 +1593,26 @@ proc make_de1_dir {} {
         saver/2560x1600/steampunk_latte.jpg *
         saver/2560x1600/superheroes.jpg *
         saver/2560x1600/three_women.jpg *     
-        profiles/Flat\ 2.5\ mL\ per\ second\ shot\ for\ light\ roasts.tcl *
+        profiles/Classic\ Italian\ espresso.tcl *
+        profiles/Flat\ 2.5\ mL\ per\ second\ shot\ for\ light\ roasts.tcl 1
+        profiles/Gentle\ preinfusion\ flow\ profile.tcl 1
         profiles/Gentler\ but\ still\ traditional\ 8.4\ bar\ shot.tcl *
-        profiles/Good\ flow\ profile\ for\ milky\ drinks.tcl *
-        profiles/Good\ flow\ profile\ for\ straight\ espresso.tcl *
+        profiles/Good\ flow\ profile\ for\ milky\ drinks.tcl 1
+        profiles/Good\ flow\ profile\ for\ straight\ espresso.tcl 1
         profiles/Low\ pressure\ lever\ machine\ at\ 6\ bar.tcl *
         profiles/Powerful\ 10\ bar\ shot.tcl *
-        profiles/Preinfuse\ then\ run\ for\ 45ml\ of\ water.tcl *
-        profiles/Recommended\ traditional\ 9\ bar\ shot.tcl *
-        profiles/Scott\ Rao\ recommends\ this\ as\ best\ overall.tcl *
-        profiles/Slow\ preinfusion\ shot\ for\ very\ light\ roasts.tcl *
+        profiles/Preinfuse\ then\ run\ for\ 45ml\ of\ water.tcl 1
+        profiles/Scott\ Rao\ says\ this\ is\ best\ overall.tcl *
+        profiles/Slow\ preinfusion\ for\ light\ roasts.tcl 1
         profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
         profiles/Traditional\ single-spring\ lever\ machine.tcl *
         profiles/Trendy\ 6\ bar\ low\ pressure\ shot.tcl *
         profiles/Two\ spring\ lever\ machine\ going\ to\ 9\ bar.tcl *
-        profiles/Ultra\ traditional\ 9\ bar\ shot.tcl *
+        profiles/Very\ slow\ preinfusion\ for\ light\ roasts.tcl 1
         profiles/default.tcl *
         profiles/e61\ classic\ at\ 9\ bar.tcl *
-        profiles/e61\ with\ preinfusion\ at\ 9\ bar.tcl *
-
-       
+        profiles/e61\ classic\ gently\ up\ to\ 10\ bar.tcl *
+        profiles/e61\ with\ fast\ preinfusion\ to\ 9\ bar.tcl *       
     }
 
     set srcdir "/d/admin/code/de1beta"

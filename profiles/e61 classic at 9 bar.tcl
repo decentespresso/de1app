@@ -1,9 +1,9 @@
-espresso_hold_time 7
-preinfusion_time 12
-espresso_pressure 6.1
-espresso_decline_time 8
-pressure_end 5.0
-espresso_temperature 90.78
+espresso_hold_time 35
+preinfusion_time 0
+espresso_pressure 9.0
+espresso_decline_time 0
+pressure_end 2.0
+espresso_temperature 92.28
 settings_profile_type settings_2a
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6
@@ -15,4 +15,5 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4
 profile_notes {}
 water_temperature 80
+final_desired_shot_weight 36
 

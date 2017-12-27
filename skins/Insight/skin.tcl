@@ -97,7 +97,7 @@ add_de1_button "preheat_2 steam water espresso espresso_3" {say [translate {wate
 set charts_width 1990
 if {$::debugging == 1} {
 	set charts_width 400
-	add_de1_variable "off espresso espresso_3" 450 220 -text "" -font Helv_6 -fill "#5a5d75" -anchor "nw" -justify left -width 780 -textvariable {$::debuglog}
+	add_de1_variable "off espresso espresso_3" 450 220 -text "" -font Helv_6 -fill "#5a5d75" -anchor "nw" -justify left -width [rescale_y_skin 1560] -textvariable {$::debuglog}
 }
 
 

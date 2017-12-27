@@ -816,14 +816,14 @@ proc de1_connected_state { {hide_delay 0} } {
 			#return "[translate Connecting]"
 			if {$elapsed > 600} {
 				if {$::scanning == 1} {
-					return "[translate Scanning]"
+					return "[translate Searching]"
 				} elseif {$::scanning == -1} {
 					return "[translate Starting]"
 				}
 				return "[translate Connecting]"
 			} else {
 				if {$::scanning == 1} {
-					return "[translate Scanning] : $elapsed"
+					return "[translate Searching] : $elapsed"
 				} else {
 					return "[translate Connecting] : $elapsed"
 				}

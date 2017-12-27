@@ -565,7 +565,7 @@ proc ble_find_de1s {} {
 	}
 	
 	#puts "ble_find_de1s"
-	#after 3000 stop_scanner
+	after 30000 stop_scanner
 	ble start $::ble_scanner
 }
 
@@ -711,6 +711,9 @@ proc de1_ble_handler { event data } {
 
     dict with data {
 
+    	if {$state != "scanning"} {
+    		msg "de1 ble_handler $event $data"
+    	}
 
 		switch -- $event {
 	    	#msg "-- device $name found at address $address"
@@ -837,15 +840,15 @@ proc de1_ble_handler { event data } {
 						append_to_de1_bluetooth_list $address
 						#msg "connected to de1 with handle $handle"
 						
+						de1_enable_temp_notifications
+						de1_enable_state_notifications
 						de1_enable_water_level_notifications
 						read_de1_version
 						de1_send_steam_hotwater_settings					
 						de1_send_shot_frames
 						de1_send_waterlevel_settings
-						de1_enable_temp_notifications
-						de1_enable_state_notifications
-						set_next_page off off
-						start_idle
+						#set_next_page off off
+						#start_idle
 
 			    		if {$::de1(skale_device_handle) != 0 || $::settings(skale_bluetooth_address) == ""} {
 							# if we're connected to both the scale and the DE1, stop scanning (or if there is not scale to connect to and we're connected to the de1)
