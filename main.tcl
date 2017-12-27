@@ -2,6 +2,7 @@
 
 package require img::jpeg
 package require snit
+package require crc32
 package require BWidget
 
 package provide de1 1.0
