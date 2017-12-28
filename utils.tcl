@@ -1199,3 +1199,86 @@ proc shot_history_export {} {
     return [lsort -dictionary -increasing $dd]
 
 }
+
+proc decent_http_get {url {timeout 30000}} {
+
+    set body {}
+    set token {}    
+    #puts "url: $url"
+    #catch {
+        ::http::config -useragent "mer454"
+        set token [::http::geturl $url -timeout $timeout]
+        set body [::http::data $token]
+
+        set cnt 0
+        while {[string length $body] == 0} {
+            puts "Amazon RequestThrottled #[incr cnt] reissuing GET query"
+            sleep 5000
+            ::http::cleanup $token
+            set token [::http::geturl $url -timeout $timeout]
+            set body [::http::data $token]
+        }
+        #puts "body: $body"
+        
+        if {[::http::error $token] != ""} {
+            debug_puts "http_get error: [::http::error $token]"
+        }
+        if {$token != ""} {
+            ::http::cleanup $token
+        }
+    #}
+    
+    return $body
+}
+
+proc start_app_update {} {
+    set host "http://10.0.1.200:8000"
+
+    set progname "de1"
+    if {[de1plus] == 1} {
+        set progname "de1plus"
+    }
+
+    set url_timestamp "$host/download/sync/$progname/timestamp.txt"
+    set remote_timestamp [string trim [decent_http_get $url_timestamp]]
+    #puts "timestamp: '$remote_timestamp'"
+    set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
+    if {$local_timestamp == $remote_timestamp} {
+        puts "Local timestamp is the same as remote timestamp, so no need to update"
+        #return
+    }
+
+
+    set url_manifest "$host/download/sync/$progname/manifest.txt"
+    set remote_manifest [string trim [decent_http_get $url_manifest]]
+    set local_manifest [string trim [read_file "[homedir]/manifest.txt"]]
+
+    # load the local manifest into memory
+    foreach {filename filesize filemtime filesha} $local_manifest {
+        set lmanifest($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
+        #puts "$filename [list filesize $filesize filemtime $filemtime filesha $filesha]"
+    }
+    #return
+
+    # compare the local vs remote manifest
+    foreach {filename filesize filemtime filesha} $remote_manifest {
+        array unset -complain data
+        array set data [ifexists lmanifest($filename)]
+        if {[ifexists data(filesha)] != $filesha} {
+            # if the CRCs don't match, then we'll want to fetch this file
+            set tofetch($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
+            puts "SHA256 mismatch '[ifexists data(filesha)]' != '$filesha' : will fetch: $filename"
+        }
+    }
+
+    #puts "Files to fetch: [join [array names tofetch] {, }]"
+
+
+}
+
+
+
+proc calc_sha {source} {
+    return [::crc::crc32 -filename $source]
+    #return [::sha2::sha256 -filename $source]
+}

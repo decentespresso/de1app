@@ -440,66 +440,87 @@ proc make_de1_dir {} {
         profiles/Very\ slow\ preinfusion\ for\ light\ roasts.tcl 1
         profiles/default.tcl *
         profiles/e61\ classic\ at\ 9\ bar.tcl *
-        profiles/e61\ classic\ gently\ up\ to\ 10\ bar.tcl *
+        profiles/e61\ rocketing\ up\ to\ 10\ bar.tcl *
         profiles/e61\ with\ fast\ preinfusion\ to\ 9\ bar.tcl *      
-
-		timestamp.txt *
-
     }
 
     set srcdir "/d/admin/code/de1beta"
-    set destdirs [list "/d/admin/code/de1" "/d/admin/code/de1plus"]
+    set destdirs [list "/d/download/sync/de1" "/d/download/sync/de1plus"]
 
+    # load the local manifest into memory
+    foreach {filename filesize filemtime filesha} [string trim [read_file "[homedir]/complete_manifest.txt"]] {
+    	#puts "$filename $filecrc"
+        set lmanifest_mtime($filename) $filemtime
+        set lmanifest_sha($filename) $filesha
+    }
+
+
+    set timestamp [clock seconds]
     set dircount  0
     foreach destdir $destdirs {
         if {[file exists $destdir] != 1} {
             file mkdir $destdir
         }
 
+
         set manifest ""
         set files_copied 0
         
         foreach {file scope} $files {
+            set source "$srcdir/$file"
+            set dest "$destdir/$file"
+
+            set mtime [file mtime $source]
+            set mtime_saved [ifexists lmanifest_mtime($file)]
+
+            if {([info exists lmanifest_sha($file)] == 1) && ($mtime ==  $mtime_saved)} {
+            	set sha256 $lmanifest_sha($file)
+        	} else {
+        		puts "Calculating SHA256 for $source"
+        		set sha256 [calc_sha $source]
+        		set lmanifest_sha($file) $sha256
+        		set lmanifest_mtime($file) $mtime
+        	}
+
+            lappend complete_manifest "\"$file\" [file size $source] [file mtime $source] $sha256"
+
             if {$scope != $dircount && $scope != "*"} {
                 # puts skip copying files that are not part of this scope
                 continue
             }
-            set source "$srcdir/$file"
-            set dest "$destdir/$file"
-
             if {[file exists [file dirname $dest]] != 1} {
                 file mkdir [file dirname $dest]
             }
         
-            if {$file == "timestamp.txt" && $files_copied == 1} {
-            	# if some files were copied then modify the timestamp
-            	# otherwise don't modify it, so that it doesn't get copied
-            	write_file "$srcdir/timestamp.txt" [clock seconds]
-            }
-
-
             if {[file exists $source] != 1} {
                 puts "File '$source' does not exist'"
                 continue
             } 
 
-            append manifest "\"$file\" [file size $source] [file mtime $source] [::crc::crc32 -filename $source]\n"
-
             if {[file exists $dest] == 1} {
                 if {[file mtime $source] == [file mtime $dest]} {
-                    # files are identical, do not copy
+                    # files are identical, do not copy		
+		            append manifest "\"$file\" [file size $source] [file mtime $source] $sha256\n"
                     continue
                 }
-            }
+            } 
 
-
-            puts "$file -> $destdir"
+            puts "$file -> $destdir/"
             file copy -force $source $dest
             set files_copied 1
         }
 
+    	write_file "$destdir/timestamp.txt" $timestamp
         write_file "$destdir/manifest.txt" $manifest 
         incr dircount
     }
 
+    write_file "$srcdir/complete_manifest.txt" [join [lsort -unique $complete_manifest] \n]
+
+}
+
+proc calc_sha {source} {
+
+	return [::crc::crc32 -filename $source]
+	#return [::sha2::sha256 -filename $source]
 }

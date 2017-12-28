@@ -599,5 +599,5 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-set_next_page off settings_4
+#set_next_page off settings_4
 

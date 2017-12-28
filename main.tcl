@@ -2,6 +2,8 @@
 
 package require img::jpeg
 package require snit
+package require sha256
+#package require md5
 package require crc32
 package require BWidget
 
@@ -12,6 +14,7 @@ package require de1_gui
 package require de1_binary
 package require de1_utils 
 package require de1_machine
+package require http 2.5
 
 
 ##############################
