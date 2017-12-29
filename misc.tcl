@@ -466,7 +466,13 @@ proc make_de1_dir {} {
         set manifest ""
         set files_copied 0
         
+        set filecnt 0
         foreach {file scope} $files {
+        	incr filecnt
+        	if {$filecnt > 10} {
+        		#break
+        	}
+
             set source "$srcdir/$file"
             set dest "$destdir/$file"
 
@@ -521,6 +527,6 @@ proc make_de1_dir {} {
 
 proc calc_sha {source} {
 
-	return [::crc::crc32 -filename $source]
-	#return [::sha2::sha256 -filename $source]
+	#return [::crc::crc32 -filename $source]
+	return [::sha2::sha256 -hex -filename $source]
 }

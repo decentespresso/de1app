@@ -1231,7 +1231,70 @@ proc decent_http_get {url {timeout 30000}} {
     return $body
 }
 
+
+
+proc percent20encode {in} {
+    set out $in
+    regsub -all " " $out "%20" out
+    #regsub -all "&" $out "%26" out
+    regsub -all {"} $out "%22" out
+    regsub -all {#} $out "%23" out
+    regsub -all {'} $out "%27" out
+    regsub -all {!} $out "%21" out
+    regsub -all {:} $out "%3A" out
+    regsub -all {;} $out "%3B" out
+    regsub -all {#} $out "%23" out
+    #regsub -all {=} $out "%3D" out
+    regsub -all {:} $out "%3A" out
+    regsub -all "\\?" $out "%3F" out
+    regsub -all {@} $out "%40" out
+    regsub -all {>} $out "%3E" out
+    regsub -all {/} $out "%2F" out
+    regsub -all {<} $out "%3C" out
+    regsub -all {\$} $out "%24" out
+    regsub -all {`} $out "%60" out
+    regsub -all {\[} $out "%5B" out
+    regsub -all {\]} $out "%5D" out
+    regsub -all {~} $out "%7E" out
+    regsub -all {\^} $out "%5E" out
+    regsub -all {\|} $out "%7C" out
+    regsub -all "," $out "%2C" out
+    regsub -all "\\)" $out "%29" out
+    regsub -all "\\(" $out "%28" out
+    
+    #puts "urlenc: '$in' / '$out'"
+    return $out
+}
+
+proc verify_decent_tls_certificate {} {
+    package require tls
+    set channel [tls::socket decentespresso.com 443]
+    tls::handshake $channel
+
+    set status [tls::status $channel]
+    close $channel
+    
+    array set status_array $status
+    set sha1 [ifexists status_array(sha1_hash)]
+    if {$sha1 == "CBA22B05D7D874275105AB3284E5F2CBE970603E"} {
+        return 1
+    }
+
+    # if the sha_1 hash on the certificate doesn't match what we expect, return the entire array of what we received from the https connection, optionally to display it to the user
+    return $status
+}
+
 proc start_app_update {} {
+
+    set cert_check [verify_decent_tls_certificate]
+    if {$cert_check != 1} {
+        puts "https certification is not what we expect, update failed"
+        foreach {k v} $cert_check {
+            puts "$k : '$v'"
+        }
+        return
+    }
+
     set host "http://10.0.1.200:8000"
 
     set progname "de1"
@@ -1267,18 +1330,32 @@ proc start_app_update {} {
         if {[ifexists data(filesha)] != $filesha} {
             # if the CRCs don't match, then we'll want to fetch this file
             set tofetch($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
-            puts "SHA256 mismatch '[ifexists data(filesha)]' != '$filesha' : will fetch: $filename"
+            #puts "SHA256 mismatch '[ifexists data(filesha)]' != '$filesha' : will fetch: $filename"
         }
     }
 
-    #puts "Files to fetch: [join [array names tofetch] {, }]"
+    set tmpdir "[homedir]/tmp"
+    file delete -force $tmpdir
+    file mkdir $tmpdir
 
+
+    foreach {k v} [array get tofetch] {
+        unset -nocomplain arr
+        array set arr $v
+        set fn "$tmpdir/$arr(filesha)"
+        set url "$host/download/sync/$progname/[percent20encode $k]"
+        write_file $fn [decent_http_get $url]
+        set newsha [calc_sha $fn]
+        puts "Fetched $k -> $fn ($url) - $arr(filesha) vs $newsha"
+
+    }
+    #puts "Files to fetch: [join [array names tofetch] {, }]"
 
 }
 
 
 
 proc calc_sha {source} {
-    return [::crc::crc32 -filename $source]
-    #return [::sha2::sha256 -filename $source]
+    #return [::crc::crc32 -filename $source]
+    return [::sha2::sha256 -hex -filename $source]
 }
