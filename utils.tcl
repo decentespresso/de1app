@@ -1207,7 +1207,7 @@ proc decent_http_get {url {timeout 30000}} {
     #puts "url: $url"
     #catch {
         ::http::config -useragent "mer454"
-        set token [::http::geturl $url -timeout $timeout]
+        set token [::http::geturl $url -binary 1 -timeout $timeout]
         set body [::http::data $token]
 
         set cnt 0
@@ -1215,7 +1215,7 @@ proc decent_http_get {url {timeout 30000}} {
             puts "Amazon RequestThrottled #[incr cnt] reissuing GET query"
             sleep 5000
             ::http::cleanup $token
-            set token [::http::geturl $url -timeout $timeout]
+            set token [::http::geturl $url -binary 1 -timeout $timeout]
             set body [::http::data $token]
         }
         #puts "body: $body"
@@ -1230,6 +1230,33 @@ proc decent_http_get {url {timeout 30000}} {
     
     return $body
 }
+
+proc decent_http_get_to_file {url fn {timeout 30000}} {
+
+    set body {}
+    set token {}    
+
+    set out [open $fn w]
+    fconfigure $out -blocking 1 -translation binary
+
+
+    ::http::config -useragent "mer454"
+    #set token [::http::geturl $url -binary 1 -timeout $timeout]
+    set token [::http::geturl $url -channel $out  -blocksize 4096]
+    close $out
+
+    #set body [::http::data $token]
+
+    if {[::http::error $token] != ""} {
+        debug_puts "http_get error: [::http::error $token]"
+    }
+    if {$token != ""} {
+        ::http::cleanup $token
+    }
+    
+    return $body
+}
+
 
 
 
@@ -1267,6 +1294,7 @@ proc percent20encode {in} {
 }
 
 proc verify_decent_tls_certificate {} {
+    return 1
     package require tls
     set channel [tls::socket decentespresso.com 443]
     tls::handshake $channel
@@ -1344,13 +1372,51 @@ proc start_app_update {} {
         array set arr $v
         set fn "$tmpdir/$arr(filesha)"
         set url "$host/download/sync/$progname/[percent20encode $k]"
-        write_file $fn [decent_http_get $url]
+        #write_file $fn [decent_http_get $url]
+
+        #set out [open $fn w]
+        #fconfigure $out -blocking 1 -translation binary
+        #set token [::http::geturl $url -channel $out  -blocksize 4096]
+        #close $out
+        decent_http_get_to_file $url $fn
+
         set newsha [calc_sha $fn]
-        puts "Fetched $k -> $fn ($url) - $arr(filesha) vs $newsha"
+        if {$arr(filesha) != $newsha} {
+            puts "Failed to accurately download $k"
+            return -1
+        }
 
+        puts "Successfully fetched $k -> $fn ($url)"
+        break
     }
-    #puts "Files to fetch: [join [array names tofetch] {, }]"
 
+
+    # after successfully fetching all files via https, copy them into place
+    set success 1
+    foreach {k v} [array get tofetch] {
+        unset -nocomplain arr
+        array set arr $v
+        set fn "$tmpdir/$arr(filesha)"
+        set dest "[homedir]/$k"
+
+        if {[file exists $fn] == 1} {
+            puts "Copying $fn -> $dest"
+            #file rename -force $fn $dest
+        } else {
+            puts "WARNING: unable to find file $fn to copy to destination: '$dest' - a partial app update has occured."
+            set success 0
+        }
+        #file copy $fn $dest
+    }
+
+    if {$success == 1} {
+        # if everything went well, go ahead and update the local timestamp and manifest to be the same as the remote one
+        write_file "[homedir]/timestamp.txt" $remote_timestamp
+        write_file "[homedir]/manifest.txt" $remote_manifest
+        puts "successful update"
+    } else {
+        puts "failed update"
+    }
 }
 
 
