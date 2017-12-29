@@ -1379,6 +1379,7 @@ proc start_app_update {} {
         #set token [::http::geturl $url -channel $out  -blocksize 4096]
         #close $out
         decent_http_get_to_file $url $fn
+        update
 
         set newsha [calc_sha $fn]
         if {$arr(filesha) != $newsha} {
@@ -1387,7 +1388,7 @@ proc start_app_update {} {
         }
 
         puts "Successfully fetched $k -> $fn ($url)"
-        break
+        #break
     }
 
 
@@ -1414,14 +1415,13 @@ proc start_app_update {} {
         write_file "[homedir]/timestamp.txt" $remote_timestamp
         write_file "[homedir]/manifest.txt" $remote_manifest
         puts "successful update"
+        return 1
     } else {
         puts "failed update"
+        return 0
     }
 }
 
-
-
 proc calc_sha {source} {
-    #return [::crc::crc32 -filename $source]
     return [::sha2::sha256 -hex -filename $source]
 }

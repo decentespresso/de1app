@@ -503,10 +503,11 @@ proc make_de1_dir {} {
                 continue
             } 
 
+            append manifest "\"$file\" [file size $source] $mtime $sha256\n"
+
             if {[file exists $dest] == 1} {
                 if {[file mtime $source] == [file mtime $dest]} {
                     # files are identical, do not copy		
-		            append manifest "\"$file\" [file size $source] [file mtime $source] $sha256\n"
                     continue
                 }
             } 
