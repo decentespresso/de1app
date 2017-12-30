@@ -1425,7 +1425,7 @@ proc start_app_update {} {
         if {$files_moved > 0} {
             set ::de1(app_update_button_label) [translate "Updated"]; 
         } else {
-            set ::de1(app_update_button_label) [translate "Current version"]; 
+            set ::de1(app_update_button_label) [translate "Up to date"]; 
         }
         return 1
     } else {
