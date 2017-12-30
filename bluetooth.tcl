@@ -350,6 +350,10 @@ proc app_exit {} {
 	after 10000 {exit}
 
 	catch {
+		ble stop $::ble_scanner
+	}
+	
+	catch {
 		msg "Closing de1"
 		if {$::de1(device_handle) != 0} {
 			ble close $::de1(device_handle)
@@ -364,13 +368,8 @@ proc app_exit {} {
 	}
 
 	catch {
-		ble stop $::ble_scanner
-	}
-	
-
-	catch {
-		#ble unpair $::de1(de1_address)
-		#ble unpair $::settings(bluetooth_address)
+		ble unpair $::de1(de1_address)
+		ble unpair $::settings(bluetooth_address)
 	}
 	exit
 }
@@ -572,6 +571,12 @@ proc ble_find_de1s {} {
 proc stop_scanner {} {
 
 	if {$::scanning == 0} {
+		return
+	}
+
+	if {$::de1(device_handle) == 0} {
+		# don't stop scanning if there is no DE1 connection
+		after 30000 stop_scanner
 		return
 	}
 

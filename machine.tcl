@@ -126,7 +126,7 @@ catch {
 #}
 
 array set ::settings {
-	default_language en
+	language en
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"

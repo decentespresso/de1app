@@ -144,15 +144,17 @@ proc pause {time} {
 proc language {} {
     global current_language
 
+    if {$::settings(language) != "--" && $::settings(language) != ""} {
+        return $::settings(language)
+    } 
+
+
     if {$::android != 1} {
-        # if not running on Android then use the setting in the 
-        return $::settings(default_language)
+        # on non-android OS, we don't know the system language so use english if nothing else is set
+        return "en"
     }
 
-    #catch {
-        #puts "current_language: '$current_language'"
-    #}
-    #set current_language "zh-hant"
+    # otherwise use the Android system language, if we can
 
     # the UI language for Decent Espresso is set as the UI language that Android is currently operating in
     if {[info exists current_language] == 0} {
@@ -167,23 +169,22 @@ proc language {} {
                 set current_language "zh-hans"
             }
         } elseif {$loc(language) == "ko"} {
-            # not sure why Androir deviates from KR standard for korean
+            # not sure why Android deviates from KR standard for korean
             set current_language "kr"
         }
-
-        #set current_language "fr"
-        #puts "current_language: '$current_language' [array get loc]"
 
     }
 
     return $current_language
-    #return "en"
-    #return "fr"
 }
 
-proc translation_langs {} {
-    return {fr de it es pt zh-hans zh-hant kr jp ar hu tr th da sv hu fi ro hi pl no sk gr}
+proc obsolete_translation_langs {} {
+    return {en fr de it es pt zh-hans zh-hant kr jp ar hu tr th da sv fi ro hi pl no sk el cs}
+}
 
+# from wikipedia https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
+proc translation_langs_array {} {
+    return {en English fr "français" de Deutsch it italiano es español pt português zh-hans "簡體" zh-hant "繁體" kr "한국어" jp "日本語" ar "العَرَبِيَّة" hu "magyar nyelv" tr "Türkçe" th "ภาษาไทย" da "dansk" sv "svenska" fi "suomen kieli" ro "limba română" hi "हिन्दी" pl "Język polski" no "Nynorsk" sk "slovenčina" el "Νέα Ελληνικά" cs "čeština"}
 }
 
 
@@ -196,6 +197,8 @@ proc translate {english} {
     if {[language] == "en"} {
         return $english
     }
+
+    #puts "lang: '[language]'"
 
     global translation
 
@@ -213,7 +216,7 @@ proc translate {english} {
     if {$::android != 1} {
         if {[info exists ::already_shown_trans($english)] != 1} {
             set t [subst {"$english" \{}]
-            foreach l [translation_langs] {
+            foreach {l d} [translation_langs_array] {
                 set translation($l) $english
                 append t [subst {$l "$english" }]
             }
@@ -417,7 +420,10 @@ proc setup_environment {} {
         #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
         font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
         font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
+        font create Helv_16_bold -family $helvetica_bold_font -size [expr {int($fontm * 27)}] 
+        font create Helv_17_bold -family $helvetica_bold_font -size [expr {int($fontm * 30)}] 
         font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 32)}] 
+        font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 34)}] 
         font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 36)}]
 
         #font create Sourcesans_30 -family "Source Sans Pro" -size 10
@@ -453,9 +459,6 @@ proc setup_environment {} {
         set screen_size_width 2048
         set screen_size_height 1536
 
-        set screen_size_width 1920
-        set screen_size_height 1200
-
         set screen_size_width 2560
         set screen_size_height 1600
 
@@ -479,6 +482,9 @@ proc setup_environment {} {
 
         set screen_size_width 1280
         set screen_size_height 800
+
+        set screen_size_width 1920
+        set screen_size_height 1200
 
 
         set fontm [expr {$screen_size_width / 1280.0}]
@@ -552,7 +558,10 @@ proc setup_environment {} {
         font create Helv_12_bold -family $boldfont -size [expr {int($fontm * 30)}]
         font create Helv_15 -family $regularfont -size [expr {int($fontm * 30)}]
         font create Helv_15_bold -family $boldfont -size [expr {int($fontm * 30)}]
+        font create Helv_16_bold -family $boldfont -size [expr {int($fontm * 33)}]
+        font create Helv_17_bold -family $boldfont -size [expr {int($fontm * 37)}]
         font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]
+        font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 43)}]
         font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 46)}]
         #font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 18)}]
     
@@ -688,6 +697,7 @@ proc defaultskin_directory_graphics {} {
     #set dir "[file dirname [info script]]/$skindir/default"
     return $dir
 }
+
 proc saver_directory {} {
     global saver_directory 
     if {[info exists saver_directory] != 1} {
@@ -1371,7 +1381,14 @@ proc start_app_update {} {
     file mkdir $tmpdir
 
 
+    set cnt 0
     foreach {k v} [array get tofetch] {
+
+        set perc [expr {100 * ($cnt / [array size tofetch])}]
+        incr cnt
+
+        set ::de1(app_update_button_label) "[round_to_integer $perc]%"; 
+
         unset -nocomplain arr
         array set arr $v
         set fn "$tmpdir/$arr(filesha)"
@@ -1395,6 +1412,7 @@ proc start_app_update {} {
     # after successfully fetching all files via https, copy them into place
     set success 1
     set files_moved 0
+    set graphics_were_updated 0
     foreach {k v} [array get tofetch] {
         unset -nocomplain arr
         array set arr $v
@@ -1410,6 +1428,13 @@ proc start_app_update {} {
             puts "Moving $fn -> $dest"
             file rename -force $fn $dest
             incr files_moved 
+
+            # keep track of whether any graphics were updated
+            set extension [file extension $dest]
+            if {$extension == ".png" || $extension == ".jpg"} {
+                set graphics_were_updated 1
+            }
+
         } else {
             puts "WARNING: unable to find file $fn to copy to destination: '$dest' - a partial app update has occured."
             set success 0
@@ -1418,7 +1443,37 @@ proc start_app_update {} {
     }
 
     if {$success == 1} {
+
         # if everything went well, go ahead and update the local timestamp and manifest to be the same as the remote one
+        if {$graphics_were_updated == 1} {
+            set this_resolution "${::screen_size_width}x${::screen_size_height}"
+            # if any graphics were updated, and this app is running at a nonstand resolution, then delete all cached local-resolution files, to force a remake of them all. 
+            # this is inefficient, as it would be better to only delete the related files, and that would be a good improvement in a future version
+            if {$this_resolution != "2560x1600" && $this_resolution != "1280x800"} {
+                set saver_directory "[homedir]/saver/${::screen_size_width}x${::screen_size_height}"
+                set splash_directory [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}"]
+                puts "deleting $saver_directory"
+                puts "deleting $splash_directory"
+
+                file delete -force $saver_directory
+                file delete -force $splash_directory
+
+                set skindirs [lsort -dictionary [glob -tails -directory "[homedir]/skins/" *]]
+                foreach d $skindirs {
+                    set thisskindir "[homedir]/skins/$d/$this_resolution/"
+                    puts "testing '$d' - '$thisskindir'"
+                    if {[file exists $thisskindir] == 1} {
+                        # skins are converted to this apps resolution only as needed, so only delete the existing dirs
+                        file delete -force $thisskindir
+                        puts "deleting $thisskindir"
+                    }
+                }
+            }
+
+        }
+
+
+        # ok, all done.
         write_file "[homedir]/timestamp.txt" $remote_timestamp
         write_file "[homedir]/manifest.txt" $remote_manifest
         puts "successful update"
@@ -1427,6 +1482,8 @@ proc start_app_update {} {
         } else {
             set ::de1(app_update_button_label) [translate "Up to date"]; 
         }
+
+
         return 1
     } else {
         set ::de1(app_update_button_label) [translate "Update failed"]; 

@@ -1096,10 +1096,13 @@ proc fill_skin_listbox {} {
 	#$widget itemconfigure $current_skin_number -foreground blue
 
 	$widget selection set $::current_skin_number
+
+
 	make_current_listbox_item_blue $widget
 	#puts "current_skin_number: $::current_skin_number"
 
 	preview_tablet_skin
+	$widget yview $::current_skin_number
 
 }
 
@@ -1259,6 +1262,8 @@ proc fill_profiles_listbox {} {
 	set ::globals(profiles_listbox) $widget
 	make_current_listbox_item_blue $widget 
 	preview_profile 
+
+	$widget yview $::current_profile_number
 }
 
 proc copy_pressure_profile_to_advanced_profile {} {
@@ -1393,7 +1398,36 @@ proc copy_flow_profile_to_advanced_profile {} {
 	}
 	#puts "adv: $::settings(advanced_shot)"
 	set ::current_step_number 0
+}
 
+proc fill_languages_listbox {} {
+
+	set widget $::languages_widget
+
+	$widget delete 0 99999
+	set cnt 0
+	set current_profile_number 0
+
+	# on android we can automatically detect the language from the OS setting, and this is the preferred way to go
+	$widget insert $cnt [translate Automatic]
+	incr cnt
+
+	set current 0
+
+	foreach {code desc} [translation_langs_array] {
+        #puts "$code $desc"
+
+		if {$::settings(language) == $code} {
+			set current $cnt
+		}
+		$widget insert $cnt "$desc"
+		incr cnt
+	}
+
+	$widget selection set $current;
+	make_current_listbox_item_blue $::languages_widget
+
+	$::languages_widget yview $current
 }
 
 proc fill_advanced_profile_steps_listbox {} {
@@ -1442,6 +1476,23 @@ proc check_for_multiple_listbox_events_bug {} {
 	}
 
 	return 0
+}
+
+proc load_language {} {
+	set stepnum [$::languages_widget curselection]
+	if {$stepnum == ""} {
+		return
+	}
+
+	if {$stepnum == 0} {
+		set ::settings(language) ""
+	} else {
+		set ::settings(language) [lindex [translation_langs_array] [expr {($stepnum * 2) - 2}] ]
+	}
+
+	make_current_listbox_item_blue $::languages_widget
+
+	#puts "lang '$::settings(language)' '$stepnum'"
 }
 
 proc load_advanced_profile_step {} {

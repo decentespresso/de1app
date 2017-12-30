@@ -550,6 +550,17 @@ add_de1_variable "settings_4" 960 100 -text "" -font Helv_10_bold -fill "#7f879a
 add_de1_text "settings_4" 1590 100 -text [translate "OTHER"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
 add_de1_text "settings_4" 2215 100 -text [translate "MACHINE"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
+
+add_de1_text "settings_3" 1890 790 -text [translate "Language"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_widget "settings_3" listbox 1890 868 { 
+	set ::languages_widget $widget
+	bind $widget <<ListboxSelect>> ::load_language
+	fill_languages_listbox
+
+} -background #fbfaff -font Helv_10 -bd 0 -height 7 -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+
+
+
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
 #fill_skin_listbox; 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::active_settings_tab "settings_1"} 0 0 641 188
@@ -558,7 +569,7 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::active_settings_tab "settings_4"} 1905 0 2560 188
 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; 
-		if {[array_item_difference ::settings ::settings_backup "bluetooth_address skale_bluetooth_address skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1 } {
+		if {[array_item_difference ::settings ::settings_backup "bluetooth_address skale_bluetooth_address language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1 } {
 			.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 			set_next_page off message; page_show message
 		} else {
@@ -599,5 +610,5 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off settings_4
+#set_next_page off settings_3
 
