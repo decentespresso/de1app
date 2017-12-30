@@ -143,10 +143,10 @@ proc pause {time} {
 
 proc language {} {
     global current_language
-#return "en"
+
     if {$::android != 1} {
-        #return "sk"
-        return en
+        # if not running on Android then use the setting in the 
+        return $::settings(default_language)
     }
 
     #catch {
