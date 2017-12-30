@@ -341,7 +341,7 @@ add_de1_button "settings_4" {say [translate {descale}] $::settings(sound_button_
 add_de1_button "settings_4" {start_firmware_update} 1930 460 2550 600
 
 # app update
-add_de1_button "settings_4" {start_app_update} 1300 1206 1900 1406
+add_de1_button "settings_4" {set ::de1(app_update_button_label) [translate "Updating"]; start_app_update} 1300 1206 1900 1406
 
 # firmware reset
 #add_de1_button "settings_4" {} 640 890 1260 1080

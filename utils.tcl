@@ -10,11 +10,11 @@ proc homedir {} {
 }
 
 proc reverse_array {arrname} {
-	upvar $arrname arr
-	foreach {k v} [array get arr] {
-		set newarr($v) $k
-	}
-	return [array get newarr]
+    upvar $arrname arr
+    foreach {k v} [array get arr] {
+        set newarr($v) $k
+    }
+    return [array get newarr]
 }
 
 proc stacktrace {} {
@@ -242,6 +242,7 @@ set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_LAYOUT_STABLE | $SYSTEM_U
 
 #set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_IMMERSIVE}]
 #set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY}]
+    set android 0
 
 proc setup_environment {} {
     #puts "setup_environment"
@@ -249,7 +250,6 @@ proc setup_environment {} {
     global screen_size_height
     global fontm
     global android
-    set android 0
     catch {
         package require ble
         set android 1
@@ -1044,7 +1044,7 @@ proc skin_convert {indir} {
             if {[file extension $skinfile] == ".png"} {
                 catch {
                     #-format png8
-                	exec convert $skinfile -strip -resize $dir!   ../$dir/$skinfile 
+                    exec convert $skinfile -strip -resize $dir!   ../$dir/$skinfile 
                     
                     # additional optional PNG compression step 
                     exec zopflipng -q --iterations=1 -y   ../$dir/$skinfile   ../$dir/$skinfile 
@@ -1053,12 +1053,12 @@ proc skin_convert {indir} {
             } else {
 
                 catch {
-                	exec convert $skinfile -resize $dir!  -quality 90 ../$dir/$skinfile 
+                    exec convert $skinfile -resize $dir!  -quality 90 ../$dir/$skinfile 
                 }
                 if {$skinfile == "icon.jpg"} {
                     # icon files are reduced to 25% of the screen resolution
                     #catch {
-                    	exec convert ../$dir/$skinfile -resize 25%  ../$dir/$skinfile 
+                        exec convert ../$dir/$skinfile -resize 25%  ../$dir/$skinfile 
                     #}
                 }
             }
@@ -1336,6 +1336,8 @@ proc start_app_update {} {
     set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
     if {$local_timestamp == $remote_timestamp} {
         puts "Local timestamp is the same as remote timestamp, so no need to update"
+        
+        # we can return at this point, if we're very confident that the sync is correct
         #return
     }
 
@@ -1346,17 +1348,19 @@ proc start_app_update {} {
 
     # load the local manifest into memory
     foreach {filename filesize filemtime filesha} $local_manifest {
+        set filesize 0
+        catch {
+            set filesize [file size "[homedir]/$filename"]
+        }
         set lmanifest($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
-        #puts "$filename [list filesize $filesize filemtime $filemtime filesha $filesha]"
     }
-    #return
 
     # compare the local vs remote manifest
     foreach {filename filesize filemtime filesha} $remote_manifest {
         array unset -complain data
         array set data [ifexists lmanifest($filename)]
-        if {[ifexists data(filesha)] != $filesha} {
-            # if the CRCs don't match, then we'll want to fetch this file
+        if {[ifexists data(filesha)] != $filesha || [ifexists data(filesize)] != $filesize} {
+            # if the CRCs or file size don't match, then we'll want to fetch this file
             set tofetch($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
             #puts "SHA256 mismatch '[ifexists data(filesha)]' != '$filesha' : will fetch: $filename"
         }
@@ -1372,13 +1376,9 @@ proc start_app_update {} {
         array set arr $v
         set fn "$tmpdir/$arr(filesha)"
         set url "$host/download/sync/$progname/[percent20encode $k]"
-        #write_file $fn [decent_http_get $url]
-
-        #set out [open $fn w]
-        #fconfigure $out -blocking 1 -translation binary
-        #set token [::http::geturl $url -channel $out  -blocksize 4096]
-        #close $out
         decent_http_get_to_file $url $fn
+
+        # call 'update' to keep the gui responsive
         update
 
         set newsha [calc_sha $fn]
@@ -1394,6 +1394,7 @@ proc start_app_update {} {
 
     # after successfully fetching all files via https, copy them into place
     set success 1
+    set files_moved 0
     foreach {k v} [array get tofetch] {
         unset -nocomplain arr
         array set arr $v
@@ -1401,8 +1402,14 @@ proc start_app_update {} {
         set dest "[homedir]/$k"
 
         if {[file exists $fn] == 1} {
-            puts "Copying $fn -> $dest"
-            #file rename -force $fn $dest
+            set dirname [file dirname $dest]
+            if {[file exists $dirname] != 1} {
+                puts "Making non-existing directory: '$dirname'"
+                file mkdir -force $dirname
+            }
+            puts "Moving $fn -> $dest"
+            file rename -force $fn $dest
+            incr files_moved 
         } else {
             puts "WARNING: unable to find file $fn to copy to destination: '$dest' - a partial app update has occured."
             set success 0
@@ -1415,8 +1422,14 @@ proc start_app_update {} {
         write_file "[homedir]/timestamp.txt" $remote_timestamp
         write_file "[homedir]/manifest.txt" $remote_manifest
         puts "successful update"
+        if {$files_moved > 0} {
+            set ::de1(app_update_button_label) [translate "Updated"]; 
+        } else {
+            set ::de1(app_update_button_label) [translate "Current version"]; 
+        }
         return 1
     } else {
+        set ::de1(app_update_button_label) [translate "Update failed"]; 
         puts "failed update"
         return 0
     }
@@ -1425,3 +1438,4 @@ proc start_app_update {} {
 proc calc_sha {source} {
     return [::sha2::sha256 -hex -filename $source]
 }
+

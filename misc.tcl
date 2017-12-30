@@ -60,6 +60,7 @@ proc make_de1_dir {} {
         de1plus_icon_v2.png 1
         create_de1_icon.tcl 0
         create_de1plus_icon.tcl 1
+        appupdate.tcl *
 
         history/info.txt *
         fw/bootfwupdate.dat *
@@ -447,9 +448,9 @@ proc make_de1_dir {} {
     set srcdir "/d/admin/code/de1beta"
     set destdirs [list "/d/download/sync/de1" "/d/download/sync/de1plus"]
 
-    # load the local manifest into memory
+    # load the local manifest into memory 
     foreach {filename filesize filemtime filesha} [string trim [read_file "[homedir]/complete_manifest.txt"]] {
-    	#puts "$filename $filecrc"
+        #puts "$filename $filecrc"
         set lmanifest_mtime($filename) $filemtime
         set lmanifest_sha($filename) $filesha
     }
@@ -468,10 +469,10 @@ proc make_de1_dir {} {
         
         set filecnt 0
         foreach {file scope} $files {
-        	incr filecnt
-        	if {$filecnt > 10} {
-        		#break
-        	}
+            incr filecnt
+            if {$filecnt > 10} {
+                #break
+            }
 
             set source "$srcdir/$file"
             set dest "$destdir/$file"
@@ -480,13 +481,13 @@ proc make_de1_dir {} {
             set mtime_saved [ifexists lmanifest_mtime($file)]
 
             if {([info exists lmanifest_sha($file)] == 1) && ($mtime ==  $mtime_saved)} {
-            	set sha256 $lmanifest_sha($file)
-        	} else {
-        		puts "Calculating SHA256 for $source"
-        		set sha256 [calc_sha $source]
-        		set lmanifest_sha($file) $sha256
-        		set lmanifest_mtime($file) $mtime
-        	}
+                set sha256 $lmanifest_sha($file)
+            } else {
+                puts "Calculating SHA256 for $source"
+                set sha256 [calc_sha $source]
+                set lmanifest_sha($file) $sha256
+                set lmanifest_mtime($file) $mtime
+            }
 
             lappend complete_manifest "\"$file\" [file size $source] [file mtime $source] $sha256"
 
@@ -507,7 +508,7 @@ proc make_de1_dir {} {
 
             if {[file exists $dest] == 1} {
                 if {[file mtime $source] == [file mtime $dest]} {
-                    # files are identical, do not copy		
+                    # files are identical, do not copy      
                     continue
                 }
             } 
@@ -517,17 +518,17 @@ proc make_de1_dir {} {
             set files_copied 1
         }
 
-    	write_file "$destdir/timestamp.txt" $timestamp
+        write_file "$destdir/timestamp.txt" $timestamp
         write_file "$destdir/manifest.txt" $manifest 
         incr dircount
     }
 
     write_file "$srcdir/complete_manifest.txt" [join [lsort -unique $complete_manifest] \n]
-
 }
 
 proc calc_sha {source} {
 
-	#return [::crc::crc32 -filename $source]
-	return [::sha2::sha256 -hex -filename $source]
+    #return [::crc::crc32 -filename $source]
+    return [::sha2::sha256 -hex -filename $source]
 }
+
