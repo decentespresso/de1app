@@ -1333,7 +1333,8 @@ proc start_app_update {} {
         return
     }
 
-    set host "http://10.0.1.200:8000"
+    #set host "http://10.0.1.200:8000"
+    set host "https://decentespresso.com"
 
     set progname "de1"
     if {[de1plus] == 1} {
