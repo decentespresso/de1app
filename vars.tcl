@@ -47,7 +47,7 @@ proc clear_espresso_chart {} {
 
 	catch {
 		# update the Y axis on the temperature chart, each time that we make an espresso, in case the goal temperature changed
-		update_temperature_charts_y_axis
+		#update_temperature_charts_y_axis
 	}
 
 	############################################################################################################

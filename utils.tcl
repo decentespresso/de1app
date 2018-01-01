@@ -345,7 +345,7 @@ proc setup_environment {} {
 
         if {$::undroid == 1} {
             # undroid does not resize fonts appropriately for the current resolution
-            set fontm [expr {$screen_size_width / 1280.0}]
+            set fontm [expr {($screen_size_width / 1024.0)}]
             set ::fontw 2
         }
 
@@ -850,34 +850,65 @@ proc say {txt sndnum} {
 
 
 proc fast_write_open {fn parms} {
-    set f [open $fn $parms]
-    fconfigure $f -blocking 0
-    fconfigure $f -buffersize 1000000
+    set success 0
+    set f 0
+    set errcode [catch {
+        set f [open $fn $parms]
+        fconfigure $f -blocking 0
+        fconfigure $f -buffersize 1000000
+        set success 1
+    }]
+
+    if {$errcode != 0} {
+        msg "fast_write_open $::errorInfo"
+    }
+
     return $f
+    #return ""
 }
 
 proc write_file {filename data} {
-    set fn [fast_write_open $filename w]
-    puts $fn $data 
-    close $fn
-    return 1
+    set success 0
+    set errcode [catch {
+        set fn [fast_write_open $filename w]
+        puts $fn $data 
+        close $fn
+        set success 1
+    }]
+
+    if {$errcode != 0} {
+        msg "write_file '$filename' $::errorInfo"
+    }
+
+    return $success
 }
 
 proc read_file {filename} {
     set data ""
-    catch {
+    set errcode [catch {
         set fn [open $filename]
         set data [read $fn]
         close $fn
+    }]
+
+    if {$errcode != 0} {
+        msg "read_file $::errorInfo"
     }
     return $data
 }
 
 proc append_file {filename data} {
-    set fn [open $filename a]
-    puts $fn $data 
-    close $fn
-    return 1
+    set success 0
+    set errcode [catch {
+        set fn [open $filename a]
+        puts $fn $data 
+        close $fn
+        set success 1
+    }]
+    if {$errcode != 0} {
+        msg "append_file $::errorInfo"
+    }
+    return $success
 }
 
 
@@ -1399,7 +1430,10 @@ proc start_app_update {} {
         array set arr $v
         set fn "$tmpdir/$arr(filesha)"
         set url "$host/download/sync/$progname/[percent20encode $k]"
-        decent_http_get_to_file $url $fn
+        
+        catch {
+            decent_http_get_to_file $url $fn
+        }
 
         # call 'update' to keep the gui responsive
         update
