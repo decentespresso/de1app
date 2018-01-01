@@ -1,5 +1,6 @@
 #!/usr/local/bin/tclsh
 
+package require msgcat 1.6
 package require img::jpeg
 package require snit
 package require sha256
