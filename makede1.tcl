@@ -15,4 +15,4 @@ skin_convert_all
 make_de1_dir
 
 cd "[homedir]/desktop_app/osx"
-exec zip -u -x CVS -x .DS_Store -r /d/download/desktop/osx/DE1PLUS.zip DE1+.app
+exec zip -u -x CVS --exclude="*.DS_Store*" --exclude="*CVS*" -r /d/download/desktop/osx/DE1PLUS.zip DE1+.app
