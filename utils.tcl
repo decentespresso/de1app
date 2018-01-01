@@ -245,7 +245,6 @@ set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_LAYOUT_STABLE | $SYSTEM_U
 
 #set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_IMMERSIVE}]
 #set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY}]
-    set android 0
 
 proc setup_environment {} {
     #puts "setup_environment"
@@ -253,17 +252,21 @@ proc setup_environment {} {
     global screen_size_height
     global fontm
     global android
-    catch {
-        package require ble
-        set android 1
-    }
+    global undroid
 
     #puts "android: $android"
+    #puts "undroid: $undroid"
+    #set undroid 1
+    #set android 1
 
-    if {$android == 1} {
-        package require BLT
-        namespace import blt::*
-        namespace import -force blt::tile::*
+    #wm attributes . -fullscreen 1
+
+    if {$android == 1 || $undroid == 1} {
+        #package require BLT
+        #namespace import blt::*
+        #namespace import -force blt::tile::*
+
+
 
         #borg systemui 0x1E02
         #borg brightness 0
@@ -276,14 +279,17 @@ proc setup_environment {} {
             borg screenorientation landscape
         }
 
-        wm attributes . -fullscreen 1
+        #wm attributes . -fullscreen 1
         sdltk screensaver off
         
         # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
-        pause 200
+        if {$android == 1} {
+            pause 200
+        }
 
         set width [winfo screenwidth .]
         set height [winfo screenheight .]
+
 
         # sets immersive mode
         #set fontm 1
@@ -333,21 +339,21 @@ proc setup_environment {} {
             set screen_size_height 720
         }
 
+        # Android seems to automatically resize fonts appropriately to the current resolution
+        set fontm .5
+        set ::fontw 1
+
+        if {$::undroid == 1} {
+            # undroid does not resize fonts appropriately for the current resolution
+            set fontm [expr {$screen_size_width / 1280.0}]
+            set ::fontw 2
+        }
+
+
         if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
             set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
             set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
         }
-
-        #set fontm [expr {$screen_size_width / 1280.0}]
-        #set fontm [expr {1280.0 / ($screen_size_width)}]
-        set fontm .5
-        set ::fontw 1
-        #set fontm [expr {2560.0 / $screen_size_width}]
-        #set fontm 1
-
-        #set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
-        #set helvetica_bold_font [sdltk addfont "fonts/helvetica-neue-bold.ttf"]
-        #set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
 
         global helvetica_bold_font
         global helvetica_font
@@ -382,24 +388,6 @@ proc setup_environment {} {
         }
 
 
-
-        #set helvetica_font $helvetica_bold_font
-        #puts "helvetica_font: $helvetica_font : fontm: $fontm"
-        #puts "helvetica_bold_font: $helvetica_bold_font"
-        #puts "1c"
-
-        #set helvetica_font [sdltk addfont "fonts/HelveticaNeueHv.ttf"]
-        #set helvetica_font [sdltk addfont "fonts/HelveticaNeue Light.ttf"]
-        
-        #set helvetica_bold_font [sdltk addfont "fonts/SourceSansPro-Bold.ttf"]
-
-        #set helvetica_bold_font [sdltk addfont "fonts/HelveticaNeueBd.ttf"]
-        #set helvetica_bold_font [sdltk addfont "fonts/HelveticaNeueHv.ttf"]
-
-        #set helvetica_bold_font2 [sdltk addfont "fonts/SourceSansPro-Semibold.ttf"]
-        #puts "helvetica_bold_font: $helvetica_bold_font2"
-        #set sourcesans_font [sdltk addfont "fonts/SourceSansPro-Regular.ttf"]
-
         font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
         font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
         font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 19)}] 
@@ -407,7 +395,6 @@ proc setup_environment {} {
         font create Helv_1 -family $helvetica_font -size 1
         font create Helv_4 -family $helvetica_font -size [expr {int($fontm * 8)}]
         font create Helv_5 -family $helvetica_font -size [expr {int($fontm * 10)}]
-        #font create Helv_7 -family $helvetica_font -size 7
         font create Helv_6 -family $helvetica_font -size [expr {int($fontm * 12)}]
         font create Helv_6_bold -family $helvetica_bold_font -size [expr {int($fontm * 12)}]
         font create Helv_7 -family $helvetica_font -size [expr {int($fontm * 14)}]
@@ -417,7 +404,6 @@ proc setup_environment {} {
         
         font create Helv_9 -family $helvetica_font -size [expr {int($fontm * 18)}]
         font create Helv_9_bold -family $helvetica_bold_font -size [expr {int($fontm * 18)}] 
-        #font create Helv_10_bold -family "Source Sans Pro" -size 10 -weight bold
         font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
         font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
         font create Helv_16_bold -family $helvetica_bold_font -size [expr {int($fontm * 27)}] 
@@ -426,12 +412,10 @@ proc setup_environment {} {
         font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 34)}] 
         font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 36)}]
 
-        #font create Sourcesans_30 -family "Source Sans Pro" -size 10
-        #font create Sourcesans_20 -family "Source Sans Pro" -size 6
-
         sdltk touchtranslate 0
         wm maxsize . $screen_size_width $screen_size_height
         wm minsize . $screen_size_width $screen_size_height
+        wm attributes . -fullscreen 1
 
         if {$::settings(flight_mode_enable) == 1 && [de1plus] } {
             if {[package require de1plus] > 1} {
@@ -462,9 +446,6 @@ proc setup_environment {} {
         set screen_size_width 2560
         set screen_size_height 1600
 
-        set screen_size_width 640
-        set screen_size_height 480
-
         set screen_size_width 1920
         set screen_size_height 1080
 
@@ -480,12 +461,17 @@ proc setup_environment {} {
         set screen_size_width 1920
         set screen_size_height 1200
 
-        set screen_size_width 1280
-        set screen_size_height 800
-
         set screen_size_width 1920
         set screen_size_height 1200
 
+        set screen_size_width 1280
+        set screen_size_height 800
+
+        #set screen_size_width 640
+        #set screen_size_height 400
+
+        #set screen_size_width 960 
+        #set screen_size_height 600
 
         set fontm [expr {$screen_size_width / 1280.0}]
         #puts "fontm: $fontm"
@@ -536,8 +522,21 @@ proc setup_environment {} {
         }
 
 
+
         #   puts "setarting up with langage: [language]"
         set ::helvetica_font $regularfont
+
+        #catch {
+            # this will only work if we're running under undroidwish
+            #set regularfont [sdltk addfont "fonts/notosansuiregular.ttf"]
+            #puts "helvetica_font: $helvetica_font"
+            #set boldfont [sdltk addfont "fonts/notosansuibold.ttf"]
+
+            #sdltk touchtranslate 0
+            #wm maxsize . $screen_size_width $screen_size_height
+            #wm minsize . $screen_size_width $screen_size_height
+
+        #}
 
         font create Helv_1 -family $regularfont -size 1
         font create Helv_4 -family $regularfont -size 10
@@ -569,16 +568,7 @@ proc setup_environment {} {
         #font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
 
         #proc send_de1_shot_and_steam_settings {} {}
-        proc ble {args} { puts "    ble $args"; return 1 }
-        proc borg {args} { 
-            if {[lindex $args 0] == "locale"} {
-                return [list "language" "en"]
-            } elseif {[lindex $args 0] == "log"} {
-                # do nothing
-            } else {
-                #puts "borg $args"
-            }
-        }
+        android_specific_stubs
 
         #proc save_settings_to_de1 {} {}
         #proc de1_send_steam_hotwater_settings {} {}
@@ -632,6 +622,21 @@ proc skin_directory {} {
     return $dir
 }
 
+proc android_specific_stubs {} {
+
+    proc ble {args} { puts "    ble $args"; return 1 }
+    proc borg {args} { 
+        if {[lindex $args 0] == "locale"} {
+            return [list "language" "en"]
+        } elseif {[lindex $args 0] == "log"} {
+            # do nothing
+        } else {
+            #puts "borg $args"
+        }
+    }
+
+
+}
 
 
 proc settings_directory_graphics {} {
@@ -1104,7 +1109,7 @@ proc load_font {name fn pcsize {androidsize {}} } {
  
     if {[language] == "zh-hant" || [language] == "zh-hans"} {
 
-        if {$::android == 1} {
+        if {$::android == 1 || $::undroid == 1} {
             font create $name -family $::helvetica_font -size [expr {int(1.0 * $::fontm * $androidsize)}]
         } else {
             font create "$name" -family $::helvetica_font -size [expr {int(1.0 * $pcsize * $::fontm)}]
@@ -1113,7 +1118,7 @@ proc load_font {name fn pcsize {androidsize {}} } {
         return
     } elseif {[language] == "th"} {
 
-        if {$::android == 1} {
+        if {$::android == 1 || $::undroid == 1} {
             if {[info exists ::thai_fontname] != 1} {
                 set fn "[homedir]/fonts/sarabun.ttf"
                 set ::thai_fontname  [sdltk addfont $fn]
@@ -1126,7 +1131,7 @@ proc load_font {name fn pcsize {androidsize {}} } {
         return
     } else {
         #puts "$::android load_font $name '$fn' $size : fontm: $::fontm"
-        if {$::android == 1} {
+        if {$::android == 1 || $::undroid == 1} {
             #puts "sdltk addfont '$fn'"
             set result ""
             catch {

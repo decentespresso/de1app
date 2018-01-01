@@ -97,12 +97,31 @@ if {[de1plus]} {
 	set ::de1(maxpressure) 12 
 }
 
-catch {
-	package require tkblt
-}
+set android 0
+set undroid 0
+
 catch {
 	package require BLT
+    namespace import blt::*
+    namespace import -force blt::tile::*
+
+    #sdltk android
+    set undroid 1
+
+    package require ble
+    set undroid 0
+    set android 1
 }
+
+if {$android == 0 && $undroid == 0} {
+	package require tkblt
+}
+
+if {$android == 0 || $undroid == 1} {
+	# no 'borg' or 'ble' commands, so emulate
+    android_specific_stubs
+}
+
 
 #namespace import blt::*
 #namespace import -force blt::tile::*

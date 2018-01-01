@@ -13,3 +13,6 @@ package require de1_gui
 
 skin_convert_all
 make_de1_dir
+
+cd "[homedir]/desktop_app/osx"
+exec zip -u -r /d/download/desktop/osx/DE1PLUS.zip .
