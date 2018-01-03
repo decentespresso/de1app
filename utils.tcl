@@ -184,7 +184,32 @@ proc obsolete_translation_langs {} {
 
 # from wikipedia https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
 proc translation_langs_array {} {
-    return {en English fr "français" de Deutsch it italiano es español pt português zh-hans "簡體" zh-hant "繁體" kr "한국어" jp "日本語" ar "العَرَبِيَّة" hu "magyar nyelv" tr "Türkçe" th "ภาษาไทย" da "dansk" sv "svenska" fi "suomen kieli" ro "limba română" hi "हिन्दी" pl "Język polski" no "Nynorsk" sk "slovenčina" el "Νέα Ελληνικά" cs "čeština"}
+    return [list \
+        en English \
+        kr "한국어" \
+        fr [encoding convertfrom utf-8 "français"] \
+        de Deutsch \
+        it italiano \
+        da "dansk" \
+        sv "svenska" \
+        no "Nynorsk" \
+        es [encoding convertfrom utf-8 "español"] \
+        pt [encoding convertfrom utf-8 "português"] \
+        pl "Język polski" \
+        fi "suomen kieli" \
+        zh-hans "簡體" \
+        zh-hant "繁體" \
+        th "ภาษาไทย" \
+        jp "日本語" \
+        el "Νέα Ελληνικά" \
+        sk "slovenčina" \
+        cs "čeština" \
+        hu "magyar nyelv" \
+        tr [encoding convertfrom utf-8 "Türkçe"] \
+        ro [encoding convertfrom utf-8 "limba română"] \
+        ar "العَرَبِيَّة" \
+        hi "हिन्दी" \
+    ]
 }
 
 
@@ -208,6 +233,8 @@ proc translate {english} {
         if {[info exists available([language])] == 1} {
             # this word has been translated into the desired non-english language
             #puts "$available([language])"
+
+            #puts "translate: '[encoding convertfrom $available([language])]'"
             return $available([language])
         }
     } 
@@ -360,33 +387,25 @@ proc setup_environment {} {
 
         #puts "setting up fonts for language [language]"
         if {[language] == "th"} {
-            #set regularfont "sarabun"
-            #set boldfont "sarabunbold"
             set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
-            #puts "helvetica_font: $helvetica_font"
             set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
             set fontm [expr {($fontm * 1.2)}]
-        #set fontm [expr {($fontm * 1.20)}]
+            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
         } elseif {[language] == "zh-hant" || [language] == "zh-hans" || [language] == "kr"} {
-            #set helvetica_font [sdltk addfont "fonts/DroidSansFallbackFull.ttf"]
-            #set helvetica_font [sdltk addfont "fonts/cwTeXQHei-Bold.ttf"]
-            
             set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-            #NotoSansCJKjp-Bold
-            #puts "helvetica_font: $helvetica_font"
-            #set helvetica_font [sdltk addfont "fonts/wts11.ttf"]
             set helvetica_bold_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Bold.otf"] 0]
+            set global_font_name $helvetica_font
 
             set fontm [expr {($fontm * .95)}]
-            #puts "loading asian otf font"
-            #set fontm [expr {($fontm * -)}]
-            #set fontm 3
         } else {
+            # we use the immense google font so that we can handle virtually all of the world's languages with consistency
             set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
-            #puts "helvetica_font: $helvetica_font"
             set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
-        }
+            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+        }            
 
+
+        font create global_font -family $global_font_name -size [expr {int($fontm * 16)}] 
 
         font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
         font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
@@ -510,6 +529,10 @@ proc setup_environment {} {
 
         set regularfont "notosansuiregular"
         set boldfont "notosansuibold"
+        #set ::global_font "Noto Sans CJK JP Regular"
+
+        #set regularfont "Noto Sans CJK JP Regular"
+        #set boldfont "Noto Sans CJK JP Bold"
 
         if {[language] == "th"} {
             set regularfont "sarabun"
@@ -562,6 +585,13 @@ proc setup_environment {} {
         font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]
         font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 43)}]
         font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 46)}]
+
+
+        #set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+        font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 
+
+        #set ::global_font "Helv_10"
+        
         #font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 18)}]
     
         #font create Sourcesans_30 -family {Source Sans Pro Bold} -size 50
@@ -887,6 +917,8 @@ proc read_file {filename} {
     set data ""
     set errcode [catch {
         set fn [open $filename]
+            fconfigure $fn -translation binary
+
         set data [read $fn]
         close $fn
     }]
@@ -1340,7 +1372,10 @@ proc percent20encode {in} {
 }
 
 proc verify_decent_tls_certificate {} {
+    
+    # disabled for now until release, but does currently work
     return 1
+
     package require tls
     set channel [tls::socket decentespresso.com 443]
     tls::handshake $channel
@@ -1369,8 +1404,13 @@ proc start_app_update {} {
         return
     }
 
-    #set host "http://10.0.1.200:8000"
-    set host "https://decentespresso.com"
+    #set host "https://decentespresso.com"
+    set host "http://10.0.1.200:8000"
+
+    if {$undroid == 1} {
+        # undroid doesn't yet support https
+        set host "http://decentespresso.com"
+    }
 
     set progname "de1"
     if {[de1plus] == 1} {
@@ -1421,10 +1461,13 @@ proc start_app_update {} {
     set cnt 0
     foreach {k v} [array get tofetch] {
 
-        set perc [expr {100 * ($cnt / [array size tofetch])}]
+        set perc [expr {100.0 * ($cnt / [array size tofetch])}]
         incr cnt
 
-        set ::de1(app_update_button_label) "[round_to_integer $perc]%"; 
+        #set ::de1(app_update_button_label) "[round_to_integer $perc]%"; 
+        set ::de1(app_update_button_label) "$cnt/[array size tofetch]"; 
+        catch { update_onscreen_variables }
+        update
 
         unset -nocomplain arr
         array set arr $v
@@ -1436,7 +1479,6 @@ proc start_app_update {} {
         }
 
         # call 'update' to keep the gui responsive
-        update
 
         set newsha [calc_sha $fn]
         if {$arr(filesha) != $newsha} {
@@ -1448,6 +1490,9 @@ proc start_app_update {} {
         #break
     }
 
+    set ::de1(app_update_button_label) [translate WAIT]
+    catch { update_onscreen_variables }
+    update
 
     # after successfully fetching all files via https, copy them into place
     set success 1
@@ -1486,6 +1531,13 @@ proc start_app_update {} {
 
         # if everything went well, go ahead and update the local timestamp and manifest to be the same as the remote one
         if {$graphics_were_updated == 1} {
+
+            if {[ifexists ::screen_size_width] != 1} {
+                # if we're not running this proc inside the gui, then we don't have resolution info
+                set ::screen_size_width 1280
+                set ::screen_size_height 800
+            }
+
             set this_resolution "${::screen_size_width}x${::screen_size_height}"
             # if any graphics were updated, and this app is running at a nonstand resolution, then delete all cached local-resolution files, to force a remake of them all. 
             # this is inefficient, as it would be better to only delete the related files, and that would be a good improvement in a future version

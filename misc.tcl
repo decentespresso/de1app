@@ -43,6 +43,10 @@ proc make_de1_dir {} {
 
     }
 
+        #fonts/NotoSansCJKjp-DemiLight.otf *
+        #fonts/NotoSansCJKjp-Thin.otf *
+        #fonts/NotoSansCJKjp-Medium.otf *
+
     set files {
         binary.tcl *
         bluetooth.tcl *

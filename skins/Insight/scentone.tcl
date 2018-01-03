@@ -151,17 +151,17 @@ if {$::settings(has_refractometer) == 1 || $::settings(has_scale) == 1} {
 
 	if {$::settings(has_scale) == 1} {
 		add_de1_text "describe_espresso" 1630 440 -text [translate "Weight:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-		add_de1_widget "describe_espresso" scale 1630 490 {} -to 60 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 150] -variable ::settings(drink_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "describe_espresso" scale 1630 500 {} -to 60 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 140] -variable ::settings(drink_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "describe_espresso" 2480 640 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(drink_weight)]}
 	}
 
 	if {$::settings(has_refractometer) == 1} {
 		add_de1_text "describe_espresso" 1630 670 -text [translate "TDS:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-		add_de1_widget "describe_espresso" scale 1630 720 {} -to 14 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 150] -variable ::settings(drink_tds) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "describe_espresso" scale 1630 730 {} -to 14 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 140] -variable ::settings(drink_tds) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "describe_espresso" 2480 870 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_tds)]}
 
 		add_de1_text "describe_espresso" 1630 900 -text [translate "EY:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-		add_de1_widget "describe_espresso" scale 1630 950 {} -to 24 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 150] -variable ::settings(drink_ey) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "describe_espresso" scale 1630 960 {} -to 24 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 0.1 -length [rescale_x_skin 850]  -width [rescale_y_skin 140] -variable ::settings(drink_ey) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "describe_espresso" 2480 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_ey)]}
 	}
 

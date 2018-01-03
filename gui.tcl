@@ -953,9 +953,13 @@ proc set_next_page {machinepage guipage} {
 	set ::nextpage($key) $guipage
 }
 
-proc show_settings {} {
+proc show_settings { {tab_to_show ""} } {
 	backup_settings; 
-	page_to_show_when_off $::active_settings_tab
+	if {$tab_to_show == ""} {
+		page_to_show_when_off $::active_settings_tab
+	} else {
+		page_to_show_when_off $tab_to_show
+	}
 	scheduler_feature_hide_show_refresh
 	preview_profile 
 }

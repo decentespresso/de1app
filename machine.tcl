@@ -150,6 +150,7 @@ array set ::settings {
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"
 	water_refill_point 2
+	insight_skin_show_embedded_profile 0
 	flying 0
 	bean_notes {}
 	espresso_notes {}
@@ -343,8 +344,7 @@ array set ::de1_substate_types {
 }
 array set ::de1_substate_types_reversed [reverse_array ::de1_substate_types]
 
-array set translation [read_file "[homedir]/translation.tcl"]
-
+array set translation [encoding convertfrom utf-8 [read_file "[homedir]/translation.tcl"]]
 
 proc de1_substate_text {} {
 	set num $::de1(substate)

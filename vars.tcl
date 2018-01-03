@@ -101,11 +101,11 @@ proc espresso_frame_title {num} {
 
 proc espresso_frame_description {num} {
 	if {$num == 1} {
-		return "Gently go to 8.4 bar of pressure with a water mix temperature of 92ºC. Go to the next step after 10 seconds. temperature of 92ºC. Gently go to 8.4 bar of pressure with a water mix temperature of 92ºC."
+		return "Gently go to 8.4 bar of pressure with a water mix temperature of 92[encoding convertfrom utf-8 º]C. Go to the next step after 10 seconds. temperature of 92[encoding convertfrom utf-8 º]C. Gently go to 8.4 bar of pressure with a water mix temperature of 92[encoding convertfrom utf-8 º]C."
 	} elseif {$num == 2} {
-		return "Quickly go to 8.4 bar of pressure with a basket temperature of 90ºC. Go to the next step after 10 seconds."
+		return "Quickly go to 8.4 bar of pressure with a basket temperature of 90[encoding convertfrom utf-8 º]C. Go to the next step after 10 seconds."
 	} elseif {$num == 3} {
-		return "Automatically manage pressure to attain a flow rate of 1.2 mL/s at a water temperature of 88ºC.  End this step after 30 seconds."
+		return "Automatically manage pressure to attain a flow rate of 1.2 mL/s at a water temperature of 88[encoding convertfrom utf-8 º]C.  End this step after 30 seconds."
 	} elseif {$num == 4} {
 		return ""
 	} elseif {$num == 5} {
@@ -478,7 +478,7 @@ proc accelerometer_angle_text {} {
 	}
 	set since_last_acc [clock milliseconds]
 	set last_acc_count $accelerometer_read_count
-	return "$::settings(accelerometer_angle)º ($accelerometer_read_count) $rate events/second $delta events $rate"
+	return "$::settings(accelerometer_angle)[encoding convertfrom utf-8 º] ($accelerometer_read_count) $rate events/second $delta events $rate"
 }
 
 proc group_head_heater_temperature {} {
@@ -842,9 +842,9 @@ proc setting_water_temperature {} {
 
 proc return_html_temperature_units {} {
 	if {$::settings(enable_fahrenheit) == 1} {
-		return "°F"
+		return "[encoding convertfrom utf-8 °]F"
 	} else {
-		return "°C"
+		return "[encoding convertfrom utf-8 °]C"
 	}
 }
 proc return_temperature_number {in} {
@@ -858,15 +858,15 @@ proc return_temperature_number {in} {
 proc return_temperature_measurement {in} {
 	if {[de1plus]} {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]][encoding convertfrom utf-8 º]F}]
 		} else {
-			return [subst {[round_to_one_digits $in]ºC}]
+			return [subst {[round_to_one_digits $in][encoding convertfrom utf-8 º]C}]
 		}
 	} else {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]][encoding convertfrom utf-8 º]F}]
 		} else {
-			return [subst {[round_to_integer $in]ºC}]
+			return [subst {[round_to_integer $in][encoding convertfrom utf-8 º]C}]
 		}
 
 	}
@@ -875,20 +875,20 @@ proc return_temperature_measurement {in} {
 proc return_temperature_setting {in} {
 	if {[de1plus]} {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]][encoding convertfrom utf-8 º]F}]
 		} else {
 			if {[round_to_half_integer $in] == [round_to_integer $in]} {
 				# don't display a .0 on the number if it's not needed
-				return [subst {[round_to_integer $in]ºC}]
+				return [subst {[round_to_integer $in][encoding convertfrom utf-8 º]C}]
 			} else {
-				return [subst {[round_to_half_integer $in]ºC}]
+				return [subst {[round_to_half_integer $in][encoding convertfrom utf-8 º]C}]
 			}
 		}
 	} else {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]ºF}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]][encoding convertfrom utf-8 º]F}]
 		} else {
-			return [subst {[round_to_integer $in]ºC}]
+			return [subst {[round_to_integer $in][encoding convertfrom utf-8 º]C}]
 		}
 
 	}
@@ -898,10 +898,10 @@ proc return_temperature_setting {in} {
 proc return_delta_temperature_measurement {in} {
 
 	if {$::settings(enable_fahrenheit) == 1} {
-		set label "ºF"
+		set label "[encoding convertfrom utf-8 º]F"
 		set num [celsius_to_fahrenheit $in]
 	} else {
-		set label {ºC}
+		set label "[encoding convertfrom utf-8 º]C"
 		set num $in
 	}
 
@@ -1233,6 +1233,19 @@ proc fill_ble_skale_listbox {} {
 	$widget selection set $current_ble_number;
 	
 	make_current_listbox_item_blue $widget
+}
+
+proc profile_type_text {} {
+	set in $::settings(settings_profile_type)
+	if {$in == "settings_2a"} {
+		return [translate "Pressure profile"]
+	} elseif {$in == "settings_2b"} {
+		return [translate "Flow profile"]
+	} elseif {$in == "settings_2c"} {
+		return [translate "Advanced profile"]
+	} else {
+		return [translate "Profile"]
+	}
 }
 
 

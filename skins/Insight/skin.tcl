@@ -51,7 +51,7 @@ source "[homedir]/skins/default/de1_skin_settings.tcl"
 # the font used in the big round green buttons needs to fit appropriately inside the circle, 
 # and thus is dependent on the translation of the words inside the circle
 set green_button_font "Helv_19_bold"
-if {[language] == "fr" || [language] == "es"} {
+if {[language] == "fr" || [language] == "es" || [language] == "sv"} {
 	set green_button_font "Helv_16_bold"
 }
 
@@ -147,7 +147,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
 		$widget element create line_espresso_flow_delta  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth quadratic 
 	}
 
-	if {$::settings(display_weight_delta_line) == 1} {	
+	if {$::settings(skale_bluetooth_address) != ""} {
 		$widget element create line_espresso_flow_weight  -xdata espresso_elapsed -ydata espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 6] -color #a2693d -smooth quadratic -pixels 0; 
 		$widget element create god_line_espresso_flow_weight  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 12] -color #edd4c1 -smooth quadratic -pixels 0; 
 	}
@@ -194,7 +194,7 @@ add_de1_text "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoom
 add_de1_text "off espresso espresso_3" 40 220 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "nw"
 
 add_de1_text "off espresso espresso_3" 40 677 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
-if {$::settings(display_weight_delta_line) == 1} {	
+if {$::settings(skale_bluetooth_address) != ""} {
 	#set distance [font_width "Flow (mL/s)" Helv_7_bold]
 	add_de1_text "off espresso espresso_3" 1970 677 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 
 	
@@ -203,6 +203,8 @@ if {$::settings(display_weight_delta_line) == 1} {
 }
 
 add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([return_html_temperature_units]) :"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
+
+
 
 
 if {$::settings(waterlevel_indicator_on) == 1} {
@@ -274,7 +276,7 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 74 {
 		$widget element create line_espresso_flow_delta_1  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth quadratic 
 	}
 
-	if {$::settings(display_weight_delta_line) == 1} {	
+	if {$::settings(skale_bluetooth_address) != ""} {
 		$widget element create line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata espresso_flow_weight_2x -symbol none -label "" -linewidth [rescale_x_skin 8] -color #a2693d -smooth quadratic -pixels 0; 
 		$widget element create god_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata god_espresso_flow_weight_2x -symbol none -label "" -linewidth [rescale_x_skin 16] -color #edd4c1 -smooth quadratic -pixels 0; 
 
@@ -486,6 +488,36 @@ add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" 2510 [ex
 	}
 #######################
 
+#######################
+# profile name 
+if {$::settings(insight_skin_show_embedded_profile) == 1} {
+	# not yet complete implementation of idea of showing the espresso shot profile on the Insight skin's ESPRESSO tab
+	# what is not yet finished is that this is only showing the pressure profile, and instead this needs to show
+	# a flow profile if that's selected, or nothing is displayed if this is an advanced profile
+	add_de1_widget "off espresso_3" graph 2030 1080 { 
+		update_de1_explanation_chart;
+		$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 2] -color #888888  -smooth quadratic -pixels [rescale_x_skin 10]; 
+		$widget axis configure x -color #5a5d75 -tickfont Helv_6 
+		#-command graph_seconds_axis_format; 
+		$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max [expr {0.1 + $::de1(maxpressure)}] -stepsize 4 -majorticks {4 8} -title "" -titlefont Helv_10 -titlecolor #5a5d75;
+
+		$widget element create line_espresso_de1_explanation_chart_pressure_part1 -xdata espresso_de1_explanation_chart_elapsed_1 -ydata espresso_de1_explanation_chart_pressure_1 -symbol circle -label "" -linewidth [rescale_x_skin 16] -color $::settings(color_stage_1)  -smooth quadratic -pixels [rescale_x_skin 10]; 
+		$widget element create line_espresso_de1_explanation_chart_pressure_part2 -xdata espresso_de1_explanation_chart_elapsed_2 -ydata espresso_de1_explanation_chart_pressure_2 -symbol circle -label "" -linewidth [rescale_x_skin 16] -color $::settings(color_stage_2)  -smooth quadratic -pixels [rescale_x_skin 10]; 
+		$widget element create line_espresso_de1_explanation_chart_pressure_part3 -xdata espresso_de1_explanation_chart_elapsed_3 -ydata espresso_de1_explanation_chart_pressure_3 -symbol circle -label "" -linewidth [rescale_x_skin 16] -color $::settings(color_stage_3)  -smooth quadratic -pixels [rescale_x_skin 10]; 
+
+		bind $widget [platform_button_press] { 
+			show_settings $::settings(settings_profile_type)
+		} 
+	} -plotbackground $chart_background_color -width [rescale_x_skin 430] -height [rescale_y_skin 200] -borderwidth 1 -background #FFFFFF -plotrelief raised
+} else {
+	# we can display the profile name if the embedded chart is not displayed.
+	add_de1_variable "off off_zoomed off_zoomed_temperature" 2060 [expr {$pos_top + (10 * $spacer)}] -justify right -anchor "nw" -text "" -font Helv_7_bold -fill $dark -width [rescale_x_skin 520] -textvariable {[profile_type_text]} 
+	add_de1_variable "espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (9 * $spacer)}] -justify right -anchor "nw" -text "" -font Helv_7_bold -fill $dark -width [rescale_x_skin 520] -textvariable {[profile_type_text]} 
+		add_de1_variable "off off_zoomed off_zoomed_temperature" 2060 [expr {$pos_top + (11 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $lighter -width [rescale_x_skin 470] -textvariable {$::settings(profile)} 
+		add_de1_variable "espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (10 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $lighter -width [rescale_x_skin 470] -textvariable {$::settings(profile)} 
+}
+#######################
+
 
 # this feature is always on now
 set ::settings(display_rate_espresso) 1
@@ -664,4 +696,4 @@ add_de1_variable "steam" 2470 400 -justify left -anchor "ne" -text "" -font Helv
 add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Total volume:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
-#set_next_page off settings_2c;
+#set_next_page off settings_3;

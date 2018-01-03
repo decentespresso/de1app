@@ -346,6 +346,9 @@ proc run_next_userdata_cmd {} {
 
 proc app_exit {} {
 
+	exit
+	return
+
 	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
 	after 10000 {exit}
 
