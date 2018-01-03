@@ -183,32 +183,34 @@ proc obsolete_translation_langs {} {
 }
 
 # from wikipedia https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
+# converted UTF8 chars to unicode with http://ratfactor.com/utf-8-to-unicode to avoid problems with this source being loaded on Windows (where UTF8 is not the default).
+# note that "Arabic" is the descriptor for that language because can make the correct arabic text render with this same font.
 proc translation_langs_array {} {
     return [list \
         en English \
-        kr "한국어" \
-        fr [encoding convertfrom utf-8 "français"] \
+        kr "\uD55C\uAD6D\uC5B4" \
+        fr "\u0066\u0072\u0061\u006E\u00E7\u0061\u0069\u0073" \
         de Deutsch \
         it italiano \
         da "dansk" \
         sv "svenska" \
         no "Nynorsk" \
-        es [encoding convertfrom utf-8 "español"] \
-        pt [encoding convertfrom utf-8 "português"] \
-        pl "Język polski" \
+        es "\u0065\u0073\u0070\u0061\u00F1\u006F\u006C" \
+        pt "\u0070\u006F\u0072\u0074\u0075\u0067\u0075\u00EA\u0073" \
+        pl "\u004A\u119\u007A\u0079\u006B\u0020\u0070\u006F\u006C\u0073\u006B\u0069" \
         fi "suomen kieli" \
-        zh-hans "簡體" \
-        zh-hant "繁體" \
-        th "ภาษาไทย" \
-        jp "日本語" \
-        el "Νέα Ελληνικά" \
-        sk "slovenčina" \
-        cs "čeština" \
+        zh-hans "\u7C21\u9AD4" \
+        zh-hant "\u7E41\u9AD4" \
+        th "\uE20\uE32\uE29\uE32\uE44\uE17\uE22" \
+        jp "\u65E5\u672C\u8A9E" \
+        el "\u39D\u3AD\u3B1\u0020\u395\u3BB\u3BB\u3B7\u3BD\u3B9\u3BA\u3AC" \
+        sk "\u0073\u006C\u006F\u0076\u0065\u006E\u10D\u0069\u006E\u0061" \
+        cs "\u10D\u0065\u161\u0074\u0069\u006E\u0061" \
         hu "magyar nyelv" \
-        tr [encoding convertfrom utf-8 "Türkçe"] \
-        ro [encoding convertfrom utf-8 "limba română"] \
-        ar "العَرَبِيَّة" \
-        hi "हिन्दी" \
+        tr "\u0054\u00FC\u0072\u006B\u00E7\u0065" \
+        ro "\u006C\u0069\u006D\u0062\u0061\u0020\u0072\u006F\u006D\u00E2\u006E\u103" \
+        hi "\u939\u93F\u928\u94D\u926\u940" \
+        ar "Arabic" \
     ]
 }
 

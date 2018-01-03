@@ -101,11 +101,11 @@ proc espresso_frame_title {num} {
 
 proc espresso_frame_description {num} {
 	if {$num == 1} {
-		return "Gently go to 8.4 bar of pressure with a water mix temperature of 92[encoding convertfrom utf-8 º]C. Go to the next step after 10 seconds. temperature of 92[encoding convertfrom utf-8 º]C. Gently go to 8.4 bar of pressure with a water mix temperature of 92[encoding convertfrom utf-8 º]C."
+		return "Gently go to 8.4 bar of pressure with a water mix temperature of 92\u00BAC. Go to the next step after 10 seconds. temperature of 92\u00BAC. Gently go to 8.4 bar of pressure with a water mix temperature of 92\u00BAC."
 	} elseif {$num == 2} {
-		return "Quickly go to 8.4 bar of pressure with a basket temperature of 90[encoding convertfrom utf-8 º]C. Go to the next step after 10 seconds."
+		return "Quickly go to 8.4 bar of pressure with a basket temperature of 90\u00BAC. Go to the next step after 10 seconds."
 	} elseif {$num == 3} {
-		return "Automatically manage pressure to attain a flow rate of 1.2 mL/s at a water temperature of 88[encoding convertfrom utf-8 º]C.  End this step after 30 seconds."
+		return "Automatically manage pressure to attain a flow rate of 1.2 mL/s at a water temperature of 88\u00BAC.  End this step after 30 seconds."
 	} elseif {$num == 4} {
 		return ""
 	} elseif {$num == 5} {
@@ -478,7 +478,7 @@ proc accelerometer_angle_text {} {
 	}
 	set since_last_acc [clock milliseconds]
 	set last_acc_count $accelerometer_read_count
-	return "$::settings(accelerometer_angle)[encoding convertfrom utf-8 º] ($accelerometer_read_count) $rate events/second $delta events $rate"
+	return "$::settings(accelerometer_angle)\u00BA ($accelerometer_read_count) $rate events/second $delta events $rate"
 }
 
 proc group_head_heater_temperature {} {
@@ -858,15 +858,15 @@ proc return_temperature_number {in} {
 proc return_temperature_measurement {in} {
 	if {[de1plus]} {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]][encoding convertfrom utf-8 º]F}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
 		} else {
-			return [subst {[round_to_one_digits $in][encoding convertfrom utf-8 º]C}]
+			return [subst {[round_to_one_digits $in]\u00BAC}]
 		}
 	} else {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]][encoding convertfrom utf-8 º]F}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
 		} else {
-			return [subst {[round_to_integer $in][encoding convertfrom utf-8 º]C}]
+			return [subst {[round_to_integer $in]\u00BAC}]
 		}
 
 	}
@@ -875,20 +875,20 @@ proc return_temperature_measurement {in} {
 proc return_temperature_setting {in} {
 	if {[de1plus]} {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]][encoding convertfrom utf-8 º]F}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
 		} else {
 			if {[round_to_half_integer $in] == [round_to_integer $in]} {
 				# don't display a .0 on the number if it's not needed
-				return [subst {[round_to_integer $in][encoding convertfrom utf-8 º]C}]
+				return [subst {[round_to_integer $in]\u00BAC}]
 			} else {
-				return [subst {[round_to_half_integer $in][encoding convertfrom utf-8 º]C}]
+				return [subst {[round_to_half_integer $in]\u00BAC}]
 			}
 		}
 	} else {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]][encoding convertfrom utf-8 º]F}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
 		} else {
-			return [subst {[round_to_integer $in][encoding convertfrom utf-8 º]C}]
+			return [subst {[round_to_integer $in]\u00BAC}]
 		}
 
 	}
@@ -898,10 +898,10 @@ proc return_temperature_setting {in} {
 proc return_delta_temperature_measurement {in} {
 
 	if {$::settings(enable_fahrenheit) == 1} {
-		set label "[encoding convertfrom utf-8 º]F"
+		set label "\u00BAF"
 		set num [celsius_to_fahrenheit $in]
 	} else {
-		set label "[encoding convertfrom utf-8 º]C"
+		set label "\u00BAC"
 		set num $in
 	}
 
