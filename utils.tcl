@@ -295,7 +295,8 @@ proc setup_environment {} {
         #namespace import blt::*
         #namespace import -force blt::tile::*
 
-
+        # this causes the app to exit if the main window is closed
+        wm protocol . WM_DELETE_WINDOW exit
 
         #borg systemui 0x1E02
         #borg brightness 0

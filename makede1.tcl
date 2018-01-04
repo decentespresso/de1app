@@ -24,6 +24,9 @@ make_de1_dir
 cd "[homedir]/desktop_app/osx"
 exec zip -u -x CVS --exclude="*.DS_Store*" --exclude="*CVS*" -r /d/download/desktop/osx/DE1PLUS.zip DE1+.app
 
+cd "[homedir]/desktop_app/win32"
+exec zip -u -x CVS --exclude="*.DS_Store*" --exclude="*CVS*" --exclude="*undroidwish*" -r /d/download/desktop/win32/de1plus.zip ./
+
 cd "/d/download/sync"
 exec zip -u -x CVS --exclude="*.DS_Store*" --exclude="*CVS*" -r /d/download/desktop/source/de1plus_source.zip de1plus
 
