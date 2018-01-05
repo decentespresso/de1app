@@ -43,7 +43,7 @@ proc make_de1_dir {} {
 
     }
 
-        #fonts/NotoSansCJKjp-DemiLight.otf *
+        #fonts/NotoSansCJKjp-ThinSansCJKjp-DemiLight.otf *
         #fonts/NotoSansCJKjp-Thin.otf *
         #fonts/NotoSansCJKjp-Medium.otf *
 
