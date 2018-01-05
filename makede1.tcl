@@ -16,18 +16,26 @@ package require de1_gui
 #file delete -force /d/download/sync/de1plus
 #file delete -force /d/download/sync/de1
 #file delete -force /d/download/desktop/osx/DE1PLUS.zip
-#file delete -force /d/download/desktop/source/de1plus_source.zip
+#file delete -force /d/download/desktop/win32/de1plus.zip
+#file delete -force /d/download/desktop/source/de1plus_source.zip 
 
 skin_convert_all
 make_de1_dir
 
 cd "[homedir]/desktop_app/osx"
-exec zip -u -x CVS --exclude="*.DS_Store*" --exclude="*CVS*" -r /d/download/desktop/osx/DE1PLUS.zip DE1+.app
+exec zip -u -x CVS --exclude="*.DS_Store*" --exclude="*CVS*" -r /d/download/desktop/osx/DE1PLUS.zip "DE1+.app"
+catch {
+exec zip /d/download/desktop/osx/DE1PLUS.zip -d "*CVS*"
+}
 
 cd "[homedir]/desktop_app/win32"
 exec zip -u -x CVS --exclude="*.DS_Store*" --exclude="*CVS*" -r /d/download/desktop/win32/de1plus.zip ./
+catch {
+exec zip /d/download/desktop/win32/de1plus.zip -d "*CVS*"
+}
 
 cd "/d/download/sync"
 exec zip -u -x CVS --exclude="*.DS_Store*" --exclude="*CVS*" -r /d/download/desktop/source/de1plus_source.zip de1plus
-
-
+catch {	
+exec zip /d/download/desktop/source/de1plus_source.zip -d "*CVS*"
+}
