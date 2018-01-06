@@ -52,7 +52,7 @@ proc make_de1_dir {} {
         bluetooth.tcl *
         translation.tcl *
         de1plus.tcl 1
-        de1.tcl 0
+        de1.tcl *
         gui.tcl *
         machine.tcl *
         utils.tcl *
@@ -60,9 +60,9 @@ proc make_de1_dir {} {
         vars.tcl *
         misc.tcl *
         pkgIndex.tcl *
-        de1_icon_v2.png 0
+        de1_icon_v2.png 1
         de1plus_icon_v2.png 1
-        create_de1_icon.tcl 0
+        create_de1_icon.tcl 1
         create_de1plus_icon.tcl 1
         appupdate.tcl *
 
@@ -99,7 +99,7 @@ proc make_de1_dir {} {
         skins/default/1280x800/settings_message.jpg  *
         skins/default/1280x800/descaling.jpg *
         skins/default/1280x800/settings_1.png *
-        skins/default/1280x800/settings_2.png 0
+        skins/default/1280x800/settings_2.png 1
         skins/default/1280x800/settings_2a.png 1
         skins/default/1280x800/settings_2a2.png 1
         skins/default/1280x800/settings_2b.png 1
@@ -119,7 +119,7 @@ proc make_de1_dir {} {
         skins/default/2560x1600/settings_message.jpg  *
         skins/default/2560x1600/descaling.jpg *
         skins/default/2560x1600/settings_1.png *
-        skins/default/2560x1600/settings_2.png 0
+        skins/default/2560x1600/settings_2.png 1
         skins/default/2560x1600/settings_2a.png 1
         skins/default/2560x1600/settings_2a2.png 1
         skins/default/2560x1600/settings_2b.png 1

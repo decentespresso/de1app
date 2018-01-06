@@ -1417,7 +1417,7 @@ proc start_app_update {} {
     #set host "https://decentespresso.com"
     set host "http://10.0.1.200:8000"
 
-    if {$undroid == 1} {
+    if {$::undroid == 1} {
         # undroid doesn't yet support https
         set host "http://decentespresso.com"
     }
