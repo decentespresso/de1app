@@ -178,8 +178,12 @@ proc language {} {
     return $current_language
 }
 
-proc obsolete_translation_langs {} {
-    return {en fr de it es pt zh-hans zh-hant kr jp ar hu tr th da sv fi ro hi pl no sk el cs}
+proc translation_langs {} {
+    set l {}
+    foreach {k v} [translation_langs_array] {
+        lappend l $k
+    }
+    return $l
 }
 
 # from wikipedia https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
@@ -927,7 +931,10 @@ proc read_file {filename} {
     }]
 
     if {$errcode != 0} {
-        msg "read_file $::errorInfo"
+        puts "read_file $::errorInfo"
+        catch {
+            msg "read_file $::errorInfo"
+        }
     }
     return $data
 }
