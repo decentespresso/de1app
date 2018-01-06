@@ -24,7 +24,8 @@ skin_convert_all
 make_de1_dir
 
 cd "[homedir]/desktop_app/osx"
-exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1plus_osx.zip DE1+.app DE1.app
+exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1plus_osx.zip DE1+.app 
+exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1_osx.zip DE1.app
 
 cd "[homedir]/desktop_app/win32"
 exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/win32/de1plus_win.zip ./
