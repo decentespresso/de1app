@@ -490,8 +490,13 @@ proc setup_environment {} {
         set screen_size_width 1920
         set screen_size_height 1200
 
+        set screen_size_width 640
+        set screen_size_height 400
+
         set screen_size_width 1280
         set screen_size_height 800
+
+
 
         #set screen_size_width 640
         #set screen_size_height 400
