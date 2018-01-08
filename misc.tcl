@@ -366,10 +366,8 @@ proc make_de1_dir {} {
         saver/1280x800/Cozy-Home.jpg *
         saver/1280x800/Floral.jpg *
         saver/1280x800/Lomen.jpg *
-        saver/1280x800/alice.jpg *
         saver/1280x800/apartment.jpg *
         saver/1280x800/aztec.jpg *
-        saver/1280x800/borg.jpg *
         saver/1280x800/cafe_girls.jpg *
         saver/1280x800/cities.jpg *
         saver/1280x800/cups.jpg *
@@ -379,29 +377,19 @@ proc make_de1_dir {} {
         saver/1280x800/graffiti_1.jpg *
         saver/1280x800/graffiti_2.jpg *
         saver/1280x800/graffiti_wall.jpg *
-        saver/1280x800/greek_gods.jpg *
-        saver/1280x800/hindu_gods.jpg *
         saver/1280x800/jim_shaw.jpg *
-        saver/1280x800/manga_fashion.jpg *
-        saver/1280x800/manga_girls.jpg *
         saver/1280x800/minimalism.jpg *
-        saver/1280x800/scifi.jpg *
-        saver/1280x800/sin_city.jpg *
         saver/1280x800/splash_noir.jpg *
-        saver/1280x800/splash_rodent.jpg *
         saver/1280x800/splotch.jpg *
         saver/1280x800/steampunk_espresso.jpg *
         saver/1280x800/steampunk_latte.jpg *
-        saver/1280x800/superheroes.jpg *
         saver/1280x800/three_women.jpg *     
         saver/2560x1600/Black\ Steel.jpg *
         saver/2560x1600/Cozy-Home.jpg *
         saver/2560x1600/Floral.jpg *
         saver/2560x1600/Lomen.jpg *
-        saver/2560x1600/alice.jpg *
         saver/2560x1600/apartment.jpg *
         saver/2560x1600/aztec.jpg *
-        saver/2560x1600/borg.jpg *
         saver/2560x1600/cafe_girls.jpg *
         saver/2560x1600/cities.jpg *
         saver/2560x1600/cups.jpg *
@@ -410,22 +398,14 @@ proc make_de1_dir {} {
         saver/2560x1600/graffiti_1.jpg *
         saver/2560x1600/graffiti_2.jpg *
         saver/2560x1600/graffiti_wall.jpg *
-        saver/2560x1600/greek_gods.jpg *
-        saver/2560x1600/hindu_gods.jpg *
         saver/2560x1600/jim_shaw.jpg *
-        saver/2560x1600/manga_fashion.jpg *
-        saver/2560x1600/manga_girls.jpg *
         saver/2560x1600/minimalism.jpg *
-        saver/2560x1600/scifi.jpg *
-        saver/2560x1600/sin_city.jpg *
         saver/2560x1600/green-cup.jpg *
         saver/2560x1600/photomanipulation.jpg *
         saver/2560x1600/splash_noir.jpg *
-        saver/2560x1600/splash_rodent.jpg *
         saver/2560x1600/splotch.jpg *
         saver/2560x1600/steampunk_espresso.jpg *
         saver/2560x1600/steampunk_latte.jpg *
-        saver/2560x1600/superheroes.jpg *
         saver/2560x1600/three_women.jpg *     
         profiles/Classic\ Italian\ espresso.tcl *
         profiles/Flat\ 2.5\ mL\ per\ second\ shot\ for\ light\ roasts.tcl 1
