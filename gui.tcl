@@ -1,5 +1,16 @@
 package provide de1_gui 1.0
 
+
+proc setup_images_for_other_pages {} {
+	borg spinner on
+	source "[skin_directory]/skin.tcl"
+	borg spinner off
+    borg systemui $::android_full_screen_flags
+
+	return
+}
+
+
 proc chart_refresh {} {
 
 }
@@ -339,6 +350,23 @@ proc read_binary_file {filename} {
     return $data
 }
 
+
+
+proc install_update_app_icon {dir} {
+	package require base64
+	set icondata_de1 [read_binary_file "/mnt/sdcard/$dir/cloud_download_icon.png"]
+	set iconbase64_de1 [::base64::encode -maxlen 0 $icondata_de1]
+
+	set appurl "file://mnt/sdcard/$dir/appupdate.tcl"
+	catch {
+		set x [borg shortcut add "Decent Update" $appurl $iconbase64_de1]
+		puts "shortcut added: '$x'"
+	}
+
+}
+
+
+
 proc install_de1_app_icon {} {
 	package require base64
 	set icondata_de1 [read_binary_file "/mnt/sdcard/de1/de1_icon_v2.png"]
@@ -349,6 +377,9 @@ proc install_de1_app_icon {} {
 		set x [borg shortcut add "DE1" $appurl $iconbase64_de1]
 		puts "shortcut added: '$x'"
 	}
+
+	install_update_app_icon "de1"
+
 }
 
 
@@ -362,6 +393,8 @@ proc install_de1plus_app_icon {} {
 		set x [borg shortcut add "DE1+" $appurl $iconbase64_de1plus]
 		puts "shortcut added: '$x'"
 	}
+
+	install_update_app_icon "de1plus"
 }
 
 
@@ -1356,8 +1389,9 @@ proc run_de1_app {} {
 }
 
 proc ui_startup {} {
-	load_settings
+	puts "setup_environment"
 	setup_environment
+	load_settings
 	ble_find_de1s
 	#if {$::android == 1} {
 		#ble_connect_to_de1

@@ -11,6 +11,8 @@ package require crc32
 package require snit
 package require de1_gui 
 
+
+
 # optionally purge the source directories and resync
 # do this if we remove files from the sync list
 #file delete -force /d/download/sync/de1plus
@@ -23,15 +25,21 @@ package require de1_gui
 skin_convert_all
 make_de1_dir
 
-cd "[homedir]/desktop_app/osx"
-exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1plus_osx.zip DE1+.app 
-exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1_osx.zip DE1.app
+if {$argv != ""} {
+	puts "Updating apps"
 
-cd "[homedir]/desktop_app/win32"
-exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/win32/de1plus_win.zip ./
+	cd "[homedir]/desktop_app/osx"
+	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1plus_osx.zip DE1+.app 
+	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1_osx.zip DE1.app
 
-cd "[homedir]/desktop_app/linux"
-exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/linux/de1plus_linux.zip ./
+	cd "[homedir]/desktop_app/win32"
+	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/win32/de1plus_win.zip ./
 
-cd "/d/download/sync"
-exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1plus_source.zip de1plus
+	cd "[homedir]/desktop_app/linux"
+	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/linux/de1plus_linux.zip ./
+
+	cd "/d/download/sync"
+	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1plus_source.zip de1plus
+}
+
+puts "done"

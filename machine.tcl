@@ -97,21 +97,6 @@ if {[de1plus]} {
 	set ::de1(maxpressure) 12 
 }
 
-set android 0
-set undroid 0
-
-catch {
-	package require BLT
-    namespace import blt::*
-    namespace import -force blt::tile::*
-
-    #sdltk android
-    set undroid 1
-
-    package require ble
-    set undroid 0
-    set android 1
-}
 
 if {$android == 0 && $undroid == 0} {
 	package require tkblt
@@ -219,7 +204,7 @@ array set ::settings {
 	enable_negative_flow_charts 0
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
-	final_desired_shot_weight_percentage_to_stop .88
+	final_desired_shot_weight_percentage_to_stop .80
 	history_saved ""
 	pressure_end 4 
 	espresso_step_1 pressure

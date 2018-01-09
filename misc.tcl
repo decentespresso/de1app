@@ -62,6 +62,7 @@ proc make_de1_dir {} {
         pkgIndex.tcl *
         de1_icon_v2.png 1
         de1plus_icon_v2.png 1
+        cloud_download_icon.png *
         create_de1_icon.tcl 1
         create_de1plus_icon.tcl 1
         appupdate.tcl *

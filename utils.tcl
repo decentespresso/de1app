@@ -1,268 +1,6 @@
 package provide de1_utils 1.0
 
 
-proc homedir {} {
-    global home
-    if {[info exists home] != 1} {
-        set home [file normalize [file dirname [info script]]]
-    }
-    return $home
-}
-
-proc reverse_array {arrname} {
-    upvar $arrname arr
-    foreach {k v} [array get arr] {
-        set newarr($v) $k
-    }
-    return [array get newarr]
-}
-
-proc stacktrace {} {
-    set stack "Stack trace:\n"
-    for {set i 1} {$i < [info level]} {incr i} {
-        set lvl [info level -$i]
-        set pname [lindex $lvl 0]
-        append stack [string repeat " " $i]$pname
-        foreach value [lrange $lvl 1 end] arg [info args $pname] {
-            if {$value eq ""} {
-                info default $pname $arg value
-            }
-            append stack " $arg='$value'"
-        }
-        append stack \n
-    }
-    return $stack
-}
-
-proc random_saver_file {} {
-
-
-    if {[info exists ::saver_files_cache] != 1} {
-        puts "building saver_files_cache"
-        set ::saver_files_cache {}
- 
-        set savers {}
-        catch {
-            set savers [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
-        }
-        if {$savers == ""} {
-            catch {
-                file mkdir "[saver_directory]/${::screen_size_width}x${::screen_size_height}/"
-            }
-
-            set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
-            set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
-
-            foreach fn [glob "[saver_directory]/2560x1600/*.jpg"] {
-                borg spinner on
-                image create photo saver -file $fn
-                photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
-
-                set resized_filename "[saver_directory]/${::screen_size_width}x${::screen_size_height}/[file tail $fn]"
-                puts "saving resized image to: $resized_filename"
-                borg spinner off
-
-                saver write $resized_filename   -format {jpeg -quality 50}
-            }
-        }
-
-        set ::saver_files_cache [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
-    }
-    return [random_pick $::saver_files_cache]
-
-}
-
-proc random_splash_file {} {
-    if {[info exists ::splash_files_cache] != 1} {
-
-        puts "building splash_files_cache"
-        set ::splash_files_cache {}
- 
-        set savers {}
-        catch {
-            set savers [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
-        }
-        if {$savers == ""} {
-            catch {
-                file mkdir "[splash_directory]/${::screen_size_width}x${::screen_size_height}/"
-            }
-
-            set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
-            set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
-
-            foreach fn [glob "[splash_directory]/2560x1600/*.jpg"] {
-                borg spinner on
-                image create photo saver -file $fn
-                photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
-
-                set resized_filename "[splash_directory]/${::screen_size_width}x${::screen_size_height}/[file tail $fn]"
-                puts "saving resized image to: $resized_filename"
-                borg spinner off
-                saver write $resized_filename   -format {jpeg -quality 50}
-            }
-        }
-
-        set ::splash_files_cache [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
-    }
-    return [random_pick $::splash_files_cache]
-
-}
-
-proc random_splash_file_obs {} {
-    if {[info exists ::splash_files_cache] != 1} {
-        puts "building splash_files_cache"
-        set ::splash_files_cache {}
-        if {[file exists "[splash_directory]/${::screen_size_width}x${::screen_size_height}/"] == 1} {
-            set files [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
-        } else {
-            set files [glob "[splash_directory]/2560x1600/*.jpg"]
-        }
-
-        borg spinner on
-        foreach file $files {
-            if {[string first $file resized] == -1} {
-                lappend ::splash_files_cache $file
-            }
-        }
-        borg spinner off
-        puts "savers: $::splash_files_cache"
-
-    }
-
-    return [random_pick $::splash_files_cache]
-
-}
-
-proc pause {time} {
-    global pause_end
-    after $time set pause_end 1
-    vwait pause_end
-    unset -nocomplain pause_end
-}
-
-
-proc language {} {
-    global current_language
-
-    if {$::settings(language) != "--" && $::settings(language) != ""} {
-        return $::settings(language)
-    } 
-
-
-    if {$::android != 1} {
-        # on non-android OS, we don't know the system language so use english if nothing else is set
-        return "en"
-    }
-
-    # otherwise use the Android system language, if we can
-
-    # the UI language for Decent Espresso is set as the UI language that Android is currently operating in
-    if {[info exists current_language] == 0} {
-        array set loc [borg locale]
-
-        set current_language $loc(language)
-        if {$loc(language) == "zh"} {
-            # chinese traditional vs simplified is only differentiated by the country associated with it
-            if {$loc(country) == "TW"} {
-                set current_language "zh-hant"
-            } else {
-                set current_language "zh-hans"
-            }
-        } elseif {$loc(language) == "ko"} {
-            # not sure why Android deviates from KR standard for korean
-            set current_language "kr"
-        }
-
-    }
-
-    return $current_language
-}
-
-proc translation_langs {} {
-    set l {}
-    foreach {k v} [translation_langs_array] {
-        lappend l $k
-    }
-    return $l
-}
-
-# from wikipedia https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
-# converted UTF8 chars to unicode with http://ratfactor.com/utf-8-to-unicode to avoid problems with this source being loaded on Windows (where UTF8 is not the default).
-# note that "Arabic" is the descriptor for that language because can make the correct arabic text render with this same font.
-proc translation_langs_array {} {
-    return [list \
-        en English \
-        kr "\uD55C\uAD6D\uC5B4" \
-        fr "\u0066\u0072\u0061\u006E\u00E7\u0061\u0069\u0073" \
-        de Deutsch \
-        it italiano \
-        da "dansk" \
-        sv "svenska" \
-        no "Nynorsk" \
-        es "\u0065\u0073\u0070\u0061\u00F1\u006F\u006C" \
-        pt "\u0070\u006F\u0072\u0074\u0075\u0067\u0075\u00EA\u0073" \
-        pl "\u004A\u119\u007A\u0079\u006B\u0020\u0070\u006F\u006C\u0073\u006B\u0069" \
-        fi "suomen kieli" \
-        zh-hans "\u7C21\u9AD4" \
-        zh-hant "\u7E41\u9AD4" \
-        th "\uE20\uE32\uE29\uE32\uE44\uE17\uE22" \
-        jp "\u65E5\u672C\u8A9E" \
-        el "\u39D\u3AD\u3B1\u0020\u395\u3BB\u3BB\u3B7\u3BD\u3B9\u3BA\u3AC" \
-        sk "\u0073\u006C\u006F\u0076\u0065\u006E\u10D\u0069\u006E\u0061" \
-        cs "\u10D\u0065\u161\u0074\u0069\u006E\u0061" \
-        hu "magyar nyelv" \
-        tr "\u0054\u00FC\u0072\u006B\u00E7\u0065" \
-        ro "\u006C\u0069\u006D\u0062\u0061\u0020\u0072\u006F\u006D\u00E2\u006E\u103" \
-        hi "\u939\u93F\u928\u94D\u926\u940" \
-        ar "Arabic" \
-    ]
-}
-
-
-proc translate {english} {
-
-    if {$english == ""} { 
-        return "" 
-    }
-
-    if {[language] == "en"} {
-        return $english
-    }
-
-    #puts "lang: '[language]'"
-
-    global translation
-
-    if {[info exists translation($english)] == 1} {
-        # this word has been translated
-        array set available $translation($english)
-        if {[info exists available([language])] == 1} {
-            # this word has been translated into the desired non-english language
-            #puts "$available([language])"
-
-            #puts "translate: '[encoding convertfrom $available([language])]'"
-            return $available([language])
-        }
-    } 
-
-    # if no translation found, return the english text
-    if {$::android != 1} {
-        if {[info exists ::already_shown_trans($english)] != 1} {
-            set t [subst {"$english" \{}]
-            foreach {l d} [translation_langs_array] {
-                set translation($l) $english
-                append t [subst {$l "$english" }]
-            }
-            append t "\}"
-            puts "Appending new phrase: $english"
-            msg [stacktrace]
-            append_file "[homedir]/translation.tcl" $t
-            set ::already_shown_trans($english) 1
-        }
-    }
-
-    return $english
-}
 
 # from https://developer.android.com/reference/android/view/View.html#SYSTEM_UI_FLAG_IMMERSIVE
 set SYSTEM_UI_FLAG_IMMERSIVE_STICKY 0x00001000
@@ -275,9 +13,33 @@ set SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN 0x00000400
 
 set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_LAYOUT_STABLE | $SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_IMMERSIVE}]
 
-
 #set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_IMMERSIVE}]
 #set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_IMMERSIVE_STICKY}]
+
+
+set android 0
+set undroid 0
+
+catch {
+    package require BLT
+    namespace import blt::*
+    namespace import -force blt::tile::*
+
+    #sdltk android
+    set undroid 1
+
+    package require ble
+    set undroid 0
+    set android 1
+}
+
+if {$android == 1 || $undroid == 1} {
+    # turn the background window black as soon as possible
+    # and then make it full screen on android/undroid, so as to prepare for the loading of the splash screen
+    # and also to remove the displaying of the Tcl/Tk app bar, which looks weird being on Android
+    . configure -bg black -bd 0
+    wm attributes . -fullscreen 1
+}
 
 proc setup_environment {} {
     #puts "setup_environment"
@@ -469,9 +231,6 @@ proc setup_environment {} {
         set screen_size_width 2048
         set screen_size_height 1536
 
-        set screen_size_width 2560
-        set screen_size_height 1600
-
         set screen_size_width 1920
         set screen_size_height 1080
 
@@ -493,10 +252,11 @@ proc setup_environment {} {
         set screen_size_width 640
         set screen_size_height 400
 
+        set screen_size_width 2560
+        set screen_size_height 1600
+
         set screen_size_width 1280
         set screen_size_height 800
-
-
 
         #set screen_size_width 640
         #set screen_size_height 400
@@ -645,6 +405,272 @@ proc setup_environment {} {
     ############################################
 }
 
+
+
+proc homedir {} {
+    global home
+    if {[info exists home] != 1} {
+        set home [file normalize [file dirname [info script]]]
+    }
+    return $home
+}
+
+proc reverse_array {arrname} {
+    upvar $arrname arr
+    foreach {k v} [array get arr] {
+        set newarr($v) $k
+    }
+    return [array get newarr]
+}
+
+proc stacktrace {} {
+    set stack "Stack trace:\n"
+    for {set i 1} {$i < [info level]} {incr i} {
+        set lvl [info level -$i]
+        set pname [lindex $lvl 0]
+        append stack [string repeat " " $i]$pname
+        foreach value [lrange $lvl 1 end] arg [info args $pname] {
+            if {$value eq ""} {
+                info default $pname $arg value
+            }
+            append stack " $arg='$value'"
+        }
+        append stack \n
+    }
+    return $stack
+}
+
+proc random_saver_file {} {
+
+
+    if {[info exists ::saver_files_cache] != 1} {
+        puts "building saver_files_cache"
+        set ::saver_files_cache {}
+ 
+        set savers {}
+        catch {
+            set savers [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+        }
+        if {$savers == ""} {
+            catch {
+                file mkdir "[saver_directory]/${::screen_size_width}x${::screen_size_height}/"
+            }
+
+            set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
+            set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
+
+            foreach fn [glob "[saver_directory]/2560x1600/*.jpg"] {
+                borg spinner on
+                image create photo saver -file $fn
+                photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
+
+                set resized_filename "[saver_directory]/${::screen_size_width}x${::screen_size_height}/[file tail $fn]"
+                puts "saving resized image to: $resized_filename"
+                borg spinner off
+
+                saver write $resized_filename   -format {jpeg -quality 50}
+            }
+        }
+
+        set ::saver_files_cache [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+    }
+    return [random_pick $::saver_files_cache]
+
+}
+
+proc random_splash_file {} {
+    if {[info exists ::splash_files_cache] != 1} {
+
+        puts "building splash_files_cache"
+        set ::splash_files_cache {}
+ 
+        set savers {}
+        catch {
+            set savers [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+        }
+        if {$savers == ""} {
+            catch {
+                file mkdir "[splash_directory]/${::screen_size_width}x${::screen_size_height}/"
+            }
+
+            set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
+            set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
+
+            foreach fn [glob "[splash_directory]/2560x1600/*.jpg"] {
+                borg spinner on
+                image create photo saver -file $fn
+                photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
+
+                set resized_filename "[splash_directory]/${::screen_size_width}x${::screen_size_height}/[file tail $fn]"
+                puts "saving resized image to: $resized_filename"
+                borg spinner off
+                saver write $resized_filename   -format {jpeg -quality 50}
+            }
+        }
+
+        set ::splash_files_cache [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+    }
+    return [random_pick $::splash_files_cache]
+
+}
+
+proc random_splash_file_obs {} {
+    if {[info exists ::splash_files_cache] != 1} {
+        puts "building splash_files_cache"
+        set ::splash_files_cache {}
+        if {[file exists "[splash_directory]/${::screen_size_width}x${::screen_size_height}/"] == 1} {
+            set files [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+        } else {
+            set files [glob "[splash_directory]/2560x1600/*.jpg"]
+        }
+
+        borg spinner on
+        foreach file $files {
+            if {[string first $file resized] == -1} {
+                lappend ::splash_files_cache $file
+            }
+        }
+        borg spinner off
+        puts "savers: $::splash_files_cache"
+
+    }
+
+    return [random_pick $::splash_files_cache]
+
+}
+
+proc pause {time} {
+    global pause_end
+    after $time set pause_end 1
+    vwait pause_end
+    unset -nocomplain pause_end
+}
+
+
+proc language {} {
+    global current_language
+
+    if {[ifexists ::settings(language)] != "--" && [ifexists ::settings(language)] != ""} {
+        return [ifexists ::settings(language)]
+    } 
+
+
+    if {$::android != 1} {
+        # on non-android OS, we don't know the system language so use english if nothing else is set
+        return "en"
+    }
+
+    # otherwise use the Android system language, if we can
+
+    # the UI language for Decent Espresso is set as the UI language that Android is currently operating in
+    if {[info exists current_language] == 0} {
+        array set loc [borg locale]
+
+        set current_language $loc(language)
+        if {$loc(language) == "zh"} {
+            # chinese traditional vs simplified is only differentiated by the country associated with it
+            if {$loc(country) == "TW"} {
+                set current_language "zh-hant"
+            } else {
+                set current_language "zh-hans"
+            }
+        } elseif {$loc(language) == "ko"} {
+            # not sure why Android deviates from KR standard for korean
+            set current_language "kr"
+        }
+
+    }
+
+    return $current_language
+}
+
+proc translation_langs {} {
+    set l {}
+    foreach {k v} [translation_langs_array] {
+        lappend l $k
+    }
+    return $l
+}
+
+# from wikipedia https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
+# converted UTF8 chars to unicode with http://ratfactor.com/utf-8-to-unicode to avoid problems with this source being loaded on Windows (where UTF8 is not the default).
+# note that "Arabic" is the descriptor for that language because can make the correct arabic text render with this same font.
+proc translation_langs_array {} {
+    return [list \
+        en English \
+        kr "\uD55C\uAD6D\uC5B4" \
+        fr "\u0066\u0072\u0061\u006E\u00E7\u0061\u0069\u0073" \
+        de Deutsch \
+        it italiano \
+        da "dansk" \
+        sv "svenska" \
+        no "Nynorsk" \
+        es "\u0065\u0073\u0070\u0061\u00F1\u006F\u006C" \
+        pt "\u0070\u006F\u0072\u0074\u0075\u0067\u0075\u00EA\u0073" \
+        pl "\u004A\u119\u007A\u0079\u006B\u0020\u0070\u006F\u006C\u0073\u006B\u0069" \
+        fi "suomen kieli" \
+        zh-hans "\u7C21\u9AD4" \
+        zh-hant "\u7E41\u9AD4" \
+        th "\uE20\uE32\uE29\uE32\uE44\uE17\uE22" \
+        jp "\u65E5\u672C\u8A9E" \
+        el "\u39D\u3AD\u3B1\u0020\u395\u3BB\u3BB\u3B7\u3BD\u3B9\u3BA\u3AC" \
+        sk "\u0073\u006C\u006F\u0076\u0065\u006E\u10D\u0069\u006E\u0061" \
+        cs "\u10D\u0065\u161\u0074\u0069\u006E\u0061" \
+        hu "magyar nyelv" \
+        tr "\u0054\u00FC\u0072\u006B\u00E7\u0065" \
+        ro "\u006C\u0069\u006D\u0062\u0061\u0020\u0072\u006F\u006D\u00E2\u006E\u103" \
+        hi "\u939\u93F\u928\u94D\u926\u940" \
+        ar "Arabic" \
+    ]
+}
+
+
+proc translate {english} {
+
+    if {$english == ""} { 
+        return "" 
+    }
+
+    if {[language] == "en"} {
+        return $english
+    }
+
+    #puts "lang: '[language]'"
+
+    global translation
+
+    if {[info exists translation($english)] == 1} {
+        # this word has been translated
+        array set available $translation($english)
+        if {[info exists available([language])] == 1} {
+            # this word has been translated into the desired non-english language
+            #puts "$available([language])"
+
+            #puts "translate: '[encoding convertfrom $available([language])]'"
+            return $available([language])
+        }
+    } 
+
+    # if no translation found, return the english text
+    if {$::android != 1} {
+        if {[info exists ::already_shown_trans($english)] != 1} {
+            set t [subst {"$english" \{}]
+            foreach {l d} [translation_langs_array] {
+                set translation($l) $english
+                append t [subst {$l "$english" }]
+            }
+            append t "\}"
+            puts "Appending new phrase: $english"
+            msg [stacktrace]
+            append_file "[homedir]/translation.tcl" $t
+            set ::already_shown_trans($english) 1
+        }
+    }
+
+    return $english
+}
+
+
 proc skin_directory {} {
     global screen_size_width
     global screen_size_height
@@ -746,6 +772,7 @@ proc defaultskin_directory_graphics {} {
 }
 
 proc saver_directory {} {
+
     global saver_directory 
     if {[info exists saver_directory] != 1} {
         global screen_size_width
@@ -1408,6 +1435,38 @@ proc verify_decent_tls_certificate {} {
     return $status
 }
 
+
+proc ifexists {fieldname2 {defvalue {}} } {
+    upvar $fieldname2 fieldname
+    
+    if {[info exists fieldname] == 1} {
+        return [subst "\$fieldname"]
+    } else {
+        if {$defvalue != ""} {
+            set fieldname $defvalue
+            return $defvalue
+        } else {
+            return ""
+        }
+    }
+    #return $defvalue
+}
+
+proc de1plus {} {
+    #puts "x: [package present de1plus 1.0]"
+    set x 0
+    catch {
+        catch {
+            if {[package present de1plus 1.0] >= 1} {
+            set x 1
+            }
+        }
+    }
+    return $x
+
+}
+
+
 proc start_app_update {} {
 
     set cert_check [verify_decent_tls_certificate]
@@ -1585,7 +1644,7 @@ proc start_app_update {} {
         write_file "[homedir]/manifest.txt" $remote_manifest
         puts "successful update"
         if {$files_moved > 0} {
-            set ::de1(app_update_button_label) [translate "Updated"]; 
+            set ::de1(app_update_button_label) "[translate "Updated"] $files_moved"; 
         } else {
             set ::de1(app_update_button_label) [translate "Up to date"]; 
         }
