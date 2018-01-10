@@ -1474,7 +1474,14 @@ proc start_app_update {} {
     set host "https://decentespresso.com"
     #set host "http://10.0.1.200:8000"
 
-    if {$::undroid == 1} {
+    set has_tls 0
+    catch {
+        package package present tls
+        set has_tls 1
+    }    
+
+
+    if {$has_tls == 1} {
         # undroid doesn't yet support https
         set host "http://decentespresso.com"
     }

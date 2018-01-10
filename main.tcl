@@ -8,6 +8,10 @@ package require sha256
 package require crc32
 package require BWidget
 
+package require http 2.5
+package require tls 1.6
+::http::register https 443 ::tls::socket
+
 package provide de1 1.0
 package provide de1_main 1.0
 package require de1_gui 

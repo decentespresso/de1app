@@ -8,6 +8,8 @@ package require de1_utils
 package require sha256
 package require crc32
 package require http 2.5
+package require tls 1.6
+::http::register https 443 ::tls::socket
 
 set tk ""
 catch {
