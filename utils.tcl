@@ -1598,7 +1598,6 @@ proc start_app_update {} {
             puts "WARNING: unable to find file $fn to copy to destination: '$dest' - a partial app update has occured."
             set success 0
         }
-        #file copy $fn $dest
     }
 
     if {$success == 1} {
