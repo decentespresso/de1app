@@ -1524,7 +1524,7 @@ proc start_app_update {} {
         if {[ifexists data(filesha)] != $filesha || [ifexists data(filesize)] != $filesize} {
             # if the CRCs or file size don't match, then we'll want to fetch this file
             set tofetch($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
-            #puts "SHA256 mismatch '[ifexists data(filesha)]' != '$filesha' : will fetch: $filename"
+            puts "SHA256 mismatch '[ifexists data(filesha)]' != '$filesha' : will fetch: $filename or filesize [ifexists data(filesize)] != $filesize"
         }
     }
 
