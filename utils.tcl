@@ -1553,12 +1553,15 @@ proc start_app_update {} {
         }
 
         # call 'update' to keep the gui responsive
+        update
 
         set newsha [calc_sha $fn]
         if {$arr(filesha) != $newsha} {
             puts "Failed to accurately download $k"
             return -1
         }
+
+        update
 
         puts "Successfully fetched $k -> $fn ($url)"
         #break
