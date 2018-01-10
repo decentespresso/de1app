@@ -1499,7 +1499,8 @@ proc start_app_update {} {
         puts "Local timestamp is the same as remote timestamp, so no need to update"
         
         # we can return at this point, if we're very confident that the sync is correct
-        #return
+        set ::de1(app_update_button_label) [translate "Up to date"]; 
+        return
     }
 
 
