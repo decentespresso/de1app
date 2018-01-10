@@ -40,6 +40,7 @@ if {$argv != ""} {
 
 	cd "/d/download/sync"
 	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1plus_source.zip de1plus
+	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1_source.zip de1
 }
 
 puts "done"
