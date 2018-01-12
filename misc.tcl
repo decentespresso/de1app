@@ -60,7 +60,7 @@ proc make_de1_dir {} {
         vars.tcl *
         misc.tcl *
         pkgIndex.tcl *
-        de1_icon_v2.png 1
+        de1_icon_v2.png *
         de1plus_icon_v2.png 1
         cloud_download_icon.png *
         create_de1_icon.tcl 1
