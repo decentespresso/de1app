@@ -66,6 +66,7 @@ proc make_de1_dir {} {
         create_de1_icon.tcl 1
         create_de1plus_icon.tcl 1
         appupdate.tcl *
+        autopair_with_de1.tcl *
 
         history/info.txt *
         fw/bootfwupdate.dat *

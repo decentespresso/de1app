@@ -1462,17 +1462,25 @@ proc de1plus {} {
 
 proc start_app_update {} {
 
+    if {$::android == 1} {
+        if {[borg networkinfo] == "none"} {
+            set ::de1(app_update_button_label) [translate "No Wifi network"]; 
+            return $::de1(app_update_button_label)
+        }
+    }
+
     set cert_check [verify_decent_tls_certificate]
     if {$cert_check != 1} {
         puts "https certification is not what we expect, update failed"
         foreach {k v} $cert_check {
             puts "$k : '$v'"
         }
-        return
+        set ::de1(app_update_button_label) [translate "Internet encryption problem"]; 
+        return $::de1(app_update_button_label)
     }
 
     set host "https://decentespresso.com"
-    #set host "http://10.0.1.200:8000"
+    set host "http://10.0.1.200:8000"
 
     set has_tls 0
     catch {
