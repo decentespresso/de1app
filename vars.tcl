@@ -1905,10 +1905,7 @@ proc save_this_espresso_to_history {} {
 	    }
 	    append espresso_data "}\n"
 
-
-
-		set fn "[homedir]/history/$clock.shot"
-
+		set fn "[homedir]/history/[clock format $clock -format "%Y%m%dT%H%M%S"].shot"
 		if {[espresso_elapsed length] > 5} {
 			# only save shots that have at least 5 data points
 	    	write_file $fn $espresso_data

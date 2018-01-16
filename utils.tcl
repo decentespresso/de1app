@@ -1291,11 +1291,12 @@ proc shot_history_export {} {
 
     set dirs [lsort -dictionary [glob -tails -directory "[homedir]/history/" *.shot]]
     set dd {}
+    puts -nonewline "Exporting"
     foreach d $dirs {
         array unset -nocomplain arr
         set rootname [file tail $d]
         array set arr [read_file "history/$d"]
-        puts "keys: [array names arr]"
+        #puts "keys: [array names arr]"
         set x 0
         set lines {}
         set lines [subst {espresso_elapsed, espresso_pressure, espresso_flow, espresso_flow_weight, espresso_temperature_basket, espresso_temperature_mix\n}]
@@ -1306,9 +1307,11 @@ proc shot_history_export {} {
         }
 
         set newfile "[file rootname $rootname].csv"
-        puts "$rootname, $newfile"
+        #puts "$rootname, $newfile"
+        puts -nonewline "."
         write_file "history/$newfile" $lines
     }
+    puts "done"
     return [lsort -dictionary -increasing $dd]
 
 }
