@@ -1503,10 +1503,17 @@ proc start_app_update {} {
     }
 
     set url_timestamp "$host/download/sync/$progname/timestamp.txt"
-    set remote_timestamp [string trim [decent_http_get $url_timestamp]]
+    set remote_timestamp {}
+    catch {
+        set remote_timestamp [string trim [decent_http_get $url_timestamp]]
+    }
     #puts "timestamp: '$remote_timestamp'"
     set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
-    if {$local_timestamp == $remote_timestamp} {
+    if {$remote_timestamp == ""} {
+        puts "unable to fetch remote timestamp"
+        set ::de1(app_update_button_label) [translate "Update error"]; 
+        return
+    } elseif {$local_timestamp == $remote_timestamp} {
         puts "Local timestamp is the same as remote timestamp, so no need to update"
         
         # we can return at this point, if we're very confident that the sync is correct
@@ -1516,7 +1523,10 @@ proc start_app_update {} {
 
 
     set url_manifest "$host/download/sync/$progname/manifest.txt"
-    set remote_manifest [string trim [decent_http_get $url_manifest]]
+    set remote_manifest {}
+    catch {
+        set remote_manifest [string trim [decent_http_get $url_manifest]]
+    }
     set local_manifest [string trim [read_file "[homedir]/manifest.txt"]]
 
     # load the local manifest into memory

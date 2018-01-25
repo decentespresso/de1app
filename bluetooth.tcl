@@ -352,27 +352,23 @@ proc app_exit {} {
 	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
 	after 10000 {exit}
 
-	catch {
+	if {$::scanning  == 1} {
 		ble stop $::ble_scanner
 	}
 	
-	catch {
-		msg "Closing de1"
-		if {$::de1(device_handle) != 0} {
-			ble close $::de1(device_handle)
-		}
+	msg "Closing de1"
+	if {$::de1(device_handle) != 0} {
+		ble close $::de1(device_handle)
+	}
+
+	msg "Closing skale"
+	if {$::de1(skale_device_handle) != 0} {
+		ble close $::de1(skale_device_handle)
 	}
 
 	catch {
-		msg "Closing skale"
-		if {$::de1(skale_device_handle) != 0} {
-			ble close $::de1(skale_device_handle)
-		}
-	}
-
-	catch {
-		ble unpair $::de1(de1_address)
-		ble unpair $::settings(bluetooth_address)
+		#ble unpair $::de1(de1_address)
+		#ble unpair $::settings(bluetooth_address)
 	}
 	exit
 }
@@ -588,6 +584,18 @@ proc stop_scanner {} {
 	#userdata_append "stop scanning" [list ble stop $::ble_scanner]
 }
 
+proc bluetooth_connect_to_devices {} {
+	if {$::settings(bluetooth_address) != ""} {
+		ble_connect_to_de1
+	}
+
+	#if {$::settings(skale_bluetooth_address) != ""} {
+		#ble_connect_to_skale
+	#}
+
+}
+
+
 set ::currently_connecting_de1_handle 0
 proc ble_connect_to_de1 {} {
 
@@ -606,7 +614,7 @@ proc ble_connect_to_de1 {} {
     set ::de1(device_handle) 0
 
 	catch {
-		ble unpair $::settings(bluetooth_address)
+		#ble unpair $::settings(bluetooth_address)
 	}
 
 	if {$::de1(device_handle) != "0"} {
@@ -848,13 +856,20 @@ proc de1_ble_handler { event data } {
 						append_to_de1_bluetooth_list $address
 						#msg "connected to de1 with handle $handle"
 						
-						de1_enable_temp_notifications
-						de1_enable_state_notifications
-						de1_enable_water_level_notifications
 						read_de1_version
-						de1_send_steam_hotwater_settings					
 						de1_send_shot_frames
 						de1_send_waterlevel_settings
+						de1_enable_state_notifications
+						de1_enable_water_level_notifications
+						de1_send_steam_hotwater_settings					
+						de1_enable_temp_notifications
+
+						if {$::settings(skale_bluetooth_address) != ""} {
+							# connect to the scale once the connection to the DE1 is set up
+							#userdata_append "BLE connect to scale" [list ble_connect_to_skale] 
+							ble_connect_to_skale
+						}
+						
 						#set_next_page off off
 						#start_idle
 
@@ -870,11 +885,12 @@ proc de1_ble_handler { event data } {
 			    		set ::de1(wrote) 0
 						set ::de1(skale_device_handle) $handle
 						skale_enable_lcd
+						#skale_enable_grams
 						skale_tare 
+						#skale_timer_off
 						skale_enable_button_notifications
-						skale_enable_grams
-						skale_timer_off
 						skale_enable_weight_notifications
+						skale_enable_lcd
 
 						if {$::de1(device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning
@@ -1245,6 +1261,9 @@ proc scanning_restart {} {
 	if {$::android != 1} {
 		set ::scanning 1
 		after 3000 { set scanning 0 }
+	} else {
+		# only scan for a few seconds
+		after 10000 { stop_scanner }
 	}
 
 	set ::scanning 1
