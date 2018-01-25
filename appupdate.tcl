@@ -1,15 +1,21 @@
 #!/usr/local/bin/tclsh
 
 cd "[file dirname [info script]]/"
+source "updater.tcl"
 
-source pkgIndex.tcl
-package require de1_utils
+#determine_if_android
+
+#source pkgIndex.tcl
+#package require de1_utils
 #package require snit
 package require sha256
 package require crc32
 package require http 2.5
 package require tls 1.6
 ::http::register https 443 ::tls::socket
+
+# this minimal version doesn't do translations so as to not have any dependencies
+proc translate {x} {return $x}
 
 set tk ""
 catch {
