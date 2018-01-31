@@ -3,7 +3,7 @@
 cd "[file dirname [info script]]/"
 source "updater.tcl"
 
-#determine_if_android
+determine_if_android
 
 #source pkgIndex.tcl
 #package require de1_utils
@@ -14,7 +14,6 @@ package require http 2.5
 package require tls 1.6
 ::http::register https 443 ::tls::socket
 
-# this minimal version doesn't do translations so as to not have any dependencies
 proc translate {x} {return $x}
 
 set tk ""
@@ -38,12 +37,12 @@ if {$err != 0} {
 
 if {$tk != ""} {
 	if {$success == 1} {
-		.hello configure -text [ifexists ::de1(app_update_button_label)] 
+		.hello configure -text "[ifexists ::de1(app_update_button_label)]\n\nTap screen to exit."
 	} else {
-		.hello configure -text "Failed.\n------------\n\nError info:\n------------\n$errorInfo" 
+		.hello configure -text "Failed.\n------------\n\nError info:\n------------\n$errorInfo\n\nTap screen to exit." 
 	}
 }
 
 ##
 
-pause 2000
+#pause 2000

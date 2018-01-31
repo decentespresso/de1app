@@ -715,7 +715,7 @@ proc append_to_skale_bluetooth_list {address} {
 }
 
 proc de1_ble_handler { event data } {
-	#msg "de1 ble_handler $event $data"
+	msg "de1 ble_handler $event $data"
 	#set ::de1(wrote) 0
 	#msg "ble event: $event"
 
@@ -856,13 +856,15 @@ proc de1_ble_handler { event data } {
 						append_to_de1_bluetooth_list $address
 						#msg "connected to de1 with handle $handle"
 						
-						read_de1_version
-						de1_send_shot_frames
-						de1_send_waterlevel_settings
 						de1_enable_state_notifications
+						de1_enable_temp_notifications
+						read_de1_version
+						#de1_send_waterlevel_settings
 						de1_enable_water_level_notifications
 						de1_send_steam_hotwater_settings					
-						de1_enable_temp_notifications
+						de1_send_shot_frames
+						#de1_enable_temp_notifications
+						#de1_enable_state_notifications
 
 						if {$::settings(skale_bluetooth_address) != ""} {
 							# connect to the scale once the connection to the DE1 is set up
@@ -1155,7 +1157,7 @@ proc de1_ble_handler { event data } {
 					    	if {$address == $::settings(bluetooth_address)} {
 								if {$cuuid == "0000A002-0000-1000-8000-00805F9B34FB"} {
 									parse_state_change $value arr
-						    		msg "Confirmed state change: '[array get arr]'"
+						    		msg "Confirmed state change written to DE1: '[array get arr]'"
 								} elseif {$cuuid == "0000A006-0000-1000-8000-00805F9B34FB"} {
 									msg "firmware write ack recved: [string length $value] bytes: $value : [array get arr2]"
 									firmware_upload_next

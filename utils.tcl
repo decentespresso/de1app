@@ -871,40 +871,6 @@ proc say {txt sndnum} {
 }
 
 
-proc fast_write_open {fn parms} {
-    set success 0
-    set f 0
-    set errcode [catch {
-        set f [open $fn $parms]
-        fconfigure $f -blocking 0
-        fconfigure $f -buffersize 1000000
-        set success 1
-    }]
-
-    if {$errcode != 0} {
-        msg "fast_write_open $::errorInfo"
-    }
-
-    return $f
-    #return ""
-}
-
-proc write_file {filename data} {
-    set success 0
-    set errcode [catch {
-        set fn [fast_write_open $filename w]
-        puts $fn $data 
-        close $fn
-        set success 1
-    }]
-
-    if {$errcode != 0} {
-        msg "write_file '$filename' $::errorInfo"
-    }
-
-    return $success
-}
-
 proc append_file {filename data} {
     set success 0
     set errcode [catch {
@@ -1260,61 +1226,8 @@ proc shot_history_export {} {
 
 
 
-proc percent20encode {in} {
-    set out $in
-    regsub -all " " $out "%20" out
-    #regsub -all "&" $out "%26" out
-    regsub -all {"} $out "%22" out
-    regsub -all {#} $out "%23" out
-    regsub -all {'} $out "%27" out
-    regsub -all {!} $out "%21" out
-    regsub -all {:} $out "%3A" out
-    regsub -all {;} $out "%3B" out
-    regsub -all {#} $out "%23" out
-    #regsub -all {=} $out "%3D" out
-    regsub -all {:} $out "%3A" out
-    regsub -all "\\?" $out "%3F" out
-    regsub -all {@} $out "%40" out
-    regsub -all {>} $out "%3E" out
-    regsub -all {/} $out "%2F" out
-    regsub -all {<} $out "%3C" out
-    regsub -all {\$} $out "%24" out
-    regsub -all {`} $out "%60" out
-    regsub -all {\[} $out "%5B" out
-    regsub -all {\]} $out "%5D" out
-    regsub -all {~} $out "%7E" out
-    regsub -all {\^} $out "%5E" out
-    regsub -all {\|} $out "%7C" out
-    regsub -all "," $out "%2C" out
-    regsub -all "\\)" $out "%29" out
-    regsub -all "\\(" $out "%28" out
-    
-    #puts "urlenc: '$in' / '$out'"
-    return $out
-}
 
 
 
 
-proc ifexists {fieldname2 {defvalue {}} } {
-    upvar $fieldname2 fieldname
-    
-    if {[info exists fieldname] == 1} {
-        return [subst "\$fieldname"]
-    } else {
-        if {$defvalue != ""} {
-            set fieldname $defvalue
-            return $defvalue
-        } else {
-            return ""
-        }
-    }
-    #return $defvalue
-}
-
-
-
-proc calc_sha {source} {
-    return [::sha2::sha256 -hex -filename $source]
-}
 

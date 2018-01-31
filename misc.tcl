@@ -58,6 +58,7 @@ proc make_de1_dir {} {
         utils.tcl *
         main.tcl *
         vars.tcl *
+        updater.tcl *
         misc.tcl *
         pkgIndex.tcl *
         de1_icon_v2.png *
