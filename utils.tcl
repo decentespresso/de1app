@@ -574,6 +574,7 @@ proc translation_langs_array {} {
         ro "\u006C\u0069\u006D\u0062\u0061\u0020\u0072\u006F\u006D\u00E2\u006E\u103" \
         hi "\u939\u93F\u928\u94D\u926\u940" \
         ar "Arabic" \
+        nl "Nederlands" \
     ]
 }
 
