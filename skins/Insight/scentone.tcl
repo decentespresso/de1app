@@ -117,7 +117,7 @@ add_de1_text "describe_espresso2" 80 790 -text [translate "Beans"] -font Helv_8_
 	add_de1_text "describe_espresso2" 540 1100 -text [translate "Roast level:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
 	add_de1_widget "describe_espresso2" entry 550 1090 {} -width 28 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_level) 
 
-	add_de1_text "describe_espresso2" 540 1180 -text [translate "Notes:"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_text "describe_espresso2" 540 1180 -text [translate "Notes"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
 	add_de1_widget "describe_espresso2" multiline_entry 550 1180 {} -width 22 -height 3 -font Helv_9  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(bean_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 
@@ -133,8 +133,8 @@ add_de1_text "describe_espresso2" 1340 560 -text [translate "Enable these featur
 	add_de1_text "describe_espresso2" 1340 850 -text [translate "God shot"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 		add_de1_text "describe_espresso2" 1650 1016 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 		add_de1_text "describe_espresso2" 2250 1016 -text [translate "Erase"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-		add_de1_button "describe_espresso2" {say [translate {set}] $::settings(sound_button_in); god_shot_save; set_next_page off off; page_show off} 1300 900 1900 1116
-		add_de1_button "describe_espresso2" {say [translate {clear}] $::settings(sound_button_in); god_shot_clear; set_next_page off off; page_show off} 1910 900 2550 1116
+		add_de1_button "describe_espresso2" {say [translate {Saved}] $::settings(sound_button_in); god_shot_save; set_next_page off off; page_show off} 1300 900 1900 1116
+		add_de1_button "describe_espresso2" {say [translate {Cancel}] $::settings(sound_button_in); god_shot_clear; set_next_page off off; page_show off} 1910 900 2550 1116
 
 
 
