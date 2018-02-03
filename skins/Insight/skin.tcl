@@ -128,7 +128,6 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 267 {
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max $::de1(max_pressure) -subdivisions 5 -majorticks {1 3 5 7 9 11} 
-
 } -plotbackground #FFFFFF -width [rescale_x_skin $charts_width] -height [rescale_y_skin 406] -borderwidth 1 -background #FFFFFF -plotrelief flat 
 
 add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
