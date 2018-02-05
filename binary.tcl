@@ -990,6 +990,9 @@ proc update_de1_shotvalue {packed} {
 	set ::de1(goal_temperature) $ShotSample(SetHeadTemp)
 
 	append_live_data_to_espresso_chart
+
+	# return the parsed array of what we just received so that we can display it to a debug log if desired
+	return [array get ShotSample]
 }
 
 proc convert_3_char_to_U24P16 {char1 char2 char3} {

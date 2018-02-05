@@ -346,8 +346,8 @@ proc run_next_userdata_cmd {} {
 
 proc app_exit {} {
 
-	exit
-	return
+	#exit
+	#return
 
 	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
 	after 10000 {exit}
@@ -367,8 +367,8 @@ proc app_exit {} {
 	}
 
 	catch {
-		#ble unpair $::de1(de1_address)
-		#ble unpair $::settings(bluetooth_address)
+		ble unpair $::de1(de1_address)
+		ble unpair $::settings(bluetooth_address)
 	}
 	exit
 }
@@ -614,7 +614,7 @@ proc ble_connect_to_de1 {} {
     set ::de1(device_handle) 0
 
 	catch {
-		#ble unpair $::settings(bluetooth_address)
+		ble unpair $::settings(bluetooth_address)
 	}
 
 	if {$::de1(device_handle) != "0"} {
@@ -717,7 +717,7 @@ proc append_to_skale_bluetooth_list {address} {
 proc de1_ble_handler { event data } {
 	msg "de1 ble_handler $event $data"
 	#set ::de1(wrote) 0
-	#msg "ble event: $event"
+	#msg "ble event: $event $data"
 
 	set previous_wrote 0
 	set previous_wrote [ifexists ::de1(wrote)]
@@ -855,16 +855,14 @@ proc de1_ble_handler { event data } {
 						set ::de1(device_handle) $handle
 						append_to_de1_bluetooth_list $address
 						#msg "connected to de1 with handle $handle"
-						
-						de1_enable_state_notifications
-						de1_enable_temp_notifications
+
 						read_de1_version
-						#de1_send_waterlevel_settings
+						de1_send_waterlevel_settings
 						de1_enable_water_level_notifications
 						de1_send_steam_hotwater_settings					
 						de1_send_shot_frames
-						#de1_enable_temp_notifications
-						#de1_enable_state_notifications
+						de1_enable_state_notifications
+						de1_enable_temp_notifications
 
 						if {$::settings(skale_bluetooth_address) != ""} {
 							# connect to the scale once the connection to the DE1 is set up
@@ -950,8 +948,8 @@ proc de1_ble_handler { event data } {
 
 						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
-							update_de1_shotvalue $value
-							#msg "shotvalue" 
+							set results [update_de1_shotvalue $value]
+							msg "Shotvalue received: $results" 
 							#set ::de1(wrote) 0
 							#run_next_userdata_cmd
 							set do_this 0
