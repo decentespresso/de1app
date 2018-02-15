@@ -676,7 +676,12 @@ proc add_de1_widget {args} {
 	#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
 	set x [rescale_x_skin [lindex $args 2]]
 	set y [rescale_y_skin [lindex $args 3]]
-	set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden]
+
+	if {$widgettype == "scrollbar"} {
+		set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden -height 245]
+	} else {
+		set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden]
+	}
 	#puts "winfo: [winfo children .can]"
 	#.can bind $windowname [platform_button_press] "msg click"
 	
@@ -996,6 +1001,7 @@ proc show_settings { {tab_to_show ""} } {
 	}
 	scheduler_feature_hide_show_refresh
 	preview_profile 
+	set_profiles_scrollbar_dimensions
 }
 
 proc page_to_show_when_off {page_to_show} {
@@ -1393,6 +1399,7 @@ proc ui_startup {} {
 	setup_environment
 	load_settings
 	#ble_find_de1s
+	
 	bluetooth_connect_to_devices
 	#if {$::android == 1} {
 		#ble_connect_to_de1
@@ -1599,6 +1606,21 @@ proc water_level_color_check {widget} {
 	$widget configure -background $color
 	after $blinkrate water_level_color_check $widget
 }
+
+# convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
+proc listbox_moveto {lb dest1 dest2} {
+	$lb yview moveto $dest1
+}
+
+# convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
+proc scale_scroll {lb dest1 dest2} {
+	upvar $lb fieldname
+	set fieldname $dest1
+	#$lb yview moveto $dest1
+#	puts "$lb $dest1 $dest2"
+	
+}
+
 
 
 #install_de1_app_icon

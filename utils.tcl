@@ -18,13 +18,6 @@ proc setup_environment {} {
     global android
     global undroid
 
-    #puts "android: $android"
-    #puts "undroid: $undroid"
-    #set undroid 1
-    #set android 1
-
-    #wm attributes . -fullscreen 1
-
     if {$android == 1 || $undroid == 1} {
         #package require BLT
         #namespace import blt::*
@@ -33,18 +26,12 @@ proc setup_environment {} {
         # this causes the app to exit if the main window is closed
         wm protocol . WM_DELETE_WINDOW exit
 
-        #borg systemui 0x1E02
-        #borg brightness 0
-        #borg brightness $::settings(app_brightness)
-        #borg systemui $::android_full_screen_flags
-
         # force the screen into landscape if it isn't yet
         msg "orientation: [borg screenorientation]"
         if {[borg screenorientation] != "landscape" && [borg screenorientation] != "reverselandscape"} {
             borg screenorientation landscape
         }
 
-        #wm attributes . -fullscreen 1
         sdltk screensaver off
         
         # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
@@ -55,9 +42,6 @@ proc setup_environment {} {
         set width [winfo screenwidth .]
         set height [winfo screenheight .]
 
-
-        # sets immersive mode
-        #set fontm 1
 
         # john: it would make sense to save the previous screen size so that we can start up faster, without waiting for the chrome to disappear
 
@@ -143,10 +127,12 @@ proc setup_environment {} {
         }            
 
 
-        font create global_font -family $global_font_name -size [expr {int($fontm * 16)}] 
+        font create global_font -family $global_font_name -size [expr {int($fontm * 19)}] 
 
         font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
         font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
+        font create Helv_11_bold -family $helvetica_bold_font -size [expr {int($fontm * 20)}] 
+        font create Helv_11 -family $helvetica_font -size [expr {int($fontm * 20)}] 
         font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 19)}] 
         font create Helv_10 -family $helvetica_font -size [expr {int($fontm * 19)}] 
         font create Helv_1 -family $helvetica_font -size 1
@@ -169,7 +155,9 @@ proc setup_environment {} {
         font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 34)}] 
         font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 36)}]
 
-        sdltk touchtranslate 0
+        # enable swipe gesture translating, to scroll through listboxes
+        sdltk touchtranslate 1
+
         wm maxsize . $screen_size_width $screen_size_height
         wm minsize . $screen_size_width $screen_size_height
         wm attributes . -fullscreen 1
@@ -186,8 +174,9 @@ proc setup_environment {} {
         #    set ::settings(timer_interval) 1000
         #}
 
-        # preload the speaking engine
-        borg speak { }
+        # preload the speaking engine 
+        # john 2/12/18 re-enable this when TTS feature is enabled
+        # borg speak { }
 
         #puts "1d"
         source "bluetooth.tcl"
@@ -229,6 +218,9 @@ proc setup_environment {} {
 
         #set screen_size_width 640
         #set screen_size_height 400
+
+        #set screen_size_width 320
+        #set screen_size_height 200
 
         #set screen_size_width 960 
         #set screen_size_height 600
@@ -289,19 +281,6 @@ proc setup_environment {} {
 
         #   puts "setarting up with langage: [language]"
         set ::helvetica_font $regularfont
-
-        #catch {
-            # this will only work if we're running under undroidwish
-            #set regularfont [sdltk addfont "fonts/notosansuiregular.ttf"]
-            #puts "helvetica_font: $helvetica_font"
-            #set boldfont [sdltk addfont "fonts/notosansuibold.ttf"]
-
-            #sdltk touchtranslate 0
-            #wm maxsize . $screen_size_width $screen_size_height
-            #wm minsize . $screen_size_width $screen_size_height
-
-        #}
-
         font create Helv_1 -family $regularfont -size 1
         font create Helv_4 -family $regularfont -size 10
         font create Helv_5 -family $regularfont -size 12
@@ -316,7 +295,9 @@ proc setup_environment {} {
         font create Helv_9 -family $regularfont -size [expr {int($fontm * 23)}]
         font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 21)}]
         font create Helv_10 -family $regularfont -size [expr {int($fontm * 23)}]
-        font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 25)}]
+        font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 23)}]
+        font create Helv_11 -family $regularfont -size [expr {int($fontm * 25)}]
+        font create Helv_11_bold -family $boldfont -size [expr {int($fontm * 25)}]
         font create Helv_12 -family $regularfont -size [expr {int($fontm * 27)}]
         font create Helv_12_bold -family $boldfont -size [expr {int($fontm * 30)}]
         font create Helv_15 -family $regularfont -size [expr {int($fontm * 30)}]
@@ -329,7 +310,7 @@ proc setup_environment {} {
 
 
         #set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-        font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 
+        font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 24)}] 
 
         #set ::global_font "Helv_10"
         
@@ -405,7 +386,7 @@ proc random_saver_file {} {
 
 
     if {[info exists ::saver_files_cache] != 1} {
-        puts "building saver_files_cache"
+        #puts "building saver_files_cache"
         set ::saver_files_cache {}
  
         set savers {}
@@ -442,7 +423,7 @@ proc random_saver_file {} {
 proc random_splash_file {} {
     if {[info exists ::splash_files_cache] != 1} {
 
-        puts "building splash_files_cache"
+        #puts "building splash_files_cache"
         set ::splash_files_cache {}
  
         set savers {}
@@ -601,7 +582,13 @@ proc translate {english} {
             #puts "$available([language])"
 
             #puts "translate: '[encoding convertfrom $available([language])]'"
-            return $available([language])
+            if {$available([language]) != ""} {
+                # if the translated version of the English is NOT blank, return it
+                return $available([language])
+            } else {
+                # if the translation is blank, show the English instead
+                return $english
+            }
         }
     } 
 
@@ -1019,6 +1006,7 @@ proc skin_convert {indir} {
         puts "No jpg files found in '$indir'"
         return
     }
+#        "320x200" 4 4 
     set dirs [list \
         "1280x800" 2 2 \
     ]

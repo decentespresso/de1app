@@ -358,12 +358,16 @@ proc app_exit {} {
 	
 	msg "Closing de1"
 	if {$::de1(device_handle) != 0} {
-		ble close $::de1(device_handle)
+		catch {
+			ble close $::de1(device_handle)
+		}
 	}
 
 	msg "Closing skale"
 	if {$::de1(skale_device_handle) != 0} {
-		ble close $::de1(skale_device_handle)
+		catch {
+			ble close $::de1(skale_device_handle)
+		}
 	}
 
 	catch {
@@ -585,13 +589,13 @@ proc stop_scanner {} {
 }
 
 proc bluetooth_connect_to_devices {} {
-	if {$::settings(bluetooth_address) != ""} {
+	#if {$::settings(bluetooth_address) != ""} {
 		ble_connect_to_de1
-	}
-
-	#if {$::settings(skale_bluetooth_address) != ""} {
-		#ble_connect_to_skale
 	#}
+
+	if {$::settings(skale_bluetooth_address) != ""} {
+		ble_connect_to_skale
+	}
 
 }
 
@@ -605,28 +609,36 @@ proc ble_connect_to_de1 {} {
 
 	    msg "Connected to fake DE1"
 		set ::de1(device_handle) 1
+
+		# example binary string containing binary version string
+		set version_value "\x01\x00\x00\x00\x03\x00\x00\x00\xAC\x1B\x1E\x09\x01"
+		parse_binary_version_desc $version_value arr2
+		set ::de1(version) [array get arr2]
+
 		return
-	}
-
-
-    set ::de1(connect_time) 0
-    set ::de1(scanning) 0
-    set ::de1(device_handle) 0
-
-	catch {
-		ble unpair $::settings(bluetooth_address)
-	}
-
-	if {$::de1(device_handle) != "0"} {
-		catch {
-			ble close $::de1(device_handle)
-		}
 	}
 
 	if {$::settings(bluetooth_address) == ""} {
 		# if no bluetooth address set, then don't try to connect
 		return ""
 	}
+
+    set ::de1(connect_time) 0
+    set ::de1(scanning) 0
+
+	if {$::de1(device_handle) != "0"} {
+		catch {
+			msg "disconnecting from DE1"
+			ble close $::de1(device_handle)
+			set ::de1(device_handle) "0"
+			after 1000 ble_connect_to_de1
+		}
+		catch {
+			#ble unpair $::settings(bluetooth_address)
+		}
+
+	}
+    set ::de1(device_handle) 0
 
     set ::de1_name "DE1"
 	if {[catch {
@@ -654,7 +666,18 @@ proc ble_connect_to_skale {} {
 	}
 
 	if {$::de1(skale_device_handle) != "0"} {
-		msg "Skale already connected, so not reconnecting to it"
+		msg "Skale already connected, so not disconnecting before reconnecting to it"
+		#return
+		catch {
+			ble close $::de1(skale_device_handle)
+			set ::de1(skale_device_handle) 0
+			after 1000 ble_connect_to_skale
+		}
+
+	}
+
+	if {$::currently_connecting_skale_handle != 0} {
+		msg "Already trying to connect to Skale, so don't try again"
 		return
 	}
 
@@ -665,7 +688,7 @@ proc ble_connect_to_skale {} {
 	}
 
 	catch {
-		#ble unpair $::settings(skale_bluetooth_address)
+		ble unpair $::settings(skale_bluetooth_address)
 	}
 
 	if {[catch {
@@ -715,7 +738,7 @@ proc append_to_skale_bluetooth_list {address} {
 }
 
 proc de1_ble_handler { event data } {
-	msg "de1 ble_handler $event $data"
+	#msg "de1 ble_handler $event $data"
 	#set ::de1(wrote) 0
 	#msg "ble event: $event $data"
 
@@ -728,7 +751,7 @@ proc de1_ble_handler { event data } {
     dict with data {
 
     	if {$state != "scanning"} {
-    		msg "de1 ble_handler $event $data"
+    		#msg "de1b ble_handler $event $data"
     	}
 
 		switch -- $event {
@@ -749,7 +772,7 @@ proc de1_ble_handler { event data } {
 					append_to_skale_bluetooth_list $address
 					#msg "$::settings(skale_bluetooth_address) == $address && $::currently_connecting_skale_handle == 0"
 					if {$::settings(skale_bluetooth_address) == $address && $::currently_connecting_skale_handle == 0} {
-						msg "connecing to skale"
+						msg "connecting to skale"
 						ble_connect_to_skale
 					}
 
@@ -786,7 +809,7 @@ proc de1_ble_handler { event data } {
 
 					    # temporarily disable this feature as it's not clear that it's needed.
 					    #set ::settings(max_ble_connect_attempts) 99999999
-					    #set ::settings(max_ble_connect_attempts) 10
+					    set ::settings(max_ble_connect_attempts) 10
 					    
 					    incr ::failed_attempt_count_connecting_to_de1
 					    if {$::failed_attempt_count_connecting_to_de1 > $::settings(max_ble_connect_attempts) && $::successful_de1_connection_count > 0} {
@@ -850,6 +873,7 @@ proc de1_ble_handler { event data } {
 					    #set ::de1(found) 1
 					    set ::de1(connect_time) [clock seconds]
 					    set ::de1(last_ping) [clock seconds]
+					    set ::currently_connecting_de1_handle 0
 
 					    #msg "Connected to DE1"
 						set ::de1(device_handle) $handle
@@ -858,13 +882,14 @@ proc de1_ble_handler { event data } {
 
 						read_de1_version
 						de1_send_waterlevel_settings
-						de1_enable_water_level_notifications
 						de1_send_steam_hotwater_settings					
 						de1_send_shot_frames
+						de1_enable_water_level_notifications
 						de1_enable_state_notifications
 						de1_enable_temp_notifications
+						read_de1_version
 
-						if {$::settings(skale_bluetooth_address) != ""} {
+						if {$::settings(skale_bluetooth_address) != "" && $::de1(skale_device_handle) == 0 } {
 							# connect to the scale once the connection to the DE1 is set up
 							#userdata_append "BLE connect to scale" [list ble_connect_to_skale] 
 							ble_connect_to_skale
@@ -891,6 +916,7 @@ proc de1_ble_handler { event data } {
 						skale_enable_button_notifications
 						skale_enable_weight_notifications
 						skale_enable_lcd
+						set ::currently_connecting_skale_handle 0
 
 						if {$::de1(device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning
@@ -900,7 +926,8 @@ proc de1_ble_handler { event data } {
 						#run_next_userdata_cmd
 
 					} else {
-						msg "doubled connection notification, already connected with $address"
+						msg "doubled connection notification from $address, already connected with $address"
+						#ble close $handle
 					}
 
 
@@ -949,7 +976,7 @@ proc de1_ble_handler { event data } {
 						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							set results [update_de1_shotvalue $value]
-							msg "Shotvalue received: $results" 
+							#msg "Shotvalue received: $results" 
 							#set ::de1(wrote) 0
 							#run_next_userdata_cmd
 							set do_this 0
@@ -967,7 +994,7 @@ proc de1_ble_handler { event data } {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_version_desc $value arr2
-							msg "version data received [string length $value] bytes: $value  : [array get arr2] / $event $data"
+							msg "version data received [string length $value] bytes: '$value' \"[convert_string_to_hex $value]\"  : '[array get arr2]'/ $event $data"
 							set ::de1(version) [array get arr2]
 
 							set ::de1(wrote) 0
@@ -1062,7 +1089,7 @@ proc de1_ble_handler { event data } {
 							set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
 
 							if {$diff != 0} {
-								msg "Diff: [round_to_two_digits $diff] - mult: [round_to_two_digits $multiplier1] - wt [round_to_two_digits $thisweight] - sen [round_to_two_digits $sensorweight]"
+								#msg "Diff: [round_to_two_digits $diff] - mult: [round_to_two_digits $multiplier1] - wt [round_to_two_digits $thisweight] - sen [round_to_two_digits $sensorweight]"
 							}
 
 
@@ -1251,6 +1278,15 @@ proc scanning_state_text {} {
 	if {$::scanning == 1} {
 		return [translate "Searching"]
 	}
+
+	if {$::currently_connecting_de1_handle != 0} {
+		return [translate "Connecting"]
+	} 
+
+	if {[expr {$::de1(connect_time) + 5}] > [clock seconds]} {
+		return [translate "Connected"]
+	}
+
 	return [translate "Search"]
 }
 

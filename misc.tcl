@@ -100,7 +100,7 @@ proc make_de1_dir {} {
         skins/default/1280x800/filling_tank.jpg *
         skins/default/1280x800/fill_tank.jpg *
         skins/default/1280x800/cleaning.jpg *
-        skins/default/1280x800/settings_message.jpg  *
+        skins/default/1280x800/settings_message.png  *
         skins/default/1280x800/descaling.jpg *
         skins/default/1280x800/settings_1.png *
         skins/default/1280x800/settings_2.png 1
@@ -120,7 +120,7 @@ proc make_de1_dir {} {
         skins/default/2560x1600/filling_tank.jpg *
         skins/default/2560x1600/fill_tank.jpg *
         skins/default/2560x1600/cleaning.jpg *
-        skins/default/2560x1600/settings_message.jpg  *
+        skins/default/2560x1600/settings_message.png  *
         skins/default/2560x1600/descaling.jpg *
         skins/default/2560x1600/settings_1.png *
         skins/default/2560x1600/settings_2.png 1

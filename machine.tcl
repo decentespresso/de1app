@@ -65,7 +65,7 @@ array set ::de1 {
 	has_plumbing_kit 0
 	max_pressure 12
 	max_flowrate 6
-	version "1.0"
+	version ""
 	min_temperature 80
 	max_temperature 100
 	goal_flow 2
@@ -497,12 +497,12 @@ proc start_idle {} {
 
 
 	if {$::de1(skale_device_handle) == 0 && $::settings(skale_bluetooth_address) != ""} {
-		scanning_restart
+		#scanning_restart
 		ble_connect_to_skale
 	}
 
 	if {$::de1(device_handle) == 0} {
-		scanning_restart
+		#scanning_restart
 		update_de1_state "$::de1_state(Idle)\x0"
 		ble_connect_to_de1
 		return

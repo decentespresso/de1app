@@ -1022,6 +1022,10 @@ proc backup_settings {} {
 }
 
 proc skin_directories {} {
+	if {[info exists ::skin_directories_cache] == 1} {
+		return $::skin_directories_cache
+	}
+
 	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/skins/" *]]
 	#puts "skin_directories: $dirs"
 	set dd {}
@@ -1031,7 +1035,10 @@ proc skin_directories {} {
 			continue
 		}
 	    
-	    if {[string first "package require de1plus" [read_file "[homedir]/skins/$d/skin.tcl"]] != -1} {
+	    set fn "[homedir]/skins/$d/skin.tcl"
+	    set skintcl [read_file $fn]
+	    #set skintcl ""
+	    if {[string first "package require de1plus" $skintcl] != -1} {
 	    	if {!$de1plus} {
 		    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
 		    	#puts "Skipping $d"
@@ -1044,7 +1051,8 @@ proc skin_directories {} {
 
 		lappend dd $d		
 	}
-	return $dd
+	set ::skin_directories_cache [lsort -dictionary -increasing $dd]
+	return $::skin_directories_cache
 }
 
 
@@ -1075,11 +1083,11 @@ proc fill_skin_listbox {} {
 
 	set cnt 0
 	set ::current_skin_number 0
-	foreach d [lsort -dictionary -increasing [skin_directories]] {
+	foreach d [skin_directories] {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
-		$widget insert $cnt $d
+		$widget insert $cnt [translate $d]
 		if {$::settings(skin) == $d} {
 			set ::current_skin_number $cnt
 		}
@@ -1154,9 +1162,17 @@ proc profile_directories {} {
 		    set ::de1plus_profile([file rootname $d]) 1
 		}
 
-		lappend dd [file rootname $d]
+		set rootname [file rootname $d]
+
+		if {$rootname == "CVS" || $rootname == "example"} {
+			continue
+		}		
+
+		lappend dd $rootname
 	}
-	return $dd
+
+
+	return [lsort -dictionary -increasing $dd]
 }
 
 proc delete_selected_profile {} {
@@ -1257,11 +1273,12 @@ proc fill_profiles_listbox {} {
 	set cnt 0
 	set ::current_profile_number 0
 
-	foreach d [lsort -dictionary -increasing [profile_directories]] {
-		if {$d == "CVS" || $d == "example"} {
-			continue
-		}
-		$widget insert $cnt $d 
+	foreach d [profile_directories] {
+		#if {$d == "CVS" || $d == "example"} {
+		#	continue
+		#}
+		$widget insert $cnt [translate $d]
+
 		#puts "$widget insert $cnt $d"
 		if {$::settings(profile) == $d} {
 			set ::current_profile_number $cnt
@@ -1622,8 +1639,11 @@ proc preview_tablet_skin {} {
 		#return
 		$w selection set $::current_skin_number
 	}
-	set skindir [$w get [$w curselection]]
+
+
+	set skindir [lindex [skin_directories] [$w curselection]]
 	set ::settings(skin) $skindir
+	#puts "skindir: '$skindir'"
 
 	set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
 	if {[file exists $fn] != 1} {
@@ -1690,12 +1710,19 @@ proc change_bluetooth_device {} {
 	}
 	set profile [$w get [$w curselection]]
 	if {$profile == $::settings(bluetooth_address)} {
-		# if no change in setting, do nothing.
-		return
+		# if no change in setting, then disconnect/reconnect.
+		#return
+		msg "reconnecting to DE1"
 	}
-	set ::settings(bluetooth_address) $profile
 
-	save_settings_and_ask_to_restart_app
+	if {$profile != $::settings(bluetooth_address)} {
+		# if no change in setting, then disconnect/reconnect.
+		set ::settings(bluetooth_address) $profile
+		save_settings
+	}
+
+	# disconnect (if necessary) and reconnect to the DE1 now
+	ble_connect_to_de1
 }
 
 
@@ -1707,16 +1734,20 @@ proc change_skale_bluetooth_device {} {
 	}
 	if {[$w curselection] == ""} {
 		# no current selection
-		return ""
+		#return ""
+		msg "re-connecting to scale"
+		ble_connect_to_skale
+		return
 	}
+
 	set profile [$w get [$w curselection]]
 	if {$profile == $::settings(skale_bluetooth_address)} {
 		# if no change in setting, do nothing.
-		return
+		#return
 	}
 	set ::settings(skale_bluetooth_address) $profile
-
-	save_settings_and_ask_to_restart_app
+	save_settings
+	ble_connect_to_skale
 }
 
 
@@ -1747,7 +1778,7 @@ proc preview_profile {} {
 		}
 
 		#set profile [$w get [$w curselection]]
-		set profile [$w get [$w curselection]]
+		set profile [lindex [profile_directories] [$w curselection]]
 		#set profile [$w get active]
 		set ::settings(profile) $profile
 		set ::settings(profile_notes) ""
@@ -1758,6 +1789,10 @@ proc preview_profile {} {
 
 		load_settings_vars $fn
 		set ::settings(profile_to_save) $::settings(profile)
+
+		if {[language] != "en"} {
+			set ::settings(profile_notes) "z[translate $::settings(profile_notes)]"
+		}
 
 		make_current_listbox_item_blue $::globals(profiles_listbox)
 
@@ -1954,12 +1989,13 @@ proc espresso_history_save_from_gui {} {
 	if {$substate_txt != "ready"} {
 		set state [translate "WAIT"]
 	} else {
-		if {$::settings(history_saved) != 1} { 
-			set state [translate "SAVING"] 
-		} else {
-			set state [translate "RESTART"]
-		}; 
+#		if {$::settings(history_saved) != 1} { 
+	#		set state [translate "SAVING"] 
+		#} else {
+		#}; 
+		set state [translate "RESTART"]
 	}
+	#set state [translate "WAIT"]
 	save_this_espresso_to_history; 
 	return $state
 }
@@ -2123,3 +2159,8 @@ proc firmware_uploaded_label {} {
 	}
 
 }
+proc de1_version_string {} {
+	array set v $::de1(version)
+	return "HW=[ifexists v(BLEFWMajor)].[ifexists v(BLEFWMinor)].[ifexists v(P0BLECommits)].[ifexists v(Dirty)] API=[ifexists v(APIVersion)] SHA=[ifexists v(BLESha)]"
+}
+

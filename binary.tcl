@@ -237,14 +237,21 @@ proc maprequest_spec {} {
 
 }
 
+#   U16P0 APIVersion;  // Incremented if we make a change that breaks things
+#   U16P0 BLEFWMajor;  // The major revision, as tagged in version control system
+#   U16P0 BLEFWMinor;  // The minor tag, from the VCS
+#   U16P0 P0BLECommits;  // The number of commits since the tag shown above
+#   U8P0  BLESha[4];   // First 7 nybbles of sha hash of last commit, followed by a pad nybble. Pad nybble is zero if VCS is git
+#   U8P0  Dirty;       // Non-zero if this firmware image is from code that is not checked in to the VCS
+
 proc version_spec {} {
 	set spec {
-		FW {Short {} {} {unsigned} {$val / 1.0}}
-		A {Short {} {} {unsigned} {$val / 1.0}}
-		B {Short {} {} {unsigned} {$val / 1.0}}
-		C {Short {} {} {unsigned} {$val / 1.0}}
-		D {char {} {} {unsigned} {$val / 1.0}}
-		VC {char {} {} {unsigned} {$val / 1.0}}
+		APIVersion {short {} {} {unsigned} {}}
+		BLEFWMajor {short {} {} {unsigned} {}}
+		BLEFWMinor {short {} {} {unsigned} {}}
+		P0BLECommits {short {} {} {unsigned} {}}
+		BLESha {int {} {} {unsigned} {[format %X $val]}}
+		Dirty {char {} {} {unsigned} {}}
 	}
 	return $spec
 }
@@ -1244,4 +1251,19 @@ proc use_old_ble_spec {} {
 		return 1
 	}
 	return 0
+}
+
+proc convert_string_to_decimal {chrs} {
+	binary scan [encoding convertto ascii $chrs] c* x
+	return $x
+}
+
+
+proc convert_string_to_hex {chrs} {
+    
+    set toreturn {}
+    foreach {a b} [split [binary encode hex $chrs] {}] {
+    	append toreturn "$a$b "
+    }
+    return [string toupper [string trim $toreturn]]
 }

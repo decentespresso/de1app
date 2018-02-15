@@ -12,7 +12,7 @@ add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
 add_de1_page "tankempty" "fill_tank.jpg" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
-add_de1_page "message" "settings_message.jpg" "default"
+add_de1_page "message" "settings_message.png" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
 
