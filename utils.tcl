@@ -127,7 +127,7 @@ proc setup_environment {} {
         }            
 
 
-        font create global_font -family $global_font_name -size [expr {int($fontm * 19)}] 
+        font create global_font -family $global_font_name -size [expr {int($fontm * 18)}] 
 
         font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
         font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
@@ -310,7 +310,7 @@ proc setup_environment {} {
 
 
         #set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-        font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 24)}] 
+        font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 
 
         #set ::global_font "Helv_10"
         

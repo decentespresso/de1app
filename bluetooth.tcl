@@ -611,7 +611,9 @@ proc ble_connect_to_de1 {} {
 		set ::de1(device_handle) 1
 
 		# example binary string containing binary version string
-		set version_value "\x01\x00\x00\x00\x03\x00\x00\x00\xAC\x1B\x1E\x09\x01"
+		#set version_value "\x01\x00\x00\x00\x03\x00\x00\x00\xAC\x1B\x1E\x09\x01"
+		#set version_value "\x01\x00\x00\x00\x03\x00\x00\x00\xAC\x1B\x1E\x09\x01"
+		set version_value "\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51"
 		parse_binary_version_desc $version_value arr2
 		set ::de1(version) [array get arr2]
 
@@ -1075,10 +1077,13 @@ proc de1_ble_handler { event data } {
 
 							set multiplier1 0.95
 							set diff [expr {$::de1(scale_weight) - $sensorweight}]
+
+							# the greater the weight leap from the previous read weight, the more smoothing we apply, so make bumps to the scale have only a minor effect
 							if {$::de1_num_state($::de1(state)) == "Idle"} {
 								# no smoothing when the machine is idle
 								set multiplier1 0
 							} elseif {$diff > 1} { 
+								# more than 1 gram in 1/10th of a second is smoothed out the most
 								set multiplier1 0.998
 							} elseif {$diff > .5} { 
 								set multiplier1 0.99
@@ -1109,7 +1114,7 @@ proc de1_ble_handler { event data } {
 
 							# (beta) stop shot-at-weight feature
 							if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)) } {
-								set ::de1(final_water_weight) [expr { 1 + $thisweight }]
+								set ::de1(final_water_weight) $thisweight
 
 								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
 
@@ -1120,6 +1125,11 @@ proc de1_ble_handler { event data } {
 
 									 	# immediately set the DE1 state as if it were idle so that we don't repeatedly ask the DE1 to stop as we still get weight increases. There might be a slight delay between asking the DE1 to stop and it stopping.
 									 	set ::de1(scale_autostop_triggered) 1
+
+									 	# let a few seconds elapse after the shot stop command was given and keep updating the final shot weight number
+									 	after 1000 {after_shot_weight_hit_update_final_weight}
+									 	after 2000 {after_shot_weight_hit_update_final_weight}
+									 	after 3000 {after_shot_weight_hit_update_final_weight}
 									}
 								}
 							}
@@ -1256,6 +1266,15 @@ proc de1_ble_handler { event data } {
 	#run_next_userdata_cmd
 
     #msg "exited event"
+}
+
+proc after_shot_weight_hit_update_final_weight {} {
+
+	if {$::de1(scale_weight) > $::de1(final_water_weight)} {
+		# if the current scale weight is more than the final weight we have on record, then update the final weight
+		set ::de1(final_water_weight) $::de1(scale_weight)}
+	}
+
 }
 
 proc fast_write_open {fn parms} {

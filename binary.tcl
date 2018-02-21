@@ -237,21 +237,19 @@ proc maprequest_spec {} {
 
 }
 
-#   U16P0 APIVersion;  // Incremented if we make a change that breaks things
-#   U16P0 BLEFWMajor;  // The major revision, as tagged in version control system
-#   U16P0 BLEFWMinor;  // The minor tag, from the VCS
-#   U16P0 P0BLECommits;  // The number of commits since the tag shown above
-#   U8P0  BLESha[4];   // First 7 nybbles of sha hash of last commit, followed by a pad nybble. Pad nybble is zero if VCS is git
-#   U8P0  Dirty;       // Non-zero if this firmware image is from code that is not checked in to the VCS
-
 proc version_spec {} {
 	set spec {
-		APIVersion {short {} {} {unsigned} {}}
-		BLEFWMajor {short {} {} {unsigned} {}}
-		BLEFWMinor {short {} {} {unsigned} {}}
-		P0BLECommits {short {} {} {unsigned} {}}
-		BLESha {int {} {} {unsigned} {[format %X $val]}}
-		Dirty {char {} {} {unsigned} {}}
+		BLE_APIVersion {char {} {} {unsigned} {}}
+		BLE_Release {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
+		BLE_Commits {Short {} {} {unsigned} {}}
+		BLE_Changes {char {} {} {unsigned} {}}
+		BLE_Sha {int {} {} {unsigned} {[format %X $val]}}
+
+		FW_APIVersion {char {} {} {unsigned} {}}
+		FW_Release {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
+		FW_Commits {Short {} {} {unsigned} {}}
+		FW_Changes {char {} {} {unsigned} {}}
+		FW_Sha {int {} {} {unsigned} {[format %X $val]}}
 	}
 	return $spec
 }

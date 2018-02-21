@@ -1857,7 +1857,7 @@ proc save_profile {} {
 		return
 	}
 
-	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight}
+	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee }
 	set profile_name_to_save $::settings(profile_to_save) 
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"
 	if {[save_settings_vars $fn $profile_vars] == 1} {
@@ -2161,6 +2161,8 @@ proc firmware_uploaded_label {} {
 }
 proc de1_version_string {} {
 	array set v $::de1(version)
-	return "HW=[ifexists v(BLEFWMajor)].[ifexists v(BLEFWMinor)].[ifexists v(P0BLECommits)].[ifexists v(Dirty)] API=[ifexists v(APIVersion)] SHA=[ifexists v(BLESha)]"
+	return "BLE v[ifexists v(BLE_Release)].[ifexists v(BLE_Changes)].[ifexists v(BLE_Commits)], API v[ifexists v(BLE_APIVersion)], SHA=[ifexists v(BLE_Sha)]\nFW v[ifexists v(FW_Release)].[ifexists v(FW_Changes)].[ifexists v(FW_Commits)], API v[ifexists v(FW_APIVersion)], SHA=[ifexists v(FW_Sha)]"
+
+	#return "HW=[ifexists v(BLEFWMajor)].[ifexists v(BLEFWMinor)].[ifexists v(P0BLECommits)].[ifexists v(Dirty)] API=[ifexists v(APIVersion)] SHA=[ifexists v(BLESha)]"
 }
 

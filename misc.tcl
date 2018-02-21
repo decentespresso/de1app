@@ -412,21 +412,21 @@ proc make_de1_dir {} {
         saver/2560x1600/steampunk_latte.jpg *
         saver/2560x1600/three_women.jpg *     
         profiles/Classic\ Italian\ espresso.tcl *
-        profiles/Flat\ 2.5\ mL\ per\ second\ shot\ for\ light\ roasts.tcl 1
+        profiles/Flow\ profile\ for\ milky\ drinks.tcl 1
+        profiles/Flow\ profile\ for\ straight\ espresso.tcl 1
+        profiles/Gentle\ flat\ 2.5\ ml\ per\ second.tcl 1
         profiles/Gentle\ preinfusion\ flow\ profile.tcl 1
-        profiles/Gentler\ but\ still\ traditional\ 8.4\ bar\ shot.tcl *
-        profiles/Good\ flow\ profile\ for\ milky\ drinks.tcl 1
-        profiles/Good\ flow\ profile\ for\ straight\ espresso.tcl 1
+        profiles/Gentler\ but\ still\ traditional\ 8.4\ bar.tcl *
+        profiles/Hybrid\ pour\ over\ espresso.tcl 1
         profiles/Low\ pressure\ lever\ machine\ at\ 6\ bar.tcl *
         profiles/Powerful\ 10\ bar\ shot.tcl *
-        profiles/Preinfuse\ then\ run\ for\ 45ml\ of\ water.tcl 1
+        profiles/Preinfuse\ then\ 45ml\ of\ water.tcl 1
         profiles/Scott\ Rao\ says\ this\ is\ best\ overall.tcl *
-        profiles/Slow\ preinfusion\ for\ light\ roasts.tcl 1
         profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
-        profiles/Traditional\ single-spring\ lever\ machine.tcl *
+        profiles/Traditional\ lever\ machine.tcl *
         profiles/Trendy\ 6\ bar\ low\ pressure\ shot.tcl *
-        profiles/Two\ spring\ lever\ machine\ going\ to\ 9\ bar.tcl *
-        profiles/Very\ slow\ preinfusion\ for\ light\ roasts.tcl 1
+        profiles/Two\ spring\ lever\ machine\ to\ 9\ bar.tcl *
+        profiles/Innovative\ long\ preinfusion.tcl 1
         profiles/default.tcl *
         profiles/e61\ classic\ at\ 9\ bar.tcl *
         profiles/e61\ rocketing\ up\ to\ 10\ bar.tcl *

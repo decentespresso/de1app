@@ -15,4 +15,5 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4
 profile_notes {}
 water_temperature 80
+final_desired_shot_weight 32
 

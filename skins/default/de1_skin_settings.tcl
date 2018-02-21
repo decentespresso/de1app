@@ -290,7 +290,7 @@ add_de1_widget "settings_1" listbox 50 305 {
 	 	set ::globals(profiles_listbox) $widget
 		fill_profiles_listbox
 		bind $::globals(profiles_listbox) <<ListboxSelect>> ::preview_profile
-	} -background #fbfaff -yscrollcommand {scale_scroll ::profiles_slider} -font Helv_11 -bd 0 -height 15 -width 32 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1 
+	} -background #fbfaff -yscrollcommand {scale_scroll ::profiles_slider} -font Helv_10 -bd 0 -height 16 -width 32 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1 
 
 set ::profiles_slider 0
 
@@ -363,19 +363,19 @@ add_de1_button "settings_4" {set ::de1(app_update_button_label) [translate "Upda
 #add_de1_button "settings_4" {} 1900 890 2520 1080
 
 add_de1_text "settings_4" 1310 220 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-	add_de1_text "settings_4" 1310 300 -text [translate {Version}] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1220] -justify "left" 
-		add_de1_variable "settings_4" 1600 300 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 920] -justify "left" -textvariable {[de1_version_string]} 
+	add_de1_text "settings_4" 1310 290 -text [translate {Version}] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1220] -justify "left" 
+		add_de1_variable "settings_4" 1600 290 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 920] -justify "left" -textvariable {[de1_version_string]} 
 
-	add_de1_text "settings_4" 1310 360 -text [translate "Water level"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" 
-		add_de1_variable "settings_4" 1600 360 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" -textvariable {[round_to_integer $::de1(water_level)][translate mm]}
+	add_de1_text "settings_4" 1310 380 -text [translate "Water level"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" 
+		add_de1_variable "settings_4" 1600 380 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" -textvariable {[round_to_integer $::de1(water_level)][translate mm]}
 
-	add_de1_text "settings_4" 1310 420 -text [translate "Counter"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left"
-		add_de1_text "settings_4" 1450 460 -text [translate "Espresso"] -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" 
-		add_de1_text "settings_4" 1450 500 -text [translate "Steam"] -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left"
-		add_de1_text "settings_4" 1450 540 -text [translate "Hot water"] -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left"
-		add_de1_variable "settings_4" 1430 460 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(espresso_count)]}
-		add_de1_variable "settings_4" 1430 500 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(steaming_count)]}
-		add_de1_variable "settings_4" 1430 540 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(water_count)]}
+	add_de1_text "settings_4" 1310 430 -text [translate "Counter"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left"
+		add_de1_text "settings_4" 1450 470 -text [translate "Espresso"] -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" 
+		add_de1_text "settings_4" 1450 510 -text [translate "Steam"] -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left"
+		add_de1_text "settings_4" 1450 550 -text [translate "Hot water"] -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left"
+		add_de1_variable "settings_4" 1430 470 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(espresso_count)]}
+		add_de1_variable "settings_4" 1430 510 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(steaming_count)]}
+		add_de1_variable "settings_4" 1430 550 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(water_count)]}
 
 proc scheduler_feature_hide_show_refresh {} {
 	if {$::de1(current_context) == "settings_3"} {
