@@ -1272,7 +1272,7 @@ proc after_shot_weight_hit_update_final_weight {} {
 
 	if {$::de1(scale_weight) > $::de1(final_water_weight)} {
 		# if the current scale weight is more than the final weight we have on record, then update the final weight
-		set ::de1(final_water_weight) $::de1(scale_weight)}
+		set ::de1(final_water_weight) $::de1(scale_weight)
 	}
 
 }
