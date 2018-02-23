@@ -34,58 +34,68 @@ proc setup_environment {} {
 
         sdltk screensaver off
         
-        # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
-        if {$android == 1} {
-            pause 200
-        }
 
-        set width [winfo screenwidth .]
-        set height [winfo screenheight .]
+        if {$::settings(screen_size_width) != "" && $::settings(screen_size_height) != ""} {
+            set screen_size_width $::settings(screen_size_width)
+            set screen_size_height $::settings(screen_size_height)
+
+        } else {
 
 
-        # john: it would make sense to save the previous screen size so that we can start up faster, without waiting for the chrome to disappear
+            # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
+            if {$android == 1} {
+                pause 500
+            }
 
-        #array set displaymetrics [borg displaymetrics]
-        if {$width > 2300} {
-            set screen_size_width 2560
-            if {$height > 1450} {
-                set screen_size_height 1600
-            } else {
+            set width [winfo screenwidth .]
+            set height [winfo screenheight .]
+
+            if {$width > 2300} {
+                set screen_size_width 2560
+                if {$height > 1450} {
+                    set screen_size_height 1600
+                } else {
+                    set screen_size_height 1440
+                }
+            } elseif {$height > 2300} {
+                set screen_size_width 2560
+                if {$width > 1440} {
+                    set screen_size_height 1600
+                } else {
+                    set screen_size_height 1440
+                }
+            } elseif {$width == 2048 && $height == 1440} {
+                set screen_size_width 2048
                 set screen_size_height 1440
-            }
-        } elseif {$height > 2300} {
-            set screen_size_width 2560
-            if {$width > 1440} {
-                set screen_size_height 1600
-            } else {
-                set screen_size_height 1440
-            }
-        } elseif {$width == 2048 && $height == 1440} {
-            set screen_size_width 2048
-            set screen_size_height 1440
-            #set fontm 2
-        } elseif {$width == 2048 && $height == 1536} {
-            set screen_size_width 2048
-            set screen_size_height 1536
-            #set fontm 2
-        } elseif {$width == 1920} {
-            set screen_size_width 1920
-            set screen_size_height 1080
-            if {$width > 1080} {
-                set screen_size_height 1200
-            }
+                #set fontm 2
+            } elseif {$width == 2048 && $height == 1536} {
+                set screen_size_width 2048
+                set screen_size_height 1536
+                #set fontm 2
+            } elseif {$width == 1920} {
+                set screen_size_width 1920
+                set screen_size_height 1080
+                if {$width > 1080} {
+                    set screen_size_height 1200
+                }
 
-        } elseif {$width == 1280} {
-            set screen_size_width 1280
-            if {$width > 720} {
-                set screen_size_height 800
+            } elseif {$width == 1280} {
+                set screen_size_width 1280
+                if {$width > 720} {
+                    set screen_size_height 800
+                } else {
+                    set screen_size_height 720
+                }
             } else {
+                # unknown resolution type, go with smallest
+                set screen_size_width 1280
                 set screen_size_height 720
             }
-        } else {
-            # unknown resolution type, go with smallest
-            set screen_size_width 1280
-            set screen_size_height 720
+
+            # only calculate the tablet's dimensions once, then save it in settings for a faster app startup
+            set ::settings(screen_size_width) $screen_size_width 
+            set ::settings(screen_size_height) $screen_size_height
+            save_settings
         }
 
         # Android seems to automatically resize fonts appropriately to the current resolution
@@ -93,11 +103,10 @@ proc setup_environment {} {
         set ::fontw 1
 
         if {$::undroid == 1} {
-            # undroid does not resize fonts appropriately for the current resolution
+            # undroid does not resize fonts appropriately for the current resolution, it assumes a 1024 resolution
             set fontm [expr {($screen_size_width / 1024.0)}]
             set ::fontw 2
         }
-
 
         if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
             set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
@@ -156,7 +165,9 @@ proc setup_environment {} {
         font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 36)}]
 
         # enable swipe gesture translating, to scroll through listboxes
-        sdltk touchtranslate 1
+        # sdltk touchtranslate 1
+        # disable touch translating as it does not feel native on tablets and is thus confusing
+        sdltk touchtranslate 0
 
         wm maxsize . $screen_size_width $screen_size_height
         wm minsize . $screen_size_width $screen_size_height
@@ -178,73 +189,32 @@ proc setup_environment {} {
         # john 2/12/18 re-enable this when TTS feature is enabled
         # borg speak { }
 
-        #puts "1d"
         source "bluetooth.tcl"
-        #puts "1e"
 
     } else {
 
         expr {srand([clock milliseconds])}
 
-        set screen_size_width 2048
-        set screen_size_height 1536
+        if {$::settings(screen_size_width) != "" && $::settings(screen_size_height) != ""} {
+            set screen_size_width $::settings(screen_size_width)
+            set screen_size_height $::settings(screen_size_height)
+        } else {
+            # if this is the first time running on Tk, then use a default 1280x800 resolution, and allow changing resolution by editing settings file
+            set screen_size_width 1280
+            set screen_size_height 800
 
-        set screen_size_width 1920
-        set screen_size_height 1080
+            set ::settings(screen_size_width) $screen_size_width 
+            set ::settings(screen_size_height) $screen_size_height
+            save_settings
 
-        set screen_size_width 1280
-        set screen_size_height 800
-
-        set screen_size_width 2048
-        set screen_size_height 1536
-
-        set screen_size_width 640
-        set screen_size_height 480
-
-        set screen_size_width 1920
-        set screen_size_height 1200
-
-        set screen_size_width 1920
-        set screen_size_height 1200
-
-        set screen_size_width 640
-        set screen_size_height 400
-
-        set screen_size_width 2560
-        set screen_size_height 1600
-
-        set screen_size_width 1280
-        set screen_size_height 800
-
-        #set screen_size_width 640
-        #set screen_size_height 400
-
-        #set screen_size_width 320
-        #set screen_size_height 200
-
-        #set screen_size_width 960 
-        #set screen_size_height 600
+        }
 
         set fontm [expr {$screen_size_width / 1280.0}]
-        #puts "fontm: $fontm"
-
-#set fonntm .5
-
         set ::fontw 2
-
-        #set ::fontw 1
-        
-
-        #set screen_size_width 1920
-        #set screen_size_height 1080
-        #set fontm 1.5
-
-        #set screen_size_width 1280
-        #set screen_size_height 720
-        #set fontm 1
 
         package require Tk
         catch {
+            # tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
             package require tkblt
             namespace import blt::*
         }
@@ -257,15 +227,8 @@ proc setup_environment {} {
             set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
         }
 
-        #set regularfont "Helvetica Neue Regular"
-        #set boldfont "Helvetica Neue Bold"
-
         set regularfont "notosansuiregular"
         set boldfont "notosansuibold"
-        #set ::global_font "Noto Sans CJK JP Regular"
-
-        #set regularfont "Noto Sans CJK JP Regular"
-        #set boldfont "Noto Sans CJK JP Bold"
 
         if {[language] == "th"} {
             set regularfont "sarabun"
@@ -274,17 +237,12 @@ proc setup_environment {} {
         } elseif {[language] == "zh-hant" || [language] == "zh-hans"} {
             set regularfont "notosansuiregular"
             set boldfont "notosansuibold"
-            #set fontm [expr {($fontm * 1.3)}]
         }
 
-
-
-        #   puts "setarting up with langage: [language]"
         set ::helvetica_font $regularfont
         font create Helv_1 -family $regularfont -size 1
         font create Helv_4 -family $regularfont -size 10
         font create Helv_5 -family $regularfont -size 12
-        #pngfont create Helv_7 -family $regularfont -size 14
         font create Helv_6 -family $regularfont -size [expr {int($fontm * 14)}]
         font create Helv_6_bold -family $boldfont -size [expr {int($fontm * 14)}]
         font create Helv_7 -family $regularfont -size [expr {int($fontm * 16)}]
@@ -308,43 +266,17 @@ proc setup_environment {} {
         font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 43)}]
         font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 46)}]
 
-
-        #set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
         font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 
-
-        #set ::global_font "Helv_10"
-        
-        #font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 18)}]
-    
-        #font create Sourcesans_30 -family {Source Sans Pro Bold} -size 50
-        #font create Sourcesans_20 -family {Source Sans Pro Bold} -size 22
-
-        #proc send_de1_shot_and_steam_settings {} {}
         android_specific_stubs
-
-        #proc save_settings_to_de1 {} {}
-        #proc de1_send_steam_hotwater_settings {} {}
-        #proc de1_read_hotwater {} {return 90}
-        #proc de1_send_shot_frames {} {}
-
-        #proc de1_send {x} { clear_timers;delay_screen_saver; }
-        #proc de1_read {} { puts "de1_read" }
-        #proc app_exit {} { exit }       
-        #proc ble_find_de1s {} { puts "ble_find_de1s" }
-        #set ::de1(connect_time) [clock seconds]
-
         source "bluetooth.tcl"
-
-
     }
 
-
-
-    ############################################
     # define the canvas
     . configure -bg black 
     canvas .can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
 
+    ############################################
+    # future feature: flight mode
     #if {$::settings(flight_mode_enable) == 1} {
         #if {$android == 1} {
         #   .can bind . "<<SensorUpdate>>" [accelerometer_data_read]
@@ -929,7 +861,7 @@ proc save_settings {} {
 }
 
 proc load_settings {} {
-    #puts "loading settings"
+    puts "loading settings"
     array set ::settings [read_file [settings_filename]]
 
     set skintcl [read_file "[skin_directory]/skin.tcl"]

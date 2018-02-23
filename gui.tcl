@@ -1396,8 +1396,8 @@ proc run_de1_app {} {
 
 proc ui_startup {} {
 	puts "setup_environment"
-	setup_environment
 	load_settings
+	setup_environment
 	#ble_find_de1s
 	
 	bluetooth_connect_to_devices

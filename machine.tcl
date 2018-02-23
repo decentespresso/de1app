@@ -130,6 +130,8 @@ if {$android == 0 || $undroid == 1} {
 #}
 
 array set ::settings {
+	screen_size_width {}
+	screen_size_height {}
 	language en
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
