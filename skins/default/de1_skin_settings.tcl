@@ -433,14 +433,16 @@ if {[de1plus]} {
 	set spacer 90
 	set optionfont "Helv_9"
 	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (0 * $spacer)}] {} -text [translate "Show water level"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_on)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Rate your espresso shots"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_rate_espresso)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "One-tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(one_tap_mode)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Stress test"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "One-tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(one_tap_mode)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Stress test"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (6 * $spacer)}] {} -text [translate "Chart flow rate changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_flow_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Chart flow rate changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_flow_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Calibrate"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::calibrate_toggle  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command {set ::calibrate_toggle 0; set_next_page off calibrate; page_show calibrate; }
 
 	# this feature is now automatically enabled if you have a bluetooth scale connected
 	#if {$::settings(skale_bluetooth_address) != ""} {
@@ -616,6 +618,12 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 		}
 	} 2016 1430 2560 1600
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox; fill_skin_listbox; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1505 1430 2015 1600
+
+
+# (re)calibration page
+set ::calibration_button_label [add_de1_text "calibrate" 1280 1090 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
+set ::calibration_button [add_de1_button "calibrate" {say [translate {Ok}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4} 980 990 1580 1190 ""]
+
 
 
 # END OF SETTINGS page
