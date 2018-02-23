@@ -587,7 +587,7 @@ add_de1_widget "settings_3" listbox 1890 868 {
 
 
 set ::language_slider 0
-set ::languages_scrollbar [add_de1_widget "settings_3" scale 2300 868 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::language_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::languages_widget $::language_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
+set ::languages_scrollbar [add_de1_widget "settings_3" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::language_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::languages_widget $::language_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 
 # this moves the scrollbar to the right of the languages listbox, and sets its height correctly
@@ -657,4 +657,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off settings_1
+#set_next_page off calibrate

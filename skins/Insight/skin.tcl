@@ -39,7 +39,7 @@ add_de1_page "preheat_4" "preheat_4.png"
 add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
 add_de1_page "tankempty" "fill_tank.jpg" "default"
-add_de1_page "message" "settings_message.png" "default"
+add_de1_page "message calibrate" "settings_message.png" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 
@@ -454,6 +454,7 @@ add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" 2060 [expr {
 
 	add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column2 [expr {$pos_top + (8 * $spacer)}] -justify right -anchor "nw" -text [translate "water"] -font Helv_7 -fill $lighter -width [rescale_x_skin 520]
 	add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" 2060 [expr {$pos_top + (8 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -textvariable {[mixtemp_text]} 
+	
 	if {$::settings(display_espresso_water_delta_number) == 1} {
 		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" 2510 [expr {$pos_top + (8 * $spacer)}] -justify left -anchor "ne" -font Helv_7 -fill $lightest -width [rescale_x_skin 520] -textvariable {[return_delta_temperature_measurement [diff_brew_temp_from_goal] ]} 
 		# thermometer widget from http://core.tcl.tk/bwidget/doc/bwidget/BWman/index.html
