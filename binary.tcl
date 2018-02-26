@@ -23,9 +23,9 @@ proc fields::2form {spec array {endian ""}} {
    set form ""
    set vars {}
    foreach {name qual} $spec {
-   		puts "name '$name' qual: '$qual'" 
+   		#puts "name '$name' qual: '$qual'" 
 	   foreach {type count fendian signed extra} $qual break
-	   puts "type:'$type' count:'$count' fendian:'$fendian' signed:'$signed' extra:'$extra'"
+	   #puts "type:'$type' count:'$count' fendian:'$fendian' signed:'$signed' extra:'$extra'"
 	   set t [string index $type 0]
 	   set s [string index $signed 0]
 	   
@@ -274,14 +274,18 @@ proc maprequest_spec {} {
 
 proc calibrate_spec {} {
 	set spec {
-		WriteKey {Int {} {} {unsigned} {}}
+		WriteKey {Int {} {} {unsigned} {[format %X $val]}}
 		CalCommand {char {} {} {unsigned} {}}
 		CalTarget {char {} {} {unsigned} {}}
-		DE1ReportedVal {Int {} {} {unsigned} {$val / 65536.0}}
-		MeasuredVal {Int {} {} {unsigned} {$val / 65536.0}}
+		DE1ReportedVal {Int {} {} {unsigned} {double(round(100*($val / 65536.0)))/100}}
+		MeasuredVal {Int {} {} {unsigned} {double(round(100*($val / 65536.0)))/100}}
 	}
 	return $spec
 }
+
+
+
+
 
 proc version_spec {} {
 	set spec {

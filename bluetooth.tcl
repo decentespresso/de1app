@@ -517,7 +517,7 @@ proc de1_send_calibration {calib_target reported measured} {
 
 	set data [make_packed_calibration arr]
 	parse_binary_calibration $data arr2
-	userdata_append "Set calibration: [array get arr2] ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
+	userdata_append "Set calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
 }
 
 
