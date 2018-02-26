@@ -46,7 +46,7 @@ set chart_background_color #F8F8F8
 if {[de1plus]} { 
 
 	############################
-	# puressure controlled shots
+	# pressure controlled shots
 
 	# preinfusing
 	add_de1_text "settings_2a settings_2b" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
@@ -424,14 +424,18 @@ add_de1_text "settings_4" 1310 650 -text [translate "Connect"] -font Helv_10_bol
 	}
 
 #set_next_page off settings_4
+add_de1_text "settings_4" 50 220 -text [translate "Optional features"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+set pos_top 320
+set spacer 90
+set optionfont "Helv_9"
 
 if {[de1plus]} {
 
 	# advanced features that are normally disabled
-	add_de1_text "settings_4" 50 220 -text [translate "Optional features"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-	set pos_top 320
-	set spacer 90
-	set optionfont "Helv_9"
+	#add_de1_text "settings_4" 50 220 -text [translate "Optional features"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+	#set pos_top 320
+	#set spacer 90
+	#set optionfont "Helv_9"
 	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (0 * $spacer)}] {} -text [translate "Show water level"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_on)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
@@ -442,12 +446,16 @@ if {[de1plus]} {
 	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Chart flow rate changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_flow_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Calibrate"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::calibrate_toggle  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command {set ::calibrate_toggle 0; set_next_page off calibrate; page_show calibrate; }
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Calibrate"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::calibrate_toggle  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command {set ::settings(enable_fahrenheit) 0; set ::calibrate_toggle 0; set_next_page off calibrate; page_show calibrate; }
 
 	# this feature is now automatically enabled if you have a bluetooth scale connected
 	#if {$::settings(skale_bluetooth_address) != ""} {
 		#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (7 * $spacer)}] {} -text [translate "Chart weight changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_weight_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	#}
+} else {
+
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (0 * $spacer)}] {} -text [translate "Calibrate"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::calibrate_toggle  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command {set ::calibrate_toggle 0; set_next_page off calibrate; page_show calibrate; }
+
 }
 
 
@@ -621,8 +629,60 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 
 
 # (re)calibration page
-set ::calibration_button_label [add_de1_text "calibrate" 1280 1090 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
-set ::calibration_button [add_de1_button "calibrate" {say [translate {Ok}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4} 980 990 1580 1190 ""]
+add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+
+	add_de1_text "calibrate" 1280 1090 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "calibrate" {say [translate {Ok}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4} 980 990 1580 1190 ""
+
+	add_de1_text "calibrate" 500 340 -text [translate "Saved"] -font Helv_8_bold -fill "#7f879a" -anchor "ne" 
+		add_de1_variable "calibrate" 500 500 -text "" -font Helv_15 -fill "#4e85f4" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(calibration_temperature)]}
+		add_de1_variable "calibrate" 500 650 -text "" -font Helv_15 -fill "#4e85f4" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(calibration_pressure)]}
+		add_de1_variable "calibrate" 500 800 -text "" -font Helv_15 -fill "#4e85f4" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(calibration_flow)]}
+
+	add_de1_text "calibrate" 700 340 -text [translate "Factory"] -font Helv_8_bold -fill "#7f879a" -anchor "ne" 
+		add_de1_variable "calibrate" 700 500 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_temperature)]}
+		add_de1_variable "calibrate" 700 650 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_pressure)]}
+		add_de1_variable "calibrate" 700 800 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_flow)]}
+
+	add_de1_text "calibrate" 850 340 -text [translate "Sensor"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" 
+		add_de1_text "calibrate" 850 500 -text [translate "Temperature"] -font Helv_15 -fill "#7f879a" -anchor "nw"
+		add_de1_text "calibrate" 850 650 -text [translate "Pressure"] -font Helv_15 -fill "#7f879a" -anchor "nw" 
+		add_de1_text "calibrate" 850 800 -text [translate "Flow"] -font Helv_15 -fill "#7f879a" -anchor "nw" 
+
+
+	# save buttons
+	#add_de1_widget "calibrate" button 2000 600 {} -background $::settings(color_stage_1) -text "save" -borderwidth 1 -height 1 -font Helv_10_bold -relief flat -command update_de1_explanation_chart_soon  -foreground #2d3046 -borderwidth 0  -highlightthickness 0 
+	#add_de1_widget "calibrate" button 2000 700 {} -background $::settings(color_stage_1) -text "save" -borderwidth 1 -height 1 -font Helv_10_bold -relief flat -command update_de1_explanation_chart_soon  -foreground #2d3046 -borderwidth 0  -highlightthickness 0 
+	#add_de1_widget "calibrate" button 2000 800 {} -background $::settings(color_stage_1) -text "save" -borderwidth 1 -height 1 -font Helv_10_bold -relief flat -command update_de1_explanation_chart_soon  -foreground #2d3046 -borderwidth 0  -highlightthickness 0 
+
+	# goal values
+	add_de1_text "calibrate" 1750 340 -text [translate "Goal"] -font Helv_8_bold -fill "#7f879a" -anchor "ne" 
+		add_de1_variable "calibrate" 1750 500 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
+		add_de1_variable "calibrate" 1750 650 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_pressure_measurement $::settings(espresso_pressure)]}
+		add_de1_variable "calibrate" 1750 800 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}
+
+	# entry fields
+	add_de1_text "calibrate" 1880 340 -text [translate "Measured"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" 
+		add_de1_widget "calibrate" entry 1880 500  {
+			if {[de1plus]} {
+				set ::settings(espresso_temperature) [round_to_half_integer $::settings(espresso_temperature)]
+			} else {
+				set ::settings(espresso_temperature) [round_to_integer $::settings(espresso_temperature)]
+			}
+			set ::globals(widget_calibrate_temperature) $widget
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); }
+		} -width 10 -font Helv_15_bold -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(espresso_temperature) -relief flat  -highlightthickness 1 -highlightcolor #000000 
+
+		add_de1_widget "calibrate" entry 1880 650  {
+			set ::globals(widget_calibrate_pressure) $widget
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); }
+		} -width 10 -font Helv_15_bold -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(espresso_pressure) -relief flat  -highlightthickness 1 -highlightcolor #000000 
+
+		add_de1_widget "calibrate" entry 1880 800  {
+			set ::globals(widget_calibrate_flow) $widget
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); }
+		} -width 10 -font Helv_15_bold -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(flow_profile_hold) -relief flat  -highlightthickness 1 -highlightcolor #000000 
+
 
 
 
@@ -657,4 +717,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off calibrate
+set_next_page off calibrate

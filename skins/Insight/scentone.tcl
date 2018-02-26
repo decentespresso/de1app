@@ -18,20 +18,12 @@ add_de1_page "scentone_savory" "scentone_savory.jpg"
 add_de1_page "describe_espresso" "describe_espresso.jpg"
 add_de1_page "describe_espresso2" "describe_espresso2.jpg"
 
-#add_de1_button "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {say [translate {scent one}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off} 2014 1300 2284 1440
-#add_de1_button "off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off} 2014 1300 2284 1440
-#2014 1442 2284 1600
-#add_de1_text "scentone_1 scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 1760 1520 -text [translate "Scent One"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-
 # saving an exiting from each of the aroma categories
 
 add_de1_text "describe_espresso describe_espresso2" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "describe_espresso describe_espresso2" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
 add_de1_button "describe_espresso" {say [translate {Scent One}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 2016 1206 2560 1400
-
-#add_de1_button "scentone_1" {say [translate {cancel}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off } 1505 1406 2015 1600
-#add_de1_button "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" {say [translate {save}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 1505 1406 2015 1600
 
 add_de1_text "scentone_1" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "scentone_tropical scentone_berry scentone_citrus scentone_stone scentone_cereal scentone_chocolate scentone_flower scentone_spice scentone_vegetable scentone_savory" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"

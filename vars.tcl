@@ -894,6 +894,12 @@ proc return_temperature_setting {in} {
 	}
 }
 
+proc return_plus_or_minus_number {in} {
+	if {$in > 0.0} {
+		return "+$in"
+	}
+	return $in
+}
 
 proc return_delta_temperature_measurement {in} {
 

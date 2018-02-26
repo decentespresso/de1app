@@ -204,7 +204,7 @@ proc make_packed_maprequest {arrname} {
 proc make_U24P0 {val} {
  	set arr(hi)  [expr {($val >> 16) & 0xFF}]
   	set arr(mid) [expr {($val >> 8 ) & 0xFF}]
-  	set arr(lo)  [expr {($val      ) & 0xFF}]
+  	set arr(low)  [expr {($val      ) & 0xFF}]
 	return [::fields::pack [U24P0_spec] arr]
 }
 

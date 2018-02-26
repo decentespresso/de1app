@@ -198,7 +198,7 @@ proc start_firmware_update {} {
 	set ::de1(firmware_update_size) [file size [fwfile]]
 
 	if {$::android != 1} {
-		after 100 firmware_upload_next
+		after 100 write_firmware_now
 	}
 
 	set arr(WindowIncrement) 0
@@ -255,10 +255,9 @@ proc firmware_upload_next {} {
 
 		if {$::android != 1} {
 			after 100 firmware_upload_next
-		} else {
-			set data [string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]
-			userdata_append "Write [string length $data] bytes of firmware data" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A006" $::de1(cinstance) $data]
 		}
+		set data "\x10[make_U24P0 $::de1(firmware_bytes_uploaded)][string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]"
+		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A006" $::de1(cinstance) $data]
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 	}
 }
