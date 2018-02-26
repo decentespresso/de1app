@@ -684,12 +684,12 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 
 		add_de1_widget "calibrate" entry 1880 650  {
 			set ::globals(widget_calibrate_pressure) $widget
-			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_pressure) configure -state disabled; de1_send_calibration "temperature" $::settings(espresso_pressure) $::globals(calibration_espresso_pressure) }
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_pressure) configure -state disabled; de1_send_calibration "pressure" $::settings(espresso_pressure) $::globals(calibration_espresso_pressure) }
 		} -width 10 -state normal -font Helv_15_bold -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::globals(calibration_espresso_pressure) -relief flat  -highlightthickness 1 -highlightcolor #000000 
 
 		add_de1_widget "calibrate" entry 1880 800  {
 			set ::globals(widget_calibrate_flow) $widget
-			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_flow) configure -state disabled; de1_send_calibration "temperature" $::settings(flow_profile_hold) $::globals(calibration_espresso_flow) }
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_flow) configure -state disabled; de1_send_calibration "flow" $::settings(flow_profile_hold) $::globals(calibration_espresso_flow) }
 		} -width 10 -state normal -font Helv_15_bold -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::globals(calibration_espresso_flow) -relief flat  -highlightthickness 1 -highlightcolor #000000 
 
 
