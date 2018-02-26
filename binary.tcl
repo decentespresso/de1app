@@ -23,7 +23,9 @@ proc fields::2form {spec array {endian ""}} {
    set form ""
    set vars {}
    foreach {name qual} $spec {
+   		puts "name '$name' qual: '$qual'" 
 	   foreach {type count fendian signed extra} $qual break
+	   puts "type:'$type' count:'$count' fendian:'$fendian' signed:'$signed' extra:'$extra'"
 	   set t [string index $type 0]
 	   set s [string index $signed 0]
 	   
@@ -49,6 +51,9 @@ proc fields::2form {spec array {endian ""}} {
 		   set ty [string toupper $t]
 	   } elseif {$fendian == "l"} {
 		   set ty [string tolower $t]
+	   } else {
+	   	# john this seems to be a case which throws an error for integers
+	   		set ty $t
 	   }
 	   
 	   switch [string tolower $t] {
@@ -200,6 +205,19 @@ proc make_packed_maprequest {arrname} {
 	return [::fields::pack [maprequest_spec] arr]
 }
 
+proc make_packed_calibration {arrname} {
+	upvar $arrname arr
+	return [::fields::pack [calibrate_spec] arr]
+}
+
+proc make_U32P0 {val} {
+ 	set arr(highest)  [expr {($val >> 24) & 0xFF}]
+ 	set arr(hi)  [expr {($val >> 16) & 0xFF}]
+  	set arr(mid) [expr {($val >> 8 ) & 0xFF}]
+  	set arr(low)  [expr {($val      ) & 0xFF}]
+	return [::fields::pack [U32P0_spec] arr]
+}
+
 
 proc make_U24P0 {val} {
  	set arr(hi)  [expr {($val >> 16) & 0xFF}]
@@ -208,6 +226,7 @@ proc make_U24P0 {val} {
 	return [::fields::pack [U24P0_spec] arr]
 }
 
+
 proc make_U24P0_3_chars {val} {
  	set hi  [expr {($val >> 16) & 0xFF}]
   	set mid [expr {($val >> 8 ) & 0xFF}]
@@ -215,8 +234,24 @@ proc make_U24P0_3_chars {val} {
 	return [list $hi $mid $lo]
 }
 
+proc make_U32P0_4_chars {val} {
+ 	set highest  [expr {($val >> 24) & 0xFF}]
+ 	set hi  [expr {($val >> 16) & 0xFF}]
+  	set mid [expr {($val >> 8 ) & 0xFF}]
+  	set lo  [expr {($val      ) & 0xFF}]
+	return [list $highest $hi $mid $lo]
+}
 proc U24P0_spec {} {
 	set spec {
+		hi {char {} {} {unsigned} {}}
+		mid {char {} {} {unsigned} {}}
+		low {char {} {} {unsigned} {}}
+	}
+	return $spec
+}
+proc U32P0_spec {} {
+	set spec {
+		highest {char {} {} {unsigned} {}}
 		hi {char {} {} {unsigned} {}}
 		mid {char {} {} {unsigned} {}}
 		low {char {} {} {unsigned} {}}
@@ -237,11 +272,22 @@ proc maprequest_spec {} {
 
 }
 
+proc calibrate_spec {} {
+	set spec {
+		WriteKey {Int {} {} {unsigned} {}}
+		CalCommand {char {} {} {unsigned} {}}
+		CalTarget {char {} {} {unsigned} {}}
+		DE1ReportedVal {Int {} {} {unsigned} {$val / 65536.0}}
+		MeasuredVal {Int {} {} {unsigned} {$val / 65536.0}}
+	}
+	return $spec
+}
+
 proc version_spec {} {
 	set spec {
 		BLE_APIVersion {char {} {} {unsigned} {}}
 		BLE_Release {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
-		BLE_Commits {Short {} {} {unsigned} {}}
+		BLE_Commits {Short {} {} {undsigned} {}}
 		BLE_Changes {char {} {} {unsigned} {}}
 		BLE_Sha {int {} {} {unsigned} {[format %X $val]}}
 
@@ -350,6 +396,13 @@ proc convert_float_to_U16P8 {in} {
 		set in 256
 	}
 	return [expr {round($in * 256.0)}]
+}
+
+proc convert_float_to_S32P16 {in} {
+	if {$in > 65536} {
+		set in 65536
+	}
+	return [expr {round($in * 65536.0)}]
 }
 
 proc convert_float_to_F8_1_7 {in} {
@@ -829,6 +882,23 @@ proc parse_binary_hotwater_desc {packed destarrname} {
 	}
 }
 
+proc parse_binary_calibration {packed destarrname} {
+	upvar $destarrname ShotSample
+	unset -nocomplain ShotSample
+
+	set spec [calibrate_spec]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec ShotSample bigeendian
+	foreach {field val} [array get ShotSample] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set ShotSample($field) [expr $extra]
+		}
+	}
+}
+
 proc parse_binary_shot_desc {packed destarrname} {
 	upvar $destarrname ShotSample
 	unset -nocomplain ShotSample
@@ -1006,6 +1076,10 @@ proc convert_3_char_to_U24P16 {char1 char2 char3} {
 
 proc convert_3_char_to_U24P0 {char1 char2 char3} {
 	return [expr {($char1 * 65536) + ($char2 * 256) + $char3}]
+}
+
+proc convert_4_char_to_U32P0 {char0 char1 char2 char3} {
+	return [expr {($char0 * 16777216) + ($char1 * 65536) + ($char2 * 256) + $char3}]
 }
 
 set previous_de1_substate 0

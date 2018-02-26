@@ -490,8 +490,36 @@ proc de1_send_steam_hotwater_settings {} {
 	# for testing parser/deparser
 	
 	#msg "send de1_send_steam_hotwater_settings of [string length $data] bytes: $data  : [array get arr2]"
-
 }
+
+proc de1_send_calibration {calib_target reported measured} {
+	if {$calib_target == "flow"} {
+		set target 0
+	} elseif {$calib_target == "pressure"} {
+		set target 1
+	} elseif {$calib_target == "temperature"} {
+		set target 2
+	} else {
+		msg "Uknown calibration target: '$calib_target'"
+		return
+	}
+
+	# "\xCA\xFE\xF0\x0D"
+	#set arr(WriteKey0) [expr 0xCA]
+	#set arr(WriteKey1) [expr 0xFE]
+	#set arr(WriteKey2) [expr 0xF0]
+	#set arr(WriteKey3) [expr 0x0D]
+	set arr(WriteKey) [expr 0xCAFEF00D]
+	set arr(CalCommand) 1
+	set arr(CalTarget) $target
+	set arr(DE1ReportedVal) [convert_float_to_S32P16 $reported]
+	set arr(MeasuredVal) [convert_float_to_S32P16 $measured]
+
+	set data [make_packed_calibration arr]
+	parse_binary_calibration $data arr2
+	userdata_append "Set calibration: [array get arr2] ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
+}
+
 
 
 proc de1_read {} {
