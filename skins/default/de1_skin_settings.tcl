@@ -439,6 +439,16 @@ set optionfont "Helv_9"
 		set ::globals(calibration_espresso_pressure) $::settings(espresso_pressure); 
 		set ::globals(calibration_espresso_temperature) $::settings(espresso_temperature); 
 		set ::globals(calibration_espresso_flow) $::settings(flow_profile_hold); 
+		de1_enable_calibration_notifications
+
+		# read factory and current calibration values for pressure, flow, temperature
+		de1_read_calibration "flow"
+		de1_read_calibration "flow" "factory"
+		de1_read_calibration "pressure"
+		de1_read_calibration "pressure" "factory"
+		de1_read_calibration "temperature"
+		de1_read_calibration "temperature" "factory"
+
 		set_next_page off calibrate; 
 		page_show calibrate; 
 	}
@@ -447,10 +457,6 @@ set optionfont "Helv_9"
 if {[de1plus]} {
 
 	# advanced features that are normally disabled
-	#add_de1_text "settings_4" 50 220 -text [translate "Optional features"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-	#set pos_top 320
-	#set spacer 90
-	#set optionfont "Helv_9"
 	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Show water level"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_on)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
@@ -658,6 +664,10 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 		add_de1_text "calibrate" 850 650 -text [translate "Pressure"] -font Helv_15 -fill "#7f879a" -anchor "nw" 
 		add_de1_text "calibrate" 850 800 -text [translate "Flow"] -font Helv_15 -fill "#7f879a" -anchor "nw" 
 
+	# tap on factory number in order to reset to factory values
+	add_de1_button "calibrate" {say [translate {reset}] $::settings(sound_button_in); de1_send_calibration "temperature" 0 0 3; de1_read_calibration "temperature"} 600 500 800 600
+	add_de1_button "calibrate" {say [translate {reset}] $::settings(sound_button_in); de1_send_calibration "pressure" 0 0 3; de1_read_calibration "pressure"} 600 650 800 750
+	add_de1_button "calibrate" {say [translate {reset}] $::settings(sound_button_in); de1_send_calibration "flow" 0 0 3; de1_read_calibration "flow"} 600 800 800 900
 
 	# save buttons
 	#add_de1_widget "calibrate" button 2000 600 {} -background $::settings(color_stage_1) -text "save" -borderwidth 1 -height 1 -font Helv_10_bold -relief flat -command update_de1_explanation_chart_soon  -foreground #2d3046 -borderwidth 0  -highlightthickness 0 
@@ -679,21 +689,18 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 				set ::settings(espresso_temperature) [round_to_integer $::settings(espresso_temperature)]
 			}
 			set ::globals(widget_calibrate_temperature) $widget
-			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_temperature) configure -state disabled; de1_send_calibration "temperature" $::settings(espresso_temperature) $::globals(calibration_espresso_temperature) }
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_temperature) configure -state disabled; de1_send_calibration "temperature" $::settings(espresso_temperature) $::globals(calibration_espresso_temperature); #de1_read_calibration "temperature" }
 		} -width 10 -state normal -font Helv_15_bold -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::globals(calibration_espresso_temperature) -relief flat  -highlightthickness 1 -highlightcolor #000000 
 
 		add_de1_widget "calibrate" entry 1880 650  {
 			set ::globals(widget_calibrate_pressure) $widget
-			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_pressure) configure -state disabled; de1_send_calibration "pressure" $::settings(espresso_pressure) $::globals(calibration_espresso_pressure) }
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_pressure) configure -state disabled; de1_send_calibration "pressure" $::settings(espresso_pressure) $::globals(calibration_espresso_pressure); #de1_read_calibration "pressure" }
 		} -width 10 -state normal -font Helv_15_bold -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::globals(calibration_espresso_pressure) -relief flat  -highlightthickness 1 -highlightcolor #000000 
 
 		add_de1_widget "calibrate" entry 1880 800  {
 			set ::globals(widget_calibrate_flow) $widget
-			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_flow) configure -state disabled; de1_send_calibration "flow" $::settings(flow_profile_hold) $::globals(calibration_espresso_flow) }
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_flow) configure -state disabled; de1_send_calibration "flow" $::settings(flow_profile_hold) $::globals(calibration_espresso_flow); #de1_read_calibration "flow" }
 		} -width 10 -state normal -font Helv_15_bold -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::globals(calibration_espresso_flow) -relief flat  -highlightthickness 1 -highlightcolor #000000 
-
-
-
 
 # END OF SETTINGS page
 ##############################################################################################################################################################################################################################################################################

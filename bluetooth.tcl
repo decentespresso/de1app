@@ -133,15 +133,14 @@ proc skale_enable_lcd {} {
 }
 
 
+# calibration change notifications
+proc de1_enable_calibration_notifications {} {
+	userdata_append "enable de1 calibration notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a012" $::de1(cinstance)]
+}
+
 # temp changes
 proc de1_enable_temp_notifications {} {
-	#are return
-	#userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" $::de1(cinstance)]
-	#return
 	userdata_append "enable de1 temp notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
-	#ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)
-	#return
-	#userdata_append "enable de1 temp notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" $::de1(cinstance)]
 }
 
 # status changes
@@ -492,7 +491,7 @@ proc de1_send_steam_hotwater_settings {} {
 	#msg "send de1_send_steam_hotwater_settings of [string length $data] bytes: $data  : [array get arr2]"
 }
 
-proc de1_send_calibration {calib_target reported measured} {
+proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 	if {$calib_target == "flow"} {
 		set target 0
 	} elseif {$calib_target == "pressure"} {
@@ -504,23 +503,50 @@ proc de1_send_calibration {calib_target reported measured} {
 		return
 	}
 
-	# "\xCA\xFE\xF0\x0D"
-	#set arr(WriteKey0) [expr 0xCA]
-	#set arr(WriteKey1) [expr 0xFE]
-	#set arr(WriteKey2) [expr 0xF0]
-	#set arr(WriteKey3) [expr 0x0D]
 	set arr(WriteKey) [expr 0xCAFEF00D]
-	set arr(CalCommand) 1
+
+	# change calibcmd to 2, to reset to factory settings, otherwise default of 1 does a write
+	set arr(CalCommand) $calibcmd
+	
 	set arr(CalTarget) $target
 	set arr(DE1ReportedVal) [convert_float_to_S32P16 $reported]
 	set arr(MeasuredVal) [convert_float_to_S32P16 $measured]
 
 	set data [make_packed_calibration arr]
 	parse_binary_calibration $data arr2
-	userdata_append "Set calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) $::de1(cinstance) $data]
+	userdata_append "Set calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_12) $::de1(cinstance) $data]
 }
 
+proc de1_read_calibration {calib_target {factory 0} } {
+	if {$calib_target == "flow"} {
+		set target 0
+	} elseif {$calib_target == "pressure"} {
+		set target 1
+	} elseif {$calib_target == "temperature"} {
+		set target 2
+	} else {
+		msg "Uknown calibration target: '$calib_target'"
+		return
+	}
 
+	set arr(WriteKey) [expr 0xCAFEF00D]
+
+	set arr(CalCommand) 0
+	set what "current"
+	if {$factory == "factory"} {
+		set arr(CalCommand) 3
+		set what "factory"
+	}
+	
+	set arr(CalTarget) $target
+	set arr(DE1ReportedVal) 0
+	set arr(MeasuredVal) 0
+
+	set data [make_packed_calibration arr]
+	parse_binary_calibration $data arr2
+	userdata_append "Read $what calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_12) $::de1(cinstance) $data]
+
+}
 
 proc de1_read {} {
 	puts OBSOLETE
@@ -769,7 +795,7 @@ proc append_to_skale_bluetooth_list {address} {
 proc de1_ble_handler { event data } {
 	#msg "de1 ble_handler $event $data"
 	#set ::de1(wrote) 0
-	#msg "ble event: $event $data"
+	msg "ble event: $event $data"
 
 	set previous_wrote 0
 	set previous_wrote [ifexists ::de1(wrote)]
@@ -909,14 +935,19 @@ proc de1_ble_handler { event data } {
 						append_to_de1_bluetooth_list $address
 						#msg "connected to de1 with handle $handle"
 
-						read_de1_version
+						#read_de1_version
 						de1_send_waterlevel_settings
 						de1_send_steam_hotwater_settings					
 						de1_send_shot_frames
 						de1_enable_water_level_notifications
 						de1_enable_state_notifications
 						de1_enable_temp_notifications
+						de1_enable_calibration_notifications
 						read_de1_version
+						de1_read_calibration "flow"
+						#de1_read_calibration "flow"
+						#de1_read_calibration "flow"
+
 
 						if {$::settings(skale_bluetooth_address) != "" && $::de1(skale_device_handle) == 0 } {
 							# connect to the scale once the connection to the DE1 is set up
@@ -1029,8 +1060,40 @@ proc de1_ble_handler { event data } {
 							set ::de1(wrote) 0
 							run_next_userdata_cmd
 
+						} elseif {$cuuid == "0000A012-0000-1000-8000-00805F9B34FB"} {
+						    #set ::de1(last_ping) [clock seconds]
+							parse_binary_calibration $value arr2
+							#msg "calibration data received [string length $value] bytes: $value  : [array get arr2]"
+
+							set varname ""
+							if {[ifexists arr2(CalTarget)] == 0} {
+								if {[ifexists arr2(CalCommand)] == 3} {
+									set varname	"factory_calibration_flow"
+								} else {
+									set varname	"calibration_flow"
+								}
+							} elseif {[ifexists arr2(CalTarget)] == 1} {
+								if {[ifexists arr2(CalCommand)] == 3} {
+									set varname	"factory_calibration_pressure"
+								} else {
+									set varname	"calibration_pressure"
+								}
+							} elseif {[ifexists arr2(CalTarget)] == 2} {
+								if {[ifexists arr2(CalCommand)] == 3} {
+									set varname	"factory_calibration_temperature"
+								} else {
+									set varname	"calibration_temperature"
+								}
+							} 
+
+							if {$varname != ""} {
+								msg "$varname calibration data received [string length $value] bytes: $value  : [array get arr2]"
+								set ::de1($varname) $arr2(DE1ReportedVal)
+							} else {
+								msg "unknown calibration data received [string length $value] bytes: $value  : [array get arr2]"
+							}
 						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
-						    set ::de1(last_ping) [clock seconds]
+							set ::de1(last_ping) [clock seconds]
 							parse_binary_water_level $value arr2
 							#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
 							set ::de1(water_level) $arr2(Level)

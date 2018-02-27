@@ -16,12 +16,12 @@ package provide de1_machine 1.0
 
 
 array set ::de1 {
-	calibration_pressure {1}
-	calibration_temperature {2}
-	calibration_flow {3}
-	factory_calibration_pressure {4}
-	factory_calibration_temperature {5}
-	factory_calibration_flow {6}
+	calibration_pressure {}
+	calibration_temperature {}
+	calibration_flow {}
+	factory_calibration_pressure {}
+	factory_calibration_temperature {}
+	factory_calibration_flow {}
 	water_refill_point 2
 	advanced_shot_moveone_enabled 1
     found    0
@@ -37,6 +37,7 @@ array set ::de1 {
 	cuuid_0f "0000a00f-0000-1000-8000-00805f9b34fb"
 	cuuid_10 "0000A010-0000-1000-8000-00805F9B34FB"
 	cuuid_11 "0000A011-0000-1000-8000-00805F9B34FB"
+	cuuid_12 "0000A012-0000-1000-8000-00805F9B34FB"
 	cinstance 0
 	pressure 0
 	head_temperature 0
