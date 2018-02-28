@@ -795,7 +795,7 @@ proc append_to_skale_bluetooth_list {address} {
 proc de1_ble_handler { event data } {
 	#msg "de1 ble_handler $event $data"
 	#set ::de1(wrote) 0
-	msg "ble event: $event $data"
+	#msg "ble event: $event $data"
 
 	set previous_wrote 0
 	set previous_wrote [ifexists ::de1(wrote)]
