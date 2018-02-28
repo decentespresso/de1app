@@ -529,7 +529,8 @@ proc de1_read_calibration {calib_target {factory 0} } {
 		return
 	}
 
-	set arr(WriteKey) [expr 0xCAFEF00D]
+	#set arr(WriteKey) [expr 0xCAFEF00D]
+	set arr(WriteKey) 1
 
 	set arr(CalCommand) 0
 	set what "current"
@@ -944,7 +945,7 @@ proc de1_ble_handler { event data } {
 						de1_enable_temp_notifications
 						de1_enable_calibration_notifications
 						read_de1_version
-						de1_read_calibration "pressure"
+						#de1_read_calibration "pressure"
 						#de1_read_calibration "flow"
 						#de1_read_calibration "flow"
 
@@ -1087,8 +1088,13 @@ proc de1_ble_handler { event data } {
 							} 
 
 							if {$varname != ""} {
-								msg "$varname calibration data received [string length $value] bytes: $value  : [array get arr2]"
-								set ::de1($varname) $arr2(DE1ReportedVal)
+								# this BLE characteristic receives packets both for notifications of reads and writes, but also the real current value of the calibration setting
+								if {[ifexists arr2(WriteKey)] == 0} {
+									msg "$varname value received [string length $value] bytes: [convert_string_to_hex $value] $value : [array get arr2]"
+									set ::de1($varname) $arr2(DE1ReportedVal)
+								} else {
+									msg "$varname NACK received [string length $value] bytes: [convert_string_to_hex $value] $value : [array get arr2] "
+								}
 							} else {
 								msg "unknown calibration data received [string length $value] bytes: $value  : [array get arr2]"
 							}
