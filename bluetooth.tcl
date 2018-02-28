@@ -945,7 +945,7 @@ proc de1_ble_handler { event data } {
 						de1_enable_temp_notifications
 						de1_enable_calibration_notifications
 						read_de1_version
-						#de1_read_calibration "pressure"
+						de1_read_calibration "pressure"
 						#de1_read_calibration "flow"
 						#de1_read_calibration "flow"
 
