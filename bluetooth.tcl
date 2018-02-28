@@ -133,9 +133,14 @@ proc skale_enable_lcd {} {
 }
 
 
-# calibration change notifications
+# calibration change notifications ENABLE
 proc de1_enable_calibration_notifications {} {
 	userdata_append "enable de1 calibration notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a012" $::de1(cinstance)]
+}
+
+# calibration change notifications DISABLE
+proc de1_disable_calibration_notifications {} {
+	userdata_append "disable de1 calibration notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a012" $::de1(cinstance)]
 }
 
 # temp changes
@@ -348,7 +353,7 @@ proc app_exit {} {
 	#return
 
 	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
-	after 10000 {exit}
+	after 3000 {exit}
 
 	if {$::scanning  == 1} {
 		ble stop $::ble_scanner
@@ -518,6 +523,7 @@ proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 }
 
 proc de1_read_calibration {calib_target {factory 0} } {
+
 	if {$calib_target == "flow"} {
 		set target 0
 	} elseif {$calib_target == "pressure"} {
@@ -670,6 +676,8 @@ proc ble_connect_to_de1 {} {
 		set version_value "\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51"
 		parse_binary_version_desc $version_value arr2
 		set ::de1(version) [array get arr2]
+
+		calibration_ble_received "\x00\x00\x00\x00\x03\x01\x00\x01\x00\x00\x00\x02\x14\x86"
 
 		return
 	}
@@ -945,9 +953,9 @@ proc de1_ble_handler { event data } {
 						de1_enable_temp_notifications
 						de1_enable_calibration_notifications
 						read_de1_version
-						de1_read_calibration "pressure"
-						#de1_read_calibration "flow"
-						#de1_read_calibration "flow"
+						#de1_read_calibration "pressure" "factory"
+						#de1_read_calibration "flow" "factory"
+						#de1_read_calibration "temperature"
 
 
 						if {$::settings(skale_bluetooth_address) != "" && $::de1(skale_device_handle) == 0 } {
@@ -1063,41 +1071,7 @@ proc de1_ble_handler { event data } {
 
 						} elseif {$cuuid == "0000A012-0000-1000-8000-00805F9B34FB"} {
 						    #set ::de1(last_ping) [clock seconds]
-							parse_binary_calibration $value arr2
-							#msg "calibration data received [string length $value] bytes: $value  : [array get arr2]"
-
-							set varname ""
-							if {[ifexists arr2(CalTarget)] == 0} {
-								if {[ifexists arr2(CalCommand)] == 3} {
-									set varname	"factory_calibration_flow"
-								} else {
-									set varname	"calibration_flow"
-								}
-							} elseif {[ifexists arr2(CalTarget)] == 1} {
-								if {[ifexists arr2(CalCommand)] == 3} {
-									set varname	"factory_calibration_pressure"
-								} else {
-									set varname	"calibration_pressure"
-								}
-							} elseif {[ifexists arr2(CalTarget)] == 2} {
-								if {[ifexists arr2(CalCommand)] == 3} {
-									set varname	"factory_calibration_temperature"
-								} else {
-									set varname	"calibration_temperature"
-								}
-							} 
-
-							if {$varname != ""} {
-								# this BLE characteristic receives packets both for notifications of reads and writes, but also the real current value of the calibration setting
-								if {[ifexists arr2(WriteKey)] == 0} {
-									msg "$varname value received [string length $value] bytes: [convert_string_to_hex $value] $value : [array get arr2]"
-									set ::de1($varname) $arr2(DE1ReportedVal)
-								} else {
-									msg "$varname NACK received [string length $value] bytes: [convert_string_to_hex $value] $value : [array get arr2] "
-								}
-							} else {
-								msg "unknown calibration data received [string length $value] bytes: $value  : [array get arr2]"
-							}
+						    calibration_ble_received $value
 						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_water_level $value arr2
@@ -1326,6 +1300,8 @@ proc de1_ble_handler { event data } {
 					    	msg "Confirmed: BLE temperature notifications: $data"
 						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
 					    	msg "Confirmed: BLE state change notifications"
+						} elseif {$cuuid == "0000A012-0000-1000-8000-00805F9B34FB"} {
+					    	msg "Confirmed: BLE calibration notifications"
 						} else {
 					    	msg "DESCRIPTOR UNKNOWN WRITE confirmed: $data"
 						}
@@ -1362,6 +1338,47 @@ proc de1_ble_handler { event data } {
 	#run_next_userdata_cmd
 
     #msg "exited event"
+}
+
+proc calibration_ble_received {value} {
+
+    #calibration_ble_received $value
+	parse_binary_calibration $value arr2
+	#msg "calibration data received [string length $value] bytes: $value  : [array get arr2]"
+
+	set varname ""
+	if {[ifexists arr2(CalTarget)] == 0} {
+		if {[ifexists arr2(CalCommand)] == 3} {
+			set varname	"factory_calibration_flow"
+		} else {
+			set varname	"calibration_flow"
+		}
+	} elseif {[ifexists arr2(CalTarget)] == 1} {
+		if {[ifexists arr2(CalCommand)] == 3} {
+			set varname	"factory_calibration_pressure"
+		} else {
+			set varname	"calibration_pressure"
+		}
+	} elseif {[ifexists arr2(CalTarget)] == 2} {
+		if {[ifexists arr2(CalCommand)] == 3} {
+			set varname	"factory_calibration_temperature"
+		} else {
+			set varname	"calibration_temperature"
+		}
+	} 
+
+	if {$varname != ""} {
+		# this BLE characteristic receives packets both for notifications of reads and writes, but also the real current value of the calibration setting
+		if {[ifexists arr2(WriteKey)] == 0} {
+			msg "$varname value received [string length $value] bytes: [convert_string_to_hex $value] $value : [array get arr2]"
+			set ::de1($varname) $arr2(MeasuredVal)
+		} else {
+			msg "$varname NACK received [string length $value] bytes: [convert_string_to_hex $value] $value : [array get arr2] "
+		}
+	} else {
+		msg "unknown calibration data received [string length $value] bytes: $value  : [array get arr2]"
+	}
+
 }
 
 proc after_shot_weight_hit_update_final_weight {} {
