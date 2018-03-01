@@ -263,9 +263,16 @@ proc verify_decent_tls_certificate {} {
 
 proc start_app_update {} {
 
+    if {[ifexists ::app_updating] == 1} {
+        msg "App is already updating, not going to run two processes"
+    }
+
+    set ::app_updating 1
+
     if {$::android == 1} {
         if {[borg networkinfo] == "none"} {
             set ::de1(app_update_button_label) [translate "No Wifi network"]; 
+            set ::app_updating 0
             return $::de1(app_update_button_label)
         }
     }
@@ -277,6 +284,7 @@ proc start_app_update {} {
             puts "$k : '$v'"
         }
         set ::de1(app_update_button_label) [translate "Internet encryption problem"]; 
+        set ::app_updating 0
         return $::de1(app_update_button_label)
     }
 
@@ -310,12 +318,14 @@ proc start_app_update {} {
     if {$remote_timestamp == ""} {
         puts "unable to fetch remote timestamp"
         set ::de1(app_update_button_label) [translate "Update error"]; 
+        set ::app_updating 0
         return
     } elseif {$local_timestamp == $remote_timestamp} {
         puts "Local timestamp is the same as remote timestamp, so no need to update"
         
         # we can return at this point, if we're very confident that the sync is correct
         set ::de1(app_update_button_label) [translate "Up to date"]; 
+        set ::app_updating 0
         return
     }
 
@@ -378,6 +388,7 @@ proc start_app_update {} {
         set newsha [calc_sha $fn]
         if {$arr(filesha) != $newsha} {
             puts "Failed to accurately download $k"
+            set ::app_updating 0
             return -1
         }
 
@@ -472,10 +483,12 @@ proc start_app_update {} {
         }
 
 
+        set ::app_updating 0
         return 1
     } else {
         set ::de1(app_update_button_label) [translate "Update failed"]; 
         puts "failed update"
+        set ::app_updating 0
         return 0
     }
 }
