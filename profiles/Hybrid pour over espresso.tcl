@@ -13,8 +13,10 @@ flow_profile_decline 1.8
 flow_profile_decline_time 23
 flow_profile_minimum_pressure 6
 preinfusion_flow_rate 2.0
-profile_notes {}
+profile_notes {Another approach created by a famously innovative Seattle-based espresso machine manufacturer, this technique requires you to grind your coffee very finely.  Try this with very lightly roasted coffee beans.  The resulting flavor is a blend of pour-over and espresso techniques.}
 water_temperature 80
 final_desired_shot_weight 32
-profile_title "Hybrid pour over espresso"
+preinfusion_guarantee 1
+profile_title {Hybrid pour over espresso}
 profile_language en
+

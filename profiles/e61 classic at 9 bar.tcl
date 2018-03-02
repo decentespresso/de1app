@@ -17,6 +17,6 @@ profile_notes {The E61 machine was invented by Faema in 1961 and is still the mo
 water_temperature 80
 final_desired_shot_weight 36
 preinfusion_guarantee 1
-profile_title {e61 classic at 9 bar}
+profile_title {E61 classic at 9 bar}
 profile_language en
 

@@ -13,8 +13,10 @@ flow_profile_decline 1
 flow_profile_decline_time 23
 flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4.5
-profile_notes {}
+profile_notes {With a technician's help, you could sometimes boost the pressure on the classic E61 machine to 10 bar.  You will need to grind finer, and your espresso will very thick.  Excellent for medium roasted beans mixed with whole milk.}
 water_temperature 80
 final_desired_shot_weight 36
-profile_title "e61 rocketing up to 10 bar"
+preinfusion_guarantee 1
+profile_title {E61 rocketing up to 10 bar}
 profile_language en
+
