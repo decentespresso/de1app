@@ -421,7 +421,7 @@ proc make_de1_dir {} {
         profiles/Low\ pressure\ lever\ machine\ at\ 6\ bar.tcl *
         profiles/Powerful\ 10\ bar\ shot.tcl *
         profiles/Preinfuse\ then\ 45ml\ of\ water.tcl 1
-        profiles/Scott\ Rao\ says\ this\ is\ best\ overall.tcl *
+        profiles/Best\ overall\ pressure\ profile.tcl *
         profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
         profiles/Traditional\ lever\ machine.tcl *
         profiles/Trendy\ 6\ bar\ low\ pressure\ shot.tcl *

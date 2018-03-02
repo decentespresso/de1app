@@ -16,4 +16,4 @@ preinfusion_flow_rate 4
 profile_notes {Default espresso preset}
 water_temperature 80
 final_desired_shot_weight 32
-
+title "default"

@@ -1616,11 +1616,55 @@ proc listbox_moveto {lb dest1 dest2} {
 proc scale_scroll {lb dest1 dest2} {
 	upvar $lb fieldname
 	set fieldname $dest1
-	#$lb yview moveto $dest1
-#	puts "$lb $dest1 $dest2"
-	
 }
 
+proc calibration_gui_init {} {
+
+	# calibration should always take place in Celsius
+	set ::settings(enable_fahrenheit) 0; 
+
+	# set the entry fields back to normal
+	$::globals(widget_calibrate_temperature) configure -state normal; 
+	$::globals(widget_calibrate_pressure) configure -state normal; 
+	$::globals(widget_calibrate_flow) configure -state normal; 
+
+	# set the goals to be the HOLD step of FLOW and PRESSURE shots, and the temperature to be the overall espresso temperature
+	set ::globals(calibration_espresso_pressure) $::settings(espresso_pressure); 
+	set ::globals(calibration_espresso_temperature) $::settings(espresso_temperature); 
+	set ::globals(calibration_espresso_flow) $::settings(flow_profile_hold); 
+
+	# read factory and current calibration values for pressure, flow, temperature
+	#de1_disable_temp_notifications
+	if {[ifexists ::globals(calibration_notifications_enabled)] != 1} {
+		set ::globals(calibration_notifications_enabled) 1
+		de1_enable_calibration_notifications
+	}
+
+	# the read-calibration code can't handle another request coming in while it's still processing the previous one.
+	# the *right* way to work around this is to build a spool and unspool each calibration read command as the previous
+	# one concludes. However, that's a lot of work, for this rarely used calibration feature, so we're being lazy
+	# for now and just issuing each command after a suitable delay, so they don't clobber each other
+	if {$::android != 1} {
+
+		# do fake calibration reads
+		calibration_ble_received "\x00\x00\x00\x00\x01\x02\x00\x01\x00\x00\x00\x03\x64\x86"
+		after 1000 calibration_ble_received "\x00\x00\x00\x00\x01\x01\x00\x01\x00\x00\x00\x02\x34\x86"
+		after 2000 calibration_ble_received "\x00\x00\x00\x00\x01\x00\x00\x01\x00\x00\x00\x01\x14\x86"
+
+		after 3000 calibration_ble_received "\x00\x00\x00\x00\x03\x02\x00\x01\x03\x00\x00\x06\x12\x86"
+		after 4000 calibration_ble_received "\x00\x00\x00\x00\x03\x01\x00\x01\x03\x00\x00\x05\x61\x86"
+		after 5000 calibration_ble_received "\x00\x00\x00\x00\x03\x00\x00\x01\x03\x00\x00\x04\x32\x86"
+	} else {
+
+		de1_read_calibration "temperature"
+		after 1000 de1_read_calibration "pressure"
+		after 2000 de1_read_calibration "flow"
+
+		after 3000 de1_read_calibration "temperature" "factory"
+		after 4000 de1_read_calibration "pressure" "factory"
+		after 5000 de1_read_calibration "flow" "factory"
+	}
+}
 
 
 #install_de1_app_icon

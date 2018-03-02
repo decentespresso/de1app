@@ -15,4 +15,4 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4
 profile_notes {}
 water_temperature 80
-
+title "Trendy 6 bar low pressure shot"

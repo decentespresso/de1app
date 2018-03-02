@@ -677,8 +677,6 @@ proc ble_connect_to_de1 {} {
 		parse_binary_version_desc $version_value arr2
 		set ::de1(version) [array get arr2]
 
-		calibration_ble_received "\x00\x00\x00\x00\x03\x01\x00\x01\x00\x00\x00\x02\x14\x86"
-
 		return
 	}
 

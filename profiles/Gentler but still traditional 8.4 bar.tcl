@@ -16,4 +16,4 @@ preinfusion_flow_rate 4
 profile_notes {}
 water_temperature 86.0
 final_desired_shot_weight 36
-
+title "Gentler but still traditional 8.4 bar"

@@ -1708,6 +1708,15 @@ proc save_settings_and_ask_to_restart_app {} {
 
 proc change_bluetooth_device {} {
 
+	################################################################################################################
+	# prevent rapid changing of DE1 bluetooth setting, because that can cause multiple connections to be made to the same DE1
+	if {[ifexists ::globals(changing_bluetooth_device)] == 1} {
+		return
+	}
+	set ::globals(changing_bluetooth_device) 1
+	after 5000 {set ::globals(changing_bluetooth_device) 0}
+	################################################################################################################
+
 	set w $::ble_listbox_widget
 	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
 	if {[$w curselection] == ""} {
@@ -1794,10 +1803,11 @@ proc preview_profile {} {
 		set ::settings(preinfusion_flow_rate) 4
 
 		load_settings_vars $fn
-		set ::settings(profile_to_save) $::settings(profile)
+		set ::settings(original_profile_title) $::settings(title)
+		set ::settings(profile_filename) $profile
 
 		if {[language] != "en"} {
-			set ::settings(profile_notes) "z[translate $::settings(profile_notes)]"
+			set ::settings(profile_notes) [translate $::settings(profile_notes)]
 		}
 
 		make_current_listbox_item_blue $::globals(profiles_listbox)
@@ -1864,8 +1874,17 @@ proc save_profile {} {
 	}
 
 	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee }
-	set profile_name_to_save $::settings(profile_to_save) 
+	#set profile_name_to_save $::settings(profile_to_save) 
+
+	if {$::settings(original_profile_title) == $::settings(title)} {
+		set profile_name_to_save $::settings(profile_filename) 
+	} else {
+		set profile_name_to_save [clock seconds]
+	}
+	
 	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"
+
+
 	if {[save_settings_vars $fn $profile_vars] == 1} {
 		set ::settings(profile) $profile_name_to_save
 		fill_profiles_listbox 

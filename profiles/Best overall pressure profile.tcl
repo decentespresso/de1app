@@ -13,7 +13,7 @@ flow_profile_decline 1
 flow_profile_decline_time 23
 flow_profile_minimum_pressure 6
 preinfusion_flow_rate 3.5
-profile_notes {Author Scott Rao recommends this profile as being "best overall" in the appendix of his "Espresso Extraction" book.}
+profile_notes {We recommend this pressure profile as the most likely to produce a good espresso in the most varied number of cases.}
 water_temperature 76
 final_desired_shot_weight 32
-
+title "Best overall pressure profile"
