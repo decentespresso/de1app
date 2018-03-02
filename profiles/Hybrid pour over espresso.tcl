@@ -16,4 +16,4 @@ preinfusion_flow_rate 2.0
 profile_notes {}
 water_temperature 80
 final_desired_shot_weight 32
-title "Hybrid pour over espresso"
+profile_title "Hybrid pour over espresso"

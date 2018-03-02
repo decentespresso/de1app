@@ -16,4 +16,4 @@ preinfusion_flow_rate 4.5
 profile_notes {}
 water_temperature 80
 final_desired_shot_weight 32
-title "Traditional lever machine"
+profile_title "Traditional lever machine"

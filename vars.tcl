@@ -1177,7 +1177,6 @@ proc profile_directories {} {
 		lappend dd $rootname
 	}
 
-
 	return [lsort -dictionary -increasing $dd]
 }
 
@@ -1803,7 +1802,7 @@ proc preview_profile {} {
 		set ::settings(preinfusion_flow_rate) 4
 
 		load_settings_vars $fn
-		set ::settings(original_profile_title) $::settings(title)
+		set ::settings(original_profile_title) $::settings(profile_title)
 		set ::settings(profile_filename) $profile
 
 		if {[language] != "en"} {
@@ -1869,7 +1868,7 @@ proc save_settings_vars {fn varlist} {
 }
 
 proc save_profile {} {
-	if {$::settings(profile_to_save) == [translate "Saved"]} {
+	if {$::settings(profile_title) == [translate "Saved"]} {
 		return
 	}
 
@@ -1877,30 +1876,31 @@ proc save_profile {} {
 	#set profile_name_to_save $::settings(profile_to_save) 
 
 	if {$::settings(original_profile_title) == $::settings(title)} {
-		set profile_name_to_save $::settings(profile_filename) 
+		set profile_filename $::settings(profile_filename) 
 	} else {
-		set profile_name_to_save [clock seconds]
+		# if they change the description of the profile, then save it to a new name
+		set profile_filename [clock seconds]
 	}
 	
-	set fn "[homedir]/profiles/${profile_name_to_save}.tcl"
+	set fn "[homedir]/profiles/${profile_filename}.tcl"
 
 
 	if {[save_settings_vars $fn $profile_vars] == 1} {
-		set ::settings(profile) $profile_name_to_save
+		#set ::settings(profile) $profile_name_to_save
 		fill_profiles_listbox 
 		update_de1_explanation_chart
-		set ::settings(profile_to_save) [translate "Saved"]
+		set ::settings(profile_title) [translate "Saved"]
 
 		after 1000 {
-			set ::settings(profile_to_save) $::settings(profile)
+			set ::settings(profile_title) $::settings(profile_title)
 
 			# moves the cursor to the end of the seletion after showing the "saved" message.
 			$::globals(widget_profile_name_to_save) icursor 999
 		}
 	} else {
-		set ::settings(profile_to_save) [translate "Invalid name"]
+		set ::settings(profile_title) [translate "Invalid name"]
 		after 2000 {
-			set ::settings(profile_to_save) $::settings(profile)
+			set ::settings(profile_title) $::settings(profile)
 
 			# moves the cursor to the end of the seletion after showing the "saved" message.
 			$::globals(widget_profile_name_to_save) icursor 999

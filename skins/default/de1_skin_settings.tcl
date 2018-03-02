@@ -518,7 +518,7 @@ add_de1_text "settings_3" 1310 220 -text [translate "Tablet styles"] -font Helv_
 	add_de1_widget "settings_1" entry 1360 1310  {
 			set ::globals(widget_profile_name_to_save) $widget
 			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); save_profile; }
-		} -width 38 -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_to_save) -relief flat  -highlightthickness 1 -highlightcolor #000000 
+		} -width 38 -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_title) -relief flat  -highlightthickness 1 -highlightcolor #000000 
 
 
 

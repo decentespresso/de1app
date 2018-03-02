@@ -16,4 +16,4 @@ preinfusion_flow_rate 3.5
 profile_notes {We recommend this pressure profile as the most likely to produce a good espresso in the most varied number of cases.}
 water_temperature 76
 final_desired_shot_weight 32
-title "Best overall pressure profile"
+profile_title "Best overall pressure profile"

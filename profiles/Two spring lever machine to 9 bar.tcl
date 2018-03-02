@@ -16,4 +16,4 @@ preinfusion_flow_rate 4.5
 profile_notes {}
 water_temperature 80
 final_desired_shot_weight 32
-title "Two spring lever machine to 9 bar"
+profile_title "Two spring lever machine to 9 bar"

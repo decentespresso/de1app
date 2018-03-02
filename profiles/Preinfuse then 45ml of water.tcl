@@ -16,4 +16,4 @@ preinfusion_flow_rate 4.5
 profile_notes {}
 water_temperature 86.0
 final_desired_shot_weight 32
-title "Preinfuse then 45ml of water"
+profile_title "Preinfuse then 45ml of water"

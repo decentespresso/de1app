@@ -15,4 +15,4 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4.5
 profile_notes {}
 water_temperature 86.0
-title "Powerful 10 bar shot"
+profile_title "Powerful 10 bar shot"

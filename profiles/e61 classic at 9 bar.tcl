@@ -16,4 +16,4 @@ preinfusion_flow_rate 4
 profile_notes {}
 water_temperature 80
 final_desired_shot_weight 36
-title "e61 classic at 9 bar"
+profile_title "e61 classic at 9 bar"

@@ -16,4 +16,4 @@ preinfusion_flow_rate 4
 profile_notes {Decent Espresso founder John Buckman thinks this profile works best most of the time for most espresso shots.}
 water_temperature 86.0
 final_desired_shot_weight 32
-title "Flow profile for milky drinks"
+profile_title "Flow profile for milky drinks"

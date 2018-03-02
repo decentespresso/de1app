@@ -16,4 +16,4 @@ preinfusion_flow_rate 1.0
 profile_notes {}
 water_temperature 80
 final_desired_shot_weight 32
-title "Innovative long preinfusion"
+profile_title "Innovative long preinfusion"
