@@ -17,3 +17,4 @@ profile_notes {}
 water_temperature 80
 final_desired_shot_weight 36
 profile_title "e61 classic at 9 bar"
+profile_language en

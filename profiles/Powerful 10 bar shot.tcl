@@ -16,3 +16,4 @@ preinfusion_flow_rate 4.5
 profile_notes {}
 water_temperature 86.0
 profile_title "Powerful 10 bar shot"
+profile_language en

@@ -17,3 +17,4 @@ profile_notes {}
 water_temperature 86.0
 final_desired_shot_weight 32
 profile_title "e61 with fast preinfusion to 9 bar"
+profile_language en

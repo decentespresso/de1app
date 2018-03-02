@@ -17,3 +17,4 @@ profile_notes {Decent Espresso founder John Buckman thinks this profile works be
 water_temperature 86.0
 final_desired_shot_weight 32
 profile_title "Flow profile for straight espresso"
+profile_language en

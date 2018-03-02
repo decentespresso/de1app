@@ -17,3 +17,4 @@ profile_notes {}
 water_temperature 86.0
 final_desired_shot_weight 36
 profile_title "Gentler but still traditional 8.4 bar"
+profile_language en

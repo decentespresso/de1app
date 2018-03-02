@@ -17,3 +17,4 @@ profile_notes {Default espresso preset}
 water_temperature 80
 final_desired_shot_weight 32
 profile_title "default"
+profile_language en

@@ -16,3 +16,4 @@ preinfusion_flow_rate 4.5
 profile_notes {}
 water_temperature 80
 profile_title "Low pressure lever machine at 6 bar"
+profile_language en

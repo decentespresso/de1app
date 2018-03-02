@@ -17,3 +17,4 @@ profile_notes {We recommend this pressure profile as the most likely to produce 
 water_temperature 76
 final_desired_shot_weight 32
 profile_title "Best overall pressure profile"
+profile_language en

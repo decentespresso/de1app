@@ -17,3 +17,4 @@ profile_notes {}
 water_temperature 80
 final_desired_shot_weight 32
 profile_title "Two spring lever machine to 9 bar"
+profile_language en

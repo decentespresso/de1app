@@ -17,3 +17,4 @@ profile_notes {}
 water_temperature 80
 final_desired_shot_weight 32
 profile_title "Innovative long preinfusion"
+profile_language en

@@ -17,3 +17,4 @@ profile_notes {}
 water_temperature 80
 final_desired_shot_weight 36
 profile_title "e61 rocketing up to 10 bar"
+profile_language en

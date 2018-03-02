@@ -17,3 +17,4 @@ profile_notes {}
 water_temperature 86.0
 final_desired_shot_weight 32
 profile_title "Classic Italian espresso"
+profile_language en

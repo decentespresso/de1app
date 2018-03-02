@@ -1802,12 +1802,16 @@ proc preview_profile {} {
 		set ::settings(preinfusion_flow_rate) 4
 
 		load_settings_vars $fn
-		set ::settings(original_profile_title) $::settings(profile_title)
 		set ::settings(profile_filename) $profile
 
-		if {[language] != "en"} {
+		if {[language] != "en" && $::settings(profile_language) != "en"} {
+			# the first time this profile is loaded into another language, we should try to translate the
+			# title and notes to the local language
 			set ::settings(profile_notes) [translate $::settings(profile_notes)]
+			set ::settings(profile_title) [translate $::settings(profile_title)]
+			set ::settings(profile_language) [language]
 		}
+		set ::settings(original_profile_title) $::settings(profile_title)
 
 		make_current_listbox_item_blue $::globals(profiles_listbox)
 
