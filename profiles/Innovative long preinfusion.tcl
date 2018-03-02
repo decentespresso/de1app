@@ -13,8 +13,10 @@ flow_profile_decline 1.8
 flow_profile_decline_time 23
 flow_profile_minimum_pressure 6
 preinfusion_flow_rate 1.0
-profile_notes {}
+profile_notes {Created by a famously innovative Seattle-based espresso machine manufacturer, this technique requires you to grind your coffee very finely.  Try this with very lightly roasted coffee beans.}
 water_temperature 80
 final_desired_shot_weight 32
-profile_title "Innovative long preinfusion"
+preinfusion_guarantee 1
+profile_title {Innovative long preinfusion}
 profile_language en
+

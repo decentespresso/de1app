@@ -13,8 +13,8 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes {Default espresso preset}
+profile_notes {This profile is gentle on the coffee puck and not too demanding on the barista.  Produces a very acceptable espresso in a wide variety of settings.}
 water_temperature 80
 final_desired_shot_weight 32
-profile_title "default"
+profile_title "Default"
 profile_language en

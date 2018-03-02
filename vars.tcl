@@ -1188,6 +1188,7 @@ proc delete_selected_profile {} {
 		return
 	}
 
+	puts [subst {file delete "[homedir]/profiles/${todel}.tcl"}]
 	file delete "[homedir]/profiles/${todel}.tcl"
 	set ::settings(profile) "default"
 	fill_profiles_listbox 
@@ -1282,7 +1283,17 @@ proc fill_profiles_listbox {} {
 		#if {$d == "CVS" || $d == "example"} {
 		#	continue
 		#}
-		$widget insert $cnt [translate $d]
+
+		set fn "[homedir]/profiles/${d}.tcl"
+		#puts "fn: $fn"
+		array unset -nocomplain profile
+		array set profile [read_file $fn]
+
+		if {[language] != "en" && $profile(profile_language) == "en"} {
+			$widget insert $cnt [translate $profile(profile_title)]
+		} else {
+			$widget insert $cnt $profile(profile_title)
+		}
 
 		#puts "$widget insert $cnt $d"
 		if {$::settings(profile) == $d} {
@@ -1804,7 +1815,7 @@ proc preview_profile {} {
 		load_settings_vars $fn
 		set ::settings(profile_filename) $profile
 
-		if {[language] != "en" && $::settings(profile_language) != "en"} {
+		if {[language] != "en" && $::settings(profile_language) == "en"} {
 			# the first time this profile is loaded into another language, we should try to translate the
 			# title and notes to the local language
 			set ::settings(profile_notes) [translate $::settings(profile_notes)]
@@ -1876,10 +1887,10 @@ proc save_profile {} {
 		return
 	}
 
-	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee }
+	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee profile_title profile_language}
 	#set profile_name_to_save $::settings(profile_to_save) 
 
-	if {$::settings(original_profile_title) == $::settings(title)} {
+	if {$::settings(original_profile_title) == $::settings(profile_title)} {
 		set profile_filename $::settings(profile_filename) 
 	} else {
 		# if they change the description of the profile, then save it to a new name
@@ -1888,6 +1899,9 @@ proc save_profile {} {
 	
 	set fn "[homedir]/profiles/${profile_filename}.tcl"
 
+	# set the title back to its title, after we display SAVED for a second
+	# moves the cursor to the end of the seletion after showing the "saved" message.
+	after 1000 "set ::settings(profile_title) \{$::settings(profile_title)\}; $::globals(widget_profile_name_to_save) icursor 999"
 
 	if {[save_settings_vars $fn $profile_vars] == 1} {
 		#set ::settings(profile) $profile_name_to_save
@@ -1895,20 +1909,8 @@ proc save_profile {} {
 		update_de1_explanation_chart
 		set ::settings(profile_title) [translate "Saved"]
 
-		after 1000 {
-			set ::settings(profile_title) $::settings(profile_title)
-
-			# moves the cursor to the end of the seletion after showing the "saved" message.
-			$::globals(widget_profile_name_to_save) icursor 999
-		}
 	} else {
 		set ::settings(profile_title) [translate "Invalid name"]
-		after 2000 {
-			set ::settings(profile_title) $::settings(profile)
-
-			# moves the cursor to the end of the seletion after showing the "saved" message.
-			$::globals(widget_profile_name_to_save) icursor 999
-		}
 	}
 }
 

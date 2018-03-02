@@ -13,8 +13,10 @@ flow_profile_decline 1
 flow_profile_decline_time 23
 flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4.5
-profile_notes {}
+profile_notes {This will imitate the espresso style of the majority of cafes around the world. It uses a short preinfusion with a flat 9 bar pressure profile.}
 water_temperature 86.0
 final_desired_shot_weight 32
-profile_title "Classic Italian espresso"
+preinfusion_guarantee 1
+profile_title {Classic Italian espresso}
 profile_language en
+
