@@ -419,10 +419,8 @@ proc make_de1_dir {} {
         profiles/Gentler\ but\ still\ traditional\ 8.4\ bar.tcl *
         profiles/Hybrid\ pour\ over\ espresso.tcl 1
         profiles/Low\ pressure\ lever\ machine\ at\ 6\ bar.tcl *
-        profiles/Powerful\ 10\ bar\ shot.tcl *
         profiles/Preinfuse\ then\ 45ml\ of\ water.tcl 1
         profiles/Best\ overall\ pressure\ profile.tcl *
-        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
         profiles/Traditional\ lever\ machine.tcl *
         profiles/Trendy\ 6\ bar\ low\ pressure\ shot.tcl *
         profiles/Two\ spring\ lever\ machine\ to\ 9\ bar.tcl *
@@ -432,6 +430,8 @@ proc make_de1_dir {} {
         profiles/e61\ rocketing\ up\ to\ 10\ bar.tcl *
         profiles/e61\ with\ fast\ preinfusion\ to\ 9\ bar.tcl *      
     }
+#        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
+#        profiles/Powerful\ 10\ bar\ shot.tcl *
 
     set srcdir "/d/admin/code/de1beta"
     set destdirs [list "/d/download/sync/de1" "/d/download/sync/de1plus"]
