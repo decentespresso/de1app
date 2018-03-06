@@ -106,6 +106,11 @@ if {$::debugging == 1} {
 	add_de1_variable "off espresso espresso_3" 450 220 -text "" -font Helv_6 -fill "#5a5d75" -anchor "nw" -justify left -width [rescale_y_skin 1560] -textvariable {$::debuglog}
 }
 
+	
+	# not yet ready to be used, still needs some work
+	set ::settings(display_pressure_delta_line) 0
+	set ::settings(display_flow_delta_line) 0
+
 
 #######################
 # 3 equal sized charts
@@ -121,7 +126,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 267 {
 	$widget element create line_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth quadratic -pixels 0; 
 	$widget element create god_line_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 20] -color #c5ffe7  -smooth quadratic -pixels 0; 
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ; 
-	
+
 	if {$::settings(display_pressure_delta_line) == 1} {
 		$widget element create line_espresso_pressure_delta2  -xdata espresso_elapsed -ydata espresso_pressure_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #40dc94 -pixels 0 -smooth quadratic 
 	}

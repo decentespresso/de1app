@@ -872,6 +872,14 @@ proc return_temperature_measurement {in} {
 	}
 }
 
+proc round_temperature_number {in} {
+	if {[de1plus]} {
+		return [round_to_half_integer $in]
+	} else {
+		return [round_to_integer $in]
+	}
+}
+
 proc return_temperature_setting {in} {
 	if {[de1plus]} {
 		if {$::settings(enable_fahrenheit) == 1} {
