@@ -1198,6 +1198,11 @@ proc de1_ble_handler { event data } {
 									 	after 1000 {after_shot_weight_hit_update_final_weight}
 									 	after 2000 {after_shot_weight_hit_update_final_weight}
 									 	after 3000 {after_shot_weight_hit_update_final_weight}
+									 	after 4000 {after_shot_weight_hit_update_final_weight}
+									 	after 5000 {after_shot_weight_hit_update_final_weight}
+									 	after 6000 {after_shot_weight_hit_update_final_weight}
+									 	after 7000 {after_shot_weight_hit_update_final_weight}
+									 	after 8000 {after_shot_weight_hit_update_final_weight}
 									}
 								}
 							}

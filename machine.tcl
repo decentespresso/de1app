@@ -213,7 +213,7 @@ array set ::settings {
 	enable_negative_flow_charts 0
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
-	final_desired_shot_weight_percentage_to_stop .80
+	final_desired_shot_weight_percentage_to_stop .75
 	history_saved ""
 	pressure_end 4 
 	espresso_step_1 pressure
