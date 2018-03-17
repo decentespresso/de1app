@@ -201,7 +201,6 @@ proc read_file {filename} {
     return $data
 }
 
-
 proc homedir {} {
     global home
     if {[info exists home] != 1} {
