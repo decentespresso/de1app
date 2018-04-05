@@ -762,7 +762,6 @@ proc after_info {} {
 }
 
 proc show_going_to_sleep_page  {} {
-
 	if {$::de1_num_state($::de1(state)) != "Idle"} {
 		# never go to sleep if the DE1 is not idle
 		msg "delaying screen saver because de1 is not idle"

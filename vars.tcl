@@ -847,12 +847,22 @@ proc return_html_temperature_units {} {
 		return "[encoding convertfrom utf-8 °]C"
 	}
 }
+
+proc return_temp_offset {in} {
+	if {$::settings(enable_fahrenheit) == 1} {
+		return [expr {$in * 1.8}]
+	} else {
+		return $in
+	}
+}
+
+
 proc return_temperature_number {in} {
 	if {$::settings(enable_fahrenheit) == 1} {
 		return [celsius_to_fahrenheit $in]
 	} else {
 		return $in
-	}
+	}	
 }
 
 proc return_temperature_measurement {in} {
@@ -870,6 +880,16 @@ proc return_temperature_measurement {in} {
 		}
 
 	}
+}
+
+proc round_and_return_temperature_setting {varname} {
+	upvar $varname in
+	set out [round_temperature_number $in]
+	if {$in != $out} {
+	#puts "$in != $out"
+		set $varname $out
+	}	
+	return_temperature_setting $in
 }
 
 proc round_temperature_number {in} {
@@ -913,16 +933,17 @@ proc return_delta_temperature_measurement {in} {
 
 	if {$::settings(enable_fahrenheit) == 1} {
 		set label "\u00BAF"
-		set num [celsius_to_fahrenheit $in]
+		#set num [celsius_to_fahrenheit $in]
+#		set num $in
 	} else {
 		set label "\u00BAC"
-		set num $in
+#		set num $in
 	}
 
 	if {[de1plus]} {
-		set num [round_to_one_digits $num]
+		set num [round_to_one_digits $in]
 	} else {
-		set num [round_to_integer $num]
+		set num [round_to_integer $in]
 	}
 
 	set t {}
@@ -2200,7 +2221,11 @@ proc firmware_uploaded_label {} {
 }
 proc de1_version_string {} {
 	array set v $::de1(version)
-	return "BLE v[ifexists v(BLE_Release)].[ifexists v(BLE_Changes)].[ifexists v(BLE_Commits)], API v[ifexists v(BLE_APIVersion)], SHA=[ifexists v(BLE_Sha)]\nFW v[ifexists v(FW_Release)].[ifexists v(FW_Changes)].[ifexists v(FW_Commits)], API v[ifexists v(FW_APIVersion)], SHA=[ifexists v(FW_Sha)]"
+	set version "BLE v[ifexists v(BLE_Release)].[ifexists v(BLE_Changes)].[ifexists v(BLE_Commits)], API v[ifexists v(BLE_APIVersion)], SHA=[ifexists v(BLE_Sha)]"
+	if {[ifexists v(FW_Sha)] != [ifexists v(BLE_Sha)] } {
+		append version "\nFW v[ifexists v(FW_Release)].[ifexists v(FW_Changes)].[ifexists v(FW_Commits)], API v[ifexists v(FW_APIVersion)], SHA=[ifexists v(FW_Sha)]"
+	}
+	return $version
 
 	#return "HW=[ifexists v(BLEFWMajor)].[ifexists v(BLEFWMinor)].[ifexists v(P0BLECommits)].[ifexists v(Dirty)] API=[ifexists v(APIVersion)] SHA=[ifexists v(BLESha)]"
 }

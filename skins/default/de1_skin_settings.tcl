@@ -89,7 +89,7 @@ if {[de1plus]} {
 		set ::espresso_pressure_decline_widget_label [add_de1_variable "settings_2 settings_2a" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(pressure_end)]}]
 
 	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker .5 .5 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1} 2404 192 2590 750 ""
-	add_de1_variable "settings_2a settings_2b" 2470 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[set ::settings(espresso_temperature) [round_temperature_number $::settings(espresso_temperature)]; return_temperature_setting $::settings(espresso_temperature)]}
+	add_de1_variable "settings_2a settings_2b" 2470 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_temperature_setting ::settings(espresso_temperature)]}
 
 	############################
 	# flow controlled shots
@@ -332,7 +332,10 @@ add_de1_variable "settings_4" 1650 1300 -text [translate "Update"] -font Helv_10
 
 # exit app feature
 add_de1_text "settings_4" 2280 1300 -text [translate "Exit"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
-add_de1_button "settings_4" {say [translate {exit}] $::settings(sound_button_in); app_exit} 1925 1206 2550 1406
+add_de1_button "settings_4" {say [translate {exit}] $::settings(sound_button_in); .can itemconfigure $::message_label -text [translate "Exiting"]; .can itemconfigure $::message_button_label -text [translate "Ok"]; set_next_page off message; page_show message; app_exit} 1925 1206 2550 1406
+
+
+
 
 #add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 #add_de1_text "settings_4" 2280 980 -text [translate "Pair"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -width 200 -justify "center"
@@ -608,7 +611,7 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::active_settings_tab "settings_4"} 1905 0 2560 188
 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; 
-		if {[array_item_difference ::settings ::settings_backup "language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1 } {
+		if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1 } {
 			.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 			set_next_page off message; page_show message
 		} else {
@@ -704,4 +707,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off settings_4
+#set_next_page off tankempty

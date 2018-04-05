@@ -233,6 +233,8 @@ proc write_firmware_now {} {
 
 proc firmware_upload_next {} {
 	msg "firmware_upload_next $::de1(firmware_bytes_uploaded)"
+	#delay_screen_saver
+
 	if  {$::de1(firmware_bytes_uploaded) >= $::de1(firmware_update_size)} {
 		if {$::android != 1} {
 			set ::de1(firmware_update_button_label) [translate "Updated"]
@@ -355,6 +357,10 @@ proc app_exit {} {
 	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
 	after 3000 {exit}
 
+	if {$::de1_num_state($::de1(state)) != "Idle"} {
+		start_idle
+	}
+
 	if {$::scanning  == 1} {
 		ble stop $::ble_scanner
 	}
@@ -362,22 +368,23 @@ proc app_exit {} {
 	msg "Closing de1"
 	if {$::de1(device_handle) != 0} {
 		catch {
-			ble close $::de1(device_handle)
+			after 500 ble close $::de1(device_handle)
 		}
 	}
 
 	msg "Closing skale"
 	if {$::de1(skale_device_handle) != 0} {
 		catch {
-			ble close $::de1(skale_device_handle)
+			after 500 ble close $::de1(skale_device_handle)
 		}
 	}
 
 	catch {
-		ble unpair $::de1(de1_address)
-		ble unpair $::settings(bluetooth_address)
+		after 1000 ble unpair $::de1(de1_address)
+		after 1000 ble unpair $::settings(bluetooth_address)
 	}
-	exit
+
+	after 2000 exit
 }
 
 #proc de1_enable_obsolete {cuuid_to_enable} {
@@ -1092,6 +1099,7 @@ proc de1_ble_handler { event data } {
 								} else {
 									set ::de1(firmware_update_button_label) [translate "Failed"]
 								}
+								set ::de1(currently_updating_firmware) 0
 
 							} else {
 								msg "unknown firmware cmd ack recved: [string length $value] bytes: $value : [array get arr2]"
@@ -1177,6 +1185,7 @@ proc de1_ble_handler { event data } {
 							set ::de1(scale_weight_rate) $flow
 							
 							set ::de1(scale_weight) $thisweight
+							set ::de1(scale_sensor_weight) $sensorweight
 							#msg "weight received: $thisweight : flow: $tempflow"
 
 
@@ -1386,9 +1395,9 @@ proc calibration_ble_received {value} {
 
 proc after_shot_weight_hit_update_final_weight {} {
 
-	if {$::de1(scale_weight) > $::de1(final_water_weight)} {
+	if {$::de1(scale_sensor_weight) > $::de1(final_water_weight)} {
 		# if the current scale weight is more than the final weight we have on record, then update the final weight
-		set ::de1(final_water_weight) $::de1(scale_weight)
+		set ::de1(final_water_weight) $::de1(scale_sensor_weight)
 	}
 
 }

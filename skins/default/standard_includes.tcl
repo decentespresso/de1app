@@ -16,6 +16,11 @@ add_de1_page "message calibrate" "settings_message.png" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
 
+
+add_de1_text "tankempty" 1280 750 -text [translate "Out of water"] -font Helv_20_bold -fill "#AAAAAA" -justify "center" -anchor "center" -width 900
+add_de1_text "cleaning" 1280 80 -text [translate "Cleaning"] -font Helv_20_bold -fill "#EEEEEE" -justify "center" -anchor "center" -width 900
+add_de1_text "descaling" 1280 80 -text [translate "Descaling"] -font Helv_20_bold -fill "#CCCCCC" -justify "center" -anchor "center" -width 900
+
 set_de1_screen_saver_directory "[homedir]/saver"
 
 # include the generic settings features for all DE1 skins.  

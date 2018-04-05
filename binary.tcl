@@ -186,7 +186,7 @@ proc return_de1_packed_steam_hotwater_settings {} {
 
 proc return_de1_packed_waterlevel_settings {} {
 	set arr(Level) [convert_float_to_U16P8 0]
-	set arr(StartFillLevel) [convert_float_to_U16P8 $::de1(water_refill_point)]
+	set arr(StartFillLevel) [convert_float_to_U16P8 $::settings(water_refill_point)]
 	return [make_packed_waterlevel_settings arr]
 }
 

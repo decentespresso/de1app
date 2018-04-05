@@ -22,7 +22,6 @@ array set ::de1 {
 	factory_calibration_pressure {}
 	factory_calibration_temperature {}
 	factory_calibration_flow {}
-	water_refill_point 2
 	advanced_shot_moveone_enabled 1
     found    0
     scanning 1
@@ -64,6 +63,7 @@ array set ::de1 {
 	substate 0
 	current_context ""
 	serial_number 0
+	scale_sensor_weight 0
 	scale_weight {}
 	scale_weight_rate 0
 	final_water_weight 0
@@ -143,7 +143,7 @@ array set ::settings {
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"
-	water_refill_point 2
+	water_refill_point 5
 	insight_skin_show_embedded_profile 0
 	flying 0
 	bean_notes {}
@@ -542,6 +542,19 @@ proc start_idle {} {
 
 
 proc start_sleep {} {
+
+    if {[ifexists ::app_updating] == 1} {
+		msg "delaying screen saver because tablet app is updating"
+		delay_screen_saver
+		return
+	}
+
+    if {$::de1(currently_updating_firmware) == 1} {
+		msg "delaying screen saver because firmware is updating"
+		delay_screen_saver
+		return
+	}
+
 	change_screen_saver_img
 	stop_screen_saver_timer
 	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
