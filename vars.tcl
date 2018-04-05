@@ -2222,7 +2222,7 @@ proc firmware_uploaded_label {} {
 proc de1_version_string {} {
 	array set v $::de1(version)
 	set version "BLE v[ifexists v(BLE_Release)].[ifexists v(BLE_Changes)].[ifexists v(BLE_Commits)], API v[ifexists v(BLE_APIVersion)], SHA=[ifexists v(BLE_Sha)]"
-	if {[ifexists v(FW_Sha)] != [ifexists v(BLE_Sha)] } {
+	if {[ifexists v(FW_Sha)] != [ifexists v(BLE_Sha)] && [ifexists v(FW_Sha)] != 0} {
 		append version "\nFW v[ifexists v(FW_Release)].[ifexists v(FW_Changes)].[ifexists v(FW_Commits)], API v[ifexists v(FW_APIVersion)], SHA=[ifexists v(FW_Sha)]"
 	}
 	return $version
