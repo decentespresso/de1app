@@ -769,6 +769,18 @@ proc show_going_to_sleep_page  {} {
 		return
 	}
 
+    if {[ifexists ::app_updating] == 1} {
+		msg "delaying screen saver because tablet app is updating"
+		delay_screen_saver
+		return
+	}
+
+    if {$::de1(currently_updating_firmware) == 1} {
+		msg "delaying screen saver because firmware is updating"
+		delay_screen_saver
+		return
+	}	
+
 	puts "show_going_to_sleep_page"
  	if {$::de1(current_context) == "sleep" || $::de1(current_context) == "saver"} {
  		return
@@ -998,12 +1010,12 @@ proc show_settings { {tab_to_show ""} } {
 	backup_settings; 
 	if {$tab_to_show == ""} {
 		page_to_show_when_off $::active_settings_tab
+		scheduler_feature_hide_show_refresh
+		set_profiles_scrollbar_dimensions
 	} else {
 		page_to_show_when_off $tab_to_show
 	}
-	scheduler_feature_hide_show_refresh
-	preview_profile 
-	set_profiles_scrollbar_dimensions
+	#preview_profile 
 }
 
 proc page_to_show_when_off {page_to_show} {
@@ -1176,6 +1188,16 @@ proc update_de1_explanation_chart { {context {}} } {
 
 
 	set espresso_pressure $::settings(espresso_pressure)
+	if {$espresso_pressure == 0} {
+		# don't chart espresso pressure at zero, because you get visual interference with the baseline
+		set espresso_pressure 0.05
+	}
+
+	set pressure_end $::settings(pressure_end)
+	if {$pressure_end == 0} {
+		# don't chart espresso end pressure at zero, because you get visual interference with the baseline
+		set pressure_end 0.05
+	}
 
 	# the 0.1 added is to avoid having a rampup of zero which causes the chart library to remove one of the plotted dots
 	set approximate_ramptime [expr {0.01 + (abs($espresso_pressure - $preinfusion_pressure) * 0.5)}]
@@ -1224,10 +1246,10 @@ proc update_de1_explanation_chart { {context {}} } {
 	# decline pressure stage
 	if {$::settings(espresso_decline_time) > 0} {
 		set seconds [expr {$seconds + $espresso_decline_time}]
-		espresso_de1_explanation_chart_pressure append $::settings(pressure_end)
+		espresso_de1_explanation_chart_pressure append $pressure_end
 		espresso_de1_explanation_chart_elapsed append $seconds
 
-		espresso_de1_explanation_chart_pressure_3 append $::settings(pressure_end)
+		espresso_de1_explanation_chart_pressure_3 append $pressure_end
 		espresso_de1_explanation_chart_elapsed_3 append $seconds
 	}
 
@@ -1341,25 +1363,39 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 #		set approximate_ramptime 5
 	#}	
 
+	set flow_profile_hold $::settings(flow_profile_hold)
+	if {$flow_profile_hold == 0} {
+		# don't chart espresso pressure at zero, because you get visual interference with the baseline
+		set flow_profile_hold 0.05
+	}
+
+	set flow_profile_decline $::settings(flow_profile_decline)
+	if {$flow_profile_decline == 0} {
+		# don't chart espresso end pressure at zero, because you get visual interference with the baseline
+		set flow_profile_decline 0.05
+	}
+
+
+
 	# ramp up the flow
 	if {$flow_profile_hold_time > 0} {
 		set seconds [expr {$seconds + $approximate_ramptime}]
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
-		espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_flow append $flow_profile_hold
 		
 		espresso_de1_explanation_chart_elapsed_flow_2 append $seconds
-		espresso_de1_explanation_chart_flow_2 append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_flow_2 append $flow_profile_hold
 		espresso_de1_explanation_chart_elapsed_flow_3 append $seconds
-		espresso_de1_explanation_chart_flow_3 append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_flow_3 append $flow_profile_hold
 
 		# hold the flow
 		set seconds [expr {$seconds + $flow_profile_hold_time}]
-		espresso_de1_explanation_chart_flow append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_flow append $flow_profile_hold
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 		
-		espresso_de1_explanation_chart_flow_2 append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_flow_2 append $flow_profile_hold
 		espresso_de1_explanation_chart_elapsed_flow_2 append $seconds
-		espresso_de1_explanation_chart_flow_3 append $::settings(flow_profile_hold)
+		espresso_de1_explanation_chart_flow_3 append $flow_profile_hold
 		espresso_de1_explanation_chart_elapsed_flow_3 append $seconds
 
 	}
@@ -1367,11 +1403,11 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 	# decline flow stage
 	if {$espresso_decline_time > 0} {
 		set seconds [expr {$seconds + $espresso_decline_time}]
-		espresso_de1_explanation_chart_flow append $::settings(flow_profile_decline)
+		espresso_de1_explanation_chart_flow append $flow_profile_decline
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 		
 
-		espresso_de1_explanation_chart_flow_3 append $::settings(flow_profile_decline)
+		espresso_de1_explanation_chart_flow_3 append $flow_profile_decline
 		espresso_de1_explanation_chart_elapsed_flow_3 append $seconds
 	}
 
@@ -1583,6 +1619,41 @@ proc water_level_color_check {widget} {
 		set ::water_level_color_check_count  0
 	}
 	incr ::water_level_color_check_count 
+	set colors [list  "#7ad2ff"  "#ff6b6b"]
+	if {$::water_level_color_check_count > [expr {-1 + [llength $colors]}] } {
+		set ::water_level_color_check_count 0
+	}
+
+	if {$::de1(water_level) > $::settings(waterlevel_blink_start_level)} {
+		# check the water rate infrequently if there is enough water and don't blink it
+		set color "#7ad2ff"
+		set blinkrate 5000
+	} else {
+		set color [lindex $colors $::water_level_color_check_count]
+		if {$::de1(water_level) > 10} {
+			set blinkrate 2000
+		} elseif {$::de1(water_level) > 7} {
+			set blinkrate 1000
+		} elseif {$::de1(water_level) > 5} {
+			set blinkrate 500
+		} else {
+			set blinkrate 150
+		}
+	}
+
+	$widget configure -background $color
+	after $blinkrate water_level_color_check $widget
+}
+
+# causes the water level widget to change between colors (blinking) at an inreasing rate as the water level goes lower
+proc water_level_color_check_obs {widget} {
+	if {$::settings(waterlevel_indicator_blink) != 1} {
+		return
+	}
+	if {[info exists ::water_level_color_check_count] != 1} {
+		set ::water_level_color_check_count  0
+	}
+	incr ::water_level_color_check_count 
 	set colors [list  "#7ad2ff"  "#98eeff"]
 	if {$::water_level_color_check_count > [expr {-1 + [llength $colors]}] } {
 		set ::water_level_color_check_count 0
@@ -1608,6 +1679,7 @@ proc water_level_color_check {widget} {
 	$widget configure -background $color
 	after $blinkrate water_level_color_check $widget
 }
+
 
 # convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
 proc listbox_moveto {lb dest1 dest2} {

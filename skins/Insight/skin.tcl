@@ -1,4 +1,4 @@
-set ::skindebug 0
+set ::skindebug 1
 set ::debugging 0
 
 #puts "debugging: $::debugging"
@@ -225,41 +225,6 @@ add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([r
 if {$::settings(waterlevel_indicator_on) == 1} {
 	# water level sensor 
 	add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2528 694 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #ffffff -borderwidth 0  -highlightthickness 0
-
-	# causes the water level widget to change between colors (blinking) at an inreasing rate as the water level goes lower
-	proc water_level_color_check {widget} {
-		if {$::settings(waterlevel_indicator_blink) != 1} {
-			return
-		}
-		if {[info exists ::water_level_color_check_count] != 1} {
-			set ::water_level_color_check_count  0
-		}
-		incr ::water_level_color_check_count 
-		set colors [list  "#7ad2ff"  "#98eeff"]
-		if {$::water_level_color_check_count > [expr {-1 + [llength $colors]}] } {
-			set ::water_level_color_check_count 0
-		}
-
-		if {$::de1(water_level) > $::settings(waterlevel_blink_start_level)} {
-			# check the water rate infrequently if there is enough water and don't blink it
-			set color "#7ad2ff"
-			set blinkrate 5000
-		} else {
-			set color [lindex $colors $::water_level_color_check_count]
-			if {$::de1(water_level) > 10} {
-				set blinkrate 2000
-			} elseif {$::de1(water_level) > 7} {
-				set blinkrate 1000
-			} elseif {$::de1(water_level) > 5} {
-				set blinkrate 500
-			} else {
-				set blinkrate 250
-			}
-		}
-
-		$widget configure -background $color
-		after $blinkrate water_level_color_check $widget
-	}
 }
 
 
@@ -390,14 +355,14 @@ add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(s
 
 if {$::debugging == 1} {
 #	add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4 off_zoomed espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); start_sleep} 2014 1442 2284 1600
-	add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4 off_zoomed espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); app_"} 2014 1420 2284 1600
+	add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4 off_zoomed espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); app_exit} 2014 1420 2284 1600
 } else {
 	add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 water_4 off_zoomed espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); set ::current_espresso_page "off"; start_sleep} 2014 1420 2284 1600
 }
 add_de1_text "sleep" 2500 1440 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
 
 # settings button 
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed steam_1 water_1 preheat_1 steam_3 water_3 preheat_3 off_zoomed_temperature espresso_3_zoomed_temperature" { say [translate {settings}] $::settings(sound_button_in); show_settings } 2285 1420 2560 1600
+add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed steam_1 water_1 preheat_1 steam_3 water_3 preheat_3 preheat_4 off_zoomed_temperature espresso_3_zoomed_temperature" { say [translate {settings}] $::settings(sound_button_in); show_settings } 2285 1420 2560 1600
 
 add_de1_variable "off off_zoomed off_zoomed_temperature" 2290 390 -text [translate "START"] -font $green_button_font -fill "#2d3046" -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
 add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" 2290 390 -text [translate "STOP"] -font $green_button_font -fill "#2d3046" -anchor "center" -textvariable {[stop_text_if_espresso_stoppable]} 
@@ -552,30 +517,37 @@ add_de1_button "espresso_zoomed_temperature" {say [translate {stop}] $::settings
 # settings for preheating a cup
 
 add_de1_variable "preheat_1" 1390 775 -text [translate "START"] -font $green_button_font -fill "#2d3046" -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
-add_de1_text "preheat_1 preheat_2 preheat_3" 1390 865 -text [translate "FLUSH"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1390 865 -text [translate "FLUSH"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 add_de1_variable "preheat_2" 1390 775 -text [translate "STOP"] -font $green_button_font -fill "#2d3046" -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
-add_de1_variable "preheat_3" 1390 775 -text [translate "RESTART"] -font $green_button_font -fill "#7f879a" -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
+add_de1_variable "preheat_3 preheat_4" 1390 775 -text [translate "RESTART"] -font $green_button_font -fill "#2d3046" -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
 
-add_de1_button "preheat_1 preheat_3" {say [translate {pre-heat cup}] $::settings(sound_button_in); set ::settings(preheat_temperature) 90; set_next_page hotwaterrinse preheat_2; start_hot_water_rinse} 1030 210 1800 1400
-add_de1_button "preheat_2" {say [translate {stop}] $::settings(sound_button_in); set_next_page off preheat_3; start_idle} 0 189 2560 1600
-add_de1_button "preheat_3" {say "" $::settings(sound_button_in); set_next_page off preheat_1; start_idle} 0 210 1000 1400
-add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(preheat_volume) 10 250 %x %y %x0 %y0 %x1 %y1; save_settings; de1_send_steam_hotwater_settings} 100 510 900 1200 ""
+#1030 210 1800 1400
+add_de1_button "preheat_1 preheat_3 preheat_4" {say [translate {pre-heat cup}] $::settings(sound_button_in); set ::settings(preheat_temperature) 90; set_next_page hotwaterrinse preheat_2; start_hot_water_rinse} 0 189 2560 1400
+add_de1_button "preheat_2" {say [translate {stop}] $::settings(sound_button_in); set_next_page off preheat_4; start_idle} 0 189 2560 1600
 
-add_de1_text "preheat_1" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 900]
-add_de1_text "preheat_2 preheat_3" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 900]
-add_de1_text "preheat_1" 1070 250 -text [translate "2) The group head will pour hot water out"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
-add_de1_text "preheat_2" 1070 250 -text [translate "2) Hot water is pouring out"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
-add_de1_text "preheat_3 " 1070 250 -text [translate "2) The group head will pour hot water out"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 650]
 
-add_de1_text "preheat_1" 1840 250 -text [translate "3) Your group head is now clean"] -font Helv_9 -fill "#b1b9cd" -anchor "nw" -width [rescale_x_skin 680]
-add_de1_text "preheat_3" 1840 250 -text [translate "3) Your group head is now clean"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 680]
+set preheat_water_volume_feature_enabled 0
+if {$preheat_water_volume_feature_enabled == 1} {
+	add_de1_button "preheat_3 preheat_4" {say "" $::settings(sound_button_in); set_next_page off preheat_1; start_idle} 0 210 1000 1400
+	add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker 50 10 ::settings(preheat_volume) 10 250 %x %y %x0 %y0 %x1 %y1; save_settings; de1_send_steam_hotwater_settings} 100 510 900 1200 ""
+	add_de1_text "preheat_1" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 900]
+	add_de1_text "preheat_2 preheat_3 preheat_4" 70 250 -text [translate "1) How much water?"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 900]
+}
+add_de1_text "preheat_1" 1070 250 -text [translate "1) Hot water will pour out"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
+add_de1_text "preheat_2" 1070 250 -text [translate "1) Hot water is pouring out"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 650]
+add_de1_text "preheat_3 preheat_4" 1070 250 -text [translate "1) Hot water will pour out"] -font Helv_9 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 650]
 
-add_de1_variable "preheat_1" 540 1250 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_liquid_measurement $::settings(preheat_volume)]}
-add_de1_variable "preheat_2 preheat_3" 540 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -textvariable {[return_liquid_measurement $::settings(preheat_volume)]}
-add_de1_text "preheat_1 preheat_2 preheat_3" 540 1300  -text [translate "VOLUME"] -font Helv_7 -fill "#7f879a" -anchor "center" 
+#add_de1_text "preheat_1" 1840 250 -text [translate "2) Done"] -font Helv_9 -fill "#b1b9cd" -anchor "nw" -width [rescale_x_skin 680]
+add_de1_text "preheat_3 preheat_4" 1840 250 -text [translate "2) Done"] -font Helv_9 -fill "#5a5d75" -anchor "nw" -width [rescale_x_skin 680]
 
-add_de1_text "preheat_2" 1880 1300 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "preheat_2" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+if {$preheat_water_volume_feature_enabled == 1} {
+	add_de1_variable "preheat_1" 540 1250 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[return_liquid_measurement $::settings(preheat_volume)]}
+	add_de1_variable "preheat_2 preheat_3 preheat_4" 540 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -textvariable {[return_liquid_measurement $::settings(preheat_volume)]}
+	add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 540 1300  -text [translate "VOLUME"] -font Helv_7 -fill "#7f879a" -anchor "center" 
+
+	add_de1_text "preheat_2" 1880 1300 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+	add_de1_variable "preheat_2" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+}
 
 add_de1_text "preheat_3" 1880 1300 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "preheat_3" 2460 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[done_timer][translate "s"]} 
@@ -591,11 +563,11 @@ add_de1_variable "preheat_3" 2470 1250 -justify left -anchor "ne" -text "" -font
 # add_de1_text "water_1 water_3" 1390 1270 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
 
 add_de1_variable "water_1" 1390 775 -text [translate "START"] -font $green_button_font -fill "#2d3046" -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
-add_de1_variable "water_3" 1390 775 -text [translate "RESTART"] -font $green_button_font -fill "#7f879a" -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
+add_de1_variable "water_3" 1390 775 -text [translate "RESTART"] -font $green_button_font -fill "#2d3046" -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
 add_de1_variable "water" 1390 775 -text [translate "STOP"] -font $green_button_font -fill "#2d3046" -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
 
 add_de1_text "water_1 water water_3" 1390 865 -text [translate "WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
-add_de1_button "water_1 water_3" {say [translate {Hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 210 1800 1400
+add_de1_button "water_1 water_3" {say [translate {Hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 210 2560 1400
 add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set_next_page off water_3 ; start_idle} 0 189 2560 1600
 
 # future feature
@@ -674,7 +646,7 @@ add_de1_variable "steam_3" 1390 775 -text [translate "RESTART"] -font $green_but
 
 add_de1_text "steam_1 steam steam_3" 1390 865 -text [translate "STEAM"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
-add_de1_button "steam_1 steam_3" {say [translate {steam}] $::settings(sound_button_in); start_steam} 1030 210 1800 1400
+add_de1_button "steam_1 steam_3" {say [translate {steam}] $::settings(sound_button_in); start_steam} 1030 210 2560 1400
 
 
 # future feature

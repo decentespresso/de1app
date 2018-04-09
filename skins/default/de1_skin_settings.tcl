@@ -32,7 +32,7 @@ if {[de1plus]} {
 add_de1_page "settings_3" "settings_3.png" "default"
 add_de1_page "settings_4" "settings_4.png" "default"
 
-set ::active_settings_tab settings_1
+#set ::active_settings_tab settings_1
 
 # this is the message page
 set ::message_label [add_de1_text "message" 1280 750 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
@@ -405,7 +405,7 @@ add_de1_text "settings_4" 1310 650 -text [translate "Connect"] -font Helv_10_bol
 	add_de1_text "settings_4" 1310 750 -text [translate "Espresso machine"] -font Helv_7_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
 	add_de1_variable "settings_4" 2230 696 -text {} -font Helv_8_bold -fill "#FFFFFF" -anchor "center"  -textvariable {[scanning_state_text]} 
-	add_de1_button "settings_4" {say [translate {Scan}] $::settings(sound_button_in); scanning_restart} 2050 640 2550 750
+	add_de1_button "settings_4" {say [translate {Scan}] $::settings(sound_button_in); scanning_restart} 1900 640 2550 750
 
 	if {[de1plus]} {
 		add_de1_text "settings_4" 1920 750 -text [translate "Scale"] -font Helv_7_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -676,6 +676,8 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 
 # END OF SETTINGS page
 ##############################################################################################################################################################################################################################################################################
+
+set ::active_settings_tab $::settings(settings_profile_type)
 
 proc setting_profile_type_to_text { } {
 	set in $::settings(settings_profile_type)
