@@ -150,6 +150,7 @@ array set ::settings {
 	espresso_notes {}
 	espresso_count 0
 	steaming_count 0
+	profile_has_changed 0
 	water_count 0
 	advanced_shot {}
 	water_time_max 60
@@ -198,7 +199,7 @@ array set ::settings {
 	water_temperature 80
 	final_desired_shot_weight 36
 	espresso_max_time 60
-	skale_square_button_starts_espresso 0
+	skale_square_button_starts_espresso 1
 	espresso_temperature 92
 	espresso_decline_time 25
 	preinfusion_enabled 1

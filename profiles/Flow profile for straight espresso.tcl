@@ -16,7 +16,7 @@ preinfusion_flow_rate 4
 profile_notes {John Buckman, the founder of Decent Espresso, finds that this flow profile produces the best espresso shots for straight espresso drinks in the widest variety of circumstances. It is especially tolerant of not-yet-very-good barista technique.}
 water_temperature 86.0
 final_desired_shot_weight 32
-preinfusion_guarantee 1
+preinfusion_guarantee 0
 profile_title {Flow profile for straight espresso}
 profile_language en
 

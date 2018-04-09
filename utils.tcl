@@ -297,6 +297,25 @@ proc reverse_array {arrname} {
     return [array get newarr]
 }
 
+# name the procs in the stack
+proc stackprocs {} {
+
+    set stack {}
+    for {set i 1} {$i < [info level]} {incr i} {
+        set lvl [info level -$i]
+        set pname [lindex $lvl 0]
+        lappend stack $pname
+        #foreach value [lrange $lvl 1 end] arg [info args $pname] {
+        #    if {$value eq ""} {
+        #        info default $pname $arg value
+        #    }
+        #    append stack " $arg='$value'"
+        #}
+        #append stack \n
+    }
+    return $stack
+}
+
 proc stacktrace {} {
     set stack "Stack trace:\n"
     for {set i 1} {$i < [info level]} {incr i} {

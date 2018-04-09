@@ -1872,10 +1872,54 @@ proc preview_profile {} {
 		}
 		update_onscreen_variables
 
+		profile_has_not_changed_set
+
 		catch {
 			break
 		}
 	#}
+}
+
+proc profile_has_changed_set_colors {} {
+	if {$::settings(profile_has_changed) == 1} {
+		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
+			$::globals(widget_profile_name_to_save) configure -bg #ffe3e3
+		}
+
+		if {[info exists ::globals(widget_current_profile_name)] == 1} {
+			.can itemconfigure $::globals(widget_current_profile_name) -fill #ff6b6b
+		}
+	} else {
+		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
+			# this indicates to the user that the profile has changed or not
+			$::globals(widget_profile_name_to_save) configure -bg #fbfaff
+		}
+
+		if {[info exists ::globals(widget_current_profile_name)] == 1} {
+			# this is displayed on the main Insight skin page
+			.can itemconfigure $::globals(widget_current_profile_name) -fill #969eb1
+		}
+	}
+
+}
+
+proc profile_has_changed_set args {
+
+	# if one the scroll bars has been touched by a human (not by the page display code) then mark the profile as having been changed
+	if {[lsearch -exact [stackprocs] "page_show"] == -1} {
+		set ::settings(profile_has_changed) 1
+		#puts "profile_has_changed_set:\n[stacktrace]"
+	}
+	#profile_has_changed_set_colors
+	#puts "profile_has_changed_set:\n[stacktrace]"
+
+
+
+}
+
+
+proc profile_has_not_changed_set args {
+	set ::settings(profile_has_changed) 0
 }
 
 proc load_settings_vars {fn} {
@@ -1937,6 +1981,7 @@ proc save_profile {} {
 		fill_profiles_listbox 
 		update_de1_explanation_chart
 		set ::settings(profile_title) [translate "Saved"]
+		profile_has_not_changed_set
 
 	} else {
 		set ::settings(profile_title) [translate "Invalid name"]

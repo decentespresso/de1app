@@ -1,5 +1,5 @@
 espresso_hold_time 20
-preinfusion_time 20
+preinfusion_time 25
 espresso_pressure 9.0
 espresso_decline_time 0
 pressure_end 1.0

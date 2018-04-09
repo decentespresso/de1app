@@ -984,7 +984,7 @@ proc de1_ble_handler { event data } {
 			    		set ::de1(wrote) 0
 						set ::de1(skale_device_handle) $handle
 						skale_enable_lcd
-						#skale_enable_grams
+						skale_enable_grams
 						skale_tare 
 						#skale_timer_off
 						skale_enable_button_notifications
@@ -1225,7 +1225,7 @@ proc de1_ble_handler { event data } {
 						    if {$t0 == 1} {
 								skale_tare
 							} elseif {$t0 == 2} {
-								if {$::settings(skale_square_button_starts_espresso) == 1} {
+								#if {$::settings(skale_square_button_starts_espresso) == 1} {
 									 if {$::de1_num_state($::de1(state)) == "Espresso"} {
 									 	say [translate {Stop}] $::settings(sound_button_in)
 									 	start_idle
@@ -1233,7 +1233,7 @@ proc de1_ble_handler { event data } {
 								 		say [translate {Espresso}] $::settings(sound_button_in)
 										start_espresso
 									}
-								}
+								#}
 							}
 						} else {
 							msg "Confirmed unknown read from DE1 $cuuid: '$value'"

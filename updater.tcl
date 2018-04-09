@@ -288,7 +288,7 @@ proc start_app_update {} {
     }
 
     set host "https://decentespresso.com"
-    #set host "http://10.0.1.200:8000"
+    set host "http://10.0.1.200:8000"
 
     set has_tls 0
     catch {
