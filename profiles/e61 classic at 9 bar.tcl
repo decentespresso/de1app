@@ -19,4 +19,4 @@ final_desired_shot_weight 36
 preinfusion_guarantee 1
 profile_title {E61 classic at 9 bar}
 profile_language en
-
+author Decent

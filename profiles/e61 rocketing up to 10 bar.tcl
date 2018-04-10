@@ -19,4 +19,4 @@ final_desired_shot_weight 36
 preinfusion_guarantee 1
 profile_title {E61 rocketing up to 10 bar}
 profile_language en
-
+author Decent

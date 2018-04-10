@@ -1318,7 +1318,7 @@ proc fill_profiles_listbox {} {
 		array unset -nocomplain profile
 		array set profile [read_file $fn]
 
-		if {[language] != "en" && $profile(profile_language) == "en"} {
+		if {[language] != "en" && $profile(profile_language) == "en" && [ifexists profile(author)] == "Decent"} {
 			$widget insert $cnt [translate $profile(profile_title)]
 		} else {
 			$widget insert $cnt $profile(profile_title)
@@ -1817,66 +1817,67 @@ proc preview_profile {} {
 	#catch {
 		#msg "preview_profile: [clock milliseconds]"
 
-		incr ::preview_profile_counter
-		set w $::globals(profiles_listbox)
-	    #msg "$::preview_profile_counter : $w vs $win"
+	incr ::preview_profile_counter
+	set w $::globals(profiles_listbox)
+    #msg "$::preview_profile_counter : $w vs $win"
 
-	    #$w selection set active
+    #$w selection set active
 
-		#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
-		#puts "w: $w '[$w curselection]'"
-		if {[$w curselection] == ""} {
-			$w selection set $::current_profile_number
-			puts "setting profile to $::current_profile_number"
-			#set profile $::current_profile_number
+	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
+	#puts "w: $w '[$w curselection]'"
+	if {[$w curselection] == ""} {
+		$w selection set $::current_profile_number
+		puts "setting profile to $::current_profile_number"
+		#set profile $::current_profile_number
+	}
+
+	#set profile [$w get [$w curselection]]
+	set profile [lindex [profile_directories] [$w curselection]]
+	#set profile [$w get active]
+	set ::settings(profile) $profile
+	set ::settings(profile_notes) ""
+	set fn "[homedir]/profiles/${profile}.tcl"
+
+	# for importing De1 profiles that don't have this feature.
+	set ::settings(preinfusion_flow_rate) 4
+
+	load_settings_vars $fn
+	set ::settings(profile_filename) $profile
+
+	puts "Author: '[ifexists ::settings(author)]'"
+	if {[language] != "en" && $::settings(profile_language) == "en" && [ifexists ::settings(author)] == "Decent"} {
+		# the first time this profile is loaded into another language, we should try to translate the
+		# title and notes to the local language
+		set ::settings(profile_notes) [translate $::settings(profile_notes)]
+		set ::settings(profile_title) [translate $::settings(profile_title)]
+		set ::settings(profile_language) [language]
+	}
+	set ::settings(original_profile_title) $::settings(profile_title)
+
+	make_current_listbox_item_blue $::globals(profiles_listbox)
+
+	if {[de1plus]} {
+		
+		if {$::settings(settings_profile_type) == "settings_2" || $::settings(settings_profile_type) == "settings_profile_pressure"} {
+			set ::settings(settings_profile_type) "settings_2a"
+		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+			set ::settings(settings_profile_type) "settings_2b"
 		}
 
-		#set profile [$w get [$w curselection]]
-		set profile [lindex [profile_directories] [$w curselection]]
-		#set profile [$w get active]
-		set ::settings(profile) $profile
-		set ::settings(profile_notes) ""
-		set fn "[homedir]/profiles/${profile}.tcl"
+	} else {
+		set ::settings(settings_profile_type) "settings_2"
 
-		# for importing De1 profiles that don't have this feature.
-		set ::settings(preinfusion_flow_rate) 4
-
-		load_settings_vars $fn
-		set ::settings(profile_filename) $profile
-
-		if {[language] != "en" && $::settings(profile_language) == "en"} {
-			# the first time this profile is loaded into another language, we should try to translate the
-			# title and notes to the local language
-			set ::settings(profile_notes) [translate $::settings(profile_notes)]
-			set ::settings(profile_title) [translate $::settings(profile_title)]
-			set ::settings(profile_language) [language]
-		}
-		set ::settings(original_profile_title) $::settings(profile_title)
-
-		make_current_listbox_item_blue $::globals(profiles_listbox)
-
-		if {[de1plus]} {
-			
-			if {$::settings(settings_profile_type) == "settings_2" || $::settings(settings_profile_type) == "settings_profile_pressure"} {
-				set ::settings(settings_profile_type) "settings_2a"
-			} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
-				set ::settings(settings_profile_type) "settings_2b"
-			}
-
-		} else {
+		if {$::settings(settings_profile_type) == "settings_2a"} {
 			set ::settings(settings_profile_type) "settings_2"
-
-			if {$::settings(settings_profile_type) == "settings_2a"} {
-				set ::settings(settings_profile_type) "settings_2"
-			}
 		}
-		update_onscreen_variables
+	}
+	update_onscreen_variables
 
-		profile_has_not_changed_set
+	profile_has_not_changed_set
 
-		catch {
-			break
-		}
+	catch {
+		break
+	}
 	#}
 }
 
@@ -1960,7 +1961,7 @@ proc save_profile {} {
 		return
 	}
 
-	set profile_vars { espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee profile_title profile_language}
+	set profile_vars { author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee profile_title profile_language}
 	#set profile_name_to_save $::settings(profile_to_save) 
 
 	if {$::settings(original_profile_title) == $::settings(profile_title)} {

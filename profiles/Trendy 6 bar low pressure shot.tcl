@@ -19,4 +19,4 @@ final_desired_shot_weight 36
 preinfusion_guarantee 1
 profile_title {Trendy 6 bar low pressure shot}
 profile_language en
-
+author Decent

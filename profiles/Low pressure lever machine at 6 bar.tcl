@@ -19,4 +19,4 @@ final_desired_shot_weight 32
 preinfusion_guarantee 1
 profile_title {Low pressure lever machine at 6 bar}
 profile_language en
-
+author Decent

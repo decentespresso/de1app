@@ -19,4 +19,4 @@ final_desired_shot_weight 32
 preinfusion_guarantee 1
 profile_title {Two spring lever machine to 9 bar}
 profile_language en
-
+author Decent
