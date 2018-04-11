@@ -395,7 +395,7 @@ add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoom
 	add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7  -fill $lighter -width [rescale_x_skin 520] -textvariable {[preinfusion_timer][translate "s"] [translate "preinfusion"]} 
 	add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7  -fill $lighter -width [rescale_x_skin 520] -textvariable {[pour_timer][translate "s"] [translate "pouring"]} 
 	add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -textvariable {[elapsed_timer][translate "s"] [translate "total"]} 
-	add_de1_variable "espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (4 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -text "" -fill $lighter -width [rescale_x_skin 520] -textvariable {[done_timer][translate "s"] [translate "done"]} 
+	add_de1_variable "espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" 2060 [expr {$pos_top + (4 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -text "" -fill $lighter -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_espresso)} {return "[done_timer][translate s] [translate done]"} else { return ""}]} 
 
 add_de1_text "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2510 [expr {$pos_top + (0 * $spacer)}] -justify right -anchor "ne" -text [translate "Volume"] -font Helv_7_bold -fill $dark -width [rescale_x_skin 520]
 	add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2510 [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "ne" -text "" -font Helv_7  -fill $lighter -width [rescale_x_skin 520] -textvariable {[preinfusion_volume]} 
@@ -549,8 +549,9 @@ if {$preheat_water_volume_feature_enabled == 1} {
 	add_de1_variable "preheat_2" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 }
 
-add_de1_text "preheat_3" 1880 1300 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "preheat_3" 2460 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[done_timer][translate "s"]} 
+add_de1_variable "preheat_3 preheat_4" 1880 1300 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_flush)} {return [translate Done]} else { return ""}]} 
+add_de1_variable "preheat_3 preheat_4" 2460 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_flush)} {return "[done_timer][translate s]"} else { return ""}]} 
+
 add_de1_text "preheat_3" 1880 1250 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "preheat_3" 2470 1250 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
@@ -607,8 +608,10 @@ add_de1_text "water" 1870 1300 -justify right -anchor "nw" -text [translate "Pou
 add_de1_variable "water" 2470 1300 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_timer][translate "s"]} 
 add_de1_text "water_3" 1870 1250 -justify right -anchor "nw" -text [translate "Pouring:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "water_3" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_timer][translate "s"]} 
-add_de1_text "water_3" 1870 1300 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water_3" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[done_timer][translate "s"]} 
+
+
+add_de1_variable "water_3" 1870 1300 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_hotwater)} {return [translate Done]} else { return ""}]} 
+add_de1_variable "water_3" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_hotwater)} {return "[done_timer][translate s]"} else { return ""}]} 
 
 
 add_de1_text "water " 1870 250 -justify right -anchor "nw" -text [translate "Information"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
@@ -672,8 +675,10 @@ add_de1_text "steam_1 steam steam_3" 537 1300 -text [translate "AUTO-OFF"] -font
 add_de1_text "steam steam_3" 1870 1200 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 add_de1_text "steam steam_3" 1870 1250 -justify right -anchor "nw" -text [translate "Steaming"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "steam steam_3" 2470 1250 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steam_timer][translate "s"]} 
-add_de1_text "steam_3" 1870 1300 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "steam_3" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[done_timer][translate "s"]} 
+
+add_de1_variable "steam_3" 1870 1300 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_steam)} {return [translate Done]} else { return ""}]} 
+add_de1_variable "steam_3" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_steam)} {return "[done_timer][translate s]"} else { return ""}]} 
+
 add_de1_text "steam" 1870 1300 -justify right -anchor "nw" -text [translate "Auto-Off"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "steam" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[setting_steam_max_time][translate "s"]} 
 
