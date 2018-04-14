@@ -44,6 +44,9 @@ add_de1_page "tankempty" "fill_tank.jpg" "default"
 add_de1_page "message calibrate" "settings_message.png" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
+add_de1_page "travel_prepare" "travel_prepare.jpg" "default"
+add_de1_page "travel_do" "travel_do.jpg" "default"
+
 
 set_de1_screen_saver_directory "[homedir]/saver"
 

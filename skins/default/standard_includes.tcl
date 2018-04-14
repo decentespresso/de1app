@@ -15,6 +15,8 @@ add_de1_page "cleaning" "cleaning.jpg" "default"
 add_de1_page "message calibrate" "settings_message.png" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
+add_de1_page "travel_prepare" "travel_prepare.jpg" "default"
+add_de1_page "travel_do" "travel_do.jpg" "default"
 
 
 add_de1_text "tankempty" 1280 750 -text [translate "Out of water"] -font Helv_20_bold -fill "#AAAAAA" -justify "center" -anchor "center" -width 900
