@@ -13,7 +13,7 @@ flow_profile_decline 1
 flow_profile_decline_time 23
 flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4
-profile_notes {A high tech variation on the classic E61 9 bar shot, this version brings more acidity out at the end with its increasing pressure.  This makes it more appropriate to drink without milk.  It will be quite thick, so adding water to make an Americano is recommended.}
+profile_notes {This high tech variation on the classic E61 9 bar shot brings out more acidity by increasing pressure towards the end of the shot.  This makes it more appropriate to drink without milk.  It will be quite thick, so adding water to make an Americano is recommended.}
 water_temperature 80
 final_desired_shot_weight 36
 preinfusion_guarantee 1
