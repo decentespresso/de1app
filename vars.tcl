@@ -1071,7 +1071,7 @@ proc skin_directories {} {
 		}
 	    
 	    set fn "[homedir]/skins/$d/skin.tcl"
-	    set skintcl [read_binary_file $fn]
+	    set skintcl [read_file $fn]
 	    #set skintcl ""
 	    if {[string first "package require de1plus" $skintcl] != -1} {
 	    	if {!$de1plus} {
