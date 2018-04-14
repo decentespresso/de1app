@@ -343,7 +343,7 @@ array set ::de1_substate_types {
 }
 array set ::de1_substate_types_reversed [reverse_array ::de1_substate_types]
 
-array set translation [encoding convertfrom utf-8 [read_file "[homedir]/translation.tcl"]]
+array set translation [encoding convertfrom utf-8 [read_binary_file "[homedir]/translation.tcl"]]
 
 proc de1_substate_text {} {
 	set num $::de1(substate)

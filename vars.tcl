@@ -1071,7 +1071,7 @@ proc skin_directories {} {
 		}
 	    
 	    set fn "[homedir]/skins/$d/skin.tcl"
-	    set skintcl [read_file $fn]
+	    set skintcl [read_binary_file $fn]
 	    #set skintcl ""
 	    if {[string first "package require de1plus" $skintcl] != -1} {
 	    	if {!$de1plus} {
@@ -1185,7 +1185,7 @@ proc profile_directories {} {
 		#	continue
 		#}
 
-		set filecontents [read_file "[homedir]/profiles/$d"]
+		set filecontents [encoding convertfrom utf-8 [read_binary_file "[homedir]/profiles/$d"]]
 	    if {[string first "settings_profile_type settings_2b" $filecontents] != -1 || [string first "settings_profile_type settings_2c" $filecontents] != -1 || [string first "settings_profile_type settings_profile_flow" $filecontents] != -1 || [string first "settings_profile_type settings_profile_advanced" $filecontents] != -1} {
 	    	if {!$de1plus} {
 		    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
@@ -1316,7 +1316,7 @@ proc fill_profiles_listbox {} {
 		set fn "[homedir]/profiles/${d}.tcl"
 		#puts "fn: $fn"
 		array unset -nocomplain profile
-		array set profile [read_file $fn]
+		array set profile [encoding convertfrom utf-8 [read_binary_file $fn]]
 
 		if {[language] != "en" && $profile(profile_language) == "en" && [ifexists profile(author)] == "Decent"} {
 			$widget insert $cnt [translate $profile(profile_title)]
@@ -1722,7 +1722,7 @@ proc preview_history {w args} {
 
 		# need to code this
 		#load_settings_vars $fn
-		array set props [read_file $fn]
+		array set props [encoding convertfrom utf-8 [read_binary_file $fn]]
 
 		array set ::settings $props(settings)
 
@@ -1844,7 +1844,7 @@ proc preview_profile {} {
 	load_settings_vars $fn
 	set ::settings(profile_filename) $profile
 
-	puts "Author: '[ifexists ::settings(author)]'"
+	#puts "Author: '[ifexists ::settings(author)]'"
 	if {[language] != "en" && $::settings(profile_language) == "en" && [ifexists ::settings(author)] == "Decent"} {
 		# the first time this profile is loaded into another language, we should try to translate the
 		# title and notes to the local language
@@ -1932,7 +1932,7 @@ proc load_settings_vars {fn} {
 		set ::settings(settings_profile_type) "settings_2"
 	}
 
-	foreach {k v} [read_file $fn] {
+	foreach {k v} [encoding convertfrom utf-8 [read_binary_file $fn]] {
 		#puts "$k $v"
 		set ::settings($k) $v
 	}
