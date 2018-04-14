@@ -1225,7 +1225,7 @@ proc de1_ble_handler { event data } {
 						    if {$t0 == 1} {
 								skale_tare
 							} elseif {$t0 == 2} {
-								if {$::settings(skale_square_button_starts_espresso) == 1} {
+								if {$::settings(scale_button_starts_espresso) == 1} {
 									 if {$::de1_num_state($::de1(state)) == "Espresso"} {
 									 	say [translate {Stop}] $::settings(sound_button_in)
 									 	start_idle

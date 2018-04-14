@@ -203,7 +203,7 @@ array set ::settings {
 	water_temperature 80
 	final_desired_shot_weight 36
 	espresso_max_time 60
-	skale_square_button_starts_espresso 0
+	scale_button_starts_espresso 0
 	espresso_temperature 92
 	espresso_decline_time 25
 	preinfusion_enabled 1
