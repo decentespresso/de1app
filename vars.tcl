@@ -1944,8 +1944,10 @@ proc save_settings_vars {fn varlist} {
 
 	set txt ""
 	foreach k $varlist {
-		set v $::settings($k)
-		append txt "[list $k] [list $v]\n"
+		if {[info exists ::settings($k)] == 1} {
+			set v $::settings($k)
+			append txt "[list $k] [list $v]\n"
+		}
 	}
 
 	set success 0
