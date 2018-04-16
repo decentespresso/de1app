@@ -300,6 +300,8 @@ array set ::de1_state {
     SteamRinse \x10
 	Refill \x11
     Clean \x12
+    InBootLoader \x13
+    AirPurge \x14
 }
 
 
@@ -323,6 +325,8 @@ array set ::de1_num_state {
   16 SteamRinse
   17 Refill
   18 Clean
+  19 InBootLoader
+  20 AirPurge
 }
 
 
@@ -369,6 +373,22 @@ proc start_decaling {} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		#after 200 "update_de1_state $::de1_state(Descale)"
 		after 200 [list update_de1_state "$::de1_state(Descale)\x5"]
+	}
+}
+
+
+proc start_air_purge {} {
+
+	msg "Tell DE1 to start TRAVEL DO"
+	set ::de1(timer) 0
+	set ::de1(volume) 0
+	de1_send_state "air purge" $::de1_state(AirPurge)
+
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
+		#after 200 "update_de1_state $::de1_state(Descale)"
+		after 200 [list update_de1_state "$::de1_state(AirPurge)\x5"]
+		after 5000 [list update_de1_state "$::de1_state(Idle)\x5"]
 	}
 }
 

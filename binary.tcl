@@ -1313,6 +1313,8 @@ proc update_de1_state {statechar} {
 			page_display_change $::de1(current_context) "descaling" 
 		} elseif {$textstate == "Clean"} {
 			page_display_change $::de1(current_context) "cleaning" 
+		} elseif {$textstate == "AirPurge"} {
+			page_display_change $::de1(current_context) "travel_do" 
 		}
 	#} else {
 	#	update
