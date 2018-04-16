@@ -454,11 +454,12 @@ if {[de1plus]} {
 	#}
 }
 
-add_de1_text "travel_prepare" 1400 1200 -text [translate "Please pull the water tank forward as shown in the photograph."] -font Helv_10_bold -fill "#fAfBff" -anchor "center" -width 600
-	add_de1_text "travel_prepare" 1550 1400 -text "\[ [translate "Ok"] \]" -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_text "travel_prepare" 1100 1400 -text "\[ [translate "Cancel"] \]" -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button "travel_prepare" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_4; start_air_purge} 1350 1300 1750 1500 ""
-	add_de1_button "travel_prepare" {say [translate {Cancel}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 900 1300 1300 1500 ""
+add_de1_text "travel_prepare" 1400 700 -text [translate "To prepare your espresso machine for the suitcase."] -font Helv_15_bold -fill "#000000" -anchor "center" -width 500
+	add_de1_text "travel_prepare" 1400 900 -text [translate "First, pull the water tank forward as shown in this photograph."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 500
+	add_de1_text "travel_prepare" 1070 1200 -text "\[ [translate "Cancel"] \]" -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_text "travel_prepare" 1850 1200 -text "\[ [translate "Ok"] \]" -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "travel_prepare" {say [translate {Cancel}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 900 1000 1300 1500 ""
+	add_de1_button "travel_prepare" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_4; start_air_purge} 1600 1000 2100 1500 ""
 	add_de1_text "travel_do" 1280 1450 -text [translate "Now removing water from your espresso machine."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 600
 
 
@@ -716,4 +717,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-set_next_page off travel_prepare
+#set_next_page off travel_prepare
