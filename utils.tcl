@@ -841,21 +841,14 @@ proc god_shot_save {} {
     set ::settings(god_espresso_flow) [espresso_flow range 0 end]
     set ::settings(god_espresso_flow_weight) [espresso_flow_weight range 0 end]
 
-    god_espresso_pressure length 0
-    god_espresso_temperature_basket length 0
-    god_espresso_flow length 0
-    god_espresso_flow_weight length 0
-
-    god_espresso_pressure append $::settings(god_espresso_pressure)
-    god_espresso_temperature_basket append $::settings(god_espresso_temperature_basket)
-    god_espresso_flow append $::settings(god_espresso_flow)
-    god_espresso_flow_weight append $::settings(god_espresso_flow_weight)
+    set ::settings(god_espresso_flow) [espresso_flow range 0 end]
+    set ::settings(god_espresso_flow_weight) [espresso_flow_weight range 0 end]
 
     save_settings
-
-
+    god_shot_reference_reset
     #clear_espresso_chart
 }
+
 
 proc god_shot_clear {} {
     set ::settings(god_espresso_pressure) {}
@@ -867,6 +860,8 @@ proc god_shot_clear {} {
     god_espresso_temperature_basket length 0
     god_espresso_flow length 0
     god_espresso_flow_weight length 0
+    god_espresso_flow_2x length 0
+    god_espresso_flow_weight_2x length 0
 
     save_settings
 }

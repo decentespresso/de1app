@@ -45,11 +45,16 @@ proc clear_espresso_chart {} {
 	espresso_flow_goal_2x append -1
 	espresso_temperature_goal append $::settings(espresso_temperature)
 
+	god_shot_reference_reset
+	
 	catch {
 		# update the Y axis on the temperature chart, each time that we make an espresso, in case the goal temperature changed
 		#update_temperature_charts_y_axis
 	}
 
+}	
+
+proc god_shot_reference_reset {} {
 	############################################################################################################
 	# god shot reference
 	god_espresso_pressure length 0
@@ -79,8 +84,8 @@ proc clear_espresso_chart {} {
 		}
 	}
 	############################################################################################################
-}	
 
+}
 
 
 proc espresso_frame_title {num} {
