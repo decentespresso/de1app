@@ -27,7 +27,7 @@ if {$argv != ""} {
 	file delete -force /d/download/desktop/linux/de1plus_linux.zip
 	file delete -force /d/download/desktop/source/de1plus_source.zip
 
-	skin_convert_all
+	#skin_convert_all
 	make_de1_dir
 
 
@@ -45,7 +45,7 @@ if {$argv != ""} {
 	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1plus_source.zip de1plus
 	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1_source.zip de1
 } else {
-	skin_convert_all
+	#skin_convert_all
 	make_de1_dir
 
 }

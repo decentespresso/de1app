@@ -1635,7 +1635,7 @@ proc water_level_color_check {widget} {
 			set blinkrate 2000
 		} elseif {$::de1(water_level) > 7} {
 			set blinkrate 1000
-		} elseif {$::de1(water_level) > 5} {
+		} elseif {$::de1(water_level) >= 5} {
 			set blinkrate 500
 		} else {
 			set blinkrate 150
