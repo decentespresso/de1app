@@ -614,7 +614,7 @@ proc de1_packed_shot_flow {} {
 	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
 	set frame2(MaxVol) [convert_float_to_U10P0 99]
-	if {$::settings(preinfusion_guarantee) == 1} {
+	if {$::settings(preinfusion_guarantee) == 1 && $::settings(preinfusion_time) > 0} {
 		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(flow_rise_timeout)]
 	} else {
 		# a length of zero means the DE1+ will skip this frame
