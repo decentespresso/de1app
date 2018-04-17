@@ -79,4 +79,5 @@ if {$tk != ""} {
 
 ##
 #pause 1000
+
 app_exit
