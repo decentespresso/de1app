@@ -323,9 +323,10 @@ proc start_app_update {} {
         puts "Local timestamp is the same as remote timestamp, so no need to update"
         
         # we can return at this point, if we're very confident that the sync is correct
-        set ::de1(app_update_button_label) [translate "Up to date"]; 
-        set ::app_updating 0
-        return
+        # john 4/18/18 we want to check all files anyway, to fill in any missing local files, so we are going to ignore the time stamps being equal
+        #set ::de1(app_update_button_label) [translate "Up to date"]; 
+        #set ::app_updating 0
+        #return
     }
 
 
@@ -345,6 +346,7 @@ proc start_app_update {} {
 
         if {[file exists "[homedir]/$filename"] != 1} {
             # force retrieval of any locally missing file by setting its SHA to zero
+            puts "Missing: $filename"
             set filesha 0
         }
         set lmanifest($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
