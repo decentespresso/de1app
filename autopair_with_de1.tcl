@@ -1,5 +1,3 @@
-
-
 cd "[file dirname [info script]]/"
 
 source pkgIndex.tcl
@@ -80,6 +78,5 @@ if {$tk != ""} {
 }
 
 ##
-
 #pause 1000
 app_exit

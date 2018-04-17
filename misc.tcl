@@ -476,8 +476,9 @@ proc make_de1_dir {} {
             if {([info exists lmanifest_sha($file)] == 1) && ($mtime ==  $mtime_saved)} {
                 set sha256 $lmanifest_sha($file)
             } else {
-                puts "Calculating SHA256 for $source"
+                puts -nonewline "Calculating SHA256 for $source : "
                 set sha256 [calc_sha $source]
+                puts $sha256
                 set lmanifest_sha($file) $sha256
                 set lmanifest_mtime($file) $mtime
             }
