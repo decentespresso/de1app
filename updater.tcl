@@ -342,6 +342,11 @@ proc start_app_update {} {
         catch {
             set filesize [file size "[homedir]/$filename"]
         }
+
+        if {[file exists "[homedir]/$filename"] != 1} {
+            # force retrieval of any locally missing file by setting its SHA to zero
+            set filesha 0
+        }
         set lmanifest($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
     }
 
@@ -349,8 +354,10 @@ proc start_app_update {} {
     foreach {filename filesize filemtime filesha} $remote_manifest {
         array unset -complain data
         array set data [ifexists lmanifest($filename)]
-        if {[ifexists data(filesha)] != $filesha || [ifexists data(filesize)] != $filesize} {
-            # if the CRCs or file size don't match, then we'll want to fetch this file
+        #if {[ifexists data(filesha)] != $filesha || [ifexists data(filesize)] != $filesize} 
+        if {[ifexists data(filesha)] != $filesha} {
+            # if the SHA doesn't match then we'll want to fetch this file
+            # john 4/18/18 note that we no longer use FILESIZE to compare files, because it can vary between file systems, even if the contents are identical
             set tofetch($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
             puts "SHA256 mismatch '[ifexists data(filesha)]' != '$filesha' : will fetch: $filename or filesize [ifexists data(filesize)] != $filesize"
         }
