@@ -574,10 +574,96 @@ proc make_chunked_packed_shot_sample {hdrarrname framenames} {
 	set packed_frames {}
 
 	foreach framearrname $framenames {
+		#puts "framearrname: $framearrname"
 		upvar $framearrname $hdrarrname
 		lappend packed_frames [::fields::pack [spec_shotframe] $hdrarrname]
 	}
 	return [list $packed_header $packed_frames]
+}
+
+
+
+proc de1_packed_shot_advanced {} {
+
+	puts "de1_packed_shot_advanced"
+
+	set hdr(HeaderV) 1
+	set hdr(MinimumPressure) 0
+	set hdr(MaximumFlow) [convert_float_to_U8P4 6]
+
+	set cnt 0
+
+	# for now, we are defaulting to IgnoreLimit as our starting flag, because we are not setting constraints of max pressure or max flow
+	set frame_names ""
+	foreach step $::settings(advanced_shot) {
+		unset -nocomplain props
+		array set props $step
+
+		set frame_name "frame_$cnt"
+		lappend frame_names $frame_name
+
+
+		set features {IgnoreLimit}
+
+		# flow control
+		if {$props(pump) == "flow"} {
+			lappend features "CtrlF"
+			set SetVal $props(flow)
+		} else {
+			set SetVal $props(pressure)
+		}
+
+		# use boiler water temperature as the goal
+		if {$props(sensor) == "water"} {
+			lappend features "TMixTemp"
+		}
+
+		if {$props(transition) == "smooth"} {
+			lappend features "Interpolate"
+		}
+
+		# "move on if...."
+		if {$props(exit_if) == 1} {
+			if {$props(exit_type) == "pressure_under"} {
+				lappend features "DoCompare"
+				set TriggerVal $props(exit_pressure_under)
+			} elseif {$props(exit_type) == "pressure_over"} {
+				lappend features "DoCompare"
+				lappend features "DC_GT"
+				set TriggerVal $props(exit_pressure_over)
+			} elseif {$props(exit_type) == "flow_under"} {
+				lappend features "DoCompare"
+				lappend features "DC_CompF"
+				set TriggerVal $props(exit_flow_under)
+			} elseif {$props(exit_type) == "flow_over"} {
+				lappend features "DoCompare"
+				lappend features "DC_GT"
+				lappend features "DC_CompF"
+				set TriggerVal $props(exit_flow_over)
+			}
+			#set TriggerVal 1
+		} else {
+			set TriggerVal 0
+		}
+
+		array set $frame_name [list FrameToWrite $cnt]
+		array set $frame_name [list Flag [make_shot_flag $features]]
+		array set $frame_name [list SetVal [convert_float_to_U8P4 $SetVal]]
+		array set $frame_name [list Temp [convert_float_to_U8P1 $props(temperature)]]
+		array set $frame_name [list FrameLen [convert_float_to_F8_1_7 $props(seconds)]]
+		array set $frame_name [list MaxVol [convert_float_to_U10P0 $props(volume)]]
+		array set $frame_name [list TriggerVal [convert_float_to_U8P4 $TriggerVal]]
+
+		puts "[expr {1 + $cnt}]. $props(name) : [array get props]"
+		incr cnt
+	}
+
+	set hdr(NumberOfFrames) $cnt
+	#[llength $::settings(advanced_shot)]
+	set hdr(NumberOfPreinfuseFrames) 1
+
+	return [make_chunked_packed_shot_sample hdr $frame_names]
+
 }
 
 proc de1_packed_shot_flow {} {
@@ -651,6 +737,8 @@ proc de1_packed_shot {} {
 
 	if {[de1plus] && [ifexists ::settings(settings_profile_type)] == "settings_2b"} {
 		return [de1_packed_shot_flow]
+	} elseif {[de1plus] && [ifexists ::settings(settings_profile_type)] == "settings_2c"} {
+		return [de1_packed_shot_advanced]
 	}
 
 	set hdr(HeaderV) 1
