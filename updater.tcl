@@ -320,7 +320,7 @@ proc start_app_update {} {
         set ::app_updating 0
         return
     } elseif {$local_timestamp == $remote_timestamp} {
-        puts "Local timestamp is the same as remote timestamp, so no need to update"
+        #puts "Local timestamp is the same as remote timestamp, so no need to update"
         
         # we can return at this point, if we're very confident that the sync is correct
         # john 4/18/18 we want to check all files anyway, to fill in any missing local files, so we are going to ignore the time stamps being equal
