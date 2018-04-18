@@ -361,7 +361,7 @@ proc start_app_update {} {
             # if the SHA doesn't match then we'll want to fetch this file
             # john 4/18/18 note that we no longer use FILESIZE to compare files, because it can vary between file systems, even if the contents are identical
             set tofetch($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
-            puts "SHA256 mismatch '[ifexists data(filesha)]' != '$filesha' : will fetch: $filename or filesize [ifexists data(filesize)] != $filesize"
+            puts "SHA256 mismatch local:'[ifexists data(filesha)]' != remote:'$filesha' : will fetch: $filename or filesize [ifexists data(filesize)] != $filesize"
         }
     }
 
