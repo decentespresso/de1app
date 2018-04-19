@@ -869,6 +869,10 @@ proc god_shot_clear {} {
 proc save_settings {} {
     msg "saving settings"
     save_array_to_file ::settings [settings_filename]
+
+    catch {
+        update_temperature_charts_y_axis
+    }
     #save_settings_to_de1
     # john not sure what this is for since we're receiving hot water notifications
     #de1_read_hotwater

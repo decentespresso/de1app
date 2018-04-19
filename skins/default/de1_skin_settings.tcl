@@ -216,7 +216,7 @@ add_de1_button "settings_2c" {say [translate {add}] $::settings(sound_button_in)
 
 add_de1_text "settings_2c" 1070 680 -text [translate "goal"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1070 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_setting [ifexists ::current_adv_step(temperature)]]}
-	add_de1_button "settings_2c" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker .5 .5 ::current_adv_step(temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 980 310 1150 640 ""
+	add_de1_button "settings_2c" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker .5 .5 ::current_adv_step(temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step; } 980 310 1150 640 ""
 
 add_de1_text "settings_2c" 1380 680 -text [translate "sensor"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" { say [translate {sensor}] $::settings(sound_button_in); if {[ifexists ::current_adv_step(sensor)] == "water"} {  set ::current_adv_step(sensor) "coffee" } else { set ::current_adv_step(sensor) "water" }; save_current_adv_shot_step } 1200 310 1550 680 ""
@@ -454,13 +454,13 @@ if {[de1plus]} {
 	#}
 }
 
-add_de1_text "travel_prepare" 1400 700 -text [translate "Prepare your espresso machine for transport"] -font Helv_15_bold -fill "#000000" -anchor "center" -width 500
-	add_de1_text "travel_prepare" 1400 900 -text [translate "First, pull the water tank forward as shown in this photograph."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 500
-	add_de1_text "travel_prepare" 1070 1200 -text "\[ [translate "Cancel"] \]" -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_text "travel_prepare" 1850 1200 -text "\[ [translate "Ok"] \]" -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button "travel_prepare" {say [translate {Cancel}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 900 1000 1300 1500 ""
-	add_de1_button "travel_prepare" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_4; start_air_purge} 1600 1000 2100 1500 ""
-	add_de1_text "travel_do" 1280 1450 -text [translate "Now removing water from your espresso machine."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 600
+add_de1_text "travel_prepare" 1280 80 -text [translate "Prepare your espresso machine for transport"] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
+	add_de1_text "travel_prepare" 1750 950 -text [translate "After you press Ok, pull the water tank forward as shown in this photograph."] -font Helv_8_bold -fill "#000000" -anchor "nw" -width 370
+	add_de1_text "travel_prepare" 40 1500 -text "\[ [translate "Cancel"] \]" -font Helv_10_bold -fill "#000000" -anchor "nw"
+	add_de1_text "travel_prepare" 2520 1500 -text "\[ [translate "Ok"] \]" -font Helv_10_bold -fill "#000000" -anchor "ne"
+	add_de1_button "travel_prepare" {say [translate {Cancel}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 0 1200 600 1600 ""
+	add_de1_button "travel_prepare" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_4; start_air_purge} 1960 1200 2560 1600 ""
+	add_de1_text "travel_do" 1280 1500 -text [translate "Now removing water from your espresso machine."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 600
 
 
 add_de1_widget "settings_4" listbox 1310 800 { 

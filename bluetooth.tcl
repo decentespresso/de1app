@@ -484,7 +484,7 @@ proc save_settings_to_de1 {} {
 
 	#de1_disable_temp_notifications
 	de1_send_shot_frames
-	de1_send_steam_hotwater_settings
+	#de1_send_steam_hotwater_settings
 	#de1_enable_temp_notifications
 
 }

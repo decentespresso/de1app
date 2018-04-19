@@ -301,14 +301,39 @@ add_de1_widget "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zo
 } -plotbackground #FFFFFF -width [rescale_x_skin 1990] -height [rescale_y_skin 1516] -borderwidth 1 -background #FFFFFF -plotrelief flat
 
 proc update_temperature_charts_y_axis args {
-	#puts "update_temperature_charts_y_axis $::settings(espresso_temperature)"
-	$::temperature_chart_widget axis configure y -min [expr {[return_temperature_number $::settings(espresso_temperature)] - [return_temp_offset $::settings(espresso_chart_under)]}] -max [expr {[return_temperature_number $::settings(espresso_temperature)] + [return_temp_offset $::settings(espresso_chart_over)] }]; 
-	$::temperature_chart_zoomed_widget axis configure y -min [expr {[return_temperature_number $::settings(espresso_temperature)] - [return_temp_offset $::settings(espresso_chart_under)]}] -max [expr {[return_temperature_number $::settings(espresso_temperature)] + [return_temp_offset $::settings(espresso_chart_over)] }]; 
+	puts "update_temperature_charts_y_axis $::settings(espresso_temperature)"
+	if {[ifexists ::settings(settings_profile_type)] == "settings_2c"} {	
+		set mintmp 100
+		set maxtmp 0
+
+		foreach step $::settings(advanced_shot) {
+			unset -nocomplain props
+			array set props $step
+
+			if {$props(temperature) > $maxtmp} {
+				set maxtmp $props(temperature)
+			}
+			if {$props(temperature) < $mintmp} {
+				set mintmp $props(temperature)
+			}
+		}
+
+		puts "scaling chart for advanced shot $mintmp<x<$maxtmp"
+
+		# in advanced shots, we might have temperature profiling, so set the temperature chart differently.
+
+		$::temperature_chart_widget axis configure y -min [expr {[return_temperature_number $mintmp] - [return_temp_offset $::settings(espresso_chart_under)]}] -max [expr {[return_temperature_number $maxtmp] + [return_temp_offset $::settings(espresso_chart_over)] }]; 
+		$::temperature_chart_zoomed_widget axis configure y -min [expr {[return_temperature_number $mintmp] - [return_temp_offset $::settings(espresso_chart_under)]}] -max [expr {[return_temperature_number $maxtmp] + [return_temp_offset $::settings(espresso_chart_over)] }]; 
+	} else {
+		$::temperature_chart_widget axis configure y -min [expr {[return_temperature_number $::settings(espresso_temperature)] - [return_temp_offset $::settings(espresso_chart_under)]}] -max [expr {[return_temperature_number $::settings(espresso_temperature)] + [return_temp_offset $::settings(espresso_chart_over)] }]; 
+		$::temperature_chart_zoomed_widget axis configure y -min [expr {[return_temperature_number $::settings(espresso_temperature)] - [return_temp_offset $::settings(espresso_chart_under)]}] -max [expr {[return_temperature_number $::settings(espresso_temperature)] + [return_temp_offset $::settings(espresso_chart_over)] }]; 
+	}
 	#puts [stacktrace]
 }
 update_temperature_charts_y_axis
 
-trace add variable ::settings(espresso_temperature) write update_temperature_charts_y_axis
+#trace add variable ::settings(espresso_temperature) write update_temperature_charts_y_axis
+#trace add variable ::current_adv_step write update_temperature_charts_y_axis
 
 
 #######################
