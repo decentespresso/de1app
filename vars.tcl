@@ -1156,15 +1156,29 @@ proc fill_skin_listbox {} {
 
 
 proc make_current_listbox_item_blue { widget} {
+	if {[$widget index end] == 0} {
+		# empty listbox
+		return
+	}
 
+	set found_one 0
 	for {set x 0} {$x < [$widget index end]} {incr x} {
 		if {$x == [$widget curselection]} {
-			#puts "x: $x"
-			$widget itemconfigure $x -foreground #000000 -selectforeground #000000  -background #c0c4e1
+			#puts "x: $x vs [$widget index end]"
+			#if {$x < [$widget index end]} {
+				$widget itemconfigure $x -foreground #000000 -selectforeground #000000  -background #c0c4e1
+				set found_one 1
+			#}
 
 		} else {
 			$widget itemconfigure $x -foreground #b2bad0 -background #fbfaff
 		}
+	}
+
+	if {$found_one != 1} {
+		# handle the case where nothing has been selected
+		$widget selection set 0
+		$widget itemconfigure 0 -foreground #000000 -selectforeground #000000  -background #c0c4e1
 	}
 
 }
@@ -1535,7 +1549,8 @@ proc fill_advanced_profile_steps_listbox {} {
 		$::advanced_shot_steps_widget selection set $cs;
 	}
 
-	load_advanced_profile_step
+	load_advanced_profile_step 1
+	make_current_listbox_item_blue $::advanced_shot_steps_widget
 	update
 }
 
@@ -1575,10 +1590,11 @@ proc load_language {} {
 	#puts "lang '$::settings(language)' '$stepnum'"
 }
 
-proc load_advanced_profile_step {} {
-	#msg "load_advanced_profile_step [clock milliseconds]"
+proc load_advanced_profile_step {{force 0}} {
+	msg "load_advanced_profile_step [clock milliseconds]"
 
-	if {$::de1(current_context) != "settings_2c"} {
+	if {$::de1(current_context) != "settings_2c" && $force == 0} {
+		#puts "retruning"
 		return 
 	}
 
@@ -1625,11 +1641,28 @@ proc change_current_adv_shot_step_name {} {
 
 proc save_current_adv_shot_step {} {
 	set ::settings(advanced_shot) [lreplace $::settings(advanced_shot) [current_adv_step] [current_adv_step]  [array get ::current_adv_step]]
+
+	# for display purposes, make the espresso temperature be equal to the temperature of the first step in the advanced shot
+	array set first_step [lindex $::settings(advanced_shot) 0]
+	set ::settings(espresso_temperature) $first_step(temperature)
 }
 
 proc delete_current_adv_step {} {
+
+	if {[$::advanced_shot_steps_widget index end] == 1} {
+		# we don't allow deleting the only step, because that leads to weird UI issues.
+		puts "not deleting step because there is only one advanced step at the moment"
+		return
+	}
+
 	set ::settings(advanced_shot) [lreplace $::settings(advanced_shot)  [current_adv_step] [current_adv_step]]
+
+	puts "deleting"
+	set ::current_step_number 0
+	$::advanced_shot_steps_widget selection set $::current_step_number;
+	$::advanced_shot_steps_widget activate $::current_step_number;
 	fill_advanced_profile_steps_listbox
+	#make_current_listbox_item_blue $::advanced_shot_steps_widget
 }
 
 # inserts a new step immediately after the currently seleted one, with all the same settings except for a different name
@@ -1659,7 +1692,7 @@ proc add_to_current_adv_step {} {
 	fill_advanced_profile_steps_listbox
 
 	#$::advanced_shot_steps_widget selection set $stepnum;
-	$::advanced_shot_steps_widget selection clear $::current_step_number;;
+	$::advanced_shot_steps_widget selection clear $::current_step_number;
 	incr ::current_step_number
 	$::advanced_shot_steps_widget selection set $::current_step_number;
 	$::advanced_shot_steps_widget activate $::current_step_number;
@@ -1819,8 +1852,6 @@ proc preview_profile {} {
 	#if {[check_for_multiple_listbox_events_bug] == 1} {
 	#	return
 	#}
-	#catch {
-		#msg "preview_profile: [clock milliseconds]"
 
 	incr ::preview_profile_counter
 	set w $::globals(profiles_listbox)
@@ -1867,6 +1898,12 @@ proc preview_profile {} {
 			set ::settings(settings_profile_type) "settings_2a"
 		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
 			set ::settings(settings_profile_type) "settings_2b"
+		} elseif {$::settings(settings_profile_type) == "settings_profile_advanced"} {
+			set ::settings(settings_profile_type) "settings_2c"
+		}
+
+		if {$::settings(settings_profile_type) == "settings_2c"} {
+			fill_advanced_profile_steps_listbox
 		}
 
 	} else {
@@ -1877,13 +1914,8 @@ proc preview_profile {} {
 		}
 	}
 	update_onscreen_variables
-
 	profile_has_not_changed_set
 
-	catch {
-		break
-	}
-	#}
 }
 
 proc profile_has_changed_set_colors {} {
@@ -1968,7 +2000,7 @@ proc save_profile {} {
 		return
 	}
 
-	set profile_vars { author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee profile_title profile_language}
+	set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee profile_title profile_language}
 	#set profile_name_to_save $::settings(profile_to_save) 
 
 	if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {

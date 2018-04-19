@@ -420,6 +420,7 @@ proc make_de1_dir {} {
         profiles/Flow\ profile\ for\ straight\ espresso.tcl 1
         profiles/Gentle\ flat\ 2.5\ ml\ per\ second.tcl 1
         profiles/Gentle\ preinfusion\ flow\ profile.tcl 1
+        profiles/Pour\ over.tcl 1
         profiles/Gentler\ but\ still\ traditional\ 8.4\ bar.tcl *
         profiles/Hybrid\ pour\ over\ espresso.tcl 1
         profiles/Low\ pressure\ lever\ machine\ at\ 6\ bar.tcl *

@@ -199,6 +199,7 @@ add_de1_widget "settings_2c" listbox 70 310 {
 	set ::advanced_shot_steps_widget $widget
 	bind $widget <<ListboxSelect>> ::load_advanced_profile_step
 	fill_advanced_profile_steps_listbox
+	load_advanced_profile_step 1
 
 } -background #fbfaff -font Helv_9 -bd 0 -height 11 -width 24 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
@@ -248,23 +249,23 @@ add_de1_text "settings_2c" 1360 1270 -text [translate "volume"] -font Helv_6 -fi
 
 
 add_de1_text "settings_2c" 1654 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-add_de1_text "settings_2c" 1654 1270 -text [translate "goes over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 1654 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1654 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_over"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_over) 11] } else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_over" } { set ::current_adv_step(exit_type) "pressure_over" } else { vertical_clicker .1 .1 ::current_adv_step(exit_pressure_over) 0 13 %x %y %x0 %y0 %x1 %y1 }; save_current_adv_shot_step; } 1540 900 1750 1240 ""
 
 add_de1_text "settings_2c" 1890 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-add_de1_text "settings_2c" 1890 1270 -text [translate "goes under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 1890 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1890 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_under"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_under) 0] } else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_under" } { set ::current_adv_step(exit_type) "pressure_under" } else { vertical_clicker .1 .1 ::current_adv_step(exit_pressure_under) 0 13 %x %y %x0 %y0 %x1 %y1}; save_current_adv_shot_step; } 1790 900 1990 1240 ""
 
 
 add_de1_text "settings_2c" 2144 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-add_de1_text "settings_2c" 2144 1270 -text [translate "goes over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 2144 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 2144 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_over"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_over) 6]} else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if {[ifexists ::current_adv_step(exit_type)] != "flow_over" } { set ::current_adv_step(exit_type) "flow_over" } else { vertical_clicker .1 .1 ::current_adv_step(exit_flow_over) 0 6 %x %y %x0 %y0 %x1 %y1}; save_current_adv_shot_step; } 2020 900 2230 1240 ""
 
 add_de1_text "settings_2c" 2394 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-add_de1_text "settings_2c" 2394 1270 -text [translate "goes under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 2394 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 2394 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_under"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_under) 0] } else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {over pressure}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "flow_under" } { set ::current_adv_step(exit_type) "flow_under" } else { vertical_clicker .1 .1 ::current_adv_step(exit_flow_under) 0 6 %x %y %x0 %y0 %x1 %y1}; save_current_adv_shot_step; } 2270 900 2500 1240 ""
 
@@ -626,7 +627,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_next_page off off; page_show off
 			}
 		} 2016 1430 2560 1600
-	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off} 1505 1430 2015 1600
+	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;} 1505 1430 2015 1600
 
 
 # (re)calibration page
