@@ -1594,7 +1594,7 @@ proc load_advanced_profile_step {{force 0}} {
 
 	if {$::de1(current_context) != "settings_2c" && $force == 0} {
 		#puts "retruning"
-#		return 
+		return 
 	}
 
 	#if {[check_for_multiple_listbox_events_bug] == 1} {
@@ -1911,6 +1911,8 @@ proc preview_profile {} {
 			set ::settings(settings_profile_type) "settings_2"
 		}
 	}
+
+	puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
 
 	update_onscreen_variables
 	profile_has_not_changed_set

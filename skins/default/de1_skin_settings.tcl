@@ -204,7 +204,6 @@ add_de1_widget "settings_2c" listbox 70 310 {
 } -background #fbfaff -font Helv_9 -bd 0 -height 11 -width 24 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
 
-
 add_de1_text "settings_2c" 70 1222 -text [translate "Insert a step"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_widget "settings_2c" entry 70 1282  {
 	set ::globals(widget_profile_step_save) $widget
@@ -318,6 +317,20 @@ add_de1_widget "settings_1b" graph 1330 300 {
 		$::preview_graph_flow axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 6.5 -majorticks {1 2 3 4 5 6} -title [translate "Flow rate"] -titlefont Helv_8 -titlecolor #5a5d75;
 		bind $::preview_graph_flow [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type) } 
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised 
+
+
+add_de1_widget "settings_1c" graph 1330 300 { 
+		set ::preview_graph_advanced $widget
+		update_de1_explanation_chart;
+		#$::preview_graph_advanced element create line_espresso_de1_explanation_chart_adv -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth quadratic -pixels [rescale_x_skin 30]; 
+		$::preview_graph_advanced axis configure x -color #5a5d75 -tickfont Helv_6; 
+		$::preview_graph_advanced axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 6.5 -majorticks {1 2 3 4 5 6} -title [translate "Advanced"] -titlefont Helv_8 -titlecolor #5a5d75;
+		bind $::preview_graph_advanced [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type); fill_advanced_profile_steps_listbox } 
+	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised 
+
+
+add_de1_button "settings_1" {say [translate {edit}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type); fill_advanced_profile_steps_listbox } 1330 220 2560 800
+
 
 
 add_de1_variable "settings_1" 2466 660 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
@@ -694,6 +707,7 @@ proc setting_profile_type_to_text { } {
 		if {$::de1(current_context) == "settings_1"} {
 			.can itemconfigure $::preview_graph_flow -state hidden
 			.can itemconfigure $::preview_graph_pressure -state normal
+			.can itemconfigure $::preview_graph_advanced -state hidden
 		}
 		#return [translate "Pressure profile"]
 		return [translate "PRESSURE"]
@@ -701,6 +715,7 @@ proc setting_profile_type_to_text { } {
 		if {$::de1(current_context) == "settings_1"} {
 			.can itemconfigure $::preview_graph_pressure -state hidden
 			.can itemconfigure $::preview_graph_flow -state normal
+			.can itemconfigure $::preview_graph_advanced -state hidden
 		}
 		#return [translate "Flow profile"]
 		return [translate "FLOW"]
@@ -708,6 +723,7 @@ proc setting_profile_type_to_text { } {
 		if {$::de1(current_context) == "settings_1"} {
 			.can itemconfigure $::preview_graph_pressure -state hidden
 			.can itemconfigure $::preview_graph_flow -state hidden
+			.can itemconfigure $::preview_graph_advanced -state normal
 		}
 		return [translate "ADVANCED"]
 		#return [translate "Advanced profile"]
