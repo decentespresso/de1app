@@ -1525,9 +1525,6 @@ proc fill_languages_listbox {} {
 }
 
 proc fill_advanced_profile_steps_listbox {} {
-	puts "fill_advanced_profile_steps_listbox"
-
-	puts fill_advanced_profile_steps_listbox
 
 	set widget $::advanced_shot_steps_widget
 	set cs [ifexists ::current_step_number]
