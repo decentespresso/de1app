@@ -1525,10 +1525,12 @@ proc fill_languages_listbox {} {
 }
 
 proc fill_advanced_profile_steps_listbox {} {
+	puts "fill_advanced_profile_steps_listbox"
+
+	puts fill_advanced_profile_steps_listbox
 
 	set widget $::advanced_shot_steps_widget
 	set cs [ifexists ::current_step_number]
-
 	$widget delete 0 99999
 	set cnt 0
 	set current_profile_number 0
@@ -1542,7 +1544,7 @@ proc fill_advanced_profile_steps_listbox {} {
 		incr cnt
 	}
 	
-	if {$cs == ""} {
+	if {$cs == "" || $cs > [$::advanced_shot_steps_widget index end]} {
 		$::advanced_shot_steps_widget selection set 0;
 		set ::current_step_number 0
 	} else {
@@ -1595,7 +1597,7 @@ proc load_advanced_profile_step {{force 0}} {
 
 	if {$::de1(current_context) != "settings_2c" && $force == 0} {
 		#puts "retruning"
-		return 
+#		return 
 	}
 
 	#if {[check_for_multiple_listbox_events_bug] == 1} {
@@ -1891,7 +1893,6 @@ proc preview_profile {} {
 	set ::settings(original_profile_title) $::settings(profile_title)
 
 	make_current_listbox_item_blue $::globals(profiles_listbox)
-
 	if {[de1plus]} {
 		
 		if {$::settings(settings_profile_type) == "settings_2" || $::settings(settings_profile_type) == "settings_profile_pressure"} {
@@ -1903,7 +1904,7 @@ proc preview_profile {} {
 		}
 
 		if {$::settings(settings_profile_type) == "settings_2c"} {
-			fill_advanced_profile_steps_listbox
+			#fill_advanced_profile_steps_listbox
 		}
 
 	} else {
@@ -1913,6 +1914,7 @@ proc preview_profile {} {
 			set ::settings(settings_profile_type) "settings_2"
 		}
 	}
+
 	update_onscreen_variables
 	profile_has_not_changed_set
 
