@@ -879,8 +879,8 @@ proc save_settings {} {
 }
 
 proc load_settings {} {
-    puts "loading settings"
-    array set ::settings [read_file [settings_filename]]
+    #puts "loading settings XXXXXXX"
+    array set ::settings [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]
 
     set skintcl [read_file "[skin_directory]/skin.tcl"]
     if {![de1plus] && [string first "package require de1plus" $skintcl] != -1} {

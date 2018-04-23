@@ -1537,6 +1537,7 @@ proc fill_advanced_profile_steps_listbox {} {
 		array set props $step
 
 		set name $props(name)
+		puts "[expr {1 + $cnt}]. $name"
 		$widget insert $cnt "[expr {1 + $cnt}]. $name"
 		incr cnt
 	}
