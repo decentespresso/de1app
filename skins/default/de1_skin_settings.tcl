@@ -335,6 +335,17 @@ add_de1_button "settings_1" {say [translate {edit}] $::settings(sound_button_in)
 
 add_de1_variable "settings_1" 2466 660 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
 
+# calibrate feature
+add_de1_text "settings_4" 380 990 -text [translate "Calibrate"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	add_de1_button "settings_4" {say [translate {Calibrate}] $::settings(sound_button_in); calibration_gui_init; set_next_page off calibrate; page_show calibrate; }  30 896 638 1096
+
+# prepare for transport button
+add_de1_text "settings_4" 1000 990 -text [translate "Transport"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	add_de1_button "settings_4" {say [translate {Transport}] $::settings(sound_button_in); set_next_page off travel_prepare; page_show travel_prepare; } 645 896 1260 1096
+ 
+	
+
+
 # clean feature
 add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_button "settings_4" {say [translate {Clean}] $::settings(sound_button_in); start_cleaning}  30 1206 638 1406
@@ -409,8 +420,9 @@ add_de1_text "settings_3" 50 220 -text [translate "Screen brightness"] -font Hel
 add_de1_text "settings_3" 50 540 -text [translate "Energy saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 680 540 -text [translate "Screen saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 add_de1_text "settings_3" 50 860 -text [translate "Measurements"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 50 1140 -text [translate "Maintenance"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-add_de1_text "settings_4" 1320 1140 -text [translate "App"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 50 1120 -text [translate "Maintenance"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 50 810 -text [translate "Utilities"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+add_de1_text "settings_4" 1320 1120 -text [translate "App"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 #add_de1_text "settings_4" 1960 1140 -text [translate "App"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
 add_de1_text "settings_4" 1310 650 -text [translate "Connect"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -437,15 +449,15 @@ set spacer 90
 set optionfont "Helv_9"
 
 
-add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (0 * $spacer)}] {} -text [translate "Calibrate"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::calibrate_toggle  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command {
-	calibration_gui_init; set ::calibrate_toggle 0; set_next_page off calibrate; page_show calibrate; 
-}
+#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (0 * $spacer)}] {} -text [translate "Calibrate"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::calibrate_toggle  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command {
+#	calibration_gui_init; set ::calibrate_toggle 0; set_next_page off calibrate; page_show calibrate; 
+#}
 
-add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (0 * $spacer)}] {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Prepare for transport"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::prepare_for_suitcase_toggle  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command {
-	set ::prepare_for_suitcase_toggle 0; set_next_page off travel_prepare; page_show travel_prepare; 
-}
+#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Prepare for transport"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::prepare_for_suitcase_toggle  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command {
+#	set ::prepare_for_suitcase_toggle 0; set_next_page off travel_prepare; page_show travel_prepare; 
+#}
 
 if {[de1plus]} {
 
@@ -454,7 +466,7 @@ if {[de1plus]} {
 	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Rate your espresso shots"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_rate_espresso)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "One-tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(one_tap_mode)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+	add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "One-tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(one_tap_mode)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 	
 	# not yet ready to be used, still needs some work
 	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
@@ -468,8 +480,8 @@ if {[de1plus]} {
 
 add_de1_text "travel_prepare" 1280 80 -text [translate "Prepare your espresso machine for transport"] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
 	add_de1_text "travel_prepare" 1750 950 -text [translate "After you press Ok, pull the water tank forward as shown in this photograph."] -font Helv_8_bold -fill "#000000" -anchor "nw" -width 370
-	add_de1_text "travel_prepare" 40 1500 -text "\[ [translate "Cancel"] \]" -font Helv_10_bold -fill "#000000" -anchor "nw"
-	add_de1_text "travel_prepare" 2520 1500 -text "\[ [translate "Ok"] \]" -font Helv_10_bold -fill "#000000" -anchor "ne"
+	add_de1_text "travel_prepare" 280 1504 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	add_de1_text "travel_prepare" 2300 1504 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_button "travel_prepare" {say [translate {Cancel}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 0 1200 600 1600 ""
 	add_de1_button "travel_prepare" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_4; start_air_purge} 1960 1200 2560 1600 ""
 	add_de1_text "travel_do" 1280 1500 -text [translate "Now removing water from your espresso machine."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 600
