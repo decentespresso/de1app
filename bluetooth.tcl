@@ -734,20 +734,22 @@ proc ble_connect_to_skale {} {
 		return
 	}
 
-	if {$::de1(skale_device_handle) != "0"} {
-		msg "Skale already connected, so not disconnecting before reconnecting to it"
-		#return
-		catch {
-			ble close $::de1(skale_device_handle)
-			set ::de1(skale_device_handle) 0
-			after 1000 ble_connect_to_skale
-		}
-
-	}
-
 	if {$::currently_connecting_skale_handle != 0} {
 		msg "Already trying to connect to Skale, so don't try again"
 		return
+	}
+
+	if {$::de1(skale_device_handle) != "0"} {
+		msg "Skale already connected, so disconnecting before reconnecting to it"
+		#return
+		catch {
+			set ::de1(skale_device_handle) 0
+			ble close $::de1(skale_device_handle)
+			set ::currently_connecting_skale_handle 0
+			#after 1000 ble_connect_to_skale
+			#return
+		}
+
 	}
 
 	if {$::de1(device_handle) == 0} {
@@ -948,20 +950,13 @@ proc de1_ble_handler { event data } {
 						set ::de1(device_handle) $handle
 						append_to_de1_bluetooth_list $address
 						#msg "connected to de1 with handle $handle"
-
-						#read_de1_version
 						de1_send_waterlevel_settings
 						de1_send_steam_hotwater_settings					
 						de1_send_shot_frames
 						de1_enable_water_level_notifications
 						de1_enable_state_notifications
 						de1_enable_temp_notifications
-						#de1_enable_calibration_notifications
 						read_de1_version
-						#de1_read_calibration "pressure" "factory"
-						#de1_read_calibration "flow" "factory"
-						#de1_read_calibration "temperature"
-
 
 						if {$::settings(skale_bluetooth_address) != "" && $::de1(skale_device_handle) == 0 } {
 							# connect to the scale once the connection to the DE1 is set up

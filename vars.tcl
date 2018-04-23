@@ -1834,8 +1834,8 @@ proc change_skale_bluetooth_device {} {
 
 	set profile [$w get [$w curselection]]
 	if {$profile == $::settings(skale_bluetooth_address)} {
-		# if no change in setting, do nothing.
-		#return
+		ble_connect_to_skale
+		return
 	}
 	set ::settings(skale_bluetooth_address) $profile
 	save_settings
