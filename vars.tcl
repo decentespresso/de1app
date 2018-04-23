@@ -1537,7 +1537,7 @@ proc fill_advanced_profile_steps_listbox {} {
 		array set props $step
 
 		set name $props(name)
-		puts "[expr {1 + $cnt}]. $name"
+		#puts "[expr {1 + $cnt}]. $name"
 		$widget insert $cnt "[expr {1 + $cnt}]. $name"
 		incr cnt
 	}
@@ -1591,7 +1591,7 @@ proc load_language {} {
 }
 
 proc load_advanced_profile_step {{force 0}} {
-	msg "load_advanced_profile_step [clock milliseconds]"
+	#msg "load_advanced_profile_step [clock milliseconds]"
 
 	if {$::de1(current_context) != "settings_2c" && $force == 0} {
 		#puts "retruning"
@@ -1913,7 +1913,7 @@ proc preview_profile {} {
 		}
 	}
 
-	puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
+	#puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
 
 	update_onscreen_variables
 	profile_has_not_changed_set

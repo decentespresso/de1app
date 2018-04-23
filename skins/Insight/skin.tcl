@@ -199,9 +199,6 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 1174 {
 	set ::temperature_chart_widget $widget
 } -width [rescale_x_skin $charts_width] -height [rescale_y_skin 410]  -plotbackground #FFFFFF -borderwidth 0 -background #FFFFFF -plotrelief flat
 
-#proc update_temperature_charts_y_axis {} {
-#	$::temperature_chart_widget axis configure y -color #e73249 -tickfont Helv_6 -subdivisions 2 -min [expr {[return_temperature_number $::settings(espresso_temperature)] - 10}] -max [expr {[return_temperature_number $::settings(espresso_temperature)] + 3}]; 
-#}
 
 ####
 
@@ -301,7 +298,7 @@ add_de1_widget "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zo
 } -plotbackground #FFFFFF -width [rescale_x_skin 1990] -height [rescale_y_skin 1516] -borderwidth 1 -background #FFFFFF -plotrelief flat
 
 proc update_temperature_charts_y_axis args {
-	puts "update_temperature_charts_y_axis $::settings(espresso_temperature)"
+	#puts "update_temperature_charts_y_axis $::settings(espresso_temperature)"
 	if {[ifexists ::settings(settings_profile_type)] == "settings_2c"} {	
 		set mintmp 100
 		set maxtmp 0
@@ -318,7 +315,7 @@ proc update_temperature_charts_y_axis args {
 			}
 		}
 
-		puts "scaling chart for advanced shot $mintmp<x<$maxtmp"
+		#puts "scaling chart for advanced shot $mintmp<x<$maxtmp"
 
 		# in advanced shots, we might have temperature profiling, so set the temperature chart differently.
 
