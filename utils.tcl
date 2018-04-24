@@ -127,7 +127,7 @@ proc setup_environment {} {
             set helvetica_bold_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Bold.otf"] 0]
             set global_font_name $helvetica_font
 
-            set fontm [expr {($fontm * .95)}]
+            set fontm [expr {($fontm * .92)}]
         } else {
             # we use the immense google font so that we can handle virtually all of the world's languages with consistency
             set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
