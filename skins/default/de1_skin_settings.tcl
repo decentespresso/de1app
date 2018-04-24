@@ -337,13 +337,11 @@ add_de1_variable "settings_1" 2466 660 -text "" -font Helv_7 -fill "#7f879a" -an
 
 # calibrate feature
 add_de1_text "settings_4" 380 1010 -text [translate "Calibrate"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-	add_de1_button "settings_4" {say [translate {Calibrate}] $::settings(sound_button_in); calibration_gui_init; set_next_page off calibrate; page_show calibrate; }  30 896 638 1096
+	add_de1_button "settings_4" {say [translate {Calibrate}] $::settings(sound_button_in); calibration_gui_init; set_next_page off calibrate; page_show calibrate; }  30 916 638 1116
 
 # prepare for transport button
 add_de1_text "settings_4" 1000 1010 -text [translate "Transport"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-	add_de1_button "settings_4" {say [translate {Transport}] $::settings(sound_button_in); set_next_page off travel_prepare; page_show travel_prepare; } 645 896 1260 1096
- 
-	
+	add_de1_button "settings_4" {say [translate {Transport}] $::settings(sound_button_in); set_next_page off travel_prepare; page_show travel_prepare; } 645 916 1260 1116
 
 
 # clean feature
@@ -497,7 +495,7 @@ add_de1_widget "settings_4" listbox 1310 800 {
 add_de1_text "settings_4" 50 560 -text [translate "Water level"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	add_de1_widget "settings_4" scale 50 640 {} -from 3 -to 30 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 550] -width [rescale_y_skin 115] -variable ::settings(water_refill_point) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 	add_de1_variable "settings_4" 50 760 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] $::settings(water_refill_point)[translate mm]}
-	add_de1_variable "settings_4" 400 760 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "right" -textvariable {[translate "Now:"] [round_to_integer $::de1(water_level)][translate mm]}
+	add_de1_variable "settings_4" 600 760 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[translate "Now:"] [round_to_integer $::de1(water_level)][translate mm]}
 
 # bluetooth scan
 #add_de1_text "settings_4" 2230 980 -text [translate "Search"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
