@@ -52,7 +52,6 @@ array set ::de1 {
 	cmdstack {}
 	scale_autostop_triggered 1
 	water_level_full_point 40
-	water_level_empty_point 5
 	connect_time 0
 	water_level 30
 	firmware_bytes_uploaded 0
