@@ -251,6 +251,7 @@ VOLUME {fr VOLUME de MENGE it {} es VOLUMEN pt {} zh-hans 容量 zh-hant 容量 
 volume {fr volume de Menge it {} es volumen pt {} zh-hans 容量 zh-hant 容量 kr 물양 jp ボリューム ar {} hu térfogat tr {} th {} da volumen sv mängd fi {} ro {} hi {} pl objętość no {} sk objem el {} cs {} nl volume}
 Volume {fr Volume de Menge it {} es Volumen pt {} zh-hans 容量 zh-hant 容量 kr 물양 jp ボリューム ar {} hu Térfogat tr {} th {} da Volumen sv Volym fi {} ro {} hi {} pl Objętość no {} sk Objem el {} cs {} nl Volume}
 WAIT {fr ATTENDRE de WARTEN it {} es ESPERA pt {} zh-hans 等待 zh-hant 等待 kr 대기 jp 待つ ar {} hu {} tr {} th {} da VENT sv VÄNTAR fi {} ro {} hi {} pl CZEKAJ no {} sk ČAKAŤ el {} cs {} nl WACHT}
+Wait {fr ATTENDRE de WARTEN it {} es ESPERA pt {} zh-hans 等待 zh-hant 等待 kr 대기 jp 待つ ar {} hu {} tr {} th {} da VENT sv VÄNTAR fi {} ro {} hi {} pl CZEKAJ no {} sk ČAKAŤ el {} cs {} nl WACHT}
 waiting {fr attente de warten zh-hant 等待中 zh-hans 等待中 es esperando it attendi pt espera kr 대기중 jp 待機中 ar {} hu várakozás tr bekliyor th รอ sv väntar da venter fi odottaa ro așteptare hi {} pl czekam no {} sk čakám el αναμονή cs {} nl wachten}
 Walnut {fr Noix de Walnuss it {} es Nuez pt {} zh-hans 核桃 zh-hant 核桃 kr 호두 jp ウォールナット ar {} hu Dió tr {} th {} da Valnød sv Valnöt fi {} ro {} hi {} pl {Orzech włoski} no {} sk {Vlašský orech} el {} cs {Vlašský ořech} nl Walnoot}
 WATER {fr EAU de WASSER es AGUA it ACQUA pt ÁGUA zh-hant 水 zh-hans 水 kr 온수 jp 水 ar {} hu VÍZ tr SU th น้ำ sv VATTEN da VAND fi VESI ro APĂ hi {} pl WODA no {} sk VODA el ΝΕΡΟ cs VODA nl WATER}
