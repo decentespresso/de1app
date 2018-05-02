@@ -29,9 +29,9 @@ catch {
 	set tk [package present Tk]
 }
 if {$tk != ""} {
-	button .hello -text "Updating" -command { exit } -height 40 -width 100
+	button .hello -text "Updating" -command { exit } -height 10 -width 50
 	#-width 200 -height 100
-	button .resetapp -text "Reset app" -command { catch { file delete "settings.tdb"} ; exit } -height 3 -width 50
+	button .resetapp -text "Reset app" -command { catch { file delete "settings.tdb"} ; exit } -height 5 -width 40
 	#-width 200 -height 100 -bd 2
 	pack .hello  -pady 10
 	pack .resetapp -side bottom -pady 10
@@ -39,7 +39,7 @@ if {$tk != ""} {
 
 set success 0
 set err [catch {
-	start_app_update
+	#start_app_update
 	set success 1
 }]
 
