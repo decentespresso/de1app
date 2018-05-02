@@ -39,7 +39,7 @@ if {$tk != ""} {
 
 set success 0
 set err [catch {
-	#start_app_update
+	start_app_update
 	set success 1
 }]
 
