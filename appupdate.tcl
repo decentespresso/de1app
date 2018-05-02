@@ -20,6 +20,7 @@ package require crc32
 package require http 2.5
 package require tls 1.6
 ::http::register https 443 ::tls::socket
+cd "[file dirname [info script]]/"
 
 proc translate {x} {return $x}
 
@@ -28,8 +29,12 @@ catch {
 	set tk [package present Tk]
 }
 if {$tk != ""} {
-	button .hello -text "Updating" -command { exit } -width 200 -height 100
-	pack .hello
+	button .hello -text "Updating" -command { exit } -height 40 -width 100
+	#-width 200 -height 100
+	button .resetapp -text "Reset app" -command { catch { file delete "settings.tdb"} ; exit } -height 3 -width 50
+	#-width 200 -height 100 -bd 2
+	pack .hello  -pady 10
+	pack .resetapp -side bottom -pady 10
 }
 
 set success 0
@@ -44,9 +49,9 @@ if {$err != 0} {
 
 if {$tk != ""} {
 	if {$success == 1} {
-		.hello configure -text "[ifexists ::de1(app_update_button_label)]\n\nTap screen to exit."
+		.hello configure -text "[ifexists ::de1(app_update_button_label)]\n\nTap here to exit."
 	} else {
-		.hello configure -text "Failed.\n------------\n\nError info:\n------------\n$errorInfo\n\nTap screen to exit." 
+		.hello configure -text "Failed.\n------------\n\nError info:\n------------\n$errorInfo\n\nTap here to exit." 
 	}
 }
 
