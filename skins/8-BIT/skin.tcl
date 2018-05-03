@@ -75,7 +75,7 @@ add_de1_variable "off" 1320 100 -justify left -anchor "center" -text "" -font pi
 if {[de1plus]} {
 	if {$::settings(waterlevel_indicator_on) == 1} {
 		# water level sensor 
-		add_de1_widget "off espresso steam water" scale 2544 0 {after 1000 water_level_color_check $widget} -from $::de1(water_level_full_point) -to $::de1(water_level_empty_point) -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1600] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #000000 -borderwidth 0  -highlightthickness 0
+		add_de1_widget "off espresso steam water" scale 2544 0 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1600] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #000000 -borderwidth 0  -highlightthickness 0
 	}
 
 
