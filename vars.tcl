@@ -1216,6 +1216,13 @@ proc profile_directories {} {
 		    set ::de1plus_profile([file rootname $d]) 1
 		}
 
+		unset -nocomplain profile
+		array set profile $filecontents
+		if {[info exists profile(profile_title)] != 1} {
+			msg "Corrupt profile file: '$d'"
+			continue
+		}
+
 		set rootname [file rootname $d]
 
 		if {$rootname == "CVS" || $rootname == "example"} {
@@ -1334,10 +1341,15 @@ proc fill_profiles_listbox {} {
 
 		set fn "[homedir]/profiles/${d}.tcl"
 		#puts "fn: $fn"
-		array unset -nocomplain profile
+		unset -nocomplain profile
 		array set profile [encoding convertfrom utf-8 [read_binary_file $fn]]
 
-		if {[language] != "en" && $profile(profile_language) == "en" && [ifexists profile(author)] == "Decent"} {
+		if {[info exists profile(profile_title)] != 1} {
+			msg "Corrupt profile file: '$d'"
+			continue
+		}
+
+		if {[language] != "en" && [ifexists profile(profile_language)] == "en" && [ifexists profile(author)] == "Decent"} {
 			$widget insert $cnt [translate $profile(profile_title)]
 		} else {
 			$widget insert $cnt $profile(profile_title)
@@ -1871,6 +1883,7 @@ proc preview_profile {} {
 	set profile [lindex [profile_directories] [$w curselection]]
 	#set profile [$w get active]
 	set ::settings(profile) $profile
+	#msg "profile: $profile"
 	set ::settings(profile_notes) ""
 	set fn "[homedir]/profiles/${profile}.tcl"
 

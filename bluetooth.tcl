@@ -106,7 +106,6 @@ proc skale_enable_weight_notifications {} {
 	userdata_append "enable Skale weight notifications" [list ble enable $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" "0" "0000EF81-0000-1000-8000-00805F9B34FB" "0"]
 }
 
-
 proc skale_enable_button_notifications {} {
 	if {$::de1(skale_device_handle) == 0} {
 		return 
@@ -130,6 +129,14 @@ proc skale_enable_lcd {} {
 	set displayweight [binary decode hex "EC"]
 	userdata_append "Skale : enable LCD" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $screenon]
 	userdata_append "Skale : display weight on LCD" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $displayweight]
+}
+
+proc skale_disable_lcd {} {
+	if {$::de1(skale_device_handle) == 0} {
+		return 
+	}
+	set screenoff [binary decode hex "EE"]
+	userdata_append "Skale : disable LCD" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $screenoff]
 }
 
 
@@ -322,6 +329,11 @@ proc run_next_userdata_cmd {} {
 
 		if {$result != 1} {
 			msg "!!!! BLE command failed ($result): [lindex $cmd 1]"
+
+			# john 4/28/18 not sure if we should give up on the command if it fails, or retry it
+			# retrying a command that will forever fail kind of kills the BLE abilities of the app
+			
+			#after 500 run_next_userdata_cmd
 			return 
 		}
 
@@ -381,10 +393,10 @@ proc app_exit {} {
 
 	catch {
 		after 1000 ble unpair $::de1(de1_address)
-		after 1000 ble unpair $::settings(bluetooth_address)
+		after 1200 ble unpair $::settings(bluetooth_address)
 	}
 
-	after 2000 exit
+	#after 2000 exit
 }
 
 #proc de1_enable_obsolete {cuuid_to_enable} {
@@ -743,11 +755,11 @@ proc ble_connect_to_skale {} {
 		msg "Skale already connected, so disconnecting before reconnecting to it"
 		#return
 		catch {
+			skale_disable_lcd
+			after 500 [list ble close $::de1(skale_device_handle)]
 			set ::de1(skale_device_handle) 0
-			ble close $::de1(skale_device_handle)
-			set ::currently_connecting_skale_handle 0
-			#after 1000 ble_connect_to_skale
-			#return
+			# when the skale disconnect message occurs, this proc will get re-run and a connection attempt will be made
+			return
 		}
 
 	}
@@ -759,7 +771,7 @@ proc ble_connect_to_skale {} {
 	}
 
 	catch {
-		ble unpair $::settings(skale_bluetooth_address)
+		#ble unpair $::settings(skale_bluetooth_address)
 	}
 
 	if {[catch {
@@ -897,18 +909,29 @@ proc de1_ble_handler { event data } {
 
 				    } elseif {$address == $::settings(skale_bluetooth_address)} {
 			    		set ::de1(wrote) 0
-				    	msg "skale disconnected"
-				    	if {$::de1(skale_device_handle) != 0} {
-				    		ble close $::de1(skale_device_handle)
-				    	}
-						catch {
-					    	ble close $::currently_connecting_skale_handle
+				    	msg "skale disconnected $data"
+			    		catch {
+			    			ble close $handle
+			    		}
+
+			    		# if the skale connection closed in the currentl one, then reset it
+			    		if {$handle == $::de1(skale_device_handle)} {
+			    			set ::de1(skale_device_handle) 0
+			    		}
+
+					    if {$::currently_connecting_skale_handle == 0} {
+					    	ble_connect_to_skale
 					    }
 
-					    set ::currently_connecting_skale_handle 0
+				    	set do_this 0
+				    	if {$do_this == 1} {
+							catch {
+						    	ble close $::currently_connecting_skale_handle
+						    }
 
-				    	set ::de1(skale_device_handle) 0
-			    		ble_connect_to_skale
+						    set ::currently_connecting_skale_handle 0
+				    		ble_connect_to_skale
+				    	}
 				    }
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1
@@ -961,7 +984,7 @@ proc de1_ble_handler { event data } {
 						if {$::settings(skale_bluetooth_address) != "" && $::de1(skale_device_handle) == 0 } {
 							# connect to the scale once the connection to the DE1 is set up
 							#userdata_append "BLE connect to scale" [list ble_connect_to_skale] 
-							ble_connect_to_skale
+							#ble_connect_to_skale
 						}
 						
 						#set_next_page off off
@@ -978,13 +1001,14 @@ proc de1_ble_handler { event data } {
 						append_to_skale_bluetooth_list $address
 			    		set ::de1(wrote) 0
 						set ::de1(skale_device_handle) $handle
-						skale_enable_lcd
-						skale_enable_grams
-						skale_tare 
-						#skale_timer_off
-						skale_enable_button_notifications
-						skale_enable_weight_notifications
-						skale_enable_lcd
+
+						skale_disable_lcd
+						after 500 skale_tare 
+						after 1000 skale_enable_weight_notifications
+						after 1500 skale_enable_button_notifications
+						after 2000 skale_enable_lcd
+						after 2500 skale_enable_grams
+
 						set ::currently_connecting_skale_handle 0
 
 						if {$::de1(device_handle) != 0} {
