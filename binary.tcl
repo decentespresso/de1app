@@ -651,8 +651,12 @@ proc de1_packed_shot_advanced {} {
 		array set $frame_name [list SetVal [convert_float_to_U8P4 $SetVal]]
 		array set $frame_name [list Temp [convert_float_to_U8P1 $props(temperature)]]
 		array set $frame_name [list FrameLen [convert_float_to_F8_1_7 $props(seconds)]]
-		array set $frame_name [list MaxVol [convert_float_to_U10P0 $props(volume)]]
 		array set $frame_name [list TriggerVal [convert_float_to_U8P4 $TriggerVal]]
+
+		# MaxVol feature has been disabled 5/11/18
+		array set $frame_name [list MaxVol [convert_float_to_U10P0 0]]
+		#array set $frame_name [list MaxVol [convert_float_to_U10P0 $props(volume)]]
+
 
 		puts "[expr {1 + $cnt}]. $props(name) : [array get props]"
 		incr cnt
@@ -687,7 +691,10 @@ proc de1_packed_shot_flow {} {
 	set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
 	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
-	set frame1(MaxVol) [convert_float_to_U10P0 90]
+
+	# MaxVol feature has been disabled 5/11/18
+	set frame1(MaxVol) [convert_float_to_U10P0 0]
+	#	set frame1(MaxVol) [convert_float_to_U10P0 90]
 
 	# exit preinfusion if your pressure is above the pressure goal, no matter what
 	set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
@@ -699,7 +706,12 @@ proc de1_packed_shot_flow {} {
 	set frame2(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
 	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
-	set frame2(MaxVol) [convert_float_to_U10P0 99]
+	
+
+	# MaxVol feature has been disabled 5/11/18
+	set frame2(MaxVol) [convert_float_to_U10P0 0]
+	#set frame2(MaxVol) [convert_float_to_U10P0 99]
+
 	if {$::settings(preinfusion_guarantee) == 1 && $::settings(preinfusion_time) > 0} {
 		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(flow_rise_timeout)]
 	} else {
@@ -715,7 +727,10 @@ proc de1_packed_shot_flow {} {
 	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
 	set frame3(TriggerVal) 0
-	set frame3(MaxVol) [convert_float_to_U10P0 $::settings(flow_hold_stop_volumetric)]
+
+	# MaxVol feature has been disabled 5/11/18	
+	set frame3(MaxVol) [convert_float_to_U10P0 0]
+	#set frame3(MaxVol) [convert_float_to_U10P0 $::settings(flow_hold_stop_volumetric)]
 
 	# decline
 	set frame4(FrameToWrite) 3
@@ -724,7 +739,10 @@ proc de1_packed_shot_flow {} {
 	set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
 	set frame4(TriggerVal) 0
-	set frame4(MaxVol) [convert_float_to_U10P0 $::settings(flow_decline_stop_volumetric)]
+
+	# MaxVol feature has been disabled 5/11/18	
+	set frame4(MaxVol) [convert_float_to_U10P0 0]
+	#set frame4(MaxVol) [convert_float_to_U10P0 $::settings(flow_decline_stop_volumetric)]
 
 	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3 frame4]]
 
@@ -766,7 +784,10 @@ proc de1_packed_shot {} {
 	}
 	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
-	set frame1(MaxVol) [convert_float_to_U10P0 90]
+	
+	# MaxVol feature has been disabled 5/11/18
+	set frame1(MaxVol) [convert_float_to_U10P0 0]
+	#set frame1(MaxVol) [convert_float_to_U10P0 90]
 
 	if {[de1plus]} {
 		# exit preinfusion if your pressure is above the pressure goal, no matter what
@@ -782,7 +803,10 @@ proc de1_packed_shot {} {
 	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
 	set frame2(TriggerVal) 0
-	set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
+
+	# MaxVol feature has been disabled 5/11/18
+	set frame2(MaxVol) [convert_float_to_U10P0 0]
+	#set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
 
 	# decline
 	set frame3(FrameToWrite) 2
@@ -791,7 +815,10 @@ proc de1_packed_shot {} {
 	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
 	set frame3(TriggerVal) 0
-	set frame3(MaxVol) [convert_float_to_U10P0 $::settings(pressure_decline_stop_volumetric)]
+
+	# MaxVol feature has been disabled 5/11/18
+	set frame3(MaxVol) [convert_float_to_U10P0 0]
+	#set frame3(MaxVol) [convert_float_to_U10P0 $::settings(pressure_decline_stop_volumetric)]
 
 	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3]]
 
@@ -1210,15 +1237,15 @@ proc append_live_data_to_espresso_chart {} {
 		if {$::de1(substate) == 4 || $::de1(substate) == 5} {
 
 			espresso_elapsed append [expr {$millitime/1000.0}]
-			espresso_weight append $::de1(scale_weight)
-			espresso_pressure append $::de1(pressure)
-			espresso_flow append $::de1(flow)
-			espresso_flow_2x append [expr {2.0 * $::de1(flow)}]
+			espresso_weight append [round_to_two_digits $::de1(scale_weight)]
+			espresso_pressure append [round_to_two_digits $::de1(pressure)]
+			espresso_flow append [round_to_two_digits $::de1(flow)]
+			espresso_flow_2x append [round_to_two_digits [expr {2.0 * $::de1(flow)}]]
 
 			if {$::de1(scale_weight_rate) != ""} {
-				# if a bluetooth scale is recording shot weight, graph it along with the flow meterr 
-				espresso_flow_weight append $::de1(scale_weight_rate)
-				espresso_flow_weight_2x append [expr {2 * $::de1(scale_weight_rate)}]
+				# if a bluetooth scale is recording shot weight, graph it along with the flow meter
+				espresso_flow_weight append [round_to_two_digits $::de1(scale_weight_rate)]
+				espresso_flow_weight_2x append [expr {2.0 * [round_to_two_digits $::de1(scale_weight_rate)] }]
 			}
 
 			#set elapsed_since_last [expr {$millitime - $::previous_espresso_flow_time}]

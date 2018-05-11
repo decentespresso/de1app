@@ -130,6 +130,12 @@ if {[de1plus]} {
 		add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 		add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
+
+		# future support for weight-bsaed ending of advanced shots
+		#add_de1_text "settings_2c" 70 940 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+		#add_de1_widget "settings_2c" scale 70 1015 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		#add_de1_variable "settings_2c" 70 1165 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
+
 	}
 
 	#trace add variable ::settings write profile_has_changed_set
@@ -195,13 +201,18 @@ add_de1_text "settings_2c" 984 830 -text [translate "3: Duration"] -font Helv_9_
 
 add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
 
+set adv_listbox_height 11
+#if {$::settings(skale_bluetooth_address) != ""} {
+#	set adv_listbox_height 9
+#}
+
 add_de1_widget "settings_2c" listbox 70 310 { 
 	set ::advanced_shot_steps_widget $widget
 	fill_advanced_profile_steps_listbox
 	load_advanced_profile_step 1
 	bind $widget <<ListboxSelect>> ::load_advanced_profile_step
 
-} -background #fbfaff -font Helv_9 -bd 0 -height 11 -width 24 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+} -background #fbfaff -font Helv_9 -bd 0 -height $adv_listbox_height -width 24 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
 
 add_de1_text "settings_2c" 70 1222 -text [translate "Insert a step"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 

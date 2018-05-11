@@ -47,6 +47,7 @@ array set ::de1 {
 	flow_delta 0
 	pressure_delta 0
 	timer 0
+	hertz 50
 	volume 0
 	wrote 0
 	cmdstack {}

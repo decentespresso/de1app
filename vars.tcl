@@ -37,13 +37,13 @@ proc clear_espresso_chart {} {
 	espresso_flow_delta append 0
 	espresso_flow_delta_negative append 0
 	espresso_flow_delta_negative_2x append 0
-	espresso_temperature_mix append $::settings(espresso_temperature)
-	espresso_temperature_basket append $::settings(espresso_temperature)
+	espresso_temperature_mix append [return_temperature_number $::settings(espresso_temperature)]
+	espresso_temperature_basket append [return_temperature_number $::settings(espresso_temperature)]
 	espresso_state_change append 0
 	espresso_pressure_goal append -1
 	espresso_flow_goal append -1
 	espresso_flow_goal_2x append -1
-	espresso_temperature_goal append $::settings(espresso_temperature)
+	espresso_temperature_goal append [return_temperature_number $::settings(espresso_temperature)]
 
 	god_shot_reference_reset
 	
@@ -65,7 +65,7 @@ proc god_shot_reference_reset {} {
 	god_espresso_flow_weight_2x length 0
 
 	god_espresso_pressure append $::settings(god_espresso_pressure)
-	god_espresso_temperature_basket append $::settings(god_espresso_temperature_basket)
+	god_espresso_temperature_basket append [return_temperature_number $::settings(god_espresso_temperature_basket)]
 
 	if {$::settings(god_espresso_flow) != {} } {
 		god_espresso_flow append $::settings(god_espresso_flow)
@@ -864,9 +864,9 @@ proc return_temp_offset {in} {
 
 proc return_temperature_number {in} {
 	if {$::settings(enable_fahrenheit) == 1} {
-		return [celsius_to_fahrenheit $in]
+		return [round_to_two_digits [celsius_to_fahrenheit $in]]
 	} else {
-		return $in
+		return [round_to_two_digits $in]
 	}	
 }
 
@@ -944,6 +944,9 @@ proc return_delta_temperature_measurement {in} {
 		set label "\u00BAC"
 #		set num $in
 	}
+
+	# handle ºC vs ºF deltas
+	set in [return_temp_offset $in]
 
 	if {[de1plus]} {
 		set num [round_to_one_digits $in]

@@ -571,15 +571,17 @@ if {$preheat_water_volume_feature_enabled == 1} {
 	add_de1_variable "preheat_2 preheat_3 preheat_4" 540 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -textvariable {[return_liquid_measurement $::settings(preheat_volume)]}
 	add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 540 1300  -text [translate "VOLUME"] -font Helv_7 -fill "#7f879a" -anchor "center" 
 
-	add_de1_text "preheat_2" 1880 1300 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-	add_de1_variable "preheat_2" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+	# feature disabled until flowmeter reporting over BLE is implemented
+	#add_de1_text "preheat_2" 1880 1300 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+	#add_de1_variable "preheat_2" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 }
 
 add_de1_variable "preheat_3 preheat_4" 1880 1300 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_flush)} {return [translate Done]} else { return ""}]} 
 add_de1_variable "preheat_3 preheat_4" 2460 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_flush)} {return "[done_timer][translate s]"} else { return ""}]} 
 
-add_de1_text "preheat_3" 1880 1250 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "preheat_3" 2470 1250 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+# feature disabled until flowmeter reporting over BLE is implemented
+#add_de1_text "preheat_3" 1880 1250 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+#add_de1_variable "preheat_3" 2470 1250 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
 ##########################################################################################################################################################################################################################################################################
 
@@ -643,16 +645,21 @@ add_de1_variable "water_3" 2470 1300 -justify left -anchor "ne" -font Helv_8 -te
 add_de1_text "water " 1870 250 -justify right -anchor "nw" -text [translate "Information"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 add_de1_text "water " 1870 300 -justify right -anchor "nw" -text [translate "Water temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "water" 2470 300 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
-add_de1_text "water " 1870 350 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water" 2470 350 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
-add_de1_text "water " 1870 400 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water" 2470 400 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+
+add_de1_text "water " 1870 350 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+add_de1_variable "water" 2470 350 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+
+# feature disabled until flowmeter reporting over BLE is implemented
+#add_de1_text "water " 1870 350 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+#add_de1_variable "water" 2470 350 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
 add_de1_text "water_3" 1870 350 -justify right -anchor "nw" -text [translate "Information"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 add_de1_text "water_3" 1870 400 -justify right -anchor "nw" -text [translate "Water temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "water_3" 2470 400 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
-add_de1_text "water_3" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water_3" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+
+# feature disabled until flowmeter reporting over BLE is implemented
+#add_de1_text "water_3" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+#add_de1_variable "water_3" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
 
 
@@ -715,7 +722,9 @@ add_de1_text "steam" 1870 350 -justify right -anchor "nw" -text [translate "Pres
 add_de1_variable "steam" 2470 350 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
 add_de1_text "steam" 1870 400 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "steam" 2470 400 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
-add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+
+# feature disabled until flowmeter reporting over BLE is implemented
+#add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+#add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
 #set_next_page off settings_4;

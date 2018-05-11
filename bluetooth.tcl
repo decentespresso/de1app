@@ -419,14 +419,14 @@ proc de1_send_state {comment msg} {
 }
 
 
-proc send_de1_shot_and_steam_settings {} {
-	return
-	msg "send_de1_shot_and_steam_settings"
+#proc send_de1_shot_and_steam_settings {} {
+#	return
+#	msg "send_de1_shot_and_steam_settings"
 	#return
 	#de1_send_shot_frames
-	de1_send_steam_hotwater_settings
+#	de1_send_steam_hotwater_settings
 
-}
+#}
 
 proc de1_send_shot_frames {} {
 
@@ -496,9 +496,9 @@ proc save_settings_to_de1 {} {
 
 	#de1_disable_temp_notifications
 	de1_send_shot_frames
-	#de1_send_steam_hotwater_settings
+	#start_idle
+	de1_send_steam_hotwater_settings
 	#de1_enable_temp_notifications
-
 }
 
 proc de1_send_steam_hotwater_settings {} {
@@ -1185,6 +1185,9 @@ proc de1_ble_handler { event data } {
 							} elseif {$diff > .1} { 
 								set multiplier1 0.98
 							}
+
+							# john 5/11/18 hard set this to 5% weighting, until we're sure these other methods work well.
+							set multiplier1 .95
 							set multiplier2 [expr {1 - $multiplier1}];
 							set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
 
@@ -1212,7 +1215,8 @@ proc de1_ble_handler { event data } {
 							if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)) } {
 								set ::de1(final_water_weight) $thisweight
 
-								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
+								# john 5/11/18 no support at the moment for weight-ending shots in advanced shots (settings_2c)
+								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0 && $::settings(settings_profile_type) != "settings_2c"} {
 
 									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) * $::settings(final_desired_shot_weight_percentage_to_stop)}]]} {
 										msg "Weight based Espresso stop was triggered at ${thisweight}g > $::settings(final_desired_shot_weight)g "
