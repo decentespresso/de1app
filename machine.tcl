@@ -83,7 +83,6 @@ array set ::de1 {
 	steam_heater_wattage 1500
 	group_heater_wattage 500
 	maxpressure 10
-	hertz 50
 	steam_min_temperature 120
 	steam_max_temperature 170
 	water_min_temperature 20
@@ -219,7 +218,7 @@ array set ::settings {
 	enable_negative_flow_charts 0
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
-	final_desired_shot_weight_percentage_to_stop .75
+	final_desired_shot_weight_percentage_to_stop .80
 	history_saved ""
 	pressure_end 4 
 	espresso_step_1 pressure
