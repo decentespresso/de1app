@@ -1218,7 +1218,7 @@ proc de1_ble_handler { event data } {
 								# john 5/11/18 no support at the moment for weight-ending shots in advanced shots (settings_2c)
 								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0 && $::settings(settings_profile_type) != "settings_2c"} {
 
-									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) * $::settings(final_desired_shot_weight_percentage_to_stop)}]]} {
+									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) * ($::settings(shot_weight_percentage_stop)/100.0)}]]} {
 										msg "Weight based Espresso stop was triggered at ${thisweight}g > $::settings(final_desired_shot_weight)g "
 									 	start_idle
 									 	say [translate {Stop}] $::settings(sound_button_in)

@@ -156,6 +156,7 @@ array set ::settings {
 	advanced_shot {}
 	water_time_max 60
 	grinder_dose_weight 0
+	scentone {}
 	one_tap_mode 0
 	allow_unheated_water 1
 	minimum_water_temperature 80
@@ -219,7 +220,7 @@ array set ::settings {
 	enable_negative_flow_charts 0
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
-	final_desired_shot_weight_percentage_to_stop .80
+	shot_weight_percentage_stop 80
 	history_saved ""
 	pressure_end 4 
 	espresso_step_1 pressure
