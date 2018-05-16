@@ -218,12 +218,12 @@ add_de1_widget "settings_2c" listbox 70 310 {
 add_de1_text "settings_2c" 70 1222 -text [translate "Insert a step"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_widget "settings_2c" entry 70 1282  {
 	set ::globals(widget_profile_step_save) $widget
-	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); change_current_adv_shot_step_name; }
+	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); change_current_adv_shot_step_name; profile_has_changed_set}
 	} -width 27 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::profile_step_name_to_add
 
 
-add_de1_button "settings_2c" {say [translate {delete}] $::settings(sound_button_in); delete_current_adv_step} 740 250 920 500
-add_de1_button "settings_2c" {say [translate {add}] $::settings(sound_button_in); add_to_current_adv_step} 740 1200 920 1400
+add_de1_button "settings_2c" {say [translate {delete}] $::settings(sound_button_in); delete_current_adv_step; profile_has_changed_set} 740 250 920 500
+add_de1_button "settings_2c" {say [translate {add}] $::settings(sound_button_in); add_to_current_adv_step; profile_has_changed_set} 740 1200 920 1400
 
 add_de1_text "settings_2c" 1070 680 -text [translate "goal"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1070 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_setting [ifexists ::current_adv_step(temperature)]]}
@@ -666,7 +666,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_next_page off off; page_show off
 			}
 		} 2016 1430 2560 1600
-	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;} 1505 1430 2015 1600
+	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;} 1505 1430 2015 1600
 
 
 # (re)calibration page

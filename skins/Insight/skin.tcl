@@ -723,6 +723,7 @@ add_de1_variable "steam" 2470 350 -justify left -anchor "ne" -font Helv_8 -text 
 add_de1_text "steam" 1870 400 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "steam" 2470 400 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
+profile_has_changed_set_colors
 # feature disabled until flowmeter reporting over BLE is implemented
 #add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 

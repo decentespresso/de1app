@@ -1657,6 +1657,7 @@ proc change_current_adv_shot_step_name {} {
 proc save_current_adv_shot_step {} {
 	set ::settings(advanced_shot) [lreplace $::settings(advanced_shot) [current_adv_step] [current_adv_step]  [array get ::current_adv_step]]
 
+	profile_has_changed_set
 	# for display purposes, make the espresso temperature be equal to the temperature of the first step in the advanced shot
 	array set first_step [lindex $::settings(advanced_shot) 0]
 	set ::settings(espresso_temperature) $first_step(temperature)
@@ -1886,7 +1887,6 @@ proc preview_profile {} {
 	set profile [lindex [profile_directories] [$w curselection]]
 	#set profile [$w get active]
 	set ::settings(profile) $profile
-	#msg "profile: $profile"
 	set ::settings(profile_notes) ""
 	set fn "[homedir]/profiles/${profile}.tcl"
 
@@ -1895,6 +1895,7 @@ proc preview_profile {} {
 
 	load_settings_vars $fn
 	set ::settings(profile_filename) $profile
+	#msg "profile: $profile - $::settings(profile_notes)"
 
 	#puts "Author: '[ifexists ::settings(author)]'"
 	if {[language] != "en" && $::settings(profile_language) == "en" && [ifexists ::settings(author)] == "Decent"} {
@@ -1934,9 +1935,11 @@ proc preview_profile {} {
 	update_onscreen_variables
 	profile_has_not_changed_set
 
+#set ::settings(profile_notes) [clock seconds]
 }
 
 proc profile_has_changed_set_colors {} {
+	#puts "profile_has_changed_set_colors : $::settings(profile_has_changed)"
 	if {$::settings(profile_has_changed) == 1} {
 		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
 			$::globals(widget_profile_name_to_save) configure -bg #ffe3e3
@@ -1964,7 +1967,7 @@ proc profile_has_changed_set args {
 	# if one the scroll bars has been touched by a human (not by the page display code) then mark the profile as having been changed
 	if {[lsearch -exact [stackprocs] "page_show"] == -1} {
 		set ::settings(profile_has_changed) 1
-		#puts "profile_has_changed_set:\n[stacktrace]"
+		puts "profile_has_changed_set:\n[stacktrace]"
 	}
 	#profile_has_changed_set_colors
 	#puts "profile_has_changed_set:\n[stacktrace]"
@@ -1979,6 +1982,7 @@ proc profile_has_not_changed_set args {
 }
 
 proc load_settings_vars {fn} {
+	#msg "load_settings_vars $fn"
 	#error "load_settings_vars"
 	# set the default profile type to use, this can be over-ridden by the saved profile
 	if {[de1plus]} {
