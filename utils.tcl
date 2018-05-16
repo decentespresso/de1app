@@ -486,6 +486,7 @@ proc translation_langs_array {} {
         kr "\uD55C\uAD6D\uC5B4" \
         fr "\u0066\u0072\u0061\u006E\u00E7\u0061\u0069\u0073" \
         de Deutsch \
+        de-ch Schwizerd\u00FCtsche \
         it italiano \
         da "dansk" \
         sv "svenska" \
