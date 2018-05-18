@@ -42,7 +42,7 @@ add_de1_button "describe_espresso describe_espresso2" {say [translate {save}] $:
 		set_next_page off espresso_3; page_show off
 	}
  } 2016 1406 2560 1600
-add_de1_button "describe_espresso describe_espresso2" {say [translate {cancel}] $::settings(sound_button_in); unset -nocomplain ::settings; array set ::settings [array get ::settings_backup]; set_next_page off espresso_3; page_show off} 1505 1406 2015 1600
+add_de1_button "describe_espresso describe_espresso2" {say [translate {cancel}] $::settings(sound_button_in); array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; set_next_page off espresso_3; page_show off} 1505 1406 2015 1600
 
 
 #add_de1_text "scentone_1" 1245 1520 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
