@@ -1076,7 +1076,7 @@ proc load_font {name fn pcsize {androidsize {}} } {
             catch {
                 set result [sdltk addfont $fn]
             }
-            puts "addfont of '$fn' finished with fonts added: '$result'"
+            msg "addfont of '$fn' finished with fonts added: '$result'"
             if {$name != $result} {
                 puts "Warning, font name used does not equal Android font name added: '$name' != '$result'"
             }
@@ -1086,7 +1086,7 @@ proc load_font {name fn pcsize {androidsize {}} } {
             
         } else {
             font create "$name" -family "$name" -size [expr {int(1.0 * $pcsize * $::fontm)}]
-            #puts "font create \"$name\" -family \"$name\" -size [expr {int($size * $::fontm)}]"
+            msg "font create \"$name\" -family \"$name\" -size [expr {int(1.0 * $pcsize * $::fontm)}]"
         }
 
     }
