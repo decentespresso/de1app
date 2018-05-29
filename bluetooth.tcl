@@ -1212,7 +1212,7 @@ proc de1_ble_handler { event data } {
 
 
 							# (beta) stop shot-at-weight feature
-							if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)) } {
+							if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion) || $::de1(substate) == $::de1_substate_types_reversed(ending)) } {
 								set ::de1(final_water_weight) $thisweight
 
 								# john 5/11/18 no support at the moment for weight-ending shots in advanced shots (settings_2c)
