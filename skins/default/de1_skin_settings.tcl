@@ -488,14 +488,15 @@ if {[de1plus]} {
 	#}
 }
 
-add_de1_text "travel_prepare" 1280 70 -text [translate "Prepare your espresso machine for transport"] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
-	add_de1_text "travel_prepare" 1820 1050 -text [translate "After you press Ok, pull the water tank forward as shown in this photograph."] -font Helv_8_bold -fill "#000000" -anchor "nw" -width 360
+add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso machine for transport"] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
+	add_de1_text "travel_prepare" 1520 1000 -text [translate "After you press Ok, pull the water tank forward as shown in this photograph."] -font Helv_10_bold -fill "#000000" -anchor "nw" -width 500
 	add_de1_text "travel_prepare" 280 1504 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_text "travel_prepare" 2300 1504 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_button "travel_prepare" {say [translate {Cancel}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 0 1200 600 1600 ""
 	add_de1_button "travel_prepare" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_4; start_air_purge} 1960 1200 2560 1600 ""
-	add_de1_text "travel_do" 1330 70 -text [translate "Now removing water from your espresso machine."] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
-	add_de1_text "travel_do" 1330 1520 -text [translate "When finished, your machine will be out of water and ready for transport."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 1000
+	add_de1_text "travel_do" 1280 120 -text [translate "Now removing water from your espresso machine."] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
+	add_de1_text "travel_do" 1520 1000 -text [translate "You can turn your machine off once it is out of water. It will then be ready for transport."] -font Helv_10_bold -fill "#000000" -anchor "nw" -width 500
+	#add_de1_text "travel_do" 1280 1520 -text [translate "It will then be ready for transport."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 1000
 
 
 add_de1_widget "settings_4" listbox 1310 800 { 
