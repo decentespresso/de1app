@@ -1149,7 +1149,35 @@ proc update_de1_shotvalue {packed} {
 	if {$::previous_FrameNumber != [ifexists ShotSample(FrameNumber)]} {
 		# draw a vertical line at each frame change
 		set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
+		set ::de1(current_frame_number) $ShotSample(FrameNumber)
 
+		if {$::settings(settings_profile_type) == "settings_2a"} {
+			if {$ShotSample(FrameNumber) == 0} {
+				set framedesc [translate "1: preinfuse"]
+			} elseif {$ShotSample(FrameNumber) == 1} {
+				set framedesc [translate "2: rise and hold"]
+			} else {
+				set framedesc [translate "3: decline"]
+			}
+		} elseif {$::settings(settings_profile_type) == "settings_2b"} {
+			if {$ShotSample(FrameNumber) == 0} {
+				set framedesc [translate "1: preinfuse"]
+			} elseif {$ShotSample(FrameNumber) == 1} {
+				set framedesc [translate "1: rise"]
+			} elseif {$ShotSample(FrameNumber) == 2} {
+				set framedesc [translate "2: hold"]
+			} else {
+				set framedesc [translate "3: decline"]
+			}
+		} elseif {$::settings(settings_profile_type) == "settings_2b"} {
+			array set thisadvstep [lindex $::settings(advanced_shot) $::de1(current_frame_number)]
+			set framedesc "$::de1(current_frame_number). [ifexists thisadvstep(name)]"
+		} else {
+			set framedesc ""
+		}
+
+		set ::settings(current_frame_description) $framedesc
+		#puts "framedesc $framedesc"
 	}
 	set ::previous_FrameNumber [ifexists ShotSample(FrameNumber)]
 

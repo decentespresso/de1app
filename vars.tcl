@@ -1947,6 +1947,7 @@ proc profile_has_changed_set_colors {} {
 
 		if {[info exists ::globals(widget_current_profile_name)] == 1} {
 			.can itemconfigure $::globals(widget_current_profile_name) -fill #ff6b6b
+			.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill #ff6b6b
 		}
 	} else {
 		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
@@ -1957,6 +1958,7 @@ proc profile_has_changed_set_colors {} {
 		if {[info exists ::globals(widget_current_profile_name)] == 1} {
 			# this is displayed on the main Insight skin page
 			.can itemconfigure $::globals(widget_current_profile_name) -fill #969eb1
+			.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill #969eb1
 		}
 	}
 

@@ -893,6 +893,21 @@ proc de1_connected_state { {hide_delay 0} } {
 	}
 }
 
+#
+# Proc to generate a string of (given) characters
+# Range defaults to "ABCDEF...wxyz'
+#
+proc randomRangeString {length {chars "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"}} {
+    set range [expr {[string length $chars]-1}]
+
+    set txt ""
+    for {set i 0} {$i < $length} {incr i} {
+       set pos [expr {int(rand()*$range)}]
+       append txt [string range $chars $pos $pos]
+    }
+    return $txt
+}
+
 
 proc update_onscreen_variables { {state {}} } {
 
@@ -915,6 +930,7 @@ proc update_onscreen_variables { {state {}} } {
 
 		if {[expr {int(rand() * 100)}] > 95} {
 			set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
+			set ::settings(current_frame_description) [randomRangeString 15]
 		}
 
 		if {$::de1(state) == 2} {

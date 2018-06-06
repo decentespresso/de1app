@@ -16,6 +16,7 @@ package provide de1_machine 1.0
 
 
 array set ::de1 {
+	current_frame_number 0
 	calibration_pressure {}
 	calibration_temperature {}
 	calibration_flow {}
@@ -138,6 +139,7 @@ if {$android == 0 || $undroid == 1} {
 array set ::settings {
 	screen_size_width {}
 	screen_size_height {}
+	current_frame_description {asdfasdfsa}
 	language en
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
@@ -461,6 +463,7 @@ proc start_espresso {} {
 	set ::de1(volume) 0
 	set ::de1(preinfusion_volume) 0
 	set ::de1(pour_volume) 0
+	set ::de1(current_frame_number) 0
 
 	# only works if a BLE scale is attached
 	set ::de1(final_espresso_weight) 0	
