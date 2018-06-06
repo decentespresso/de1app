@@ -402,9 +402,9 @@ set pos_top 720
 set spacer 38
 #set paragraph 20
 
-set column2 2190
+set column2 2195
 if {$::settings(enable_fahrenheit) == 1} {
-	set column2 2205
+	set column2 2210
 }
 
 set dark "#5a5d75"
