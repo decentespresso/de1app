@@ -1157,11 +1157,3 @@ proc shot_history_export {} {
 
 }
 
-
-
-
-
-
-
-
-
