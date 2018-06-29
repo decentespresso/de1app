@@ -45,6 +45,16 @@ proc clear_espresso_chart {} {
 	espresso_flow_goal_2x append -1
 	espresso_temperature_goal append [return_temperature_number $::settings(espresso_temperature)]
 
+	espresso_de1_explanation_chart_elapsed length 0
+	espresso_de1_explanation_chart_elapsed_1 length 0
+	espresso_de1_explanation_chart_elapsed_2 length 0
+	espresso_de1_explanation_chart_elapsed_3 length 0
+
+	espresso_de1_explanation_chart_elapsed_flow length 0
+	espresso_de1_explanation_chart_elapsed_flow_1 length 0
+	espresso_de1_explanation_chart_elapsed_flow_2 length 0
+	espresso_de1_explanation_chart_elapsed_flow_3 length 0
+
 	god_shot_reference_reset
 	
 	catch {
@@ -1940,7 +1950,9 @@ proc preview_profile {} {
 
 proc profile_has_changed_set_colors {} {
 	#puts "profile_has_changed_set_colors : $::settings(profile_has_changed)"
+
 	if {$::settings(profile_has_changed) == 1} {
+		update_de1_explanation_chart
 		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
 			$::globals(widget_profile_name_to_save) configure -bg #ffe3e3
 		}
@@ -1971,6 +1983,7 @@ proc profile_has_changed_set args {
 		set ::settings(profile_has_changed) 1
 		puts "profile_has_changed_set:\n[stacktrace]"
 	}
+
 	#profile_has_changed_set_colors
 	#puts "profile_has_changed_set:\n[stacktrace]"
 

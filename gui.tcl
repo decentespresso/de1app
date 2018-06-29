@@ -1017,7 +1017,7 @@ proc update_onscreen_variables { {state {}} } {
 }
 
 proc set_next_page {machinepage guipage} {
-	msg "set_next_page $machinepage $guipage"
+	#msg "set_next_page $machinepage $guipage"
 	set key "machine:$machinepage"
 	set ::nextpage($key) $guipage
 }
@@ -1144,6 +1144,43 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 
 proc update_de1_explanation_chart { {context {}} } {
 
+	espresso_de1_explanation_chart_elapsed length 0
+
+	espresso_de1_explanation_chart_pressure length 0
+	espresso_de1_explanation_chart_pressure_1 length 0
+	espresso_de1_explanation_chart_elapsed_1 length 0
+	espresso_de1_explanation_chart_pressure_2 length 0
+	espresso_de1_explanation_chart_elapsed_2 length 0
+	espresso_de1_explanation_chart_pressure_3 length 0
+	espresso_de1_explanation_chart_elapsed_3 length 0
+
+	espresso_de1_explanation_chart_flow length 0
+
+	espresso_de1_explanation_chart_elapsed_flow length 0
+	espresso_de1_explanation_chart_flow_1 length 0
+	espresso_de1_explanation_chart_elapsed_flow_1 length 0
+	espresso_de1_explanation_chart_flow_2 length 0
+	espresso_de1_explanation_chart_elapsed_flow_2 length 0
+	espresso_de1_explanation_chart_flow_3 length 0
+	espresso_de1_explanation_chart_elapsed_flow_3 length 0
+
+	espresso_de1_explanation_chart_flow_2x length 0
+	espresso_de1_explanation_chart_flow_1_2x length 0
+	espresso_de1_explanation_chart_flow_2_2x length 0
+	espresso_de1_explanation_chart_flow_3_2x length 0
+
+
+	clear_espresso_chart
+
+	if {$::settings(settings_profile_type) == "settings_2b"} {
+		update_de1_plus_flow_explanation_chart
+	    espresso_de1_explanation_chart_elapsed append [espresso_de1_explanation_chart_elapsed_flow range 0 end]
+		return
+	} elseif {$::settings(settings_profile_type) == "settings_2c"} {
+		# advanced shots currently get no graphic preview
+		return
+	}
+
 	if {![de1plus]} {
 		if {[expr {$::settings(pressure_end) + 1}] > $::settings(espresso_pressure)} {
 			# the end pressure is not allowed to be higher than the hold pressure
@@ -1151,18 +1188,6 @@ proc update_de1_explanation_chart { {context {}} } {
 		}
 	}
 
-	#save_settings
-	#puts "update_de1_explanation_chart"
-	espresso_de1_explanation_chart_pressure length 0
-	#espresso_de1_explanation_chart_flow length 0
-	espresso_de1_explanation_chart_elapsed length 0
-
-	espresso_de1_explanation_chart_pressure_1 length 0
-	espresso_de1_explanation_chart_elapsed_1 length 0
-	espresso_de1_explanation_chart_pressure_2 length 0
-	espresso_de1_explanation_chart_elapsed_2 length 0
-	espresso_de1_explanation_chart_pressure_3 length 0
-	espresso_de1_explanation_chart_elapsed_3 length 0
 
 
 
@@ -1272,9 +1297,6 @@ proc update_de1_explanation_chart { {context {}} } {
 	# save the total time
 	set ::settings(espresso_max_time) $seconds
 
-	if {[de1plus]} {
-		update_de1_plus_flow_explanation_chart
-	}
 }
 
 
@@ -1288,15 +1310,7 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 	#save_settings
 	#puts "update_de1_explanation_chart"
 	#espresso_de1_explanation_chart_pressure length 0
-	espresso_de1_explanation_chart_flow length 0
-	espresso_de1_explanation_chart_elapsed_flow length 0
 
-	espresso_de1_explanation_chart_flow_1 length 0
-	espresso_de1_explanation_chart_elapsed_flow_1 length 0
-	espresso_de1_explanation_chart_flow_2 length 0
-	espresso_de1_explanation_chart_elapsed_flow_2 length 0
-	espresso_de1_explanation_chart_flow_3 length 0
-	espresso_de1_explanation_chart_elapsed_flow_3 length 0
 
 	set seconds 0
 
@@ -1426,6 +1440,25 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 		espresso_de1_explanation_chart_flow_3 append $flow_profile_decline
 		espresso_de1_explanation_chart_elapsed_flow_3 append $seconds
 	}
+
+	######################################
+	# 2x zoomed flow explanation
+	foreach f [espresso_de1_explanation_chart_flow range 0 end] {
+		espresso_de1_explanation_chart_flow_2x append [expr {2.0 * $f}]
+	}
+	foreach f [espresso_de1_explanation_chart_flow_1 range 0 end] {
+		espresso_de1_explanation_chart_flow_1_2x append [expr {2.0 * $f}]
+	}
+	foreach f [espresso_de1_explanation_chart_flow_2 range 0 end] {
+		espresso_de1_explanation_chart_flow_2_2x append [expr {2.0 * $f}]
+	}
+	foreach f [espresso_de1_explanation_chart_flow_3 range 0 end] {
+		espresso_de1_explanation_chart_flow_3_2x append [expr {2.0 * $f}]
+	}
+
+	######################################
+
+
 
 	# save the total time
 	set ::settings(espresso_max_time) $seconds
