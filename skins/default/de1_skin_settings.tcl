@@ -318,7 +318,7 @@ add_de1_widget "settings_1" graph 1330 300 {
 		$::preview_graph_pressure element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth quadratic -pixels [rescale_x_skin 20]; 
 		$::preview_graph_pressure axis configure x -color #5a5d75 -tickfont Helv_6 ; 
 		$::preview_graph_pressure axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 11.5 -stepsize 2 -majorticks {1 3 5 7 9 11} -title [translate "pressure (bar)"] -titlefont Helv_8 -titlecolor #5a5d75;
-		bind $::preview_graph_pressure [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type) } 
+		bind $::preview_graph_pressure [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised
 
 add_de1_widget "settings_1b" graph 1330 300 { 
@@ -327,7 +327,7 @@ add_de1_widget "settings_1b" graph 1330 300 {
 		$::preview_graph_flow element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth quadratic -pixels [rescale_x_skin 30]; 
 		$::preview_graph_flow axis configure x -color #5a5d75 -tickfont Helv_6; 
 		$::preview_graph_flow axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 6.5 -majorticks {1 2 3 4 5 6} -title [translate "Flow rate"] -titlefont Helv_8 -titlecolor #5a5d75;
-		bind $::preview_graph_flow [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type) } 
+		bind $::preview_graph_flow [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised 
 
 
@@ -337,11 +337,11 @@ add_de1_widget "settings_1c" graph 1330 300 {
 		#$::preview_graph_advanced element create line_espresso_de1_explanation_chart_adv -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth quadratic -pixels [rescale_x_skin 30]; 
 		$::preview_graph_advanced axis configure x -color #5a5d75 -tickfont Helv_6; 
 		$::preview_graph_advanced axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 6.5 -majorticks {1 2 3 4 5 6} -title [translate "Advanced"] -titlefont Helv_8 -titlecolor #5a5d75;
-		bind $::preview_graph_advanced [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type); fill_advanced_profile_steps_listbox } 
+		bind $::preview_graph_advanced [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox } 
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised 
 
 
-add_de1_button "settings_1" {say [translate {edit}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type); fill_advanced_profile_steps_listbox } 1330 220 2560 800
+add_de1_button "settings_1" {say [translate {edit}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox } 1330 220 2560 800
 
 
 
@@ -589,10 +589,10 @@ if {[de1plus]} {
 	add_de1_text "settings_2c" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
 	add_de1_text "settings_2c" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
-	add_de1_button "settings_2b settings_2c" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::active_settings_tab $::settings(settings_profile_type) } 1 1410 495 1600
-	add_de1_button "settings_2a settings_2c" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::active_settings_tab $::settings(settings_profile_type) } 496 1410 972 1600
-	add_de1_button "settings_2a" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type); copy_pressure_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set} 974 1410 1500 1600
-	add_de1_button "settings_2b" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type); copy_flow_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set } 974 1410 1500 1600
+	add_de1_button "settings_2b settings_2c" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 1 1410 495 1600
+	add_de1_button "settings_2a settings_2c" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 496 1410 972 1600
+	add_de1_button "settings_2a" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_pressure_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set} 974 1410 1500 1600
+	add_de1_button "settings_2b" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_flow_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set } 974 1410 1500 1600
 }
 
 
@@ -652,10 +652,10 @@ proc set_languages_scrollbar_dimensions {} {
 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::active_settings_tab "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::active_settings_tab $::settings(settings_profile_type); fill_advanced_profile_steps_listbox} 642 0 1277 188 
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::active_settings_tab "settings_3"; preview_tablet_skin; set_languages_scrollbar_dimensions} 1278 0 1904 188
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::active_settings_tab "settings_4"} 1905 0 2560 188
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::settings(active_settings_tab) "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox} 642 0 1277 188 
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"; preview_tablet_skin; set_languages_scrollbar_dimensions} 1278 0 1904 188
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"} 1905 0 2560 188
 
 
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -668,7 +668,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_next_page off off; page_show off
 			}
 		} 2016 1430 2560 1600
-	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;} 1505 1430 2015 1600
+	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;restore_espresso_chart; } 1505 1430 2015 1600
 
 
 # (re)calibration page
@@ -734,7 +734,7 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 # END OF SETTINGS page
 ##############################################################################################################################################################################################################################################################################
 
-set ::active_settings_tab $::settings(settings_profile_type)
+set ::settings(active_settings_tab) $::settings(settings_profile_type)
 
 proc setting_profile_type_to_text { } {
 	set in $::settings(settings_profile_type)

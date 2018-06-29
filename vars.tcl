@@ -5,7 +5,7 @@ package provide de1_vars 1.0
 # raw data from the DE1
 
 proc clear_espresso_chart {} {
-	msg "clear_espresso_chart"
+	#msg "clear_espresso_chart"
 	espresso_elapsed length 0
 	espresso_pressure length 0
 	espresso_weight length 0
@@ -24,6 +24,16 @@ proc clear_espresso_chart {} {
 	espresso_flow_goal length 0
 	espresso_flow_goal_2x length 0
 	espresso_temperature_goal length 0
+
+	espresso_de1_explanation_chart_elapsed length 0
+	espresso_de1_explanation_chart_elapsed_1 length 0
+	espresso_de1_explanation_chart_elapsed_2 length 0
+	espresso_de1_explanation_chart_elapsed_3 length 0
+
+	espresso_de1_explanation_chart_elapsed_flow length 0
+	espresso_de1_explanation_chart_elapsed_flow_1 length 0
+	espresso_de1_explanation_chart_elapsed_flow_2 length 0
+	espresso_de1_explanation_chart_elapsed_flow_3 length 0	
 
 	espresso_elapsed append 0
 	espresso_pressure append 0
@@ -45,16 +55,6 @@ proc clear_espresso_chart {} {
 	espresso_flow_goal_2x append -1
 	espresso_temperature_goal append [return_temperature_number $::settings(espresso_temperature)]
 
-	espresso_de1_explanation_chart_elapsed length 0
-	espresso_de1_explanation_chart_elapsed_1 length 0
-	espresso_de1_explanation_chart_elapsed_2 length 0
-	espresso_de1_explanation_chart_elapsed_3 length 0
-
-	espresso_de1_explanation_chart_elapsed_flow length 0
-	espresso_de1_explanation_chart_elapsed_flow_1 length 0
-	espresso_de1_explanation_chart_elapsed_flow_2 length 0
-	espresso_de1_explanation_chart_elapsed_flow_3 length 0
-
 	god_shot_reference_reset
 	
 	catch {
@@ -63,6 +63,35 @@ proc clear_espresso_chart {} {
 	}
 
 }	
+
+proc espresso_chart_structures {} {
+	return [list espresso_elapsed espresso_pressure espresso_weight espresso_flow espresso_flow_weight espresso_flow_weight_2x espresso_flow_2x espresso_pressure_delta espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3 espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_elapsed_flow_3 espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3]
+}
+
+proc backup_espresso_chart {} {
+	#puts "backup_espresso_chart"
+	unset -nocomplain ::chartbk
+	foreach s [espresso_chart_structures] {
+		if {[$s length] > 0} {
+			#puts "backing up: $s with: [$s range 0 end]"
+			set ::chartbk($s) [$s range 0 end]
+		} else {
+			set ::chartbk($s) {}
+		}
+	}
+
+}
+
+proc restore_espresso_chart {} {
+	foreach s [espresso_chart_structures] {
+		$s length 0
+		if {[info exists ::chartbk($s)] == 1} {
+			#puts "restoring chart structure: '$s' to '$::chartbk($s)'"
+			$s append $::chartbk($s)
+		}
+	}
+}
+
 
 proc god_shot_reference_reset {} {
 	############################################################################################################
@@ -1072,6 +1101,8 @@ proc ml_to_oz {in} {
 proc backup_settings {} {
 	unset -nocomplain ::settings_backup; 
 	array set ::settings_backup [array get ::settings]
+	backup_espresso_chart
+	#update_de1_explanation_chart
 }
 
 proc skin_directories {} {

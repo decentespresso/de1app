@@ -1024,13 +1024,18 @@ proc set_next_page {machinepage guipage} {
 
 proc show_settings { {tab_to_show ""} } {
 	backup_settings; 
+
+	puts "show_settings"
+
 	if {$tab_to_show == ""} {
-		page_to_show_when_off $::active_settings_tab
+		page_to_show_when_off $::settings(active_settings_tab)
 		scheduler_feature_hide_show_refresh
 		set_profiles_scrollbar_dimensions
 	} else {
 		page_to_show_when_off $tab_to_show
 	}
+
+	update_de1_explanation_chart
 	#preview_profile 
 }
 
@@ -1143,6 +1148,7 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 }
 
 proc update_de1_explanation_chart { {context {}} } {
+	puts "update_de1_explanation_chart 1: $::settings(settings_profile_type)"
 
 	espresso_de1_explanation_chart_elapsed length 0
 
@@ -1188,8 +1194,7 @@ proc update_de1_explanation_chart { {context {}} } {
 		}
 	}
 
-
-
+	#puts "update_de1_explanation_chart 2"
 
 	set seconds 0
 

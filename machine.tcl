@@ -141,6 +141,7 @@ array set ::settings {
 	screen_size_height {}
 	current_frame_description {asdfasdfsa}
 	language en
+	active_settings_tab settings_2a
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"
