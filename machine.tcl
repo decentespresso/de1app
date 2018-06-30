@@ -152,6 +152,7 @@ array set ::settings {
 	advanced_shot_chart_temp_min 80
 	bean_notes {}
 	espresso_notes {}
+	profile_graph_smoothing_technique "linear"
 	espresso_count 0
 	steaming_count 0
 	profile_has_changed 0
