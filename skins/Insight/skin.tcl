@@ -758,7 +758,7 @@ add_de1_variable "steam_3" 1870 1300 -justify right -anchor "nw" -text [translat
 add_de1_variable "steam_3" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_steam)} {return "[done_timer][translate s]"} else { return ""}]} 
 
 add_de1_text "steam" 1870 1300 -justify right -anchor "nw" -text [translate "Auto-Off"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "steam" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[setting_steam_max_time][translate "s"]} 
+add_de1_variable "steam" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
 
 add_de1_text "steam" 1870 250 -justify right -anchor "nw" -text [translate "Information"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 add_de1_text "steam" 1870 300 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
