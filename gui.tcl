@@ -1148,7 +1148,7 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 }
 
 proc update_de1_explanation_chart { {context {}} } {
-	puts "update_de1_explanation_chart 1: $::settings(settings_profile_type)"
+	#puts "update_de1_explanation_chart 1: $::settings(settings_profile_type)"
 
 	espresso_de1_explanation_chart_elapsed length 0
 

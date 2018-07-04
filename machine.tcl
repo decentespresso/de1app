@@ -55,7 +55,7 @@ array set ::de1 {
 	scale_autostop_triggered 1
 	water_level_full_point 40
 	connect_time 0
-	water_level 30
+	water_level 35
 	firmware_bytes_uploaded 0
 	firmware_update_size 0
 	firmware_update_button_label "Firmware Update"

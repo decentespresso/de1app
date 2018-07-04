@@ -1058,13 +1058,29 @@ proc graph_seconds_axis_format {nm val} {
 #######################
 # conversion functions
 
+proc round_to_tens {in} {
+	set x 0
+    catch {
+    	set x [expr {round($in / 10.0)*10}]
+    }
+    return $x
+}
+
 proc round_to_two_digits {in} {
 	set x 0
     catch {
     	set x [expr {round($in * 100.0)/100.0}]
     }
     return $x
-}
+
+
+proc round_to_two_digits {in} {
+	set x 0
+    catch {
+    	set x [expr {round($in * 100.0)/100.0}]
+    }
+    return $x
+}}
 
 proc round_to_one_digits {in} {
 	set x 0
@@ -2383,3 +2399,11 @@ proc de1_version_string {} {
 	#return "HW=[ifexists v(BLEFWMajor)].[ifexists v(BLEFWMinor)].[ifexists v(P0BLECommits)].[ifexists v(Dirty)] API=[ifexists v(APIVersion)] SHA=[ifexists v(BLESha)]"
 }
 
+proc water_tank_level_to_milliliters {mm} {
+	set ml 0
+	catch {
+		set ml [expr {((( $mm * 22) + ([::tcl::mathfunc::pow $mm 1.52])))}]
+	}
+	set ml [round_to_tens $ml]
+	return $ml
+}
