@@ -2401,8 +2401,16 @@ proc de1_version_string {} {
 
 proc water_tank_level_to_milliliters {mm} {
 	set ml 0
+	set exp 
+	if {$mm < 18} {
+		set exp 1.35
+	} elseif {$mm < 48} {
+		set exp 1.4
+	} else {
+		set exp 1.45
+	}
 	catch {
-		set ml [expr {((( $mm * 22) + ([::tcl::mathfunc::pow $mm 1.52])))}]
+		set ml [expr {((( $mm * 23) + ([::tcl::mathfunc::pow $mm $exp])))}]
 	}
 	set ml [round_to_tens $ml]
 	return $ml
