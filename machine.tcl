@@ -29,8 +29,9 @@ array set ::de1 {
     device_handle 0
     skale_device_handle 0
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"
-	sinstance 0
+	sinstance 12
 	cuuid "0000a002-0000-1000-8000-00805f9b34fb"
+	cuuid_02 "0000a002-0000-1000-8000-00805f9b34fb"
 	cuuid_0a "0000a00a-0000-1000-8000-00805f9b34fb"
 	cuuid_0b "0000a00b-0000-1000-8000-00805f9b34fb"
 	cuuid_0c "0000a00c-0000-1000-8000-00805f9b34fb"
@@ -460,6 +461,7 @@ proc start_steam {} {
 
 proc start_espresso {} {
 	msg "Tell DE1 to start making ESPRESSO"
+	msg [stacktrace]
 	set ::settings(history_saved) ""
 	set ::de1(timer) 0
 	set ::de1(volume) 0

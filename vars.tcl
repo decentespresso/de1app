@@ -749,6 +749,12 @@ proc waterweight_text {} {
 	if {$::de1(scale_weight) == ""} {
 		return ""
 	}
+
+	if {$::de1(skale_device_handle) == "0" || $::de1(skale_device_handle) == ""} {
+		return [translate "Disconnected"]
+	}
+
+
 	return [return_weight_measurement $::de1(scale_weight)]
 }
 
@@ -760,6 +766,10 @@ proc waterweight_label_text {} {
 
 	if {$::android == 0} {
 		return [translate "Weight"]
+	}
+
+	if {$::de1(skale_device_handle) == "0" || $::de1(skale_device_handle) == ""} {
+		return [translate "Disconnected"]
 	}
 
 
