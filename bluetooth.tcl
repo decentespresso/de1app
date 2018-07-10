@@ -217,7 +217,6 @@ proc start_firmware_update {} {
 	set data [make_packed_maprequest arr]
 
 	# it'd be useful here to test that the maprequest was correctly packed
-	#parse_binary_water_level $data arr2
 	set ::de1(currently_erasing_firmware) 1
 	userdata_append "Erase firmware: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A009" 38 $data]
 
@@ -1124,7 +1123,11 @@ proc de1_ble_handler { event data } {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_water_level $value arr2
 							#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
-							set ::de1(water_level) $arr2(Level)
+	
+							# compensate for the fact that we measure water level a few mm higher than the water uptake point
+							set mm [expr {$arr2(Level) + 5}]
+							set ::de1(water_level) $mm
+							
 						} elseif {$cuuid == "0000A009-0000-1000-8000-00805F9B34FB"} {
 						    #set ::de1(last_ping) [clock seconds]
 							parse_map_request $value arr2

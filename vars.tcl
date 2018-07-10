@@ -2409,7 +2409,8 @@ proc de1_version_string {} {
 	#return "HW=[ifexists v(BLEFWMajor)].[ifexists v(BLEFWMinor)].[ifexists v(P0BLECommits)].[ifexists v(Dirty)] API=[ifexists v(APIVersion)] SHA=[ifexists v(BLESha)]"
 }
 
-proc water_tank_level_to_milliliters {mm} {
+proc water_tank_level_to_milliliters {mm_measured} {
+
 	set ml 0
 	set exp  1.45
 	if {$mm < 18} {
