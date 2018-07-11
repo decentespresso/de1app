@@ -27,8 +27,10 @@ proc userdata_append {comment cmd} {
 
 proc read_de1_version {} {
 	#puts "read_de1_version"
-	userdata_append "read_de1_version" [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a001" 14]
+	userdata_append "read_de1_version" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_01) $::cinstance($::de1(cuuid_01))]
 }
+
+
 
 
 proc poll_de1_state {} {
@@ -37,8 +39,8 @@ proc poll_de1_state {} {
 
 	#de1_enable_bluetooth_notifications
 
-	userdata_append "read de1 temp" [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" 50]
-	userdata_append "read de1 state" [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" 53]
+	userdata_append "read de1 temp" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0D) $::cinstance($::de1(cuuid_0D))]
+	userdata_append "read de1 state" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
 
 	after 5000 poll_de1_state
 }
@@ -48,8 +50,13 @@ proc skale_timer_start {} {
 		return 
 	}
 
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot start timer"
+		return
+	}
+
 	set timeron [binary decode hex "DD"]
-	userdata_append "Skale : timer start" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF80-0000-1000-8000-00805F9B34FB" 22 $timeron]
+	userdata_append "Skale : timer start" [list ble write $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $timeron]
 
 }
 
@@ -64,7 +71,12 @@ proc skale_timer_stop {} {
 	#set ::de1(scale_weight) 0
 	#set ::de1(scale_weight_rate) 0
 
-	userdata_append "Skale: timer stop" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF80-0000-1000-8000-00805F9B34FB" 22 $tare]
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot stop timer"
+		return
+	}
+
+	userdata_append "Skale: timer stop" [list ble write $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare]
 }
 
 proc skale_timer_off {} {
@@ -76,7 +88,14 @@ proc skale_timer_off {} {
 	#set ::de1(scale_weight) 0
 	#set ::de1(scale_weight_rate) 0
 
-	userdata_append "Skale: timer off" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF80-0000-1000-8000-00805F9B34FB" 22 $tare]
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot off timer"
+		return
+	}
+
+
+
+	userdata_append "Skale: timer off" [list ble write $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare]
 }
 
 
@@ -94,21 +113,39 @@ proc skale_tare {} {
 
 	#set ::de1(final_espresso_weight) 0
 
-	userdata_append "Skale: tare" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF80-0000-1000-8000-00805F9B34FB" 22 $tare]
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot tare"
+		return
+	}
+
+	userdata_append "Skale: tare" [list ble write $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare]
 }
 
 proc skale_enable_weight_notifications {} {
 	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
-	userdata_append "enable Skale weight notifications" [list ble enable $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF81-0000-1000-8000-00805F9B34FB" 19]
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "enable Skale weight notifications" [list ble enable $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF81) $::cinstance($::de1(cuuid_skale_EF81))]
 }
 
 proc skale_enable_button_notifications {} {
 	if {$::de1(skale_device_handle) == 0} {
 		return 
 	}
-	userdata_append "enable Skale button notifications" [list ble enable $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF82-0000-1000-8000-00805F9B34FB" 16]
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot enable button notifications"
+		return
+	}
+
+
+	userdata_append "enable Skale button notifications" [list ble enable $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF82) $::cinstance($::de1(cuuid_skale_EF82))]
 }
 
 proc skale_enable_grams {} {
@@ -116,7 +153,13 @@ proc skale_enable_grams {} {
 		return 
 	}
 	set grams [binary decode hex "03"]
-	userdata_append "Skale : enable grams" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF80-0000-1000-8000-00805F9B34FB" 22 $grams]
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot enable grams"
+		return
+	}
+
+	userdata_append "Skale : enable grams" [list ble write $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $grams]
 }
 
 proc skale_enable_lcd {} {
@@ -125,8 +168,14 @@ proc skale_enable_lcd {} {
 	}
 	set screenon [binary decode hex "ED"]
 	set displayweight [binary decode hex "EC"]
-	userdata_append "Skale : enable LCD" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF80-0000-1000-8000-00805F9B34FB" 22 $screenon]
-	userdata_append "Skale : display weight on LCD" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF80-0000-1000-8000-00805F9B34FB" 22 $displayweight]
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot enable LCD"
+		return
+	}
+
+	userdata_append "Skale : enable LCD" [list ble write $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $screenon]
+	userdata_append "Skale : display weight on LCD" [list ble write $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $displayweight]
 	#ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 0 "0000EF80-0000-1000-8000-00805F9B34FB" 0 $displayweight
 }
 
@@ -135,51 +184,101 @@ proc skale_disable_lcd {} {
 		return 
 	}
 	set screenoff [binary decode hex "EE"]
-	userdata_append "Skale : disable LCD" [list ble write $::de1(skale_device_handle) "0000FF08-0000-1000-8000-00805F9B34FB" 12 "0000EF80-0000-1000-8000-00805F9B34FB" 22 $screenoff]
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot disable LCD"
+		return
+	}
+
+	userdata_append "Skale : disable LCD" [list ble write $::de1(skale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $screenoff]
 }
 
 
 # calibration change notifications ENABLE
 proc de1_enable_calibration_notifications {} {
-	userdata_append "enable de1 calibration notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a012" 65]
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+	userdata_append "enable de1 calibration notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_12) $::cinstance($::de1(cuuid_12))]
 }
 
 # calibration change notifications DISABLE
 proc de1_disable_calibration_notifications {} {
-	userdata_append "disable de1 calibration notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a012" 65]
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+	userdata_append "disable de1 calibration notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_12) $::cinstance($::de1(cuuid_12))]
 }
 
 # temp changes
 proc de1_enable_temp_notifications {} {
-	userdata_append "enable de1 temp notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" 50]
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+	userdata_append "enable de1 temp notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0D) $::cinstance($::de1(cuuid_0D))]
 }
 
 # status changes
 proc de1_enable_state_notifications {} {
-	userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" 53]
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+	userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
 }
 
 proc de1_disable_temp_notifications {} {
-	userdata_append "disable temp notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00d" 50]
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+	userdata_append "disable temp notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0D) $::cinstance($::de1(cuuid_0D))]
 }
 
 proc de1_disable_state_notifications {} {
-	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "a00e" 53]
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
 }
 
 # water level notifications
 proc de1_enable_water_level_notifications {} {
-	#return
-	userdata_append "enable de1 water level notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A011" 62]
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+	userdata_append "enable de1 water level notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_11) $::cinstance($::de1(cuuid_11))]
 }
 
 proc de1_disable_water_level_notifications {} {
-	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A011" 62]
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_11) $::cinstance($::de1(cuuid_11))]
 }
 
 # firmware update command notifications (not writing new fw, this is for erasing and switching firmware)
 proc de1_enable_maprequest_notifications {} {
-	userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A009" 38]
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+	userdata_append "enable de1 state notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_09) $::cinstance($::de1(cuuid_09))]
 }
 
 proc fwfile {} {
@@ -188,6 +287,11 @@ proc fwfile {} {
 
 
 proc start_firmware_update {} {
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
 
 	if {$::de1(currently_erasing_firmware) == 1} {
 		msg "Already erasing firmware"
@@ -218,7 +322,7 @@ proc start_firmware_update {} {
 
 	# it'd be useful here to test that the maprequest was correctly packed
 	set ::de1(currently_erasing_firmware) 1
-	userdata_append "Erase firmware: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A009" 38 $data]
+	userdata_append "Erase firmware: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_09) $::cinstance($::de1(cuuid_09)) $data]
 
 }
 
@@ -235,6 +339,13 @@ proc write_firmware_now {} {
 
 proc firmware_upload_next {} {
 	msg "firmware_upload_next $::de1(firmware_bytes_uploaded)"
+
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+
 	#delay_screen_saver
 
 	if  {$::de1(firmware_bytes_uploaded) >= $::de1(firmware_update_size)} {
@@ -257,7 +368,7 @@ proc firmware_upload_next {} {
 			set arr(FirstError2) [expr 0xFF]
 			set arr(FirstError3) [expr 0xFF]
 			set data [make_packed_maprequest arr]
-			userdata_append "Find first error in firmware update: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A009" 38 $data]
+			userdata_append "Find first error in firmware update: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_09) $::cinstance($::de1(cuuid_09)) $data]
 		}
 	} else {
 
@@ -265,19 +376,24 @@ proc firmware_upload_next {} {
 			after 100 firmware_upload_next
 		}
 		set data "\x10[make_U24P0 $::de1(firmware_bytes_uploaded)][string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]"
-		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) "A006" 29 $data]
+		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data]
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 	}
 }
 
 
 proc de1_send_waterlevel_settings {} {
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
+
 	#puts ">>>> Sending BLE hot water/steam settings"
 	set data [return_de1_packed_waterlevel_settings]
 	parse_binary_water_level $data arr2
-	userdata_append "Set water level settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_11) 62 $data]
+	userdata_append "Set water level settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_11) $::cinstance($::de1(cuuid_11)) $data]
 	#puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-	
 	# for testing parser/deparser
 	
 	#msg "send de1_send_steam_hotwater_settings of [string length $data] bytes: $data  : [array get arr2]"
@@ -403,6 +519,11 @@ proc app_exit {} {
 }
 
 proc de1_send_state {comment msg} {
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
 	#clear_timers
 	delay_screen_saver
 	
@@ -413,7 +534,7 @@ proc de1_send_state {comment msg} {
 
 	#set ::de1(substate) -
 	#msg "Sending to DE1: '$msg'"
-	userdata_append $comment [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_02) 17 "$msg"]
+	userdata_append $comment [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_02) $::cinstance($::de1(cuuid_02)) "$msg"]
 }
 
 
@@ -474,14 +595,24 @@ proc de1_send_shot_frames {} {
 }
 
 proc ble_write_010 {packed_frame} {
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
 	#ble begin $::de1(device_handle); 
-	return [ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_10) 59 $packed_frame]
+	return [ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_10) $::cinstance($::de1(cuuid_10)) $packed_frame]
 	#ble execute $::de1(device_handle); 
 }
 
 proc ble_write_00f {packed_frame} {
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
 	#ble begin $::de1(device_handle); 
-	return [ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0f) 56 $packed_frame]
+	return [ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0F) $::cinstance($::de1(cuuid_0F)) $packed_frame]
 	#ble execute $::de1(device_handle); 
 }
 
@@ -500,11 +631,16 @@ proc save_settings_to_de1 {} {
 
 proc de1_send_steam_hotwater_settings {} {
 
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
 
 	#puts ">>>> Sending BLE hot water/steam settings"
 	set data [return_de1_packed_steam_hotwater_settings]
 	parse_binary_hotwater_desc $data arr2
-	userdata_append "Set water/steam settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) 44 $data]
+	userdata_append "Set water/steam settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0B) $::cinstance($::de1(cuuid_0B)) $data]
 	#puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 	
 	# for testing parser/deparser
@@ -513,6 +649,11 @@ proc de1_send_steam_hotwater_settings {} {
 }
 
 proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
 	if {$calib_target == "flow"} {
 		set target 0
 	} elseif {$calib_target == "pressure"} {
@@ -535,10 +676,15 @@ proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 
 	set data [make_packed_calibration arr]
 	parse_binary_calibration $data arr2
-	userdata_append "Set calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_12) 65 $data]
+	userdata_append "Set calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_12) $::cinstance($::de1(cuuid_12)) $data]
 }
 
 proc de1_read_calibration {calib_target {factory 0} } {
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command"
+		return
+	}
+
 
 	if {$calib_target == "flow"} {
 		set target 0
@@ -567,7 +713,7 @@ proc de1_read_calibration {calib_target {factory 0} } {
 
 	set data [make_packed_calibration arr]
 	parse_binary_calibration $data arr2
-	userdata_append "Read $what calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_12) 65 $data]
+	userdata_append "Read $what calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_12) $::cinstance($::de1(cuuid_12)) $data]
 
 }
 
@@ -577,7 +723,7 @@ proc de1_read_version {} {
 	#	return
 	#}
 
-	userdata_append "read de1 version" [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0a) 41]
+	userdata_append "read de1 version" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0A) $::cinstance($::de1(cuuid_0A))]
 }
 
 proc de1_read_hotwater {} {
@@ -586,7 +732,7 @@ proc de1_read_hotwater {} {
 	#	return
 	#}
 
-	userdata_append "read de1 hot water/steam" [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0b) 44]
+	userdata_append "read de1 hot water/steam" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0B) $::cinstance($::de1(cuuid_0B))]
 }
 
 proc de1_read_shot_header {} {
@@ -595,7 +741,7 @@ proc de1_read_shot_header {} {
 	#	return
 	#}
 
-	userdata_append "read shot header" [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_0f) 56]
+	userdata_append "read shot header" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0F) $::cinstance($::de1(cuuid_0F))]
 }
 proc de1_read_shot_frame {} {
 	#if {$::de1(device_handle) == "0"} {
@@ -603,7 +749,7 @@ proc de1_read_shot_frame {} {
 	#	return
 	#}
 
-	userdata_append "read shot frame" [list ble read $::de1(device_handle) $::de1(suuid) $::de1(sinstance) $::de1(cuuid_10) 59]
+	userdata_append "read shot frame" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_10) $::cinstance($::de1(cuuid_10))]
 }
 
 proc remove_null_terminator {instr} {
@@ -653,7 +799,7 @@ proc bluetooth_connect_to_devices {} {
 	}
 
 	if {$::settings(skale_bluetooth_address) != ""} {
-		#after 3000 ble_connect_to_skale
+		after 3000 ble_connect_to_skale
 	}
 
 }
@@ -722,7 +868,7 @@ proc ble_connect_to_de1 {} {
 set ::currently_connecting_skale_handle 0
 proc ble_connect_to_skale {} {
 
-	puts "ble_connect_to_skale [stacktrace]"
+	#puts "ble_connect_to_skale [stacktrace]"
 
 
 	#set ::de1(scale_weight) ""
@@ -969,8 +1115,8 @@ proc de1_ble_handler { event data } {
 						append_to_de1_bluetooth_list $address
 						#return
 						start_idle
-						de1_send_waterlevel_settings
 						#msg "connected to de1 with handle $handle"
+						de1_send_waterlevel_settings
 						de1_send_steam_hotwater_settings					
 						de1_send_shot_frames
 						de1_enable_water_level_notifications
@@ -981,7 +1127,7 @@ proc de1_ble_handler { event data } {
 						if {$::settings(skale_bluetooth_address) != "" && $::de1(skale_device_handle) == 0 } {
 							# connect to the scale once the connection to the DE1 is set up
 							#userdata_append "BLE connect to scale" [list ble_connect_to_skale] 
-							ble_connect_to_skale
+							#ble_connect_to_skale
 						}
 						
 						#set_next_page off off
@@ -1005,8 +1151,8 @@ proc de1_ble_handler { event data } {
 						#skale_tare 
 						#after 1000 
 						skale_enable_lcd
-						skale_enable_button_notifications
-						skale_enable_weight_notifications
+						after 1000 skale_enable_weight_notifications
+						after 2000 skale_enable_button_notifications
 						#after 1500 
 						#after 2000 
 						#set displayweight [binary decode hex "EC"]
@@ -1050,16 +1196,15 @@ proc de1_ble_handler { event data } {
 		    characteristic {
 			    #.t insert end "${event}: ${data}\n"
 			    if {[string first A001 $data] != -1} {
-			    	msg "de1 characteristic $state: ${event}: ${data}"
+			    	#msg "de1 characteristic $state: ${event}: ${data}"
 			    }
-			    if {[string first A002 $data] != -1} {
-			    	msg "de1 characteristic $state: ${event}: ${data}"
-			    }
-			    if {[string first A006 $data] != -1} {
-			    	msg "de1 characteristic $state: ${event}: ${data}"
-			    }
+		    	#msg "de1 characteristic $state: ${event}: ${data}"
 			    #msg "connected to de1 with $handle "
 				if {$state eq "discovery"} {
+					# save the mapping because we now need it for Android 7
+					set ::cinstance($cuuid) $cinstance
+					set ::sinstance($suuid) $sinstance
+
 					#msg "discovery 1"
 					#ble_connect_to_de1
 					# && ($properties & 0x10)
