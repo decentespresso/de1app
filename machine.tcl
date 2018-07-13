@@ -179,7 +179,7 @@ array set ::settings {
 	seconds_to_display_done_steam 120
 	seconds_to_display_done_flush 120
 	seconds_to_display_done_hotwater 120
-	waterlevel_blink_start_offset 10
+	waterlevel_blink_start_offset 5
 	waterlevel_indicator_blink_rate 1000
 	waterlevel_indicator_on 1
 	waterlevel_indicator_blink 1
