@@ -504,16 +504,29 @@ proc close_all_ble_and_exit {} {
 
 proc app_exit {} {
 
+	if {$::android != 1} {
+		close_all_ble_and_exit
+	}
 	#exit
 	#return
 
 	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
 	#after 3000 {exit}
 
-	if {$::de1_num_state($::de1(state)) != "Sleep"} {
-		start_sleep
+	#if {$::de1_num_state($::de1(state)) != "Sleep"} {
+	set ::exit_app_on_sleep 1
+	start_sleep
+	#}
+	
+	# fail-over, if the DE1 doesn't to to sleep
+	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
+	if {$since_last_ping > 10} {
+		# wait less time for the fail-over if we don't have any temperature pings from the DE1
+		after 1000 close_all_ble_and_exit
+	} else {
+		after 5000 close_all_ble_and_exit
 	}
-	after 2000 close_all_ble_and_exit
+
 
 
 }
@@ -1270,7 +1283,7 @@ proc de1_ble_handler { event data } {
 							#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
 	
 							# compensate for the fact that we measure water level a few mm higher than the water uptake point
-							set mm [expr {$arr2(Level) + 5}]
+							set mm [expr {$arr2(Level) + $::de1(water_level_mm_correction)}]
 							set ::de1(water_level) $mm
 							
 						} elseif {$cuuid == "0000A009-0000-1000-8000-00805F9B34FB"} {

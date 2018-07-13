@@ -62,10 +62,11 @@ array set ::de1 {
 	volume 0
 	wrote 0
 	cmdstack {}
+	water_level_mm_correction 5
 	scale_autostop_triggered 1
 	water_level_full_point 40
 	connect_time 0
-	water_level 35
+	water_level 20
 	firmware_bytes_uploaded 0
 	firmware_update_size 0
 	firmware_update_button_label "Firmware Update"
@@ -178,7 +179,8 @@ array set ::settings {
 	seconds_to_display_done_steam 120
 	seconds_to_display_done_flush 120
 	seconds_to_display_done_hotwater 120
-	waterlevel_blink_start_level 15
+	waterlevel_blink_start_offset 10
+	waterlevel_indicator_blink_rate 1000
 	waterlevel_indicator_on 1
 	waterlevel_indicator_blink 1
 	drink_weight 0

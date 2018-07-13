@@ -769,9 +769,18 @@ proc waterweight_label_text {} {
 	}
 
 	if {$::de1(skale_device_handle) == "0" || $::de1(skale_device_handle) == ""} {
-		return [translate "Disconnected"]
+		if {[ifexists ::blink_water_weight] != 1} {
+			if {$::currently_connecting_skale_handle == 0} {
+				set ::blink_water_weight 1
+				return {}
+			} else {
+				return "..."
+			}
+		} else {
+			set ::blink_water_weight 0
+			return [translate "Weight"]
+		}
 	}
-
 
 	return [translate "Weight"]
 }

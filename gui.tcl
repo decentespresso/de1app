@@ -1069,6 +1069,11 @@ proc page_display_change {page_to_hide page_to_show} {
 	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
 		msg "discarding intermediate sleep/off state msg"
 		return 
+	} elseif {$page_to_show == "saver"} {
+		if {[ifexists ::exit_app_on_sleep] == 1} {
+			borg brightness 0
+			close_all_ble_and_exit
+		}
 	}
 
 	# signal the page change with a sound
@@ -1678,21 +1683,26 @@ proc water_level_color_check {widget} {
 		set ::water_level_color_check_count 0
 	}
 
-	if {$::de1(water_level) > $::settings(waterlevel_blink_start_level)} {
+	set refill_point_corrected [expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}]
+	set start_blinking_level [expr {$::settings(waterlevel_blink_start_offset) + $refill_point_corrected}]
+	set blinkrate $::settings(waterlevel_indicator_blink_rate)
+
+	if {$::de1(water_level) > $start_blinking_level} {
 		# check the water rate infrequently if there is enough water and don't blink it
 		set color "#7ad2ff"
-		set blinkrate 5000
+		#set blinkrate 5000
 	} else {
 		set color [lindex $colors $::water_level_color_check_count]
+
 		if {$::de1(water_level) > 10} {
-			set color "#7ad2ff"
-			set blinkrate 2000
+			#set color "#7ad2ff"
+			#set blinkrate 2000
 		} elseif {$::de1(water_level) > 7} {
-			set blinkrate 1000
+			#set blinkrate 1000
 		} elseif {$::de1(water_level) >= 5} {
-			set blinkrate 500
+			#set blinkrate 500
 		} else {
-			set blinkrate 150
+			#set blinkrate 150
 		}
 	}
 
