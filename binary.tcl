@@ -1430,12 +1430,14 @@ proc update_de1_state {statechar} {
 				stop_timer_steam_pour
 			} elseif {$textstate == "Espresso" || [ifexists ::previous_textstate] == "Espresso"} {
 				stop_timer_espresso_pour
+				stop_espresso_timers
 			} elseif {$textstate == "HotWaterRinse" || [ifexists ::previous_textstate] == "HotWaterRinse"} {
 				stop_timer_flush_pour
 			} else {
 				msg "unknown timer stop"
 				zz12
 			}
+		} else {
 		}
 		
 		if {$current_de1_substate == 4} {
