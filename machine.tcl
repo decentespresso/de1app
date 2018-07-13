@@ -476,6 +476,7 @@ proc start_espresso {} {
 	set ::settings(history_saved) ""
 	set ::de1(timer) 0
 	set ::de1(volume) 0
+	set ::de1(final_water_weight) 0
 	set ::de1(preinfusion_volume) 0
 	set ::de1(pour_volume) 0
 	set ::de1(current_frame_number) 0

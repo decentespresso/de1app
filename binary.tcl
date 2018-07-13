@@ -1378,6 +1378,7 @@ proc update_de1_state {statechar} {
 	#msg "update_de1_state [array get msg]"
 
 	set textstate [ifexists ::de1_num_state($msg(state))]
+	puts "textstate: $textstate"
 	if {$msg(state) != $::de1(state)} {
 		msg "applying DE1 state change: $::de1(state) [array get msg] ($textstate)"
 		set ::de1(state) $msg(state)
@@ -1398,20 +1399,20 @@ proc update_de1_state {statechar} {
 					# tare the scale when the espresso starts and start the shot timer
 					#skale_tare
 					#skale_timer_off
-					if {$::timer_running == 0} {
+					if {$::timer_running == 0 && $textstate == "Espresso"} {
 						#start_timers
 						skale_tare
 						skale_timer_start
-						start_timers
+						start_espresso_timers
 						#set ::timer_running 1
 					}
 					
-				} elseif {$current_de1_substate != 5 || $current_de1_substate == 4} {
+				} elseif {($current_de1_substate != 5 || $current_de1_substate == 4) && $textstate == "Espresso"} {
 					# shot is ended, so turn timer off
 					if {$::timer_running == 1} {
 						#set ::timer_running 0
 						skale_timer_stop
-						stop_timers
+						stop_espresso_timers
 					}
 				}
 			#}
@@ -1423,13 +1424,29 @@ proc update_de1_state {statechar} {
 		if {$::previous_de1_substate == 4} {
 			stop_timer_preinfusion
 		} elseif {$::previous_de1_substate == 5} {
-			stop_timer_pour
+			if {$textstate == "HotWater" || [ifexists ::previous_textstate] == "HotWater"} {
+				stop_timer_water_pour
+			} elseif {$textstate == "Steam" || [ifexists ::previous_textstate] == "Steam"} {
+				stop_timer_steam_pour
+			} elseif {$textstate == "HotWaterRinse" || [ifexists ::previous_textstate] == "HotWaterRinse"} {
+				stop_timer_flush_pour
+			} else {
+				msg "unknown timer stop"
+			}
 		}
 		
 		if {$current_de1_substate == 4} {
 			start_timer_preinfusion
 		} elseif {$current_de1_substate == 5} {
-			start_timer_pour
+			if {$textstate == "HotWater"} {
+				start_timer_water_pour
+			} elseif {$textstate == "Steam"} {
+				start_timer_steam_pour
+			} elseif {$textstate == "HotWaterRinse"} {
+				start_timer_flush_pour
+			} else {
+				msg "unknown timer start"
+			}
 		}
 		
 		set ::previous_de1_substate $::de1(substate)
@@ -1466,7 +1483,7 @@ proc update_de1_state {statechar} {
 	#	update
 	#}
 
-	#set ::previous_textstate $textstate
+	set ::previous_textstate $textstate
 }
 
 set ble_spec 1.0

@@ -229,11 +229,24 @@ proc stop_timer_preinfusion {} {
 }
 
 proc start_timer_pour {} {
+	zz4
 	set ::timers(pour_start) [clock milliseconds]
 }
 
+proc start_timer_water_pour {} {
+
+	set ::timers(water_pour_stop) 0
+	set ::timers(water_pour_start) [clock milliseconds]
+}
+
 proc stop_timer_pour {} {
+	zz3
 	set ::timers(pour_stop) [clock milliseconds]
+
+}
+
+proc stop_timer_water_pour {} {
+	set ::timers(water_pour_stop) [clock milliseconds]
 
 }
 
@@ -248,7 +261,8 @@ proc stop_timers {} {
 
 proc start_timers {} {
 	#msg "stop_timers"
-	clear_timers
+	#clear_timers
+	zz5
 	set ::timer_running 1
 	set ::timers(start) [clock milliseconds]
 	#set ::timers(millistart) [clock milliseconds]
@@ -340,6 +354,18 @@ proc pour_timer {} {
 	}
 }
 
+proc water_pour_timer {} {
+	if {$::timers(water_pour_start) == 0} {
+		return 0
+	} elseif {$::timers(water_pour_stop) == 0} {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(water_pour_start))/1000}]
+	} else {
+		# stop occured, so show that.
+		return [expr {($::timers(water_pour_stop) - $::timers(water_pour_start))/1000}]
+	}
+}
+
 proc done_timer {} {
 	if {$::timers(stop) == 0} {
 		return 0
@@ -348,6 +374,16 @@ proc done_timer {} {
 		return [expr {([clock milliseconds] - $::timers(stop))/1000}]
 	}
 }
+
+proc water_done_timer {} {
+	if {$::timers(water_pour_stop) == 0} {
+		return 0
+	} else {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(water_pour_stop))/1000}]
+	}
+}
+
 
 proc obsolete_event_timer_calculate {state destination_state previous_states} {
 
@@ -388,11 +424,13 @@ proc obsolete_event_timer_calculate {state destination_state previous_states} {
 
 
 proc steam_timer {} {
+	zz1
 	return [pour_timer]
 	#return [event_timer_calculate "Steam" "pouring" {"stabilising" "final heating"} ]
 }
 
 proc water_timer {} {
+	zz2
 	return [pour_timer]
 	#return [event_timer_calculate "HotWater" "pouring" {"stabilising" "final heating"} ]
 }

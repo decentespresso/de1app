@@ -1403,7 +1403,10 @@ proc de1_ble_handler { event data } {
 
 							# (beta) stop shot-at-weight feature
 							if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion) || $::de1(substate) == $::de1_substate_types_reversed(ending)) } {
-								set ::de1(final_water_weight) $thisweight
+								
+								if {$::de1(scale_sensor_weight) > $::de1(final_water_weight)} {
+									set ::de1(final_water_weight) $thisweight
+								}
 
 								# john 5/11/18 no support at the moment for weight-ending shots in advanced shots (settings_2c)
 								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0 && $::settings(settings_profile_type) != "settings_2c"} {
@@ -1426,6 +1429,11 @@ proc de1_ble_handler { event data } {
 									 	after 7000 {after_shot_weight_hit_update_final_weight}
 									 	after 8000 {after_shot_weight_hit_update_final_weight}
 									}
+								}
+							} elseif {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed($::de1(substate) == $::de1_substate_types_reversed(heating)) || $::de1(substate) == $::de1_substate_types_reversed(final heating))} {
+								if {$::de1(scale_weight) > 10} {
+									# if a cup was added during the warmup stage, about to make an espresso, then tare automatically
+									skale_tare
 								}
 							}
 

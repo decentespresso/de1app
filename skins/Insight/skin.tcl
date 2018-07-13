@@ -686,13 +686,13 @@ add_de1_button "water_3" {say "" $::settings(sound_button_in); set_next_page off
 add_de1_text "water" 1870 1250 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 add_de1_text "water_3" 1870 1200 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 add_de1_text "water" 1870 1300 -justify right -anchor "nw" -text [translate "Pouring:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water" 2470 1300 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_timer][translate "s"]} 
+add_de1_variable "water" 2470 1300 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_pour_timer][translate "s"]} 
 add_de1_text "water_3" 1870 1250 -justify right -anchor "nw" -text [translate "Pouring:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water_3" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_timer][translate "s"]} 
+add_de1_variable "water_3" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_pour_timer][translate "s"]} 
 
 
 add_de1_variable "water_3" 1870 1300 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_hotwater)} {return [translate Done]} else { return ""}]} 
-add_de1_variable "water_3" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_hotwater)} {return "[done_timer][translate s]"} else { return ""}]} 
+add_de1_variable "water_3" 2470 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[done_timer] < $::settings(seconds_to_display_done_hotwater)} {return "[water_done_timer][translate s]"} else { return ""}]} 
 
 
 add_de1_text "water " 1870 250 -justify right -anchor "nw" -text [translate "Information"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
