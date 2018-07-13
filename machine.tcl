@@ -497,7 +497,7 @@ proc start_espresso {} {
 	de1_send_state "make espresso" $::de1_state(Espresso)
 
 	clear_espresso_chart
-	clear_timers
+	clear_espresso_timers
 
 	incr ::settings(espresso_count)
 	save_settings

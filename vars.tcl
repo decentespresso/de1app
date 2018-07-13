@@ -219,18 +219,17 @@ proc format_alarm_time { in } {
 	}
 }
 
-proc start_timer_preinfusion {} {
-	set ::timers(preinfusion_start) [clock milliseconds]
+proc start_timer_espresso_preinfusion {} {
+	set ::timers(espresso_preinfusion_start) [clock milliseconds]
 }
 
-proc stop_timer_preinfusion {} {
-	set ::timers(preinfusion_stop) [clock milliseconds]
+proc stop_timer_espresso_preinfusion {} {
+	set ::timers(espresso_preinfusion_stop) [clock milliseconds]
 
 }
 
-proc start_timer_pour {} {
-	zz4
-	set ::timers(pour_start) [clock milliseconds]
+proc start_timer_espresso_pour {} {
+	set ::timers(espresso_pour_start) [clock milliseconds]
 }
 
 proc start_timer_water_pour {} {
@@ -239,118 +238,135 @@ proc start_timer_water_pour {} {
 	set ::timers(water_pour_start) [clock milliseconds]
 }
 
-proc stop_timer_pour {} {
-	zz3
-	set ::timers(pour_stop) [clock milliseconds]
+proc start_timer_steam_pour {} {
+
+	set ::timers(steam_pour_stop) 0
+	set ::timers(steam_pour_start) [clock milliseconds]
+}
+proc start_timer_flush_pour {} {
+
+	set ::timers(flush_pour_stop) 0
+	set ::timers(flush_pour_start) [clock milliseconds]
+}
+
+proc stop_timer_espresso_pour {} {
+	set ::timers(espresso_pour_stop) [clock milliseconds]
 
 }
 
 proc stop_timer_water_pour {} {
 	set ::timers(water_pour_stop) [clock milliseconds]
-
 }
 
-proc stop_timers {} {
+proc stop_timer_steam_pour {} {
+	set ::timers(steam_pour_stop) [clock milliseconds]
+}
+
+proc stop_timer_flush_pour {} {
+	set ::timers(flush_pour_stop) [clock milliseconds]
+}
+
+proc stop_espresso_timers {} {
 	#msg "stop_timers"
 	set ::timer_running 0
-	set ::timers(stop) [clock milliseconds]
+	set ::timers(espresso_stop) [clock milliseconds]
 	#stop_timer_preinfusion
 	#stop_timer_pour
 	#set ::substate_timers(stop) [clock milliseconds]
 }
 
-proc start_timers {} {
+proc start_espresso_timers {} {
 	#msg "stop_timers"
 	#clear_timers
-	zz5
+	#zz5
 	set ::timer_running 1
-	set ::timers(start) [clock milliseconds]
+	set ::timers(espresso_start) [clock milliseconds]
 	#set ::timers(millistart) [clock milliseconds]
 	#set ::substate_timers(millistart) [clock milliseconds]
 }
 
-proc clear_timers {} {
+proc clear_espresso_timers {} {
 	#msg "clear_timers"
 	#global start_timer
 	#global start_millitimer
 	#set ::start_timer [clock seconds]
 	#set ::start_millitimer [clock milliseconds]
 	#set now [clock seconds]
-
+#zz1
 	unset -nocomplain ::timers
-	set ::timers(start) 0
+	set ::timers(espresso_start) 0
 	#set ::timers(millistart) 0
-	set ::timers(stop) 0
+	set ::timers(espresso_stop) 0
 
 	unset -nocomplain ::substate_timers
-	set ::substate_timers(start) 0
-	set ::substate_timers(stop) 0
+	set ::substate_timers(espresso_start) 0
+	set ::substate_timers(espresso_stop) 0
 
-	set ::timers(preinfusion_start) 0
-	set ::timers(preinfusion_stop) 0
+	set ::timers(espresso_preinfusion_start) 0
+	set ::timers(espresso_preinfusion_stop) 0
 
-	set ::timers(pour_start) 0
-	set ::timers(pour_stop) 0
+	set ::timers(espresso_pour_start) 0
+	set ::timers(espresso_pour_stop) 0
 
 	set ::timer_running 0
 	#puts "clearing timers"
 }
 
-clear_timers
+clear_espresso_timers
 #stop_timers
 
 
 # amount of time that we've been on this page
 #set ::timer [clock seconds]
-proc timer {} {
+proc espresso_timer {} {
 	#global start_timer
 	#if {$::timer_running == 1} {
 	#	set ::timer [clock seconds]
 	#}	
 	#return $timer
-	return [expr {([clock milliseconds] - $::timers(start) )/1000}]
+	return [expr {([clock milliseconds] - $::timers(espresso_start) )/1000}]
 }
 
-proc millitimer {} {
-	return [expr {([clock milliseconds] - $::timers(start))}]
+proc espresso_millitimer {} {
+	return [expr {([clock milliseconds] - $::timers(espresso_start))}]
 	#global start_millitimer
 	#return [expr {[clock milliseconds] - $start_millitimer}]
 }
 
-proc elapsed_timer {} {
-	if {$::timers(start) == 0} {
+proc espresso_elapsed_timer {} {
+	if {$::timers(espresso_start) == 0} {
 		return 0
-	} elseif {$::timers(stop) == 0} {
+	} elseif {$::timers(espresso_stop) == 0} {
 		# no stop, so show current elapsed time
-		return [expr {([clock milliseconds] - $::timers(start))/1000}]
+		return [expr {([clock milliseconds] - $::timers(espresso_start))/1000}]
 	} else {
 		# stop occured, so show that.
-		return [expr {($::timers(stop) - $::timers(start))/1000}]
+		return [expr {($::timers(espresso_stop) - $::timers(espresso_start))/1000}]
 	}
 }
 
-proc preinfusion_timer {} {
-	if {$::timers(preinfusion_start) == 0} {
+proc espresso_preinfusion_timer {} {
+	if {$::timers(espresso_preinfusion_start) == 0} {
 		return 0
-	} elseif {$::timers(preinfusion_stop) == 0} {
+	} elseif {$::timers(espresso_preinfusion_stop) == 0} {
 		# no stop, so show current elapsed time
-		return [expr {([clock milliseconds] - $::timers(preinfusion_start))/1000}]
+		return [expr {([clock milliseconds] - $::timers(espresso_preinfusion_start))/1000}]
 	} else {
 		# stop occured, so show that.
-		return [expr {($::timers(preinfusion_stop) - $::timers(preinfusion_start))/1000}]
+		return [expr {($::timers(espresso_preinfusion_stop) - $::timers(espresso_preinfusion_start))/1000}]
 	}
 }
 
 
-proc pour_timer {} {
-	if {$::timers(pour_start) == 0} {
+proc espresso_pour_timer {} {
+	if {$::timers(espresso_pour_start) == 0} {
 		return 0
-	} elseif {$::timers(pour_stop) == 0} {
+	} elseif {$::timers(espresso_pour_stop) == 0} {
 		# no stop, so show current elapsed time
-		return [expr {([clock milliseconds] - $::timers(pour_start))/1000}]
+		return [expr {([clock milliseconds] - $::timers(espresso_pour_start))/1000}]
 	} else {
 		# stop occured, so show that.
-		return [expr {($::timers(pour_stop) - $::timers(pour_start))/1000}]
+		return [expr {($::timers(espresso_pour_stop) - $::timers(espresso_pour_start))/1000}]
 	}
 }
 
@@ -365,7 +381,29 @@ proc water_pour_timer {} {
 		return [expr {($::timers(water_pour_stop) - $::timers(water_pour_start))/1000}]
 	}
 }
+proc steam_pour_timer {} {
+	if {$::timers(steam_pour_start) == 0} {
+		return 0
+	} elseif {$::timers(steam_pour_stop) == 0} {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(steam_pour_start))/1000}]
+	} else {
+		# stop occured, so show that.
+		return [expr {($::timers(steam_pour_stop) - $::timers(steam_pour_start))/1000}]
+	}
+}
 
+proc flush_pour_timer {} {
+	if {$::timers(flush_pour_start) == 0} {
+		return 0
+	} elseif {$::timers(flush_pour_stop) == 0} {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(flush_pour_start))/1000}]
+	} else {
+		# stop occured, so show that.
+		return [expr {($::timers(flush_pour_stop) - $::timers(flush_pour_start))/1000}]
+	}
+}
 proc done_timer {} {
 	if {$::timers(stop) == 0} {
 		return 0
@@ -375,12 +413,38 @@ proc done_timer {} {
 	}
 }
 
+proc espresso_done_timer {} {
+	if {$::timers(espresso_stop) == 0} {
+		return 0
+	} else {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(espresso_stop))/1000}]
+	}
+}
+
 proc water_done_timer {} {
 	if {$::timers(water_pour_stop) == 0} {
 		return 0
 	} else {
 		# no stop, so show current elapsed time
 		return [expr {([clock milliseconds] - $::timers(water_pour_stop))/1000}]
+	}
+}
+proc steam_done_timer {} {
+	if {$::timers(steam_pour_stop) == 0} {
+		return 0
+	} else {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(steam_pour_stop))/1000}]
+	}
+}
+
+proc flush_done_timer {} {
+	if {$::timers(flush_pour_stop) == 0} {
+		return 0
+	} else {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(flush_pour_stop))/1000}]
 	}
 }
 

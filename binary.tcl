@@ -1235,7 +1235,7 @@ proc convert_4_char_to_U32P0 {char0 char1 char2 char3} {
 set previous_de1_substate 0
 set state_change_chart_value 10000000
 set previous_espresso_flow 0
-set previous_espresso_flow_time [millitimer]
+set previous_espresso_flow_time [espresso_millitimer]
 
 proc append_live_data_to_espresso_chart {} {
 
@@ -1263,7 +1263,7 @@ proc append_live_data_to_espresso_chart {} {
 		  #}
 		#}
 
-		set millitime [millitimer]
+		set millitime [espresso_millitimer]
 
 		if {$::de1(substate) == 4 || $::de1(substate) == 5} {
 
@@ -1422,21 +1422,24 @@ proc update_de1_state {statechar} {
 	  	}
 
 		if {$::previous_de1_substate == 4} {
-			stop_timer_preinfusion
+			stop_timer_espresso_preinfusion
 		} elseif {$::previous_de1_substate == 5} {
 			if {$textstate == "HotWater" || [ifexists ::previous_textstate] == "HotWater"} {
 				stop_timer_water_pour
 			} elseif {$textstate == "Steam" || [ifexists ::previous_textstate] == "Steam"} {
 				stop_timer_steam_pour
+			} elseif {$textstate == "Espresso" || [ifexists ::previous_textstate] == "Espresso"} {
+				stop_timer_espresso_pour
 			} elseif {$textstate == "HotWaterRinse" || [ifexists ::previous_textstate] == "HotWaterRinse"} {
 				stop_timer_flush_pour
 			} else {
 				msg "unknown timer stop"
+				zz12
 			}
 		}
 		
 		if {$current_de1_substate == 4} {
-			start_timer_preinfusion
+			start_timer_espresso_preinfusion
 		} elseif {$current_de1_substate == 5} {
 			if {$textstate == "HotWater"} {
 				start_timer_water_pour
@@ -1444,8 +1447,11 @@ proc update_de1_state {statechar} {
 				start_timer_steam_pour
 			} elseif {$textstate == "HotWaterRinse"} {
 				start_timer_flush_pour
+			} elseif {$textstate == "Espresso"} {
+				start_timer_espresso_pour
 			} else {
 				msg "unknown timer start"
+				zz13
 			}
 		}
 		
