@@ -46,6 +46,7 @@ proc photoscale {img sx {sy ""} } {
 
 proc add_de1_page {names filename {skin ""} } {
 
+	#puts "names: '$names'"
 	if {$skin == ""} {
 		set skin $::settings(skin)
 	}
@@ -74,6 +75,7 @@ proc add_de1_page {names filename {skin ""} } {
 	}
 
 	foreach name $names {
+		#puts "$filename $name"
 		.can create image {0 0} -anchor nw -image $names -tag [list pages $name] -state hidden 
 	}
 }	
