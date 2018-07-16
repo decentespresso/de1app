@@ -1269,7 +1269,10 @@ proc append_live_data_to_espresso_chart {} {
 
 			set mtime [expr {$millitime/1000.0}]
 			set last_elapsed_time_index [expr {[espresso_elapsed length] - 1}]
-			set last_elapsed_time [espresso_elapsed range $last_elapsed_time_index $last_elapsed_time_index]
+			set last_elapsed_time 0
+			if {$last_elapsed_time_index >= 0} {
+				set last_elapsed_time [espresso_elapsed range $last_elapsed_time_index $last_elapsed_time_index]
+			}
 			#puts "last_elapsed_time: $mtime / $last_elapsed_time"
 
 			if {$mtime > $last_elapsed_time} {
@@ -1388,7 +1391,7 @@ proc update_de1_state {statechar} {
 	#msg "update_de1_state [array get msg]"
 
 	set textstate [ifexists ::de1_num_state($msg(state))]
-	puts "textstate: $textstate"
+	#puts "textstate: $textstate"
 	if {$msg(state) != $::de1(state)} {
 		msg "applying DE1 state change: $::de1(state) [array get msg] ($textstate)"
 		set ::de1(state) $msg(state)

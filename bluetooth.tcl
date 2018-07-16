@@ -1425,7 +1425,6 @@ proc de1_ble_handler { event data } {
 										 	set ::de1(scale_autostop_triggered) 1
 
 										 	# let a few seconds elapse after the shot stop command was given and keep updating the final shot weight number
-										 	set t 0
 										 	for {set t 0} {$t < [expr {1000 * $::settings(seconds_after_espresso_stop_to_continue_weighing)}]} { set t [expr {$t + 1000}]} {
 										 		after $t after_shot_weight_hit_update_final_weight
 										 	}

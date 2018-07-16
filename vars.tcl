@@ -103,7 +103,10 @@ proc god_shot_reference_reset {} {
 	god_espresso_flow_2x length 0
 	god_espresso_flow_weight_2x length 0
 
-	espresso_elapsed append $::settings(god_espresso_elapsed)
+	if {[info exists ::settings(god_espresso_elapsed)] == 1} {
+		espresso_elapsed length 0
+		espresso_elapsed append $::settings(god_espresso_elapsed)
+	}
 
 	god_espresso_pressure append $::settings(god_espresso_pressure)
 	god_espresso_temperature_basket append  $::settings(god_espresso_temperature_basket)
