@@ -1414,22 +1414,22 @@ proc de1_ble_handler { event data } {
 								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0 && $::settings(settings_profile_type) != "settings_2c"} {
 
 									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) * ($::settings(shot_weight_percentage_stop)/100.0)}]]} {
-										msg "Weight based Espresso stop was triggered at ${thisweight}g > $::settings(final_desired_shot_weight)g "
-									 	start_idle
-									 	say [translate {Stop}] $::settings(sound_button_in)
+										if {[espresso_timer] < 5} {
+											skale_tare
+										} else {
+											msg "Weight based Espresso stop was triggered at ${thisweight}g > $::settings(final_desired_shot_weight)g "
+										 	start_idle
+										 	say [translate {Stop}] $::settings(sound_button_in)
 
-									 	# immediately set the DE1 state as if it were idle so that we don't repeatedly ask the DE1 to stop as we still get weight increases. There might be a slight delay between asking the DE1 to stop and it stopping.
-									 	set ::de1(scale_autostop_triggered) 1
+										 	# immediately set the DE1 state as if it were idle so that we don't repeatedly ask the DE1 to stop as we still get weight increases. There might be a slight delay between asking the DE1 to stop and it stopping.
+										 	set ::de1(scale_autostop_triggered) 1
 
-									 	# let a few seconds elapse after the shot stop command was given and keep updating the final shot weight number
-									 	after 1000 {after_shot_weight_hit_update_final_weight}
-									 	after 2000 {after_shot_weight_hit_update_final_weight}
-									 	after 3000 {after_shot_weight_hit_update_final_weight}
-									 	after 4000 {after_shot_weight_hit_update_final_weight}
-									 	after 5000 {after_shot_weight_hit_update_final_weight}
-									 	after 6000 {after_shot_weight_hit_update_final_weight}
-									 	after 7000 {after_shot_weight_hit_update_final_weight}
-									 	after 8000 {after_shot_weight_hit_update_final_weight}
+										 	# let a few seconds elapse after the shot stop command was given and keep updating the final shot weight number
+										 	set t 0
+										 	foreach {set t 0} {$t < [expr {1000 * $::settings(seconds_after_espresso_stop_to_continue_weighing)}]} { set t [expr {$t + 1000}]} {
+										 		after $t after_shot_weight_hit_update_final_weight
+										 	}
+										 }
 									}
 								}
 							} elseif {$::de1_num_state($::de1(state)) == "Espresso" && ( $::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating) )} {
