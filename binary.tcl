@@ -1267,7 +1267,17 @@ proc append_live_data_to_espresso_chart {} {
 
 		if {$::de1(substate) == 4 || $::de1(substate) == 5} {
 
-			espresso_elapsed append [expr {$millitime/1000.0}]
+			set mtime [expr {$millitime/1000.0}]
+			set last_elapsed_time_index [expr {[espresso_elapsed length] - 1}]
+			set last_elapsed_time [espresso_elapsed range $last_elapsed_time_index $last_elapsed_time_index]
+			#puts "last_elapsed_time: $mtime / $last_elapsed_time"
+
+			if {$mtime > $last_elapsed_time} {
+				# this is for handling cases where a god shot has already loaded a time axis
+				espresso_elapsed append $mtime
+			}
+
+
 			espresso_weight append [round_to_two_digits $::de1(scale_weight)]
 			espresso_pressure append [round_to_two_digits $::de1(pressure)]
 			espresso_flow append [round_to_two_digits $::de1(flow)]
