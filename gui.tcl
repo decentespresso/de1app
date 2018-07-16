@@ -1059,6 +1059,7 @@ proc page_show {page_to_show} {
 }
 
 proc page_display_change {page_to_hide page_to_show} {
+	msg "page_display_change $page_to_show"
 
 	#if {$page_to_hide == ""} {
 	#}

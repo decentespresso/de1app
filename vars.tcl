@@ -2170,7 +2170,7 @@ proc profile_has_changed_set args {
 	# if one the scroll bars has been touched by a human (not by the page display code) then mark the profile as having been changed
 	if {[lsearch -exact [stackprocs] "page_show"] == -1} {
 		set ::settings(profile_has_changed) 1
-		puts "profile_has_changed_set:\n[stacktrace]"
+		#puts "profile_has_changed_set:\n[stacktrace]"
 	}
 
 	#profile_has_changed_set_colors
