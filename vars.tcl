@@ -2276,7 +2276,7 @@ proc save_espresso_rating_to_history {} {
 
 proc save_this_espresso_to_history {} {
 
-	if {[ifexists ::settings(history_saved)] != 1} {
+	if {[ifexists ::settings(history_saved)] != 1 && [espresso_elapsed length] > 0} {
 
 		set name [clock format [clock seconds]]
 		set clock [clock seconds]

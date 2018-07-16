@@ -1169,16 +1169,31 @@ proc update_de1_shotvalue {packed} {
 			} else {
 				set framedesc [translate "3: decline"]
 			}
-		} elseif {$::settings(settings_profile_type) == "settings_2b"} {
+		} elseif {$::settings(settings_profile_type) == "settings_2c"} {
 			array set thisadvstep [lindex $::settings(advanced_shot) $::de1(current_frame_number)]
-			set framedesc "$::de1(current_frame_number). [ifexists thisadvstep(name)]"
+			set framedesc "[expr {1 + $::de1(current_frame_number)}]: [ifexists thisadvstep(name)]"
 		} else {
-			set framedesc ""
+			set framedesc "-"
 		}
 
-		set ::settings(current_frame_description) $framedesc
+		if {$::de1(substate) == $::de1_substate_types_reversed(preinfusion) || $::de1(substate) == $::de1_substate_types_reversed(pouring)} {
+			set ::settings(current_frame_description) $framedesc
+		} else {
+			#set ::settings(current_frame_description) "$::de1(state) $::de1(substate) $::de1(current_frame_number)"
+			set ::settings(current_frame_description) ""
+		}
 		#puts "framedesc $framedesc"
 	}
+
+	if {$::de1(substate) == $::de1_substate_types_reversed(ending) } {
+		set ::settings(current_frame_description) [translate "ending"]
+	} elseif {$::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating)} {
+		set ::settings(current_frame_description) [translate "heating"]
+	}
+
+	#set ::settings(current_frame_description) "$::de1(state) $::de1(substate) [ifexists ShotSample(FrameNumber)]"
+	
+
 	set ::previous_FrameNumber [ifexists ShotSample(FrameNumber)]
 
   	if {[use_old_ble_spec] == 1} {

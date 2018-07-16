@@ -60,8 +60,6 @@ add_de1_text "tankempty" 1280 750 -text [translate "Out of water"] -font Helv_20
 add_de1_text "cleaning" 1280 80 -text [translate "Cleaning"] -font Helv_20_bold -fill "#EEEEEE" -justify "center" -anchor "center" -width 900
 add_de1_text "descaling" 1280 80 -text [translate "Descaling"] -font Helv_20_bold -fill "#CCCCCC" -justify "center" -anchor "center" -width 900
 
-
-
 # the font used in the big round green buttons needs to fit appropriately inside the circle, 
 # and thus is dependent on the translation of the words inside the circle
 set green_button_font "Helv_19_bold"
@@ -560,7 +558,7 @@ if {$::settings(insight_skin_show_embedded_profile) == 1} {
 	
 	
 	# current frame description, not yet implemented
-	# add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (18.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {$::settings(current_frame_description)} 
+	 add_de1_variable "espresso espresso_zoomed" $column3_pos [expr {$pos_top + (18.5 * $spacer)}] -justify left -anchor "ne" -text "" -font Helv_7 -fill "#8297be" -width [rescale_x_skin 520] -textvariable {$::settings(current_frame_description)} 
 
 
 	#add_de1_variable "espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (9 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7_bold -fill $dark -width [rescale_x_skin 520] -textvariable {[profile_type_text]} 

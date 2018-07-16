@@ -850,6 +850,10 @@ proc de1_connected_state { {hide_delay 0} } {
 		#borg spinner off
 
 		if {$::de1(substate) != 0} {
+			if {$::de1(substate) == 4 || $::de1(substate) == 5} {
+				# currently making espresso.
+				return ""
+			}
 			return [translate Wait]
 		}
 
