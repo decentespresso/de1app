@@ -527,6 +527,8 @@ proc app_exit {} {
 		after 5000 close_all_ble_and_exit
 	}
 
+	after 10000 exit
+
 
 
 }
@@ -1430,7 +1432,7 @@ proc de1_ble_handler { event data } {
 									 	after 8000 {after_shot_weight_hit_update_final_weight}
 									}
 								}
-							} elseif {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed($::de1(substate) == $::de1_substate_types_reversed(heating)) || $::de1(substate) == $::de1_substate_types_reversed(final heating))} {
+							} elseif {$::de1_num_state($::de1(state)) == "Espresso" && ( $::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating) )} {
 								if {$::de1(scale_weight) > 10} {
 									# if a cup was added during the warmup stage, about to make an espresso, then tare automatically
 									skale_tare

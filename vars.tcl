@@ -359,6 +359,10 @@ proc espresso_preinfusion_timer {} {
 
 
 proc espresso_pour_timer {} {
+	if {[info exists ::timers(espresso_pour_start)] != 1} {
+		return 0
+	}
+
 	if {$::timers(espresso_pour_start) == 0} {
 		return 0
 	} elseif {$::timers(espresso_pour_stop) == 0} {
@@ -371,6 +375,10 @@ proc espresso_pour_timer {} {
 }
 
 proc water_pour_timer {} {
+	if {[info exists ::timers(water_pour_start)] != 1} {
+		return 0
+	}
+
 	if {$::timers(water_pour_start) == 0} {
 		return 0
 	} elseif {$::timers(water_pour_stop) == 0} {
@@ -382,6 +390,10 @@ proc water_pour_timer {} {
 	}
 }
 proc steam_pour_timer {} {
+	if {[info exists ::timers(steam_pour_start)] != 1} {
+		return 0
+	}
+
 	if {$::timers(steam_pour_start) == 0} {
 		return 0
 	} elseif {$::timers(steam_pour_stop) == 0} {
@@ -394,6 +406,10 @@ proc steam_pour_timer {} {
 }
 
 proc flush_pour_timer {} {
+	if {[info exists ::timers(flush_pour_start)] != 1} {
+		return 0
+	}
+
 	if {$::timers(flush_pour_start) == 0} {
 		return 0
 	} elseif {$::timers(flush_pour_stop) == 0} {
