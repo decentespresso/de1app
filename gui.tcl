@@ -46,7 +46,6 @@ proc photoscale {img sx {sy ""} } {
 
 proc add_de1_page {names filename {skin ""} } {
 
-	#puts "names: '$names'"
 	if {$skin == ""} {
 		set skin $::settings(skin)
 	}
@@ -71,12 +70,16 @@ proc add_de1_page {names filename {skin ""} } {
 		$names write $pngfilename  -format {jpeg -quality 90}
 
 	} else {
-		image create photo $names -file $pngfilename
+		#image create photo $names -file $pngfilename
+		#image create photo $names 
+		#$names -file $pngfilename
 	}
 
+	#.can create image {0 0} -anchor nw -image $names -tag [list pages $name] -state hidden 
 	foreach name $names {
-		#puts "$filename $name"
-		.can create image {0 0} -anchor nw -image $names -tag [list pages $name] -state hidden 
+		.can create image {0 0} -anchor nw  -tag [list pages $name] -state hidden 
+		set ::delayed_image_load($name) $pngfilename
+		#.can itemconfigure $names -image $names 
 	}
 }	
 
@@ -1112,6 +1115,14 @@ proc page_display_change {page_to_hide page_to_show} {
 	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	.can itemconfigure $page_to_hide -state hidden
 	#.can itemconfigure [list "pages" "splash" "saver"] -state hidden
+
+	if {[info exists ::delayed_image_load($page_to_show)] == 1} {
+		set pngfilename	$::delayed_image_load($page_to_show)
+		unset -nocomplain ::delayed_image_load($page_to_show)
+		image create photo $page_to_show -file $pngfilename
+		.can itemconfigure $page_to_show -image $page_to_show
+	}
+
 	.can itemconfigure $page_to_show -state normal
 
 	set these_labels [ifexists ::existing_labels($page_to_show)]
