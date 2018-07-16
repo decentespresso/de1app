@@ -934,7 +934,7 @@ proc ble_connect_to_skale {} {
 	    msg "Connecting to Skale on $::settings(skale_bluetooth_address)"
 		set retcode 0
 	} err] != 0} {
-		::currently_connecting_skale_handle 0
+		set ::currently_connecting_skale_handle 0
 		set retcode 1
 		msg "Failed to start to BLE connect to Skale because: '$err'"
 	}
