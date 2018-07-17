@@ -435,6 +435,11 @@ proc done_timer {} {
 }
 
 proc espresso_done_timer {} {
+
+	if {[info exists ::timers(espresso_stop)] != 1} {
+		return 0
+	}
+
 	if {$::timers(espresso_stop) == 0} {
 		return 0
 	} else {
@@ -444,6 +449,10 @@ proc espresso_done_timer {} {
 }
 
 proc water_done_timer {} {
+	if {[info exists ::timers(water_pour_stop)] != 1} {
+		return 0
+	}
+
 	if {$::timers(water_pour_stop) == 0} {
 		return 0
 	} else {
@@ -452,6 +461,10 @@ proc water_done_timer {} {
 	}
 }
 proc steam_done_timer {} {
+	if {[info exists ::timers(steam_pour_stop)] != 1} {
+		return 0
+	}
+
 	if {$::timers(steam_pour_stop) == 0} {
 		return 0
 	} else {
@@ -461,6 +474,10 @@ proc steam_done_timer {} {
 }
 
 proc flush_done_timer {} {
+	if {[info exists ::timers(flush_pour_stop)] != 1} {
+		return 0
+	}
+
 	if {$::timers(flush_pour_stop) == 0} {
 		return 0
 	} else {
