@@ -68,6 +68,7 @@ proc add_de1_page {names filename {skin ""} } {
 		photoscale $names $rescale_images_y_ratio $rescale_images_x_ratio
 		borg spinner off
 		$names write $pngfilename  -format {jpeg -quality 90}
+		image delete $names
 
 	} else {
 		#image create photo $names -file $pngfilename
