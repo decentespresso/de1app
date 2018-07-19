@@ -1671,3 +1671,5 @@ proc scanning_restart {} {
 	set ::scanning 1
 	ble start $::ble_scanner
 }
+
+
