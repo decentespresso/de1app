@@ -603,7 +603,7 @@ proc make_de1_dir {} {
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
 
     set srcdir "/d/admin/code/de1beta"
-    set destdirs [list "/d/download/sync/de1" "/d/download/sync/de1plus" "/d/download/sync/de1plus" "/d/download/sync/de1plusbig"]
+    set destdirs [list "/d/download/sync/de1" "/d/download/sync/de1plus" "/d/download/sync/de1plusbig"]
 
     # load the local manifest into memory 
     foreach {filename filesize filemtime filesha} [string trim [read_file "[homedir]/complete_manifest.txt"]] {
