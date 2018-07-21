@@ -33,7 +33,7 @@ if {$argv != ""} {
 
 	cd "[homedir]/desktop_app/osx"
 	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1plus_osx.zip DE1+.app 
-	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1_osx.zip DE1.app
+	#exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1_osx.zip DE1.app
 
 	cd "[homedir]/desktop_app/win32"
 	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/win32/de1plus_win.zip ./
@@ -43,7 +43,7 @@ if {$argv != ""} {
 
 	cd "/d/download/sync"
 	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1plus_source.zip de1plus
-	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1_source.zip de1
+	#exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1_source.zip de1
 } else {
 	#skin_convert_all
 	make_de1_dir
