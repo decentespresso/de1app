@@ -881,7 +881,8 @@ proc de1_connected_state { {hide_delay 0} } {
 				if {$::scanning == 1} {
 					return "[translate Searching]"
 				} elseif {$::scanning == -1} {
-					return "[translate Starting]"
+					return [translate "Disconnected"]
+					#return "[translate Starting]"
 				}
 				return "[translate Connecting]"
 			} else {
@@ -896,7 +897,7 @@ proc de1_connected_state { {hide_delay 0} } {
 			if {$since_last_ping > 59} {
 				#ble_find_de1s
 				#ble_connect_to_de1
-				return [subst {[translate "Disconnected"]}]
+				return [translate "Disconnected"]
 			}
 			return [subst {[translate "Disconnected"] : $since_last_ping}]
 		}
