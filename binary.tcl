@@ -1463,7 +1463,7 @@ proc update_de1_state {statechar} {
 				stop_timer_flush_pour
 			} else {
 				msg "unknown timer stop"
-				zz12
+				#zz12
 			}
 		} else {
 		}
@@ -1481,7 +1481,7 @@ proc update_de1_state {statechar} {
 				start_timer_espresso_pour
 			} else {
 				msg "unknown timer start"
-				zz13
+				#zz13
 			}
 		}
 		

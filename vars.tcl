@@ -526,13 +526,13 @@ proc obsolete_event_timer_calculate {state destination_state previous_states} {
 
 
 proc steam_timer {} {
-	zz1
+zz1
 	return [pour_timer]
 	#return [event_timer_calculate "Steam" "pouring" {"stabilising" "final heating"} ]
 }
 
 proc water_timer {} {
-	zz2
+zz2
 	return [pour_timer]
 	#return [event_timer_calculate "HotWater" "pouring" {"stabilising" "final heating"} ]
 }
