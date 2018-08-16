@@ -283,10 +283,6 @@ proc calibrate_spec {} {
 	return $spec
 }
 
-
-
-
-
 proc version_spec {} {
 	set spec {
 		BLE_APIVersion {char {} {} {unsigned} {}}

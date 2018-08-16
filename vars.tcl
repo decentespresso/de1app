@@ -2558,18 +2558,88 @@ proc de1_version_string {} {
 	#return "HW=[ifexists v(BLEFWMajor)].[ifexists v(BLEFWMinor)].[ifexists v(P0BLECommits)].[ifexists v(Dirty)] API=[ifexists v(APIVersion)] SHA=[ifexists v(BLESha)]"
 }
 
+# spreadsheet to calculate this calculated from CAD, from Mark Kelly, and is in /d/admin/src/
 proc water_tank_level_to_milliliters {mm} {
 
-	set ml 0
-	set exp  1.45
-	if {$mm < 18} {
-		set exp 1.35
-	} elseif {$mm < 48} {
-		set exp 1.4
-	}
+	set mm_to_ml [list \
+		0 \
+		16	\
+		43	\
+		70	\
+		97	\
+		124	\
+		151	\
+		179	\
+		206	\
+		233	\
+		261	\
+		288	\
+		316	\
+		343	\
+		371	\
+		398	\
+		426	\
+		453	\
+		481	\
+		509	\
+		537	\
+		564	\
+		592	\
+		620	\
+		648	\
+		676	\
+		704	\
+		732	\
+		760	\
+		788	\
+		816	\
+		844	\
+		872	\
+		900	\
+		929	\
+		957	\
+		985	\
+		1013	\
+		1042	\
+		1070	\
+		1104	\
+		1138	\
+		1172	\
+		1207	\
+		1242	\
+		1277	\
+		1312	\
+		1347	\
+		1382	\
+		1417	\
+		1453	\
+		1488	\
+		1523	\
+		1559	\
+		1594	\
+		1630	\
+		1665	\
+		1701	\
+		1736	\
+		1772	\
+		1808	\
+		1843	\
+		1879	\
+		1915	\
+		1951	\
+		1986	\
+		2022	\
+		2058	\
+	]
+
+	set index [expr {int($mm)}]
+	set mm 2058
 	catch {
-		set ml [expr {((( $mm * 23) + ([::tcl::mathfunc::pow $mm $exp])))}]
+		set mm [lindex $mm_to_ml $index ]
 	}
-	set ml [round_to_tens $ml]
-	return $ml
+	if {$mm == ""} {
+		set mm 2058
+	}
+	return $mm
+
 }
