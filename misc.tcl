@@ -576,6 +576,8 @@ proc make_de1_dir {} {
         saver/2560x1600/steampunk_latte.jpg *
         saver/2560x1600/three_women.jpg *     
 
+        profiles/Gentle\ and\ sweet.tcl *
+        profiles/Blooming\ espresso.tcl *
         profiles/Classic\ Italian\ espresso.tcl *
         profiles/Flow\ profile\ for\ milky\ drinks.tcl 1
         profiles/Flow\ profile\ for\ straight\ espresso.tcl 1
