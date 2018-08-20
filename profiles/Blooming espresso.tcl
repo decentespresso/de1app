@@ -19,6 +19,6 @@ profile_notes {This technique causes a furor when Rao first published it.  His e
 water_temperature 80
 final_desired_shot_weight 32
 preinfusion_guarantee 1
-profile_title {Rao's Blooming Espresso}
+profile_title {Blooming Espresso}
 profile_language en
 

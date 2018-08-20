@@ -15,7 +15,7 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes {This is a very easy espresso to successfully make, and is suggested if you are having difficulty making good drinks.  The pressure rises only to 6 bar and then slowly decends to 4 bar.  Preinfusion is used to prepare the puck.  This preset is similar to a 6 bar lever espresso shot}
+profile_notes {This is a very easy espresso to successfully make, and is suggested if you are having difficulty making good drinks.  The pressure rises only to 6 bar and then slowly decends to 4 bar.  Preinfusion is used to prepare the puck.  This preset is similar to a 6 bar lever espresso shot.}
 water_temperature 80
 final_desired_shot_weight 32
 preinfusion_guarantee 1
