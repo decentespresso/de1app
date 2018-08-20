@@ -15,7 +15,7 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes {This technique causes a furor when Rao first published it.  His extraction of 24% is 2% higher than what is usually attainable with only the very best and most expensive grinders, yet Rao did it with an inexpensive home grinder.  This technique is especially appropriate for lightly roasted, complex and expensive coffee beans.}
+profile_notes {This technique causes a furor when Rao first published it.  His extraction of 24% is 2% higher than what is usually attainable with only the very best grinders, yet Rao did it with an inexpensive home grinder.  This technique is especially appropriate for lightly roasted, complex and expensive coffee beans.}
 water_temperature 80
 final_desired_shot_weight 32
 preinfusion_guarantee 1
