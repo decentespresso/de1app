@@ -1816,12 +1816,12 @@ proc calibration_gui_init {} {
 	} else {
 
 		de1_read_calibration "temperature"
-		after 1000 de1_read_calibration "pressure"
-		after 2000 de1_read_calibration "flow"
+		#after 1000 de1_read_calibration "pressure"
+		#after 2000 de1_read_calibration "flow"
 
-		after 3000 de1_read_calibration "temperature" "factory"
-		after 4000 de1_read_calibration "pressure" "factory"
-		after 5000 de1_read_calibration "flow" "factory"
+		#after 3000 de1_read_calibration "temperature" "factory"
+		#after 4000 de1_read_calibration "pressure" "factory"
+		#after 5000 de1_read_calibration "flow" "factory"
 	}
 }
 
