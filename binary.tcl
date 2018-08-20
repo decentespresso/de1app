@@ -277,8 +277,8 @@ proc calibrate_spec {} {
 		WriteKey {Int {} {} {unsigned} {[format %X $val]}}
 		CalCommand {char {} {} {unsigned} {}}
 		CalTarget {char {} {} {unsigned} {}}
-		DE1ReportedVal {Int {} {} {signed} {double(round(100*($val / 65536.0)))/100}}
-		MeasuredVal {Int {} {} {signed} {double(round(100*($val / 65536.0)))/100}}
+		DE1ReportedVal {Int {} {} {unsigned} {double(round(100*($val / 65536.0)))/100}}
+		MeasuredVal {Int {} {} {unsigned} {double(round(100*($val / 65536.0)))/100}}
 	}
 	return $spec
 }
