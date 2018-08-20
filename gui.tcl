@@ -1815,8 +1815,8 @@ proc calibration_gui_init {} {
 		after 5000 calibration_ble_received "\x00\x00\x00\x00\x03\x00\x00\x01\x03\x00\x00\x04\x32\x86"
 	} else {
 
-		#de1_read_calibration "temperature"
-		after 1000 de1_read_calibration "pressure"
+		de1_read_calibration "temperature"
+		#after 1000 de1_read_calibration "pressure"
 		#after 2000 de1_read_calibration "flow"
 
 		#after 3000 de1_read_calibration "temperature" "factory"
