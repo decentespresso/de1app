@@ -1042,6 +1042,7 @@ proc show_settings { {tab_to_show ""} } {
 		page_to_show_when_off $::settings(active_settings_tab)
 		scheduler_feature_hide_show_refresh
 		set_profiles_scrollbar_dimensions
+		set_advsteps_scrollbar_dimensions
 	} else {
 		page_to_show_when_off $tab_to_show
 	}
@@ -1768,7 +1769,8 @@ proc water_level_color_check_obs {widget} {
 
 # convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
 proc listbox_moveto {lb dest1 dest2} {
-	$lb yview moveto $dest1
+	#puts "listbox_moveto $lb $dest1 $dest2"
+	$lb yview moveto $dest2
 }
 
 # convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
