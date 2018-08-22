@@ -1899,6 +1899,12 @@ proc delete_current_adv_step {} {
 
 # inserts a new step immediately after the currently seleted one, with all the same settings except for a different name
 proc add_to_current_adv_step {} {
+
+	# don't add more than the maximum number of steps that the espresso machine can handle
+	if {[llength $::settings(advanced_shot)] >= 20} {
+		return
+	}
+
 	set newlist {} 
 	set cnt 0
 	set stepnum [current_adv_step]
