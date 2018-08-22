@@ -212,7 +212,22 @@ add_de1_widget "settings_2c" listbox 70 310 {
 	load_advanced_profile_step 1
 	bind $widget <<ListboxSelect>> ::load_advanced_profile_step
 
-} -background #fbfaff -font Helv_9 -bd 0 -height $adv_listbox_height -width 24 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+} -background #fbfaff -yscrollcommand {scale_scroll ::advsteps_slider} -font Helv_9 -bd 0 -height $adv_listbox_height -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+
+set ::advsteps_slider 0
+
+# draw the scrollbar off screen so that it gets resized and moved to the right place on the first draw
+set ::advsteps_scrollbar [add_de1_widget "settings_2c" scale 10000 1 {} -from 0 -to .50 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::advsteps -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::advanced_shot_steps_widget $::advsteps_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
+
+proc set_advsteps_scrollbar_dimensions {} {
+	# set the height of the scrollbar to be the same as the listbox
+	$::advsteps_scrollbar configure -length [winfo height $::advanced_shot_steps_widget]
+	set coords [.can coords $::advanced_shot_steps_widget ]
+	set newx [expr {[winfo width $::advanced_shot_steps_widget] + [lindex $coords 0]}]
+	.can coords $::advsteps_scrollbar "$newx [lindex $coords 1]"
+}
+
+
 
 
 add_de1_text "settings_2c" 70 1222 -text [translate "Insert a step"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
@@ -655,7 +670,7 @@ proc set_languages_scrollbar_dimensions {} {
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
 add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::settings(active_settings_tab) "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
-add_de1_button "settings_1 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox} 642 0 1277 188 
+add_de1_button "settings_1 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox; set_advsteps_scrollbar_dimensions} 642 0 1277 188 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"; preview_tablet_skin; set_languages_scrollbar_dimensions} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"} 1905 0 2560 188
 
