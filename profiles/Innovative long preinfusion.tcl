@@ -1,3 +1,4 @@
+advanced_shot {}
 author Decent
 espresso_hold_time 25
 preinfusion_time 60
@@ -20,4 +21,5 @@ final_desired_shot_weight 32
 preinfusion_guarantee 1
 profile_title {Innovative long preinfusion}
 profile_language en
+preinfusion_stop_pressure 1.0
 

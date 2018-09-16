@@ -1,3 +1,5 @@
+advanced_shot {}
+author Decent
 espresso_hold_time 20
 preinfusion_time 25
 espresso_pressure 9.0
@@ -19,4 +21,5 @@ final_desired_shot_weight 32
 preinfusion_guarantee 1
 profile_title {Hybrid pour over espresso}
 profile_language en
-author Decent
+preinfusion_stop_pressure 1.5
+

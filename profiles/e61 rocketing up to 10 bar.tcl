@@ -1,3 +1,5 @@
+advanced_shot {}
+author Decent
 espresso_hold_time 30
 preinfusion_time 10
 espresso_pressure 10.0
@@ -19,4 +21,5 @@ final_desired_shot_weight 36
 preinfusion_guarantee 1
 profile_title {E61 rocketing up to 10 bar}
 profile_language en
-author Decent
+preinfusion_stop_pressure 4
+

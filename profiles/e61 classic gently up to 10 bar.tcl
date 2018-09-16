@@ -1,9 +1,11 @@
+advanced_shot {}
+author Decent
 espresso_hold_time 5
 preinfusion_time 10
 espresso_pressure 9.0
 espresso_decline_time 20
 pressure_end 10.0
-espresso_temperature 92.28
+espresso_temperature 92.0
 settings_profile_type settings_2a
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6
@@ -19,4 +21,5 @@ final_desired_shot_weight 36
 preinfusion_guarantee 1
 profile_title {E61 classic gently up to 10 bar}
 profile_language en
-author Decent
+preinfusion_stop_pressure 4
+

@@ -21,4 +21,5 @@ final_desired_shot_weight 32
 preinfusion_guarantee 1
 profile_title {Gentle and sweet}
 profile_language en
+preinfusion_stop_pressure 4.0
 
