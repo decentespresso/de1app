@@ -1,4 +1,4 @@
-advanced_shot {{exit_if 1 flow 6.0 volume 100 transition fast exit_flow_under 4.0 temperature 84.0 name preinfusion pressure 1 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 3.0 seconds 10.0 exit_pressure_under 0} {exit_if 0 volume 100 transition fast exit_flow_under 0 temperature 81.0 name {rise and hold} pressure 7.5 sensor coffee pump pressure exit_flow_over 6 exit_pressure_over 11 seconds 8.0 exit_pressure_under 0} {exit_if 0 volume 100 transition smooth exit_flow_under 0 temperature 78.0 name decline pressure 3.0 sensor coffee pump pressure exit_flow_over 6 exit_pressure_over 11 seconds 30.0 exit_pressure_under 0}}
+advanced_shot {{exit_if 1 flow 6.0 volume 100 transition fast exit_flow_under 4.0 temperature 84.0 name preinfusion pressure 1 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 3.0 seconds 10.0 exit_pressure_under 0} {exit_if 0 volume 100 transition fast exit_flow_under 0 temperature 81.0 name {rise and hold} pressure 7.5 sensor coffee pump pressure exit_flow_over 6 exit_pressure_over 11 seconds 8.0 exit_pressure_under 0} {exit_if 0 volume 100 transition smooth exit_flow_under 0 temperature 78.0 name decline pressure 3.0 sensor coffee pump pressure exit_flow_over 6 exit_pressure_over 11 seconds 30.0 exit_pressure_under 0} {exit_if 0 flow 0.0 volume 100 transition smooth exit_flow_under 0 temperature 84.0 name {reset temperature} pressure 3.0 sensor coffee pump flow exit_flow_over 6 exit_pressure_over 11 seconds 1.0 exit_pressure_under 0}}
 author Decent
 espresso_hold_time 10
 preinfusion_time 5
@@ -21,3 +21,5 @@ final_desired_shot_weight 32
 preinfusion_guarantee 1
 profile_title {Espresso Forge Dark}
 profile_language en
+preinfusion_stop_pressure 4
+
