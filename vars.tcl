@@ -1231,15 +1231,7 @@ proc round_to_two_digits {in} {
     	set x [expr {round($in * 100.0)/100.0}]
     }
     return $x
-
-
-proc round_to_two_digits {in} {
-	set x 0
-    catch {
-    	set x [expr {round($in * 100.0)/100.0}]
-    }
-    return $x
-}}
+}
 
 proc round_to_one_digits {in} {
 	set x 0
