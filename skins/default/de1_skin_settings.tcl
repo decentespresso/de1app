@@ -809,5 +809,4 @@ proc setting_profile_type_to_text { } {
 		return [translate "PROFILE"]
 	}
 }
-
-set_next_page off create_preset
+#set_next_page off create_preset
