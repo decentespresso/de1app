@@ -566,7 +566,33 @@ if {$::settings(display_fluid_ounces_option) == 1} {
 }
 
 add_de1_button "settings_1" {say [translate {save}] $::settings(sound_button_in); save_profile} 2300 1220 2550 1410
-add_de1_button "settings_1" {say [translate {cancel}] $::settings(sound_button_in); delete_selected_profile} 1100 280 1300 500
+
+# trash can icon to delete a preset
+add_de1_button "settings_1" {say [translate {cancel}] $::settings(sound_button_in); delete_selected_profile} 1100 280 1300 460
+
+# plus icon to create a new preset
+add_de1_button "settings_1" {say [translate {new}] $::settings(sound_button_in); set_next_page off "create_preset"; page_show off;} 1100 530 1300 730
+
+#############################
+# create a new preset
+add_de1_text "create_preset" 2275 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	add_de1_button "create_preset" {set_next_page off "settings_1"; page_show off;} 2016 1430 2560 1600
+
+
+	add_de1_text "create_preset" 1280 90 -text [translate "New Preset"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+	add_de1_text "create_preset" 1280 690 -text [translate "What kind of preset?"] -font Helv_15_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+	
+	add_de1_text "create_preset" 520 1090 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+
+	add_de1_text "create_preset" 520 1090 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+	add_de1_text "create_preset" 1280 1090 -text [translate "Flow"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+	add_de1_text "create_preset" 2070 1090 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+
+	add_de1_button "create_preset" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 220 990 800 1190
+	add_de1_button "create_preset" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 980 990 1580 1190
+	add_de1_button "create_preset" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_pressure_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set; set_advsteps_scrollbar_dimensions} 1760 990 2350 1190
+
+#############################
 
 set settings_label1 [translate "PRESSURE"]
 set settings_label2 [translate "Pressure profiles"]
@@ -594,22 +620,22 @@ if {[de1plus]} {
 	set settings_label2 [translate "Profiles"]
 
 	# types of profiles available on DE1+
-	add_de1_text "settings_2a" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-	add_de1_text "settings_2a" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	add_de1_text "settings_2a" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+	#add_de1_text "settings_2a" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+	#add_de1_text "settings_2a" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+	#add_de1_text "settings_2a" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
 
-	add_de1_text "settings_2b" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	add_de1_text "settings_2b" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-	add_de1_text "settings_2b" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+	#add_de1_text "settings_2b" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+	#add_de1_text "settings_2b" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+	#add_de1_text "settings_2b" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
 
-	add_de1_text "settings_2c" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	add_de1_text "settings_2c" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	add_de1_text "settings_2c" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+	#add_de1_text "settings_2c" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+	#add_de1_text "settings_2c" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+	#add_de1_text "settings_2c" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
-	add_de1_button "settings_2b settings_2c" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 1 1410 495 1600
-	add_de1_button "settings_2a settings_2c" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 496 1410 972 1600
-	add_de1_button "settings_2a" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_pressure_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set; set_advsteps_scrollbar_dimensions} 974 1410 1500 1600
-	add_de1_button "settings_2b" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_flow_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set; set_advsteps_scrollbar_dimensions } 974 1410 1500 1600
+	#add_de1_button "settings_2b settings_2c" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 1 1410 495 1600
+	#add_de1_button "settings_2a settings_2c" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 496 1410 972 1600
+	#add_de1_button "settings_2a" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_pressure_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set; set_advsteps_scrollbar_dimensions} 974 1410 1500 1600
+	#add_de1_button "settings_2b" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_flow_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set; set_advsteps_scrollbar_dimensions } 974 1410 1500 1600
 }
 
 
@@ -784,4 +810,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off settings_4
+set_next_page off create_preset

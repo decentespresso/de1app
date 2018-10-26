@@ -1,4 +1,4 @@
-set ::skindebug 0
+set ::skindebug 1
 set ::debugging 0
 
 #puts "debugging: $::debugging"
@@ -42,6 +42,8 @@ add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
 add_de1_page "tankempty" "fill_tank.jpg" "default"
 add_de1_page "message calibrate" "settings_message.png" "default"
+add_de1_page "create_preset" "settings_3_choices.png" "default"
+
 add_de1_page "cleaning" "cleaning.jpg" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 add_de1_page "travel_prepare" "travel_prepare.jpg" "default"

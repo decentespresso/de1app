@@ -41,164 +41,7 @@ proc make_de1_dir {} {
         splash/2560x1600/watercolor.jpg *
         splash/2560x1600/wired_superheroes.jpg *
 
-        splash/2048x1536/de1.jpg 2
-        skins/default/2048x1536/nothing_on.png 2
-        skins/default/2048x1536/espresso_on.png 2
-        skins/default/2048x1536/steam_on.png 2
-        skins/default/2048x1536/tea_on.png 2
-        skins/default/2048x1536/sleep.jpg 2
-        skins/default/2048x1536/filling_tank.jpg 2
-        skins/default/2048x1536/fill_tank.jpg 2
-        skins/default/2048x1536/cleaning.jpg 2
-        skins/default/2048x1536/settings_message.png  2
-        skins/default/2048x1536/descaling.jpg 2
-        skins/default/2048x1536/settings_1.png 2
-        skins/default/2048x1536/settings_2.png 2
-        skins/default/2048x1536/settings_2a.png 2
-        skins/default/2048x1536/settings_2a2.png 2
-        skins/default/2048x1536/settings_2b.png 2
-        skins/default/2048x1536/settings_2b2.png 2
-        skins/default/2048x1536/settings_2c.png 2
-        skins/default/2048x1536/settings_3.png 2
-        skins/default/2048x1536/settings_4.png 2
-        skins/default/2048x1536/icon.jpg 2
-        skins/default/2048x1536/travel_do.jpg 2
-        skins/default/2048x1536/travel_prepare.jpg 2
 
-        skins/Antibes/2048x1536/espresso_on.png 2
-        skins/Antibes/2048x1536/icon.jpg 2
-        skins/Antibes/2048x1536/nothing_on.png 2
-        skins/Antibes/2048x1536/steam_on.png 2
-        skins/Antibes/2048x1536/tea_on.png 2  
-
-        skins/Borg/2048x1536/espresso_on.png 2
-        skins/Borg/2048x1536/icon.jpg 2
-        skins/Borg/2048x1536/nothing_on.png 2
-        skins/Borg/2048x1536/steam_on.png 2
-        skins/Borg/2048x1536/tea_on.png 2  
-
-        skins/Aztec/2048x1536/espresso_on.png 2
-        skins/Aztec/2048x1536/icon.jpg 2
-        skins/Aztec/2048x1536/nothing_on.png 2
-        skins/Aztec/2048x1536/steam_on.png 2
-        skins/Aztec/2048x1536/tea_on.png 2  
-
-        skins/Constructivism/2048x1536/espresso_on.png 2
-        skins/Constructivism/2048x1536/icon.jpg 2
-        skins/Constructivism/2048x1536/nothing_on.png 2
-        skins/Constructivism/2048x1536/steam_on.png 2
-        skins/Constructivism/2048x1536/tea_on.png 2  
-
-        skins/Roman\ Gods/2048x1536/espresso_on.png 2
-        skins/Roman\ Gods/2048x1536/icon.jpg 2
-        skins/Roman\ Gods/2048x1536/nothing_on.png 2
-        skins/Roman\ Gods/2048x1536/steam_on.png 2
-        skins/Roman\ Gods/2048x1536/tea_on.png 2  
-
-        skins/8-BIT/2048x1536/espresso_on.png 2
-        skins/8-BIT/2048x1536/espresso_on_plus.png 2
-        skins/8-BIT/2048x1536/icon.jpg 2
-        skins/8-BIT/2048x1536/nothing_on.png 2
-        skins/8-BIT/2048x1536/steam_on.png 2
-        skins/8-BIT/2048x1536/tea_on.png 2  
-
-        skins/Teal\ Modern/2048x1536/espresso_on.png 2
-        skins/Teal\ Modern/2048x1536/icon.jpg 2
-        skins/Teal\ Modern/2048x1536/nothing_on.png 2
-        skins/Teal\ Modern/2048x1536/steam_on.png 2
-        skins/Teal\ Modern/2048x1536/tea_on.png 2  
-
-        skins/Green\ Cups/2048x1536/espresso_on.png 2
-        skins/Green\ Cups/2048x1536/icon.jpg 2
-        skins/Green\ Cups/2048x1536/nothing_on.png 2
-        skins/Green\ Cups/2048x1536/steam_on.png 2
-        skins/Green\ Cups/2048x1536/tea_on.png 2  
-
-
-        skins/Croissant/2048x1536/espresso_on.png 2
-        skins/Croissant/2048x1536/icon.jpg 2
-        skins/Croissant/2048x1536/nothing_on.png 2
-        skins/Croissant/2048x1536/steam_on.png 2
-        skins/Croissant/2048x1536/tea_on.png 2  
-
-        skins/Noir/2048x1536/espresso_on.png 2
-        skins/Noir/2048x1536/icon.jpg 2
-        skins/Noir/2048x1536/nothing_on.png 2
-        skins/Noir/2048x1536/steam_on.png 2
-        skins/Noir/2048x1536/tea_on.png 2  
-
-        skins/Three\ Women/2048x1536/espresso_on.png 2
-        skins/Three\ Women/2048x1536/icon.jpg 2
-        skins/Three\ Women/2048x1536/nothing_on.png 2
-        skins/Three\ Women/2048x1536/steam_on.png 2
-        skins/Three\ Women/2048x1536/tea_on.png 2  
-
-        skins/Rodent/2048x1536/espresso_on.png 2
-        skins/Rodent/2048x1536/icon.jpg 2
-        skins/Rodent/2048x1536/nothing_on.png 2
-        skins/Rodent/2048x1536/steam_on.png 2
-        skins/Rodent/2048x1536/tea_on.png 2  
-
-        skins/Diner/2048x1536/espresso_on.png 2
-        skins/Diner/2048x1536/icon.jpg 2
-        skins/Diner/2048x1536/nothing_on.png 2
-        skins/Diner/2048x1536/steam_on.png 2
-        skins/Diner/2048x1536/tea_on.png 2  
-
-        skins/Insight/2048x1536/icon.jpg 2
-        skins/Insight/2048x1536/espresso_1.png 1
-        skins/Insight/2048x1536/espresso_1_zoomed.png 2
-        skins/Insight/2048x1536/espresso_2.png 2
-        skins/Insight/2048x1536/espresso_2_zoomed.png 2
-        skins/Insight/2048x1536/espresso_3.png 2
-        skins/Insight/2048x1536/espresso_3_zoomed.png 2
-        skins/Insight/2048x1536/steam_1.png 2
-        skins/Insight/2048x1536/steam_2.png 2
-        skins/Insight/2048x1536/steam_3.png 2
-        skins/Insight/2048x1536/water_1.png 2
-        skins/Insight/2048x1536/water_2.png 2
-        skins/Insight/2048x1536/water_3.png 2
-        skins/Insight/2048x1536/preheat_1.png 2
-        skins/Insight/2048x1536/preheat_2.png 2
-        skins/Insight/2048x1536/preheat_3.png 2
-        skins/Insight/2048x1536/preheat_4.png 2
-        skins/Insight/2048x1536/scentone_1.jpg 2
-        skins/Insight/2048x1536/scentone_tropical.jpg 2
-        skins/Insight/2048x1536/scentone_berry.jpg 2
-        skins/Insight/2048x1536/scentone_citrus.jpg 2
-        skins/Insight/2048x1536/scentone_stone.jpg 2
-        skins/Insight/2048x1536/scentone_cereal.jpg 2
-        skins/Insight/2048x1536/scentone_chocolate.jpg 2
-        skins/Insight/2048x1536/scentone_flower.jpg 2
-        skins/Insight/2048x1536/scentone_spice.jpg 2
-        skins/Insight/2048x1536/scentone_vegetable.jpg 2
-        skins/Insight/2048x1536/scentone_savory.jpg 2
-        skins/Insight/2048x1536/describe_espresso.jpg 2
-        skins/Insight/2048x1536/describe_espresso2.jpg 2
-
-        saver/2048x1536/Black\ Steel.jpg 2
-        saver/2048x1536/Cozy-Home.jpg 2
-        saver/2048x1536/Floral.jpg 2
-        saver/2048x1536/Lomen.jpg 2
-        saver/2048x1536/apartment.jpg 2
-        saver/2048x1536/aztec.jpg 2
-        saver/2048x1536/cafe_girls.jpg 2
-        saver/2048x1536/cities.jpg 2
-        saver/2048x1536/cups.jpg 2
-        saver/2048x1536/dark_choices.jpg 2
-        saver/2048x1536/french_breakfast.jpg 2
-        saver/2048x1536/graffiti_1.jpg 2
-        saver/2048x1536/graffiti_2.jpg 2
-        saver/2048x1536/graffiti_wall.jpg 2
-        saver/2048x1536/jim_shaw.jpg 2
-        saver/2048x1536/minimalism.jpg 2
-        saver/2048x1536/green-cup.jpg 2
-        saver/2048x1536/photomanipulation.jpg 2
-        saver/2048x1536/splash_noir.jpg 2
-        saver/2048x1536/splotch.jpg 2
-        saver/2048x1536/steampunk_espresso.jpg 2
-        saver/2048x1536/steampunk_latte.jpg 2
-        saver/2048x1536/three_women.jpg 2 
 
     }
 
@@ -261,6 +104,7 @@ proc make_de1_dir {} {
         skins/default/1280x800/fill_tank.jpg *
         skins/default/1280x800/cleaning.jpg *
         skins/default/1280x800/settings_message.png  *
+        skins/default/1280x800/settings_3_choices.png  *
         skins/default/1280x800/descaling.jpg *
         skins/default/1280x800/settings_1.png *
         skins/default/1280x800/settings_2.png 1
@@ -283,6 +127,7 @@ proc make_de1_dir {} {
         skins/default/2560x1600/fill_tank.jpg *
         skins/default/2560x1600/cleaning.jpg *
         skins/default/2560x1600/settings_message.png  *
+        skins/default/2560x1600/settings_3_choices.png  *
         skins/default/2560x1600/descaling.jpg *
         skins/default/2560x1600/settings_1.png *
         skins/default/2560x1600/settings_2.png 1

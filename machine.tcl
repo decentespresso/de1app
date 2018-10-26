@@ -159,6 +159,7 @@ array set ::settings {
 	water_refill_point 5
 	insight_skin_show_embedded_profile 0
 	flying 0
+	preload_all_page_images 0
 	advanced_shot_chart_temp_max 100
 	advanced_shot_chart_temp_min 80
 	bean_notes {}

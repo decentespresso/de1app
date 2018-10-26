@@ -71,16 +71,21 @@ proc add_de1_page {names filename {skin ""} } {
 		image delete $names
 
 	} else {
-		#image create photo $names -file $pngfilename
-		#image create photo $names 
-		#$names -file $pngfilename
+		if {$::settings(preload_all_page_images) == 1} {
+			puts "loading page: '$pngfilename'"
+			image create photo $names -file $pngfilename
+			#image create photo $names 			$names -file $pngfilename
+		}
 	}
 
 	#.can create image {0 0} -anchor nw -image $names -tag [list pages $name] -state hidden 
 	foreach name $names {
 		.can create image {0 0} -anchor nw  -tag [list pages $name] -state hidden 
-		set ::delayed_image_load($name) $pngfilename
-		#.can itemconfigure $names -image $names 
+		if {$::settings(preload_all_page_images) == 1} {
+			.can itemconfigure $names -image $names 
+		} else {
+			set ::delayed_image_load($name) $pngfilename
+		}
 	}
 }	
 
@@ -1123,6 +1128,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	if {[info exists ::delayed_image_load($page_to_show)] == 1} {
 		set pngfilename	$::delayed_image_load($page_to_show)
 		unset -nocomplain ::delayed_image_load($page_to_show)
+		puts "png: $pngfilename"
 		image create photo $page_to_show -file $pngfilename
 		.can itemconfigure $page_to_show -image $page_to_show
 	}
