@@ -990,6 +990,9 @@ proc update_onscreen_variables { {state {}} } {
 
 		if {$::de1(state) == 4} {
 			append_live_data_to_espresso_chart
+		} elseif {$::de1(state) == 5} {
+			#steaming
+			append_live_data_to_espresso_chart
 		}
 	}
 

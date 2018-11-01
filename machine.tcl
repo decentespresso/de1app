@@ -157,6 +157,7 @@ array set ::settings {
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"
 	water_refill_point 5
+	max_steam_pressure 3
 	insight_skin_show_embedded_profile 0
 	flying 0
 	preload_all_page_images 0
@@ -459,6 +460,11 @@ proc start_steam {} {
 
 	incr ::settings(steaming_count)
 	save_settings
+
+	steam_elapsed length 0
+	steam_pressure length 0
+	#steam_pressure append 0
+	#steam_elapsed append 0
 
 	if {$::settings(stress_test) == 1} {
 		set ::idle_next_step start_steam

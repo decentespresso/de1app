@@ -410,6 +410,22 @@ proc steam_pour_timer {} {
 	}
 }
 
+proc steam_pour_millitimer {} {
+	if {[info exists ::timers(steam_pour_start)] != 1} {
+		return 0
+	}
+
+	if {$::timers(steam_pour_start) == 0} {
+		return 0
+	} elseif {$::timers(steam_pour_stop) == 0} {
+		# no stop, so show current elapsed time
+		return [expr {([clock milliseconds] - $::timers(steam_pour_start))/1}]
+	} else {
+		# stop occured, so show that.
+		return [expr {($::timers(steam_pour_stop) - $::timers(steam_pour_start))/1}]
+	}
+}
+
 proc flush_pour_timer {} {
 	if {[info exists ::timers(flush_pour_start)] != 1} {
 		return 0
@@ -616,19 +632,36 @@ proc pressure {} {
 	}
 
 	if {$::android == 0} {
-		if {[ifexists ::de1(pressure)] == ""} {
-			set ::de1(pressure) 5
-		}
+		if {$::de1(state) == 4} {
+			#espresso
+			if {[ifexists ::de1(pressure)] == ""} {
+				set ::de1(pressure) 5
+			}
 
-		if {$::de1(pressure) > 10} {
-			set ::de1(pressure) 9
-		}
-		if {$::de1(pressure) < 1} {
-			set ::de1(pressure) 5
-		}
+			if {$::de1(pressure) > 10} {
+				set ::de1(pressure) 9
+			}
+			if {$::de1(pressure) < 1} {
+				set ::de1(pressure) 5
+			}
 
 
-		set ::de1(pressure) [expr {(.5 * (rand() - 0.5)) + $::de1(pressure)}]
+			set ::de1(pressure) [expr {(.5 * (rand() - 0.5)) + $::de1(pressure)}]
+		} elseif {$::de1(state) == 5} { 
+			#steam
+			if {[ifexists ::de1(pressure)] == ""} {
+				set ::de1(pressure) 2
+			}
+
+			if {$::de1(pressure) > 3} {
+				set ::de1(pressure) 2
+			}
+			if {$::de1(pressure) < .2} {
+				set ::de1(pressure) 2
+			}
+
+			set ::de1(pressure) [expr {(.2 * (rand() - 0.5)) + $::de1(pressure)}]
+		}
 	}
 
 	return $::de1(pressure)

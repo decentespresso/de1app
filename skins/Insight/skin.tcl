@@ -422,6 +422,19 @@ add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_
 add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2295 560 -justify center -anchor "center" -text "" -font Helv_6 -fill "#CCCCCC" -width 520 -textvariable {[de1_connected_state]} 
 
 
+add_de1_widget "steam steam_3" graph 1050 1080 { 
+	bind $widget [platform_button_press] { 
+		say [translate {zoom}] $::settings(sound_button_in); 
+		set_next_page steam steam_zoomed; 
+		set_next_page steam_3 steam_3_zoomed; 
+		page_show $::de1(current_context);
+	}
+	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
+	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
+	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 3 5 7 9 11} 
+} -plotbackground #FFFFFF -width [rescale_x_skin 700] -height [rescale_y_skin 300] -borderwidth 1 -background #FFFFFF -plotrelief flat 
+
+
 ##########################################################################################################################################################################################################################################################################
 # data card displayed during espresso making
 
