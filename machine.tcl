@@ -84,6 +84,7 @@ array set ::de1 {
 	has_plumbing_kit 0
 	max_pressure 12
 	max_flowrate 6
+	max_flowrate_v11 8
 	version ""
 	min_temperature 80
 	max_temperature 100

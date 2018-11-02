@@ -180,7 +180,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
 	$widget element create line_espresso_state_change_2 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0; 
 	$widget axis configure x -color #206ad4 -tickfont Helv_6 ; 
 
-	$widget axis configure y -color #206ad4 -tickfont Helv_6 -min 0.0 -max 6.01 -subdivisions 2 -majorticks {1 2 3 4 5 6}
+	$widget axis configure y -color #206ad4 -tickfont Helv_6 -min 0.0 -max 8.01 -subdivisions 2 -majorticks {1 2 3 4 5 6 7 8}
 
 	# show the shot configuration
 	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 5] -color #888888  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
