@@ -1252,8 +1252,9 @@ proc append_live_data_to_espresso_chart {} {
 
     if {$::de1_num_state($::de1(state)) == "Steam"} {
 		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {
-		puts "append_live_data_to_espresso_chart $::de1(pressure)"
+		#puts "append_live_data_to_espresso_chart $::de1(pressure)"
 			steam_pressure append [round_to_two_digits $::de1(pressure)]
+			steam_flow append [round_to_two_digits $::de1(flow)]
 			#set millitime [steam_pour_timer]
 			steam_elapsed append  [expr {[steam_pour_millitimer]/1000.0}]
 		}

@@ -463,6 +463,7 @@ proc start_steam {} {
 
 	steam_elapsed length 0
 	steam_pressure length 0
+	steam_flow length 0
 	#steam_pressure append 0
 	#steam_elapsed append 0
 
