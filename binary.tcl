@@ -1255,6 +1255,7 @@ proc append_live_data_to_espresso_chart {} {
 		#puts "append_live_data_to_espresso_chart $::de1(pressure)"
 			steam_pressure append [round_to_two_digits $::de1(pressure)]
 			steam_flow append [round_to_two_digits $::de1(flow)]
+			steam_temperature append [round_to_two_digits [expr {$::de1(steam_heater_temperature)/100.0}]]
 			#set millitime [steam_pour_timer]
 			steam_elapsed append  [expr {[steam_pour_millitimer]/1000.0}]
 		}

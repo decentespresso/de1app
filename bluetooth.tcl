@@ -304,7 +304,7 @@ proc start_firmware_update {} {
 	}
 
 	de1_enable_maprequest_notifications
-	set ::de1(firmware_update_button_label) [translate "Updating"]
+	
 	set ::de1(firmware_bytes_uploaded) 0
 	set ::de1(firmware_update_size) [file size [fwfile]]
 
@@ -319,6 +319,8 @@ proc start_firmware_update {} {
 	set arr(FirstError2) 0
 	set arr(FirstError3) 0
 	set data [make_packed_maprequest arr]
+
+	set ::de1(firmware_update_button_label) [translate "Updating"]		
 
 	# it'd be useful here to test that the maprequest was correctly packed
 	set ::de1(currently_erasing_firmware) 1
@@ -345,12 +347,14 @@ proc firmware_upload_next {} {
 		return
 	}
 
-
 	#delay_screen_saver
 
 	if  {$::de1(firmware_bytes_uploaded) >= $::de1(firmware_update_size)} {
 		if {$::android != 1} {
 			set ::de1(firmware_update_button_label) [translate "Updated"]
+			
+			set ::settings(firmware_mtime) [file mtime [fwfile]]
+			save_settings
 		} else {
 			set ::de1(firmware_update_button_label) [translate "Testing"]
 
@@ -371,6 +375,7 @@ proc firmware_upload_next {} {
 			userdata_append "Find first error in firmware update: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_09) $::cinstance($::de1(cuuid_09)) $data]
 		}
 	} else {
+		set ::de1(firmware_update_button_label) [translate "Updating"]		
 
 		if {$::android != 1} {
 			after 100 firmware_upload_next
