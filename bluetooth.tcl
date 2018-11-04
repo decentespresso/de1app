@@ -359,11 +359,12 @@ proc firmware_upload_next {} {
 	#delay_screen_saver
 
 	if  {$::de1(firmware_bytes_uploaded) >= $::de1(firmware_update_size)} {
+		set ::settings(firmware_mtime) [file mtime [fwfile]]
+		save_settings
+		
 		if {$::android != 1} {
 			set ::de1(firmware_update_button_label) [translate "Updated"]
 			
-			set ::settings(firmware_mtime) [file mtime [fwfile]]
-			save_settings
 		} else {
 			set ::de1(firmware_update_button_label) [translate "Testing"]
 
