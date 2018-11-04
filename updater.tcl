@@ -488,6 +488,8 @@ proc start_app_update {} {
         write_file "[homedir]/timestamp.txt" $remote_timestamp
         write_file "[homedir]/manifest.txt" $remote_manifest
         puts "successful update"
+        unset -nocomplain ::de1(firmware_mtime) 
+
         if {$files_moved > 0} {
             set ::de1(app_update_button_label) "[translate "Updated"] $files_moved"; 
         } else {

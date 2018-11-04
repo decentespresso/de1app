@@ -197,7 +197,7 @@ proc skale_disable_lcd {} {
 # calibration change notifications ENABLE
 proc de1_enable_calibration_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 1"
 		return
 	}
 
@@ -207,7 +207,7 @@ proc de1_enable_calibration_notifications {} {
 # calibration change notifications DISABLE
 proc de1_disable_calibration_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 2"
 		return
 	}
 
@@ -217,7 +217,7 @@ proc de1_disable_calibration_notifications {} {
 # temp changes
 proc de1_enable_temp_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 3"
 		return
 	}
 
@@ -227,7 +227,7 @@ proc de1_enable_temp_notifications {} {
 # status changes
 proc de1_enable_state_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 4"
 		return
 	}
 
@@ -236,7 +236,7 @@ proc de1_enable_state_notifications {} {
 
 proc de1_disable_temp_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 5"
 		return
 	}
 
@@ -245,7 +245,7 @@ proc de1_disable_temp_notifications {} {
 
 proc de1_disable_state_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 6"
 		return
 	}
 
@@ -255,7 +255,7 @@ proc de1_disable_state_notifications {} {
 # water level notifications
 proc de1_enable_water_level_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 7"
 		return
 	}
 
@@ -264,7 +264,7 @@ proc de1_enable_water_level_notifications {} {
 
 proc de1_disable_water_level_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 8"
 		return
 	}
 
@@ -274,7 +274,7 @@ proc de1_disable_water_level_notifications {} {
 # firmware update command notifications (not writing new fw, this is for erasing and switching firmware)
 proc de1_enable_maprequest_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 9"
 		return
 	}
 
@@ -288,8 +288,10 @@ proc fwfile {} {
 
 proc start_firmware_update {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
-		return
+		if {$::android == 1} {
+			msg "DE1 not connected, cannot send BLE command 10"
+			return
+		}
 	}
 
 
@@ -310,6 +312,10 @@ proc start_firmware_update {} {
 
 	if {$::android != 1} {
 		after 100 write_firmware_now
+		set ::sinstance($::de1(suuid)) 0
+		set ::de1(cuuid_09) 0
+		set ::de1(cuuid_06) 0
+		set ::cinstance($::de1(cuuid_09)) 0
 	}
 
 	set arr(WindowIncrement) 0
@@ -340,10 +346,13 @@ proc write_firmware_now {} {
 
 
 proc firmware_upload_next {} {
-	msg "firmware_upload_next $::de1(firmware_bytes_uploaded)"
+	
+	if {$::android == 1} {
+		msg "firmware_upload_next $::de1(firmware_bytes_uploaded)"
+	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 11"
 		return
 	}
 
@@ -377,19 +386,19 @@ proc firmware_upload_next {} {
 	} else {
 		set ::de1(firmware_update_button_label) [translate "Updating"]		
 
-		if {$::android != 1} {
-			after 100 firmware_upload_next
-		}
 		set data "\x10[make_U24P0 $::de1(firmware_bytes_uploaded)][string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]"
 		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data]
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
+		if {$::android != 1} {
+			after 1 firmware_upload_next
+		}
 	}
 }
 
 
 proc de1_send_waterlevel_settings {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 12"
 		return
 	}
 
@@ -540,7 +549,7 @@ proc app_exit {} {
 
 proc de1_send_state {comment msg} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 13"
 		return
 	}
 
@@ -616,7 +625,7 @@ proc de1_send_shot_frames {} {
 
 proc ble_write_010 {packed_frame} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 14"
 		return
 	}
 
@@ -627,7 +636,7 @@ proc ble_write_010 {packed_frame} {
 
 proc ble_write_00f {packed_frame} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 15"
 		return
 	}
 
@@ -652,7 +661,7 @@ proc save_settings_to_de1 {} {
 proc de1_send_steam_hotwater_settings {} {
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 16"
 		return
 	}
 
@@ -670,7 +679,7 @@ proc de1_send_steam_hotwater_settings {} {
 
 proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 17"
 		return
 	}
 
@@ -701,7 +710,7 @@ proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 
 proc de1_read_calibration {calib_target {factory 0} } {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command"
+		msg "DE1 not connected, cannot send BLE command 18"
 		return
 	}
 

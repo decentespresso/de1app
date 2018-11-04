@@ -2577,20 +2577,28 @@ proc check_firmware_update_is_available {} {
 	if {$::de1(firmware_mtime) != [ifexists ::settings(firmware_mtime)]} {
 		#return [translate "Firmware update available"]
 		set ::de1(firmware_update_button_label) [translate "Firmware update available"]
+	} else {
+		#set ::de1(firmware_update_button_label) [translate "No update necessary"]
 	}
 	return ""
 }
 
 proc firmware_uploaded_label {} {
+	#puts "firmware_uploaded_label firmware_uploaded_label"
 	if {$::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0} {
-		return ""
-	} else {
-		set percentage [expr {(100.0 * $::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
-		return "[round_to_one_digits $percentage]%"
-		#puts "percentage $percentage"
-		if {$percentage >= 100} {
-			return "[translate {Reboot your espresso machine now}]"
+		if {$::de1(firmware_mtime) == [ifexists ::settings(firmware_mtime)]} {
+			return [translate "No update necessary"]
 		}
+
+		return ""
+	} 
+
+	set percentage [expr {(100.0 * $::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
+	#puts "percentage $percentage"
+	if {$percentage >= 100} {
+		return "[translate {Reboot your espresso machine now}]"
+	} else {
+		return "[round_to_one_digits $percentage]%"
 	}
 }
 
