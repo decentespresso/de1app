@@ -165,6 +165,9 @@ array set ::settings {
 	advanced_shot_chart_temp_max 100
 	advanced_shot_chart_temp_min 80
 	bean_notes {}
+	chart_dashes_flow ""
+	chart_dashes_temperature ""
+	chart_dashes_pressure ""
 	espresso_notes {}
 	profile_graph_smoothing_technique "quadratic"
 	espresso_count 0

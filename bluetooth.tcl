@@ -368,7 +368,7 @@ proc firmware_upload_next {} {
 		} else {
 			set ::de1(firmware_update_button_label) [translate "Testing"]
 
-			unset -nocomplain ::de1(firmware_update_size)
+			set ::de1(firmware_update_size) 0
 			unset -nocomplain ::de1(firmware_update_binary)
 			set ::de1(firmware_bytes_uploaded) 0
 
