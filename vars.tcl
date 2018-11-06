@@ -2585,9 +2585,10 @@ proc check_firmware_update_is_available {} {
 
 proc firmware_uploaded_label {} {
 	#puts "firmware_uploaded_label firmware_uploaded_label"
-	if {$::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0} {
+
+	if {($::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0) && $::de1(currently_updating_firmware) == ""} {
 		if {$::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]} {
-			return [translate "No update necessary"]
+			return [subst {[translate "No update necessary"] $::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]}]
 		}
 
 		return ""
