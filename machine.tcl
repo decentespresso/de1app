@@ -168,6 +168,7 @@ array set ::settings {
 	chart_dashes_flow ""
 	chart_dashes_temperature ""
 	chart_dashes_pressure ""
+	water_level_sensor_max 50
 	espresso_notes {}
 	profile_graph_smoothing_technique "quadratic"
 	espresso_count 0
