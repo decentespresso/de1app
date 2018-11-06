@@ -368,9 +368,9 @@ proc firmware_upload_next {} {
 		} else {
 			set ::de1(firmware_update_button_label) [translate "Testing"]
 
-			set ::de1(firmware_update_size) 0
+			#set ::de1(firmware_update_size) 0
 			unset -nocomplain ::de1(firmware_update_binary)
-			set ::de1(firmware_bytes_uploaded) 0
+			#set ::de1(firmware_bytes_uploaded) 0
 
 			#write_FWMapRequest(self.FWMapRequest, 0, 0, 1, 0xFFFFFF, True)		
 			#def write_FWMapRequest(ctic, WindowIncrement=0, FWToErase=0, FWToMap=0, FirstError=0, withResponse=True):
