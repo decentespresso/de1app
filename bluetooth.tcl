@@ -359,9 +359,9 @@ proc firmware_upload_next {} {
 	#delay_screen_saver
 
 	if  {$::de1(firmware_bytes_uploaded) >= $::de1(firmware_update_size)} {
-		set ::settings(firmware_mtime) [file mtime [fwfile]]
+		set ::settings(firmware_crc) [crc::crc32 -filename [fwfile]]
 		save_settings
-		
+
 		if {$::android != 1} {
 			set ::de1(firmware_update_button_label) [translate "Updated"]
 			
@@ -514,7 +514,7 @@ proc close_all_ble_and_exit {} {
 	}
 
 	#after 2000 exit
-	exit
+	exit 0
 }	
 
 proc app_exit {} {
@@ -542,7 +542,7 @@ proc app_exit {} {
 		after 5000 close_all_ble_and_exit
 	}
 
-	after 10000 exit
+	after 10000 "exit 0"
 
 
 

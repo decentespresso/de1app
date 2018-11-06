@@ -54,7 +54,7 @@ array set ::de1 {
 	mix_temperature 0
 	flow 0
 	currently_erasing_firmware 0
-	currently_updating_firmware 0
+	currently_updating_firmware {}
 	flow_delta 0
 	pressure_delta 0
 	timer 0

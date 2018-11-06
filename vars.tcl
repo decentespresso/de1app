@@ -2565,16 +2565,16 @@ proc round_to_half_integer {in} {
 }
 
 proc check_firmware_update_is_available {} {
-	#if {$::de1(currently_erasing_firmware) == 1 || $::de1(currently_updating_firmware) == 1} {
-		#set ::de1(firmware_update_button_label) [translate "Updating"]
-		#return
+#	if {$::de1(currently_erasing_firmware) == 1 || $::de1(currently_updating_firmware) == 1} {
+#		set ::de1(firmware_update_button_label) [translate "Updating"]
+	#	return
 	#}
 
-	if {[info exists ::de1(firmware_mtime)] != 1} {
-		set ::de1(firmware_mtime) [file mtime [fwfile]]
+	if {[info exists ::de1(firmware_crc)] != 1} {
+		set ::de1(firmware_crc) [crc::crc32 -filename [fwfile]]
 	}
 
-	if {$::de1(firmware_mtime) != [ifexists ::settings(firmware_mtime)]} {
+	if {$::de1(firmware_crc) != [ifexists ::settings(firmware_crc)] && $::de1(currently_updating_firmware) == ""} {
 		#return [translate "Firmware update available"]
 		set ::de1(firmware_update_button_label) [translate "Firmware update available"]
 	} else {
@@ -2586,7 +2586,7 @@ proc check_firmware_update_is_available {} {
 proc firmware_uploaded_label {} {
 	#puts "firmware_uploaded_label firmware_uploaded_label"
 	if {$::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0} {
-		if {$::de1(firmware_mtime) == [ifexists ::settings(firmware_mtime)]} {
+		if {$::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]} {
 			return [translate "No update necessary"]
 		}
 
