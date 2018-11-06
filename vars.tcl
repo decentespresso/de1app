@@ -2596,7 +2596,7 @@ proc firmware_uploaded_label {} {
 
 	set percentage [expr {(100.0 * $::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
 	#puts "percentage $percentage"
-	if {$percentage >= 100 && ::de1(currently_updating_firmware) == 0} {
+	if {$percentage >= 100 && $::de1(currently_updating_firmware) == 0} {
 		return "[translate {Reboot your espresso machine now}]"
 	} else {
 		return "[round_to_one_digits $percentage]%"
