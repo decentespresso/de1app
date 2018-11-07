@@ -250,7 +250,7 @@ add_de1_text "settings_2c" 1380 680 -text [translate "sensor"] -font Helv_6 -fil
 
 add_de1_text "settings_2c" 1710 680 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 2010 680 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_button "settings_2c" { say [translate {flow}] $::settings(sound_button_in); set ::current_adv_step(pump) "flow";  vertical_clicker .1 .1 ::current_adv_step(flow) 0 6 %x %y %x0 %y0 %x1 %y1;  save_current_adv_shot_step; } 1580 310 1820 640 ""
+	add_de1_button "settings_2c" { say [translate {flow}] $::settings(sound_button_in); set ::current_adv_step(pump) "flow";  vertical_clicker .1 .1 ::current_adv_step(flow) 0 8 %x %y %x0 %y0 %x1 %y1;  save_current_adv_shot_step; } 1580 310 1820 640 ""
 	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "pressure"; vertical_clicker .1 .1 ::current_adv_step(pressure) 0 12 %x %y %x0 %y0 %x1 %y1; update_onscreen_variables; save_current_adv_shot_step} 1890 310 2120 640 ""
 	add_de1_variable "settings_2c" 1710 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable { [ if {[ifexists ::current_adv_step(pump)] == "flow"} { return [return_flow_measurement $::current_adv_step(flow)] } else { return "-" } ]  }
 	add_de1_variable "settings_2c" 2010 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "pressure"} {return_pressure_measurement $::current_adv_step(pressure)} else { return "-" }] }
