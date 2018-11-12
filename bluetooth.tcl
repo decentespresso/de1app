@@ -326,7 +326,7 @@ proc start_firmware_update {} {
 	set arr(FirstError3) 0
 	set data [make_packed_maprequest arr]
 
-	set ::de1(firmware_update_button_label) [translate "Updating"]		
+	set ::de1(firmware_update_button_label) "Updating"
 
 	# it'd be useful here to test that the maprequest was correctly packed
 	set ::de1(currently_erasing_firmware) 1
@@ -363,10 +363,10 @@ proc firmware_upload_next {} {
 		save_settings
 
 		if {$::android != 1} {
-			set ::de1(firmware_update_button_label) [translate "Updated"]
+			set ::de1(firmware_update_button_label) "Updated"
 			
 		} else {
-			set ::de1(firmware_update_button_label) [translate "Testing"]
+			set ::de1(firmware_update_button_label) "Testing"
 
 			#set ::de1(firmware_update_size) 0
 			unset -nocomplain ::de1(firmware_update_binary)
@@ -385,7 +385,7 @@ proc firmware_upload_next {} {
 			userdata_append "Find first error in firmware update: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_09) $::cinstance($::de1(cuuid_09)) $data]
 		}
 	} else {
-		set ::de1(firmware_update_button_label) [translate "Updating"]		
+		set ::de1(firmware_update_button_label) "Updating"
 
 		set data "\x10[make_U24P0 $::de1(firmware_bytes_uploaded)][string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]"
 		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data]
@@ -1316,9 +1316,9 @@ proc de1_ble_handler { event data } {
 								msg "BLE firmware find error BLE recv: '$value' [array get arr2]'"
 						
 								if {[ifexists arr2(FirstError1)] == [expr 0xFF] && [ifexists arr2(FirstError2)] == [expr 0xFF] && [ifexists arr2(FirstError3)] == [expr 0xFD]} {
-									set ::de1(firmware_update_button_label) [translate "Updated"]
+									set ::de1(firmware_update_button_label) "Updated"
 								} else {
-									set ::de1(firmware_update_button_label) [translate "Failed"]
+									set ::de1(firmware_update_button_label) "Update failed"
 								}
 								set ::de1(currently_updating_firmware) 0
 
