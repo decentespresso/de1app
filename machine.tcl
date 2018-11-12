@@ -70,7 +70,7 @@ array set ::de1 {
 	firmware_bytes_uploaded 0
 	firmware_update_size 0
 	firmware_update_button_label "Firmware Update"
-	app_update_button_label "Update"
+	app_update_button_label ""
 	state 0
 	substate 0
 	current_context ""

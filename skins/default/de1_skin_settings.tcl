@@ -386,7 +386,8 @@ add_de1_variable "settings_4" 2270 534 -text "" -width [rescale_y_skin 400] -fon
 add_de1_variable "settings_4" 2500 410 -font Helv_7 -fill "#7f879a" -anchor "ne" -width 500 -justify "right" -textvariable {[firmware_uploaded_label]} 
 
 # app update
-add_de1_variable "settings_4" 1650 1300 -text [translate "Update"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -textvariable {[translate $::de1(app_update_button_label)]} 
+set ::de1(app_update_button_label) [translate "Update"]
+add_de1_variable "settings_4" 1650 1300 -text [translate "Update"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -textvariable {$::de1(app_update_button_label)} 
 	add_de1_button "settings_4" {set ::de1(app_update_button_label) [translate "Updating"]; update; start_app_update} 1300 1206 1900 1406
 
 # exit app feature
