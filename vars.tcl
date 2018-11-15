@@ -215,13 +215,24 @@ proc next_alarm_time { in } {
 	return $alarm
 }
 
+proc time_format {seconds} {
+	if {$::settings(enable_ampm) == 1} {
+		return [subst {[clock format $seconds -format {%A}] [string trim [clock format $seconds -format {%l:%M %p}]]}]
+	} else {
+		return [subst {[clock format $seconds -format {%A}] [string trim [clock format $seconds -format {%H:%M}]]}]
+	}
+}
+
+proc stripzeros {value} {
+    set retval [string trimleft $value 0]
+    if { ![string length $retval] } {
+		return 0
+    }
+    return $retval
+}
 
 proc format_alarm_time { in } {
-	if {$::settings(enable_ampm) == 1} {
-		return [clock format [next_alarm_time $in] -format {%l:%M %p}] 
-	} else {
-		return [clock format [next_alarm_time $in] -format {%H:%M}] 
-	}
+	return [time_format [next_alarm_time $in]]
 }
 
 proc start_timer_espresso_preinfusion {} {

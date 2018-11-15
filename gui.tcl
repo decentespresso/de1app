@@ -1070,7 +1070,7 @@ proc page_show {page_to_show} {
 }
 
 proc display_brightness {percentage} {
-	puts "brightness: $percentage %"
+	#puts "brightness: $percentage %"
 	borg brightness $percentage
 }
 
