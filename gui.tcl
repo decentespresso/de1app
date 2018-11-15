@@ -1069,6 +1069,11 @@ proc page_show {page_to_show} {
 	return [page_display_change $page_to_hide $page_to_show] 
 }
 
+proc display_brightness {percentage} {
+	puts "brightness: $percentage %"
+	borg brightness $percentage
+}
+
 proc page_display_change {page_to_hide page_to_show} {
 	msg "page_display_change $page_to_show"
 
@@ -1104,10 +1109,10 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	# set the brightness in one place
 	if {$page_to_show == "saver" } {
-		borg brightness $::settings(saver_brightness)
+		display_brightness $::settings(saver_brightness)
 		borg systemui $::android_full_screen_flags  
 	} else {
-		borg brightness $::settings(app_brightness)
+		display_brightness $::settings(app_brightness)
 
 		# let the Android controls show for 5 seconds, and if the user doesn't use them in that time, then hide them
 		after 5000 borg systemui $::android_full_screen_flags
