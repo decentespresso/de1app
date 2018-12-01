@@ -480,6 +480,7 @@ proc translation_langs {} {
 
 # from wikipedia https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
 # converted UTF8 chars to unicode with http://ratfactor.com/utf-8-to-unicode to avoid problems with this source being loaded on Windows (where UTF8 is not the default).
+# new url: https://mothereff.in/js-escapes
 # note that "Arabic" is the descriptor for that language because can make the correct arabic text render with this same font.
 proc translation_langs_array {} {
     return [list \
@@ -489,9 +490,11 @@ proc translation_langs_array {} {
         de Deutsch \
         de-ch Schwiizerd\u00FCtsch \
         it italiano \
+        ar "Arabic" \
         da "dansk" \
         sv "svenska" \
         no "Nynorsk" \
+        he "\u05E2\u05D1\u05E8\u05D9\u05EA" \
         es "\u0065\u0073\u0070\u0061\u00F1\u006F\u006C" \
         pt "\u0070\u006F\u0072\u0074\u0075\u0067\u0075\u00EA\u0073" \
         pl "\u004A\u119\u007A\u0079\u006B\u0020\u0070\u006F\u006C\u0073\u006B\u0069" \
@@ -507,8 +510,7 @@ proc translation_langs_array {} {
         tr "\u0054\u00FC\u0072\u006B\u00E7\u0065" \
         ro "\u006C\u0069\u006D\u0062\u0061\u0020\u0072\u006F\u006D\u00E2\u006E\u103" \
         hi "\u939\u93F\u928\u94D\u926\u940" \
-        ar "Arabic" \
-        nl "Nederlands" \
+        nl "Nederlands" 
     ]
 }
 
