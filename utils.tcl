@@ -890,6 +890,8 @@ proc load_settings {} {
     #puts "loading settings XXXXXXX"
     array set ::settings [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]
 
+    set ::settings(stress_test) 0
+
     set skintcl [read_file "[skin_directory]/skin.tcl"]
     if {![de1plus] && [string first "package require de1plus" $skintcl] != -1} {
         puts "Error: incompatible DE1PLUS skin loaded on a DE1"
