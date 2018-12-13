@@ -108,7 +108,8 @@ add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 ste
 # when the espresso machine is doing something, the top tabs have to first stop that function, then the tab can change
 add_de1_button "steam steam_zoom water espresso espresso_3" {say [translate {pre-heat}] $::settings(sound_button_in);set_next_page off preheat_1; start_idle; if {$::settings(one_tap_mode) == 1} { set_next_page hotwaterrinse preheat_2; start_hot_water_rinse } } 0 0 641 188
 add_de1_button "preheat_2 steam steam_zoom water" {say [translate {espresso}] $::settings(sound_button_in);set ::current_espresso_page off; set_next_page $::current_espresso_page off; start_idle; if {$::settings(one_tap_mode) == 1} { start_espresso } } 642 0 1277 188
-add_de1_button "preheat_2 water espresso espresso_3 steam steam_zoom espresso_zoomed espresso_zoomed_temperature" {say [translate {steam}] $::settings(sound_button_in);set_next_page off steam_1; start_idle; if {$::settings(one_tap_mode) == 1} { start_steam } } 1278 0 1904 188
+add_de1_button "preheat_2 water espresso espresso_3 steam steam_zoom" {say [translate {steam}] $::settings(sound_button_in);set_next_page off steam_1; start_idle; if {$::settings(one_tap_mode) == 1} { start_steam } } 1278 0 1904 188
+add_de1_button "espresso_zoomed espresso_zoomed_temperature" {say [translate {steam}] $::settings(sound_button_in); set_next_page off steam_1; page_show off; start_idle; if {$::settings(one_tap_mode) == 1} { start_steam } } 2020 0 2550 180
 add_de1_button "preheat_2 steam steam_zoom espresso espresso_3" {say [translate {water}] $::settings(sound_button_in);set_next_page off water_1; start_idle; if {$::settings(one_tap_mode) == 1} { start_water } } 1905 0 2560 188
 
 
