@@ -25,7 +25,7 @@ if {$::settings(display_rate_espresso) == 1} {
 add_de1_page "espresso" "espresso_2.png"
 add_de1_page "espresso_zoomed espresso_zoomed_temperature" "espresso_2_zoomed.png" 
 
-add_de1_page "steam" "steam_2.png"
+add_de1_page "steam steam_zoom" "steam_2.png"
 add_de1_page "steam_1" "steam_1.png"
 add_de1_page "steam_3 steam_zoom_3" "steam_3.png"
 
@@ -87,10 +87,10 @@ add_de1_text "off_zoomed espresso_3_zoomed espresso_zoomed off_zoomed_temperatur
 add_de1_text "off espresso espresso_3" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 # labels for STEAM tab on
-add_de1_text "steam steam_1 steam_3 steam_zoom_3" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "steam steam_1 steam_3 steam_zoom_3" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "steam steam_1 steam_3 steam_zoom_3" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "steam steam_1 steam_3 steam_zoom_3" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
 # labels for HOT WATER tab on
 add_de1_text "water water_1 water_3" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
@@ -99,11 +99,11 @@ add_de1_text "water water_1 water_3" 1665 100 -text [translate "STEAM"] -font He
 add_de1_text "water water_1 water_3" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
-add_de1_button "off espresso_3 steam_1 steam_3 steam_zoom_3 water_1 water_3 water_4" {say [translate {Flush}] $::settings(sound_button_in); set_next_page off preheat_1; page_show preheat_1; if {$::settings(one_tap_mode) == 1} { set_next_page hotwaterrinse preheat_2; start_hot_water_rinse } } 0 0 641 188
-add_de1_button "preheat_1 preheat_3 preheat_4 steam_1 steam_3 steam_zoom_3 water_1 water_3 water_4" {say [translate {espresso}] $::settings(sound_button_in); set_next_page off $::current_espresso_page; if {$::settings(one_tap_mode) == 1} { start_espresso }; page_show off;  } 642 0 1277 188
+add_de1_button "off espresso_3 steam_1 steam_3 steam_zoom_3 steam_zoom water_1 water_3 water_4" {say [translate {Flush}] $::settings(sound_button_in); set_next_page off preheat_1; page_show preheat_1; if {$::settings(one_tap_mode) == 1} { set_next_page hotwaterrinse preheat_2; start_hot_water_rinse } } 0 0 641 188
+add_de1_button "preheat_1 preheat_3 preheat_4 steam_1 steam_3 steam_zoom steam_zoom_3 water_1 water_3 water_4" {say [translate {espresso}] $::settings(sound_button_in); set_next_page off $::current_espresso_page; if {$::settings(one_tap_mode) == 1} { start_espresso }; page_show off;  } 642 0 1277 188
 add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 water_1 water_3 water_4" {say [translate {steam}] $::settings(sound_button_in); set_next_page off steam_1; page_show off; if {$::settings(one_tap_mode) == 1} { start_steam } } 1278 0 1904 188
 add_de1_button "off_zoomed espresso_3_zoomed espresso_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {steam}] $::settings(sound_button_in); set_next_page off steam_1; page_show off; if {$::settings(one_tap_mode) == 1} { start_steam } } 2020 0 2550 180
-add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 steam_zoom_3" {say [translate {water}] $::settings(sound_button_in); set_next_page off water_1; page_show off; if {$::settings(one_tap_mode) == 1} { start_water } } 1905 0 2560 188
+add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 steam_zoom steam_zoom_3" {say [translate {water}] $::settings(sound_button_in); set_next_page off water_1; page_show off; if {$::settings(one_tap_mode) == 1} { start_water } } 1905 0 2560 188
 
 # when the espresso machine is doing something, the top tabs have to first stop that function, then the tab can change
 add_de1_button "steam water espresso espresso_3" {say [translate {pre-heat}] $::settings(sound_button_in);set_next_page off preheat_1; start_idle; if {$::settings(one_tap_mode) == 1} { set_next_page hotwaterrinse preheat_2; start_hot_water_rinse } } 0 0 641 188
@@ -425,10 +425,9 @@ add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_
 add_de1_widget "steam" graph 1810 1090 { 
 	bind $widget [platform_button_press] { 
 		say [translate {zoom}] $::settings(sound_button_in); 
-		set_next_page off steam_zoom_3; 
-		set_next_page steam_3 steam_zoom_3; 
+		#set_next_page off steam_zoom; 
+		set_next_page steam steam_zoom; 
 		page_show $::de1(current_context);
-		start_idle
 	}
 	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color #18c37e  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
 	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
@@ -470,6 +469,21 @@ add_de1_widget "steam_zoom_3" graph 34 214 {
 	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
 } -plotbackground #FFFFFF -width [rescale_x_skin 2490] -height [rescale_y_skin 1190] -borderwidth 1 -background #FFFFFF -plotrelief flat 
 
+add_de1_widget "steam_zoom" graph 34 214 { 
+	bind $widget [platform_button_press] { 
+		say [translate {zoom}] $::settings(sound_button_in); 
+		set_next_page off steam; 
+		set_next_page steam_zoom steam; 
+		page_show $::de1(current_context);
+	}
+	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+
+	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
+	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
+} -plotbackground #FFFFFF -width [rescale_x_skin 2490] -height [rescale_y_skin 1190] -borderwidth 1 -background #FFFFFF -plotrelief flat 
+
 
 ##########################################################################################################################################################################################################################################################################
 # data card displayed during espresso making
@@ -496,7 +510,7 @@ if {$::settings(waterlevel_indicator_on) == 1} {
 	add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2544 190 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1410] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #ecedfa -borderwidth 0  -highlightthickness 0
 
 	# water level sensor on other tabs page (white background)
-	add_de1_widget "preheat_2 preheat_3 preheat_4 steam steam_3 steam_zoom_3 water water_3 water_4" scale 2510 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1166] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #ffffff -borderwidth 0  -highlightthickness 0
+	add_de1_widget "preheat_2 preheat_3 preheat_4 steam steam_3 steam_zoom steam_zoom_3 water water_3 water_4" scale 2510 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1166] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #ffffff -borderwidth 0  -highlightthickness 0
 
 	# water level sensor on other tabs page (light blue background)
 	add_de1_widget "preheat_1 steam_1 water_1" scale 2510 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1166] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #f2f2fc -borderwidth 0  -highlightthickness 0
@@ -804,8 +818,8 @@ add_de1_variable "steam_3" 1390 775 -text [translate "RESTART"] -font $green_but
 
 add_de1_text "steam_1 steam steam_3" 1390 865 -text [translate "STEAM"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
-add_de1_button "steam_1" {say [translate {steam}] $::settings(sound_button_in); start_steam} 1030 210 2560 1400
-add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); start_steam} 1030 210 2560 1070
+add_de1_button "steam_1" {say [translate {steam}] $::settings(sound_button_in); set_next_page steam steam; start_steam} 1030 210 2560 1400
+add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); set_next_page steam steam; start_steam} 1030 210 2560 1070
 
 
 # future feature
