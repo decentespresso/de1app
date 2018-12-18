@@ -342,6 +342,7 @@ proc make_de1_dir {} {
         skins/Insight/1280x800/scentone_spice.jpg 1
         skins/Insight/1280x800/scentone_vegetable.jpg 1
         skins/Insight/1280x800/scentone_savory.jpg 1
+        skins/Insight/1280x800/describe_espresso0.jpg 1
         skins/Insight/1280x800/describe_espresso.jpg 1
         skins/Insight/1280x800/describe_espresso2.jpg 1
         skins/Insight/2560x1600/icon.jpg 1
@@ -372,6 +373,7 @@ proc make_de1_dir {} {
         skins/Insight/2560x1600/scentone_spice.jpg 1
         skins/Insight/2560x1600/scentone_vegetable.jpg 1
         skins/Insight/2560x1600/scentone_savory.jpg 1
+        skins/Insight/2560x1600/describe_espresso0.jpg 1
         skins/Insight/2560x1600/describe_espresso.jpg 1
         skins/Insight/2560x1600/describe_espresso2.jpg 1
 

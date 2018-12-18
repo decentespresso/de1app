@@ -17,6 +17,7 @@ add_de1_page "scentone_savory" "scentone_savory.jpg"
 
 add_de1_page "describe_espresso" "describe_espresso.jpg"
 add_de1_page "describe_espresso2" "describe_espresso2.jpg"
+add_de1_page "describe_espresso0" "describe_espresso0.jpg"
 
 # saving an exiting from each of the aroma categories
 

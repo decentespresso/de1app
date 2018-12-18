@@ -14,8 +14,9 @@ convert ~/Desktop/scentone_all0008.tif scentone_spice.jpg
 convert ~/Desktop/scentone_all0009.tif scentone_vegetable.jpg
 convert ~/Desktop/scentone_all0010.tif scentone_savory.jpg
 
-convert ~/Desktop/scentone_all0011.tif describe_espresso.jpg
-convert ~/Desktop/scentone_all0012.tif describe_espresso2.jpg
+convert ~/Desktop/scentone_all0011.tif describe_espresso0.jpg
+convert ~/Desktop/scentone_all0012.tif describe_espresso.jpg
+convert ~/Desktop/scentone_all0013.tif describe_espresso2.jpg
 
 
 rm ~/Desktop/scentone_all0000.tif 
@@ -34,4 +35,5 @@ rm ~/Desktop/scentone_all0010.tif
 
 rm ~/Desktop/scentone_all0011.tif 
 rm ~/Desktop/scentone_all0012.tif 
+rm ~/Desktop/scentone_all0013.tif 
 
