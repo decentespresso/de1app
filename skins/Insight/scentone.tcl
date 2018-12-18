@@ -21,8 +21,8 @@ add_de1_page "describe_espresso0" "describe_espresso0.jpg"
 
 # saving an exiting from each of the aroma categories
 
-add_de1_text "describe_espresso describe_espresso2" 2275 1520 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-add_de1_text "describe_espresso describe_espresso2" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "describe_espresso describe_espresso0 describe_espresso2" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "describe_espresso describe_espresso0 describe_espresso2" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
 add_de1_button "describe_espresso" {say [translate {Scent One}] $::settings(sound_button_in); set_next_page off scentone_1; page_show off } 2016 1206 2560 1400
 
@@ -35,7 +35,7 @@ add_de1_button "scentone_1" {say [translate {Scent One}] $::settings(sound_butto
 add_de1_button "scentone_1" {say [translate {reset}] $::settings(sound_button_in); set ::settings(scentone) "" } 1505 1406 2015 1600
 add_de1_button "scentone_1" {say [translate {save}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off } 2016 1406 2560 1600
 
-add_de1_button "describe_espresso describe_espresso2" {say [translate {save}] $::settings(sound_button_in); save_settings; save_espresso_rating_to_history; 
+add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [translate {save}] $::settings(sound_button_in); save_settings; save_espresso_rating_to_history; 
 	if {$::settings(has_scale) != $::settings_backup(has_scale) || $::settings(has_refractometer) != $::settings_backup(has_refractometer) } {
 		.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 		set_next_page off message; page_show message
@@ -43,17 +43,60 @@ add_de1_button "describe_espresso describe_espresso2" {say [translate {save}] $:
 		set_next_page off espresso_3; page_show off
 	}
  } 2016 1406 2560 1600
-add_de1_button "describe_espresso describe_espresso2" {say [translate {cancel}] $::settings(sound_button_in); array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; set_next_page off espresso_3; page_show off} 1505 1406 2015 1600
+add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [translate {cancel}] $::settings(sound_button_in); array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; set_next_page off espresso_3; page_show off} 1505 1406 2015 1600
 
 
 #add_de1_text "scentone_1" 1245 1520 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 
 
 ##################################################################################################################################################################################################################
+# god shot page
+
+
+add_de1_text "describe_espresso0" 70 346 -text [translate "Your God shots"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
+add_de1_text "describe_espresso0" 70 1222 -text [translate "Save your current shot"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
+add_de1_widget "describe_espresso0" entry 70 1282  {
+	set ::globals(widget_god_shot_save) $widget
+	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); change_current_god_shot_name}
+	} -width 49 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(god_shot_name)
+
+
+add_de1_button "describe_espresso0" {say [translate {delete}] $::settings(sound_button_in); delete_current_god_shot} 1180 350 1380 600
+add_de1_button "describe_espresso0" {say [translate {add}] $::settings(sound_button_in); add_to_god_shots} 1180 1200 1380 1400
+
+set godshots_listbox_height 11
+#if {$::settings(skale_bluetooth_address) != ""} {
+#	set godshots_listbox_height 9
+#}
+
+add_de1_widget "describe_espresso0" listbox 70 420 { 
+	set ::globals(god_shots_widget) $widget
+	fill_god_shots_listbox
+	#load_advanced_profile_step 1
+	bind $widget <<ListboxSelect>> ::load_god_shot
+
+} -background #fbfaff -yscrollcommand {scale_scroll ::gotshots_slider} -font Helv_9 -bd 0 -height $godshots_listbox_height -width 33 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+
+set ::gotshots_slider 0
+
+# draw the scrollbar off screen so that it gets resized and moved to the right place on the first draw
+set ::god_shots_scrollbar [add_de1_widget "describe_espresso0" scale 10000 1 {} -from 0 -to .50 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::advsteps -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(god_shots_widget) $::gotshots_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
+
+proc set_god_shot_scrollbar_dimensions {} {
+	# set the height of the scrollbar to be the same as the listbox
+	$::god_shots_scrollbar configure -length [winfo height $::globals(god_shots_widget)]
+	set coords [.can coords $::globals(god_shots_widget) ]
+	set newx [expr {[winfo width $::globals(god_shots_widget)] + [lindex $coords 0]}]
+	.can coords $::god_shots_scrollbar "$newx [lindex $coords 1]"
+}
+
+##################################################################################################################################################################################################################
 # main espresso description page
 
 set slider_trough_color1 #e2e2e2 
 set slider_trough_color2 #f3f3f3 
+
+
 
 # from http://www.iconarchive.com/show/shiny-smiley-icons-by-iconicon.html
 add_de1_text "describe_espresso" 80 360 -text [translate "Enjoyment"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
@@ -123,11 +166,11 @@ add_de1_text "describe_espresso2" 1340 560 -text [translate "Enable these featur
 
 
 
-	add_de1_text "describe_espresso2" 1340 850 -text [translate "God shot"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-		add_de1_text "describe_espresso2" 1650 1016 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-		add_de1_text "describe_espresso2" 2250 1016 -text [translate "Erase"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-		add_de1_button "describe_espresso2" {say [translate {Saved}] $::settings(sound_button_in); god_shot_save; set_next_page off off; page_show off} 1300 900 1900 1116
-		add_de1_button "describe_espresso2" {say [translate {Cancel}] $::settings(sound_button_in); god_shot_clear; set_next_page off off; page_show off} 1910 900 2550 1116
+	#add_de1_text "describe_espresso2" 1340 850 -text [translate "God shot"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+	#	add_de1_text "describe_espresso2" 1650 1016 -text [translate "Save"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	#	add_de1_text "describe_espresso2" 2250 1016 -text [translate "Erase"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	#	add_de1_button "describe_espresso2" {say [translate {Saved}] $::settings(sound_button_in); god_shot_save; set_next_page off off; page_show off} 1300 900 1900 1116
+	#	add_de1_button "describe_espresso2" {say [translate {Cancel}] $::settings(sound_button_in); god_shot_clear; set_next_page off off; page_show off} 1910 900 2550 1116
 
 
 
@@ -163,17 +206,21 @@ add_de1_variable "describe_espresso" 1610 1280 -text "" -font Helv_6 -width 200 
 ##################################################################################################################################################################################################################
 # describe your espresso
 
-add_de1_text "describe_espresso" 640 230 -text [translate "This espresso"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
-add_de1_text "describe_espresso" 1920 230 -text [translate "Your setup"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso" 1330 230 -text [translate "This espresso"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso describe_espresso0" 2160 230 -text [translate "Your setup"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
 
-add_de1_text "describe_espresso2" 640 230 -text [translate "This espresso"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
-add_de1_text "describe_espresso2" 1920 230 -text [translate "Your setup"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso2 describe_espresso0" 1330 230 -text [translate "This espresso"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso2" 2160 230 -text [translate "Your setup"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso0" 460 230 -text [translate "God shot"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso2 describe_espresso" 460 230 -text [translate "God shot"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
 
-add_de1_text "describe_espresso" 1280 90 -text [translate "Describe this espresso"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
-add_de1_text "describe_espresso2" 1280 90 -text [translate "Describe your setup"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
+#add_de1_text "describe_espresso" 1280 90 -text [translate "Describe this espresso"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
+#add_de1_text "describe_espresso2" 1280 90 -text [translate "Describe your setup"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
+#add_de1_text "describe_espresso0" 1280 90 -text [translate "Your God shots"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
 
-add_de1_button "describe_espresso2" {say [translate {this espresso}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off} 0 0 1250 300
-add_de1_button "describe_espresso" {say [translate {your setup}] $::settings(sound_button_in); set_next_page off describe_espresso2; page_show off} 1290 0 2560 300
+add_de1_button "describe_espresso0 describe_espresso2" {say [translate {this espresso}] $::settings(sound_button_in); set_next_page off describe_espresso; page_show off} 860 0 1680 300
+add_de1_button "describe_espresso0 describe_espresso" {say [translate {your setup}] $::settings(sound_button_in); set_next_page off describe_espresso2; page_show off} 1710 0 2560 300
+add_de1_button "describe_espresso describe_espresso2" {say [translate {God shot}] $::settings(sound_button_in); set_next_page off describe_espresso0; page_show off} 0 0 850 300
 
 
 ##################################################################################################################################################################################################################
@@ -581,4 +628,5 @@ add_de1_button "scentone_savory" {say [translate {Beef}] $::settings(sound_butto
 # end
 #####################################################################
 
-#set_next_page off describe_espresso2
+set_next_page off describe_espresso0
+after 100 set_god_shot_scrollbar_dimensions

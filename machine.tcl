@@ -167,6 +167,7 @@ array set ::settings {
 	bean_notes {}
 	chart_dashes_flow ""
 	chart_dashes_temperature ""
+	name {}
 	chart_dashes_pressure ""
 	water_level_sensor_max 50
 	espresso_notes {}
@@ -193,6 +194,7 @@ array set ::settings {
 	waterlevel_indicator_blink 1
 	drink_weight 0
 	espresso_enjoyment 0
+	god_espresso_name {}
 	god_espresso_pressure {}
 	god_espresso_temperature_basket {}
 	god_espresso_flow {}

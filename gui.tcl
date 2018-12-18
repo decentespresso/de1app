@@ -1844,6 +1844,51 @@ proc calibration_gui_init {} {
 	}
 }
 
+proc god_shot_files {} {
+	set files [lsort -dictionary [glob -tails -directory "[homedir]/godshots/" *.shot]]
+	#puts "skin_directories: $dirs"
+	set dd {}
+	foreach f $files {
+	    
+	    set fn "[homedir]/godshots/$f"
+	    array unset -nocomplete godprops
+	    array set godprops [read_file $fn]
+	    #set skintcl ""
+
+	    set name [ifexists godprops(name)]
+	    if {$name == "None"} {
+	    	set name [translate "None"]
+	    }
+		lappend dd $f $name
+	}
+	#puts "god shots: '$dd'"
+	return $dd
+}
+
+
+
+proc fill_god_shots_listbox {} {
+	#puts "fill_skin_listbox $widget" 
+	set widget $::globals(god_shots_widget)
+	$widget delete 0 99999
+
+	set cnt 0
+	set ::current_skin_number 0
+	foreach {fn desc} [god_shot_files] {
+		$widget insert $cnt $desc
+		incr cnt
+	}
+	
+	#$widget selection set $::current_skin_number
+
+
+	make_current_listbox_item_blue $widget
+	#$widget yview $::current_skin_number
+
+}
+
+
+
 
 #install_de1_app_icon
 #install_de1plus_app_icon
