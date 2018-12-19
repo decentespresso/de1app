@@ -53,6 +53,14 @@ add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [t
 # god shot page
 
 
+add_de1_widget "describe_espresso0" graph 1382 314 {
+	$widget element create god_line_espresso_flow_2x  -xdata espresso_elapsed -ydata god_espresso_flow_2x -symbol none -label "" -linewidth [rescale_x_skin 24] -color #e4edff -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
+	if {$::settings(skale_bluetooth_address) != ""} {
+		$widget element create god_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata god_espresso_flow_weight_2x -symbol none -label "" -linewidth [rescale_x_skin 16] -color #edd4c1 -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
+	}
+	$widget element create god_line2_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 24] -color #c5ffe7  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
+} -plotbackground #FFFFFF -width [rescale_x_skin 1130] -height [rescale_y_skin 700] -borderwidth 1 -background #FFFFFF -plotrelief flat
+
 add_de1_text "describe_espresso0" 70 346 -text [translate "Your God shots"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_text "describe_espresso0" 70 1222 -text [translate "Save your current shot"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_widget "describe_espresso0" entry 70 1282  {

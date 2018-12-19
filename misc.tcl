@@ -87,6 +87,8 @@ proc make_de1_dir {} {
         fonts/sarabun.ttf *
         fonts/sarabunbold.ttf *
 
+        godshots/none.shot *
+
         splash/1280x800/de1.jpg *
         splash/2560x1600/de1.jpg *
 

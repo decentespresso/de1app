@@ -1859,7 +1859,7 @@ proc god_shot_files {} {
 	    if {$name == "None"} {
 	    	set name [translate "None"]
 	    }
-		lappend dd $f $name
+		lappend dd $name $f 
 	}
 	#puts "god shots: '$dd'"
 	return $dd
@@ -1875,7 +1875,9 @@ proc fill_god_shots_listbox {} {
 
 	set cnt 0
 	set ::current_skin_number 0
-	foreach {fn desc} [god_shot_files] {
+	array set god_shot_files_array [god_shot_files]
+	foreach desc [lsort [array names god_shot_files_array]] {
+		set fn $god_shot_files_array($desc)
 		$widget insert $cnt $desc
 		set ::god_shot_filenames($cnt) $fn
 		incr cnt
@@ -1977,9 +1979,13 @@ proc load_god_shot {} {
     set ::settings(god_espresso_temperature_basket) $godprops(espresso_temperature_basket)
     set ::settings(god_espresso_flow) $godprops(espresso_flow)
     set ::settings(god_espresso_flow_weight) $godprops(espresso_flow_weight)
-    set ::settings(god_espresso_elapsed) $godprops(espresso_elapsed)
     set ::settings(god_espresso_flow) $godprops(espresso_flow)
     set ::settings(god_espresso_flow_weight) $godprops(espresso_flow_weight)
+
+    if {[llength [ifexists godprops(espresso_elapsed)]] > 0} {
+    	set ::settings(god_espresso_elapsed) $godprops(espresso_elapsed)
+    }
+
 
     save_settings
     god_shot_reference_reset
