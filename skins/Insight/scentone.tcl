@@ -57,12 +57,12 @@ add_de1_text "describe_espresso0" 70 346 -text [translate "Your God shots"] -fon
 add_de1_text "describe_espresso0" 70 1222 -text [translate "Save your current shot"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_widget "describe_espresso0" entry 70 1282  {
 	set ::globals(widget_god_shot_save) $widget
-	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); change_current_god_shot_name}
+	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); save_to_god_shots}
 	} -width 49 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(god_shot_name)
 
 
 add_de1_button "describe_espresso0" {say [translate {delete}] $::settings(sound_button_in); delete_current_god_shot} 1180 350 1380 600
-add_de1_button "describe_espresso0" {say [translate {add}] $::settings(sound_button_in); add_to_god_shots} 1180 1200 1380 1400
+add_de1_button "describe_espresso0" {say [translate {add}] $::settings(sound_button_in); save_to_god_shots} 1180 1200 1380 1400
 
 set godshots_listbox_height 11
 #if {$::settings(skale_bluetooth_address) != ""} {
@@ -74,6 +74,7 @@ add_de1_widget "describe_espresso0" listbox 70 420 {
 	fill_god_shots_listbox
 	#load_advanced_profile_step 1
 	bind $widget <<ListboxSelect>> ::load_god_shot
+
 
 } -background #fbfaff -yscrollcommand {scale_scroll ::gotshots_slider} -font Helv_9 -bd 0 -height $godshots_listbox_height -width 33 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
@@ -88,7 +89,17 @@ proc set_god_shot_scrollbar_dimensions {} {
 	set coords [.can coords $::globals(god_shots_widget) ]
 	set newx [expr {[winfo width $::globals(god_shots_widget)] + [lindex $coords 0]}]
 	.can coords $::god_shots_scrollbar "$newx [lindex $coords 1]"
+
+	if {$::settings(god_shot_name) == ""} {
+		set ::settings(god_shot_name) $::settings(profile_title)
+	}
 }
+
+proc change_current_god_shot_name {} {
+#read_
+}
+
+
 
 ##################################################################################################################################################################################################################
 # main espresso description page
@@ -628,5 +639,5 @@ add_de1_button "scentone_savory" {say [translate {Beef}] $::settings(sound_butto
 # end
 #####################################################################
 
-set_next_page off describe_espresso0
-after 100 set_god_shot_scrollbar_dimensions
+#set_next_page off describe_espresso0
+#after 100 set_god_shot_scrollbar_dimensions

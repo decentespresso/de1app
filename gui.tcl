@@ -1869,6 +1869,7 @@ proc god_shot_files {} {
 
 proc fill_god_shots_listbox {} {
 	#puts "fill_skin_listbox $widget" 
+	unset -nocomplain ::god_shot_filenames
 	set widget $::globals(god_shots_widget)
 	$widget delete 0 99999
 
@@ -1876,18 +1877,120 @@ proc fill_god_shots_listbox {} {
 	set ::current_skin_number 0
 	foreach {fn desc} [god_shot_files] {
 		$widget insert $cnt $desc
+		set ::god_shot_filenames($cnt) $fn
 		incr cnt
 	}
-	
+
 	#$widget selection set $::current_skin_number
-
-
 	make_current_listbox_item_blue $widget
 	#$widget yview $::current_skin_number
-
 }
 
 
+proc save_to_god_shots {} {
+	if {$::settings(god_shot_name) == [translate "Saved"] || $::settings(god_shot_name) == [translate "Updated"] || $::settings(god_shot_name) == [translate "Ok"]} {
+		return
+	}
+
+
+	set ::settings(god_shot_name) [string trim $::settings(god_shot_name)]
+	if {$::settings(god_shot_name) == "" || [espresso_elapsed length] <= 5} {
+		# refuse to save if no name or too short
+		return 
+	}
+
+	set clock [clock seconds]
+	set filename [subst {[clock format $clock -format "%Y%m%dT%H%M%S"].shot}]
+
+	set files [lsort -dictionary [glob -tails -directory "[homedir]/godshots/" *.shot]]
+	#puts "skin_directories: $dirs"
+	set dd {}
+	set msg [translate "Saved"]
+	set updated 0
+	foreach f $files {
+	    set fn "[homedir]/godshots/$f"
+	    array unset -nocomplete godprops
+	    array set godprops [read_file $fn]
+	    if {[ifexists godprops(name)] == $::settings(god_shot_name)} {
+	    	puts "found pre-existing god shot $f with the same description"
+	    	set filename $f
+	    	set msg [translate "Updated"]
+	    	set updated 1
+	    	break
+	    }
+	}
+
+	set espresso_data {}
+	append espresso_data "filename [list $filename]\n"
+	append espresso_data "name [list $::settings(god_shot_name)]\n"
+	append espresso_data "clock $clock\n"
+
+	append espresso_data "espresso_elapsed {[espresso_elapsed range 0 end]}\n"
+	append espresso_data "espresso_pressure {[espresso_pressure range 0 end]}\n"
+	append espresso_data "espresso_weight {[espresso_weight range 0 end]}\n"
+	append espresso_data "espresso_flow {[espresso_flow range 0 end]}\n"
+	append espresso_data "espresso_flow_weight {[espresso_flow_weight range 0 end]}\n"
+	append espresso_data "espresso_temperature_basket {[espresso_temperature_basket range 0 end]}\n"
+	append espresso_data "espresso_temperature_mix {[espresso_temperature_mix range 0 end]}\n"
+
+	set fn "[homedir]/godshots/$filename"
+	write_file $fn $espresso_data
+	
+	if {$updated != 1} {
+		fill_god_shots_listbox
+	}
+	puts "save_to_god_shots ran"
+
+	god_shot_save
+
+	after 1000 "set ::settings(god_shot_name) \{$::settings(god_shot_name)\}; $::globals(widget_god_shot_save) icursor 999"
+	set ::settings(god_shot_name) $msg
+
+}
+
+proc delete_current_god_shot {} {
+	set stepnum [$::globals(god_shots_widget) curselection]
+	set f $::god_shot_filenames($stepnum)
+	if {$f == "none.shot"} {
+		return
+	}
+
+	set fn "[homedir]/godshots/$f"
+	file delete $fn
+	fill_god_shots_listbox
+
+}
+
+proc load_god_shot {} {
+	set stepnum [$::globals(god_shots_widget) curselection]
+	set f $::god_shot_filenames($stepnum)
+	puts "god shot: $stepnum $f"
+	if {$stepnum == ""} {
+		return
+	}
+
+	set fn "[homedir]/godshots/$f"
+	array unset -nocomplete godprops
+	array set godprops [read_file $fn]
+
+    set ::settings(god_espresso_pressure) $godprops(espresso_pressure)
+    set ::settings(god_espresso_temperature_basket) $godprops(espresso_temperature_basket)
+    set ::settings(god_espresso_flow) $godprops(espresso_flow)
+    set ::settings(god_espresso_flow_weight) $godprops(espresso_flow_weight)
+    set ::settings(god_espresso_elapsed) $godprops(espresso_elapsed)
+    set ::settings(god_espresso_flow) $godprops(espresso_flow)
+    set ::settings(god_espresso_flow_weight) $godprops(espresso_flow_weight)
+
+    save_settings
+    god_shot_reference_reset
+
+	make_current_listbox_item_blue $::globals(god_shots_widget)
+
+	#after 1000 "set ::settings(god_shot_name) \{$godprops(name)\}; $::globals(widget_god_shot_save) icursor 999"
+    #set ::settings(god_shot_name) [translate "Ok"]
+    set ::settings(god_shot_name) $godprops(name)
+
+}
 
 
 #install_de1_app_icon

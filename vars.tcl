@@ -1352,7 +1352,6 @@ proc skin_directories {} {
 
 
 proc fill_history_listbox {} {
-	#puts "fill_skin_listbox $widget" 
 	set widget $::globals(history_listbox)
 
 	$widget delete 0 99999

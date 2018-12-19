@@ -194,6 +194,7 @@ array set ::settings {
 	waterlevel_indicator_blink 1
 	drink_weight 0
 	espresso_enjoyment 0
+	god_espresso_filename {}
 	god_espresso_name {}
 	god_espresso_pressure {}
 	god_espresso_temperature_basket {}

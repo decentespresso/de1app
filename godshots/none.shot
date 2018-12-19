@@ -1,4 +1,6 @@
 name {None}
+clock 0
+filename "none.shot"
 espresso_elapsed {}
 espresso_pressure {}
 espresso_weight {}
