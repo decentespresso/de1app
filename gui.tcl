@@ -1952,7 +1952,10 @@ proc save_to_god_shots {} {
 
 proc delete_current_god_shot {} {
 	set stepnum [$::globals(god_shots_widget) curselection]
-	set f $::god_shot_filenames($stepnum)
+	if {$stepnum == ""} {
+		return 
+	}
+	set f [ifexists ::god_shot_filenames($stepnum)]
 	if {$f == "none.shot"} {
 		return
 	}
@@ -1964,8 +1967,17 @@ proc delete_current_god_shot {} {
 }
 
 proc load_god_shot {} {
+	if {$::de1(current_context) != "describe_espresso0"} {
+		# spurious tk call from Android
+		#puts "retruning"
+		return 
+	}
+
 	set stepnum [$::globals(god_shots_widget) curselection]
-	set f $::god_shot_filenames($stepnum)
+	if {$stepnum == ""} {
+		return 
+	}
+	set f [ifexists ::god_shot_filenames($stepnum)]
 	puts "god shot: $stepnum $f"
 	if {$stepnum == ""} {
 		return
