@@ -1880,6 +1880,11 @@ proc fill_god_shots_listbox {} {
 		set fn $god_shot_files_array($desc)
 		$widget insert $cnt $desc
 		set ::god_shot_filenames($cnt) $fn
+
+		if {$desc == $::settings(god_espresso_name)} {
+			$widget selection set $cnt
+			load_god_shot
+		}
 		incr cnt
 	}
 
@@ -1890,16 +1895,18 @@ proc fill_god_shots_listbox {} {
 
 
 proc save_to_god_shots {} {
-	if {$::settings(god_shot_name) == [translate "Saved"] || $::settings(god_shot_name) == [translate "Updated"] || $::settings(god_shot_name) == [translate "Ok"]} {
+	if {$::settings(god_espresso_name) == [translate "Saved"] || $::settings(god_espresso_name) == [translate "Updated"] || $::settings(god_espresso_name) == [translate "Ok"]} {
 		return
 	}
 
 
-	set ::settings(god_shot_name) [string trim $::settings(god_shot_name)]
-	if {$::settings(god_shot_name) == "" || [espresso_elapsed length] <= 5} {
+	set ::settings(god_espresso_name) [string trim $::settings(god_espresso_name)]
+	if {$::settings(god_espresso_name) == "" || [llength [espresso_pressure range 0 end]] <= 50} {
 		# refuse to save if no name or too short
 		return 
 	}
+
+	#puts "ll2: '[llength [espresso_pressure range 0 end]]'"
 
 	set clock [clock seconds]
 	set filename [subst {[clock format $clock -format "%Y%m%dT%H%M%S"].shot}]
@@ -1913,18 +1920,23 @@ proc save_to_god_shots {} {
 	    set fn "[homedir]/godshots/$f"
 	    array unset -nocomplete godprops
 	    array set godprops [read_file $fn]
-	    if {[ifexists godprops(name)] == $::settings(god_shot_name)} {
+	    if {[ifexists godprops(name)] == $::settings(god_espresso_name)} {
 	    	puts "found pre-existing god shot $f with the same description"
 	    	set filename $f
 	    	set msg [translate "Updated"]
 	    	set updated 1
+
+			if {$f == "none.shot"} {
+				return
+			}
+
 	    	break
 	    }
 	}
 
 	set espresso_data {}
 	append espresso_data "filename [list $filename]\n"
-	append espresso_data "name [list $::settings(god_shot_name)]\n"
+	append espresso_data "name [list $::settings(god_espresso_name)]\n"
 	append espresso_data "clock $clock\n"
 
 	append espresso_data "espresso_elapsed {[espresso_elapsed range 0 end]}\n"
@@ -1945,8 +1957,8 @@ proc save_to_god_shots {} {
 
 	god_shot_save
 
-	after 1000 "set ::settings(god_shot_name) \{$::settings(god_shot_name)\}; $::globals(widget_god_shot_save) icursor 999"
-	set ::settings(god_shot_name) $msg
+	after 1000 "set ::settings(god_espresso_name) \{$::settings(god_espresso_name)\}; $::globals(widget_god_shot_save) icursor 999"
+	set ::settings(god_espresso_name) $msg
 
 }
 
@@ -1998,15 +2010,17 @@ proc load_god_shot {} {
     	set ::settings(god_espresso_elapsed) $godprops(espresso_elapsed)
     }
 
+    # also load the godshot as if it were the most recent espresso
+    #array set ::settings [read_file $fn]
 
     save_settings
     god_shot_reference_reset
 
 	make_current_listbox_item_blue $::globals(god_shots_widget)
 
-	#after 1000 "set ::settings(god_shot_name) \{$godprops(name)\}; $::globals(widget_god_shot_save) icursor 999"
-    #set ::settings(god_shot_name) [translate "Ok"]
-    set ::settings(god_shot_name) $godprops(name)
+	#after 1000 "set ::settings(god_espresso_name) \{$godprops(name)\}; $::globals(widget_god_shot_save) icursor 999"
+    #set ::settings(god_espresso_name) [translate "Ok"]
+    set ::settings(god_espresso_name) $godprops(name)
 
 }
 

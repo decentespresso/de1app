@@ -1,9 +1,11 @@
-name {None}
-clock 0
-filename "none.shot"
-espresso_pressure {}
-espresso_weight {}
-espresso_flow {}
-espresso_flow_weight {}
-espresso_temperature_basket {}
-espresso_temperature_mix {}
+filename none.shot
+name None
+clock 1545215838
+espresso_elapsed {0.0 0.134 0.275 0.408 0.571 0.707 0.84 0.97 1.08 1.22 1.346 1.471 1.607 1.732 1.875 2.021 2.156 2.29 2.42 2.558 2.692 2.83 2.963 3.096 3.24 3.38 3.507 3.639 3.766 3.907 4.036 4.174 4.307 4.435 4.563 4.708 4.847 4.99 5.124 5.26 5.388 5.523 5.65 5.79 5.919 6.046 6.18 6.321 6.448 6.574 6.706}
+espresso_pressure {0.0}
+espresso_weight {0.0}
+espresso_flow {0.0}
+espresso_flow_weight {0.0}
+espresso_temperature_basket {88.0}
+espresso_temperature_mix {88.0}
+
