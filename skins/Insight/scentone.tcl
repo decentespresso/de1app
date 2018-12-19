@@ -66,7 +66,7 @@ add_de1_text "describe_espresso0" 70 1222 -text [translate "Save your current sh
 add_de1_widget "describe_espresso0" entry 70 1282  {
 	set ::globals(widget_god_shot_save) $widget
 	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); save_to_god_shots}
-	} -width 46 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(god_shot_name)
+	} -width 45 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(god_shot_name)
 
 
 add_de1_button "describe_espresso0" {say [translate {delete}] $::settings(sound_button_in); delete_current_god_shot} 1180 350 1380 600
