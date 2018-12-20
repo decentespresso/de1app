@@ -1993,6 +1993,7 @@ proc preview_tablet_skin {} {
 		#set w 
 		#set skindir [$w get $::current_skin_number]
 		#return
+		puts "::current_skin_number: $::current_skin_number"
 		$w selection set $::current_skin_number
 	}
 

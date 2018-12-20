@@ -1874,7 +1874,7 @@ proc fill_god_shots_listbox {} {
 	$widget delete 0 99999
 
 	set cnt 0
-	set ::current_skin_number 0
+	#set ::current_skin_number 0
 	array set god_shot_files_array [god_shot_files]
 	foreach desc [lsort [array names god_shot_files_array]] {
 		set fn $god_shot_files_array($desc)
