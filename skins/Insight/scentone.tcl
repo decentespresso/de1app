@@ -3,21 +3,21 @@
 # scent one aroma system
 ##############################################
 
-add_de1_page "scentone_1" "scentone_1.jpg"
-add_de1_page "scentone_tropical" "scentone_tropical.jpg"
-add_de1_page "scentone_berry" "scentone_berry.jpg"
-add_de1_page "scentone_citrus" "scentone_citrus.jpg"
-add_de1_page "scentone_stone" "scentone_stone.jpg"
-add_de1_page "scentone_cereal" "scentone_cereal.jpg"
-add_de1_page "scentone_chocolate" "scentone_chocolate.jpg"
-add_de1_page "scentone_flower" "scentone_flower.jpg"
-add_de1_page "scentone_spice" "scentone_spice.jpg"
-add_de1_page "scentone_vegetable" "scentone_vegetable.jpg"
-add_de1_page "scentone_savory" "scentone_savory.jpg"
+add_de1_page "scentone_1" "scentone_1.jpg" "Insight"
+add_de1_page "scentone_tropical" "scentone_tropical.jpg" "Insight"
+add_de1_page "scentone_berry" "scentone_berry.jpg" "Insight"
+add_de1_page "scentone_citrus" "scentone_citrus.jpg" "Insight"
+add_de1_page "scentone_stone" "scentone_stone.jpg" "Insight"
+add_de1_page "scentone_cereal" "scentone_cereal.jpg" "Insight"
+add_de1_page "scentone_chocolate" "scentone_chocolate.jpg" "Insight"
+add_de1_page "scentone_flower" "scentone_flower.jpg" "Insight"
+add_de1_page "scentone_spice" "scentone_spice.jpg" "Insight"
+add_de1_page "scentone_vegetable" "scentone_vegetable.jpg" "Insight"
+add_de1_page "scentone_savory" "scentone_savory.jpg" "Insight"
 
-add_de1_page "describe_espresso" "describe_espresso.jpg"
-add_de1_page "describe_espresso2" "describe_espresso2.jpg"
-add_de1_page "describe_espresso0" "describe_espresso0.jpg"
+add_de1_page "describe_espresso" "describe_espresso.jpg" "Insight"
+add_de1_page "describe_espresso2" "describe_espresso2.jpg" "Insight"
+add_de1_page "describe_espresso0" "describe_espresso0.jpg" "Insight"
 
 # saving an exiting from each of the aroma categories
 
@@ -40,10 +40,10 @@ add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [t
 		.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 		set_next_page off message; page_show message
 	} else {
-		set_next_page off espresso_3; page_show off
+		set_next_page off off; page_show off
 	}
  } 2016 1406 2560 1600
-add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [translate {cancel}] $::settings(sound_button_in); array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; fill_god_shots_listbox; set_next_page off espresso_3; page_show off} 1505 1406 2015 1600
+add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [translate {cancel}] $::settings(sound_button_in); array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; fill_god_shots_listbox; set_next_page off off; page_show off} 1505 1406 2015 1600
 
 
 #add_de1_text "scentone_1" 1245 1520 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
