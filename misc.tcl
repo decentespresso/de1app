@@ -74,6 +74,7 @@ proc make_de1_dir {} {
         history_export.tcl *
 
         history/info.txt *
+        history/export/readme.txt *
         fw/bootfwupdate.dat *
         wallpaper/spy_1280x800.jpg *
         wallpaper/spy_2560x1600.jpg *
@@ -88,6 +89,7 @@ proc make_de1_dir {} {
         fonts/sarabunbold.ttf *
 
         godshots/none.shot *
+        godshots/import/readme.txt *
 
         splash/1280x800/de1.jpg *
         splash/2560x1600/de1.jpg *

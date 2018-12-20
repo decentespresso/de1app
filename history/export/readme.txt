@@ -1,0 +1,1 @@
+All your historical espresso shots will be exported here, updated automatically when the app launches.
