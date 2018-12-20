@@ -75,6 +75,7 @@ proc make_de1_dir {} {
 
         history/info.txt *
         history/export/readme.txt *
+
         fw/bootfwupdate.dat *
         wallpaper/spy_1280x800.jpg *
         wallpaper/spy_2560x1600.jpg *
@@ -90,6 +91,10 @@ proc make_de1_dir {} {
 
         godshots/none.shot *
         godshots/import/readme.txt *
+        godshots/import/common/readme.txt *
+        godshots/export/readme.txt *
+        godshots/export/common/readme.txt *
+        godshots/export/columnar/readme.txt *
 
         splash/1280x800/de1.jpg *
         splash/2560x1600/de1.jpg *

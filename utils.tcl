@@ -1168,26 +1168,84 @@ proc shot_history_export {} {
         array unset -nocomplain arr
         set rootname [file tail $d]
         array set arr [read_file "history/$d"]
+        export_csv arr "history/$newfile.csv" 
         #puts "keys: [array names arr]"
-        set x 0
-        set lines {}
-        set lines [subst {espresso_elapsed, espresso_pressure, espresso_flow, espresso_flow_weight, espresso_temperature_basket, espresso_temperature_mix\n}]
-
-        for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
-            set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x]\n}]
-            append lines $line
-        }
-
-        set newfile "[file rootname $rootname].csv"
-        #puts "$rootname, $newfile"
-        puts -nonewline "."
-        write_file "history/$newfile" $lines
     }
     puts "done"
     return [lsort -dictionary -increasing $dd]
 
 }
 
+# Export one shot from memory, to a file
+proc export_csv {arrname fn} {
+    upvar $arrname arr
+    set x 0
+    set lines {}
+    set lines [subst {espresso_elapsed, espresso_pressure, espresso_flow, espresso_flow_weight, espresso_temperature_basket, espresso_temperature_mix\n}]
+
+    for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
+        set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x]\n}]
+        append lines $line
+    }
+
+    #set newfile "[file rootname $rootname].csv"
+    #puts "$rootname, $newfile"
+    puts -nonewline "."
+    #write_file "history/$newfile" $lines
+    write_file $fn $lines
+
+}
+
+# Export one shot from memory, to a file
+proc export_csv_common_format {arrname fn} {
+    upvar $arrname arr
+    set x 0
+    set lines [subst {information_type,elapsed,pressure,current_total_shot_weight,flow_in,flow_out,water_temperature_boiler,water_temperature_in,water_temperature_basket,metatype,metadata,comment
+meta,,,,,,,,,Description,,text
+meta,,,,,,,,,Date,2018-11-11T08:34:33Z,ISO8601 formatted date
+meta,,,,,,,,,Operator,,text
+meta,,,,,,,,,Espresso machine brand,,text
+meta,,,,,,,,,Espresso machine model,,text
+meta,,,,,,,,,Basket diameter,,number
+meta,,,,,,,,,Basket make,,text
+meta,,,,,,,,,Boiler temperature,,celsius
+meta,,,,,,,,,Boiler Pressure,,celsius
+meta,,,,,,,,,Brewing temperature,,celsius
+meta,,,,,,,,,Pre-infusion time,,sec
+meta,,,,,,,,,Grinder brand,,text
+meta,,,,,,,,,Grinder model,,text
+meta,,,,,,,,,Grinder setting,,number
+meta,,,,,,,,,Dose,17.784,grounds weight in g
+meta,,,,,,,,,Espresso weight,27.140,drink weight in g
+meta,,,,,,,,,Brew ratio,152.609,espresso weight / grounds weight in %
+meta,,,,,,,,,Extraction time,71.669,sec
+meta,,,,,,,,,TDS,,number
+meta,,,,,,,,,Avarage flow rate,0.386,g/sec
+meta,,,,,,,,,Name,My espresso #47,text
+meta,,,,,,,,,Unit system,metric,metric or imperial
+meta,,,,,,,,,Attribution,Decent Espresso,
+meta,,,,,,,,,Software,DE1+ App,
+meta,,,,,,,,,Url,https://decentespresso.com/de1plus,
+meta,,,,,,,,,Export version,1.1.0,
+}]
+
+    set lines [subst {espresso_elapsed, espresso_pressure, espresso_flow, espresso_flow_weight, espresso_temperature_basket, espresso_temperature_mix\n}]
+
+    for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
+        set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x]\n}]
+
+        append lines [subst {moment,0.000,0.000,0.000,,,,,,,,sample: weight}]
+
+        append lines $line
+    }
+
+    #set newfile "[file rootname $rootname].csv"
+    #puts "$rootname, $newfile"
+    puts -nonewline "."
+    #write_file "history/$newfile" $lines
+    write_file $fn $lines
+
+}
 
 #The following procedure is used to extract all ASCII string parts from the Unicode string. in tk_messageBox after rendering to Arabic they come reversed
 #So this fix has been added

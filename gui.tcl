@@ -1858,6 +1858,19 @@ proc god_shot_files {} {
 	    set name [ifexists godprops(name)]
 	    if {$name == "None"} {
 	    	set name [translate "None"]
+	    } else {
+	    	set fnexport "[homedir]/godshots/export/columnar/[file rootname $f].csv"
+			if {[file exists $fnexport] != 1} { 
+				puts "Exporting God Shot file from $fn to $fnexport" 
+				export_csv godprops $fnexport
+			}
+
+	    	set fnexport_common "[homedir]/godshots/export/common/[file rootname $f].csv"
+			if {[file exists $fnexport_common] != 1} { 
+				puts "Exporting God Shot file from $fn to $fnexport_common" 
+				export_csv_common_format godprops $fnexport_common
+			}
+
 	    }
 		lappend dd $name $f 
 	}
@@ -1991,7 +2004,7 @@ proc load_god_shot { {force 0} } {
 		return 
 	}
 	set f [ifexists ::god_shot_filenames($stepnum)]
-	puts "god shot: $stepnum $f"
+	#puts "god shot: $stepnum $f"
 	if {$stepnum == ""} {
 		return
 	}

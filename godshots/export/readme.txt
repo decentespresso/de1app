@@ -1,0 +1,1 @@
+God shots are autonatically exported to subdirectories here, in various file formats
