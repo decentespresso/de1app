@@ -1860,7 +1860,7 @@ proc load_advanced_profile_step {{force 0}} {
 	#msg "load_advanced_profile_step [clock milliseconds]"
 
 	if {$::de1(current_context) != "settings_2c" && $force == 0} {
-		#puts "retruning"
+		puts "returning load_advanced_profile_step"
 		return 
 	}
 

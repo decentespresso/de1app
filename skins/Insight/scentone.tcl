@@ -43,7 +43,7 @@ add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [t
 		set_next_page off espresso_3; page_show off
 	}
  } 2016 1406 2560 1600
-add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [translate {cancel}] $::settings(sound_button_in); array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; set_next_page off espresso_3; page_show off} 1505 1406 2015 1600
+add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [translate {cancel}] $::settings(sound_button_in); array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; fill_god_shots_listbox; set_next_page off espresso_3; page_show off} 1505 1406 2015 1600
 
 
 #add_de1_text "scentone_1" 1245 1520 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -77,7 +77,7 @@ set godshots_listbox_height 11
 #	set godshots_listbox_height 9
 #}
 
-add_de1_widget "describe_espresso0" listbox 70 420 { 
+add_de1_widget "describe_espresso0" listbox 80 420 { 
 	set ::globals(god_shots_widget) $widget
 	fill_god_shots_listbox
 	#load_advanced_profile_step 1
@@ -89,7 +89,7 @@ add_de1_widget "describe_espresso0" listbox 70 420 {
 set ::gotshots_slider 0
 
 # draw the scrollbar off screen so that it gets resized and moved to the right place on the first draw
-set ::god_shots_scrollbar [add_de1_widget "describe_espresso0" scale 10000 1 {} -from 0 -to .50 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::advsteps -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(god_shots_widget) $::gotshots_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
+set ::god_shots_scrollbar [add_de1_widget "describe_espresso0" scale 1000 1000 {} -from 0 -to .50 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::advsteps -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(god_shots_widget) $::gotshots_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 proc set_god_shot_scrollbar_dimensions {} {
 	# set the height of the scrollbar to be the same as the listbox

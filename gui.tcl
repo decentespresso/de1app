@@ -1883,7 +1883,7 @@ proc fill_god_shots_listbox {} {
 
 		if {$desc == $::settings(god_espresso_name)} {
 			$widget selection set $cnt
-			load_god_shot
+			load_god_shot 1
 		}
 		incr cnt
 	}
@@ -1978,8 +1978,9 @@ proc delete_current_god_shot {} {
 
 }
 
-proc load_god_shot {} {
-	if {$::de1(current_context) != "describe_espresso0"} {
+proc load_god_shot { {force 0} } {
+
+	if {$::de1(current_context) != "describe_espresso0" && $force == 0} {
 		# spurious tk call from Android
 		#puts "retruning"
 		return 
