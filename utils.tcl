@@ -122,11 +122,14 @@ proc setup_environment {} {
             set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
             set fontm [expr {($fontm * 1.2)}]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-        } elseif {[language] == "arobs"} {
-            set helvetica_font [sdltk addfont "fonts/Scheherazade-Regular.ttf"]
-            set helvetica_bold_font [sdltk addfont "fonts/Scheherazade-Regular.ttf"]
-            set fontm [expr {($fontm * 1.2)}]
-            #set global_font_name [lindex [sdltk addfont "fonts/Scheherazade-Regular.ttf"] 0]
+        } elseif {[language] == "ar"} {
+            set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
+            set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
+            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+            #set fontm [expr {($fontm * 1.08)}]
+            #set fontm 1.2
+            #set global_font_name [lindex [sdltk addfont "fonts/NotoNaskhArabic-Regular.ttf"] 0]
+            set global_font_name $helvetica_font
         } elseif {[language] == "zh-hant" || [language] == "zh-hans" || [language] == "kr"} {
             set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
             set helvetica_bold_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Bold.otf"] 0]
@@ -138,6 +141,7 @@ proc setup_environment {} {
             set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
             set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+
         }            
 
 
@@ -1222,6 +1226,7 @@ set length [string length $arabic_string]
 #a procedure to make Arabic readable when displayed in a Tk widget.
     
 proc render_arabic args {
+
     set  arabic_string [lindex $args 0]
     set  is_messageBox [lindex $args 1]
 
@@ -1443,7 +1448,7 @@ proc render_arabic args {
                 }
                   \u0644 {
                     #laam
-                    set word [ string replace $word end end \ufede ]
+                    set word [ string replace $word end end \ufede]
                 }
                 \u0645 {
                     #meem
