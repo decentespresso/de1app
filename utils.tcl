@@ -1181,10 +1181,10 @@ proc export_csv {arrname fn} {
     upvar $arrname arr
     set x 0
     set lines {}
-    set lines [subst {espresso_elapsed, espresso_pressure, espresso_flow, espresso_flow_weight, espresso_temperature_basket, espresso_temperature_mix\n}]
+    set lines [subst {espresso_elapsed, espresso_pressure, espresso_flow, espresso_flow_weight, espresso_temperature_basket, espresso_temperature_mix, espresso_weight\n}]
 
     for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
-        set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x]\n}]
+        set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x], [lindex $arr(espresso_weight) $x]\n}]
         append lines $line
     }
 
@@ -1206,7 +1206,8 @@ proc export_csv_common_format {arrname fn} {
     }
 
     set lines [subst {information_type,elapsed,pressure,current_total_shot_weight,flow_in,flow_out,water_temperature_boiler,water_temperature_in,water_temperature_basket,metatype,metadata,comment
-meta,,,,,,,,,Description,$::settings(god_espresso_name),text
+meta,,,,,,,,,Name,$::settings(god_espresso_name),text
+meta,,,,,,,,,Description,$::settings(espresso_notes),text
 meta,,,,,,,,,Date,[iso8601clock [clock seconds]],ISO8601 formatted date
 meta,,,,,,,,,Operator,$::settings(my_name),text
 meta,,,,,,,,,Espresso machine brand,Decent,text
@@ -1224,12 +1225,11 @@ meta,,,,,,,,,Grinder brand,$::settings(grinder_model),text
 meta,,,,,,,,,Grinder model,$::settings(grinder_model),text
 meta,,,,,,,,,Grinder setting,$::settings(grinder_setting),number
 meta,,,,,,,,,Dose,$::settings(grinder_dose_weight),grounds weight in g
-meta,,,,,,,,,Espresso weight,27.140,drink weight in g
-meta,,,,,,,,,Extraction time,71.669,sec
+meta,,,,,,,,,Espresso weight,$::settings(drink_weight),drink weight in g
+meta,,,,,,,,,Extraction time,[lindex $arr(espresso_elapsed) end],,sec
 meta,,,,,,,,,TDS,,$::settings(drink_tds)
 meta,,,,,,,,,EY,,$::settings(drink_ey)
-meta,,,,,,,,,Avarage flow rate,0.386,g/sec
-meta,,,,,,,,,Name,My espresso #47,text
+meta,,,,,,,,,Avarage flow rate,[round_to_two_digits [::math::statistics::mean $arr(espresso_flow)]],g/sec
 meta,,,,,,,,,Unit system,metric,metric or imperial
 meta,,,,,,,,,Attribution,Decent Espresso,
 meta,,,,,,,,,Software,DE1+ App,
@@ -1240,7 +1240,7 @@ meta,,,,,,,,,Export version,1.1.0,
     for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
         set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x]\n}]
 
-        append lines [subst {moment,[lindex $arr(espresso_elapsed) $x],[lindex $arr(espresso_pressure) $x],[lindex $arr(espresso_flow) $x],[lindex $arr(espresso_flow_weight) $x],[lindex $arr(espresso_temperature_mix) $x],[lindex $arr(espresso_temperature_basket) $x],,,,,\n}]
+        append lines [subst {moment,[lindex $arr(espresso_elapsed) $x],[lindex $arr(espresso_pressure) $x],[lindex $arr(espresso_weight) $x],[lindex $arr(espresso_flow) $x],[lindex $arr(espresso_flow_weight) $x],[lindex $arr(espresso_temperature_mix) $x],[lindex $arr(espresso_temperature_mix) $x],[lindex $arr(espresso_temperature_basket) $x],,,,,\n}]
 
         #append lines $line
     }
