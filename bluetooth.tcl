@@ -1144,15 +1144,19 @@ proc de1_ble_handler { event data } {
 						set ::de1(device_handle) $handle
 						append_to_de1_bluetooth_list $address
 						#return
+
+
 						#msg "connected to de1 with handle $handle"
-						de1_send_waterlevel_settings
-						de1_send_steam_hotwater_settings					
-						de1_send_shot_frames
-						de1_enable_water_level_notifications
-						de1_enable_temp_notifications
+						de1_read_calibration "temperature"
+
+						#de1_send_waterlevel_settings
+						#de1_send_steam_hotwater_settings					
+						#de1_send_shot_frames
+						#de1_enable_water_level_notifications
+						#de1_enable_temp_notifications
 						read_de1_version
-						de1_enable_state_notifications
-						start_idle
+						#de1_enable_state_notifications
+						#start_idle
 
 						if {$::settings(skale_bluetooth_address) != "" && $::de1(skale_device_handle) == 0 } {
 							# connect to the scale once the connection to the DE1 is set up
@@ -1423,6 +1427,7 @@ proc de1_ble_handler { event data } {
 								
 								if {$::de1(scale_sensor_weight) > $::de1(final_water_weight)} {
 									set ::de1(final_water_weight) $thisweight
+									set ::settings(drink_weight) [round_to_one_digits $::de1(final_water_weight)]
 								}
 
 								# john 5/11/18 no support at the moment for weight-ending shots in advanced shots (settings_2c)
@@ -1635,6 +1640,7 @@ proc after_shot_weight_hit_update_final_weight {} {
 	if {$::de1(scale_sensor_weight) > $::de1(final_water_weight)} {
 		# if the current scale weight is more than the final weight we have on record, then update the final weight
 		set ::de1(final_water_weight) $::de1(scale_sensor_weight)
+		set ::settings(drink_weight) [round_to_one_digits $::de1(final_water_weight)]
 	}
 
 }

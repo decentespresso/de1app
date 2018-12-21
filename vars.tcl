@@ -854,6 +854,18 @@ proc return_stop_at_weight_measurement {in} {
 	}
 }
 
+proc return_shot_weight_measurement {in} {
+	if {$in == 0} {
+		return [translate "off"]
+	} else {
+		if {$::settings(enable_fluid_ounces) != 1} {
+			return [subst {[round_to_one_digits $in][translate "g"]}]
+		} else {
+			return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
+		}
+	}
+}
+
 
 proc preinfusion_volume {} {
 	return_liquid_measurement [round_to_integer $::de1(preinfusion_volume)]
