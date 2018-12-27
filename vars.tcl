@@ -842,6 +842,13 @@ proc return_off_if_zero {in} {
 
 }
 
+proc return_zero_if_blank {in} {
+	if {$in == ""} {
+		return 0
+	}
+	return $in
+}
+
 proc return_stop_at_weight_measurement {in} {
 	if {$in == 0} {
 		return [translate "off"]

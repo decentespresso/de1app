@@ -1229,13 +1229,14 @@ meta,,,,,,,,,Espresso weight,$::settings(drink_weight),drink weight in g
 meta,,,,,,,,,Extraction time,[lindex $arr(espresso_elapsed) end],,sec
 meta,,,,,,,,,TDS,,$::settings(drink_tds)
 meta,,,,,,,,,EY,,$::settings(drink_ey)
-meta,,,,,,,,,Avarage flow rate,[round_to_two_digits [::math::statistics::mean $arr(espresso_flow)]],g/sec
 meta,,,,,,,,,Unit system,metric,metric or imperial
 meta,,,,,,,,,Attribution,Decent Espresso,
 meta,,,,,,,,,Software,DE1+ App,
 meta,,,,,,,,,Url,https://decentespresso.com/de1plus,
 meta,,,,,,,,,Export version,1.1.0,
 }]
+
+#meta,,,,,,,,,Avarage flow rate,[round_to_two_digits [::math::statistics::mean $arr(espresso_flow)]],g/sec
 
     for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
         set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x]\n}]
@@ -1608,3 +1609,18 @@ proc iso8601clock {{now {}}} {
     return [clock format $now -format "%Y-%m-%dT%H:%M:%SZ" -gmt 1 ]
 }
 
+proc iso8601stringparse {in} {
+    set date ""
+    set time ""
+    regexp {([0-9-]+)T([0-9:]+)\.?[0-9]+?Z} $in discard date time
+    if {$date == ""} {
+        puts "No date found in: '$in'"
+        return 0
+    }
+    if {$time == ""} {
+        puts "No time found in: '$in'"
+        return 0
+    }
+    set timestring "$date $time UTC"
+    return [clock scan $timestring]
+}

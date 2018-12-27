@@ -1844,7 +1844,111 @@ proc calibration_gui_init {} {
 	}
 }
 
+proc import_god_shots_from_common_format {} {
+
+
+	set import_files [lsort -dictionary [glob -tails -directory "[homedir]/godshots/import/common/" *.csv]]
+	puts "import_files: $import_files"
+	foreach import_file $import_files {
+		set import_files_array($import_file) 1
+	}
+
+	set files [lsort -dictionary [glob -tails -directory "[homedir]/godshots/" *.shot]]
+	set dd {}
+	foreach f $files {
+		unset -nocomplain import_files_array($f)
+	}
+
+	set files_to_import [array names import_files_array]
+	puts "files_to_import: $files_to_import"
+	if {$files_to_import != ""} {
+		foreach file_to_import $files_to_import {
+			set fn_import "[homedir]/godshots/import/common/$file_to_import"
+			set fn_export "[homedir]/godshots/[file rootname $file_to_import].shot"
+
+			puts "Importing common file format into god shot from '$fn_import' to '$fn_export'"
+
+			set import_espresso_elapsed {}
+			set import_espresso_pressure {}
+			set import_espresso_weight {}
+			set import_espresso_flow {}
+			set import_espresso_flow_weight {}
+			set import_espresso_temperature_basket {}
+			set import_espresso_temperature_mix {}
+
+			set import_filename "[file rootname $file_to_import].shot"
+			set import_name [clock seconds]
+			set meta(clock) [clock seconds]
+
+			set linecnt 0
+			set labels {}
+			foreach line [split [read_file $fn_import] \n\r] {
+				incr linecnt
+				if {$linecnt == 1} {
+					set labels [split $line ,]
+					puts "labels: '[join $labels |]'"
+					continue
+				}
+
+				set parts [split $line ,]
+				if {[lindex $parts 0] == "meta"} {
+					set metatype [string trim [lindex $parts 9]]
+					set metadata [string trim [lindex $parts 10]]
+					#puts "metadata: '$metadata' / metatype: '$metatype'"
+					if {[string tolower $metatype] == "date"} {
+					 	set meta(clock) [iso8601stringparse $metadata]
+					} else {
+					 	set meta([string tolower $metatype]) $metadata
+					}
+				} elseif {[lindex $parts 0] == "moment"} {
+					set partcnt 0
+					unset -nocomplain momentarray
+					foreach part $parts {
+						set labelname [lindex $labels $partcnt]
+						incr partcnt
+
+						set momentarray($labelname) $part
+					}
+
+					#puts [array get momentarray]
+
+					if {[ifexists momentarray(elapsed)] != ""} {
+						lappend import_espresso_elapsed [ifexists momentarray(elapsed)]
+						lappend import_espresso_pressure [return_zero_if_blank [ifexists momentarray(pressure)]]
+						lappend import_espresso_weight [return_zero_if_blank [ifexists momentarray(current_total_shot_weight)]]
+						lappend import_espresso_flow [return_zero_if_blank [ifexists momentarray(flow_in)]]
+						lappend import_espresso_flow_weight [return_zero_if_blank [ifexists momentarray(flow_out)]]
+						lappend import_espresso_temperature_basket [return_zero_if_blank [ifexists momentarray(water_temperature_basket)]]
+						lappend import_espresso_temperature_mix [return_zero_if_blank [ifexists momentarray(water_temperature_in)]]
+					}
+				}
+			}
+
+set exportdata [subst {filename [file rootname $file_to_import].shot
+name [list [ifexists meta(name)]]
+clock $meta(clock)
+espresso_elapsed [list $import_espresso_elapsed]
+espresso_pressure [list $import_espresso_pressure]
+espresso_weight [list $import_espresso_weight]
+espresso_flow [list $import_espresso_flow]
+espresso_flow_weight [list $import_espresso_flow_weight]
+espresso_temperature_basket [list $import_espresso_temperature_basket]
+espresso_temperature_mix [list $import_espresso_temperature_mix]
+}]
+
+			write_file $fn_export $exportdata
+
+			#puts [array get meta]
+			#puts ---
+		
+		}
+	}
+
+}
+
 proc god_shot_files {} {
+	import_god_shots_from_common_format
+
 	set files [lsort -dictionary [glob -tails -directory "[homedir]/godshots/" *.shot]]
 	#puts "skin_directories: $dirs"
 	set dd {}
@@ -1871,9 +1975,12 @@ proc god_shot_files {} {
 				export_csv_common_format godprops $fnexport_common
 			}
 
+			# keep up to date the list of files to import
+			unset -nocomplain import_files_array($f)
 	    }
 		lappend dd $name $f 
 	}
+
 	#puts "god shots: '$dd'"
 	return $dd
 }
