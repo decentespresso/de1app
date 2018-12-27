@@ -1147,16 +1147,23 @@ proc de1_ble_handler { event data } {
 
 
 						#msg "connected to de1 with handle $handle"
-						#de1_read_calibration "temperature"
+						set testing 0
+						if {$testing == 1} {
+							de1_read_calibration "temperature"
+						} else {
 
-						de1_send_waterlevel_settings
-						de1_send_steam_hotwater_settings					
-						de1_send_shot_frames
-						de1_enable_water_level_notifications
-						de1_enable_temp_notifications
-						read_de1_version
-						de1_enable_state_notifications
-						start_idle
+							de1_send_waterlevel_settings
+							de1_send_steam_hotwater_settings					
+							de1_send_shot_frames
+							de1_enable_water_level_notifications
+							de1_enable_temp_notifications
+							read_de1_version
+							de1_enable_state_notifications
+							start_idle
+							#after 2000 de1_enable_calibration_notifications
+							#after 3000 de1_read_calibration "temperature"
+						}
+
 
 						if {$::settings(skale_bluetooth_address) != "" && $::de1(skale_device_handle) == 0 } {
 							# connect to the scale once the connection to the DE1 is set up

@@ -28,6 +28,7 @@ proc fields::2form {spec array {endian ""}} {
 	   #puts "type:'$type' count:'$count' fendian:'$fendian' signed:'$signed' extra:'$extra'"
 	   set t [string index $type 0]
 	   set s [string index $signed 0]
+	   #puts "s: $s t: $t"
 	   
 	   if {$fendian == ""} {
 		   set fendian [string tolower [string index $endian 0]]
@@ -71,7 +72,7 @@ proc fields::2form {spec array {endian ""}} {
 			   # char - 8 bit integer values
 			   set ty [string tolower $t]
 		   }
-		   
+
 		   h {
 			   # hex low2high
 			   # Hex high2low
@@ -124,6 +125,14 @@ proc fields::2form {spec array {endian ""}} {
 	   catch {
 	   	#msg "type: 'name=$name qual =$qual == $ty$s$count'"
 	   }
+
+	   if {$ty == "I" && $s ==  "s"} {
+	   	# signed integers are by default, and need no modifier
+	   	#set ty "s1"
+	   	set s ""
+	   }
+
+	   puts "append '$ty$s$count'"
 	   append form $ty$s$count
    }
 
@@ -143,7 +152,7 @@ proc ::fields::pack {spec array {endian ""}} {
 proc ::fields::unpack {packed spec array {endian ""}} {
    upvar $array Record
    foreach {form out in} [::fields::2form $spec Record $endian] break
-   #puts stderr "unpack: binary scan $form $out"
+   puts stderr "unpack: binary scan $form $out"
    return [binary scan $packed [list $form] {*}$out]
 }
 
@@ -278,7 +287,7 @@ proc calibrate_spec {} {
 		CalCommand {char {} {} {unsigned} {}}
 		CalTarget {char {} {} {unsigned} {}}
 		DE1ReportedVal {Int {} {} {unsigned} {double(round(100*($val / 65536.0)))/100}}
-		MeasuredVal {Int {} {} {unsigned} {double(round(100*($val / 65536.0)))/100}}
+		MeasuredVal {Int {} {} {signed} {double(round(100*($val / 65536.0)))/100}}
 	}
 	return $spec
 }
