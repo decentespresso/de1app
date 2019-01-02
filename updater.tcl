@@ -462,14 +462,14 @@ proc start_app_update {} {
             # this is inefficient, as it would be better to only delete the related files, and that would be a good improvement in a future version
             if {$this_resolution != "2560x1600" && $this_resolution != "1280x800"} {
                 set saver_directory "[homedir]/saver/${::screen_size_width}x${::screen_size_height}"
-                set splash_directory [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}"]
+                set splash_directory [glob -nocomplain "[splash_directory]/${::screen_size_width}x${::screen_size_height}"]
                 puts "deleting $saver_directory"
                 puts "deleting $splash_directory"
 
                 file delete -force $saver_directory
                 file delete -force $splash_directory
 
-                set skindirs [lsort -dictionary [glob -tails -directory "[homedir]/skins/" *]]
+                set skindirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/skins/" *]]
                 foreach d $skindirs {
                     set thisskindir "[homedir]/skins/$d/$this_resolution/"
                     puts "testing '$d' - '$thisskindir'"

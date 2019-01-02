@@ -352,7 +352,7 @@ proc random_saver_file {} {
  
         set savers {}
         catch {
-            set savers [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+            set savers [glob -nocomplain "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
         }
         if {$savers == ""} {
             catch {
@@ -362,7 +362,7 @@ proc random_saver_file {} {
             set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
             set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
-            foreach fn [glob "[saver_directory]/2560x1600/*.jpg"] {
+            foreach fn [glob -nocomplain "[saver_directory]/2560x1600/*.jpg"] {
                 borg spinner on
                 image create photo saver -file $fn
                 photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
@@ -375,7 +375,7 @@ proc random_saver_file {} {
             }
         }
 
-        set ::saver_files_cache [glob "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+        set ::saver_files_cache [glob -nocomplain "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
     }
     return [random_pick $::saver_files_cache]
 
@@ -389,7 +389,7 @@ proc random_splash_file {} {
  
         set savers {}
         catch {
-            set savers [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+            set savers [glob -nocomplain "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
         }
         if {$savers == ""} {
             catch {
@@ -399,7 +399,7 @@ proc random_splash_file {} {
             set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
             set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
-            foreach fn [glob "[splash_directory]/2560x1600/*.jpg"] {
+            foreach fn [glob -nocomplain "[splash_directory]/2560x1600/*.jpg"] {
                 borg spinner on
                 image create photo saver -file $fn
                 photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
@@ -411,7 +411,7 @@ proc random_splash_file {} {
             }
         }
 
-        set ::splash_files_cache [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+        set ::splash_files_cache [glob -nocomplain "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
     }
     return [random_pick $::splash_files_cache]
 
@@ -422,9 +422,9 @@ proc random_splash_file_obs {} {
         puts "building splash_files_cache"
         set ::splash_files_cache {}
         if {[file exists "[splash_directory]/${::screen_size_width}x${::screen_size_height}/"] == 1} {
-            set files [glob "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+            set files [glob -nocomplain "[splash_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
         } else {
-            set files [glob "[splash_directory]/2560x1600/*.jpg"]
+            set files [glob -nocomplain "[splash_directory]/2560x1600/*.jpg"]
         }
 
         borg spinner on
@@ -1161,7 +1161,7 @@ proc array_item_difference {arr1 arr2 keylist} {
 
 proc shot_history_export {} {
 
-    set dirs [lsort -dictionary [glob -tails -directory "[homedir]/history/" *.shot]]
+    set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
     set dd {}
     puts -nonewline "Exporting"
     foreach d $dirs {

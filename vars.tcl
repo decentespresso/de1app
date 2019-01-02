@@ -1340,7 +1340,7 @@ proc skin_directories {} {
 		return $::skin_directories_cache
 	}
 
-	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/skins/" *]]
+	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/skins/" *]]
 	#puts "skin_directories: $dirs"
 	set dd {}
 	set de1plus [de1plus]
@@ -1459,7 +1459,7 @@ proc make_current_listbox_item_blue { widget} {
 
 
 proc history_directories {} {
-	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/history/" *.shot]]
+	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
 	set dd {}
 	foreach d $dirs {
 		lappend dd [file rootname $d]
@@ -1469,7 +1469,7 @@ proc history_directories {} {
 
 
 proc profile_directories {} {
-	set dirs [lsort -dictionary [glob -tails -directory "[homedir]/profiles/" *.tcl]]
+	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/profiles/" *.tcl]]
 	set dd {}
 	set de1plus [de1plus]
 	foreach d $dirs {

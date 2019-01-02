@@ -1849,13 +1849,13 @@ proc calibration_gui_init {} {
 proc import_god_shots_from_common_format {} {
 
 
-	set import_files [lsort -dictionary [glob -tails -directory "[homedir]/godshots/import/common/" *.csv]]
+	set import_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/import/common/" *.csv]]
 	puts "import_files: $import_files"
 	foreach import_file $import_files {
 		set import_files_array($import_file) 1
 	}
 
-	set files [lsort -dictionary [glob -tails -directory "[homedir]/godshots/" *.shot]]
+	set files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/" *.shot]]
 	set dd {}
 	foreach f $files {
 		unset -nocomplain import_files_array($f)
@@ -1951,7 +1951,7 @@ espresso_temperature_mix [list $import_espresso_temperature_mix]
 proc god_shot_files {} {
 	import_god_shots_from_common_format
 
-	set files [lsort -dictionary [glob -tails -directory "[homedir]/godshots/" *.shot]]
+	set files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/" *.shot]]
 	#puts "skin_directories: $dirs"
 	set dd {}
 	foreach f $files {
@@ -2033,7 +2033,7 @@ proc save_to_god_shots {} {
 	set clock [clock seconds]
 	set filename [subst {[clock format $clock -format "%Y%m%dT%H%M%S"].shot}]
 
-	set files [lsort -dictionary [glob -tails -directory "[homedir]/godshots/" *.shot]]
+	set files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/" *.shot]]
 	#puts "skin_directories: $dirs"
 	set dd {}
 	set msg [translate "Saved"]
