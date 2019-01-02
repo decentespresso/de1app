@@ -722,7 +722,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 
 	add_de1_text "calibrate" 1280 1090 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 980 990 1580 1190 ""
+	add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); save_settings; set_next_page off settings_4; page_show settings_4;} 980 990 1580 1190 ""
 		
 
 	add_de1_text "calibrate" 500 340 -text [translate "Saved"] -font Helv_8_bold -fill "#7f879a" -anchor "ne" 

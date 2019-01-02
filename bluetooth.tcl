@@ -1391,21 +1391,34 @@ proc de1_ble_handler { event data } {
 							set diff [expr {$::de1(scale_weight) - $sensorweight}]
 							
 
-							# the greater the weight leap from the previous read weight, the more smoothing we apply, so make bumps to the scale have only a minor effect
-							if {$::de1_num_state($::de1(state)) == "Idle"} {
-								# no smoothing when the machine is idle
-								set multiplier1 0
-							} elseif {$diff > 1} { 
-								# more than 1 gram in 1/10th of a second is smoothed out the most
-								set multiplier1 0.998
-							} elseif {$diff > .5} { 
-								set multiplier1 0.99
-							} elseif {$diff > .1} { 
-								set multiplier1 0.98
+							set enabled_alt_multiplier 0
+							if {$enabled_alt_multiplier == 1} {
+								# the greater the weight leap from the previous read weight, the more smoothing we apply, so make bumps to the scale have only a minor effect
+								if {$::de1_num_state($::de1(state)) == "Idle"} {
+									# no smoothing when the machine is idle
+									set multiplier1 0
+								} elseif {$diff > 1} { 
+									# more than 1 gram in 1/10th of a second is smoothed out the most
+									set multiplier1 0.998
+								} elseif {$diff > .5} { 
+									set multiplier1 0.99
+								} elseif {$diff > .1} { 
+									set multiplier1 0.98
+								}
+
+								# john 5/11/18 hard set this to 5% weighting, until we're sure these other methods work well.
+								set multiplier1 .95
+							} else {
+
+								if {$::de1_num_state($::de1(state)) == "Idle"} {
+									# no smoothing when the machine is idle
+									set multiplier1 0
+								} else {
+									# john 5/11/18 hard set this to 5% weighting, until we're sure these other methods work well.
+									set multiplier1 .95
+								}
 							}
 
-							# john 5/11/18 hard set this to 5% weighting, until we're sure these other methods work well.
-							set multiplier1 .95
 							set multiplier2 [expr {1 - $multiplier1}];
 							set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
 
@@ -1440,7 +1453,12 @@ proc de1_ble_handler { event data } {
 								# john 5/11/18 no support at the moment for weight-ending shots in advanced shots (settings_2c)
 								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0 && $::settings(settings_profile_type) != "settings_2c"} {
 
-									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) * ($::settings(shot_weight_percentage_stop)/100.0)}]]} {
+									# damian found:
+									# > after you hit the stop button, the remaining liquid that will end up in the cup is equal to about 2.6 seconds of the current flow rate, minus a 0.4 g adjustment
+								    set lag_time_calibration [expr {(($::de1(scale_weight_rate) * 2.6 ) - 0.4)}]
+
+									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) - $lag_time_calibration}]]} {	
+
 										if {[espresso_timer] < 5} {
 											skale_tare
 										} else {
