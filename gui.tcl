@@ -1862,12 +1862,14 @@ proc import_god_shots_from_common_format {} {
 	}
 
 	set files_to_import [array names import_files_array]
-	puts "files_to_import: $files_to_import"
+	#puts "files_to_import: $files_to_import"
 	if {$files_to_import != ""} {
 		foreach file_to_import $files_to_import {
 			set fn_import "[homedir]/godshots/import/common/$file_to_import"
 			set fn_export "[homedir]/godshots/[file rootname $file_to_import].shot"
-
+			if {[file exist $fn_export] == 1} {
+				continue
+			}
 			puts "Importing common file format into god shot from '$fn_import' to '$fn_export'"
 
 			set import_espresso_elapsed {}
