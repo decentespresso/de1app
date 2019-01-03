@@ -41,7 +41,7 @@ add_de1_page "preheat_4" "preheat_4.png"
 # most skins will not bother replacing these graphics
 add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
-add_de1_page "tankempty" "fill_tank.jpg" "default"
+add_de1_page "tankempty refill" "fill_tank.jpg" "default"
 add_de1_page "message calibrate" "settings_message.png" "default"
 add_de1_page "create_preset" "settings_3_choices.png" "default"
 
@@ -57,7 +57,8 @@ set_de1_screen_saver_directory "[homedir]/saver"
 source "[homedir]/skins/default/de1_skin_settings.tcl"
 
 # out of water page
-add_de1_text "tankempty" 1280 750 -text [translate "Out of water"] -font Helv_20_bold -fill "#AAAAAA" -justify "center" -anchor "center" -width 900
+add_de1_text "tankempty refill" 1280 750 -text [translate "Out of water"] -font Helv_20_bold -fill "#AAAAAA" -justify "center" -anchor "center" -width 900
+add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 0 0 2560 1600 
 
 # cleaning and descaling
 add_de1_text "cleaning" 1280 80 -text [translate "Cleaning"] -font Helv_20_bold -fill "#EEEEEE" -justify "center" -anchor "center" -width 900
