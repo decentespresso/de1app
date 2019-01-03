@@ -392,6 +392,20 @@ proc next_espresso_step {} {
 }
 
 
+proc start_refill_kit {} {
+	msg "Tell DE1 to start REFILL"
+	set ::de1(timer) 0
+	set ::de1(volume) 0
+	de1_send_state "refill" $::de1_state(Refill)
+
+	if {$::android == 0} {
+		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
+		#after 200 "update_de1_state $::de1_state(Descale)"
+		after 200 [list update_de1_state "$::de1_state(Refill)\x5"]
+	}
+
+}
+
 proc start_decaling {} {
 
 	msg "Tell DE1 to start DESCALING"
