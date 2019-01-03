@@ -1455,7 +1455,7 @@ proc de1_ble_handler { event data } {
 
 									# damian found:
 									# > after you hit the stop button, the remaining liquid that will end up in the cup is equal to about 2.6 seconds of the current flow rate, minus a 0.4 g adjustment
-								    set lag_time_calibration [expr {(($::de1(scale_weight_rate) * 2.6 ) - 0.4)}]
+								    set lag_time_calibration [expr {$::de1(scale_weight_rate) * $::settings(stop_weight_before_seconds) }]
 
 									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) - $lag_time_calibration}]]} {	
 
