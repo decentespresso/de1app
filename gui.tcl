@@ -1884,6 +1884,7 @@ proc import_god_shots_from_common_format {} {
 			set import_name [clock seconds]
 			set meta(clock) [clock seconds]
 			set notes_list {}
+			set this_weight 0
 
 			set linecnt 0
 			set labels {}
@@ -1929,6 +1930,46 @@ proc import_god_shots_from_common_format {} {
 						lappend import_espresso_temperature_basket [return_zero_if_blank [ifexists momentarray(water_temperature_basket)]]
 						lappend import_espresso_temperature_mix [return_zero_if_blank [ifexists momentarray(water_temperature_in)]]
 					}
+				}
+			}
+
+			# we have no gravimetric flow data, but we have weight data, then remake the gravimetric flow rate list
+			if {[lsort -unique [ifexists import_espresso_flow]] == 0} {
+				puts "we have no gravimetric flow data, but we have weight data, so remaking the gravimetric flow rate list using incremental weight data"
+				set import_espresso_flow {}
+				set previous_weight 0
+				set previous_time 0
+				set smoothed_flow_rate 0
+				set cnt 0
+
+				# smoothing of weight flow data
+				set multiplier1 .95
+
+
+				foreach w $import_espresso_weight {
+					set this_weight [lindex $import_espresso_weight $cnt]
+					set this_time [lindex $import_espresso_elapsed $cnt]
+
+					set diff_weight [expr {$this_weight - $previous_weight}]
+					set diff_time [expr {$this_time - $previous_time}]
+					if {$diff_time > 0} {
+						set diff_weight_per_second [expr {$diff_weight / $diff_time}]					
+					} else {
+						set diff_weight_per_second 0
+					}
+					if {$diff_weight_per_second < 0} {
+						set diff_weight_per_second 0
+					}
+
+					puts "cnt $cnt: $this_time $this_weight = $diff_weight_per_second"
+					set multiplier2 [expr {1 - $multiplier1}];
+					set smoothed_flow_rate [expr {($smoothed_flow_rate * $multiplier1) + ($diff_weight_per_second * $multiplier2)}]
+
+					lappend import_espresso_flow $smoothed_flow_rate
+
+					incr cnt
+					set previous_weight $this_weight
+					set previous_time $this_time
 				}
 			}
 
