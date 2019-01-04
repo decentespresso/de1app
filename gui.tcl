@@ -1961,7 +1961,7 @@ proc import_god_shots_from_common_format {} {
 						set diff_weight_per_second 0
 					}
 
-					puts "cnt $cnt: $this_time $this_weight = $diff_weight_per_second"
+					#puts "cnt $cnt: $this_time $this_weight = $diff_weight_per_second"
 					set multiplier2 [expr {1 - $multiplier1}];
 					set smoothed_flow_rate [expr {($smoothed_flow_rate * $multiplier1) + ($diff_weight_per_second * $multiplier2)}]
 
