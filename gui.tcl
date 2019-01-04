@@ -1883,6 +1883,7 @@ proc import_god_shots_from_common_format {} {
 			set import_filename "[file rootname $file_to_import].shot"
 			set import_name [clock seconds]
 			set meta(clock) [clock seconds]
+			set notes_list {}
 
 			set linecnt 0
 			set labels {}
@@ -1903,6 +1904,9 @@ proc import_god_shots_from_common_format {} {
 					 	set meta(clock) [iso8601stringparse $metadata]
 					} else {
 					 	set meta([string tolower $metatype]) $metadata
+					 	if {$metadata != ""} {
+					 		lappend notes_list "$metatype: $metadata"
+					 	}
 					}
 				} elseif {[lindex $parts 0] == "moment"} {
 					set partcnt 0
@@ -1938,6 +1942,7 @@ espresso_flow [list $import_espresso_flow]
 espresso_flow_weight [list $import_espresso_flow_weight]
 espresso_temperature_basket [list $import_espresso_temperature_basket]
 espresso_temperature_mix [list $import_espresso_temperature_mix]
+espresso_notes [list [join $notes_list { - }]]
 }]
 
 			write_file $fn_export $exportdata
@@ -2132,6 +2137,10 @@ proc load_god_shot { {force 0} } {
     set ::settings(god_espresso_flow) $godprops(espresso_flow)
     set ::settings(god_espresso_flow_weight) $godprops(espresso_flow_weight)
     set ::settings(god_espresso_weight) $godprops(espresso_weight)
+    
+    if {[ifexists godprops(espresso_notes)] != ""} {
+    	set ::settings(espresso_notes) [ifexists godprops(espresso_notes)]
+    }
 
     if {[llength [ifexists godprops(espresso_elapsed)]] > 0} {
     	set ::settings(god_espresso_elapsed) $godprops(espresso_elapsed)

@@ -1196,7 +1196,7 @@ proc export_csv {arrname fn} {
 
 }
 
-# Export one shot from memory, to a file
+# Export one shot from memory, to an EEX format file
 proc export_csv_common_format {arrname fn} {
     upvar $arrname arr
     set x 0
