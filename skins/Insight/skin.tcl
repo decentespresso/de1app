@@ -59,6 +59,8 @@ source "[homedir]/skins/default/de1_skin_settings.tcl"
 # out of water page
 add_de1_text "tankempty refill" 1280 750 -text [translate "Out of water"] -font Helv_20_bold -fill "#AAAAAA" -justify "center" -anchor "center" -width 900
 add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 0 0 2560 1600 
+add_de1_variable "tankempty refill" 1280 900 -justify center -anchor "center" -text "" -font Helv_10 -fill "#CCCCCC" -width 520 -textvariable {[return "s:$::de1(state) - b:$::de1(substate)"]} 
+
 
 # cleaning and descaling
 add_de1_text "cleaning" 1280 80 -text [translate "Cleaning"] -font Helv_20_bold -fill "#EEEEEE" -justify "center" -anchor "center" -width 900
@@ -871,5 +873,5 @@ profile_has_changed_set_colors
 #add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
-#set_next_page off settings_4;
+#set_next_page off refill;
 #
