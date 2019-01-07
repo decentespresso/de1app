@@ -2737,3 +2737,4 @@ proc refill_kit_retry_button {} {
 	} else {
 		return ""
 	}
+}
