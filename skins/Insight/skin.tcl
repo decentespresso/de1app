@@ -123,6 +123,7 @@ set charts_width 1990
 if {$::debugging == 1} {
 	set charts_width 400
 	add_de1_variable "off espresso espresso_3" 450 220 -text "" -font Helv_6 -fill "#5a5d75" -anchor "nw" -justify left -width [rescale_y_skin 1560] -textvariable {$::debuglog}
+	add_de1_variable "steam steam_1 steam_3 preheat_1 preheat_2 preheat_3 preheat_4 water water_1 water_3" 50 220 -text "" -font Helv_6 -fill "#5a5d75" -anchor "nw" -justify left -width [rescale_y_skin 1560] -textvariable {$::debuglog}
 }
 
 	

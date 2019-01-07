@@ -1804,7 +1804,10 @@ proc calibration_gui_init {} {
 	# set the entry fields back to normal
 	$::globals(widget_calibrate_temperature) configure -state normal; 
 	$::globals(widget_calibrate_pressure) configure -state normal; 
-	$::globals(widget_calibrate_flow) configure -state normal; 
+
+	if {[info exists ::globals(widget_calibrate_flow)] == 1} {	
+		$::globals(widget_calibrate_flow) configure -state normal; 
+	}
 
 	# set the goals to be the HOLD step of FLOW and PRESSURE shots, and the temperature to be the overall espresso temperature
 	set ::globals(calibration_espresso_pressure) $::settings(espresso_pressure); 
@@ -1828,21 +1831,21 @@ proc calibration_gui_init {} {
 		calibration_ble_received "\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\xFF\xFD\xB3\x34"
 		#calibration_ble_received "\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x04\xB3\x34"
 		#calibration_ble_received "\x00\x00\x00\x00\x01\x02\x00\x01\x00\x00\x00\x03\x64\x86"
-		#after 1000 calibration_ble_received "\x00\x00\x00\x00\x01\x01\x00\x01\x00\x00\x00\x02\x34\x86"
-		#after 2000 calibration_ble_received "\x00\x00\x00\x00\x01\x00\x00\x01\x00\x00\x00\x01\x14\x86"
+		after 500 calibration_ble_received "\x00\x00\x00\x00\x01\x01\x00\x01\x00\x00\x00\x02\x34\x86"
+		after 1000 calibration_ble_received "\x00\x00\x00\x00\x01\x00\x00\x01\x00\x00\x00\x01\x14\x86"
 
-		#after 3000 calibration_ble_received "\x00\x00\x00\x00\x03\x02\x00\x01\x03\x00\x00\x06\x12\x86"
-		#after 4000 calibration_ble_received "\x00\x00\x00\x00\x03\x01\x00\x01\x03\x00\x00\x05\x61\x86"
-		#after 5000 calibration_ble_received "\x00\x00\x00\x00\x03\x00\x00\x01\x03\x00\x00\x04\x32\x86"
+		after 1500 calibration_ble_received "\x00\x00\x00\x00\x03\x02\x00\x01\x03\x00\x00\x06\x12\x86"
+		after 2000 calibration_ble_received "\x00\x00\x00\x00\x03\x01\x00\x01\x03\x00\x00\x05\x61\x86"
+		after 2500 calibration_ble_received "\x00\x00\x00\x00\x03\x00\x00\x01\x03\x00\x00\x04\x32\x86"
 	} else {
 
 		de1_read_calibration "temperature"
-		after 1000 de1_read_calibration "pressure"
-		after 2000 de1_read_calibration "flow"
+		after 500 de1_read_calibration "pressure"
+		after 1000 de1_read_calibration "flow"
 
-		after 3000 de1_read_calibration "temperature" "factory"
-		after 4000 de1_read_calibration "pressure" "factory"
-		after 5000 de1_read_calibration "flow" "factory"
+		after 1500 de1_read_calibration "temperature" "factory"
+		after 2000 de1_read_calibration "pressure" "factory"
+		after 2500 de1_read_calibration "flow" "factory"
 	}
 }
 

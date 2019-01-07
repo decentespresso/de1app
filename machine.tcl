@@ -250,7 +250,7 @@ array set ::settings {
 	shot_weight_percentage_stop 79
 	history_saved ""
 	pressure_end 4 
-	stop_weight_before_seconds 3
+	stop_weight_before_seconds 2.8
 	espresso_step_1 pressure
 	espresso_step_2 pressure
 	espresso_step_3 pressure

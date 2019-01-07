@@ -30,19 +30,20 @@ proc read_de1_version {} {
 	userdata_append "read_de1_version" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_01) $::cinstance($::de1(cuuid_01))]
 }
 
-
-
-
+# repeatedly request de1 state
 proc poll_de1_state {} {
 
 	msg "poll_de1_state"
 
 	#de1_enable_bluetooth_notifications
-
+	read_de1_state
 	#userdata_append "read de1 temp" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0D) $::cinstance($::de1(cuuid_0D))]
-	userdata_append "read de1 state" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
-
+	#userdata_append "read de1 state" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
 	after 5000 poll_de1_state
+}
+
+proc read_de1_state {} {
+	userdata_append "read de1 state" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
 }
 
 proc skale_timer_start {} {
@@ -1161,7 +1162,7 @@ proc de1_ble_handler { event data } {
 							de1_enable_temp_notifications
 							read_de1_version
 							de1_enable_state_notifications
-							poll_de1_state
+							read_de1_state
 							#start_idle
 							#after 2000 de1_enable_calibration_notifications
 							#after 3000 de1_read_calibration "temperature"
