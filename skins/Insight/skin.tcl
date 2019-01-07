@@ -446,7 +446,7 @@ add_de1_widget "steam_3" graph 1810 1090 {
 	bind $widget [platform_button_press] { 
 		say [translate {stop}] $::settings(sound_button_in); 
 		say [translate {zoom}] $::settings(sound_button_in); 
-		set_next_page off steam_zoom_3; 
+		#set_next_page off steam_zoom_3; 
 		set_next_page steam_3 steam_zoom_3; 
 		page_show $::de1(current_context);
 	}
@@ -462,7 +462,9 @@ add_de1_widget "steam_3" graph 1810 1090 {
 add_de1_widget "steam_zoom_3" graph 34 214 { 
 	bind $widget [platform_button_press] { 
 		say [translate {zoom}] $::settings(sound_button_in); 
-		set_next_page off steam_3; 
+		#set_next_page off steam_3; 
+		#set_next_page steam_zoom_3 steam_3; 
+		set_next_page steam steam; 
 		set_next_page steam_zoom_3 steam_3; 
 		page_show $::de1(current_context);
 	}
@@ -477,7 +479,9 @@ add_de1_widget "steam_zoom_3" graph 34 214 {
 add_de1_widget "steam_zoom" graph 34 214 { 
 	bind $widget [platform_button_press] { 
 		say [translate {zoom}] $::settings(sound_button_in); 
-		set_next_page off steam; 
+		#set_next_page off steam; 
+		#set_next_page steam_zoom_3 steam_3; 
+		set_next_page steam steam; 
 		set_next_page steam_zoom steam; 
 		page_show $::de1(current_context);
 	}

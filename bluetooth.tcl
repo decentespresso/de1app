@@ -39,7 +39,7 @@ proc poll_de1_state {} {
 	read_de1_state
 	#userdata_append "read de1 temp" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0D) $::cinstance($::de1(cuuid_0D))]
 	#userdata_append "read de1 state" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
-	after 5000 poll_de1_state
+	after 1000 poll_de1_state
 }
 
 proc read_de1_state {} {
@@ -1154,15 +1154,13 @@ proc de1_ble_handler { event data } {
 						} else {
 
 							set ::globals(if_in_sleep_move_to_idle) 1
-
-							de1_send_waterlevel_settings
-							de1_send_steam_hotwater_settings					
-							de1_send_shot_frames
-							de1_enable_water_level_notifications
-							de1_enable_temp_notifications
-							read_de1_version
+							
 							de1_enable_state_notifications
 							read_de1_state
+							de1_enable_temp_notifications
+							#de1_send_waterlevel_settings
+							after 2000 "de1_enable_water_level_notifications; read_de1_version; de1_send_steam_hotwater_settings; de1_send_shot_frames"
+							#poll_de1_state
 							#start_idle
 							#after 2000 de1_enable_calibration_notifications
 							#after 3000 de1_read_calibration "temperature"

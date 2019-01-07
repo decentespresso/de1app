@@ -132,7 +132,7 @@ proc fields::2form {spec array {endian ""}} {
 	   	set s ""
 	   }
 
-	   puts "append '$ty$s$count'"
+	   #puts "append '$ty$s$count'"
 	   append form $ty$s$count
    }
 
@@ -152,7 +152,7 @@ proc ::fields::pack {spec array {endian ""}} {
 proc ::fields::unpack {packed spec array {endian ""}} {
    upvar $array Record
    foreach {form out in} [::fields::2form $spec Record $endian] break
-   puts stderr "unpack: binary scan $form $out"
+   #puts stderr "unpack: binary scan $form $out"
    return [binary scan $packed [list $form] {*}$out]
 }
 
@@ -1486,7 +1486,7 @@ proc update_de1_state {statechar} {
 		
 		if {$current_de1_substate == 4} {
 			start_timer_espresso_preinfusion
-		} elseif {$current_de1_substate == 5} {
+		} elseif {$current_de1_substate == 5 && $::previous_de1_substate != 5} {
 			if {$textstate == "HotWater"} {
 				start_timer_water_pour
 			} elseif {$textstate == "Steam"} {

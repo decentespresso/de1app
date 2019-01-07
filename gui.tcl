@@ -1530,9 +1530,9 @@ proc ui_startup {} {
 	puts "setup_environment"
 	load_settings
 	setup_environment
+	bluetooth_connect_to_devices
 	#ble_find_de1s
 	
-	bluetooth_connect_to_devices
 	#if {$::android == 1} {
 		#ble_connect_to_de1
 	#}
