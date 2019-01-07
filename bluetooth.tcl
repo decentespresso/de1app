@@ -1152,6 +1152,8 @@ proc de1_ble_handler { event data } {
 							de1_read_calibration "temperature"
 						} else {
 
+							set ::globals(if_in_sleep_move_to_idle) 1
+
 							de1_send_waterlevel_settings
 							de1_send_steam_hotwater_settings					
 							de1_send_shot_frames
@@ -1363,6 +1365,15 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							update_de1_state $value
+
+							if {[info exists ::globals(if_in_sleep_move_to_idle)] == 1} {
+								unset ::globals(if_in_sleep_move_to_idle)
+								if {$::de1_num_state($::de1(state)) == "Sleep"} {
+									# when making a new connection to the espresso machine, if the machine is currently asleep, then take it out of sleep
+									# but only do this check once, right after connection establisment
+									start_idle
+								}
+							}
 							#update_de1_substate $value
 							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
 							set ::de1(wrote) 0
