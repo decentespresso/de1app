@@ -374,6 +374,7 @@ array set ::de1_substate_types {
 	4	"preinfusion"
 	5	"pouring"
 	6	"ending"
+	17  "refill"
 }
 array set ::de1_substate_types_reversed [reverse_array ::de1_substate_types]
 
