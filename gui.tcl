@@ -1943,7 +1943,7 @@ proc import_god_shots_from_common_format {} {
 				set cnt 0
 
 				# smoothing of weight flow data
-				set multiplier1 .95
+				set multiplier1 0
 
 
 				foreach w $import_espresso_weight {

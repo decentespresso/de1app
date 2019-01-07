@@ -1159,7 +1159,7 @@ proc de1_ble_handler { event data } {
 							de1_enable_temp_notifications
 							read_de1_version
 							de1_enable_state_notifications
-							start_idle
+							#start_idle
 							#after 2000 de1_enable_calibration_notifications
 							#after 3000 de1_read_calibration "temperature"
 						}
