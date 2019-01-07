@@ -2733,7 +2733,7 @@ proc water_tank_level_to_milliliters {mm} {
 proc refill_kit_retry_button {} {
 
 	if {$::de1(substate) != 0} {
-		return [translate "Retry"]
+		return [translate "Touch screen to retry"]
 	} else {
 		return ""
 	}
