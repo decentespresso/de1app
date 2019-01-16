@@ -1053,7 +1053,7 @@ proc mixtemp_text {} {
 }
 
 proc watertemp_text {} {
-	return [return_temperature_measurement [water_mix_temperature]]
+	return [return_temperature_measurement [watertemp]]
 }
 
 proc steamtemp_text {} {
