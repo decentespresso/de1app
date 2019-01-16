@@ -1465,7 +1465,8 @@ proc de1_ble_handler { event data } {
 								}
 
 								# john 5/11/18 no support at the moment for weight-ending shots in advanced shots (settings_2c)
-								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0 && $::settings(settings_profile_type) != "settings_2c"} {
+								# john 1/18/18 support added for advanced shots stopping on weight
+								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
 
 									# damian found:
 									# > after you hit the stop button, the remaining liquid that will end up in the cup is equal to about 2.6 seconds of the current flow rate, minus a 0.4 g adjustment

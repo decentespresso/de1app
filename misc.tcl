@@ -122,6 +122,7 @@ proc make_de1_dir {} {
         skins/default/1280x800/settings_2b.png 1
         skins/default/1280x800/settings_2b2.png 1
         skins/default/1280x800/settings_2c.png 1
+        skins/default/1280x800/settings_2c2.png 1
         skins/default/1280x800/settings_3.png *
         skins/default/1280x800/settings_4.png *
         skins/default/1280x800/icon.jpg *
@@ -145,6 +146,7 @@ proc make_de1_dir {} {
         skins/default/2560x1600/settings_2b.png 1
         skins/default/2560x1600/settings_2b2.png 1
         skins/default/2560x1600/settings_2c.png 1
+        skins/default/2560x1600/settings_2c2.png 1
         skins/default/2560x1600/settings_3.png *
         skins/default/2560x1600/settings_4.png *
         skins/default/2560x1600/icon.jpg *

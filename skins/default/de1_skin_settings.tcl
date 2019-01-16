@@ -18,6 +18,7 @@ if {[de1plus]} {
 		add_de1_page "settings_2b" "settings_2b2.png" "default"
 	}
 	add_de1_page "settings_2c" "settings_2c.png" "default"
+	add_de1_page "settings_2c2" "settings_2c2.png" "default"
 
 	if {$::settings(settings_profile_type) == "settings_2"} {
 		# this happens if you switch to the de1 gui, which then saves the de1 settings default, so we need to reset it to this de1+ default
@@ -132,11 +133,19 @@ if {[de1plus]} {
 		add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
 
 		# future support for weight-bsaed ending of advanced shots
-		#add_de1_text "settings_2c" 70 940 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-		#add_de1_widget "settings_2c" scale 70 1015 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		#add_de1_variable "settings_2c" 70 1165 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
+		add_de1_text "settings_2c2" 70 230 -text [translate "Stop at weight"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+		add_de1_widget "settings_2c2" scale 70 305 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "settings_2c2" 70 455 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
 
 	}
+
+	add_de1_text "settings_2c settings_2c2" 240 1485 -text [translate "Steps"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+	add_de1_text "settings_2c settings_2c2" 735 1485 -text [translate "Limits"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+	#add_de1_text "settings_2c" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+
+	add_de1_button "settings_2c2" {say [translate {Steps}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 1 1410 495 1600
+	add_de1_button "settings_2c" {say [translate {Limits}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c2"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 496 1410 972 1600
+
 
 	#trace add variable ::settings write profile_has_changed_set
 
@@ -201,7 +210,7 @@ add_de1_text "settings_2c" 984 830 -text [translate "3: Duration"] -font Helv_9_
 
 add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
 
-set adv_listbox_height 11
+set adv_listbox_height 14
 #if {$::settings(skale_bluetooth_address) != ""} {
 #	set adv_listbox_height 9
 #}
@@ -572,10 +581,10 @@ if {$::settings(display_fluid_ounces_option) == 1} {
 add_de1_button "settings_1" {say [translate {save}] $::settings(sound_button_in); save_profile} 2300 1220 2550 1410
 
 # trash can icon to delete a preset
-add_de1_button "settings_1" {say [translate {cancel}] $::settings(sound_button_in); delete_selected_profile} 1100 280 1300 460
+add_de1_button "settings_1" {say [translate {cancel}] $::settings(sound_button_in); delete_selected_profile} 1120 280 1300 460
 
 # plus icon to create a new preset
-add_de1_button "settings_1" {say [translate {new}] $::settings(sound_button_in); set_next_page off "create_preset"; page_show off;} 1100 530 1300 730
+add_de1_button "settings_1" {say [translate {new}] $::settings(sound_button_in); set_next_page off "create_preset"; page_show off;} 1120 530 1300 730
 
 #############################
 # create a new preset
@@ -653,10 +662,10 @@ add_de1_text "settings_1" 2215 100 -text [translate "MACHINE"] -font Helv_10_bol
 
 ########################################
 # labels for tab2
-add_de1_text "settings_2 settings_2a settings_2b settings_2c" 330 100 -text [translate "PRESETS"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-add_de1_variable "settings_2 settings_2a settings_2b settings_2c" 960 100 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[setting_profile_type_to_text]}
-add_de1_text "settings_2 settings_2a settings_2b settings_2c" 1590 100 -text [translate "OTHER"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-add_de1_text "settings_2 settings_2a settings_2b settings_2c" 2215 100 -text [translate "MACHINE"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2c2" 330 100 -text [translate "PRESETS"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+add_de1_variable "settings_2 settings_2a settings_2b settings_2c settings_2c2" 960 100 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[setting_profile_type_to_text]}
+add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2c2" 1590 100 -text [translate "OTHER"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2c2" 2215 100 -text [translate "MACHINE"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
 
 ########################################
 # top labels for tab3 
@@ -699,15 +708,15 @@ proc set_languages_scrollbar_dimensions {} {
 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
-add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::settings(active_settings_tab) "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
+add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::settings(active_settings_tab) "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
 add_de1_button "settings_1 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox; set_advsteps_scrollbar_dimensions} 642 0 1277 188 
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"; preview_tablet_skin; set_languages_scrollbar_dimensions} 1278 0 1904 188
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"} 1905 0 2560 188
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"; preview_tablet_skin; set_languages_scrollbar_dimensions} 1278 0 1904 188
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"} 1905 0 2560 188
 
 
-add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; profile_has_changed_set_colors;
+add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; profile_has_changed_set_colors;
 			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit water_refill_point language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1 } {
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 				set_next_page off message; page_show message
@@ -715,7 +724,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_next_page off off; page_show off
 			}
 		} 2016 1430 2560 1600
-	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_3 settings_4" {array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;restore_espresso_chart; } 1505 1430 2015 1600
+	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_profiles_listbox; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;restore_espresso_chart; } 1505 1430 2015 1600
 
 set enable_flow_calibration 0
 
@@ -818,7 +827,7 @@ proc setting_profile_type_to_text { } {
 		}
 		#return [translate "Flow profile"]
 		return [translate "FLOW"]
-	} elseif {$in == "settings_2c"} {
+	} elseif {$in == "settings_2c" || $in == "settings_2c2"} {
 		if {$::de1(current_context) == "settings_1"} {
 			.can itemconfigure $::preview_graph_pressure -state hidden
 			.can itemconfigure $::preview_graph_flow -state hidden
