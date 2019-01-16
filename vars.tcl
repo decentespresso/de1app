@@ -2252,7 +2252,7 @@ proc profile_has_changed_set args {
 		set ::settings(profile_has_changed) 1
 		#puts "profile_has_changed_set:\n[stacktrace]"
 	} else {
-		puts "profile_has_changed_set:\n[stacktrace]"
+		#puts "profile_has_changed_set:\n[stacktrace]"
 	}
 
 	#profile_has_changed_set_colors
