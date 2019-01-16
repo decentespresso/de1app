@@ -1181,10 +1181,10 @@ proc export_csv {arrname fn} {
     upvar $arrname arr
     set x 0
     set lines {}
-    set lines [subst {espresso_elapsed, espresso_pressure, espresso_flow, espresso_flow_weight, espresso_temperature_basket, espresso_temperature_mix, espresso_weight\n}]
+    set lines [subst {espresso_elapsed,espresso_pressure,espresso_flow,espresso_flow_weight,espresso_temperature_basket,espresso_temperature_mix,espresso_weight\n}]
 
     for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
-        set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x], [lindex $arr(espresso_weight) $x]\n}]
+        set line [subst {[lindex $arr(espresso_elapsed) $x],[lindex $arr(espresso_pressure) $x],[lindex $arr(espresso_flow) $x],[lindex $arr(espresso_flow_weight) $x],[lindex $arr(espresso_temperature_basket) $x],[lindex $arr(espresso_temperature_mix) $x],[lindex $arr(espresso_weight) $x]\n}]
         append lines $line
     }
 
@@ -1239,7 +1239,7 @@ meta,,,,,,,,,Export version,1.1.0,
 #meta,,,,,,,,,Avarage flow rate,[round_to_two_digits [::math::statistics::mean $arr(espresso_flow)]],g/sec
 
     for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
-        set line [subst {[lindex $arr(espresso_elapsed) $x], [lindex $arr(espresso_pressure) $x], [lindex $arr(espresso_flow) $x], [lindex $arr(espresso_flow_weight) $x], [lindex $arr(espresso_temperature_basket) $x], [lindex $arr(espresso_temperature_mix) $x]\n}]
+        set line [subst {[lindex $arr(espresso_elapsed) $x],[lindex $arr(espresso_pressure) $x],[lindex $arr(espresso_flow) $x],[lindex $arr(espresso_flow_weight) $x],[lindex $arr(espresso_temperature_basket) $x],[lindex $arr(espresso_temperature_mix) $x]\n}]
 
         append lines [subst {moment,[lindex $arr(espresso_elapsed) $x],[lindex $arr(espresso_pressure) $x],[lindex $arr(espresso_weight) $x],[lindex $arr(espresso_flow) $x],[lindex $arr(espresso_flow_weight) $x],[lindex $arr(espresso_temperature_mix) $x],[lindex $arr(espresso_temperature_mix) $x],[lindex $arr(espresso_temperature_basket) $x],,,,,\n}]
 

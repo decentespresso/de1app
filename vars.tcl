@@ -210,7 +210,8 @@ proc next_alarm_time { in } {
 	set alarm [expr {[round_date_to_nearest_day [clock seconds]] + round($in)}]
 	if {$alarm < [clock seconds] } {
 		# if the alarm time has passed, set it for tomorrow
-		set alarm [expr {$alarm + 86400} ]
+		#set alarm [expr {$alarm + 86400} ]
+		set alarm [clock add $alarm 1 day]
 	}
 	return $alarm
 }
