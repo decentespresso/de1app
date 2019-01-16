@@ -1464,8 +1464,7 @@ proc de1_ble_handler { event data } {
 									set ::settings(drink_weight) [round_to_one_digits $::de1(final_water_weight)]
 								}
 
-								# john 5/11/18 no support at the moment for weight-ending shots in advanced shots (settings_2c)
-								# john 1/18/18 support added for advanced shots stopping on weight
+								# john 1/18/19 support added for advanced shots stopping on weight, just like other shots
 								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
 
 									# damian found:

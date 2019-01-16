@@ -149,6 +149,7 @@ if {$android == 0 || $undroid == 1} {
 #}
 
 array set ::settings {
+	preset_counter 1
 	screen_size_width {}
 	screen_size_height {}
 	current_frame_description {asdfasdfsa}

@@ -129,12 +129,12 @@ if {[de1plus]} {
 	# (beta) weight based shot ending, only displayed if a skale is connected
 	if {$::settings(skale_bluetooth_address) != ""} {
 		add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-		add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
 
-		# future support for weight-bsaed ending of advanced shots
+		# 1/18/19 support for weight-bsaed ending of advanced shots
 		add_de1_text "settings_2c2" 70 230 -text [translate "Stop at weight"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-		add_de1_widget "settings_2c2" scale 70 305 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "settings_2c2" scale 70 305 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "settings_2c2" 70 455 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
 
 	}
@@ -210,7 +210,7 @@ add_de1_text "settings_2c" 984 830 -text [translate "3: Duration"] -font Helv_9_
 
 add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
 
-set adv_listbox_height 14
+set adv_listbox_height 13
 #if {$::settings(skale_bluetooth_address) != ""} {
 #	set adv_listbox_height 9
 #}
@@ -710,6 +710,7 @@ proc set_languages_scrollbar_dimensions {} {
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
 add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::settings(active_settings_tab) "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
 add_de1_button "settings_1 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox; set_advsteps_scrollbar_dimensions} 642 0 1277 188 
+add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2c2" {say [translate {save}] $::settings(sound_button_in); if {$::settings(profile_has_changed) == 1} { save_profile } } 642 0 1277 188 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"; preview_tablet_skin; set_languages_scrollbar_dimensions} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"} 1905 0 2560 188
 
@@ -810,6 +811,16 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 set ::settings(active_settings_tab) $::settings(settings_profile_type)
 
 proc setting_profile_type_to_text { } {
+
+	# if the current profile has changed, display a * to the right of its name
+	# tapping on that tab, while editing it, will auto-save that profile to the samena,e
+	if {$::settings(profile_has_changed) == 1} {
+		set changedicon "*"
+	} else {
+		set changedicon ""
+	}
+
+
 	set in $::settings(settings_profile_type)
 	if {$in == "settings_2a"} {
 		if {$::de1(current_context) == "settings_1"} {
@@ -818,7 +829,7 @@ proc setting_profile_type_to_text { } {
 			.can itemconfigure $::preview_graph_advanced -state hidden
 		}
 		#return [translate "Pressure profile"]
-		return [translate "PRESSURE"]
+		return [translate "PRESSURE"]$changedicon
 	} elseif {$in == "settings_2b"} {
 		if {$::de1(current_context) == "settings_1"} {
 			.can itemconfigure $::preview_graph_pressure -state hidden
@@ -826,17 +837,17 @@ proc setting_profile_type_to_text { } {
 			.can itemconfigure $::preview_graph_advanced -state hidden
 		}
 		#return [translate "Flow profile"]
-		return [translate "FLOW"]
+		return [translate "FLOW"]$changedicon
 	} elseif {$in == "settings_2c" || $in == "settings_2c2"} {
 		if {$::de1(current_context) == "settings_1"} {
 			.can itemconfigure $::preview_graph_pressure -state hidden
 			.can itemconfigure $::preview_graph_flow -state hidden
 			.can itemconfigure $::preview_graph_advanced -state normal
 		}
-		return [translate "ADVANCED"]
+		return [translate "ADVANCED"]$changedicon
 		#return [translate "Advanced profile"]
 	} else {
-		return [translate "PROFILE"]
+		return [translate "PROFILE"]$changedicon
 	}
 }
 #set_next_page off create_preset

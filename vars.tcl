@@ -1630,7 +1630,8 @@ proc fill_profiles_listbox {} {
 		}
 
 		#puts "$widget insert $cnt $d"
-		if {$::settings(profile) == $d} {
+		#puts "$::settings(profile) == [ifexists profile(profile_title)]"
+		if {$::settings(profile) ==[ifexists profile(profile_title)]} {
 			set ::current_profile_number $cnt
 			#puts "current profile of '$d' is #$cnt"
 		}
@@ -2247,9 +2248,11 @@ proc profile_has_changed_set_colors {} {
 proc profile_has_changed_set args {
 
 	# if one the scroll bars has been touched by a human (not by the page display code) then mark the profile as having been changed
-	if {[lsearch -exact [stackprocs] "page_show"] == -1} {
+	if {[lsearch -exact [stackprocs] "page_show"] == -1 && [lsearch -exact [stackprocs] "update_onscreen_variables"] == -1} {
 		set ::settings(profile_has_changed) 1
 		#puts "profile_has_changed_set:\n[stacktrace]"
+	} else {
+		puts "profile_has_changed_set:\n[stacktrace]"
 	}
 
 	#profile_has_changed_set_colors
@@ -2305,6 +2308,14 @@ proc save_profile {} {
 		return
 	}
 
+	# if no name then give it a name which is just a number
+	if {$::settings(profile_title) == ""} {
+		incr ::settings(preset_counter)  
+		save_settings
+
+		set ::settings(profile_title) $::settings(preset_counter)  
+	}
+
 	set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure}
 	#set profile_name_to_save $::settings(profile_to_save) 
 
@@ -2323,6 +2334,8 @@ proc save_profile {} {
 
 	if {[save_settings_vars $fn $profile_vars] == 1} {
 		#set ::settings(profile) $profile_name_to_save
+		set ::settings(profile) $::settings(profile_title)
+
 		fill_profiles_listbox 
 		update_de1_explanation_chart
 		set ::settings(profile_title) [translate "Saved"]

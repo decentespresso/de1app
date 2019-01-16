@@ -1,11 +1,11 @@
 advanced_shot {}
 author Decent
 espresso_hold_time 25
-preinfusion_time 60
+preinfusion_time 37
 espresso_pressure 9.0
 espresso_decline_time 0
 pressure_end 1.0
-espresso_temperature 88.5
+espresso_temperature 92.0
 settings_profile_type settings_2b
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6

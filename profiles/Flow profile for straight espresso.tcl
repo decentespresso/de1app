@@ -9,7 +9,7 @@ espresso_temperature 92.0
 settings_profile_type settings_2b
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6
-flow_profile_hold 2.5
+flow_profile_hold 2.0
 flow_profile_hold_time 0
 flow_profile_decline 1
 flow_profile_decline_time 23
@@ -21,5 +21,5 @@ final_desired_shot_weight 32
 preinfusion_guarantee 0
 profile_title {Flow profile for straight espresso}
 profile_language en
-preinfusion_stop_pressure 4
+preinfusion_stop_pressure 5.0
 
