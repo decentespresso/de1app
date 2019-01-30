@@ -256,7 +256,7 @@ array set ::settings {
 	espresso_step_2 pressure
 	espresso_step_3 pressure
 	espresso_pressure 9.2
-	app_brightness 100
+	app_brightness 70
 	saver_brightness 0
 	accelerometer_angle 45
 	goal_is_basket_temp 1
