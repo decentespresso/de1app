@@ -252,6 +252,7 @@ array set ::settings {
 	history_saved ""
 	pressure_end 4 
 	stop_weight_before_seconds 2.8
+	max_stop_at_weight 100
 	espresso_step_1 pressure
 	espresso_step_2 pressure
 	espresso_step_3 pressure
