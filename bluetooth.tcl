@@ -1160,8 +1160,8 @@ proc de1_ble_handler { event data } {
 							de1_send_shot_frames
 							read_de1_version
 							de1_enable_state_notifications
+							de1_send_waterlevel_settings
 							read_de1_state
-							#de1_send_waterlevel_settings
 							#after 2000 "; ; ; "
 							#poll_de1_state
 							#start_idle
