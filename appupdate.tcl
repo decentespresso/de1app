@@ -21,6 +21,8 @@ package require http 2.5
 package require tls 1.6
 ::http::register https 443 ::tls::socket
 cd "[file dirname [info script]]/"
+set ::settings(logfile) "updatelog.txt"
+set debugcnt 0
 
 proc translate {x} {return $x}
 
@@ -35,6 +37,7 @@ if {$tk != ""} {
 	#-width 200 -height 100 -bd 2
 	pack .hello  -pady 10
 	pack .resetapp -side bottom -pady 10
+	
 }
 
 set success 0
@@ -53,6 +56,10 @@ if {$tk != ""} {
 	} else {
 		.hello configure -text "Failed.\n------------\n\nError info:\n------------\n$errorInfo\n\nTap here to exit." 
 	}
+}
+
+catch {
+
 }
 
 ##

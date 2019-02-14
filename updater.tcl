@@ -235,6 +235,25 @@ proc pause {time} {
 
 
 
+proc log_to_debug_file {text} {
+    if {[ifexists ::settings(logfile)] != ""} {
+        if {[ifexists ::logfile_handle] == ""} {
+
+            #set errcode [catch {
+                set ::logfile_handle [open "[homedir]/$::settings(logfile)" w]
+                fconfigure $::logfile_handle -blocking 0
+                fconfigure $::logfile_handle -buffersize 10240
+            #}]
+
+
+        } else {
+            puts $::logfile_handle "$::debugcnt) $text"
+
+        } 
+    }
+
+
+}
 
 
 proc verify_decent_tls_certificate {} {
@@ -259,6 +278,13 @@ proc verify_decent_tls_certificate {} {
     return $status
 }
 
+proc close_log_file {} {
+    if {[ifexists ::logfile_handle] == ""} {
+        catch {
+            close $::logfile_handle
+        }
+    }
+}
 
 proc start_app_update {} {
 
@@ -279,8 +305,10 @@ proc start_app_update {} {
     set cert_check [verify_decent_tls_certificate]
     if {$cert_check != 1} {
         puts "https certification is not what we expect, update failed"
+        log_to_debug_file "https certification is not what we expect, update failed"
         foreach {k v} $cert_check {
             puts "$k : '$v'"
+            log_to_debug_file "$k : '$v'"
         }
         set ::de1(app_update_button_label) [translate "Internet encryption problem"]; 
         set ::app_updating 0
@@ -316,11 +344,14 @@ proc start_app_update {} {
     set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
     if {$remote_timestamp == ""} {
         puts "unable to fetch remote timestamp"
+        log_to_debug_file "unable to fetch remote timestamp"
+
         set ::de1(app_update_button_label) [translate "Update error"]; 
         set ::app_updating 0
         return
     } elseif {$local_timestamp == $remote_timestamp} {
-        #puts "Local timestamp is the same as remote timestamp, so no need to update"
+        puts "Local timestamp is the same as remote timestamp, so no need to update"
+        log_to_debug_file "Local timestamp is the same as remote timestamp, so no need to update"
         
         # we can return at this point, if we're very confident that the sync is correct
         # john 4/18/18 we want to check all files anyway, to fill in any missing local files, so we are going to ignore the time stamps being equal
@@ -347,6 +378,7 @@ proc start_app_update {} {
         if {[file exists "[homedir]/$filename"] != 1} {
             # force retrieval of any locally missing file by setting its SHA to zero
             puts "Missing: $filename"
+            log_to_debug_file "Missing: $filename"
             set filesha 0
         }
         set lmanifest($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
@@ -360,11 +392,13 @@ proc start_app_update {} {
         if {[info exists data(filesha)] != 1} {
             set tofetch($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
             puts "Local file is missing in local manifest: $filename"
+            log_to_debug_file "Local file is missing in local manifest: $filename"
         } elseif {$data(filesha) != $filesha} {
             # if the SHA doesn't match then we'll want to fetch this file
             # john 4/18/18 note that we no longer use FILESIZE to compare files, because it can vary between file systems, even if the contents are identical
             set tofetch($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
             puts "SHA256 mismatch local:'[ifexists data(filesha)]' != remote:'$filesha' : will fetch: $filename or filesize [ifexists data(filesize)] != $filesize"
+            log_to_debug_file "SHA256 mismatch local:'[ifexists data(filesha)]' != remote:'$filesha' : will fetch: $filename or filesize [ifexists data(filesize)] != $filesize"
         } else {
         }
     }
@@ -382,6 +416,10 @@ proc start_app_update {} {
 
         #set ::de1(app_update_button_label) "[round_to_integer $perc]%"; 
         set ::de1(app_update_button_label) "$cnt/[array size tofetch]"; 
+        catch {
+            .hello configure -text "$cnt/[array size tofetch]"
+        }
+
         catch { update_onscreen_variables }
         update
 
@@ -400,6 +438,7 @@ proc start_app_update {} {
         set newsha [calc_sha $fn]
         if {$arr(filesha) != $newsha} {
             puts "Failed to accurately download $k"
+            log_to_debug_file "Failed to accurately download $k"
             set ::app_updating 0
             return -1
         }
@@ -407,6 +446,7 @@ proc start_app_update {} {
         update
 
         puts "Successfully fetched $k -> $fn ($url)"
+        log_to_debug_file "Successfully fetched $k -> $fn ($url)"
         #break
     }
 
@@ -418,6 +458,8 @@ proc start_app_update {} {
     set success 1
     set files_moved 0
     set graphics_were_updated 0
+    set files_to_delete {}
+    
     foreach {k v} [array get tofetch] {
         unset -nocomplain arr
         array set arr $v
@@ -428,10 +470,16 @@ proc start_app_update {} {
             set dirname [file dirname $dest]
             if {[file exists $dirname] != 1} {
                 puts "Making non-existing directory: '$dirname'"
+                log_to_debug_file "Making non-existing directory: '$dirname'"
                 file mkdir -force $dirname
             }
             puts "Moving $fn -> $dest"
-            file rename -force $fn $dest
+            log_to_debug_file "Moving $fn -> $dest"
+            #file rename -force $fn $dest
+
+            # john 2-16-19 we copy instead of rename in case two files have an identical SHA (ie, identical content)
+            file copy -force $fn $dest
+            lappend files_to_delete $fn
             incr files_moved 
 
             # keep track of whether any graphics were updated
@@ -442,8 +490,15 @@ proc start_app_update {} {
 
         } else {
             puts "WARNING: unable to find file $fn to copy to destination: '$dest' - a partial app update has occured."
+            log_to_debug_file "WARNING: unable to find file $fn to copy to destination: '$dest' - a partial app update has occured."
             set success 0
         }
+    }
+
+    foreach file_to_delete $files_to_delete {
+        #catch {
+            file delete $file_to_delete
+        #}
     }
 
     if {$success == 1} {
@@ -465,6 +520,8 @@ proc start_app_update {} {
                 set splash_directory [glob -nocomplain "[splash_directory]/${::screen_size_width}x${::screen_size_height}"]
                 puts "deleting $saver_directory"
                 puts "deleting $splash_directory"
+                log_to_debug_file "deleting $saver_directory"
+                log_to_debug_file "deleting $splash_directory"
 
                 file delete -force $saver_directory
                 file delete -force $splash_directory
@@ -473,10 +530,12 @@ proc start_app_update {} {
                 foreach d $skindirs {
                     set thisskindir "[homedir]/skins/$d/$this_resolution/"
                     puts "testing '$d' - '$thisskindir'"
+                    log_to_debug_file "testing '$d' - '$thisskindir'"
                     if {[file exists $thisskindir] == 1} {
                         # skins are converted to this apps resolution only as needed, so only delete the existing dirs
                         file delete -force $thisskindir
                         puts "deleting $thisskindir"
+                        log_to_debug_file "deleting $thisskindir"
                     }
                 }
             }
@@ -488,6 +547,7 @@ proc start_app_update {} {
         write_file "[homedir]/timestamp.txt" $remote_timestamp
         write_file "[homedir]/manifest.txt" $remote_manifest
         puts "successful update"
+        log_to_debug_file "successful update"
         unset -nocomplain ::de1(firmware_crc) 
 
         if {$files_moved > 0} {
@@ -502,6 +562,7 @@ proc start_app_update {} {
     } else {
         set ::de1(app_update_button_label) [translate "Update failed"]; 
         puts "failed update"
+        log_to_debug_file "failed update"
         set ::app_updating 0
         return 0
     }

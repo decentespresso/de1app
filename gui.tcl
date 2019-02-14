@@ -458,6 +458,7 @@ proc platform_button_unpress {} {
 	return {<ButtonRelease-1>}
 }
 
+
 set cnt 0
 set debugcnt 0
 set ::debuglog {}					
@@ -465,21 +466,9 @@ proc msg {text} {
 #z
 
 	incr ::debugcnt
-	if {$::settings(logfile) != ""} {
-		if {[ifexists ::logfile_handle] == ""} {
-
-		    #set errcode [catch {
-		        set ::logfile_handle [open "[homedir]/$::settings(logfile)" w]
-		        fconfigure $::logfile_handle -blocking 0
-		        fconfigure $::logfile_handle -buffersize 10240
-		    #}]
-
-
-		} else {
-			puts $::logfile_handle "$::debugcnt) $text"
-		} 
+	catch {
+		log_to_debug_file $text
 	}
-
 	#catch {
 	if {[info exists ::debugging] == 1} {
 		if {$::debugging == 1} {
