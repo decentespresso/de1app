@@ -1169,7 +1169,7 @@ proc de1_ble_handler { event data } {
 
 							catch {
 								if {$::settings(ble_unpair_at_exit) == 0} {
-									ble pair $::de1(de1_address)
+									ble pair $::settings(bluetooth_address)
 								}
 							}
 
@@ -1211,12 +1211,12 @@ proc de1_ble_handler { event data } {
 						after 1000 skale_enable_weight_notifications
 						after 2000 skale_enable_button_notifications
 
+
 						catch {
 							if {$::settings(ble_unpair_at_exit) == 0} {
-								ble pair $::de1(skale_bluetooth_address)
+								ble pair $::settings(skale_bluetooth_address)
 							}
 						}
-
 						
 						#after 1500 
 						#after 2000 
