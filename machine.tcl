@@ -162,6 +162,7 @@ array set ::settings {
 	max_steam_pressure 3
 	insight_skin_show_embedded_profile 0
 	flying 0
+	ble_unpair_at_exit 1
 	preload_all_page_images 0
 	advanced_shot_chart_temp_max 100
 	advanced_shot_chart_temp_min 80
