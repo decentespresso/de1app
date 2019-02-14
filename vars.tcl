@@ -2108,6 +2108,8 @@ proc change_bluetooth_device {} {
 		save_settings
 	}
 
+	
+
 	# disconnect (if necessary) and reconnect to the DE1 now
 	ble_connect_to_de1
 }
@@ -2133,6 +2135,9 @@ proc change_skale_bluetooth_device {} {
 		return
 	}
 	set ::settings(skale_bluetooth_address) $profile
+
+
+
 	save_settings
 	ble_connect_to_skale
 }

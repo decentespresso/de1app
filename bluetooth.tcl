@@ -1167,11 +1167,12 @@ proc de1_ble_handler { event data } {
 							de1_send_waterlevel_settings
 							read_de1_state
 
-							catch {
-								if {$::settings(ble_unpair_at_exit) == 0} {
-									ble pair $::settings(bluetooth_address)
-								}
-							}
+							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
+							#catch {
+							#	if {$::settings(ble_unpair_at_exit) == 0} {
+							#		ble pair $::settings(bluetooth_address)
+							#	}
+							#}
 
 							#after 2000 "; ; ; "
 							#poll_de1_state
@@ -1212,12 +1213,13 @@ proc de1_ble_handler { event data } {
 						after 2000 skale_enable_button_notifications
 
 
-						catch {
-							if {$::settings(ble_unpair_at_exit) == 0} {
-								ble pair $::settings(skale_bluetooth_address)
-							}
-						}
-						
+						# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
+						#catch {
+						#	if {$::settings(ble_unpair_at_exit) == 0} {
+						#		ble pair $::settings(skale_bluetooth_address)
+						#	}
+						#}
+
 						#after 1500 
 						#after 2000 
 						#set displayweight [binary decode hex "EC"]
