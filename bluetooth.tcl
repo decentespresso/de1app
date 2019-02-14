@@ -510,8 +510,10 @@ proc close_all_ble_and_exit {} {
 	}
 
 	catch {
-		ble unpair $::de1(de1_address)
-		ble unpair $::settings(bluetooth_address)
+		if {$::settings(ble_unpair_at_exit) == 1} {
+			ble unpair $::de1(de1_address)
+			ble unpair $::settings(bluetooth_address)
+		}
 	}
 
 	#after 2000 exit
