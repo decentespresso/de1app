@@ -1166,6 +1166,13 @@ proc de1_ble_handler { event data } {
 							de1_enable_state_notifications
 							de1_send_waterlevel_settings
 							read_de1_state
+
+							catch {
+								if {$::settings(ble_unpair_at_exit) == 0} {
+									ble pair $::de1(de1_address)
+								}
+							}
+
 							#after 2000 "; ; ; "
 							#poll_de1_state
 							#start_idle
@@ -1203,6 +1210,14 @@ proc de1_ble_handler { event data } {
 						skale_enable_lcd
 						after 1000 skale_enable_weight_notifications
 						after 2000 skale_enable_button_notifications
+
+						catch {
+							if {$::settings(ble_unpair_at_exit) == 0} {
+								ble pair $::de1(skale_bluetooth_address)
+							}
+						}
+
+						
 						#after 1500 
 						#after 2000 
 						#set displayweight [binary decode hex "EC"]
