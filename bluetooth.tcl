@@ -522,6 +522,13 @@ proc close_all_ble_and_exit {} {
 
 proc app_exit {} {
 
+	if {[ifexists ::logfile_handle] == ""} {
+		catch {
+			close $::logfile_handle
+		}
+	}
+
+
 	if {$::android != 1} {
 		close_all_ble_and_exit
 	}

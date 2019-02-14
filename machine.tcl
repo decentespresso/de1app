@@ -158,6 +158,7 @@ array set ::settings {
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"
+	logfile "log.txt"
 	water_refill_point 5
 	max_steam_pressure 3
 	insight_skin_show_embedded_profile 0
