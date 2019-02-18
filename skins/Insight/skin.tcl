@@ -128,8 +128,8 @@ if {$::debugging == 1} {
 
 	
 	# not yet ready to be used, still needs some work
-	set ::settings(display_pressure_delta_line) 0
-	set ::settings(display_flow_delta_line) 0
+	#set ::settings(display_pressure_delta_line) 0
+	#set ::settings(display_flow_delta_line) 0
 
 #######################
 # 3 equal sized charts
