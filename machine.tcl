@@ -107,7 +107,7 @@ array set ::de1 {
 	steam_time_min 1
 	steam_time_max 120
 	last_ping 0
-	steam_heater_temperature 170
+	steam_heater_temperature 160
 }
 
 set ::de1(last_ping) [clock seconds]
@@ -226,7 +226,6 @@ array set ::settings {
 	enable_fahrenheit 0
 	enable_ampm 0
 	settings_1_page settings_1
-	steam_temperature 170
 	settings_profile_type "settings_2"
 	steam_max_time 120
 	skale_bluetooth_address {}
