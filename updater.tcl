@@ -251,8 +251,6 @@ proc log_to_debug_file {text} {
 
         } 
     }
-
-
 }
 
 
