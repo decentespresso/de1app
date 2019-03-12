@@ -1392,6 +1392,46 @@ proc append_live_data_to_espresso_chart {} {
   	}
 }  
 
+# System to plug-in handlers for state (not substate) changes.
+array set ::state_change_handlers {}
+
+proc register_state_change_handler {old_state_name new_state_name handler} {
+  # Registers a state change handler for a specific state-to-state transition.
+  #
+  # Args:
+  #   old_state_name: name for the "from" state. Names are from ::de1_num_state
+  #   new_state_name: name for the "to" state.
+  #   handler: callback that handles state transition.
+  #     When invoked, old_state_name and new_state_name are added as arguments.
+  set event_key [make_state_change_event_key $::de1_num_state_reversed($old_state_name) $::de1_num_state_reversed($new_state_name)]
+  if {![info exists ::state_change_handlers($event_key)]} {
+    set ::state_change_handlers($event_key) [list]
+  }
+  lappend ::state_change_handlers($event_key) $handler
+}
+
+proc make_state_change_event_key {old_state new_state} {
+  # Warning: state change event does not have current substate stored in ::de1(substate).
+  # Handlers are not stored persistently, so no backward compatibility issue with changing this schema.
+  #
+  # Args:
+  #   old_state: integer representing old state.
+  #   new_state: integer representing new state.
+  return "${old_state},${new_state}"
+}
+
+proc emit_state_change_event {old_state new_state} {
+  # Asynchronously triggers all handlers.
+  set old_state_name $::de1_num_state($old_state)
+  set new_state_name $::de1_num_state($new_state)
+  set event_key [make_state_change_event_key $old_state $new_state]
+  if {[info exists ::state_change_handlers($event_key)]} {
+    foreach handler $::state_change_handlers($event_key) {
+      # No bracing so variables are expanded correctly.
+      after idle after 0 eval {*}$handler $old_state_name $new_state_name
+    }
+  }
+}
 
 
 proc parse_state_change {packed destarrname} {
@@ -1425,6 +1465,7 @@ proc update_de1_state {statechar} {
 	#puts "textstate: $textstate"
 	if {$msg(state) != $::de1(state)} {
 		msg "applying DE1 state change: $::de1(state) [array get msg] ($textstate)"
+		emit_state_change_event $::de1(state) $msg(state)
 		set ::de1(state) $msg(state)
 	}
 

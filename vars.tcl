@@ -2367,13 +2367,17 @@ proc de1plus {} {
 }
 
 proc save_espresso_rating_to_history {} {
-	unset -nocomplain ::settings(history_saved)
-	save_this_espresso_to_history
+	#unset -nocomplain ::settings(history_saved)
+	save_this_espresso_to_history {} {}
 }
 
-proc save_this_espresso_to_history {} {
 
-	if {[ifexists ::settings(history_saved)] != 1 && [espresso_elapsed length] > 0} {
+# Lazy way of decoupling from "package require" ordering.
+after idle {after 0 {register_state_change_handler Espresso Idle save_this_espresso_to_history}}
+
+proc save_this_espresso_to_history {unused_old_state unused_new_state} {
+	# only save shots that have at least 5 data points
+	if {!$::settings(history_saved) && [espresso_elapsed length] > 5} {
 
 		set name [clock format [clock seconds]]
 		set clock [clock seconds]
@@ -2409,15 +2413,13 @@ proc save_this_espresso_to_history {} {
 	    append espresso_data "}\n"
 
 		set fn "[homedir]/history/[clock format $clock -format "%Y%m%dT%H%M%S"].shot"
-		if {[espresso_elapsed length] > 5} {
-			# only save shots that have at least 5 data points
-	    	write_file $fn $espresso_data
-			puts "save_this_espresso_to_history"
-	    }
+		write_file $fn $espresso_data
+		msg "Save this espresso to history"
 
-	    set ::settings(history_saved) 1
+		set ::settings(history_saved) 1
 	}
 }
+
 
 
 proc start_text_if_espresso_ready {} {
@@ -2450,7 +2452,7 @@ proc stop_text_if_espresso_stoppable {} {
 }
 
 
-
+# TODO: this should probably be renamed.
 proc espresso_history_save_from_gui {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
@@ -2464,7 +2466,7 @@ proc espresso_history_save_from_gui {} {
 		set state [translate "RESTART"]
 	}
 	#set state [translate "WAIT"]
-	save_this_espresso_to_history; 
+	#save_this_espresso_to_history; 
 	return $state
 }
 
