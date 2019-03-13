@@ -2377,7 +2377,7 @@ after idle {after 0 {register_state_change_handler Espresso Idle save_this_espre
 
 proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 	# only save shots that have at least 5 data points
-	if {!$::settings(history_saved) && [espresso_elapsed length] > 5} {
+	if {!$::settings(history_saved) && [espresso_elapsed length] > 5 && $::settings(should_save_history) == 1} {
 
 		set name [clock format [clock seconds]]
 		set clock [clock seconds]

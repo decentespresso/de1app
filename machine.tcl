@@ -250,7 +250,8 @@ array set ::settings {
 	flow_profile_decline_time 17
 	flow_profile_preinfusion_time 5
 	shot_weight_percentage_stop 79
-	history_saved 1
+	history_saved 0
+	should_save_history 1
 	pressure_end 4 
 	stop_weight_before_seconds 2.8
 	max_stop_at_weight 100
@@ -510,10 +511,7 @@ proc start_espresso {} {
 	msg "Tell DE1 to start making ESPRESSO"
 	msg [stacktrace]
 	
-	if {$::settings(history_saved) == ""} {
-		# if upgrading from an existing installation, with a blank ::settings(history_saved) then upgrade them to enable this feature
-		set ::settings(history_saved) 1
-	}
+	set ::settings(history_saved) 0
 
 	set ::de1(timer) 0
 	set ::de1(volume) 0
