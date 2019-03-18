@@ -1226,7 +1226,7 @@ proc update_de1_explanation_chart { {context {}} } {
 		update_de1_plus_flow_explanation_chart
 	    espresso_de1_explanation_chart_elapsed append [espresso_de1_explanation_chart_elapsed_flow range 0 end]
 		return
-	} elseif {$::settings(settings_profile_type) == "settings_2c"} {
+	} elseif {$::settings(settings_profile_type) == "settings_2c" || $::settings(settings_profile_type) == "settings_2c2"} {
 		# advanced shots currently get no graphic preview
 		return
 	}

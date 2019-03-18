@@ -547,6 +547,75 @@ proc parse_binary_shotframe {packed destarrname} {
 	}
 }
 
+
+
+
+
+# C code:
+#	struct PACKEDATTR T_ReadFromMMR {
+#	  U8P0  Len;       // Length of data to read, in words-1. ie. 0 = 4 bytes, 1 = 8 bytes, 255 = 2014 bytes, etc.
+#	  U24P0 Address;   // Address of window. Will autoincrement if set up in MapRequest
+#	  U8P0  Data[16];  // If data reaches past the end of a region, bytes will be zero filled
+#	};
+proc spec_ReadFromMMR {} {
+	set spec {
+		Len {char {} {} {unsigned} {}}
+		Address1 {char {} {} {unsigned} {}}
+		Address2 {char {} {} {unsigned} {}}
+		Address3 {char {} {} {unsigned} {}}
+		Data0 {char {} {} {unsigned} {}}
+		Data1 {char {} {} {unsigned} {}}
+		Data2 {char {} {} {unsigned} {}}
+		Data3 {char {} {} {unsigned} {}}
+		Data4 {char {} {} {unsigned} {}}
+		Data5 {char {} {} {unsigned} {}}
+		Data6 {char {} {} {unsigned} {}}
+		Data7 {char {} {} {unsigned} {}}
+		Data8 {char {} {} {unsigned} {}}
+		Data9 {char {} {} {unsigned} {}}
+		Data10 {char {} {} {unsigned} {}}
+		Data11 {char {} {} {unsigned} {}}
+		Data12 {char {} {} {unsigned} {}}
+		Data13 {char {} {} {unsigned} {}}
+		Data14 {char {} {} {unsigned} {}}
+		Data15 {char {} {} {unsigned} {}}
+	}
+}
+
+# C code:
+#	struct PACKEDATTR T_WriteToMMR {
+#	  U8P0  Len;       // Length of data
+#	  U24P0 Address;   // Address within the MMR
+#	  U8P0  Data[16];  // Data, zero padded
+#	};
+
+proc spec_WriteToMMR {} {
+	set spec {
+		Len {char {} {} {unsigned} {}}
+		Address1 {char {} {} {unsigned} {}}
+		Address2 {char {} {} {unsigned} {}}
+		Address3 {char {} {} {unsigned} {}}
+		Data0 {char {} {} {unsigned} {}}
+		Data1 {char {} {} {unsigned} {}}
+		Data2 {char {} {} {unsigned} {}}
+		Data3 {char {} {} {unsigned} {}}
+		Data4 {char {} {} {unsigned} {}}
+		Data5 {char {} {} {unsigned} {}}
+		Data6 {char {} {} {unsigned} {}}
+		Data7 {char {} {} {unsigned} {}}
+		Data8 {char {} {} {unsigned} {}}
+		Data9 {char {} {} {unsigned} {}}
+		Data10 {char {} {} {unsigned} {}}
+		Data11 {char {} {} {unsigned} {}}
+		Data12 {char {} {} {unsigned} {}}
+		Data13 {char {} {} {unsigned} {}}
+		Data14 {char {} {} {unsigned} {}}
+		Data15 {char {} {} {unsigned} {}}
+	}
+}
+
+
+
 proc spec_shotdescheader {} {
 	set spec {
 		HeaderV {char {} {} {unsigned} {}}
