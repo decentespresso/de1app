@@ -724,7 +724,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 			} else {
 				msg "Saving settings: '$::settings(settings_profile_type)'"
 				if {$::settings(settings_profile_type) == "settings_2c2"} {
-					# if on the LIMITS tab, save them back to the main advanced settings tab, when leaving the settings page
+					# if on the LIMITS tab, indicate that this is settings_2c (aka "advanced") shot as part of the OK button process
 					set ::settings(settings_profile_type) "settings_2c"
 
 					# allow people to return to the LIMITS tab directory when they go in/out of settings, so don't over-ride the default behavior
