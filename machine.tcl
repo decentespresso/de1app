@@ -181,6 +181,7 @@ array set ::settings {
 	water_count 0
 	advanced_shot {}
 	water_time_max 60
+	refill_check_at_sleep 0
 	grinder_dose_weight 0
 	scentone {}
 	seconds_after_espresso_stop_to_continue_weighing 8
@@ -401,14 +402,20 @@ proc start_refill_kit {} {
 	msg "Tell DE1 to start REFILL"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send_state "refill" $::de1_state(Refill)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		#after 200 "update_de1_state $::de1_state(Descale)"
 		after 200 [list update_de1_state "$::de1_state(Refill)\x5"]
+		#after 1000 [list update_de1_state "$::de1_state(Idle)\x5"]
+		after 2000 start_idle
+	} else {
+		de1_send_state "refill" $::de1_state(Refill)
 	}
 
+	if {[ifexists ::sleep_after_refill] == 1} {
+		unset -nocomplain ::sleep_after_refill
+	}
 }
 
 proc start_decaling {} {
@@ -627,6 +634,13 @@ proc start_idle {} {
 
 
 proc start_sleep {} {
+
+	if {$::settings(refill_check_at_sleep) == 1} {
+		msg "check refill first before sleep"
+		set ::sleep_after_refill 1
+		start_refill_kit
+		return
+	}
 
     if {[ifexists ::app_updating] == 1} {
 		msg "delaying screen saver because tablet app is updating"
