@@ -1212,7 +1212,7 @@ proc update_de1_shotvalue {packed} {
 		set ::previous_timer $ShotSample(Timer)
 		return
 	} elseif {$::previous_timer == 0} {
-		msg "previous timer was zero so settings to $ShotSample(Timer)"
+		#msg "previous timer was zero so settings to $ShotSample(Timer)"
 		set ::previous_timer $ShotSample(Timer)
 		return
 	}
