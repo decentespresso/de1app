@@ -38,7 +38,7 @@ add_de1_page "settings_4" "settings_4.png" "default"
 # this is the message page
 set ::message_label [add_de1_text "message" 1280 750 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
 set ::message_button_label [add_de1_text "message" 1280 1090 -text [translate "Quit"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
-set ::message_button [add_de1_button "message" {say [translate {Quit}] $::settings(sound_button_in);exit} 980 990 1580 1190 ""]
+set ::message_button [add_de1_button "message" {say [translate {Quit}] $::settings(sound_button_in); exit} 980 990 1580 1190 ""]
 
 set slider_trough_color #EAEAEA
 set chart_background_color #F8F8F8

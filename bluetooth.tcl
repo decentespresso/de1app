@@ -521,22 +521,14 @@ proc close_all_ble_and_exit {} {
 }	
 
 proc app_exit {} {
-
 	close_log_file
 
 	if {$::android != 1} {
 		close_all_ble_and_exit
 	}
-	#exit
-	#return
 
-	# this is a fail-over in case the bluetooth command hangs, which it sometimes does
-	#after 3000 {exit}
-
-	#if {$::de1_num_state($::de1(state)) != "Sleep"} {
 	set ::exit_app_on_sleep 1
 	start_sleep
-	#}
 	
 	# fail-over, if the DE1 doesn't to to sleep
 	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
@@ -548,9 +540,6 @@ proc app_exit {} {
 	}
 
 	after 10000 "exit 0"
-
-
-
 }
 
 proc de1_send_state {comment msg} {

@@ -2198,7 +2198,8 @@ proc preview_profile {} {
 			set ::settings(settings_profile_type) "settings_2a"
 		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
 			set ::settings(settings_profile_type) "settings_2b"
-		} elseif {$::settings(settings_profile_type) == "settings_profile_advanced"} {
+		} elseif {$::settings(settings_profile_type) == "settings_profile_advanced" || $::settings(settings_profile_type) == "settings_2c2"} {
+			# old profile names that shouldn't exist any more, so upgrade them to the latest name
 			set ::settings(settings_profile_type) "settings_2c"
 		}
 
