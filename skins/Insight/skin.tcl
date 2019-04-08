@@ -369,7 +369,7 @@ add_de1_button "off espresso espresso_3" {
 		set_next_page espresso espresso_zoomed; 
 		set_next_page espresso_3 espresso_3_zoomed; 
 		page_show $::de1(current_context);
-} 10 200 2012 1135
+} 10 240 2012 1135
 
 # click anywhere on the chart to zoom pressure/flow.  This button is only to cover the parts that aren't overlaid by the charts, such as the text labels
 add_de1_button "off espresso espresso_3" {
@@ -657,10 +657,10 @@ if {$::settings(display_rate_espresso) == 1} {
 # making espresso now
 
 # make and stop espresso button
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set ::current_espresso_page espresso_3; set_next_page off espresso_3; start_espresso} 2020 200 2560 700
-add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in);set_next_page off espresso_3; start_idle;} 2020 200 2560 1600
-add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed; start_idle;} 2020 200 2560 1600
-add_de1_button "espresso_zoomed_temperature" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed_temperature; start_idle;} 2020 200 2560 1600
+add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set ::current_espresso_page espresso_3; set_next_page off espresso_3; start_espresso} 2020 240 2560 700
+add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in);set_next_page off espresso_3; start_idle;} 2020 240 2560 1600
+add_de1_button "espresso_zoomed" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed; start_idle;} 2020 240 2560 1600
+add_de1_button "espresso_zoomed_temperature" {say [translate {stop}] $::settings(sound_button_in); set_next_page off espresso_3_zoomed_temperature; start_idle;} 2020 240 2560 1600
 
 ##########################################################################################################################################################################################################################################################################
 
@@ -674,8 +674,8 @@ add_de1_variable "preheat_2" 1390 775 -text [translate "STOP"] -font $green_butt
 add_de1_variable "preheat_3 preheat_4" 1390 775 -text [translate "RESTART"] -font $green_button_font -fill "#2d3046" -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
 
 #1030 210 1800 1400
-add_de1_button "preheat_1 preheat_3 preheat_4" {say [translate {pre-heat cup}] $::settings(sound_button_in); set ::settings(preheat_temperature) 90; set_next_page hotwaterrinse preheat_2; start_hot_water_rinse} 0 189 2560 1400
-add_de1_button "preheat_2" {say [translate {stop}] $::settings(sound_button_in); set_next_page off preheat_4; start_idle} 0 189 2560 1600
+add_de1_button "preheat_1 preheat_3 preheat_4" {say [translate {pre-heat cup}] $::settings(sound_button_in); set ::settings(preheat_temperature) 90; set_next_page hotwaterrinse preheat_2; start_hot_water_rinse} 0 240 2560 1400
+add_de1_button "preheat_2" {say [translate {stop}] $::settings(sound_button_in); set_next_page off preheat_4; start_idle} 0 240 2560 1600
 
 
 set preheat_water_volume_feature_enabled 0
@@ -741,8 +741,8 @@ add_de1_variable "water_3" 1390 775 -text [translate "RESTART"] -font $green_but
 add_de1_variable "water" 1390 775 -text [translate "STOP"] -font $green_button_font -fill "#2d3046" -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
 
 add_de1_text "water_1 water water_3" 1390 865 -text [translate "WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
-add_de1_button "water_1 water_3" {say [translate {Hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 210 2560 1400
-add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set_next_page off water_3 ; start_idle} 0 189 2560 1600
+add_de1_button "water_1 water_3" {say [translate {Hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 240 2560 1400
+add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set_next_page off water_3 ; start_idle} 0 240 2560 1600
 
 # future feature
 #add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
@@ -772,7 +772,7 @@ add_de1_variable "water water_3" 300 1250 -text "" -font Helv_10_bold -fill "#7f
 add_de1_text "water water_3" 300 1300  -text [translate "VOLUME"] -font Helv_7 -fill "#b1b9cd" -anchor "center" 
 add_de1_variable "water water_3" 755 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
 add_de1_text "water water_3" 755 1300 -text [translate "TEMP"] -font Helv_7 -fill "#b1b9cd" -anchor "center" 
-add_de1_button "water_3" {say "" $::settings(sound_button_in); set_next_page off water_1; start_idle} 0 210 1000 1400
+add_de1_button "water_3" {say "" $::settings(sound_button_in); set_next_page off water_1; start_idle} 0 240 1000 1400
 
 # data card
 #add_de1_text "water" 1870 1250 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
@@ -829,15 +829,15 @@ add_de1_variable "steam_3" 1390 775 -text [translate "RESTART"] -font $green_but
 
 add_de1_text "steam_1 steam steam_3" 1390 865 -text [translate "STEAM"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
-add_de1_button "steam_1" {say [translate {steam}] $::settings(sound_button_in); set_next_page steam steam; start_steam} 1030 210 2560 1400
-add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); set_next_page steam steam; start_steam} 1030 210 2560 1070
+add_de1_button "steam_1" {say [translate {steam}] $::settings(sound_button_in); set_next_page steam steam; start_steam} 1030 240 2560 1400
+add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); set_next_page steam steam; start_steam} 1030 240 2560 1070
 
 
 # future feature
 #add_de1_button "steam_1" {say [translate {rinse}] $::settings(sound_button_in); start_steam} 1030 1101 1760 1400
 
-add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle} 0 189 2560 1600
-add_de1_button "steam_3" {say "" $::settings(sound_button_in); set_next_page off steam_1; start_idle} 0 210 1000 1400
+add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle} 0 240 2560 1600
+add_de1_button "steam_3" {say "" $::settings(sound_button_in); set_next_page off steam_1; start_idle} 0 240 1000 1400
 add_de1_button "steam_1" {say "" $::settings(sound_button_in);vertical_clicker 10 1 ::settings(steam_timeout) 1 250 %x %y %x0 %y0 %x1 %y1; save_settings; de1_send_steam_hotwater_settings} 200 580 900 1150 ""
 
 
