@@ -727,9 +727,9 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				if {$::settings(settings_profile_type) == "settings_2c2"} {
 					# if on the LIMITS tab, indicate that this is settings_2c (aka "advanced") shot as part of the OK button process
 					set ::settings(settings_profile_type) "settings_2c"
-
-					# allow people to return to the LIMITS tab directory when they go in/out of settings, so don't over-ride the default behavior
-					#set ::settings(active_settings_tab) $::settings(settings_profile_type)
+				}
+				if {$::settings(active_settings_tab) == "settings_2c2"} {
+					set ::settings(active_settings_tab) "settings_2c"
 				}
 				set_next_page off off; page_show off
 			}
