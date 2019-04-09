@@ -607,7 +607,7 @@ proc de1_send_shot_frames {} {
 		incr cnt
 		unset -nocomplain arr3
 		parse_binary_shotframe $packed_frame arr3
-		#msg "frame #$cnt data parsed [string length $packed_frame] bytes: $packed_frame  : [array get arr3]"
+		msg "frame #$cnt data parsed [string length $packed_frame] bytes: $packed_frame  : [array get arr3]"
 		####
 	#set enabled_features 
 
