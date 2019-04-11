@@ -465,10 +465,10 @@ set ::debuglog {}
 proc msg {text} {
 #z
 
-	incr ::debugcnt
 	catch {
 		log_to_debug_file $text
 	}
+	incr ::debugcnt
 	#catch {
 	if {[info exists ::debugging] == 1} {
 		if {$::debugging == 1} {

@@ -247,7 +247,7 @@ proc log_to_debug_file {text} {
 
 
         } else {
-            puts $::logfile_handle "$::debugcnt) $text"
+            puts $::logfile_handle "$::debugcnt. ([clock format [clock seconds] -format "%Y-%m-%d %H:%M:%S" ]) $text"
 
         } 
     }
