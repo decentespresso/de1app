@@ -1166,9 +1166,14 @@ proc shot_history_export {} {
     puts -nonewline "Exporting"
     foreach d $dirs {
         array unset -nocomplain arr
-        set rootname [file tail $d]
+        set tailname [file tail $d]
+        set newfile [file rootname $tailname]
         array set arr [read_file "history/$d"]
-        export_csv arr "history/$newfile.csv" 
+        set fname "history/$newfile.csv" 
+        if {[file exists $fname] != 1} {
+            msg "exporting history item: $fname"
+            export_csv arr $fname
+        }
         #puts "keys: [array names arr]"
     }
     puts "done"
