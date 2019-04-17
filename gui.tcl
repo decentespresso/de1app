@@ -2123,7 +2123,7 @@ proc save_to_god_shots {} {
 	append espresso_data "espresso_flow_weight {[espresso_flow_weight range 0 end]}\n"
 	append espresso_data "espresso_temperature_basket {[espresso_temperature_basket range 0 end]}\n"
 	append espresso_data "espresso_temperature_mix {[espresso_temperature_mix range 0 end]}\n"
-	append espresso_data "espresso_weight {[espresso_weight range 0 end]}\n"
+	#append espresso_data "espresso_weight {[espresso_weight range 0 end]}\n"
 
 	set fn "[homedir]/godshots/$filename"
 	write_file $fn $espresso_data
@@ -2182,8 +2182,8 @@ proc load_god_shot { {force 0} } {
     set ::settings(god_espresso_temperature_basket) $godprops(espresso_temperature_basket)
     set ::settings(god_espresso_flow) $godprops(espresso_flow)
     set ::settings(god_espresso_flow_weight) $godprops(espresso_flow_weight)
-    set ::settings(god_espresso_flow) $godprops(espresso_flow)
-    set ::settings(god_espresso_flow_weight) $godprops(espresso_flow_weight)
+    #set ::settings(god_espresso_flow) $godprops(espresso_flow)
+    #set ::settings(god_espresso_flow_weight) $godprops(espresso_flow_weight)
     set ::settings(god_espresso_weight) $godprops(espresso_weight)
     
     if {[ifexists godprops(espresso_notes)] != ""} {
