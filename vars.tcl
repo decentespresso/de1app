@@ -2397,6 +2397,10 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 		append espresso_data "espresso_temperature_basket {[espresso_temperature_basket range 0 end]}\n"
 		append espresso_data "espresso_temperature_mix {[espresso_temperature_mix range 0 end]}\n"
 
+		append espresso_data "espresso_pressure_goal {[espresso_pressure_goal range 0 end]}\n"
+		append espresso_data "espresso_flow_goal {[espresso_flow_goal range 0 end]}\n"
+		append espresso_data "espresso_temperature_goal {[espresso_temperature_goal range 0 end]}\n"		
+
 		# format settings nicely so that it is easier to read and parse
 		append espresso_data "settings {\n"
 	    foreach k [lsort -dictionary [array names ::settings]] {
