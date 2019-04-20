@@ -1737,14 +1737,14 @@ proc water_level_color_check {widget} {
 		set color [lindex $colors $::water_level_color_check_count]
 
 		if {$::de1(water_level) > 10} {
-			#set color "#7ad2ff"
-			#set blinkrate 2000
+			set color "#7ad2ff"
+			set blinkrate 2000
 		} elseif {$::de1(water_level) > 7} {
-			#set blinkrate 1000
+			set blinkrate 1000
 		} elseif {$::de1(water_level) >= 5} {
-			#set blinkrate 500
+			set blinkrate 500
 		} else {
-			#set blinkrate 150
+			set blinkrate 150
 		}
 	}
 
