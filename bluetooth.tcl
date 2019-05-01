@@ -1474,19 +1474,27 @@ proc de1_ble_handler { event data } {
 									set ::settings(drink_weight) [round_to_one_digits $::de1(final_water_weight)]
 								}
 
+
+
 								# john 1/18/19 support added for advanced shots stopping on weight, just like other shots
-								if {$::settings(final_desired_shot_weight) != "" && $::settings(final_desired_shot_weight) > 0} {
+								# john improve 5/2/19 with a separate (much higher value) weight option for advanced shots
+								set target_shot_weight $::settings(final_desired_shot_weight)
+								if {$::settings(settings_profile_type) == "settings_2c"} {
+									set target_shot_weight $::settings(final_desired_shot_weight_advanced)
+								}
+
+								if {$target_shot_weight != "" && $target_shot_weight > 0} {
 
 									# damian found:
 									# > after you hit the stop button, the remaining liquid that will end up in the cup is equal to about 2.6 seconds of the current flow rate, minus a 0.4 g adjustment
 								    set lag_time_calibration [expr {$::de1(scale_weight_rate) * $::settings(stop_weight_before_seconds) }]
 
-									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$::settings(final_desired_shot_weight) - $lag_time_calibration}]]} {	
+									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$target_shot_weight - $lag_time_calibration}]]} {	
 
 										if {[espresso_timer] < 5} {
 											skale_tare
 										} else {
-											msg "Weight based Espresso stop was triggered at ${thisweight}g > $::settings(final_desired_shot_weight)g "
+											msg "Weight based Espresso stop was triggered at ${thisweight}g > ${target_shot_weight}g "
 										 	start_idle
 										 	say [translate {Stop}] $::settings(sound_button_in)
 

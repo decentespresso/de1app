@@ -2203,8 +2203,8 @@ proc preview_profile {} {
 			set ::settings(settings_profile_type) "settings_2c"
 		}
 
+
 		if {$::settings(settings_profile_type) == "settings_2c"} {
-			#fill_advanced_profile_steps_listbox
 		}
 
 	} else {
@@ -2322,7 +2322,7 @@ proc save_profile {} {
 		set ::settings(profile_title) $::settings(preset_counter)  
 	}
 
-	set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure}
+	set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight final_desired_shot_weight_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure}
 	#set profile_name_to_save $::settings(profile_to_save) 
 
 	if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
