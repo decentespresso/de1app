@@ -18,7 +18,7 @@ preinfusion_flow_rate 4
 profile_notes {This technique causes a furor when Rao first published it.  His extraction of 24% is 2% higher than what is usually attainable with only the very best grinders, yet Rao did it with an inexpensive home grinder.  This technique is especially appropriate for lightly roasted, complex and expensive coffee beans.}
 water_temperature 80
 final_desired_shot_weight 42
-final_desired_shot_weight_advanced 48
+final_desired_shot_weight_advanced 0
 preinfusion_guarantee 1
 profile_title {Blooming Espresso}
 profile_language en

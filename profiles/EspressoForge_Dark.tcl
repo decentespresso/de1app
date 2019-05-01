@@ -6,7 +6,7 @@ espresso_pressure 7.0
 espresso_decline_time 20
 pressure_end 4.3
 espresso_temperature 84.0
-settings_profile_type settings_2c
+settings_profile_type settings_2c2
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6
 flow_profile_hold 2.3
@@ -18,7 +18,7 @@ preinfusion_flow_rate 6.0
 profile_notes {A dark roast pressure profile that emulates the flow and temperature characteristics of the Espresso Forge manual machine. Good for medium to dark roasts where you want to pull out more fruit flavors, similar to the classic Italian Lever profile.}
 water_temperature 80
 final_desired_shot_weight 42
-final_desired_shot_weight_advanced 42
+final_desired_shot_weight_advanced 0
 preinfusion_guarantee 1
 profile_title {Espresso Forge Dark}
 profile_language en

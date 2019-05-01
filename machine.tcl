@@ -234,7 +234,7 @@ array set ::settings {
 	water_max_vol 500
 	water_temperature 80
 	final_desired_shot_weight 36
-	final_desired_shot_weight_advanced 36
+	final_desired_shot_weight_advanced 0
 	espresso_max_time 60
 	scale_button_starts_espresso 0
 	espresso_temperature 92
