@@ -2285,8 +2285,18 @@ proc load_settings_vars {fn} {
 
 	foreach {k v} [encoding convertfrom utf-8 [read_binary_file $fn]] {
 		#puts "$k $v"
-		set ::settings($k) $v
+		#set ::settings($k) $v
+		set temp_settings($k) $v
 	}
+
+	if {[ifexists temp_settings(settings_profile_type)] == "settings_2c" && [ifexists temp_settings(final_desired_shot_weight)] != "" && [ifexists temp_settings(final_desired_shot_weight_advanced)] == "" } {
+		msg "Using a default for final_desired_shot_weight_advanced from final_desired_shot_weight of [ifexists temp_settings(final_desired_shot_weight)]"
+		set temp_settings(final_desired_shot_weight_advanced) $temp_settings(final_desired_shot_weight)
+	}
+
+	array set ::settings [array get temp_settings]
+
+
 	update_de1_explanation_chart
 
 }
