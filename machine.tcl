@@ -107,7 +107,7 @@ array set ::de1 {
 	steam_time_min 1
 	steam_time_max 120
 	last_ping 0
-	steam_heater_temperature 160
+	steam_heater_temperature 150
 }
 
 set ::de1(last_ping) [clock seconds]
