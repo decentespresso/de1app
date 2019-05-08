@@ -391,7 +391,7 @@ proc install_de1_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
-	install_update_app_icon [appdir]
+	#install_update_app_icon [appdir]
 
 }
 
@@ -408,7 +408,7 @@ proc install_de1plus_app_icon {} {
 		puts "shortcut added: '$x'"
 	}
 
-	install_update_app_icon [appdir]
+	#install_update_app_icon [appdir]
 }
 
 

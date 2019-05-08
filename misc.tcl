@@ -68,6 +68,7 @@ proc make_de1_dir {} {
         cloud_download_icon.png *
         create_de1_icon.tcl 1
         create_de1plus_icon.tcl 1
+        create_de1_update_icon.tcl 1
         appupdate.tcl *
         autopair_with_de1.tcl *
         autopair_with_de1plus.tcl *
