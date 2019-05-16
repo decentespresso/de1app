@@ -153,6 +153,7 @@ array set ::settings {
 	screen_size_width {}
 	screen_size_height {}
 	current_frame_description {asdfasdfsa}
+	default_font_calibration 0.5
 	language en
 	active_settings_tab settings_2a
 	color_stage_1 "#c8e7d5"

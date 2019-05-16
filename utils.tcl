@@ -99,7 +99,7 @@ proc setup_environment {} {
         }
 
         # Android seems to automatically resize fonts appropriately to the current resolution
-        set fontm .5
+        set fontm $::settings(default_font_calibration)
         set ::fontw 1
 
         if {$::undroid == 1} {
