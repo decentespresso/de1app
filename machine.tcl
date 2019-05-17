@@ -182,6 +182,7 @@ array set ::settings {
 	water_count 0
 	advanced_shot {}
 	water_time_max 60
+	orientation "landscape"
 	refill_check_at_sleep 0
 	grinder_dose_weight 0
 	scentone {}

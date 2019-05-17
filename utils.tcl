@@ -29,7 +29,7 @@ proc setup_environment {} {
         # force the screen into landscape if it isn't yet
         msg "orientation: [borg screenorientation]"
         if {[borg screenorientation] != "landscape" && [borg screenorientation] != "reverselandscape"} {
-            borg screenorientation landscape
+            borg screenorientation $::settings(orientation)
         }
 
         sdltk screensaver off
