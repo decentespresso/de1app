@@ -906,6 +906,13 @@ proc load_settings {} {
 
     set ::settings(stress_test) 0
 
+    # rao request to increase these defaults to 300 (from 120) to aid in pour-overs. Will remove this settings.tdb override in the future, once 
+    # everyone's settings.tdb has had time to save this new default
+    set ::settings(seconds_to_display_done_espresso) 300
+    set ::settings(seconds_to_display_done_steam) 300
+    set ::settings(seconds_to_display_done_flush) 300
+    set ::settings(seconds_to_display_done_hotwater) 300
+
     set skintcl [read_file "[skin_directory]/skin.tcl"]
     if {![de1plus] && [string first "package require de1plus" $skintcl] != -1} {
         puts "Error: incompatible DE1PLUS skin loaded on a DE1"
@@ -1176,7 +1183,7 @@ proc shot_history_export {} {
         }
         #puts "keys: [array names arr]"
     }
-    puts "done"
+    #puts "done"
     return [lsort -dictionary -increasing $dd]
 
 }

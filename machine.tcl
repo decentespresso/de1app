@@ -190,10 +190,10 @@ array set ::settings {
 	one_tap_mode 0
 	allow_unheated_water 1
 	minimum_water_temperature 80
-	seconds_to_display_done_espresso 120
-	seconds_to_display_done_steam 120
-	seconds_to_display_done_flush 120
-	seconds_to_display_done_hotwater 120
+	seconds_to_display_done_espresso 300
+	seconds_to_display_done_steam 300
+	seconds_to_display_done_flush 300
+	seconds_to_display_done_hotwater 300
 	waterlevel_blink_start_offset 5
 	waterlevel_indicator_blink_rate 1000
 	waterlevel_indicator_on 1
