@@ -398,6 +398,20 @@ proc firmware_upload_next {} {
 }
 
 
+proc de1_cause_refill_now_if_level_low {} {
+
+	# set the water level refill point to 10mm more water
+	set backup_waterlevel_setting $::settings(water_refill_point)
+	set ::settings(water_refill_point) [expr {$::settings(water_refill_point) + 10}]
+	de1_send_waterlevel_settings
+
+	# then set the water level refill point back to the user setting
+	set ::settings(water_refill_point) $backup_waterlevel_setting
+
+	# and in 30 seconds, tell the machine to set it back to normal
+	after 30000 de1_send_waterlevel_settings
+}
+
 proc de1_send_waterlevel_settings {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 		msg "DE1 not connected, cannot send BLE command 12"
