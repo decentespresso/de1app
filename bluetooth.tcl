@@ -402,7 +402,7 @@ proc de1_cause_refill_now_if_level_low {} {
 
 	# set the water level refill point to 10mm more water
 	set backup_waterlevel_setting $::settings(water_refill_point)
-	set ::settings(water_refill_point) [expr {$::settings(water_refill_point) + 10}]
+	set ::settings(water_refill_point) [expr {$::settings(water_refill_point) + 20}]
 	de1_send_waterlevel_settings
 
 	# then set the water level refill point back to the user setting
