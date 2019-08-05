@@ -660,7 +660,7 @@ proc start_sleep {} {
 	change_screen_saver_img
 	stop_screen_saver_timer
 
-	de1_cause_refill_now_if_level_low
+	#de1_cause_refill_now_if_level_low
 
 	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
 	de1_send_state "go to sleep" $::de1_state(Sleep)

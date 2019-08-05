@@ -400,6 +400,9 @@ proc firmware_upload_next {} {
 
 proc de1_cause_refill_now_if_level_low {} {
 
+	# john 05-08-19 commented out, will obsolete soon.  Turns out not to work, because SLEEP mode does not check low water setting.
+	return
+
 	# set the water level refill point to 10mm more water
 	set backup_waterlevel_setting $::settings(water_refill_point)
 	set ::settings(water_refill_point) [expr {$::settings(water_refill_point) + 20}]
