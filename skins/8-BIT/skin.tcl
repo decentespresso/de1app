@@ -132,9 +132,9 @@ if {[de1plus]} {
 	set lightest "#FFFFFF"
 
 	add_de1_text "espresso" $column1 [expr {$pos_top + (0 * $spacer)}] -justify right -anchor "nw" -text [translate "Time"] -font $font -fill $dark -width [rescale_x_skin 620]
-		add_de1_variable "espresso" $column1 [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "nw" -text "" -font $font  -fill $lighter -width [rescale_x_skin 620] -textvariable {[preinfusion_timer][translate "s"] [translate "preinfusion"]} 
-		add_de1_variable "espresso" $column1 [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font $font  -fill $lighter -width [rescale_x_skin 620] -textvariable {[pour_timer][translate "s"] [translate "pouring"]} 
-		add_de1_variable "espresso" $column1 [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -text "" -font $font -fill $lighter -width [rescale_x_skin 620] -textvariable {[elapsed_timer][translate "s"] [translate "total"]} 
+		add_de1_variable "espresso" $column1 [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "nw" -text "" -font $font  -fill $lighter -width [rescale_x_skin 620] -textvariable {[espresso_preinfusion_timer][translate "s"] [translate "preinfusion"]} 
+		add_de1_variable "espresso" $column1 [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font $font  -fill $lighter -width [rescale_x_skin 620] -textvariable {[espresso_pour_timer][translate "s"] [translate "pouring"]} 
+		add_de1_variable "espresso" $column1 [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -text "" -font $font -fill $lighter -width [rescale_x_skin 620] -textvariable {[espresso_elapsed_timer][translate "s"] [translate "total"]} 
 
 	add_de1_text "espresso" $column3 [expr {$pos_top + (0 * $spacer)}] -justify right -anchor "ne" -text [translate "Volume"] -font $font -fill $dark -width [rescale_x_skin 520]
 		add_de1_variable "espresso" $column3 [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "ne" -text "" -font $font  -fill $lighter -width [rescale_x_skin 520] -textvariable {[preinfusion_volume]} 

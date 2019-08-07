@@ -155,6 +155,10 @@ array set ::settings {
 	current_frame_description {asdfasdfsa}
 	default_font_calibration 0.5
 	language en
+	steam_over_temp_threshold 175
+	steam_over_pressure_threshold 3
+	steam_over_pressure_count_trigger 10
+	steam_over_temp_count_trigger 10
 	active_settings_tab settings_2a
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
@@ -672,6 +676,38 @@ proc start_sleep {} {
 	}
 }
 
+proc check_if_steam_clogged {} {
+
+	set bad_pressure 0
+	set bad_temp 0
+	if {$::settings(steam_over_pressure_count_trigger) != 0} {
+		set over_pressure [steam_pressure search $::settings(steam_over_pressure_threshold) 999]
+		if {[llength $over_pressure] > $::settings(steam_over_pressure_count_trigger)} {
+			set bad_pressure 1
+		}
+
+		msg "over_pressure: [llength $over_pressure] vs $::settings(steam_over_pressure_count_trigger) - over_pressure: $over_pressure - bad_pressure: $bad_pressure ($::settings(steam_over_pressure_threshold) bar) - [steam_pressure range 0 end]"
+
+	}
+
+	if {$::settings(steam_over_temp_count_trigger) != 0} {
+		# steam_temperature is mapped to the charts at 1/100th scale, so we need to multiple the threshold here by 100
+		set over_temp [steam_temperature search [expr {$::settings(steam_over_temp_threshold) / 100.0}] 999]
+		#set over_temp [steam_temperature search 160 999]
+		if {[llength $over_temp] > $::settings(steam_over_temp_count_trigger)} {
+			set bad_temp 1
+		}
+
+		msg "over_temp: $over_temp -  $bad_temp (> $::settings(steam_over_temp_threshold) ºC) - [steam_temperature range 0 end]"
+
+	}
+
+	if {$bad_pressure == 1 || $bad_temp == 1} {
+		set_next_page off descalewarning;
+		page_show descalewarning
+
+	}
+}
 
 proc has_flowmeter {} {
 	return $::de1(has_flowmeter)

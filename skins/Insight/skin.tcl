@@ -44,6 +44,7 @@ add_de1_page "tankfilling" "filling_tank.jpg" "default"
 add_de1_page "tankempty refill" "fill_tank.jpg" "default"
 add_de1_page "message calibrate" "settings_message.png" "default"
 add_de1_page "create_preset" "settings_3_choices.png" "default"
+add_de1_page "descalewarning" "descalewarning.jpg" "default"
 
 add_de1_page "cleaning" "cleaning.jpg" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
@@ -60,6 +61,13 @@ source "[homedir]/skins/default/de1_skin_settings.tcl"
 add_de1_text "tankempty refill" 1280 750 -text [translate "Please add water"] -font Helv_20_bold -fill "#AAAAAA" -justify "center" -anchor "center" -width 900
 add_de1_variable "tankempty refill" 1280 900 -justify center -anchor "center" -text "" -font Helv_10 -fill "#CCCCCC" -width 520 -textvariable {[refill_kit_retry_button]} 
 add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 0 0 2560 1600 
+
+
+# show descale warning after steam, if clogging of the steam wand is detected
+add_de1_text "descalewarning" 1280 1310 -text [translate "Your steam wand is clogging up"] -font Helv_17_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
+add_de1_text "descalewarning" 1280 1480 -text [translate "It needs to be descaled soon"] -font Helv_15_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
+add_de1_button "descalewarning" {say [translate {descale}] $::settings(sound_button_in); show_settings settings_4;} 0 0 2560 1600 
+
 
 
 # cleaning and descaling
@@ -837,7 +845,7 @@ add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); 
 # future feature
 #add_de1_button "steam_1" {say [translate {rinse}] $::settings(sound_button_in); start_steam} 1030 1101 1760 1400
 
-add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle} 0 240 2560 1600
+add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 0 240 2560 1600
 add_de1_button "steam_3" {say "" $::settings(sound_button_in); set_next_page off steam_1; start_idle} 0 240 1000 1400
 add_de1_button "steam_1" {say "" $::settings(sound_button_in);vertical_clicker 10 1 ::settings(steam_timeout) 1 250 %x %y %x0 %y0 %x1 %y1; save_settings; de1_send_steam_hotwater_settings} 200 580 900 1150 ""
 
@@ -879,5 +887,5 @@ profile_has_changed_set_colors
 #add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
-#set_next_page off refill;
+#set_next_page off descalewarning;
 #

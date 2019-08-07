@@ -1,9 +1,9 @@
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is doing steam, hot water or espresso
 
-add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in);start_idle} 0 0 2560 1600
-add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in);start_idle} 0 0 2560 1600
-add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in);start_idle} 0 0 2560 1600
+add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); start_idle; check_if_steam_clogged} 0 0 2560 1600
+add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); start_idle} 0 0 2560 1600
+add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in); start_idle} 0 0 2560 1600
 
 ##############################################################################################################################################################################################################################################################################
 # when the SCREEN SAVER is on or about to come on
