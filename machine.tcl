@@ -686,7 +686,7 @@ proc check_if_steam_clogged {} {
 			set bad_pressure 1
 		}
 
-		msg "over_pressure: [llength $over_pressure] vs $::settings(steam_over_pressure_count_trigger) - over_pressure: $over_pressure - bad_pressure: $bad_pressure ($::settings(steam_over_pressure_threshold) bar) - [steam_pressure range 0 end]"
+		msg "over_pressure: [llength $over_pressure] vs $::settings(steam_over_pressure_count_trigger) - over_pressure: $over_pressure - bad_pressure: $bad_pressure ($::settings(steam_over_pressure_threshold) bar)"
 
 	}
 
@@ -698,7 +698,7 @@ proc check_if_steam_clogged {} {
 			set bad_temp 1
 		}
 
-		msg "over_temp: $over_temp -  $bad_temp (> $::settings(steam_over_temp_threshold) ºC) - [steam_temperature range 0 end]"
+		msg "over_temp: $over_temp -  $bad_temp (> $::settings(steam_over_temp_threshold) ºC)"
 
 	}
 
