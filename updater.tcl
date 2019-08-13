@@ -236,13 +236,16 @@ proc pause {time} {
 
 proc log_to_debug_file {text} {
     if {[ifexists ::settings(logfile)] != ""} {
-        if {[ifexists ::logfile_handle] == ""} {
+        if {[ifexists ::logfile_handle] == "0"} {
+            # do nothing, no logging is possible (such as OSX readonly file system)
+        } elseif {[ifexists ::logfile_handle] == ""} {
 
-            #set errcode [catch {
+            set ::logfile_handle "0"
+            catch {
                 set ::logfile_handle [open "[homedir]/$::settings(logfile)" w]
                 fconfigure $::logfile_handle -blocking 0
                 fconfigure $::logfile_handle -buffersize 10240
-            #}]
+            }
 
 
         } else {
