@@ -1537,9 +1537,6 @@ proc ui_startup {} {
 	bluetooth_connect_to_devices
 	#ble_find_de1s
 	
-	#if {$::android == 1} {
-		#ble_connect_to_de1
-	#}
 	setup_images_for_first_page
 	setup_images_for_other_pages
 	.can itemconfigure splash -state hidden
@@ -1548,18 +1545,6 @@ proc ui_startup {} {
 	update_onscreen_variables
 	delay_screen_saver
 	change_screen_saver_img
-
-	#check_if_should_start_screen_saver
-	if {$::android == 1} {
-		#ble_find_de1s
-		#ble_connect_to_de1
-		#puts "ran ble_connect_to_de1"
-		#after 1 run_de1_app
-		
-	} else {
-		#after 1 run_de1_app
-	}
-	#after 1 run_de1_app
 
 	# check for app updates, a half day after startup, and then every 24h thereafter
 	#after 43200000 scheduled_app_update_check
