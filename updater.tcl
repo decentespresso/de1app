@@ -286,10 +286,10 @@ proc close_log_file {} {
 # every day, check to see if an app update is available
 proc scheduled_app_update_check {} {
     check_timestamp_for_app_update_available
-    after 8640000 scheduled_app_update_check
+    after 8640000 scheduled_app_update_check 
 }
 
-proc check_timestamp_for_app_update_available {} {
+proc check_timestamp_for_app_update_available { {check_only 0} } {
 
     set host "http://decentespresso.com"
     set progname "de1plus"
@@ -311,14 +311,16 @@ proc check_timestamp_for_app_update_available {} {
         puts "unable to fetch remote timestamp"
         log_to_debug_file "unable to fetch remote timestamp"
 
-        #set ::de1(app_update_button_label) [translate "Update error"]; 
-        #set ::app_updating 0
-        set ::de1(app_update_button_label) [translate "Update"];             
+        if {$check_only != 1} {
+            set ::de1(app_update_button_label) [translate "Update"];             
+        }
 
         return -1
     } elseif {$local_timestamp == $remote_timestamp} {
 
-        set ::de1(app_update_button_label) [translate "Up to date"];             
+        if {$check_only != 1} {
+            set ::de1(app_update_button_label) [translate "Up to date"];             
+        }
 
         puts "Local timestamp is the same as remote timestamp, so no need to update"
         log_to_debug_file "Local timestamp is the same as remote timestamp, so no need to update"
@@ -334,8 +336,9 @@ proc check_timestamp_for_app_update_available {} {
     msg "app update available"
     set ::app_update_available 1
 
-    set ::de1(app_update_button_label) [translate "Update available"];     
-
+    if {$check_only != 1} {
+        set ::de1(app_update_button_label) [translate "Update available"];     
+    }
     # time stamps don't match, so update is useful
     return $remote_timestamp
 
@@ -392,7 +395,7 @@ proc start_app_update {} {
     }
 
     
-    set remote_timestamp [check_timestamp_for_app_update_available]
+    set remote_timestamp [check_timestamp_for_app_update_available 1]
 
 
     set url_manifest "$host/download/sync/$progname/manifest.txt"
@@ -484,7 +487,7 @@ proc start_app_update {} {
         #break
     }
 
-    set ::de1(app_update_button_label) [translate WAIT]
+    #set ::de1(app_update_button_label) [translate WAIT]
     catch { update_onscreen_variables }
     update
 
