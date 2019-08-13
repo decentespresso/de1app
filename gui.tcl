@@ -1561,7 +1561,9 @@ proc ui_startup {} {
 	}
 	#after 1 run_de1_app
 
-	after 5000 scheduled_app_update_check
+	# check for app updates, a half day after startup, and then every 24h thereafter
+	after 43200000 scheduled_app_update_check
+
 	run_de1_app
 	vwait forever
 }

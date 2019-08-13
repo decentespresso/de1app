@@ -128,7 +128,7 @@ proc decent_http_get {url {timeout 30000}} {
 
     set body {}
     set token {}    
-    puts "url: $url"
+    #puts "url: $url"
     #catch {
         ::http::config -useragent "mer454"
         set token [::http::geturl $url -binary 1 -timeout $timeout]
@@ -136,7 +136,6 @@ proc decent_http_get {url {timeout 30000}} {
 
         set cnt 0
         while {[string length $body] == 0} {
-            puts "Amazon RequestThrottled #[incr cnt] reissuing GET query"
             sleep 5000
             ::http::cleanup $token
             set token [::http::geturl $url -binary 1 -timeout $timeout]

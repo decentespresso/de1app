@@ -388,7 +388,7 @@ add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bo
 	add_de1_button "settings_4" {say [translate {Descale}] $::settings(sound_button_in); start_decaling} 645 1206 1260 1406
  
 # firmware update
-add_de1_variable "settings_4" 2270 534 -text "" -width [rescale_y_skin 400] -font Helv_8_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]} 
+add_de1_variable "settings_4" 2270 534 -text "" -width [rescale_y_skin 400] -font Helv_8_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available]$::de1(firmware_update_button_label)} 
 	add_de1_button "settings_4" {start_firmware_update} 1930 460 2550 600
 
 add_de1_variable "settings_4" 2500 410 -font Helv_7 -fill "#7f879a" -anchor "ne" -width 500 -justify "right" -textvariable {[firmware_uploaded_label]} 

@@ -2689,20 +2689,13 @@ proc round_to_half_integer {in} {
 }
 
 proc check_firmware_update_is_available {} {
-#	if {$::de1(currently_erasing_firmware) == 1 || $::de1(currently_updating_firmware) == 1} {
-#		set ::de1(firmware_update_button_label) [translate "Updating"]
-	#	return
-	#}
 
 	if {[info exists ::de1(firmware_crc)] != 1} {
 		set ::de1(firmware_crc) [crc::crc32 -filename [fwfile]]
 	}
 
 	if {$::de1(firmware_crc) != [ifexists ::settings(firmware_crc)] && $::de1(currently_updating_firmware) == ""} {
-		#return [translate "Firmware update available"]
-		set ::de1(firmware_update_button_label) [translate "Firmware update available"]
-	} else {
-		#set ::de1(firmware_update_button_label) [translate "No update necessary"]
+		set ::de1(firmware_update_button_label) "Firmware update available"
 	}
 	return ""
 }
