@@ -403,17 +403,6 @@ add_de1_text "settings_4" 2280 1300 -text [translate "Exit"] -font Helv_10_bold 
 	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); .can itemconfigure $::message_label -text [translate "Going to sleep"]; .can itemconfigure $::message_button_label -text [translate "Wait"]; after 10000 {.can itemconfigure $::message_button_label -text [translate "Ok"]; }; set_next_page off message; page_show message; app_exit} 1925 1206 2550 1406
 
 
-
-
-#add_de1_text "settings_4" 1020 980 -text [translate "Reset"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-#add_de1_text "settings_4" 2280 980 -text [translate "Pair"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" -width 200 -justify "center"
-
-# firmware reset
-#add_de1_button "settings_4" {} 640 890 1260 1080
-
-# firmware reset
-#add_de1_button "settings_4" {} 1900 890 2520 1080
-
 add_de1_text "settings_4" 1310 220 -text [translate "Information"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	add_de1_text "settings_4" 1310 290 -text [translate {Version}] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1220] -justify "left" 
 		add_de1_variable "settings_4" 1600 290 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 920] -justify "left" -textvariable {[de1_version_string]} 
