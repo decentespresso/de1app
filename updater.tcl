@@ -337,7 +337,7 @@ proc check_timestamp_for_app_update_available {} {
     set ::de1(app_update_button_label) [translate "Update available"];     
 
     # time stamps don't match, so update is useful
-    return 1
+    return $remote_timestamp
 
 
 }
@@ -392,7 +392,7 @@ proc start_app_update {} {
     }
 
     
-    #check_timestamp_for_app_update_available url_timestamp
+    set remote_timestamp [check_timestamp_for_app_update_available]
 
 
     set url_manifest "$host/download/sync/$progname/manifest.txt"
