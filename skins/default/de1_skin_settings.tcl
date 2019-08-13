@@ -475,7 +475,7 @@ add_de1_text "settings_4" 1310 650 -text [translate "Connect"] -font Helv_10_bol
 				set ::ble_skale_listbox_widget $widget
 				bind $widget <<ListboxSelect>> ::change_skale_bluetooth_device
 				fill_ble_skale_listbox
-			} -background #fbfaff -font Helv_12 -bd 0 -height 3 -width 17 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+			} -background #fbfaff -font Helv_11 -bd 0 -height 3 -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 	}
 
@@ -530,7 +530,7 @@ add_de1_widget "settings_4" listbox 1310 800 {
 		set ::ble_listbox_widget $widget
 		bind $::ble_listbox_widget <<ListboxSelect>> ::change_bluetooth_device
 		fill_ble_listbox
-	} -background #fbfaff -font Helv_12 -bd 0 -height 3 -width 17 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+	} -background #fbfaff -font Helv_11 -bd 0 -height 3 -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 
 add_de1_text "settings_4" 50 560 -text [translate "Water level"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
