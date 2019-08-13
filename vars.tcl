@@ -1536,24 +1536,40 @@ proc fill_ble_listbox {} {
 	$widget delete 0 99999
 	set cnt 0
 	set current_ble_number 0
-
-	#set ble_ids [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
+#
+#	set ble_ids [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
 	#lappend ::de1_bluetooth_list $address
 
 	if {$::android == 0} {	
-		#set ::de1_bluetooth_list [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
+#		set ::skale_bluetooth_list [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
 		#set ::de1_bluetooth_list ""
 	}
 
+	
+
+	set one_selected 0
 	foreach d [lsort -dictionary -increasing $::de1_bluetooth_list] {
-		$widget insert $cnt $d
+		#$widget insert $cnt $d
+		if {$d == [ifexists ::settings(bluetooth_address)]} {
+			$widget insert $cnt "\[X\] $d"
+			set one_selected 1
+		} else {
+			$widget insert $cnt "\[  \] $d"
+		}
+
 		if {[ifexists ::settings(bluetooth_address)] == $d} {
 			set current_ble_number $cnt
 			#puts "current profile of '$d' is #$cnt"
 		}
 		incr cnt
 	}
-	
+
+	set ::de1_needs_to_be_selected 0
+	if {[llength $::de1_bluetooth_list] > 0 && $one_selected == 0} {
+		set ::de1_needs_to_be_selected 1
+	}
+
+
 	#$widget itemconfigure $current_profile_number -foreground blue
 	$widget selection set $current_ble_number;
 
@@ -1573,8 +1589,15 @@ proc fill_ble_skale_listbox {} {
 	set cnt 0
 	set current_ble_number 0
 
+	set one_selected 0
 	foreach d [lsort -dictionary -increasing $::skale_bluetooth_list] {
-		$widget insert $cnt $d
+		if {$d == [ifexists ::settings(skale_bluetooth_address)]} {
+			$widget insert $cnt "\[X\] $d"
+			set one_selected 1
+		} else {
+			$widget insert $cnt "\[  \] $d"
+		}
+			#$widget insert $cnt $d
 		if {[ifexists ::settings(skale_bluetooth_address)] == $d} {
 			set current_ble_number $cnt
 		}
@@ -1582,6 +1605,11 @@ proc fill_ble_skale_listbox {} {
 	}
 	
 	$widget selection set $current_ble_number;
+
+	set ::skale_needs_to_be_selected 0
+	if {[llength $::de1_bluetooth_list] > 0 && $one_selected == 0} {
+		set ::skale_needs_to_be_selected 1
+	}
 	
 	make_current_listbox_item_blue $widget
 }
@@ -2080,27 +2108,46 @@ proc save_settings_and_ask_to_restart_app {} {
 
 proc change_bluetooth_device {} {
 
-	################################################################################################################
-	# prevent rapid changing of DE1 bluetooth setting, because that can cause multiple connections to be made to the same DE1
-	if {[ifexists ::globals(changing_bluetooth_device)] == 1} {
-		return
-	}
-	set ::globals(changing_bluetooth_device) 1
-	after 5000 {set ::globals(changing_bluetooth_device) 0}
+
 	################################################################################################################
 
 	set w $::ble_listbox_widget
 	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
 	if {[$w curselection] == ""} {
 		# no current selection
+		puts "no BLE selection"
 		return ""
 	}
-	set profile [$w get [$w curselection]]
+
+	#set profile [$w get [$w curselection]]
+	set was_selected [$w get [$w curselection]]
+	puts "BLE was_selected: '$was_selected'"
+
+	set p [string first "\] " $was_selected 0]
+	set p2 [expr {$p + 2}]
+	set profile [string range $was_selected $p2 end]
+	puts "new ble: '$profile'"
+
 	if {$profile == $::settings(bluetooth_address)} {
 		# if no change in setting, then disconnect/reconnect.
 		#return
+
+		################################################################################################################
+		# prevent rapid changing of DE1 bluetooth setting, because that can cause multiple connections to be made to the same DE1
+		if {[ifexists ::globals(changing_bluetooth_device)] == 1} {
+			puts "already changing_bluetooth_device"
+			return
+		}
+
+
+
 		msg "reconnecting to DE1"
+
 	}
+
+	set ::globals(changing_bluetooth_device) 1
+	after 5000 {set ::globals(changing_bluetooth_device) 0}
+
 
 	if {$profile != $::settings(bluetooth_address)} {
 		# if no change in setting, then disconnect/reconnect.
@@ -2112,11 +2159,14 @@ proc change_bluetooth_device {} {
 
 	# disconnect (if necessary) and reconnect to the DE1 now
 	ble_connect_to_de1
+
+	fill_ble_listbox
 }
 
 
 proc change_skale_bluetooth_device {} {
 	set w $::ble_skale_listbox_widget
+
 
 	if {$w == ""} {
 		return
@@ -2129,17 +2179,25 @@ proc change_skale_bluetooth_device {} {
 		return
 	}
 
-	set profile [$w get [$w curselection]]
+	set was_selected [$w get [$w curselection]]
+	puts "BLE was_selected: '$was_selected'"
+
+	set p [string first "\] " $was_selected 0]
+	set p2 [expr {$p + 2}]
+	set profile [string range $was_selected $p2 end]
+	puts "new ble: '$profile'"
+
+
 	if {$profile == $::settings(skale_bluetooth_address)} {
 		ble_connect_to_skale
 		return
 	}
 	set ::settings(skale_bluetooth_address) $profile
 
-
-
 	save_settings
 	ble_connect_to_skale
+
+	fill_ble_skale_listbox
 }
 
 

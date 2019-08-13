@@ -1748,6 +1748,11 @@ proc scanning_state_text {} {
 		return [translate "Connected"]
 	}
 
+	#return [translate "Tap to select"]
+	if {[ifexists ::de1_needs_to_be_selected] == 1 || [ifexists ::skale_needs_to_be_selected] == 1} {
+		return [translate "Tap to select"]
+	}
+
 	return [translate "Search"]
 }
 
@@ -1756,8 +1761,16 @@ proc scanning_restart {} {
 		return
 	}
 	if {$::android != 1} {
+
+		set ::skale_bluetooth_list [list "12:32:56:78:90" "32:56:78:90:12" "56:78:90:12:32"]
+		set ::de1_bluetooth_list [list "12:32:56:78:90" "32:56:78:90:12" "56:78:90:12:32"]
+
+		after 200 fill_ble_skale_listbox
+		after 400 fill_ble_listbox
+
 		set ::scanning 1
 		after 3000 { set scanning 0 }
+		return
 	} else {
 		# only scan for a few seconds
 		after 10000 { stop_scanner }
