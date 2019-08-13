@@ -1551,10 +1551,10 @@ proc fill_ble_listbox {} {
 	foreach d [lsort -dictionary -increasing $::de1_bluetooth_list] {
 		#$widget insert $cnt $d
 		if {$d == [ifexists ::settings(bluetooth_address)]} {
-			$widget insert $cnt "\[\u2713\] $d"
+			$widget insert $cnt " \[\u2713\] $d"
 			set one_selected 1
 		} else {
-			$widget insert $cnt "\[   \] $d"
+			$widget insert $cnt " \[   \] $d"
 		}
 
 		if {[ifexists ::settings(bluetooth_address)] == $d} {
@@ -1592,10 +1592,10 @@ proc fill_ble_skale_listbox {} {
 	set one_selected 0
 	foreach d [lsort -dictionary -increasing $::skale_bluetooth_list] {
 		if {$d == [ifexists ::settings(skale_bluetooth_address)]} {
-			$widget insert $cnt "\[\u2713\] $d"
+			$widget insert $cnt " \[\u2713\] $d"
 			set one_selected 1
 		} else {
-			$widget insert $cnt "\[   \] $d"
+			$widget insert $cnt " \[   \] $d"
 		}
 			#$widget insert $cnt $d
 		if {[ifexists ::settings(skale_bluetooth_address)] == $d} {
