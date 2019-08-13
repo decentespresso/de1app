@@ -128,7 +128,7 @@ proc decent_http_get {url {timeout 30000}} {
 
     set body {}
     set token {}    
-    #puts "url: $url"
+    puts "url: $url"
     #catch {
         ::http::config -useragent "mer454"
         set token [::http::geturl $url -binary 1 -timeout $timeout]
@@ -150,7 +150,7 @@ proc decent_http_get {url {timeout 30000}} {
         if {$token != ""} {
             ::http::cleanup $token
         }
-    #}
+    #}z
     
     return $body
 }
@@ -284,6 +284,65 @@ proc close_log_file {} {
     }
 }
 
+# every day, check to see if an app update is available
+proc scheduled_app_update_check {} {
+    check_timestamp_for_app_update_available
+    after 8640000 scheduled_app_update_check
+}
+
+proc check_timestamp_for_app_update_available {} {
+
+    set host "http://decentespresso.com"
+    set progname "de1plus"
+    set url_timestamp "$host/download/sync/$progname/timestamp.txt"    
+
+    set remote_timestamp {}
+
+    set ::app_update_available 0
+    
+
+    catch {
+        msg "Fetching remote update timestamp: '$url_timestamp'"
+        set remote_timestamp [string trim [decent_http_get $url_timestamp]]
+    }
+    #puts "timestamp: '$remote_timestamp'"
+
+    set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
+    if {$remote_timestamp == ""} {
+        puts "unable to fetch remote timestamp"
+        log_to_debug_file "unable to fetch remote timestamp"
+
+        #set ::de1(app_update_button_label) [translate "Update error"]; 
+        #set ::app_updating 0
+        set ::de1(app_update_button_label) [translate "Update"];             
+
+        return -1
+    } elseif {$local_timestamp == $remote_timestamp} {
+
+        set ::de1(app_update_button_label) [translate "Up to date"];             
+
+        puts "Local timestamp is the same as remote timestamp, so no need to update"
+        log_to_debug_file "Local timestamp is the same as remote timestamp, so no need to update"
+        return 0
+        
+        # we can return at this point, if we're very confident that the sync is correct
+        # john 4/18/18 we want to check all files anyway, to fill in any missing local files, so we are going to ignore the time stamps being equal
+        #set ::de1(app_update_button_label) [translate "Up to date"]; 
+        #set ::app_updating 0
+        #return
+    }
+
+    msg "app update available"
+    set ::app_update_available 1
+
+    set ::de1(app_update_button_label) [translate "Update available"];     
+
+    # time stamps don't match, so update is useful
+    return 1
+
+
+}
+
 proc start_app_update {} {
 
     if {[ifexists ::app_updating] == 1} {
@@ -333,30 +392,8 @@ proc start_app_update {} {
         set progname "de1plus"
     }
 
-    set url_timestamp "$host/download/sync/$progname/timestamp.txt"
-    set remote_timestamp {}
-    catch {
-        set remote_timestamp [string trim [decent_http_get $url_timestamp]]
-    }
-    #puts "timestamp: '$remote_timestamp'"
-    set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
-    if {$remote_timestamp == ""} {
-        puts "unable to fetch remote timestamp"
-        log_to_debug_file "unable to fetch remote timestamp"
-
-        set ::de1(app_update_button_label) [translate "Update error"]; 
-        set ::app_updating 0
-        return
-    } elseif {$local_timestamp == $remote_timestamp} {
-        puts "Local timestamp is the same as remote timestamp, so no need to update"
-        log_to_debug_file "Local timestamp is the same as remote timestamp, so no need to update"
-        
-        # we can return at this point, if we're very confident that the sync is correct
-        # john 4/18/18 we want to check all files anyway, to fill in any missing local files, so we are going to ignore the time stamps being equal
-        #set ::de1(app_update_button_label) [translate "Up to date"]; 
-        #set ::app_updating 0
-        #return
-    }
+    
+    #check_timestamp_for_app_update_available url_timestamp
 
 
     set url_manifest "$host/download/sync/$progname/manifest.txt"

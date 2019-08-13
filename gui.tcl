@@ -1560,6 +1560,8 @@ proc ui_startup {} {
 		#after 1 run_de1_app
 	}
 	#after 1 run_de1_app
+
+	after 5000 scheduled_app_update_check
 	run_de1_app
 	vwait forever
 }
