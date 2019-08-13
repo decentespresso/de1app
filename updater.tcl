@@ -587,6 +587,7 @@ proc start_app_update {} {
 
         if {$files_moved > 0} {
             set ::de1(app_update_button_label) "[translate "Updated"] $files_moved"; 
+            set ::app_has_updated 1
         } else {
             set ::de1(app_update_button_label) [translate "Up to date"]; 
         }
