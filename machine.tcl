@@ -186,6 +186,10 @@ array set ::settings {
 	water_count 0
 	advanced_shot {}
 	water_time_max 60
+	battery_low_trigger 60
+	battery_low_brightness 50
+	battery_very_low_trigger 30
+	battery_very_low_brightness 10
 	orientation "landscape"
 	refill_check_at_sleep 0
 	grinder_dose_weight 0

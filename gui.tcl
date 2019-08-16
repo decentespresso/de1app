@@ -24,8 +24,21 @@ proc Double2Fraction { dbl {eps 0.000001}} {
     list $num $den
 }
 
-
 proc photoscale {img sx {sy ""} } {
+
+	if {($::android == 1 && $::undroid != 1)} {
+		photoscale_not_android $img $sx $sy
+		#photoscale_android $img $sx $sy
+	} elseif {$::undroid == 1} {
+		# no undroid support for this yet
+		#photoscale_android $img $sx $sy
+		photoscale_not_android $img $sx $sy
+	} else {
+		photoscale_not_android $img $sx $sy
+	}
+}
+
+proc photoscale_not_android {img sx {sy ""} } {
 	msg "photoscale $img $sx $sy"
     if { $sx == 1 && ($sy eq "" || $sy == 1) } {
         return;   # Nothing to do!
@@ -42,6 +55,27 @@ proc photoscale {img sx {sy ""} } {
     $img blank
     $img copy $tmp -shrink -subsample $sx_f $sy_f -compositingrule set
     image delete $tmp
+}
+
+
+proc photoscale_android {img sx {sy ""} } {
+	msg "photoscale $img $sx $sy"
+    if { $sx == 1 && ($sy eq "" || $sy == 1) } {
+        return;   # Nothing to do!
+    }
+    
+
+    #set tmp [image create photo -width 1280 -height 720]
+    set tmp [image create photo]
+    $tmp configure -width 1280 -height 720
+
+    $tmp copy $img -scale 0.5
+    # $sx $sy -compositingrule set
+    $img copy $tmp
+    #$img blank
+    #$img copy $tmp 
+    image delete $tmp
+
 }
 
 proc add_de1_page {names filename {skin ""} } {
@@ -1074,7 +1108,8 @@ proc page_show {page_to_show} {
 }
 
 proc display_brightness {percentage} {
-	#puts "brightness: $percentage %"
+	set percentage [check_battery_low $percentage]
+	puts "brightness: $percentage %"
 	borg brightness $percentage
 }
 

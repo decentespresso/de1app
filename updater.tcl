@@ -444,8 +444,12 @@ proc start_app_update {} {
     }
 
     set tmpdir "[homedir]/tmp"
-    file delete -force $tmpdir
-    file mkdir $tmpdir
+    catch {
+        file delete -force $tmpdir
+    }
+    catch {
+        file mkdir $tmpdir
+    }
 
 
     set cnt 0
@@ -536,9 +540,9 @@ proc start_app_update {} {
     }
 
     foreach file_to_delete $files_to_delete {
-        #catch {
+        catch {
             file delete $file_to_delete
-        #}
+        }
     }
 
     if {$success == 1} {
@@ -563,8 +567,12 @@ proc start_app_update {} {
                 log_to_debug_file "deleting $saver_directory"
                 log_to_debug_file "deleting $splash_directory"
 
-                file delete -force $saver_directory
-                file delete -force $splash_directory
+                catch {
+                    file delete -force $saver_directory
+                }
+                catch {
+                    file delete -force $splash_directory
+                }
 
                 set skindirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/skins/" *]]
                 foreach d $skindirs {
@@ -573,7 +581,9 @@ proc start_app_update {} {
                     log_to_debug_file "testing '$d' - '$thisskindir'"
                     if {[file exists $thisskindir] == 1} {
                         # skins are converted to this apps resolution only as needed, so only delete the existing dirs
-                        file delete -force $thisskindir
+                        catch {
+                            file delete -force $thisskindir
+                        }
                         puts "deleting $thisskindir"
                         log_to_debug_file "deleting $thisskindir"
                     }
