@@ -27,12 +27,12 @@ proc Double2Fraction { dbl {eps 0.000001}} {
 proc photoscale {img sx {sy ""} } {
 
 	if {($::android == 1 && $::undroid != 1)} {
-		photoscale_not_android $img $sx $sy
-		#photoscale_android $img $sx $sy
+		#photoscale_not_android $img $sx $sy
+		photoscale_android $img $sx $sy
 	} elseif {$::undroid == 1} {
 		# no undroid support for this yet
-		#photoscale_android $img $sx $sy
-		photoscale_not_android $img $sx $sy
+		photoscale_android $img $sx $sy
+		#photoscale_not_android $img $sx $sy
 	} else {
 		photoscale_not_android $img $sx $sy
 	}
@@ -67,9 +67,10 @@ proc photoscale_android {img sx {sy ""} } {
 
     #set tmp [image create photo -width 1280 -height 720]
     set tmp [image create photo]
-    $tmp configure -width 1280 -height 720
+    #$tmp configure -width 1280 -height 720
+    #$img configure -width 1280 -height 720
 
-    $tmp copy $img -scale 0.5
+    $tmp copy $img -scale $sx $sy
     # $sx $sy -compositingrule set
     $img copy $tmp
     #$img blank

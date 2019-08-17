@@ -697,7 +697,6 @@ proc check_if_steam_clogged {} {
 	if {$::settings(steam_over_temp_count_trigger) != 0} {
 		# steam_temperature is mapped to the charts at 1/100th scale, so we need to multiple the threshold here by 100
 		set over_temp [steam_temperature search [expr {$::settings(steam_over_temp_threshold) / 100.0}] 999]
-		#set over_temp [steam_temperature search 160 999]
 		if {[llength $over_temp] > $::settings(steam_over_temp_count_trigger)} {
 			set bad_temp 1
 		}
