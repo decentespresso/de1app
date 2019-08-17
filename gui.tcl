@@ -65,18 +65,19 @@ proc photoscale_android {img sx {sy ""} } {
     }
     
 
-    #set tmp [image create photo -width 1280 -height 720]
+    # create a new tmp image
     set tmp [image create photo]
-    #$tmp configure -width 1280 -height 720
-    #$img configure -width 1280 -height 720
 
+    # resize to the tmp image
     $tmp copy $img -scale $sx $sy
-    # $sx $sy -compositingrule set
-    $img copy $tmp
-    #$img blank
-    #$img copy $tmp 
-    image delete $tmp
 
+    # recreate the original image and copy the tmp over it
+	image delete $img
+	image create photo $img
+    $img copy $tmp
+
+    # clean up
+    image delete $tmp
 }
 
 proc add_de1_page {names filename {skin ""} } {
