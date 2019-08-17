@@ -2695,7 +2695,7 @@ proc check_firmware_update_is_available {} {
 	}
 
 	if {$::de1(firmware_crc) != [ifexists ::settings(firmware_crc)] && $::de1(currently_updating_firmware) == ""} {
-		set ::de1(firmware_update_button_label) "Firmware update available"
+		set ::de1(firmware_update_button_label) [translate "Firmware update available"]
 	}
 	return ""
 }
