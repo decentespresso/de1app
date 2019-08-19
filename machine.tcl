@@ -155,7 +155,7 @@ array set ::settings {
 	current_frame_description {asdfasdfsa}
 	default_font_calibration 0.5
 	language en
-	steam_over_temp_threshold 175
+	steam_over_temp_threshold 180
 	steam_over_pressure_threshold 3
 	steam_over_pressure_count_trigger 10
 	steam_over_temp_count_trigger 10
@@ -681,6 +681,7 @@ proc start_sleep {} {
 }
 
 proc check_if_steam_clogged {} {
+	set ::settings(steam_over_temp_threshold) 180
 
 	set bad_pressure 0
 	set bad_temp 0
