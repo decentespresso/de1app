@@ -618,3 +618,4 @@ proc start_app_update {} {
         return 0
     }
 }
+
