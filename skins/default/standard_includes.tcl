@@ -16,6 +16,7 @@ add_de1_page "message calibrate" "settings_message.png" "default"
 add_de1_page "create_preset" "settings_3_choices.png" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
+add_de1_page "ghc" "ghc.jpg" "default"
 add_de1_page "travel_prepare" "travel_prepare.jpg" "default"
 add_de1_page "travel_do" "travel_do.jpg" "default"
 add_de1_page "descalewarning" "descalewarning.jpg" "default"
@@ -28,6 +29,17 @@ add_de1_text "descaling" 1280 80 -text [translate "Descaling"] -font Helv_20_bol
 add_de1_text "descalewarning" 1280 1310 -text [translate "Your steam wand is clogging up"] -font Helv_17_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
 add_de1_text "descalewarning" 1280 1480 -text [translate "It needs to be descaled soon"] -font Helv_15_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
 add_de1_button "descalewarning" {say [translate {descale}] $::settings(sound_button_in); show_settings settings_4;} 0 0 2560 1600 
+
+
+# group head controller FYI messages
+add_de1_page "ghc_steam ghc_espresso ghc_flush ghc_hotwater" "ghc.jpg" "default"
+	add_de1_text "ghc_steam" 1990 680 -text "\[      \]\n[translate {Tap here for steam}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
+	add_de1_text "ghc_espresso" 1936 950 -text "\[      \]\n[translate {Tap here for espresso}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
+	add_de1_text "ghc_flush" 1520 840 -text "\[      \]\n[translate {Tap here to flush}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 750
+	add_de1_text "ghc_hotwater" 1630 600 -text "\[      \]\n[translate {Tap here for hot water}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 820
+	add_de1_button "ghc_steam ghc_espresso ghc_flush ghc_hotwater" {say [translate {Ok}] $::settings(sound_button_in); page_show off;} 0 0 2560 1600 
+
+
 
 set_de1_screen_saver_directory "[homedir]/saver"
 

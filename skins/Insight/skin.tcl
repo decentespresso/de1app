@@ -37,6 +37,8 @@ add_de1_page "preheat_1" "preheat_1.png"
 add_de1_page "preheat_2" "preheat_2.png"
 add_de1_page "preheat_3" "preheat_3.png"
 add_de1_page "preheat_4" "preheat_4.png"
+set_next_page hotwaterrinse preheat_2
+
 
 # most skins will not bother replacing these graphics
 add_de1_page "sleep" "sleep.jpg" "default"
@@ -50,6 +52,13 @@ add_de1_page "cleaning" "cleaning.jpg" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 add_de1_page "travel_prepare" "travel_prepare.jpg" "default"
 add_de1_page "travel_do" "travel_do.jpg" "default"
+
+add_de1_page "ghc_steam ghc_espresso ghc_flush ghc_hotwater" "ghc.jpg" "default"
+add_de1_text "ghc_steam" 1990 680 -text "\[      \]\n[translate {Tap here for steam}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
+add_de1_text "ghc_espresso" 1936 950 -text "\[      \]\n[translate {Tap here for espresso}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
+add_de1_text "ghc_flush" 1520 840 -text "\[      \]\n[translate {Tap here to flush}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 750
+add_de1_text "ghc_hotwater" 1630 600 -text "\[      \]\n[translate {Tap here for hot water}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 820
+add_de1_button "ghc_steam ghc_espresso ghc_flush ghc_hotwater" {say [translate {Ok}] $::settings(sound_button_in); page_show off;} 0 0 2560 1600 
 
 
 set_de1_screen_saver_directory "[homedir]/saver"
@@ -883,9 +892,26 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 		add_de1_variable "steam" 2470 570 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
 profile_has_changed_set_colors
+
+proc skins_page_change_due_to_de1_state_change { textstate } {
+	page_change_due_to_de1_state_change $textstate
+
+	if {$textstate == "Steam"} {
+		set_next_page off steam_3; 
+	} elseif {$textstate == "Espresso"} {
+		set_next_page off espresso_3; 
+	} elseif {$textstate == "HotWater"} {
+		set_next_page off water_3; 
+	} elseif {$textstate == "HotWaterRinse"} {
+		set_next_page off preheat_3; 
+	}
+}
+
+
+
 # feature disabled until flowmeter reporting over BLE is implemented
 #add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
-#set_next_page off descalewarning;
-#
+#set_next_page off ghc_espresso;
+##

@@ -1419,7 +1419,6 @@ proc fill_skin_listbox {} {
 
 	$widget selection set $::current_skin_number
 
-
 	make_current_listbox_item_blue $widget
 	#puts "current_skin_number: $::current_skin_number"
 
@@ -2499,6 +2498,11 @@ proc start_text_if_espresso_ready {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
+		
+		if {$::settings(has_ghc) == 1} {
+			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
+			return [translate "READY"]
+		}
 		return [translate "START"]
 	}
 	return [translate "WAIT"]
@@ -2508,6 +2512,10 @@ proc restart_text_if_espresso_ready {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
+		if {$::settings(has_ghc) == 1} {
+			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
+			return [translate "READY"]
+		}
 		return [translate "RESTART"]
 	}
 	return [translate "WAIT"]
@@ -2536,7 +2544,13 @@ proc espresso_history_save_from_gui {} {
 	#		set state [translate "SAVING"] 
 		#} else {
 		#}; 
-		set state [translate "RESTART"]
+		if {$::settings(has_ghc) == 1} {
+			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
+			set state [translate "READY"]
+		} else {
+			set state [translate "RESTART"]
+		}
+
 	}
 	#set state [translate "WAIT"]
 	#save_this_espresso_to_history; 

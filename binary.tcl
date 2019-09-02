@@ -1541,6 +1541,16 @@ proc update_de1_state {statechar} {
 		msg "applying DE1 state change: $::de1(state) [array get msg] ($textstate)"
 		emit_state_change_event $::de1(state) $msg(state)
 		set ::de1(state) $msg(state)
+
+		if {$textstate == "Espresso"} {
+			reset_gui_starting_espresso
+		} elseif {$textstate == "Steam"} {
+			reset_gui_starting_steam
+		} elseif {$textstate == "HotWater"} {
+			reset_gui_starting_steam
+		} elseif {$textstate == "HotWaterRinse"} {
+			reset_gui_starting_steam
+		}
 	}
 
 
@@ -1554,26 +1564,26 @@ proc update_de1_state {statechar} {
 
 			#if {$textstate == "Espresso"} {
 
-				if {$current_de1_substate == 4 || ($current_de1_substate == 5 && $::previous_de1_substate != 4)} {
-					# tare the scale when the espresso starts and start the shot timer
-					#skale_tare
-					#skale_timer_off
-					if {$::timer_running == 0 && $textstate == "Espresso"} {
-						#start_timers
-						skale_tare
-						skale_timer_start
-						start_espresso_timers
-						#set ::timer_running 1
-					}
-					
-				} elseif {($current_de1_substate != 5 || $current_de1_substate == 4) && $textstate == "Espresso"} {
-					# shot is ended, so turn timer off
-					if {$::timer_running == 1} {
-						#set ::timer_running 0
-						skale_timer_stop
-						stop_espresso_timers
-					}
+			if {$current_de1_substate == 4 || ($current_de1_substate == 5 && $::previous_de1_substate != 4)} {
+				# tare the scale when the espresso starts and start the shot timer
+				#skale_tare
+				#skale_timer_off
+				if {$::timer_running == 0 && $textstate == "Espresso"} {
+					#start_timers
+					skale_tare
+					skale_timer_start
+					start_espresso_timers
+					#set ::timer_running 1
 				}
+				
+			} elseif {($current_de1_substate != 5 || $current_de1_substate == 4) && $textstate == "Espresso"} {
+				# shot is ended, so turn timer off
+				if {$::timer_running == 1} {
+					#set ::timer_running 0
+					skale_timer_stop
+					stop_espresso_timers
+				}
+			}
 			#}
 
 			set ::de1(substate) $msg(substate)
@@ -1616,42 +1626,51 @@ proc update_de1_state {statechar} {
 			}
 		}
 		
+		# can be over-written by a skin
+		skins_page_change_due_to_de1_state_change $textstate
+
 		set ::previous_de1_substate $::de1(substate)
 	}
 
 	#set textstate $::de1_num_state($msg(state))
 	#if {$::previous_textstate != $::previous_textstate} {
-		if {$textstate == "Idle"} {
-			page_display_change $::de1(current_context) "off"
-		} elseif {$textstate == "GoingToSleep"} {
-			page_display_change $::de1(current_context) "sleep" 
-		} elseif {$textstate == "Sleep"} {
-			page_display_change $::de1(current_context) "saver" 
-		} elseif {$textstate == "Steam"} {
-			page_display_change $::de1(current_context) "steam" 
-		} elseif {$textstate == "Espresso"} {
-			page_display_change $::de1(current_context) "espresso" 
-		} elseif {$textstate == "HotWater"} {
-			page_display_change $::de1(current_context) "water" 
-		} elseif {$textstate == "Refill"} {
-			page_display_change $::de1(current_context) "tankempty" 
-		} elseif {$textstate == "SteamRinse"} {
-			page_display_change $::de1(current_context) "steamrinse" 
-		} elseif {$textstate == "HotWaterRinse"} {
-			page_display_change $::de1(current_context) "hotwaterrinse" 
-		} elseif {$textstate == "Descale"} {
-			page_display_change $::de1(current_context) "descaling" 
-		} elseif {$textstate == "Clean"} {
-			page_display_change $::de1(current_context) "cleaning" 
-		} elseif {$textstate == "AirPurge"} {
-			page_display_change $::de1(current_context) "travel_do" 
-		}
 	#} else {
 	#	update
 	#}
 
 	set ::previous_textstate $textstate
 }
+
+
+proc page_change_due_to_de1_state_change {textstate} {
+	if {$textstate == "Idle"} {
+		page_display_change $::de1(current_context) "off"
+	} elseif {$textstate == "GoingToSleep"} {
+		page_display_change $::de1(current_context) "sleep" 
+	} elseif {$textstate == "Sleep"} {
+		page_display_change $::de1(current_context) "saver" 
+	} elseif {$textstate == "Steam"} {
+		page_display_change $::de1(current_context) "steam" 
+	} elseif {$textstate == "Espresso"} {
+		page_display_change $::de1(current_context) "espresso" 
+	} elseif {$textstate == "HotWater"} {
+		page_display_change $::de1(current_context) "water" 
+	} elseif {$textstate == "Refill"} {
+		page_display_change $::de1(current_context) "tankempty" 
+	} elseif {$textstate == "SteamRinse"} {
+		page_display_change $::de1(current_context) "steamrinse" 
+	} elseif {$textstate == "HotWaterRinse"} {
+		page_display_change $::de1(current_context) "hotwaterrinse" 
+	} elseif {$textstate == "Descale"} {
+		page_display_change $::de1(current_context) "descaling" 
+	} elseif {$textstate == "Clean"} {
+		page_display_change $::de1(current_context) "cleaning" 
+	} elseif {$textstate == "AirPurge"} {
+		page_display_change $::de1(current_context) "travel_do" 
+	}
+}
+
+
 
 set ble_spec 1.0
 proc use_old_ble_spec {} {

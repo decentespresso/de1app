@@ -1,12 +1,22 @@
 package provide de1_gui 1.0
 
 
+proc load_skin {} {
+
+	# optional callback for skins, which is reset to normal always, before loading the skin
+	eval {
+		proc skins_page_change_due_to_de1_state_change { textstate } {
+			page_change_due_to_de1_state_change $textstate
+		}
+	}
+	source "[skin_directory]/skin.tcl"
+}
+
 proc setup_images_for_other_pages {} {
 	borg spinner on
-	source "[skin_directory]/skin.tcl"
+	load_skin
 	borg spinner off
     borg systemui $::android_full_screen_flags
-
 	return
 }
 
@@ -2041,7 +2051,6 @@ proc god_shot_files {} {
 	    set fn "[homedir]/godshots/$f"
 	    array unset -nocomplete godprops
 	    array set godprops [read_file $fn]
-	    #set skintcl ""
 
 	    set name [ifexists godprops(name)]
 	    if {$name == "None"} {

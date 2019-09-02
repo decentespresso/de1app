@@ -153,6 +153,7 @@ array set ::settings {
 	screen_size_width {}
 	screen_size_height {}
 	current_frame_description {asdfasdfsa}
+	has_ghc 0
 	default_font_calibration 0.5
 	language en
 	steam_over_temp_threshold 180
@@ -474,15 +475,28 @@ proc start_cleaning {} {
 	}
 }
 
-proc start_hot_water_rinse {} {
+
+proc reset_gui_starting_hot_water_rinse {} {
 	msg "Tell DE1 to start HOT WATER RINSE"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
+}
+
+proc start_hot_water_rinse {} {
+	msg "Tell DE1 to start HOT WATER RINSE"
 	de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
+
+	if {$::settings(has_ghc) == 1} {
+		# show the user what button to press on the group head
+		ghc_message ghc_flush
+		return
+	}
+
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		after 200 [list update_de1_state "$::de1_state(HotWaterRinse)\x5"]
+		after 10000 [list update_de1_state "$::de1_state(Idle)\x5"]
 	}
 }
 
@@ -498,11 +512,9 @@ proc start_steam_rinse {} {
 	}
 }
 
-proc start_steam {} {
-	msg "Tell DE1 to start making STEAM"
+proc reset_gui_starting_steam {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send_state "make steam" $::de1_state(Steam)
 
 	incr ::settings(steaming_count)
 	save_settings
@@ -512,23 +524,32 @@ proc start_steam {} {
 	steam_flow length 0
 	#steam_pressure append 0
 	#steam_elapsed append 0
+}
+
+proc start_steam {} {
+	msg "Tell DE1 to start making STEAM"
+
+	de1_send_state "make steam" $::de1_state(Steam)
+	if {$::settings(has_ghc) == 1} {
+		# show the user what button to press on the group head
+		ghc_message ghc_steam
+		return
+	}
+
 
 	if {$::settings(stress_test) == 1} {
 		set ::idle_next_step start_steam
 	}
 
-
-
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		after 200 [list update_de1_state "$::de1_state(Steam)\x5"]
+		after 10000 [list update_de1_state "$::de1_state(Idle)\x5"]
 	}
 }
 
-proc start_espresso {} {
-	msg "Tell DE1 to start making ESPRESSO"
-	msg [stacktrace]
-	
+proc reset_gui_starting_espresso {} {
+
 	set ::settings(history_saved) 0
 
 	set ::de1(timer) 0
@@ -551,7 +572,6 @@ proc start_espresso {} {
 	set ::settings(drink_ey) 0
 	############
 
-	de1_send_state "make espresso" $::de1_state(Espresso)
 
 	clear_espresso_chart
 	clear_espresso_timers
@@ -570,36 +590,74 @@ proc start_espresso {} {
 		#skale_timer_start
 	}
 
+	if {$::settings(stress_test) == 1} {
+		# this will cease to work once the GHC is installed
+		set ::idle_next_step start_espresso
+	}
+}
+
+proc ghc_message {type} {
+	# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
+	if {[info exists ::nextpage(machine:off)] == 1} {
+		set currentpage $::nextpage(machine:off)
+	} else {
+		set currentpage "off"
+	}
+
+	set_next_page off $type
+	page_show $type
+	after 1000 "set ::nextpage(machine:off) $currentpage"
+}
+
+proc start_espresso {} {
+	msg "Tell DE1 to start making ESPRESSO"
+	de1_send_state "make espresso" $::de1_state(Espresso)
+
+	log_to_debug_file "ghc: $::settings(has_ghc)"
+
+	if {$::settings(has_ghc) == 1} {
+		# show the user what button to press on the group head
+		ghc_message ghc_espresso
+		return
+	}
+
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
 		after 200 [list update_de1_state "$::de1_state(Espresso)\x1"]
+		after 30000 [list update_de1_state "$::de1_state(Idle)\x5"]
 	}
 
-	if {$::settings(stress_test) == 1} {
-		set ::idle_next_step start_espresso
-	}
+	return	
+}
 
+proc reset_gui_starting_hotwater {} {
+	set ::de1(timer) 0
+	set ::de1(volume) 0
+	incr ::settings(water_count)
+	save_settings
 
-	#run_next_userdata_cmd
 }
 
 proc start_water {} {
 	msg "Tell DE1 to start making HOT WATER"
-	set ::de1(timer) 0
-	set ::de1(volume) 0
 	de1_send_state "make hot water" $::de1_state(HotWater)
 
-	incr ::settings(water_count)
-	save_settings
+	if {$::settings(has_ghc) == 1} {
+		# show the user what button to press on the group head
+		ghc_message ghc_hotwater
+		return
+	}
 
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 [list update_de1_state "$::de1_state(HotWater)\x5"]
+		after 10000 [list update_de1_state "$::de1_state(Idle)\x5"]
 	}
 
 	if {$::settings(stress_test) == 1} {
 		set ::idle_next_step start_water
+		after 1200 [list update_de1_state "$::de1_state(Idle)\x5"]
 	}
 
 }
