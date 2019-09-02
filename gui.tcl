@@ -450,7 +450,7 @@ proc install_de1plus_app_icon {} {
 	set appurl "file://mnt/sdcard/[appdir]/de1plus.tcl"
 	#puts "appurl: $appurl"
 	catch {
-		set x [borg shortcut add "DE1+" $appurl $iconbase64_de1plus]
+		set x [borg shortcut add "Decent" $appurl $iconbase64_de1plus]
 		puts "shortcut added: '$x'"
 	}
 
@@ -467,7 +467,7 @@ proc install_this_app_icon_beta {} {
 
 	set appurl "file://mnt/sdcard/de1beta/de1plus.tcl"
 	catch {
-		set x [borg shortcut add "DE1+" $appurl $iconbase64_de1plus]
+		set x [borg shortcut add "Decent" $appurl $iconbase64_de1plus]
 		puts "shortcut added: '$x'"
 	}
 
