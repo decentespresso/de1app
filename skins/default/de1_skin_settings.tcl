@@ -877,4 +877,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-set_next_page off descale_prepare
+#set_next_page off tankempty

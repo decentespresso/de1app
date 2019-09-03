@@ -608,6 +608,12 @@ proc start_app_update {} {
         }
 
 
+        catch {
+            .hello configure -text $::de1(app_update_button_label)
+            .hello configure -command { exit }
+        }
+
+
         set ::app_updating 0
         return 1
     } else {
@@ -615,6 +621,14 @@ proc start_app_update {} {
         puts "failed update"
         log_to_debug_file "failed update"
         set ::app_updating 0
+
+
+        catch {
+            .hello configure -text $::de1(app_update_button_label)
+            .hello configure -command { exit }
+        }
+
+
         return 0
     }
 }
