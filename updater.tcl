@@ -613,7 +613,6 @@ proc start_app_update {} {
             .hello configure -command { exit }
         }
 
-
         set ::app_updating 0
         return 1
     } else {
