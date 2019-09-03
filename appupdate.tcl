@@ -31,15 +31,23 @@ catch {
 	set tk [package present Tk]
 }
 if {$tk != ""} {
-	button .hello -text "Update app" -command { pack forget .frame; start_app_update; } -height 10 -width 40
+	button .hello -text "Update app" -command { 
+		catch { .hello configure -text "Working" }
+		catch { pack forget .frame; }
+		start_app_update; 
+	} -height 10 -width 40
 	frame .frame -border 2
 	button .frame.redownloadapp -text " Redownload entire app " -command { 
+		catch { .hello configure -text "Working" }
 		catch { file delete "manifest.txt"; }
 		catch { file delete "timestamp.txt"; }
 		catch { pack forget .frame; }
 		catch { start_app_update; } 
 		exit } 
-	button .frame.resetapp -text " Reset app settings " -command { catch { file delete "settings.tdb"; } ; exit } 
+	button .frame.resetapp -text " Reset app settings " -command { 
+		catch { file delete "settings.tdb"; } ; 
+		exit 
+	} 
 	
 	pack .hello  -pady 10 -padx 10
 	pack .frame -side bottom -pady 0 -padx 0
