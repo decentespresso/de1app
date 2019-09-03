@@ -359,6 +359,12 @@ proc start_app_update {} {
     if {$::android == 1} {
         if {[borg networkinfo] == "none"} {
             set ::de1(app_update_button_label) [translate "No Wifi network"]; 
+
+            catch {
+                .hello configure -text $::de1(app_update_button_label)
+            }
+
+            
             set ::app_updating 0
             return $::de1(app_update_button_label)
         }
