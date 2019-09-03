@@ -1118,6 +1118,7 @@ proc skin_convert {indir} {
 
                 catch {
                     exec convert $skinfile -resize $dir!  -quality 90 ../$dir/$skinfile 
+                    puts "\nconvert $skinfile -resize $dir!  -quality 90 ../$dir/$skinfile "
                 }
                 if {$skinfile == "icon.jpg"} {
                     # icon files are reduced to 25% of the screen resolution
