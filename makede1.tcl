@@ -21,29 +21,39 @@ if {$argv != ""} {
 	# optionally purge the source directories and resync
 	# do this if we remove files from the sync list
 	file delete -force /d/download/sync/de1plus
-	file delete -force /d/download/sync/de1
-	file delete -force /d/download/desktop/osx/de1plus_osx.zip
-	file delete -force /d/download/desktop/win32/de1plus_win.zip
-	file delete -force /d/download/desktop/linux/de1plus_linux.zip
-	file delete -force /d/download/desktop/source/de1plus_source.zip
+	file delete -force /d/download/sync/decent
+	file mkdir /d/download/sync/de1plus
+	file link /d/download/sync/decent /d/download/sync/de1plus 
+	#file delete -force /d/download/sync/de1
+	file delete -force /d/download/desktop/osx/decent_osx.zip
+	file delete -force /d/download/desktop/win32/decent_win.zip
+	file delete -force /d/download/desktop/linux/decent_linux.zip
+	file delete -force /d/download/desktop/source/decent_source.zip
 
 	#skin_convert_all
 	make_de1_dir
 
 
 	cd "[homedir]/desktop_app/osx"
-	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1plus_osx.zip DE1+.app 
-	#exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/de1_osx.zip DE1.app
+	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/osx/decent_osx.zip Decent.app 
 
 	cd "[homedir]/desktop_app/win32"
-	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/win32/de1plus_win.zip ./
+	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/win32/decent_win.zip ./
 
 	cd "[homedir]/desktop_app/linux"
-	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/linux/de1plus_linux.zip ./
+	file attributes "undroidwish/undroidwish-linux32" -permission 0755
+	file attributes "undroidwish/undroidwish-linux64" -permission 0755
+	file attributes "undroidwish/undroidwish-raspberry" -permission 0755
+	file attributes "undroidwish/undroidwish-wayland64" -permission 0755
+
+	cd ..
+	file delete -force "[homedir]/desktop_app/decent"
+	file link "[homedir]/desktop_app/decent" "[homedir]/desktop_app/linux"
+	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/linux/decent_linux.zip decent
 
 	cd "/d/download/sync"
-	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1plus_source.zip de1plus
-	#exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/de1_source.zip de1
+	exec zip -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/decent_source.zip de1plus
+
 } else {
 	#skin_convert_all
 	make_de1_dir
@@ -51,3 +61,6 @@ if {$argv != ""} {
 }
 
 puts "done"
+
+
+
