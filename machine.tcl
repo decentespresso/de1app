@@ -693,6 +693,8 @@ proc start_idle {} {
 
 	set ::settings(flying) 0
 	de1_send_state "go idle" $::de1_state(Idle)
+	skale_enable_lcd
+
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 [list update_de1_state "$::de1_state(Idle)\x0"]
@@ -730,6 +732,7 @@ proc start_sleep {} {
 
 	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
 	de1_send_state "go to sleep" $::de1_state(Sleep)
+	skale_disable_lcd
 	
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}

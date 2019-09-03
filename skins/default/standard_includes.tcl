@@ -29,7 +29,7 @@ add_de1_text "descaling" 1280 80 -text [translate "Descaling"] -font Helv_20_bol
 
 add_de1_text "descalewarning" 1280 1310 -text [translate "Your steam wand is clogging up"] -font Helv_17_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
 add_de1_text "descalewarning" 1280 1480 -text [translate "It needs to be descaled soon"] -font Helv_15_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
-add_de1_button "descalewarning" {say [translate {descale}] $::settings(sound_button_in); show_settings descale_prepare;} 0 0 2560 1600 
+add_de1_button "descalewarning" {say [translate {Descale}] $::settings(sound_button_in); show_settings descale_prepare;} 0 0 2560 1600 
 
 
 # group head controller FYI messages
