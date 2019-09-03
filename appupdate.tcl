@@ -33,7 +33,12 @@ catch {
 if {$tk != ""} {
 	button .hello -text "Update app" -command { pack forget .frame; start_app_update; } -height 10 -width 40
 	frame .frame -border 2
-	button .frame.redownloadapp -text " Redownload entire app " -command { catch { file delete "manifest.txt"; file delete "timestamp.txt"; pack forget .frame; start_app_update; } ; exit } 
+	button .frame.redownloadapp -text " Redownload entire app " -command { 
+		catch { file delete "manifest.txt"; }
+		catch { file delete "timestamp.txt"; }
+		catch { pack forget .frame; }
+		catch { start_app_update; } 
+		exit } 
 	button .frame.resetapp -text " Reset app settings " -command { catch { file delete "settings.tdb"; } ; exit } 
 	
 	pack .hello  -pady 10 -padx 10

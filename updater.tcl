@@ -610,6 +610,9 @@ proc start_app_update {} {
 
         catch {
             .hello configure -text $::de1(app_update_button_label)
+        }
+
+        catch {
             .hello configure -command { exit }
         }
 
