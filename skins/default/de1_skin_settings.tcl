@@ -385,7 +385,7 @@ add_de1_text "settings_4" 380 1300 -text [translate "Clean"] -font Helv_10_bold 
 
 # descale button
 add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-	add_de1_button "settings_4" {say [translate {Descale}] $::settings(sound_button_in); start_decaling} 645 1206 1260 1406
+	add_de1_button "settings_4" {say [translate {Descale}] $::settings(sound_button_in); set_next_page off descale_prepare; page_show descale_prepare;} 645 1206 1260 1406
  
 # firmware update
 add_de1_variable "settings_4" 2270 534 -text "" -width [rescale_y_skin 400] -font Helv_8_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available]$::de1(firmware_update_button_label)} 
@@ -508,14 +508,28 @@ if {[de1plus]} {
 	#}
 }
 
-add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso machine for transport"] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
-	add_de1_text "travel_prepare" 1520 1000 -text [translate "After you press Ok, pull the water tank forward as shown in this photograph."] -font Helv_10_bold -fill "#000000" -anchor "nw" -width 500
+add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso machine for transport"] -font Helv_15_bold -fill "#a77171" -anchor "center" -width 1000
+	add_de1_text "travel_prepare" 1520 1000 -text [translate "After you press Ok, pull the water tank forward as shown in this photograph."] -font Helv_10_bold -fill "#a77171" -anchor "nw" -width 500
 	add_de1_text "travel_prepare" 280 1504 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_text "travel_prepare" 2300 1504 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_button "travel_prepare" {say [translate {Cancel}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 0 1200 600 1600 ""
 	add_de1_button "travel_prepare" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_4; start_air_purge} 1960 1200 2560 1600 ""
-	add_de1_text "travel_do" 1280 120 -text [translate "Now removing water from your espresso machine."] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
-	add_de1_text "travel_do" 1520 1000 -text [translate "You can turn your machine off once it is out of water. It will then be ready for transport."] -font Helv_10_bold -fill "#000000" -anchor "nw" -width 500
+	add_de1_text "travel_do" 1280 120 -text [translate "Now removing water from your espresso machine."] -font Helv_15_bold -fill "#a77171" -anchor "center" -width 1000
+	add_de1_text "travel_do" 1520 1000 -text [translate "You can turn your machine off once it is out of water. It will then be ready for transport."] -font Helv_10_bold -fill "#a77171" -anchor "nw" -width 500
+	#add_de1_text "travel_do" 1280 1520 -text [translate "It will then be ready for transport."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 1000
+
+
+add_de1_text "descale_prepare" 70 50 -text [translate "Prepare to descale"] -font Helv_20_bold -fill "#a77171" -anchor "nw" -width 1000
+	add_de1_text "descale_prepare" 1200 180 -text "[translate {1) Put a blank basket in the portafilter}]" -font Helv_9_bold -fill "#a77171" -anchor "nw" -justify left -width 450
+	add_de1_text "descale_prepare" 1200 550 -text [translate "2) Remove the drip tray cover"] -font Helv_9_bold -fill "#a77171" -anchor "nw" -justify left -width 450
+	add_de1_text "descale_prepare" 1200 850 -text [translate "3) In the water tank, mix 1.5 liter hot water with 300g citric acid powder"] -font Helv_9_bold -fill "#a77171" -anchor "nw" -justify left -width 450
+	add_de1_text "descale_prepare" 1200 1210 -text [translate "4) Push the water tank back in"] -font Helv_9_bold -fill "#a77171" -anchor "nw" -justify left -width 450
+	add_de1_text "descale_prepare" 280 1504 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	add_de1_text "descale_prepare" 2300 1504 -text [translate "Descale now"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	add_de1_button "descale_prepare" {say [translate {Cancel}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 0 1200 600 1600 ""
+	add_de1_button "descale_prepare" {say [translate {Ok}] $::settings(sound_button_in); start_decaling} 1960 1200 2560 1600 ""
+	#add_de1_text "travel_do" 1280 120 -text [translate "Now removing water from your espresso machine."] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
+	#add_de1_text "travel_do" 1520 1000 -text [translate "You can turn your machine off once it is out of water. It will then be ready for transport."] -font Helv_10_bold -fill "#000000" -anchor "nw" -width 500
 	#add_de1_text "travel_do" 1280 1520 -text [translate "It will then be ready for transport."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 1000
 
 
@@ -862,4 +876,5 @@ proc setting_profile_type_to_text { } {
 		return [translate "PROFILE"]$changedicon
 	}
 }
-#set_next_page off create_preset
+
+#set_next_page off descalewarning
