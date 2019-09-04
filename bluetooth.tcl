@@ -1509,7 +1509,13 @@ proc de1_ble_handler { event data } {
 									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$target_shot_weight - $lag_time_calibration}]]} {	
 
 										if {[espresso_timer] < 5} {
-											skale_tare
+											if {$::settings(tare_only_on_espresso_start) == 1} {
+												if {$::de1_num_state($::de1(state)) == "Espresso"} {
+													skale_tare
+												}
+											} else {
+												skale_tare
+											}
 										} else {
 											msg "Weight based Espresso stop was triggered at ${thisweight}g > ${target_shot_weight}g "
 										 	start_idle

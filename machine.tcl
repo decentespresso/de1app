@@ -158,6 +158,7 @@ array set ::settings {
 	language en
 	steam_over_temp_threshold 180
 	steam_over_pressure_threshold 3
+	tare_only_on_espresso_start 0
 	steam_over_pressure_count_trigger 10
 	steam_over_temp_count_trigger 10
 	active_settings_tab settings_2a
