@@ -1417,11 +1417,15 @@ proc de1_ble_handler { event data } {
 					        binary scan $value cus1cu t0 t1 t2 t3 t4 t5
 							set sensorweight [expr {$t1 / 10.0}]
 							if {$sensorweight < 0 && $::de1_num_state($::de1(state)) == "Idle"} {
-								# one second after the negative weights have stopped, automatically do a tare
-								if {[info exists ::scheduled_skale_tare_id] == 1} {
-									after cancel $::scheduled_skale_tare_id
+
+								if {$::settings(tare_only_on_espresso_start) != 1} {
+
+									# one second after the negative weights have stopped, automatically do a tare
+									if {[info exists ::scheduled_skale_tare_id] == 1} {
+										after cancel $::scheduled_skale_tare_id
+									}
+									set ::scheduled_skale_tare_id [after 1000 skale_tare]
 								}
-								set ::scheduled_skale_tare_id [after 1000 skale_tare]
 							}
 
 							set multiplier1 0.95
@@ -1509,13 +1513,7 @@ proc de1_ble_handler { event data } {
 									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$target_shot_weight - $lag_time_calibration}]]} {	
 
 										if {[espresso_timer] < 5} {
-											if {$::settings(tare_only_on_espresso_start) == 1} {
-												if {$::de1_num_state($::de1(state)) == "Espresso"} {
-													skale_tare
-												}
-											} else {
-												skale_tare
-											}
+											skale_tare
 										} else {
 											msg "Weight based Espresso stop was triggered at ${thisweight}g > ${target_shot_weight}g "
 										 	start_idle
