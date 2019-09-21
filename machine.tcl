@@ -751,7 +751,7 @@ proc check_if_steam_clogged {} {
 
 		# remove the first 20 samples (2 seconds) of data, as pressure is high to start, by design
 		steam_pressure dup trimmed_steam_pressure
-		trimmed_steam_pressure delete 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+		catch {trimmed_steam_pressure delete 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20}
 
 		set over_pressure [trimmed_steam_pressure search $::settings(steam_over_pressure_threshold) 999]
 
