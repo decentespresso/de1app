@@ -55,7 +55,7 @@ add_de1_button "describe_espresso describe_espresso0 describe_espresso2" {say [t
 
 add_de1_widget "describe_espresso0" graph 1382 314 {
 	$widget element create god_line_espresso_flow_2x  -xdata espresso_elapsed -ydata god_espresso_flow_2x -symbol none -label "" -linewidth [rescale_x_skin 24] -color #e4edff -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
-	if {$::settings(skale_bluetooth_address) != ""} {
+	if {$::settings(scale_bluetooth_address) != ""} {
 		$widget element create god_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata god_espresso_flow_weight_2x -symbol none -label "" -linewidth [rescale_x_skin 16] -color #edd4c1 -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
 	}
 	$widget element create god_line2_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 24] -color #c5ffe7  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
@@ -73,7 +73,7 @@ add_de1_button "describe_espresso0" {say [translate {delete}] $::settings(sound_
 add_de1_button "describe_espresso0" {say [translate {add}] $::settings(sound_button_in); save_to_god_shots} 1180 1200 1380 1400
 
 set godshots_listbox_height 11
-#if {$::settings(skale_bluetooth_address) != ""} {
+#if {$::settings(scale_bluetooth_address) != ""} {
 #	set godshots_listbox_height 9
 #}
 

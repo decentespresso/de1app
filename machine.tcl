@@ -27,7 +27,8 @@ array set ::de1 {
     found    0
     scanning 1
     device_handle 0
-    skale_device_handle 0
+    scale_device_handle 0
+    decentscale_device_handle 0
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"
 	sinstance 12
 	cuuid "0000A002-0000-1000-8000-00805F9B34FB"
@@ -48,6 +49,9 @@ array set ::de1 {
 	cuuid_skale_EF81 "0000EF81-0000-1000-8000-00805F9B34FB"
 	cuuid_skale_EF82 "0000EF82-0000-1000-8000-00805F9B34FB"
 	suuid_skale "0000FF08-0000-1000-8000-00805F9B34FB"
+	cuuid_decentscale_read "0000FFF4-0000-1000-8000-00805F9B34FB"
+	cuuid_decentscale_write "000036F5-0000-1000-8000-00805F9B34FB"
+	suuid_decentscale "0000FFF0-0000-1000-8000-00805F9B34FB"
 	cinstance 0
 	pressure 0
 	head_temperature 0
@@ -162,9 +166,11 @@ array set ::settings {
 	steam_over_pressure_count_trigger 10
 	steam_over_temp_count_trigger 10
 	active_settings_tab settings_2a
+	chart_total_shot_weight 1
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"
+	start_espresso_only_if_scale_connected 0
 	logfile "log.txt"
 	water_refill_point 5
 	max_steam_pressure 3
@@ -176,6 +182,7 @@ array set ::settings {
 	advanced_shot_chart_temp_min 80
 	bean_notes {}
 	chart_dashes_flow ""
+	chart_dashes_espresso_weight {2 1}
 	chart_dashes_temperature ""
 	name {}
 	chart_dashes_pressure ""
@@ -236,12 +243,15 @@ array set ::settings {
 	display_espresso_water_delta_number 1
 	display_fluid_ounces_option 0
 	has_scale 1
+    scale_type ""
 	enable_fahrenheit 0
 	enable_ampm 0
 	settings_1_page settings_1
 	settings_profile_type "settings_2"
 	steam_max_time 120
+	scale_bluetooth_address {}
 	skale_bluetooth_address {}
+	decentscale_bluetooth_address {}
 	bluetooth_address {}
 	water_max_vol 500
 	water_temperature 80
@@ -326,7 +336,28 @@ if {[de1plus]} {
 
 # default the listbox to the currently set ble addresses
 set ::de1_bluetooth_list $settings(bluetooth_address)
-set ::skale_bluetooth_list $settings(skale_bluetooth_address)
+
+# copy the BLE address from Skale to the new generic "scale" BLE address (20-9-19 added support for two kinds of scales)
+if {$::settings(skale_bluetooth_address) != ""} {
+	set ::settings(scale_bluetooth_address) $::settings(skale_bluetooth_address)
+	set ::settings(scale_type) "atomaxskale"
+	set ::settings(skale_bluetooth_address) ""
+}
+
+# if we don't know what kind of scale it is, assume it's a historical Atomax Skale
+if {$::settings(scale_type) == "" && $::settings(scale_bluetooth_address) != ""} {
+	set ::settings(scale_type) "atomaxskale"
+}
+
+#msg "init was run '$::settings(scale_type)'"
+
+	#error "atomaxscale"
+# initial filling of BLE scale list
+#set ::scale_bluetooth_list $::settings(scale_bluetooth_address)
+
+# elseif {$settings(decentscale_bluetooth_address) != ""} {
+#	set ::scale_bluetooth_list $settings(decentscale_bluetooth_address)
+#}
 
 array set ::de1_state {
 	Sleep \x00
@@ -379,7 +410,7 @@ array set ::de1_num_state {
 
 
 
-
+set ::scale_bluetooth_list ""
 array set ::de1_num_state_reversed [reverse_array ::de1_num_state]
 
 
@@ -583,13 +614,13 @@ proc reset_gui_starting_espresso {} {
 
 	#start_timers
 
-	if {$::de1(skale_device_handle) != 0} {
+	if {$::de1(scale_device_handle) != 0} {
 		# this variable prevents the stop trigger from happening until the Tare has succeeded.
 		set ::de1(scale_autostop_triggered) 1
-		skale_tare
-		skale_timer_off
-		#skale_timer_start
+		scale_tare
+		scale_timer_off
 	}
+
 
 	if {$::settings(stress_test) == 1} {
 		# this will cease to work once the GHC is installed
@@ -612,6 +643,14 @@ proc ghc_message {type} {
 
 proc start_espresso {} {
 	msg "Tell DE1 to start making ESPRESSO"
+
+	if {$::settings(start_espresso_only_if_scale_connected) == 1 && $::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
+		msg "Refusing to START espresso without the scale being connected"
+		info_page [translate "Please connect your scale"] [translate "Ok"]
+		return
+	}
+
+
 	de1_send_state "make espresso" $::de1_state(Espresso)
 
 	log_to_debug_file "ghc: $::settings(has_ghc)"
@@ -667,13 +706,11 @@ proc start_idle {} {
 	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
 
-	if {$::de1(skale_device_handle) == 0 && $::settings(skale_bluetooth_address) != ""} {
-		#scanning_restart
-		ble_connect_to_skale
+	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
+		ble_connect_to_scale
 	}
 
 	if {$::de1(device_handle) == 0} {
-		#scanning_restart
 		update_de1_state "$::de1_state(Idle)\x0"
 		ble_connect_to_de1
 		return
@@ -694,7 +731,10 @@ proc start_idle {} {
 
 	set ::settings(flying) 0
 	de1_send_state "go idle" $::de1_state(Idle)
-	skale_enable_lcd
+	
+	if {$::de1(scale_device_handle) == 0} {
+		scale_enable_lcd
+	}
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
@@ -733,7 +773,11 @@ proc start_sleep {} {
 
 	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
 	de1_send_state "go to sleep" $::de1_state(Sleep)
-	skale_disable_lcd
+
+	if {$::de1(scale_device_handle) == 0} {
+		scale_disable_lcd
+	}
+
 	
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
@@ -743,6 +787,12 @@ proc start_sleep {} {
 }
 
 proc check_if_steam_clogged {} {
+
+	if {[steam_pressure length] < 30} {
+		# if steaming was for less than 3 seconds, then don't run this test, as that was just a short purge
+		return 
+	}
+
 	set ::settings(steam_over_temp_threshold) 180
 
 	set bad_pressure 0

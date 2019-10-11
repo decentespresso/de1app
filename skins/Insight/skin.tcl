@@ -37,14 +37,14 @@ add_de1_page "preheat_1" "preheat_1.png"
 add_de1_page "preheat_2" "preheat_2.png"
 add_de1_page "preheat_3" "preheat_3.png"
 add_de1_page "preheat_4" "preheat_4.png"
-set_next_page hotwaterrinse preheat_2
+set_next_page "hotwaterrinse" "preheat_2"
 
 
 # most skins will not bother replacing these graphics
 add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
 add_de1_page "tankempty refill" "fill_tank.jpg" "default"
-add_de1_page "message calibrate" "settings_message.png" "default"
+add_de1_page "message calibrate infopage" "settings_message.png" "default"
 add_de1_page "create_preset" "settings_3_choices.png" "default"
 add_de1_page "descalewarning" "descalewarning.jpg" "default"
 
@@ -194,13 +194,20 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
 
 	$widget element create line_espresso_flow  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 12] -color #4e85f4 -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
 
+
 	if {$::settings(display_flow_delta_line) == 1} {
 		$widget element create line_espresso_flow_delta  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth $::settings(profile_graph_smoothing_technique) 
 	}
 
-	if {$::settings(skale_bluetooth_address) != ""} {
+	if {$::settings(scale_bluetooth_address) != ""} {
 		$widget element create line_espresso_flow_weight  -xdata espresso_elapsed -ydata espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 6] -color #a2693d -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
 		$widget element create god_line_espresso_flow_weight  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 12] -color #edd4c1 -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
+
+		if {$::settings(chart_total_shot_weight) == 1} {
+			$widget element create line_espresso_weight  -xdata espresso_elapsed -ydata espresso_weight_chartable -symbol none -label "" -linewidth [rescale_x_skin 4] -color #a2693d -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);  
+		}
+
+
 	}
 
 	$widget element create god_line_espresso_flow  -xdata espresso_elapsed -ydata god_espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 24] -color #e4edff -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
@@ -249,7 +256,7 @@ add_de1_text "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoom
 add_de1_text "off espresso espresso_3" 40 220 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "nw"
 
 add_de1_text "off espresso espresso_3" 40 677 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
-if {$::settings(skale_bluetooth_address) != ""} {
+if {$::settings(scale_bluetooth_address) != ""} {
 	#set distance [font_width "Flow (mL/s)" Helv_7_bold]
 	add_de1_text "off espresso espresso_3" 1970 677 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 
 	
@@ -291,9 +298,14 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 74 {
 		$widget element create line_espresso_flow_delta_1  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth $::settings(profile_graph_smoothing_technique) 
 	}
 
-	if {$::settings(skale_bluetooth_address) != ""} {
+	if {$::settings(scale_bluetooth_address) != ""} {
 		$widget element create line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata espresso_flow_weight_2x -symbol none -label "" -linewidth [rescale_x_skin 8] -color #a2693d -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
 		$widget element create god_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata god_espresso_flow_weight_2x -symbol none -label "" -linewidth [rescale_x_skin 16] -color #edd4c1 -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
+
+		if {$::settings(chart_total_shot_weight) == 1} {
+			$widget element create line_espresso_weight_2x  -xdata espresso_elapsed -ydata espresso_weight_chartable -symbol none -label "" -linewidth [rescale_x_skin 4] -color #a2693d -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);  
+		}
+
 
 	}
 
@@ -611,13 +623,13 @@ add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column3
 	add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column3_pos [expr {$pos_top + (11.5 * $spacer)}] -justify left -anchor "ne" -text "" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -textvariable {[waterweight_text]} 
 	add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column3_pos [expr {$pos_top + (12.5 * $spacer)}] -justify left -anchor "ne" -text "" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -textvariable {[waterweightflow_text]} 
 
-	if {$::settings(skale_bluetooth_address) != ""} {
+	if {$::settings(scale_bluetooth_address) != ""} {
 		set ::de1(scale_weight_rate) -1
 		add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (8.3 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg #FFFFFF -maximum 6 -borderwidth 1 -relief flat
 		add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (13.8 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg #FFFFFF -maximum 6 -borderwidth 1 -relief flat
 	
-		# skale ble reconnection button
-		add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {connect}] $::settings(sound_button_in); catch {ble_connect_to_skale}} 2300 900 2560 1100
+		# scale ble reconnection button
+		add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {connect}] $::settings(sound_button_in); catch {ble_connect_to_scale}} 2300 900 2560 1100
 	}
 
 

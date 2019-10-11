@@ -26,6 +26,9 @@ proc setup_environment {} {
         # this causes the app to exit if the main window is closed
         wm protocol . WM_DELETE_WINDOW exit
 
+        # set the window title of the app. Only visible when casting the app via jsmpeg, and when running the app in a window using undroidwish
+        wm title . "Decent"
+
         # force the screen into landscape if it isn't yet
         msg "orientation: [borg screenorientation]"
         if {[borg screenorientation] != "landscape" && [borg screenorientation] != "reverselandscape"} {
@@ -996,7 +999,7 @@ proc load_settings {} {
         set settings(water_volume) 100
     }
 
-    blt::vector create espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight
+    blt::vector create espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable
     blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow 
     blt::vector create espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
     blt::vector create espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3
@@ -1020,23 +1023,23 @@ proc settings_filename {} {
     return $fn
 }
 
-proc skin_xskale_factor {} {
+proc skin_xscale_factor {} {
     global screen_size_width
     return [expr {2560.0/$screen_size_width}]
 }
 
-proc skin_yskale_factor {} {
+proc skin_yscale_factor {} {
     global screen_size_height
     return [expr {1600.0/$screen_size_height}]
 }
 
 proc rescale_x_skin {in} {
-    #puts "rescale_x_skin $in / [skin_xskale_factor]"
-    return [expr {int($in / [skin_xskale_factor])}]
+    #puts "rescale_x_skin $in / [skin_xscale_factor]"
+    return [expr {int($in / [skin_xscale_factor])}]
 }
 
 proc rescale_y_skin {in} {
-    return [expr {int($in / [skin_yskale_factor])}]
+    return [expr {int($in / [skin_yscale_factor])}]
 }
 
 proc rescale_font {in} {

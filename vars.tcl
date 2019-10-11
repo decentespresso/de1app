@@ -9,6 +9,7 @@ proc clear_espresso_chart {} {
 	espresso_elapsed length 0
 	espresso_pressure length 0
 	espresso_weight length 0
+	espresso_weight_chartable length 0
 	espresso_flow length 0
 	espresso_flow_weight length 0
 	espresso_flow_weight_2x length 0
@@ -39,6 +40,7 @@ proc clear_espresso_chart {} {
 	espresso_pressure append 0
 	#god_espresso_pressure append 0
 	espresso_weight append 0
+	espresso_weight_chartable append 0
 	espresso_flow append 0
 	espresso_flow_weight append 0
 	espresso_flow_weight_2x append 0
@@ -65,7 +67,7 @@ proc clear_espresso_chart {} {
 }	
 
 proc espresso_chart_structures {} {
-	return [list espresso_elapsed espresso_pressure espresso_weight espresso_flow espresso_flow_weight espresso_flow_weight_2x espresso_flow_2x espresso_pressure_delta espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3 espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_elapsed_flow_3 espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3]
+	return [list espresso_elapsed espresso_pressure espresso_weight espresso_weight_chartable espresso_flow espresso_flow_weight espresso_flow_weight_2x espresso_flow_2x espresso_pressure_delta espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3 espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_elapsed_flow_3 espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3]
 }
 
 proc backup_espresso_chart {} {
@@ -942,7 +944,7 @@ proc waterweight_text {} {
 			if {$::de1(scale_weight) == ""} {
 				set ::de1(scale_weight) 3
 			}
-			set ::de1(scale_weight) [expr {$::de1(scale_weight) + (rand() * .1) }]
+			set ::de1(scale_weight) [expr {$::de1(scale_weight) + (rand() * .3) }]
 			set ::de1(final_water_weight) $::de1(scale_weight)
 		} else {
 			set ::de1(scale_weight) 0
@@ -954,7 +956,7 @@ proc waterweight_text {} {
 		return ""
 	}
 
-	if {$::de1(skale_device_handle) == "0" || $::de1(skale_device_handle) == ""} {
+	if {$::de1(scale_device_handle) == "0"} {
 		return [translate "Disconnected"]
 	}
 
@@ -972,9 +974,9 @@ proc waterweight_label_text {} {
 		return [translate "Weight"]
 	}
 
-	if {$::de1(skale_device_handle) == "0" || $::de1(skale_device_handle) == ""} {
+	if {$::de1(scale_device_handle) == "0"} {
 		if {[ifexists ::blink_water_weight] != 1} {
-			if {$::currently_connecting_skale_handle == 0} {
+			if {$::currently_connecting_scale_handle == 0} {
 				set ::blink_water_weight 1
 				return {}
 			} else {
@@ -1540,7 +1542,7 @@ proc fill_ble_listbox {} {
 	#lappend ::de1_bluetooth_list $address
 
 	if {$::android == 0} {	
-#		set ::skale_bluetooth_list [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
+		#set ::scale_bluetooth_list [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
 		#set ::de1_bluetooth_list ""
 	}
 
@@ -1581,23 +1583,24 @@ proc fill_ble_listbox {} {
 	make_current_listbox_item_blue $widget
 }
 
-proc fill_ble_skale_listbox {} {
+proc fill_ble_scale_listbox {} {
+	
 
-	set widget $::ble_skale_listbox_widget
+	set widget $::ble_scale_listbox_widget
 	$widget delete 0 99999
 	set cnt 0
 	set current_ble_number 0
 
 	set one_selected 0
-	foreach d [lsort -dictionary -increasing $::skale_bluetooth_list] {
-		if {$d == [ifexists ::settings(skale_bluetooth_address)]} {
+	foreach d [lsort -dictionary -increasing $::scale_bluetooth_list] {
+		if {$d == [ifexists ::settings(scale_bluetooth_address)]} {
 			$widget insert $cnt " \[\u2713\] $d"
 			set one_selected 1
 		} else {
 			$widget insert $cnt " \[   \] $d"
 		}
 			#$widget insert $cnt $d
-		if {[ifexists ::settings(skale_bluetooth_address)] == $d} {
+		if {[ifexists ::settings(scale_bluetooth_address)] == $d} {
 			set current_ble_number $cnt
 		}
 		incr cnt
@@ -1605,9 +1608,9 @@ proc fill_ble_skale_listbox {} {
 	
 	$widget selection set $current_ble_number;
 
-	set ::skale_needs_to_be_selected 0
+	set ::scale_needs_to_be_selected 0
 	if {[llength $::de1_bluetooth_list] > 0 && $one_selected == 0} {
-		set ::skale_needs_to_be_selected 1
+		set ::scale_needs_to_be_selected 1
 	}
 	
 	make_current_listbox_item_blue $widget
@@ -2100,9 +2103,32 @@ proc preview_history {w args} {
 
 proc save_settings_and_ask_to_restart_app {} {
 	save_settings; 
-	.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
-	set_next_page off message; page_show message
+	message_page [translate "Please quit and restart this app to apply your changes."] [translate "Quit"];
+}
 
+proc message_page {msg buttonmsg} {
+	.can itemconfigure $::message_label -text $msg
+	.can itemconfigure $::message_button_label -text $buttonmsg
+	set_next_page off message; 
+	page_show message
+}
+
+
+#set ::infopage_label [add_de1_text "infopage" 1280 750 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
+#set ::infopage_button_label [add_de1_text "infopage" 1280 1090 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
+#set ::infopage_button [add_de1_button "infopage" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off off} 980 990 1580 1190 ""]
+
+
+proc info_page {msg buttonmsg} {
+
+		#set_next_page off descalewarning;
+		#page_show descalewarning
+
+		#return
+	.can itemconfigure $::infopage_label -text $msg
+	.can itemconfigure $::infopage_button_label -text $buttonmsg
+	set_next_page off infopage; 
+	page_show off
 }
 
 proc change_bluetooth_device {} {
@@ -2163,8 +2189,8 @@ proc change_bluetooth_device {} {
 }
 
 
-proc change_skale_bluetooth_device {} {
-	set w $::ble_skale_listbox_widget
+proc change_scale_bluetooth_device {} {
+	set w $::ble_scale_listbox_widget
 
 
 	if {$w == ""} {
@@ -2174,7 +2200,7 @@ proc change_skale_bluetooth_device {} {
 		# no current selection
 		#return ""
 		msg "re-connecting to scale"
-		ble_connect_to_skale
+		ble_connect_to_scale
 		return
 	}
 
@@ -2184,19 +2210,22 @@ proc change_skale_bluetooth_device {} {
 	set p [string first "\] " $was_selected 0]
 	set p2 [expr {$p + 2}]
 	set profile [string range $was_selected $p2 end]
-	puts "new ble: '$profile'"
+#	puts "new ble: '$profile'"
+#
+	set ::settings(scale_bluetooth_address) $profile
+	set ::settings(scale_type) [ifexists ::scale_types($profile)]
+	msg "set scale type to: '$::settings(scale_type)' $profile"
 
-
-	if {$profile == $::settings(skale_bluetooth_address)} {
-		ble_connect_to_skale
+	if {$profile == $::settings(scale_bluetooth_address)} {
+		ble_connect_to_scale
 		return
 	}
-	set ::settings(skale_bluetooth_address) $profile
+	#msg "scale types: [array get ::scale_types]"
 
 	save_settings
-	ble_connect_to_skale
+	ble_connect_to_scale
 
-	fill_ble_skale_listbox
+	fill_ble_scale_listbox
 }
 
 
@@ -2709,7 +2738,7 @@ proc check_firmware_update_is_available {} {
 	}
 
 	if {$::de1(firmware_crc) != [ifexists ::settings(firmware_crc)] && $::de1(currently_updating_firmware) == ""} {
-		set ::de1(firmware_update_button_label) [translate "Firmware update available"]
+		set ::de1(firmware_update_button_label) "Firmware update available"
 	}
 	return ""
 }

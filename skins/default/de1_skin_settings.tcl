@@ -10,7 +10,7 @@ if {[de1plus]} {
 
 	add_de1_page "settings_1" "settings_1.png" "default"
 	
-	if {$::settings(skale_bluetooth_address) == ""} {
+	if {$::settings(scale_bluetooth_address) == ""} {
 		add_de1_page "settings_2a" "settings_2a.png" "default"
 		add_de1_page "settings_2b" "settings_2b.png" "default"
 	} else {
@@ -39,6 +39,12 @@ add_de1_page "settings_4" "settings_4.png" "default"
 set ::message_label [add_de1_text "message" 1280 750 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
 set ::message_button_label [add_de1_text "message" 1280 1090 -text [translate "Quit"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
 set ::message_button [add_de1_button "message" {say [translate {Quit}] $::settings(sound_button_in); exit} 980 990 1580 1190 ""]
+
+set ::infopage_label [add_de1_text "infopage" 1280 750 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
+set ::infopage_button_label [add_de1_text "infopage" 1280 1090 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
+set ::infopage_button [add_de1_button "infopage" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off off; page_show off} 980 990 1580 1190 ""]
+
+
 
 set slider_trough_color #EAEAEA
 set chart_background_color #F8F8F8
@@ -127,7 +133,7 @@ if {[de1plus]} {
 	############################
 
 	# (beta) weight based shot ending, only displayed if a skale is connected
-	if {$::settings(skale_bluetooth_address) != ""} {
+	if {$::settings(scale_bluetooth_address) != ""} {
 		add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 		add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
@@ -388,7 +394,7 @@ add_de1_text "settings_4" 1000 1300 -text [translate "Descale"] -font Helv_10_bo
 	add_de1_button "settings_4" {say [translate {Descale}] $::settings(sound_button_in); set_next_page off descale_prepare; page_show descale_prepare;} 645 1206 1260 1406
  
 # firmware update
-add_de1_variable "settings_4" 2270 534 -text "" -width [rescale_y_skin 400] -font Helv_8_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available]$::de1(firmware_update_button_label)} 
+add_de1_variable "settings_4" 2270 534 -text "" -width [rescale_y_skin 400] -font Helv_8_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]} 
 	add_de1_button "settings_4" {start_firmware_update} 1930 460 2550 600
 
 add_de1_variable "settings_4" 2500 410 -font Helv_7 -fill "#7f879a" -anchor "ne" -width 500 -justify "right" -textvariable {[firmware_uploaded_label]} 
@@ -461,9 +467,9 @@ add_de1_text "settings_4" 1310 650 -text [translate "Connect"] -font Helv_10_bol
 		add_de1_text "settings_4" 1920 750 -text [translate "Scale"] -font Helv_7_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
 		add_de1_widget "settings_4" listbox 1920 800 { 
-				set ::ble_skale_listbox_widget $widget
-				bind $widget <<ListboxSelect>> ::change_skale_bluetooth_device
-				fill_ble_skale_listbox
+				set ::ble_scale_listbox_widget $widget
+				bind $widget <<ListboxSelect>> ::change_scale_bluetooth_device
+				fill_ble_scale_listbox
 			} -background #fbfaff -font Helv_11 -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 	}
@@ -520,12 +526,12 @@ add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso m
 
 
 add_de1_text "descale_prepare" 70 50 -text [translate "Prepare to descale"] -font Helv_20_bold -fill "#a77171" -anchor "nw" -width 1000
-	add_de1_text "descale_prepare" 1200 180 -text [translate "1) Remove the drip tray and its cover."] -font Helv_9_bold -fill "#a77171" -anchor "nw" -justify left -width 400
-	add_de1_text "descale_prepare" 1200 520 -text [translate "2) In the water tank, mix 1.5 liter hot water with 300g citric acid powder."] -font Helv_9_bold -fill "#a77171" -anchor "nw" -justify left -width 400
-	add_de1_text "descale_prepare" 1200 870 -text [translate "3) Put a blind basket in the portafilter."] -font Helv_9_bold -fill "#a77171" -anchor "nw" -justify left -width 400
-	add_de1_text "descale_prepare" 1200 1210 -text [translate "4) Push back the water tank.  Place the drip tray back without its cover."] -font Helv_9_bold -fill "#a77171" -anchor "nw" -justify left -width 400
-	add_de1_text "descale_prepare" 280 1504 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-	add_de1_text "descale_prepare" 2278 1504 -text [translate "Descale now"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+	add_de1_text "descale_prepare" 1050 280 -text [translate "1) Remove the drip tray and its cover."] -font Helv_8_bold -fill "#a77171" -anchor "sw" -justify left -width 400
+	add_de1_text "descale_prepare" 1050 670 -text [translate "2) In the water tank, mix 1.5 liter hot water with 300g citric acid powder."] -font Helv_8_bold -fill "#a77171" -anchor "sw" -justify left -width 400
+	add_de1_text "descale_prepare" 1050 970 -text [translate "3) Put a blind basket in the portafilter."] -font Helv_8_bold -fill "#a77171" -anchor "sw" -justify left -width 400
+	add_de1_text "descale_prepare" 1050 1350 -text [translate "4) Push back the water tank.  Place the drip tray back without its cover."] -font Helv_8_bold -fill "#a77171" -anchor "sw" -justify left -width 400
+	add_de1_text "descale_prepare" 340 1504 -text [translate "Cancel"] -font Helv_10_bold -fill "#444444" -anchor "center"
+	add_de1_text "descale_prepare" 2233 1504 -text [translate "Descale now"] -font Helv_10_bold -fill "#444444" -anchor "center"
 	add_de1_button "descale_prepare" {say [translate {Cancel}] $::settings(sound_button_in);set_next_page off settings_4; page_show settings_4;} 0 1200 600 1600 ""
 	add_de1_button "descale_prepare" {say [translate {Ok}] $::settings(sound_button_in); start_decaling} 1960 1200 2560 1600 ""
 	#add_de1_text "travel_do" 1280 120 -text [translate "Now removing water from your espresso machine."] -font Helv_15_bold -fill "#000000" -anchor "center" -width 1000
@@ -877,4 +883,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off tankempty
+#set_next_page off descale_prepare

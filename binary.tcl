@@ -268,6 +268,31 @@ proc U32P0_spec {} {
 	return $spec
 }
 
+proc decent_scale_generic_read_spec {} {
+	set spec {
+		model {char {} {} {unsigned} {}}
+		command {char {} {} {unsigned} {}}
+		data3 {char {} {} {unsigned} {}}
+		data4 {char {} {} {unsigned} {}}
+		data5 {char {} {} {unsigned} {}}
+		data6 {char {} {} {unsigned} {}}
+		xor {char {} {} {unsigned} {}}
+	}
+	return $spec
+}
+
+proc decent_scale_weight_read_spec {} {
+	set spec {
+		model {char {} {} {unsigned} {}}
+		wtype {char {} {} {unsigned} {}}
+		weight {Short {} {} {signed} {}}
+		data4 {char {} {} {unsigned} {}}
+		data5 {char {} {} {unsigned} {}}
+		xor {char {} {} {unsigned} {}}
+	}
+	return $spec
+}
+
 proc maprequest_spec {} {
 	set spec {
 		WindowIncrement {Short {} {} {unsigned} {$val / 1.0}}
@@ -1083,6 +1108,8 @@ proc parse_binary_hotwater_desc {packed destarrname} {
 	}
 }
 
+
+
 proc parse_binary_calibration {packed destarrname} {
 	upvar $destarrname ShotSample
 	unset -nocomplain ShotSample
@@ -1387,6 +1414,8 @@ proc append_live_data_to_espresso_chart {} {
 
 
 			espresso_weight append [round_to_two_digits $::de1(scale_weight)]
+			espresso_weight_chartable append [round_to_two_digits [expr {0.10 * $::de1(scale_weight)}]]
+
 			espresso_pressure append [round_to_two_digits $::de1(pressure)]
 			espresso_flow append [round_to_two_digits $::de1(flow)]
 			espresso_flow_2x append [round_to_two_digits [expr {2.0 * $::de1(flow)}]]
@@ -1508,6 +1537,24 @@ proc emit_state_change_event {old_state new_state} {
 }
 
 
+proc parse_decent_scale_recv {packed destarrname} {
+	upvar $destarrname recv
+	unset -nocomplain recv
+
+   	::fields::unpack $packed [decent_scale_generic_read_spec] recv bigeendian
+
+   	if {$recv(command) == 0xCE || $recv(command) == 0xCA} {
+   		# weight comes as a short, so use a different parsing format in this case, otherwise just return bytes
+   		unset -nocomplain recv
+	   	::fields::unpack $packed [decent_scale_weight_read_spec] recv bigeendian
+	   	#::fields::unpack $packed [decent_scale_generic_read_spec] recv bigeendian
+   	} elseif {$recv(command) == 0xAA} {
+   		#msg "Decentscale BUTTON $recv(data3) pressed"
+   	}
+
+}
+
+
 proc parse_state_change {packed destarrname} {
 	upvar $destarrname ShotSample
 	unset -nocomplain ShotSample
@@ -1570,8 +1617,12 @@ proc update_de1_state {statechar} {
 				#skale_timer_off
 				if {$::timer_running == 0 && $textstate == "Espresso"} {
 					#start_timers
-					skale_tare
-					skale_timer_start
+					if {$::de1(scale_device_handle) == 0} {
+						scale_tare
+						scale_timer_start
+					}
+
+
 					start_espresso_timers
 					#set ::timer_running 1
 				}
@@ -1580,7 +1631,9 @@ proc update_de1_state {statechar} {
 				# shot is ended, so turn timer off
 				if {$::timer_running == 1} {
 					#set ::timer_running 0
-					skale_timer_stop
+					if {$::de1(scale_device_handle) == 0} {
+						scale_timer_stop
+					}
 					stop_espresso_timers
 				}
 			}

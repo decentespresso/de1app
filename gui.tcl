@@ -1072,7 +1072,8 @@ proc update_onscreen_variables { {state {}} } {
 	}
 
 	if {$something_updated == 1} {
-		update
+		# john 3-10-19 not sure we need to do a forced screen update
+		#update
 	}
 
 	#set y [clock milliseconds]
