@@ -1412,7 +1412,9 @@ proc append_live_data_to_espresso_chart {} {
 				espresso_elapsed append $mtime
 			}
 
-
+			if {$::de1(scale_weight) == ""} {
+				set ::de1(scale_weight) 0
+			}
 			espresso_weight append [round_to_two_digits $::de1(scale_weight)]
 			espresso_weight_chartable append [round_to_two_digits [expr {0.10 * $::de1(scale_weight)}]]
 

@@ -249,8 +249,9 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 1174 {
 
 ####
 
-add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1970 30 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "ne"
-add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 40 30 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "nw"
+add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 40 30 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
+add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1970 30 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "ne"
+
 add_de1_text "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 40 30 -text [translate "Temperature ([return_html_temperature_units])"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
 
 add_de1_text "off espresso espresso_3" 40 220 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "nw"
@@ -261,7 +262,7 @@ if {$::settings(scale_bluetooth_address) != ""} {
 	add_de1_text "off espresso espresso_3" 1970 677 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 
 	
 	#set distance [font_width "Weight (g/s)" Helv_7_bold]
-	add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1600 30 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 	
+	add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 700 30 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 	
 }
 
 add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([return_html_temperature_units])"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
@@ -274,15 +275,36 @@ add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([r
 # zoomed espresso
 add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 74 {
 	bind $widget [platform_button_press] { 
-		say [translate {zoom}] $::settings(sound_button_in); 
-		set_next_page espresso_3 espresso_3; 
-		set_next_page espresso_3_zoomed espresso_3; 
-		set_next_page espresso espresso; 
-		set_next_page espresso_zoomed espresso; 
-		set_next_page off off; 
-		set_next_page off_zoomed off; 
-		page_show $::de1(current_context)
+		#msg "100 = [rescale_y_skin 200] = %y = [rescale_y_skin 726]"
+		if {%x < [rescale_y_skin 400]} {
+			# left column clicked on chart, indicates zoom
+
+			if {%y > [rescale_y_skin 726]} {
+				if {$::settings(zoomed_y_axis_scale) < 15} {
+					# 15 is the max Y axis allowed
+					incr ::settings(zoomed_y_axis_scale)
+				}
+			} else {
+				if {$::settings(zoomed_y_axis_scale) > 1} {
+					incr ::settings(zoomed_y_axis_scale) -1
+				}
+			}
+			%W axis configure y -max $::settings(zoomed_y_axis_scale)
+			
+		}  else {
+
+			say [translate {zoom}] $::settings(sound_button_in); 
+			set_next_page espresso_3 espresso_3; 
+			set_next_page espresso_3_zoomed espresso_3; 
+			set_next_page espresso espresso; 
+			set_next_page espresso_zoomed espresso; 
+			set_next_page off off; 
+			set_next_page off_zoomed off; 
+			page_show $::de1(current_context)
+		}
 	} 
+
+
 	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #69fdb3  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
 	$widget element create line2_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 12] -color #18c37e  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
 
@@ -313,8 +335,8 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 74 {
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ; 
 
 	$widget axis configure x -color #5a5d75 -tickfont Helv_7_bold; 
-	$widget axis configure y -color #008c4c -tickfont Helv_7_bold -min 0.0 -max $::de1(max_pressure) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}  -hide 0;
-	$widget axis configure y2 -color #206ad4 -tickfont Helv_7_bold -min 0.0 -max 6 -subdivisions 2 -majorticks {0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6} -hide 0; 
+	#$widget axis configure y2 -color #008c4c -tickfont Helv_7_bold -min 0.0 -max $::de1(max_pressure) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}  -hide 0;
+	$widget axis configure y -color #5a5d75 -tickfont Helv_7_bold -min 0.0 -max $::settings(zoomed_y_axis_scale) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20} -hide 0; 
 
 	# show the explanation for pressure
 	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 5] -color #888888  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 

@@ -184,6 +184,7 @@ array set ::settings {
 	chart_dashes_flow ""
 	chart_dashes_espresso_weight {2 1}
 	chart_dashes_temperature ""
+	zoomed_y_axis_scale 12
 	name {}
 	chart_dashes_pressure ""
 	water_level_sensor_max 50
