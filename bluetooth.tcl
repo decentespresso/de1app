@@ -1372,31 +1372,6 @@ proc de1_ble_handler { event data } {
 						    set ::currently_connecting_scale_handle 0
 				    		ble_connect_to_scale
 				    	}
-				    } elseif {$address == $::settings(decentscale_bluetooth_address)} {
-			    		set ::de1(wrote) 0
-				    	msg "decentscale disconnected $data"
-			    		catch {
-			    			ble close $handle
-			    		}
-
-			    		# if the decentscale connection closed in the currentl one, then reset it
-			    		if {$handle == $::de1(decentscale_device_handle)} {
-			    			set ::de1(decentscale_device_handle) 0
-			    		}
-
-					    if {$::currently_connecting_decentscale_handle == 0} {
-					    	#ble_connect_to_decentscale
-					    }
-
-				    	set do_this 1
-				    	if {$do_this == 1} {
-							catch {
-						    	ble close $::currently_connecting_decentscale_handle
-						    }
-
-						    set ::currently_connecting_decentscale_handle 0
-				    		#ble_connect_to_decentscale
-				    	}
 				    }
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1

@@ -251,7 +251,6 @@ array set ::settings {
 	steam_max_time 120
 	scale_bluetooth_address {}
 	skale_bluetooth_address {}
-	decentscale_bluetooth_address {}
 	bluetooth_address {}
 	water_max_vol 500
 	water_temperature 80
@@ -337,27 +336,12 @@ if {[de1plus]} {
 # default the listbox to the currently set ble addresses
 set ::de1_bluetooth_list $settings(bluetooth_address)
 
-# copy the BLE address from Skale to the new generic "scale" BLE address (20-9-19 added support for two kinds of scales)
-if {$::settings(skale_bluetooth_address) != ""} {
-	set ::settings(scale_bluetooth_address) $::settings(skale_bluetooth_address)
-	set ::settings(scale_type) "atomaxskale"
-	set ::settings(skale_bluetooth_address) ""
-}
-
-# if we don't know what kind of scale it is, assume it's a historical Atomax Skale
-if {$::settings(scale_type) == "" && $::settings(scale_bluetooth_address) != ""} {
-	set ::settings(scale_type) "atomaxskale"
-}
-
 #msg "init was run '$::settings(scale_type)'"
 
 	#error "atomaxscale"
 # initial filling of BLE scale list
 #set ::scale_bluetooth_list $::settings(scale_bluetooth_address)
 
-# elseif {$settings(decentscale_bluetooth_address) != ""} {
-#	set ::scale_bluetooth_list $settings(decentscale_bluetooth_address)
-#}
 
 array set ::de1_state {
 	Sleep \x00

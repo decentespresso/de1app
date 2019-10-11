@@ -2381,8 +2381,7 @@ proc load_settings_vars {fn} {
 	}
 
 	array set ::settings [array get temp_settings]
-
-
+z
 	update_de1_explanation_chart
 
 }

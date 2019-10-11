@@ -999,6 +999,22 @@ proc load_settings {} {
         set settings(water_volume) 100
     }
 
+    # copy the BLE address from Skale to the new generic "scale" BLE address (20-9-19 added support for two kinds of scales)
+    if {$::settings(skale_bluetooth_address) != ""} {
+        set ::settings(scale_bluetooth_address) $::settings(skale_bluetooth_address)
+        set ::settings(scale_type) "atomaxskale"
+        set ::settings(skale_bluetooth_address) ""
+    }
+
+    # if we don't know what kind of scale it is, assume it's a historical Atomax Skale
+    if {$::settings(scale_type) == "" && $::settings(scale_bluetooth_address) != ""} {
+        set ::settings(scale_type) "atomaxskale"
+    }
+
+
+
+    
+
     blt::vector create espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable
     blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow 
     blt::vector create espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
