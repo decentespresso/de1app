@@ -2334,7 +2334,6 @@ proc profile_has_changed_set_colors {} {
 			.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill #969eb1
 		}
 	}
-
 }
 
 proc profile_has_changed_set args {
@@ -2381,7 +2380,7 @@ proc load_settings_vars {fn} {
 	}
 
 	array set ::settings [array get temp_settings]
-z
+
 	update_de1_explanation_chart
 
 }
