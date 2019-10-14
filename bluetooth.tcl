@@ -440,7 +440,7 @@ proc skale_enable_lcd {} {
 }
 
 proc skale_disable_lcd {} {
-	if {$::de1(scale_device_handle) == 0 || $::de1(scale_type) != "atomaxskale"} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
 		return 
 	}
 	set screenoff [binary decode hex "EE"]
