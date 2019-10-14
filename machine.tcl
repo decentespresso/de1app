@@ -201,7 +201,6 @@ array set ::settings {
 	battery_very_low_trigger 30
 	battery_very_low_brightness 10
 	orientation "landscape"
-	refill_check_at_sleep 0
 	grinder_dose_weight 0
 	scentone {}
 	seconds_after_espresso_stop_to_continue_weighing 8
@@ -717,7 +716,7 @@ proc start_idle {} {
 	set ::settings(flying) 0
 	de1_send_state "go idle" $::de1_state(Idle)
 	
-	if {$::de1(scale_device_handle) == 0} {
+	if {$::de1(scale_device_handle) != 0} {
 		scale_enable_lcd
 	}
 
@@ -732,12 +731,13 @@ proc start_idle {} {
 
 proc start_sleep {} {
 
-	if {$::settings(refill_check_at_sleep) == 1} {
-		msg "check refill first before sleep"
-		set ::sleep_after_refill 1
-		start_refill_kit
-		return
-	}
+	# obsolete, now done in fw
+	#if {$::settings(refill_check_at_sleep) == 1} {
+	#	msg "check refill first before sleep"
+	#	set ::sleep_after_refill 1
+	#	start_refill_kit
+	#	return
+	#}
 
     if {[ifexists ::app_updating] == 1} {
 		msg "delaying screen saver because tablet app is updating"
@@ -759,7 +759,7 @@ proc start_sleep {} {
 	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
 	de1_send_state "go to sleep" $::de1_state(Sleep)
 
-	if {$::de1(scale_device_handle) == 0} {
+	if {$::de1(scale_device_handle) != 0} {
 		scale_disable_lcd
 	}
 
