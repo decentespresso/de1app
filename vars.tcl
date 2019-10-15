@@ -965,8 +965,7 @@ proc waterweight_text {} {
 }
 
 proc waterweight_label_text {} {
-	if {$::de1(scale_weight) == ""} {
-		# setting this to negative will cause the progress bar to disappear 
+	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
 		return ""
 	}
 
