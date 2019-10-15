@@ -917,14 +917,14 @@ proc waterweightflow_text {} {
 			#return [return_flow_weight_measurement [expr {(rand() * 6)}]]
 	}
 
-	if {$::de1(scale_weight_rate) == ""} {
+	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
 		return ""
 	}
 	return [return_flow_weight_measurement $::de1(scale_weight_rate)]
 }
 
 proc finalwaterweight_text {} {
-	if {$::de1(scale_weight) == ""} {
+	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
 		return ""
 	}
 	return [return_weight_measurement $::de1(final_water_weight)]
@@ -938,6 +938,10 @@ proc dump_stack {a b c} {
 #trace add variable de1(final_water_weight) write dump_stack
 
 proc waterweight_text {} {
+	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
+		return ""
+	}
+
 	if {$::android == 0} {
 
 		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
@@ -951,9 +955,6 @@ proc waterweight_text {} {
 		}
 
 		#return [return_weight_measurement [expr {round((rand() * 20))}]]
-	}
-	if {$::de1(scale_weight) == ""} {
-		return ""
 	}
 
 	if {$::de1(scale_device_handle) == "0"} {
