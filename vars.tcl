@@ -927,6 +927,11 @@ proc finalwaterweight_text {} {
 	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
 		return ""
 	}
+
+	if {[ifexists ::blink_water_weight] == 1} {
+		return ""
+	}
+
 	return [return_weight_measurement $::de1(final_water_weight)]
 }
 
@@ -980,7 +985,7 @@ proc waterweight_label_text {} {
 				set ::blink_water_weight 1
 				return {}
 			} else {
-				return "..."
+				return [translate "Wait"]
 			}
 		} else {
 			set ::blink_water_weight 0
