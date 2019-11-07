@@ -162,6 +162,7 @@ array set ::settings {
 	language en
 	steam_over_temp_threshold 180
 	steam_over_pressure_threshold 3
+	automatically_ble_reconnect_forever_to_scale 0
 	tare_only_on_espresso_start 0
 	steam_over_pressure_count_trigger 10
 	steam_over_temp_count_trigger 10

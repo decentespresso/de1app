@@ -1372,7 +1372,7 @@ proc de1_ble_handler { event data } {
 					    # john 1-11-19 automatic reconnection attempts eventually kill the bluetooth stack on android 5.1
 					    # john might want to make this happen automatically on Android 8, though. For now, it's a setting, which might 
 					    # eventually get auto-set as per the current Android version, if we can trust that to give us a reliable BLE stack.
-						if {$::settings(automatically_ble_reconnect_forever_to_scale) != 1} {
+						if {$::settings(automatically_ble_reconnect_forever_to_scale) == 1} {
 				    		ble_connect_to_scale
 				    	}
 
