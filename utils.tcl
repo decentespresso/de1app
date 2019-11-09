@@ -1313,6 +1313,22 @@ proc shot_history_count_profile_use {} {
 
     # only keep the top 5 profiles in this global array, which will be marked with a heart symbol to indicate that they are the user's favrite profiles
     array set ::profile_shot_count [array_keyvalue_sorted_by_val_limited profile_all_shot_count -decreasing 6]
+    if {[array size ::profile_shot_count] < 3} {
+        # indicate that the DEFAULT profile is a favorite, if there are less than 3 faves, as it's a good basic choice
+        array set ::profile_shot_count [list "default" 1]
+        
+    } 
+
+    if {[array size ::profile_shot_count] < 3} {
+        # indicate that the 'Blooming espresso' profile is a favorite, if there are less than 3 faves, as it's a good choice
+        array set ::profile_shot_count [list "Blooming espresso" 1]
+        
+    } 
+
+    if {[array size ::profile_shot_count] < 3} {
+        # indicate that the 'Gentle and sweet' profile is a favorite, if there are less than 3 faves, as it's a good choice
+        array set ::profile_shot_count [list "Gentle and sweet" 1]
+    }
 }
 
 
