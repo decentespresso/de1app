@@ -497,6 +497,7 @@ proc make_de1_dir {} {
         saver/2560x1600/three_women.jpg *     
 
         profiles/Gentle\ and\ sweet.tcl *
+        profiles/Londinium-R-by-Damian.tcl *
         profiles/Blooming\ espresso.tcl *
         profiles/Classic\ Italian\ espresso.tcl *
         profiles/Flow\ profile\ for\ milky\ drinks.tcl *
