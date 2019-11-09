@@ -341,6 +341,15 @@ proc check_battery_low {brightness_to_use} {
             return $::settings(battery_low_brightness)
         }
         #return $brightness_to_use
+    } elseif {$percent < $::settings(battery_medium_trigger)} {
+        if {$current_brightness > $::settings(battery_medium_brightness)} {
+            borg brightness $::settings(battery_medium_brightness)
+            msg "Battery is medium ($percent < $::settings(battery_medium_trigger)) so lowering screen to $::settings(battery_medium_brightness)"
+        }
+        if {$brightness_to_use > $::settings(battery_medium_brightness)} {
+            return $::settings(battery_medium_brightness)
+        }
+        #return $brightness_to_use
     }
 
     return $brightness_to_use

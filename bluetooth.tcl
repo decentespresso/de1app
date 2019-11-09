@@ -1095,6 +1095,7 @@ proc stop_scanner {} {
 }
 
 proc bluetooth_connect_to_devices {} {
+	msg "bluetooth_connect_to_devices"
 	if {$::settings(bluetooth_address) != ""} {
 		ble_connect_to_de1
 	}
@@ -1113,6 +1114,7 @@ proc ble_connect_to_de1 {} {
 	#return
 
 	if {$::android != 1} {
+		msg "simulated DE1 connection"
 	    set ::de1(connect_time) [clock seconds]
 	    set ::de1(last_ping) [clock seconds]
 
@@ -1153,7 +1155,7 @@ proc ble_connect_to_de1 {} {
 
     set ::de1_name "DE1"
 	if {[catch {
-		set ::currently_connecting_de1_handle [ble connect $::settings(bluetooth_address) de1_ble_handler]
+		set ::currently_connecting_de1_handle [ble connect $::settings(bluetooth_address) de1_ble_handler true]
     	msg "Connecting to DE1 on $::settings(bluetooth_address)"
     	set retcode 1
 	} err] != 0} {
@@ -1219,7 +1221,7 @@ proc ble_connect_to_scale {} {
 	}
 
 	if {[catch {
-		set ::currently_connecting_scale_handle [ble connect $::settings(scale_bluetooth_address) de1_ble_handler]
+		set ::currently_connecting_scale_handle [ble connect $::settings(scale_bluetooth_address) de1_ble_handler true]
 	    msg "Connecting to scale on $::settings(scale_bluetooth_address)"
 		set retcode 0
 	} err] != 0} {

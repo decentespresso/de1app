@@ -197,6 +197,8 @@ array set ::settings {
 	water_count 0
 	advanced_shot {}
 	water_time_max 60
+	battery_medium_trigger 90
+	battery_medium_brightness 70
 	battery_low_trigger 60
 	battery_low_brightness 50
 	battery_very_low_trigger 30
