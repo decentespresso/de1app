@@ -20,7 +20,7 @@ water_temperature 80
 final_desired_shot_weight 32
 final_desired_shot_weight_advanced 32
 preinfusion_guarantee 1
-profile_title {Londinium R by Damian}
+profile_title {Londinium R by Damian Brakel}
 profile_language en
 preinfusion_stop_pressure 4.0
 

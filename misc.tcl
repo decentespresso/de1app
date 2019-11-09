@@ -498,6 +498,7 @@ proc make_de1_dir {} {
 
         profiles/Gentle\ and\ sweet.tcl *
         profiles/Londinium-R-by-Damian.tcl *
+        profiles/Advanced\ spring\ lever.tcl *
         profiles/Blooming\ espresso.tcl *
         profiles/Classic\ Italian\ espresso.tcl *
         profiles/Flow\ profile\ for\ milky\ drinks.tcl *
