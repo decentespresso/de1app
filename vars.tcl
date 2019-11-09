@@ -1670,17 +1670,21 @@ proc fill_profiles_listbox {} {
 
 		if {$pcnt != ""} {
 			#set p "$p \u2665 \u263A \u2764 \u2764\uFE0F"
-			set p "$p \u2665"
+			set p "$p$::settings(append_most_used_profiles_with_text)"
 		}
 		$widget insert $cnt $p
 
-		if {$::settings(profile) ==[ifexists profile(profile_title)]} {
+		#msg "'$::settings(profile)' == '[ifexists profile(profile_title)]'"
+		if {[string tolower $::settings(profile)] == [string tolower [ifexists profile(profile_title)]]} {
 			set ::current_profile_number $cnt
-			#puts "current profile of '$d' is #$cnt"
+			puts "current profile of '$d' is #$cnt"
 		}
 
 		incr cnt
 	}
+
+			
+
 	
 	$widget selection set $::current_profile_number;
 	set ::globals(profiles_listbox) $widget
