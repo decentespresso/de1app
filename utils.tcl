@@ -1266,19 +1266,68 @@ proc array_item_difference {arr1 arr2 keylist} {
 }
 
 
+proc array_keyvalue_sorted_by_val_limited {arrname {sort_order -increasing} {limit -1} } {
+    upvar $arrname arr
+    foreach k [array names arr] {
+        set k2 "$arr($k) $k"
+        #set k2 "[format {"%0.12i"} $arr($k)] $k"
+        #puts "k2: $k2"
+        set t($k2) $k
+    }
+    
+    set toreturn {}
+
+    set keys [lsort $sort_order -dictionary [array names t]]
+    foreach k $keys {
+        set v $t($k)
+        lappend toreturn $v [lindex $k 0]
+        if {$limit != -1 && [llength $toreturn] >= $limit} {
+            break
+        }
+        #msg "$k"
+    }
+    return $toreturn
+}
+
+proc shot_history_count_profile_use {} {
+
+    set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+    set dd {}
+    #puts -nonewline "Exporting"
+    foreach d $dirs {
+        unset -nocomplain arr
+        unset -nocomplain sett
+        array set arr [read_file "history/$d"]
+        array set sett [ifexists arr(settings)]
+        #puts [array get sett]
+        #return
+        set profile [ifexists sett(profile)]
+        if {$profile != ""} {
+
+            incr profile_all_shot_count($profile)
+        }
+    }
+
+    #msg "Count of shots by espresso profile: [array get profile_all_shot_count]"
+    #msg "array_kv_keys_sorted_by_val: [array_keyvalue_sorted_by_val_limited profile_all_shot_count -decreasing 10]"
+
+    # only keep the top 5 profiles in this global array, which will be marked with a heart symbol to indicate that they are the user's favrite profiles
+    array set ::profile_shot_count [array_keyvalue_sorted_by_val_limited profile_all_shot_count -decreasing 10]
+}
+
 
 proc shot_history_export {} {
 
     set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
     set dd {}
-    puts -nonewline "Exporting"
+    #puts -nonewline "Exporting"
     foreach d $dirs {
-        array unset -nocomplain arr
         set tailname [file tail $d]
         set newfile [file rootname $tailname]
-        array set arr [read_file "history/$d"]
         set fname "history/$newfile.csv" 
         if {[file exists $fname] != 1} {
+            array unset -nocomplain arr
+            array set arr [read_file "history/$d"]
             msg "exporting history item: $fname"
             export_csv arr $fname
         }

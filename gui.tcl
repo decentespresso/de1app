@@ -1583,6 +1583,8 @@ proc ui_startup {} {
 	load_settings
 	setup_environment
 	bluetooth_connect_to_devices
+	shot_history_export
+	shot_history_count_profile_use
 	#ble_find_de1s
 	
 	setup_images_for_first_page

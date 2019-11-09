@@ -1658,14 +1658,22 @@ proc fill_profiles_listbox {} {
 			continue
 		}
 
+		set ptitle $profile(profile_title)
+		set pcnt [ifexists ::profile_shot_count($d)]
+		#puts "ptitle: '$ptitle '$pcnt'"
+
 		if {[language] != "en" && [ifexists profile(profile_language)] == "en" && [ifexists profile(author)] == "Decent"} {
-			$widget insert $cnt [translate $profile(profile_title)]
+			set p [translate $ptitle]
 		} else {
-			$widget insert $cnt $profile(profile_title)
+			set p $ptitle
 		}
 
-		#puts "$widget insert $cnt $d"
-		#puts "$::settings(profile) == [ifexists profile(profile_title)]"
+		if {$pcnt != ""} {
+			#set p "$p \u2665 \u263A \u2764 \u2764\uFE0F"
+			set p "$p \u2665"
+		}
+		$widget insert $cnt $p
+
 		if {$::settings(profile) ==[ifexists profile(profile_title)]} {
 			set ::current_profile_number $cnt
 			#puts "current profile of '$d' is #$cnt"
