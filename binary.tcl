@@ -1682,7 +1682,9 @@ proc update_de1_state {statechar} {
 		}
 		
 		# can be over-written by a skin
-		skins_page_change_due_to_de1_state_change $textstate
+		catch {
+			skins_page_change_due_to_de1_state_change $textstate
+		}
 
 		set ::previous_de1_substate $::de1(substate)
 	}
