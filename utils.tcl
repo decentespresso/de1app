@@ -1289,6 +1289,7 @@ proc array_keyvalue_sorted_by_val_limited {arrname {sort_order -increasing} {lim
     return $toreturn
 }
 
+
 proc shot_history_count_profile_use {} {
 
     set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
@@ -1297,8 +1298,15 @@ proc shot_history_count_profile_use {} {
     foreach d $dirs {
         unset -nocomplain arr
         unset -nocomplain sett
-        array set arr [read_file "history/$d"]
-        array set sett [ifexists arr(settings)]
+        catch {
+            array set arr [read_file "history/$d"]
+            array set sett [ifexists arr(settings)]
+        }
+            if {[array size arr] == 0} {
+                msg "Corrupted shot history item during count: 'history/$d'"
+                continue
+            }
+
         #puts [array get sett]
         #return
         set profile [ifexists sett(profile)]
@@ -1343,8 +1351,14 @@ proc shot_history_export {} {
         set fname "history/$newfile.csv" 
         if {[file exists $fname] != 1} {
             array unset -nocomplain arr
-            array set arr [read_file "history/$d"]
-            msg "exporting history item: $fname"
+            catch {
+                array set arr [read_file "history/$d"]
+            }
+            if {[array size arr] == 0} {
+                msg "Corrupted shot history item: 'history/$d'"
+                continue
+            }
+            msg "Exportingng history item: $fname"
             export_csv arr $fname
         }
         #puts "keys: [array names arr]"
