@@ -1669,8 +1669,9 @@ proc fill_profiles_listbox {} {
 		}
 
 		if {$pcnt != ""} {
-			#set p "$p \u2665 \u263A \u2764 \u2764\uFE0F"
-			set p "$p$::settings(append_most_used_profiles_with_text)"
+			#set p "$p  \u2615"
+			set p "$p$::settings(append_most_used_profiles_with)"
+
 		}
 		$widget insert $cnt $p
 

@@ -417,10 +417,12 @@ proc start_app_update {} {
     }
 
     set remote_manifest_length 0
+    set remote_manifest_parts_length -1
     catch {
         set remote_manifest_length [llength $remote_manifest]
+        set remote_manifest_parts_length [expr {$remote_manifest_length % 4}]
     }
-    msg "Length of remote manifest: $remote_manifest_length"
+    msg "Length of remote manifest: $remote_manifest_length % $remote_manifest_parts_length"
 
     set url_manifest_gz "$host/download/sync/$progname/manifest.gz"
     set remote_manifest_gz {}
@@ -429,10 +431,18 @@ proc start_app_update {} {
         set remote_manifest_gunzip [zlib gunzip $remote_manifest_gz]
     }
     set remote_manifest_gunzip_length 0
+    set remote_manifest_gunzip_parts_length -1
     catch {
         set remote_manifest_gunzip_length [llength $remote_manifest_gunzip]
+        set remote_manifest_gunzip_parts_length [expr {$remote_manifest_gunzip_length % 4}]
     }
-    msg "Length of gunzip remote manifest: $remote_manifest_gunzip_length"
+    msg "Length of gunzip remote manifest: $remote_manifest_gunzip_length % $remote_manifest_gunzip_parts_length"
+
+    # if the text file is corrupted (doesn't have a x4 part structure) but the .gz file is fine, use that
+    if {($remote_manifest_length == 0 || $remote_manifest_parts_length != 0) && ($remote_manifest_gunzip_length > 100 && $remote_manifest_gunzip_parts_length == 0)} {
+        msg "Remote plain text manifest.txt is corrupted, using gzipped version"
+        set remote_manifest $remote_manifest_gunzip
+    }
     ##############################################################################################################
 
 
