@@ -602,7 +602,11 @@ proc make_de1_dir {} {
         }
 
         write_file "$destdir/timestamp.txt" $timestamp
+
         write_file "$destdir/manifest.txt" $manifest 
+
+        # it might be that .txt files are modified, so try another extension name
+        write_file "$destdir/manifest.tdb" $manifest 
 
         write_binary_file "$destdir/manifest.gz" [zlib gzip $manifest]
 
