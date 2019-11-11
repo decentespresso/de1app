@@ -67,7 +67,9 @@ proc fast_write_open {fn parms} {
     }]
 
     if {$errcode != 0} {
-        msg "fast_write_open $::errorInfo"
+        catch {
+            msg "fast_write_open $::errorInfo"
+        }
     }
 
     return $f
@@ -84,7 +86,9 @@ proc write_file {filename data} {
     }]
 
     if {$errcode != 0} {
-        msg "write_file '$filename' $::errorInfo"
+        catch {
+            msg "write_file '$filename' $::errorInfo"
+        }
     }
 
     return $success
@@ -305,6 +309,9 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
 
     catch {
         msg "Fetching remote update timestamp: '$url_timestamp'"
+    }
+
+    catch {
         set remote_timestamp [string trim [decent_http_get $url_timestamp]]
     }
     #puts "timestamp: '$remote_timestamp'"
@@ -336,7 +343,10 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
         #return
     }
 
-    msg "app update available"
+    catch {
+        msg "app update available"
+    }
+
     set ::app_update_available 1
 
     if {$check_only != 1} {
@@ -351,7 +361,9 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
 proc start_app_update {} {
 
     if {[ifexists ::app_updating] == 1} {
-        msg "App is already updating, not going to run two processes"
+        catch {
+            msg "App is already updating, not going to run two processes"
+        }
     }
 
     set ::app_updating 1
@@ -411,7 +423,11 @@ proc start_app_update {} {
     # get manifest both as raw TXT and as gzip compressed, to detect tampering 
     #set url_manifest "$host/download/sync/$progname/manifest.txt"
     set url_manifest "$host/download/sync/$progname/manifest.tdb"
-    msg "Fetching manifest: $url_manifest"
+
+    catch {
+        msg "Fetching manifest: $url_manifest"
+    }
+
     set remote_manifest {}
     catch {
         set remote_manifest [string trim [decent_http_get $url_manifest]]
@@ -424,7 +440,9 @@ proc start_app_update {} {
         set remote_manifest_length [llength $remote_manifest]
         set remote_manifest_parts_length [expr {$remote_manifest_length % 4}]
     }
-    msg "Length of remote manifest: $remote_manifest_length % $remote_manifest_parts_length"
+    catch {
+        msg "Length of remote manifest: $remote_manifest_length % $remote_manifest_parts_length"
+    }
 
     set url_manifest_gz "$host/download/sync/$progname/manifest.gz"
     set remote_manifest_gz {}
@@ -438,11 +456,16 @@ proc start_app_update {} {
         set remote_manifest_gunzip_length [llength $remote_manifest_gunzip]
         set remote_manifest_gunzip_parts_length [expr {$remote_manifest_gunzip_length % 4}]
     }
-    msg "Length of gunzip remote manifest: $remote_manifest_gunzip_length % $remote_manifest_gunzip_parts_length"
+
+    catch {
+        msg "Length of gunzip remote manifest: $remote_manifest_gunzip_length % $remote_manifest_gunzip_parts_length"
+    }
 
     # if the text file is corrupted (doesn't have a x4 part structure) but the .gz file is fine, use that
     if {($remote_manifest_length == 0 || $remote_manifest_parts_length != 0) && ($remote_manifest_gunzip_length > 100 && $remote_manifest_gunzip_parts_length == 0)} {
-        msg "Remote plain text manifest.txt is corrupted, using gzipped version"
+        catch {
+            msg "Remote plain text manifest.txt is corrupted, using gzipped version"
+        }
         set remote_manifest $remote_manifest_gunzip
     }
     ##############################################################################################################

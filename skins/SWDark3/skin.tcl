@@ -358,7 +358,7 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 300 {
 					incr ::zoomed_y2_axis_scale
 				}
 			} else {
-				if {$::settings(zoomed_y_axis_scale) > 1} {
+				if {$::settings(zoomed_y_axis_scale) > 2} {
 					incr ::settings(zoomed_y_axis_scale) -2
 					incr ::zoomed_y2_axis_scale -1
 				}
