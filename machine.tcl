@@ -158,7 +158,6 @@ array set ::settings {
 	screen_size_height {}
 	current_frame_description {asdfasdfsa}
 	has_ghc 0
-	append_most_used_profiles_with " \u25C0"
 	default_font_calibration 0.5
 	language en
 	steam_over_temp_threshold 180

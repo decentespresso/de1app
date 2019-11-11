@@ -411,6 +411,7 @@ proc start_app_update {} {
     # get manifest both as raw TXT and as gzip compressed, to detect tampering 
     #set url_manifest "$host/download/sync/$progname/manifest.txt"
     set url_manifest "$host/download/sync/$progname/manifest.tdb"
+    msg "Fetching manifest: $url_manifest"
     set remote_manifest {}
     catch {
         set remote_manifest [string trim [decent_http_get $url_manifest]]
