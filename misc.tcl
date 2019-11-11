@@ -603,11 +603,24 @@ proc make_de1_dir {} {
 
         write_file "$destdir/timestamp.txt" $timestamp
         write_file "$destdir/manifest.txt" $manifest 
+
+        write_binary_file "$destdir/manifest.gz" [zlib gzip $manifest]
+
         incr dircount
     }
 
     write_file "$srcdir/complete_manifest.txt" [join [lsort -unique $complete_manifest] \n]
 }
+
+proc write_binary_file {filename data} {
+    set fn [fast_write_open $filename w]
+    fconfigure $fn -translation binary
+    puts $fn $data 
+    close $fn
+    return 1
+}
+
+
 
 proc calc_sha {source} {
 

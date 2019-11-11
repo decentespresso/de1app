@@ -2053,14 +2053,6 @@ proc fast_write_open {fn parms} {
     return $f
 }
 
-proc write_binary_file {filename data} {
-    set fn [fast_write_open $filename w]
-    fconfigure $fn -translation binary
-    puts $fn $data 
-    close $fn
-    return 1
-}
-
 
 proc scanning_state_text {} {
 	if {$::scanning == 1} {

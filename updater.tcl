@@ -407,11 +407,35 @@ proc start_app_update {} {
     set remote_timestamp [check_timestamp_for_app_update_available 1]
 
 
+    ##############################################################################################################
+    # get manifest both as raw TXT and as gzip compressed, to detect tampering 
     set url_manifest "$host/download/sync/$progname/manifest.txt"
     set remote_manifest {}
     catch {
         set remote_manifest [string trim [decent_http_get $url_manifest]]
+
     }
+
+    set remote_manifest_length 0
+    catch {
+        set remote_manifest_length [llength $remote_manifest]
+    }
+    msg "Length of remote manifest: $remote_manifest_length"
+
+    set url_manifest_gz "$host/download/sync/$progname/manifest.gz"
+    set remote_manifest_gz {}
+    catch {
+        set remote_manifest_gz [decent_http_get $url_manifest_gz]
+        set remote_manifest_gunzip [zlib gunzip $remote_manifest_gz]
+    }
+    set remote_manifest_gunzip_length 0
+    catch {
+        set remote_manifest_gunzip_length [llength $remote_manifest_gunzip]
+    }
+    msg "Length of gunzip remote manifest: $remote_manifest_gunzip_length"
+    ##############################################################################################################
+
+
     set local_manifest [string trim [read_file "[homedir]/manifest.txt"]]
 
     # load the local manifest into memory
