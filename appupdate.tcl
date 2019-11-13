@@ -53,7 +53,10 @@ if {$tk != ""} {
 	pack .frame -side bottom -pady 0 -padx 0
 
 	pack .frame.resetapp -side left -pady 10 -padx 10
-	pack .frame.redownloadapp -side right -pady 10 -padx 10
+	
+	# john 13-11-19 taking away this button as many users click it and it causes huge downloads.
+	# better to ask them to redownload the entire app from our web site https://decentespresso.com/downloads
+	#pack .frame.redownloadapp -side right -pady 10 -padx 10
 	
 	.hello configure -text "[ifexists ::de1(app_update_button_label)] Update app"
 
