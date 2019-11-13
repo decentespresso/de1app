@@ -1062,7 +1062,19 @@ proc update_onscreen_variables { {state {}} } {
 		foreach label_to_update $labels_to_update {
 			set label_name [lindex $label_to_update 0]
 			set label_cmd [lindex $label_to_update 1]
-			set label_value [subst $label_cmd]
+			
+			set label_value ""
+			set errcode [catch {
+				set label_value [subst $label_cmd]
+			}]
+
+
+		    if {$errcode != 0} {
+		        catch {
+		            msg "update_onscreen_variables error: $::errorInfo"
+		        }
+		    }
+
 			if {[ifexists ::labelcache($label_name)] != $label_value} {
 				.can itemconfig $label_name -text $label_value
 				set ::labelcache($label_name) $label_value
