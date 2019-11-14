@@ -31,7 +31,7 @@ catch {
 	set tk [package present Tk]
 }
 if {$tk != ""} {
-	button .hello -text "Update app" -command { 
+	button .hello -text "Update Decent App" -command { 
 		catch { .hello configure -text "Working" }
 		catch { pack forget .frame; }
 		start_app_update; 
@@ -44,7 +44,8 @@ if {$tk != ""} {
 		catch { pack forget .frame; }
 		catch { start_app_update; } 
 		exit } 
-	button .frame.resetapp -text " Reset app settings " -command { 
+	button .frame.exitapp -text " --- Exit --- " -command { exit } 
+	button .frame.resetapp -text " Reset all app settings " -command { 
 		catch { file delete "settings.tdb"; } ; 
 		exit 
 	} 
@@ -57,6 +58,7 @@ if {$tk != ""} {
 	# john 13-11-19 taking away this button as many users click it and it causes huge downloads.
 	# better to ask them to redownload the entire app from our web site https://decentespresso.com/downloads
 	#pack .frame.redownloadapp -side right -pady 10 -padx 10
+	pack .frame.exitapp -side right -pady 10 -padx 10
 	
 	.hello configure -text "[ifexists ::de1(app_update_button_label)] Update app"
 
