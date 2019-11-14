@@ -48,6 +48,7 @@ proc make_de1_dir {} {
         #fonts/NotoSansCJKjp-ThinSansCJKjp-DemiLight.otf *
         #fonts/NotoSansCJKjp-Thin.otf *
         #fonts/NotoSansCJKjp-Medium.otf *
+#        create_de1_icon.tcl *
 
     set files {
         binary.tcl *
@@ -66,7 +67,6 @@ proc make_de1_dir {} {
         de1_icon_v2.png *
         de1plus_icon_v2.png *
         cloud_download_icon.png *
-        create_de1_icon.tcl *
         create_de1plus_icon.tcl *
         create_de1_update_icon.tcl *
         appupdate.tcl *

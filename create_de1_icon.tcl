@@ -8,5 +8,5 @@ source "pkgIndex.tcl"
 package require de1_main
 package require de1_gui
 
-install_de1_app_icon
+install_de1plus_app_icon
 exit
