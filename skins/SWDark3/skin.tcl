@@ -41,6 +41,9 @@ set ::detailtextcol "#9f9f9f"
 set ::detailtextheadingcol "#ffffff"
 set ::zoomed_y2_axis_scale "6"
 
+load_font "helveticabold" "[skin_directory]/helveticabold.ttf" 24
+load_font "helveticabold2" "[skin_directory]/helveticabold2.ttf" 16
+
     if {$::settings(settings_profile_type) == "settings_2c"} {
     set ::stopatweight $::settings(final_desired_shot_weight_advanced)g
     } else {
@@ -146,11 +149,11 @@ set ::current_espresso_page "off"
 #add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#8b8b8b" -anchor "center" 
 
 # labels for ESPRESSO tab on
-#add_de1_text "off espresso espresso_3" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#8b8b8b" -anchor "center" 
-#add_de1_text "off espresso espresso_3" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#000000" -anchor "center" 
-#add_de1_text "off espresso espresso_3" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#8b8b8b" -anchor "center" 
-#add_de1_text "off_zoomed espresso_3_zoomed espresso_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2350 90 -text [translate "STEAM"] -font Helv_10_bold -fill "#8b8b8b" -anchor "center" 
-#add_de1_text "off espresso espresso_3" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#8b8b8b" -anchor "center" 
+#add_de1_text "off espresso espresso_3" 1035 100 -text [translate "FLUSH"] -font helveticabold -fill "#8b8b8b" -anchor "center" 
+#add_de1_text "off espresso espresso_3" 2290 100 -text [translate "ESPRESSO"] -font helveticabold2 -fill "#000000" -anchor "center" 
+#add_de1_text "off espresso espresso_3" 1665 100 -text [translate "STEAM"] -font helveticabold -fill "#8b8b8b" -anchor "center" 
+#add_de1_text "off_zoomed espresso_3_zoomed espresso_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2350 90 -text [translate "STEAM"] -font helveticabold -fill "#8b8b8b" -anchor "center" 
+#add_de1_text "off espresso espresso_3" 405 100  -text [translate "WATER"] -font helveticabold -fill "#8b8b8b" -anchor "center" 
 
 # labels for STEAM tab on
 #add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#8b8b8b" -anchor "center" 
