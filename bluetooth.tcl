@@ -1063,8 +1063,42 @@ proc remove_null_terminator {instr} {
 	return [string range $instr 0 $pos]
 }
 
+proc android_8_or_newer {} {
+
+	#catch {
+		array set androidprops [borg osbuildinfo]
+		msg [array get androidprops]
+		msg "v: '$androidprops(version.release)'"
+		set test [expr {$androidprops(version.release) >= 8}]
+		return $test
+	#}
+	return 5.1
+}
+
 set ::ble_scanner [ble scanner de1_ble_handler]
 set ::scanning -1
+
+proc check_if_initial_connect_didnt_happen_quickly {} {
+# on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead
+	if {$::de1(device_handle) == 0 && $::currently_connecting_de1_handle != 0} {
+		msg "on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead"
+		catch {
+			ble abort $::currently_connecting_de1_handle
+	    }
+		catch {
+	    	ble close $::currently_connecting_de1_handle
+	    }
+	    catch {
+	    	set ::currently_connecting_de1_handle 0
+	    }
+
+	    ble start $::ble_scanner
+	    after 30000 stop_scanner
+		#ble_connect_to_de1
+	}
+
+}
+
 proc ble_find_de1s {} {
 
 	return
@@ -1097,7 +1131,15 @@ proc stop_scanner {} {
 proc bluetooth_connect_to_devices {} {
 	msg "bluetooth_connect_to_devices"
 	if {$::settings(bluetooth_address) != ""} {
-		ble_connect_to_de1
+		if {[android_8_or_newer] != 1} {
+			ble_connect_to_de1
+		} else {
+			ble_connect_to_de1
+			after 4000 check_if_initial_connect_didnt_happen_quickly
+			#after 30000 stop_scanner
+			#after 3000 ble start $::ble_scanner
+		}
+
 	}
 
 	if {$::settings(scale_bluetooth_address) != ""} {
@@ -1111,6 +1153,7 @@ proc bluetooth_connect_to_devices {} {
 
 set ::currently_connecting_de1_handle 0
 proc ble_connect_to_de1 {} {
+	msg "ble_connect_to_de1"
 	#return
 
 	if {$::android != 1} {
@@ -1155,7 +1198,7 @@ proc ble_connect_to_de1 {} {
 
     set ::de1_name "DE1"
 	if {[catch {
-		set ::currently_connecting_de1_handle [ble connect $::settings(bluetooth_address) de1_ble_handler true]
+		set ::currently_connecting_de1_handle [ble connect $::settings(bluetooth_address) de1_ble_handler false]
     	msg "Connecting to DE1 on $::settings(bluetooth_address)"
     	set retcode 1
 	} err] != 0} {
@@ -1298,8 +1341,17 @@ proc de1_ble_handler { event data } {
 						#set ::scanning 0
 						#ble_connect_to_de1
 					#}
-					if {$address == $::settings(bluetooth_address) && $::currently_connecting_de1_handle == 0} {
-						ble_connect_to_de1
+					if {$address == $::settings(bluetooth_address)} {
+						if {$::currently_connecting_de1_handle == 0} {
+							msg "Not currently connecting to DE1, so trying now"
+							ble_connect_to_de1
+						} else {
+							#msg "Already connecting to DE1, so not trying now"
+							#catch {
+						    	#ble close $::currently_connecting_de1_handle
+						    #}
+							#ble_connect_to_de1
+						}
 					}
 				} elseif {[string first Skale $name] != -1} {
 					append_to_scale_bluetooth_list $address "atomaxskale"
@@ -1443,6 +1495,8 @@ proc de1_ble_handler { event data } {
 							#		ble pair $::settings(bluetooth_address)
 							#	}
 							#}
+
+							#ble pair $::settings(bluetooth_address)
 
 							#after 2000 "; ; ; "
 							#poll_de1_state

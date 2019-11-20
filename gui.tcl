@@ -866,9 +866,12 @@ proc change_screen_saver_img {} {
 
 		set fn [random_saver_file]
 
-		image create photo saver -file $fn
-		.can create image {0 0} -anchor nw -image saver  -tag saver -state hidden
-		.can lower saver
+		catch {
+			# this can happen during an upgrade
+			image create photo saver -file $fn
+			.can create image {0 0} -anchor nw -image saver  -tag saver -state hidden
+			.can lower saver
+		}
 		#update
 	#}#
 
@@ -1201,8 +1204,13 @@ proc page_display_change {page_to_hide page_to_show} {
 		set pngfilename	$::delayed_image_load($page_to_show)
 		unset -nocomplain ::delayed_image_load($page_to_show)
 		puts "png: $pngfilename"
-		image create photo $page_to_show -file $pngfilename
-		.can itemconfigure $page_to_show -image $page_to_show
+		
+		catch {
+			# this can happen if the image file has been moved/deleted underneath the app
+			#fallback is to at least not crash
+			image create photo $page_to_show -file $pngfilename
+			.can itemconfigure $page_to_show -image $page_to_show
+		}
 	}
 
 	.can itemconfigure $page_to_show -state normal
