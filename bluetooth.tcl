@@ -1065,14 +1065,18 @@ proc remove_null_terminator {instr} {
 
 proc android_8_or_newer {} {
 
-	#catch {
+	if {$::android != 1} {
+		return 0
+	}
+
+	catch {
 		array set androidprops [borg osbuildinfo]
 		msg [array get androidprops]
 		msg "v: '$androidprops(version.release)'"
 		set test [expr {$androidprops(version.release) >= 8}]
 		return $test
-	#}
-	return 5.1
+	}
+	return 0
 }
 
 set ::ble_scanner [ble scanner de1_ble_handler]
