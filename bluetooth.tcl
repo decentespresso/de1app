@@ -1080,24 +1080,38 @@ set ::scanning -1
 
 proc check_if_initial_connect_didnt_happen_quickly {} {
 # on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead
+	set ble_scan_started 0
 	if {$::de1(device_handle) == 0 && $::currently_connecting_de1_handle != 0} {
 		msg "on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead"
-		catch {
-			ble abort $::currently_connecting_de1_handle
-	    }
 		catch {
 	    	ble close $::currently_connecting_de1_handle
 	    }
 	    catch {
 	    	set ::currently_connecting_de1_handle 0
 	    }
-
-	    ble start $::ble_scanner
-	    after 30000 stop_scanner
-		#ble_connect_to_de1
+	    set ble_scan_started 1
 	}
 
+	if {$::settings(scale_bluetooth_address) != "" && $::de1(scale_device_handle) == 0 && $::currently_connecting_scale_handle != 0} {
+		msg "on initial startup, if a direct connection to scale doesn't work quickly, start a scan instead"
+		catch {
+	    	ble close $::currently_connecting_scale_handle
+	    }
+	    catch {
+	    	set ::currently_connecting_scale_handle 0
+	    }
+	    set ble_scan_started 1
+	}	    
+
+
+	if {$ble_scan_started == 1} {
+	    ble start $::ble_scanner
+	    after 30000 stop_scanner
+	}
+
+
 }
+
 
 proc ble_find_de1s {} {
 
@@ -1129,22 +1143,31 @@ proc stop_scanner {} {
 }
 
 proc bluetooth_connect_to_devices {} {
+
 	msg "bluetooth_connect_to_devices"
 	if {$::settings(bluetooth_address) != ""} {
-		if {[android_8_or_newer] != 1} {
-			ble_connect_to_de1
-		} else {
+		if {[android_8_or_newer] == 1} {
+			# on bootpup, android 8 won't connect directly to a BLE device unless it's found by a scan
+			# this step below waits 4 seconds to see if a direct connection worked, and if not, activates a scan
+			# when a scan finds the device, then it will initiate a new connection request and that one will work
 			ble_connect_to_de1
 			after 4000 check_if_initial_connect_didnt_happen_quickly
-			#after 30000 stop_scanner
-			#after 3000 ble start $::ble_scanner
+		} else {
+			# earlier android revisions can connect directly, and it's fast
+			ble_connect_to_de1
 		}
-
 	}
 
 	if {$::settings(scale_bluetooth_address) != ""} {
-		after 3000 ble_connect_to_scale
-		#ble_connect_to_scale
+		
+		if {[android_8_or_newer] == 1} {
+			ble_connect_to_scale
+		} else {
+			after 3000 ble_connect_to_scale
+		}
+			#after 3000 [list userdata_append "connect to scale" ble_connect_to_scale]
+
+		#after 3000 ble_connect_to_scale
 	}
 
 #		ble_connect_to_scale
@@ -1264,7 +1287,7 @@ proc ble_connect_to_scale {} {
 	}
 
 	if {[catch {
-		set ::currently_connecting_scale_handle [ble connect $::settings(scale_bluetooth_address) de1_ble_handler true]
+		set ::currently_connecting_scale_handle [ble connect $::settings(scale_bluetooth_address) de1_ble_handler false]
 	    msg "Connecting to scale on $::settings(scale_bluetooth_address)"
 		set retcode 0
 	} err] != 0} {
@@ -1355,8 +1378,24 @@ proc de1_ble_handler { event data } {
 					}
 				} elseif {[string first Skale $name] != -1} {
 					append_to_scale_bluetooth_list $address "atomaxskale"
+
+					if {$address == $::settings(scale_bluetooth_address)} {
+						if {$::currently_connecting_scale_handle == 0} {
+							msg "Not currently connecting to scale, so trying now"
+							ble_connect_to_scale
+						}
+					}
+
 				} elseif {[string first "Decent Scale" $name] != -1} {
 					append_to_scale_bluetooth_list $address "decentscale"
+
+					if {$address == $::settings(scale_bluetooth_address)} {
+						if {$::currently_connecting_scale_handle == 0} {
+							msg "Not currently connecting to scale, so trying now"
+							ble_connect_to_scale
+						}
+					}
+
 				} else {
 					#msg "-- device $name found at address $address ($data)"
 				}
@@ -1455,6 +1494,11 @@ proc de1_ble_handler { event data } {
 
 					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
 						msg "de1 connected $event $data"
+
+						if {$::settings(scale_bluetooth_address) != ""} {
+							ble_connect_to_scale
+						}
+
 						
 						incr ::successful_de1_connection_count
 						set ::failed_attempt_count_connecting_to_de1 0
@@ -1541,12 +1585,16 @@ proc de1_ble_handler { event data } {
 							decentscale_enable_lcd
 							after 1000 decentscale_enable_notifications
 							after 2000 decentscale_tare
+							after 3000 decentscale_enable_lcd
+
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
 							append_to_scale_bluetooth_list $address "atomaxskale"
 							#set ::de1(scale_type) "atomaxskale"
 							skale_enable_lcd
 							after 1000 skale_enable_weight_notifications
 							after 2000 skale_enable_button_notifications
+							after 3000 skale_enable_lcd
+
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
