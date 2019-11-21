@@ -1066,27 +1066,35 @@ proc remove_null_terminator {instr} {
 proc android_8_or_newer {} {
 
 	if {$::android != 1} {
+		msg "android_8_or_newer reports: not android (0)"		
 		return 0
 	}
 
+	#catch {
+	array set androidprops [borg osbuildinfo]
+	#msg [array get androidprops]
+	#msg "v: '$androidprops(version.release)'"
+	set test 0
 	catch {
-		array set androidprops [borg osbuildinfo]
-		msg [array get androidprops]
-		msg "v: '$androidprops(version.release)'"
 		set test [expr {$androidprops(version.release) >= 8}]
-		return $test
 	}
-	return 0
+	msg "t: '$test'"
+	return $test
+	#}
+
+	#msg "android_8_or_newer failed and reports: 0"
+	#return 0
 }
 
 set ::ble_scanner [ble scanner de1_ble_handler]
 set ::scanning -1
 
 proc check_if_initial_connect_didnt_happen_quickly {} {
+	msg "check_if_initial_connect_didnt_happen_quickly"
 # on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead
 	set ble_scan_started 0
-	if {$::de1(device_handle) == 0 && $::currently_connecting_de1_handle != 0} {
-		msg "on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead"
+	if {$::de1(device_handle) == 0 } {
+		msg "check_if_initial_connect_didnt_happen_quickly ::de1(device_handle) == 0"
 		catch {
 	    	ble close $::currently_connecting_de1_handle
 	    }
@@ -1094,9 +1102,11 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 	    	set ::currently_connecting_de1_handle 0
 	    }
 	    set ble_scan_started 1
+	} else {
+		msg "DE1 device handle is $::de1(device_handle)"
 	}
 
-	if {$::settings(scale_bluetooth_address) != "" && $::de1(scale_device_handle) == 0 && $::currently_connecting_scale_handle != 0} {
+	if {$::settings(scale_bluetooth_address) != "" && $::de1(scale_device_handle) == 0} {
 		msg "on initial startup, if a direct connection to scale doesn't work quickly, start a scan instead"
 		catch {
 	    	ble close $::currently_connecting_scale_handle
@@ -1109,8 +1119,7 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 
 
 	if {$ble_scan_started == 1} {
-	    ble start $::ble_scanner
-	    after 30000 stop_scanner
+	    scanning_restart
 	}
 
 
@@ -1147,6 +1156,7 @@ proc stop_scanner {} {
 }
 
 proc bluetooth_connect_to_devices {} {
+	#@return
 
 	msg "bluetooth_connect_to_devices"
 	if {$::settings(bluetooth_address) != ""} {
@@ -1156,6 +1166,8 @@ proc bluetooth_connect_to_devices {} {
 			# when a scan finds the device, then it will initiate a new connection request and that one will work
 			ble_connect_to_de1
 			after 4000 check_if_initial_connect_didnt_happen_quickly
+
+			msg "will launch check_if_initial_connect_didnt_happen_quickly in 4000ms"
 		} else {
 			# earlier android revisions can connect directly, and it's fast
 			ble_connect_to_de1
