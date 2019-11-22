@@ -1071,10 +1071,12 @@ proc android_8_or_newer {} {
 	}
 
 	catch {
-		array set androidprops [borg osbuildinfo]
+		set x [borg osbuildinfo]
+		msg "borg osbuildinfo: '$x'"
+		array set androidprops $x
+		msg [array get androidprops]
+		msg "v: '$androidprops(version.release)'"
 	}
-	msg [array get androidprops]
-	msg "v: '$androidprops(version.release)'"
 	set test 0
 	catch {
 		set test [expr {$androidprops(version.release) >= 8}]
