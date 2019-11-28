@@ -1102,11 +1102,10 @@ proc page_show {page_to_show} {
 proc display_brightness {percentage} {
 	set percentage [check_battery_low $percentage]
 	#puts "brightness: $percentage %"
-	borg brightness $percentage
+	get_set_tablet_brightness $percentage
 }
 
 proc page_display_change {page_to_hide page_to_show} {
-	msg "page_display_change $page_to_show"
 
 	#if {$page_to_hide == ""} {
 	#}
@@ -1119,24 +1118,27 @@ proc page_display_change {page_to_hide page_to_show} {
 		set page_to_show $::nextpage($key)
 	}
 
-
 	if {$::de1(current_context) == $page_to_show} {
-		puts "page_display_change returning because ::de1(current_context) == $page_to_show"
+		msg "page_display_change returning because ::de1(current_context) == $page_to_show"
 		return 
 	}
+
+	msg "page_display_change $page_to_show"
+
+
 	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
 		msg "discarding intermediate sleep/off state msg"
 		return 
 	} elseif {$page_to_show == "saver"} {
 		if {[ifexists ::exit_app_on_sleep] == 1} {
-			borg brightness 0
+			get_set_tablet_brightness 0
 			close_all_ble_and_exit
 		}
 	}
 
 	# signal the page change with a sound
 	say "" $::settings(sound_button_out)
-	msg "page_display_change $page_to_show"
+	#msg "page_display_change $page_to_show"
 	#set start [clock milliseconds]
 
 	# set the brightness in one place
@@ -1168,7 +1170,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	if {[info exists ::delayed_image_load($page_to_show)] == 1} {
 		set pngfilename	$::delayed_image_load($page_to_show)
 		unset -nocomplain ::delayed_image_load($page_to_show)
-		puts "png: $pngfilename"
+		msg "Loading skin image from disk: $pngfilename"
 		
 		set errcode [catch {
 			# this can happen if the image file has been moved/deleted underneath the app
@@ -1573,7 +1575,6 @@ proc setup_images_for_first_page {} {
 	image create photo splash -file $fn 
 	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
 	pack .can
-    #borg brightness 100
 
 	update
 	return

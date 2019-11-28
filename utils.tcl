@@ -309,7 +309,7 @@ proc setup_environment {} {
 # dim the screen automaticaly if the battery is low
 proc check_battery_low {brightness_to_use} {
     array set powerinfo [sdltk powerinfo]
-    set current_brightness [borg brightness]
+    set current_brightness [get_set_tablet_brightness]
     if {$current_brightness == ""} {
         set current_brightness 100
     } else {
@@ -326,7 +326,7 @@ proc check_battery_low {brightness_to_use} {
     #puts "check_battery_low: $brightness_to_use / borg brightness = [borg brightness] / powerinfo(percent) = [ifexists powerinfo(percent)]"
     if {$percent < $::settings(battery_very_low_trigger)} {
         if {$current_brightness > $::settings(battery_very_low_brightness)} {
-            borg brightness $::settings(battery_very_low_brightness)
+            get_set_tablet_brightness $::settings(battery_very_low_brightness)
             msg "Battery is very low ($percent < $::settings(battery_very_low_trigger)) so lowering screen to $::settings(battery_very_low_brightness)"
         }
         if {$brightness_to_use > $::settings(battery_very_low_brightness)} {
@@ -334,7 +334,7 @@ proc check_battery_low {brightness_to_use} {
         }
     } elseif {$percent < $::settings(battery_low_trigger)} {
         if {$current_brightness > $::settings(battery_low_brightness)} {
-            borg brightness $::settings(battery_low_brightness)
+            get_set_tablet_brightness $::settings(battery_low_brightness)
             msg "Battery is low ($percent < $::settings(battery_low_trigger)) so lowering screen to $::settings(battery_low_brightness)"
         }
         if {$brightness_to_use > $::settings(battery_low_brightness)} {
@@ -343,7 +343,7 @@ proc check_battery_low {brightness_to_use} {
         #return $brightness_to_use
     } elseif {$percent < $::settings(battery_medium_trigger)} {
         if {$current_brightness > $::settings(battery_medium_brightness)} {
-            borg brightness $::settings(battery_medium_brightness)
+            get_set_tablet_brightness $::settings(battery_medium_brightness)
             msg "Battery is medium ($percent < $::settings(battery_medium_trigger)) so lowering screen to $::settings(battery_medium_brightness)"
         }
         if {$brightness_to_use > $::settings(battery_medium_brightness)} {
@@ -668,7 +668,7 @@ proc skin_directory {} {
 
 proc android_specific_stubs {} {
 
-    proc ble {args} { puts "    ble $args"; return 1 }
+    proc ble {args} { msg "ble $args"; return 1 }
     
     if {$::android != 1 && $::undroid != 1} {
         proc sdltk {args} {
@@ -702,8 +702,19 @@ proc android_specific_stubs {} {
             puts "unknown 'borg $args'"
         }
     }
+}
 
+proc get_set_tablet_brightness { {setting ""} } {
+    set actual [borg brightness]
+    if {$setting == ""} {
+        # no parameter means: return current value
+        return $actual
+    }
 
+    # only call the Android setting if the setting needs to be changed.
+    if {$actual != $setting} {
+        borg brightness $setting
+    }
 }
 
 

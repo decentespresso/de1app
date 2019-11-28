@@ -26,7 +26,6 @@ proc userdata_append {comment cmd} {
 
 
 proc read_de1_version {} {
-	#puts "read_de1_version"
 	catch {
 		userdata_append "read_de1_version" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_01) $::cinstance($::de1(cuuid_01))]
 	}
@@ -680,16 +679,9 @@ proc de1_send_waterlevel_settings {} {
 		return
 	}
 
-
-	#puts ">>>> Sending BLE hot water/steam settings"
 	set data [return_de1_packed_waterlevel_settings]
 	parse_binary_water_level $data arr2
 	userdata_append "Set water level settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_11) $::cinstance($::de1(cuuid_11)) $data]
-	#puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-	# for testing parser/deparser
-	
-	#msg "send de1_send_steam_hotwater_settings of [string length $data] bytes: $data  : [array get arr2]"
-
 }
 
 
@@ -898,15 +890,9 @@ proc de1_send_steam_hotwater_settings {} {
 	}
 
 
-	#puts ">>>> Sending BLE hot water/steam settings"
 	set data [return_de1_packed_steam_hotwater_settings]
 	parse_binary_hotwater_desc $data arr2
 	userdata_append "Set water/steam settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0B) $::cinstance($::de1(cuuid_0B)) $data]
-	#puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-	
-	# for testing parser/deparser
-	
-	#msg "send de1_send_steam_hotwater_settings of [string length $data] bytes: $data  : [array get arr2]"
 }
 
 proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
@@ -1096,7 +1082,6 @@ proc ble_find_de1s {} {
 		ble_connect_to_de1
 	}
 	
-	#puts "ble_find_de1s"
 	after 30000 stop_scanner
 	ble start $::ble_scanner
 }
@@ -1217,12 +1202,6 @@ proc ble_connect_to_de1 {} {
 
 set ::currently_connecting_scale_handle 0
 proc ble_connect_to_scale {} {
-
-
-	#puts "ble_connect_to_scale [stacktrace]"
-
-
-	#set ::de1(scale_weight) ""
 
 	if {$::settings(scale_bluetooth_address) == ""} {
 		msg "No Scale BLE address in settings, so not connecting to it"
