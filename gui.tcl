@@ -507,71 +507,35 @@ proc platform_button_unpress {} {
 
 set cnt 0
 set debugcnt 0
-set ::debuglog {}					
+set ::debuglog {}	
+# display a debug message into the on-screen debug window, if that's enabled
+# also saves the info to the log file.				
 proc msg {text} {
-#z
 
 	catch {
 		log_to_debug_file $text
 	}
 	incr ::debugcnt
-	#catch {
+
+	set ::debuglog "$::debugcnt) $text\n$::debuglog"
+	set loglines [split $::debuglog "\n"]
+	if {[llength $loglines] > $::settings(debuglog_window_size)} {
+		unshift loglines
+		set ::debuglog [join $loglines \n]
+	}
 	if {[info exists ::debugging] == 1} {
 		if {$::debugging == 1} {
-
-			set ::debuglog "$::debugcnt) $text\n$::debuglog"
-			#return
-			set loglines [split $::debuglog "\n"]
-			if {[llength $loglines] > 35} {
-				unshift loglines
-				set ::debuglog [join $loglines \n]
-				#set ::debuglog [join [lrange $loglines 0 [expr {[llength loglines] - 1}] \n]]
-				#pop 
-				#set loglines [split $::debuglog "\n"]
-			}
-
 	        puts $text
-
 			return
-
-	        $::debugwidget insert end "$text\n"
-	        set txt [$::debugwidget get 1.0 end]
-	        tk::TextSetCursor $::debugwidget {insert display lineend}
-
-	        #append ::debuglog $text\n
-	        return
-
 		}
 	}
-	#}
-	#return
 
 	if {$text == ""} {
 		return
 	}
 
-	#set text "$text ([::thread::id])"
 	puts $text
-return
-
-	borg log 1 "decent" $text
-
-	global debuglog 
-   	global cnt
-    incr cnt
-	lappend debuglog "$cnt: $text"
- 	.can itemconfigure .t -text [join $debuglog \n]
-
- 	if {[llength $debuglog] > 22} {
-		set debuglog [lrange $debuglog 1 end]
-	}
-
-    catch  {
-
-        #.t insert end "$text\n"
-        #set txt [.t get 1.0 end]
-        #tk::TextSetCursor .t {insert display lineend}
-   }
+	return
 }
 
 
@@ -1137,7 +1101,7 @@ proc page_show {page_to_show} {
 
 proc display_brightness {percentage} {
 	set percentage [check_battery_low $percentage]
-	puts "brightness: $percentage %"
+	#puts "brightness: $percentage %"
 	borg brightness $percentage
 }
 
@@ -1157,6 +1121,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 
 	if {$::de1(current_context) == $page_to_show} {
+		puts "page_display_change returning because ::de1(current_context) == $page_to_show"
 		return 
 	}
 	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
@@ -1205,12 +1170,30 @@ proc page_display_change {page_to_hide page_to_show} {
 		unset -nocomplain ::delayed_image_load($page_to_show)
 		puts "png: $pngfilename"
 		
-		catch {
+		set errcode [catch {
 			# this can happen if the image file has been moved/deleted underneath the app
 			#fallback is to at least not crash
 			image create photo $page_to_show -file $pngfilename
+		}]
+
+	    if {$errcode != 0} {
+	        catch {
+	            msg "image create photo error: $::errorInfo"
+	        }
+	    }
+
+		set errcode [catch {
+			# this can happen if the image file has been moved/deleted underneath the app
+			#fallback is to at least not crash
 			.can itemconfigure $page_to_show -image $page_to_show
-		}
+		}]
+
+	    if {$errcode != 0} {
+	        catch {
+	            msg ".can itemconfigure page_to_show error: $::errorInfo"
+	        }
+	    }
+
 	}
 
 	.can itemconfigure $page_to_show -state normal
@@ -1245,6 +1228,8 @@ proc page_display_change {page_to_hide page_to_show} {
 			eval $action
 		}
 	}
+
+	#msg "Switched to page: $page_to_show"
 
 	#update_onscreen_variables
 	#after 100 update_chart
@@ -1917,7 +1902,7 @@ proc import_god_shots_from_common_format {} {
 
 
 	set import_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/import/common/" *.csv]]
-	puts "import_files: $import_files"
+	#puts "import_files: $import_files"
 	foreach import_file $import_files {
 		set import_files_array($import_file) 1
 	}

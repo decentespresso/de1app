@@ -737,15 +737,6 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_next_page off message; page_show message
 				after 1000 app_exit
 			} else {
-				# john OBSOLETE WORK-AROUND : to delete
-				#msg "Saving settings: '$::settings(settings_profile_type)'"
-				#if {$::settings(settings_profile_type) == "settings_2c2"} {
-					# if on the LIMITS tab, indicate that this is settings_2c (aka "advanced") shot as part of the OK button process
-					#set ::settings(settings_profile_type) "settings_2c"
-				#}
-				#if {$::settings(active_settings_tab) == "settings_2c2"} {
-					#set ::settings(active_settings_tab) "settings_2c"
-				#}
 				set_next_page off off; page_show off
 			}
 		} 2016 1430 2560 1600

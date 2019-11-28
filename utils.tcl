@@ -685,6 +685,12 @@ proc android_specific_stubs {} {
             return [list "language" "en"]
         } elseif {[lindex $args 0] == "log"} {
             # do nothing
+        } elseif {[lindex $args 0] == "beep"} {
+            # do nothing
+        } elseif {[lindex $args 0] == "systemui"} {
+            # do nothing
+        } elseif {[lindex $args 0] == "spinner"} {
+            # do nothing
         } elseif {[lindex $args 0] == "brightness"} {
             if {[lindex $args 1] == ""} {
                 return 70

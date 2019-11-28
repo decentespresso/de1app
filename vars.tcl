@@ -1679,7 +1679,7 @@ proc fill_profiles_listbox {} {
 		#msg "'$::settings(profile)' == '[ifexists profile(profile_title)]'"
 		if {[string tolower $::settings(profile)] == [string tolower [ifexists profile(profile_title)]]} {
 			set ::current_profile_number $cnt
-			puts "current profile of '$d' is #$cnt"
+			#puts "current profile of '$d' is #$cnt"
 		}
 
 		incr cnt

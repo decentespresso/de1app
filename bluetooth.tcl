@@ -702,33 +702,28 @@ proc run_next_userdata_cmd {} {
 			return
 		}
 	}
-	if {$::de1(device_handle) == "0" && $::de1(scale_device_handle) == "0"} {
+	if {($::de1(device_handle) == "0" || $::de1(device_handle) == "1") && $::de1(scale_device_handle) == "0"} {
 		#msg "error: de1 not connected"
 		return
 	}
 
-	#pause 300
-
-	#msg "run_next_userdata_cmd $::de1(device_handle)"
-	#set cmds {}
-	
-#	catch {
-#		set cmds [ble userdata $::de1(device_handle)]
-#	}
 	if {$::de1(cmdstack) ne {}} {
 
 		set cmd [lindex $::de1(cmdstack) 0]
 		set cmds [lrange $::de1(cmdstack) 1 end]
-		#msg "stack cmd: $cmd"
-			#msg "{*}$cmd"
-		#set result 0
 		set result 0
 		msg ">>> [lindex $cmd 0] (-[llength $::de1(cmdstack)])"
-		catch {
-			set result [{*}[lindex $cmd 1]]
+		set errcode [catch {
+		set result [{*}[lindex $cmd 1]]
 			
-			#msg " "
-		}
+		}]
+
+	    if {$errcode != 0} {
+	        catch {
+	            msg "run_next_userdata_cmd catch error: $::errorInfo"
+	        }
+	    }
+
 
 		if {$result != 1} {
 			msg "!!!! BLE command failed ($result): [lindex $cmd 1]"
@@ -741,23 +736,12 @@ proc run_next_userdata_cmd {} {
 		}
 
 
-		#if {$result <= 0} {
-			#msg "BLE command failed to start $result: $cmd"
-			#return
-		#}
-		#pause 300
-		#ble userdata $::de1(device_handle) $cmds
 		set ::de1(cmdstack) $cmds
 		set ::de1(wrote) 1
 		set ::de1(previouscmd) [lindex $cmd 1]
 		if {[llength $::de1(cmdstack)] == 0} {
 			msg "BLE command queue is now empty"
 		}
-
-		catch {
-			#after cancel $::bletimeoutid
-		}
-		#set ::bletimeoutid [after 5000 run_next_userdata_cmd]
 
 	} else {
 		#msg "no userdata cmds to run"
@@ -850,18 +834,6 @@ proc de1_send_state {comment msg} {
 
 proc de1_send_shot_frames {} {
 
-
-	#if {$::de1(device_handle) == "0"} {
-	#	msg "error: de1 not connected"
-	#	return
-	#}
-
-	#de1_disable_bluetooth_notifications	
-
-	#msg ======================================
- #puts ">>>> Sending Espresso frames"
-	#userdata_append de1_disable_bluetooth_notifications
-
 	set parts [de1_packed_shot]
 	set header [lindex $parts 0]
 	
@@ -873,9 +845,7 @@ proc de1_send_shot_frames {} {
 
 
 	userdata_append "Espresso header: [array get arr2]" [list ble_write_00f $header]
-	#userdata_append [list ble_write_00f $header]
-	#userdata_append [list ble_write_00f $header]
-
+return
 	set cnt 0
 	foreach packed_frame [lindex $parts 1] {
 
@@ -886,11 +856,9 @@ proc de1_send_shot_frames {} {
 		parse_binary_shotframe $packed_frame arr3
 		msg "frame #$cnt data parsed [string length $packed_frame] bytes: $packed_frame  : [array get arr3]"
 		####
-	#set enabled_features 
 
 		userdata_append "Espresso frame #$cnt: [array get arr3] (FLAGS: [parse_shot_flag $arr3(Flag)])"  [list ble_write_010 $packed_frame]
 	}
-	#puts "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
 	return
 }
@@ -918,16 +886,8 @@ proc ble_write_00f {packed_frame} {
 }
 
 proc save_settings_to_de1 {} {
-	#if {$::de1(device_handle) == "0"} {
-	#	msg "error: de1 not connected"
-	#	return
-	#}
-
-	#de1_disable_temp_notifications
 	de1_send_shot_frames
-	#start_idle
 	de1_send_steam_hotwater_settings
-	#de1_enable_temp_notifications
 }
 
 proc de1_send_steam_hotwater_settings {} {

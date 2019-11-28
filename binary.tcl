@@ -1658,7 +1658,7 @@ proc update_de1_state {statechar} {
 			} elseif {$textstate == "HotWaterRinse" || [ifexists ::previous_textstate] == "HotWaterRinse"} {
 				stop_timer_flush_pour
 			} else {
-				msg "unknown timer stop"
+				msg "unknown timer stop: $textstate"
 				#zz12
 			}
 		} else {
@@ -1676,7 +1676,7 @@ proc update_de1_state {statechar} {
 			} elseif {$textstate == "Espresso"} {
 				start_timer_espresso_pour
 			} else {
-				msg "unknown timer start"
+				msg "unknown timer start: $textstate"
 				#zz13
 			}
 		}

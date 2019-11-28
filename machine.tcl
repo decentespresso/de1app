@@ -188,6 +188,7 @@ array set ::settings {
 	zoomed_y_axis_scale 12
 	name {}
 	chart_dashes_pressure ""
+	debuglog_window_size 35
 	water_level_sensor_max 50
 	espresso_notes {}
 	profile_graph_smoothing_technique "quadratic"
