@@ -837,7 +837,7 @@ proc de1_send_shot_frames {} {
 
 
 	userdata_append "Espresso header: [array get arr2]" [list ble_write_00f $header]
-return
+
 	set cnt 0
 	foreach packed_frame [lindex $parts 1] {
 
@@ -1018,16 +1018,16 @@ proc android_8_or_newer {} {
 
 	catch {
 		set x [borg osbuildinfo]
-		msg "borg osbuildinfo: '$x'"
+		msg "osbuildinfo: '$x'"
 		array set androidprops $x
 		msg [array get androidprops]
-		msg "v: '$androidprops(version.release)'"
+		msg "Android release reported: '$androidprops(version.release)'"
 	}
 	set test 0
 	catch {
 		set test [expr {$androidprops(version.release) >= 8}]
 	}
-	msg "t: '$test'"
+	msg "Is this Android 8 or newer? '$test'"
 	return $test
 	
 
@@ -1189,6 +1189,9 @@ proc ble_connect_to_de1 {} {
     	msg "Connecting to DE1 on $::settings(bluetooth_address)"
     	set retcode 1
 	} err] != 0} {
+		if {$err == "unsupported"} {
+			after 5000 [list message_page "Bluetooth is not on" "Ok"]
+		}
 		msg "Failed to start to BLE connect to DE1 because: '$err'"
 		set retcode 0
 	}
