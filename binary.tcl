@@ -1581,10 +1581,12 @@ proc parse_state_change {packed destarrname} {
 proc update_de1_state {statechar} {
 	#::fields::unpack $statechar $spec msg bigeendian
 	parse_state_change $statechar msg
+	set textstate [ifexists ::de1_num_state($msg(state))]
+
+	#msg "update_de1_state '[ifexists ::previous_textstate]' '$textstate'"
 
 	#msg "update_de1_state [array get msg]"
 
-	set textstate [ifexists ::de1_num_state($msg(state))]
 	#puts "textstate: $textstate"
 	if {$msg(state) != $::de1(state)} {
 		msg "applying DE1 state change: $::de1(state) [array get msg] ($textstate)"
@@ -1602,10 +1604,11 @@ proc update_de1_state {statechar} {
 		}
 
 		if {[ifexists ::previous_textstate] == "Sleep" && $textstate != "Sleep"} {
+			#msg "Coming back from SLEEP"
 			# if awakening from sleep, on Group Head Controller machines, this is not on on the tablet, and so we should
 			# now try to connect to the scale upon awakening from sleep
 			if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
-				msg "Coming back from sleep, try to connect to scale"
+				msg "Back from sleep, try to connect to scale automatically (if it is currently disconnected)"
 				ble_connect_to_scale
 			}
 		}

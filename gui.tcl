@@ -521,6 +521,8 @@ proc msg {text} {
 	}
 
 	incr ::debugcnt
+
+	# someone inefficent mechanism, but no better way to prepend a string exists https://stackoverflow.com/questions/10009181/tcl-string-prepend
 	set ::debuglog "$::debugcnt) $text\n$::debuglog"
 
 	set loglines [split $::debuglog "\n"]
