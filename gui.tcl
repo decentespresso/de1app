@@ -512,30 +512,25 @@ set ::debuglog {}
 # also saves the info to the log file.				
 proc msg {text} {
 
-	catch {
-		log_to_debug_file $text
-	}
-	incr ::debugcnt
-
-	set ::debuglog "$::debugcnt) $text\n$::debuglog"
-	set loglines [split $::debuglog "\n"]
-	if {[llength $loglines] > $::settings(debuglog_window_size)} {
-		unshift loglines
-		set ::debuglog [join $loglines \n]
-	}
-	if {[info exists ::debugging] == 1} {
-		if {$::debugging == 1} {
-	        puts $text
-			return
-		}
-	}
-
 	if {$text == ""} {
 		return
 	}
 
+	catch {
+		log_to_debug_file $text
+	}
+
+	incr ::debugcnt
+	append ::debuglog "$::debugcnt) $text\n"
+
+	set loglines [split $::debuglog "\n"]
+
+	if {[llength $loglines] > $::settings(debuglog_window_size)} {
+		unshift loglines
+		set ::debuglog [join $loglines \n]
+	}
+
 	puts $text
-	return
 }
 
 
@@ -1119,7 +1114,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	}
 
 	if {$::de1(current_context) == $page_to_show} {
-		msg "page_display_change returning because ::de1(current_context) == $page_to_show"
+		#msg "page_display_change returning because ::de1(current_context) == $page_to_show"
 		return 
 	}
 
@@ -1176,6 +1171,7 @@ proc page_display_change {page_to_hide page_to_show} {
 			# this can happen if the image file has been moved/deleted underneath the app
 			#fallback is to at least not crash
 			image create photo $page_to_show -file $pngfilename
+			#msg "image create photo $page_to_show -file $pngfilename"
 		}]
 
 	    if {$errcode != 0} {
@@ -1188,6 +1184,7 @@ proc page_display_change {page_to_hide page_to_show} {
 			# this can happen if the image file has been moved/deleted underneath the app
 			#fallback is to at least not crash
 			.can itemconfigure $page_to_show -image $page_to_show
+			#msg ".can itemconfigure $page_to_show -image $page_to_show"
 		}]
 
 	    if {$errcode != 0} {
@@ -1201,6 +1198,7 @@ proc page_display_change {page_to_hide page_to_show} {
 	.can itemconfigure $page_to_show -state normal
 
 	set these_labels [ifexists ::existing_labels($page_to_show)]
+	#msg "these_labels: $these_labels"
 
 	if {[info exists ::all_labels] != 1} {
 		set ::all_labels {}
@@ -1213,11 +1211,13 @@ proc page_display_change {page_to_hide page_to_show} {
 	foreach label $::all_labels {
 		if {[.can itemcget $label -state] != "hidden"} {
 			.can itemconfigure $label -state hidden
+			#msg "hiding: '$label'"
 		}
 	}
 
 	foreach label $these_labels {
 		.can itemconfigure $label -state normal
+		#msg "showing: '$label'"
 	}
 
 	update
@@ -1228,13 +1228,15 @@ proc page_display_change {page_to_hide page_to_show} {
 	if {[info exists actions($page_to_show)] == 1} {
 		foreach action $actions($page_to_show) {
 			eval $action
+			#msg "action: '$action"
 		}
 	}
 
 	#msg "Switched to page: $page_to_show"
 
-	#update_onscreen_variables
+	update_onscreen_variables
 	#after 100 update_chart
+	after 1000 update
 
 }
 

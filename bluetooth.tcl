@@ -847,7 +847,7 @@ proc de1_send_shot_frames {} {
 		unset -nocomplain arr3
 		parse_binary_shotframe $packed_frame arr3
 		#msg "frame #$cnt data parsed [string length $packed_frame] bytes: $packed_frame  : [array get arr3]"
-		msg "frame #$cnt data parsed [string length $packed_frame] bytes: [array get arr3]"
+		msg "frame #$cnt: [string length $packed_frame] bytes: [array get arr3]"
 		####
 
 		userdata_append "Espresso frame #$cnt: [array get arr3] (FLAGS: [parse_shot_flag $arr3(Flag)])"  [list ble_write_010 $packed_frame]
