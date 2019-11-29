@@ -718,7 +718,7 @@ proc run_next_userdata_cmd {} {
 
 
 		if {$result != 1} {
-			msg "!!!! BLE command failed ($result): [lindex $cmd 1]"
+			msg "BLE command failed, will retry ($result): [lindex $cmd 1]"
 
 			# john 4/28/18 not sure if we should give up on the command if it fails, or retry it
 			# retrying a command that will forever fail kind of kills the BLE abilities of the app
@@ -846,7 +846,8 @@ proc de1_send_shot_frames {} {
 		incr cnt
 		unset -nocomplain arr3
 		parse_binary_shotframe $packed_frame arr3
-		msg "frame #$cnt data parsed [string length $packed_frame] bytes: $packed_frame  : [array get arr3]"
+		#msg "frame #$cnt data parsed [string length $packed_frame] bytes: $packed_frame  : [array get arr3]"
+		msg "frame #$cnt data parsed [string length $packed_frame] bytes: [array get arr3]"
 		####
 
 		userdata_append "Espresso frame #$cnt: [array get arr3] (FLAGS: [parse_shot_flag $arr3(Flag)])"  [list ble_write_010 $packed_frame]
@@ -1043,7 +1044,7 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 # on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead
 	set ble_scan_started 0
 	if {$::de1(device_handle) == 0 } {
-		msg "check_if_initial_connect_didnt_happen_quickly ::de1(device_handle) == 0"
+		#msg "check_if_initial_connect_didnt_happen_quickly ::de1(device_handle) == 0"
 		catch {
 	    	ble close $::currently_connecting_de1_handle
 	    }
@@ -1190,7 +1191,7 @@ proc ble_connect_to_de1 {} {
     	set retcode 1
 	} err] != 0} {
 		if {$err == "unsupported"} {
-			after 5000 [list message_page "Bluetooth is not on" "Ok"]
+			after 5000 [list info_page [translate "Bluetooth is not on"] [translate "Ok"]]
 		}
 		msg "Failed to start to BLE connect to DE1 because: '$err'"
 		set retcode 0
@@ -1312,6 +1313,8 @@ proc de1_ble_handler { event data } {
 
     	if {$state != "scanning"} {
     		#msg "de1b ble_handler $event $data"
+    	} else {
+    		#msg "scanning $event $data"
     	}
 
 		switch -- $event {
