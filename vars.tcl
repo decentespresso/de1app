@@ -2083,9 +2083,11 @@ proc preview_tablet_skin {} {
         set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
 		set src "[homedir]/skins/$skindir/2560x1600/icon.jpg"
-		$::table_style_preview_image read $src
-		photoscale $::table_style_preview_image $rescale_images_y_ratio $rescale_images_x_ratio
-		$::table_style_preview_image write $fn  -format {jpeg -quality 90}
+		catch {
+			$::table_style_preview_image read $src
+			photoscale $::table_style_preview_image $rescale_images_y_ratio $rescale_images_x_ratio
+			$::table_style_preview_image write $fn  -format {jpeg -quality 90}
+		}
 
 	} else {
 		set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"

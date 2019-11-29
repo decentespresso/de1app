@@ -521,7 +521,7 @@ proc msg {text} {
 	}
 
 	incr ::debugcnt
-	append ::debuglog "$::debugcnt) $text\n"
+	set ::debuglog "$::debugcnt) $text\n$::debuglog"
 
 	set loglines [split $::debuglog "\n"]
 
@@ -1159,7 +1159,9 @@ proc page_display_change {page_to_hide page_to_show} {
 	set ::de1(current_context) $page_to_show
 
 	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
-	.can itemconfigure $page_to_hide -state hidden
+	catch {
+		.can itemconfigure $page_to_hide -state hidden
+	}
 	#.can itemconfigure [list "pages" "splash" "saver"] -state hidden
 
 	if {[info exists ::delayed_image_load($page_to_show)] == 1} {
@@ -1195,7 +1197,16 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	}
 
-	.can itemconfigure $page_to_show -state normal
+	set errcode [catch {
+		.can itemconfigure $page_to_show -state normal
+	}]
+
+	if {$errcode != 0} {
+		catch {
+			msg ".can itemconfigure page_to_show error: $::errorInfo"
+		}
+
+	}
 
 	set these_labels [ifexists ::existing_labels($page_to_show)]
 	#msg "these_labels: $these_labels"

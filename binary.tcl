@@ -1600,6 +1600,15 @@ proc update_de1_state {statechar} {
 		} elseif {$textstate == "HotWaterRinse"} {
 			reset_gui_starting_steam
 		}
+
+		if {[ifexists ::previous_textstate] == "Sleep" && $textstate != "Sleep"} {
+			# if awakening from sleep, on Group Head Controller machines, this is not on on the tablet, and so we should
+			# now try to connect to the scale upon awakening from sleep
+			if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
+				msg "Coming back from sleep, try to connect to scale"
+				ble_connect_to_scale
+			}
+		}
 	}
 
 
