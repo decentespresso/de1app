@@ -1375,7 +1375,7 @@ proc shot_history_export {} {
                 msg "Corrupted shot history item: 'history/$d'"
                 continue
             }
-            msg "Exportingng history item: $fname"
+            msg "Exporting history item: $fname"
             export_csv arr $fname
         }
         #puts "keys: [array names arr]"
