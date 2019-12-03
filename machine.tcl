@@ -192,6 +192,7 @@ array set ::settings {
 	water_level_sensor_max 50
 	espresso_notes {}
 	profile_graph_smoothing_technique "quadratic"
+	live_graph_smoothing_technique "linear"
 	espresso_count 0
 	steaming_count 0
 	profile_has_changed 0
