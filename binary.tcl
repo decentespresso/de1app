@@ -1207,7 +1207,7 @@ proc update_de1_shotvalue {packed} {
 		SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
 		SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
 		FrameNumber {char {} {} {unsigned} {}}
-		SteamTemp {chart {} {} {unsigned} {}}
+		SteamTemp {char {} {} {unsigned} {}}
   	}
 
   	if {[use_old_ble_spec] == 1} {
@@ -1311,6 +1311,7 @@ proc update_de1_shotvalue {packed} {
 
 	set ::de1(mix_temperature) $ShotSample(MixTemp)
 	set ::de1(steam_heater_temperature) $ShotSample(SteamTemp)
+	msg "Steam temp, $::de1(steam_heater_temperature)"
 
 	set water_volume_dispensed_since_last_update [expr {$ShotSample(GroupFlow) * ($delta/100.0)}]
 	if {$water_volume_dispensed_since_last_update < 0} {
@@ -1366,6 +1367,7 @@ proc append_live_data_to_espresso_chart {} {
 			steam_pressure append [round_to_two_digits $::de1(pressure)]
 			steam_flow append [round_to_two_digits $::de1(flow)]
 			steam_temperature append [round_to_two_digits [expr {$::de1(steam_heater_temperature)/100.0}]]
+			#steam_temperature append $::de1(steam_heater_temperature)
 			#set millitime [steam_pour_timer]
 			steam_elapsed append  [expr {[steam_pour_millitimer]/1000.0}]
 		}
@@ -1669,6 +1671,8 @@ proc update_de1_state {statechar} {
 				stop_espresso_timers
 			} elseif {$textstate == "HotWaterRinse" || [ifexists ::previous_textstate] == "HotWaterRinse"} {
 				stop_timer_flush_pour
+			} elseif {$textstate == "Idle"} {
+				# do nothing
 			} else {
 				msg "unknown timer stop: $textstate"
 				#zz12

@@ -495,7 +495,8 @@ add_de1_widget "steam" graph 1810 1090 {
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3} 
+	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3} 
+	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 
 } -plotbackground #FFFFFF -width [rescale_x_skin 700] -height [rescale_y_skin 300] -borderwidth 1 -background #FFFFFF -plotrelief flat 
 
 add_de1_widget "steam_3" graph 1810 1090 { 
@@ -511,7 +512,8 @@ add_de1_widget "steam_3" graph 1810 1090 {
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);   
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3} 
+	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3} 
+	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0
 } -plotbackground #FFFFFF -width [rescale_x_skin 700] -height [rescale_y_skin 300] -borderwidth 1 -background #FFFFFF -plotrelief flat 
 
 
@@ -529,7 +531,8 @@ add_de1_widget "steam_zoom_3" graph 34 214 {
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
+	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
+	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
 } -plotbackground #FFFFFF -width [rescale_x_skin 2490] -height [rescale_y_skin 1190] -borderwidth 1 -background #FFFFFF -plotrelief flat 
 
 add_de1_widget "steam_zoom" graph 34 214 { 
@@ -546,7 +549,8 @@ add_de1_widget "steam_zoom" graph 34 214 {
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
+	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
+	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
 } -plotbackground #FFFFFF -width [rescale_x_skin 2490] -height [rescale_y_skin 1190] -borderwidth 1 -background #FFFFFF -plotrelief flat 
 
 
@@ -930,6 +934,30 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 	add_de1_text "steam" 1870 570 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 		add_de1_variable "steam" 2470 570 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
+	# zoomed steam chart
+	add_de1_text "steam_zoom_3 steam_zoom" 250 1440 -justify right -anchor "nw" -text [translate "Steaming"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+		add_de1_variable "steam_zoom_3 steam_zoom" 230 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steam_pour_timer][translate "s"]} 
+	add_de1_variable "steam_zoom_3 steam_zoom" 250 1490 -justify right -anchor "nw" -text [translate "Done"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[steam_done_timer] < $::settings(seconds_to_display_done_steam)} {return [translate Done]} else { return ""}]} 
+		add_de1_variable "steam_zoom_3 steam_zoom" 230 1490 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[steam_done_timer] < $::settings(seconds_to_display_done_steam)} {return "[steam_done_timer][translate s]"} else { return ""}]} 
+	add_de1_text "steam_zoom_3 steam_zoom" 250 1540 -justify right -anchor "nw" -text [translate "Auto-Off"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+		add_de1_variable "steam_zoom_3 steam_zoom" 230 1540 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
+
+	add_de1_text "steam_zoom_3 steam_zoom" 870 1440 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+		add_de1_variable "steam_zoom_3 steam_zoom" 850 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
+		add_de1_variable "steam_zoom_3 steam_zoom" 700 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[round_to_integer $::de1(steam_heater_temperature)]} 
+
+	add_de1_text "steam_zoom_3 steam_zoom" 870 1490 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+		add_de1_variable "steam_zoom_3 steam_zoom" 850 1490 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
+	add_de1_text "steam_zoom_3 steam_zoom" 870 1540 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+		add_de1_variable "steam_zoom_3 steam_zoom" 850 1540 -justify left -anchor "ne" -text "" -font Helv_7 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+
+
+	# when steam is off
+	add_de1_text "steam_1" 1100 1270 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
+		add_de1_variable "steam_1" 1680 1270 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
+
+
+
 profile_has_changed_set_colors
 
 proc skins_page_change_due_to_de1_state_change { textstate } {
@@ -952,5 +980,5 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
 #add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
-#set_next_page off ghc_espresso;
+#set_next_page off steam_1;
 ##
