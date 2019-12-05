@@ -1366,7 +1366,20 @@ proc append_live_data_to_espresso_chart {} {
 		#puts "append_live_data_to_espresso_chart $::de1(pressure)"
 			steam_pressure append [round_to_two_digits $::de1(pressure)]
 			steam_flow append [round_to_two_digits $::de1(flow)]
-			steam_temperature append [round_to_two_digits [expr {$::de1(steam_heater_temperature)/100.0}]]
+
+			#steam_pressure append 3
+			#steam_flow append 1
+
+			#steam_temperature append [round_to_two_digits [expr {$::de1(steam_heater_temperature)/100.0}]]
+			if {$::settings(enable_fahrenheit) == 1} {
+				steam_temperature append [round_to_integer [celsius_to_fahrenheit $::de1(steam_heater_temperature)]]
+			} else {
+				steam_temperature append [round_to_integer $::de1(steam_heater_temperature)]
+			}
+				#return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
+
+			#steam_temperature append [round_to_two_digits [expr {$::de1(steam_heater_temperature)/100.0}]]
+			#steam_temperature append 1.5
 			#steam_temperature append $::de1(steam_heater_temperature)
 			#set millitime [steam_pour_timer]
 			steam_elapsed append  [expr {[steam_pour_millitimer]/1000.0}]

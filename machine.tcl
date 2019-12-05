@@ -66,6 +66,8 @@ array set ::de1 {
 	volume 0
 	wrote 0
 	cmdstack {}
+	widget_current_profile_name_color_normal "#ff6b6b"
+	widget_current_profile_name_color_changed "#969eb1"
 	water_level_mm_correction 5
 	scale_autostop_triggered 1
 	water_level_full_point 40
