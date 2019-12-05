@@ -554,7 +554,13 @@ add_de1_widget "steam_zoom_3" graph 34 914 {
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
-	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+	
+	if {$::settings(enable_fahrenheit) == 1} {
+		$widget axis configure y -color #008c4c -tickfont Helv_6 -min 250 -max 350 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+	} else {
+		$widget axis configure y -color #008c4c -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+	}
+	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
 } -plotbackground #FFFFFF -width [rescale_x_skin 2490] -height [rescale_y_skin 490] -borderwidth 1 -background #FFFFFF -plotrelief flat 
 
 
@@ -597,7 +603,11 @@ add_de1_widget "steam_zoom" graph 34 914 {
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
-	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+	if {$::settings(enable_fahrenheit) == 1} {
+		$widget axis configure y -color #008c4c -tickfont Helv_6 -min 250 -max 350 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+	} else {
+		$widget axis configure y -color #008c4c -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+	}
 } -plotbackground #FFFFFF -width [rescale_x_skin 2490] -height [rescale_y_skin 490] -borderwidth 1 -background #FFFFFF -plotrelief flat 
 
 
