@@ -2896,3 +2896,85 @@ proc return_steam_heater_calibration {steam_temperature} {
 	}
 	return [return_temperature_setting $steam_temperature]
 }
+
+proc Restart_app {} {
+   #foreach w [winfo children .] {
+    ##   destroy $w
+   #}
+   #source [info script]
+
+	setup_images_for_first_page
+	setup_images_for_other_pages
+	.can itemconfigure splash -state hidden
+
+	#after $::settings(timer_interval) 
+	update_onscreen_variables
+	delay_screen_saver
+	change_screen_saver_img
+
+
+#de1_ui_startup
+
+}
+
+foreach p [info procs] { set kpv(p,$p) 1 }
+ foreach p [info vars]  { set kpv(v,$p) 1 }
+ set kpv(p,bgerror) 1
+
+ #######################################################################
+ #
+ # Restart
+ #
+ # Deletes all non-root widgets and all bindings This allows us to
+ # reload the source file without getting any errors.
+ #
+ proc Restart_app {{f ""}} {
+
+
+
+#    global kpv tk_version
+ 
+    ;#catch {auto_reset}                        ;# Undo all autoload stuff
+    if [info exists tk_version] {               ;# In wish not tclsh
+        . config -cursor {}
+        eval destroy [winfo children .]         ;# Kill all children windows
+  
+        foreach v [bind .] {                    ;# Remove all bindings also
+            bind . $v {}
+        }
+        if {$tk_version >= 4.0} {               ;# Kill after events
+            catch {foreach v [after info] {after cancel $v}}
+        }
+        if {$tk_version >= 8} {                 ;# Font stuff
+            catch { eval font delete [font names] }
+            eval image delete [image names]     ;# Image stuff
+        }
+        wm geom . {}                            ;# Reset main window geometry
+        . config -width 200 -height 200
+        raise .
+    }
+    foreach v [info procs] {                    ;# Remove unwanted procs
+        if {[info exists kpv(p,$v)] == 0} {
+            catch {rename $v {}}
+        }
+    }
+ #     foreach v [namespace children] {
+ #       if {[info exists kpv(n,$v)] == 0} {
+ #           catch {namespace delete $v}
+ #       }
+ #     }
+    
+    uplevel {                                   ;# Get at global variables 
+        foreach _v [info vars] {                ;# Remove unwanted variables
+            if {[info exists kpv(v,$_v)] == 0} {;# Part of the core?
+                catch {unset $_v}
+            }
+        }
+        catch { unset _v }
+    }
+    if [file exists $f] {
+       # uplevel source $f
+    }
+
+    source "de1plus.tcl"
+ }
