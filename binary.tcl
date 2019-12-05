@@ -182,7 +182,14 @@ proc return_de1_packed_steam_hotwater_settings {} {
 
 	#puts "xx $::settings(water_volume)"
 	set arr(SteamSettings) [expr {0 & 0x80 & 0x40}]
-	set arr(TargetSteamTemp) [convert_float_to_U8P0 $::settings(steam_temperature)]
+
+	# turn the steam heater off completely, if the heater is set to below 130ºC
+	set steam_temperature $::settings(steam_temperature)
+	if {$steam_temperature < 130} {
+		set steam_temperature 0
+	}
+
+	set arr(TargetSteamTemp) [convert_float_to_U8P0 $steam_temperature]
 	set arr(TargetSteamLength) [convert_float_to_U8P0 $::settings(steam_timeout)]
 	set arr(TargetHotWaterTemp) [convert_float_to_U8P0 $::settings(water_temperature)]
 	set arr(TargetHotWaterVol) [convert_float_to_U8P0 $::settings(water_volume)]

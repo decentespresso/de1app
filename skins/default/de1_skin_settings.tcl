@@ -732,7 +732,13 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; profile_has_changed_set_colors;
-			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit steam_temperature water_refill_point language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1  || [ifexists ::app_has_updated] == 1} {
+			if {[array_item_difference ::settings ::settings_backup "steam_temperature water_refill_point"] == 1} {
+				# resend the calibration settings if they were changed
+				de1_send_steam_hotwater_settings
+				de1_send_waterlevel_settings
+			}
+
+			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1  || [ifexists ::app_has_updated] == 1} {
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 				set_next_page off message; page_show message
 				after 1000 app_exit
@@ -757,7 +763,7 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 		if {$enable_flow_calibration == 1} {
 			#add_de1_variable "calibrate" 500 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(calibration_flow)]}
 		}
-		add_de1_variable "calibrate" 500 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(steam_temperature)}
+		add_de1_variable "calibrate" 500 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
 		add_de1_variable "calibrate" 500 875 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(stop_weight_before_seconds)}
 
 	add_de1_text "calibrate" 720 340 -text [translate "Factory"] -font Helv_8_bold -fill "#7f879a" -anchor "ne" 
@@ -766,7 +772,7 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 		if {$enable_flow_calibration == 1} {
 			add_de1_variable "calibrate" 720 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_flow)]}
 		}
-		add_de1_variable "calibrate" 720 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(steam_temperature)}
+		add_de1_variable "calibrate" 720 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
 		add_de1_variable "calibrate" 720 875 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(stop_weight_before_seconds)}
 
 
@@ -792,7 +798,8 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 			add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}
 		}
 
-		add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_measurement $::settings(steam_temperature)]}
+		#add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_measurement $::settings(steam_temperature)]}
+		add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
 
 		add_de1_variable "calibrate" 1750 875 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[seconds_text $::settings(stop_weight_before_seconds)]}
 
@@ -823,7 +830,7 @@ add_de1_text "calibrate" 1280 90 -text [translate "Calibrate"] -font Helv_20_bol
 		
 		#add_de1_widget "calibrate" scale 1880 875 {} -to 100 -from 60 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 100] -variable ::settings(shot_weight_percentage_stop) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 
-		add_de1_widget "calibrate" scale 1880 750 {} -to 170 -from 135 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 400]  -width [rescale_y_skin 100] -variable ::settings(steam_temperature) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "calibrate" scale 1880 750 {} -to 170 -from 129 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 100] -variable ::settings(steam_temperature) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 
 		add_de1_widget "calibrate" scale 1880 875 {} -to 5 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 400]  -width [rescale_y_skin 100] -variable ::settings(stop_weight_before_seconds) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		

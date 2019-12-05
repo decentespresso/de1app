@@ -1175,6 +1175,7 @@ proc round_temperature_number {in} {
 }
 
 proc return_temperature_setting {in} {
+	#msg "return_temperature_setting: $in"
 	if {[de1plus]} {
 		if {$::settings(enable_fahrenheit) == 1} {
 			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
@@ -2886,4 +2887,12 @@ proc refill_kit_retry_button {} {
 	} else {
 		return ""
 	}
+}
+
+proc return_steam_heater_calibration {steam_temperature} {
+
+	if {$steam_temperature < 130} {
+		return [translate "off"]		
+	}
+	return [return_temperature_setting $steam_temperature]
 }
