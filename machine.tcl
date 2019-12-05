@@ -163,7 +163,7 @@ array set ::settings {
 	default_font_calibration 0.5
 	language en
 	steam_over_temp_threshold 180
-	steam_over_pressure_threshold 3
+	steam_over_pressure_threshold 5
 	automatically_ble_reconnect_forever_to_scale 0
 	tare_only_on_espresso_start 0
 	steam_over_pressure_count_trigger 10
@@ -545,6 +545,7 @@ proc reset_gui_starting_steam {} {
 	steam_elapsed length 0
 	steam_pressure length 0
 	steam_flow length 0
+	steam_temperature length 0
 	#steam_pressure append 0
 	#steam_elapsed append 0
 }
@@ -786,6 +787,7 @@ proc check_if_steam_clogged {} {
 	}
 
 	set ::settings(steam_over_temp_threshold) 180
+	set ::settings(steam_over_pressure_threshold) 5
 
 	set bad_pressure 0
 	set bad_temp 0
@@ -807,7 +809,7 @@ proc check_if_steam_clogged {} {
 
 	if {$::settings(steam_over_temp_count_trigger) != 0} {
 		# steam_temperature is mapped to the charts at 1/100th scale, so we need to multiple the threshold here by 100
-		set over_temp [steam_temperature search [expr {$::settings(steam_over_temp_threshold) / 100.0}] 999]
+		set over_temp [steam_temperature search $::settings(steam_over_temp_threshold) 999]
 		if {[llength $over_temp] > $::settings(steam_over_temp_count_trigger)} {
 			set bad_temp 1
 		}
