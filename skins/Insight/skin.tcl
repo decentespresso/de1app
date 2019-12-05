@@ -944,7 +944,7 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 
 	add_de1_text "steam_zoom_3 steam_zoom" 870 1440 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
 		add_de1_variable "steam_zoom_3 steam_zoom" 850 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
-		add_de1_variable "steam_zoom_3 steam_zoom" 700 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[round_to_integer $::de1(steam_heater_temperature)]} 
+		#add_de1_variable "steam_zoom_3 steam_zoom" 700 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[round_to_integer $::de1(steam_heater_temperature)]} 
 
 	add_de1_text "steam_zoom_3 steam_zoom" 870 1490 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
 		add_de1_variable "steam_zoom_3 steam_zoom" 850 1490 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
@@ -952,7 +952,7 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 		add_de1_variable "steam_zoom_3 steam_zoom" 850 1540 -justify left -anchor "ne" -text "" -font Helv_7 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
 
-	# when steam is off
+	# when steam is off, display current steam heater temp
 	add_de1_text "steam_1" 1100 1270 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 		add_de1_variable "steam_1" 1680 1270 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
 
