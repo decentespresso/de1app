@@ -1392,9 +1392,19 @@ proc export_csv {arrname fn} {
     set lines {}
     set lines [subst {espresso_elapsed,espresso_pressure,espresso_flow,espresso_flow_weight,espresso_temperature_basket,espresso_temperature_mix,espresso_weight\n}]
 
-    for {set x 0} {$x < [llength $arr(espresso_elapsed)]} {incr x} {
-        set line [subst {[lindex $arr(espresso_elapsed) $x],[lindex $arr(espresso_pressure) $x],[lindex $arr(espresso_flow) $x],[lindex $arr(espresso_flow_weight) $x],[lindex $arr(espresso_temperature_basket) $x],[lindex $arr(espresso_temperature_mix) $x],[lindex $arr(espresso_weight) $x]\n}]
-        append lines $line
+    set elapsed [llength $arr(espresso_elapsed)]
+    for {set x 0} {$x < $elapsed} {incr x} {
+        catch {
+            set failed 1
+            set line [subst {[lindex $arr(espresso_elapsed) $x],[lindex $arr(espresso_pressure) $x],[lindex $arr(espresso_flow) $x],[lindex $arr(espresso_flow_weight) $x],[lindex $arr(espresso_temperature_basket) $x],[lindex $arr(espresso_temperature_mix) $x],[lindex $arr(espresso_weight) $x]\n}]
+            append lines $line
+            set failed 0
+        } err
+
+        if {$failed == 1} {
+            puts "$err: '$fn'"
+        }
+
     }
 
     #set newfile "[file rootname $rootname].csv"
