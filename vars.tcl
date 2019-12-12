@@ -1681,6 +1681,11 @@ proc fill_profiles_listbox {} {
 		if {[string tolower $::settings(profile)] == [string tolower [ifexists profile(profile_title)]]} {
 			set ::current_profile_number $cnt
 			#puts "current profile of '$d' is #$cnt"
+		} elseif {[language] != "en"} {
+			if {[string tolower $::settings(profile)] == [string tolower [translate [ifexists profile(profile_title)]]]} {
+				set ::current_profile_number $cnt
+			#	msg "translated current profile of '$d' is #$cnt"
+			}
 		}
 
 		incr cnt
@@ -2324,6 +2329,7 @@ proc preview_profile {} {
 	}
 
 	#puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
+	set ::settings(profile) $::settings(profile_title)
 
 	update_onscreen_variables
 	profile_has_not_changed_set
