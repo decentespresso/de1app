@@ -97,31 +97,42 @@ if {[language] == "fr" || [language] == "es" || [language] == "sv"} {
 
 set ::current_espresso_page "off"
 
+# the position of each text string is somewhat dependent on the icon to the left of it, and how much space that icon takes up
+set flush_button_text_position 386
+set espresso_button_text_position 1040
+set steam_button_text_position 1655
+set hotwater_button_text_position 2280
+
+# lighter grey, matches icons
+set toptab_unselected_color "#8c8d96"
+
+# darker grey, easier to read
+#set toptab_unselected_color "#5a5d75"
 
 # labels for PREHEAT tab on
-add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" $flush_button_text_position 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" $espresso_button_text_position 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" $steam_button_text_position 100 -text [translate "STEAM"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" $hotwater_button_text_position 100 -text [translate "WATER"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
 
 # labels for ESPRESSO tab on
-add_de1_text "off espresso espresso_3" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "off espresso espresso_3" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "off espresso espresso_3" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "off_zoomed espresso_3_zoomed espresso_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2350 90 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "off espresso espresso_3" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "off espresso espresso_3" $flush_button_text_position 100 -text [translate "FLUSH"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "off espresso espresso_3" $espresso_button_text_position 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "off espresso espresso_3" $steam_button_text_position 100 -text [translate "STEAM"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "off_zoomed espresso_3_zoomed espresso_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2350 90 -text [translate "STEAM"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "off espresso espresso_3" $hotwater_button_text_position 100 -text [translate "WATER"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
 
 # labels for STEAM tab on
-add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" $flush_button_text_position 100 -text [translate "FLUSH"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" $espresso_button_text_position 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" $steam_button_text_position 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "steam steam_1 steam_3 steam_zoom_3 steam_zoom" $hotwater_button_text_position 100 -text [translate "WATER"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
 
 # labels for HOT WATER tab on
-add_de1_text "water water_1 water_3" 405 100 -text [translate "FLUSH"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "water water_1 water_3" 1035 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "water water_1 water_3" 1665 100 -text [translate "STEAM"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-add_de1_text "water water_1 water_3" 2290 100 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
+add_de1_text "water water_1 water_3" $flush_button_text_position 100 -text [translate "FLUSH"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "water water_1 water_3" $espresso_button_text_position 100 -text [translate "ESPRESSO"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "water water_1 water_3" $steam_button_text_position 100 -text [translate "STEAM"] -font Helv_10_bold -fill $toptab_unselected_color -anchor "center" 
+add_de1_text "water water_1 water_3" $hotwater_button_text_position 100 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
 add_de1_button "off espresso_3 steam_1 steam_3 steam_zoom_3 water_1 water_3 water_4" {say [translate {Flush}] $::settings(sound_button_in); set_next_page off preheat_1; page_show preheat_1; if {$::settings(one_tap_mode) == 1} { set_next_page hotwaterrinse preheat_2; start_hot_water_rinse } } 0 0 641 188
@@ -991,6 +1002,7 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 	add_de1_text "steam" 1870 570 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 		add_de1_variable "steam" 2470 570 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
+
 	# zoomed steam chart
 	add_de1_text "steam_zoom_3 steam_zoom" 250 1440 -justify right -anchor "nw" -text [translate "Steaming"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
 		add_de1_variable "steam_zoom_3 steam_zoom" 230 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steam_pour_timer][translate "s"]} 
@@ -1007,6 +1019,10 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 		add_de1_variable "steam_zoom_3 steam_zoom" 850 1490 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
 	add_de1_text "steam_zoom_3 steam_zoom" 870 1540 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
 		add_de1_variable "steam_zoom_3 steam_zoom" 850 1540 -justify left -anchor "ne" -text "" -font Helv_7 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+
+	# stop button when zoomed on steam
+	add_de1_variable "steam_zoom" 2100 1510 -text "\[ [translate "STOP"] \]" -font $green_button_font -fill "#2d3046" -anchor "center"  -textvariable {\[ [stop_text_if_espresso_stoppable] \]} 
+	add_de1_button "steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 0 1410 2560 1600
 
 
 	# when steam is off, display current steam heater temp
@@ -1037,5 +1053,5 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
 #add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
-#set_next_page off steam_zoom_3;
+#set_next_page off steam_zoom;
 ##
