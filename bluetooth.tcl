@@ -1489,12 +1489,12 @@ proc de1_ble_handler { event data } {
 
 							set ::globals(if_in_sleep_move_to_idle) 1
 							de1_enable_temp_notifications
+							de1_send_waterlevel_settings
 							de1_enable_water_level_notifications
 							de1_send_steam_hotwater_settings
 							de1_send_shot_frames
 							read_de1_version
 							de1_enable_state_notifications
-							de1_send_waterlevel_settings
 							read_de1_state
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet

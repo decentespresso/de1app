@@ -725,7 +725,7 @@ proc start_idle {} {
 	de1_send_state "go idle" $::de1_state(Idle)
 	
 	if {$::de1(scale_device_handle) != 0} {
-		scale_enable_lcd
+		#scale_enable_lcd
 	}
 
 	if {$::android == 0} {
@@ -768,7 +768,7 @@ proc start_sleep {} {
 	de1_send_state "go to sleep" $::de1_state(Sleep)
 
 	if {$::de1(scale_device_handle) != 0} {
-		scale_disable_lcd
+		#scale_disable_lcd
 	}
 
 	

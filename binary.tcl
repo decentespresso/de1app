@@ -1633,6 +1633,11 @@ proc update_de1_state {statechar} {
 				msg "Back from sleep, try to connect to scale automatically (if it is currently disconnected)"
 				ble_connect_to_scale
 			}
+
+			scale_tare
+			scale_enable_lcd
+		} elseif {[ifexists ::previous_textstate] != "Sleep" && $textstate == "Sleep"} {
+			scale_disable_lcd
 		}
 	}
 
@@ -1653,23 +1658,27 @@ proc update_de1_state {statechar} {
 				#skale_timer_off
 				if {$::timer_running == 0 && $textstate == "Espresso"} {
 					#start_timers
-					if {$::de1(scale_device_handle) == 0} {
-						scale_tare
-						scale_timer_start
-					}
-
-
+					scale_tare
+					scale_timer_start
 					start_espresso_timers
 					#set ::timer_running 1
+				}
+				
+				if {$textstate == "HotWaterRinse"} {
+					# tare the scale when doing a flush, in case they want to see how much water they put in (to preheat a cup)
+					scale_tare
+				}
+				
+				if {$textstate == "HotWater"} {
+					# tare the scale when doing a hot water pour, so they can compare it to the amount of water they asked for
+					scale_tare
 				}
 				
 			} elseif {($current_de1_substate != 5 || $current_de1_substate == 4) && $textstate == "Espresso"} {
 				# shot is ended, so turn timer off
 				if {$::timer_running == 1} {
 					#set ::timer_running 0
-					if {$::de1(scale_device_handle) == 0} {
-						scale_timer_stop
-					}
+					scale_timer_stop
 					stop_espresso_timers
 				}
 			}
