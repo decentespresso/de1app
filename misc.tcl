@@ -70,6 +70,7 @@ proc make_de1_dir {} {
         create_de1plus_icon.tcl *
         create_de1_update_icon.tcl *
         appupdate.tcl *
+        cline_appupdate.tcl *
         autopair_with_de1.tcl *
         autopair_with_de1plus.tcl *
         history_export.tcl *
