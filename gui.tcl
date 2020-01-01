@@ -938,6 +938,16 @@ proc randomRangeString {length {chars "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno
     return $txt
 }
 
+proc display_popup_android_message_if_necessary {intxt} {
+	set msg ""
+	regexp {\[(.*?)\]} $intxt discard msg
+	if {$msg != ""} {
+		borg toast $msg 1
+		#puts $msg
+	}
+	
+}
+
 
 proc update_onscreen_variables { {state {}} } {
 

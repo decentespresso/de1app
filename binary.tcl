@@ -1291,6 +1291,7 @@ proc update_de1_shotvalue {packed} {
 
 		if {$::de1(substate) == $::de1_substate_types_reversed(preinfusion) || $::de1(substate) == $::de1_substate_types_reversed(pouring)} {
 			set ::settings(current_frame_description) $framedesc
+			display_popup_android_message_if_necessary $framedesc
 		} else {
 			#set ::settings(current_frame_description) "$::de1(state) $::de1(substate) $::de1(current_frame_number)"
 			set ::settings(current_frame_description) ""

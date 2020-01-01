@@ -98,10 +98,10 @@ if {[language] == "fr" || [language] == "es" || [language] == "sv"} {
 set ::current_espresso_page "off"
 
 # the position of each text string is somewhat dependent on the icon to the left of it, and how much space that icon takes up
-set flush_button_text_position 386
+set flush_button_text_position 380
 set espresso_button_text_position 1040
-set steam_button_text_position 1655
-set hotwater_button_text_position 2280
+set steam_button_text_position 1646
+set hotwater_button_text_position 2276
 
 # lighter grey, matches icons
 set toptab_unselected_color "#8c8d96"

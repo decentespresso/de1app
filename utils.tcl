@@ -691,6 +691,8 @@ proc android_specific_stubs {} {
             # do nothing
         } elseif {[lindex $args 0] == "spinner"} {
             # do nothing
+        } elseif {[lindex $args 0] == "toast"} {
+            puts "screen popup message: '$args'"
         } elseif {[lindex $args 0] == "brightness"} {
             if {[lindex $args 1] == ""} {
                 return 70
