@@ -938,12 +938,22 @@ proc randomRangeString {length {chars "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno
     return $txt
 }
 
+proc cancel_borg_notifications {} {
+	borg notification delete
+}
+
 proc display_popup_android_message_if_necessary {intxt} {
+
+	if {[string first "*" $intxt] != -1} {
+		# beep if a * is found in the description
+		borg beep
+	}
+
 	set msg ""
 	regexp {\[(.*?)\]} $intxt discard msg
 	if {$msg != ""} {
-		borg toast $msg 1
-		#puts $msg
+		# post the message 1 second after the start, so that there's a slight delay 
+		after 1000 [list borg toast $msg 1]
 	}
 	
 }
