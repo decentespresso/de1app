@@ -1517,15 +1517,23 @@ proc profile_directories {} {
 }
 
 proc delete_selected_profile {} {
+	set w $::globals(profiles_listbox)
+	#$w selection set $::current_profile_number
+	#puts "cc: '[$w curselection]'"
+	set profile [lindex [profile_directories] [lindex [$w curselection] 0]]
+	set fn "[homedir]/profiles/${profile}.tcl"
+	puts "todelete: '$fn'"
 
 	set todel $::settings(profile)
-	#puts "delete profile: $todel"
-	if {$todel == "default"} {
+	puts "delete profile: $todel"
+	if {$profile == "default"} {
+		msg "cannot delete default profile"
 		return
 	}
+	#return
 
-	puts [subst {file delete "[homedir]/profiles/${todel}.tcl"}]
-	file delete "[homedir]/profiles/${todel}.tcl"
+	#puts [subst {file delete "[homedir]/profiles/${todel}.tcl"}]
+	file delete $fn
 	set ::settings(profile) "default"
 	fill_profiles_listbox 
 	#preview_profile 
@@ -2057,7 +2065,8 @@ proc save_new_tablet_skin_setting {} {
 
 
 proc preview_tablet_skin {} {
-	if {$::de1(current_context) != "settings_3"} {
+	
+	if {$::de1(current_context) != "tabletstyles"} {
 		return 
 	}
 
@@ -2286,6 +2295,8 @@ proc preview_profile {} {
 	set ::settings(profile) $profile
 	set ::settings(profile_notes) ""
 	set fn "[homedir]/profiles/${profile}.tcl"
+
+	puts "fn: '$fn'"
 
 	# for importing De1 profiles that don't have this feature.
 	set ::settings(preinfusion_flow_rate) 4
