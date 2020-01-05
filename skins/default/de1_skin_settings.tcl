@@ -720,7 +720,7 @@ if {[de1plus]} {
 }
 
 set pos_preset_label 380
-set pos_profile_label 1020
+set pos_profile_label 1010
 set pos_machine_label 1650
 set pos_app_label 2270
 
