@@ -189,6 +189,7 @@ array set ::settings {
 	chart_dashes_temperature ""
 	zoomed_y_axis_scale 12
 	name {}
+	display_espresso_water_temp_difference 0
 	chart_dashes_pressure ""
 	debuglog_window_size 35
 	water_level_sensor_max 50
