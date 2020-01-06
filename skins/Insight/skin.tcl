@@ -247,6 +247,10 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 1174 {
 
 	$widget element create line_espresso_temperature_goal -xdata espresso_elapsed -ydata espresso_temperature_goal -symbol none -label ""  -linewidth [rescale_x_skin 8] -color #ffa5a6 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
 	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 12] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+	$widget element create line_espresso_temperature_mix -xdata espresso_elapsed -ydata espresso_temperature_mix -symbol none -label ""  -linewidth [rescale_x_skin 2] -color #ffc2c1 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 
+	#-dashes $::settings(chart_dashes_temperature_mix);  
+
+
 
 	$widget element create god_line_espresso_temperature_basket -xdata espresso_elapsed -ydata god_espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 24] -color #ffe4e7 -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 	$widget element create line_espresso_state_change_3 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ; 
@@ -385,6 +389,8 @@ add_de1_widget "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zo
 	$widget element create line_espresso_temperature_goal -xdata espresso_elapsed -ydata espresso_temperature_goal -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #ffa5a6 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
 	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 	$widget element create god_line_espresso_temperature_basket -xdata espresso_elapsed -ydata god_espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 20] -color #ffe4e7 -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_temperature_mix2 -xdata espresso_elapsed -ydata espresso_temperature_mix -symbol none -label ""  -linewidth [rescale_x_skin 2] -color #ffc2c1 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 
+
 	$widget element create line_espresso_state_change_4 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ; 
 	$widget axis configure x -color #e73249 -tickfont Helv_6; 
 	$widget axis configure y -color #e73249 -tickfont Helv_6 -subdivisions 5; 
