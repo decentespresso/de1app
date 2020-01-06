@@ -99,7 +99,21 @@ proc add_de1_page {names filename {skin ""} } {
 	set pngfilename "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/$filename"
 	set srcfilename "[homedir]/skins/$skin/2560x1600/$filename"
 
-	if {[file exists $pngfilename] != 1} {
+	set make_new_image 0
+	if {$::screen_size_width == 1280 && $::screen_size_height == 800} {
+		# no redoing, as these are shipping with the app
+	} elseif {$::screen_size_width == 2560 && $::screen_size_height == 1600} {
+		# no redoing, as these are shipping with the app
+	} elseif {[file exists $pngfilename] != 1} {
+		set make_new_image 1
+		msg "Making new image because destination image does not exist: $pngfilename"
+	} elseif {[file mtime $srcfilename] > [file mtime $pngfilename]} {
+		# if the source image is newer than the target image, 
+		set make_new_image 1
+		msg "Making new image because date of src image is newer: $srcfilename"
+	}
+
+	if {$make_new_image == 1} {
 		borg spinner on
     	catch {
     		file mkdir "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/"
