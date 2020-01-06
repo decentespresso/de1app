@@ -2094,7 +2094,7 @@ proc god_shot_files {} {
 	    
 	    set fn "[homedir]/godshots/$f"
 	    array unset -nocomplete godprops
-	    array set godprops [read_file $fn]
+	    array set godprops [encoding convertfrom utf-8 [read_binary_file $fn]]
 
 	    set name [ifexists godprops(name)]
 	    if {$name == "None"} {
@@ -2176,7 +2176,7 @@ proc save_to_god_shots {} {
 	foreach f $files {
 	    set fn "[homedir]/godshots/$f"
 	    array unset -nocomplete godprops
-	    array set godprops [read_file $fn]
+	    array set godprops [encoding convertfrom utf-8[read_binary_file $fn]]
 	    if {[ifexists godprops(name)] == $::settings(god_espresso_name)} {
 	    	puts "found pre-existing god shot $f with the same description"
 	    	set filename $f
@@ -2256,7 +2256,8 @@ proc load_god_shot { {force 0} } {
 
 	set fn "[homedir]/godshots/$f"
 	array unset -nocomplete godprops
-	array set godprops [read_file $fn]
+	#array set godprops [read_file $fn]
+	array set godprops [encoding convertfrom utf-8 [read_binary_file $fn]]
 
     set ::settings(god_espresso_pressure) $godprops(espresso_pressure)
     set ::settings(god_espresso_temperature_basket) $godprops(espresso_temperature_basket)
