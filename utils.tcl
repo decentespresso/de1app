@@ -1361,6 +1361,11 @@ proc shot_history_count_profile_use {} {
 
 proc shot_history_export {} {
 
+    # optionally disable this feature
+    if {$::settings(export_history_automatically_to_csv) != "1"} {    
+        return
+    }
+
     set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
     set dd {}
     #puts -nonewline "Exporting"
