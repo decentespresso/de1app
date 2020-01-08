@@ -19,6 +19,8 @@ profile_notes {This profile simulates a Londinium R machines extraction style. T
 water_temperature 80
 final_desired_shot_weight 32
 final_desired_shot_weight_advanced 32
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 0
 preinfusion_guarantee 1
 profile_title {Londinium R by Damian Brakel}
 profile_language en

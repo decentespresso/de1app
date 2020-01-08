@@ -6,7 +6,7 @@ espresso_pressure 7.0
 espresso_decline_time 20
 pressure_end 4.3
 espresso_temperature 96.0
-settings_profile_type settings_2c2
+settings_profile_type settings_2c
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6
 flow_profile_hold 2.3
@@ -19,6 +19,8 @@ profile_notes {A light roast pressure profile that emulates the flow and tempera
 water_temperature 80
 final_desired_shot_weight 42
 final_desired_shot_weight_advanced 42
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 0
 preinfusion_guarantee 1
 profile_title {Espresso Forge Light}
 profile_language en

@@ -101,6 +101,10 @@ proc tare_counter_incr {} {
 
 }
 
+proc int_to_hex {in} {
+	return [format %02X $in]
+}
+
 proc decent_scale_tare_cmd {} {
 	tare_counter_incr
 	set cmd [decent_scale_make_command "0F" [format %02X $::decent_scale_tare_counter]]
@@ -290,6 +294,7 @@ proc decentscale_tare {} {
 	set tare [binary decode hex "10"]
 	set ::de1(scale_weight) 0
 	set ::de1(scale_weight_rate) 0
+	set ::de1(scale_weight_rate_raw) 0
 
 	# if this was a scheduled tare, indicate that the tare has completed
 	unset -nocomplain ::scheduled_scale_tare_id
@@ -323,7 +328,7 @@ proc skale_tare {} {
 	}
 	set tare [binary decode hex "10"]
 	set ::de1(scale_weight) 0
-	set ::de1(scale_weight_rate) 0
+	set ::de1(scale_weight_rate_raw) 0
 
 	# if this was a scheduled tare, indicate that the tare has completed
 	unset -nocomplain ::scheduled_scale_tare_id
@@ -511,6 +516,16 @@ proc de1_disable_state_notifications {} {
 	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
 }
 
+proc de1_enable_mmr_notifications {} {
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command 7"
+		return
+	}
+
+	#userdata_append "enable MMR write notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06))]
+	userdata_append "enable MMR read notifications" [list ble enable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_05) $::cinstance($::de1(cuuid_05))]
+}
+
 # water level notifications
 proc de1_enable_water_level_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
@@ -655,6 +670,56 @@ proc firmware_upload_next {} {
 	}
 }
 
+
+proc mmr_read {address length} {
+
+ 	set mmrlen [binary decode hex $length]	
+	set mmrloc [binary decode hex $address]
+	set data "$mmrlen${mmrloc}[binary decode hex 00000000000000000000000000000000]"
+	
+	#set data [expr "0x0080380C"]
+	#set data [binary decode hex "0080380C"]
+
+	if {$::android != 1} {
+		msg "MMR requesting read [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc]: with comment [convert_string_to_hex $data]"
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command 11"
+		return
+	}
+
+	userdata_append "MMR requesting read [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc] with '[convert_string_to_hex $data]'" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_05) $::cinstance($::de1(cuuid_05)) $data]
+
+}
+
+proc mmr_write { address length value} {
+ 	set mmrlen [binary decode hex $length]	
+	set mmrloc [binary decode hex $address]
+ 	set mmrval [binary decode hex $value]	
+	set data "$mmrlen${mmrloc}${mmrval}[binary decode hex 000000000000000000000000000000]"
+	
+	if {$::android != 1} {
+		msg "MMR writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]"
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot send BLE command 11"
+		return
+	}
+	userdata_append "MMR writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data]
+}
+
+proc set_tank_temperature {temp} {
+	msg "Setting desired water tank temperature to '[zero_pad $::settings(tank_desired_water_temperature) 2]'"
+	mmr_write "80380C" "04" [zero_pad [int_to_hex $temp] 2]
+	#mmr_write "80380C" "04" "0B"
+}
+
+proc get_tank_temperature {} {
+	msg "Reading desired water tank temperature"
+	mmr_read "80380C" "00"
+}
 
 proc de1_cause_refill_now_if_level_low {} {
 
@@ -852,6 +917,14 @@ proc de1_send_shot_frames {} {
 
 		userdata_append "Espresso frame #$cnt: [array get arr3] (FLAGS: [parse_shot_flag $arr3(Flag)])"  [list ble_write_010 $packed_frame]
 	}
+
+	# only set the tank temperature for advanced profile shots
+	if {$::settings(settings_profile_type) == "settings_2c"} {
+		set_tank_temperature $::settings(tank_desired_water_temperature)
+	} else {
+		set_tank_temperature 0
+	}
+
 
 	return
 }
@@ -1314,7 +1387,7 @@ proc de1_ble_handler { event data } {
     	if {$state != "scanning"} {
     		#msg "de1b ble_handler $event $data"
     	} else {
-    		#msg "scanning $event $data"
+    		msg "scanning $event $data"
     	}
 
 		switch -- $event {
@@ -1492,10 +1565,12 @@ proc de1_ble_handler { event data } {
 							de1_send_waterlevel_settings
 							de1_enable_water_level_notifications
 							de1_send_steam_hotwater_settings
+							de1_enable_mmr_notifications
 							de1_send_shot_frames
 							read_de1_version
 							de1_enable_state_notifications
 							read_de1_state
+							
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
 							#catch {
@@ -1612,8 +1687,19 @@ proc de1_ble_handler { event data } {
 				    #ble userdata $handle $cmds
 				} elseif {$state eq "connected"} {
 					#msg "$data"
+					if {$access eq "w"} {
+			    		set ::de1(wrote) 0
+			    		run_next_userdata_cmd
 
-				    if {$access eq "r" || $access eq "c"} {
+			    		if {$cuuid == $::de1(cuuid_05)} {
+			    			# MMR read
+			    			msg "MMR read: '[convert_string_to_hex $value]'"
+			    		} elseif {$cuuid == $::de1(cuuid_06)} {
+			    			# MMR read
+			    			msg "MMR write: '[convert_string_to_hex $value]'"
+			    		}
+
+				    } elseif {$access eq "r" || $access eq "c"} {
 				    	#msg "rc: $data"
 				    	if {$access eq "r"} {
 				    		set ::de1(wrote) 0
@@ -1829,8 +1915,13 @@ proc de1_ble_handler { event data } {
 
 							#set multiplier1 0
 
-							set multiplier2 [expr {1 - $multiplier1}];
+							set multiplier2 [expr {1.0 - $multiplier1}];
 							set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
+
+
+							set multiplier1r 0.5
+							set multiplier2r [expr {1.0 - $multiplier1r}];
+							set thisrawweight [expr {1.0 * ($::de1(scale_sensor_weight) * $multiplier1r) + ($sensorweight * $multiplier2r)}]
 
 							if {$diff != 0} {
 								#msg "Diff: [round_to_two_digits $diff] - mult: [round_to_two_digits $multiplier1] - wt [round_to_two_digits $thisweight] - sen [round_to_two_digits $sensorweight]"
@@ -1844,7 +1935,8 @@ proc de1_ble_handler { event data } {
 						 	}
 
 							# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
-							set flow [expr { $scale_refresh_rate * ($thisweight - $::de1(scale_weight)) }]
+							set flow [expr { 1.0 * $scale_refresh_rate * ($thisweight - $::de1(scale_weight)) }]
+							set flow_raw [expr { 1.0 * $scale_refresh_rate * ($thisrawweight - $::de1(scale_sensor_weight)) }]
 
 							#set flow [expr {($::de1(scale_weight_rate) * $multiplier1) + ($tempflow * $multiplier2)}]
 							if {$flow < 0} {
@@ -1852,9 +1944,10 @@ proc de1_ble_handler { event data } {
 							}
 
 							set ::de1(scale_weight_rate) $flow
+							set ::de1(scale_weight_rate_raw) $flow_raw
 							
 							set ::de1(scale_weight) $thisweight
-							set ::de1(scale_sensor_weight) $sensorweight
+							set ::de1(scale_sensor_weight) $thisrawweight
 							#msg "weight received: $thisweight : flow: $tempflow"
 
 
@@ -1928,6 +2021,12 @@ proc de1_ble_handler { event data } {
 									}
 								}
 							}
+			    		} elseif {$cuuid == $::de1(cuuid_05)} {
+			    			# MMR read
+			    			msg "MMR replied to read: '[convert_string_to_hex $value]'"
+			    		} elseif {$cuuid == $::de1(cuuid_06)} {
+			    			# MMR read
+			    			msg "MMR replied to write: '[convert_string_to_hex $value]'"
 						} else {
 							msg "Confirmed unknown read from DE1 $cuuid: '$value'"
 						}
@@ -2027,6 +2126,8 @@ proc de1_ble_handler { event data } {
 
 				    	set ::de1(wrote) 0
 						run_next_userdata_cmd
+				    } else {
+						msg "de1 unknown descriptor $state: ${event}: ${data}"				    	
 				    }
 
 					set run_this 0

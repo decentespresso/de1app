@@ -6,7 +6,7 @@ espresso_pressure 6.0
 espresso_decline_time 30
 pressure_end 4.0
 espresso_temperature 90.0
-settings_profile_type settings_2c
+settings_profile_type settings_2c2
 flow_profile_preinfusion 4
 flow_profile_preinfusion_time 5
 flow_profile_hold 2
@@ -19,6 +19,8 @@ profile_notes {An advanced spring lever profile that addresses a problem with si
 water_temperature 80
 final_desired_shot_weight 32
 final_desired_shot_weight_advanced 36
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 0
 preinfusion_guarantee 1
 profile_title {Advanced spring lever by John Weiss}
 profile_language en

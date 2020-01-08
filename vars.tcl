@@ -12,7 +12,9 @@ proc clear_espresso_chart {} {
 	espresso_weight_chartable length 0
 	espresso_flow length 0
 	espresso_flow_weight length 0
+	espresso_flow_weight_raw length 0
 	espresso_flow_weight_2x length 0
+	espresso_water_dispensed length 0
 	espresso_flow_2x length 0
 	espresso_pressure_delta length 0
 	espresso_flow_delta length 0
@@ -44,6 +46,8 @@ proc clear_espresso_chart {} {
 	espresso_flow append 0
 	espresso_flow_weight append 0
 	espresso_flow_weight_2x append 0
+	espresso_flow_weight_raw append 0
+	espresso_water_dispensed append 0
 	espresso_flow_2x append 0
 	espresso_pressure_delta append 0
 	espresso_flow_delta append 0
@@ -67,7 +71,7 @@ proc clear_espresso_chart {} {
 }	
 
 proc espresso_chart_structures {} {
-	return [list espresso_elapsed espresso_pressure espresso_weight espresso_weight_chartable espresso_flow espresso_flow_weight espresso_flow_weight_2x espresso_flow_2x espresso_pressure_delta espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3 espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_elapsed_flow_3 espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3]
+	return [list espresso_elapsed espresso_pressure espresso_weight espresso_weight_chartable espresso_flow espresso_flow_weight espresso_flow_weight_raw espresso_water_dispensed espresso_flow_weight_2x espresso_flow_2x espresso_pressure_delta espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3 espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_elapsed_flow_3 espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3]
 }
 
 proc backup_espresso_chart {} {
@@ -585,7 +589,15 @@ proc waterflow {} {
 
 
 		set ::de1(flow) [expr {(.1 * (rand() - 0.5)) + $::de1(flow)}]		
+
+
+		if {[espresso_millitimer] < 5000} {	
+			set ::de1(preinfusion_volume) [expr {$::de1(preinfusion_volume) + ($::de1(flow) * .1) }]
+		} else {
+			set ::de1(pour_volume) [expr {$::de1(pour_volume) + ($::de1(flow) * .1) }]
+		}
 		#set ::de1(flow) [expr {rand() + $::de1(flow) - 0.5}]
+
 	}
 
 	return $::de1(flow)
@@ -740,7 +752,7 @@ proc water_mix_temperature {} {
 			if {$::de1(mix_temperature) == "" || $::de1(mix_temperature) < 85 || $::de1(mix_temperature) > 99} {
 				set ::de1(mix_temperature) 94
 			}
-			set ::de1(mix_temperature) [expr {$::de1(mix_temperature) + ((rand() - 0.5) * .3) }]
+			set ::de1(mix_temperature) [expr {$::de1(head_temperature) + ((rand() - 0.5) * 2) }]
 		}
 			#return [return_flow_weight_measurement [expr {(rand() * 6)}]]
 	}
@@ -852,6 +864,22 @@ proc return_zero_if_blank {in} {
 	return $in
 }
 
+proc return_stop_at_volume_measurement {in} {
+	if {$in == 0} {
+		return [translate "off"]
+	} else {
+		return [return_liquid_measurement [round_to_integer $in]]
+	}
+}
+
+proc return_off_or_temperature {in} {
+	if {$in == 0} {
+		return [translate "off"]
+	} else {
+		return [return_temperature_measurement [round_to_integer $in]]
+	}
+}
+
 proc return_stop_at_weight_measurement {in} {
 	if {$in == 0} {
 		return [translate "off"]
@@ -906,13 +934,19 @@ proc watervolume_text {} {
 proc waterweightflow_text {} {
 	if {$::android == 0} {
 		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
-			if {$::de1(scale_weight_rate) == ""} {
-				set ::de1(scale_weight_rate) 3
+			if {[espresso_millitimer] > 5000} {	
+				# no weight increase for 5s due to preinfusion
+				if {$::de1(scale_weight_rate) == ""} {
+					set ::de1(scale_weight_rate) 3
+				}
+
+				set ::de1(scale_weight_rate) [expr {$::de1(scale_weight_rate) + ((rand() - 0.5) * .3) }]
+				if {$::de1(scale_weight_rate) < 0} {
+					set ::de1(scale_weight_rate) 1
+				}
+				set ::de1(scale_weight_rate_raw) [expr {$::de1(scale_weight_rate) + ((rand() - 0.5) * 1) }]
 			}
-			set ::de1(scale_weight_rate) [expr {$::de1(scale_weight_rate) + ((rand() - 0.5) * .3) }]
-			if {$::de1(scale_weight_rate) < 0} {
-				set ::de1(scale_weight_rate) 1
-			}
+
 		}
 			#return [return_flow_weight_measurement [expr {(rand() * 6)}]]
 	}
@@ -948,15 +982,20 @@ proc waterweight_text {} {
 	}
 
 	if {$::android == 0} {
-
-		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
-			if {$::de1(scale_weight) == ""} {
-				set ::de1(scale_weight) 3
-			}
-			set ::de1(scale_weight) [expr {$::de1(scale_weight) + (rand() * .3) }]
-			set ::de1(final_water_weight) $::de1(scale_weight)
-		} else {
+		if {[espresso_millitimer] < 5000} {	
+			# no weight increase for 5s due to preinfusion
 			set ::de1(scale_weight) 0
+		} else {
+
+			if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
+				if {$::de1(scale_weight) == ""} {
+					set ::de1(scale_weight) 3
+				}
+				set ::de1(scale_weight) [expr {$::de1(scale_weight) + (rand() * .3) }]
+				set ::de1(final_water_weight) $::de1(scale_weight)
+			} else {
+				set ::de1(scale_weight) 0
+			}
 		}
 
 		#return [return_weight_measurement [expr {round((rand() * 20))}]]
@@ -1173,6 +1212,15 @@ proc round_temperature_number {in} {
 		return [round_to_integer $in]
 	}
 }
+
+proc return_temperature_setting_or_off {in} {
+	if {$in == 0} {
+		return [translate "off"]
+	} else {
+		return [return_temperature_setting $in]
+	}
+}
+
 
 proc return_temperature_setting {in} {
 	#msg "return_temperature_setting: $in"
@@ -1711,6 +1759,7 @@ proc fill_profiles_listbox {} {
 }
 
 proc copy_pressure_profile_to_advanced_profile {} {
+	msg "copy_pressure_profile_to_advanced_profile"
 	set preinfusion [list \
 		name [translate "preinfusion"] \
 		temperature $::settings(espresso_temperature) \
@@ -1767,7 +1816,7 @@ proc copy_pressure_profile_to_advanced_profile {} {
 
 
 proc copy_flow_profile_to_advanced_profile {} {
-	#puts "copy_flow_profile_to_advanced_profile"
+	puts "copy_flow_profile_to_advanced_profile"
 	set preinfusion [list \
 		name [translate "preinfusion"] \
 		temperature $::settings(espresso_temperature) \
@@ -2455,7 +2504,7 @@ proc save_profile {} {
 		set ::settings(profile_title) $::settings(preset_counter)  
 	}
 
-	set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight final_desired_shot_weight_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure}
+	set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure}
 	#set profile_name_to_save $::settings(profile_to_save) 
 
 	if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
@@ -2527,8 +2576,10 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 		append espresso_data "espresso_weight {[espresso_weight range 0 end]}\n"
 		append espresso_data "espresso_flow {[espresso_flow range 0 end]}\n"
 		append espresso_data "espresso_flow_weight {[espresso_flow_weight range 0 end]}\n"
+		append espresso_data "espresso_flow_weight_raw {[espresso_flow_weight_raw range 0 end]}\n"
 		append espresso_data "espresso_temperature_basket {[espresso_temperature_basket range 0 end]}\n"
 		append espresso_data "espresso_temperature_mix {[espresso_temperature_mix range 0 end]}\n"
+		append espresso_data "espresso_water_dispensed {[espresso_water_dispensed range 0 end]}\n"
 
 		append espresso_data "espresso_pressure_goal {[espresso_pressure_goal range 0 end]}\n"
 		append espresso_data "espresso_flow_goal {[espresso_flow_goal range 0 end]}\n"

@@ -1319,7 +1319,7 @@ proc update_de1_shotvalue {packed} {
 
 	set ::de1(mix_temperature) $ShotSample(MixTemp)
 	set ::de1(steam_heater_temperature) $ShotSample(SteamTemp)
-	msg "Steam temp, $::de1(steam_heater_temperature)"
+	#msg "Steam temp, $::de1(steam_heater_temperature)"
 
 	set water_volume_dispensed_since_last_update [expr {$ShotSample(GroupFlow) * ($delta/100.0)}]
 	if {$water_volume_dispensed_since_last_update < 0} {
@@ -1335,6 +1335,8 @@ proc update_de1_shotvalue {packed} {
 
 	set ::de1(flow_delta) [expr {$::de1(flow) - $ShotSample(GroupFlow)}]
 	set ::de1(flow) $ShotSample(GroupFlow)
+
+
 	
 	set ::de1(pressure_delta) [expr {$::de1(pressure) - $ShotSample(GroupPressure)}]
 	set ::de1(pressure) $ShotSample(GroupPressure)
@@ -1448,6 +1450,7 @@ proc append_live_data_to_espresso_chart {} {
 			if {$::de1(scale_weight_rate) != ""} {
 				# if a bluetooth scale is recording shot weight, graph it along with the flow meter
 				espresso_flow_weight append [round_to_two_digits $::de1(scale_weight_rate)]
+				espresso_flow_weight_raw append [round_to_two_digits $::de1(scale_weight_rate_raw)]
 				espresso_flow_weight_2x append [expr {2.0 * [round_to_two_digits $::de1(scale_weight_rate)] }]
 			}
 
@@ -1516,6 +1519,16 @@ proc append_live_data_to_espresso_chart {} {
 			espresso_temperature_goal append [return_temperature_number $::de1(goal_temperature)]
 
 
+			set total_water_volume [expr {$::de1(preinfusion_volume) + $::de1(pour_volume)}]
+			set total_water_volume_divided [expr {0.1 * ($::de1(preinfusion_volume) + $::de1(pour_volume))}]
+			espresso_water_dispensed append $total_water_volume_divided
+
+			# stop espresso at a desired water volume, if set to > 0, but only for advanced shots
+			if {$::settings(settings_profile_type) == "settings_2c" && $::settings(final_desired_shot_volume_advanced) > 0 && $::settings(final_desired_shot_volume_advanced) < $total_water_volume} {
+				msg "Water volume based Espresso stop was triggered at: $total_water_volume ml > $::settings(final_desired_shot_volume_advanced) ml "
+			 	start_idle
+			 	say [translate {Stop}] $::settings(sound_button_in)	
+		 	}		
 		}
   	}
 }  

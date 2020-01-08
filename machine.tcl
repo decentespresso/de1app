@@ -34,6 +34,8 @@ array set ::de1 {
 	cuuid "0000A002-0000-1000-8000-00805F9B34FB"
 	cuuid_01 "0000A001-0000-1000-8000-00805F9B34FB"
 	cuuid_02 "0000A002-0000-1000-8000-00805F9B34FB"
+	cuuid_05 "0000A005-0000-1000-8000-00805F9B34FB"
+	cuuid_06 "0000A006-0000-1000-8000-00805F9B34FB"
 	cuuid_0A "0000A00A-0000-1000-8000-00805F9B34FB"
 	cuuid_0B "0000A00B-0000-1000-8000-00805F9B34FB"
 	cuuid_0C "0000A00C-0000-1000-8000-00805F9B34FB"
@@ -84,6 +86,7 @@ array set ::de1 {
 	scale_sensor_weight 0
 	scale_weight {}
 	scale_weight_rate 0
+	scale_weight_rate_raw 0
 	final_water_weight 0
 	voltage 110
 	has_catering_kit 0
@@ -157,6 +160,7 @@ if {$android == 0 || $undroid == 1} {
 array set ::settings {
 	preset_counter 1
 	screen_size_width {}
+	tank_desired_water_temperature 0
 	screen_size_height {}
 	current_frame_description {asdfasdfsa}
 	has_ghc 0
@@ -165,6 +169,7 @@ array set ::settings {
 	steam_over_temp_threshold 180
 	steam_over_pressure_threshold 5
 	automatically_ble_reconnect_forever_to_scale 0
+	chart_total_shot_flow 1
 	tare_only_on_espresso_start 0
 	steam_over_pressure_count_trigger 10
 	steam_over_temp_count_trigger 10
@@ -266,6 +271,7 @@ array set ::settings {
 	water_temperature 80
 	final_desired_shot_weight 36
 	final_desired_shot_weight_advanced 0
+	final_desired_shot_volume_advanced 0
 	espresso_max_time 60
 	scale_button_starts_espresso 0
 	espresso_temperature 92

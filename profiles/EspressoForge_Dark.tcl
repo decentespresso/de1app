@@ -19,6 +19,8 @@ profile_notes {A dark roast pressure profile that emulates the flow and temperat
 water_temperature 80
 final_desired_shot_weight 42
 final_desired_shot_weight_advanced 42
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 0
 preinfusion_guarantee 1
 profile_title {Espresso Forge Dark}
 profile_language en

@@ -19,6 +19,8 @@ profile_notes {You can make a pour over coffee with your espresso machine.  To d
 water_temperature 80
 final_desired_shot_weight 32
 final_desired_shot_weight_advanced 0
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 0
 preinfusion_guarantee 1
 profile_title {Pour over}
 profile_language en
