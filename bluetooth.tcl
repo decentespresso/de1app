@@ -200,8 +200,6 @@ proc decentscale_timer_stop {} {
 		return 
 	}
 	set tare [binary decode hex "D1"]
-	#set ::de1(scale_weight) 0
-	#set ::de1(scale_weight_rate) 0
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
 		msg "decentscale not connected, cannot stop timer"
@@ -226,9 +224,6 @@ proc decentscale_timer_off {} {
 	if {$::de1(scale_device_handle) == 0} {
 		return 
 	}
-	#set tare [binary decode hex "D0"]
-	#set ::de1(scale_weight) 0
-	#set ::de1(scale_weight_rate) 0
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
 		msg "decentscale not connected, cannot off timer"
@@ -247,8 +242,6 @@ proc skale_timer_stop {} {
 		return 
 	}
 	set tare [binary decode hex "D1"]
-	#set ::de1(scale_weight) 0
-	#set ::de1(scale_weight_rate) 0
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
 		msg "Skale not connected, cannot stop timer"
@@ -264,8 +257,6 @@ proc skale_timer_off {} {
 		return 
 	}
 	set tare [binary decode hex "D0"]
-	#set ::de1(scale_weight) 0
-	#set ::de1(scale_weight_rate) 0
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
 		msg "Skale not connected, cannot off timer"
@@ -299,8 +290,6 @@ proc decentscale_tare {} {
 	# if this was a scheduled tare, indicate that the tare has completed
 	unset -nocomplain ::scheduled_scale_tare_id
 
-	#set ::de1(final_espresso_weight) 0
-
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
 		msg "decent scale not connected, cannot tare"
 		return
@@ -308,17 +297,7 @@ proc decentscale_tare {} {
 
 	set tare [decent_scale_tare_cmd]
 
-	#msg "screen on: '$screenon'"
-
-	#if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-	#	msg "decentscale not connected, cannot enable LCD"
-	#	return
-	#}
-
 	userdata_append "decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare]
-
-	# send a 2nd tare to really, really zero out the weight
-	#after 1000 "userdata_append {decentscale : tare} [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare]"
 }
 
 
@@ -712,8 +691,16 @@ proc mmr_write { address length value} {
 
 proc set_tank_temperature {temp} {
 	msg "Setting desired water tank temperature to '[zero_pad $::settings(tank_desired_water_temperature) 2]'"
-	mmr_write "80380C" "04" [zero_pad [int_to_hex $temp] 2]
-	#mmr_write "80380C" "04" "0B"
+
+	if {$temp == 0} {
+		mmr_write "80380C" "04" [zero_pad [int_to_hex $temp] 2]
+	} else {
+		# if the water temp is being set, then set the water temp temporarily to 60º in order to force a water circulation for 2 seconds
+		# then a few seconds later, set it to the real, desired value
+		set hightemp 60
+		mmr_write "80380C" "04" [zero_pad [int_to_hex $hightemp] 2]
+		after 4000 [list mmr_write "80380C" "04" [zero_pad [int_to_hex $temp] 2]]
+	}
 }
 
 proc get_tank_temperature {} {
@@ -1387,7 +1374,7 @@ proc de1_ble_handler { event data } {
     	if {$state != "scanning"} {
     		#msg "de1b ble_handler $event $data"
     	} else {
-    		msg "scanning $event $data"
+    		#msg "scanning $event $data"
     	}
 
 		switch -- $event {
@@ -1686,20 +1673,8 @@ proc de1_ble_handler { event data } {
 				    #msg "enabling $suuid $sinstance $cuuid $cinstance"
 				    #ble userdata $handle $cmds
 				} elseif {$state eq "connected"} {
-					#msg "$data"
-					if {$access eq "w"} {
-			    		set ::de1(wrote) 0
-			    		run_next_userdata_cmd
 
-			    		if {$cuuid == $::de1(cuuid_05)} {
-			    			# MMR read
-			    			msg "MMR read: '[convert_string_to_hex $value]'"
-			    		} elseif {$cuuid == $::de1(cuuid_06)} {
-			    			# MMR read
-			    			msg "MMR write: '[convert_string_to_hex $value]'"
-			    		}
-
-				    } elseif {$access eq "r" || $access eq "c"} {
+				    if {$access eq "r" || $access eq "c"} {
 				    	#msg "rc: $data"
 				    	if {$access eq "r"} {
 				    		set ::de1(wrote) 0
@@ -1898,15 +1873,16 @@ proc de1_ble_handler { event data } {
 							set diff [expr {abs($::de1(scale_weight) - $sensorweight)}]
 							
 
-							if {$::de1_num_state($::de1(state)) == "Idle"} {
-								# no smoothing when the machine is idle
-								set multiplier1 0
-							} else {
+							#if {$::de1_num_state($::de1(state)) == "Idle"} 
+							if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)) } {
 								# john 5/11/18 hard set this to 5% weighting, until we're sure these other methods work well.
 								set multiplier1 0.95
 								#if {$diff > 10} {
 									#set multiplier1 0.90
 								#}
+							} else {
+								# no smoothing when the machine is idle or not pouring/preinfusion 
+								set multiplier1 0
 							}
 
 								#set multiplier1 0.9
@@ -1919,6 +1895,7 @@ proc de1_ble_handler { event data } {
 							set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
 
 
+							# a much less smoothed, more raw weight, with lower latency
 							set multiplier1r 0.5
 							set multiplier2r [expr {1.0 - $multiplier1r}];
 							set thisrawweight [expr {1.0 * ($::de1(scale_sensor_weight) * $multiplier1r) + ($sensorweight * $multiplier2r)}]
@@ -1947,8 +1924,9 @@ proc de1_ble_handler { event data } {
 							set ::de1(scale_weight_rate_raw) $flow_raw
 							
 							set ::de1(scale_weight) $thisweight
+							#set ::de1(scale_sensor_weight) $thisrawweight
 							set ::de1(scale_sensor_weight) $thisrawweight
-							#msg "weight received: $thisweight : flow: $tempflow"
+							#msg "weight received: $thisweight : flow: $flow"
 
 
 							# (beta) stop shot-at-weight feature
@@ -1974,12 +1952,13 @@ proc de1_ble_handler { event data } {
 									# > after you hit the stop button, the remaining liquid that will end up in the cup is equal to about 2.6 seconds of the current flow rate, minus a 0.4 g adjustment
 								    set lag_time_calibration [expr {$::de1(scale_weight_rate) * $::settings(stop_weight_before_seconds) }]
 
-								    #msg "lag_time_calibration: $lag_time_calibration | target_shot_weight: $target_shot_weight | thisweight: $thisweight | scale_autostop_triggered: $::de1(scale_autostop_triggered) | timer: [espresso_timer]"
+								    msg "lag_time_calibration: $lag_time_calibration | target_shot_weight: $target_shot_weight | thisweight: $thisweight | scale_autostop_triggered: $::de1(scale_autostop_triggered) | timer: [espresso_timer]"
 
 									if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$target_shot_weight - $lag_time_calibration}]]} {	
 
 										if {[espresso_timer] < 5} {
-											scale_tare
+											# bad idea to tare during preinfusion, problem is there might not be a puck, so we remove the first 5 seconds of weight by doing this.
+											# scale_tare 
 										} else {
 											msg "Weight based Espresso stop was triggered at ${thisweight}g > ${target_shot_weight}g "
 										 	start_idle
@@ -2037,7 +2016,13 @@ proc de1_ble_handler { event data } {
 						set ::de1(wrote) 0
 				    	run_next_userdata_cmd
 
-				    	if {$cuuid == $::de1(cuuid_10)} {
+			    		if {$cuuid == $::de1(cuuid_05)} {
+			    			# MMR read
+			    			msg "MMR read: '[convert_string_to_hex $value]'"
+			    		} elseif {$cuuid == $::de1(cuuid_06)} {
+			    			# MMR read
+			    			msg "MMR write: '[convert_string_to_hex $value]'"
+			    		} elseif {$cuuid == $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3				    		
 					    	msg "Confirmed shot frame written to DE1: '$value' : [array get arr3]"
 				    	} elseif {$cuuid == $::de1(cuuid_11)} {

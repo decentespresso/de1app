@@ -677,16 +677,18 @@ add_de1_text "create_preset" 2275 1520 -text [translate "Cancel"] -font Helv_10_
 
 
 	add_de1_text "create_preset" 1280 90 -text [translate "New Preset"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
-	add_de1_text "create_preset" 1280 690 -text [translate "What kind of preset?"] -font Helv_15_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+	add_de1_text "create_preset" 1280 650 -text [translate "What kind of preset?"] -font Helv_15_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 	
-	add_de1_text "create_preset" 520 1090 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+	#add_de1_text "create_preset" 520 1090 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
-	add_de1_text "create_preset" 520 1090 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-	add_de1_text "create_preset" 1280 1090 -text [translate "Flow"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-	add_de1_text "create_preset" 2070 1090 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+	add_de1_text "create_preset" 520 910 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+	add_de1_text "create_preset" 1280 910 -text [translate "Flow"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+	add_de1_text "create_preset" 2060 910 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
-	add_de1_button "create_preset" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 220 990 800 1190
-	add_de1_button "create_preset" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 980 990 1580 1190
+	add_de1_text "create_preset" 2060 1060 -text [translate "Your existing profile will be automatically copied.";] -font Helv_7 -width 300 -fill "#5a5d75" -anchor "center" -justify "center"
+
+	add_de1_button "create_preset" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 220 690 800 1190
+	add_de1_button "create_preset" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 980 690 1580 1190
 	add_de1_button "create_preset" {say [translate {ADVANCED}] $::settings(sound_button_in); 
 		if {$::settings(settings_profile_type) == "settings_2a"} { copy_pressure_profile_to_advanced_profile; } elseif {$::settings(settings_profile_type) == "settings_2b"} {copy_flow_profile_to_advanced_profile; }
 		set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; 
@@ -695,7 +697,7 @@ add_de1_text "create_preset" 2275 1520 -text [translate "Cancel"] -font Helv_10_
 		set ::settings(tank_desired_water_temperature) 0; 
 		set ::settings(active_settings_tab) $::settings(settings_profile_type); 	
 		fill_advanced_profile_steps_listbox; 
-		profile_has_changed_set; set_advsteps_scrollbar_dimensions} 1760 990 2350 1190
+		profile_has_changed_set; set_advsteps_scrollbar_dimensions} 1760 690 2350 1190
 
 #############################
 
@@ -936,4 +938,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off settings_4
+#set_next_page off create_preset
