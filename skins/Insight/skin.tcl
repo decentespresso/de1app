@@ -790,10 +790,11 @@ if {$::settings(insight_skin_show_embedded_profile) == 1} {
 #######################
 
 
-# tap on profile name to go directly to settings edit page
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off $::settings(settings_profile_type); page_show off; } 2040 1090 2400 1350
-	# also, tap on temperature 
-	add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off $::settings(settings_profile_type); page_show off; } 2040 720 2300 1080
+# tap on profile name to go directly to settings choose page
+add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off settings_1; page_show off; } 2040 1090 2400 1350
+
+# also, tap on temperature or time to get to settings edit page
+add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off $::settings(settings_profile_type); page_show off; } 2040 720 2300 1080
 
 
 # this heart icon feature is always on now
