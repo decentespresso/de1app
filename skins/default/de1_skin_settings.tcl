@@ -519,7 +519,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 # exit app feature
 add_de1_text "settings_4" 1310 1130 -text [translate "Exit app"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	add_de1_text "settings_4" 1900 1290 -text [translate "Exit"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
-	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); .can itemconfigure $::message_label -text [translate "Going to sleep"]; .can itemconfigure $::message_button_label -text [translate "Wait"]; after 10000 {.can itemconfigure $::message_button_label -text [translate "Ok"]; }; set_next_page off message; page_show message; after 500 app_exit} 1290 1120 2550 1400
+	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); .can itemconfigure $::message_label -text [translate "Going to sleep"]; .can itemconfigure $::message_button_label -text [translate "Wait"]; after 10000 {.can itemconfigure $::message_button_label -text [translate "Ok"]; }; set_next_page off message; page_show message; save_settings; after 500 app_exit} 1290 1120 2550 1400
 
 
 add_de1_text "settings_3" 55 544 -text [translate {Version}] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1220] -justify "left" 
