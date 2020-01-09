@@ -189,6 +189,7 @@ array set ::settings {
 	export_history_automatically_to_csv 1
 	advanced_shot_chart_temp_max 100
 	advanced_shot_chart_temp_min 80
+	show_mixtemp_during_espresso 0
 	bean_notes {}
 	chart_dashes_flow ""
 	chart_dashes_espresso_weight {2 1}
