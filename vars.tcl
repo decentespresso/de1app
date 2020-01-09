@@ -2467,6 +2467,13 @@ proc load_settings_vars {fn} {
 		set temp_settings(final_desired_shot_weight_advanced) $temp_settings(final_desired_shot_weight)
 	}
 
+	# pre-set the shot volume, to the shot weight, if importing an old shot definition that doesn't have a an end volume 
+	if {[ifexists temp_settings(final_desired_shot_volume)] == ""} {
+		msg "pre-set the shot volume, to the shot weight, if importing an old shot definition that doesn't have a an end volume "
+		set temp_settings(final_desired_shot_volume) [ifexists temp_settings(final_desired_shot_weight)]
+	}
+
+
 	array set ::settings [array get temp_settings]
 
 	update_de1_explanation_chart
@@ -2504,7 +2511,7 @@ proc save_profile {} {
 		set ::settings(profile_title) $::settings(preset_counter)  
 	}
 
-	set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure}
+	set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure}
 	#set profile_name_to_save $::settings(profile_to_save) 
 
 	if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {

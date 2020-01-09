@@ -10,13 +10,13 @@ if {[de1plus]} {
 
 	add_de1_page "settings_1" "settings_1.png" "default"
 	
-	if {$::settings(scale_bluetooth_address) == ""} {
-		add_de1_page "settings_2a" "settings_2a.png" "default"
-		add_de1_page "settings_2b" "settings_2b.png" "default"
-	} else {
+	#add_de1_page "settings_2a" "settings_2a.png" "default"
+	#add_de1_page "settings_2b" "settings_2b.png" "default"
+	#if {$::settings(scale_bluetooth_address) == ""} {
+	#} else {
 		add_de1_page "settings_2a" "settings_2a2.png" "default"
 		add_de1_page "settings_2b" "settings_2b2.png" "default"
-	}
+	#}
 	add_de1_page "settings_2c" "settings_2c.png" "default"
 	add_de1_page "settings_2c2" "settings_2c2.png" "default"
 
@@ -154,6 +154,10 @@ if {[de1plus]} {
 		add_de1_widget "settings_2c2" scale 70 900 {} -to 2000 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 2400]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "settings_2c2" 70 1050 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
 
+	} else {
+		add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at pour:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+		add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume)]}
 	}
 
 
@@ -567,6 +571,8 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 			} -background #fbfaff -font Helv_11 -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 	add_de1_text "settings_4" 680 1100 -text [translate "Scale"] -font Helv_7_bold -fill "#7f879a" -justify "left" -anchor "nw"
+		add_de1_variable "settings_4" 1240 1100 -text \[[translate "Remove"]\] -font Helv_7_bold -fill "#7f879a" -justify "right" -anchor "ne" -textvariable {[if {$::settings(scale_bluetooth_address) != ""} { return \[[translate "Remove"]\]} else {return "" } ] }
+		add_de1_button "settings_4" {say [translate {Remove}] $::settings(sound_button_in);set ::settings(scale_bluetooth_address) "";fill_ble_scale_listbox} 960 1100 1250 1140 ""
 		add_de1_widget "settings_4" listbox 670 1150 { 
 			set ::ble_scale_listbox_widget $widget
 				bind $widget <<ListboxSelect>> ::change_scale_bluetooth_device
@@ -938,4 +944,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off create_preset
+#set_next_page off settings_4
