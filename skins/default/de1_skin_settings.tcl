@@ -798,6 +798,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				# resend the calibration settings if they were changed
 				de1_send_steam_hotwater_settings
 				de1_send_waterlevel_settings
+				de1_enable_water_level_notifications
 			}
 
 			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit scale_bluetooth_address language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1  || [ifexists ::app_has_updated] == 1} {
