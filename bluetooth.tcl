@@ -1920,12 +1920,11 @@ proc de1_ble_handler { event data } {
 								set flow 0
 							}
 
-							set ::de1(scale_weight_rate) $flow
-							set ::de1(scale_weight_rate_raw) $flow_raw
+							set ::de1(scale_weight_rate) [round_to_two_digits $flow]
+							set ::de1(scale_weight_rate_raw) [round_to_two_digits $flow_raw]
 							
-							set ::de1(scale_weight) $thisweight
-							#set ::de1(scale_sensor_weight) $thisrawweight
-							set ::de1(scale_sensor_weight) $thisrawweight
+							set ::de1(scale_weight) [round_to_two_digits $thisweight]
+							set ::de1(scale_sensor_weight) [round_to_two_digits $thisrawweight]
 							#msg "weight received: $thisweight : flow: $flow"
 
 

@@ -1523,18 +1523,20 @@ proc append_live_data_to_espresso_chart {} {
 			set total_water_volume_divided [expr {0.1 * ($::de1(preinfusion_volume) + $::de1(pour_volume))}]
 			espresso_water_dispensed append $total_water_volume_divided
 
-			# stop espresso at a desired water volume, if set to > 0, but only for advanced shots
-			if {$::settings(settings_profile_type) == "settings_2c" && $::settings(final_desired_shot_volume_advanced) > 0 && $total_water_volume >= $::settings(final_desired_shot_volume_advanced)} {
-				# for advanced shots, it's TOTAL WATER VOLuME that is the trigger, since Preinfusion is not necessarily part of an advanced shot
-				msg "Water volume based Espresso stop was triggered at: $total_water_volume ml > $::settings(final_desired_shot_volume_advanced) ml "
-			 	start_idle
-			 	say [translate {Stop}] $::settings(sound_button_in)	
-		 	} elseif {($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b") && $::settings(final_desired_shot_volume) > 0 && $::de1(pour_volume) >= $::settings(final_desired_shot_volume)} {
-		 		# for FLOW and PRESSURE shots, we normally use preinfusion, so POUR VOLUME is very close to WEIGHT
-				msg "Water volume based Espresso stop was triggered at: $::de1(pour_volume) ml > $::settings(final_desired_shot_volume) ml"
-			 	start_idle
-			 	say [translate {Stop}] $::settings(sound_button_in)	
-		 	}		
+			if {$::settings(scale_bluetooth_address) == ""} {
+				# stop espresso at a desired water volume, if set to > 0, but only for advanced shots
+				if {$::settings(settings_profile_type) == "settings_2c" && $::settings(final_desired_shot_volume_advanced) > 0 && $total_water_volume >= $::settings(final_desired_shot_volume_advanced)} {
+					# for advanced shots, it's TOTAL WATER VOLuME that is the trigger, since Preinfusion is not necessarily part of an advanced shot
+					msg "Water volume based Espresso stop was triggered at: $total_water_volume ml > $::settings(final_desired_shot_volume_advanced) ml "
+				 	start_idle
+				 	say [translate {Stop}] $::settings(sound_button_in)	
+			 	} elseif {($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b") && $::settings(final_desired_shot_volume) > 0 && $::de1(pour_volume) >= $::settings(final_desired_shot_volume)} {
+			 		# for FLOW and PRESSURE shots, we normally use preinfusion, so POUR VOLUME is very close to WEIGHT
+					msg "Water volume based Espresso stop was triggered at: $::de1(pour_volume) ml > $::settings(final_desired_shot_volume) ml"
+				 	start_idle
+				 	say [translate {Stop}] $::settings(sound_button_in)	
+			 	}		
+			 }
 		}
   	}
 }  
