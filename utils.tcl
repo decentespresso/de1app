@@ -173,8 +173,8 @@ proc setup_environment {} {
         font create Helv_16_bold -family $helvetica_bold_font -size [expr {int($fontm * 27)}] 
         font create Helv_17_bold -family $helvetica_bold_font -size [expr {int($fontm * 30)}] 
         font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 32)}] 
-        font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 34)}] 
-        font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 36)}]
+        font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 35)}] 
+        font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 37)}]
         font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
 
         # enable swipe gesture translating, to scroll through listboxes
@@ -277,8 +277,8 @@ proc setup_environment {} {
         font create Helv_16_bold -family $boldfont -size [expr {int($fontm * 33)}]
         font create Helv_17_bold -family $boldfont -size [expr {int($fontm * 37)}]
         font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]
-        font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 43)}]
-        font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 46)}]
+        font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 45)}]
+        font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 48)}]
         font create Helv_30_bold -family $boldfont -size [expr {int($fontm * 69)}]
 
         font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 

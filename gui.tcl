@@ -992,9 +992,14 @@ proc update_onscreen_variables { {state {}} } {
 
 	if {$::android == 0} {
 
-		if {[expr {int(rand() * 100)}] > 95} {
+		if {[expr {int(rand() * 100)}] > 96} {
 			set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
-			set ::settings(current_frame_description) [randomRangeString 15]
+			
+			if {[expr {rand()}] > 0.5} {
+				set ::settings(current_frame_description) [translate "pouring"]
+			} else {
+				set ::settings(current_frame_description) [translate "preinfusion"]
+			}
 		}
 
 		if {$::de1(state) == 2} {

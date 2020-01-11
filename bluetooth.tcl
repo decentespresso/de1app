@@ -619,7 +619,7 @@ proc firmware_upload_next {} {
 			set ::de1(firmware_update_button_label) "Updated"
 			
 		} else {
-			set ::de1(firmware_update_button_label) "Testing"
+			#set ::de1(firmware_update_button_label) "Testing"
 
 			#set ::de1(firmware_update_size) 0
 			unset -nocomplain ::de1(firmware_update_binary)
@@ -2018,9 +2018,6 @@ proc de1_ble_handler { event data } {
 			    		if {$cuuid == $::de1(cuuid_05)} {
 			    			# MMR read
 			    			msg "MMR read: '[convert_string_to_hex $value]'"
-			    		} elseif {$cuuid == $::de1(cuuid_06)} {
-			    			# MMR read
-			    			msg "MMR write: '[convert_string_to_hex $value]'"
 			    		} elseif {$cuuid == $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3				    		
 					    	msg "Confirmed shot frame written to DE1: '$value' : [array get arr3]"

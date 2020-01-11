@@ -162,7 +162,7 @@ array set ::settings {
 	screen_size_width {}
 	tank_desired_water_temperature 0
 	screen_size_height {}
-	current_frame_description {asdfasdfsa}
+	current_frame_description {}
 	has_ghc 0
 	default_font_calibration 0.5
 	language en
@@ -198,6 +198,7 @@ array set ::settings {
 	name {}
 	display_espresso_water_temp_difference 0
 	chart_dashes_pressure ""
+	insight_skin_show_weight_activity_bar 0
 	debuglog_window_size 35
 	water_level_sensor_max 50
 	espresso_notes {}
