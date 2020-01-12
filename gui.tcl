@@ -1843,10 +1843,8 @@ proc water_level_color_check {widget} {
 		set blinkrate 2000
 	} elseif {$remaining_water > 5} {
 		set blinkrate 1000
-	} elseif {$remaining_water > 4} {
-		set blinkrate 500
 	} else {
-		set blinkrate 150
+		set blinkrate 500
 	}
 
 	$widget configure -background $color
