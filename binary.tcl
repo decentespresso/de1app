@@ -1331,6 +1331,7 @@ proc update_de1_shotvalue {packed} {
 		set ::previous_FrameNumber -1
 	} elseif {$::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating)} {
 		set ::settings(current_frame_description) [translate "heating"]
+		set ::previous_FrameNumber -1
 	}
 
 	#set ::settings(current_frame_description) "$::de1(state) $::de1(substate) [ifexists ShotSample(FrameNumber)]"
