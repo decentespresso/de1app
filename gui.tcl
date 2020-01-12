@@ -1813,6 +1813,9 @@ proc water_level_color_check {widget} {
 	if {$::settings(waterlevel_indicator_blink) != 1} {
 		return
 	}
+
+	#puts water_level_color_check
+
 	if {[info exists ::water_level_color_check_count] != 1} {
 		set ::water_level_color_check_count  0
 	}
@@ -1823,29 +1826,27 @@ proc water_level_color_check {widget} {
 	}
 
 	set refill_point_corrected [expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}]
-	#set start_blinking_level [expr {$::settings(waterlevel_blink_start_offset) + $refill_point_corrected}]
-	
+	set start_blinking_level [expr {$::settings(waterlevel_blink_start_offset) + $refill_point_corrected}]
+	set remaining_water [expr {$::de1(water_level)  - $refill_point_corrected}]
 	# if using refill kit don't blink
-	set start_blinking_level $::settings(waterlevel_blink_start_offset)
+	#set start_blinking_level $::settings(waterlevel_blink_start_offset)
 	set blinkrate $::settings(waterlevel_indicator_blink_rate)
 
-	if {$::de1(water_level) > $start_blinking_level} {
+	#puts "$::de1(water_level) | $start_blinking_level | $remaining_water"
+	set color [lindex $colors $::water_level_color_check_count]
+	if {$remaining_water > 7} {
 		# check the water rate infrequently if there is enough water and don't blink it
-		set color "#7ad2ff"
-		#set blinkrate 5000
+		set color [lindex $colors 0]
+		set blinkrate 5000
+	} elseif {$remaining_water > 6} {
+		#set color "#7ad2ff"
+		set blinkrate 2000
+	} elseif {$remaining_water > 5} {
+		set blinkrate 1000
+	} elseif {$remaining_water > 4} {
+		set blinkrate 500
 	} else {
-		set color [lindex $colors $::water_level_color_check_count]
-
-		if {$::de1(water_level) > 10} {
-			set color "#7ad2ff"
-			set blinkrate 2000
-		} elseif {$::de1(water_level) > 7} {
-			set blinkrate 1000
-		} elseif {$::de1(water_level) >= 5} {
-			set blinkrate 500
-		} else {
-			set blinkrate 150
-		}
+		set blinkrate 150
 	}
 
 	$widget configure -background $color
@@ -1918,6 +1919,9 @@ proc calibration_gui_init {} {
 	set ::globals(calibration_espresso_temperature) $::settings(espresso_temperature); 
 	set ::globals(calibration_espresso_flow) $::settings(flow_profile_hold); 
 
+	set ::globals(calibration_espresso_flow) $::settings(flow_profile_hold); 
+
+
 	# read factory and current calibration values for pressure, flow, temperature
 	#de1_disable_temp_notifications
 	if {[ifexists ::globals(calibration_notifications_enabled)] != 1} {
@@ -1943,13 +1947,14 @@ proc calibration_gui_init {} {
 		after 2500 calibration_ble_received "\x00\x00\x00\x00\x03\x00\x00\x01\x03\x00\x00\x04\x32\x86"
 	} else {
 
-		de1_read_calibration "temperature"
-		after 500 de1_read_calibration "pressure"
-		after 1000 de1_read_calibration "flow"
+		after 1000 de1_read_calibration "temperature"
+		after 2000 de1_read_calibration "pressure"
+		after 3000 de1_read_calibration "flow"
 
-		after 1500 de1_read_calibration "temperature" "factory"
-		after 2000 de1_read_calibration "pressure" "factory"
-		after 2500 de1_read_calibration "flow" "factory"
+		after 4000 de1_read_calibration "temperature" "factory"
+		after 5000 de1_read_calibration "pressure" "factory"
+		after 6000 de1_read_calibration "flow" "factory"
+
 	}
 }
 

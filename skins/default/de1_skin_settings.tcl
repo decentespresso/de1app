@@ -798,13 +798,13 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; profile_has_changed_set_colors;
-			if {[array_item_difference ::settings ::settings_backup "steam_temperature water_refill_point"] == 1} {
+			if {[array_item_difference ::settings ::settings_backup "steam_temperature water_refill_point fan_threshold"] == 1} {
 				# resend the calibration settings if they were changed
 				de1_send_steam_hotwater_settings
 				de1_send_waterlevel_settings
-				de1_enable_water_level_notifications
+				set_fan_temperature_threshold $::settings(fan_threshold)
+				#de1_enable_water_level_notifications
 			}
-
 			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit scale_bluetooth_address language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
@@ -852,6 +852,8 @@ add_de1_text "calibrate" 1280 300 -text [translate "Calibrate"] -font Helv_20_bo
 		}
 		add_de1_text "calibrate" 850 750 -text [translate "Steam temperature"] -font Helv_15_bold -fill "#7f879a" -anchor "nw" 
 		add_de1_text "calibrate" 850 875 -text [translate "Stop at weight"] -font Helv_15_bold -fill "#7f879a" -anchor "nw" 
+		add_de1_text "calibrate" 850 1000 -text [translate "Fan turns on at:"] -font Helv_15_bold -fill "#7f879a" -anchor "nw" 
+
 
 	# tap on factory number in order to reset to factory values
 	#add_de1_button "calibrate" {say [translate {reset}] $::settings(sound_button_in); de1_send_calibration "temperature" 0 0 3; de1_read_calibration "temperature"} 600 500 800 600
@@ -869,7 +871,6 @@ add_de1_text "calibrate" 1280 300 -text [translate "Calibrate"] -font Helv_20_bo
 		#add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_measurement $::settings(steam_temperature)]}
 		add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
 
-		add_de1_variable "calibrate" 1750 875 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[seconds_text $::settings(stop_weight_before_seconds)]}
 
 	# entry fields
 	add_de1_text "calibrate" 1880 440 -text [translate "Measured"] -font Helv_8_bold -fill "#c0c4e1" -anchor "nw" 
@@ -901,6 +902,10 @@ add_de1_text "calibrate" 1280 300 -text [translate "Calibrate"] -font Helv_20_bo
 		add_de1_widget "calibrate" scale 1880 750 {} -to 170 -from 129 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 100] -variable ::settings(steam_temperature) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 
 		add_de1_widget "calibrate" scale 1880 875 {} -to 5 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 400]  -width [rescale_y_skin 100] -variable ::settings(stop_weight_before_seconds) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+
+	add_de1_variable "calibrate" 1750 875 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[seconds_text $::settings(stop_weight_before_seconds)]}
+		add_de1_widget "calibrate" scale 1880 1000 {} -to 60 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 100] -variable ::settings(fan_threshold) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate" 1750 1000 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_fan_threshold_calibration $::settings(fan_threshold)]}
 		
 
 # END OF SETTINGS page
@@ -949,4 +954,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off settings_4
+#set_next_page off calibrate

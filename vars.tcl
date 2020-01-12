@@ -2965,6 +2965,14 @@ proc refill_kit_retry_button {} {
 	}
 }
 
+proc return_fan_threshold_calibration {temperature} {
+
+	if {$temperature == 0} {
+		return [translate "always on"]		
+	}
+	return [return_temperature_setting $temperature]
+}
+
 proc return_steam_heater_calibration {steam_temperature} {
 
 	if {$steam_temperature < 130} {

@@ -183,6 +183,7 @@ array set ::settings {
 	steam_over_temp_count_trigger 10
 	active_settings_tab settings_2a
 	chart_total_shot_weight 1
+	fan_threshold 0
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"

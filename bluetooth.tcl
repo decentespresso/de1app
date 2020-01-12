@@ -687,7 +687,7 @@ proc mmr_write { address length value} {
 }
 
 proc set_tank_temperature_threshold {temp} {
-	msg "Setting desired water tank temperature to '[zero_pad $::settings(tank_desired_water_temperature) 2]'"
+	msg "Setting desired water tank temperature to '$temp'"
 
 	if {$temp == 0} {
 		mmr_write "80380C" "04" [zero_pad [int_to_hex $temp] 2]
@@ -736,6 +736,10 @@ proc get_fan_threshold {} {
 	mmr_read "803808" "00"
 }
 
+proc set_fan_temperature_threshold {temp} {
+	msg "Setting desired water tank temperature to '$temp'"
+	mmr_write "803808" "04" [zero_pad [int_to_hex $temp] 2]
+}
 
 proc get_tank_temperature_threshold {} {
 	msg "Reading desired water tank temperature"
@@ -1585,22 +1589,25 @@ proc de1_ble_handler { event data } {
 
 							# vital stuff, do first
 							
-							start_idle
-							de1_enable_state_notifications
+							proc later_new_de1_connection_setup {} {
+								read_de1_version
+								de1_send_waterlevel_settings
+								de1_enable_mmr_notifications
+								get_ghc_is_installed
+								de1_send_steam_hotwater_settings
+								set_fan_temperature_threshold $::settings(fan_threshold)
+								de1_enable_water_level_notifications
+							}
 
 							# less important stuff
 							#
-							read_de1_version
-							de1_send_waterlevel_settings
-							de1_send_steam_hotwater_settings
-							de1_enable_mmr_notifications
-							get_ghc_is_installed
-							#get_fan_threshold
+							start_idle
+							de1_enable_state_notifications
 							de1_send_shot_frames
-							de1_enable_temp_notifications
 							read_de1_state
-							de1_enable_water_level_notifications
-							#after 3000 
+							de1_enable_temp_notifications
+							after 5000 later_new_de1_connection_setup
+
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
 							#catch {
@@ -2057,6 +2064,7 @@ proc de1_ble_handler { event data } {
 			    				set ::de1(ghc_is_installed) $mmr_val
 			    			} elseif {$mmr_id == "803808"} {
 			    				set ::de1(fan_threshold) $mmr_val
+			    				set ::settings(fan_threshold) $mmr_val
 			    				msg "Read: Fan threshold: '$mmr_val'"
 			    			} elseif {$mmr_id == "80380C"} {
 			    				msg "Read: tank temperature threshold: '$mmr_val'"
