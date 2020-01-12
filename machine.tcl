@@ -26,6 +26,7 @@ array set ::de1 {
 	advanced_shot_moveone_enabled 1
     found    0
     scanning 1
+    ghc_is_installed 0
     device_handle 0
     scale_device_handle 0
     decentscale_device_handle 0
@@ -55,7 +56,10 @@ array set ::de1 {
 	cuuid_decentscale_write "000036F5-0000-1000-8000-00805F9B34FB"
 	suuid_decentscale "0000FFF0-0000-1000-8000-00805F9B34FB"
 	cinstance 0
+	fan_threshold 100
+	tank_temperature_threshold 0
 	pressure 0
+	ghc_mode 0
 	head_temperature 0
 	mix_temperature 0
 	flow 0
@@ -135,6 +139,11 @@ if {$android == 0 || $undroid == 1} {
     android_specific_stubs
 }
 
+if {$::android != 1} {
+	set ::de1(ghc_is_installed) 0
+}
+
+
 
 #namespace import blt::*
 #namespace import -force blt::tile::*
@@ -163,7 +172,6 @@ array set ::settings {
 	tank_desired_water_temperature 0
 	screen_size_height {}
 	current_frame_description {}
-	has_ghc 0
 	default_font_calibration 0.5
 	language en
 	steam_over_temp_threshold 180
@@ -521,7 +529,7 @@ proc start_hot_water_rinse {} {
 	msg "Tell DE1 to start HOT WATER RINSE"
 	de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
 
-	if {$::settings(has_ghc) == 1} {
+	if {$::de1(ghc_is_installed) == 3} {
 		# show the user what button to press on the group head
 		ghc_message ghc_flush
 		return
@@ -566,7 +574,7 @@ proc start_steam {} {
 	msg "Tell DE1 to start making STEAM"
 
 	de1_send_state "make steam" $::de1_state(Steam)
-	if {$::settings(has_ghc) == 1} {
+	if {$::de1(ghc_is_installed) == 3} {
 		# show the user what button to press on the group head
 		ghc_message ghc_steam
 		return
@@ -657,9 +665,7 @@ proc start_espresso {} {
 
 	de1_send_state "make espresso" $::de1_state(Espresso)
 
-	log_to_debug_file "ghc: $::settings(has_ghc)"
-
-	if {$::settings(has_ghc) == 1} {
+	if {$::de1(ghc_is_installed) == 3} {
 		# show the user what button to press on the group head
 		ghc_message ghc_espresso
 		return
@@ -686,7 +692,7 @@ proc start_water {} {
 	msg "Tell DE1 to start making HOT WATER"
 	de1_send_state "make hot water" $::de1_state(HotWater)
 
-	if {$::settings(has_ghc) == 1} {
+	if {$::de1(ghc_is_installed) == 3} {
 		# show the user what button to press on the group head
 		ghc_message ghc_hotwater
 		return

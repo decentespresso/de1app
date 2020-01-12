@@ -668,7 +668,7 @@ add_de1_text "settings_3" 50 770 -text [translate "Energy saver"] -font Helv_10_
 	add_de1_variable "settings_3" 50 1020 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Cool down after:"] [minutes_text $::settings(screen_saver_delay)]}
 
 
-add_de1_button "settings_1" {say [translate {save}] $::settings(sound_button_in); save_profile} 2300 1220 2550 1410
+add_de1_button "settings_1" {say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; save_profile} 2300 1220 2550 1410
 
 # trash can icon to delete a preset
 add_de1_button "settings_1" {say [translate {Cancel}] $::settings(sound_button_in); delete_selected_profile} 1120 280 1300 460
@@ -719,7 +719,7 @@ add_de1_variable "settings_1" 1360 1240 -text "" -font Helv_10_bold -fill "#7f87
 	add_de1_widget "settings_1" multiline_entry 1360 900 {} -width 55 -height 5 -font Helv_7 -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 	add_de1_widget "settings_1" entry 1360 1310  {
 			set ::globals(widget_profile_name_to_save) $widget
-			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); save_profile; }
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; save_profile; }
 		} -width 38 -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_title) -relief flat  -highlightthickness 1 -highlightcolor #000000 
 
 
@@ -754,39 +754,43 @@ set pos_profile_label 1010
 set pos_machine_label 1650
 set pos_app_label 2270
 
+set settings_tab_font "Helv_10_bold"
+if {[language] != "en" && [language] != "kr" && [language] != "zh-hans" && [language] != "zh-hant"} {
+	set settings_tab_font "Helv_8_bold"
+}
+
+
 ########################################
 # labels for tab1
-add_de1_text "settings_1" $pos_preset_label 100 -text [translate "PRESETS"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_variable "settings_1" $pos_profile_label 100 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -textvariable {[setting_profile_type_to_text]}
-add_de1_text "settings_1" $pos_machine_label 100 -text [translate "MACHINE"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-add_de1_text "settings_1" $pos_app_label 100 -text [translate "APP"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+add_de1_text "settings_1" $pos_preset_label 100 -text [translate "PRESETS"] -font $settings_tab_font -fill "#2d3046" -anchor "center" 
+add_de1_variable "settings_1" $pos_profile_label 100 -text "" -font $settings_tab_font -fill "#7f879a" -anchor "center" -textvariable {[setting_profile_type_to_text]}
+add_de1_text "settings_1" $pos_machine_label 100 -text [translate "MACHINE"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
+add_de1_text "settings_1" $pos_app_label 100 -text [translate "APP"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
 
 ########################################
 # labels for tab2
-add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2c2" $pos_preset_label 100 -text [translate "PRESETS"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-add_de1_variable "settings_2 settings_2a settings_2b settings_2c settings_2c2" $pos_profile_label 100 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center" -textvariable {[setting_profile_type_to_text]}
-add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2c2" $pos_machine_label 100 -text [translate "MACHINE"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2c2" $pos_app_label 100 -text [translate "APP"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2c2" $pos_preset_label 100 -text [translate "PRESETS"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
+add_de1_variable "settings_2 settings_2a settings_2b settings_2c settings_2c2" $pos_profile_label 100 -text "" -font $settings_tab_font -fill "#2d3046" -anchor "center" -textvariable {[setting_profile_type_to_text]}
+add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2c2" $pos_machine_label 100 -text [translate "MACHINE"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
+add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2c2" $pos_app_label 100 -text [translate "APP"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
 
 ########################################
 # top labels for tab3 
-add_de1_text "settings_3" $pos_preset_label 100 -text [translate "PRESETS"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-add_de1_variable "settings_3" $pos_profile_label 100 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -textvariable {[setting_profile_type_to_text]}
-add_de1_text "settings_3" $pos_machine_label 100 -text [translate "MACHINE"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "settings_3" $pos_app_label 100 -text [translate "APP"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+add_de1_text "settings_3" $pos_preset_label 100 -text [translate "PRESETS"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
+add_de1_variable "settings_3" $pos_profile_label 100 -text "" -font $settings_tab_font -fill "#7f879a" -anchor "center" -textvariable {[setting_profile_type_to_text]}
+add_de1_text "settings_3" $pos_machine_label 100 -text [translate "MACHINE"] -font $settings_tab_font -fill "#2d3046" -anchor "center" 
+add_de1_text "settings_3" $pos_app_label 100 -text [translate "APP"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
 
 # top labels for tab4
-add_de1_text "settings_4" $pos_preset_label 100 -text [translate "PRESETS"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-add_de1_variable "settings_4" $pos_profile_label 100 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -textvariable {[setting_profile_type_to_text]}
-add_de1_text "settings_4" $pos_machine_label 100 -text [translate "MACHINE"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-add_de1_text "settings_4" $pos_app_label 100 -text [translate "APP"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-
-
+add_de1_text "settings_4" $pos_preset_label 100 -text [translate "PRESETS"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
+add_de1_variable "settings_4" $pos_profile_label 100 -text "" -font $settings_tab_font -fill "#7f879a" -anchor "center" -textvariable {[setting_profile_type_to_text]}
+add_de1_text "settings_4" $pos_machine_label 100 -text [translate "MACHINE"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
+add_de1_text "settings_4" $pos_app_label 100 -text [translate "APP"] -font $settings_tab_font -fill "#2d3046" -anchor "center" 
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
 add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::settings(active_settings_tab) "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
 add_de1_button "settings_1 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox; set_advsteps_scrollbar_dimensions} 642 0 1277 188 
-add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2c2" {say [translate {save}] $::settings(sound_button_in); if {$::settings(profile_has_changed) == 1} { save_profile } } 642 0 1277 188 
+add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2c2" {say [translate {save}] $::settings(sound_button_in); if {$::settings(profile_has_changed) == 1} { borg toast [translate "Saved"]; save_profile } } 642 0 1277 188 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"} 1905 0 2560 188
 

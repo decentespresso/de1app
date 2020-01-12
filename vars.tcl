@@ -590,11 +590,12 @@ proc waterflow {} {
 
 		set ::de1(flow) [expr {(.1 * (rand() - 0.5)) + $::de1(flow)}]		
 
-
-		if {[espresso_millitimer] < 5000} {	
-			set ::de1(preinfusion_volume) [expr {$::de1(preinfusion_volume) + ($::de1(flow) * .1) }]
-		} else {
-			set ::de1(pour_volume) [expr {$::de1(pour_volume) + ($::de1(flow) * .1) }]
+		if {$::de1_num_state($::de1(state)) == "Espresso"} {
+			if {[espresso_millitimer] < 5000} {	
+				set ::de1(preinfusion_volume) [expr {$::de1(preinfusion_volume) + ($::de1(flow) * .1) }]
+			} else {
+				set ::de1(pour_volume) [expr {$::de1(pour_volume) + ($::de1(flow) * .1) }]
+			}
 		}
 		#set ::de1(flow) [expr {rand() + $::de1(flow) - 0.5}]
 
@@ -2623,7 +2624,7 @@ proc start_text_if_espresso_ready {} {
 	set substate_txt $::de1_substate_types($num)
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		
-		if {$::settings(has_ghc) == 1} {
+		if {$::de1(ghc_is_installed) == 3} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 			return [translate "READY"]
 		}
@@ -2636,7 +2637,7 @@ proc restart_text_if_espresso_ready {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
-		if {$::settings(has_ghc) == 1} {
+		if {$::de1(ghc_is_installed) == 3} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 			return [translate "READY"]
 		}
@@ -2668,7 +2669,7 @@ proc espresso_history_save_from_gui {} {
 	#		set state [translate "SAVING"] 
 		#} else {
 		#}; 
-		if {$::settings(has_ghc) == 1} {
+		if {$::de1(ghc_is_installed) == 3} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 			set state [translate "READY"]
 		} else {
@@ -2852,7 +2853,7 @@ proc firmware_uploaded_label {} {
 	set percentage [expr {(100.0 * $::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
 	#puts "percentage $percentage"
 	if {$percentage >= 100 && $::de1(currently_updating_firmware) == 0} {
-		return "[translate {Reboot your espresso machine now}]"
+		return "[translate {Turn your machine off and on again}]"
 	} else {
 		return "[round_to_one_digits $percentage]%"
 	}

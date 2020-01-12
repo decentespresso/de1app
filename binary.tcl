@@ -1098,6 +1098,27 @@ proc parse_binary_water_level {packed destarrname} {
 	}
 }
 
+
+proc parse_binary_mmr_read {packed destarrname} {
+	upvar $destarrname mmrdata
+	unset -nocomplain mmrdata
+
+	set spec [spec_ReadFromMMR]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec mmrdata bigeendian
+	foreach {field val} [array get mmrdata] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set mmrdata($field) [expr $extra]
+		}
+	}
+
+	set mmrdata(Address) "[format %02X $mmrdata(Address1)][format %02X $mmrdata(Address2)][format %02X $mmrdata(Address3)]"
+
+}
+
 proc parse_binary_hotwater_desc {packed destarrname} {
 	upvar $destarrname ShotSample
 	unset -nocomplain ShotSample
@@ -1176,7 +1197,7 @@ proc obsolete_get_timer {state substate} {
   return $timer
 }
 
-set ::previous_FrameNumber 0
+set ::previous_FrameNumber -1
 proc update_de1_shotvalue {packed} {
 
 	if {[string length $packed] < 7} {
@@ -1261,7 +1282,11 @@ proc update_de1_shotvalue {packed} {
 
 	if {$::previous_FrameNumber != [ifexists ShotSample(FrameNumber)]} {
 		# draw a vertical line at each frame change
-		set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
+
+		if {$::previous_FrameNumber > 0} {
+			# don't draw a line a the first frame change
+			set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
+		}
 		set ::de1(current_frame_number) $ShotSample(FrameNumber)
 
 		if {$::settings(settings_profile_type) == "settings_2a"} {
@@ -1327,10 +1352,14 @@ proc update_de1_shotvalue {packed} {
 
 	}
 	set ::de1(volume) [expr {$::de1(volume) + $water_volume_dispensed_since_last_update}]
-	if {$::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
-		set ::de1(preinfusion_volume) [expr {$::de1(preinfusion_volume) + $water_volume_dispensed_since_last_update}]
-	} elseif {$::de1(substate) == $::de1_substate_types_reversed(pouring) } {	
-		set ::de1(pour_volume) [expr {$::de1(pour_volume) + $water_volume_dispensed_since_last_update}]
+
+	# keep track of water volume during espresso, but not steam
+	if {$::de1_num_state($::de1(state)) == "Espresso"} {
+		if {$::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
+			set ::de1(preinfusion_volume) [expr {$::de1(preinfusion_volume) + $water_volume_dispensed_since_last_update}]
+		} elseif {$::de1(substate) == $::de1_substate_types_reversed(pouring) } {	
+			set ::de1(pour_volume) [expr {$::de1(pour_volume) + $water_volume_dispensed_since_last_update}]
+		}
 	}
 
 	set ::de1(flow_delta) [expr {$::de1(flow) - $ShotSample(GroupFlow)}]
@@ -1529,6 +1558,7 @@ proc append_live_data_to_espresso_chart {} {
 				msg "Water volume based Espresso stop was triggered at: $total_water_volume ml > $::settings(final_desired_shot_volume_advanced) ml "
 			 	start_idle
 			 	say [translate {Stop}] $::settings(sound_button_in)	
+			 	borg toast [translate "Total volume reached"]
 			} elseif {$::settings(scale_bluetooth_address) == ""} {
 				# if no scale connected, potentially use volumetric to stop the shot
 
@@ -1537,6 +1567,7 @@ proc append_live_data_to_espresso_chart {} {
 					msg "Water volume based Espresso stop was triggered at: $::de1(pour_volume) ml > $::settings(final_desired_shot_volume) ml"
 				 	start_idle
 				 	say [translate {Stop}] $::settings(sound_button_in)	
+				 	borg toast [translate "Espresso volume reached"]
 			 	}		
 			}
 		}

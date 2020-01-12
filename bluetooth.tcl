@@ -619,7 +619,7 @@ proc firmware_upload_next {} {
 			set ::de1(firmware_update_button_label) "Updated"
 			
 		} else {
-			#set ::de1(firmware_update_button_label) "Testing"
+			set ::de1(firmware_update_button_label) "Testing"
 
 			#set ::de1(firmware_update_size) 0
 			unset -nocomplain ::de1(firmware_update_binary)
@@ -656,9 +656,6 @@ proc mmr_read {address length} {
 	set mmrloc [binary decode hex $address]
 	set data "$mmrlen${mmrloc}[binary decode hex 00000000000000000000000000000000]"
 	
-	#set data [expr "0x0080380C"]
-	#set data [binary decode hex "0080380C"]
-
 	if {$::android != 1} {
 		msg "MMR requesting read [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc]: with comment [convert_string_to_hex $data]"
 	}
@@ -689,7 +686,7 @@ proc mmr_write { address length value} {
 	userdata_append "MMR writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data]
 }
 
-proc set_tank_temperature {temp} {
+proc set_tank_temperature_threshold {temp} {
 	msg "Setting desired water tank temperature to '[zero_pad $::settings(tank_desired_water_temperature) 2]'"
 
 	if {$temp == 0} {
@@ -703,7 +700,44 @@ proc set_tank_temperature {temp} {
 	}
 }
 
-proc get_tank_temperature {} {
+# /*
+#  *  Memory Mapped Registers
+#  *
+#  *  RangeNum Position       Len  Desc
+#  *  -------- --------       ---  ----
+#  *         1 0x0080 0000      4  : HWConfig
+#  *         2 0x0080 0004      4  : Model
+#  *         3 0x0080 2800      4  : How many characters in debug buffer are valid. Accessing this pauses BLE debug logging.
+#  *         4 0x0080 2804 0x1000  : Last 4K of output. Zero terminated if buffer not full yet. Pauses BLE debug logging.
+#  *         6 0x0080 3808      4  : Fan threshold.
+#  *         7 0x0080 380C      4  : Tank water threshold.
+#  *        11 0x0080 381C      4  : GHC Info Bitmask, 0x1 = GHC Present, 0x2 = GHC Active
+#  *
+#  */
+
+
+proc set_ghc_mode {desired_mode} {
+	msg "Setting group head control mode '$desired_mode'"
+	mmr_write "803820" "04" [zero_pad [int_to_hex $desired_mode] 2]
+}
+
+proc get_ghc_mode {} {
+	msg "Reading group head control mode"
+	mmr_read "803820" "00"
+}
+
+proc get_ghc_is_installed {} {
+	msg "Reading whether the group head controller is installed or not"
+	mmr_read "80381C" "00"
+}
+
+proc get_fan_threshold {} {
+	msg "Reading at what temperature the PCB fan turns on"
+	mmr_read "803808" "00"
+}
+
+
+proc get_tank_temperature_threshold {} {
 	msg "Reading desired water tank temperature"
 	mmr_read "80380C" "00"
 }
@@ -907,9 +941,9 @@ proc de1_send_shot_frames {} {
 
 	# only set the tank temperature for advanced profile shots
 	if {$::settings(settings_profile_type) == "settings_2c"} {
-		set_tank_temperature $::settings(tank_desired_water_temperature)
+		set_tank_temperature_threshold $::settings(tank_desired_water_temperature)
 	} else {
-		set_tank_temperature 0
+		set_tank_temperature_threshold 0
 	}
 
 
@@ -1547,17 +1581,26 @@ proc de1_ble_handler { event data } {
 							de1_read_calibration "temperature"
 						} else {
 
-							set ::globals(if_in_sleep_move_to_idle) 1
-							de1_enable_temp_notifications
+							set ::globals(if_in_sleep_move_to_idle) 0
+
+							# vital stuff, do first
+							
+							start_idle
+							de1_enable_state_notifications
+
+							# less important stuff
+							#
+							read_de1_version
 							de1_send_waterlevel_settings
-							de1_enable_water_level_notifications
 							de1_send_steam_hotwater_settings
 							de1_enable_mmr_notifications
+							get_ghc_is_installed
+							#get_fan_threshold
 							de1_send_shot_frames
-							read_de1_version
-							de1_enable_state_notifications
+							de1_enable_temp_notifications
 							read_de1_state
-							
+							de1_enable_water_level_notifications
+							#after 3000 
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
 							#catch {
@@ -1962,6 +2005,8 @@ proc de1_ble_handler { event data } {
 											msg "Weight based Espresso stop was triggered at ${thisweight}g > ${target_shot_weight}g "
 										 	start_idle
 										 	say [translate {Stop}] $::settings(sound_button_in)
+						 				 	borg toast [translate "Espresso weight reached"]
+
 
 										 	# immediately set the DE1 state as if it were idle so that we don't repeatedly ask the DE1 to stop as we still get weight increases. There might be a slight delay between asking the DE1 to stop and it stopping.
 										 	set ::de1(scale_autostop_triggered) 1
@@ -2001,10 +2046,28 @@ proc de1_ble_handler { event data } {
 							}
 			    		} elseif {$cuuid == $::de1(cuuid_05)} {
 			    			# MMR read
-			    			msg "MMR replied to read: '[convert_string_to_hex $value]'"
-			    		} elseif {$cuuid == $::de1(cuuid_06)} {
-			    			# MMR read
-			    			msg "MMR replied to write: '[convert_string_to_hex $value]'"
+			    			msg "MMR recv read: '[convert_string_to_hex $value]'"
+
+			    			parse_binary_mmr_read $value arr
+			    			set mmr_id $arr(Address)
+			    			set mmr_val [ifexists arr(Data0)]
+			    			msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
+			    			if {$mmr_id == "80381C"} {
+			    				msg "Read: GHC is installed: '$mmr_val'"
+			    				set ::de1(ghc_is_installed) $mmr_val
+			    			} elseif {$mmr_id == "803808"} {
+			    				set ::de1(fan_threshold) $mmr_val
+			    				msg "Read: Fan threshold: '$mmr_val'"
+			    			} elseif {$mmr_id == "80380C"} {
+			    				msg "Read: tank temperature threshold: '$mmr_val'"
+			    				set ::de1(tank_temperature_threshold) $mmr_val
+			    			} elseif {$mmr_id == "803820"} {
+			    				msg "Read: group head control mode: '$mmr_val'"
+			    				set ::de1(ghc_mode) $mmr_val
+			    			} else {
+			    				msg "Uknown type of direct MMR read on '[convert_string_to_hex $mmr_id]': $data"
+			    			}
+
 						} else {
 							msg "Confirmed unknown read from DE1 $cuuid: '$value'"
 						}
@@ -2054,8 +2117,12 @@ proc de1_ble_handler { event data } {
 									parse_state_change $value arr
 						    		msg "Confirmed state change written to DE1: '[array get arr]'"
 								} elseif {$cuuid == "0000A006-0000-1000-8000-00805F9B34FB"} {
-									msg "firmware write ack recved: [string length $value] bytes: $value : [array get arr2]"
-									firmware_upload_next
+									if {$::de1(currently_erasing_firmware) == 1 || $::de1(currently_updating_firmware) == 1} {
+										msg "firmware write ack recved: [string length $value] bytes: $value : [array get arr2]"
+										firmware_upload_next
+									} else {
+										msg "MMR write ack: [string length $value] bytes: [convert_string_to_hex $value ] : $value : [array get arr2]"
+									}
 								} else {
 						    		msg "Confirmed wrote to $cuuid of DE1: '$value'"
 								}
@@ -2101,6 +2168,12 @@ proc de1_ble_handler { event data } {
 					    	msg "Confirmed: BLE state change notifications"
 						} elseif {$cuuid == "0000A012-0000-1000-8000-00805F9B34FB"} {
 					    	msg "Confirmed: BLE calibration notifications"
+						} elseif {$cuuid == "0000A012-0000-1000-8000-00805F9B34FB"} {
+					    	msg "Confirmed: BLE calibration notifications"
+						} elseif {$cuuid == "0000A005-0000-1000-8000-00805F9B34FB"} {
+					    	msg "Confirmed: BLE MMR write: $data"
+						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
+					    	msg "Confirmed: water level write: $data"
 						} else {
 					    	msg "DESCRIPTOR UNKNOWN WRITE confirmed: $data"
 						}
