@@ -1197,7 +1197,6 @@ proc obsolete_get_timer {state substate} {
   return $timer
 }
 
-set ::previous_FrameNumber -1
 proc update_de1_shotvalue {packed} {
 
 	if {[string length $packed] < 7} {
