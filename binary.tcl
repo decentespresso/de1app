@@ -1324,8 +1324,11 @@ proc update_de1_shotvalue {packed} {
 		#puts "framedesc $framedesc"
 	}
 
+	set ::previous_FrameNumber [ifexists ShotSample(FrameNumber)]
+
 	if {$::de1(substate) == $::de1_substate_types_reversed(ending) } {
 		set ::settings(current_frame_description) [translate "ending"]
+		set ::previous_FrameNumber -1
 	} elseif {$::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating)} {
 		set ::settings(current_frame_description) [translate "heating"]
 	}
@@ -1333,7 +1336,6 @@ proc update_de1_shotvalue {packed} {
 	#set ::settings(current_frame_description) "$::de1(state) $::de1(substate) [ifexists ShotSample(FrameNumber)]"
 	
 
-	set ::previous_FrameNumber [ifexists ShotSample(FrameNumber)]
 
   	if {[use_old_ble_spec] == 1} {
 		set ::de1(head_temperature) $ShotSample(HeadTemp)
