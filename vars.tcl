@@ -2624,7 +2624,7 @@ proc start_text_if_espresso_ready {} {
 	set substate_txt $::de1_substate_types($num)
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		
-		if {$::de1(ghc_is_installed) == 3} {
+		if {$::settings(ghc_is_installed) == 3} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 			return [translate "READY"]
 		}
@@ -2637,7 +2637,7 @@ proc restart_text_if_espresso_ready {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
-		if {$::de1(ghc_is_installed) == 3} {
+		if {$::settings(ghc_is_installed) == 3} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 			return [translate "READY"]
 		}
@@ -2669,7 +2669,7 @@ proc espresso_history_save_from_gui {} {
 	#		set state [translate "SAVING"] 
 		#} else {
 		#}; 
-		if {$::de1(ghc_is_installed) == 3} {
+		if {$::settings(ghc_is_installed) == 3} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 			set state [translate "READY"]
 		} else {

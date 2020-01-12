@@ -1590,13 +1590,13 @@ proc de1_ble_handler { event data } {
 							
 							proc later_new_de1_connection_setup {} {
 								# less important stuff
+								de1_enable_mmr_notifications
 								read_de1_version
 								de1_send_waterlevel_settings
-								de1_enable_mmr_notifications
-								get_ghc_is_installed
 								de1_send_steam_hotwater_settings
 								set_fan_temperature_threshold $::settings(fan_threshold)
 								de1_enable_water_level_notifications
+								get_ghc_is_installed
 							}
 
 							# vital stuff, do first
@@ -2060,7 +2060,7 @@ proc de1_ble_handler { event data } {
 			    			msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
 			    			if {$mmr_id == "80381C"} {
 			    				msg "Read: GHC is installed: '$mmr_val'"
-			    				set ::de1(ghc_is_installed) $mmr_val
+			    				set ::settings(ghc_is_installed) $mmr_val
 			    			} elseif {$mmr_id == "803808"} {
 			    				set ::de1(fan_threshold) $mmr_val
 			    				set ::settings(fan_threshold) $mmr_val

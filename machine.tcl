@@ -26,7 +26,6 @@ array set ::de1 {
 	advanced_shot_moveone_enabled 1
     found    0
     scanning 1
-    ghc_is_installed 0
     device_handle 0
     scale_device_handle 0
     decentscale_device_handle 0
@@ -137,10 +136,6 @@ if {$android == 0 && $undroid == 0} {
 if {$android == 0 || $undroid == 1} {
 	# no 'borg' or 'ble' commands, so emulate
     android_specific_stubs
-}
-
-if {$::android != 1} {
-	set ::de1(ghc_is_installed) 0
 }
 
 
@@ -354,12 +349,20 @@ array set ::settings {
 	preheat_volume 50
 	preheat_temperature 95
 	water_volume 50
+    ghc_is_installed 0
+
 }
 
 if {[de1plus]} {
 	# default de1plus skin
 	set ::settings(skin) "Insight"
 }
+
+if {$::android != 1} {
+	set ::settings(ghc_is_installed) 0
+}
+
+
 
 # default the listbox to the currently set ble addresses
 set ::de1_bluetooth_list $settings(bluetooth_address)
@@ -530,7 +533,7 @@ proc start_hot_water_rinse {} {
 	msg "Tell DE1 to start HOT WATER RINSE"
 	de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
 
-	if {$::de1(ghc_is_installed) == 3} {
+	if {$::settings(ghc_is_installed) == 3} {
 		# show the user what button to press on the group head
 		ghc_message ghc_flush
 		return
@@ -575,7 +578,7 @@ proc start_steam {} {
 	msg "Tell DE1 to start making STEAM"
 
 	de1_send_state "make steam" $::de1_state(Steam)
-	if {$::de1(ghc_is_installed) == 3} {
+	if {$::settings(ghc_is_installed) == 3} {
 		# show the user what button to press on the group head
 		ghc_message ghc_steam
 		return
@@ -666,7 +669,7 @@ proc start_espresso {} {
 
 	de1_send_state "make espresso" $::de1_state(Espresso)
 
-	if {$::de1(ghc_is_installed) == 3} {
+	if {$::settings(ghc_is_installed) == 3} {
 		# show the user what button to press on the group head
 		ghc_message ghc_espresso
 		return
@@ -693,7 +696,7 @@ proc start_water {} {
 	msg "Tell DE1 to start making HOT WATER"
 	de1_send_state "make hot water" $::de1_state(HotWater)
 
-	if {$::de1(ghc_is_installed) == 3} {
+	if {$::settings(ghc_is_installed) == 3} {
 		# show the user what button to press on the group head
 		ghc_message ghc_hotwater
 		return
