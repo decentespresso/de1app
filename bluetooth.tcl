@@ -1597,6 +1597,7 @@ proc de1_ble_handler { event data } {
 								set_fan_temperature_threshold $::settings(fan_threshold)
 								de1_enable_water_level_notifications
 								get_ghc_is_installed
+								de1_enable_temp_notifications
 							}
 
 							# vital stuff, do first
@@ -1604,8 +1605,7 @@ proc de1_ble_handler { event data } {
 							de1_enable_state_notifications
 							de1_send_shot_frames
 							read_de1_state
-							de1_enable_temp_notifications
-							after 5000 later_new_de1_connection_setup
+							after 3000 later_new_de1_connection_setup
 
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
