@@ -598,6 +598,8 @@ proc start_steam {} {
 
 proc reset_gui_starting_espresso {} {
 
+	set ::previous_FrameNumber -1
+
 	set ::settings(history_saved) 0
 
 	set ::de1(timer) 0
