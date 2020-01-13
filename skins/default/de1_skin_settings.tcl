@@ -803,7 +803,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				de1_send_steam_hotwater_settings
 				de1_send_waterlevel_settings
 				set_fan_temperature_threshold $::settings(fan_threshold)
-				#de1_enable_water_level_notifications
+				de1_enable_water_level_notifications
 			}
 			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit scale_bluetooth_address language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
@@ -822,37 +822,45 @@ set enable_flow_calibration 0
 add_de1_text "calibrate" 1280 300 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 
 	add_de1_text "calibrate" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); save_settings; set_next_page off settings_3; page_show settings_3;} 980 1210 1580 1410 ""
+		add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); 
+		if {[ifexists ::calibration_disabled_fahrenheit] == 1} {
+			set ::settings(enable_fahrenheit) 1
+			unset -nocomplain ::calibration_disabled_fahrenheit
+			msg "Calibration re-enabled Fahrenheit"
+		}
+
+		save_settings; set_next_page off settings_3; 
+		page_show settings_3;} 980 1210 1580 1410 ""
 		
 
 	add_de1_text "calibrate" 500 440 -text [translate "Saved"] -font Helv_8_bold -fill "#c0c4e1" -anchor "ne" 
-		add_de1_variable "calibrate" 500 500 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(calibration_temperature)]}
-		add_de1_variable "calibrate" 500 625 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(calibration_pressure)]}
+		add_de1_variable "calibrate" 500 500 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(calibration_temperature)]}
+		add_de1_variable "calibrate" 500 625 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(calibration_pressure)]}
 		if {$enable_flow_calibration == 1} {
 			#add_de1_variable "calibrate" 500 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(calibration_flow)]}
 		}
-		add_de1_variable "calibrate" 500 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
-		add_de1_variable "calibrate" 500 875 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(stop_weight_before_seconds)}
+		add_de1_variable "calibrate" 500 750 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
+		add_de1_variable "calibrate" 500 875 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(stop_weight_before_seconds)}
 
 	add_de1_text "calibrate" 720 440 -text [translate "Factory"] -font Helv_8_bold -fill "#c0c4e1" -anchor "ne" 
-		add_de1_variable "calibrate" 720 500 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_temperature)]}
-		add_de1_variable "calibrate" 720 625 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_pressure)]}
+		add_de1_variable "calibrate" 720 500 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_temperature)]}
+		add_de1_variable "calibrate" 720 625 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_pressure)]}
 		if {$enable_flow_calibration == 1} {
-			add_de1_variable "calibrate" 720 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_flow)]}
+			add_de1_variable "calibrate" 720 750 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_flow)]}
 		}
-		add_de1_variable "calibrate" 720 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
-		add_de1_variable "calibrate" 720 875 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(stop_weight_before_seconds)}
+		add_de1_variable "calibrate" 720 750 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
+		add_de1_variable "calibrate" 720 875 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(stop_weight_before_seconds)}
 
 
 	add_de1_text "calibrate" 850 440 -text [translate "Sensor"] -font Helv_8_bold -fill "#c0c4e1" -anchor "nw" 
-		add_de1_text "calibrate" 850 500 -text [translate "Temperature"] -font Helv_15_bold -fill "#7f879a" -anchor "nw"
-		add_de1_text "calibrate" 850 625 -text [translate "Pressure"] -font Helv_15_bold -fill "#7f879a" -anchor "nw" 
+		add_de1_text "calibrate" 850 500 -text [translate "Temperature"] -font Helv_11_bold -fill "#7f879a" -anchor "nw"
+		add_de1_text "calibrate" 850 625 -text [translate "Pressure"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" 
 		if {$enable_flow_calibration == 1} {
-			add_de1_text "calibrate" 850 750 -text [translate "Flow"] -font Helv_15_bold -fill "#7f879a" -anchor "nw" 
+			add_de1_text "calibrate" 850 750 -text [translate "Flow"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" 
 		}
-		add_de1_text "calibrate" 850 750 -text [translate "Steam temperature"] -font Helv_15_bold -fill "#7f879a" -anchor "nw" 
-		add_de1_text "calibrate" 850 875 -text [translate "Stop at weight"] -font Helv_15_bold -fill "#7f879a" -anchor "nw" 
-		add_de1_text "calibrate" 850 1000 -text [translate "Fan turns on at:"] -font Helv_15_bold -fill "#7f879a" -anchor "nw" 
+		add_de1_text "calibrate" 850 750 -text [translate "Steam temperature"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" 
+		add_de1_text "calibrate" 850 875 -text [translate "Stop at weight"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" 
+		add_de1_text "calibrate" 850 1000 -text [translate "Fan turns on at:"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" 
 
 
 	# tap on factory number in order to reset to factory values
@@ -862,14 +870,14 @@ add_de1_text "calibrate" 1280 300 -text [translate "Calibrate"] -font Helv_20_bo
 
 	# goal values
 	add_de1_text "calibrate" 1750 440 -text [translate "Goal"] -font Helv_8_bold -fill "#c0c4e1" -anchor "ne" 
-		add_de1_variable "calibrate" 1750 500 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
-		add_de1_variable "calibrate" 1750 625 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_pressure_measurement $::settings(espresso_pressure)]}
+		add_de1_variable "calibrate" 1750 500 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
+		add_de1_variable "calibrate" 1750 625 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_pressure_measurement $::settings(espresso_pressure)]}
 		if {$enable_flow_calibration == 1} {
-			add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}
+			add_de1_variable "calibrate" 1750 750 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}
 		}
 
 		#add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_measurement $::settings(steam_temperature)]}
-		add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
+		add_de1_variable "calibrate" 1750 750 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
 
 
 	# entry fields
@@ -903,9 +911,9 @@ add_de1_text "calibrate" 1280 300 -text [translate "Calibrate"] -font Helv_20_bo
 
 		add_de1_widget "calibrate" scale 1880 875 {} -to 5 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 400]  -width [rescale_y_skin 100] -variable ::settings(stop_weight_before_seconds) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 
-	add_de1_variable "calibrate" 1750 875 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[seconds_text $::settings(stop_weight_before_seconds)]}
+	add_de1_variable "calibrate" 1750 875 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[seconds_text $::settings(stop_weight_before_seconds)]}
 		add_de1_widget "calibrate" scale 1880 1000 {} -to 60 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 100] -variable ::settings(fan_threshold) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "calibrate" 1750 1000 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_fan_threshold_calibration $::settings(fan_threshold)]}
+		add_de1_variable "calibrate" 1750 1000 -text "" -font Helv_11 -fill "#7f879a" -anchor "ne" -textvariable {[return_fan_threshold_calibration $::settings(fan_threshold)]}
 		
 
 # END OF SETTINGS page

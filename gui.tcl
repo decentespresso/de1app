@@ -1902,7 +1902,11 @@ proc scale_scroll {lb dest1 dest2} {
 proc calibration_gui_init {} {
 
 	# calibration should always take place in Celsius
-	set ::settings(enable_fahrenheit) 0; 
+	if {[ifexists ::settings(enable_fahrenheit)] == 1} {
+		set ::settings(enable_fahrenheit) 0
+		set ::calibration_disabled_fahrenheit 1
+		msg "Calibration disabled Fahrenheit"
+	}
 
 	# set the entry fields back to normal
 	$::globals(widget_calibrate_temperature) configure -state normal; 

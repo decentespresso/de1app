@@ -1858,3 +1858,98 @@ proc zero_pad {number len} {
     }
     return $out
 }
+
+proc wrapped_string_part {input threshold partnumber} {
+    set l [wrap_string $input $threshold 1]
+    return [lindex $l $partnumber]
+}
+
+##
+# wrap_string --- line wraps a given paragraph of text
+#
+# DESCRIPTION
+#
+# This function will line wrap the given text paragraph.
+#
+# PROTOTYPE
+#
+# [proc text::wrap_string {input {threshold 75}}]
+#
+# EXAMPLE
+#
+# [
+#    set para "asdfas dasdf klasljdf aslkdfj alk jsdlfkja sld kfaslkdfj laksdj flas dfla jsdlfj alskdj flaksj dflkaj sdlfkj asdf\naa sdfhakj sdfkjah sdkfh asf\n\nasjdf ajksdh fkjash dfkha sdfh aksjdh fkjash df\nasdf akjsdhf kjha sdkfja hsdkfhas\nasdfasdf"
+#    puts $para
+#    puts "================================="
+#    set newpara [wrap_string $para]
+#    puts $newpara
+# ]
+#
+##
+# wraps a string to be no wider than 80 columns by inserting line breaks
+proc wrap_string {input {threshold 75} {returnlist 0}} {
+    set result_rows [list]
+    set start_of_line_index 0
+    while 1 {
+        
+        set this_line [string range $input $start_of_line_index [expr $start_of_line_index + $threshold - 1]]
+        if { $this_line == "" } {
+            if {$returnlist == 0} {
+                return [join $result_rows "\n"]
+            } else {
+                return $result_rows
+            }
+        }
+        
+        set first_new_line_pos [string first "\n" $this_line]
+        if { $first_new_line_pos != -1 } {
+            # there is a newline
+            lappend result_rows [string range $input $start_of_line_index [expr $start_of_line_index + $first_new_line_pos - 1]]
+            set start_of_line_index [expr $start_of_line_index + $first_new_line_pos + 1]
+            continue
+        }
+        if { [expr $start_of_line_index + $threshold + 1] >= [string length $input] } {
+            # we're on the last line and it is < threshold so just return it
+            lappend result_rows $this_line
+            #return [join $result_rows "\n"]
+            if {$returnlist == 0} {
+                return [join $result_rows "\n"]
+            } else {
+                return $result_rows
+            }
+        }
+        
+        set last_space_pos [string last " " $this_line]
+        if { $last_space_pos == -1 } {
+            # no space found!  Try the first space in the whole rest of the string
+            set next_space_pos [string first " " [string range $input $start_of_line_index end]]
+            set next_newline_pos [string first "\n" [string range $input $start_of_line_index end]]
+            if {$next_space_pos == -1} {
+                set last_space_pos $next_newline_pos
+                
+            } elseif {$next_space_pos < $next_newline_pos} {
+                set last_space_pos $next_space_pos
+                
+            } else {
+                set last_space_pos $next_newline_pos
+            }
+            
+            if { $last_space_pos == -1 } {
+                # didn't find any more whitespace, append the whole thing as a line
+                lappend result_rows [string range $input $start_of_line_index end]
+                if {$returnlist == 0} {
+                    return [join $result_rows "\n"]
+                } else {
+                    return $result_rows
+                }
+                #return [join $result_rows "\n"]
+            } 
+        }
+        
+        # OK, we have a last space pos of some sort
+        set real_index_of_space [expr $start_of_line_index + $last_space_pos]
+        lappend result_rows [string range $input $start_of_line_index [expr $real_index_of_space - 1]]
+        set start_of_line_index [expr $start_of_line_index + $last_space_pos + 1]
+    }
+    
+}
