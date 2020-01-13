@@ -55,7 +55,7 @@ array set ::de1 {
 	cuuid_decentscale_write "000036F5-0000-1000-8000-00805F9B34FB"
 	suuid_decentscale "0000FFF0-0000-1000-8000-00805F9B34FB"
 	cinstance 0
-	fan_threshold 100
+	fan_threshold 0
 	tank_temperature_threshold 0
 	pressure 0
 	ghc_mode 0
@@ -178,7 +178,7 @@ array set ::settings {
 	steam_over_temp_count_trigger 10
 	active_settings_tab settings_2a
 	chart_total_shot_weight 1
-	fan_threshold 0
+	fan_threshold 45
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	color_stage_3 "#edceca"
