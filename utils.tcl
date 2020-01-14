@@ -992,7 +992,8 @@ proc god_shot_clear {} {
 }
 
 proc save_settings {} {
-    msg "saving settings"
+
+    msg "saving settings: [stacktrace]"
     save_array_to_file ::settings [settings_filename]
 
     catch {

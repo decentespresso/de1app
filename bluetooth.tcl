@@ -1117,7 +1117,7 @@ proc android_8_or_newer {} {
 
 	catch {
 		set x [borg osbuildinfo]
-		msg "osbuildinfo: '$x'"
+		#msg "osbuildinfo: '$x'"
 		array set androidprops $x
 		msg [array get androidprops]
 		msg "Android release reported: '$androidprops(version.release)'"
@@ -1126,7 +1126,7 @@ proc android_8_or_newer {} {
 	catch {
 		set test [expr {$androidprops(version.release) >= 8}]
 	}
-	msg "Is this Android 8 or newer? '$test'"
+	#msg "Is this Android 8 or newer? '$test'"
 	return $test
 	
 
@@ -1590,6 +1590,13 @@ proc de1_ble_handler { event data } {
 							
 							proc later_new_de1_connection_setup {} {
 								# less important stuff
+							}
+
+							# vital stuff, do first
+								de1_enable_temp_notifications
+							#read_de1_state
+							#after 3000 later_new_de1_connection_setup
+
 								de1_enable_mmr_notifications
 								read_de1_version
 								de1_send_waterlevel_settings
@@ -1597,16 +1604,9 @@ proc de1_ble_handler { event data } {
 								set_fan_temperature_threshold $::settings(fan_threshold)
 								de1_enable_water_level_notifications
 								get_ghc_is_installed
-								de1_enable_temp_notifications
-							}
-
-							# vital stuff, do first
-							start_idle
-							de1_enable_state_notifications
-							de1_send_shot_frames
-							read_de1_state
-							after 3000 later_new_de1_connection_setup
-
+								de1_enable_state_notifications
+								de1_send_shot_frames
+								start_idle
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
 							#catch {
@@ -1710,8 +1710,9 @@ proc de1_ble_handler { event data } {
 					set ::cinstance($cuuid) $cinstance
 					set ::sinstance($suuid) $sinstance
 
-					msg "discovery ::cinstance(cuuid=$cuuid) cinstance=$cinstance - $data"
-					msg "discovery ::sinstance(suuid=$suuid) sinstance=$sinstance - $data"
+					#msg "discovery ::cinstance(cuuid=$cuuid) cinstance=$cinstance - $data"
+					#msg "discovery ::sinstance(suuid=$suuid) sinstance=$sinstance - $data"
+
 					#ble_connect_to_de1
 					# && ($properties & 0x10)
 				    # later turn on notifications
