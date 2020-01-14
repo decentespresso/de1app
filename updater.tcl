@@ -396,6 +396,7 @@ proc start_app_update {} {
     }
 
     set host "https://decentespresso.com"
+    set host2 "https://decentespresso.com"
     #set host "http://10.0.1.200:8000"
 
     set has_tls 0
@@ -444,7 +445,7 @@ proc start_app_update {} {
         msg "Length of remote manifest: $remote_manifest_length % $remote_manifest_parts_length"
     }
 
-    set url_manifest_gz "$host/download/sync/$progname/manifest.gz"
+    set url_manifest_gz "$host2/download/sync/$progname/manifest.gz"
     set remote_manifest_gz {}
     catch {
         set remote_manifest_gz [decent_http_get $url_manifest_gz]
@@ -459,6 +460,15 @@ proc start_app_update {} {
 
     catch {
         msg "Length of gunzip remote manifest: $remote_manifest_gunzip_length % $remote_manifest_gunzip_parts_length"
+    }
+
+    # test the remote manifest file to see that it is unmodiied and uncorrupted
+    set errcode [catch {
+        foreach {filename filesize filemtime filesha} $remote_manifest {}
+    }]
+    if {$errcode != 0} {
+        msg "Corrupt manifest.tdb - using gzipped version instead"
+        set remote_manifest_length ""
     }
 
     # if the text file is corrupted (doesn't have a x4 part structure) but the .gz file is fine, use that
