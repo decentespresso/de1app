@@ -993,6 +993,21 @@ proc god_shot_clear {} {
 
 proc save_settings {} {
 
+    set compare_settings 1
+
+    if {$compare_settings == 1} {
+        array set ::settings_saved [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]
+
+        foreach k [lsort [array names ::settings]] {
+            set v $::settings($k)
+
+            set sv [ifexists ::settings_saved($k)]
+            if {$sv != $v} {
+                msg "New setting: '$k' = '$v' (was '$sv')"
+            }
+        }
+    }
+
     msg "saving settings: [stacktrace]"
     save_array_to_file ::settings [settings_filename]
 
@@ -1040,9 +1055,6 @@ proc load_settings {} {
         set ::settings(scale_type) "atomaxskale"
     }
 
-
-
-    
 
     blt::vector create espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable
     blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow espresso_water_dispensed espresso_flow_weight_raw
