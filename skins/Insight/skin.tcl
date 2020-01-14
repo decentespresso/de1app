@@ -816,7 +816,7 @@ add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_tempera
 # atap on temperature or time to get to settings edit page
 add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off $::settings(settings_profile_type); page_show off; set_profiles_scrollbar_dimensions} 2040 720 2560 1070
 	#add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off $::settings(settings_profile_type); page_show off; } 2302 720 2560 890
-
+#
 # this heart icon feature is always on now
 set ::settings(display_rate_espresso) 1
 if {$::settings(display_rate_espresso) == 1} {
