@@ -24,7 +24,7 @@ add_de1_text "off" 942 585  -text [translate "STEAM"] -font {musicos} -fill "#00
 add_de1_text "steam" 630 495  -text [translate "STEAM"] -font {musicos} -fill "#000000" -anchor "center" 
 
 add_de1_text "off" 1780 597 -text [translate "WATER"] -font {musicos} -fill "#000000" -anchor "center" 
-add_de1_text "water" 1550 500 -text [translate "WATER"] -font {musicos} -fill "#000000" -anchor "center" 
+add_de1_text "water hotwaterrinse" 1550 500 -text [translate "WATER"] -font {musicos} -fill "#000000" -anchor "center" 
 
 
 

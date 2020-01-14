@@ -25,7 +25,7 @@ load_font "KG Havent Slept in Two Days Sha" "[skin_directory]/KGHaventSleptShado
 
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-add_de1_text "off water" 1635 1510 -text [translate "WATER"] -font {KG Les Bouquinistes de Paris} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water hotwaterrinse" 1635 1510 -text [translate "WATER"] -font {KG Les Bouquinistes de Paris} -fill "#ffffff" -anchor "center" 
 
 add_de1_text "off" 335 1500 -text [translate "ESPRESSO"] -font {KG The Last Time} -fill "#ff7f24" -anchor "center" 
 add_de1_text "espresso" 350 1500 -text [translate "ESPRESSO"] -font {KG The Last Time} -fill "#ff7f24" -anchor "center" 

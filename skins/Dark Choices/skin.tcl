@@ -19,7 +19,7 @@ load_font "lighthouse" "[skin_directory]/lighthouse.ttf" 20
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 395 1197  -text [translate "ESPRESSO"] -font {lighthouse} -fill "#ffffff" -anchor "center" 
 add_de1_text "off steam" 1305 1197  -text [translate "STEAM"] -font {lighthouse} -fill "#ffffff" -anchor "center" 
-add_de1_text "off water" 2180 1197 -text [translate "WATER"] -font {lighthouse} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water hotwaterrinse" 2180 1197 -text [translate "WATER"] -font {lighthouse} -fill "#ffffff" -anchor "center" 
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)

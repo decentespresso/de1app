@@ -25,7 +25,7 @@ add_de1_text "steam" 948 1484  -text [translate "STEAM"] -font {renaissance} -fi
 
 
 add_de1_text "off" 1568 1484 -text [translate "WATER"] -font {renaissance} -fill "#a7534e" -anchor "center" 
-add_de1_text "water" 1568 1484  -text [translate "WATER"] -font {renaissance} -fill "#a7534e" -anchor "center" 
+add_de1_text "water hotwaterrinse" 1568 1484  -text [translate "WATER"] -font {renaissance} -fill "#a7534e" -anchor "center" 
 
 add_de1_text "off" 2208 1484  -text [translate "SETTINGS"] -font {renaissance} -fill "#a7534e" -anchor "center" 
 

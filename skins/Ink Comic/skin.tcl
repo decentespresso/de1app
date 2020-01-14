@@ -29,7 +29,7 @@ add_de1_text "off steam" 1605 635 -text [translate "Bloody hell!
 The STEAM
 is busted"] -font {DSEraserCyr} -fill "#1f72c7" -anchor "center" 
 
-add_de1_text "off water" 880 980 -text [translate "And there's
+add_de1_text "off water hotwaterrinse" 880 980 -text [translate "And there's
 WATER
 all over
 the floor!"] -font {DSEraserCyr} -fill "#ff1717" -anchor "center" 

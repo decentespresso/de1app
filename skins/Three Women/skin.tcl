@@ -19,7 +19,7 @@ load_font "painthand" "[skin_directory]/painthand.ttf" 28
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 490 1380  -text [translate "ESPRESSO"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
 add_de1_text "off steam" 1311 1380  -text [translate "STEAM"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
-add_de1_text "off water" 2147 1380 -text [translate "WATER"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
+add_de1_text "off water hotwaterrinse" 2147 1380 -text [translate "WATER"] -font {painthand} -fill "#8d8d8c" -anchor "center" 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
 add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 225 450 730 1250

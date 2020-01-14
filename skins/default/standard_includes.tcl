@@ -5,14 +5,14 @@ set ::skindebug 0
 add_de1_page "off" "nothing_on.png"
 add_de1_page "espresso" "espresso_on.png"
 add_de1_page "steam" "steam_on.png"
-add_de1_page "water" "tea_on.png"
+add_de1_page "water hotwaterrinse" "tea_on.png"
 
 # most skins will not bother replacing these graphics
 add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
 add_de1_page "tankempty refill" "fill_tank.jpg" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
-add_de1_page "message infopage calibrate tabletstyles languages measurements" "settings_message.png" "default"
+add_de1_page "message calibrate infopage tabletstyles languages measurements" "settings_message.png" "default"
 add_de1_page "create_preset" "settings_3_choices.png" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 add_de1_page "descale_prepare" "descale_prepare.jpg" "default"

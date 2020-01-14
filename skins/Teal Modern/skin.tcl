@@ -22,7 +22,7 @@ load_font "novocento" "[skin_directory]/novocento.ttf" 29
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 450 1225  -text [translate "ESPRESSO"] -font {novocento} -fill "#a5e2e3" -anchor "center" 
 add_de1_text "off steam" 975 1225  -text [translate "STEAM"] -font {novocento} -fill "#a5e2e3" -anchor "center" 
-add_de1_text "off water" 1572 1225 -text [translate "WATER"] -font {novocento} -fill "#a5e2e3" -anchor "center" 
+add_de1_text "off water hotwaterrinse" 1572 1225 -text [translate "WATER"] -font {novocento} -fill "#a5e2e3" -anchor "center" 
 add_de1_text "off settings" 2180 1225  -text [translate "SETTINGS"] -font {novocento} -fill "#a5e2e3" -anchor "center" 
 
 

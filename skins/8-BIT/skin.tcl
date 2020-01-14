@@ -5,7 +5,7 @@ package require de1 1.0
 ##############################################################################################################################################################################################################################################################################
 
 # you should replace the JPG graphics in the 2560x1600/ directory with your own graphics. 
-#source "[homedir]/skins/default/standard_includes.tcl"
+source "[homedir]/skins/default/standard_includes.tcl"
 
 set ::skindebug 0
 
@@ -18,7 +18,7 @@ if {[de1plus]} {
 	add_de1_page "espresso" "espresso_on.png"
 }
 add_de1_page "steam" "steam_on.png"
-add_de1_page "water" "tea_on.png"
+add_de1_page "water hotwaterrinse" "tea_on.png"
 
 # most skins will not bother replacing these graphics
 add_de1_page "sleep" "sleep.jpg" "default"
@@ -57,7 +57,7 @@ if {![de1plus]} {
 }
 
 add_de1_text "off steam" 1318 1100  -text [translate "STEAM"] -font {pixel} -fill "#ffffff" -anchor "center" 
-add_de1_text "off water" 2110 1100 -text [translate "WATER"] -font {pixel} -fill "#ffffff" -anchor "center" 
+add_de1_text "off water hotwaterrinse" 2110 1100 -text [translate "WATER"] -font {pixel} -fill "#ffffff" -anchor "center" 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
 add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 75 385 775 1250
@@ -75,7 +75,7 @@ add_de1_variable "off" 1320 100 -justify left -anchor "center" -text "" -font pi
 if {[de1plus]} {
 	if {$::settings(waterlevel_indicator_on) == 1} {
 		# water level sensor 
-		add_de1_widget "off espresso steam water" scale 2544 0 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1600] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #000000 -borderwidth 0  -highlightthickness 0
+		add_de1_widget "off espresso steam hotwaterrinse water" scale 2544 0 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1600] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #000000 -borderwidth 0  -highlightthickness 0
 	}
 
 

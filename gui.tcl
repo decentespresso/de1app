@@ -2315,6 +2315,31 @@ proc load_god_shot { {force 0} } {
 
 }
 
+# space = idle
+# e = espresso 
+# f = flush
+# s = steam
+# w = water
+
+proc handle_keypress {keycode} {
+	msg "Keypress detected: $keycode"
+	if {$keycode == 101} {
+		# e = espresso 
+		start_espresso
+	} elseif {$keycode == 32} {
+		# space = idle
+		start_idle
+	} elseif {$keycode == 102} {
+		# f = flush
+		start_hot_water_rinse
+	} elseif {$keycode == 115} {
+		# s = steam
+		start_steam
+	} elseif {$keycode == 119} {
+		# w = water
+		start_water
+	}
+}
 
 #install_de1_app_icon
 #install_de1plus_app_icon

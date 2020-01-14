@@ -26,7 +26,7 @@ add_de1_text "off" 1275 1425  -text [translate "STEAM"] -font {renogare} -fill "
 add_de1_text "steam" 1275 1435  -text [translate "STEAM"] -font {renogare} -fill "#000000" -anchor "center" 
 
 add_de1_text "off" 2067 1425 -text [translate "WATER"] -font {renogare} -fill "#000000" -anchor "center" 
-add_de1_text "water" 2067 1435 -text [translate "WATER"] -font {renogare} -fill "#000000" -anchor "center" 
+add_de1_text "water hotwaterrinse" 2067 1435 -text [translate "WATER"] -font {renogare} -fill "#000000" -anchor "center" 
 
 add_de1_text "off settings" 2245 122  -text [translate "SETTINGS"] -font {renogare} -fill "#000000" -anchor "center" 
 

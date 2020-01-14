@@ -19,7 +19,7 @@ load_font "Grand Stylus" "[skin_directory]/Grand Stylus.ttf" 70
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 420 1450  -text [translate "ESPRESSO"] -font {Grand Stylus} -fill "#989898" -anchor "center" 
-add_de1_text "off water" 1260 1450  -text [translate "WATER"] -font {Grand Stylus} -fill "#989898" -anchor "center" 
+add_de1_text "off water hotwaterrinse" 1260 1450  -text [translate "WATER"] -font {Grand Stylus} -fill "#989898" -anchor "center" 
 add_de1_text "off steam" 2160 1450 -text [translate "STEAM"] -font {Grand Stylus} -fill "#989898" -anchor "center" 
 #add_de1_text "off settings" 2242 165  -text [translate "SETTINGS"] -font {Grand Stylus} -fill "#989898" -anchor "center" 
 

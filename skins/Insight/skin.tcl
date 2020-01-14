@@ -1077,6 +1077,9 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 		add_de1_variable "steam_1" 1680 1270 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
 
 
+# optional keyboard bindings
+focus .can
+bind Canvas <KeyPress> {handle_keypress %k}
 
 profile_has_changed_set_colors
 
@@ -1093,7 +1096,6 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
 		set_next_page off preheat_3; 
 	}
 }
-
 
 
 # feature disabled until flowmeter reporting over BLE is implemented

@@ -20,7 +20,7 @@ load_font "retrofont" "[skin_directory]/retrofont.ttf" 36
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 400 1500  -text [translate "ESPRESSO"] -font {retrofont} -fill "#fff2d7" -anchor "center" 
 add_de1_text "off steam" 1290 1500  -text [translate "STEAM"] -font {retrofont} -fill "#fff2d7" -anchor "center" 
-add_de1_text "off water" 2140 1500 -text [translate "WATER"] -font {retrofont} -fill "#fff2d7" -anchor "center" 
+add_de1_text "off water hotwaterrinse" 2140 1500 -text [translate "WATER"] -font {retrofont} -fill "#fff2d7" -anchor "center" 
 #add_de1_text "off settings" 2486 1500  -text [translate "SETTINGS"] -font {retrofont} -fill "#c1a47f" -anchor "ne" 
 #add_de1_text "off" 1820 1500  -text "OFF" -font {retrofont} -fill "#c1a47f" -anchor "nw" 
 

@@ -229,6 +229,46 @@ proc make_de1_dir {} {
         skins/SWDark3/1280x800/preheat_4.png *
         skins/SWDark3/1280x800/espresso_2_zoomed.png *
 
+
+        skins/SWDark4/screen_saver/2560x1600/saver-1.jpg *
+        skins/SWDark4/screen_saver/2560x1600/saver-2.jpg *
+        skins/SWDark4/screen_saver/2560x1600/saver-3.jpg *
+        skins/SWDark4/screen_saver/1280x800/saver-1.jpg *
+        skins/SWDark4/screen_saver/1280x800/saver-2.jpg *
+        skins/SWDark4/screen_saver/1280x800/saver-3.jpg *
+        skins/SWDark4/swdark_functions.tcl *
+        skins/SWDark4/skin.tcl *
+        skins/SWDark4/img/hearticon.png *
+        skins/SWDark4/helveticabold12.ttf *
+        skins/SWDark4/helveticabold16.ttf *
+        skins/SWDark4/helveticabold18.ttf *
+        skins/SWDark4/helveticabold20.ttf *
+        skins/SWDark4/helveticabold24.ttf *
+        skins/SWDark4/2560x1600/home.png *
+        skins/SWDark4/2560x1600/home_2.png *
+        skins/SWDark4/2560x1600/home_2_single.png *
+        skins/SWDark4/2560x1600/home_2_split.png *
+        skins/SWDark4/2560x1600/swsettings.png *
+        skins/SWDark4/2560x1600/icon.jpg *
+        skins/SWDark4/2560x1600/sleep.png *
+        skins/SWDark4/2560x1600/fill_tank.png *
+        skins/SWDark4/2560x1600/saver-1.png *
+        skins/SWDark4/2560x1600/saver-2.png *
+        skins/SWDark4/2560x1600/saver-3.png *
+        skins/SWDark4/userdata/swdark_usersettings.tdb *
+        skins/SWDark4/1280x800/icon.jpg *
+        skins/SWDark4/1280x800/sleep.png *
+        skins/SWDark4/1280x800/fill_tank.png *
+        skins/SWDark4/1280x800/saver-1.png *
+        skins/SWDark4/1280x800/saver-2.png *
+        skins/SWDark4/1280x800/saver-3.png *
+        skins/SWDark4/1280x800/home.png *
+        skins/SWDark4/1280x800/home_2.png *
+        skins/SWDark4/1280x800/home_2_single.png *
+        skins/SWDark4/1280x800/home_2_split.png *
+        skins/SWDark4/1280x800/swsettings.png *
+
+
         skins/Borg/skin.tcl *
         skins/Borg/diablo.ttf *
         skins/Borg/1280x800/espresso_on.png *

@@ -22,7 +22,7 @@ load_font "mangaspeak" "[skin_directory]/mangaspeak.ttf" 28
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 272 350  -text [translate "ESPRESSO"] -font {mangaspeak} -fill "#CCCCCC" -anchor "center" 
 add_de1_text "off steam" 865 350  -text [translate "STEAM"] -font {mangaspeak} -fill "#CCCCCC" -anchor "center" 
-add_de1_text "off water" 1462 350 -text [translate "WATER"] -font {mangaspeak} -fill "#CCCCCC" -anchor "center" 
+add_de1_text "off water hotwaterrinse" 1462 350 -text [translate "WATER"] -font {mangaspeak} -fill "#CCCCCC" -anchor "center" 
 add_de1_text "off settings" 2055 350  -text [translate "SETTINGS"] -font {mangaspeak} -fill "#CCCCCC" -anchor "center" 
 
 

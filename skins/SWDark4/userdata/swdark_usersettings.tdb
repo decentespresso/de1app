@@ -1,0 +1,15 @@
+scale_display_state { }
+scale_display_state_b .
+skale_display_state { }
+skale_display_state_b .
+swbrewratio 2
+swcoffeedose 20.0
+swcoffeetargetweight 45.0
+swcoffeetargetweightadv 32
+swcoffeetargetweightcombined 55.0
+swflushvol 50
+swsteamoff 100
+swwatertemp 80
+swwatervol 120
+swweighttype ::settings(final_desired_shot_weight_advanced)
+

@@ -4,6 +4,9 @@
 set ::skindebug 0
 set ::debugging 0
 
+
+source "[homedir]/skins/default/standard_includes.tcl"
+
 ##### Colour variables for chart lines#####
 #set green-dotted "#8fd0af"
 #set green-solid "#458c6f"
@@ -1061,3 +1064,8 @@ profile_has_changed_set_colors
 
 #set_next_page off refill;
 #
+
+# optional keyboard bindings
+focus .can
+bind Canvas <KeyPress> {handle_keypress %k}
+

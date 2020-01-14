@@ -24,7 +24,7 @@ add_de1_text "off steam" 1026 1350  -text [translate "STEAM"] -font {bellerose} 
 #add_de1_text "steam" 1026 1350  -text [translate "STEAM"] -font {bellerose} -fill "#a4f1fa" -anchor "center" 
 
 
-add_de1_text "off water" 1604 1350 -text [translate "WATER"] -font {bellerose} -fill "#a4f1fa" -anchor "center" 
+add_de1_text "off water hotwaterrinse" 1604 1350 -text [translate "WATER"] -font {bellerose} -fill "#a4f1fa" -anchor "center" 
 #add_de1_text "water" 1604 1350  -text [translate "WATER"] -font {bellerose} -fill "#a4f1fa" -anchor "center" 
 
 add_de1_text "off" 2164 1350  -text [translate "SETTINGS"] -font {bellerose} -fill "#a4f1fa" -anchor "center" 
