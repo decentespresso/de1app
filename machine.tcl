@@ -743,6 +743,8 @@ proc start_idle {} {
 		unset -nocomplain ::idle_next_step 
 	}
 
+	# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
+	set_fan_temperature_threshold $::settings(fan_threshold)
 
 	set ::settings(flying) 0
 	de1_send_state "go idle" $::de1_state(Idle)
@@ -769,6 +771,10 @@ proc start_sleep {} {
 	#	start_refill_kit
 	#	return
 	#}
+
+
+	# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
+	set_fan_temperature_threshold 0
 
     if {[ifexists ::app_updating] == 1} {
 		msg "delaying screen saver because tablet app is updating"
