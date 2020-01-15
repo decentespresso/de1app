@@ -870,6 +870,9 @@ proc app_exit {} {
 		close_all_ble_and_exit
 	}
 
+	# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
+	set_fan_temperature_threshold 0
+
 	set ::exit_app_on_sleep 1
 	start_sleep
 	
