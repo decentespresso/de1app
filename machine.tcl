@@ -221,6 +221,7 @@ array set ::settings {
 	battery_very_low_trigger 30
 	battery_very_low_brightness 10
 	orientation "landscape"
+	enable_rise 0
 	grinder_dose_weight 0
 	scentone {}
 	seconds_after_espresso_stop_to_continue_weighing 8
