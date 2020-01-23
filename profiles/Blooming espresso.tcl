@@ -6,7 +6,7 @@ espresso_pressure 6.0
 espresso_decline_time 30
 pressure_end 4.0
 espresso_temperature 97.5
-settings_profile_type settings_2c2
+settings_profile_type settings_2c
 flow_profile_preinfusion 4
 flow_profile_preinfusion_time 5
 flow_profile_hold 2

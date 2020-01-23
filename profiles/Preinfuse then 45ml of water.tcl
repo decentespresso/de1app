@@ -22,7 +22,7 @@ final_desired_shot_weight 36
 final_desired_shot_weight_advanced 0
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 0
-preinfusion_guarantee 1
+preinfusion_guarantee 0
 profile_title {Preinfuse then 45ml of water}
 profile_language en
 preinfusion_stop_pressure 4.0

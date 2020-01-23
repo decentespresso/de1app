@@ -22,7 +22,7 @@ final_desired_shot_weight 36
 final_desired_shot_weight_advanced 1
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 74
-preinfusion_guarantee 1
+preinfusion_guarantee 0
 profile_title {Hybrid pour over espresso}
 profile_language en
 preinfusion_stop_pressure 1.5

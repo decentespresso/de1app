@@ -22,7 +22,7 @@ final_desired_shot_weight 36
 final_desired_shot_weight_advanced 135
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 135
-preinfusion_guarantee 1
+preinfusion_guarantee 0
 profile_title {Gentle preinfusion flow profile}
 profile_language en
 preinfusion_stop_pressure 4.0
