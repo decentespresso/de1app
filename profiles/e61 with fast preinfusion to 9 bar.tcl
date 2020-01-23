@@ -17,7 +17,11 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4
 profile_notes {E61 machines evolved with time, with some models adding an optional, manually controlled preinfusion step.  In most cases, preinfusion will produce a more evenly extracted shot.}
 water_temperature 86.0
-final_desired_shot_weight 32
+final_desired_shot_volume 36
+final_desired_shot_weight 36
+final_desired_shot_weight_advanced 36
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 0
 preinfusion_guarantee 1
 profile_title {E61 with fast preinfusion to 9 bar}
 profile_language en

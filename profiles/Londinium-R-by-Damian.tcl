@@ -6,7 +6,7 @@ espresso_pressure 6.0
 espresso_decline_time 30
 pressure_end 4.0
 espresso_temperature 89.0
-settings_profile_type settings_2c
+settings_profile_type settings_2c2
 flow_profile_preinfusion 4
 flow_profile_preinfusion_time 5
 flow_profile_hold 2
@@ -17,8 +17,9 @@ flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
 profile_notes {This profile simulates a Londinium R machines extraction style. This is an advanced profile with some added steps to assist with less than ideal puck prep. Christee-Lee described it as “like having a milkshake with extra syrup”. Great body and flavour range.  By Damian Brakel https://www.diy.brakel.com.au/londinium-r-style-profile/}
 water_temperature 80
+final_desired_shot_volume 32
 final_desired_shot_weight 32
-final_desired_shot_weight_advanced 32
+final_desired_shot_weight_advanced 36
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 0
 preinfusion_guarantee 1

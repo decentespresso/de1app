@@ -17,7 +17,11 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4.0
 profile_notes {John Buckman, the founder of Decent Espresso, finds that this flow profile produces the best espresso shots for milky drinks in the widest variety of circumstances. It is especially tolerant of not-yet-very-good barista technique.}
 water_temperature 86.0
-final_desired_shot_weight 32
+final_desired_shot_volume 36
+final_desired_shot_weight 36
+final_desired_shot_weight_advanced 42
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 0
 preinfusion_guarantee 0
 profile_title {Flow profile for milky drinks}
 profile_language en

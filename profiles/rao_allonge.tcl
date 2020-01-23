@@ -6,7 +6,7 @@ espresso_pressure 8.6
 espresso_decline_time 18
 pressure_end 6.0
 espresso_temperature 88.0
-settings_profile_type settings_2c
+settings_profile_type settings_2c2
 flow_profile_preinfusion 4
 flow_profile_preinfusion_time 5
 flow_profile_hold 4.5
@@ -21,7 +21,7 @@ final_desired_shot_volume 100
 final_desired_shot_weight 32
 final_desired_shot_weight_advanced 135
 tank_desired_water_temperature 0
-final_desired_shot_volume_advanced 135
+final_desired_shot_volume_advanced 180
 preinfusion_guarantee 0
 profile_title {Rao Allongé}
 profile_language en

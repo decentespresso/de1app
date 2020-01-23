@@ -1348,6 +1348,13 @@ proc round_to_tens {in} {
 
 proc round_to_two_digits {in} {
 	set x 0
+	catch {
+		set x [format "%.2f" $in]
+	}
+	return $x
+
+	# obsolete below
+	set x 0
     catch {
     	set x [expr {round($in * 100.0)/100.0}]
     }
@@ -3008,6 +3015,19 @@ proc return_fan_threshold_calibration {temperature} {
 	}
 	return [return_temperature_setting $temperature]
 }
+
+
+proc return_steam_flow_calibration {steam_flow} {
+	set in [expr {$steam_flow / 100.0}]
+
+	if {$::settings(enable_fluid_ounces) != 1} {
+		return [subst {[round_to_two_digits $in] [translate "mL/s"]}]
+	} else {
+		return [subst {[round_to_two_digits [ml_to_oz $in]] oz/s}]
+	}
+
+}
+
 
 proc return_steam_heater_calibration {steam_temperature} {
 

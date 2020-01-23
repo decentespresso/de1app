@@ -716,6 +716,20 @@ proc set_tank_temperature_threshold {temp} {
 #  */
 
 
+
+proc set_steam_flow {desired_flow} {
+	#return
+	msg "Setting steam flow rate to '$desired_flow'"
+	mmr_write "80382C" "04" [zero_pad [int_to_hex $desired_flow] 2]
+}
+
+proc get_steam_flow {} {
+	msg "Setting steam flow rate"
+	mmr_read "80382C" "00"
+}
+
+
+
 proc set_ghc_mode {desired_mode} {
 	msg "Setting group head control mode '$desired_mode'"
 	mmr_write "803820" "04" [zero_pad [int_to_hex $desired_mode] 2]
@@ -991,10 +1005,11 @@ proc de1_send_steam_hotwater_settings {} {
 		return
 	}
 
-
 	set data [return_de1_packed_steam_hotwater_settings]
 	parse_binary_hotwater_desc $data arr2
 	userdata_append "Set water/steam settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0B) $::cinstance($::de1(cuuid_0B)) $data]
+
+	set_steam_flow $::settings(steam_flow)
 }
 
 proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
@@ -1593,12 +1608,6 @@ proc de1_ble_handler { event data } {
 							
 							proc later_new_de1_connection_setup {} {
 								# less important stuff
-							}
-
-							# vital stuff, do first
-								de1_enable_temp_notifications
-							#read_de1_state
-							#after 3000 later_new_de1_connection_setup
 
 								de1_enable_mmr_notifications
 								read_de1_version
@@ -1607,9 +1616,15 @@ proc de1_ble_handler { event data } {
 								set_fan_temperature_threshold $::settings(fan_threshold)
 								de1_enable_water_level_notifications
 								get_ghc_is_installed
-								de1_enable_state_notifications
 								de1_send_shot_frames
+							}
+
+							# vital stuff, do first
+							#read_de1_state
+								de1_enable_state_notifications
 								start_idle
+								de1_enable_temp_notifications
+								after 3000 later_new_de1_connection_setup
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
 							#catch {
@@ -2075,6 +2090,9 @@ proc de1_ble_handler { event data } {
 			    			} elseif {$mmr_id == "803820"} {
 			    				msg "Read: group head control mode: '$mmr_val'"
 			    				set ::de1(ghc_mode) $mmr_val
+			    			} elseif {$mmr_id == "80382C"} {
+			    				msg "Read: steam flow: '$mmr_val'"
+			    				set ::de1(steam_flow) $mmr_val
 			    			} else {
 			    				msg "Uknown type of direct MMR read on '[convert_string_to_hex $mmr_id]': $data"
 			    			}

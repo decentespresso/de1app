@@ -17,7 +17,11 @@ flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
 profile_notes {This is a very easy espresso to successfully make and is suggested if you are having difficulty making good drinks.  The pressure rises to only 6 bar and then slowly descends to 4 bar.  The resulting espresso should be free of channeling, have low acidity and quite pleasant to drink straight or with milk.}
 water_temperature 80
-final_desired_shot_weight 32
+final_desired_shot_volume 36
+final_desired_shot_weight 36
+final_desired_shot_weight_advanced 135
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 135
 preinfusion_guarantee 1
 profile_title {Gentle and sweet}
 profile_language en

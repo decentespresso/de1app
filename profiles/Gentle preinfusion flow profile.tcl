@@ -17,7 +17,11 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 3.5
 profile_notes {Created by a famously innovative Seattle-based espresso machine manufacturer, this technique works well with aromatic, lightly roasted coffee beans.}
 water_temperature 80
-final_desired_shot_weight 32
+final_desired_shot_volume 36
+final_desired_shot_weight 36
+final_desired_shot_weight_advanced 135
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 135
 preinfusion_guarantee 1
 profile_title {Gentle preinfusion flow profile}
 profile_language en

@@ -17,7 +17,11 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4.5
 profile_notes {Italians in Australia have a style all their own. They still use dark roasted coffee beans and extract at 9 bar, but they lower the brew temperature so as to not overextract the coffee.  Aim for a brew ratio of 2.5x, which is to say an in-cup weight that is 2.5x the weight of the coffee ground dose.}
 water_temperature 86.0
-final_desired_shot_weight 32
+final_desired_shot_volume 36
+final_desired_shot_weight 36
+final_desired_shot_weight_advanced 1
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 74
 preinfusion_guarantee 1
 profile_title {Italian Australian espresso}
 profile_language en

@@ -17,8 +17,8 @@ flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
 profile_notes {This profile is gentle on the coffee puck and not too demanding on the barista.  Produces a very acceptable espresso in a wide variety of settings.}
 water_temperature 80
-final_desired_shot_volume 32
-final_desired_shot_weight 32
+final_desired_shot_volume 36
+final_desired_shot_weight 36
 final_desired_shot_weight_advanced 36
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 0
