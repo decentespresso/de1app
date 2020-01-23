@@ -16,7 +16,6 @@ add_de1_page "message calibrate infopage tabletstyles languages measurements" "s
 add_de1_page "create_preset" "settings_3_choices.png" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 add_de1_page "descale_prepare" "descale_prepare.jpg" "default"
-add_de1_page "cleaning" "cleaning.jpg" "default"
 add_de1_page "ghc" "ghc.jpg" "default"
 add_de1_page "travel_prepare" "travel_prepare.jpg" "default"
 add_de1_page "travel_do" "travel_do.jpg" "default"

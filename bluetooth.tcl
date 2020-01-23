@@ -718,7 +718,7 @@ proc set_tank_temperature_threshold {temp} {
 
 
 proc set_steam_flow {desired_flow} {
-	#return
+	return
 	msg "Setting steam flow rate to '$desired_flow'"
 	mmr_write "80382C" "04" [zero_pad [int_to_hex $desired_flow] 2]
 }
