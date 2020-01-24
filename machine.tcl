@@ -58,7 +58,6 @@ array set ::de1 {
 	fan_threshold 0
 	tank_temperature_threshold 0
 	pressure 0
-	ghc_mode 0
 	head_temperature 0
 	mix_temperature 0
 	flow 0
@@ -178,6 +177,7 @@ array set ::settings {
 	steam_over_temp_count_trigger 10
 	active_settings_tab settings_2a
 	chart_total_shot_weight 1
+	ghc_mode 0
 	fan_threshold 45
 	steam_flow 700
 	color_stage_1 "#c8e7d5"
@@ -199,6 +199,7 @@ array set ::settings {
 	chart_dashes_flow ""
 	chart_dashes_espresso_weight {2 1}
 	chart_dashes_temperature ""
+	steam_highflow_start 100
 	zoomed_y_axis_scale 12
 	name {}
 	display_espresso_water_temp_difference 0

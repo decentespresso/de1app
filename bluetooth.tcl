@@ -718,16 +718,27 @@ proc set_tank_temperature_threshold {temp} {
 
 
 proc set_steam_flow {desired_flow} {
-	return
+	#return
 	msg "Setting steam flow rate to '$desired_flow'"
-	mmr_write "80382C" "04" [zero_pad [int_to_hex $desired_flow] 2]
+	mmr_write "803828" "04" [zero_pad [int_to_hex $desired_flow] 2]
 }
 
 proc get_steam_flow {} {
 	msg "Setting steam flow rate"
-	mmr_read "80382C" "00"
+	mmr_read "803828" "00"
 }
 
+
+proc set_steam_highflow_start {desired_seconds} {
+	#return
+	msg "Setting steam high flow rate start seconds to '$desired_seconds'"
+	mmr_write "80382C" "04" [zero_pad [int_to_hex $desired_seconds] 2]
+}
+
+proc get_steam_highflow_start {} {
+	msg "Getting steam high flow rate start seconds "
+	mmr_read "80382C" "00"
+}
 
 
 proc set_ghc_mode {desired_mode} {
@@ -1010,6 +1021,7 @@ proc de1_send_steam_hotwater_settings {} {
 	userdata_append "Set water/steam settings: [array get arr2]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0B) $::cinstance($::de1(cuuid_0B)) $data]
 
 	set_steam_flow $::settings(steam_flow)
+	set_steam_highflow_start $::settings(steam_highflow_start)
 }
 
 proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
@@ -2089,10 +2101,13 @@ proc de1_ble_handler { event data } {
 			    				set ::de1(tank_temperature_threshold) $mmr_val
 			    			} elseif {$mmr_id == "803820"} {
 			    				msg "Read: group head control mode: '$mmr_val'"
-			    				set ::de1(ghc_mode) $mmr_val
-			    			} elseif {$mmr_id == "80382C"} {
+			    				set ::settings(ghc_mode) $mmr_val
+			    			} elseif {$mmr_id == "803828"} {
 			    				msg "Read: steam flow: '$mmr_val'"
-			    				set ::de1(steam_flow) $mmr_val
+			    				set ::settings(steam_flow) $mmr_val
+			    			} elseif {$mmr_id == "80382C"} {
+			    				msg "Read: steam_highflow_start: '$mmr_val'"
+			    				set ::settings(steam_highflow_start) $mmr_val
 			    			} else {
 			    				msg "Uknown type of direct MMR read on '[convert_string_to_hex $mmr_id]': $data"
 			    			}

@@ -3024,7 +3024,7 @@ proc return_fan_threshold_calibration {temperature} {
 
 
 proc return_steam_flow_calibration {steam_flow} {
-	set in [expr {$steam_flow / 100.0}]
+	set in [expr {$steam_flow / 1000.0}]
 
 	if {$::settings(enable_fluid_ounces) != 1} {
 		return [subst {[round_to_two_digits $in] [translate "mL/s"]}]
