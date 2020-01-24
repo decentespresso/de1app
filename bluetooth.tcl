@@ -724,7 +724,7 @@ proc set_steam_flow {desired_flow} {
 }
 
 proc get_steam_flow {} {
-	msg "Setting steam flow rate"
+	msg "Getting steam flow rate"
 	mmr_read "803828" "00"
 }
 

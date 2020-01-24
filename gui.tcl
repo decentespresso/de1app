@@ -737,7 +737,7 @@ proc add_de1_widget {args} {
 
 
 proc add_de1_variable {args} {
-	#global text_cnt
+
 	set varcmd [lindex [unshift args] 0]
 	set lastcmd [unshift args]
 	if {$lastcmd != "-textvariable"} {
@@ -747,18 +747,15 @@ proc add_de1_variable {args} {
 	set contexts [lindex $args 0]
 	set label_name [eval add_de1_text $args]
 
-	set x [rescale_x_skin [lindex $args 1]]
-	set y [rescale_y_skin [lindex $args 2]]
-	set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
-	#puts $torun
-	eval $torun
-	incr ::text_cnt
+	# john 24-1-20 now unneeded code https://3.basecamp.com/3671212/buckets/7351439/messages/2360038011
+	#set x [rescale_x_skin [lindex $args 1]]
+	#set y [rescale_y_skin [lindex $args 2]]
+	#set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
+	#eval $torun
+	#incr ::text_cnt
 
 	foreach context $contexts {
-		#set label_name "${context}_$text_cnt"
-
 		# keep track of what labels are displayed in what contexts
-		#add_visual_item_to_context $context $label_name
 		add_variable_item_to_context $context $label_name $varcmd
 	}
 	return $label_name

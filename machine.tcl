@@ -199,7 +199,7 @@ array set ::settings {
 	chart_dashes_flow ""
 	chart_dashes_espresso_weight {2 1}
 	chart_dashes_temperature ""
-	steam_highflow_start 100
+	steam_highflow_start 70
 	zoomed_y_axis_scale 12
 	name {}
 	display_espresso_water_temp_difference 0

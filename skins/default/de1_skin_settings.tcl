@@ -634,7 +634,7 @@ add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso m
 add_de1_text "descale_prepare" 70 50 -text [translate "Prepare to descale"] -font Helv_20_bold -fill "#a77171" -anchor "nw" -width 1000
 	add_de1_text "descale_prepare" 1050 280 -text [translate "1) Remove the drip tray and its cover."] -font Helv_8_bold -fill "#a77171" -anchor "sw" -justify left -width 400
 	add_de1_text "descale_prepare" 1050 670 -text [translate "2) In the water tank, mix 1.5 liter hot water with 300g citric acid powder."] -font Helv_8_bold -fill "#a77171" -anchor "sw" -justify left -width 400
-	add_de1_text "descale_prepare" 1050 970 -text [translate "3) Put a blind basket in the portafilter."] -font Helv_8_bold -fill "#a77171" -anchor "sw" -justify left -width 400
+	add_de1_text "descale_prepare" 1050 970 -text [subst {[translate "3) Put a blind basket in the portafilter."] [translate "Lower the steam wand."]}] -font Helv_8_bold -fill "#a77171" -anchor "sw" -justify left -width 400
 	add_de1_text "descale_prepare" 1050 1350 -text [translate "4) Push back the water tank.  Place the drip tray back without its cover."] -font Helv_8_bold -fill "#a77171" -anchor "sw" -justify left -width 400
 	add_de1_text "descale_prepare" 340 1504 -text [translate "Cancel"] -font Helv_10_bold -fill "#444444" -anchor "center"
 	add_de1_text "descale_prepare" 2233 1504 -text [translate "Descale now"] -font Helv_10_bold -fill "#444444" -anchor "center"
