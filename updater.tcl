@@ -510,6 +510,10 @@ proc start_app_update {} {
 
     set local_manifest [string trim [read_file "[homedir]/manifest.txt"]]
 
+    catch {
+        msg "Local manifest has [string length $local_manifest] bytes"
+    }
+
     # load the local manifest into memory
     foreach {filename filesize filemtime filesha} $local_manifest {
         set filesize 0
@@ -519,7 +523,10 @@ proc start_app_update {} {
 
         if {[file exists "[homedir]/$filename"] != 1} {
             # force retrieval of any locally missing file by setting its SHA to zero
-            puts "Missing: $filename"
+            catch {
+                msg "Missing: $filename"
+            }
+
             log_to_debug_file "Missing: $filename"
             set filesha 0
         }
@@ -533,7 +540,9 @@ proc start_app_update {} {
         #if {[ifexists data(filesha)] != $filesha || [ifexists data(filesize)] != $filesize} 
         if {[info exists data(filesha)] != 1} {
             set tofetch($filename) [list filesize $filesize filemtime $filemtime filesha $filesha]
-            puts "Local file is missing in local manifest: $filename"
+            catch {
+                msg "Local file is missing in local manifest: $filename"
+            }
             log_to_debug_file "Local file is missing in local manifest: $filename"
         } elseif {$data(filesha) != $filesha} {
             # if the SHA doesn't match then we'll want to fetch this file
