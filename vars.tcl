@@ -156,11 +156,11 @@ proc espresso_frame_title {num} {
 
 proc espresso_frame_description {num} {
 	if {$num == 1} {
-		return "Gently go to 8.4 bar of pressure with a water mix temperature of 92\u00BAC. Go to the next step after 10 seconds. temperature of 92\u00BAC. Gently go to 8.4 bar of pressure with a water mix temperature of 92\u00BAC."
+		return "Gently go to 8.4 bar of pressure with a water mix temperature of 92\u00B0C. Go to the next step after 10 seconds. temperature of 92\u00B0C. Gently go to 8.4 bar of pressure with a water mix temperature of 92\u00B0C."
 	} elseif {$num == 2} {
-		return "Quickly go to 8.4 bar of pressure with a basket temperature of 90\u00BAC. Go to the next step after 10 seconds."
+		return "Quickly go to 8.4 bar of pressure with a basket temperature of 90\u00B0C. Go to the next step after 10 seconds."
 	} elseif {$num == 3} {
-		return "Automatically manage pressure to attain a flow rate of 1.2 mL/s at a water temperature of 88\u00BAC.  End this step after 30 seconds."
+		return "Automatically manage pressure to attain a flow rate of 1.2 mL/s at a water temperature of 88\u00B0C.  End this step after 30 seconds."
 	} elseif {$num == 4} {
 		return ""
 	} elseif {$num == 5} {
@@ -722,7 +722,7 @@ proc accelerometer_angle_text {} {
 	}
 	set since_last_acc [clock milliseconds]
 	set last_acc_count $accelerometer_read_count
-	return "$::settings(accelerometer_angle)\u00BA ($accelerometer_read_count) $rate events/second $delta events $rate"
+	return "$::settings(accelerometer_angle)\u00B0 ($accelerometer_read_count) $rate events/second $delta events $rate"
 }
 
 proc group_head_heater_temperature {} {
@@ -1179,18 +1179,22 @@ proc return_temperature_number {in} {
 	}	
 }
 
+# john 25-1-2020 fix
+# we were using the wrong unicode symbol for the degrees sign (should be \u00B0 not \u00BA).
+# http://www.fileformat.info/info/unicode/char/b0/index.htm
+# http://www.fileformat.info/info/unicode/char/ba/index.htm
 proc return_temperature_measurement {in} {
 	if {[de1plus]} {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 		} else {
-			return [subst {[round_to_one_digits $in]\u00BAC}]
+			return [subst {[round_to_one_digits $in]\u00B0C}]
 		}
 	} else {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 		} else {
-			return [subst {[round_to_integer $in]\u00BAC}]
+			return [subst {[round_to_integer $in]\u00B0C}]
 		}
 
 	}
@@ -1227,20 +1231,20 @@ proc return_temperature_setting {in} {
 	#msg "return_temperature_setting: $in"
 	if {[de1plus]} {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 		} else {
 			if {[round_to_half_integer $in] == [round_to_integer $in]} {
 				# don't display a .0 on the number if it's not needed
-				return [subst {[round_to_integer $in]\u00BAC}]
+				return [subst {[round_to_integer $in]\u00B0C}]
 			} else {
-				return [subst {[round_to_half_integer $in]\u00BAC}]
+				return [subst {[round_to_half_integer $in]\u00B0C}]
 			}
 		}
 	} else {
 		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00BAF}]
+			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 		} else {
-			return [subst {[round_to_integer $in]\u00BAC}]
+			return [subst {[round_to_integer $in]\u00B0C}]
 		}
 
 	}
@@ -1256,11 +1260,11 @@ proc return_plus_or_minus_number {in} {
 proc return_delta_temperature_measurement {in} {
 
 	if {$::settings(enable_fahrenheit) == 1} {
-		set label "\u00BAF"
+		set label "\u00B0F"
 		#set num [celsius_to_fahrenheit $in]
 #		set num $in
 	} else {
-		set label "\u00BAC"
+		set label "\u00B0C"
 #		set num $in
 	}
 
@@ -3024,7 +3028,7 @@ proc return_fan_threshold_calibration {temperature} {
 
 
 proc return_steam_flow_calibration {steam_flow} {
-	set in [expr {$steam_flow / 1000.0}]
+	set in [expr {$steam_flow / 100.0}]
 
 	if {$::settings(enable_fluid_ounces) != 1} {
 		return [subst {[round_to_two_digits $in] [translate "mL/s"]}]
