@@ -1622,12 +1622,12 @@ proc de1_ble_handler { event data } {
 								de1_enable_water_level_notifications
 								get_ghc_is_installed
 								de1_send_shot_frames
+								start_idle
 							}
 
 							# vital stuff, do first
-							read_de1_state
+							#read_de1_state
 							de1_enable_state_notifications
-							start_idle
 							de1_enable_temp_notifications
 							after 3000 later_new_de1_connection_setup
 
