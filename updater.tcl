@@ -43,13 +43,13 @@ proc calc_sha {source} {
             set sha [::sha2::sha256 -hex -filename $source]
         }
         
-        # use this to
-        if {$tries == 0} { set sha 0 }
-        
+        # use this to test SHA failure once
+        #if {$tries == 0} { set sha 0 }
+
         if {$sha == 0} {
             # we are trying to solve an occasional "file busy", maybe the OS is doing something in the background
             catch {
-                log_to_debug_file "Pausing and then retrying to calculate SHA for $source"
+                msg "Pausing and then retrying to calculate SHA for $source"
             }
             after 1000
         }
@@ -58,7 +58,7 @@ proc calc_sha {source} {
 
     if {$sha == 0} {
         catch {
-            log_to_debug_file "Unable to calculate SHA for $source"
+            msg "Unable to calculate SHA for $source"
         }
     }
 
