@@ -1351,8 +1351,11 @@ proc update_de1_shotvalue {packed} {
 
 	set water_volume_dispensed_since_last_update [expr {$ShotSample(GroupFlow) * ($delta/100.0)}]
 	if {$water_volume_dispensed_since_last_update < 0} {
+		# occasionally the water volume dispensed numbers are negative, which causes bugs downstream
+		# not sure why this happens, but maybe it originates in the DE1 firmware.
+		# this if() statement is an attempt to catch this problem and solve it.  Not sure if it will succeed.
+		set water_volume_dispensed_since_last_update 0
 		msg "WARNING negative water volume dispensed: $water_volume_dispensed_since_last_update"
-
 	}
 	set ::de1(volume) [expr {$::de1(volume) + $water_volume_dispensed_since_last_update}]
 
