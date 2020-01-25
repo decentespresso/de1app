@@ -1614,6 +1614,11 @@ proc de1_ble_handler { event data } {
 							proc later_new_de1_connection_setup {} {
 								# less important stuff
 
+							}
+
+							# vital stuff, do first
+							#read_de1_state
+							de1_enable_state_notifications
 								de1_enable_mmr_notifications
 								read_de1_version
 								de1_send_waterlevel_settings
@@ -1623,13 +1628,8 @@ proc de1_ble_handler { event data } {
 								get_ghc_is_installed
 								de1_send_shot_frames
 								start_idle
-							}
-
-							# vital stuff, do first
-							#read_de1_state
-							de1_enable_state_notifications
-							de1_enable_temp_notifications
-							after 3000 later_new_de1_connection_setup
+								de1_enable_temp_notifications
+							#after 3000 later_new_de1_connection_setup
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
 							#catch {
