@@ -4,26 +4,13 @@ package provide de1_bluetooth
 set ::failed_attempt_count_connecting_to_de1 0
 set ::successful_de1_connection_count 0
 
-#set suuid "0000A000-0000-1000-8000-00805F9B34FB"
-#set sinstance 0
-#set cuuid "0000a001-0000-1000-8000-00805f9b34fb"
-#set cinstance 0
-
-# a00b = hot water/steam settings
-# a00c = espresso frame settings
-
-
 proc userdata_append {comment cmd} {
 	#set cmds [ble userdata $::de1(device_handle)]
 	#lappend cmds $cmd
 	#ble userdata $::de1(device_handle) $cmds
 	lappend ::de1(cmdstack) [list $comment $cmd]
 	run_next_userdata_cmd
-	#set ::de1(wrote) 1
 }
-
-
-
 
 proc read_de1_version {} {
 	catch {
@@ -36,11 +23,7 @@ proc read_de1_version {} {
 proc poll_de1_state {} {
 
 	msg "poll_de1_state"
-
-	#de1_enable_bluetooth_notifications
 	read_de1_state
-	#userdata_append "read de1 temp" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0D) $::cinstance($::de1(cuuid_0D))]
-	#userdata_append "read de1 state" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
 	after 1000 poll_de1_state
 }
 
