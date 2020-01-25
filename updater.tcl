@@ -35,7 +35,28 @@ proc determine_if_android {} {
 determine_if_android
 
 proc calc_sha {source} {
-    return [::sha2::sha256 -hex -filename $source]
+    set sha 0
+    set tries 0
+
+    while {$sha == 0 && $tries < 10} {
+        catch {
+            set sha [::sha2::sha256 -hex -filename $source]
+        }
+        if {$sha == 0} {
+            # we are trying to solve an occasional "file busy", maybe the OS is doing something in the background
+            msg "Pausing and then retrying to calculate SHA for $source"
+            after 1000
+        }
+        incr tries
+    }
+
+    if {$sha == 0} {
+        catch {
+            msg "Unable to calculate SHA for $source"
+        }
+    }
+
+    return $sha
 }
 
 
