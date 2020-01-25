@@ -2747,7 +2747,7 @@ proc preinfusion_seconds_text {num} {
 	} elseif {$num == 1} {
 		return [subst {< $num [translate "second"]}]
 	} else {
-		return [subst {> $num [translate "seconds"]}]
+		return [subst {< $num [translate "seconds"]}]
 	}
 }
 

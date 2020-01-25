@@ -79,6 +79,7 @@ proc make_de1_dir {} {
         history/export/readme.txt *
 
         fw/bootfwupdate.dat *
+        fw/bootfwupdate2.dat *
         wallpaper/spy_1280x800.jpg *
         wallpaper/spy_2560x1600.jpg *
         sounds/KeypressStandard_120.ogg *
