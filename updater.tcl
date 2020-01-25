@@ -569,7 +569,6 @@ proc start_app_update {} {
         set perc [expr {100.0 * ($cnt / [array size tofetch])}]
         incr cnt
 
-        #set ::de1(app_update_button_label) "[round_to_integer $perc]%"; 
         set ::de1(app_update_button_label) "$cnt/[array size tofetch]"; 
         catch {
             .hello configure -text "$cnt/[array size tofetch]"
