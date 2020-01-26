@@ -17,7 +17,7 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 1.5
 profile_notes {Another approach created by a famously innovative Seattle-based espresso machine manufacturer, this technique requires you to grind your coffee very finely.  Try this with very lightly roasted coffee beans.  The resulting flavor is more like a pour-over than espresso.}
 water_temperature 80
-final_desired_shot_volume 36
+final_desired_shot_volume 0
 final_desired_shot_weight 36
 final_desired_shot_weight_advanced 1
 tank_desired_water_temperature 0

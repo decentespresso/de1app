@@ -17,7 +17,7 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 2.5
 profile_notes {Created by French barista Adrien Sénac of Cafeism, this innovative technique allowed Adrien to produce excellent shots from very aromatic, lightly roasted beans that he had never before managed to successfully pull.}
 water_temperature 80
-final_desired_shot_volume 36
+final_desired_shot_volume 0
 final_desired_shot_weight 36
 final_desired_shot_weight_advanced 135
 tank_desired_water_temperature 0
