@@ -1764,6 +1764,8 @@ proc update_de1_state {statechar} {
 				stop_timer_water_pour
 			} elseif {$textstate == "Steam" || [ifexists ::previous_textstate] == "Steam"} {
 				stop_timer_steam_pour
+				after 1000 check_if_steam_clogged
+
 			} elseif {$textstate == "Espresso" || [ifexists ::previous_textstate] == "Espresso"} {
 				stop_timer_espresso_pour
 				stop_espresso_timers
@@ -1789,9 +1791,10 @@ proc update_de1_state {statechar} {
 				start_timer_flush_pour
 			} elseif {$textstate == "Espresso"} {
 				start_timer_espresso_pour
+			} elseif {$textstate == "Idle"} {
+				# no idle timer needed
 			} else {
 				msg "unknown timer start: $textstate"
-				#zz13
 			}
 		}
 		
