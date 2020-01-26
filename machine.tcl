@@ -815,12 +815,18 @@ proc start_sleep {} {
 
 proc check_if_steam_clogged {} {
 
+msg "check_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_clogged"
+
 	if {[steam_pressure length] < 30} {
 		# if steaming was for less than 3 seconds, then don't run this test, as that was just a short purge
 		return 
 	}
 
 	set ::settings(steam_over_temp_threshold) 180
+	if {$::settings(enable_fahrenheit) == 1} {
+		# change temp threshold for clogging to a Fahrenheit number, as steam temp logging is in their temp system
+		set ::settings(steam_over_temp_threshold) [celsius_to_fahrenheit 180]
+	}
 	set ::settings(steam_over_pressure_threshold) 5
 
 	set bad_pressure 0
@@ -848,7 +854,7 @@ proc check_if_steam_clogged {} {
 			set bad_temp 1
 		}
 
-		msg "over_temp: $over_temp -  $bad_temp (> $::settings(steam_over_temp_threshold) ºC)"
+		msg "over_temp: $over_temp -  $bad_temp (> $::settings(steam_over_temp_threshold)º)"
 
 	}
 

@@ -1764,7 +1764,7 @@ proc update_de1_state {statechar} {
 				stop_timer_water_pour
 			} elseif {$textstate == "Steam" || [ifexists ::previous_textstate] == "Steam"} {
 				stop_timer_steam_pour
-				after 1000 check_if_steam_clogged
+				after 2000 check_if_steam_clogged
 
 			} elseif {$textstate == "Espresso" || [ifexists ::previous_textstate] == "Espresso"} {
 				stop_timer_espresso_pour

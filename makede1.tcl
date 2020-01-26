@@ -14,6 +14,11 @@ package require de1_gui
 
 
 
+#file link "/d/admin/code/de1beta/desktop_app/linux" "/d/admin/code/de1beta/desktop_app/decent"
+#file link "/d/admin/code/de1beta/desktop_app/linux" "/d/admin/code/de1beta/desktop_app/decent"
+catch { file link  "/d/admin/code/de1beta/desktop_app/linux/src" "/d/download/sync/de1plus" }
+catch { file link  "/d/admin/code/de1beta/desktop_app/osx/Decent.app/Contents/Resources/de1plus" "/d/download/sync/de1plus" }
+catch { file link  "/d/admin/code/de1beta/desktop_app/win32/src" "/d/download/sync/de1plus" }
 
 if {$argv != ""} {
 	puts "Updating apps"
@@ -59,6 +64,10 @@ if {$argv != ""} {
 	make_de1_dir
 
 }
+
+file delete /d/admin/code/de1beta/desktop_app/linux/src
+file delete /d/admin/code/de1beta/desktop_app/osx/Decent.app/Contents/Resources/de1plus
+file delete /d/admin/code/de1beta/desktop_app/win32/src
 
 puts "done"
 
