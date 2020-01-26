@@ -819,6 +819,7 @@ msg "check_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_
 
 	if {[steam_pressure length] < 30} {
 		# if steaming was for less than 3 seconds, then don't run this test, as that was just a short purge
+		msg "Not checking steam for clogging because steam_pressure length : [steam_pressure length] < 30"
 		return 
 	}
 

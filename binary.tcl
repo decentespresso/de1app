@@ -1680,7 +1680,7 @@ proc update_de1_state {statechar} {
 
 	#puts "textstate: $textstate"
 	if {$msg(state) != $::de1(state)} {
-		msg "applying DE1 state change: $::de1(state) [array get msg] ($textstate)"
+		msg "applying DE1 state change: $::de1(state) [array get msg] (now:$textstate) (was:[ifexists ::previous_textstate])"
 		emit_state_change_event $::de1(state) $msg(state)
 		set ::de1(state) $msg(state)
 
@@ -1692,6 +1692,9 @@ proc update_de1_state {statechar} {
 			reset_gui_starting_steam
 		} elseif {$textstate == "HotWaterRinse"} {
 			reset_gui_starting_steam
+		} elseif {$textstate == "Idle" && [ifexists ::previous_textstate] == "Steam"} {
+			msg "Scheduling check_if_steam_clogged"
+			after 3000 check_if_steam_clogged
 		}
 
 		if {[ifexists ::previous_textstate] == "Sleep" && $textstate != "Sleep"} {
@@ -1760,11 +1763,12 @@ proc update_de1_state {statechar} {
 		if {$::previous_de1_substate == 4} {
 			stop_timer_espresso_preinfusion
 		} elseif {$::previous_de1_substate == 5} {
+			#msg "state $textstate / [ifexists ::previous_textstate]"
+
 			if {$textstate == "HotWater" || [ifexists ::previous_textstate] == "HotWater"} {
 				stop_timer_water_pour
 			} elseif {$textstate == "Steam" || [ifexists ::previous_textstate] == "Steam"} {
 				stop_timer_steam_pour
-				after 2000 check_if_steam_clogged
 
 			} elseif {$textstate == "Espresso" || [ifexists ::previous_textstate] == "Espresso"} {
 				stop_timer_espresso_pour
