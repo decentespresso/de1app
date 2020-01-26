@@ -1210,7 +1210,75 @@ proc round_date_to_nearest_day {now} {
     return [clock scan $rounded]
 }
 
+# from Barney  https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
 proc load_font {name fn pcsize {androidsize {}} } {
+    # calculate font size
+    if {($::android == 1 || $::undroid == 1) && $androidsize != ""} {
+        set pcsize $androidsize
+    }
+    set platform_font_size [expr {int(1.0 * $::fontm * $pcsize)}]
+
+    if {[language] == "zh-hant" || [language] == "zh-hans"} {
+        set fn ""
+        set familyname $::helvetica_font
+    } elseif {[language] == "th"} {
+        set fn "[homedir]/fonts/sarabun.ttf"
+    }
+
+    if {[info exists ::loaded_fonts] != 1} {
+        set ::loaded_fonts list
+    }
+    set fontindex [lsearch $::loaded_fonts $fn]
+    if {$fontindex != -1} {
+        set familyname [lindex $::loaded_fonts [expr $fontindex + 1]]
+    } elseif {($::android == 1 || $::undroid == 1) && $fn != ""} {
+        catch {
+            set familyname [lindex [sdltk addfont $fn] 0]
+        }
+        lappend ::loaded_fonts $fn $familyname
+    }
+
+    if {[info exists familyname] != 1 || $familyname == ""} {
+        msg "Font familyname not available; using name '$name'."
+        set familyname $name
+    }
+
+    catch {
+        font create $name -family $familyname -size $platform_font_size
+    }
+    msg "added font name: \"$name\" family: \"$familyname\" size: $platform_font_size filename: \"$fn\""
+}
+
+# Barney writes: https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
+# I created a wrapper function that you might be interested in adopting. It makes working with fonts even simpler by removing the need to pre-load fonts before using them.
+# Here's the syntax for using the get_font function in a call to add_de1_text:
+# add_de1_text "off" 100 100 -text "Hi!" -font [get_font "Comic Sans" 12] 
+proc get_font { font_name size } {
+    if {[info exists ::skin_fonts] != 1} {
+        set ::skin_fonts list
+    }
+
+    set font_key "$font_name $size"
+    set font_index [lsearch $::skin_fonts $font_key]
+    if {$font_index == -1} {
+        # load the font if needed. 
+
+        # support for both OTF and TTF files
+        if {[file exists "[skin_directory]/fonts/$font_name.otf"] == 1} {
+            load_font $font_key "[skin_directory]/fonts/$font_name.otf" $size
+            lappend ::skin_fonts $font_key
+        } elseif {[file exists "[skin_directory]/fonts/$font_name.ttf"] == 1} {
+            load_font $font_key "[skin_directory]/fonts/$font_name.ttf" $size
+            lappend ::skin_fonts $font_key
+        } else {
+            msg "Unable to load font '$font_key'"
+        }
+    }
+
+    return $font_key
+}
+
+proc load_font_obsolete {name fn pcsize {androidsize {}} } {
     if {$androidsize == ""} {
         set androidsize $pcsize
     }
