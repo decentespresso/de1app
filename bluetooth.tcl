@@ -36,15 +36,6 @@ proc read_de1_state {} {
 }
 
 proc skale_timer_start {} {
-	if {$::settings(scale_type) == "atomaxskale"} {
-	 	skale_timer_start
- 	} elseif {$::settings(scale_type) == "decentscale"} {
-	 	decentscale_timer_start
- 	}
-}
-
-
-proc skale_timer_start {} {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
 		return 
 	}
@@ -64,11 +55,28 @@ proc skale_timer_start {} {
 # cmdtype is either 0x0A for LED (cmddata 00=off, 01=on), or 0x0F for tare (cmdata = incremented char counter for each TARE use)
 proc decent_scale_calc_xor {cmdtype cmdddata} {
 	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata ^ 0x00 ^ 0x00 ^ 0x00}]]
+	msg "decent_scale_calc_xor for '$cmdtype' '$cmdddata' is '$xor'"
+	return $xor
+}
+
+proc decent_scale_calc_xor4 {cmdtype cmdddata1 cmdddata2} {
+	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata1 ^ $cmdddata2 ^ 0x00 ^ 0x00}]]
+	msg "decent_scale_calc_xor4 for '$cmdtype' '$cmdddata1' '$cmdddata2' is '$xor'"
 	return $xor
 }
 
 proc decent_scale_make_command {cmdtype cmdddata} {
-	set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]
+	if {[string length $cmdddata] == 2} {
+		set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]
+		set hex2 [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x00"]}]
+		msg "compare hex '$hex' to '$hex2'"
+	} elseif {[string length $cmdddata] == 4} {
+		set hex [subst {03${cmdtype}${cmdddata}0000[decent_scale_calc_xor4 "0x$cmdtype" "0x[string range $cmdddata 0 1]" "0x[string range $cmdddata 2 3]"]}]
+	} else {
+		msg "Unknown decent_scale_make_command $cmdtype cmdddata"
+		return ""
+	}
+	msg "hex is '$hex' for '$cmdtype' '$cmdddata'"
 	return [binary decode hex $hex]
 }
 
@@ -107,16 +115,16 @@ proc decentscale_enable_lcd {} {
 	if {$::de1(scale_device_handle) == 0} {
 		return 
 	}
-	set screenon [decent_scale_make_command 0A 01]
-
+	set screenon [decent_scale_make_command 0A 0101]
 	msg "decent scale screen on: '$screenon'"
-
-	#if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-	#	msg "decentscale not connected, cannot enable LCD"
-	#	return
-	#}
-
 	userdata_append "decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon]
+
+	set timeron [decent_scale_make_command 0B 01]
+	msg "decent scale timer on: '$timeron'"
+	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
+
+
+
 }
 
 proc scale_disable_lcd {} {
@@ -160,9 +168,13 @@ proc decentscale_timer_start {} {
 		return
 	}
 
-	# cmd not yet implemented
-	#set timeron [binary decode hex "DD"]
-	#userdata_append "decentscale : timer start" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $timeron]
+	#set timerreset [decent_scale_make_command 0B 02]
+	#msg "decent scale timer reset: '$timerreset'"
+	#userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timerreset]
+
+	set timeron [decent_scale_make_command 0B 01]
+	msg "decent scale timer on: '$timeron'"
+	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
 
 }
 
@@ -188,6 +200,10 @@ proc decentscale_timer_stop {} {
 		msg "decentscale not connected, cannot stop timer"
 		return
 	}
+
+	set timeron [decent_scale_make_command 0B 00]
+	msg "decent scale timer on: '$timeron'"
+	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
 
 	# cmd not yet implemented
 	#userdata_append "decentscale: timer stop" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare]
@@ -1897,11 +1913,11 @@ proc de1_ble_handler { event data } {
 
 									return
 								} elseif {[ifexists weightarray(command)] == 0xAA} {									
-									msg "Decentscale BUTTON $recv(data3) pressed"
-									if {[ifexists $recv(data3)] == 1} {
+									msg "Decentscale BUTTON $weightarray(data3) pressed"
+									if {[ifexists $weightarray(data3)] == 1} {
 										# button 1 "O" pressed
 										decentscale_tare
-									} elseif {[ifexists $recv(data3)] == 2} {
+									} elseif {[ifexists $weightarray(data3)] == 2} {
 										# button 2 "[]" pressed
 									}
 								} elseif {[ifexists weightarray(command)] != ""} {
@@ -1911,7 +1927,8 @@ proc de1_ble_handler { event data } {
 
 								if {[info exists weightarray(weight)] == 1} {
 									set sensorweight [expr {$weightarray(weight) / 10.0}]
-									#msg "sensorweight: $sensorweight"
+									msg "scale: ${sensorweight}g [array get weightarray] '[convert_string_to_hex $value]'"
+									#msg "decentscale recv read: '[convert_string_to_hex $value]'"
 								} else {
 									msg "decent scale recv: [array get weightarray]"
 								}
@@ -1981,7 +1998,7 @@ proc de1_ble_handler { event data } {
 							if {$::settings(scale_type) == "atomaxskale"} {
 								set scale_refresh_rate 10
 						 	} elseif {$::settings(scale_type) == "decentscale"} {
-								set scale_refresh_rate 3.5
+								set scale_refresh_rate 10
 						 	}
 
 							# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
