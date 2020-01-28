@@ -9,7 +9,7 @@ espresso_temperature 88.0
 settings_profile_type settings_2b
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6
-flow_profile_hold 1.7
+flow_profile_hold 1.2
 flow_profile_hold_time 0
 flow_profile_decline 1
 flow_profile_decline_time 23
