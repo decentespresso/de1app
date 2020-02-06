@@ -660,6 +660,8 @@ proc firmware_upload_next {} {
 
 
 proc mmr_read {address length} {
+	return
+	#jbtemp
 
  	set mmrlen [binary decode hex $length]	
 	set mmrloc [binary decode hex $address]
@@ -679,6 +681,10 @@ proc mmr_read {address length} {
 }
 
 proc mmr_write { address length value} {
+	return
+	#jbtemp
+
+
  	set mmrlen [binary decode hex $length]	
 	set mmrloc [binary decode hex $address]
  	set mmrval [binary decode hex $value]	
@@ -1242,10 +1248,17 @@ proc stop_scanner {} {
 }
 
 proc bluetooth_connect_to_devices {} {
+
 	#@return
 
 	msg "bluetooth_connect_to_devices"
+
+	if {$::android != 1} {
+		ble_connect_to_de1
+	}
+
 	if {$::settings(bluetooth_address) != ""} {
+
 		if {[android_8_or_newer] == 1} {
 			# on bootpup, android 8 won't connect directly to a BLE device unless it's found by a scan
 			# this step below waits 4 seconds to see if a direct connection worked, and if not, activates a scan
@@ -1257,6 +1270,7 @@ proc bluetooth_connect_to_devices {} {
 		} else {
 			# earlier android revisions can connect directly, and it's fast
 			ble_connect_to_de1
+
 		}
 	}
 
@@ -1635,16 +1649,17 @@ proc de1_ble_handler { event data } {
 							# vital stuff, do first
 							#read_de1_state
 							de1_enable_state_notifications
-								de1_enable_mmr_notifications
-								read_de1_version
-								de1_send_waterlevel_settings
-								de1_send_steam_hotwater_settings
-								set_fan_temperature_threshold $::settings(fan_threshold)
-								de1_enable_water_level_notifications
-								get_ghc_is_installed
-								de1_send_shot_frames
-								start_idle
-								de1_enable_temp_notifications
+							de1_enable_mmr_notifications
+							read_de1_version
+							de1_send_waterlevel_settings
+							de1_send_steam_hotwater_settings
+							set_fan_temperature_threshold $::settings(fan_threshold)
+							de1_enable_water_level_notifications
+							get_ghc_is_installed
+							de1_send_shot_frames
+							start_idle
+							#read_de1_state
+							de1_enable_temp_notifications
 							#after 3000 later_new_de1_connection_setup
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet

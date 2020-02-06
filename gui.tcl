@@ -92,6 +92,8 @@ proc photoscale_android {img sx {sy ""} } {
 
 proc add_de1_page {names filename {skin ""} } {
 
+	set ::settings(preload_all_page_images) 0
+
 	if {$skin == ""} {
 		set skin $::settings(skin)
 	}
@@ -132,8 +134,8 @@ proc add_de1_page {names filename {skin ""} } {
 
 	} else {
 		if {$::settings(preload_all_page_images) == 1} {
-			puts "loading page: '$pngfilename'"
-			image create photo $names -file $pngfilename
+			set iname [image create photo $names -file $pngfilename]
+			puts "loading page: '$names' with image '$pngfilename' with tclname: '$iname'"
 			#image create photo $names 			$names -file $pngfilename
 		}
 	}
@@ -142,7 +144,8 @@ proc add_de1_page {names filename {skin ""} } {
 	foreach name $names {
 		.can create image {0 0} -anchor nw  -tag [list pages $name] -state hidden 
 		if {$::settings(preload_all_page_images) == 1} {
-			.can itemconfigure $names -image $names 
+			#.can itemconfigure $names -image $names 
+			.can itemconfigure $name -image $names
 		} else {
 			set ::delayed_image_load($name) $pngfilename
 		}
@@ -1140,6 +1143,8 @@ proc display_brightness {percentage} {
 
 proc page_display_change {page_to_hide page_to_show} {
 
+	msg [stacktrace]
+
 	#if {$page_to_hide == ""} {
 	#}
 
@@ -1152,11 +1157,12 @@ proc page_display_change {page_to_hide page_to_show} {
 	}
 
 	if {$::de1(current_context) == $page_to_show} {
-		#msg "page_display_change returning because ::de1(current_context) == $page_to_show"
+		#jbtemp
+		msg "page_display_change returning because ::de1(current_context) == $page_to_show"
 		return 
 	}
 
-	msg "page_display_change $page_to_show"
+	msg "page_display_change $page_to_hide->$page_to_show"
 
 
 	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
@@ -1223,7 +1229,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		set errcode [catch {
 			# this can happen if the image file has been moved/deleted underneath the app
 			#fallback is to at least not crash
-			.can itemconfigure $page_to_show -image $page_to_show
+			.can itemconfigure $page_to_show -image $page_to_show -state hidden
 			#msg ".can itemconfigure $page_to_show -image $page_to_show"
 		}]
 
@@ -1244,7 +1250,7 @@ proc page_display_change {page_to_hide page_to_show} {
 			msg ".can itemconfigure page_to_show error: $::errorInfo"
 		}
 
-	}
+	} 
 
 	set these_labels [ifexists ::existing_labels($page_to_show)]
 	#msg "these_labels: $these_labels"
@@ -1257,6 +1263,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		set ::all_labels [lsort -unique $::all_labels]
 	}
 
+	msg "Hiding [llength $::all_labels] labels"
 	foreach label $::all_labels {
 		if {[.can itemcget $label -state] != "hidden"} {
 			.can itemconfigure $label -state hidden
@@ -1264,6 +1271,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		}
 	}
 
+	msg "Showing [llength $these_labels] labels"
 	foreach label $these_labels {
 		.can itemconfigure $label -state normal
 		#msg "showing: '$label'"
@@ -1277,11 +1285,11 @@ proc page_display_change {page_to_hide page_to_show} {
 	if {[info exists actions($page_to_show)] == 1} {
 		foreach action $actions($page_to_show) {
 			eval $action
-			#msg "action: '$action"
+			msg "action: '$action"
 		}
 	}
 
-	#msg "Switched to page: $page_to_show"
+	msg "Switched to page: $page_to_show"
 
 	update_onscreen_variables
 	#after 100 update_chart
