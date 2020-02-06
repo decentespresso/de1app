@@ -26,6 +26,7 @@ array set ::de1 {
 	advanced_shot_moveone_enabled 1
     found    0
     scanning 1
+    mmr_enabled 0
     device_handle 0
     scale_device_handle 0
     decentscale_device_handle 0

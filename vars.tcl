@@ -2204,10 +2204,15 @@ proc save_settings_and_ask_to_restart_app {} {
 }
 
 proc message_page {msg buttonmsg} {
-	.can itemconfigure $::message_label -text $msg
-	.can itemconfigure $::message_button_label -text $buttonmsg
-	set_next_page off message; 
-	page_show message
+	if {[catch {
+		.can itemconfigure $::message_label -text $msg
+		.can itemconfigure $::message_button_label -text $buttonmsg
+		set_next_page off message; 
+		page_show message
+	} err] != 0} {
+		msg "message_page failed because: '$err'"
+	}
+
 }
 
 
@@ -2217,15 +2222,14 @@ proc message_page {msg buttonmsg} {
 
 
 proc info_page {msg buttonmsg} {
-
-		#set_next_page off descalewarning;
-		#page_show descalewarning
-
-		#return
-	.can itemconfigure $::infopage_label -text $msg
-	.can itemconfigure $::infopage_button_label -text $buttonmsg
-	set_next_page off infopage; 
-	page_show off
+	if {[catch {
+		.can itemconfigure $::infopage_label -text $msg
+		.can itemconfigure $::infopage_button_label -text $buttonmsg
+		set_next_page off infopage; 
+		page_show off
+	} err] != 0} {
+		msg "info_page failed because: '$err'"
+	}
 }
 
 proc change_bluetooth_device {} {
@@ -2911,6 +2915,16 @@ proc firmware_uploaded_label {} {
 		return "[round_to_one_digits $percentage]%"
 	}
 }
+
+proc de1_version_bleapi {} {
+	array set ver $::de1(version)
+	set c [ifexists ver(BLE_APIVersion)]
+	if {$c == ""} {
+		set c 0
+	}
+	return $c
+}
+
 
 proc de1_version_string {} {
 	array set v $::de1(version)

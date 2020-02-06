@@ -494,7 +494,26 @@ proc de1_disable_state_notifications {} {
 	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
 }
 
+proc mmr_available {} {
+
+	if {$::de1(mmr_enabled) == 0} {
+		if {[de1_version_bleapi] > 3} {
+			# mmr feature became available at this version number
+			set ::de1(mmr_enabled) 1
+		} else {
+			msg "MMR is not enabled on this DE1 BLE API <4 #: [de1_version_bleapi]"
+		}
+	}
+	return $::de1(mmr_enabled)
+}
+
 proc de1_enable_mmr_notifications {} {
+
+	if {[mmr_available] == 0} {
+		msg "Unable to de1_enable_mmr_notifications because MMR not available"
+		return
+	}
+
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 		msg "DE1 not connected, cannot send BLE command 7"
 		return
@@ -660,8 +679,11 @@ proc firmware_upload_next {} {
 
 
 proc mmr_read {address length} {
-	return
-	#jbtemp
+	if {[mmr_available] == 0} {
+		msg "Unable to mmr_read because MMR not available"
+		return
+	}
+
 
  	set mmrlen [binary decode hex $length]	
 	set mmrloc [binary decode hex $address]
@@ -681,9 +703,10 @@ proc mmr_read {address length} {
 }
 
 proc mmr_write { address length value} {
-	return
-	#jbtemp
-
+	if {[mmr_available] == 0} {
+		msg "Unable to mmr_read because MMR not available"
+		return
+	}
 
  	set mmrlen [binary decode hex $length]	
 	set mmrloc [binary decode hex $address]
@@ -894,8 +917,8 @@ proc close_all_ble_and_exit {} {
 
 	catch {
 		if {$::settings(ble_unpair_at_exit) == 1} {
-			ble unpair $::de1(de1_address)
-			ble unpair $::settings(bluetooth_address)
+			#ble unpair $::de1(de1_address)
+			#ble unpair $::settings(bluetooth_address)
 		}
 	}
 
@@ -1449,6 +1472,16 @@ proc append_to_scale_bluetooth_list {address name} {
 	}
 }
 
+proc later_new_de1_connection_setup {} {
+	# less important stuff, also some of it is dependent on BLE version
+	de1_enable_mmr_notifications
+	de1_send_shot_frames
+	set_fan_temperature_threshold $::settings(fan_threshold)
+	de1_send_steam_hotwater_settings
+	get_ghc_is_installed
+
+}
+
 proc de1_ble_handler { event data } {
 	#msg "de1 ble_handler '$event' $data"
 	#set ::de1(wrote) 0
@@ -1640,27 +1673,19 @@ proc de1_ble_handler { event data } {
 
 							set ::globals(if_in_sleep_move_to_idle) 0
 
-							
-							proc later_new_de1_connection_setup {} {
-								# less important stuff
-
-							}
-
 							# vital stuff, do first
 							#read_de1_state
-							de1_enable_state_notifications
-							de1_enable_mmr_notifications
+							de1_enable_temp_notifications
+							start_idle
 							read_de1_version
 							de1_send_waterlevel_settings
-							de1_send_steam_hotwater_settings
-							set_fan_temperature_threshold $::settings(fan_threshold)
 							de1_enable_water_level_notifications
-							get_ghc_is_installed
-							de1_send_shot_frames
-							start_idle
-							#read_de1_state
-							de1_enable_temp_notifications
-							#after 3000 later_new_de1_connection_setup
+							de1_enable_state_notifications
+							read_de1_state
+
+
+
+							#after 5000 later_new_de1_connection_setup
 
 							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
 							#catch {
@@ -1817,6 +1842,9 @@ proc de1_ble_handler { event data } {
 							parse_binary_version_desc $value arr2
 							msg "version data received [string length $value] bytes: '$value' \"[convert_string_to_hex $value]\"  : '[array get arr2]'/ $event $data"
 							set ::de1(version) [array get arr2]
+
+							# run stuff that depends on the BLE API version
+							later_new_de1_connection_setup
 
 							set ::de1(wrote) 0
 							run_next_userdata_cmd

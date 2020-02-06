@@ -1,6 +1,5 @@
 package provide de1_gui 1.0
 
-
 proc load_skin {} {
 
 	# optional callback for skins, which is reset to normal always, before loading the skin
