@@ -1474,6 +1474,10 @@ proc append_to_scale_bluetooth_list {address name} {
 
 proc later_new_de1_connection_setup {} {
 	# less important stuff, also some of it is dependent on BLE version
+
+	de1_enable_water_level_notifications
+	de1_send_waterlevel_settings
+
 	de1_enable_mmr_notifications
 	de1_send_shot_frames
 	set_fan_temperature_threshold $::settings(fan_threshold)
@@ -1676,14 +1680,10 @@ proc de1_ble_handler { event data } {
 							# vital stuff, do first
 							#read_de1_state
 							de1_enable_temp_notifications
-							de1_enable_water_level_notifications
 							start_idle
 							read_de1_version
-							de1_send_waterlevel_settings
-							de1_enable_state_notifications
 							read_de1_state
-
-
+							de1_enable_state_notifications
 
 							#after 5000 later_new_de1_connection_setup
 
