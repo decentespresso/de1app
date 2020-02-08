@@ -1676,10 +1676,10 @@ proc de1_ble_handler { event data } {
 							# vital stuff, do first
 							#read_de1_state
 							de1_enable_temp_notifications
+							de1_enable_water_level_notifications
 							start_idle
 							read_de1_version
 							de1_send_waterlevel_settings
-							de1_enable_water_level_notifications
 							de1_enable_state_notifications
 							read_de1_state
 
