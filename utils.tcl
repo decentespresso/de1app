@@ -585,7 +585,8 @@ proc translation_langs_array {} {
         tr "\u0054\u00FC\u0072\u006B\u00E7\u0065" \
         ro "\u006C\u0069\u006D\u0062\u0061\u0020\u0072\u006F\u006D\u00E2\u006E\u103" \
         hi "\u939\u93F\u928\u94D\u926\u940" \
-        nl "Nederlands" 
+        nl "Nederlands" \
+        ru "русский" 
     ]
 }
 
