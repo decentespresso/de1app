@@ -1484,6 +1484,8 @@ proc later_new_de1_connection_setup {} {
 	de1_send_waterlevel_settings
 	de1_enable_water_level_notifications
 
+	after 5000 read_de1_state
+
 }
 
 proc de1_ble_handler { event data } {
