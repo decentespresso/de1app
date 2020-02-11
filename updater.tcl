@@ -751,3 +751,52 @@ proc start_app_update {} {
     }
 }
 
+
+proc read_binary_file {filename} {
+    set fn ""
+    set err {}
+    set error [catch {set fn [open $filename]} err]
+    if {$fn == ""} {
+        #puts "error opening binary file: $filename / '$err' / '$error' / $fn"
+        return ""
+    }
+    if {$fn == ""} {
+        return ""
+    }
+    
+    fconfigure $fn -translation binary
+    set data [read $fn]
+    close $fn
+    return $data
+}
+
+
+
+proc save_array_to_file {arrname fn} {
+    upvar $arrname item
+    set toexport2 {}
+    foreach k [lsort -dictionary [array names item]] {
+        set v $item($k)
+        append toexport2 [subst {[list $k] [list $v]\n}]
+    }
+    write_file $fn $toexport2
+}
+
+proc settings_filename {} {
+    set fn "[homedir]/settings.tdb"
+    #puts "sc: '$fn'"
+    return $fn
+}
+
+
+
+proc reset_skin {} {
+    set s "settings.tdb"
+        set s [settings_filename]
+    catch {
+    }
+
+    array set ::settings [encoding convertfrom utf-8 [read_binary_file $s]]
+    set ::settings(skin) "Insight"
+    save_array_to_file ::settings $s
+}

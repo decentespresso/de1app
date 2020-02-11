@@ -947,17 +947,6 @@ proc append_file {filename data} {
     return $success
 }
 
-
-proc save_array_to_file {arrname fn} {
-    upvar $arrname item
-    set toexport2 {}
-    foreach k [lsort -dictionary [array names item]] {
-        set v $item($k)
-        append toexport2 [subst {[list $k] [list $v]\n}]
-    }
-    write_file $fn $toexport2
-}
-
 proc god_shot_save {} {
     set ::settings(god_espresso_pressure) [espresso_pressure range 0 end]
     set ::settings(god_espresso_temperature_basket) [espresso_temperature_basket range 0 end]
@@ -1073,12 +1062,6 @@ proc load_settings {} {
     #espresso_elapsed append 0    
     clear_espresso_chart
 
-}
-
-proc settings_filename {} {
-    set fn "[homedir]/settings.tdb"
-    #puts "sc: '$fn'"
-    return $fn
 }
 
 proc skin_xscale_factor {} {

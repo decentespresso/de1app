@@ -405,23 +405,7 @@ proc generic_button_held {btnup btndown action} {
 
 
 
-proc read_binary_file {filename} {
-    set fn ""
-    set err {}
-    set error [catch {set fn [open $filename]} err]
-    if {$fn == ""} {
-        #puts "error opening binary file: $filename / '$err' / '$error' / $fn"
-        return ""
-    }
-    if {$fn == ""} {
-        return ""
-    }
-    
-    fconfigure $fn -translation binary
-    set data [read $fn]
-    close $fn
-    return $data
-}
+
 
 proc appdir {} {
     return [file tail [homedir]]
