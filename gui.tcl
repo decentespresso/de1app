@@ -8,7 +8,21 @@ proc load_skin {} {
 			page_change_due_to_de1_state_change $textstate
 		}
 	}
-	source "[skin_directory]/skin.tcl"
+
+	if {[catch {
+		source "[skin_directory]/skin.tcl"
+	} err] != 0} {
+		catch {
+			# reset te skin back to default, if their skin failed to load correctly
+			reset_skin
+		}
+		catch {
+			message_page [subst {[translate "Your choice of skin had an error and cannot be used."]\n\n$err}] [translate "Ok"]
+		}
+		msg "Failed to 'load_skin' because: '$err'"
+		after 10000 exit
+	}
+
 }
 
 proc setup_images_for_other_pages {} {
