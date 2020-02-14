@@ -1,6 +1,6 @@
 advanced_shot {}
 author Decent
-espresso_hold_time 15
+espresso_hold_time 16
 preinfusion_time 20
 espresso_pressure 6.0
 espresso_decline_time 30
@@ -22,7 +22,7 @@ final_desired_shot_weight 36
 final_desired_shot_weight_advanced 135
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 135
-preinfusion_guarantee 1
+preinfusion_guarantee 0
 profile_title {Gentle and sweet}
 profile_language en
 preinfusion_stop_pressure 4.0

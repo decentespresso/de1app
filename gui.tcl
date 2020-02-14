@@ -2317,6 +2317,15 @@ proc load_god_shot { {force 0} } {
 
 }
 
+proc profile_title {} {
+	if {$::settings(profile_has_changed) == 1} {
+		return "$::settings(profile_title)*"
+	} else {
+		return $::settings(profile_title)
+
+	}
+}
+
 # space = idle
 # e = espresso 
 # f = flush

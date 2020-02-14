@@ -2420,7 +2420,7 @@ proc preview_profile {} {
 }
 
 proc profile_has_changed_set_colors {} {
-	#puts "profile_has_changed_set_colors : $::settings(profile_has_changed)"
+	#msg "profile_has_changed_set_colors : $::settings(profile_has_changed) [stacktrace]"
 
 	if {$::settings(profile_has_changed) == 1} {
 		update_de1_explanation_chart
@@ -2430,25 +2430,23 @@ proc profile_has_changed_set_colors {} {
 			}
 		}
 
-		if {[info exists ::globals(widget_current_profile_name)] == 1} {
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_normal)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_normal)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_normal)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill $::de1(widget_current_profile_name_color_normal)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_normal)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_normal)
-			}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_normal)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_normal)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_normal)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill $::de1(widget_current_profile_name_color_normal)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_normal)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_normal)
 		}
 	} else {
 		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
@@ -2458,26 +2456,24 @@ proc profile_has_changed_set_colors {} {
 			}
 		}
 
-		if {[info exists ::globals(widget_current_profile_name)] == 1} {
-			# this is displayed on the main Insight skin page
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_changed)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_changed)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_changed)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill $::de1(widget_current_profile_name_color_changed)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_changed)
-			}
-			catch {
-				.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_changed)
-			}
+		# this is displayed on the main Insight skin page
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_changed)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_changed)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_changed)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill $::de1(widget_current_profile_name_color_changed)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_changed)
+		}
+		catch {
+			.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_changed)
 		}
 	}
 }
@@ -2597,6 +2593,8 @@ proc save_profile {} {
 	} else {
 		set ::settings(profile_title) [translate "Invalid name"]
 	}
+
+	profile_has_changed_set_colors
 }
 
 

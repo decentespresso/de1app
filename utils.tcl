@@ -1925,6 +1925,12 @@ proc zero_pad {number len} {
 }
 
 proc wrapped_string_part {input threshold partnumber} {
+    if {[string length $input] == [expr {1 + $threshold}] } {
+        # wrap algorithm seems to chop off last character if there is just 1 character too many, so 
+        # work around that by adding a space when needed.
+        append input " "
+    }
+    #msg "wrapped_string_part $input ([string length $input]) $threshold"
     set l [wrap_string $input $threshold 1]
     return [lindex $l $partnumber]
 }

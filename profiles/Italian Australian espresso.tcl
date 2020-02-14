@@ -2,7 +2,7 @@ advanced_shot {}
 author Decent
 espresso_hold_time 35
 preinfusion_time 8
-espresso_pressure 9.0
+espresso_pressure 8.7
 espresso_decline_time 0
 pressure_end 6.0
 espresso_temperature 88.0
@@ -22,7 +22,7 @@ final_desired_shot_weight 36
 final_desired_shot_weight_advanced 1
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 74
-preinfusion_guarantee 1
+preinfusion_guarantee 0
 profile_title {Italian Australian espresso}
 profile_language en
 preinfusion_stop_pressure 4.0

@@ -1,6 +1,6 @@
 advanced_shot {}
 author Decent
-espresso_hold_time 20
+espresso_hold_time 21
 preinfusion_time 30
 espresso_pressure 9.0
 espresso_decline_time 0
@@ -17,7 +17,7 @@ flow_profile_minimum_pressure 6
 preinfusion_flow_rate 3.5
 profile_notes {Created by a famously innovative Seattle-based espresso machine manufacturer, this technique works well with aromatic, lightly roasted coffee beans.}
 water_temperature 80
-final_desired_shot_volume 36
+final_desired_shot_volume 37
 final_desired_shot_weight 36
 final_desired_shot_weight_advanced 135
 tank_desired_water_temperature 0

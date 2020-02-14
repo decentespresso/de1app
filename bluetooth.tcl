@@ -2148,6 +2148,15 @@ proc de1_ble_handler { event data } {
 			    			if {$mmr_id == "80381C"} {
 			    				msg "Read: GHC is installed: '$mmr_val'"
 			    				set ::settings(ghc_is_installed) $mmr_val
+
+								if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2} {
+									# if the GHC is present but not active, check back every 10 minutes to see if its status has changed
+									# this is only relevant if the machine is in a debug GHC mode, where the DE1 acts as if the GHC 
+									# is not there until it is touched. This allows the tablet to start operations.  If (or once) the GHC is 
+									# enabled, only the GHC can start operations.
+									after 600000 get_ghc_is_installed
+								}
+
 			    			} elseif {$mmr_id == "803808"} {
 			    				set ::de1(fan_threshold) $mmr_val
 			    				set ::settings(fan_threshold) $mmr_val
