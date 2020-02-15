@@ -1,6 +1,6 @@
 advanced_shot {}
 author Decent
-espresso_hold_time 13
+espresso_hold_time 10
 preinfusion_time 20
 espresso_pressure 8.6
 espresso_decline_time 25
@@ -15,15 +15,15 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes 这个设定对咖啡粉饼的要求相对温和，对咖啡师的准绳度亦不太苛刻。在大多数情况下亦能制作出不错的咖啡。
+profile_notes {This profile is gentle on the coffee puck and not too demanding on the barista.  Produces a very acceptable espresso in a wide variety of settings.}
 water_temperature 80
 final_desired_shot_volume 36
 final_desired_shot_weight 36
 final_desired_shot_weight_advanced 36
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 0
-preinfusion_guarantee 0
-profile_title 基本
-profile_language zh-hans
+preinfusion_guarantee 1
+profile_title Default
+profile_language en
 preinfusion_stop_pressure 4
 
