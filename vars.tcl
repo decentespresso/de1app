@@ -1038,7 +1038,12 @@ proc waterweight_label_text {} {
 
 
 proc espresso_goal_temp_text {} {
-	return [return_temperature_measurement $::de1(goal_temperature)]
+		if {$::settings(make_preinfusion_hotter) != ""} {
+		return [return_temperature_measurement [expr {$::de1(goal_temperature) - $::settings(make_preinfusion_hotter)}]]
+	} else {
+		return [return_temperature_measurement $::de1(goal_temperature)]
+	}
+
 }
 
 set ::diff_brew_temp_from_goal 0
@@ -2883,6 +2888,12 @@ proc round_to_half_integer {in} {
 }
 
 proc check_firmware_update_is_available {} {
+
+	if {$::settings(force_fw_update) != 1} {
+		set ::de1(firmware_update_button_label) "Up to date"
+		return ""
+	}
+
 
 	if {[info exists ::de1(firmware_crc)] != 1} {
 		set ::de1(firmware_crc) [crc::crc32 -filename [fwfile]]
