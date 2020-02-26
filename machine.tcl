@@ -16,6 +16,7 @@ package provide de1_machine 1.0
 
 
 array set ::de1 {
+	firmware_crc ""
 	current_frame_number 0
 	calibration_pressure {}
 	calibration_temperature {}
