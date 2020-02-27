@@ -1,6 +1,6 @@
 advanced_shot {}
 author Decent
-espresso_hold_time 10
+espresso_hold_time 4
 preinfusion_time 20
 espresso_pressure 8.6
 espresso_decline_time 25
@@ -22,7 +22,7 @@ final_desired_shot_weight 36
 final_desired_shot_weight_advanced 36
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 0
-preinfusion_guarantee 1
+preinfusion_guarantee 0
 profile_title Default
 profile_language en
 preinfusion_stop_pressure 4

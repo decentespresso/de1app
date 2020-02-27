@@ -1,4 +1,4 @@
-advanced_shot {{exit_if 1 flow 4.5 volume 100 transition fast exit_flow_under 0 temperature 92.00 name preinfusion pressure 1 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 4 exit_pressure_under 0 seconds 20} {exit_if 0 flow 5.0 volume 100 transition fast exit_flow_under 0 temperature 92.00 name hold sensor coffee pump flow exit_flow_over 6 exit_pressure_over 11 exit_pressure_under 0 seconds 5.0} {exit_if 0 flow 4.0 volume 100 transition smooth exit_flow_under 0 temperature 92.00 name decline sensor coffee pump flow exit_flow_over 6 exit_pressure_over 11 exit_pressure_under 0 seconds 40.0}}
+advanced_shot {{exit_if 0 flow 4.50 volume 100 transition fast exit_flow_under 0 temperature 92.00 name {hold at 4.5 ml/s} sensor coffee pump flow exit_flow_over 6 exit_pressure_over 11 seconds 60.00 exit_pressure_under 0}}
 author Decent
 espresso_hold_time 10
 preinfusion_time 20
