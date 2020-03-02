@@ -3,7 +3,7 @@ author Decent
 espresso_hold_time 4
 preinfusion_time 20
 espresso_pressure 8.6
-espresso_decline_time 25
+espresso_decline_time 35
 pressure_end 6.0
 espresso_temperature 88.0
 settings_profile_type settings_2a
