@@ -616,8 +616,7 @@ proc translate {english} {
             if {$available([language]) != ""} {
                 # if the translated version of the English is NOT blank, return it
                 if {[language] == "ar" && ($::android == 1 || $::undroid == 1)} {
-                    #return [string reverse $available([language])]
-                    return [render_arabic  $available([language])]
+                    #return [render_arabic  $available([language])]
                 }
 
                 return $available([language])
