@@ -118,7 +118,6 @@ proc setup_environment {} {
 
         global helvetica_bold_font
         global helvetica_font
-
         #puts "setting up fonts for language [language]"
         if {[language] == "th"} {
             set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
@@ -129,9 +128,11 @@ proc setup_environment {} {
             set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
             set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-            #set fontm [expr {($fontm * 1.08)}]
-            #set fontm 1.2
-            #set global_font_name [lindex [sdltk addfont "fonts/NotoNaskhArabic-Regular.ttf"] 0]
+
+            #set helvetica_font [sdltk addfont "fonts/Rakkas-Regular.ttf"]
+            #set helvetica_bold_font $helvetica_font
+            #set global_font_name $helvetica_font
+
             set global_font_name $helvetica_font
         } elseif {[language] == "zh-hant" || [language] == "zh-hans" || [language] == "kr"} {
             set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
@@ -615,9 +616,13 @@ proc translate {english} {
             #puts "translate: '[encoding convertfrom $available([language])]'"
             if {$available([language]) != ""} {
                 # if the translated version of the English is NOT blank, return it
+                log_to_debug_file [encoding names]
+                log_to_debug_file "English: '$available([language])'"
                 if {[language] == "ar" && ($::android == 1 || $::undroid == 1)} {
+                    #return [string reverse $available([language])]
                     #return [render_arabic  $available([language])]
                 }
+
 
                 return $available([language])
             } else {
