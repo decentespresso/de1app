@@ -65,18 +65,15 @@ proc decent_scale_calc_xor4 {cmdtype cmdddata1 cmdddata2} {
 	return $xor
 }
 
-proc decent_scale_make_command {cmdtype cmdddata} {
-	if {[string length $cmdddata] == 2} {
+proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} } {
+	if {$cmddata2 == ""} {
 		set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]
-		set hex2 [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x00"]}]
-		msg "compare hex '$hex' to '$hex2'"
-	} elseif {[string length $cmdddata] == 4} {
-		set hex [subst {03${cmdtype}${cmdddata}0000[decent_scale_calc_xor4 "0x$cmdtype" "0x[string range $cmdddata 0 1]" "0x[string range $cmdddata 2 3]"]}]
+		#set hex2 [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x00"]}]
+		#msg "compare hex '$hex' to '$hex2'"
 	} else {
-		msg "Unknown decent_scale_make_command $cmdtype cmdddata"
-		return ""
+		set hex [subst {03${cmdtype}${cmdddata}${cmddata2}0000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x$cmddata2"]}]
 	}
-	msg "hex is '$hex' for '$cmdtype' '$cmdddata'"
+	msg "hex is '$hex' for '$cmdtype' '$cmdddata' '$cmddata2'"
 	return [binary decode hex $hex]
 }
 
@@ -115,17 +112,29 @@ proc decentscale_enable_lcd {} {
 	if {$::de1(scale_device_handle) == 0} {
 		return 
 	}
-	set screenon [decent_scale_make_command 0A 0101]
-	msg "decent scale screen on: '$screenon'"
+	set screenon [decent_scale_make_command 0A 01 00]
+	msg "decent scale screen on: '[convert_string_to_hex $screenon]' '$screenon'"
 	userdata_append "decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon]
 
-	set timeron [decent_scale_make_command 0B 01]
-	msg "decent scale timer on: '$timeron'"
-	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
+	#set timeron [decent_scale_make_command 0A 00 01]
+	#msg "decent scale timer on: '$timeron'"
+	#userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
+
+
+
+	#set timeron [decent_scale_make_command 0B 02]
+	#msg "decent scale timer on: '$timeron'"
+	#userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
+
+	decentscale_timer_start
+	#set timeron [decent_scale_make_command 0B 01]
+	#msg "decent scale timer on: '$timeron'"
+	#userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
 
 
 
 }
+
 
 proc scale_disable_lcd {} {
 	if {$::settings(scale_type) == "atomaxskale"} {
@@ -173,7 +182,7 @@ proc decentscale_timer_start {} {
 	#userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timerreset]
 
 	set timeron [decent_scale_make_command 0B 01]
-	msg "decent scale timer on: '$timeron'"
+	msg "decent scale timer on: [convert_string_to_hex $timeron] '$timeron'"
 	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
 
 }
@@ -1278,7 +1287,6 @@ proc stop_scanner {} {
 proc bluetooth_connect_to_devices {} {
 
 	#@return
-
 	msg "bluetooth_connect_to_devices"
 
 	if {$::android != 1} {
@@ -1938,7 +1946,7 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq "83CDC3D4-3BA2-13FC-CC5E-106C351A9352"} {
 							# decent scale
 							parse_decent_scale_recv $value vals
-							msg "decentscale: '[array get vals]'"
+							#msg "decentscale: '[array get vals]'"
 							
 							#set sensorweight [expr {$t1 / 10.0}]
 

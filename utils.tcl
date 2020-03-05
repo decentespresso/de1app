@@ -124,7 +124,7 @@ proc setup_environment {} {
             set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
             set fontm [expr {($fontm * 1.2)}]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-        } elseif {[language] == "ar"} {
+        } elseif {[language] == "ar" || [language] == "arb"} {
             set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
             set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
@@ -616,13 +616,12 @@ proc translate {english} {
             #puts "translate: '[encoding convertfrom $available([language])]'"
             if {$available([language]) != ""} {
                 # if the translated version of the English is NOT blank, return it
-                log_to_debug_file [encoding names]
-                log_to_debug_file "English: '$available([language])'"
+                #log_to_debug_file [encoding names]
+                #log_to_debug_file "English: '$available([language])'"
                 if {[language] == "ar" && ($::android == 1 || $::undroid == 1)} {
-                    #return [string reverse $available([language])]
-                    #return [render_arabic  $available([language])]
+                    # use the "arb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
+                    return $available(arb)
                 }
-
 
                 return $available([language])
             } else {
