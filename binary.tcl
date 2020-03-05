@@ -818,11 +818,7 @@ proc de1_packed_shot_flow {} {
 	set frame1(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
 	set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
 	#set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	if {$::settings(make_preinfusion_hotter) != ""} {
-		set frame1(Temp) [convert_float_to_U8P1 [expr {$::settings(make_preinfusion_hotter) + $::settings(espresso_temperature)}]]
-	} else {
-		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	}
+	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 
 
 	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
@@ -923,11 +919,7 @@ proc de1_packed_shot {} {
 		set frame1(SetVal) [convert_float_to_U8P4 4]
 	}
 
-	if {$::settings(make_preinfusion_hotter) != ""} {
-		set frame1(Temp) [convert_float_to_U8P1 [expr {$::settings(make_preinfusion_hotter) + $::settings(espresso_temperature)}]]
-	} else {
-		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	}
+	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 
 	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
 	

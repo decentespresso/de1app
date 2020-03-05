@@ -1038,12 +1038,7 @@ proc waterweight_label_text {} {
 
 
 proc espresso_goal_temp_text {} {
-	if {$::settings(make_preinfusion_hotter) != "" && $::settings(settings_profile_type) != "settings_2c"} {
-		return [return_temperature_measurement [expr {$::de1(goal_temperature) - $::settings(make_preinfusion_hotter)}]]
-	} else {
-		return [return_temperature_measurement $::de1(goal_temperature)]
-	}
-
+	return [return_temperature_measurement $::de1(goal_temperature)]
 }
 
 set ::diff_brew_temp_from_goal 0

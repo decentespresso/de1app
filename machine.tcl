@@ -164,7 +164,6 @@ if {$android == 0 || $undroid == 1} {
 
 array set ::settings {
 	force_fw_update 0
-	make_preinfusion_hotter 2
 	preset_counter 1
 	screen_size_width {}
 	tank_desired_water_temperature 0
