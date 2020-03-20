@@ -1,7 +1,7 @@
 #SWDark theme by Spencer Webb, November 2019, VERSION 4
 #Adapted and inspired by the Insight & Modernist themes.  Thanks John & David V!  
 
-source "[homedir]/skins/default/standard_includes.tcl"
+#source "[homedir]/skins/default/standard_includes.tcl"
 
 set ::skindebug 0
 set ::debugging 0
@@ -218,6 +218,10 @@ if { [language] == "de" || [language] == "da" || [language] == "sv" || [language
 
 #Main Buttons
 
+add_de1_button "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off off; start_idle} 2028 296 2298 401
+
+add_de1_variable "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" 2162.825 518.88 -text [translate "stop"] -font helveticabold18 -fill "#FFFFFF" -anchor "center" -textvariable {[stop_text_if_espresso_stoppable]} 
+
 # make and stop espresso button
 add_de1_button "home off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set ::current_espresso_page espresso; set_next_page off off; start_espresso} 2173 20 2538 338
 
@@ -271,9 +275,6 @@ add_de1_variable "home swsettings off espresso_1 espresso_3 preheat_1 preheat_3 
 
 #add_de1_variable "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" 2162 452 -text [translate "stop"] -font helveticabold18 -fill "#FFFFFF" -anchor "center" -textvariable {[stop_text_if_espresso_stoppable]} 
 
-add_de1_variable "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" 2162.825 518.88 -text [translate "stop"] -font helveticabold18 -fill "#FFFFFF" -anchor "center" -textvariable {[stop_text_if_espresso_stoppable]} 
-
-add_de1_button "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off off; start_idle} 2028 296 2298 401
 
 
 ################################################################################################################################################################################################################################################################################################
@@ -1061,7 +1062,10 @@ if {$::settings(insight_skin_show_embedded_profile) == 1} {
 
 
 #Select Profile Button
-add_de1_button "home off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {}] $::settings(sound_button_in); show_settings; set_next_page off settings_1; page_show off;  set ::settings(active_settings_tab) settings_1 ; start_idle} 1789 1155 2380 1270
+#add_de1_button "home off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {}] $::settings(sound_button_in); show_settings; set_next_page off settings_1; page_show off;  set ::settings(active_settings_tab) settings_1 ; start_idle} 1789 1155 2380 1270
+
+add_de1_button "home off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); if {$::settings(profile_has_changed) == 1} { save_profile } else { backup_settings; set_next_page off settings_1; page_show off; set_profiles_scrollbar_dimensions }
+} 1789 1155 2380 1270
 
 #######################
 

@@ -5,7 +5,7 @@ set ::skindebug 0
 set ::debugging 0
 
 
-source "[homedir]/skins/default/standard_includes.tcl"
+#source "[homedir]/skins/default/standard_includes.tcl"
 
 ##### Colour variables for chart lines#####
 #set green-dotted "#8fd0af"
@@ -44,8 +44,8 @@ set ::detailtextcol "#9f9f9f"
 set ::detailtextheadingcol "#ffffff"
 set ::zoomed_y2_axis_scale "6"
 
-load_font "helveticabold" "[skin_directory]/helveticabold.ttf" 24
-load_font "helveticabold2" "[skin_directory]/helveticabold2.ttf" 16
+load_font_obsolete "helveticabold" "[skin_directory]/helveticabold.ttf" 24
+load_font_obsolete "helveticabold2" "[skin_directory]/helveticabold2.ttf" 16
 
     if {$::settings(settings_profile_type) == "settings_2c"} {
     set ::stopatweight $::settings(final_desired_shot_weight_advanced)g
