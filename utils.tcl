@@ -132,7 +132,7 @@ proc setup_environment {} {
             #set helvetica_font [sdltk addfont "fonts/tahoma.ttf"]
             #set helvetica_bold_font $helvetica_font
             #set global_font_name $helvetica_font
-            #set fontm [expr {($fontm * 1.2)}]
+            #set fontm [expr {($fontm * 1.0)}]
 
             #set global_font_name $helvetica_font
         } elseif {[language] == "zh-hant" || [language] == "zh-hans" || [language] == "kr"} {
