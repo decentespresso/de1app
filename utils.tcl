@@ -125,14 +125,18 @@ proc setup_environment {} {
             set fontm [expr {($fontm * 1.2)}]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
         } elseif {[language] == "ar" || [language] == "arb"} {
-            set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
-            set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
-            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+            #set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
+            #set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
+            #set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
 
-            #set helvetica_font [sdltk addfont "fonts/tahoma.ttf"]
-            #set helvetica_bold_font $helvetica_font
+            set helvetica_font [sdltk addfont "fonts/agamashq.ttf"]
+            #log_to_debug_file "helvetica_font: $helvetica_font"
+            set helvetica_bold_font [sdltk addfont "fonts/agamashq_bold.ttf"]
+            set global_font_name $helvetica_font
+
+            #set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
             #set global_font_name $helvetica_font
-            #set fontm [expr {($fontm * 1.0)}]
+            set fontm [expr {($fontm * 1.3)}]
 
             #set global_font_name $helvetica_font
         } elseif {[language] == "zh-hant" || [language] == "zh-hans" || [language] == "kr"} {

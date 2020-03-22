@@ -91,7 +91,8 @@ proc make_de1_dir {} {
         fonts/notosansuiregular.ttf *
         fonts/sarabun.ttf *
         fonts/sarabunbold.ttf *
-        fonts/Rakkas-Regular.ttf *
+        fonts/agamashq.ttf *
+        fonts/agamashq_bold.ttf *
 
         godshots/none.shot *
         godshots/import/readme.txt *
