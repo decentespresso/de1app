@@ -685,6 +685,11 @@ add_de1_button "settings_1" {say [translate {Cancel}] $::settings(sound_button_i
 # plus icon to create a new preset
 add_de1_button "settings_1" {say [translate {new}] $::settings(sound_button_in); set_next_page off "create_preset"; page_show off;} 1120 530 1300 730
 
+# eyeball icon to show or hide preset
+add_de1_button "settings_1" {say [translate {Choose which presets to show}] $::settings(sound_button_in); if {[ifexists ::profiles_hide_mode] != 1} { set ::profiles_hide_mode 1 } else { unset -nocomplain ::profiles_hide_mode } ; fill_profiles_listbox} 1120 800 1300 1000
+
+#############################
+
 #############################
 # create a new preset
 add_de1_text "create_preset" 2275 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
@@ -720,7 +725,7 @@ set settings_label1 [translate "PRESSURE"]
 set settings_label2 [translate "Pressure profiles"]
 
 #add_de1_text "settings_1" 50 220 -text $settings_label2 -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
-add_de1_text "settings_1" 50 230 -text [translate "Load a preset"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
+add_de1_variable "settings_1" 50 230 -text [translate "Load a preset"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" -textvariable {[if {[ifexists ::profiles_hide_mode] == 1} { return [translate "Choose which presets to show"] } else { return [translate "Load a preset"] }]}
 add_de1_text "settings_1" 1360 230 -text [translate "Preview"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_text "settings_1" 1360 830 -text [translate "Description"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 
@@ -807,6 +812,10 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; profile_has_changed_set_colors;
+			if {[ifexists ::profiles_hide_mode] == 1} {
+				unset -nocomplain ::profiles_hide_mode 
+				fill_profiles_listbox
+			}
 			if {[array_item_difference ::settings ::settings_backup "steam_temperature steam_flow water_refill_point fan_threshold"] == 1} {
 				# resend the calibration settings if they were changed
 				de1_send_steam_hotwater_settings
@@ -823,7 +832,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_next_page off off; page_show off
 			}
 		} 2016 1430 2560 1600
-	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;restore_espresso_chart; } 1505 1430 2015 1600
+	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {if {[ifexists ::profiles_hide_mode] == 1} { unset -nocomplain ::profiles_hide_mode; fill_profiles_listbox }; array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;restore_espresso_chart; } 1505 1430 2015 1600
 
 set enable_flow_calibration 0
 
@@ -979,4 +988,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off measurements
+#set_next_page off settings_1

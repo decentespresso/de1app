@@ -1260,7 +1260,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		set ::all_labels [lsort -unique $::all_labels]
 	}
 
-	msg "Hiding [llength $::all_labels] labels"
+	#msg "Hiding [llength $::all_labels] labels"
 	foreach label $::all_labels {
 		if {[.can itemcget $label -state] != "hidden"} {
 			.can itemconfigure $label -state hidden
@@ -1268,7 +1268,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		}
 	}
 
-	msg "Showing [llength $these_labels] labels"
+	#msg "Showing [llength $these_labels] labels"
 	foreach label $these_labels {
 		.can itemconfigure $label -state normal
 		#msg "showing: '$label'"
@@ -2333,7 +2333,7 @@ proc profile_title {} {
 # w = water
 
 proc handle_keypress {keycode} {
-	msg "Keypress detected: $keycode"
+	#msg "Keypress detected: $keycode"
 	if {$keycode == 101} {
 		# e = espresso 
 		start_espresso

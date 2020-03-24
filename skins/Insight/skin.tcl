@@ -43,7 +43,7 @@ set_next_page "hotwaterrinse" "preheat_2"
 add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
 add_de1_page "tankempty refill" "fill_tank.jpg" "default"
-add_de1_page "message calibrate infopage tabletstyles languages measurements" "settings_message.png" "default"
+add_de1_page "message calibrate infopage tabletstyles languages measurements showprofiles" "settings_message.png" "default"
 add_de1_page "create_preset" "settings_3_choices.png" "default"
 add_de1_page "descalewarning" "descalewarning.jpg" "default"
 
