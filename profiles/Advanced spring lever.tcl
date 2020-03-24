@@ -22,8 +22,8 @@ preinfusion_time 20
 pressure_end 4.0
 profile_hide 1
 profile_language en
-profile_notes {An advanced spring lever profile that addresses a problem with simple spring lever profiles, by using both pressure and flow control. The last two steps keep pressure/flow under control as the puck erodes, if the shot has not finished by the end of step 3. Please consider this as a starting point for tweaking.}
-profile_title {Advanced spring lever by John Weiss}
+profile_notes {An advanced spring lever profile by John Weiss that addresses a problem with simple spring lever profiles, by using both pressure and flow control. The last two steps keep pressure/flow under control as the puck erodes, if the shot has not finished by the end of step 3. Please consider this as a starting point for tweaking.}
+profile_title {Advanced spring lever}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 80
