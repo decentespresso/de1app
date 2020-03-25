@@ -206,7 +206,10 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 }
 
 
-proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1} {
+proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1 {b 0} } {
+	# b = which button was tapped
+	msg "Button $b"
+
 	set yrange [expr {$y1 - $y0}]
 	set yoffset [expr {$y - $y0}]
 
@@ -221,14 +224,18 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 	set currentval [subst \$$varname]
 	set newval $currentval
 
-	if {$y < $onequarterpoint} {
-		set newval [expr "1.0 * \$$varname + $bigincrement"]
-	} elseif {$y < $midpoint} {
-		set newval [expr "1.0 * \$$varname + $smallincrement"]
-	} elseif {$y < $threequarterpoint} {
-		set newval [expr "1.0 * \$$varname - $smallincrement"]
+	if {$y < $midpoint} {
+		if {$b == 3} {
+			set newval [expr "1.0 * \$$varname + $bigincrement"]
+		} else {
+			set newval [expr "1.0 * \$$varname + $smallincrement"]
+		}
 	} else {
-		set newval [expr "1.0 * \$$varname - $bigincrement"]
+		if {$b == 3} {
+			set newval [expr "1.0 * \$$varname - $bigincrement"]
+		} else {
+			set newval [expr "1.0 * \$$varname - $smallincrement"]
+		}
 	}
 
 	set newval [round_to_two_digits $newval]
@@ -497,9 +504,9 @@ proc platform_button_press {} {
 	global android 
 	if {$android == 1} {
 		#return {<<FingerUp>>}
-		return {<ButtonPress-1>}
+		return {<ButtonPress>}
 	}
-	return {<ButtonPress-1>}
+	return {<ButtonPress>}
 }
 
 proc platform_finger_down {} {

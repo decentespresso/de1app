@@ -186,7 +186,7 @@ proc setup_environment {} {
         # enable swipe gesture translating, to scroll through listboxes
         # sdltk touchtranslate 1
         # disable touch translating as it does not feel native on tablets and is thus confusing
-        sdltk touchtranslate 0
+        sdltk touchtranslate 1
 
         wm maxsize . $screen_size_width $screen_size_height
         wm minsize . $screen_size_width $screen_size_height
