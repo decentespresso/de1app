@@ -1514,6 +1514,12 @@ proc append_live_data_to_espresso_chart {} {
 			espresso_flow append [round_to_two_digits $::de1(flow)]
 			espresso_flow_2x append [round_to_two_digits [expr {2.0 * $::de1(flow)}]]
 
+			set resistance 0
+			catch {
+				set resistance [round_to_two_digits [expr {$::de1(pressure) / $::de1(flow)}]]
+			}
+			espresso_resistance append $resistance
+
 			if {$::de1(scale_weight_rate) != ""} {
 				# if a bluetooth scale is recording shot weight, graph it along with the flow meter
 				espresso_flow_weight append [round_to_two_digits $::de1(scale_weight_rate)]
