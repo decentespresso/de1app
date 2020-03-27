@@ -285,7 +285,7 @@ add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([r
 
 #######################
 # zoomed espresso
-add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 74 {
+add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 	bind $widget [platform_button_press] { 
 		#msg "100 = [rescale_y_skin 200] = %y = [rescale_y_skin 726]"
 		if {%x < [rescale_y_skin 800]} {
@@ -374,7 +374,7 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 74 {
 
 
 	#$widget axis configure y2 -color #206ad4 -tickfont Helv_6 -gridminor 0 -min 0.0 -max $::de1(max_flowrate) -majorticks {0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6} -hide 0; 
-} -plotbackground #FFFFFF -width [rescale_x_skin 1990] -height [rescale_y_skin 1516] -borderwidth 1 -background #FFFFFF -plotrelief flat
+} -plotbackground #FFFFFF -width [rescale_x_skin 1990] -height [rescale_y_skin 1510] -borderwidth 1 -background #FFFFFF -plotrelief flat
 
 #######################
 
