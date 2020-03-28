@@ -566,8 +566,9 @@ proc make_de1_dir {} {
         profiles/e61\ rocketing\ up\ to\ 10\ bar.tcl *
         profiles/e61\ with\ fast\ preinfusion\ to\ 9\ bar.tcl *      
         profiles/Italian\ Australian\ espresso.tcl *
-        profiles/EspressoForge_Light.tcl *
-        profiles/EspressoForge_Dark.tcl *
+        profiles/v60-15g.tcl *
+        profiles/v60-20g.tcl *
+        profiles/v60-22g.tcl *
     }
 #        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
