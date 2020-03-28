@@ -70,6 +70,31 @@ proc load_swdark_settings {} {
     array set ::swdark_settings [encoding convertfrom utf-8 [read_binary_file [swdark_filename]]]
 }
 
+proc swdark4varscheck {} {
+	set var ::swdark_settings(swstopatvol)
+    if {[info exists $var]} {
+    } else {
+        set $var [round_to_integer $::settings(final_desired_shot_volume)]
+		save_swdark_settings
+    }
+	set var ::swdark_settings(swstopatvoladv)
+    if {[info exists $var]} {
+    } else {
+        set $var [round_to_integer $::settings(final_desired_shot_volume_advanced)]
+		save_swdark_settings
+    }
+	set var ::swdark_settings(swvoltype)
+    if {[info exists $var]} {
+    } else {
+		if {[ifexists ::settings(settings_profile_type)] == "settings_2c"} {
+			set ::swdark_settings(swvoltype) "::settings(final_desired_shot_volume_advanced)"
+		} else {
+			set ::swdark_settings(swvoltype) "::settings(final_desired_shot_volume)"
+		}
+		save_swdark_settings
+    }
+}
+
 
 proc skale_display_toggle {} {
     set ::swdark_settings(skale_display_state_b) $::swdark_settings(skale_display_state)
@@ -97,7 +122,6 @@ proc scale_display_toggle {} {
         }
 }
 
-
 proc stopatweight {} {
     if {$::settings(settings_profile_type) == "settings_2c"} {
     set ::stopatweight $::settings(final_desired_shot_weight_advanced)g
@@ -112,6 +136,15 @@ if {[ifexists ::settings(settings_profile_type)] == "settings_2c"} {
 	set ::swdark_settings(swweighttype) "::settings(final_desired_shot_weight_advanced)"
 } else {
 	set ::swdark_settings(swweighttype) "::settings(final_desired_shot_weight)"
+}
+}
+
+
+proc swvoltype2 {} {
+if {[ifexists ::settings(settings_profile_type)] == "settings_2c"} {
+	set ::swdark_settings(swvoltype) "::settings(final_desired_shot_volume_advanced)"
+} else {
+	set ::swdark_settings(swvoltype) "::settings(final_desired_shot_volume)"
 }
 }
 
@@ -130,6 +163,15 @@ proc updateswbrewratio2 {} {
 		set ::swdark_settings(swbrewratio) [round_to_one_digits [expr $::settings(final_desired_shot_weight_advanced) / $::swdark_settings(swcoffeedose)]]
 	} else {
 		set ::swdark_settings(swbrewratio) [round_to_one_digits [expr $::settings(final_desired_shot_weight) / $::swdark_settings(swcoffeedose)]]
+	}
+}
+
+
+proc updateswbrewvol {} {
+	if {[ifexists ::settings(settings_profile_type)] == "settings_2c"} {
+		set ::swdark_settings(swstopatvoladv) [round_to_integer $::settings(final_desired_shot_volume_advanced)]
+	} else {
+		set ::swdark_settings(swstopatvol) [round_to_integer $::settings(final_desired_shot_volume)]
 	}
 }
 
@@ -153,10 +195,20 @@ proc updateswbrewratio {} {
 				return $::settings(final_desired_shot_weight)
 			}
 		}
+
+#Set the target volume depending on Profile Type std/adv - used as a variable in the data tab to ensure value is uptodate
+		proc update_swcoffeevolume {} {
+			if {[ifexists ::settings(settings_profile_type)] == "settings_2c"} {
+				return $::settings(final_desired_shot_volume_advanced)
+			} else {
+				return $::settings(final_desired_shot_volume)
+			}
+		}
+
 		
 #Used to ensure espresso target temp is uptodate on data tab, really needs updating to check C vs F temp setting
 proc update_swcoffeetemp {} {
-	return [round_to_integer $::settings(espresso_temperature)][translate "\u00BAC"]
+	return [return_temperature_measurement [round_to_integer $::settings(espresso_temperature)]]
 	}
 	
 #used to recalculate the brew ration when weight is altered in main settings
@@ -240,6 +292,12 @@ proc append_live_data_to_espresso_chart {} {
 			espresso_pressure append [round_to_two_digits $::de1(pressure)]
 			espresso_flow append [round_to_two_digits $::de1(flow)]
 			espresso_flow_2x append [round_to_two_digits [expr {2.0 * $::de1(flow)}]]
+
+			set resistance 0
+			catch {
+				set resistance [round_to_two_digits [expr {$::de1(pressure) / $::de1(flow)}]]
+			}
+			espresso_resistance append $resistance
 
 			if {$::de1(scale_weight_rate) != ""} {
 				# if a bluetooth scale is recording shot weight, graph it along with the flow meter

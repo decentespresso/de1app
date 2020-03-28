@@ -244,6 +244,7 @@ proc make_de1_dir {} {
         skins/SWDark4/img/hearticon.png *
         skins/SWDark4/helveticabold12.ttf *
         skins/SWDark4/helveticabold16.ttf *
+        skins/SWDark4/helveticabold17.ttf *
         skins/SWDark4/helveticabold18.ttf *
         skins/SWDark4/helveticabold20.ttf *
         skins/SWDark4/helveticabold24.ttf *
