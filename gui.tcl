@@ -1834,7 +1834,10 @@ proc water_level_color_check {widget} {
 		set ::water_level_color_check_count 0
 	}
 
-	set refill_point_corrected [expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}]
+	# john 28-3-20 not adjusting the blinking to be higher, when refilling earlier, as they will not actually run out of water during drink making, so no need to warn
+	#set refill_point_corrected [expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}]
+	set refill_point_corrected $::de1(water_level_mm_correction)
+
 	set start_blinking_level [expr {$::settings(waterlevel_blink_start_offset) + $refill_point_corrected}]
 	set remaining_water [expr {$::de1(water_level)  - $refill_point_corrected}]
 	# if using refill kit don't blink
