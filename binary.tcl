@@ -1514,32 +1514,33 @@ proc append_live_data_to_espresso_chart {} {
 			espresso_flow append [round_to_two_digits $::de1(flow)]
 			espresso_flow_2x append [round_to_two_digits [expr {2.0 * $::de1(flow)}]]
 
+			set resistance 0
+			catch {
+				# main calculation, based on laminar flow. # linear adjustment 
+				set resistance [round_to_two_digits [expr {$::de1(pressure) / ($::de1(flow) / $::settings(linear_resistance_adjustment) ) }]]
+			}
+			espresso_resistance append $resistance
+
+
 			if {$::de1(scale_weight_rate) != ""} {
 				# if a bluetooth scale is recording shot weight, graph it along with the flow meter
 				espresso_flow_weight append [round_to_two_digits $::de1(scale_weight_rate)]
 				espresso_flow_weight_raw append [round_to_two_digits $::de1(scale_weight_rate_raw)]
 				espresso_flow_weight_2x append [expr {2.0 * [round_to_two_digits $::de1(scale_weight_rate)] }]
-			}
 
-
-
-			set resistance 0
-			catch {
-				set flowsq [tcl::mathfunc::pow $::de1(flow) 2]
-				if {$::de1(pressure) != 0 && $flowsq != 0} {
-					# alternative calculation, based on turbulent flow
-					set resistance_2 [round_to_two_digits [expr {$::de1(pressure) / $flowsq}]]
-
-					if {$::de1(scale_weight_rate) != "" && $::de1(scale_weight_rate) != 0} {
+				set resistance_weight 0
+				catch {
+					if {$::de1(pressure) != 0 && $::de1(scale_weight_rate) != "" && $::de1(scale_weight_rate) != 0} {
 						# if the scale is available, use that instead of the flowmeter calculation, to determine resistance
-						set resistance [round_to_two_digits [expr {$::de1(pressure) / ($::de1(scale_weight_rate) / $::settings(linear_resistance_adjustment) ) }]]
-					} else {
-						# main calculation, based on laminar flow. # linear adjustment 
-						set resistance [round_to_two_digits [expr {$::de1(pressure) / ($::de1(flow) / $::settings(linear_resistance_adjustment) ) }]]
+						set resistance_weight [round_to_two_digits [expr {$::de1(pressure) / ($::de1(scale_weight_rate) / $::settings(linear_resistance_adjustment) ) }]]
 					}
 				}
+
+				espresso_resistance_weight append $resistance_weight
 			}
-			espresso_resistance append $resistance
+
+
+
 
 			#set elapsed_since_last [expr {$millitime - $::previous_espresso_flow_time}]
 			#puts "elapsed_since_last: $elapsed_since_last"
