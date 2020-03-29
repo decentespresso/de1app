@@ -170,6 +170,7 @@ array set ::settings {
 	screen_size_height {}
 	current_frame_description {}
 	default_font_calibration 0.5
+	linear_resistance_adjustment 1
 	language en
 	steam_over_temp_threshold 180
 	steam_over_pressure_threshold 5

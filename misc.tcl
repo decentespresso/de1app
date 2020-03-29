@@ -517,7 +517,7 @@ proc make_de1_dir {} {
         saver/1280x800/steampunk_espresso.jpg *
         saver/1280x800/steampunk_latte.jpg *
         saver/1280x800/three_women.jpg *     
-        saver/1280x800/rainbow_dj.png *     
+        saver/1280x800/rainbow_dj.jpg *     
         saver/2560x1600/Black\ Steel.jpg *
         saver/2560x1600/Cozy-Home.jpg *
         saver/2560x1600/Floral.jpg *
@@ -541,7 +541,7 @@ proc make_de1_dir {} {
         saver/2560x1600/steampunk_espresso.jpg *
         saver/2560x1600/steampunk_latte.jpg *
         saver/2560x1600/three_women.jpg *     
-        saver/2560x1600/rainbow_dj.png *     
+        saver/2560x1600/rainbow_dj.jpg *     
 
         profiles/Gentle\ and\ sweet.tcl *
         profiles/Londinium-R-by-Damian.tcl *

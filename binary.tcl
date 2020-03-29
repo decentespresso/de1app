@@ -1518,7 +1518,11 @@ proc append_live_data_to_espresso_chart {} {
 			catch {
 				set flowsq [tcl::mathfunc::pow $::de1(flow) 2]
 				if {$::de1(pressure) != 0 && $flowsq != 0} {
-					set resistance [round_to_two_digits [expr {$::de1(pressure) / $flowsq}]]
+					# alternative calculation, based on turbulent flow
+					set resistance_2 [round_to_two_digits [expr {$::de1(pressure) / $flowsq}]]
+
+					# main calculation, based on laminar flow. # linear adjustment 
+					set resistance [round_to_two_digits [expr {$::de1(pressure) / ($::de1(flow) / $::settings(linear_resistance_adjustment) ) }]]
 				}
 			}
 			espresso_resistance append $resistance
