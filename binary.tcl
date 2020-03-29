@@ -1514,6 +1514,15 @@ proc append_live_data_to_espresso_chart {} {
 			espresso_flow append [round_to_two_digits $::de1(flow)]
 			espresso_flow_2x append [round_to_two_digits [expr {2.0 * $::de1(flow)}]]
 
+			if {$::de1(scale_weight_rate) != ""} {
+				# if a bluetooth scale is recording shot weight, graph it along with the flow meter
+				espresso_flow_weight append [round_to_two_digits $::de1(scale_weight_rate)]
+				espresso_flow_weight_raw append [round_to_two_digits $::de1(scale_weight_rate_raw)]
+				espresso_flow_weight_2x append [expr {2.0 * [round_to_two_digits $::de1(scale_weight_rate)] }]
+			}
+
+
+
 			set resistance 0
 			catch {
 				set flowsq [tcl::mathfunc::pow $::de1(flow) 2]
@@ -1521,18 +1530,16 @@ proc append_live_data_to_espresso_chart {} {
 					# alternative calculation, based on turbulent flow
 					set resistance_2 [round_to_two_digits [expr {$::de1(pressure) / $flowsq}]]
 
-					# main calculation, based on laminar flow. # linear adjustment 
-					set resistance [round_to_two_digits [expr {$::de1(pressure) / ($::de1(flow) / $::settings(linear_resistance_adjustment) ) }]]
+					if {$::de1(scale_weight_rate) != ""} {
+						# if the scale is available, use that instead of the flowmeter calculation, to determine resistance
+						set resistance [round_to_two_digits [expr {abs($::de1(pressure) / $::de1(scale_weight_rate) ) }]]
+					} else {
+						# main calculation, based on laminar flow. # linear adjustment 
+						set resistance [round_to_two_digits [expr {$::de1(pressure) / ($::de1(flow) / $::settings(linear_resistance_adjustment) ) }]]
+					}
 				}
 			}
 			espresso_resistance append $resistance
-
-			if {$::de1(scale_weight_rate) != ""} {
-				# if a bluetooth scale is recording shot weight, graph it along with the flow meter
-				espresso_flow_weight append [round_to_two_digits $::de1(scale_weight_rate)]
-				espresso_flow_weight_raw append [round_to_two_digits $::de1(scale_weight_rate_raw)]
-				espresso_flow_weight_2x append [expr {2.0 * [round_to_two_digits $::de1(scale_weight_rate)] }]
-			}
 
 			#set elapsed_since_last [expr {$millitime - $::previous_espresso_flow_time}]
 			#puts "elapsed_since_last: $elapsed_since_last"
