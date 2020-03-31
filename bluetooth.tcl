@@ -1690,12 +1690,16 @@ proc de1_ble_handler { event data } {
 							de1_read_calibration "temperature"
 						} else {
 
-							set ::globals(if_in_sleep_move_to_idle) 0
+							#set ::globals(if_in_sleep_move_to_idle) 0
 
 							# vital stuff, do first
 							#read_de1_state
 							de1_enable_temp_notifications
-							start_idle
+							if {[info exists ::de1(first_connection_was_made)] != 1} {
+								# on app startup, wake the machine up
+								set ::de1(first_connection_was_made) 1
+								start_idle
+							}
 							read_de1_version
 							read_de1_state
 							
@@ -1926,14 +1930,14 @@ proc de1_ble_handler { event data } {
 						    set ::de1(last_ping) [clock seconds]
 							update_de1_state $value
 
-							if {[info exists ::globals(if_in_sleep_move_to_idle)] == 1} {
-								unset ::globals(if_in_sleep_move_to_idle)
-								if {$::de1_num_state($::de1(state)) == "Sleep"} {
+							#if {[info exists ::globals(if_in_sleep_move_to_idle)] == 1} {
+							#	unset ::globals(if_in_sleep_move_to_idle)
+							#	if {$::de1_num_state($::de1(state)) == "Sleep"} {
 									# when making a new connection to the espresso machine, if the machine is currently asleep, then take it out of sleep
 									# but only do this check once, right after connection establisment
-									start_idle
-								}
-							}
+							#		start_idle
+							#	}
+							#}
 							#update_de1_substate $value
 							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
 							set ::de1(wrote) 0
