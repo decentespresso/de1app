@@ -1517,7 +1517,7 @@ proc append_live_data_to_espresso_chart {} {
 			set resistance 0
 			catch {
 				# main calculation, based on laminar flow. # linear adjustment 
-				set resistance [round_to_two_digits [expr {$::de1(pressure) / ($::de1(flow) / $::settings(linear_resistance_adjustment) ) }]]
+				set resistance [round_to_two_digits [expr {$::de1(pressure) / pow($::de1(flow), 2) }]]
 			}
 			espresso_resistance append $resistance
 
@@ -1532,7 +1532,7 @@ proc append_live_data_to_espresso_chart {} {
 				catch {
 					if {$::de1(pressure) != 0 && $::de1(scale_weight_rate) != "" && $::de1(scale_weight_rate) != 0} {
 						# if the scale is available, use that instead of the flowmeter calculation, to determine resistance
-						set resistance_weight [round_to_two_digits [expr {$::de1(pressure) / ($::de1(scale_weight_rate) / $::settings(linear_resistance_adjustment) ) }]]
+						set resistance_weight [round_to_two_digits [expr {$::de1(pressure) / pow($::de1(scale_weight_rate), 2) }]]
 					}
 				}
 
