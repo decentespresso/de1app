@@ -2953,10 +2953,10 @@ proc round_to_half_integer {in} {
 
 proc check_firmware_update_is_available {} {
 
-	if {$::settings(force_fw_update) != 1} {
-		set ::de1(firmware_update_button_label) "Up to date"
-		return ""
-	}
+	#if {$::settings(force_fw_update) != 1} {
+	#	set ::de1(firmware_update_button_label) "Up to date"
+	#	return ""
+	#}
 
 
 	if {[info exists ::de1(firmware_crc)] != 1} {

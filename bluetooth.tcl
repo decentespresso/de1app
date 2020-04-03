@@ -584,10 +584,10 @@ proc start_firmware_update {} {
 		}
 	}
 
-	if {$::settings(force_fw_update) != 1} {
-		set ::de1(firmware_update_button_label) "Up to date"
-		return
-	}
+	#if {$::settings(force_fw_update) != 1} {
+		#set ::de1(firmware_update_button_label) "Up to date"
+		#return
+	#}
 
 
 	if {$::de1(currently_erasing_firmware) == 1} {
