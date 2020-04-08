@@ -92,7 +92,7 @@ proc make_de1_dir {} {
         fonts/sarabun.ttf *
         fonts/sarabunbold.ttf *
         fonts/Dubai-Bold.otf *
-        fonts/Dubai-Regular *
+        fonts/Dubai-Regular.otf *
 
         godshots/none.shot *
         godshots/import/readme.txt *
