@@ -10,9 +10,9 @@ set botton_button_font "Helv_10_bold"
 set listbox_font "Helv_10"
 if {[language] == "ar"} {
 	set green_button_font "Helv_17_bold"
-	set settings_tab_font "Helv_17_bold"
+	set settings_tab_font "Helv_15_bold"
 	set botton_button_font "Helv_15_bold"
-	set listbox_font "Helv_8_bold"
+	set listbox_font "Helv_7_bold"
 } elseif {[language] == "zh-hans" || [language] == "zh-hant" || [language] == "kr"} {
 	set green_button_font "Helv_17_bold"
 	set settings_tab_font "Helv_15_bold"
@@ -596,7 +596,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 				set ::ble_listbox_widget $widget
 				bind $::ble_listbox_widget <<ListboxSelect>> ::change_bluetooth_device
 				fill_ble_listbox
-			} -background #fbfaff -font $listbox_font -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+			} -background #fbfaff -font $listbox_font -bd 0 -height 3 -width 22 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 	add_de1_text "settings_4" 680 1100 -text [translate "Scale"] -font Helv_7_bold -fill "#7f879a" -justify "left" -anchor "nw"
 		add_de1_variable "settings_4" 1240 1100 -text \[[translate "Remove"]\] -font Helv_7 -fill "#bec7db" -justify "right" -anchor "ne" -textvariable {[if {$::settings(scale_bluetooth_address) != ""} { return \[[translate "Remove"]\]} else {return "" } ] }
@@ -605,7 +605,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 			set ::ble_scale_listbox_widget $widget
 				bind $widget <<ListboxSelect>> ::change_scale_bluetooth_device
 				fill_ble_scale_listbox
-			} -background #fbfaff -font $listbox_font -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+			} -background #fbfaff -font $listbox_font -bd 0 -height 3 -width 22 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 
 
