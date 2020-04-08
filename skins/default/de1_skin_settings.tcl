@@ -4,6 +4,23 @@
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
 
+
+set settings_tab_font "Helv_10_bold"
+set botton_button_font "Helv_10_bold"
+set listbox_font "Helv_10"
+if {[language] == "ar"} {
+	set green_button_font "Helv_17_bold"
+	set settings_tab_font "Helv_17_bold"
+	set botton_button_font "Helv_15_bold"
+	set listbox_font "Helv_8_bold"
+} elseif {[language] == "zh-hans" || [language] == "zh-hant" || [language] == "kr"} {
+	set green_button_font "Helv_17_bold"
+	set settings_tab_font "Helv_15_bold"
+	set botton_button_font "Helv_15_bold"
+} elseif {[language] != "en" && [language] != "kr" && [language] != "zh-hans" && [language] != "zh-hant"} {
+	set settings_tab_font "Helv_8_bold"
+}
+
 add_de1_page "settings_1" "settings_1.png" "default"
 
 if {[de1plus]} {
@@ -253,7 +270,7 @@ add_de1_widget "settings_2c" listbox 70 310 {
 	load_advanced_profile_step 1
 	bind $widget <<ListboxSelect>> ::load_advanced_profile_step
 
-} -background #fbfaff -yscrollcommand {scale_scroll ::advsteps_slider} -font Helv_9 -bd 0 -height $adv_listbox_height -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+} -background #fbfaff -yscrollcommand {scale_scroll ::advsteps_slider} -font $listbox_font -bd 0 -height $adv_listbox_height -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
 set ::advsteps_slider 0
 
@@ -343,7 +360,7 @@ add_de1_widget "settings_1" listbox 50 305 {
 	 	set ::globals(profiles_listbox) $widget
 		fill_profiles_listbox
 		bind $::globals(profiles_listbox) <<ListboxSelect>> ::preview_profile
-	} -background #fbfaff -yscrollcommand {scale_scroll ::profiles_slider} -font Helv_10 -bd 0 -height 15 -width 32 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1 
+	} -background #fbfaff -yscrollcommand {scale_scroll ::profiles_slider} -font $listbox_font -bd 0 -height 15 -width 32 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1 
 
 set ::profiles_slider 0
 
@@ -438,7 +455,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 				set ::globals(tablet_styles_listbox) $widget
 				fill_skin_listbox
 				bind $::globals(tablet_styles_listbox) <<ListboxSelect>> ::preview_tablet_skin
-			} -background #fbfaff -yscrollcommand {scale_scroll ::skin_slider} -font Helv_10 -bd 0 -height 10 -width 30 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+			} -background #fbfaff -yscrollcommand {scale_scroll ::skin_slider} -font $listbox_font -bd 0 -height 10 -width 30 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 		set ::skin_slider 0
 		set ::skin_scrollbar [add_de1_widget "tabletstyles" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::skin_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(tablet_styles_listbox) $::skin_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
@@ -471,11 +488,11 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 		add_de1_text "languages" 1280 300 -text [translate "Language"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 		#add_de1_text "languages" 1890 790 -text [translate "Language"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-		add_de1_widget "languages" listbox 950 480 { 
+		add_de1_widget "languages" listbox 900 480 { 
 			set ::languages_widget $widget
 			bind $widget <<ListboxSelect>> ::load_language
 			fill_languages_listbox
-		} -background #fbfaff -yscrollcommand {scale_scroll ::language_slider} -font global_font -bd 0 -height 9 -width 18 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+		} -background #fbfaff -yscrollcommand {scale_scroll ::language_slider} -font global_font -bd 0 -height 9 -width 26 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
 
 		set ::language_slider 0
@@ -511,6 +528,8 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		add_de1_text "measurements" 1600 730 -text [translate "Optional features"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			add_de1_widget "measurements" checkbutton 1600 810 {} -text [translate "One-tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(one_tap_mode)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 			add_de1_widget "measurements" checkbutton 1600 870  {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+			add_de1_widget "measurements" checkbutton 1600 930  {} -text [translate "Screen saver clock"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_time_in_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+
 
 		add_de1_text "measurements" 340 500 -text [translate "Screen saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			add_de1_widget "measurements" scale 340 580 {} -from 0 -to 100 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 900] -width [rescale_y_skin 135] -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
@@ -577,7 +596,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 				set ::ble_listbox_widget $widget
 				bind $::ble_listbox_widget <<ListboxSelect>> ::change_bluetooth_device
 				fill_ble_listbox
-			} -background #fbfaff -font Helv_11 -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+			} -background #fbfaff -font $listbox_font -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 	add_de1_text "settings_4" 680 1100 -text [translate "Scale"] -font Helv_7_bold -fill "#7f879a" -justify "left" -anchor "nw"
 		add_de1_variable "settings_4" 1240 1100 -text \[[translate "Remove"]\] -font Helv_7 -fill "#bec7db" -justify "right" -anchor "ne" -textvariable {[if {$::settings(scale_bluetooth_address) != ""} { return \[[translate "Remove"]\]} else {return "" } ] }
@@ -586,7 +605,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 			set ::ble_scale_listbox_widget $widget
 				bind $widget <<ListboxSelect>> ::change_scale_bluetooth_device
 				fill_ble_scale_listbox
-			} -background #fbfaff -font Helv_11 -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+			} -background #fbfaff -font $listbox_font -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 
 
@@ -768,11 +787,6 @@ set pos_profile_label 1010
 set pos_machine_label 1650
 set pos_app_label 2270
 
-set settings_tab_font "Helv_10_bold"
-if {[language] != "en" && [language] != "kr" && [language] != "zh-hans" && [language] != "zh-hant"} {
-	set settings_tab_font "Helv_8_bold"
-}
-
 
 ########################################
 # labels for tab1
@@ -809,8 +823,8 @@ add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settin
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"} 1905 0 2560 188
 
 
-add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
+add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font $botton_button_font -fill "#FFFFFF" -anchor "center"
+add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font $botton_button_font -fill "#FFFFFF" -anchor "center"
 	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; profile_has_changed_set_colors;
 			if {[ifexists ::profiles_hide_mode] == 1} {
 				unset -nocomplain ::profiles_hide_mode 
@@ -823,7 +837,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_fan_temperature_threshold $::settings(fan_threshold)
 				de1_enable_water_level_notifications
 			}
-			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit scale_bluetooth_address language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water"] == 1  || [ifexists ::app_has_updated] == 1} {
+			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit scale_bluetooth_address language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 				set_next_page off message; page_show message

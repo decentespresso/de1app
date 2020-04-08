@@ -228,9 +228,9 @@ proc next_alarm_time { in } {
 
 proc time_format {seconds} {
 	if {$::settings(enable_ampm) == 1} {
-		return [subst {[clock format $seconds -format {%A}] [string trim [clock format $seconds -format {%l:%M %p}]]}]
+		return [subst {[translate [clock format $seconds -format {%A}]] [string trim [clock format $seconds -format {%l:%M %p}]]}]
 	} else {
-		return [subst {[clock format $seconds -format {%A}] [string trim [clock format $seconds -format {%H:%M}]]}]
+		return [subst {[translate [clock format $seconds -format {%A}]] [string trim [clock format $seconds -format {%H:%M}]]}]
 	}
 }
 

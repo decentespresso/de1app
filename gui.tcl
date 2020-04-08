@@ -180,7 +180,37 @@ proc set_de1_screen_saver_directory {{dirname {}}} {
 	foreach name $names {
 		.can create image {0 0} -anchor nw -image $names  -tag [list saver $name] -state hidden
 	}
+
+	setup_display_time_in_screen_saver
 }	
+
+proc setup_display_time_in_screen_saver {} {
+
+	if {$::settings(display_time_in_screen_saver) != 1} {
+		return
+	}
+
+	set ::clocktime [clock seconds]
+	set ::previous_clocktime [clock seconds]
+	# might want to determine dominant color of screen saver in order to use a visible text color in each case http://www.fmwconcepts.com/imagemagick/dominantcolor/index.php
+	set ::saver_clock [add_de1_variable "saver" 1280 900 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#FFFFFF" -width 520 -textvariable {[time_format $::clocktime]}]
+
+	after 1000 saver_clock_move
+	proc saver_clock_move {} {
+		set ::clocktime [clock seconds]
+		if {[time_format $::clocktime] != [time_format $::previous_clocktime]} {
+
+			set newx [expr {180 + (rand() * [rescale_x_skin 1800])}]
+			set newy [expr {140 + (rand() * [rescale_x_skin 1000])}]
+
+			.can coords $::saver_clock "$newx $newy"
+			set ::previous_clocktime $::clocktime 
+		}
+		after 1000 saver_clock_move
+		
+	}
+
+}
 
 proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 	set yrange [expr {$y1 - $y0}]

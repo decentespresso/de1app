@@ -84,7 +84,7 @@ add_de1_widget "describe_espresso0" listbox 80 420 {
 	bind $widget <<ListboxSelect>> ::load_god_shot
 
 
-} -background #fbfaff -yscrollcommand {scale_scroll ::gotshots_slider} -font Helv_9 -bd 0 -height $godshots_listbox_height -width 33 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+} -background #fbfaff -yscrollcommand {scale_scroll ::gotshots_slider} -font $listbox_font -bd 0 -height $godshots_listbox_height -width 33 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
 set ::gotshots_slider 0
 
@@ -135,7 +135,7 @@ add_de1_text "describe_espresso" 80 360 -text [translate "Enjoyment"] -font Helv
 #	add_de1_variable "describe_espresso" 1500 980 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_aftertaste)]}
 
 	add_de1_text "describe_espresso" 80 740 -text [translate "Notes"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" multiline_entry 80 820 {} -width 50 -height 8 -font Helv_9  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(espresso_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
+	add_de1_widget "describe_espresso" multiline_entry 80 820 {} -width 50 -height 8 -font Helv_8  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(espresso_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 
 add_de1_text "describe_espresso2" 80 360 -text [translate "Grinder"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"

@@ -42,6 +42,7 @@ add_de1_page "ghc_steam ghc_espresso ghc_flush ghc_hotwater" "ghc.jpg" "default"
 
 set_de1_screen_saver_directory "[homedir]/saver"
 
+
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/skins/default/de1_skin_settings.tcl"
 

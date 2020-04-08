@@ -560,8 +560,7 @@ proc translation_langs_array {} {
         de Deutsch \
         de-ch Schwiizerd\u00FCtsch \
         it italiano \
-        ar "Arabic" \
-        arb "Arabic for Android" \
+        ar "Arabic (with Dubai font)" \
         da "dansk" \
         sv "svenska" \
         no "Nynorsk" \
@@ -615,7 +614,7 @@ proc translate {english} {
                 #log_to_debug_file "English: '$available([language])'"
                 if {[language] == "ar" && ($::android == 1 || $::undroid == 1)} {
                     # use the "arb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
-                    #return $available(arb)
+                    return $available(arb)
                 }
 
                 return $available([language])
