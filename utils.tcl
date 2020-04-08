@@ -171,6 +171,7 @@ proc setup_environment {} {
         font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 35)}] 
         font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 37)}]
         font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
+        font create Helv_30 -family $helvetica_font -size [expr {int($fontm * 56)}]
 
         # enable swipe gesture translating, to scroll through listboxes
         # sdltk touchtranslate 1
@@ -275,6 +276,7 @@ proc setup_environment {} {
         font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 45)}]
         font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 48)}]
         font create Helv_30_bold -family $boldfont -size [expr {int($fontm * 69)}]
+        font create Helv_30 -family $regularfont -size [expr {int($fontm * 72)}]
 
         font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 
         android_specific_stubs
