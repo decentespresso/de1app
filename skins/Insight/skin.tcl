@@ -95,8 +95,8 @@ set listbox_font "Helv_10"
 
 if {[language] == "ar"} {
 	set green_button_font "Helv_17_bold"
-	set label_font "Helv_17_bold"
-	set listbox_font "Helv_8_bold"
+	set label_font "Helv_15_bold"
+	set listbox_font "Helv_8"
 } elseif {[language] == "zh-hans" || [language] == "zh-hant" || [language] == "kr"} {
 	set green_button_font "Helv_17_bold"
 	set label_font "Helv_15_bold"
