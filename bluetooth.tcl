@@ -589,7 +589,6 @@ proc start_firmware_update {} {
 		return
 	}
 
-
 	if {$::de1(currently_erasing_firmware) == 1} {
 		msg "Already erasing firmware"
 		return

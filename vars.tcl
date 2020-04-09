@@ -2963,7 +2963,6 @@ proc check_firmware_update_is_available {} {
 		return ""
 	}
 
-
 	if {[info exists ::de1(firmware_crc)] != 1} {
 		set ::de1(firmware_crc) [crc::crc32 -filename [fwfile]]
 	}
