@@ -226,11 +226,16 @@ proc next_alarm_time { in } {
 	return $alarm
 }
 
-proc time_format {seconds} {
+proc time_format {seconds {crlf 0}} {
+	set crlftxt ""
+	if {$crlf == 1} {
+		set crlftxt \n
+	}
+
 	if {$::settings(enable_ampm) == 1} {
-		return [subst {[translate [clock format $seconds -format {%A}]] [string trim [clock format $seconds -format {%l:%M %p}]]}]
+		return [subst {[translate [clock format $seconds -format {%A}]]$crlftxt[string trim [clock format $seconds -format {%l:%M %p}]]}]
 	} else {
-		return [subst {[translate [clock format $seconds -format {%A}]] [string trim [clock format $seconds -format {%H:%M}]]}]
+		return [subst {[translate [clock format $seconds -format {%A}]]$crlftxt[string trim [clock format $seconds -format {%H:%M}]]}]
 	}
 }
 

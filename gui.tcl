@@ -193,9 +193,9 @@ proc setup_display_time_in_screen_saver {} {
 	set ::clocktime [clock seconds]
 	set ::previous_clocktime 0
 	
-	set ::saver_clock2 [add_de1_variable "saver" 1278 898 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#CCCCCC" -width 2000 -textvariable {[time_format $::clocktime]}]
-	set ::saver_clock3 [add_de1_variable "saver" 1282 902 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#666666" -width 2000 -textvariable {[time_format $::clocktime]}]
-	set ::saver_clock [add_de1_variable "saver" 1280 900 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#F8F8F8" -width 2000 -textvariable {[time_format $::clocktime]}]
+	set ::saver_clock2 [add_de1_variable "saver" 1278 898 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#CCCCCC" -width 2000 -textvariable {[time_format $::clocktime 1]}]
+	set ::saver_clock3 [add_de1_variable "saver" 1282 902 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#666666" -width 2000 -textvariable {[time_format $::clocktime 1]}]
+	set ::saver_clock [add_de1_variable "saver" 1280 900 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#F8F8F8" -width 2000 -textvariable {[time_format $::clocktime 1]}]
 
 	after 1000 saver_clock_move
 	proc saver_clock_move {} {
@@ -204,8 +204,8 @@ proc setup_display_time_in_screen_saver {} {
 		if {[time_format $::clocktime] != [time_format $::previous_clocktime] || $force == 1} {
 
 
-			set newx [expr {[rescale_x_skin 800] + (rand() * [rescale_x_skin 1000])}]
-			set newy [expr {[rescale_y_skin 60] + (rand() * [rescale_y_skin 1400])}]
+			set newx [expr {[rescale_x_skin 600] + (rand() * [rescale_x_skin 1400])}]
+			set newy [expr {[rescale_y_skin 200] + (rand() * [rescale_y_skin 1200])}]
 			set newx2 [expr {$newx - [rescale_x_skin 2]}]
 			set newy2 [expr {$newy - [rescale_y_skin 2]}]
 
