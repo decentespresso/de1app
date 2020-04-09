@@ -34,7 +34,7 @@ proc horizontal_clicker {bigincrement smallincrement varname minval maxval x y x
 }
 
 proc swdark2_filename {} {
-    set fn "[homedir]/skins/SWDark3/userdata/swdark2_usersettings.tdb"
+    set fn "[skin_directory]/userdata/swdark2_usersettings.tdb"
     return $fn
 }
 
@@ -105,4 +105,20 @@ proc stopatweight {} {
     } else {
     set ::stopatweight $::settings(final_desired_shot_weight)g
     }
+}
+
+
+proc swdark_setyaxis {} {
+	set var ::swdark2_settings(sw_y_axisscale)
+    if {[info exists $var]} {
+	} else {
+		set myList {0 1 3 5 7 9 11 13 15 17 19}
+		if {[lsearch -exact $myList $::settings(zoomed_y_axis_scale)] >= 0} {
+		set ::swdark2_settings(sw_y_axisscale) 12
+		save_swdark2_settings
+		} else {
+		set ::swdark2_settings(sw_y_axisscale) $::settings(zoomed_y_axis_scale)
+		save_swdark2_settings
+		}
+	}
 }

@@ -42,7 +42,7 @@ set ::chartgodtempcol "#FFB9AD"
 #set ::detailtextcol "#969eb1"
 set ::detailtextcol "#9f9f9f"
 set ::detailtextheadingcol "#ffffff"
-set ::zoomed_y2_axis_scale "6"
+
 
 load_font_obsolete "helveticabold" "[skin_directory]/helveticabold.ttf" 24
 load_font_obsolete "helveticabold2" "[skin_directory]/helveticabold2.ttf" 16
@@ -57,13 +57,17 @@ load_font_obsolete "helveticabold2" "[skin_directory]/helveticabold2.ttf" 16
 #puts "debugging: $::debugging"
 
 package require de1plus 1.0
-package ifneeded swdark2_functions 1.0 [list source [file join "./skins/SWDark3/" swdark2_functions.tcl]]
+package ifneeded swdark2_functions 1.0 [list source [file join "[skin_directory]/swdark2_functions.tcl"]]
 #package ifneeded swdark2_usersettings 1.0 [list source [file join "./skins/SWDark2/userdata/" swdark2_usersettings.tdb]]
 package require swdark2_functions 1.0
 #package require swdark2_usersettings 1.0
 
 #swdark2_filename
 load_swdark2_settings
+
+#set zoomed graph y/y2 axis
+swdark_setyaxis
+set ::zoomed_y2_axis_scale [expr {$::swdark2_settings(sw_y_axisscale) / 2}]
 
 # example of loading a custom font (you need to indicate the TTF file and the font size)
 #load_font "Northwood High" "[skin_directory]/sample.ttf" 60
@@ -104,34 +108,55 @@ add_de1_page "preheat_2" "preheat_2.png"
 add_de1_page "preheat_3" "preheat_3.png"
 add_de1_page "preheat_4" "preheat_4.png"
 
-add_de1_page "sleep" "sleep.png" "SWDark3"
-add_de1_page "tankempty refill" "fill_tank.png" "SWDark3"
+add_de1_page "sleep" "sleep.png"
+add_de1_page "tankempty refill" "fill_tank.png"
 
-# most skins will not bother replacing these graphics 
+# most skins will not bother replacing these graphics
+#add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
-add_de1_page "message calibrate" "settings_message.png" "default"
+#add_de1_page "tankempty refill" "fill_tank.jpg" "default"
+add_de1_page "message calibrate infopage tabletstyles languages measurements" "settings_message.png" "default"
 add_de1_page "create_preset" "settings_3_choices.png" "default"
+add_de1_page "descalewarning" "descalewarning.jpg" "default"
+
 add_de1_page "cleaning" "cleaning.jpg" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
+add_de1_page "descale_prepare" "descale_prepare.jpg" "default"
+
 add_de1_page "travel_prepare" "travel_prepare.jpg" "default"
 add_de1_page "travel_do" "travel_do.jpg" "default"
 
+add_de1_page "ghc_steam ghc_espresso ghc_flush ghc_hotwater" "ghc.jpg" "default"
+add_de1_text "ghc_steam" 1990 680 -text "\[      \]\n[translate {Tap here for steam}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
+add_de1_text "ghc_espresso" 1936 950 -text "\[      \]\n[translate {Tap here for espresso}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
+add_de1_text "ghc_flush" 1520 840 -text "\[      \]\n[translate {Tap here to flush}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 750
+add_de1_text "ghc_hotwater" 1630 600 -text "\[      \]\n[translate {Tap here for hot water}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 820
+add_de1_button "ghc_steam ghc_espresso ghc_flush ghc_hotwater" {say [translate {Ok}] $::settings(sound_button_in); page_show off;} 0 0 2560 1600 
+
+# out of water page
+add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 0 0 2560 1400 
+	add_de1_text "tankempty refill" 1280 750 -text [translate "Please add water"] -font Helv_20_bold -fill "#CCCCCC" -justify "center" -anchor "center" -width 900
+	add_de1_variable "tankempty refill" 1280 900 -justify center -anchor "center" -text "" -font Helv_10 -fill "#CCCCCC" -width 520 -textvariable {[refill_kit_retry_button]} 
+	add_de1_text "tankempty" 340 1504 -text [translate "Exit App"] -font Helv_10_bold -fill "#AAAAAA" -anchor "center" 
+	add_de1_text "tankempty" 2220 1504 -text [translate "Ok"] -font Helv_10_bold -fill "#AAAAAA" -anchor "center" 
+	add_de1_button "tankempty" {say [translate {Exit}] $::settings(sound_button_in); .can itemconfigure $::message_label -text [translate "Going to sleep"]; .can itemconfigure $::message_button_label -text [translate "Wait"]; after 10000 {.can itemconfigure $::message_button_label -text [translate "Ok"]; }; set_next_page off message; page_show message; after 500 app_exit} 0 1402 800 1600
+	add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 1760 1402 2560 1600
+
+# show descale warning after steam, if clogging of the steam wand is detected
+add_de1_text "descalewarning" 1280 1310 -text [translate "Your steam wand is clogging up"] -font Helv_17_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
+add_de1_text "descalewarning" 1280 1480 -text [translate "It needs to be descaled soon"] -font Helv_15_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
+add_de1_button "descalewarning" {say [translate {descale}] $::settings(sound_button_in); show_settings descale_prepare} 0 0 2560 1600 
+
+# cleaning and descaling
+add_de1_text "cleaning" 1280 80 -text [translate "Cleaning"] -font Helv_20_bold -fill "#EEEEEE" -justify "center" -anchor "center" -width 900
+add_de1_text "descaling" 1280 80 -text [translate "Descaling"] -font Helv_20_bold -fill "#CCCCCC" -justify "center" -anchor "center" -width 900
+
 
 # new screensavers while we're at it. 
-set_de1_screen_saver_directory "./skins/SWDark3/screen_saver"
+set_de1_screen_saver_directory "[skin_directory]/screen_saver"
  
 source "[homedir]/skins/default/de1_skin_settings.tcl"
 
-# out of water page
-#don't need the text, this is happening via image
-#add_de1_text "tankempty refill" 1280 750 -text [translate "Out of water"] -font Helv_10_bold -fill "#AAAAAA" -justify "center" -anchor "center" -width 900
-#add_de1_variable "tankempty refill" 1280 900 -justify center -anchor "center" -text "" -font Helv_10 -fill "#CCCCCC" -width 520 -textvariable {[refill_kit_retry_button]} 
-
-add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 0 0 2560 1600 
-
-# cleaning and descaling
-add_de1_text "cleaning" 1280 80 -text [translate "Cleaning"] -font Helv_10_bold -fill "#EEEEEE" -justify "center" -anchor "center" -width 900
-add_de1_text "descaling" 1280 80 -text [translate "Descaling"] -font Helv_10_bold -fill "#CCCCCC" -justify "center" -anchor "center" -width 900
 
 # the font used in the big round green buttons needs to fit appropriately inside the circle, 
 # and thus is dependent on the translation of the words inside the circle
@@ -358,18 +383,20 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 300 {
 			# left column clicked on chart, indicates zoom
 
 			if {%y > [rescale_y_skin 726]} {
-				if {$::settings(zoomed_y_axis_scale) < 12} {
-					# 12 is the max Y axis allowed
-					incr ::settings(zoomed_y_axis_scale) 2
+				if {$::swdark2_settings(sw_y_axisscale) < 14} {
+					# 14 is the max Y axis allowed
+					incr ::swdark2_settings(sw_y_axisscale) 2
 					incr ::zoomed_y2_axis_scale
+					save_swdark2_settings
 				}
 			} else {
-				if {$::settings(zoomed_y_axis_scale) > 2} {
-					incr ::settings(zoomed_y_axis_scale) -2
+				if {$::swdark2_settings(sw_y_axisscale) > 2} {
+					incr ::swdark2_settings(sw_y_axisscale) -2
 					incr ::zoomed_y2_axis_scale -1
+					save_swdark2_settings
 				}
 			}
-			%W axis configure y -max $::settings(zoomed_y_axis_scale)
+			%W axis configure y -max $::swdark2_settings(sw_y_axisscale)
 			%W axis configure y2 -max $::zoomed_y2_axis_scale
 			
 		}  else {
@@ -413,8 +440,8 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 300 {
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color $::chartprofilestepzoomcol -pixels 0 ; 
 
 	$widget axis configure x -color #8b8b8b -tickfont Helv_7_bold; 
-	$widget axis configure y -color #008c4c -tickfont Helv_7_bold -min 0.0 -max $::settings(zoomed_y_axis_scale) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}  -hide 0;
-	$widget axis configure y2 -color #206ad4 -tickfont Helv_7_bold -min 0.0 -max $::zoomed_y2_axis_scale -subdivisions 2 -majorticks {0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6} -hide 0; 
+	$widget axis configure y -color #008c4c -tickfont Helv_7_bold -min 0.0 -max $::swdark2_settings(sw_y_axisscale) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14}  -hide 0;
+	$widget axis configure y2 -color #206ad4 -tickfont Helv_7_bold -min 0.0 -max $::zoomed_y2_axis_scale -subdivisions 2 -majorticks {0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6 6.5 7} -hide 0;
 
 	# grid command not always available outside of Android, so catch it so that it doesn't break the app when running-non-android
 	catch {
@@ -796,15 +823,15 @@ if {$::settings(insight_skin_show_embedded_profile) == 1} {
 	add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top_orig + (15 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7_bold -fill #ffffff -width [rescale_x_skin 520] -textvariable {[profile_type_text]} 
 	
 
-	set ::globals(widget_current_profile_name) [add_de1_variable "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (9.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 450] -textvariable {$::settings(profile_title)} ]
+	set ::globals(widget_current_profile_name) [add_de1_variable "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (9.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 730] -textvariable {$::settings(profile_title)} ]
 	
 
-	set ::globals(widget_current_profile_name_espresso) [add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top_orig + (16 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 450] -textvariable {$::settings(profile_title)} ]
+	set ::globals(widget_current_profile_name_espresso) [add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top_orig + (16 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 730] -textvariable {$::settings(profile_title)} ]
 	
 	#hard coded location versus varibales of  $column1_pos [expr {$pos_top + (15.5 * $spacer)}]
 
 	# current frame description, not yet implemented
-	 add_de1_variable "espresso espresso_zoomed" 1950 1487 -justify left -anchor "nw" -text "" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 520] -textvariable {$::settings(current_frame_description)} 
+	 add_de1_variable "espresso espresso_zoomed" 1950 1487 -justify left -anchor "nw" -text "" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 5730] -textvariable {$::settings(current_frame_description)} 
 
 
 	#add_de1_variable "espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (9 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7_bold -fill $dark -width [rescale_x_skin 520] -textvariable {[profile_type_text]} 
@@ -918,7 +945,7 @@ add_de1_variable "water" 2225 455 -text [translate "STOP"] -font $green_button_f
 
 add_de1_text "water_1 water water_3" 2225 525 -text [translate "WATER"] -font Helv_10 -fill "#9f9f9f" -anchor "center" 
 add_de1_button "water_1 water_3" {say [translate {Hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1929 190 2529 790
-add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set_next_page off water_3 ; start_idle} 1929 190 2529 790
+add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set_next_page off water_1 ; start_idle} 1929 190 2529 790
 
 # future feature
 #add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
@@ -1056,6 +1083,23 @@ add_de1_variable "steam steam_3" 959.74 829 -text "" -font Helv_10_bold -fill "#
 		add_de1_variable "steam" 2480 1001 -justify left -anchor "ne" -font Helv_8 -text "" -fill $::detailtextcol -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
 	add_de1_text "steam" 1950 1041 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill $::detailtextheadingcol -width [rescale_x_skin 520]
 		add_de1_variable "steam" 2480 1041 -justify left -anchor "ne" -text "" -font Helv_8 -fill $::detailtextcol -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+
+
+proc skins_page_change_due_to_de1_state_change { textstate } {
+	page_change_due_to_de1_state_change $textstate
+
+	if {$textstate == "Steam"} {
+		set_next_page off steam_1; 
+	} elseif {$textstate == "Espresso"} {
+		set_next_page off espresso_3; 
+	} elseif {$textstate == "HotWater"} {
+		set_next_page off water_1; 
+	} elseif {$textstate == "HotWaterRinse"} {
+		set_next_page off preheat_1; 
+		after [expr "\[round_to_integer $::settings(preheat_volume)] * 1000"] {set_next_page off preheat_1; start_idle}
+	}
+}
+
 
 profile_has_changed_set_colors
 # feature disabled until flowmeter reporting over BLE is implemented
