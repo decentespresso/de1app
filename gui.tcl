@@ -545,9 +545,18 @@ proc platform_button_press {} {
 	global android 
 	if {$android == 1} {
 		#return {<<FingerUp>>}
-		return {<ButtonPress>}
+		return {<ButtonPress-1>}
 	}
-	return {<ButtonPress>}
+	return {<ButtonPress-1>}
+}
+
+proc platform_button_long_press {} {
+	global android 
+	if {$android == 1} {
+		#return {<<FingerUp>>}
+		return {<ButtonPress-3>}
+	}
+	return {<ButtonPress-3>}
 }
 
 proc platform_finger_down {} {
@@ -662,6 +671,7 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 	regsub {%y1} $tclcode $ry1 tclcode
 
 	.can bind $btn_name [platform_button_press] $tclcode
+	.can bind $btn_name [platform_button_long_press] $tclcode
 
 	if {[string first mousemove $options] != -1} {
 		#puts "mousemove detected"
