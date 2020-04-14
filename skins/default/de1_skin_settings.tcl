@@ -50,6 +50,9 @@ if {[de1plus]} {
 add_de1_page "settings_3" "settings_3.png" "default"
 add_de1_page "settings_4" "settings_4.png" "default"
 
+set ::settings(minimum_water_temperature) 1	
+
+
 #set ::active_settings_tab settings_1
 
 # this is the message page
@@ -217,6 +220,7 @@ if {[de1plus]} {
 		set ::espresso_pressure_decline_widget [add_de1_widget "settings_2" scale 2360 850 {} -to 0 -from 10 -background $::settings(color_stage_3) -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 470]  -width [rescale_y_skin 150] -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 		set ::espresso_pressure_decline_widget_label [add_de1_variable "settings_2" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(pressure_end)]}]
 		
+
 	if {$::settings(enable_fahrenheit) == 1} {
 		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.555556 0.555556 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1 %b} 2404 192 2590 750 ""
 	} else {
