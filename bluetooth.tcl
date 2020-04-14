@@ -1211,7 +1211,6 @@ proc android_8_or_newer {} {
 	#msg "Is this Android 8 or newer? '$test'"
 	return $test
 	
-
 	#msg "android_8_or_newer failed and reports: 0"
 	#return 0
 }
