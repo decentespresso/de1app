@@ -17,9 +17,9 @@ preinfusion_guarantee 1
 preinfusion_stop_pressure 1.5
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 1
+profile_hide 0
 profile_language en
-profile_notes {Scott Rao's 15g profile for pouur overs using the Decent pour over basket.}
+profile_notes {Scott Rao's 15g profile for pour overs using the Decent pour over basket.}
 profile_title {V60 15g}
 settings_profile_type settings_2c
 water_temperature 80
