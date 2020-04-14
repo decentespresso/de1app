@@ -1205,7 +1205,8 @@ proc android_8_or_newer {} {
 	}
 	set test 0
 	catch {
-		set test [expr {$androidprops(version.release) >= 8}]
+		# john note: Android 7 behaves like 8
+		set test [expr {$androidprops(version.release) >= 7}]
 	}
 	#msg "Is this Android 8 or newer? '$test'"
 	return $test
