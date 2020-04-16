@@ -671,7 +671,10 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 	regsub {%y1} $tclcode $ry1 tclcode
 
 	.can bind $btn_name [platform_button_press] $tclcode
-	.can bind $btn_name [platform_button_long_press] $tclcode
+	
+	if {$::settings(disable_long_press) != 1 } {
+		.can bind $btn_name [platform_button_long_press] $tclcode
+	}
 
 	if {[string first mousemove $options] != -1} {
 		#puts "mousemove detected"

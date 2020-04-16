@@ -175,6 +175,7 @@ array set ::settings {
 	language en
 	display_time_in_screen_saver 0
 	steam_over_temp_threshold 180
+	disable_long_press 0
 	steam_over_pressure_threshold 5
 	automatically_ble_reconnect_forever_to_scale 0
 	chart_total_shot_flow 1
