@@ -547,6 +547,7 @@ proc make_de1_dir {} {
         profiles/Londinium-R-by-Damian.tcl *
         profiles/Advanced\ spring\ lever.tcl *
         profiles/Blooming\ espresso.tcl *
+        profiles/Blooming\ allonge.tcl *
         profiles/Classic\ Italian\ espresso.tcl *
         profiles/Flow\ profile\ for\ milky\ drinks.tcl *
         profiles/Flow\ profile\ for\ straight\ espresso.tcl *
