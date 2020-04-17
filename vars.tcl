@@ -2600,7 +2600,8 @@ proc load_settings_vars {fn} {
 
 	array set ::settings [array get temp_settings]
 
-	
+	# john disabling LONG PRESS support as it appears to be buggy on tablets https://3.basecamp.com/3671212/buckets/7351439/messages/2566269076#__recording_2595312790
+	set ::setting(disable_long_press) 1
 
 	update_de1_explanation_chart
 
