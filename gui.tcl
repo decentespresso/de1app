@@ -1358,12 +1358,20 @@ proc page_display_change {page_to_hide page_to_show} {
 proc update_de1_explanation_chart_soon  { {context {}} } {
 	# we can optionally delay displaying the chart until data from the slider stops coming
 	update_de1_explanation_chart
-	#return
-	#after cancel update_de1_explanation_chart
-	#after 5 update_de1_explanation_chart
+	return
+	
+	#after 10 {after cancel update_de1_explanation_chart; after idle update_de1_explanation_chart}
+	if {[info exists ::chart_update_id] == 1} {
+		after cancel $::chart_update_id; 
+		unset -nocomplain ::chart_update_id
+	}
+
+	set ::chart_update_id [after idle update_de1_explanation_chart]
+	#after idle update_de1_explanation_chart
 }
 
 proc update_de1_explanation_chart { {context {}} } {
+	puts "update_de1_explanation_chart"
 	#puts "update_de1_explanation_chart 1: $::settings(settings_profile_type)"
 
 	espresso_de1_explanation_chart_elapsed length 0

@@ -2486,8 +2486,25 @@ proc preview_profile {} {
 	update_onscreen_variables
 	profile_has_not_changed_set
 
+	# as of v1.3 people can start an espresso from the group head, which means their currently selected 
+	# profile needs to sent right away to the DE1, in case the person taps the GH button to start espresso w/o leaving settings
+	send_de1_settings_soon
+
 #set ::settings(profile_notes) [clock seconds]
 }
+
+
+proc send_de1_settings_soon  {} {
+	if {[info exists ::save_settings_to_de1_id] == 1} {
+		after cancel $::save_settings_to_de1_id; 
+		unset -nocomplain ::save_settings_to_de1_id
+		msg "cancelled extra de1_send"
+	}
+
+	set ::save_settings_to_de1_id [after 500 save_settings_to_de1]
+}
+
+
 
 proc profile_has_changed_set_colors {} {
 	#msg "profile_has_changed_set_colors : $::settings(profile_has_changed) [stacktrace]"
