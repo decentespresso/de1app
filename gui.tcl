@@ -249,7 +249,23 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 
 proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1 {b 0} } {
 	# b = which button was tapped
-	msg "Button $b"
+	msg "Var: $varname : Button $b"
+
+	##################################################
+	# if this is a fast double-tap, then treat it like a long tap (button-3) 
+	#set key [::crc::crc32 $varname]
+	set millinow [clock milliseconds]
+	set key $varname
+	set prevtime [ifexists ::last_click_time($key)]
+	if {$prevtime != ""} {
+		# check for a fast double-varName
+		if {[expr {$millinow - $prevtime}] < 250} {
+			msg "Fast button double-tap on $varname"
+			set b 3
+		}
+	}
+	set ::last_click_time($key) $millinow
+	##################################################
 
 	set yrange [expr {$y1 - $y0}]
 	set yoffset [expr {$y - $y0}]
