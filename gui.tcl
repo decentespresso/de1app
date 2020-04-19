@@ -251,11 +251,12 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 	# b = which button was tapped
 	msg "Var: $varname : Button $b  $x $y $x0 $y0 $x1 $y1 "
 
+	# on android we track finger-down, instead of button-press, as it gives us lower latency by avoding having to distinguish a potential gesture from a tap
 	global android
 	if {$android == 1} {
+		# finger down gives a http://blog.tcl.tk/39474
 		set x [expr {$x * [winfo screenwidth .] / 10000}]
 		set y [expr {$y * [winfo screenheight .] / 10000}]
-		#bind . "<<FingerDown>>" {set ::btn "fingerdown %x %y [expr { %x * [winfo screenwidth .] / 10000}]  [expr { %y * [winfo screenheight .] / 10000}]"}
 	}
 
 	##################################################
@@ -285,21 +286,19 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 	set twothirdpoint [expr {$y1 - ($yrange / 3)}]
 
 	if {[info exists $varname] != 1} {
-		# if the variable doesn't yet exist, initiialize it with a zero value
+		# if the variable doesn't yet exist, initialize it with a zero value
 		set $varname 0
 	}
 	set currentval [subst \$$varname]
 	set newval $currentval
 
 	if {$y < $onethirdpoint} {
-		#borg toast "up $x $y $x0 $y0 $x1 $y1 "
 		if {$b == 3} {
 			set newval [expr "1.0 * \$$varname + $bigincrement"]
 		} else {
 			set newval [expr "1.0 * \$$varname + $smallincrement"]
 		}
 	} elseif {$y > $twothirdpoint} {
-		#borg toast "down $x $y $x0 $y0 $x1 $y1 "
 		if {$b == 3} {
 			set newval [expr "1.0 * \$$varname - $bigincrement"]
 		} else {
