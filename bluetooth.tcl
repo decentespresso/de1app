@@ -1144,7 +1144,9 @@ proc de1_read_calibration {calib_target {factory 0} } {
 
 }
 
-proc de1_read_version {} {
+proc de1_read_version_obsolete {} {
+	msg "LIKELY OBSOLETE BLE FUNCTION: DO NOT USE"
+
 	#if {$::de1(device_handle) == "0"} {
 	#	msg "error: de1 not connected"
 	#	return

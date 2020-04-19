@@ -249,7 +249,14 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 
 proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1 {b 0} } {
 	# b = which button was tapped
-	msg "Var: $varname : Button $b"
+	msg "Var: $varname : Button $b  $x $y $x0 $y0 $x1 $y1 "
+
+	global android
+	if {$android == 1} {
+		set x [expr {$x * [winfo screenwidth .] / 10000}]
+		set y [expr {$y * [winfo screenheight .] / 10000}]
+		#bind . "<<FingerDown>>" {set ::btn "fingerdown %x %y [expr { %x * [winfo screenwidth .] / 10000}]  [expr { %y * [winfo screenheight .] / 10000}]"}
+	}
 
 	##################################################
 	# if this is a fast double-tap, then treat it like a long tap (button-3) 
@@ -259,7 +266,7 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 	set prevtime [ifexists ::last_click_time($key)]
 	if {$prevtime != ""} {
 		# check for a fast double-varName
-		if {[expr {$millinow - $prevtime}] < 250} {
+		if {[expr {$millinow - $prevtime}] < 200} {
 			msg "Fast button double-tap on $varname"
 			set b 3
 		}
@@ -274,6 +281,9 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 	set onequarterpoint [expr {$y0 + ($yrange / 4)}]
 	set threequarterpoint [expr {$y1 - ($yrange / 4)}]
 
+	set onethirdpoint [expr {$y0 + ($yrange / 3)}]
+	set twothirdpoint [expr {$y1 - ($yrange / 3)}]
+
 	if {[info exists $varname] != 1} {
 		# if the variable doesn't yet exist, initiialize it with a zero value
 		set $varname 0
@@ -281,13 +291,15 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 	set currentval [subst \$$varname]
 	set newval $currentval
 
-	if {$y < $midpoint} {
+	if {$y < $onethirdpoint} {
+		#borg toast "up $x $y $x0 $y0 $x1 $y1 "
 		if {$b == 3} {
 			set newval [expr "1.0 * \$$varname + $bigincrement"]
 		} else {
 			set newval [expr "1.0 * \$$varname + $smallincrement"]
 		}
-	} else {
+	} elseif {$y > $twothirdpoint} {
+		#borg toast "down $x $y $x0 $y0 $x1 $y1 "
 		if {$b == 3} {
 			set newval [expr "1.0 * \$$varname - $bigincrement"]
 		} else {
@@ -559,10 +571,13 @@ proc install_this_app_icon_beta {} {
 
 proc platform_button_press {} {
 	global android 
+	global undroid
+	#return {<Motion>}
 	if {$android == 1} {
-		#return {<<FingerUp>>}
-		return {<ButtonPress-1>}
+		return {<<FingerDown>>}
+		#return {<ButtonPress-1>}
 	}
+	#return {<Motion>}
 	return {<ButtonPress-1>}
 }
 
@@ -578,7 +593,7 @@ proc platform_button_long_press {} {
 proc platform_finger_down {} {
 	global android 
 	if {$android == 1} {
-		return {<Motion>}
+		return {<<FingerDown>>}
 	}
 	return {<Motion>}
 }
