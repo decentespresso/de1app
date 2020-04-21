@@ -1,6 +1,6 @@
 package provide swdark_functions 4.0
 
-proc horizontal_clicker {bigincrement smallincrement varname minval maxval inx iny x0 y0 x1 y1} {
+proc horizontal_clicker_obs {bigincrement smallincrement varname minval maxval inx iny x0 y0 x1 y1} {
 
 	set x [translate_coordinates_finger_down_x $inx]
 	set y [translate_coordinates_finger_down_y $iny]
