@@ -298,11 +298,15 @@ add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([r
 # zoomed espresso
 add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 	bind $widget [platform_button_press] { 
+
+		set x [translate_coordinates_finger_down_x %x]
+		set y [translate_coordinates_finger_down_y %y]
+
 		#msg "100 = [rescale_y_skin 200] = %y = [rescale_y_skin 726]"
-		if {%x < [rescale_y_skin 800]} {
+		if {$x < [rescale_y_skin 800]} {
 			# left column clicked on chart, indicates zoom
 
-			if {%y > [rescale_y_skin 726]} {
+			if {$y > [rescale_y_skin 726]} {
 				if {$::settings(zoomed_y_axis_scale) < 15} {
 					# 15 is the max Y axis allowed
 					incr ::settings(zoomed_y_axis_scale)

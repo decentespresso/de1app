@@ -246,34 +246,47 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 
 }
 
+# on android we track finger-down, instead of button-press, as it gives us lower latency by avoding having to distinguish a potential gesture from a tap
+# finger down gives a http://blog.tcl.tk/39474
+proc translate_coordinates_finger_down_x { x } {
 
-proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1 {b 0} } {
-	# b = which button was tapped
-	msg "Var: $varname : Button $b  $x $y $x0 $y0 $x1 $y1 "
+	if {$::android == 1} {
+	 	return [expr {$x * [winfo screenwidth .] / 10000}]
+	 }
+	 return $x
+}
+proc translate_coordinates_finger_down_y { y } {
 
-	# on android we track finger-down, instead of button-press, as it gives us lower latency by avoding having to distinguish a potential gesture from a tap
-	global android
-	if {$android == 1} {
-		# finger down gives a http://blog.tcl.tk/39474
-		set x [expr {$x * [winfo screenwidth .] / 10000}]
-		set y [expr {$y * [winfo screenheight .] / 10000}]
-	}
+	if {$::android == 1} {
+	 	return [expr {$y * [winfo screenheight .] / 10000}]
+	 }
+	 return $y
+}
 
-	##################################################
+proc is_fast_double_tap { key } {
 	# if this is a fast double-tap, then treat it like a long tap (button-3) 
-	#set key [::crc::crc32 $varname]
+
+	set b 0
 	set millinow [clock milliseconds]
-	set key $varname
 	set prevtime [ifexists ::last_click_time($key)]
 	if {$prevtime != ""} {
 		# check for a fast double-varName
 		if {[expr {$millinow - $prevtime}] < 200} {
-			msg "Fast button double-tap on $varname"
-			set b 3
+			msg "Fast button double-tap on $key"
+			set b 1
 		}
 	}
 	set ::last_click_time($key) $millinow
-	##################################################
+
+	return $b
+}
+
+proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1 {b 0} } {
+	# b = which button was tapped
+	#msg "Var: $varname : Button $b  $x $y $x0 $y0 $x1 $y1 "
+
+	set x [translate_coordinates_finger_down_x $x]
+	set y [translate_coordinates_finger_down_y $y]
 
 	set yrange [expr {$y1 - $y0}]
 	set yoffset [expr {$y - $y0}]
@@ -291,6 +304,13 @@ proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 
 	}
 	set currentval [subst \$$varname]
 	set newval $currentval
+
+	# check for a fast double tap
+	set b 0
+	if {[is_fast_double_tap $varname] == 1} {
+		#set the button to 3, which is the same as a long press, or middle button (ie button 3) on a mouse
+		set b 3
+	}
 
 	if {$y < $onethirdpoint} {
 		if {$b == 3} {
@@ -567,7 +587,6 @@ proc install_this_app_icon_beta {} {
 	}
 }
 
-
 proc platform_button_press {} {
 	global android 
 	global undroid
@@ -594,7 +613,7 @@ proc platform_finger_down {} {
 	if {$android == 1} {
 		return {<<FingerDown>>}
 	}
-	return {<Motion>}
+	return {<ButtonPress-1>}
 }
 
 proc platform_button_unpress {} {
@@ -702,14 +721,14 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 
 	.can bind $btn_name [platform_button_press] $tclcode
 	
-	if {$::settings(disable_long_press) != 1 } {
-		.can bind $btn_name [platform_button_long_press] $tclcode
-	}
+#	if {$::settings(disable_long_press) != 1 } {
+#		.can bind $btn_name [platform_button_long_press] $tclcode
+#	}
 
-	if {[string first mousemove $options] != -1} {
+#	if {[string first mousemove $options] != -1} {
 		#puts "mousemove detected"
-		.can bind $btn_name [platform_finger_down] $tclcode
-	}
+#		.can bind $btn_name [platform_finger_down] $tclcode
+#	}
 
 	foreach displaycontext $displaycontexts {
 		add_visual_item_to_context $displaycontext $btn_name
