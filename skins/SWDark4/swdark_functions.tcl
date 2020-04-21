@@ -1,6 +1,10 @@
 package provide swdark_functions 4.0
 
-proc horizontal_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1} {
+proc horizontal_clicker {bigincrement smallincrement varname minval maxval inx iny x0 y0 x1 y1} {
+
+	set x [translate_coordinates_finger_down_x $inx]
+	set y [translate_coordinates_finger_down_y $iny]
+
 	set xrange [expr {$x1 - $x0}]
 	set xoffset [expr {$x - $x0}]
 	set midpoint [expr {$x0 + ($xrange / 2)}]

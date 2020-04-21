@@ -2,14 +2,18 @@ scale_display_state { }
 scale_display_state_b .
 skale_display_state { }
 skale_display_state_b .
-swbrewratio 2
+sw_y_axisscale 10
+swbrewratio 1.8
 swcoffeedose 20.0
 swcoffeetargetweight 45.0
 swcoffeetargetweightadv 32
 swcoffeetargetweightcombined 55.0
 swflushvol 50
-swsteamoff 100
-swwatertemp 80
+swsteamoff 21
+swstopatvol 32
+swstopatvoladv 0
+swvoltype ::settings(final_desired_shot_volume_advanced)
+swwatertemp 64
 swwatervol 120
 swweighttype ::settings(final_desired_shot_weight_advanced)
 
