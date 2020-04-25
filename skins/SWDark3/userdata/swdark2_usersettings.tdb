@@ -2,4 +2,5 @@ scale_display_state { }
 scale_display_state_b .
 skale_display_state { }
 skale_display_state_b .
+sw_y_axisscale 10
 
