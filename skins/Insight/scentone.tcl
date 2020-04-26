@@ -149,7 +149,7 @@ add_de1_text "describe_espresso2" 80 360 -text [translate "Grinder"] -font Helv_
 	#set slider_trough_color2 #EAEAEA
 	add_de1_text "describe_espresso2" 540 620 -text [translate "Dose weight"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
 	add_de1_widget "describe_espresso2" scale 550 610 {} -to 30 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 630]  -width [rescale_y_skin 150] -variable ::settings(grinder_dose_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "describe_espresso2" 1160 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(grinder_dose_weight)]}
+	add_de1_variable "describe_espresso2" 1160 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement_precise $::settings(grinder_dose_weight)]}
 
 
 
