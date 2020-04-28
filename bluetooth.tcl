@@ -16,7 +16,6 @@ proc read_de1_version {} {
 	catch {
 		userdata_append "read_de1_version" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_01) $::cinstance($::de1(cuuid_01))]
 	}
-
 }
 
 # repeatedly request de1 state
@@ -851,7 +850,6 @@ proc de1_send_waterlevel_settings {} {
 }
 
 
-
 proc run_next_userdata_cmd {} {
 	if {$::android == 1} {
 		# if running on android, only write one BLE command at a time
@@ -870,7 +868,7 @@ proc run_next_userdata_cmd {} {
 		set cmd [lindex $::de1(cmdstack) 0]
 		set cmds [lrange $::de1(cmdstack) 1 end]
 		set result 0
-		msg ">>> [lindex $cmd 0] (-[llength $::de1(cmdstack)])"
+		msg ">>> [lindex $cmd 0] (-[llength $::de1(cmdstack)]) : [lindex $cmd 1]"
 		set errcode [catch {
 		set result [{*}[lindex $cmd 1]]
 			
@@ -883,14 +881,21 @@ proc run_next_userdata_cmd {} {
 	    }
 
 
-		if {$result != 1} {
-			msg "BLE command failed, will retry ($result): [lindex $cmd 1]"
 
-			# john 4/28/18 not sure if we should give up on the command if it fails, or retry it
-			# retrying a command that will forever fail kind of kills the BLE abilities of the app
-			
-			#after 500 run_next_userdata_cmd
-			return 
+		if {$result != 1} {
+
+			if {[string first "invalid handle" $::errorInfo] != -1} {
+				msg "Not retrying this command because BLE handle for the device is now invalid"
+				#after 500 run_next_userdata_cmd
+			} else {
+				msg "BLE command failed, will retry ($result): [lindex $cmd 1]"
+
+				# john 4/28/18 not sure if we should give up on the command if it fails, or retry it
+				# retrying a command that will forever fail kind of kills the BLE abilities of the app
+				
+				after 500 run_next_userdata_cmd
+				return 
+			}
 		}
 
 
@@ -900,6 +905,10 @@ proc run_next_userdata_cmd {} {
 		if {[llength $::de1(cmdstack)] == 0} {
 			msg "BLE command queue is now empty"
 		}
+
+		# try the bluetooth stack in a second, in case there were no bluetooth commands succeeded
+		# and thus the queue doesn't keep getting tried
+		after 1000 run_next_userdata_cmd
 
 	} else {
 		#msg "no userdata cmds to run"

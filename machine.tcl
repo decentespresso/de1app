@@ -118,7 +118,7 @@ array set ::de1 {
 	pour_volume 0
 	water_time_min 1
 	steam_time_min 1
-	steam_time_max 120
+	steam_time_max 250
 	last_ping 0
 	steam_heater_temperature 150
 }
