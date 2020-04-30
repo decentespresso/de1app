@@ -7,7 +7,7 @@ espresso_temperature 100
 final_desired_shot_volume 32
 final_desired_shot_volume_advanced 0
 final_desired_shot_weight 32
-final_desired_shot_weight_advanced 32
+final_desired_shot_weight_advanced 0
 flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_hold 2
@@ -24,7 +24,7 @@ profile_hide 1
 profile_language en
 profile_notes {Scott Rao's 15g profile for pour overs using the Decent pour over basket.}
 profile_title {V60 15g}
-settings_profile_type settings_2c
+settings_profile_type settings_2c2
 tank_desired_water_temperature 30
 water_temperature 80
 
