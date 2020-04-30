@@ -536,13 +536,13 @@ proc start_cleaning {} {
 
 
 proc reset_gui_starting_hot_water_rinse {} {
-	msg "Tell DE1 to start HOT WATER RINSE"
+	#msg "Tell DE1 to start HOT WATER RINSE"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 }
 
 proc start_hot_water_rinse {} {
-	msg "Tell DE1 to start HOT WATER RINSE"
+	msg "Tell DE1 to start HOT WATER RINSE (flush)"
 	de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
 
 	if {$::settings(ghc_is_installed) == 3} {
@@ -733,10 +733,6 @@ proc start_water {} {
 proc start_idle {} {
 	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
-	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
-		ble_connect_to_scale
-	}
-
 	if {$::de1(device_handle) == 0} {
 		update_de1_state "$::de1_state(Idle)\x0"
 		ble_connect_to_de1
@@ -768,6 +764,11 @@ proc start_idle {} {
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 [list update_de1_state "$::de1_state(Idle)\x0"]
+	}
+
+	# moved the scale reconnect to be after the other commands, because otherwise a scale disconnected would interrupt the IDLE command
+	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != "" && [ifexists ::currently_connecting_de1_handle] == 0} {
+		ble_connect_to_scale
 	}
 
 	#msg "sensors: [borg sensor list]"

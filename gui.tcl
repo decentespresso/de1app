@@ -2452,9 +2452,15 @@ proc profile_title {} {
 # f = flush
 # s = steam
 # w = water
+# the CTRL-key version causes the state to arrive as if the DE1 has caused it, such as from the GHC.  
+# This is useful for testing that the GUI responds correctly to GHC caused events.  Note that the
+# "fake DE1" won't kick in when you use the ctrl-key commands. That's intentional, otherwise
+# you might trick yourself into thinking you're handling the events correctly but you have the handlers
+# in the wrong places.
 
 proc handle_keypress {keycode} {
-	#msg "Keypress detected: $keycode"
+	msg "Keypress detected: $keycode"
+
 	if {$keycode == 101} {
 		# e = espresso 
 		start_espresso
@@ -2470,6 +2476,21 @@ proc handle_keypress {keycode} {
 	} elseif {$keycode == 119} {
 		# w = water
 		start_water
+	} elseif {$keycode == 917509} {
+		# ctrl-e = espresso 
+		update_de1_state "$::de1_state(Espresso)\x0"
+	} elseif {$keycode == 3211264} {
+		# ctrl-space = idle
+		update_de1_state "$::de1_state(Idle)\x0"
+	} elseif {$keycode == 196614} {
+		# ctrl-f = flush
+		update_de1_state "$::de1_state(HotWaterRinse)\x0"
+	} elseif {$keycode == 65555} {
+		# ctrl-s = steam
+		update_de1_state "$::de1_state(Steam)\x0"
+	} elseif {$keycode == 851991} {
+		# ctrl-w = water
+		update_de1_state "$::de1_state(HotWater)\x0"
 	}
 }
 
