@@ -9,6 +9,7 @@ proc determine_if_android {} {
 
     set ::android 0
     set ::undroid 0
+    set ::some_droid 0
 
     catch {
         package require BLT
@@ -29,6 +30,7 @@ proc determine_if_android {} {
         # and also to remove the displaying of the Tcl/Tk app bar, which looks weird being on Android
         . configure -bg black -bd 0
         wm attributes . -fullscreen 1
+        set ::some_droid 1
     }
 
 }
