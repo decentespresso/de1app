@@ -1,5 +1,5 @@
-#SWDark theme by Spencer Webb, November 2019, VERSION 4
-#Adapted and inspired by the Insight & Modernist themes.  Thanks John & David V!  
+#SWDark4 theme by Spencer Webb, 30th April 2020
+#Adapted and inspired by the Insight & Modernist themes.  Thanks John, Damian & David V!  
 
 #source "[homedir]/skins/default/standard_includes.tcl"
 
@@ -222,7 +222,7 @@ add_de1_button "home off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 ste
 #add_de1_button "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off off; start_idle} 2173 360 2538 678
 
 #STOP Button when doing something
-add_de1_button "steam espresso espresso_zoomed espresso_zoomed_temperature steam_zoom_3 preheat water espresso_2 preheat_2 steam_2 water_2 steam_zoom" {say [translate {stop}] $::settings(sound_button_in);set_next_page off off; start_idle} 1789 20 2539 678
+add_de1_button "steam espresso espresso_zoomed espresso_zoomed_temperature steam_zoom_3 preheat water espresso_2 preheat_2 steam_2 water_2 steam_zoom" {after cancel {set_next_page off off; start_idle}; set_next_page off off; start_idle} 1789 20 2539 678
 
 
 
