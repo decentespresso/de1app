@@ -217,10 +217,6 @@ proc decent_http_get_to_file {url fn {timeout 30000}} {
 proc read_file {filename} {
     set data ""
 
-    catch {
-        msg "read_file: exists [file exists $filename] - length [file size $filename]"
-    }
-
     set errcode [catch {
         set fn [open $filename]
             fconfigure $fn -translation binary
@@ -234,6 +230,13 @@ proc read_file {filename} {
         catch {
             msg "read_file $::errorInfo"
         }
+    }
+
+    if {$data == ""} {
+        catch {
+            msg "read_file: '$filename' exists [file exists $filename] - length [file size $filename]"
+        }
+
     }
     return $data
 }
