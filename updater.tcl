@@ -216,6 +216,11 @@ proc decent_http_get_to_file {url fn {timeout 30000}} {
 
 proc read_file {filename} {
     set data ""
+
+    catch {
+        msg "read_file: exists [file exists $filename] - length [file size $filename]"
+    }
+
     set errcode [catch {
         set fn [open $filename]
             fconfigure $fn -translation binary
@@ -516,10 +521,19 @@ proc start_app_update {} {
     ##############################################################################################################
 
 
-    set local_manifest [string trim [read_file "[homedir]/manifest.txt"]]
+    set local_manifest [string trim [read_binary_file "[homedir]/manifest.txt"]]
 
     catch {
-        msg "Local manifest has [string length $local_manifest] bytes"
+        msg "Local [homedir]/manifest.txt has [string length $local_manifest] bytes"
+    }
+
+    if {[string length $local_manifest] == 0} {
+        set local_manifest [string trim [read_binary_file "[homedir]/manifest.tdb"]]
+
+        catch {
+            msg "Now using manifest.tdb file.  Local [homedir]/manifest.tdb has [string length $local_manifest] bytes"
+        }
+
     }
 
     # load the local manifest into memory
@@ -759,7 +773,7 @@ proc read_binary_file {filename} {
     set err {}
     set error [catch {set fn [open $filename]} err]
     if {$fn == ""} {
-        #puts "error opening binary file: $filename / '$err' / '$error' / $fn"
+        msg "error opening binary file: $filename / '$err' / '$error' / $fn"
         return ""
     }
     if {$fn == ""} {
