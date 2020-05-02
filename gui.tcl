@@ -2478,6 +2478,10 @@ proc handle_keypress {keycode} {
 		# w = water
 		start_water
 
+	} elseif {($::some_droid != 1 && $keycode == 112) || ($::some_droid == 1 && $keycode == 19)} {
+		# w = water
+		start_sleep
+
 	} elseif {($::some_droid != 1 && $keycode == 50) || ($::some_droid == 1 && $keycode == 31)} {
 		# ctrl-e = espresso or 2 on android
 		update_de1_state "$::de1_state(Espresso)\x0"
