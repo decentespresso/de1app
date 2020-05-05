@@ -2705,6 +2705,9 @@ proc save_profile {} {
 
 
 proc de1plus {} {
+    # all machines are DE1+ now
+    return 1
+
 	#puts "x: [package present de1plus 1.0]"
 	set x 0
 	catch {
