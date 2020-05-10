@@ -1953,10 +1953,6 @@ proc de1_ble_handler { event data } {
 							set ::de1(wrote) 0
 							run_next_userdata_cmd
 
-						} elseif {$cuuid == "0000A00F-0000-1000-8000-00805F9B34FB"} {
-							msg "error"
-							#update_de1_state $value
-							#msg "Confirmed a00f read from DE1: '[remove_null_terminator $value]'"
 						} elseif {$cuuid eq "83CDC3D4-3BA2-13FC-CC5E-106C351A9352"} {
 							# decent scale
 							parse_decent_scale_recv $value vals
