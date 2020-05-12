@@ -60,7 +60,7 @@ set ::message_label [add_de1_text "message" 1280 800 -text "" -font Helv_15_bold
 set ::message_button_label [add_de1_text "message" 1280 1310 -text [translate "Quit"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
 set ::message_button [add_de1_button "message" {say [translate {Quit}] $::settings(sound_button_in); exit} 980 1210 1580 1410 ""]
 
-set ::infopage_label [add_de1_text "infopage" 800 750 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
+set ::infopage_label [add_de1_text "infopage" 1280 800 -text "" -font Helv_10_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
 set ::infopage_button_label [add_de1_text "infopage" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
 set ::infopage_button [add_de1_button "infopage" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off off; page_show off} 980 1210 1580 1410 ""]
 

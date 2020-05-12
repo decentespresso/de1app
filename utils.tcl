@@ -306,10 +306,25 @@ proc setup_environment {} {
     ############################################
 }
 
+proc check_if_battery_low_and_give_message {} {
+    if {[battery_percent] < 10} {
+        info_page [subst {[translate "We noticed that your battery power is very low."]\n\n[translate "Maybe you are turning your DE1 off using the power switch on the back?"]\n\n[translate "If so, that prevents the tablet from charging."]\n\n[translate "Instead, put the DE1 to sleep by tapping the power icon in the App."]}] [translate "Ok"]
+    }
+}
+
+proc battery_percent {} {
+    array set powerinfo [sdltk powerinfo]
+    set percent [ifexists powerinfo(percent)]
+    if {$percent == ""} {
+        set percent 100
+    }
+
+    return $percent
+}
+
 
 # dim the screen automaticaly if the battery is low
 proc check_battery_low {brightness_to_use} {
-    array set powerinfo [sdltk powerinfo]
     set current_brightness [get_set_tablet_brightness]
     if {$current_brightness == ""} {
         set current_brightness 100
@@ -317,12 +332,8 @@ proc check_battery_low {brightness_to_use} {
         set current_brightness [expr {abs($current_brightness)}]
     }
 
-    set percent [ifexists powerinfo(percent)]
-    if {$percent == ""} {
-        set percent 100
-    }
-
     #return 100
+    set percent [battery_percent]
 
     #puts "check_battery_low: $brightness_to_use / borg brightness = [borg brightness] / powerinfo(percent) = [ifexists powerinfo(percent)]"
     if {$percent < $::settings(battery_very_low_trigger)} {

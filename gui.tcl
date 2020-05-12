@@ -1776,6 +1776,8 @@ proc ui_startup {} {
 	delay_screen_saver
 	change_screen_saver_img
 
+	check_if_battery_low_and_give_message
+
 	# check for app updates, a half day after startup, and then every 24h thereafter
 	#after 43200000 scheduled_app_update_check
 	after 3000 scheduled_app_update_check
