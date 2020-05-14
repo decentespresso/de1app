@@ -227,7 +227,7 @@ proc next_alarm_time { in } {
 }
 
 proc time_format {seconds {crlf 0}} {
-	set crlftxt ""
+	set crlftxt " "
 	if {$crlf == 1} {
 		set crlftxt \n
 	}
