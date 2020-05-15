@@ -544,6 +544,7 @@ proc make_de1_dir {} {
         saver/2560x1600/rainbow_dj.jpg *     
 
         profiles/Gentle\ and\ sweet.tcl *
+        profiles/Cremina.tcl *
         profiles/Londinium-R-by-Damian.tcl *
         profiles/Advanced\ spring\ lever.tcl *
         profiles/Blooming\ espresso.tcl *
