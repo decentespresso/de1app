@@ -507,7 +507,7 @@ proc start_app_update {} {
     set local_manifest [string trim [read_binary_file "[homedir]/manifest.txt"]]
 
     catch {
-        msg "Local [homedir]/manifest.txt has [string length $local_manifest] bytes"
+        msg "Local [homedir]/manifest.txt has [string length $local_manifest] bytes - [file exists "[homedir]/manifest.txt"]"
     }
 
     if {[string length $local_manifest] == 0} {
