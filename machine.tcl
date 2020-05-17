@@ -628,6 +628,10 @@ proc reset_gui_starting_espresso {} {
 	# clear any description of the previous espresso
 	set ::settings(scentone) ""
 	set ::settings(espresso_enjoyment) 0
+
+	# this sets the time the espresso starts, used for recording this espresso to a history file
+	set ::settings(espresso_clock) [clock seconds]
+
 	set ::settings(espresso_notes) ""
 	set ::settings(drink_tds) 0
 	set ::settings(drink_weight) 0

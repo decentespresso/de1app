@@ -2723,6 +2723,7 @@ proc de1plus {} {
 
 proc save_espresso_rating_to_history {} {
 	#unset -nocomplain ::settings(history_saved)
+	set ::settings(history_saved) 0
 	save_this_espresso_to_history {} {}
 }
 
@@ -2731,11 +2732,20 @@ proc save_espresso_rating_to_history {} {
 after idle {after 0 {register_state_change_handler Espresso Idle save_this_espresso_to_history}}
 
 proc save_this_espresso_to_history {unused_old_state unused_new_state} {
+	puts "save_this_espresso_to_history "
 	# only save shots that have at least 5 data points
 	if {!$::settings(history_saved) && [espresso_elapsed length] > 5 && [espresso_pressure length] > 5 && $::settings(should_save_history) == 1} {
 
-		set name [clock format [clock seconds]]
-		set clock [clock seconds]
+		#set clock [clock seconds]
+		if {[info exists ::settings(espresso_clock)] != 1} {
+			# in theory, this should never occur.
+			msg "This espresso's start time was not recorded. Possibly we didn't get the bluetooth message of state change to espresso."
+			set ::settings(espresso_clock) [clock seconds]
+		}
+		
+		set clock $::settings(espresso_clock)
+		set name [clock format $clock]
+
 		set espresso_data {}
 		set espresso_data "name [list $name]\n"
 		set espresso_data "clock $clock\n"
@@ -2778,6 +2788,8 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 		msg "Save this espresso to history"
 
 		set ::settings(history_saved) 1
+	} else {
+		msg "Not saved to history $::settings(history_saved) - [espresso_elapsed length] - [espresso_pressure length] - $::settings(should_save_history) "
 	}
 }
 
