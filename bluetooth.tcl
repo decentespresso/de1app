@@ -869,36 +869,31 @@ proc run_next_userdata_cmd {} {
 		set cmds [lrange $::de1(cmdstack) 1 end]
 		set result 0
 		msg ">>> [lindex $cmd 0] (-[llength $::de1(cmdstack)]) : [lindex $cmd 1]"
-		set errmsg ""
-		#set errcode [catch {
-		#	set result [{*}[lindex $cmd 1]]		
-		#} errmsg]
-
-		set result [{*}[lindex $cmd 1]]		
-
-		set errcode 0
-		#set result [catch *[lindex $cmd 1] errmsg]
+		set errcode [catch {
+		set result [{*}[lindex $cmd 1]]
+			
+		}]
 
 	    if {$errcode != 0} {
 	        catch {
 	            msg "run_next_userdata_cmd catch error: $::errorInfo"
-	        } 
+	        }
 	    }
 
 
 
 		if {$result != 1} {
 
-			if {[string first "invalid handle" $errmsg] != -1} {
+			if {[string first "invalid handle" $::errorInfo] != -1} {
 				msg "Not retrying this command because BLE handle for the device is now invalid"
 				#after 500 run_next_userdata_cmd
 			} else {
-				msg "BLE command failed $result, will retry ($result): [lindex $cmd 1] $errmsg"
+				msg "BLE command failed, will retry ($result): [lindex $cmd 1] $::errorInfo"
 
 				# john 4/28/18 not sure if we should give up on the command if it fails, or retry it
 				# retrying a command that will forever fail kind of kills the BLE abilities of the app
 				
-				after 1000 run_next_userdata_cmd
+				after 500 run_next_userdata_cmd
 				update
 				return 
 			}
@@ -980,7 +975,6 @@ proc app_exit {} {
 }
 
 proc de1_send_state {comment msg} {
-	msg "de1_send_state $comment $msg"
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 		msg "DE1 not connected, cannot send BLE command 13"
 		return
@@ -1620,7 +1614,7 @@ proc de1_ble_handler { event data } {
 
 					    	update_de1_state "$::de1_state(Sleep)\x0"
 					    } else {
-						    after 1000 ble_connect_to_de1
+						    ble_connect_to_de1
 					    }
 
 				    } elseif {$address == $::settings(scale_bluetooth_address)} {

@@ -437,7 +437,7 @@ proc generic_push_button_settings {btnup btndown action change buttontype} {
 		.can itemconfigure $btnup -state hidden
 		update
 		set genericstate($btndown) "down"
-		zz
+		
 		if {$buttontype == "holdrepeats"} {
 			set afterid [after 700 [list generic_button_held $btnup $btndown $action]]
 			set genericstate($btnup) $afterid

@@ -738,7 +738,6 @@ proc start_idle {} {
 	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
 	if {$::de1(device_handle) == 0} {
-		msg "No DE1 connection, so reconnecting"
 		update_de1_state "$::de1_state(Idle)\x0"
 		ble_connect_to_de1
 		return
@@ -757,7 +756,7 @@ proc start_idle {} {
 	}
 
 	# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
-	#set_fan_temperature_threshold $::settings(fan_threshold)
+	set_fan_temperature_threshold $::settings(fan_threshold)
 
 	set ::settings(flying) 0
 	de1_send_state "go idle" $::de1_state(Idle)
