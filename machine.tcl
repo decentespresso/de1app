@@ -202,6 +202,7 @@ array set ::settings {
 	advanced_shot_chart_temp_max 100
 	advanced_shot_chart_temp_min 80
 	show_mixtemp_during_espresso 0
+	enable_descale_steam_check 1
 	bean_notes {}
 	chart_dashes_flow ""
 	chart_dashes_espresso_weight {2 1}
@@ -833,6 +834,10 @@ msg "check_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_
 		# if steaming was for less than 3 seconds, then don't run this test, as that was just a short purge
 		msg "Not checking steam for clogging because steam_pressure length : [steam_pressure length] < 30"
 		return 
+	}
+
+	if {$::settings(enable_descale_steam_check) != 1} {
+		return
 	}
 
 	set ::settings(steam_over_temp_threshold) 180

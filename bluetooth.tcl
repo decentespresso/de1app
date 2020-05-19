@@ -739,7 +739,8 @@ proc mmr_write { address length value} {
 proc set_tank_temperature_threshold {temp} {
 	msg "Setting desired water tank temperature to '$temp' [stacktrace]"
 
-	if {$temp == 0} {
+	if {$temp < 10} {
+		# no point in circulating the water if the desired temp is <10ºC, or no preheating.
 		mmr_write "80380C" "04" [zero_pad [int_to_hex $temp] 2]
 	} else {
 		# if the water temp is being set, then set the water temp temporarily to 60º in order to force a water circulation for 2 seconds
