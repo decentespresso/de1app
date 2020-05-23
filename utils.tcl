@@ -118,12 +118,14 @@ proc setup_environment {} {
 
         global helvetica_bold_font
         global helvetica_font
+        set global_font_size 18
         #puts "setting up fonts for language [language]"
         if {[language] == "th"} {
             set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
             set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
             set fontm [expr {($fontm * 1.2)}]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+            set global_font_size 16
         } elseif {[language] == "ar" || [language] == "arb"} {
             set helvetica_font [sdltk addfont "fonts/Dubai-Regular.otf"]
             set helvetica_bold_font [sdltk addfont "fonts/Dubai-Bold.otf"]
@@ -143,7 +145,7 @@ proc setup_environment {} {
         }            
 
 
-        font create global_font -family $global_font_name -size [expr {int($fontm * 18)}] 
+        font create global_font -family $global_font_name -size [expr {int($fontm * $global_font_size)}] 
 
         font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
         font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
