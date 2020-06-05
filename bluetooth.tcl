@@ -696,7 +696,7 @@ proc firmware_upload_next {} {
 }
 
 
-proc mmr_read {address length} {
+proc mmr_read {note address length} {
 	if {[mmr_available] == 0} {
 		msg "Unable to mmr_read because MMR not available"
 		return
@@ -708,7 +708,7 @@ proc mmr_read {address length} {
 	set data "$mmrlen${mmrloc}[binary decode hex 00000000000000000000000000000000]"
 	
 	if {$::android != 1} {
-		msg "MMR requesting read [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc]: with comment [convert_string_to_hex $data]"
+		msg "MMR requesting read $address:$length [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc]: with comment [convert_string_to_hex $data]"
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
@@ -716,7 +716,9 @@ proc mmr_read {address length} {
 		return
 	}
 
-	userdata_append "MMR requesting read [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc] with '[convert_string_to_hex $data]'" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_05) $::cinstance($::de1(cuuid_05)) $data]
+	set cmt "Queing: MMR requesting read '$note' [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc] with '[convert_string_to_hex $data]'"
+	msg $cmt
+	userdata_append $cmt [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_05) $::cinstance($::de1(cuuid_05)) $data]
 
 }
 
@@ -782,7 +784,7 @@ proc set_steam_flow {desired_flow} {
 
 proc get_steam_flow {} {
 	msg "Getting steam flow rate"
-	mmr_read "803828" "00"
+	mmr_read "get_steam_flow" "803828" "00"
 }
 
 
@@ -794,7 +796,7 @@ proc set_steam_highflow_start {desired_seconds} {
 
 proc get_steam_highflow_start {} {
 	msg "Getting steam high flow rate start seconds "
-	mmr_read "80382C" "00"
+	mmr_read "get_steam_highflow_start" "80382C" "00"
 }
 
 
@@ -805,17 +807,17 @@ proc set_ghc_mode {desired_mode} {
 
 proc get_ghc_mode {} {
 	msg "Reading group head control mode"
-	mmr_read "803820" "00"
+	mmr_read "get_ghc_mode" "803820" "00"
 }
 
 proc get_ghc_is_installed {} {
-	msg "Reading whether the group head controller is installed or not"
-	mmr_read "80381C" "00"
+	msg "Reading whether the group head controller (GHC) is installed or not"
+	mmr_read "get_ghc_is_installed" "80381C" "00"
 }
 
 proc get_fan_threshold {} {
 	msg "Reading at what temperature the PCB fan turns on"
-	mmr_read "803808" "00"
+	mmr_read "get_fan_threshold" "803808" "00"
 }
 
 proc set_fan_temperature_threshold {temp} {
@@ -825,7 +827,7 @@ proc set_fan_temperature_threshold {temp} {
 
 proc get_tank_temperature_threshold {} {
 	msg "Reading desired water tank temperature"
-	mmr_read "80380C" "00"
+	mmr_read "get_tank_temperature_threshold" "80380C" "00"
 }
 
 proc de1_cause_refill_now_if_level_low {} {
