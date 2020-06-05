@@ -568,8 +568,10 @@ proc fwfile {} {
 		# please do not bypass this test and load the new firmware on your v1.0 v1.1 machines yet.  Once we have new firmware is known to work on those older machines, we'll get rid of the 2nd firmware image.
 
 		# note that ghc_is_installed=1 ghc hw is there but unused, whereas ghc_is_installed=3 ghc hw is required.
+		msg "using v1.3 firmware"
 		return "[homedir]/fw/bootfwupdate2.dat"
 	} else {
+		msg "using v1.1 firmware"
 		return "[homedir]/fw/bootfwupdate.dat"
 	}
 }
@@ -583,9 +585,13 @@ proc start_firmware_update {} {
 		}
 	}
 
-	if {$::settings(force_fw_update) != 1} {
-		set ::de1(firmware_update_button_label) "Up to date"
-		return
+	if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2 || $::settings(ghc_is_installed) == 3} {
+		# ok to do v1.3 fw update
+	} else {
+		if {$::settings(force_fw_update) != 1} {
+			set ::de1(firmware_update_button_label) "Up to date"
+			return
+		}
 	}
 
 	if {$::de1(currently_erasing_firmware) == 1} {

@@ -3005,9 +3005,13 @@ proc round_to_half_integer {in} {
 
 proc check_firmware_update_is_available {} {
 
-	if {$::settings(force_fw_update) != 1} {
-		set ::de1(firmware_update_button_label) "Up to date"
-		return ""
+	if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2 || $::settings(ghc_is_installed) == 3} {
+		# ok to do v1.3 fw update
+	} else {
+		if {$::settings(force_fw_update) != 1} {
+			set ::de1(firmware_update_button_label) "Up to date"
+			return ""
+		}
 	}
 
 	if {[info exists ::de1(firmware_crc)] != 1} {
