@@ -3004,22 +3004,29 @@ proc round_to_half_integer {in} {
 }
 
 proc check_firmware_update_is_available {} {
+	#msg "check_firmware_update_is_available"
 
 	if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2 || $::settings(ghc_is_installed) == 3} {
 		# ok to do v1.3 fw update
+		msg "v1.3 can do fw updates at the moment"
 	} else {
+		#msg "No firmware updates at the moment for machines earlier than v1.3 unless forced to do so"
 		if {$::settings(force_fw_update) != 1} {
 			set ::de1(firmware_update_button_label) "Up to date"
 			return ""
 		}
 	}
 
-	if {[info exists ::de1(firmware_crc)] != 1} {
+	if {[ifexists ::de1(firmware_crc)] == ""} {
 		set ::de1(firmware_crc) [crc::crc32 -filename [fwfile]]
+		msg "Firmware [fwfile] CRC is $::de1(firmware_crc)"
 	}
 
-	if {$::de1(firmware_crc) != [ifexists ::settings(firmware_crc)] && $::de1(currently_updating_firmware) == ""} {
+	if {($::de1(firmware_crc) != [ifexists ::settings(firmware_crc)]) && $::de1(currently_updating_firmware) == ""} {
+		msg "firmware CRCs are not the same"
 		set ::de1(firmware_update_button_label) "Firmware update available"
+	} else {
+		msg "firmware CRCs are the same $::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]"
 	}
 	return ""
 }

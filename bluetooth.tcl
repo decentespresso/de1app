@@ -502,17 +502,31 @@ proc de1_disable_state_notifications {} {
 	userdata_append "disable state notifications" [list ble disable $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))]
 }
 
+set ::mmr_enabled ""
 proc mmr_available {} {
+return 1
+	if {$::mmr_enabled == ""} {
 
-	if {$::de1(mmr_enabled) == 0} {
-		if {[de1_version_bleapi] > 3} {
-			# mmr feature became available at this version number
-			set ::de1(mmr_enabled) 1
+		if {$::de1(version) == ""} {
+			# if the version hasn't been loaded yet, use what's in the saved settings from the last time the app ran
+			return $::settings(mmr_enabled)
 		} else {
-			msg "MMR is not enabled on this DE1 BLE API <4 #: [de1_version_bleapi]"
+			# look for the version string to determin if MMR is available
+			if {[de1_version_bleapi] > 3} {
+				# mmr feature became available at this version number
+				set ::settings(mmr_enabled) 1
+			} else {
+				msg "MMR is not enabled on this DE1 BLE API <4 #: [de1_version_bleapi]"
+				set ::settings(mmr_enabled) 0
+			}
+
+			save_settings
+
+			set ::mmr_enabled $::settings(mmr_enabled)
 		}
+
 	}
-	return $::de1(mmr_enabled)
+	return $::mmr_enabled
 }
 
 proc de1_enable_mmr_notifications {} {
@@ -561,7 +575,10 @@ proc de1_enable_maprequest_notifications {} {
 }
 
 proc fwfile {} {
-	
+	return "[homedir]/fw/bootfwupdate.dat"
+
+	# obsolete as of 6-6-20 a only using one firmware file again now
+		
 	if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2 || $::settings(ghc_is_installed) == 3} {
 		# new firmware for v1.3 machines and newer, that have a GHC.
 		# this dual firmware aspect is temporary, only until we have improved the firmware to be able to correctly migrate v1.0 v1.1 hardware machines to the new calibration settings.
@@ -716,8 +733,8 @@ proc mmr_read {note address length} {
 		return
 	}
 
-	set cmt "Queing: MMR requesting read '$note' [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc] with '[convert_string_to_hex $data]'"
-	msg $cmt
+	set cmt "MMR requesting read '$note' [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc] with '[convert_string_to_hex $data]'"
+	msg "queing $cmt"
 	userdata_append $cmt [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_05) $::cinstance($::de1(cuuid_05)) $data]
 
 }
@@ -1510,14 +1527,14 @@ proc append_to_scale_bluetooth_list {address name} {
 proc later_new_de1_connection_setup {} {
 	# less important stuff, also some of it is dependent on BLE version
 
-	de1_enable_mmr_notifications
+	#de1_enable_mmr_notifications
 	de1_send_shot_frames
 	set_fan_temperature_threshold $::settings(fan_threshold)
 	de1_send_steam_hotwater_settings
-	get_ghc_is_installed
 
 	de1_send_waterlevel_settings
 	de1_enable_water_level_notifications
+	get_ghc_is_installed
 
 	after 5000 read_de1_state
 
@@ -1716,16 +1733,22 @@ proc de1_ble_handler { event data } {
 
 							# vital stuff, do first
 							#read_de1_state
-							de1_enable_temp_notifications
-							if {[info exists ::de1(first_connection_was_made)] != 1} {
-								# on app startup, wake the machine up
-								set ::de1(first_connection_was_made) 1
-								start_idle
+							de1_enable_mmr_notifications
+							#get_ghc_is_installed
+
+							set dothis 1
+							if {$dothis == 1} {
+								de1_enable_temp_notifications
+								if {[info exists ::de1(first_connection_was_made)] != 1} {
+									# on app startup, wake the machine up
+									set ::de1(first_connection_was_made) 1
+									start_idle
+								}
+								read_de1_version
+								read_de1_state
+								
+								after 2000 de1_enable_state_notifications
 							}
-							read_de1_version
-							read_de1_state
-							
-							after 2000 de1_enable_state_notifications
 
 							#after 5000 later_new_de1_connection_setup
 
@@ -1878,6 +1901,46 @@ proc de1_ble_handler { event data } {
 									return
 								}
 							}
+			    		} elseif {$cuuid == $::de1(cuuid_05)} {
+			    			# MMR read
+			    			msg "MMR recv read: '[convert_string_to_hex $value]'"
+
+			    			parse_binary_mmr_read $value arr
+			    			set mmr_id $arr(Address)
+			    			set mmr_val [ifexists arr(Data0)]
+			    			msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
+			    			if {$mmr_id == "80381C"} {
+			    				msg "Read: GHC is installed: '$mmr_val'"
+			    				set ::settings(ghc_is_installed) $mmr_val
+
+								if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2} {
+									# if the GHC is present but not active, check back every 10 minutes to see if its status has changed
+									# this is only relevant if the machine is in a debug GHC mode, where the DE1 acts as if the GHC 
+									# is not there until it is touched. This allows the tablet to start operations.  If (or once) the GHC is 
+									# enabled, only the GHC can start operations.
+									after 600000 get_ghc_is_installed
+								}
+
+			    			} elseif {$mmr_id == "803808"} {
+			    				set ::de1(fan_threshold) $mmr_val
+			    				set ::settings(fan_threshold) $mmr_val
+			    				msg "Read: Fan threshold: '$mmr_val'"
+			    			} elseif {$mmr_id == "80380C"} {
+			    				msg "Read: tank temperature threshold: '$mmr_val'"
+			    				set ::de1(tank_temperature_threshold) $mmr_val
+			    			} elseif {$mmr_id == "803820"} {
+			    				msg "Read: group head control mode: '$mmr_val'"
+			    				set ::settings(ghc_mode) $mmr_val
+			    			} elseif {$mmr_id == "803828"} {
+			    				msg "Read: steam flow: '$mmr_val'"
+			    				set ::settings(steam_flow) $mmr_val
+			    			} elseif {$mmr_id == "80382C"} {
+			    				msg "Read: steam_highflow_start: '$mmr_val'"
+			    				set ::settings(steam_highflow_start) $mmr_val
+			    			} else {
+			    				msg "Uknown type of direct MMR read on '[convert_string_to_hex $mmr_id]': $data"
+			    			}
+
 						} elseif {$cuuid == "0000A001-0000-1000-8000-00805F9B34FB"} {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
@@ -2172,45 +2235,6 @@ proc de1_ble_handler { event data } {
 									}
 								}
 							}
-			    		} elseif {$cuuid == $::de1(cuuid_05)} {
-			    			# MMR read
-			    			msg "MMR recv read: '[convert_string_to_hex $value]'"
-
-			    			parse_binary_mmr_read $value arr
-			    			set mmr_id $arr(Address)
-			    			set mmr_val [ifexists arr(Data0)]
-			    			msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
-			    			if {$mmr_id == "80381C"} {
-			    				msg "Read: GHC is installed: '$mmr_val'"
-			    				set ::settings(ghc_is_installed) $mmr_val
-
-								if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2} {
-									# if the GHC is present but not active, check back every 10 minutes to see if its status has changed
-									# this is only relevant if the machine is in a debug GHC mode, where the DE1 acts as if the GHC 
-									# is not there until it is touched. This allows the tablet to start operations.  If (or once) the GHC is 
-									# enabled, only the GHC can start operations.
-									after 600000 get_ghc_is_installed
-								}
-
-			    			} elseif {$mmr_id == "803808"} {
-			    				set ::de1(fan_threshold) $mmr_val
-			    				set ::settings(fan_threshold) $mmr_val
-			    				msg "Read: Fan threshold: '$mmr_val'"
-			    			} elseif {$mmr_id == "80380C"} {
-			    				msg "Read: tank temperature threshold: '$mmr_val'"
-			    				set ::de1(tank_temperature_threshold) $mmr_val
-			    			} elseif {$mmr_id == "803820"} {
-			    				msg "Read: group head control mode: '$mmr_val'"
-			    				set ::settings(ghc_mode) $mmr_val
-			    			} elseif {$mmr_id == "803828"} {
-			    				msg "Read: steam flow: '$mmr_val'"
-			    				set ::settings(steam_flow) $mmr_val
-			    			} elseif {$mmr_id == "80382C"} {
-			    				msg "Read: steam_highflow_start: '$mmr_val'"
-			    				set ::settings(steam_highflow_start) $mmr_val
-			    			} else {
-			    				msg "Uknown type of direct MMR read on '[convert_string_to_hex $mmr_id]': $data"
-			    			}
 
 						} else {
 							msg "Confirmed unknown read from DE1 $cuuid: '$value'"
@@ -2224,7 +2248,10 @@ proc de1_ble_handler { event data } {
 
 			    		if {$cuuid == $::de1(cuuid_05)} {
 			    			# MMR read
-			    			msg "MMR read: '[convert_string_to_hex $value]'"
+			    			#msg "MMR read: '[convert_string_to_hex $value]'"
+
+			    			msg "MMR recv write-back: '[convert_string_to_hex $value]'"
+
 			    		} elseif {$cuuid == $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3				    		
 					    	msg "Confirmed shot frame written to DE1: '$value' : [array get arr3]"

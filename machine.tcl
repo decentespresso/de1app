@@ -27,7 +27,6 @@ array set ::de1 {
 	advanced_shot_moveone_enabled 1
     found    0
     scanning 1
-    mmr_enabled 0
     device_handle 0
     scale_device_handle 0
     decentscale_device_handle 0
@@ -170,6 +169,7 @@ array set ::settings {
 	tank_desired_water_temperature 0
 	screen_size_height {}
 	current_frame_description {}
+	mmr_enabled 0	
 	default_font_calibration 0.5
 	linear_resistance_adjustment 1
 	language en

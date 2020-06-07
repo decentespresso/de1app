@@ -156,6 +156,11 @@ proc percent20encode {in} {
     return $out
 }
 
+proc sleep {time} {
+    after $time set end 1
+    vwait end
+}
+
 
 proc decent_http_get {url {timeout 30000}} {
 
@@ -168,8 +173,9 @@ proc decent_http_get {url {timeout 30000}} {
         set body [::http::data $token]
 
         set cnt 0
-        while {[string length $body] == 0} {
-            sleep 5000
+        if {[string length $body] == 0} {
+            # try once more
+            sleep 1000
             ::http::cleanup $token
             set token [::http::geturl $url -binary 1 -timeout $timeout]
             set body [::http::data $token]
@@ -471,6 +477,7 @@ proc start_app_update {} {
     #set url_manifest "$host/download/sync/$progname/manifest.txt"
     set url_manifest_gz "$host2/download/sync/$progname/manifest.gz"
     set remote_manifest_gz {}
+    set remote_manifest {}
     catch {
         set remote_manifest_gz [decent_http_get $url_manifest_gz]
         set remote_manifest [zlib gunzip $remote_manifest_gz]
