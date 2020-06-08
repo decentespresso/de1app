@@ -579,7 +579,7 @@ proc fwfile {} {
 
 	# obsolete as of 6-6-20 a only using one firmware file again now
 		
-	if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2 || $::settings(ghc_is_installed) == 3} {
+	if {$::settings(ghc_is_installed) != 0} {
 		# new firmware for v1.3 machines and newer, that have a GHC.
 		# this dual firmware aspect is temporary, only until we have improved the firmware to be able to correctly migrate v1.0 v1.1 hardware machines to the new calibration settings.
 		# please do not bypass this test and load the new firmware on your v1.0 v1.1 machines yet.  Once we have new firmware is known to work on those older machines, we'll get rid of the 2nd firmware image.
@@ -602,7 +602,7 @@ proc start_firmware_update {} {
 		}
 	}
 
-	if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2 || $::settings(ghc_is_installed) == 3} {
+	if {$::settings(ghc_is_installed) != 0} {
 		# ok to do v1.3 fw update
 	} else {
 		if {$::settings(force_fw_update) != 1} {
