@@ -3009,6 +3009,10 @@ proc check_firmware_update_is_available {} {
 	if {$::settings(ghc_is_installed) != 0} {
 		# ok to do v1.3 fw update
 		#msg "v1.3 can do fw updates at the moment"
+		if {$::settings(force_fw_update) != 1} {
+			set ::de1(firmware_update_button_label) "Up to date"
+			return ""
+		}
 	} else {
 		#msg "No firmware updates at the moment for machines earlier than v1.3 unless forced to do so"
 		if {$::settings(force_fw_update) != 1} {
