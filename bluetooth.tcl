@@ -604,15 +604,15 @@ proc start_firmware_update {} {
 
 	if {$::settings(ghc_is_installed) != 0} {
 		# ok to do v1.3 fw update
-		if {$::settings(force_fw_update) != 1} {
-			set ::de1(firmware_update_button_label) "Up to date"
-			return
-		}
+		#if {$::settings(force_fw_update) != 1} {
+		#	set ::de1(firmware_update_button_label) "Up to date"
+		#	return
+		#}
 	} else {
-		if {$::settings(force_fw_update) != 1} {
-			set ::de1(firmware_update_button_label) "Up to date"
-			return
-		}
+		#if {$::settings(force_fw_update) != 1} {
+		#	set ::de1(firmware_update_button_label) "Up to date"
+		#	return
+		#}
 	}
 
 	if {$::de1(currently_erasing_firmware) == 1} {
@@ -625,7 +625,7 @@ proc start_firmware_update {} {
 		return
 	}
 
-	de1_enable_maprequest_notifications
+	#de1_enable_maprequest_notifications
 	
 	set ::de1(firmware_bytes_uploaded) 0
 	set ::de1(firmware_update_size) [file size [fwfile]]
@@ -686,6 +686,9 @@ proc firmware_upload_next {} {
 			set ::de1(firmware_update_button_label) "Updated"
 			
 		} else {
+			# finished
+			de1_enable_maprequest_notifications
+			
 			set ::de1(firmware_update_button_label) "Testing"
 
 			#set ::de1(firmware_update_size) 0
@@ -1437,6 +1440,12 @@ proc ble_connect_to_de1 {} {
 set ::currently_connecting_scale_handle 0
 proc ble_connect_to_scale {} {
 
+	if {$::de1(in_fw_update_mode) == 1} {
+		msg "in_fw_update_mode : ble_connect_to_scale"
+		return
+	}
+
+
 	if {$::settings(scale_bluetooth_address) == ""} {
 		msg "No Scale BLE address in settings, so not connecting to it"
 		return
@@ -1531,6 +1540,11 @@ proc append_to_scale_bluetooth_list {address name} {
 proc later_new_de1_connection_setup {} {
 	# less important stuff, also some of it is dependent on BLE version
 
+	if {$::de1(in_fw_update_mode) == 1} {
+		msg "in_fw_update_mode : later_new_de1_connection_setup skipped"
+		return
+	}
+
 	#de1_enable_mmr_notifications
 	de1_send_shot_frames
 	set_fan_temperature_threshold $::settings(fan_threshold)
@@ -1558,7 +1572,7 @@ proc de1_ble_handler { event data } {
     dict with data {
 
     	if {$state != "scanning"} {
-    		#msg "de1b ble_handler $event $data"
+    		msg "de1b ble_handler $event $data"
     	} else {
     		#msg "scanning $event $data"
     	}
@@ -1728,17 +1742,11 @@ proc de1_ble_handler { event data } {
 
 
 						#msg "connected to de1 with handle $handle"
-						set testing 0
-						if {$testing == 1} {
-							de1_read_calibration "temperature"
+
+						if {$::de1(in_fw_update_mode) == 1} {
+							msg "in_fw_update_mode : de1 connected"
 						} else {
-
-							#set ::globals(if_in_sleep_move_to_idle) 0
-
-							# vital stuff, do first
-							#read_de1_state
 							de1_enable_mmr_notifications
-							#get_ghc_is_installed
 
 							set dothis 1
 							if {$dothis == 1} {
@@ -1753,34 +1761,7 @@ proc de1_ble_handler { event data } {
 								
 								after 2000 de1_enable_state_notifications
 							}
-
-							#after 5000 later_new_de1_connection_setup
-
-							# john 02-16-19 need to make this pair in android bluetooth settings -- not working yet
-							#catch {
-							#	if {$::settings(ble_unpair_at_exit) == 0} {
-							#		ble pair $::settings(bluetooth_address)
-							#	}
-							#}
-
-							#ble pair $::settings(bluetooth_address)
-
-							#after 2000 "; ; ; "
-							#poll_de1_state
-							#start_idle
-							#after 2000 de1_enable_calibration_notifications
-							#after 3000 de1_read_calibration "temperature"
 						}
-
-
-						#if {$::settings(scale_bluetooth_address) != "" && $::de1(scale_device_handle) == 0 } {
-							# connect to the scale once the connection to the DE1 is set up
-							#userdata_append "BLE connect to scale" [list ble_connect_to_scale] 
-							#ble_connect_to_scale
-						#}
-						
-						#set_next_page off off
-						#start_idle
 
 			    		if {$::de1(scale_device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning (or if there is not scale to connect to and we're connected to the de1)
@@ -2298,6 +2279,9 @@ proc de1_ble_handler { event data } {
 									} else {
 										msg "MMR write ack: [string length $value] bytes: [convert_string_to_hex $value ] : $value : [array get arr2]"
 									}
+								} elseif {$cuuid == "0000A009-0000-1000-8000-00805F9B34FB" && $::de1(currently_erasing_firmware) == 1} {
+									msg "fw erase completed, now starting send"
+									write_firmware_now
 								} else {
 						    		msg "Confirmed wrote to $cuuid of DE1: '$value'"
 								}

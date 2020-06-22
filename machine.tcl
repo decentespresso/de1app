@@ -138,7 +138,7 @@ if {$android == 0 || $undroid == 1} {
     android_specific_stubs
 }
 
-
+set ::de1(in_fw_update_mode) 1
 
 
 #namespace import blt::*
