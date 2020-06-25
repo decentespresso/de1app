@@ -3035,10 +3035,42 @@ proc check_firmware_update_is_available {} {
 	return ""
 }
 
+proc firmware_update_eta_label {} {
+
+	if {[info exists ::de1(firmware_update_start_time)] != 1} {
+		msg "firmware_update_eta_label - no ::de1(firmware_update_start_time)"
+		return
+	}
+
+	set elapsed [expr {[clock milliseconds] - $::de1(firmware_update_start_time)}]
+	set ::de1(firmware_update_eta) 0
+
+	set percentage [expr {1.0 * ($::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
+	#msg "percentage $percentage"
+
+	if {$percentage >= 1 && $::de1(currently_updating_firmware) == 0} {
+		#return "[translate {Turn your machine off and on again}]"
+		return ""
+	} else {
+		set etamin [expr {round((($elapsed / $percentage) - $elapsed) / 60000)}]
+		set etasec [expr {round((($elapsed / $percentage) - $elapsed) / 1000)}]
+		#set etasec [expr {(($elapsed - ($elapsed / $percentage)) / 10000)}]
+		#set etasec [expr {(($elapsed / $percentage) / 1000)}]
+		if {$etasec >=120} {
+			return "$etamin [translate minutes]"
+		} else {
+			return "$etasec [translate seconds]"
+		}
+	}	
+}
+
+
 proc firmware_uploaded_label {} {
 	#puts "firmware_uploaded_label firmware_uploaded_label"
 
-	if {($::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0) && $::de1(currently_updating_firmware) == ""} {
+	#msg "currently_updating_firmware:  $::de1(currently_updating_firmware)/ $::de1(currently_erasing_firmware)"
+
+	if {($::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0) && $::de1(currently_updating_firmware) != "1"} {
 		if {$::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]} {
 			return [translate "No update necessary"]
 		}
@@ -3046,10 +3078,15 @@ proc firmware_uploaded_label {} {
 		return ""
 	} 
 
+	if {$::de1(firmware_update_size) == 0 || $::de1(firmware_bytes_uploaded) == 0} {
+		return "0%"
+	}
+
 	set percentage [expr {(100.0 * $::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
 	#puts "percentage $percentage"
 	if {$percentage >= 100 && $::de1(currently_updating_firmware) == 0} {
-		return "[translate {Turn your machine off and on again}]"
+		#return "[translate {Turn your machine off and on again}]"
+		return [translate "Done"]
 	} else {
 		return "[round_to_one_digits $percentage]%"
 	}

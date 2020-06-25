@@ -595,6 +595,9 @@ proc fwfile {} {
 
 
 proc start_firmware_update {} {
+
+	puts "start_firmware_update : [stacktrace]"
+
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 		if {$::android == 1} {
 			msg "DE1 not connected, cannot send BLE command 10"
@@ -631,7 +634,6 @@ proc start_firmware_update {} {
 	set ::de1(firmware_update_size) [file size [fwfile]]
 
 	if {$::android != 1} {
-		after 100 write_firmware_now
 		set ::sinstance($::de1(suuid)) 0
 		set ::de1(cuuid_09) 0
 		set ::de1(cuuid_06) 0
@@ -646,17 +648,34 @@ proc start_firmware_update {} {
 	set arr(FirstError3) 0
 	set data [make_packed_maprequest arr]
 
-	set ::de1(firmware_update_button_label) "Updating"
+	#set ::de1(firmware_update_button_label) "Updating"
 
 	# it'd be useful here to test that the maprequest was correctly packed
-	set ::de1(currently_erasing_firmware) 1
-	userdata_append "Erase firmware: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_09) $::cinstance($::de1(cuuid_09)) $data]
 
+	set ::de1(currently_erasing_firmware) 1
+	set ::de1(currently_updating_firmware) 0
+
+	set ::de1(firmware_update_button_label) "Starting"
+
+	#de1_send_state "go to sleep" $::de1_state(Sleep)
+
+	#set ::de1(firmware_update_binary) [read_binary_file [fwfile]]
+	#set ::de1(firmware_bytes_uploaded) 0
+
+
+	if {$::android == 1} {
+		userdata_append "Erase firmware do: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_09) $::cinstance($::de1(cuuid_09)) $data]
+		after 10000 write_firmware_now
+	} else {
+		write_firmware_now
+	}
 }
 
 proc write_firmware_now {} {
+	set ::de1(currently_erasing_firmware) 0
 	set ::de1(currently_updating_firmware) 1
-	msg "Start writing firmware now"
+	set ::de1(firmware_update_start_time) [clock milliseconds]
+	msg "Start writing firmware now [stacktrace]"
 
 	set ::de1(firmware_update_binary) [read_binary_file [fwfile]]
 	set ::de1(firmware_bytes_uploaded) 0
@@ -684,6 +703,7 @@ proc firmware_upload_next {} {
 
 		if {$::android != 1} {
 			set ::de1(firmware_update_button_label) "Updated"
+			set ::de1(currently_updating_firmware) 0			
 			
 		} else {
 			# finished
@@ -714,7 +734,9 @@ proc firmware_upload_next {} {
 		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data]
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 		if {$::android != 1} {
-			after 1 firmware_upload_next
+			#set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
+			after 10 firmware_upload_next
+			#firmware_upload_next
 		}
 	}
 }
@@ -902,10 +924,10 @@ proc run_next_userdata_cmd {} {
 		set cmds [lrange $::de1(cmdstack) 1 end]
 		set result 0
 		msg ">>> [lindex $cmd 0] (-[llength $::de1(cmdstack)]) : [lindex $cmd 1]"
+		set eer ""
 		set errcode [catch {
-		set result [{*}[lindex $cmd 1]]
-			
-		}]
+			set result [{*}[lindex $cmd 1]]			
+		} eer]
 
 	    if {$errcode != 0} {
 	        catch {
@@ -921,7 +943,12 @@ proc run_next_userdata_cmd {} {
 				msg "Not retrying this command because BLE handle for the device is now invalid"
 				#after 500 run_next_userdata_cmd
 			} else {
-				msg "BLE command failed, will retry ($result): [lindex $cmd 1] $::errorInfo"
+				if {$eer != 0} {
+					msg "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer) $::errorInfo"
+				} else {
+					msg "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer)"
+				}
+
 
 				# john 4/28/18 not sure if we should give up on the command if it fails, or retry it
 				# retrying a command that will forever fail kind of kills the BLE abilities of the app
@@ -1440,7 +1467,7 @@ proc ble_connect_to_de1 {} {
 set ::currently_connecting_scale_handle 0
 proc ble_connect_to_scale {} {
 
-	if {$::de1(in_fw_update_mode) == 1} {
+	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
 		msg "in_fw_update_mode : ble_connect_to_scale"
 		return
 	}
@@ -1540,7 +1567,7 @@ proc append_to_scale_bluetooth_list {address name} {
 proc later_new_de1_connection_setup {} {
 	# less important stuff, also some of it is dependent on BLE version
 
-	if {$::de1(in_fw_update_mode) == 1} {
+	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
 		msg "in_fw_update_mode : later_new_de1_connection_setup skipped"
 		return
 	}
@@ -1743,8 +1770,10 @@ proc de1_ble_handler { event data } {
 
 						#msg "connected to de1 with handle $handle"
 
-						if {$::de1(in_fw_update_mode) == 1} {
+						if {[ifexists ::de1(in_fw_update_mode)] == 1} {
 							msg "in_fw_update_mode : de1 connected"
+							de1_send_state "go to sleep" $::de1_state(Sleep)
+							set_fan_temperature_threshold 60
 						} else {
 							de1_enable_mmr_notifications
 
@@ -1954,12 +1983,14 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid == "0000A009-0000-1000-8000-00805F9B34FB"} {
 						    #set ::de1(last_ping) [clock seconds]
 							parse_map_request $value arr2
+							msg "a009: [array get arr2]"
 							if {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 0} {
 								msg "BLE recv: finished erasing fw '[ifexists arr2(FWToMap)]'"
 								set ::de1(currently_erasing_firmware) 0
-								write_firmware_now
+								#write_firmware_now
 							} elseif {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 1} { 
 								msg "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
+								#after 1000 read_fw_erase_progress
 							} elseif {$::de1(currently_erasing_firmware) == 0 && [ifexists arr2(FWToErase)] == 0} { 
 								msg "BLE firmware find error BLE recv: '$value' [array get arr2]'"
 						
@@ -2273,15 +2304,21 @@ proc de1_ble_handler { event data } {
 									parse_state_change $value arr
 						    		msg "Confirmed state change written to DE1: '[array get arr]'"
 								} elseif {$cuuid == "0000A006-0000-1000-8000-00805F9B34FB"} {
-									if {$::de1(currently_erasing_firmware) == 1 || $::de1(currently_updating_firmware) == 1} {
+									if {$::de1(currently_erasing_firmware) == 1 && $::de1(currently_updating_firmware) == 0} {
+										# erase ack received
+										set ::de1(currently_erasing_firmware) 0
+										msg "firmware erase write ack recved: [string length $value] bytes: $value : [array get arr2]"
+									} elseif {$::de1(currently_erasing_firmware) == 0 && $::de1(currently_updating_firmware) == 1} {
+
 										msg "firmware write ack recved: [string length $value] bytes: $value : [array get arr2]"
 										firmware_upload_next
 									} else {
 										msg "MMR write ack: [string length $value] bytes: [convert_string_to_hex $value ] : $value : [array get arr2]"
 									}
 								} elseif {$cuuid == "0000A009-0000-1000-8000-00805F9B34FB" && $::de1(currently_erasing_firmware) == 1} {
-									msg "fw erase completed, now starting send"
-									write_firmware_now
+									msg "fw request to erase sent"
+									#msg "fw request to erase sent, now starting send"
+									#write_firmware_now
 								} else {
 						    		msg "Confirmed wrote to $cuuid of DE1: '$value'"
 								}

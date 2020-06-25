@@ -163,6 +163,8 @@ proc add_de1_page {names filename {skin ""} } {
 			set ::delayed_image_load($name) $pngfilename
 		}
 	}
+
+	#set ::image_to_page($pngfilename) $names
 }	
 
 proc set_de1_screen_saver_directory {{dirname {}}} {
@@ -1012,9 +1014,9 @@ proc de1_connected_state { {hide_delay 0} } {
 		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_bluetooth_list"
 	} else {
 
-		if {$::de1(in_fw_update_mode) == 1} {
-			return ""
-		}
+#		if {[ifexists ::de1(in_fw_update_mode)] == 1} {
+#			return ""
+#		}
 
 
 		if {$::de1(device_handle) == 0} {
@@ -1319,7 +1321,6 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	if {[info exists ::delayed_image_load($page_to_show)] == 1} {
 		set pngfilename	$::delayed_image_load($page_to_show)
-		unset -nocomplain ::delayed_image_load($page_to_show)
 		msg "Loading skin image from disk: $pngfilename"
 		
 		set errcode [catch {
@@ -1335,17 +1336,25 @@ proc page_display_change {page_to_hide page_to_show} {
 	        }
 	    }
 
-		set errcode [catch {
-			# this can happen if the image file has been moved/deleted underneath the app
-			#fallback is to at least not crash
-			.can itemconfigure $page_to_show -image $page_to_show -state hidden
-			#msg ".can itemconfigure $page_to_show -image $page_to_show"
-		}]
+	    foreach {page img} [array get ::delayed_image_load] {
+	    	if {$img == $pngfilename} {
+	    		
+	    		# Matching delayed image load to every page that references it
+	    		# this avoids loading the same iamge over and over, for each page referencing it
 
-	    if {$errcode != 0} {
-	        catch {
-	            msg ".can itemconfigure page_to_show error: $::errorInfo"
-	        }
+				set errcode [catch {
+					# this error can happen if the image file has been moved/deleted underneath the app, fallback is to at least not crash
+					.can itemconfigure $page -image $page_to_show -state hidden					
+				}]
+
+			    if {$errcode != 0} {
+			        catch {
+			            msg ".can itemconfigure page_to_show ($page/$page_to_show) error: $::errorInfo"
+			        }
+			    }
+
+				unset -nocomplain ::delayed_image_load($page)
+	    	}
 	    }
 
 	}
