@@ -502,24 +502,24 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		add_de1_text "firmware_update_2" 730 700 -text [translate "Turn your DE1 on"]  -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right"
 		#add_de1_text "firmware_update_2" 730 800 -text [translate "Please wait one minute"]  -font Helv_8 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right"
 		#add_de1_variable "firmware_update_2" 730 800 -text [de1_connected_state] -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[if {$::de1(device_handle) != 0 && $::android == 1} { start_firmware_update; page_show firmware_update_3}; return [de1_connected_state]]}
-		add_de1_variable "firmware_update_2" 730 800 -text [translate "It can take one minute to start"] -font Helv_8 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[if {$::de1(device_handle) != 0 && $::android == 1} { set ::de1(currently_updating_firmware) 1; start_firmware_update; page_show firmware_update_3}; return [translate "It can take one minute to start"]]}
+		add_de1_variable "firmware_update_2" 730 800 -text [translate "It can take one minute to start"] -font Helv_8 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[if {$::de1(device_handle) != 0} { start_firmware_update; page_show firmware_update_3}; return [translate "It can take one minute to start"]]}
 
 	add_de1_text "firmware_update_3" 40 20 -text [translate "Firmware Update"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "nw" -justify "left" 
 		add_de1_text "firmware_update_3" 2530 20 -text "3/4" -font Helv_16_bold -fill "#888888" -anchor "ne" -justify "right"
 		add_de1_text "firmware_update_3" 2300 1508 -text [translate "Cancel"] -font Helv_10_bold -fill "#DDDDDD" -anchor "center"
 		add_de1_button "firmware_update_3" {say [translate {Exit}] $::settings(sound_button_in); app_exit} 1960 1200 2560 1600 ""
-		add_de1_variable "firmware_update_3" 730 700 -text [translate "Updating"] -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]}
-		add_de1_variable "firmware_update_3" 730 800 -text [translate "Updating"] -font Helv_10 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[firmware_update_eta_label]} 
-		add_de1_variable "firmware_update_3" 730 850 -text [translate "Updating"] -font Helv_10 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[if {$::de1(currently_erasing_firmware) != 1 && $::de1(currently_updating_firmware) != 1 && $::android == 1} {page_show firmware_update_4}; return [firmware_uploaded_label]]} 
+		add_de1_variable "firmware_update_3" 730 700 -text "" -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]}
+		add_de1_variable "firmware_update_3" 730 800 -text "" -font Helv_10 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[if {$::de1(currently_erasing_firmware) != 1 && $::de1(currently_updating_firmware) != 1} {page_show firmware_update_4}; return [firmware_uploaded_label]]} 
+		add_de1_variable "firmware_update_3" 730 850 -text "" -font Helv_10 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[firmware_update_eta_label]} 
 
 	add_de1_text "firmware_update_4" 40 20 -text [translate "Firmware Update"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "nw" -justify "left" 
 		add_de1_text "firmware_update_4" 2530 20 -text "4/4" -font Helv_16_bold -fill "#888888" -anchor "ne" -justify "right"
 		add_de1_text "firmware_update_4" 2300 1508 -text [translate "Exit"] -font Helv_10_bold -fill "#DDDDDD" -anchor "center"
 		add_de1_button "firmware_update_4" {say [translate {Exit}] $::settings(sound_button_in); app_exit} 1960 1200 2560 1600 ""
-		add_de1_variable "firmware_update_4" 730 700 -text [translate "Updating"] -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]}
-		add_de1_variable "firmware_update_4" 730 800 -text [translate "Updating"] -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[if {$::de1(device_handle) == 0 && $::android == 1} { app_exit }; return [firmware_uploaded_label]]} 
-		add_de1_text "firmware_update_4" 730 1000 -text [translate "Turn your DE1 off, wait a few seconds, and turn it on."] -font Helv_8 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" 
-		add_de1_text "firmware_update_4" 730 1200 -text [translate "Please be patient. It can take several minutes for your DE1 to turn back on."] -font Helv_8 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" 
+		add_de1_variable "firmware_update_4" 730 700 -text "" -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]}
+		add_de1_variable "firmware_update_4" 730 800 -text "" -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[if {$::de1(device_handle) == 0 && $::android == 1} { app_exit }; return [firmware_uploaded_label]]} 
+		add_de1_text "firmware_update_4" 730 1000 -text [translate "Turn your DE1 off. Wait a few seconds. Turn your DE1 on."] -font Helv_8 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" 
+		add_de1_text "firmware_update_4" 730 1200 -text [translate "Please be patient. It can take several minutes for your DE1 to update."] -font Helv_8 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" 
 
 	if {$::android == 0} {
 		# cheat buttons when running on not-android, so as to be able to advance to the next screen
@@ -1050,4 +1050,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-set_next_page off firmware_update_1
+#set_next_page off firmware_update_1

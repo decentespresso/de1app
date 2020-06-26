@@ -667,13 +667,13 @@ proc start_firmware_update {} {
 		userdata_append "Erase firmware do: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_09) $::cinstance($::de1(cuuid_09)) $data]
 		after 10000 write_firmware_now
 	} else {
-		write_firmware_now
+		after 100 write_firmware_now
 	}
 }
 
 proc write_firmware_now {} {
-	set ::de1(currently_erasing_firmware) 0
 	set ::de1(currently_updating_firmware) 1
+	set ::de1(currently_erasing_firmware) 0
 	set ::de1(firmware_update_start_time) [clock milliseconds]
 	msg "Start writing firmware now [stacktrace]"
 
@@ -734,8 +734,8 @@ proc firmware_upload_next {} {
 		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data]
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 		if {$::android != 1} {
-			#set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
-			after 10 firmware_upload_next
+			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
+			after 100 firmware_upload_next
 			#firmware_upload_next
 		}
 	}
@@ -2306,7 +2306,7 @@ proc de1_ble_handler { event data } {
 								} elseif {$cuuid == "0000A006-0000-1000-8000-00805F9B34FB"} {
 									if {$::de1(currently_erasing_firmware) == 1 && $::de1(currently_updating_firmware) == 0} {
 										# erase ack received
-										set ::de1(currently_erasing_firmware) 0
+										#set ::de1(currently_erasing_firmware) 0
 										msg "firmware erase write ack recved: [string length $value] bytes: $value : [array get arr2]"
 									} elseif {$::de1(currently_erasing_firmware) == 0 && $::de1(currently_updating_firmware) == 1} {
 

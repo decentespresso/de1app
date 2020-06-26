@@ -3038,7 +3038,7 @@ proc check_firmware_update_is_available {} {
 proc firmware_update_eta_label {} {
 
 	if {[info exists ::de1(firmware_update_start_time)] != 1} {
-		msg "firmware_update_eta_label - no ::de1(firmware_update_start_time)"
+		#msg "firmware_update_eta_label - no ::de1(firmware_update_start_time)"
 		return
 	}
 
@@ -3046,16 +3046,16 @@ proc firmware_update_eta_label {} {
 	set ::de1(firmware_update_eta) 0
 
 	set percentage [expr {1.0 * ($::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
-	#msg "percentage $percentage"
 
 	if {$percentage >= 1 && $::de1(currently_updating_firmware) == 0} {
 		#return "[translate {Turn your machine off and on again}]"
 		return ""
+	} elseif {$percentage < 0.003 } {
+		# not enough data to give a good estimate yet
+		return ""
 	} else {
 		set etamin [expr {round((($elapsed / $percentage) - $elapsed) / 60000)}]
-		set etasec [expr {round((($elapsed / $percentage) - $elapsed) / 1000)}]
-		#set etasec [expr {(($elapsed - ($elapsed / $percentage)) / 10000)}]
-		#set etasec [expr {(($elapsed / $percentage) / 1000)}]
+		set etasec [expr {1 + round((($elapsed / $percentage) - $elapsed) / 1000)}]
 		if {$etasec >=120} {
 			return "$etamin [translate minutes]"
 		} else {
@@ -3070,7 +3070,7 @@ proc firmware_uploaded_label {} {
 
 	#msg "currently_updating_firmware:  $::de1(currently_updating_firmware)/ $::de1(currently_erasing_firmware)"
 
-	if {($::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0) && $::de1(currently_updating_firmware) != "1"} {
+	if {($::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0) && $::de1(currently_updating_firmware) != "1" && $::de1(currently_erasing_firmware) != "1"} {
 		if {$::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]} {
 			return [translate "No update necessary"]
 		}
@@ -3079,7 +3079,7 @@ proc firmware_uploaded_label {} {
 	} 
 
 	if {$::de1(firmware_update_size) == 0 || $::de1(firmware_bytes_uploaded) == 0} {
-		return "0%"
+		return "0.0%"
 	}
 
 	set percentage [expr {(100.0 * $::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
