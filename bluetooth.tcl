@@ -504,7 +504,7 @@ proc de1_disable_state_notifications {} {
 
 set ::mmr_enabled ""
 proc mmr_available {} {
-return 1
+#return 1
 	if {$::mmr_enabled == ""} {
 
 		if {$::de1(version) == ""} {
@@ -612,10 +612,10 @@ proc start_firmware_update {} {
 		#	return
 		#}
 	} else {
-		#if {$::settings(force_fw_update) != 1} {
-		#	set ::de1(firmware_update_button_label) "Up to date"
-		#	return
-		#}
+		if {$::settings(force_fw_update) != 1} {
+			set ::de1(firmware_update_button_label) "Up to date"
+			return
+		}
 	}
 
 	if {$::de1(currently_erasing_firmware) == 1} {
@@ -667,7 +667,7 @@ proc start_firmware_update {} {
 		userdata_append "Erase firmware do: [array get arr]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_09) $::cinstance($::de1(cuuid_09)) $data]
 		after 10000 write_firmware_now
 	} else {
-		after 100 write_firmware_now
+		after 1000 write_firmware_now
 	}
 }
 
@@ -734,8 +734,8 @@ proc firmware_upload_next {} {
 		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data]
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 		if {$::android != 1} {
-			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
-			after 100 firmware_upload_next
+			#set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
+			after 1 firmware_upload_next
 			#firmware_upload_next
 		}
 	}
@@ -831,6 +831,26 @@ proc set_steam_flow {desired_flow} {
 proc get_steam_flow {} {
 	msg "Getting steam flow rate"
 	mmr_read "get_steam_flow" "803828" "00"
+}
+
+proc get_3_mmr_cpuboard_machinemodel_firmwareversion {} {
+	mmr_read "cpuboard_machinemodel_firmwareversion" "800008" "02"
+
+}
+
+proc get_cpu_board_model {} {
+	msg "Getting CPU board model"
+	mmr_read "get_cpu_board_model" "800008" "00"
+}
+
+proc get_machine_model {} {
+	msg "Getting machine model"
+	mmr_read "get_machine_model" "80000C" "00"
+}
+
+proc get_firmware_version_number {} {
+	msg "Getting firmware version number"
+	mmr_read "get_firmware_version_number" "800010" "00"
 }
 
 
@@ -1416,8 +1436,24 @@ proc ble_connect_to_de1 {} {
 		#set version_value "\x01\x00\x00\x00\x03\x00\x00\x00\xAC\x1B\x1E\x09\x01"
 		#set version_value "\x01\x00\x00\x00\x03\x00\x00\x00\xAC\x1B\x1E\x09\x01"
 		set version_value "\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51"
-		parse_binary_version_desc $version_value arr2
+		#parse_binary_version_desc $version_value arr2
 		set ::de1(version) [array get arr2]
+
+		set mmr_test "\x0C\x80\x00\x08\x14\x05\x00\x00\x03\x00\x00\x00\x71\x04\x00\x00\x00\x00\x00\x00"
+		#parse_binary_mmr_read $mmr_test arr3
+		msg [array get arr3]
+
+		#set mmr_test "\x0C\x80\x00\x08\x14\x05\x00\x00\x03\x00\x00\x00\x71\x04\x00\x00\x00\x00\x00\x00"
+		parse_binary_mmr_read_int $mmr_test arr4
+		msg [array get arr4]
+
+		msg "MMRead: CPU board model: '[ifexists arr4(Data0)]'"
+		msg "MMRead: machine model:  '[ifexists arr4(Data1)]'"
+		msg "MMRead: firmware version number: '[ifexists arr4(Data2)]'"
+
+		set ::settings(cpu_board_model) [ifexists arr4(Data0)]
+		set ::settings(machine_model) [ifexists arr4(Data1)]
+		set ::settings(firmware_version_number) [ifexists arr4(Data2)]
 
 		return
 	}
@@ -1572,18 +1608,28 @@ proc later_new_de1_connection_setup {} {
 		return
 	}
 
-	#de1_enable_mmr_notifications
+	de1_enable_mmr_notifications
+	get_ghc_is_installed
 	de1_send_shot_frames
 	set_fan_temperature_threshold $::settings(fan_threshold)
 	de1_send_steam_hotwater_settings
-
 	de1_send_waterlevel_settings
+	get_3_mmr_cpuboard_machinemodel_firmwareversion
 	de1_enable_water_level_notifications
-	get_ghc_is_installed
+	
 
 	after 5000 read_de1_state
 
 }
+
+proc mmr_read_queue_add {cmd} {
+	if {[info exists mmr_read_queue] != 1} {
+		set mmr_read_queue {}
+	}
+
+	lappend mmr_read_queue $cmd
+}
+
 
 proc de1_ble_handler { event data } {
 	#msg "de1 ble_handler '$event' $data"
@@ -1599,7 +1645,7 @@ proc de1_ble_handler { event data } {
     dict with data {
 
     	if {$state != "scanning"} {
-    		msg "de1b ble_handler $event $data"
+    		#msg "de1b ble_handler $event $data"
     	} else {
     		#msg "scanning $event $data"
     	}
@@ -1922,7 +1968,9 @@ proc de1_ble_handler { event data } {
 			    			parse_binary_mmr_read $value arr
 			    			set mmr_id $arr(Address)
 			    			set mmr_val [ifexists arr(Data0)]
-			    			msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
+			    			
+			    			#msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
+
 			    			if {$mmr_id == "80381C"} {
 			    				msg "Read: GHC is installed: '$mmr_val'"
 			    				set ::settings(ghc_is_installed) $mmr_val
@@ -1938,18 +1986,56 @@ proc de1_ble_handler { event data } {
 			    			} elseif {$mmr_id == "803808"} {
 			    				set ::de1(fan_threshold) $mmr_val
 			    				set ::settings(fan_threshold) $mmr_val
-			    				msg "Read: Fan threshold: '$mmr_val'"
+			    				msg "MMRead: Fan threshold: '$mmr_val'"
 			    			} elseif {$mmr_id == "80380C"} {
-			    				msg "Read: tank temperature threshold: '$mmr_val'"
+			    				msg "MMRead: tank temperature threshold: '$mmr_val'"
 			    				set ::de1(tank_temperature_threshold) $mmr_val
 			    			} elseif {$mmr_id == "803820"} {
-			    				msg "Read: group head control mode: '$mmr_val'"
+			    				msg "MMRead: group head control mode: '$mmr_val'"
 			    				set ::settings(ghc_mode) $mmr_val
 			    			} elseif {$mmr_id == "803828"} {
-			    				msg "Read: steam flow: '$mmr_val'"
+			    				msg "MMRead: steam flow: '$mmr_val'"
 			    				set ::settings(steam_flow) $mmr_val
+			    			} elseif {$mmr_id == "800008"} {
+				    			parse_binary_mmr_read_int $value arr2
+
+			    				if {[ifexists arr(Len)] == 12} {
+			    					# it's possibly to read all 3 MMR characteristics at once
+
+					    			# CPU Board Model * 1000. eg: 1100 = 1.1
+				    				msg "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
+				    				set ::settings(cpu_board_model) [ifexists arr2(Data0)]
+
+				    				# v1.3+ Firmware Model (Unset = 0, DE1 = 1, DE1Plus = 2, DE1Pro = 3, DE1XL = 4, DE1Cafe = 5)
+				    				msg "MMRead: machine model:  '[ifexists arr2(Data1)]'"
+				    				set ::settings(machine_model) [ifexists arr2(Data1)]
+
+				    				# CPU Board Firmware build number. (Starts at 1000 for 1.3, increments by 1 for every build)
+				    				msg "MMRead: firmware version number: '[ifexists arr2(Data2)]'"
+			    					set ::settings(firmware_version_number) [ifexists arr2(Data2)]
+
+		    					} else {
+		    						# CPU Board Model * 1000. eg: 1100 = 1.1
+				    				msg "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
+				    				set ::settings(cpu_board_model) [ifexists arr2(Data0)]
+				    			}
+
+			    			} elseif {$mmr_id == "80000C"} {
+								parse_binary_mmr_read_int $value arr2
+
+			    				# v1.3+ Firmware Model (Unset = 0, DE1 = 1, DE1Plus = 2, DE1Pro = 3, DE1XL = 4, DE1Cafe = 5)
+			    				msg "MMRead: machine model:  '[ifexists arr2(Data0)]'"
+			    				set ::settings(machine_model) [ifexists arr2(Data0)]
+
+			    			} elseif {$mmr_id == "800010"} {
+								parse_binary_mmr_read_int $value arr2
+
+			    				# CPU Board Firmware build number. (Starts at 1000 for 1.3, increments by 1 for every build)
+			    				msg "MMRead: firmware version number: '[ifexists arr2(Data0)]'"
+		    					set ::settings(firmware_version_number) [ifexists arr2(Data0)]
+
 			    			} elseif {$mmr_id == "80382C"} {
-			    				msg "Read: steam_highflow_start: '$mmr_val'"
+			    				msg "MMRead: steam_highflow_start: '$mmr_val'"
 			    				set ::settings(steam_highflow_start) $mmr_val
 			    			} else {
 			    				msg "Uknown type of direct MMR read on '[convert_string_to_hex $mmr_id]': $data"

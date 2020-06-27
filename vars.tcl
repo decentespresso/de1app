@@ -3003,6 +3003,8 @@ proc round_to_half_integer {in} {
 	return $r
 }
 
+
+
 proc check_firmware_update_is_available {} {
 	#msg "check_firmware_update_is_available"
 
@@ -3015,10 +3017,10 @@ proc check_firmware_update_is_available {} {
 		#}
 	} else {
 		#msg "No firmware updates at the moment for machines earlier than v1.3 unless forced to do so"
-		#if {$::settings(force_fw_update) != 1} {
-		#	set ::de1(firmware_update_button_label) "Up to date"
-		#	return ""
-		#}
+		if {$::settings(force_fw_update) != 1} {
+			set ::de1(firmware_update_button_label) "Up to date"
+			return ""
+		}
 	}
 
 	if {[ifexists ::de1(firmware_crc)] == ""} {

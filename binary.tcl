@@ -633,6 +633,20 @@ proc spec_ReadFromMMR {} {
 	}
 }
 
+proc spec_ReadFromMMR_int {} {
+
+	set spec {
+		Len {char {} {} {unsigned} {}}
+		Address1 {char {} {} {unsigned} {}}
+		Address2 {char {} {} {unsigned} {}}
+		Address3 {char {} {} {unsigned} {}}
+		Data0 {int {} {} {unsigned} {}}
+		Data1 {int {} {} {unsigned} {}}
+		Data2 {int {} {} {unsigned} {}}
+		Data3 {int {} {} {unsigned} {}}
+	}
+}
+
 # C code:
 #	struct PACKEDATTR T_WriteToMMR {
 #	  U8P0  Len;       // Length of data
@@ -1140,6 +1154,51 @@ proc parse_binary_mmr_read {packed destarrname} {
 	}
 
 	set mmrdata(Address) "[format %02X $mmrdata(Address1)][format %02X $mmrdata(Address2)][format %02X $mmrdata(Address3)]"
+}
+
+proc parse_binary_mmr_read {packed destarrname} {
+
+	upvar $destarrname mmrdata
+	unset -nocomplain mmrdata
+
+	set spec [spec_ReadFromMMR]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec mmrdata bigeendian
+	foreach {field val} [array get mmrdata] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set mmrdata($field) [expr $extra]
+		}
+	}
+
+	set mmrdata(Address) "[format %02X $mmrdata(Address1)][format %02X $mmrdata(Address2)][format %02X $mmrdata(Address3)]"
+	unset -nocomplain mmrdata(Address1)
+	unset -nocomplain mmrdata(Address2)
+	unset -nocomplain mmrdata(Address3)
+
+}
+proc parse_binary_mmr_read_int {packed destarrname} {
+	upvar $destarrname mmrdata
+	unset -nocomplain mmrdata
+
+	set spec [spec_ReadFromMMR_int]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec mmrdata littleeendian
+	foreach {field val} [array get mmrdata] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set mmrdata($field) [expr $extra]
+		}
+	}
+
+	set mmrdata(Address) "[format %02X $mmrdata(Address1)][format %02X $mmrdata(Address2)][format %02X $mmrdata(Address3)]"
+	unset -nocomplain mmrdata(Address1)
+	unset -nocomplain mmrdata(Address2)
+	unset -nocomplain mmrdata(Address3)
 
 }
 
