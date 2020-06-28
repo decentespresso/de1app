@@ -441,7 +441,10 @@ add_de1_text "settings_3" 1304 750 -text [translate "Firmware"] -font Helv_10_bo
 	add_de1_variable "settings_3" 1960 906 -text "" -width [rescale_y_skin 1000] -font Helv_10_bold -fill "#FFFFFF" -justify "center" -anchor "center" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]} 
 	add_de1_variable "settings_3" 1960 964 -font Helv_8 -fill "#FFFFFF" -anchor "center" -width 500 -justify "center" -textvariable {[firmware_uploaded_label]} 
 	#add_de1_button "settings_3" {start_firmware_update} 1280 820 2540 1020
-	add_de1_button "settings_3" {set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1} 1280 820 2540 1020
+	add_de1_button "settings_3" {set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1} 1280 850 2540 1020
+	
+	# hidden button to force a firmware update even if it is currently disabled.
+	add_de1_button "settings_3" {set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1} 1280 750 1800 810
 
 
 # app update
