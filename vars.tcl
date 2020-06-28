@@ -3011,10 +3011,10 @@ proc check_firmware_update_is_available {} {
 	if {$::settings(ghc_is_installed) != 0} {
 		# ok to do v1.3 fw update
 		#msg "v1.3 can do fw updates at the moment"
-		#if {$::settings(force_fw_update) != 1} {
-		#	set ::de1(firmware_update_button_label) "Up to date"
-		#	return ""
-		#}
+		if {$::settings(force_fw_update) != 1} {
+			set ::de1(firmware_update_button_label) "Up to date"
+			return ""
+		}
 	} else {
 		#msg "No firmware updates at the moment for machines earlier than v1.3 unless forced to do so"
 		if {$::settings(force_fw_update) != 1} {
@@ -3109,6 +3109,17 @@ proc de1_version_string {} {
 	set version "BLE v[ifexists v(BLE_Release)].[ifexists v(BLE_Changes)].[ifexists v(BLE_Commits)], API v[ifexists v(BLE_APIVersion)], SHA=[ifexists v(BLE_Sha)]"
 	if {[ifexists v(FW_Sha)] != [ifexists v(BLE_Sha)] && [ifexists v(FW_Sha)] != 0} {
 		append version "\nFW v[ifexists v(FW_Release)].[ifexists v(FW_Changes)].[ifexists v(FW_Commits)], API v[ifexists v(FW_APIVersion)], SHA=[ifexists v(FW_Sha)]"
+	}
+
+	array set modelarr [list 0 [translate "unknown"] 1 DE1 2 DE1+ 3 DE1PRO 4 DE1XL 5 DE1CAFE]
+
+	set brev ""
+	if {[ifexists ::settings(cpu_board_model)] != ""} {
+		set brev [expr {$::settings(cpu_board_model) / 1000.0}]
+	}
+	
+	if {[ifexists ::settings(machine_model)] != "" && [ifexists ::settings(machine_model)] != "0"} {
+		append version ", pcb=$brev, model=[ifexists modelarr([ifexists ::settings(machine_model)])], rev=[ifexists ::settings(firmware_version_number)]"
 	}
 	return $version
 
