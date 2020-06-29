@@ -920,7 +920,7 @@ proc show_going_to_sleep_page  {} {
 		return
 	}
 
-    if {$::de1(currently_updating_firmware) == 1} {
+	if {$::de1(currently_updating_firmware) == 1 || [ifexists ::de1(in_fw_update_mode)] == 1} {
 		msg "delaying screen saver because firmware is updating"
 		delay_screen_saver
 		return
