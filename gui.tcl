@@ -1233,6 +1233,7 @@ proc show_settings { {tab_to_show ""} } {
 	}
 
 	update_de1_explanation_chart
+
 	#preview_profile 
 }
 

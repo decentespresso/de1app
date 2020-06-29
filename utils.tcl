@@ -1078,6 +1078,8 @@ proc load_settings {} {
     #espresso_elapsed append 0    
     clear_espresso_chart
 
+    
+
 }
 
 proc skin_xscale_factor {} {

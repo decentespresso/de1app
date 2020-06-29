@@ -15,7 +15,7 @@ flow_profile_decline 1
 flow_profile_decline_time 23
 flow_profile_minimum_pressure 6
 preinfusion_flow_rate 4.5
-profile_notes {An amazing long espresso for light roasts, this is the biggest fruit bomb of any brewing method we know.  5:1 ratio, 35-40 seconds, coarse espresso grind. If close to the right pressure, make 0.5g dose adjustments to get to an 8-9 bar peak. The very high flow rate means small grind adjustments cause big pressure changes. An advanced technique, allongé averages 24% extraction.}
+profile_notes {Lever espresso machines are why we refer to pulling an espresso.  You pull a spring-loaded lever by hand to create pressure on the coffee puck.  This 9 bar espresso is the most common type of classic lever espresso you'll have, and many fans consider lever shots to be the best espresso they've ever had.}
 water_temperature 80
 final_desired_shot_volume 36
 final_desired_shot_weight 36
