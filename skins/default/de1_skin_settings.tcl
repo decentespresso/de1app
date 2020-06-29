@@ -495,7 +495,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 	add_de1_text "firmware_update_1" 40 20 -text [translate "Firmware Update"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "nw" -justify "left" 
 		add_de1_text "firmware_update_1" 2530 20 -text "1/4" -font Helv_16_bold -fill "#888888" -anchor "ne" -justify "right"
 		add_de1_text "firmware_update_1" 2290 1508 -text [translate "Cancel"] -font Helv_10_bold -fill "#DDDDDD" -anchor "center"
-		add_de1_button "firmware_update_1" {say [translate {Cancel}] $::settings(sound_button_in); page_to_show_when_off settings_3;} 1960 1200 2560 1600 ""
+		add_de1_button "firmware_update_1" {say [translate {Cancel}] $::settings(sound_button_in); set ::de1(in_fw_update_mode) 0; page_to_show_when_off settings_3;} 1960 1200 2560 1600 ""
 		add_de1_variable "firmware_update_1" 730 700 -text [translate "Turn your DE1 off"] -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[if {$::de1(device_handle) == 0 && $::android == 1} { page_show firmware_update_2; }; return [translate "Turn your DE1 off"]]}
 
 	add_de1_text "firmware_update_2" 40 20 -text [translate "Firmware Update"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "nw" -justify "left" 

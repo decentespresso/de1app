@@ -1818,6 +1818,8 @@ proc de1_ble_handler { event data } {
 
 						if {[ifexists ::de1(in_fw_update_mode)] == 1} {
 							msg "in_fw_update_mode : de1 connected"
+
+							msg "Tell DE1 to start to go to SLEEP (so it's asleep during firmware upgrade)"
 							de1_send_state "go to sleep" $::de1_state(Sleep)
 							set_fan_temperature_threshold 60
 						} else {
