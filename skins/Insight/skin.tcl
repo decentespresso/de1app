@@ -507,7 +507,7 @@ add_de1_button "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zo
 } 1 1 2012 1600
 
 # the "go to sleep" button and the whole-screen button for coming back awake
-add_de1_button "saver sleep descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off espresso; page_show off; start_idle; de1_send_waterlevel_settings; } 0 0 2560 1600
+add_de1_button "saver sleep descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off off; page_show off; start_idle; de1_send_waterlevel_settings; } 0 0 2560 1600
 
 
 if {$::debugging == 1} {
