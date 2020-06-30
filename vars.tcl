@@ -3118,8 +3118,14 @@ proc de1_version_string {} {
 		set brev [expr {$::settings(cpu_board_model) / 1000.0}]
 	}
 	
+	if {$brev != ""} {
+		append version ", pcb=$brev"
+	}
 	if {[ifexists ::settings(machine_model)] != "" && [ifexists ::settings(machine_model)] != "0"} {
-		append version ", pcb=$brev, model=[ifexists modelarr([ifexists ::settings(machine_model)])], rev=[ifexists ::settings(firmware_version_number)]"
+		append version ", model=[ifexists modelarr([ifexists ::settings(machine_model)])]"
+	}
+	if {[ifexists ::settings(firmware_version_number)] != ""} {
+		append version ", rev=[ifexists ::settings(firmware_version_number)]"
 	}
 	return $version
 
