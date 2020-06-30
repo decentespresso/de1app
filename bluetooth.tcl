@@ -504,7 +504,8 @@ proc de1_disable_state_notifications {} {
 
 set ::mmr_enabled ""
 proc mmr_available {} {
-#return 1
+	#return 0
+
 	if {$::mmr_enabled == ""} {
 
 		if {$::de1(version) == ""} {
@@ -612,10 +613,10 @@ proc start_firmware_update {} {
 			return
 		}
 	} else {
-		if {$::settings(force_fw_update) != 1} {
+		#if {$::settings(force_fw_update) != 1} {
 			set ::de1(firmware_update_button_label) "Up to date"
 			return
-		}
+		#}
 	}
 
 	if {$::de1(currently_erasing_firmware) == 1} {
