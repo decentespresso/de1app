@@ -734,7 +734,7 @@ proc firmware_upload_next {} {
 		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data]
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 		if {$::android != 1} {
-			#set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
+			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
 			after 1 firmware_upload_next
 			#firmware_upload_next
 		}
@@ -1476,7 +1476,6 @@ proc ble_connect_to_de1 {} {
 		catch {
 			#ble unpair $::settings(bluetooth_address)
 		}
-
 	}
     set ::de1(device_handle) 0
 
@@ -1731,7 +1730,10 @@ proc de1_ble_handler { event data } {
 
 					    	update_de1_state "$::de1_state(Sleep)\x0"
 					    } else {
-						    ble_connect_to_de1
+
+					    	if {[ifexists ::de1(disable_de1_reconnect)] != 1} {
+						    	ble_connect_to_de1
+						    }
 					    }
 
 				    } elseif {$address == $::settings(scale_bluetooth_address)} {
@@ -2539,6 +2541,17 @@ proc calibration_ble_received {value} {
 		msg "unknown calibration data received [string length $value] bytes: $value  : [array get arr2]"
 	}
 
+}
+
+proc enable_de1_reconnect {} {
+	msg "enable_de1_reconnect"
+	set ::de1(disable_de1_reconnect) 1
+	ble_connect_to_de1
+}
+
+proc disable_de1_reconnect {} {
+	msg "disable_de1_reconnect"
+	set ::de1(disable_de1_reconnect) 1
 }
 
 proc after_shot_weight_hit_update_final_weight {} {
