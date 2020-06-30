@@ -609,7 +609,7 @@ add_de1_text "settings_4" 1310 1130 -text [translate "Exit app"] -font Helv_10_b
 
 
 add_de1_text "settings_3" 55 544 -text [translate {Version}] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1220] -justify "left" 
-	add_de1_variable "settings_3" 55 620 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1180] -justify "left" -textvariable {[de1_version_string]} 
+	add_de1_variable "settings_3" 55 616 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1180] -justify "left" -textvariable {[de1_version_string]} 
 
 #add_de1_text "settings_3" 1310 380 -text [translate "Water level"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" 
 #	add_de1_variable "settings_3" 1600 380 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" -textvariable {[round_to_integer $::de1(water_level)][translate mm]}
