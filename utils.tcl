@@ -633,7 +633,9 @@ proc translate {english} {
                 #log_to_debug_file "English: '$available([language])'"
                 if {[language] == "ar" && ($::android == 1 || $::undroid == 1)} {
                     # use the "arb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
-                    return $available(arb)
+                    if {[ifexists available(arb)] != ""} {
+                        return $available(arb)
+                    }
                 }
 
                 return $available([language])
