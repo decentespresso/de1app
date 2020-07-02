@@ -627,7 +627,7 @@ proc translate {english} {
             #puts "$available([language])"
 
             #puts "translate: '[encoding convertfrom $available([language])]'"
-            if {$available([language]) != ""} {
+            if {[ifexists available([language])] != ""} {
                 # if the translated version of the English is NOT blank, return it
                 #log_to_debug_file [encoding names]
                 #log_to_debug_file "English: '$available([language])'"
