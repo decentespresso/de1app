@@ -195,9 +195,16 @@ proc setup_display_time_in_screen_saver {} {
 	set ::clocktime [clock seconds]
 	set ::previous_clocktime 0
 	
-	set ::saver_clock2 [add_de1_variable "saver" 1278 898 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#CCCCCC" -width 2000 -textvariable {[time_format $::clocktime 1]}]
-	set ::saver_clock3 [add_de1_variable "saver" 1282 902 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#666666" -width 2000 -textvariable {[time_format $::clocktime 1]}]
-	set ::saver_clock [add_de1_variable "saver" 1280 900 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#F8F8F8" -width 2000 -textvariable {[time_format $::clocktime 1]}]
+	if {$::settings(black_screen_saver) == 1} {    
+		set ::saver_clock2 [add_de1_variable "saver" 1278 898 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#111111" -width 2000 -textvariable {[time_format $::clocktime 1]}]
+		set ::saver_clock3 [add_de1_variable "saver" 1282 902 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#222222" -width 2000 -textvariable {[time_format $::clocktime 1]}]
+		set ::saver_clock [add_de1_variable "saver" 1280 900 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#444444" -width 2000 -textvariable {[time_format $::clocktime 1]}]
+	} else {
+		set ::saver_clock2 [add_de1_variable "saver" 1278 898 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#CCCCCC" -width 2000 -textvariable {[time_format $::clocktime 1]}]
+		set ::saver_clock3 [add_de1_variable "saver" 1282 902 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#666666" -width 2000 -textvariable {[time_format $::clocktime 1]}]
+		set ::saver_clock [add_de1_variable "saver" 1280 900 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#F8F8F8" -width 2000 -textvariable {[time_format $::clocktime 1]}]
+	}
+
 
 	after 1000 saver_clock_move
 	proc saver_clock_move {} {
@@ -1294,7 +1301,11 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	# set the brightness in one place
 	if {$page_to_show == "saver" } {
-		display_brightness $::settings(saver_brightness)
+		if {$::settings(black_screen_saver) == 1} {
+			display_brightness 0
+		} else {
+			display_brightness $::settings(saver_brightness)
+		}
 		borg systemui $::android_full_screen_flags  
 	} else {
 		display_brightness $::settings(app_brightness)

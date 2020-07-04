@@ -138,6 +138,7 @@ proc make_de1_dir {} {
         skins/default/1280x800/travel_do.jpg *
         skins/default/1280x800/travel_prepare.jpg *
         skins/default/1280x800/descalewarning.jpg *
+        skins/default/1280x800/black_saver.jpg *
 
         skins/default/2560x1600/firmware_upgrade.jpg *
         skins/default/2560x1600/firmware_upgrade_on.jpg *
@@ -169,6 +170,7 @@ proc make_de1_dir {} {
         skins/default/2560x1600/travel_do.jpg *
         skins/default/2560x1600/travel_prepare.jpg *
         skins/default/2560x1600/descalewarning.jpg *
+        skins/default/2560x1600/black_saver.jpg *
 
         skins/Antibes/skin.tcl *
         skins/Antibes/moonflower.ttf *

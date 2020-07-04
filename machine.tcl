@@ -183,6 +183,7 @@ array set ::settings {
 	steam_over_pressure_count_trigger 10
 	steam_over_temp_count_trigger 10
 	active_settings_tab settings_2a
+	black_screen_saver 0
 	chart_total_shot_weight 1
 	ghc_mode 0
 	fan_threshold 45

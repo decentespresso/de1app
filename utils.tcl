@@ -433,6 +433,8 @@ proc random_saver_file {} {
         catch {
             set savers [glob -nocomplain "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
         }
+
+
         if {$savers == ""} {
             catch {
                 file mkdir "[saver_directory]/${::screen_size_width}x${::screen_size_height}/"
@@ -455,6 +457,13 @@ proc random_saver_file {} {
         }
 
         set ::saver_files_cache [glob -nocomplain "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+
+        if {$::settings(black_screen_saver) == 1} {    
+            set ::saver_files_cache "[defaultskin_directory_graphics]/black_saver.jpg"
+            
+        }
+        puts "::saver_files_cache $::saver_files_cache"
+
     }
     return [random_pick $::saver_files_cache]
 

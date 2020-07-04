@@ -3256,6 +3256,8 @@ proc return_steam_heater_calibration {steam_temperature} {
 	return [return_temperature_setting $steam_temperature]
 }
 
+
+# obsolete - does not work reliably
 proc Restart_app {} {
    #foreach w [winfo children .] {
     ##   destroy $w
