@@ -920,11 +920,55 @@ set enable_flow_calibration 0
 set calibration_labels_row 350
 set calibration_row_spacing 120
 
-# (re)calibration page
-add_de1_text "calibrate" 1280 290 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 
-	add_de1_text "calibrate" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-		add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); 
+
+
+
+# (re)calibration page
+add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+
+	add_de1_text "calibrate calibrate2" 2520 1510 -text [subst {\[ [translate "More"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
+		add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); get_heater_voltage; page_to_show_when_off calibrate2;} 2200 1400 2560 1600 ""
+		add_de1_button "calibrate2" {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off calibrate;} 2200 1400 2560 1600 ""
+
+		###############################################################################################
+		# Nominal heater voltage. (Address 803834)
+		#  On 1.1 or 1.3 machines, it's assumed to be in the same range as the measured voltage.
+		#  On 1.0 machines, we can't measure voltage, so:
+		#    Return 0 for unknown
+		#    Return 1120 or 1230 if we've been set to 120 or 230
+		#
+		#  Summary for reads:
+		#      0 : We don't know nominal heater voltage
+		#    120 : We think we have 120V heaters
+		#    230 : We think we have 230V heaters
+		#   1120 : We've been told we have 120V heaters
+		#   1230 : We've been told we have 230V heaters
+		#
+		#   Summary for writes:
+		#     IF you read 0, 1120, or 1230, you can write a new nominal voltage, which may be 120 or 230V
+
+		add_de1_text "calibrate2" 350 500  -text [translate "Voltage"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_variable "calibrate2" 1000 500  -text "" -font Helv_11_bold -fill "#4e85f4" -anchor "nw" -textvariable {[if {$::settings(heater_voltage) == "1230" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { return [subst {\[ [translate "Set to 120V"] \]}] } else { return "" }]}
+		add_de1_variable "calibrate2" 1600 500  -text "" -font Helv_11_bold -fill "#4e85f4" -anchor "nw" -textvariable {[if {$::settings(heater_voltage) == "1120" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { return [subst {\[ [translate "Set to 230V"] \]}] } else { return "" }]}
+		
+		add_de1_button "calibrate2" {if {$::settings(heater_voltage) == "1230" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { if {$::android == 0} { set ::settings(heater_voltage) "1120" }; set_heater_voltage "120"; get_heater_voltage} } 1000 450 1450 600 ""
+		add_de1_button "calibrate2" {if {$::settings(heater_voltage) == "1120" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { if {$::android == 0} { set ::settings(heater_voltage) "1230" }; set_heater_voltage "230"; get_heater_voltage} } 1600 450 2050 600 ""
+
+		add_de1_variable "calibrate2" 700 500  -text [translate "Voltage"] -font Helv_11 -fill "#7f879a" -anchor "nw" -justify "left"  -textvariable {[if {$::settings(heater_voltage) == "120" || $::settings(heater_voltage) == "1120"} {
+				return "120V"
+			} elseif {$::settings(heater_voltage) == "230" || $::settings(heater_voltage) == "1230" } {
+				return "230V"
+			} else {
+				return [translate "unknown"]
+			}]
+		}
+		###############################################################################################
+
+		
+
+	add_de1_text "calibrate calibrate2" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+		add_de1_button "calibrate calibrate2" {say [translate {Done}] $::settings(sound_button_in); 
 		if {[ifexists ::calibration_disabled_fahrenheit] == 1} {
 			set ::settings(enable_fahrenheit) 1
 			unset -nocomplain ::calibration_disabled_fahrenheit
@@ -1069,5 +1113,5 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#set_next_page off firmware_update_1
+#set_next_page off calibrate2
 #set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1

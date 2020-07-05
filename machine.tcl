@@ -181,6 +181,7 @@ array set ::settings {
 	chart_total_shot_flow 1
 	tare_only_on_espresso_start 0
 	steam_over_pressure_count_trigger 10
+	heater_voltage ""
 	steam_over_temp_count_trigger 10
 	active_settings_tab settings_2a
 	black_screen_saver 0

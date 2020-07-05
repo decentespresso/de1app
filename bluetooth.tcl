@@ -111,7 +111,7 @@ proc decentscale_enable_lcd {} {
 	if {$::de1(scale_device_handle) == 0} {
 		return 
 	}
-	set screenon [decent_scale_make_command 0A 01 00]
+	set screenon [decent_scale_make_command 0A 01 01]
 	msg "decent scale screen on: '[convert_string_to_hex $screenon]' '$screenon'"
 	userdata_append "decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon]
 
@@ -125,7 +125,7 @@ proc decentscale_enable_lcd {} {
 	#msg "decent scale timer on: '$timeron'"
 	#userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
 
-	decentscale_timer_start
+	#decentscale_timer_start
 	#set timeron [decent_scale_make_command 0B 01]
 	#msg "decent scale timer on: '$timeron'"
 	#userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
@@ -146,7 +146,7 @@ proc decentscale_disable_lcd {} {
 	if {$::de1(scale_device_handle) == 0} {
 		return 
 	}
-	set screenoff [decent_scale_make_command 0A 00]
+	set screenoff [decent_scale_make_command 0A 00 00]
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
 		msg "decentscale not connected, cannot disable LCD"
@@ -180,7 +180,7 @@ proc decentscale_timer_start {} {
 	#msg "decent scale timer reset: '$timerreset'"
 	#userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timerreset]
 
-	set timeron [decent_scale_make_command 0B 01]
+	set timeron [decent_scale_make_command 0B 03 00]
 	msg "decent scale timer on: [convert_string_to_hex $timeron] '$timeron'"
 	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
 
@@ -209,7 +209,7 @@ proc decentscale_timer_stop {} {
 		return
 	}
 
-	set timeron [decent_scale_make_command 0B 00]
+	set timeron [decent_scale_make_command 0B 00 00]
 	msg "decent scale timer on: '$timeron'"
 	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron]
 
@@ -834,6 +834,11 @@ proc get_steam_flow {} {
 	mmr_read "get_steam_flow" "803828" "00"
 }
 
+proc get_heater_voltage {} {
+	msg "Getting heater voltage"
+	mmr_read "get_heater_voltage" "803834" "00"
+}
+
 proc get_3_mmr_cpuboard_machinemodel_firmwareversion {} {
 	mmr_read "cpuboard_machinemodel_firmwareversion" "800008" "02"
 
@@ -853,6 +858,13 @@ proc get_firmware_version_number {} {
 	msg "Getting firmware version number"
 	mmr_read "get_firmware_version_number" "800010" "00"
 }
+
+proc set_heater_voltage {heater_voltage} {
+	#return
+	msg "Setting heater voltage to '$heater_voltage'"
+	mmr_write "803834" "04" [zero_pad [int_to_hex $heater_voltage] 2]
+}
+
 
 
 proc set_steam_highflow_start {desired_seconds} {
@@ -1181,7 +1193,7 @@ proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 	} elseif {$calib_target == "temperature"} {
 		set target 2
 	} else {
-		msg "Uknown calibration target: '$calib_target'"
+		msg "Unknown calibration send target: '$calib_target'"
 		return
 	}
 
@@ -1213,7 +1225,7 @@ proc de1_read_calibration {calib_target {factory 0} } {
 	} elseif {$calib_target == "temperature"} {
 		set target 2
 	} else {
-		msg "Uknown calibration target: '$calib_target'"
+		msg "Unknown calibration write target: '$calib_target'"
 		return
 	}
 
@@ -1600,6 +1612,7 @@ proc append_to_scale_bluetooth_list {address name} {
 	}
 }
 
+# mmr_read used
 proc later_new_de1_connection_setup {} {
 	# less important stuff, also some of it is dependent on BLE version
 
@@ -1616,6 +1629,10 @@ proc later_new_de1_connection_setup {} {
 	de1_send_waterlevel_settings
 	get_3_mmr_cpuboard_machinemodel_firmwareversion
 	de1_enable_water_level_notifications
+
+	#if {$::settings(heater_voltage) == ""} {
+		after 7000 get_heater_voltage
+	#}
 	
 
 	after 5000 read_de1_state
@@ -1974,7 +1991,7 @@ proc de1_ble_handler { event data } {
 			    			set mmr_id $arr(Address)
 			    			set mmr_val [ifexists arr(Data0)]
 			    			
-			    			#msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
+			    			msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
 
 			    			if {$mmr_id == "80381C"} {
 			    				msg "Read: GHC is installed: '$mmr_val'"
@@ -2001,6 +2018,22 @@ proc de1_ble_handler { event data } {
 			    			} elseif {$mmr_id == "803828"} {
 			    				msg "MMRead: steam flow: '$mmr_val'"
 			    				set ::settings(steam_flow) $mmr_val
+			    			} elseif {$mmr_id == "803834"} {
+				    			parse_binary_mmr_read_int $value arr2
+
+			    				msg "MMRead: heater voltage: '[ifexists arr2(Data0)]'"
+			    				set ::settings(heater_voltage) [ifexists arr2(Data0)]
+
+			    				catch {
+			    					if {[ifexists ::settings(firmware_version_number)] != ""} {
+			    						if {$::settings(firmware_version_number) >= 1142} {
+					    					if {$::settings(heater_voltage) == 0} {
+					    						msg "Heater voltage is unknown, please set it"
+					    						show_settings calibrate2
+					    					}
+					    				}
+					    			}
+			    				}
 			    			} elseif {$mmr_id == "800008"} {
 				    			parse_binary_mmr_read_int $value arr2
 
@@ -2043,7 +2076,7 @@ proc de1_ble_handler { event data } {
 			    				msg "MMRead: steam_highflow_start: '$mmr_val'"
 			    				set ::settings(steam_highflow_start) $mmr_val
 			    			} else {
-			    				msg "Uknown type of direct MMR read on '[convert_string_to_hex $mmr_id]': $data"
+			    				msg "Uknown type of direct MMR read $mmr_id on '[convert_string_to_hex $mmr_id]': $data"
 			    			}
 
 						} elseif {$cuuid == "0000A001-0000-1000-8000-00805F9B34FB"} {

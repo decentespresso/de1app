@@ -462,7 +462,7 @@ proc random_saver_file {} {
             set ::saver_files_cache "[defaultskin_directory_graphics]/black_saver.jpg"
             
         }
-        puts "::saver_files_cache $::saver_files_cache"
+        #puts "::saver_files_cache $::saver_files_cache"
 
     }
     return [random_pick $::saver_files_cache]
