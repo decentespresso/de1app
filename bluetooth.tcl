@@ -1632,6 +1632,7 @@ proc later_new_de1_connection_setup {} {
 	get_3_mmr_cpuboard_machinemodel_firmwareversion
 	de1_enable_water_level_notifications
 	de1_enable_state_notifications
+	
 
 	#if {$::settings(heater_voltage) == ""} {
 		after 7000 get_heater_voltage
