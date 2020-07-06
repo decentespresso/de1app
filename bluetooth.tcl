@@ -1632,6 +1632,7 @@ proc later_new_de1_connection_setup {} {
 	get_3_mmr_cpuboard_machinemodel_firmwareversion
 	de1_enable_water_level_notifications
 	de1_enable_state_notifications
+	de1_enable_temp_notifications
 	
 
 	#if {$::settings(heater_voltage) == ""} {
@@ -1852,6 +1853,7 @@ proc de1_ble_handler { event data } {
 							set dothis 1
 							if {$dothis == 1} {
 								de1_enable_temp_notifications
+
 								if {[info exists ::de1(first_connection_was_made)] != 1} {
 									# on app startup, wake the machine up
 									set ::de1(first_connection_was_made) 1
