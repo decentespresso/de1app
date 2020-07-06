@@ -81,6 +81,7 @@ add_de1_page "off_zoomed off_zoomed_temperature" "home.png"
 
 #swsettings
 add_de1_page "swsettings" "swsettings.png"
+add_de1_page "swbrewsettings" "swbrewsettings.png"
 
 #Steam
 add_de1_page "steam steam_zoom" "home_2.png"
@@ -102,26 +103,40 @@ add_de1_page "preheat_4" "home.png"
 
 
 # most skins will not bother replacing these graphics
-add_de1_page "sleep" "sleep.png"
+add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
-add_de1_page "tankempty refill" "fill_tank.png"
-add_de1_page "message calibrate infopage tabletstyles languages measurements" "settings_message.png" "default"
-add_de1_page "create_preset" "settings_3_choices.png" "default"
-add_de1_page "descalewarning" "descalewarning.jpg" "default"
-
+add_de1_page "tankempty refill" "fill_tank.jpg" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
+add_de1_page "message calibrate infopage tabletstyles languages profile_notes measurements" "settings_message.png" "default"
+add_de1_page "create_preset" "settings_3_choices.png" "default"
+add_de1_page "firmware_update_3" "firmware_upgrade.jpg" "default"
+add_de1_page "firmware_update_1 firmware_update_4" "firmware_upgrade_off.jpg" "default"
+add_de1_page "firmware_update_2 firmware_update_5" "firmware_upgrade_on.jpg" "default"
 add_de1_page "descaling" "descaling.jpg" "default"
 add_de1_page "descale_prepare" "descale_prepare.jpg" "default"
-
+add_de1_page "ghc" "ghc.jpg" "default"
 add_de1_page "travel_prepare" "travel_prepare.jpg" "default"
 add_de1_page "travel_do" "travel_do.jpg" "default"
+add_de1_page "descalewarning" "descalewarning.jpg" "default"
+add_de1_page "message calibrate calibrate2 infopage tabletstyles languages profile_notes measurements" "settings_message.png" "default"
 
+add_de1_text "tankempty refill" 1280 750 -text [translate "Please add water"] -font Helv_20_bold -fill "#AAAAAA" -justify "center" -anchor "center" -width 900
+add_de1_text "cleaning" 1280 80 -text [translate "Cleaning"] -font Helv_20_bold -fill "#EEEEEE" -justify "center" -anchor "center" -width 900
+add_de1_text "descaling" 1280 80 -text [translate "Descaling"] -font Helv_20_bold -fill "#CCCCCC" -justify "center" -anchor "center" -width 900
+
+add_de1_text "descalewarning" 1280 1310 -text [translate "Your steam wand is clogging up"] -font Helv_17_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
+add_de1_text "descalewarning" 1280 1480 -text [translate "It needs to be descaled soon"] -font Helv_15_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
+add_de1_button "descalewarning" {say [translate {Descale}] $::settings(sound_button_in); show_settings descale_prepare;} 0 0 2560 1600 
+
+
+# group head controller FYI messages
 add_de1_page "ghc_steam ghc_espresso ghc_flush ghc_hotwater" "ghc.jpg" "default"
-add_de1_text "ghc_steam" 1990 680 -text "\[      \]\n[translate {Tap here for steam}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
-add_de1_text "ghc_espresso" 1936 950 -text "\[      \]\n[translate {Tap here for espresso}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
-add_de1_text "ghc_flush" 1520 840 -text "\[      \]\n[translate {Tap here to flush}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 750
-add_de1_text "ghc_hotwater" 1630 600 -text "\[      \]\n[translate {Tap here for hot water}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 820
-add_de1_button "ghc_steam ghc_espresso ghc_flush ghc_hotwater" {say [translate {Ok}] $::settings(sound_button_in); page_show off;} 0 0 2560 1600 
+	add_de1_text "ghc_steam" 1990 680 -text "\[      \]\n[translate {Tap here for steam}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
+	add_de1_text "ghc_espresso" 1936 950 -text "\[      \]\n[translate {Tap here for espresso}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 950
+	add_de1_text "ghc_flush" 1520 840 -text "\[      \]\n[translate {Tap here to flush}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 750
+	add_de1_text "ghc_hotwater" 1630 600 -text "\[      \]\n[translate {Tap here for hot water}]" -font Helv_30_bold -fill "#FFFFFF" -anchor "ne" -justify right  -width 820
+	add_de1_button "ghc_steam ghc_espresso ghc_flush ghc_hotwater" {say [translate {Ok}] $::settings(sound_button_in); page_show off;} 0 0 2560 1600 
+
 
 # out of water page
 add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 0 0 2560 1400 
@@ -131,15 +146,6 @@ add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_but
 	add_de1_text "tankempty" 2220 1504 -text [translate "Ok"] -font Helv_10_bold -fill "#AAAAAA" -anchor "center" 
 	add_de1_button "tankempty" {say [translate {Exit}] $::settings(sound_button_in); .can itemconfigure $::message_label -text [translate "Going to sleep"]; .can itemconfigure $::message_button_label -text [translate "Wait"]; after 10000 {.can itemconfigure $::message_button_label -text [translate "Ok"]; }; set_next_page off message; page_show message; after 500 app_exit} 0 1402 800 1600
 	add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 1760 1402 2560 1600
-
-# show descale warning after steam, if clogging of the steam wand is detected
-add_de1_text "descalewarning" 1280 1310 -text [translate "Your steam wand is clogging up"] -font Helv_17_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
-add_de1_text "descalewarning" 1280 1480 -text [translate "It needs to be descaled soon"] -font Helv_15_bold -fill "#FFFFFF" -justify "center" -anchor "center" -width 900
-add_de1_button "descalewarning" {say [translate {descale}] $::settings(sound_button_in); show_settings descale_prepare} 0 0 2560 1600 
-
-# cleaning and descaling
-add_de1_text "cleaning" 1280 80 -text [translate "Cleaning"] -font Helv_20_bold -fill "#EEEEEE" -justify "center" -anchor "center" -width 900
-add_de1_text "descaling" 1280 80 -text [translate "Descaling"] -font Helv_20_bold -fill "#CCCCCC" -justify "center" -anchor "center" -width 900
 
 
 # new screensavers while we're at it. 
@@ -185,14 +191,14 @@ add_de1_variable "off off_zoomed off_zoomed_temperature" 2356 215 -justify cente
 
 # labels for Power/Settings
 if { [language] == "de" || [language] == "da" || [language] == "sv" || [language] == "pt" || [language] == "nl" } {
-	add_de1_text "home swsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 2356 1503 -text [translate "POWER"] -font helveticabold12 -fill "#ffffff" -anchor "center"
-	add_de1_text "home swsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 1971 1503 -text [translate "SETTINGS"] -font helveticabold12 -fill "#ffffff" -anchor "center"
+	add_de1_text "home swsettings swbrewsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 2356 1503 -text [translate "POWER"] -font helveticabold12 -fill "#ffffff" -anchor "center"
+	add_de1_text "home swsettings swbrewsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 1971 1503 -text [translate "SETTINGS"] -font helveticabold12 -fill "#ffffff" -anchor "center"
 } elseif { [language] == "it" || [language] == "de-ch" || [language] == "fr" || [language] == "pl" || [language] == "sk" || [language] == "hu" }  {
-	add_de1_text "home swsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 2356 1503 -text [translate "POWER"] -font helveticabold16 -fill "#ffffff" -anchor "center"
-	add_de1_text "home swsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 1971 1505.5 -text [translate "SETTINGS"] -font helveticabold16 -fill "#ffffff" -anchor "center"
+	add_de1_text "home swsettings swbrewsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 2356 1503 -text [translate "POWER"] -font helveticabold16 -fill "#ffffff" -anchor "center"
+	add_de1_text "home swsettings swbrewsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 1971 1505.5 -text [translate "SETTINGS"] -font helveticabold16 -fill "#ffffff" -anchor "center"
 } else {
-	add_de1_text "home swsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 2356 1505.5 -text [translate "POWER"] -font helveticabold18 -fill "#ffffff" -anchor "center"
-	add_de1_text "home swsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 1971 1505.5 -text [translate "SETTINGS"] -font helveticabold18 -fill "#ffffff" -anchor "center"
+	add_de1_text "home swsettings swbrewsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 2356 1505.5 -text [translate "POWER"] -font helveticabold18 -fill "#ffffff" -anchor "center"
+	add_de1_text "home swsettings swbrewsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" 1971 1505.5 -text [translate "SETTINGS"] -font helveticabold18 -fill "#ffffff" -anchor "center"
 	
 }
 
@@ -207,7 +213,19 @@ add_de1_button "steam espresso preheat water espresso_2 preheat_2 steam_2 water_
 add_de1_variable "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" 2162.825 518.88 -text [translate "stop"] -font helveticabold18 -fill "#FFFFFF" -anchor "center" -textvariable {[stop_text_if_espresso_stoppable]} 
 
 # make and stop espresso button
-add_de1_button "home off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set ::current_espresso_page espresso; set_next_page off off; start_espresso} 2173 20 2538 338
+if {$::swdark_settings(swbrewsettings) == 1} {
+  if {$::settings(scale_bluetooth_address) != ""} {
+	add_de1_button "home off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" { say [translate {swbrewsettings}] $::settings(sound_button_in); set_next_page off swbrewsettings; start_idle} 2173 20 2538 338
+	add_de1_text "swbrewsettings" 2163.33 300 -text [translate "START"] -font helveticabold24 -fill "#ffffff" -anchor "center"
+	add_de1_variable "swbrewsettings" 2163.33 350 -anchor "center" -text "" -font Helv_7 -fill #cccccc -width [rescale_x_skin 650] -textvariable {$::settings(profile_title)}
+	add_de1_button "swbrewsettings" {say [translate {espresso}] $::settings(sound_button_in); save_settings ; set ::current_espresso_page espresso; set_next_page off off; start_espresso} 1788.65 20 2538 677.76
+  } else {
+	add_de1_button "home off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set ::current_espresso_page espresso; set_next_page off off; start_espresso} 2173 20 2538 338
+  }
+} else {
+	add_de1_button "home off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {espresso}] $::settings(sound_button_in);set ::current_espresso_page espresso; set_next_page off off; start_espresso} 2173 20 2538 338
+}
+
 
 #Dispense hot water button
 add_de1_button "home off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {Hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1788 20 2154 337
@@ -232,22 +250,19 @@ add_de1_button "steam espresso espresso_zoomed espresso_zoomed_temperature steam
 add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off off; start_idle} 0 0 2560 1600
 
 if {$::debugging == 1} {
-	add_de1_button "home swsettings off espresso_1 espresso_2 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); set ::current_espresso_page "off"; start_sleep} 2173 1430 2538 1580
+	add_de1_button "home swsettings swbrewsettings off espresso_1 espresso_2 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); set ::current_espresso_page "off"; start_sleep} 2173 1430 2538 1580
 } else {
-	add_de1_button "home swsettings off espresso_1 espresso_2 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); set ::current_espresso_page "off"; start_sleep} 2173 1430 2538 1580
+	add_de1_button "home swsettings swbrewsettings off espresso_1 espresso_2 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); set ::current_espresso_page "off"; start_sleep} 2173 1430 2538 1580
 }
 
 # settings button 
-add_de1_button "home swsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" { say [translate {settings}] $::settings(sound_button_in); show_settings } 1788 1430 2153 1580 
+add_de1_button "home swsettings swbrewsettings off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" { say [translate {settings}] $::settings(sound_button_in); show_settings } 1788 1430 2153 1580 
 
 #SWSettings Button
 add_de1_button "home off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" { say [translate {swsettings}] $::settings(sound_button_in); set_next_page off swsettings; start_idle} 2336 1270 2475 1410
 
 #Profile Edit Button
 add_de1_button "home off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 preheat_4 steam_1 steam_2 steam_3 water_1 water_2 water_3 off_zoomed off_steam_zoom off_zoomed_temperature" {say [translate {}] $::settings(sound_button_in); show_settings; after 500 update_de1_explanation_chart;  set_next_page off $::settings(settings_profile_type); page_show off;  set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox; set_advsteps_scrollbar_dimensions ; start_idle} 1836 1270 1981 1410
-
-
-#add_de1_button "$::dsv4_standby_pages" {say [translate {}] $::settings(sound_button_in); show_settings; after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_1; page_show off; set ::settings(active_settings_tab) settings_1; fill_advanced_profile_steps_listbox; set_advsteps_scrollbar_dimensions}  100 550 700 720
 
 
 #Scale Reconnect/Tare button
@@ -1060,16 +1075,28 @@ add_de1_variable "preheat_2 preheat_4" $column1_pos [expr {$pos_top + (3 * $spac
 
 	if {$::settings(scale_bluetooth_address) != ""} {
 		set ::de1(scale_weight_rate) -1	
+		
 		add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar 2117 1360 {} -width [rescale_y_skin 95] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #FF6A00 -bg #4e4e4e -maximum 6 -borderwidth 1 -relief flat
+		
 		add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (13 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #FF6A00 -bg #4e4e4e -maximum 6 -borderwidth 1 -relief flat
+		
 		add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (8.25 * $spacer)}] -justify left -anchor "nw" -text [translate "Recipe"] -font Helv_7_bold -fill #ffffff -width [rescale_x_skin 520]
-		#add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (10 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 520] -textvariable {[round_to_integer [update_swcoffeeweight]][translate "g"]}
+		
 		add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (9.25 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 520] -textvariable {[round_to_one_digits $::swdark_settings(swcoffeedose)][translate "g @ 1:"][round_to_one_digits $::swdark_settings(swbrewratio)][translate " to "][round_to_integer [update_swcoffeeweight]][translate "g"]}
-		#off screen variable to call update of swweight variable to keep swsettings inline with main stop at weight
-		#add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" 3000 3000 -justify left -anchor "nw" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 520] -textvariable {[update_swweight]}
+		
 		add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (10.25 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 520] -textvariable {[finalwaterweight_text]} 
+		
+		add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos [expr {$pos_top + (14.5 * $spacer)}] -justify left -anchor "nw" -text [translate "Recipe"] -font Helv_7_bold -fill #ffffff -width [rescale_x_skin 520]
+		
+		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos [expr {$pos_top + (15.5 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 520] -textvariable {[round_to_one_digits $::swdark_settings(swcoffeedose)][translate "g @ 1:"][round_to_one_digits $::swdark_settings(swbrewratio)][translate " to "][round_to_integer [update_swcoffeeweight]][translate "g"]}
+		
 	} else {
+		
 		add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (8.5 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $::detailtextcol -width [rescale_x_skin 520] -textvariable {[translate "Stop @ "][round_to_integer [update_swcoffeevolume]][translate "mL"]}	
+		
+		#add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos [expr {$pos_top + (14.5 * $spacer)}] -justify left -anchor "nw" -text [translate "Recipe"] -font Helv_7_bold -fill #ffffff -width [rescale_x_skin 520]
+		
+		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos [expr {$pos_top + (14.5 * $spacer)}] -justify left -anchor "nw" -font Helv_7_bold -fill #ffffff -width [rescale_x_skin 520] -textvariable {[translate "Stop @ "][round_to_integer [update_swcoffeevolume]][translate "mL"]}	
 	}
 
 
@@ -1099,14 +1126,14 @@ if {$::settings(insight_skin_show_embedded_profile) == 1} {
 } else {
 	# we can display the profile name if the embedded chart is not displayed.
 	add_de1_variable "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (11.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7_bold -fill #ffffff -width [rescale_x_skin 520] -textvariable {[profile_type_text]} 
-	add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (15 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7_bold -fill #ffffff -width 730 -textvariable {[profile_type_text]} 
+	add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (17.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7_bold -fill #ffffff -width 730 -textvariable {[profile_type_text]} 
 	
 	set ::globals(widget_current_profile_name) [add_de1_variable "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (12.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill #ffffff -width [rescale_x_skin 650] -textvariable {$::settings(profile_title)} ]
 	
 
-	set ::globals(widget_current_profile_name_espresso) [add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (16 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill #ffffff -width 730 -textvariable {$::settings(profile_title)} ]
+	set ::globals(widget_current_profile_name_espresso) [add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (18.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill #ffffff -width 730 -textvariable {$::settings(profile_title)} ]
 
-	add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (17 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#8297be" -width 730 -textvariable {$::settings(current_frame_description)} 
+	add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (19.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#8297be" -width 730 -textvariable {$::settings(current_frame_description)} 
 
 }
 
@@ -1291,6 +1318,96 @@ if {$::settings(scale_bluetooth_address) != ""} {
 #1:3
 	add_de1_button "swsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swbrewratio) "3"  ; updateswbrewratio } 990 1195 1323 1348
    }
+
+
+
+
+
+
+###############################
+#SWDark Brew Settings Page
+
+#swhome button
+add_de1_button "swbrewsettings" {say [translate {home}] $::settings(sound_button_in); set_next_page off off; start_idle} 1787 697 2537 1407
+
+#labels
+if {$::settings(scale_bluetooth_address) != ""} {
+	add_de1_text "swbrewsettings" 457.5 417.5 -text [translate "Dose"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	add_de1_text "swbrewsettings" 896.5 77 -text [translate "Target"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	add_de1_text "swbrewsettings" 1332.5 417.5 -text [translate "Ratio"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+
+	#brew ratio labels
+	add_de1_text "swbrewsettings" 1155.5 882 -text [translate "1:1.5"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	add_de1_text "swbrewsettings" 1509.5 882 -text [translate "1:2"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+
+	add_de1_text "swbrewsettings" 1155.5 1133 -text [translate "1:2.5"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	add_de1_text "swbrewsettings" 1509.5 1133 -text [translate "1:3"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	
+	add_de1_text "swbrewsettings" 1155.5 1384 -text [translate "1:4"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	add_de1_text "swbrewsettings" 1509.5 1384 -text [translate "1:5"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+
+	#dose button labels
+	add_de1_text "swbrewsettings" 280.5 882 -text [translate "15g"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	add_de1_text "swbrewsettings" 634.5 882 -text [translate "16g"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+
+	add_de1_text "swbrewsettings" 280.5 1133 -text [translate "17g"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	add_de1_text "swbrewsettings" 634.5 1133 -text [translate "18g"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	
+	add_de1_text "swbrewsettings" 280.5 1384 -text [translate "19g"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+	add_de1_text "swbrewsettings" 634.5 1384 -text [translate "20g"] -font helveticabold20 -fill "#ffffff" -anchor "center"
+
+
+#Coffee Dose
+	add_de1_button "swbrewsettings" {say "" $::settings(sound_button_in);horizontal_clicker 1 1 ::swdark_settings(swcoffeedose) 1 30 %x %y %x0 %y0 %x1 %y1; updateswbrewratio; save_swdark_settings} 110 465 805 664 ""
+	add_de1_button "swbrewsettings" {say "" $::settings(sound_button_in);horizontal_clicker 0.1 0.1 ::swdark_settings(swcoffeedose) 1 30 %x %y %x0 %y0 %x1 %y1; updateswbrewratio; save_swdark_settings} 235 465 680 664 ""
+	add_de1_variable "swbrewsettings" 457.735 563 -text "" -font Helv_10_bold -fill "#000000" -anchor "center"  -textvariable {[round_to_one_digits $::swdark_settings(swcoffeedose)][translate "g"]} 
+
+#Coffee Dose Buttons
+
+	#15
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swcoffeedose) "15" ; updateswbrewratio } 114 767 447 997
+	#16
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swcoffeedose) "16"  ; updateswbrewratio } 468 767 801 997
+	#17
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swcoffeedose) "17"  ; updateswbrewratio } 114 1018 447 1248
+	#18
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swcoffeedose) "18"  ; updateswbrewratio } 468 1018 801 1248
+	#19
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swcoffeedose) "19"  ; updateswbrewratio } 114 1269 447 1499
+	#20
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swcoffeedose) "20"  ; updateswbrewratio } 468 1269 801 1499
+
+#Coffee Output
+	add_de1_variable "swbrewsettings" 896.735 224 -text "" -font Helv_10_bold -fill "#000000" -anchor "center"  -textvariable {[swreturnweight][translate "g"]}
+	add_de1_variable "swbrewsettings" 3000 3000 -text "" -font Helv_10_bold -fill "#000000" -anchor "center"  -textvariable {[swweighttype2][translate "g"]}
+	add_de1_button "swbrewsettings" {say "" $::settings(sound_button_in);horizontal_clicker 10 10 $::swdark_settings(swweighttype) 1 2000	%x %y %x0 %y0 %x1 %y1;updateswbrewratio2; save_swdark_settings} 549 125 1244 324 ""
+	add_de1_button "swbrewsettings" {say "" $::settings(sound_button_in);horizontal_clicker 1 1 $::swdark_settings(swweighttype) 1 2000 %x %y %x0 %y0 %x1 %y1;updateswbrewratio2; save_swdark_settings} 674 125 1119 324 ""
+	
+#Brew Ratio
+
+	add_de1_button "swbrewsettings" {say "" $::settings(sound_button_in);horizontal_clicker 1 1 ::swdark_settings(swbrewratio) 1 100 %x %y %x0 %y0 %x1 %y1;updateswbrewratio; save_swdark_settings} 985 465 1680 664 ""
+	add_de1_button "swbrewsettings" {say "" $::settings(sound_button_in);horizontal_clicker 0.1 0.1 ::swdark_settings(swbrewratio) 1 100 %x %y %x0 %y0 %x1 %y1;updateswbrewratio; save_swdark_settings} 1110 465 1555 664 ""
+	add_de1_variable "swbrewsettings" 1332.735 563 -text "" -font Helv_10_bold -fill "#000000" -anchor "center"  -textvariable {[translate "1:"][round_to_one_digits $::swdark_settings(swbrewratio)]}
+
+#Brew Ratio Buttons
+
+	#1:1.5
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swbrewratio) "1.5" ; updateswbrewratio } 989 767 1322 997
+	#1:2
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swbrewratio) "2"  ; updateswbrewratio } 1343 767 1676 997
+	#1:2.5
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swbrewratio) "2.5"  ; updateswbrewratio } 989 1018 1322 1248
+	#1:3
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swbrewratio) "3"  ; updateswbrewratio } 1343 1018 1676 1248
+	#1:4
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swbrewratio) "4"  ; updateswbrewratio } 989 1269 1322 1499
+	#1:5
+		add_de1_button "swbrewsettings" {say [translate {settings}] $::settings(sound_button_in); set ::swdark_settings(swbrewratio) "5"  ; updateswbrewratio } 1343 1269 1676 1499
+
+} else {}
+
+###############################
+
 
 proc skins_page_change_due_to_de1_state_change { textstate } {
 	page_change_due_to_de1_state_change $textstate

@@ -696,6 +696,9 @@ proc start_espresso {} {
 		return
 	}
 
+	if {$::de1(scale_device_handle) != 0} {
+	}
+
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
 		after 200 [list update_de1_state "$::de1_state(Espresso)\x1"]

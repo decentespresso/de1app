@@ -238,8 +238,9 @@ proc decentscale_timer_off {} {
 	}
 
 
-	# cmd not yet implemented
-	#userdata_append "decentscale: timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare]
+	set timeroff [decent_scale_make_command 0B 02 00]
+	msg "decent scale timer off: '$timeroff'"
+	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff]
 }
 
 
@@ -1887,6 +1888,8 @@ proc de1_ble_handler { event data } {
 							after 1000 decentscale_enable_notifications
 							after 2000 decentscale_tare
 							after 3000 decentscale_enable_lcd
+							after 4000 decentscale_timer_stop
+							after 5000 decentscale_timer_off
 
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
 							append_to_scale_bluetooth_list $address "atomaxskale"

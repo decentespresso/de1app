@@ -97,6 +97,12 @@ proc swdark4varscheck {} {
 		}
 		save_swdark_settings
     }
+	set var ::swdark_settings(swbrewsettings)
+    if {[info exists $var]} {
+    } else {
+		set ::swdark_settings(swbrewsettings) "0"
+		save_swdark_settings
+    }
 }
 
 
