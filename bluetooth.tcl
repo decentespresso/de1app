@@ -1623,6 +1623,7 @@ proc later_new_de1_connection_setup {} {
 	}
 
 	de1_enable_mmr_notifications
+	de1_enable_state_notifications
 	get_ghc_is_installed
 	de1_send_shot_frames
 	set_fan_temperature_threshold $::settings(fan_threshold)
@@ -1855,9 +1856,11 @@ proc de1_ble_handler { event data } {
 									start_idle
 								}
 								read_de1_version
-								read_de1_state
 								
-								after 2000 de1_enable_state_notifications
+								read_de1_state
+								de1_enable_state_notifications
+
+								
 							}
 						}
 
