@@ -193,6 +193,7 @@ proc make_de1_dir {} {
         skins/SWDark3/screen_saver/1280x800/saver-3.jpg *
         skins/SWDark3/swdark2_functions.tcl *
         skins/SWDark3/skin.tcl *
+        skins/SWDark3/2560x1600/swbrewsettings.png *
         skins/SWDark3/2560x1600/water_3.png *
         skins/SWDark3/2560x1600/water_2.png *
         skins/SWDark3/2560x1600/steam_1.png *
@@ -216,6 +217,7 @@ proc make_de1_dir {} {
         skins/SWDark3/2560x1600/preheat_4.png *
         skins/SWDark3/2560x1600/espresso_2_zoomed.png *
         skins/SWDark3/userdata/swdark2_usersettings.tdb *
+        skins/SWDark3/1280x800/swbrewsettings.png *
         skins/SWDark3/1280x800/water_3.png *
         skins/SWDark3/1280x800/water_2.png *
         skins/SWDark3/1280x800/steam_1.png *
