@@ -761,11 +761,12 @@ proc start_idle {} {
 		unset -nocomplain ::idle_next_step 
 	}
 
-	# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
-	set_fan_temperature_threshold $::settings(fan_threshold)
 
 	set ::settings(flying) 0
 	de1_send_state "go idle" $::de1_state(Idle)
+
+	# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
+	set_fan_temperature_threshold $::settings(fan_threshold)
 	
 	if {$::de1(scale_device_handle) != 0} {
 		#scale_enable_lcd
@@ -778,7 +779,7 @@ proc start_idle {} {
 
 	# moved the scale reconnect to be after the other commands, because otherwise a scale disconnected would interrupt the IDLE command
 	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != "" && [ifexists ::currently_connecting_de1_handle] == 0} {
-		ble_connect_to_scale
+		#ble_connect_to_scale
 	}
 
 	#msg "sensors: [borg sensor list]"
