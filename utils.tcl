@@ -459,10 +459,13 @@ proc random_saver_file {} {
         set ::saver_files_cache [glob -nocomplain "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
 
         if {$::settings(black_screen_saver) == 1} {    
-            set ::saver_files_cache "[defaultskin_directory_graphics]/black_saver.jpg"
-            
+            # remove all other savers if we are only showing the black one
+            set ::saver_files_cache "[saver_directory]/${::screen_size_width}x${::screen_size_height}/black_saver.jpg"            
+        } else {
+            # remove the black saver if we are not needingit
+            set ::saver_files_cache [lsearch -inline -all -not -exact $::saver_files_cache "[saver_directory]/${::screen_size_width}x${::screen_size_height}/black_saver.jpg"]
         }
-        #puts "::saver_files_cache $::saver_files_cache"
+        puts "::saver_files_cache $::saver_files_cache"
 
     }
     return [random_pick $::saver_files_cache]
