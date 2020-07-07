@@ -465,7 +465,7 @@ proc random_saver_file {} {
             # remove the black saver if we are not needingit
             set ::saver_files_cache [lsearch -inline -all -not -exact $::saver_files_cache "[saver_directory]/${::screen_size_width}x${::screen_size_height}/black_saver.jpg"]
         }
-        puts "::saver_files_cache $::saver_files_cache"
+        #puts "::saver_files_cache $::saver_files_cache"
 
     }
     return [random_pick $::saver_files_cache]

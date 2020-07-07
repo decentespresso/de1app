@@ -954,7 +954,7 @@ proc change_screen_saver_img {} {
 
 	if {[llength [ifexists ::saver_files_cache]] == 1} {
 		# no need to change the background screen saver image if it's only 1
-		msg "no need to change the background screen saver image if it's only 1"
+		msg "xxxxno need to change the background screen saver image if it's only 1"
 		return
 	}
 
@@ -1274,16 +1274,6 @@ proc display_brightness {percentage} {
 	get_set_tablet_brightness $percentage
 }
 
-
-proc page_displaying_now {} {
-	set page_to_show $::de1(current_context)
-	set key "machine:$page_to_show"
-	if {[ifexists ::nextpage($key)] != ""} {
-		# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
-		set page_to_show $::nextpage($key)
-	}
-	return $page_to_show
-}
 
 proc page_display_change {page_to_hide page_to_show} {
 

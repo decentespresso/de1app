@@ -191,7 +191,6 @@ proc make_de1_dir {} {
         skins/default/1280x800/travel_do.jpg *
         skins/default/1280x800/travel_prepare.jpg *
         skins/default/1280x800/descalewarning.jpg *
-        skins/default/1280x800/black_saver.jpg *
 
         skins/default/2560x1600/firmware_upgrade.jpg *
         skins/default/2560x1600/firmware_upgrade_on.jpg *
@@ -223,7 +222,6 @@ proc make_de1_dir {} {
         skins/default/2560x1600/travel_do.jpg *
         skins/default/2560x1600/travel_prepare.jpg *
         skins/default/2560x1600/descalewarning.jpg *
-        skins/default/2560x1600/black_saver.jpg *
 
         skins/Antibes/skin.tcl *
         skins/Antibes/moonflower.ttf *
@@ -504,6 +502,7 @@ proc make_de1_dir {} {
         skins/Insight/2560x1600/describe_espresso.jpg *
         skins/Insight/2560x1600/describe_espresso2.jpg *
 
+        saver/1280x800/black_saver.jpg *
         saver/1280x800/Black\ Steel.jpg *
         saver/1280x800/Cozy-Home.jpg *
         saver/1280x800/Floral.jpg *
@@ -527,6 +526,7 @@ proc make_de1_dir {} {
         saver/1280x800/steampunk_latte.jpg *
         saver/1280x800/three_women.jpg *     
         saver/1280x800/rainbow_dj.jpg *     
+        saver/2560x1600/black_saver.jpg *
         saver/2560x1600/Black\ Steel.jpg *
         saver/2560x1600/Cozy-Home.jpg *
         saver/2560x1600/Floral.jpg *
