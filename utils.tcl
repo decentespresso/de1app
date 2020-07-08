@@ -488,7 +488,18 @@ proc tcl_introspection {} {
             #append txt "[incr cnt]. $i [image height $i]x[image width $i] in use:[image inuse $i]\n"
         }
 
-        append txt \n
+        #append txt \n
+
+        set vs [vector names]
+        append txt "Vectors: [llength $vs]"
+        set total 0
+        foreach v $vs {
+            set sz [$v length]
+            set total [expr {$total + $sz}]
+        }
+        append txt "\nTOTAL vector length: $total bytes\n"
+
+
 
         set globs [info globals] 
         append txt "Globals [llength $globs]:\n"
@@ -513,11 +524,10 @@ proc tcl_introspection {} {
         }
         append txt "TOTAL global variable memory used: $total bytes\n\n"
 
-
         msg $txt
     }
 
-    after 3600000 tcl_introspection
+    after [expr {60 * 60 * 1000}] tcl_introspection
 }
 
 proc random_splash_file {} {
