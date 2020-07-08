@@ -479,7 +479,7 @@ proc tcl_introspection {} {
     catch {
         set txt ""
 
-        append txt "Commands available: [llength [info commands]]\nInstructions run: [info cmdcount]\nGlobals: [llength [info globals]]\nProcs: [llength [info procs]]\n"
+        append txt "Commands available: [llength [info commands]]\nInstructions run: [info cmdcount]\nGlobals: [llength [info globals]]\nProcs: [llength [info procs]]\nAfter commands: [llength [after info]]\n"
 
         append txt "Images loaded: [llength [image names]]\n"
 
