@@ -309,17 +309,21 @@ proc setup_environment {} {
 }
 
 proc check_if_battery_low_and_give_message {} {
-    if {[battery_percent] < 10} {
+    #msg "check_if_battery_low_and_give_message [battery_percent]"
+    if {[battery_percent] < 10 && $::android == 1} {
         info_page [subst {[translate "We noticed that your battery power is very low."]\n\n[translate "Maybe you are turning your DE1 off using the power switch on the back?"]\n\n[translate "If so, that prevents the tablet from charging."]\n\n[translate "Instead, put the DE1 to sleep by tapping the power icon in the App."]}] [translate "Ok"]
     }
 }
 
 proc battery_percent {} {
+
     array set powerinfo [sdltk powerinfo]
     set percent [ifexists powerinfo(percent)]
     if {$percent == ""} {
         set percent 100
     }
+
+    #msg "battery_percent: $percent"
 
     return $percent
 }
@@ -460,13 +464,12 @@ proc random_saver_file {} {
 
         if {$::settings(black_screen_saver) == 1} {    
             # remove all other savers if we are only showing the black one
-            set ::saver_files_cache "[saver_directory]/${::screen_size_width}x${::screen_size_height}/black_saver.jpg"            
+            set ::saver_files_cache [glob -nocomplain "[saver_directory]/${::screen_size_width}x${::screen_size_height}/black_saver.jpg"]
+
         } else {
-            # remove the black saver if we are not needingit
+            # remove the black saver if we are not needing it
             set ::saver_files_cache [lsearch -inline -all -not -exact $::saver_files_cache "[saver_directory]/${::screen_size_width}x${::screen_size_height}/black_saver.jpg"]
         }
-        #puts "::saver_files_cache $::saver_files_cache"
-
     }
     return [random_pick $::saver_files_cache]
 
