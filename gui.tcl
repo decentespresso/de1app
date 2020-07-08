@@ -1798,6 +1798,8 @@ proc run_de1_app {} {
 
 proc ui_startup {} {
 	puts "setup_environment"
+
+
 	load_settings
 	setup_environment
 	bluetooth_connect_to_devices
@@ -1819,7 +1821,8 @@ proc ui_startup {} {
 	# check for app updates, a half day after startup, and then every 24h thereafter
 	#after 43200000 scheduled_app_update_check
 	after 3000 scheduled_app_update_check
-
+	tcl_introspection
+	
 	run_de1_app
 	vwait forever
 }
