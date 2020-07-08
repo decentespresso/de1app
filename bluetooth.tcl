@@ -27,6 +27,9 @@ proc poll_de1_state {} {
 }
 
 proc read_de1_state {} {
+	if {$::android != 1} {
+		return
+	}
 	if {[catch {
 		userdata_append "read de1 state" [list ble read $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E))] 1
 	} err] != 0} {

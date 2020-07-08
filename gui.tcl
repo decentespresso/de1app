@@ -1277,7 +1277,7 @@ proc display_brightness {percentage} {
 
 proc page_display_change {page_to_hide page_to_show} {
 
-	msg [stacktrace]
+	#msg [stacktrace]
 
 	#if {$page_to_hide == ""} {
 	#}
@@ -1331,6 +1331,8 @@ proc page_display_change {page_to_hide page_to_show} {
 
 
 	if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {
+
+		msg "Doing next stress test step: '$::idle_next_step '"
 		set todo $::idle_next_step 
 		unset -nocomplain ::idle_next_step 
 		eval $todo
@@ -1822,7 +1824,7 @@ proc ui_startup {} {
 	#after 43200000 scheduled_app_update_check
 	after 3000 scheduled_app_update_check
 	tcl_introspection
-	
+
 	run_de1_app
 	vwait forever
 }
