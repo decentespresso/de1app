@@ -545,8 +545,14 @@ proc reset_gui_starting_hot_water_rinse {} {
 }
 
 proc start_hot_water_rinse {} {
+
+	msg "Tell DE1 to go idel before HOT WATER RINSE (flush)"
+	de1_send_state "go idle" $::de1_state(Idle)
+	
 	msg "Tell DE1 to start HOT WATER RINSE (flush)"
 	de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
+
+	after 1000 read_de1_state
 
 	if {$::settings(ghc_is_installed) != 0} {
 		# show the user what button to press on the group head
@@ -563,10 +569,17 @@ proc start_hot_water_rinse {} {
 }
 
 proc start_steam_rinse {} {
-	msg "Tell DE1 to start STEAM RINSE"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
+
+	msg "Tell DE1 to go idle before steam rinse"
+	de1_send_state "go idle" $::de1_state(Idle)
+	
+	msg "Tell DE1 to start STEAM RINSE"
 	de1_send_state "steam rinse" $::de1_state(SteamRinse)
+
+	after 1000 read_de1_state
+
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -590,9 +603,16 @@ proc reset_gui_starting_steam {} {
 }
 
 proc start_steam {} {
-	msg "Tell DE1 to start making STEAM"
 
+
+	msg "Tell DE1 to go idle before steam"
+	de1_send_state "go idle" $::de1_state(Idle)
+	
+	msg "Tell DE1 to start making STEAM"
 	de1_send_state "make steam" $::de1_state(Steam)
+
+	after 1000 read_de1_state
+
 	if {$::settings(ghc_is_installed) != 0} {
 		# show the user what button to press on the group head
 		ghc_message ghc_steam
@@ -679,7 +699,6 @@ proc ghc_message {type} {
 }
 
 proc start_espresso {} {
-	msg "Tell DE1 to start making ESPRESSO"
 
 	if {$::settings(start_espresso_only_if_scale_connected) == 1 && $::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
 		msg "Refusing to START espresso without the scale being connected"
@@ -688,7 +707,15 @@ proc start_espresso {} {
 	}
 
 
+	msg "Tell DE1 to go idle before espresso"
+	de1_send_state "go idle" $::de1_state(Idle)
+	
+	msg "Tell DE1 to start making ESPRESSO"
 	de1_send_state "make espresso" $::de1_state(Espresso)
+
+	after 1000 read_de1_state
+
+
 
 	if {$::settings(ghc_is_installed) != 0} {
 		# show the user what button to press on the group head
@@ -717,8 +744,14 @@ proc reset_gui_starting_hotwater {} {
 }
 
 proc start_water {} {
+
+	msg "Tell DE1 to go idle before hot water"
+	de1_send_state "go idle" $::de1_state(Idle)
+	
 	msg "Tell DE1 to start making HOT WATER"
 	de1_send_state "make hot water" $::de1_state(HotWater)
+
+	after 1000 read_de1_state
 
 	if {$::settings(ghc_is_installed) != 0} {
 		# show the user what button to press on the group head
@@ -766,7 +799,9 @@ proc start_idle {} {
 	de1_send_state "go idle" $::de1_state(Idle)
 
 	# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
-	set_fan_temperature_threshold $::settings(fan_threshold)
+	#set_fan_temperature_threshold $::settings(fan_threshold)
+
+	after 1000 read_de1_state
 	
 	if {$::de1(scale_device_handle) != 0} {
 		#scale_enable_lcd
