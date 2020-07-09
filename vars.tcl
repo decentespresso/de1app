@@ -287,14 +287,18 @@ proc stop_timer_espresso_pour {} {
 }
 
 proc stop_timer_water_pour {} {
+	msg "stop_timer_water_pour"
 	set ::timers(water_pour_stop) [clock milliseconds]
 }
 
 proc stop_timer_steam_pour {} {
+	msg "stop_timer_steam_pour"
 	set ::timers(steam_pour_stop) [clock milliseconds]
 }
 
 proc stop_timer_flush_pour {} {
+	
+	msg "stop_timer_flush_pour"
 	set ::timers(flush_pour_stop) [clock milliseconds]
 }
 
@@ -454,19 +458,25 @@ proc steam_pour_millitimer {} {
 }
 
 proc flush_pour_timer {} {
+	set t ""
+	set c 0
 	if {[info exists ::timers(flush_pour_start)] != 1} {
-		return 0
-	}
-
-	if {$::timers(flush_pour_start) == 0} {
-		return 0
+		set t "-0"
+		set c 1
+	} elseif {$::timers(flush_pour_start) == 0} {
+		set t "-1"
+		set c 2
 	} elseif {$::timers(flush_pour_stop) == 0} {
 		# no stop, so show current elapsed time
-		return [expr {([clock milliseconds] - $::timers(flush_pour_start))/1000}]
+		set t [expr {([clock milliseconds] - $::timers(flush_pour_start))/1000}]
+		set c 3
 	} else {
 		# stop occured, so show that.
-		return [expr {($::timers(flush_pour_stop) - $::timers(flush_pour_start))/1000}]
+		set t [expr {($::timers(flush_pour_stop) - $::timers(flush_pour_start))/1000}]
+		set c 4
 	}
+	msg "flush_pour_timer: $t ($c)"
+	return $t
 }
 proc done_timer {} {
 	if {$::timers(stop) == 0} {
@@ -808,6 +818,13 @@ proc group_head_heating_text {} {
 	}
 }
 
+proc return_seconds_divided_by_ten {in} {
+	if {$in == ""} {return ""}
+
+	set t [expr {$in / 10.0}]
+	return "[round_to_one_digits $t] [translate "seconds"]"
+
+}
 proc timer_text {} {
 	return [subst {[timer] [translate "seconds"]}]
 }

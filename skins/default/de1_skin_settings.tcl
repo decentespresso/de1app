@@ -904,7 +904,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_fan_temperature_threshold $::settings(fan_threshold)
 				de1_enable_water_level_notifications
 			}
-			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit scale_bluetooth_address language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water black_screen_saver display_time_in_screen_saver"] == 1  || [ifexists ::app_has_updated] == 1} {
+			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit hot_water_idle_temp espresso_warmup_timeout scale_bluetooth_address language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water black_screen_saver display_time_in_screen_saver"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 				set_next_page off message; page_show message
@@ -928,7 +928,7 @@ set calibration_row_spacing 120
 add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 
 	add_de1_text "calibrate calibrate2" 2520 1510 -text [subst {\[ [translate "More"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
-		add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); get_heater_voltage; page_to_show_when_off calibrate2;} 2200 1400 2560 1600 ""
+		add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); get_heater_voltage; get_heater_tweaks; page_to_show_when_off calibrate2;} 2200 1400 2560 1600 ""
 		add_de1_button "calibrate2" {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off calibrate;} 2200 1400 2560 1600 ""
 
 		###############################################################################################
@@ -965,6 +965,14 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		}
 		###############################################################################################
 
+		add_de1_text "calibrate2" 350 650  -text [translate "Heater idle temperature"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_widget "calibrate2" scale 1600 650  {} -to 99 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 90] -variable ::settings(hot_water_idle_temp) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate2" 1580 650  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_setting $::settings(hot_water_idle_temp)]}
+
+		add_de1_text "calibrate2" 350 800  -text [translate "Espresso start time-out"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_widget "calibrate2" scale 1600 800  {} -to 300 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 90] -variable ::settings(espresso_warmup_timeout) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate2" 1580 800  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_seconds_divided_by_ten $::settings(espresso_warmup_timeout)]}
+
 		
 
 	add_de1_text "calibrate calibrate2" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
@@ -976,6 +984,7 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		}
 
 		save_settings; set_next_page off settings_3; 
+		set_heater_tweaks;
 		page_show settings_3;} 980 1210 1580 1410 ""
 		
 

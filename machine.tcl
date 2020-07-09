@@ -183,6 +183,7 @@ array set ::settings {
 	steam_over_pressure_count_trigger 10
 	heater_voltage ""
 	steam_over_temp_count_trigger 10
+	go_idle_before_all_operations 0
 	active_settings_tab settings_2a
 	black_screen_saver 0
 	chart_total_shot_weight 1
@@ -191,6 +192,8 @@ array set ::settings {
 	steam_flow 700
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
+	hot_water_idle_temp "85"
+	espresso_warmup_timeout "100"
 	color_stage_3 "#edceca"
 	start_espresso_only_if_scale_connected 0
 	logfile "log.txt"
@@ -545,16 +548,23 @@ proc reset_gui_starting_hot_water_rinse {} {
 }
 
 proc start_hot_water_rinse {} {
+	# here for backward compatiblity only
+	start_flush
+}
 
-	msg "Tell DE1 to go idel before HOT WATER RINSE (flush)"
-	de1_send_state "go idle" $::de1_state(Idle)
+proc start_flush {} {
+
+	if {$::settings(go_idle_before_all_operations) == 1} {
+		msg "Tell DE1 to go idel before HOT WATER RINSE (flush)"
+		de1_send_state "go idle" $::de1_state(Idle)
+	}
 	
-	msg "Tell DE1 to start HOT WATER RINSE (flush)"
-	de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
+	msg "Tell DE1 to start flush"
+	de1_send_state "flush" $::de1_state(HotWaterRinse)
 
 	after 1000 read_de1_state
 
-	if {$::settings(ghc_is_installed) != 0} {
+	if {$::settings(ghc_is_installed) != 0 && $::settings(stress_test) != 1} {
 		# show the user what button to press on the group head
 		ghc_message ghc_flush
 		return
@@ -572,8 +582,10 @@ proc start_steam_rinse {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 
-	msg "Tell DE1 to go idle before steam rinse"
-	de1_send_state "go idle" $::de1_state(Idle)
+	if {$::settings(go_idle_before_all_operations) == 1} {
+		msg "Tell DE1 to go idle before steam rinse"
+		de1_send_state "go idle" $::de1_state(Idle)
+	}
 	
 	msg "Tell DE1 to start STEAM RINSE"
 	de1_send_state "steam rinse" $::de1_state(SteamRinse)
@@ -588,6 +600,9 @@ proc start_steam_rinse {} {
 }
 
 proc reset_gui_starting_steam {} {
+
+	msg "reset_gui_starting_steam"
+	
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 
@@ -604,16 +619,17 @@ proc reset_gui_starting_steam {} {
 
 proc start_steam {} {
 
-
-	msg "Tell DE1 to go idle before steam"
-	de1_send_state "go idle" $::de1_state(Idle)
+	if {$::settings(go_idle_before_all_operations) == 1} {
+		msg "Tell DE1 to go idle before steam"
+		de1_send_state "go idle" $::de1_state(Idle)
+	}
 	
 	msg "Tell DE1 to start making STEAM"
 	de1_send_state "make steam" $::de1_state(Steam)
 
 	after 1000 read_de1_state
 
-	if {$::settings(ghc_is_installed) != 0} {
+	if {$::settings(ghc_is_installed) != 0 && $::settings(stress_test) != 1} {
 		# show the user what button to press on the group head
 		ghc_message ghc_steam
 		return
@@ -706,9 +722,10 @@ proc start_espresso {} {
 		return
 	}
 
-
-	msg "Tell DE1 to go idle before espresso"
-	de1_send_state "go idle" $::de1_state(Idle)
+	if {$::settings(go_idle_before_all_operations) == 1} {
+		msg "Tell DE1 to go idle before espresso"
+		de1_send_state "go idle" $::de1_state(Idle)
+	}
 	
 	msg "Tell DE1 to start making ESPRESSO"
 	de1_send_state "make espresso" $::de1_state(Espresso)
@@ -717,7 +734,7 @@ proc start_espresso {} {
 
 
 
-	if {$::settings(ghc_is_installed) != 0} {
+	if {$::settings(ghc_is_installed) != 0 && $::settings(stress_test) != 1} {
 		# show the user what button to press on the group head
 		ghc_message ghc_espresso
 		return
@@ -745,15 +762,17 @@ proc reset_gui_starting_hotwater {} {
 
 proc start_water {} {
 
-	msg "Tell DE1 to go idle before hot water"
-	de1_send_state "go idle" $::de1_state(Idle)
+	if {$::settings(go_idle_before_all_operations) == 1} {
+		msg "Tell DE1 to go idle before hot water"
+		de1_send_state "go idle" $::de1_state(Idle)
+	}
 	
 	msg "Tell DE1 to start making HOT WATER"
 	de1_send_state "make hot water" $::de1_state(HotWater)
 
 	after 1000 read_de1_state
 
-	if {$::settings(ghc_is_installed) != 0} {
+	if {$::settings(ghc_is_installed) != 0 && $::settings(stress_test) != 1} {
 		# show the user what button to press on the group head
 		ghc_message ghc_hotwater
 		return

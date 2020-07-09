@@ -773,7 +773,7 @@ proc mmr_read {note address length} {
 
 }
 
-proc mmr_write { address length value} {
+proc mmr_write { note address length value} {
 	if {[mmr_available] == 0} {
 		msg "Unable to mmr_read because MMR not available"
 		return
@@ -785,14 +785,14 @@ proc mmr_write { address length value} {
 	set data "$mmrlen${mmrloc}${mmrval}[binary decode hex 000000000000000000000000000000]"
 	
 	if {$::android != 1} {
-		msg "MMR writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]"
+		msg "MMR $note writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]"
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 		msg "DE1 not connected, cannot send BLE command 11"
 		return
 	}
-	userdata_append "MMR writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data] 1
+	userdata_append "MMR $note writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]" [list ble write $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $::de1(cuuid_06) $::cinstance($::de1(cuuid_06)) $data] 1
 }
 
 proc set_tank_temperature_threshold {temp} {
@@ -800,13 +800,13 @@ proc set_tank_temperature_threshold {temp} {
 
 	if {$temp < 10} {
 		# no point in circulating the water if the desired temp is <10ºC, or no preheating.
-		mmr_write "80380C" "04" [zero_pad [int_to_hex $temp] 2]
+		mmr_write "set_tank_temperature_threshold" "80380C" "04" [zero_pad [int_to_hex $temp] 2]
 	} else {
 		# if the water temp is being set, then set the water temp temporarily to 60º in order to force a water circulation for 2 seconds
 		# then a few seconds later, set it to the real, desired value
 		set hightemp 60
-		mmr_write "80380C" "04" [zero_pad [int_to_hex $hightemp] 2]
-		after 4000 [list mmr_write "80380C" "04" [zero_pad [int_to_hex $temp] 2]]
+		mmr_write "set_tank_temperature_threshold" "80380C" "04" [zero_pad [int_to_hex $hightemp] 2]
+		after 4000 [list mmr_write "set_tank_temperature_threshold" "80380C" "04" [zero_pad [int_to_hex $temp] 2]]
 	}
 }
 
@@ -826,11 +826,20 @@ proc set_tank_temperature_threshold {temp} {
 #  */
 
 
+proc get_heater_tweaks {} {
+	mmr_read "hot_water_idle_temp" "803818" "00"
+	mmr_read "espresso_warmup_timeout" "803838" "00"
+}
+
+proc set_heater_tweaks {} {
+	mmr_write "hot_water_idle_temp $::settings(hot_water_idle_temp)" "803818" "04" [zero_pad [int_to_hex [expr {10 * $::settings(hot_water_idle_temp)}]] 2]
+	mmr_write "espresso_warmup_timeout $::settings(espresso_warmup_timeout)" "803838" "04" [zero_pad [int_to_hex $::settings(espresso_warmup_timeout)] 2]
+}
 
 proc set_steam_flow {desired_flow} {
 	#return
 	msg "Setting steam flow rate to '$desired_flow'"
-	mmr_write "803828" "04" [zero_pad [int_to_hex $desired_flow] 2]
+	mmr_write "set_steam_flow" "803828" "04" [zero_pad [int_to_hex $desired_flow] 2]
 }
 
 proc get_steam_flow {} {
@@ -866,7 +875,7 @@ proc get_firmware_version_number {} {
 proc set_heater_voltage {heater_voltage} {
 	#return
 	msg "Setting heater voltage to '$heater_voltage'"
-	mmr_write "803834" "04" [zero_pad [int_to_hex $heater_voltage] 2]
+	mmr_write "set_heater_voltage" "803834" "04" [zero_pad [int_to_hex $heater_voltage] 2]
 }
 
 
@@ -874,7 +883,7 @@ proc set_heater_voltage {heater_voltage} {
 proc set_steam_highflow_start {desired_seconds} {
 	#return
 	msg "Setting steam high flow rate start seconds to '$desired_seconds'"
-	mmr_write "80382C" "04" [zero_pad [int_to_hex $desired_seconds] 2]
+	mmr_write "set_steam_highflow_start" "80382C" "04" [zero_pad [int_to_hex $desired_seconds] 2]
 }
 
 proc get_steam_highflow_start {} {
@@ -885,7 +894,7 @@ proc get_steam_highflow_start {} {
 
 proc set_ghc_mode {desired_mode} {
 	msg "Setting group head control mode '$desired_mode'"
-	mmr_write "803820" "04" [zero_pad [int_to_hex $desired_mode] 2]
+	mmr_write "set_ghc_mode" "803820" "04" [zero_pad [int_to_hex $desired_mode] 2]
 }
 
 proc get_ghc_mode {} {
@@ -905,7 +914,7 @@ proc get_fan_threshold {} {
 
 proc set_fan_temperature_threshold {temp} {
 	msg "Setting fan temperature to '$temp'"
-	mmr_write "803808" "04" [zero_pad [int_to_hex $temp] 2]
+	mmr_write "set_fan_temperature_threshold" "803808" "04" [zero_pad [int_to_hex $temp] 2]
 }
 
 proc get_tank_temperature_threshold {} {
@@ -1657,6 +1666,8 @@ proc later_new_de1_connection_setup {} {
 	de1_enable_water_level_notifications
 	de1_enable_state_notifications
 	de1_enable_temp_notifications
+	set_heater_tweaks
+	#get_heater_tweaks
 	
 
 	#if {$::settings(heater_voltage) == ""} {
@@ -2052,6 +2063,12 @@ proc de1_ble_handler { event data } {
 			    			} elseif {$mmr_id == "803828"} {
 			    				msg "MMRead: steam flow: '$mmr_val'"
 			    				set ::settings(steam_flow) $mmr_val
+			    			} elseif {$mmr_id == "803818"} {
+			    				msg "MMRead: hot_water_idle_temp: '$mmr_val'"
+			    				set ::settings(hot_water_idle_temp) $mmr_val
+			    			} elseif {$mmr_id == "803838"} {
+			    				msg "MMRead: espresso_warmup_timeout: '$mmr_val'"
+			    				set ::settings(espresso_warmup_timeout) $mmr_val
 			    			} elseif {$mmr_id == "803834"} {
 				    			parse_binary_mmr_read_int $value arr2
 

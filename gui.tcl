@@ -2513,7 +2513,7 @@ proc handle_keypress {keycode} {
 
 	} elseif {($::some_droid != 1 && $keycode == 102) || ($::some_droid == 1 && $keycode == 9)} {
 		# f = flush
-		start_hot_water_rinse
+		start_flush
 
 	} elseif {($::some_droid != 1 && $keycode == 115) || ($::some_droid == 1 && $keycode == 22)} {
 		# s = steam
