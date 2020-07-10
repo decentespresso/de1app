@@ -3152,7 +3152,7 @@ proc de1_version_string {} {
 		append version ", rev=[ifexists ::settings(firmware_version_number)]"
 	}
 
-	if {$::settings(firmware_sha) != "" && [ifexists v(BLE_Sha)] != "" && $::settings(firmware_sha) != [ifexists v(BLE_Sha)] != "" } {
+	if {$::settings(firmware_sha) != "" && [ifexists v(BLE_Sha)] != "" && $::settings(firmware_sha) != [ifexists v(BLE_Sha)] } {
 		after 5000 [list info_page "[translate {Your DE1 firmware has been upgraded}]\n\n$version" [translate "Ok"]]
 	}
 	
