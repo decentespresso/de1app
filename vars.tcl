@@ -297,7 +297,6 @@ proc stop_timer_steam_pour {} {
 }
 
 proc stop_timer_flush_pour {} {
-	
 	msg "stop_timer_flush_pour"
 	set ::timers(flush_pour_stop) [clock milliseconds]
 }
@@ -1263,7 +1262,6 @@ proc return_temperature_setting_or_off {in} {
 		return [return_temperature_setting $in]
 	}
 }
-
 
 proc return_temperature_setting {in} {
 	#msg "return_temperature_setting: $in"

@@ -759,7 +759,7 @@ proc mmr_read {note address length} {
 	set data "$mmrlen${mmrloc}[binary decode hex 00000000000000000000000000000000]"
 	
 	if {$::android != 1} {
-		msg "MMR requesting read $address:$length [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc]: with comment [convert_string_to_hex $data]"
+		msg "MMR non-android requesting read $address:$length [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc]: with comment [convert_string_to_hex $data]"
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
@@ -827,12 +827,18 @@ proc set_tank_temperature_threshold {temp} {
 
 
 proc get_heater_tweaks {} {
-	mmr_read "hot_water_idle_temp" "803818" "00"
-	mmr_read "espresso_warmup_timeout" "803838" "00"
+	#mmr_read "hot_water_idle_temp" "803818" "00"
+	#after 3000 mmr_read "espresso_warmup_timeout" "803838" "00"
 }
 
+proc get_heater_voltage {} {
+	msg "Getting heater voltage"
+	mmr_read "get_heater_voltage" "803834" "01"
+}
+
+
 proc set_heater_tweaks {} {
-	mmr_write "hot_water_idle_temp $::settings(hot_water_idle_temp)" "803818" "04" [zero_pad [int_to_hex [expr {10 * $::settings(hot_water_idle_temp)}]] 2]
+	mmr_write "hot_water_idle_temp $::settings(hot_water_idle_temp)" "803818" "04" [zero_pad [int_to_hex $::settings(hot_water_idle_temp)] 4]
 	mmr_write "espresso_warmup_timeout $::settings(espresso_warmup_timeout)" "803838" "04" [zero_pad [int_to_hex $::settings(espresso_warmup_timeout)] 2]
 }
 
@@ -845,11 +851,6 @@ proc set_steam_flow {desired_flow} {
 proc get_steam_flow {} {
 	msg "Getting steam flow rate"
 	mmr_read "get_steam_flow" "803828" "00"
-}
-
-proc get_heater_voltage {} {
-	msg "Getting heater voltage"
-	mmr_read "get_heater_voltage" "803834" "00"
 }
 
 proc get_3_mmr_cpuboard_machinemodel_firmwareversion {} {
@@ -955,12 +956,12 @@ proc run_next_userdata_cmd {} {
 	if {$::android == 1} {
 		# if running on android, only write one BLE command at a time
 		if {$::de1(wrote) == 1} {
-			#msg "Do no write, already writing to DE1"
+			msg "Do not write, already writing to DE1, queue has [llength $::de1(cmdstack)] items"
 			return
 		}
 	}
 	if {($::de1(device_handle) == "0" || $::de1(device_handle) == "1") && $::de1(scale_device_handle) == "0"} {
-		#msg "error: de1 not connected"
+		msg "run_next_userdata_cmd error: de1 not connected"
 		return
 	}
 
@@ -1655,19 +1656,27 @@ proc later_new_de1_connection_setup {} {
 		return
 	}
 
+
+	msg "later_new_de1_connection_setup"
 	de1_enable_mmr_notifications
-	de1_enable_state_notifications
-	get_ghc_is_installed
-	de1_send_shot_frames
-	set_fan_temperature_threshold $::settings(fan_threshold)
-	de1_send_steam_hotwater_settings
-	de1_send_waterlevel_settings
-	get_3_mmr_cpuboard_machinemodel_firmwareversion
-	de1_enable_water_level_notifications
-	de1_enable_state_notifications
-	de1_enable_temp_notifications
-	set_heater_tweaks
+	
+
+		de1_enable_state_notifications
+		get_ghc_is_installed
+		de1_send_shot_frames
+		set_fan_temperature_threshold $::settings(fan_threshold)
+		de1_send_steam_hotwater_settings
+		de1_send_waterlevel_settings
+		get_3_mmr_cpuboard_machinemodel_firmwareversion
+		de1_enable_water_level_notifications
+		de1_enable_state_notifications
+		de1_enable_temp_notifications
+	
+	#set_heater_tweaks	
+		#
+
 	#get_heater_tweaks
+	#get_heater_voltage
 	
 
 	#if {$::settings(heater_voltage) == ""} {
@@ -1894,13 +1903,12 @@ proc de1_ble_handler { event data } {
 									set ::de1(first_connection_was_made) 1
 									start_idle
 								}
-								read_de1_version
 								
 								read_de1_state
-								
-
-								
 							}
+
+							read_de1_version
+
 						}
 
 			    		if {$::de1(scale_device_handle) != 0} {
@@ -2035,6 +2043,9 @@ proc de1_ble_handler { event data } {
 			    			parse_binary_mmr_read $value arr
 			    			set mmr_id $arr(Address)
 			    			set mmr_val [ifexists arr(Data0)]
+
+			    			parse_binary_mmr_read_int $value arr2
+
 			    			
 			    			msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
 
@@ -2064,15 +2075,17 @@ proc de1_ble_handler { event data } {
 			    				msg "MMRead: steam flow: '$mmr_val'"
 			    				set ::settings(steam_flow) $mmr_val
 			    			} elseif {$mmr_id == "803818"} {
-			    				msg "MMRead: hot_water_idle_temp: '$mmr_val'"
-			    				set ::settings(hot_water_idle_temp) $mmr_val
-			    			} elseif {$mmr_id == "803838"} {
-			    				msg "MMRead: espresso_warmup_timeout: '$mmr_val'"
-			    				set ::settings(espresso_warmup_timeout) $mmr_val
-			    			} elseif {$mmr_id == "803834"} {
-				    			parse_binary_mmr_read_int $value arr2
+			    				msg "MMRead: hot_water_idle_temp: '[ifexists arr2(Data0)]'"
+			    				set ::settings(hot_water_idle_temp) [ifexists arr2(Data0)]
 
-			    				msg "MMRead: heater voltage: '[ifexists arr2(Data0)]'"
+			    				#mmr_read "espresso_warmup_timeout" "803838" "00"
+			    			} elseif {$mmr_id == "803838"} {
+			    				msg "MMRead: espresso_warmup_timeout: '[ifexists arr2(Data0)]'"
+			    				set ::settings(espresso_warmup_timeout) [ifexists arr2(Data0)]
+			    			} elseif {$mmr_id == "803834"} {
+				    			#parse_binary_mmr_read_int $value arr2
+
+			    				msg "MMRead: heater voltage: '[ifexists arr2(Data0)]' len=[ifexists arr(Len)]"
 			    				set ::settings(heater_voltage) [ifexists arr2(Data0)]
 
 			    				catch {
@@ -2085,8 +2098,17 @@ proc de1_ble_handler { event data } {
 					    				}
 					    			}
 			    				}
+
+			    				if {[ifexists arr(Len)] >= 8} {
+				    				msg "MMRead: espresso_warmup_timeout2: '[ifexists arr2(Data1)]'"
+				    				set ::settings(espresso_warmup_timeout) [ifexists arr2(Data1)]
+
+				    				mmr_read "hot_water_idle_temp" "803818" "00"
+				    			}
+
+			    				
 			    			} elseif {$mmr_id == "800008"} {
-				    			parse_binary_mmr_read_int $value arr2
+				    			#parse_binary_mmr_read_int $value arr2
 
 			    				if {[ifexists arr(Len)] == 12} {
 			    					# it's possibly to read all 3 MMR characteristics at once
@@ -2542,7 +2564,7 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid == "0000A012-0000-1000-8000-00805F9B34FB"} {
 					    	msg "Confirmed: BLE calibration notifications"
 						} elseif {$cuuid == "0000A005-0000-1000-8000-00805F9B34FB"} {
-					    	msg "Confirmed: BLE MMR write: $data"
+					    	msg "Confirmed: BLE MMR write: [convert_string_to_hex $data]"
 						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
 					    	msg "Confirmed: water level write: $data"
 						} else {

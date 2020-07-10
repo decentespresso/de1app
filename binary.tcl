@@ -1878,7 +1878,7 @@ proc update_de1_state {statechar} {
 		if {$::previous_de1_substate == 4} {
 			stop_timer_espresso_preinfusion
 		} elseif {$::previous_de1_substate == 5} {
-			msg "previous_de1_substate == 5/$msg(substate) -- state $textstate / [ifexists ::previous_textstate]"
+			#msg "state $textstate / [ifexists ::previous_textstate]"
 
 			if {$textstate == "HotWater" || [ifexists ::previous_textstate] == "HotWater"} {
 				stop_timer_water_pour
@@ -1902,7 +1902,6 @@ proc update_de1_state {statechar} {
 		if {$current_de1_substate == 4} {
 			start_timer_espresso_preinfusion
 		} elseif {$current_de1_substate == 5 && $::previous_de1_substate != 5} {
-			msg "previous_de1_substate == 5 changed -- state $textstate / [ifexists ::previous_textstate]"
 			if {$textstate == "HotWater"} {
 				start_timer_water_pour
 			} elseif {$textstate == "Steam"} {
