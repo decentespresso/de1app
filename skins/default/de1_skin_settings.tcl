@@ -949,14 +949,14 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		#   Summary for writes:
 		#     IF you read 0, 1120, or 1230, you can write a new nominal voltage, which may be 120 or 230V
 
-		add_de1_text "calibrate2" 350 500  -text [translate "Voltage"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" -justify "left" 
-		add_de1_variable "calibrate2" 1000 500  -text "" -font Helv_11_bold -fill "#4e85f4" -anchor "nw" -textvariable {[if {$::settings(heater_voltage) == "1230" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { return [subst {\[ [translate "Set to 120V"] \]}] } else { return "" }]}
-		add_de1_variable "calibrate2" 1600 500  -text "" -font Helv_11_bold -fill "#4e85f4" -anchor "nw" -textvariable {[if {$::settings(heater_voltage) == "1120" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { return [subst {\[ [translate "Set to 230V"] \]}] } else { return "" }]}
+		add_de1_text "calibrate2" 350 450  -text [translate "Voltage"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_variable "calibrate2" 1000 450  -text "" -font Helv_11_bold -fill "#4e85f4" -anchor "nw" -textvariable {[if {$::settings(heater_voltage) == "1230" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { return [subst {\[ [translate "Set to 120V"] \]}] } else { return "" }]}
+		add_de1_variable "calibrate2" 1600 450  -text "" -font Helv_11_bold -fill "#4e85f4" -anchor "nw" -textvariable {[if {$::settings(heater_voltage) == "1120" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { return [subst {\[ [translate "Set to 230V"] \]}] } else { return "" }]}
 		
 		add_de1_button "calibrate2" {if {$::settings(heater_voltage) == "1230" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { if {$::android == 0} { set ::settings(heater_voltage) "1120" }; set_heater_voltage "120"; get_heater_voltage} } 1000 450 1450 600 ""
 		add_de1_button "calibrate2" {if {$::settings(heater_voltage) == "1120" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { if {$::android == 0} { set ::settings(heater_voltage) "1230" }; set_heater_voltage "230"; get_heater_voltage} } 1600 450 2050 600 ""
 
-		add_de1_variable "calibrate2" 700 500  -text [translate "Voltage"] -font Helv_11 -fill "#7f879a" -anchor "nw" -justify "left"  -textvariable {[if {$::settings(heater_voltage) == "120" || $::settings(heater_voltage) == "1120"} {
+		add_de1_variable "calibrate2" 700 450  -text [translate "Voltage"] -font Helv_11 -fill "#7f879a" -anchor "nw" -justify "left"  -textvariable {[if {$::settings(heater_voltage) == "120" || $::settings(heater_voltage) == "1120"} {
 				return "120V"
 			} elseif {$::settings(heater_voltage) == "230" || $::settings(heater_voltage) == "1230" } {
 				return "230V"
@@ -966,15 +966,27 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		}
 		###############################################################################################
 
-		add_de1_text "calibrate2" 350 650  -text [translate "Heater idle temperature"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" -justify "left" 
-		add_de1_widget "calibrate2" scale 1600 650  {} -to 990 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 90] -variable ::settings(hot_water_idle_temp) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "calibrate2" 1580 650  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_setting [expr {0.1 * $::settings(hot_water_idle_temp)}]]}
+		add_de1_text "calibrate2" 350 600  -text [translate "Heater idle temperature"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_widget "calibrate2" scale 350 660  {} -to 990 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(hot_water_idle_temp) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate2" 970 680  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_temperature_setting [expr {0.1 * $::settings(hot_water_idle_temp)}]]}
 
-		add_de1_text "calibrate2" 350 800  -text [translate "Espresso start time-out"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" -justify "left" 
-		add_de1_widget "calibrate2" scale 1600 800  {} -to 300 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 90] -variable ::settings(espresso_warmup_timeout) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "calibrate2" 1580 800  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_seconds_divided_by_ten $::settings(espresso_warmup_timeout)]}
+		add_de1_text "calibrate2" 1350 600  -text [translate "Heater test time-out"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_widget "calibrate2" scale 1350 660  {} -to 300 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(espresso_warmup_timeout) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate2" 1970 680  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_seconds_divided_by_ten $::settings(espresso_warmup_timeout)]}
 
-		
+		add_de1_text "calibrate2" 350 800  -text [translate "Heater warmup flow rate"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_widget "calibrate2" scale 350 860  {} -to 60 -from 5 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(phase_1_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate2" 970 880  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_flow_calibration_measurement $::settings(phase_1_flow_rate)]}
+
+		add_de1_text "calibrate2" 1350 800  -text [translate "Heater test flow rate"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_widget "calibrate2" scale 1350 860  {} -to 60 -from 5 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(phase_2_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate2" 1970 880  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_flow_calibration_measurement $::settings(phase_2_flow_rate)]}
+
+		#add_de1_text "calibrate2" 350 1000  -text [translate "Presets:"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_text "calibrate2" 350 1000  -text "\[ [translate "Defaults for home"] \]" -font Helv_8_bold -fill "#4e85f4" -anchor "nw" -justify "left" 
+		add_de1_text "calibrate2" 350 1080 -text "\[ [translate "Defaults for cafe"] \]" -font Helv_8_bold -fill "#4e85f4" -anchor "nw" -justify "left" 
+		add_de1_button "calibrate2" {set ::settings(hot_water_idle_temp) 800; set ::settings(espresso_warmup_timeout) 100; set ::settings(phase_1_flow_rate) 10; set ::settings(phase_2_flow_rate) 40; } 300 980 900 1060 ""		
+		add_de1_button "calibrate2" {set ::settings(hot_water_idle_temp) 990; set ::settings(espresso_warmup_timeout) 10; set ::settings(phase_1_flow_rate) 20; set ::settings(phase_2_flow_rate) 40; } 300 1070 900 1150 ""		
 
 	add_de1_text "calibrate calibrate2" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 		add_de1_button "calibrate calibrate2" {say [translate {Done}] $::settings(sound_button_in); 

@@ -954,7 +954,7 @@ proc change_screen_saver_img {} {
 
 	if {[llength [ifexists ::saver_files_cache]] == 1} {
 		# no need to change the background screen saver image if it's only 1
-		msg "xxxxno need to change the background screen saver image if it's only 1"
+		#msg "xxxxno need to change the background screen saver image if it's only 1"
 		return
 	}
 
@@ -1292,7 +1292,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	if {$::de1(current_context) == $page_to_show} {
 		#jbtemp
-		msg "page_display_change returning because ::de1(current_context) == $page_to_show"
+		#msg "page_display_change returning because ::de1(current_context) == $page_to_show"
 		return 
 	}
 

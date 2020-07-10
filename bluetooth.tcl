@@ -95,6 +95,14 @@ proc int_to_hex {in} {
 	return [format %02X $in]
 }
 
+proc long_to_little_endian_hex {in} {
+	set i [format %04X $in]
+	#msg "i: '$i"
+	set i2 "[string range $i 2 3][string range $i 0 1]"
+	#msg "i2: '$i2"
+	return $i2
+}
+
 proc decent_scale_tare_cmd {} {
 	tare_counter_incr
 	set cmd [decent_scale_make_command "0F" [format %02X $::decent_scale_tare_counter]]
@@ -782,7 +790,13 @@ proc mmr_write { note address length value} {
  	set mmrlen [binary decode hex $length]	
 	set mmrloc [binary decode hex $address]
  	set mmrval [binary decode hex $value]	
-	set data "$mmrlen${mmrloc}${mmrval}[binary decode hex 000000000000000000000000000000]"
+	set data "$mmrlen${mmrloc}${mmrval}[binary decode hex 0000000000000000000000000000000000]"
+
+	#msg "mmr write length [string length $data]"
+	if {[string length $data] > 20} {
+		set data [string range $data 0 19]
+		#msg "mmr new write length [string length $data]"
+	}
 	
 	if {$::android != 1} {
 		msg "MMR $note writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]"
@@ -826,7 +840,7 @@ proc set_tank_temperature_threshold {temp} {
 #  */
 
 
-proc get_heater_tweaks {} {
+proc get_heater_tweaks_obs {} {
 	#mmr_read "hot_water_idle_temp" "803818" "00"
 	#after 3000 mmr_read "espresso_warmup_timeout" "803838" "00"
 }
@@ -837,9 +851,15 @@ proc get_heater_voltage {} {
 }
 
 
+# 4 - 121. (2020-07-09 20:43:40) >>> MMR hot_water_idle_temp 800 writing 04 bytes of firmware data to 80 38 18 with value 03 20 : with comment 04 80 38 18 03 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 (-2) : ble write ble1 0000A000-0000-1000-8000-00805F9B34FB 12 0000A006-0000-1000-8000-00805F9B34FB 29 {8 
+# 2 - 130. (2020-07-09 20:45:57) >>> MMR hot_water_idle_temp 790 writing 04 bytes of firmware data to 80 38 18 with value 31 :    with comment 04 80 38 18 31 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 (-2) : ble write ble2 0000A000-0000-1000-8000-00805F9B34FB 12 0000A006-0000-1000-8000-00805F9B34FB 29 81
 proc set_heater_tweaks {} {
-	mmr_write "hot_water_idle_temp $::settings(hot_water_idle_temp)" "803818" "04" [zero_pad [int_to_hex $::settings(hot_water_idle_temp)] 4]
-	mmr_write "espresso_warmup_timeout $::settings(espresso_warmup_timeout)" "803838" "04" [zero_pad [int_to_hex $::settings(espresso_warmup_timeout)] 2]
+	#set ::settings(hot_water_idle_temp) 790
+
+	mmr_write "phase_1_flow_rate $::settings(phase_1_flow_rate)" "803810" "04" [zero_pad [long_to_little_endian_hex $::settings(phase_1_flow_rate)] 4]
+	mmr_write "phase_2_flow_rate $::settings(phase_2_flow_rate)" "803814" "04" [zero_pad [long_to_little_endian_hex $::settings(phase_2_flow_rate)] 4]
+	mmr_write "hot_water_idle_temp $::settings(hot_water_idle_temp)" "803818" "04" [zero_pad [long_to_little_endian_hex $::settings(hot_water_idle_temp)] 4]
+	mmr_write "espresso_warmup_timeout $::settings(espresso_warmup_timeout)" "803838" "04" [zero_pad [long_to_little_endian_hex $::settings(espresso_warmup_timeout)] 4]
 }
 
 proc set_steam_flow {desired_flow} {
@@ -956,7 +976,7 @@ proc run_next_userdata_cmd {} {
 	if {$::android == 1} {
 		# if running on android, only write one BLE command at a time
 		if {$::de1(wrote) == 1} {
-			msg "Do not write, already writing to DE1, queue has [llength $::de1(cmdstack)] items"
+			#msg "Do not write, already writing to DE1, queue has [llength $::de1(cmdstack)] items"
 			return
 		}
 	}
@@ -1475,6 +1495,7 @@ proc ble_connect_to_de1 {} {
 		set version_value "\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51"
 		#parse_binary_version_desc $version_value arr2
 		set ::de1(version) [array get arr2]
+		set v [de1_version_string]
 
 		set mmr_test "\x0C\x80\x00\x08\x14\x05\x00\x00\x03\x00\x00\x00\x71\x04\x00\x00\x00\x00\x00\x00"
 		#parse_binary_mmr_read $mmr_test arr3
@@ -1661,18 +1682,18 @@ proc later_new_de1_connection_setup {} {
 	de1_enable_mmr_notifications
 	
 
-		de1_enable_state_notifications
-		get_ghc_is_installed
-		de1_send_shot_frames
-		set_fan_temperature_threshold $::settings(fan_threshold)
-		de1_send_steam_hotwater_settings
-		de1_send_waterlevel_settings
-		get_3_mmr_cpuboard_machinemodel_firmwareversion
-		de1_enable_water_level_notifications
-		de1_enable_state_notifications
-		de1_enable_temp_notifications
-	
-	#set_heater_tweaks	
+	de1_enable_state_notifications
+	get_ghc_is_installed
+	de1_send_shot_frames
+	set_fan_temperature_threshold $::settings(fan_threshold)
+	de1_send_steam_hotwater_settings
+	de1_send_waterlevel_settings
+	get_3_mmr_cpuboard_machinemodel_firmwareversion
+	de1_enable_water_level_notifications
+	de1_enable_state_notifications
+	de1_enable_temp_notifications
+
+	set_heater_tweaks	
 		#
 
 	#get_heater_tweaks
@@ -2082,6 +2103,19 @@ proc de1_ble_handler { event data } {
 			    			} elseif {$mmr_id == "803838"} {
 			    				msg "MMRead: espresso_warmup_timeout: '[ifexists arr2(Data0)]'"
 			    				set ::settings(espresso_warmup_timeout) [ifexists arr2(Data0)]
+			    			} elseif {$mmr_id == "803810"} {
+			    				msg "MMRead: phase_1_flow_rate: '[ifexists arr2(Data0)]'"
+			    				set ::settings(phase_1_flow_rate) [ifexists arr2(Data0)]
+								
+								if {[ifexists arr(Len)] >= 4} {
+			    				msg "MMRead: phase_2_flow_rate: '[ifexists arr2(Data1)]'"
+				    				set ::settings(phase_2_flow_rate) [ifexists arr2(Data1)]
+				    			}
+								if {[ifexists arr(Len)] >= 8} {
+									msg "MMRead: hot_water_idle_temp: '[ifexists arr2(Data2)]'"
+				    				set ::settings(hot_water_idle_temp) [ifexists arr2(Data2)]
+				    			}
+
 			    			} elseif {$mmr_id == "803834"} {
 				    			#parse_binary_mmr_read_int $value arr2
 
@@ -2103,7 +2137,8 @@ proc de1_ble_handler { event data } {
 				    				msg "MMRead: espresso_warmup_timeout2: '[ifexists arr2(Data1)]'"
 				    				set ::settings(espresso_warmup_timeout) [ifexists arr2(Data1)]
 
-				    				mmr_read "hot_water_idle_temp" "803818" "00"
+				    				#mmr_read "hot_water_idle_temp" "803818" "00"
+				    				mmr_read "phase_1_flow_rate" "803810" "02"
 				    			}
 
 			    				
@@ -2158,6 +2193,8 @@ proc de1_ble_handler { event data } {
 							parse_binary_version_desc $value arr2
 							msg "version data received [string length $value] bytes: '$value' \"[convert_string_to_hex $value]\"  : '[array get arr2]'/ $event $data"
 							set ::de1(version) [array get arr2]
+
+							set v [de1_version_string]
 
 							# run stuff that depends on the BLE API version
 							later_new_de1_connection_setup

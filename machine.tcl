@@ -187,6 +187,8 @@ array set ::settings {
 	active_settings_tab settings_2a
 	black_screen_saver 0
 	chart_total_shot_weight 1
+	phase_1_flow_rate 10
+	phase_2_flow_rate 20
 	ghc_mode 0
 	fan_threshold 45
 	steam_flow 700
@@ -197,6 +199,7 @@ array set ::settings {
 	color_stage_3 "#edceca"
 	start_espresso_only_if_scale_connected 0
 	logfile "log.txt"
+	firmware_sha {}
 	water_refill_point 5
 	max_steam_pressure 3
 	insight_skin_show_embedded_profile 0
