@@ -620,10 +620,10 @@ proc start_firmware_update {} {
 
 	if {$::settings(ghc_is_installed) != 0} {
 		# ok to do v1.3 fw update
-		if {$::settings(force_fw_update) != 1} {
-			set ::de1(firmware_update_button_label) "Up to date"
-			return
-		}
+		#if {$::settings(force_fw_update) != 1} {
+	#		set ::de1(firmware_update_button_label) "Up to date"
+	#		return
+	#	}
 	} else {
 		if {$::settings(force_fw_update) != 1} {
 			set ::de1(firmware_update_button_label) "Up to date"
