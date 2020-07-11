@@ -921,9 +921,6 @@ set calibration_labels_row 350
 set calibration_row_spacing 120
 
 
-
-
-
 # (re)calibration page
 add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 
@@ -960,6 +957,8 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 				return "120V"
 			} elseif {$::settings(heater_voltage) == "230" || $::settings(heater_voltage) == "1230" } {
 				return "230V"
+			} elseif {$::settings(heater_voltage) > "50" && $::settings(heater_voltage) < "300"} {
+				return "$::settings(heater_voltage)V"
 			} else {
 				return [translate "unknown"]
 			}]
