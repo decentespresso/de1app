@@ -822,7 +822,7 @@ proc start_idle {} {
 	de1_send_state "go idle" $::de1_state(Idle)
 
 	# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
-	#set_fan_temperature_threshold $::settings(fan_threshold)
+	set_fan_temperature_threshold $::settings(fan_threshold)
 
 	#after 1000 read_de1_state
 	
