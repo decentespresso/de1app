@@ -4,6 +4,7 @@ skale_display_state { }
 skale_display_state_b .
 sw_y_axisscale 10
 swbrewratio 1.8
+swbrewsettings 0
 swcoffeedose 20.0
 swcoffeetargetweight 45.0
 swcoffeetargetweightadv 32

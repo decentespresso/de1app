@@ -149,12 +149,7 @@ add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_but
 
 
 # new screensavers while we're at it. 
-if {$::settings(black_screen_saver) == 1} {
-	set_de1_screen_saver_directory "[homedir]/saver"
-} else {
-	set_de1_screen_saver_directory "[skin_directory]/screen_saver"
-}
-
+set_de1_screen_saver_directory "[skin_directory]/screen_saver"
 
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/skins/default/de1_skin_settings.tcl"

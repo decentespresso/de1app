@@ -168,9 +168,16 @@ proc add_de1_page {names filename {skin ""} } {
 }	
 
 proc set_de1_screen_saver_directory {{dirname {}}} {
+
+	# force use of our default saver directory if the black screen saver is enabled, otherwise use whatever the skin chooses
+	if {$::settings(black_screen_saver) == 1} {
+		set dirname "[homedir]/saver"
+	}
+
+
 	global saver_directory
 	if {$dirname != ""} {
-	set saver_directory $dirname
+		set saver_directory $dirname
 	}
 
 	#set pngfilename [random_saver_file]
