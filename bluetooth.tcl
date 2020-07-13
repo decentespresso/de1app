@@ -588,7 +588,22 @@ proc de1_enable_maprequest_notifications {} {
 }
 
 proc fwfile {} {
-	return "[homedir]/fw/bootfwupdate.dat"
+
+	set fw "[homedir]/fw/bootfwupdate.dat"
+
+	if {[info exists ::de1(Firmware_file_Version)] != 1} {
+		msg "reading firmware file metadata"
+		parse_firmware_file_header [read_binary_file $fw] arr
+		#msg "firmware file info: [array get arr]"
+		foreach {k v} [array get arr] {
+			set varname "Firmware_file_$k"
+			set varvalue $arr($k)
+			msg "$varname : $varvalue"
+			set ::de1($varname) $varvalue
+		}
+	}
+
+	return $fw
 
 	# obsolete as of 6-6-20 a only using one firmware file again now
 		
@@ -683,6 +698,11 @@ proc start_firmware_update {} {
 		after 1000 write_firmware_now
 	}
 }
+
+#proc get_firmware_file_specs {} {
+#	parse_firmware_file_header [read_binary_file [fwfile]] arr
+#	msg "firmware file info: [array get arr]"
+#}
 
 proc write_firmware_now {} {
 	set ::de1(currently_updating_firmware) 1

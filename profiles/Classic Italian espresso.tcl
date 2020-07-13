@@ -20,7 +20,7 @@ preinfusion_guarantee 1
 preinfusion_stop_pressure 4
 preinfusion_time 8
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {This will imitate the espresso style of the majority of cafes around the world. It uses a short preinfusion with a flat 9 bar pressure profile.}
 profile_title {Classic Italian espresso}

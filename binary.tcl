@@ -310,6 +310,31 @@ proc decent_scale_weight_read_spec2 {} {
 	return $spec
 }
 
+# typedef struct {
+#   U32 CheckSum;    // The checksum of the rest of the encrypted image. Includes "CheckSums" + "Data" fields, not "Header"
+#   U32 BoardMarker; // 0xDE100001
+#   U32 Version;     // The version of this image
+#   U32 ByteCount;   // Number of bytes in image body, ignoring padding.
+#   U32 CPUBytes;    // The first CPUBytes of the image are for the CPU. Remainder is for BLE.
+#   U32 Unused;      // Blank spot for future extension. Always zero for now
+#   U32 DCSum;       // Checksum of decrypted image
+#   U8  IV[32];       // Initialization vector for the firmware
+#   U32 HSum;        // Checksum of this header.
+# } T_FirmwareHeader;
+
+proc firmware_file_spec {} {
+	set spec {
+		CheckSum {int {} {} {unsigned} {[format %X $val]}}
+		BoardMarker {int {} {} {unsigned} {[format %X $val]}}
+		Version {int {} {} {unsigned} {}}
+		ByteCount {int {} {} {unsigned} {}}
+		CPUBytes {int {} {} {unsigned} {}}
+		Unused {int {} {} {unsigned} {}}
+		DCSum {int {} {} {unsigned} {[format %X $val]}}
+	}
+	return $spec
+}
+
 
 proc decent_scale_timing_read_spec {} {
 	set spec {
@@ -1082,6 +1107,26 @@ proc shot_sample_spec {} {
 	}
 
 }
+
+proc parse_firmware_file_header {packed destarrname} {
+	upvar $destarrname Version
+	unset -nocomplain Version
+
+	set spec [firmware_file_spec]
+	array set specarr $spec
+
+   	::fields::unpack $packed $spec Version littleeendian
+	foreach {field val} [array get Version] {
+		set specparts $specarr($field)
+		set extra [lindex $specparts 4]
+		if {$extra != ""} {
+			set Version($field) [expr $extra]
+		}
+	}
+
+}
+
+
 
 proc parse_map_request {packed destarrname} {
 	upvar $destarrname Version

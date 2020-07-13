@@ -3048,12 +3048,26 @@ proc check_firmware_update_is_available {} {
 		msg "Firmware [fwfile] CRC is $::de1(firmware_crc)"
 	}
 
+	# obsolete method, comparing settings-saved CRC of last fw upload, to what DE1 reports as CRC
 	if {($::de1(firmware_crc) != [ifexists ::settings(firmware_crc)]) && $::de1(currently_updating_firmware) == ""} {
 		#msg "firmware CRCs are not the same"
-		set ::de1(firmware_update_button_label) "Firmware update available"
+		##obsolete - set ::de1(firmware_update_button_label) "Firmware update available"
 	} else {
 		#msg "firmware CRCs are the same $::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]"
 	}
+
+	set ::de1(firmware_update_button_label) "Up to date"
+
+	# new method, directly comparing the incremented version number
+	if {[ifexists ::de1(Firmware_file_Version)] != "" && [ifexists ::settings(firmware_version_number)] != ""} {
+		if {[ifexists ::de1(Firmware_file_Version)] != [ifexists ::settings(firmware_version_number)]} {
+			set ::de1(firmware_update_button_label) "Firmware update available"
+		}
+
+	}
+
+
+
 	return ""
 }
 
@@ -3143,13 +3157,17 @@ proc de1_version_string {} {
 	}
 	
 	if {$brev != ""} {
-		append version ", pcb=$brev"
+		append version ", [translate pcb]=$brev"
 	}
 	if {[ifexists ::settings(machine_model)] != "" && [ifexists ::settings(machine_model)] != "0"} {
-		append version ", model=[ifexists modelarr([ifexists ::settings(machine_model)])]"
+		append version ", [translate model]=[ifexists modelarr([ifexists ::settings(machine_model)])]"
 	}
 	if {[ifexists ::settings(firmware_version_number)] != ""} {
-		append version ", rev=[ifexists ::settings(firmware_version_number)]"
+		append version ", [translate current]=[ifexists ::settings(firmware_version_number)]"
+	}
+	
+	if {[ifexists ::de1(Firmware_file_Version)] != "" && [ifexists ::settings(firmware_version_number)] != "" && [ifexists ::de1(Firmware_file_Version)] != [ifexists ::settings(firmware_version_number)] } {
+		append version ", [translate available]=[ifexists ::de1(Firmware_file_Version)]"
 	}
 
 	if {$::settings(firmware_sha) != "" && [ifexists v(BLE_Sha)] != "" && $::settings(firmware_sha) != [ifexists v(BLE_Sha)] } {
