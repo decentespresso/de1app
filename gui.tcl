@@ -2070,7 +2070,7 @@ proc listbox_moveto {lb dest1 dest2} {
 
 # convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
 
-proc listbox_moveto2 {lb dest1 dest2} {
+proc listbox_moveto_new {lb dest1 dest2} {
 
     # get number of items visible in list box
 
