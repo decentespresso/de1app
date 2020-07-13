@@ -2069,9 +2069,59 @@ proc listbox_moveto {lb dest1 dest2} {
 }
 
 # convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
+
+proc listbox_moveto2 {lb dest1 dest2} {
+
+    # get number of items visible in list box
+
+    set visible_items [lindex [split [$lb configure -height] " "] 4]
+
+    # get total items in listbox
+
+    set total_items [$lb size]
+
+    # if all the items fit on screen then there is nothing to do
+
+    if {$visible_items >= $total_items} {return}
+
+    # determine which item would be at the top if the last items is at the bottom
+
+    set last_top_item [expr $total_items - $visible_items]
+
+    # determine which item should be at the top for the requested value
+
+    set top_item [expr int(round($last_top_item * $dest2))]
+
+    $lb yview $top_item
+
+}
+
+# convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
 proc scale_scroll {lb dest1 dest2} {
 	upvar $lb fieldname
 	set fieldname $dest1
+}
+
+# convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
+proc scale_scroll_new {lb value dest1 dest2} {
+
+	return [scale_scroll $lb $dest1 $dest2]
+
+    #TODO: get a reference to the listbox somehow?
+
+    # get number of items visible in list box
+    set visible_items [lindex [split [$lb configure -height] " "] 4]
+    # get total items in listbox
+    set total_items [$lb size]
+    # if all the items fit on screen then there is nothing to do
+    if {$visible_items >= $total_items} {return}
+    # determine which item would be at the top if the last items is at the bottom
+    set last_top_item [expr $total_items - $visible_items]
+    # determine what percentage of the way down the current item is
+    set rescaled_value [expr $dest1 / $total_items * $visible_items]
+
+    upvar $value fieldname
+    set fieldname $rescaled_value
 }
 
 proc calibration_gui_init {} {
