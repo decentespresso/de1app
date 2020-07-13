@@ -1701,12 +1701,12 @@ proc later_new_de1_connection_setup {} {
 	
 
 	#if {$::settings(heater_voltage) == ""} {
-		after 7000 get_heater_voltage
-		after 9000 de1_enable_temp_notifications
 	#}
 	
 
 	after 5000 read_de1_state
+	after 7000 get_heater_voltage
+	after 9000 de1_enable_temp_notifications
 
 }
 
