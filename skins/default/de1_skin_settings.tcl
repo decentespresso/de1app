@@ -851,7 +851,7 @@ add_de1_variable "settings_1" 1360 1240 -text "" -font Helv_10_bold -fill "#7f87
 	add_de1_widget "profile_notes" multiline_entry 250 440 {} -width 85 -height 12 -font Helv_8 -borderwidth 0 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 	add_de1_text "profile_notes" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button "profile_notes" {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off settings_1;} 980 1210 1580 1410 ""
+	add_de1_button "profile_notes" {say [translate {Done}] $::settings(sound_button_in); profile_has_changed_set; page_to_show_when_off settings_1;} 980 1210 1580 1410 ""
 
 
 # labels for PREHEAT tab on

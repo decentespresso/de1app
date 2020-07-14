@@ -576,6 +576,7 @@ proc make_de1_dir {} {
         profiles/Two\ spring\ lever\ machine\ to\ 9\ bar.tcl *
         profiles/Innovative\ long\ preinfusion.tcl *
         profiles/default.tcl *
+        profiles/default_descending.tcl *        
         profiles/rao_allonge.tcl *
         profiles/e61\ classic\ at\ 9\ bar.tcl *
         profiles/e61\ rocketing\ up\ to\ 10\ bar.tcl *
