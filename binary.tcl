@@ -808,7 +808,7 @@ proc de1_packed_shot_advanced {} {
 				# no exit condition was checked
 				set TriggerVal 0
 			}
-			#set TriggerVal 1
+			
 		} else {
 			set TriggerVal 0
 		}
@@ -822,15 +822,13 @@ proc de1_packed_shot_advanced {} {
 
 		# MaxVol feature has been disabled 5/11/18
 		array set $frame_name [list MaxVol [convert_float_to_U10P0 0]]
+		#set props(volume) 10
 		#array set $frame_name [list MaxVol [convert_float_to_U10P0 $props(volume)]]
 
-
-		#puts "[expr {1 + $cnt}]. $props(name) : [array get props]"
 		incr cnt
 	}
 
 	set hdr(NumberOfFrames) $cnt
-	#[llength $::settings(advanced_shot)]
 	set hdr(NumberOfPreinfuseFrames) 1
 
 	return [make_chunked_packed_shot_sample hdr $frame_names]
@@ -843,79 +841,80 @@ proc de1_packed_shot_flow {} {
 	set hdr(MinimumPressure) 0
 	set hdr(MaximumFlow) [convert_float_to_U8P4 6]
 
-	set mixtempflag ""
-	if {![de1plus]} {
-		# DE1 does not have basket temo mode
-		set mixtempflag "TMixTemp"
-	}
 
+	set temp_bump_time_seconds $::settings(temp_bump_time_seconds)
+
+
+	set mixtempflag ""
 	set hdr(NumberOfFrames) 4
 	set hdr(NumberOfPreinfuseFrames) 1
 
-	# preinfusion
+
+	#####################################################################################
+	# preinfusion 2 second temp bump step, if needed
 	set frame1(FrameToWrite) 0
 	set frame1(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
 	set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
-	#set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-
-
-	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
-
-	# MaxVol feature has been disabled 5/11/18
-	set frame1(MaxVol) [convert_float_to_U10P0 0]
-	#	set frame1(MaxVol) [convert_float_to_U10P0 90]
-
-	# exit preinfusion if your pressure is above the pressure goal, no matter what
-	set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
-
-
-	# pressure rise
-	set frame2(FrameToWrite) 1
-	set frame2(Flag) [make_shot_flag "DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-	set frame2(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
-	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
 	
-
-	# MaxVol feature has been disabled 5/11/18
-	set frame2(MaxVol) [convert_float_to_U10P0 0]
-	#set frame2(MaxVol) [convert_float_to_U10P0 99]
-
-	if {$::settings(preinfusion_guarantee) == 1 && $::settings(preinfusion_time) > 0} {
-		set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(flow_rise_timeout)]
-	} else {
-		# a length of zero means the DE1+ will skip this frame
-		set frame2(FrameLen) [convert_float_to_F8_1_7 0]
+	# this frame is OFF unless needed, in which case it is just 2 seconds long
+	set frame1(FrameLen) [convert_float_to_F8_1_7 0]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set frame1(FrameLen) [convert_float_to_F8_1_7 $temp_bump_time_seconds]
 	}
-	
 
+	set frame1(MaxVol) [convert_float_to_U10P0 0]
+	set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
+	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_0)]
+	}
+
+	#####################################################################################
+	# after temp bump step, still in preinfusion if needed
+	set frame2(FrameToWrite) 1
+	set frame2(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
+	set frame2(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
+	set frame2(MaxVol) [convert_float_to_U10P0 0]
+	set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
+	set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
+	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set second_frame_len [expr {$::settings(preinfusion_time) - $temp_bump_time_seconds}]		
+		if {$second_frame_len < 0} { 
+			set second_frame_len 0
+		}
+		set frame2(FrameLen) [convert_float_to_F8_1_7 $second_frame_len]
+		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_1)]
+	}
+
+
+	#####################################################################################
 	# hold
 	set frame3(FrameToWrite) 2
 	set frame3(Flag) [make_shot_flag "CtrlF IgnoreLimit $mixtempflag"] 
 	set frame3(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_hold)]
-	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
 	set frame3(TriggerVal) 0
-
-	# MaxVol feature has been disabled 5/11/18	
 	set frame3(MaxVol) [convert_float_to_U10P0 0]
-	#set frame3(MaxVol) [convert_float_to_U10P0 $::settings(flow_hold_stop_volumetric)]
+	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_2)]
+	}
 
+	#####################################################################################
 	# decline
 	set frame4(FrameToWrite) 3
 	set frame4(Flag) [make_shot_flag "CtrlF IgnoreLimit Interpolate $mixtempflag"] 
 	set frame4(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_decline)]
-	set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
 	set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
-	set frame4(TriggerVal) 0
-
-	# MaxVol feature has been disabled 5/11/18	
 	set frame4(MaxVol) [convert_float_to_U10P0 0]
-	#set frame4(MaxVol) [convert_float_to_U10P0 $::settings(flow_decline_stop_volumetric)]
+	set frame4(TriggerVal) 0
+	set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_3)]
+	}
 
 	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3 frame4]]
-
 }
 
 
@@ -939,65 +938,76 @@ proc de1_packed_shot {} {
 	set hdr(MaximumFlow) [convert_float_to_U8P4 6]
 
 	set mixtempflag ""
-	if {![de1plus]} {
-		# DE1 does not have basket temo mode
-		set mixtempflag "TMixTemp"
-	}
+	set hdr(NumberOfFrames) 4
+	set hdr(NumberOfPreinfuseFrames) 2
 
-	set hdr(NumberOfFrames) 3
-	set hdr(NumberOfPreinfuseFrames) 1
+	set temp_bump_time_seconds $::settings(temp_bump_time_seconds)
 
-	# preinfusion
+	#####################################################################################
+	# preinfusion 2 second temp bump step, if needed
 	set frame1(FrameToWrite) 0
 	set frame1(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
+	set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
 	
-	if {[de1plus]} {
-		set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
-		#set frame1(SetVal) [convert_float_to_U8P4 3]
-	} else {
-		set frame1(SetVal) [convert_float_to_U8P4 4]
+	# this frame is OFF unless needed, in which case it is just 2 seconds long
+	set frame1(FrameLen) [convert_float_to_F8_1_7 0]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set frame1(FrameLen) [convert_float_to_F8_1_7 $temp_bump_time_seconds]
 	}
 
-	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-
-	set frame1(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
-	
-	# MaxVol feature has been disabled 5/11/18
 	set frame1(MaxVol) [convert_float_to_U10P0 0]
-	#set frame1(MaxVol) [convert_float_to_U10P0 90]
-
-	if {[de1plus]} {
-		# exit preinfusion if your pressure is above the pressure goal, no matter what
-		set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
-	} else {
-		set frame1(TriggerVal) [convert_float_to_U8P4 4]
+	set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
+	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_0)]
 	}
 
-	# hold
+	#####################################################################################
+	# after temp bump step, still in preinfusion if needed
 	set frame2(FrameToWrite) 1
-	set frame2(Flag) [make_shot_flag "IgnoreLimit $mixtempflag"] 
-	set frame2(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
-	set frame2(TriggerVal) 0
-
-	# MaxVol feature has been disabled 5/11/18
+	set frame2(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
+	set frame2(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
 	set frame2(MaxVol) [convert_float_to_U10P0 0]
-	#set frame2(MaxVol) [convert_float_to_U10P0 $::settings(pressure_hold_stop_volumetric)]
+	set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
+	set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
+	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set second_frame_len [expr {$::settings(preinfusion_time) - $temp_bump_time_seconds}]		
+		if {$second_frame_len < 0} { 
+			set second_frame_len 0
+		}
+		set frame2(FrameLen) [convert_float_to_F8_1_7 $second_frame_len]
+		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_1)]
+	}
 
-	# decline
+	#####################################################################################
+	# hold
 	set frame3(FrameToWrite) 2
-	set frame3(Flag) [make_shot_flag "IgnoreLimit Interpolate $mixtempflag"] 
-	set frame3(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
-	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
+	set frame3(Flag) [make_shot_flag "IgnoreLimit $mixtempflag"] 
+	set frame3(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
+	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
 	set frame3(TriggerVal) 0
-
-	# MaxVol feature has been disabled 5/11/18
 	set frame3(MaxVol) [convert_float_to_U10P0 0]
-	#set frame3(MaxVol) [convert_float_to_U10P0 $::settings(pressure_decline_stop_volumetric)]
+	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_2)]
+	}
 
-	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3]]
+
+	#####################################################################################
+	# decline
+	set frame4(FrameToWrite) 3
+	set frame4(Flag) [make_shot_flag "IgnoreLimit Interpolate $mixtempflag"] 
+	set frame4(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
+	set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
+	set frame4(TriggerVal) 0
+	set frame4(MaxVol) [convert_float_to_U10P0 0]
+	set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_3)]
+	}
+
+	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3 frame4]]
 
 }
 
@@ -1849,9 +1859,9 @@ proc update_de1_state {statechar} {
 		} elseif {$textstate == "Steam"} {
 			reset_gui_starting_steam
 		} elseif {$textstate == "HotWater"} {
-			reset_gui_starting_steam
+			reset_gui_starting_hotwater
 		} elseif {$textstate == "HotWaterRinse"} {
-			reset_gui_starting_steam
+			reset_gui_starting_hot_water_rinse
 		} elseif {$textstate == "Idle" && [ifexists ::previous_textstate] == "Steam"} {
 			msg "Scheduling check_if_steam_clogged"
 			after 3000 check_if_steam_clogged

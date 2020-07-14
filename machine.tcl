@@ -185,6 +185,7 @@ array set ::settings {
 	steam_over_temp_count_trigger 10
 	go_idle_before_all_operations 0
 	active_settings_tab settings_2a
+	espresso_temperature_steps_enabled 0
 	black_screen_saver 0
 	chart_total_shot_weight 1
 	phase_1_flow_rate 10
@@ -206,6 +207,7 @@ array set ::settings {
 	flying 0
 	ble_unpair_at_exit 1
 	preload_all_page_images 0
+	temp_bump_time_seconds 2
 	export_history_automatically_to_csv 1
 	advanced_shot_chart_temp_max 100
 	advanced_shot_chart_temp_min 80

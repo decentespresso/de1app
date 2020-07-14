@@ -2620,7 +2620,12 @@ proc profile_has_not_changed_set args {
 }
 
 proc load_settings_vars {fn} {
-	#msg "load_settings_vars $fn"
+
+	msg "load_settings_vars $fn"
+
+	# default to no temp steps, so as to migrate older profiles that did not have this setting, and not accidentally enble this feature on them
+	unset -nocomplain ::settings(espresso_temperature_steps_enabled) 
+
 	#error "load_settings_vars"
 	# set the default profile type to use, this can be over-ridden by the saved profile
 	if {[de1plus]} {
@@ -2675,7 +2680,7 @@ proc save_settings_vars {fn varlist} {
 }
 
 proc profile_vars {} {
- 	return { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure profile_hide}
+ 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure profile_hide}
 }
 
 proc save_profile {} {
@@ -3391,3 +3396,81 @@ foreach p [info procs] { set kpv(p,$p) 1 }
 
     source "de1plus.tcl"
  }
+
+
+
+ proc toggle_espresso_steps_option {} {
+
+ 	if {[ifexists ::settings(espresso_temperature_steps_enabled)] != 1} {
+ 		set ::settings(espresso_temperature_steps_enabled) 1 
+ 	} else {
+ 		set ::settings(espresso_temperature_steps_enabled) 0 
+
+ 	} 		
+
+	msg "Clearing default step temps"
+	set ::settings(espresso_temperature_0) $::settings(espresso_temperature)
+	set ::settings(espresso_temperature_1) $::settings(espresso_temperature)
+	set ::settings(espresso_temperature_2) $::settings(espresso_temperature)
+	set ::settings(espresso_temperature_3) $::settings(espresso_temperature)
+ 	
+
+ 	msg "toggle_espresso_steps_option $::settings(espresso_temperature_steps_enabled)"
+
+}
+
+proc round_and_return_step_temperature_setting {varname} {
+
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] != 1} {
+		return ""
+	}
+
+	set v [ifexists $varname]
+	if {$v == ""} {
+		msg "can't find variable $varname in round_and_return_step_temperature_setting"
+		return ""
+	}
+
+	return [round_and_return_temperature_setting $varname]
+}
+
+proc range_check_variable {varname low high} {
+	
+	#msg "range_check_variable $varname"
+	upvar $varname var
+	if {$var < $low} {
+		msg "variable $varname was under $low"
+		set var $low
+	}
+	if {$var > $high} {
+		msg "variable $varname was over $high"
+		set var $high
+	}
+}
+
+proc change_espresso_temperature {amount} {
+
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+
+		# if step temps are enabled then set the preinfusion start temp to the global temp 
+		# and then apply the relative change desired to each subsequent step
+
+		set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + $amount}]
+		set ::settings(espresso_temperature_0) $::settings(espresso_temperature)			
+		set ::settings(espresso_temperature_1) [expr {$::settings(espresso_temperature_1) + $amount}]
+		set ::settings(espresso_temperature_2) [expr {$::settings(espresso_temperature_2) + $amount}]
+		set ::settings(espresso_temperature_3) [expr {$::settings(espresso_temperature_3) + $amount}]
+
+
+		range_check_variable ::settings(espresso_temperature_0) 0 100
+		range_check_variable ::settings(espresso_temperature_1) 0 100
+		range_check_variable ::settings(espresso_temperature_2) 0 100
+		range_check_variable ::settings(espresso_temperature_3) 0 100
+		
+
+	} else {
+		set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + $amount}]
+	}
+
+	range_check_variable ::settings(espresso_temperature) 0 100
+}

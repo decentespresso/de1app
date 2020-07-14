@@ -43,7 +43,7 @@ set_next_page "hotwaterrinse" "preheat_2"
 add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
 add_de1_page "tankempty refill" "fill_tank.jpg" "default"
-add_de1_page "message calibrate calibrate2 infopage tabletstyles languages profile_notes measurements showprofiles" "settings_message.png" "default"
+add_de1_page "message calibrate calibrate2 infopage tabletstyles languages profile_notes measurements showprofiles temperature_steps" "settings_message.png" "default"
 add_de1_page "create_preset" "settings_3_choices.png" "default"
 add_de1_page "descalewarning" "descalewarning.jpg" "default"
 
@@ -1131,4 +1131,4 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
 #set_next_page off steam_zoom;
 ##
 
-#set_next_page off sleep;
+#set_next_page off settings_2a;

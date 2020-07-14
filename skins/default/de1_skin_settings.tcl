@@ -105,8 +105,7 @@ if {[de1plus]} {
 			# rise checkbox is made so that other code works, but it's off screen
 			set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 99947 1320 { } -command "profile_has_changed_set; update_de1_explanation_chart_soon" -padx 0 -pady 0 -bg #FFFFFF -text [translate "rise"] -indicatoron true -font Helv_10  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF]
 		}
-#1730 1175
-#1730 1325
+
 
 	add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 		add_de1_widget "settings_2a" scale 892 850 {} -from 0 -to 60 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
@@ -123,8 +122,39 @@ if {[de1plus]} {
 		set ::espresso_pressure_decline_widget [add_de1_widget "settings_2a" scale 2360 850 {} -to 0 -from 10 -background $::settings(color_stage_3) -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470]  -width [rescale_y_skin 150] -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 		set ::espresso_pressure_decline_widget_label [add_de1_variable "settings_2 settings_2a" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(pressure_end)]}]
 
-	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1.5 .5 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1 %b; profile_has_changed_set} 2404 192 2590 750 ""
-	add_de1_variable "settings_2a settings_2b" 2470 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_temperature_setting ::settings(espresso_temperature)]}
+	# display each temperature step, and if you tap on a number, allow editing of all at once
+	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature 0.5; profile_has_changed_set } 2404 192 2590 320
+		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature -0.5; profile_has_changed_set } 2404 600 2590 730
+		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); ; toggle_espresso_steps_option; profile_has_changed_set; } 2404 370 2590 560
+
+		add_de1_variable "settings_2a settings_2b" 2470 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_temperature_setting ::settings(espresso_temperature)]}
+		add_de1_variable "settings_2a settings_2b" 820 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -textvariable {[if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { return [subst {[round_and_return_step_temperature_setting ::settings(espresso_temperature_0)] / [round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}]} else {return ""}]}
+		#add_de1_variable "settings_2a settings_2b" 674 790 -text "" -font Helv_8 -fill "#AAAAAA" -anchor "center" -textvariable {[if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { return "/" } else { return "" }]}
+		#add_de1_variable "settings_2a settings_2b" 744 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}
+		add_de1_variable "settings_2a settings_2b" 1666 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_2)]}
+		add_de1_variable "settings_2a settings_2b" 2510 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_3)]}
+
+		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { page_to_show_when_off temperature_steps } } 500 750 840 830
+		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { page_to_show_when_off temperature_steps } } 1460 750 1680 830
+		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { page_to_show_when_off temperature_steps } } 2300 750 2530 830
+
+
+	add_de1_text "temperature_steps" 1280 290 -text [translate "Temperature Steps"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+		add_de1_text "temperature_steps" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+		add_de1_button "temperature_steps" {say [translate {Done}] $::settings(sound_button_in); set ::settings(espresso_temperature) $::settings(espresso_temperature_0); profile_has_changed_set; page_to_show_when_off $::settings(settings_profile_type); } 980 1210 1580 1410 ""
+		add_de1_widget "temperature_steps" scale 800 460 {} -from 0 -to 100 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_0) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+		add_de1_widget "temperature_steps" scale 800 640 {} -from 0 -to 100 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_1) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+		add_de1_widget "temperature_steps" scale 800 820 {} -from 0 -to 100 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_2) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+		add_de1_widget "temperature_steps" scale 800 1000 {} -from 0 -to 100 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_3) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+		add_de1_text "temperature_steps" 780 500 -text [translate "Start"] -font Helv_10_bold -fill "#444444" -anchor "ne"
+		add_de1_text "temperature_steps" 780 680 -text [translate "Preinfusion"] -font Helv_10_bold -fill "#444444" -anchor "ne"
+		add_de1_text "temperature_steps" 780 860 -text [translate "Hold"] -font Helv_10_bold -fill "#444444" -anchor "ne"
+		add_de1_text "temperature_steps" 780 1040 -text [translate "Decline"] -font Helv_10_bold -fill "#444444" -anchor "ne"
+
+		add_de1_variable "temperature_steps" 1800 500 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_0)]}
+		add_de1_variable "temperature_steps" 1800 680 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}
+		add_de1_variable "temperature_steps" 1800 860 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_2)]}
+		add_de1_variable "temperature_steps" 1800 1040 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_3)]}
 
 	############################
 	# flow controlled shots
