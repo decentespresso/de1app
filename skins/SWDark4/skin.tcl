@@ -107,7 +107,7 @@ add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"
 add_de1_page "tankempty refill" "fill_tank.jpg" "default"
 add_de1_page "cleaning" "cleaning.jpg" "default"
-add_de1_page "message calibrate infopage tabletstyles languages profile_notes measurements" "settings_message.png" "default"
+#add_de1_page "message calibrate infopage tabletstyles languages profile_notes measurements" "settings_message.png" "default"
 add_de1_page "create_preset" "settings_3_choices.png" "default"
 add_de1_page "firmware_update_3" "firmware_upgrade.jpg" "default"
 add_de1_page "firmware_update_1 firmware_update_4" "firmware_upgrade_off.jpg" "default"
@@ -118,7 +118,8 @@ add_de1_page "ghc" "ghc.jpg" "default"
 add_de1_page "travel_prepare" "travel_prepare.jpg" "default"
 add_de1_page "travel_do" "travel_do.jpg" "default"
 add_de1_page "descalewarning" "descalewarning.jpg" "default"
-add_de1_page "message calibrate calibrate2 infopage tabletstyles languages profile_notes measurements" "settings_message.png" "default"
+#add_de1_page "message calibrate calibrate2 infopage tabletstyles languages profile_notes measurements" "settings_message.png" "default"
+add_de1_page "message calibrate calibrate2 infopage tabletstyles languages profile_notes measurements temperature_steps" "settings_message.png" "default"
 
 add_de1_text "tankempty refill" 1280 750 -text [translate "Please add water"] -font Helv_20_bold -fill "#AAAAAA" -justify "center" -anchor "center" -width 900
 add_de1_text "cleaning" 1280 80 -text [translate "Cleaning"] -font Helv_20_bold -fill "#EEEEEE" -justify "center" -anchor "center" -width 900
