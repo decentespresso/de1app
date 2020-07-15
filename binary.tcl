@@ -847,7 +847,7 @@ proc de1_packed_shot_flow {} {
 
 	set mixtempflag ""
 	set hdr(NumberOfFrames) 4
-	set hdr(NumberOfPreinfuseFrames) 1
+	set hdr(NumberOfPreinfuseFrames) 2
 
 
 	#####################################################################################
