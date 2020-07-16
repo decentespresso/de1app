@@ -3,11 +3,11 @@ author Decent
 espresso_decline_time 35
 espresso_hold_time 4
 espresso_pressure 8.6
-espresso_temperature 90.0
-espresso_temperature_0 90.0
-espresso_temperature_1 88.0
-espresso_temperature_2 87.0
-espresso_temperature_3 86.0
+espresso_temperature 92.0
+espresso_temperature_0 92.0
+espresso_temperature_1 90.0
+espresso_temperature_2 89.0
+espresso_temperature_3 88.0
 espresso_temperature_steps_enabled 1
 final_desired_shot_volume 36
 final_desired_shot_volume_advanced 0
