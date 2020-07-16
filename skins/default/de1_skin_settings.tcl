@@ -1000,7 +1000,7 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		add_de1_variable "calibrate2" 970 680  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_temperature_setting [expr {0.1 * $::settings(hot_water_idle_temp)}]]}
 
 		add_de1_text "calibrate2" 1350 600  -text [translate "Heater test time-out"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
-		add_de1_widget "calibrate2" scale 1350 660  {} -to 300 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(espresso_warmup_timeout) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "calibrate2" scale 1350 660  {} -to 300 -from 10 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(espresso_warmup_timeout) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "calibrate2" 1970 680  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_seconds_divided_by_ten $::settings(espresso_warmup_timeout)]}
 
 		add_de1_text "calibrate2" 350 800  -text [translate "Heater warmup flow rate"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
