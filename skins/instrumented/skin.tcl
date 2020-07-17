@@ -3,6 +3,10 @@ package require de1plus 1.0
 
 source "[homedir]/skins/default/standard_includes.tcl"
 
+
+# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
+source "[homedir]/skins/default/standard_stop_buttons.tcl"
+
 ##############################################################################################################################################################################################################################################################################
 # OFF means the espresso machine is not currently doing anything.
 
@@ -126,7 +130,4 @@ add_de1_variable "water hotwaterrinse" 505 1276 -justify left -anchor "nw" -font
 #add_de1_button "saver" {say [translate {awake}] $::settings(sound_button_in);start_idle} 0 0 2560 1600
 add_de1_text "sleep" 2500 1450 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
 add_de1_button "sleep" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 2560 1600
-
-# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
-source "[homedir]/skins/default/standard_stop_buttons.tcl"
 

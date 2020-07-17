@@ -1,6 +1,13 @@
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is doing steam, hot water or espresso
 
+# the graphics for each of the main espresso machine modes
+add_de1_page "off" "nothing_on.png"
+add_de1_page "espresso" "espresso_on.png"
+add_de1_page "steam" "steam_on.png"
+add_de1_page "water hotwaterrinse" "tea_on.png"
+
+
 add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); start_idle; check_if_steam_clogged} 0 0 2560 1600
 add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); start_idle} 0 0 2560 1600
 add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in); start_idle} 0 0 2560 1600

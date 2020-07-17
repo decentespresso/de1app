@@ -7,29 +7,29 @@ package require de1 1.0
 # you should replace the JPG graphics in the 2560x1600/ directory with your own graphics. 
 source "[homedir]/skins/default/standard_includes.tcl"
 
-set ::skindebug 0
+# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
+source "[homedir]/skins/default/standard_stop_buttons.tcl"
+
+
+
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
-add_de1_page "off" "nothing_on.png"
-if {[de1plus]} {
-	add_de1_page "espresso" "espresso_on_plus.png"
-} else {
-	add_de1_page "espresso" "espresso_on.png"
-}
-add_de1_page "steam" "steam_on.png"
-add_de1_page "water hotwaterrinse" "tea_on.png"
+#add_de1_page "off" "nothing_on.png"
+#add_de1_page "espresso" "espresso_on_plus.png"
+#add_de1_page "steam" "steam_on.png"
+#add_de1_page "water hotwaterrinse" "tea_on.png"
 
 # most skins will not bother replacing these graphics
-add_de1_page "sleep" "sleep.jpg" "default"
-add_de1_page "tankfilling" "filling_tank.jpg" "default"
-add_de1_page "tankempty" "fill_tank.jpg" "default"
-add_de1_page "cleaning" "cleaning.jpg" "default"
-add_de1_page "message" "settings_message.png" "default"
-add_de1_page "descaling" "descaling.jpg" "default"
-add_de1_page "cleaning" "cleaning.jpg" "default"
+#add_de1_page "sleep" "sleep.jpg" "default"
+#add_de1_page "tankfilling" "filling_tank.jpg" "default"
+#add_de1_page "tankempty" "fill_tank.jpg" "default"
+#add_de1_page "cleaning" "cleaning.jpg" "default"
+#add_de1_page "message" "settings_message.png" "default"
+#add_de1_page "descaling" "descaling.jpg" "default"
+#add_de1_page "cleaning" "cleaning.jpg" "default"
 
-set_de1_screen_saver_directory "[homedir]/saver"
+#set_de1_screen_saver_directory "[homedir]/saver"
 
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/skins/default/de1_skin_settings.tcl"
@@ -169,7 +169,4 @@ add_de1_variable "espresso" $column3 [expr {$pos_top + (4.5 * $spacer)}] -justif
 }
 
 ##############################################################################################################################################################################################################################################################################
-
-# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
-source "[homedir]/skins/default/standard_stop_buttons.tcl"
 

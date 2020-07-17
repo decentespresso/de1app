@@ -10,6 +10,8 @@ source "[homedir]/skins/default/standard_includes.tcl"
 #load_font "Northwood High" "[skin_directory]/sample.ttf" 60
 #add_de1_text "off" 1280 500 -text "An important message" -font {Northwood High} -fill "#2d3046" -anchor "center"
 
+# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
+source "[homedir]/skins/default/standard_stop_buttons.tcl"
 
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
@@ -26,9 +28,9 @@ add_de1_text "steam" 630 495  -text [translate "STEAM"] -font {musicos} -fill "#
 add_de1_text "off" 1780 597 -text [translate "WATER"] -font {musicos} -fill "#000000" -anchor "center" 
 add_de1_text "water hotwaterrinse" 1550 500 -text [translate "WATER"] -font {musicos} -fill "#000000" -anchor "center" 
 
-
-
 add_de1_text "off settings" 1760 315  -text [translate "SETTINGS"] -font {musicos} -fill "#000000" -anchor "center" 
+
+
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
@@ -42,7 +44,3 @@ add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start
 add_de1_button "off" {show_settings} 1645 10 2595 485
 
 ##############################################################################################################################################################################################################################################################################
-
-# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
-source "[homedir]/skins/default/standard_stop_buttons.tcl"
-

@@ -6,6 +6,9 @@
 # you should replace the JPG graphics in the 2560x1600/ directory with your own graphics. 
 source "[homedir]/skins/default/standard_includes.tcl"
 
+# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
+source "[homedir]/skins/default/standard_stop_buttons.tcl"
+
 # example of loading a custom font (you need to indicate the TTF file and the font size)
 #load_font "Northwood High" "[skin_directory]/sample.ttf" 60
 #add_de1_text "off" 1280 500 -text "An important message" -font {Northwood High} -fill "#2d3046" -anchor "center"
@@ -16,13 +19,14 @@ source "[homedir]/skins/default/standard_includes.tcl"
 
 load_font "retrofont" "[skin_directory]/retrofont.ttf" 36
 
-
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
 add_de1_text "off espresso" 400 1500  -text [translate "ESPRESSO"] -font {retrofont} -fill "#fff2d7" -anchor "center" 
 add_de1_text "off steam" 1290 1500  -text [translate "STEAM"] -font {retrofont} -fill "#fff2d7" -anchor "center" 
 add_de1_text "off water hotwaterrinse" 2140 1500 -text [translate "WATER"] -font {retrofont} -fill "#fff2d7" -anchor "center" 
 #add_de1_text "off settings" 2486 1500  -text [translate "SETTINGS"] -font {retrofont} -fill "#c1a47f" -anchor "ne" 
 #add_de1_text "off" 1820 1500  -text "OFF" -font {retrofont} -fill "#c1a47f" -anchor "nw" 
+
+
 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
@@ -36,7 +40,4 @@ add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start
 add_de1_button "off" {show_settings} 2110 1410 2550 1599
 
 ##############################################################################################################################################################################################################################################################################
-
-# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
-source "[homedir]/skins/default/standard_stop_buttons.tcl"
 

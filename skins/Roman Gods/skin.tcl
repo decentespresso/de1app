@@ -6,6 +6,10 @@
 # you should replace the JPG graphics in the 2560x1600/ directory with your own graphics. 
 source "[homedir]/skins/default/standard_includes.tcl"
 
+# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
+source "[homedir]/skins/default/standard_stop_buttons.tcl"
+
+
 # example of loading a custom font (you need to indicate the TTF file and the font size)
 #load_font "Northwood High" "[skin_directory]/sample.ttf" 60
 #add_de1_text "off" 1280 500 -text "An important message" -font {Northwood High} -fill "#2d3046" -anchor "center"
@@ -45,7 +49,4 @@ add_de1_button "off" {show_settings} 1920 450 2515 1555
 add_de1_variable "off" 1280 1576 -justify left -anchor "center" -text "" -font renaissance -fill "#444444" -width 1520 -textvariable {[de1_connected_state 5]} 
 
 ##############################################################################################################################################################################################################################################################################
-
-# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
-source "[homedir]/skins/default/standard_stop_buttons.tcl"
 

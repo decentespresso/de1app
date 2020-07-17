@@ -6,6 +6,11 @@
 # you should replace the JPG graphics in the 2560x1600/ directory with your own graphics. 
 source "[homedir]/skins/default/standard_includes.tcl"
 
+
+# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
+source "[homedir]/skins/default/standard_stop_buttons.tcl"
+
+
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
@@ -48,7 +53,3 @@ add_de1_button "off" {show_settings; after 2000 labels_on} 0 0 1000 590
 add_de1_variable "off" 1280 700 -justify left -anchor "nw" -text "" -font Helv_20_bold -fill "#DDDDDD" -width 1520 -textvariable {[de1_connected_state 5]} 
 
 ##############################################################################################################################################################################################################################################################################
-
-# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
-source "[homedir]/skins/default/standard_stop_buttons.tcl"
-

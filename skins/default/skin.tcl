@@ -7,6 +7,10 @@ package require de1 1.0
 # use the standard graphic filenames and standard settings pages
 source "[homedir]/skins/default/standard_includes.tcl"
 
+
+# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
+source "[homedir]/skins/default/standard_stop_buttons.tcl"
+
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is idle
 
@@ -40,6 +44,3 @@ add_de1_variable "off" 20 1520 -justify left -anchor "nw" -text "" -font Helv_10
 
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is doing steam, hot water or espresso
-
-# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
-source "[homedir]/skins/default/standard_stop_buttons.tcl"

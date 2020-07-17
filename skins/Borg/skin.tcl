@@ -7,6 +7,10 @@ package require de1 1.0
 # you should replace the JPG graphics in the 2560x1600/ directory with your own graphics. 
 source "[homedir]/skins/default/standard_includes.tcl"
 
+
+# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
+source "[homedir]/skins/default/standard_stop_buttons.tcl"
+
 # example of loading a custom font (you need to indicate the TTF file and the font size)
 #load_font "Northwood High" "[skin_directory]/sample.ttf" 60
 #add_de1_text "off" 1280 500 -text "An important message" -font {Northwood High} -fill "#2d3046" -anchor "center"
@@ -33,6 +37,7 @@ add_de1_text "off" 1550 1375 -text [translate "WATER"] -font {diablo} -fill "#61
 add_de1_text "off settings" 2177 1375  -text [translate "SETTINGS"] -font {diablo} -fill "#61442a" -anchor "center" 
 
 
+
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
 add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 80 380 680 1485
 add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start_steam" 725 400 1265 1485
@@ -48,7 +53,3 @@ add_de1_variable "off" 1280 1520 -justify left -anchor "center" -text "" -font d
 
 
 ##############################################################################################################################################################################################################################################################################
-
-# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
-source "[homedir]/skins/default/standard_stop_buttons.tcl"
-

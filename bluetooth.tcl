@@ -1001,7 +1001,7 @@ proc run_next_userdata_cmd {} {
 		}
 	}
 	if {($::de1(device_handle) == "0" || $::de1(device_handle) == "1") && $::de1(scale_device_handle) == "0"} {
-		msg "run_next_userdata_cmd error: de1 not connected"
+		#msg "run_next_userdata_cmd error: de1 not connected"
 		return
 	}
 

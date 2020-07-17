@@ -967,9 +967,9 @@ proc change_screen_saver_img {} {
 
 	#msg "change_screen_saver_img $::de1(current_context) '[page_displaying_now]'"
 	#if {$::de1(current_context) == "saver"} {
-		#catch {
+		catch {
 			image delete saver
-		#}
+		}
 
 		set fn [random_saver_file]
 
@@ -1443,7 +1443,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		}
 	}
 
-	msg "Switched to page: $page_to_show"
+	msg "Switched to page: $page_to_show [stacktrace]"
 
 	update_onscreen_variables
 	#after 100 update_chart

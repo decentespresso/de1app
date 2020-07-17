@@ -6,6 +6,11 @@
 # you should replace the JPG graphics in the 2560x1600/ directory with your own graphics. 
 source "[homedir]/skins/default/standard_includes.tcl"
 
+# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
+source "[homedir]/skins/default/standard_stop_buttons.tcl"
+
+
+
 # example of loading a custom font (you need to indicate the TTF file and the font size)
 #load_font "Northwood High" "[skin_directory]/sample.ttf" 60
 #add_de1_text "off" 1280 500 -text "An important message" -font {Northwood High} -fill "#2d3046" -anchor "center"
@@ -17,10 +22,10 @@ source "[homedir]/skins/default/standard_includes.tcl"
 load_font "aliceinwonderland" "[skin_directory]/aliceinwonderland.ttf" 42 
 
 # these 3 text labels are for the three main DE1 functions, and they X,Y coordinates need to be adjusted for your skin graphics
-#add_de1_text "off" 473 1480  -text [translate "ESPRESSO"] -font {aliceinwonderland} -fill "#48104f" -anchor "center" 
-#add_de1_text "off" 1300 1480  -text [translate "STEAM"] -font {aliceinwonderland} -fill "#48104f" -anchor "center" 
-#add_de1_text "off" 2148 1480 -text [translate "WATER"] -font {aliceinwonderland} -fill "#48104f" -anchor "center" 
-#add_de1_text "off" 2060 235 -text [translate "SETTINGS"] -font {aliceinwonderland} -fill "#48104f" -anchor "center" 
+add_de1_text "off" 473 1480  -text [translate "ESPRESSO"] -font {aliceinwonderland} -fill "#48104f" -anchor "center" 
+add_de1_text "off" 1300 1480  -text [translate "STEAM"] -font {aliceinwonderland} -fill "#48104f" -anchor "center" 
+add_de1_text "off" 2148 1480 -text [translate "WATER"] -font {aliceinwonderland} -fill "#48104f" -anchor "center" 
+add_de1_text "off" 2060 235 -text [translate "SETTINGS"] -font {aliceinwonderland} -fill "#48104f" -anchor "center" 
 
 
 
@@ -35,8 +40,4 @@ add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start
 add_de1_button "off" {show_settings} 1875 50 2505 300
 
 ##############################################################################################################################################################################################################################################################################
-
-# the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
-source "[homedir]/skins/default/standard_stop_buttons.tcl"
-
 
