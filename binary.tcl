@@ -829,7 +829,13 @@ proc de1_packed_shot_advanced {} {
 	}
 
 	set hdr(NumberOfFrames) $cnt
-	set hdr(NumberOfPreinfuseFrames) 1
+	
+	# advanced shots can define when to start counting pour volume
+	set NumberOfPreinfuseFrames [ifexists ::settings(final_desired_shot_volume_advanced_count_start)]
+	if {$NumberOfPreinfuseFrames == ""} {
+		set NumberOfPreinfuseFrames 0
+	}
+	set hdr(NumberOfPreinfuseFrames) $NumberOfPreinfuseFrames
 
 	return [make_chunked_packed_shot_sample hdr $frame_names]
 
@@ -1726,12 +1732,13 @@ proc append_live_data_to_espresso_chart {} {
 			espresso_water_dispensed append $total_water_volume_divided
 
 			# stop espresso at a desired water volume, if set to > 0, but only for advanced shots
-			if {$::settings(settings_profile_type) == "settings_2c" && $::settings(final_desired_shot_volume_advanced) > 0 && $total_water_volume >= $::settings(final_desired_shot_volume_advanced)} {
+			if {$::settings(settings_profile_type) == "settings_2c" && $::settings(final_desired_shot_volume_advanced) > 0 && $pour_volume >= $::settings(final_desired_shot_volume_advanced)} {
 				# for advanced shots, it's TOTAL WATER VOLuME that is the trigger, since Preinfusion is not necessarily part of an advanced shot
-				msg "Water volume based Espresso stop was triggered at: $total_water_volume ml > $::settings(final_desired_shot_volume_advanced) ml "
+				msg "Water volume based Espresso stop was triggered at: $pour_volume ml > $::settings(final_desired_shot_volume_advanced) ml "
 			 	start_idle
 			 	say [translate {Stop}] $::settings(sound_button_in)	
-			 	borg toast [translate "Total volume reached"]
+			 	#borg toast [translate "Total volume reached"]
+			 	borg toast [translate "Espresso volume reached"]
 			} elseif {$::settings(scale_bluetooth_address) == ""} {
 				# if no scale connected, potentially use volumetric to stop the shot
 

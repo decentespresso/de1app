@@ -2626,6 +2626,9 @@ proc load_settings_vars {fn} {
 	# default to no temp steps, so as to migrate older profiles that did not have this setting, and not accidentally enble this feature on them
 	unset -nocomplain ::settings(espresso_temperature_steps_enabled) 
 
+	# default value 
+	set ::settings(final_desired_shot_volume_advanced_count_start) 0
+
 	#error "load_settings_vars"
 	# set the default profile type to use, this can be over-ridden by the saved profile
 	if {[de1plus]} {
