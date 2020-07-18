@@ -1734,7 +1734,7 @@ proc append_live_data_to_espresso_chart {} {
 			# stop espresso at a desired water volume, if set to > 0, but only for advanced shots
 			if {$::settings(settings_profile_type) == "settings_2c" && $::settings(final_desired_shot_volume_advanced) > 0 && $::de1(pour_volume) >= $::settings(final_desired_shot_volume_advanced)} {
 				# for advanced shots, it's TOTAL WATER VOLuME that is the trigger, since Preinfusion is not necessarily part of an advanced shot
-				msg "Water volume based Espresso stop was triggered at: $pour_volume ml > $::settings(final_desired_shot_volume_advanced) ml "
+				msg "Water volume based Espresso stop was triggered at: $$::de1(pour_volume) ml > $::settings(final_desired_shot_volume_advanced) ml "
 			 	start_idle
 			 	say [translate {Stop}] $::settings(sound_button_in)	
 			 	#borg toast [translate "Total volume reached"]
