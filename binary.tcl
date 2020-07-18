@@ -830,7 +830,7 @@ proc de1_packed_shot_advanced {} {
 
 	set hdr(NumberOfFrames) $cnt
 	
-	# advanced shots can define when to start counting pour volume
+	# advanced shots can define when to start counting pour
 	set NumberOfPreinfuseFrames [ifexists ::settings(final_desired_shot_volume_advanced_count_start)]
 	if {$NumberOfPreinfuseFrames == ""} {
 		set NumberOfPreinfuseFrames 0
@@ -1732,7 +1732,7 @@ proc append_live_data_to_espresso_chart {} {
 			espresso_water_dispensed append $total_water_volume_divided
 
 			# stop espresso at a desired water volume, if set to > 0, but only for advanced shots
-			if {$::settings(settings_profile_type) == "settings_2c" && $::settings(final_desired_shot_volume_advanced) > 0 && $pour_volume >= $::settings(final_desired_shot_volume_advanced)} {
+			if {$::settings(settings_profile_type) == "settings_2c" && $::settings(final_desired_shot_volume_advanced) > 0 && $::de1(pour_volume) >= $::settings(final_desired_shot_volume_advanced)} {
 				# for advanced shots, it's TOTAL WATER VOLuME that is the trigger, since Preinfusion is not necessarily part of an advanced shot
 				msg "Water volume based Espresso stop was triggered at: $pour_volume ml > $::settings(final_desired_shot_volume_advanced) ml "
 			 	start_idle
