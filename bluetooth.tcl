@@ -1740,9 +1740,12 @@ proc mmr_read_queue_add {cmd} {
 
 
 proc de1_ble_handler { event data } {
-	#msg "de1 ble_handler '$event' $data"
+	#msg "de1 ble_handler '$event' [convert_string_to_hex $data]"
 	#set ::de1(wrote) 0
-	#msg "ble event: $event $data"
+
+	if {$::settings(ble_debug) == 1} {
+		msg "ble event: $event $data"
+	}
 
 	set previous_wrote 0
 	set previous_wrote [ifexists ::de1(wrote)]

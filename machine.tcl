@@ -166,6 +166,7 @@ array set ::settings {
 	force_fw_update 0
 	preset_counter 1
 	screen_size_width {}
+	ble_debug 0
 	tank_desired_water_temperature 0
 	screen_size_height {}
 	current_frame_description {}
