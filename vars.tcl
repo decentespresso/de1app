@@ -3157,6 +3157,10 @@ proc de1_version_string {} {
 	}
 
 
+	if {$::settings(firmware_sha) != "" && [ifexists v(BLE_Sha)] != "" && $::settings(firmware_sha) != [ifexists v(BLE_Sha)] } {
+		after 5000 [list info_page "[translate {Your DE1 firmware has been upgraded}]\n\n$version" [translate "Ok"]]
+	}
+	
 	array set modelarr [list 0 [translate "unknown"] 1 DE1 2 DE1+ 3 DE1PRO 4 DE1XL 5 DE1CAFE]
 
 	set brev ""
@@ -3170,6 +3174,7 @@ proc de1_version_string {} {
 	if {[ifexists ::settings(machine_model)] != "" && [ifexists ::settings(machine_model)] != "0"} {
 		append version ", [translate model]=[ifexists modelarr([ifexists ::settings(machine_model)])]"
 	}
+
 	if {[ifexists ::settings(firmware_version_number)] != ""} {
 		append version ", [translate current]=[ifexists ::settings(firmware_version_number)]"
 	}
@@ -3178,10 +3183,6 @@ proc de1_version_string {} {
 		append version ", [translate available]=[ifexists ::de1(Firmware_file_Version)]"
 	}
 
-	if {$::settings(firmware_sha) != "" && [ifexists v(BLE_Sha)] != "" && $::settings(firmware_sha) != [ifexists v(BLE_Sha)] } {
-		after 5000 [list info_page "[translate {Your DE1 firmware has been upgraded}]\n\n$version" [translate "Ok"]]
-	}
-	
 	if {[ifexists v(BLE_Sha)] != "" && $::settings(firmware_sha) != [ifexists v(BLE_Sha)] } {
 		set ::settings(firmware_sha) $v(BLE_Sha)
 		save_settings
@@ -3476,4 +3477,12 @@ proc change_espresso_temperature {amount} {
 	}
 
 	range_check_variable ::settings(espresso_temperature) 0 100
+}
+
+proc when_to_start_pour_tracking_advanced {} {
+	if {$::settings(final_desired_shot_volume_advanced_count_start) > 0} {
+		return [subst {[translate "After step"] $::settings(final_desired_shot_volume_advanced_count_start)}]
+	} else {
+		return [translate "Immediately"]
+	}
 }
