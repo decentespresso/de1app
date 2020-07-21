@@ -3481,7 +3481,17 @@ proc change_espresso_temperature {amount} {
 
 proc when_to_start_pour_tracking_advanced {} {
 	if {$::settings(final_desired_shot_volume_advanced_count_start) > 0} {
-		return [subst {[translate "After step"] $::settings(final_desired_shot_volume_advanced_count_start)}]
+		set stepdesc ""
+		catch {
+			# this should all work, but in case there's something wrong with this logic or the advanced shot, wrap it all in a catch{} so as to not cause an error for such a minor feature
+			if {$::settings(final_desired_shot_volume_advanced_count_start) > [llength [ifexists ::settings(advanced_shot)]] } {
+				set ::settings(final_desired_shot_volume_advanced_count_start) [llength [ifexists ::settings(advanced_shot)]]
+			}
+
+			array set steparr [lindex [ifexists ::settings(advanced_shot)] [expr {-1 + $::settings(final_desired_shot_volume_advanced_count_start)}]]
+			set stepdesc [ifexists steparr(name)]
+		}
+		return [subst {[translate "After step"] $::settings(final_desired_shot_volume_advanced_count_start) - $stepdesc}]
 	} else {
 		return [translate "Immediately"]
 	}
