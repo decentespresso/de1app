@@ -962,7 +962,7 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 	add_de1_text "calibrate calibrate2" 2520 1510 -text [subst {\[ [translate "More"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
 		add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); get_heater_voltage; page_to_show_when_off calibrate2;} 2200 1400 2560 1600 ""
 		
-		add_de1_button "calibrate2" {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off calibrate;} 2200 1400 2560 1600 ""
+		add_de1_button "calibrate2" {say [translate {Done}] $::settings(sound_button_in); set_heater_tweaks; page_to_show_when_off calibrate;} 2200 1400 2560 1600 ""
 
 		###############################################################################################
 		# Nominal heater voltage. (Address 803834)
