@@ -25,7 +25,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {This profile is gentle on the coffee puck and not too demanding on the barista.  Produces a very acceptable espresso in a wide variety of settings.  The temperature declines several degrees over the course of the extraction.  This will give you a stronger tasting espresso without causing any unpleasant side effects.}
 profile_title {Default with descending temperature}
