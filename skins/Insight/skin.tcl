@@ -859,13 +859,16 @@ if {$preheat_water_volume_feature_enabled == 1} {
 add_de1_variable "preheat_3 preheat_4" 1870 1250 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[flush_done_timer] < $::settings(seconds_to_display_done_flush)} {return [translate Done]} else { return ""}]} 
 add_de1_variable "preheat_3 preheat_4" 2470 1250 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[flush_done_timer] < $::settings(seconds_to_display_done_flush)} {return "[flush_done_timer][translate s]"} else { return ""}]} 
 
-#add_de1_text "preheat_2"  1870 1250 -justify right -anchor "nw" -text [translate "Metal temperature"] -font Helv_8 -fill  "#7f879a"  -width [rescale_x_skin 520]
-#add_de1_variable "preheat_2"  2470 1250  -justify left -anchor "ne" -font Helv_8 -fill  "#42465c"  -width [rescale_x_skin 520] -textvariable {[group_head_heater_temperature_text]} 
+add_de1_text "preheat_3 preheat_4"  1870 1200 -justify right -anchor "nw" -text [translate "Metal temperature"] -font Helv_8 -fill  "#7f879a"  -width [rescale_x_skin 520]
+add_de1_variable "preheat_3 preheat_4"  2470 1200  -justify left -anchor "ne" -font Helv_8 -fill  "#42465c"  -width [rescale_x_skin 520] -textvariable {[group_head_heater_temperature_text]} 
 #add_de1_text "preheat_4"  1870 1200 -justify right -anchor "nw" -text [translate "Metal temperature"] -font Helv_8 -fill  "#7f879a"  -width [rescale_x_skin 520]
 #add_de1_variable "preheat_4"  2470 1200  -justify left -anchor "ne" -font Helv_8 -fill  "#42465c"  -width [rescale_x_skin 520] -textvariable {[group_head_heater_temperature_text]} 
 
 add_de1_text "preheat_2" 1870 1250 -justify right -anchor "nw" -text [translate "Water temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 add_de1_variable "preheat_2" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
+
+#add_de1_text "preheat_3" 1870 1250 -justify right -anchor "nw" -text [translate "Water temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+#add_de1_variable "preheat_3" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
 
 
 add_de1_text "preheat_2 preheat_4" 1870 1300 -justify right -anchor "nw" -text [translate "Pouring"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
