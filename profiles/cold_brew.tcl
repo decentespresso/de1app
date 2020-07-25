@@ -24,7 +24,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 1.5
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {Cold brew: this recipe works just like a hot pourover, but will take a little longer to drain and will produce slightly weaker coffee. We recommend using a 15:1 ratio to produce coffee of proper strength, which is important to combat dilution by ice.}
 profile_title {Cold brew}
