@@ -6,7 +6,11 @@ espresso_pressure 6.0
 espresso_decline_time 30
 pressure_end 4.0
 espresso_temperature 97.5
-settings_profile_type settings_2c
+espresso_temperature_0 92.0
+espresso_temperature_1 90.0
+espresso_temperature_2 89.0
+espresso_temperature_3 88.0
+settings_profile_type settings_2c2
 flow_profile_preinfusion 4
 flow_profile_preinfusion_time 5
 flow_profile_hold 2
@@ -27,4 +31,5 @@ profile_title {Blooming Espresso}
 profile_language en
 preinfusion_stop_pressure 4.0
 profile_hide 0
+final_desired_shot_volume_advanced_count_start 2
 
