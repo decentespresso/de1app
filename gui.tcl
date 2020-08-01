@@ -1802,10 +1802,8 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 	
 	# first step temp
 	array set props [lindex $::settings(advanced_shot) 0]
-	espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+	espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
 	espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
-
-	#espresso_de1_explanation_chart_temperature append [expr {$settings(espresso_temperature) / 10}]
 
 	set cnt 0
 	set previous_pump ""
@@ -1824,12 +1822,6 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 		set theseconds [ifexists props(seconds)]
 		set transition [ifexists props(transition)]
 
-		#espresso_de1_explanation_chart_elapsed append $seconds		
-		#espresso_de1_explanation_chart_elapsed_flow append $seconds		
-
-		#espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
-		#espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
-
 		if {$pump == "pressure"} {
 			puts "pressure [ifexists props(pressure)] $seconds"
 
@@ -1839,7 +1831,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 				espresso_de1_explanation_chart_elapsed append $seconds		
 				espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
-				espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+				espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
 				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
 
 			}
@@ -1850,7 +1842,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 				espresso_de1_explanation_chart_elapsed append $seconds		
 				espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
-				espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+				espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
 				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
 
 			}
@@ -1863,7 +1855,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 			espresso_de1_explanation_chart_elapsed append $seconds		
 			espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
-			espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+			espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
 			espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
 
 
@@ -1876,7 +1868,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 				espresso_de1_explanation_chart_elapsed append $seconds		
 				espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
-				espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+				espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
 				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
 
 			}
@@ -1887,9 +1879,9 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 				espresso_de1_explanation_chart_elapsed append $seconds		
 				espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
-				espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+				espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
 				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
-				
+
 			}
 
 			set seconds [expr {$seconds + $theseconds}]
@@ -1899,22 +1891,16 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 			espresso_de1_explanation_chart_elapsed append $seconds		
 			espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
-			espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+			espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
 			espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
 
 		}
 
 		set previous_pump $pump
-
 	}
-
 
 	# save the total time
 	set ::settings(espresso_max_time) $seconds
-
-	#espresso_de1_explanation_chart_pressure append $seconds
-	#espresso_de1_explanation_chart_flow append $seconds
-
 }
 
 
