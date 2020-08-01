@@ -1472,6 +1472,7 @@ proc update_de1_explanation_chart { {context {}} } {
 
 	espresso_de1_explanation_chart_elapsed length 0
 	espresso_de1_explanation_chart_temperature length 0
+	espresso_de1_explanation_chart_temperature_10 length 0
 
 	espresso_de1_explanation_chart_pressure length 0
 	espresso_de1_explanation_chart_pressure_1 length 0
@@ -1802,7 +1803,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 	# first step temp
 	array set props [lindex $::settings(advanced_shot) 0]
 	espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
-	#espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 10}]
+	espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
 
 	#espresso_de1_explanation_chart_temperature append [expr {$settings(espresso_temperature) / 10}]
 
@@ -1813,93 +1814,100 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 		unset -nocomplain props
 		array set props $step
 
+		unset -nocomplain nextprops
+		array set nextprops [lindex $::settings(advanced_shot) $cnt]
+
 		set pump [ifexists props(pump)]
 
-		set do_this 1
-		
-		if {$do_this == 1} {
-
-			if {$previous_pump != $pump} {
-				if {$previous_pump == "pressure"} {
-					espresso_de1_explanation_chart_pressure append [ifexists props(pressure)]
-					espresso_de1_explanation_chart_flow append 0
-
-					espresso_de1_explanation_chart_elapsed append $seconds		
-					espresso_de1_explanation_chart_elapsed_flow append $seconds		
-				} else {
-					espresso_de1_explanation_chart_flow append [ifexists props(flow)]
-					espresso_de1_explanation_chart_pressure append 0
-
-					espresso_de1_explanation_chart_elapsed append $seconds		
-					espresso_de1_explanation_chart_elapsed_flow append $seconds		
-				}
-				espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
-				#espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
-
-			}
-		}
 		puts "$cnt [array get props]\n"
 
 		set theseconds [ifexists props(seconds)]
 		set transition [ifexists props(transition)]
 
-		espresso_de1_explanation_chart_elapsed append $seconds		
-		espresso_de1_explanation_chart_elapsed_flow append $seconds		
+		#espresso_de1_explanation_chart_elapsed append $seconds		
+		#espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
-		espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+		#espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
 		#espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
 
 		if {$pump == "pressure"} {
 			puts "pressure [ifexists props(pressure)] $seconds"
-			espresso_de1_explanation_chart_pressure append [ifexists props(pressure)]
-			espresso_de1_explanation_chart_flow append 0
+
+			if {$previous_pump == "flow"} {
+				espresso_de1_explanation_chart_pressure append [ifexists props(pressure)]
+				espresso_de1_explanation_chart_flow append -1
+				espresso_de1_explanation_chart_elapsed append $seconds		
+				espresso_de1_explanation_chart_elapsed_flow append $seconds		
+
+				espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
+
+			}
+
+			if {$transition == "fast"} {
+				espresso_de1_explanation_chart_pressure append [ifexists props(pressure)]
+				espresso_de1_explanation_chart_flow append -1
+				espresso_de1_explanation_chart_elapsed append $seconds		
+				espresso_de1_explanation_chart_elapsed_flow append $seconds		
+
+				espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
+
+			}
+
 
 			set seconds [expr {$seconds + $theseconds}]
 
-			set do_this 0
-			
-			if {$do_this == 1} {
-				if {$transition != "smooth" || $cnt >= [llength $::settings(advanced_shot)]} {
-					espresso_de1_explanation_chart_pressure append [ifexists props(pressure)]
-					espresso_de1_explanation_chart_flow append 0
+			espresso_de1_explanation_chart_pressure append [ifexists props(pressure)]
+			espresso_de1_explanation_chart_flow append -1
+			espresso_de1_explanation_chart_elapsed append $seconds		
+			espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
-					espresso_de1_explanation_chart_elapsed append $seconds		
-					espresso_de1_explanation_chart_elapsed_flow append $seconds		
+			espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+			espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
 
-					espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
-					#espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
-
-				}
-			}
 
 		} elseif {$pump == "flow"} {
 			puts "flow [ifexists props(flow)] $seconds"
-			espresso_de1_explanation_chart_flow append [ifexists props(flow)]
-			espresso_de1_explanation_chart_pressure append 0
+
+			if {$previous_pump == "pressure"} {
+				espresso_de1_explanation_chart_flow append [ifexists props(flow)]
+				espresso_de1_explanation_chart_pressure append -1
+				espresso_de1_explanation_chart_elapsed append $seconds		
+				espresso_de1_explanation_chart_elapsed_flow append $seconds		
+
+				espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
+
+			}
+
+			if {$transition == "fast"} {
+				espresso_de1_explanation_chart_flow append [ifexists props(flow)]
+				espresso_de1_explanation_chart_pressure append -1
+				espresso_de1_explanation_chart_elapsed append $seconds		
+				espresso_de1_explanation_chart_elapsed_flow append $seconds		
+
+				espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
+				
+			}
 
 			set seconds [expr {$seconds + $theseconds}]
 
-			set do_this 0
-			
-			if {$do_this == 1} {
+			espresso_de1_explanation_chart_flow append [ifexists props(flow)]
+			espresso_de1_explanation_chart_pressure append -1
+			espresso_de1_explanation_chart_elapsed append $seconds		
+			espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
-				if {$transition != "smooth" || $cnt >= [llength $::settings(advanced_shot)]} {
-					espresso_de1_explanation_chart_flow append [ifexists props(flow)]
-					espresso_de1_explanation_chart_pressure append 0
+			espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
+			espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10}]
 
-					espresso_de1_explanation_chart_elapsed append $seconds		
-					espresso_de1_explanation_chart_elapsed_flow append $seconds		
-
-					espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
-					#espresso_de1_explanation_chart_temperature append [expr {[ifexists props(temperature)] / 1}]
-
-				}
-			}
 		}
 
 		set previous_pump $pump
 
 	}
+
 
 	# save the total time
 	set ::settings(espresso_max_time) $seconds
