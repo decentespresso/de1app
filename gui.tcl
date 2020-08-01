@@ -1815,7 +1815,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 		set pump [ifexists props(pump)]
 
-		set do_this 0
+		set do_this 1
 		
 		if {$do_this == 1} {
 
@@ -1856,7 +1856,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 			set seconds [expr {$seconds + $theseconds}]
 
-			set do_this 1
+			set do_this 0
 			
 			if {$do_this == 1} {
 				if {$transition != "smooth" || $cnt >= [llength $::settings(advanced_shot)]} {
@@ -1879,7 +1879,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 			set seconds [expr {$seconds + $theseconds}]
 
-			set do_this 1
+			set do_this 0
 			
 			if {$do_this == 1} {
 

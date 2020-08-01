@@ -428,7 +428,7 @@ add_de1_widget "settings_1" graph 1330 300 {
 add_de1_widget "settings_1b" graph 1330 300 { 
 		set ::preview_graph_flow $widget
 		update_de1_explanation_chart;
-		$::preview_graph_flow element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
+		$::preview_graph_flow element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 		$::preview_graph_flow axis configure x -color #5a5d75 -tickfont Helv_6; 
 		$::preview_graph_flow axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 8.5 -majorticks {1 2 3 4 5 6 7 8} -title [translate "Flow rate"] -titlefont Helv_8 -titlecolor #5a5d75;
 		bind $::preview_graph_flow [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 
@@ -438,9 +438,15 @@ add_de1_widget "settings_1b" graph 1330 300 {
 add_de1_widget "settings_1c" graph 1330 300 { 
 		set ::preview_graph_advanced $widget
 		update_de1_explanation_chart;
+		#$::preview_graph_flow element create line_espresso_de1_explanation_chart_flow_adv -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4ef485  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
+		#$::preview_graph_pressure element create line_espresso_de1_explanation_chart_pressure_adv -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 20]; 
+	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow  -label "" -linewidth [rescale_x_skin 15] -color #4e85f4  -smooth $::settings(preview_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
+	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 15] -color #4ef485  -smooth $::settings(preview_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
+	$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 15] -color #f44e85  -smooth $::settings(preview_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
+
 		#$::preview_graph_advanced element create line_espresso_de1_explanation_chart_adv -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(profile_graph_smoothing_technique)$::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 		$::preview_graph_advanced axis configure x -color #5a5d75 -tickfont Helv_6; 
-		$::preview_graph_advanced axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 6.5 -majorticks {1 2 3 4 5 6} -title [translate "Advanced"] -titlefont Helv_8 -titlecolor #5a5d75;
+		$::preview_graph_advanced axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 11 -majorticks {1 2 3 4 5 6 7 8 9 10 11} -title [translate "Advanced2"] -titlefont Helv_8 -titlecolor #5a5d75;
 		bind $::preview_graph_advanced [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox } 
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised 
 

@@ -230,6 +230,7 @@ array set ::settings {
 	espresso_notes {}
 	profile_graph_smoothing_technique "quadratic"
 	live_graph_smoothing_technique "linear"
+	preview_graph_smoothing_technique "quadratic"
 	espresso_count 0
 	steaming_count 0
 	profile_has_changed 0
