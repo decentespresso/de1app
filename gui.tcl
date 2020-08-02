@@ -1856,7 +1856,8 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 	set cnt 0
 	set previous_pump ""
-	set selected_step_value -10000
+	set previous_flow 0
+	set selected_step_value -100
 
 	foreach step $::settings(advanced_shot) {
 		incr cnt
@@ -1902,7 +1903,15 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 				espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
 				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10.0}]
 				espresso_de1_explanation_chart_selected_step append $selected_step_value
+			} else {
+				espresso_de1_explanation_chart_pressure append $previous_pressure
+				espresso_de1_explanation_chart_flow append -1
+				espresso_de1_explanation_chart_elapsed append $seconds		
+				espresso_de1_explanation_chart_elapsed_flow append $seconds		
 
+				espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
+				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10.0}]
+				espresso_de1_explanation_chart_selected_step append $selected_step_value
 			}
 
 
@@ -1944,6 +1953,15 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10.0}]
 				espresso_de1_explanation_chart_selected_step append $selected_step_value
 
+			}  else {
+				espresso_de1_explanation_chart_flow append $previous_flow
+				espresso_de1_explanation_chart_pressure append -1
+				espresso_de1_explanation_chart_elapsed append $seconds		
+				espresso_de1_explanation_chart_elapsed_flow append $seconds		
+
+				espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
+				espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10.0}]
+				espresso_de1_explanation_chart_selected_step append $selected_step_value
 			}
 
 			set seconds [expr {$seconds + $theseconds}]
@@ -1960,6 +1978,8 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 		}
 
 		set previous_pump $pump
+		set previous_flow [ifexists props(flow)]
+		set previous_pressure [ifexists props(pressure)]
 	}
 
 	# save the total time
