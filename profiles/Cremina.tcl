@@ -24,4 +24,3 @@ profile_notes {Aim for a 50 second shot time to have a thick espresso in the sty
 profile_title {Cremina lever machine}
 settings_profile_type settings_2c
 water_temperature 80
-

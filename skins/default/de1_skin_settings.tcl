@@ -987,8 +987,10 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit hot_water_idle_temp espresso_warmup_timeout scale_bluetooth_address language skin waterlevel_indicator_on waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water black_screen_saver display_time_in_screen_saver"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+				.can itemconfigure $::message_button_label -text [translate "Wait"]
+
 				set_next_page off message; page_show message
-				after 1000 app_exit
+				after 200 app_exit
 			} else {
 				set_next_page off off; page_show off
 			}

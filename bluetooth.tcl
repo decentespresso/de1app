@@ -1074,6 +1074,7 @@ proc run_next_userdata_cmd {} {
 }
 
 proc close_all_ble_and_exit {} {
+	msg "close_all_ble_and_exit"
 	if {$::scanning  == 1} {
 		catch {
 			ble stop $::ble_scanner
@@ -1127,6 +1128,9 @@ proc app_exit {} {
 	} else {
 		after 5000 close_all_ble_and_exit
 	}
+
+	after 5000 { .can itemconfigure $::message_button_label -text [translate "Quit"] }
+
 
 	after 10000 "exit 0"
 }
