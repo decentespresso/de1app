@@ -1530,7 +1530,7 @@ proc shot_history_export {} {
 
     set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
     set dd {}
-    #puts -nonewline "Exporting"
+
     foreach d $dirs {
         set tailname [file tail $d]
         set newfile [file rootname $tailname]
@@ -1547,9 +1547,28 @@ proc shot_history_export {} {
             msg "Exporting history item: $fname"
             export_csv arr $fname
         }
-        #puts "keys: [array names arr]"
+
+        set enable_json_export_history 0
+        if {$enable_json_export_history == 1} {
+            set jsonfname "history/$newfile.json" 
+            if {[file exists $jsonfname] != 1} {
+                array unset -nocomplain arr
+                set ftxt ""
+                catch {
+                    set ftxt [read_file "history/$d"]
+                    array set arr $ftxt
+
+                }
+                if {[array size arr] == 0} {
+                    msg "Corrupted shot history item: 'history/$d'"
+                    continue
+                }
+                msg "Exporting history item to JSON: $jsonfname"
+                export_json $ftxt $jsonfname
+            }
+        }
     }
-    #puts "done"
+
     return [lsort -dictionary -increasing $dd]
 
 }
@@ -1584,6 +1603,26 @@ proc export_csv {arrname fn} {
 
 }
 
+
+proc dict2json {dictToEncode} {
+    ::json::write object {*}[dict map {k v} $dictToEncode {
+        set v [::json::write string $v]
+    }]
+}
+
+# Export one shot from memory, to a file
+proc export_json {ftxt fn} {
+    package require json::write
+
+    set d [dict create]
+    foreach {k v} $ftxt {
+        dict set d $k $v
+    }
+    set v [dict2json $d]
+
+    puts -nonewline "."
+    write_file "$fn" $v
+}
 # Export one shot from memory, to an EEX format file
 proc export_csv_common_format {arrname fn} {
     upvar $arrname arr

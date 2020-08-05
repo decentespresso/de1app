@@ -1869,7 +1869,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 		set pump [ifexists props(pump)]
 
-		puts "$cnt [array get props]\n"
+		#puts "$cnt [array get props]\n"
 
 		set theseconds [ifexists props(seconds)]
 		set transition [ifexists props(transition)]
@@ -1880,7 +1880,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 		}
 
 		if {$pump == "pressure"} {
-			puts "pressure [ifexists props(pressure)] $seconds"
+			#puts "pressure [ifexists props(pressure)] $seconds"
 
 			if {$previous_pump == "flow"} {
 				espresso_de1_explanation_chart_pressure append [ifexists props(pressure)]
@@ -1929,7 +1929,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 
 		} elseif {$pump == "flow"} {
-			puts "flow [ifexists props(flow)] $seconds"
+			#puts "flow [ifexists props(flow)] $seconds"
 
 			if {$previous_pump == "pressure"} {
 				espresso_de1_explanation_chart_flow append [ifexists props(flow)]
