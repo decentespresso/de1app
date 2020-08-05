@@ -2791,18 +2791,24 @@ proc profile_vars {} {
  	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start}
 }
 
+
+proc set_profile_title_untitled {} {
+	# if no name then give it a name which is just a number
+	if {$::settings(profile_title) == ""} {
+		incr ::settings(preset_counter)  
+		save_settings
+
+		set ::settings(profile_title) [subst {[translate "Untitled"] $::settings(preset_counter)}]
+	}
+}
+
 proc save_profile {} {
 	if {$::settings(profile_title) == [translate "Saved"]} {
 		return
 	}
 
 	# if no name then give it a name which is just a number
-	if {$::settings(profile_title) == ""} {
-		incr ::settings(preset_counter)  
-		save_settings
-
-		set ::settings(profile_title) $::settings(preset_counter)  
-	}
+	set_profile_title_untitled
 
 	#set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure}
 	#set profile_name_to_save $::settings(profile_to_save) 
