@@ -20,7 +20,7 @@ preinfusion_guarantee 1
 preinfusion_stop_pressure 4.0
 preinfusion_time 20
 pressure_end 0.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {Lever espresso machines are why we refer to pulling an espresso.  You pull a spring-loaded lever by hand to create pressure on the coffee puck.  This 6 bar espresso is a classic Italian technique, and will result in a very sweet and gentle espresso.}
 profile_title {Low pressure lever machine at 6 bar}
