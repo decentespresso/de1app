@@ -424,6 +424,7 @@ add_de1_widget "settings_1" graph 1330 300 {
 		$::preview_graph_pressure element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #47e098  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
 		$::preview_graph_pressure axis configure x -color #5a5d75 -tickfont Helv_6 ; 
 		$::preview_graph_pressure axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 11.5 -stepsize 2 -majorticks {1 3 5 7 9 11} -title [translate "pressure (bar)"] -titlefont Helv_8 -titlecolor #5a5d75;
+		$::preview_graph_pressure element create line_espresso_de1_explanation_chart_temp2 -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature_10  -label "" -linewidth [rescale_x_skin 10] -color #ff888c  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 		bind $::preview_graph_pressure [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised -plotpady 0 -plotpadx 10
 
@@ -432,7 +433,8 @@ add_de1_widget "settings_1b" graph 1330 300 {
 		update_de1_explanation_chart;
 		$::preview_graph_flow element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #98c5ff  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
 		$::preview_graph_flow axis configure x -color #5a5d75 -tickfont Helv_6; 
-		$::preview_graph_flow axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 8.5 -majorticks {1 2 3 4 5 6 7 8} -title [translate "Flow rate"] -titlefont Helv_8 -titlecolor #5a5d75;
+		$::preview_graph_flow axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 10 -majorticks {1 2 3 4 5 6 7 8 9 10} -title [translate "Flow rate"] -titlefont Helv_8 -titlecolor #5a5d75;
+		$::preview_graph_flow element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_temperature_10  -label "" -linewidth [rescale_x_skin 10] -color #ff888c  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 		bind $::preview_graph_flow [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised  -plotpady 0 -plotpadx 10
 
