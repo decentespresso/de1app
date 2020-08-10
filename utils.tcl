@@ -84,6 +84,7 @@ proc setup_environment {} {
 
             } elseif {$width == 1280} {
                 set screen_size_width 1280
+                set screen_size_height 800
                 if {$width >= 720} {
                     set screen_size_height 800
                 } else {
@@ -92,7 +93,7 @@ proc setup_environment {} {
             } else {
                 # unknown resolution type, go with smallest
                 set screen_size_width 1280
-                set screen_size_height 720
+                set screen_size_height 800
             }
 
             # only calculate the tablet's dimensions once, then save it in settings for a faster app startup
