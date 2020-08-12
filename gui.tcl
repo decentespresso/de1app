@@ -1809,9 +1809,7 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 		espresso_de1_explanation_chart_elapsed_flow append $seconds
 
 		espresso_de1_explanation_chart_temperature append $::settings(espresso_temperature_3) 
-		espresso_de1_explanation_chart_temperature_10 append [expr {$::settings(espresso_temperature_3) / 10.0}]
-
-		
+		espresso_de1_explanation_chart_temperature_10 append [expr {$::settings(espresso_temperature_3) / 10.0}]		
 
 		espresso_de1_explanation_chart_flow_3 append $flow_profile_decline
 		espresso_de1_explanation_chart_elapsed_flow_3 append $seconds
