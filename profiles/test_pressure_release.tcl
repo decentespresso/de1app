@@ -20,7 +20,7 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 1.5
-profile_notes {Put a pour over basket in your DE1.  Look for smooth temperature ramps between each temperature stage.  }
+profile_notes {Put a blank (no hole) basket into a portafilter, and run this program to stress test all the O-rings and water connections.  The intent of this test is to cause a water leak at any connection, if there is a weak spot.}
 water_temperature 70.00
 final_desired_shot_volume 0
 final_desired_shot_weight 32
