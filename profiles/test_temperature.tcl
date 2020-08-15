@@ -1,4 +1,4 @@
-advanced_shot {{exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 70.00 name 70c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 seconds 20.00 exit_pressure_under 0} {exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 80.00 name 80c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 exit_pressure_under 0 seconds 40.00} {exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 90.00 name 90c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 exit_pressure_under 0 seconds 40.00} {exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 100.00 name 100c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 exit_pressure_under 0 seconds 40.00}}
+advanced_shot {{exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 70.00 name 70c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 seconds 20.00 exit_pressure_under 0} {exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 80.00 name 80c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 seconds 60.00 exit_pressure_under 0} {exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 90.00 name 90c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 seconds 60.00 exit_pressure_under 0}}
 espresso_temperature_steps_enabled 1
 author Decent
 espresso_hold_time 30
@@ -11,7 +11,7 @@ espresso_temperature_0 0.0
 espresso_temperature_1 0.0
 espresso_temperature_2 0.0
 espresso_temperature_3 0.0
-settings_profile_type settings_2c2
+settings_profile_type settings_2c
 flow_profile_preinfusion 4
 flow_profile_preinfusion_time 5
 flow_profile_hold 2
