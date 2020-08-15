@@ -1855,6 +1855,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 	set cnt 0
 	set previous_pump ""
 	set previous_flow 0
+	set previous_pressure 0
 	set selected_step_value -100
 
 	foreach step $::settings(advanced_shot) {
