@@ -555,6 +555,7 @@ proc make_de1_dir {} {
         profiles/Gentle\ and\ sweet.tcl *
         profiles/test_leak.tcl *
         profiles/test_temperature.tcl *
+        profiles/test_pressure_release.tcl *        
         profiles/Cremina.tcl *
         profiles/manual_flow.tcl *
         profiles/manual_pressure.tcl *
