@@ -26,7 +26,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 10.0
 preinfusion_time 60
 pressure_end 10.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {Put a blind (no hole) portafilter basket into your portafilter, and then run this profile to see if there are any water leaks in your machine.  Once pressure is reached, the blue line showing flow should be at zero, and there should be no noise on the blue line.  You should not hear any noise from the pumps, either.  Your machine should be able to hold 10 bar of pressure for two minutes without adding any water.}
 profile_title {Leak test}
