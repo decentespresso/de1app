@@ -204,6 +204,7 @@ array set ::settings {
 	firmware_sha {}
 	water_refill_point 5
 	max_steam_pressure 3
+	mmr_enabled 0
 	insight_skin_show_embedded_profile 0
 	flying 0
 	ble_unpair_at_exit 1
