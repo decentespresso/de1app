@@ -192,7 +192,7 @@ array set ::settings {
 	phase_1_flow_rate 10
 	phase_2_flow_rate 20
 	ghc_mode 0
-	fan_threshold 45
+	fan_threshold 60
 	steam_flow 700
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
