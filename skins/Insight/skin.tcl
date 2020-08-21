@@ -1,4 +1,4 @@
-set ::debugging 0
+set ::debugging 1
 
 package require de1plus 1.0
 
