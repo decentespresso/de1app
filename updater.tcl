@@ -500,7 +500,9 @@ proc start_app_update {} {
         foreach {filename filesize filemtime filesha} $remote_manifest {}
     }]
     if {$errcode != 0 || $remote_manifest == "" || $remote_manifest_gunzip_parts_length != 0} {
-        msg "Corrupt manifest: '[string range $remote_manifest 0 500]'"
+        catch {
+            msg "Corrupt manifest: '[string range $remote_manifest 0 500]'"
+        }
         set ::de1(app_update_button_label) [translate "Update failed"]; 
 
         catch {
