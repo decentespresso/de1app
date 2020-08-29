@@ -55,6 +55,8 @@ array set ::de1 {
 	cuuid_decentscale_read "0000FFF4-0000-1000-8000-00805F9B34FB"
 	cuuid_decentscale_write "000036F5-0000-1000-8000-00805F9B34FB"
 	suuid_decentscale "0000FFF0-0000-1000-8000-00805F9B34FB"
+	cuuid_acaia_ips_age "00002A80-0000-1000-8000-00805F9B34FB"
+	suuid_acaia_ips "00001820-0000-1000-8000-00805F9B34FB"
 	cinstance 0
 	fan_threshold 0
 	tank_temperature_threshold 0
