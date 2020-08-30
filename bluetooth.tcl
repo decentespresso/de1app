@@ -4,6 +4,8 @@ package provide de1_bluetooth
 set ::failed_attempt_count_connecting_to_de1 0
 set ::successful_de1_connection_count 0
 
+set ::acaia_next_command 0
+
 proc userdata_append {comment cmd {vital 0} } {
 	#set cmds [ble userdata $::de1(device_handle)]
 	#lappend cmds $cmd
@@ -293,6 +295,8 @@ proc scale_tare {} {
 	 	skale_tare
  	} elseif {$::settings(scale_type) == "decentscale"} {
 	 	decentscale_tare
+	} elseif {$::settings(scale_type) == "acaiascale"} {
+		acaia_tare
  	}
 }
 
@@ -348,6 +352,8 @@ proc scale_enable_weight_notifications {} {
 	 	scale_enable_weight_notifications
  	} elseif {$::settings(scale_type) == "decentscale"} {
 	 	decentscale_enable_notifications
+	} elseif {$::settings(scale_type) == "acaiascale"} {
+		acaia_enable_weight_notifications
  	}
  }
 
@@ -375,6 +381,102 @@ proc decentscale_enable_notifications {} {
 	}
 
 	userdata_append "enable decent scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_read) $::cinstance($::de1(cuuid_decentscale_read))] 1
+}
+
+proc acaia_encode {msgType payload} {
+
+    set HEADER1 [binary decode hex "EF"];
+    set HEADER2 [binary decode hex "DD"];
+	set TYPE [binary decode hex $msgType];
+
+	# TODO calculate checksum instead of hardcofig it
+	set data "$HEADER1${HEADER2}${TYPE}[binary decode hex $payload]"
+    return $data
+}
+
+proc acaia_tare {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
+		error "Acaia Scale not connected, cannot send tare cmd"
+		return
+	}
+
+	set tare [acaia_encode 04  0000000000000000000000000000000000]
+
+	userdata_append "send acaia heartbeat" [list ble write $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age)) $tare] 1
+
+	# The tare is not yet confirmed to us, we can therefore assume it worked out
+	set ::de1(scale_autostop_triggered) 0
+}
+
+proc acaia_send_heartbeat {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
+		error "Acaia Scale not connected, cannot send heartbeat"
+		return
+	}
+	set heartbeat [acaia_encode 0B 02000200]
+
+	userdata_append "send acaia heartbeat" [list ble write $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age)) $heartbeat] 1
+
+	after 3000 acaia_send_heartbeat
+}
+
+proc acaia_send_ident {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
+		error "Acaia Scale not connected, cannot send app ident"
+		return
+	}
+
+	set ident [acaia_encode 0B 3031323334353637383930313233349A6D]
+
+	userdata_append "send acaia ident" [list ble write $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age)) $ident] 1
+}
+
+proc acaia_send_config {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
+		error "Acaia Scale not connected, cannot send app config"
+		return
+	}
+
+	set ident [acaia_encode 0C 0900010102020503041506]
+
+
+	userdata_append "send acaia comfig" [list ble write $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age)) $ident] 1
+
+}
+
+
+proc acaia_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
+		error "Acaia Scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "enable acaia scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age))] 1
+
 }
 
 proc scale_enable_button_notifications {} {
@@ -1809,7 +1911,15 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_scale
 						}
 					}
+				} elseif {[string first "ACAIA" $name] != -1} {
+					append_to_scale_bluetooth_list $address "acaiascale"
 
+					if {$address == $::settings(scale_bluetooth_address)} {
+						if {$::currently_connecting_scale_handle == 0} {
+							msg "Not currently connecting to scale, so trying now"
+							ble_connect_to_scale
+						}
+					}
 				} else {
 					#msg "-- device $name found at address $address ($data)"
 				}
@@ -1999,7 +2109,12 @@ proc de1_ble_handler { event data } {
 							after 1000 skale_enable_weight_notifications
 							after 2000 skale_enable_button_notifications
 							after 3000 skale_enable_lcd
-
+						} elseif {$::settings(scale_type) == "acaiascale"} {
+							append_to_scale_bluetooth_list $address "acaiascale"
+							acaia_send_ident
+							after 2000 acaia_enable_weight_notifications
+							after 2500 acaia_send_config
+							after 5500 acaia_send_heartbeat
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
@@ -2307,7 +2422,6 @@ proc de1_ble_handler { event data } {
 							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
 							set ::de1(wrote) 0
 							run_next_userdata_cmd
-
 						} elseif {$cuuid eq "83CDC3D4-3BA2-13FC-CC5E-106C351A9352"} {
 							# decent scale
 							parse_decent_scale_recv $value vals
@@ -2315,7 +2429,7 @@ proc de1_ble_handler { event data } {
 							
 							#set sensorweight [expr {$t1 / 10.0}]
 
-						} elseif {$cuuid eq "0000EF81-0000-1000-8000-00805F9B34FB" || $cuuid eq $::de1(cuuid_decentscale_read)} {
+						} elseif {$cuuid eq "0000EF81-0000-1000-8000-00805F9B34FB" || $cuuid eq $::de1(cuuid_decentscale_read) || $cuuid eq $::de1(cuuid_acaia_ips_age)} {
 
 							if {$cuuid eq "0000EF81-0000-1000-8000-00805F9B34FB"} {
 								# Atomax scale
@@ -2355,6 +2469,32 @@ proc de1_ble_handler { event data } {
 									#msg "decentscale recv read: '[convert_string_to_hex $value]'"
 								} else {
 									msg "decent scale recv: [array get weightarray]"
+								}
+							} elseif {$cuuid eq $::de1(cuuid_acaia_ips_age)} {
+								# acaia scale
+								if {$::acaia_next_command == 0} {
+									# 0xEF
+									set HEADER1 239
+									# 0xDD
+									set HEADER2 221
+									binary scan $value cucucu h1 h2 msgtype
+									if { [info exists h1] && [info exists h2] } {
+										if { ($h1 == $HEADER1) && ($h2 == $HEADER2) && [info exists msgtype]} {
+											set ::acaia_next_command $msgtype
+										}
+									}
+								} else {
+									binary scan $value cucuicucu len event_type weight unit neg
+									if {$::acaia_next_command == 12 && $event_type == 5 } {
+										# we have valid data, extract it
+										set calulated_weight [expr {$weight / pow(10.0, $unit)}]
+										set is_negative [expr {$neg > 1.0}]
+										if {$is_negative} {
+											set calulated_weight [expr {$calulated_weight * -1.0}]
+										}
+										set sensorweight $calulated_weight
+									}
+									set ::acaia_next_command 0
 								}
 							} else {
 								error "unknown scale cuuid"
