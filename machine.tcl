@@ -174,6 +174,7 @@ array set ::settings {
 	current_frame_description {}
 	mmr_enabled 0	
 	default_font_calibration 0.5
+	log_fast 0
 	linear_resistance_adjustment 1
 	language en
 	display_time_in_screen_saver 0
