@@ -192,15 +192,15 @@ array set ::settings {
 	espresso_temperature_steps_enabled 0
 	black_screen_saver 0
 	chart_total_shot_weight 1
-	phase_1_flow_rate 10
-	phase_2_flow_rate 20
+	phase_1_flow_rate 20
+	phase_2_flow_rate 40
 	ghc_mode 0
 	fan_threshold 60
 	steam_flow 700
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	hot_water_idle_temp "850"
-	espresso_warmup_timeout "100"
+	espresso_warmup_timeout "20"
 	color_stage_3 "#edceca"
 	start_espresso_only_if_scale_connected 0
 	logfile "log.txt"
@@ -255,7 +255,7 @@ array set ::settings {
 	display_volumetric_usage 0
 	one_tap_mode 0
 	allow_unheated_water 1
-	minimum_water_temperature 80
+	minimum_water_temperature 99
 	seconds_to_display_done_espresso 300
 	seconds_to_display_done_steam 300
 	seconds_to_display_done_flush 300
@@ -302,7 +302,7 @@ array set ::settings {
 	skale_bluetooth_address {}
 	bluetooth_address {}
 	water_max_vol 500
-	water_temperature 80
+	water_temperature 85
 	final_desired_shot_weight 36
 	final_desired_shot_volume 36
 	final_desired_shot_weight_advanced 0

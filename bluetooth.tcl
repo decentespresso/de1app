@@ -4,7 +4,7 @@ package provide de1_bluetooth
 set ::failed_attempt_count_connecting_to_de1 0
 set ::successful_de1_connection_count 0
 
-set ::acaia_next_command 0
+set ::acaia_command_buffer ""
 
 proc userdata_append {comment cmd {vital 0} } {
 	#set cmds [ble userdata $::de1(device_handle)]
@@ -407,7 +407,7 @@ proc acaia_tare {} {
 
 	set tare [acaia_encode 04  0000000000000000000000000000000000]
 
-	userdata_append "send acaia heartbeat" [list ble write $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age)) $tare] 1
+	userdata_append "send acaia tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age)) $tare] 1
 
 	# The tare is not yet confirmed to us, we can therefore assume it worked out
 	set ::de1(scale_autostop_triggered) 0
@@ -423,7 +423,7 @@ proc acaia_send_heartbeat {} {
 		error "Acaia Scale not connected, cannot send heartbeat"
 		return
 	}
-	set heartbeat [acaia_encode 0B 02000200]
+	set heartbeat [acaia_encode 00 02000200]
 
 	userdata_append "send acaia heartbeat" [list ble write $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age)) $heartbeat] 1
 
@@ -1911,7 +1911,9 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_scale
 						}
 					}
-				} elseif {[string first "ACAIA" $name] != -1} {
+				} elseif {[string first "ACAIA" $name] != -1 \
+					|| [string first "LUNAR" $name]    != -1 \
+					|| [string first "PROCH" $name]    != -1 } {
 					append_to_scale_bluetooth_list $address "acaiascale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
@@ -2472,29 +2474,33 @@ proc de1_ble_handler { event data } {
 								}
 							} elseif {$cuuid eq $::de1(cuuid_acaia_ips_age)} {
 								# acaia scale
-								if {$::acaia_next_command == 0} {
+
+								append ::acaia_command_buffer $value
+
+								if {[string bytelength $::acaia_command_buffer] > 4} {
 									# 0xEF
 									set HEADER1 239
 									# 0xDD
 									set HEADER2 221
-									binary scan $value cucucu h1 h2 msgtype
-									if { [info exists h1] && [info exists h2] } {
-										if { ($h1 == $HEADER1) && ($h2 == $HEADER2) && [info exists msgtype]} {
-											set ::acaia_next_command $msgtype
+
+									binary scan $::acaia_command_buffer cucucucucuicucu \
+										h1 h2 msgtype len event_type weight unit neg
+									if { [info exists h1] && [info exists h2] && [info exists len]} {
+										if { ($h1 == $HEADER1) && ($h2 == $HEADER2) \
+											&& [info exists neg] \
+											&& $msgtype == 12 && $event_type == 5 } {
+											# we have valid data, extract it
+											set calulated_weight [expr {$weight / pow(10.0, $unit)}]
+											set is_negative [expr {$neg > 1.0}]
+											if {$is_negative} {
+												set calulated_weight [expr {$calulated_weight * -1.0}]
+											}
+											set sensorweight $calulated_weight
+										}
+										if { [string bytelength $::acaia_command_buffer] >= $len } {
+											set ::acaia_command_buffer ""
 										}
 									}
-								} else {
-									binary scan $value cucuicucu len event_type weight unit neg
-									if {$::acaia_next_command == 12 && $event_type == 5 } {
-										# we have valid data, extract it
-										set calulated_weight [expr {$weight / pow(10.0, $unit)}]
-										set is_negative [expr {$neg > 1.0}]
-										if {$is_negative} {
-											set calulated_weight [expr {$calulated_weight * -1.0}]
-										}
-										set sensorweight $calulated_weight
-									}
-									set ::acaia_next_command 0
 								}
 							} else {
 								error "unknown scale cuuid"
