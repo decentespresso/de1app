@@ -2187,7 +2187,7 @@ proc de1_ble_handler { event data } {
 						#de1_ble_new_value $cuuid $value
 
 
-						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
+						if {$cuuid eq $::de1(cuuid_0D)} {
 						    set ::de1(last_ping) [clock seconds]
 							set results [update_de1_shotvalue $value]
 							#msg "Shotvalue received: $results" 
@@ -2204,7 +2204,7 @@ proc de1_ble_handler { event data } {
 									return
 								}
 							}
-			    		} elseif {$cuuid == $::de1(cuuid_05)} {
+					} elseif {$cuuid eq $::de1(cuuid_05)} {
 			    			# MMR read
 			    			msg "MMR recv read: '[convert_string_to_hex $value]'"
 
@@ -2334,7 +2334,7 @@ proc de1_ble_handler { event data } {
 			    				msg "Uknown type of direct MMR read $mmr_id on '[convert_string_to_hex $mmr_id]': $data"
 			    			}
 
-						} elseif {$cuuid == "0000A001-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_01)} {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_version_desc $value arr2
@@ -2349,10 +2349,10 @@ proc de1_ble_handler { event data } {
 							set ::de1(wrote) 0
 							run_next_userdata_cmd
 
-						} elseif {$cuuid == "0000A012-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_12)} {
 						    #set ::de1(last_ping) [clock seconds]
 						    calibration_ble_received $value
-						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_11)} {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_water_level $value arr2
 							#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
@@ -2361,7 +2361,7 @@ proc de1_ble_handler { event data } {
 							set mm [expr {$arr2(Level) + $::de1(water_level_mm_correction)}]
 							set ::de1(water_level) $mm
 							
-						} elseif {$cuuid == "0000A009-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_09)} {
 						    #set ::de1(last_ping) [clock seconds]
 							parse_map_request $value arr2
 							msg "a009: [array get arr2]"
@@ -2385,7 +2385,7 @@ proc de1_ble_handler { event data } {
 							} else {
 								msg "unknown firmware cmd ack recved: [string length $value] bytes: $value : [array get arr2]"
 							}
-						} elseif {$cuuid == "0000A00B-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_0B)} {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_hotwater_desc $value arr2
@@ -2393,22 +2393,22 @@ proc de1_ble_handler { event data } {
 
 							#update_de1_substate $value
 							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
-						} elseif {$cuuid == "0000A00C-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_0C)} {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_shot_desc $value arr2
 							msg "shot data received [string length $value] bytes: $value  : [array get arr2]"
-						} elseif {$cuuid == "0000A00F-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_0F)} {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_shotdescheader $value arr2
 							msg "READ shot header success: [string length $value] bytes: $value  : [array get arr2]"
-						} elseif {$cuuid == "0000A010-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_10)} {
 						    set ::de1(last_ping) [clock seconds]
 							#update_de1_state $value
 							parse_binary_shotframe $value arr2
 							msg "shot frame received [string length $value] bytes: $value  : [array get arr2]"
-						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_0E)} {
 						    set ::de1(last_ping) [clock seconds]
 							update_de1_state $value
 
@@ -2424,16 +2424,16 @@ proc de1_ble_handler { event data } {
 							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
 							set ::de1(wrote) 0
 							run_next_userdata_cmd
-						} elseif {$cuuid eq "83CDC3D4-3BA2-13FC-CC5E-106C351A9352"} {
+						} elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
 							# decent scale
 							parse_decent_scale_recv $value vals
 							#msg "decentscale: '[array get vals]'"
 							
 							#set sensorweight [expr {$t1 / 10.0}]
 
-						} elseif {$cuuid eq "0000EF81-0000-1000-8000-00805F9B34FB" || $cuuid eq $::de1(cuuid_decentscale_read) || $cuuid eq $::de1(cuuid_acaia_ips_age)} {
+						} elseif {$cuuid eq $::de1(cuuid_skale_EF81) || $cuuid eq $::de1(cuuid_decentscale_read) || $cuuid eq $::de1(cuuid_acaia_ips_age)} {
 
-							if {$cuuid eq "0000EF81-0000-1000-8000-00805F9B34FB"} {
+							if {$cuuid eq $::de1(cuuid_skale_EF81)} {
 								# Atomax scale
 						        binary scan $value cus1cu t0 t1 t2 t3 t4 t5
 								set sensorweight [expr {$t1 / 10.0}]
@@ -2642,7 +2642,7 @@ proc de1_ble_handler { event data } {
 								}
 							}
 
-						} elseif {$cuuid eq "0000EF82-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_skale_EF82)} {
 							set t0 {}
 					        #set t1 {}
 					        binary scan $value cucucucucucu t0 t1
@@ -2672,22 +2672,22 @@ proc de1_ble_handler { event data } {
 						set ::de1(wrote) 0
 				    	run_next_userdata_cmd
 
-			    		if {$cuuid == $::de1(cuuid_05)} {
+			    		if {$cuuid eq $::de1(cuuid_05)} {
 			    			# MMR read
 			    			#msg "MMR read: '[convert_string_to_hex $value]'"
 
 			    			msg "MMR recv write-back: '[convert_string_to_hex $value]'"
 
-			    		} elseif {$cuuid == $::de1(cuuid_10)} {
+			    		} elseif {$cuuid eq $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3				    		
 					    	msg "Confirmed shot frame written to DE1: '$value' : [array get arr3]"
-				    	} elseif {$cuuid == $::de1(cuuid_11)} {
+				    	} elseif {$cuuid eq $::de1(cuuid_11)} {
 							parse_binary_water_level $value arr2
 							msg "water level write confirmed [string length $value] bytes: $value  : [array get arr2]"
-				    	} elseif {$cuuid == "83CDC3D4-3BA2-13FC-CC5E-106C351A9352"} {
+				    	} elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
 							#parse_binary_water_level $value arr2
 							msg "scale write confirmed [string length $value] bytes: $value"
-						} elseif {$cuuid eq "0000EF80-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_skale_EF80)} {
 							set tare [binary decode hex "10"]
 							set grams [binary decode hex "03"]
 							set screenon [binary decode hex "ED"]
@@ -2710,10 +2710,10 @@ proc de1_ble_handler { event data } {
 							}
 			    		} else {
 					    	if {$address == $::settings(bluetooth_address)} {
-								if {$cuuid == "0000A002-0000-1000-8000-00805F9B34FB"} {
+								if {$cuuid eq $::de1(cuuid_02)} {
 									parse_state_change $value arr
 						    		msg "Confirmed state change written to DE1: '[array get arr]'"
-								} elseif {$cuuid == "0000A006-0000-1000-8000-00805F9B34FB"} {
+								} elseif {$cuuid eq $::de1(cuuid_06)} {
 									if {$::de1(currently_erasing_firmware) == 1 && $::de1(currently_updating_firmware) == 0} {
 										# erase ack received
 										#set ::de1(currently_erasing_firmware) 0
@@ -2725,7 +2725,7 @@ proc de1_ble_handler { event data } {
 									} else {
 										msg "MMR write ack: [string length $value] bytes: [convert_string_to_hex $value ] : $value : [array get arr2]"
 									}
-								} elseif {$cuuid == "0000A009-0000-1000-8000-00805F9B34FB" && $::de1(currently_erasing_firmware) == 1} {
+								} elseif {$cuuid eq $::de1(cuuid_09) && $::de1(currently_erasing_firmware) == 1} {
 									msg "fw request to erase sent"
 									#msg "fw request to erase sent, now starting send"
 									#write_firmware_now
@@ -2768,17 +2768,15 @@ proc de1_ble_handler { event data } {
 				if {$state eq "connected"} {
 
 				    if {$access eq "w"} {
-						if {$cuuid == "0000A00D-0000-1000-8000-00805F9B34FB"} {
+						if {$cuuid eq $::de1(cuuid_0D)} {
 					    	msg "Confirmed: BLE temperature notifications: $data"
-						} elseif {$cuuid == "0000A00E-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_0E)} {
 					    	msg "Confirmed: BLE state change notifications"
-						} elseif {$cuuid == "0000A012-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_12)} {
 					    	msg "Confirmed: BLE calibration notifications"
-						} elseif {$cuuid == "0000A012-0000-1000-8000-00805F9B34FB"} {
-					    	msg "Confirmed: BLE calibration notifications"
-						} elseif {$cuuid == "0000A005-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_05)} {
 					    	msg "Confirmed: BLE MMR write: [convert_string_to_hex $data]"
-						} elseif {$cuuid == "0000A011-0000-1000-8000-00805F9B34FB"} {
+						} elseif {$cuuid eq $::de1(cuuid_11)} {
 					    	msg "Confirmed: water level write: $data"
 						} else {
 					    	msg "DESCRIPTOR UNKNOWN WRITE confirmed: $data"

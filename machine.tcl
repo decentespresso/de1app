@@ -54,6 +54,7 @@ array set ::de1 {
 	suuid_skale "0000FF08-0000-1000-8000-00805F9B34FB"
 	cuuid_decentscale_read "0000FFF4-0000-1000-8000-00805F9B34FB"
 	cuuid_decentscale_write "000036F5-0000-1000-8000-00805F9B34FB"
+	cuuid_decentscale_writeback "83CDC3D4-3BA2-13FC-CC5E-106C351A9352"
 	suuid_decentscale "0000FFF0-0000-1000-8000-00805F9B34FB"
 	cuuid_acaia_ips_age "00002A80-0000-1000-8000-00805F9B34FB"
 	suuid_acaia_ips "00001820-0000-1000-8000-00805F9B34FB"
