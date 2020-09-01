@@ -553,6 +553,7 @@ proc make_de1_dir {} {
         saver/2560x1600/rainbow_dj.jpg *     
 
         profiles/Gentle\ and\ sweet.tcl *
+        profiles/tea_portafilter.tcl *
         profiles/test_leak.tcl *
         profiles/test_temperature.tcl *
         profiles/test_pressure_calibration.tcl *
