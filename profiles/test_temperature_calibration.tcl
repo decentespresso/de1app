@@ -26,7 +26,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4.0
 preinfusion_time 0
 pressure_end 0.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {Make a device to read ºC inside a basket.  Drill a 3mm hole in a no hole basket. Thread a K type temperature bead through. Bend the wire. Run this profile twice to warm up the basket and portafilter. When the DE1 stabilizes at 90ºC, if the meter is not 90.0ºC then go to Settings->Machine->Calibrate and enter the temperature on your meter.  Press Enter, then Done, then Ok. Run the profile. Repeat until the DE1 is within 0.3ºC of the meter.}
 profile_title {Test temperature calibration}
