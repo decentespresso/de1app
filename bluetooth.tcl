@@ -1297,6 +1297,11 @@ proc de1_send_shot_frames {} {
 }
 
 proc save_settings_to_de1 {} {
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		msg "DE1 not connected, cannot save_settings_to_de1"
+		return
+	}
+
 	de1_send_shot_frames
 	de1_send_steam_hotwater_settings
 }

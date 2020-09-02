@@ -709,6 +709,13 @@ proc translate {english} {
                     }
                 }
 
+                if {[language] == "he" && ($::android == 1 || $::undroid == 1)} {
+                    # use the "heb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
+                    if {[ifexists available(heb)] != ""} {
+                        return $available(heb)
+                    }
+                }
+
                 return $available([language])
             } else {
                 # if the translation is blank, show the English instead
