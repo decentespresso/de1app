@@ -285,7 +285,7 @@ proc pause {time} {
 
 proc log_to_debug_file {text} {
 
-    if {[ifexists ::settings(logfile)] != ""} {
+    if {[ifexists ::settings(log_enabled)] == "1" && [ifexists ::settings(logfile)] != ""} {
         if {[ifexists ::logfile_handle] == "0"} {
             # do nothing, no logging is possible (such as OSX readonly file system)
             return

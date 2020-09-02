@@ -1990,9 +1990,8 @@ proc setup_images_for_first_page {} {
 	
 	set fn [random_splash_file]
 	image create photo splash -file $fn 
-	.can create image {0 0} -anchor nw -image splash  -tag splash -state normal
+	.can create image {0 0} -anchor nw -image splash -tag splash -state normal
 	pack .can
-
 	update
 	return
 }
@@ -2002,14 +2001,18 @@ proc run_de1_app {} {
 }
 
 proc ui_startup {} {
-	puts "setup_environment"
-
 
 	load_settings
 	setup_environment
 	bluetooth_connect_to_devices
-	shot_history_export
-	shot_history_count_profile_use
+	
+	if {[ifexists ::settings(enable_shot_history_export)] == "1"} {
+		shot_history_export
+	}
+
+	if {[ifexists ::settings(mark_most_popular_profiles_used)] == "1"} {
+		shot_history_count_profile_use
+	}
 	#ble_find_de1s
 	
 	setup_images_for_first_page
@@ -2023,8 +2026,7 @@ proc ui_startup {} {
 
 	check_if_battery_low_and_give_message
 
-	# check for app updates, a half day after startup, and then every 24h thereafter
-	#after 43200000 scheduled_app_update_check
+	# check for app updates, some time after startup, and then every 24h thereafter
 	after 3000 scheduled_app_update_check
 	tcl_introspection
 

@@ -195,6 +195,7 @@ array set ::settings {
 	ble_debug 0
 	tank_desired_water_temperature 0
 	screen_size_height {}
+	log_enabled 0
 	current_frame_description {}
 	mmr_enabled 0	
 	default_font_calibration 0.5
@@ -212,6 +213,7 @@ array set ::settings {
 	heater_voltage ""
 	steam_over_temp_count_trigger 10
 	go_idle_before_all_operations 0
+	mark_most_popular_profiles_used 0
 	active_settings_tab settings_2a
 	espresso_temperature_steps_enabled 0
 	black_screen_saver 0
@@ -237,7 +239,7 @@ array set ::settings {
 	ble_unpair_at_exit 1
 	preload_all_page_images 0
 	temp_bump_time_seconds 2
-	export_history_automatically_to_csv 1
+	enable_shot_history_export 0
 	advanced_shot_chart_temp_max 100
 	advanced_shot_chart_temp_min 80
 	final_desired_shot_volume_advanced 0

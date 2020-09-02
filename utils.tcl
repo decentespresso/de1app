@@ -1532,7 +1532,7 @@ proc shot_history_count_profile_use {} {
 proc shot_history_export {} {
 
     # optionally disable this feature
-    if {$::settings(export_history_automatically_to_csv) != "1"} {    
+    if {$::settings(enable_shot_history_export) != "1"} {    
         return
     }
 
