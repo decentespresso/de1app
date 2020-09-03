@@ -66,13 +66,13 @@ add_de1_text "describe_espresso0" 70 1222 -text [translate "Save your current sh
 add_de1_widget "describe_espresso0" entry 70 1282  {
 	set ::globals(widget_god_shot_save) $widget
 	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); save_to_god_shots}
-	} -width 45 -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(god_espresso_name)
+	} -width [expr {int(45 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(god_espresso_name)
 
 
 add_de1_button "describe_espresso0" {say [translate {delete}] $::settings(sound_button_in); delete_current_god_shot} 1180 350 1380 600
 add_de1_button "describe_espresso0" {say [translate {add}] $::settings(sound_button_in); save_to_god_shots} 1180 1200 1380 1400
 
-set godshots_listbox_height 11
+set godshots_listbox_height [expr {int(11 * $::globals(listbox_length_multiplier))}]
 #if {$::settings(scale_bluetooth_address) != ""} {
 #	set godshots_listbox_height 9
 #}
@@ -141,10 +141,10 @@ add_de1_text "describe_espresso" 80 360 -text [translate "Enjoyment"] -font Helv
 add_de1_text "describe_espresso2" 80 360 -text [translate "Grinder"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
 	add_de1_text "describe_espresso2" 540 440 -text [translate "Model"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
-	add_de1_widget "describe_espresso2" entry 550 430 {} -width 28 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_model) 
+	add_de1_widget "describe_espresso2" entry 550 430 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_model) 
 
 	add_de1_text "describe_espresso2" 540 530 -text [translate "Setting"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 520 {} -width 28 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_setting) 
+	add_de1_widget "describe_espresso2" entry 550 520 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_setting) 
 
 	#set slider_trough_color2 #EAEAEA
 	add_de1_text "describe_espresso2" 540 620 -text [translate "Dose weight"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
@@ -157,19 +157,19 @@ add_de1_text "describe_espresso2" 80 360 -text [translate "Grinder"] -font Helv_
 add_de1_text "describe_espresso2" 80 790 -text [translate "Beans"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
 	add_de1_text "describe_espresso2" 540 860 -text [translate "Brand"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 850 {} -width 28 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_brand) 
+	add_de1_widget "describe_espresso2" entry 550 850 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_brand) 
 
 	add_de1_text "describe_espresso2" 540 940 -text [translate "Type"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 930 {} -width 28 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_type) 
+	add_de1_widget "describe_espresso2" entry 550 930 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_type) 
 
 	add_de1_text "describe_espresso2" 540 1020 -text [translate "Roast date"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 1010 {} -width 28 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_date) 
+	add_de1_widget "describe_espresso2" entry 550 1010 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_date) 
 
 	add_de1_text "describe_espresso2" 540 1100 -text [translate "Roast level"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 1090 {} -width 28 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_level) 
+	add_de1_widget "describe_espresso2" entry 550 1090 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_level) 
 
 	add_de1_text "describe_espresso2" 540 1180 -text [translate "Notes"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" multiline_entry 550 1180 {} -width 22 -height 3 -font Helv_8  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(bean_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
+	add_de1_widget "describe_espresso2" multiline_entry 550 1180 {} -width [expr {int(22 * $::globals(entry_length_multiplier))}] -height 3 -font Helv_8  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(bean_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 
 	add_de1_text "describe_espresso2" 1340 360 -text [translate "Your name"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"

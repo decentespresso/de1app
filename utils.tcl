@@ -18,6 +18,9 @@ proc setup_environment {} {
     global android
     global undroid
 
+    set ::globals(listbox_length_multiplier) 1
+    set ::globals(entry_length_multiplier) 1
+
     if {$android == 1 || $undroid == 1} {
         #package require BLT
         #namespace import blt::*
@@ -132,6 +135,8 @@ proc setup_environment {} {
             set helvetica_bold_font [sdltk addfont "fonts/Dubai-Bold.otf"]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
         } elseif {[language] == "he" || [language] == "heb"} {
+            set ::globals(listbox_length_multiplier) 1.4
+            set ::globals(entry_length_multiplier) 0.86
             set helvetica_font [sdltk addfont "fonts/hebrew-regular.ttf"]
             set helvetica_bold_font [sdltk addfont "fonts/hebrew-bold.ttf"]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]

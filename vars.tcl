@@ -1657,10 +1657,12 @@ proc delete_selected_profile {} {
 }
 
 
+# the checkbox character is not available in all fonts, so we use an X instead then
 proc checkboxchar {} {
 	if {[language] == "ar" || [language] == "he"} {
 		return "X"
 	}
+
 	return \u2713
 }
 
