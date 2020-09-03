@@ -2932,14 +2932,20 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 	}
 }
 
+proc ghc_required {} {
+	if {$::settings(ghc_is_installed) != 0 && $::settings(ghc_is_installed) != 1 && $::settings(ghc_is_installed) != 2} {
+		return 1
+	}
+	return 0
 
+}
 
 proc start_text_if_espresso_ready {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		
-		if {$::settings(ghc_is_installed) != 0} {
+		if {[ghc_required]} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 			return [translate "READY"]
 		}
@@ -2952,7 +2958,7 @@ proc restart_text_if_espresso_ready {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
-		if {$::settings(ghc_is_installed) != 0} {
+		if {[ghc_required]} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 			return [translate "READY"]
 		}
@@ -2984,7 +2990,7 @@ proc espresso_history_save_from_gui {} {
 	#		set state [translate "SAVING"] 
 		#} else {
 		#}; 
-		if {$::settings(ghc_is_installed) != 0} {
+		if {[ghc_required]} {
 			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 			set state [translate "READY"]
 		} else {
@@ -3147,20 +3153,20 @@ proc round_to_half_integer {in} {
 proc check_firmware_update_is_available {} {
 	#msg "check_firmware_update_is_available"
 
-	if {$::settings(ghc_is_installed) != 0} {
+	#if {$::settings(ghc_is_installed) != 0} {
 		# ok to do v1.3 fw update
 		#msg "v1.3 can do fw updates at the moment"
 		#if {$::settings(force_fw_update) != 1} {
 			#set ::de1(firmware_update_button_label) "Up to date"
 			#return ""
 		#}
-	} else {
+	#} else {
 		#msg "No firmware updates at the moment for machines earlier than v1.3 unless forced to do so"
 		#if {$::settings(force_fw_update) != 1} {
 		#	set ::de1(firmware_update_button_label) "Up to date"
 		#	return ""
 		#}
-	}
+	#}
 
 	if {[ifexists ::de1(firmware_crc)] == ""} {
 		set ::de1(firmware_crc) [crc::crc32 -filename [fwfile]]

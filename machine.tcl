@@ -602,8 +602,7 @@ proc start_flush {} {
 
 
 	#after 1000 read_de1_state
-
-	if {$::settings(ghc_is_installed) != 0 && $::settings(stress_test) != 1} {
+	if {[ghc_required] && $::settings(stress_test) != 1} {
 		# show the user what button to press on the group head
 		ghc_message ghc_flush
 		return
@@ -668,7 +667,7 @@ proc start_steam {} {
 
 	#after 1000 read_de1_state
 
-	if {$::settings(ghc_is_installed) != 0 && $::settings(stress_test) != 1} {
+	if {[ghc_required] && $::settings(stress_test) != 1} {
 		# show the user what button to press on the group head
 		ghc_message ghc_steam
 		return
@@ -773,7 +772,7 @@ proc start_espresso {} {
 
 
 
-	if {$::settings(ghc_is_installed) != 0 && $::settings(stress_test) != 1} {
+	if {[ghc_required] && $::settings(stress_test) != 1} {
 		# show the user what button to press on the group head
 		ghc_message ghc_espresso
 		return
@@ -811,7 +810,7 @@ proc start_water {} {
 
 	#after 1000 read_de1_state
 
-	if {$::settings(ghc_is_installed) != 0 && $::settings(stress_test) != 1} {
+	if {[ghc_required] && $::settings(stress_test) != 1} {
 		# show the user what button to press on the group head
 		ghc_message ghc_hotwater
 		return
