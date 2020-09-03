@@ -13,6 +13,11 @@ if {[language] == "ar"} {
 	set settings_tab_font "Helv_15_bold"
 	set botton_button_font "Helv_15_bold"
 	set listbox_font "Helv_7_bold"
+} elseif {[language] == "he"} {
+	set green_button_font "Helv_17_bold"
+	set settings_tab_font "Helv_10_bold"
+	set botton_button_font "Helv_12_bold"
+	set listbox_font "Helv_8_bold"
 } elseif {[language] == "zh-hans" || [language] == "zh-hant" || [language] == "kr"} {
 	set green_button_font "Helv_17_bold"
 	set settings_tab_font "Helv_15_bold"

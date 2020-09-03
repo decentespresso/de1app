@@ -131,6 +131,10 @@ proc setup_environment {} {
             set helvetica_font [sdltk addfont "fonts/Dubai-Regular.otf"]
             set helvetica_bold_font [sdltk addfont "fonts/Dubai-Bold.otf"]
             set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+        } elseif {[language] == "he" || [language] == "heb"} {
+            set helvetica_font [sdltk addfont "fonts/hebrew-regular.ttf"]
+            set helvetica_bold_font [sdltk addfont "fonts/hebrew-bold.ttf"]
+            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
         } elseif {[language] == "zh-hant" || [language] == "zh-hans" || [language] == "kr"} {
             set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
             set helvetica_bold_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Bold.otf"] 0]

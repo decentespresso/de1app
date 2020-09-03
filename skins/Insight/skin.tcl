@@ -50,6 +50,10 @@ if {[language] == "ar"} {
 } elseif {[language] == "zh-hans" || [language] == "zh-hant" || [language] == "kr"} {
 	set green_button_font "Helv_17_bold"
 	set label_font "Helv_15_bold"
+} elseif {[language] == "he"} {
+	set green_button_font "Helv_15_bold"
+	set label_font "Helv_15_bold"
+	set listbox_font "Helv_7_bold"
 } elseif {[language] != "en" && [language] != "kr" && [language] != "zh-hans" && [language] != "zh-hant"} {
 	set green_button_font "Helv_15_bold"
 }

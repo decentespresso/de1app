@@ -98,11 +98,6 @@ proc make_de1_dir {} {
 
     }
 
-        #fonts/NotoSansCJKjp-ThinSansCJKjp-DemiLight.otf *
-        #fonts/NotoSansCJKjp-Thin.otf *
-        #fonts/NotoSansCJKjp-Medium.otf *
-#        create_de1_icon.tcl *
-
     set files {
         binary.tcl *
         bluetooth.tcl *
@@ -142,6 +137,8 @@ proc make_de1_dir {} {
         fonts/notosansuibold.ttf *
         fonts/notosansuiregular.ttf *
         fonts/sarabun.ttf *
+        fonts/hebrew-regular.ttf *
+        fonts/hebrew-bold.ttf *
         fonts/sarabunbold.ttf *
         fonts/Dubai-Bold.otf *
         fonts/Dubai-Regular.otf *
