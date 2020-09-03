@@ -1657,6 +1657,14 @@ proc delete_selected_profile {} {
 }
 
 
+proc checkboxchar {} {
+	if {[language] == "ar" || [language] == "he"} {
+		return "X"
+	}
+	return \u2713
+}
+
+
 #set de1_bluetooth_list {}
 proc fill_ble_listbox {} {
 
@@ -1682,7 +1690,7 @@ proc fill_ble_listbox {} {
 	foreach d [lsort -dictionary -increasing $::de1_bluetooth_list] {
 		#$widget insert $cnt $d
 		if {$d == [ifexists ::settings(bluetooth_address)]} {
-			$widget insert $cnt " \[\u2713\] $d"
+			$widget insert $cnt " \[[checkboxchar]\] $d"
 			set one_selected 1
 		} else {
 			$widget insert $cnt " \[   \] $d"
@@ -1724,7 +1732,7 @@ proc fill_ble_scale_listbox {} {
 	set one_selected 0
 	foreach d [lsort -dictionary -increasing $::scale_bluetooth_list] {
 		if {$d == [ifexists ::settings(scale_bluetooth_address)]} {
-			$widget insert $cnt " \[\u2713\] $d"
+			$widget insert $cnt " \[[checkboxchar]\] $d"
 			set one_selected 1
 		} else {
 			$widget insert $cnt " \[   \] $d"

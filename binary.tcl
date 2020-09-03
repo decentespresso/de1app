@@ -1849,7 +1849,7 @@ proc parse_state_change {packed destarrname} {
 proc update_de1_state {statechar} {
 	#::fields::unpack $statechar $spec msg bigeendian
 	parse_state_change $statechar msg
-	set textstate [ifexists ::de1_num_state($msg(state))]
+	set textstate [ifexists ::de1_num_state([ifexists msg(state)])]
 
 	#msg "update_de1_state '[ifexists ::previous_textstate]' '$textstate'"
 
