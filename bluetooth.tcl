@@ -746,6 +746,7 @@ proc start_firmware_update {} {
 		return
 	}
 
+
 	#de1_enable_maprequest_notifications
 	
 	set ::de1(firmware_bytes_uploaded) 0
@@ -783,7 +784,12 @@ proc start_firmware_update {} {
 
 	if {$::android == 1} {
 		userdata_append "Erase firmware do: [array get arr]" [de1_ble  write "FWMapRequest" $data] 1
-		after 10000 write_firmware_now
+		#after 10000 write_firmware_now
+
+		# if the firmware erase does not return in 15 seconds, try again, until eventually we stop trying because it succeeeded.
+		after 15000 start_firmware_update
+
+
 	} else {
 		after 1000 write_firmware_now
 	}
@@ -2318,7 +2324,6 @@ proc de1_ble_handler { event data } {
 
 						} elseif {$cuuid eq $::de1(cuuid_01)} {
 						    set ::de1(last_ping) [clock seconds]
-							#update_de1_state $value
 							parse_binary_version_desc $value arr2
 							msg "version data received [string length $value] bytes: '$value' \"[convert_string_to_hex $value]\"  : '[array get arr2]'/ $event $data"
 							set ::de1(version) [array get arr2]
@@ -2369,7 +2374,6 @@ proc de1_ble_handler { event data } {
 							}
 						} elseif {$cuuid eq $::de1(cuuid_0B)} {
 						    set ::de1(last_ping) [clock seconds]
-							#update_de1_state $value
 							parse_binary_hotwater_desc $value arr2
 							msg "hotwater data received [string length $value] bytes: $value  : [array get arr2]"
 
@@ -2377,17 +2381,14 @@ proc de1_ble_handler { event data } {
 							#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
 						} elseif {$cuuid eq $::de1(cuuid_0C)} {
 						    set ::de1(last_ping) [clock seconds]
-							#update_de1_state $value
 							parse_binary_shot_desc $value arr2
 							msg "shot data received [string length $value] bytes: $value  : [array get arr2]"
 						} elseif {$cuuid eq $::de1(cuuid_0F)} {
 						    set ::de1(last_ping) [clock seconds]
-							#update_de1_state $value
 							parse_binary_shotdescheader $value arr2
 							msg "READ shot header success: [string length $value] bytes: $value  : [array get arr2]"
 						} elseif {$cuuid eq $::de1(cuuid_10)} {
 						    set ::de1(last_ping) [clock seconds]
-							#update_de1_state $value
 							parse_binary_shotframe $value arr2
 							msg "shot frame received [string length $value] bytes: $value  : [array get arr2]"
 						} elseif {$cuuid eq $::de1(cuuid_0E)} {
