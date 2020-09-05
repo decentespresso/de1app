@@ -784,10 +784,10 @@ proc start_firmware_update {} {
 
 	if {$::android == 1} {
 		userdata_append "Erase firmware do: [array get arr]" [de1_ble  write "FWMapRequest" $data] 1
-		#after 10000 write_firmware_now
+		after 10000 write_firmware_now
 
 		# if the firmware erase does not return in 15 seconds, try again, until eventually we stop trying because it succeeeded.
-		after 15000 start_firmware_update
+		#after 15000 start_firmware_update
 
 
 	} else {
@@ -860,7 +860,7 @@ proc firmware_upload_next {} {
 		set ::de1(firmware_update_button_label) "Updating"
 
 		set data "\x10[make_U24P0 $::de1(firmware_bytes_uploaded)][string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]"
-		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" {[de1_ble write "WriteToMMR" $data]} 1
+		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [de1_ble write "WriteToMMR" $data] 1
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 		if {$::android != 1} {
 			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
