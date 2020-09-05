@@ -148,7 +148,7 @@ proc add_de1_page {names filename {skin ""} } {
 	} else {
 		if {$::settings(preload_all_page_images) == 1} {
 			set iname [image create photo $names -file $pngfilename]
-			puts "loading page: '$names' with image '$pngfilename' with tclname: '$iname'"
+			msg "loading page: '$names' with image '$pngfilename' with tclname: '$iname'"
 			#image create photo $names 			$names -file $pngfilename
 		}
 	}
@@ -168,6 +168,8 @@ proc add_de1_page {names filename {skin ""} } {
 }	
 
 proc set_de1_screen_saver_directory {{dirname {}}} {
+
+	msg "set_de1_screen_saver_directory"
 
 	# force use of our default saver directory if the black screen saver is enabled, otherwise use whatever the skin chooses
 	if {$::settings(black_screen_saver) == 1} {
@@ -406,6 +408,8 @@ proc canvas'textvar {canvas tag _var args} {
 
 # optional "alsobind" allows us to put text on top of a pressable button and have the text also bound to the same down/up/leave actions
 proc up_down_button_create {actionscript btn_images img_loc key_loc buttontype {alsobind {}} } {
+
+	msg "up_down_button_create"
 
 	if {$buttontype != "onetime" && $buttontype != "holdrepeats"} {
 		puts "ERROR unknown buttontype $buttontype"
@@ -776,6 +780,8 @@ proc add_de1_text {args} {
 
 set image_cnt 0
 proc add_de1_image {args} {
+
+	msg "add_de1_image $args"
 	global image_cnt
 	incr image_cnt
 	set contexts [lindex $args 0]
@@ -976,6 +982,7 @@ proc change_screen_saver_img {} {
 		set err ""
 		catch {
 			# this can happen during an upgrade
+			msg "image create photo saver -file $fn"
 			image create photo saver -file $fn
 			.can create image {0 0} -anchor nw -image saver  -tag saver -state hidden
 			.can lower saver
@@ -1362,6 +1369,7 @@ proc page_display_change {page_to_hide page_to_show} {
 		set errcode [catch {
 			# this can happen if the image file has been moved/deleted underneath the app
 			#fallback is to at least not crash
+			msg "page_display_change image create photo $page_to_show -file $pngfilename" 
 			image create photo $page_to_show -file $pngfilename
 			#msg "image create photo $page_to_show -file $pngfilename"
 		}]
@@ -1447,7 +1455,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	update_onscreen_variables
 	#after 100 update_chart
-	after 1000 update
+	#after 1000 update
 
 }
 
@@ -1988,6 +1996,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 proc setup_images_for_first_page {} {
 	
+	msg "setup_images_for_first_page"
 	set fn [random_splash_file]
 	image create photo splash -file $fn 
 	.can create image {0 0} -anchor nw -image splash -tag splash -state normal

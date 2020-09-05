@@ -2134,7 +2134,7 @@ proc fill_advanced_profile_steps_listbox {} {
 
 	load_advanced_profile_step 1
 	make_current_listbox_item_blue $::advanced_shot_steps_widget
-	update
+	update idletasks
 }
 
 # on androwish some listbox selctions are causing multiple cascading events, and we don't know why

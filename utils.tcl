@@ -459,6 +459,7 @@ proc random_saver_file {} {
 
             foreach fn [glob -nocomplain "[saver_directory]/2560x1600/*.jpg"] {
                 borg spinner on
+                msg "random_saver_file image create photo saver -file $fn"
                 image create photo saver -file $fn
                 photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
 
@@ -560,6 +561,7 @@ proc random_splash_file {} {
 
             foreach fn [glob -nocomplain "[splash_directory]/2560x1600/*.jpg"] {
                 borg spinner on
+                msg "random_splash_file image create photo saver -file $fn"
                 image create photo saver -file $fn
                 photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
 

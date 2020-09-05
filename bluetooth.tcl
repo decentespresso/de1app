@@ -1147,7 +1147,7 @@ proc run_next_userdata_cmd {} {
 				# retrying a command that will forever fail kind of kills the BLE abilities of the app
 				
 				after 500 run_next_userdata_cmd
-				update
+				#update
 				return 
 			}
 		}
