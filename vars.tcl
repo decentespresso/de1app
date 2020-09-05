@@ -344,6 +344,7 @@ proc clear_espresso_timers {} {
 	set ::timers(espresso_pour_stop) 0
 
 	set ::timer_running 0
+
 	#puts "clearing timers"
 }
 

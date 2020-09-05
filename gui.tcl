@@ -973,22 +973,29 @@ proc change_screen_saver_img {} {
 
 	#msg "change_screen_saver_img $::de1(current_context) '[page_displaying_now]'"
 	#if {$::de1(current_context) == "saver"} {
-		catch {
-			image delete saver
-		}
+		#catch {
+			# image delete is not needed, as Tk silently replaces the existing image if the object has the same name
+			#image delete saver
+		#}
 
 		set fn [random_saver_file]
 
 		set err ""
-		catch {
+		set errcode [catch {
 			# this can happen during an upgrade
-			msg "image create photo saver -file $fn"
+			#msg "image create photo saver -file $fn"
 			image create photo saver -file $fn
-			.can create image {0 0} -anchor nw -image saver  -tag saver -state hidden
-			.can lower saver
-		} err
+			
+			# BUG FIX: this was causing a new canvas item to be created each time a screen saver object was created
+			# switching to itemconfigure instead
+			# .can create image {0 0} -anchor nw -image saver  -tag saver -state hidden
 
-		if {$err != ""} {
+			#.can itemconfigure -anchor nw -image saver  -tag saver -state hidden
+			#.can lower saver
+		} err]
+
+		if {$errcode != 0} {
+
 			error $err
 		}
 		#update
@@ -999,8 +1006,9 @@ proc change_screen_saver_img {} {
 		unset -nocomplain ::change_screen_saver_image_handle
 	}
 
-	#set ::change_screen_saver_image_handle [after 1000 change_screen_saver_image]
 	set ::change_screen_saver_image_handle [after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_img]
+	#set ::change_screen_saver_image_handle [after 1 change_screen_saver_img]
+	#set ::change_screen_saver_image_handle [after 100 change_screen_saver_img]
 }
 
 proc update_chart {} {

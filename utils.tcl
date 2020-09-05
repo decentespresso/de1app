@@ -492,14 +492,28 @@ proc tcl_introspection {} {
 
         append txt "Commands available: [llength [info commands]]\nInstructions run: [info cmdcount]\nGlobals: [llength [info globals]]\nProcs: [llength [info procs]]\nAfter commands: [llength [after info]]\n"
 
-        append txt "Images loaded: [llength [image names]]\n"
-
-        set cnt 0
-        foreach i [image names] {
-            #append txt "[incr cnt]. $i [image height $i]x[image width $i] in use:[image inuse $i]\n"
+        set show_after_command_detail 0
+        if {$show_after_command_detail == 1} {
+            set acnt 0
+            foreach a [after info] {
+                incr acnt
+                append txt "$acnt - " [after info $a]\n"
+            }
         }
 
-        #append txt \n
+        append txt "Canvas objects: [llength [.can find all]]\n"
+
+        append txt "Images loaded: [llength [image names]]\n"
+
+        set show_image_detail 0
+        if {$show_image_detail == 1} {
+            set cnt 0
+            foreach i [image names] {
+                append txt "[incr cnt]. $i [image height $i]x[image width $i] in use:[image inuse $i]\n"
+            }
+            append txt \n
+        }
+
 
         set vs [vector names]
         append txt "Vectors: [llength $vs]"
@@ -539,6 +553,7 @@ proc tcl_introspection {} {
     }
 
     after [expr {60 * 60 * 1000}] tcl_introspection
+    #after [expr {1000}] tcl_introspection
 }
 
 proc random_splash_file {} {
@@ -1160,7 +1175,6 @@ proc load_settings {} {
 
     # zoomed flow goal 2x
     blt::vector create espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x
-
 
     # experimental chargts showing flow from the top, or 2x normal size
     blt::vector espresso_flow_delta_negative espresso_flow_delta_negative_2x
