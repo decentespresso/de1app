@@ -16,7 +16,7 @@ proc userdata_append {comment cmd {vital 0} } {
 
 proc read_de1_version {} {
 	catch {
-		userdata_append "read_de1_version" [de1_ble read Version] 1
+		userdata_append "read_de1_version" [list de1_ble read Version] 1
 	}
 }
 
@@ -33,7 +33,7 @@ proc read_de1_state {} {
 		return
 	}
 	if {[catch {
-		userdata_append "read de1 state" [de1_ble read StateInfo] 1
+		userdata_append "read de1 state" [list de1_ble read StateInfo] 1
 	} err] != 0} {
 		msg "Failed to 'read de1 state' in DE1 BLE because: '$err'"
 	}
@@ -553,7 +553,7 @@ proc de1_enable_calibration_notifications {} {
 		return
 	}
 
-	userdata_append "enable de1 calibration notifications" [de1_ble enable Calibration] 1
+	userdata_append "enable de1 calibration notifications" [list de1_ble enable Calibration] 1
 }
 
 # calibration change notifications DISABLE
@@ -563,7 +563,7 @@ proc de1_disable_calibration_notifications {} {
 		return
 	}
 
-	userdata_append "disable de1 calibration notifications" [de1_ble disable Calibration)] 1
+	userdata_append "disable de1 calibration notifications" [list de1_ble disable Calibration)] 1
 }
 
 # temp changes
@@ -573,7 +573,7 @@ proc de1_enable_temp_notifications {} {
 		return
 	}
 
-	userdata_append "enable de1 temp notifications" [de1_ble  enable "ShotSample"] 1
+	userdata_append "enable de1 temp notifications" [list de1_ble  enable "ShotSample"] 1
 }
 
 # status changes
@@ -583,7 +583,7 @@ proc de1_enable_state_notifications {} {
 		return
 	}
 
-	userdata_append "enable de1 state notifications" [de1_ble  enable "StateInfo"] 1
+	userdata_append "enable de1 state notifications" [list de1_ble  enable "StateInfo"] 1
 }
 
 proc de1_disable_temp_notifications {} {
@@ -592,7 +592,7 @@ proc de1_disable_temp_notifications {} {
 		return
 	}
 
-	userdata_append "disable temp notifications" [de1_ble  disable "ShotSample"] 1
+	userdata_append "disable temp notifications" [list de1_ble  disable "ShotSample"] 1
 }
 
 proc de1_disable_state_notifications {} {
@@ -601,7 +601,7 @@ proc de1_disable_state_notifications {} {
 		return
 	}
 
-	userdata_append "disable state notifications" [de1_ble  disable "StateInfo"] 1
+	userdata_append "disable state notifications" [list de1_ble  disable "StateInfo"] 1
 }
 
 set ::mmr_enabled ""
@@ -644,8 +644,8 @@ proc de1_enable_mmr_notifications {} {
 		return
 	}
 
-	#userdata_append "enable MMR write notifications" [de1_ble  enable "WriteToMMR"] 1
-	userdata_append "enable MMR read notifications" [de1_ble enable "ReadFromMMR"] 1
+	#userdata_append "enable MMR write notifications" [list de1_ble  enable "WriteToMMR"] 1
+	userdata_append "enable MMR read notifications" [list de1_ble enable "ReadFromMMR"] 1
 }
 
 # water level notifications
@@ -655,7 +655,7 @@ proc de1_enable_water_level_notifications {} {
 		return
 	}
 
-	userdata_append "enable de1 water level notifications" [de1_ble  enable "WaterLevels"] 1
+	userdata_append "enable de1 water level notifications" [list de1_ble  enable "WaterLevels"] 1
 }
 
 proc de1_disable_water_level_notifications {} {
@@ -664,7 +664,7 @@ proc de1_disable_water_level_notifications {} {
 		return
 	}
 
-	userdata_append "disable state notifications" [de1_ble  disable "WaterLevels"] 1
+	userdata_append "disable state notifications" [list de1_ble  disable "WaterLevels"] 1
 }
 
 # firmware update command notifications (not writing new fw, this is for erasing and switching firmware)
@@ -674,7 +674,7 @@ proc de1_enable_maprequest_notifications {} {
 		return
 	}
 
-	userdata_append "enable de1 state notifications" [de1_ble  enable "FWMapRequest"] 1
+	userdata_append "enable de1 state notifications" [list de1_ble  enable "FWMapRequest"] 1
 }
 
 proc fwfile {} {
@@ -783,7 +783,7 @@ proc start_firmware_update {} {
 
 
 	if {$::android == 1} {
-		userdata_append "Erase firmware do: [array get arr]" [de1_ble  write "FWMapRequest" $data] 1
+		userdata_append "Erase firmware do: [array get arr]" [list de1_ble  write "FWMapRequest" $data] 1
 		after 10000 write_firmware_now
 
 		# if the firmware erase does not return in 15 seconds, try again, until eventually we stop trying because it succeeeded.
@@ -854,13 +854,13 @@ proc firmware_upload_next {} {
 			set arr(FirstError2) [expr 0xFF]
 			set arr(FirstError3) [expr 0xFF]
 			set data [make_packed_maprequest arr]
-			userdata_append "Find first error in firmware update: [array get arr]" [de1_ble write "FWMapRequest" $data] 1
+			userdata_append "Find first error in firmware update: [array get arr]" [list de1_ble write "FWMapRequest" $data] 1
 		}
 	} else {
 		set ::de1(firmware_update_button_label) "Updating"
 
 		set data "\x10[make_U24P0 $::de1(firmware_bytes_uploaded)][string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]"
-		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [de1_ble write "WriteToMMR" $data] 1
+		userdata_append "Write [string length $data] bytes of firmware data ([convert_string_to_hex $data])" [list de1_ble write "WriteToMMR" $data] 1
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
 		if {$::android != 1} {
 			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
@@ -893,7 +893,7 @@ proc mmr_read {note address length} {
 
 	set cmt "MMR requesting read '$note' [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc] with '[convert_string_to_hex $data]'"
 	msg "queing $cmt"
-	userdata_append $cmt [de1_ble write "ReadFromMMR" $data] 1
+	userdata_append $cmt [list de1_ble write "ReadFromMMR" $data] 1
 
 }
 
@@ -922,7 +922,7 @@ proc mmr_write { note address length value} {
 		msg "DE1 not connected, cannot send BLE command 11"
 		return
 	}
-	userdata_append "MMR $note writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]" [de1_ble write "WriteToMMR" $data] 1
+	userdata_append "MMR $note writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]" [list de1_ble write "WriteToMMR" $data] 1
 }
 
 proc set_tank_temperature_threshold {temp} {
@@ -1084,7 +1084,7 @@ proc de1_send_waterlevel_settings {} {
 
 	set data [return_de1_packed_waterlevel_settings]
 	parse_binary_water_level $data arr2
-	userdata_append "Set water level settings: [array get arr2]" [de1_ble write "WaterLevels" $data] 1
+	userdata_append "Set water level settings: [array get arr2]" [list de1_ble write "WaterLevels" $data] 1
 }
 
 
@@ -1247,7 +1247,7 @@ proc de1_send_state {comment msg} {
 
 	#set ::de1(substate) -
 	#msg "Sending to DE1: '$msg'"
-	userdata_append $comment [de1_ble write "RequestedState" "$msg"] 1
+	userdata_append $comment [list de1_ble write "RequestedState" "$msg"] 1
 }
 
 
@@ -1274,7 +1274,7 @@ proc de1_send_shot_frames {} {
 	####
 
 
-	userdata_append "Espresso header: [array get arr2]" [de1_ble write "HeaderWrite" $header] 1
+	userdata_append "Espresso header: [array get arr2]" [list de1_ble write "HeaderWrite" $header] 1
 
 	set cnt 0
 	foreach packed_frame [lindex $parts 1] {
@@ -1288,7 +1288,7 @@ proc de1_send_shot_frames {} {
 		msg "frame #$cnt: [string length $packed_frame] bytes: [array get arr3]"
 		####
 
-		userdata_append "Espresso frame #$cnt: [array get arr3] (FLAGS: [parse_shot_flag $arr3(Flag)])"  [de1_ble write "FrameWrite" $packed_frame] 1
+		userdata_append "Espresso frame #$cnt: [array get arr3] (FLAGS: [parse_shot_flag $arr3(Flag)])"  [list de1_ble write "FrameWrite" $packed_frame] 1
 	}
 
 	# only set the tank temperature for advanced profile shots
@@ -1321,7 +1321,7 @@ proc de1_send_steam_hotwater_settings {} {
 
 	set data [return_de1_packed_steam_hotwater_settings]
 	parse_binary_hotwater_desc $data arr2
-	userdata_append "Set water/steam settings: [array get arr2]" [de1_ble write "ShotSettings" $data] 1
+	userdata_append "Set water/steam settings: [array get arr2]" [list de1_ble write "ShotSettings" $data] 1
 
 	set_steam_flow $::settings(steam_flow)
 	set_steam_highflow_start $::settings(steam_highflow_start)
@@ -1355,7 +1355,7 @@ proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 
 	set data [make_packed_calibration arr]
 	parse_binary_calibration $data arr2
-	userdata_append "Set calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [de1_ble write "Calibration" $data] 1
+	userdata_append "Set calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list de1_ble write "Calibration" $data] 1
 }
 
 proc de1_read_calibration {calib_target {factory 0} } {
@@ -1392,7 +1392,7 @@ proc de1_read_calibration {calib_target {factory 0} } {
 
 	set data [make_packed_calibration arr]
 	parse_binary_calibration $data arr2
-	userdata_append "Read $what calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [de1_ble write "Calibration" $data] 1
+	userdata_append "Read $what calibration: [array get arr2] : [string length $data] bytes: ([convert_string_to_hex $data])" [list de1_ble write "Calibration" $data] 1
 
 }
 
@@ -1404,7 +1404,7 @@ proc de1_read_version_obsolete {} {
 	#	return
 	#}
 
-	userdata_append "read de1 version" [de1_ble read "Temperatures"] 1
+	userdata_append "read de1 version" [list de1_ble read "Temperatures"] 1
 }
 
 proc de1_read_hotwater {} {
@@ -1413,7 +1413,7 @@ proc de1_read_hotwater {} {
 	#	return
 	#}
 
-	userdata_append "read de1 hot water/steam" [de1_ble read "ShotSettings"] 1
+	userdata_append "read de1 hot water/steam" [list de1_ble read "ShotSettings"] 1
 }
 
 proc de1_read_shot_header {} {
@@ -1422,7 +1422,7 @@ proc de1_read_shot_header {} {
 	#	return
 	#}
 
-	userdata_append "read shot header" [de1_ble read "HeaderWrite"] 1
+	userdata_append "read shot header" [list de1_ble read "HeaderWrite"] 1
 }
 proc de1_read_shot_frame {} {
 	#if {$::de1(device_handle) == "0"} {
@@ -1430,7 +1430,7 @@ proc de1_read_shot_frame {} {
 	#	return
 	#}
 
-	userdata_append "read shot frame" [de1_ble read "FrameWrite"] 1
+	userdata_append "read shot frame" [list de1_ble read "FrameWrite"] 1
 }
 
 proc remove_null_terminator {instr} {
@@ -1823,11 +1823,17 @@ proc mmr_read_queue_add {cmd} {
 }
 
 proc de1_ble {action command_name {data ""}} {
+
+    if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+            msg "DE1 not connected, cannot send BLE command $command_name"
+            return
+    }
+
 	eval set current_cuuid $::de1_command_names_to_cuuids($command_name)
 	if {$action == "read" || $action == "enable" || $action == "disable"} {
-		return [list ble $action $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $current_cuuid $::cinstance($current_cuuid)]
+		return [ble $action $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $current_cuuid $::cinstance($current_cuuid)]
 	} elseif {$action == "write"} {
-		return [list ble $action $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $current_cuuid $::cinstance($current_cuuid) $data]
+		return [ble $action $::de1(device_handle) $::de1(suuid) $::sinstance($::de1(suuid)) $current_cuuid $::cinstance($current_cuuid) $data]
 	} else {
 		error "Unknown communication action: $action $command_name"
 		return 0

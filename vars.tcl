@@ -2639,13 +2639,19 @@ proc preview_profile {} {
 
 
 proc send_de1_settings_soon  {} {
-	if {[info exists ::save_settings_to_de1_id] == 1} {
-		after cancel $::save_settings_to_de1_id; 
-		unset -nocomplain ::save_settings_to_de1_id
-		msg "cancelled extra de1_send"
-	}
 
-	set ::save_settings_to_de1_id [after 500 save_settings_to_de1]
+	# if they have a GHC then they can press it while in the settings page, and expect the profile they just select to be in place.  Thus we bluetooth send 
+	# profiles as they tap on them, but only if they have a GHC. No point in sending bluetooth commands that are not needed on non-GHC machines.
+	if {[ghc_required] == 1} {
+
+		if {[info exists ::save_settings_to_de1_id] == 1} {
+			after cancel $::save_settings_to_de1_id; 
+			unset -nocomplain ::save_settings_to_de1_id
+			msg "cancelled extra de1_send"
+		}
+
+		set ::save_settings_to_de1_id [after 500 save_settings_to_de1]
+	}
 }
 
 
