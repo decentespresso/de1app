@@ -98,6 +98,9 @@ proc make_de1_dir {} {
 
     }
 
+#            profiles/Best\ overall\ pressure\ profile.tcl *
+
+
     set files {
         binary.tcl *
         bluetooth.tcl *
@@ -574,7 +577,6 @@ proc make_de1_dir {} {
         profiles/Hybrid\ pour\ over\ espresso.tcl *
         profiles/Low\ pressure\ lever\ machine\ at\ 6\ bar.tcl *
         profiles/Preinfuse\ then\ 45ml\ of\ water.tcl *
-        profiles/Best\ overall\ pressure\ profile.tcl *
         profiles/Traditional\ lever\ machine.tcl *
         profiles/Trendy\ 6\ bar\ low\ pressure\ shot.tcl *
         profiles/Two\ spring\ lever\ machine\ to\ 9\ bar.tcl *

@@ -502,8 +502,8 @@ proc tcl_introspection {} {
         }
 
         append txt "Canvas objects: [llength [.can find all]]\n"
-
         append txt "Images loaded: [llength [image names]]\n"
+        append txt "BLE queue: [llength $::de1(cmdstack)]\n"
 
         set show_image_detail 0
         if {$show_image_detail == 1} {
@@ -548,6 +548,7 @@ proc tcl_introspection {} {
 
         }
         append txt "TOTAL global variable memory used: $total bytes\n\n"
+
 
         msg $txt
     }

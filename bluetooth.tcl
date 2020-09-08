@@ -11,6 +11,10 @@ proc userdata_append {comment cmd {vital 0} } {
 	#lappend cmds $cmd
 	#ble userdata $::de1(device_handle) $cmds
 	lappend ::de1(cmdstack) [list $comment $cmd $vital]
+
+	if {[llength $::de1(cmdstack)] > 20} {
+		msg "Warning, BLE queue is [llength $::de1(cmdstack)] long"
+	}
 	run_next_userdata_cmd
 }
 
@@ -1204,6 +1208,8 @@ proc close_all_ble_and_exit {} {
 }	
 
 proc app_exit {} {
+
+	tcl_introspection
 	close_log_file
 
 	if {$::android != 1} {
