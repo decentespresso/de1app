@@ -2950,7 +2950,7 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 }
 
 proc ghc_required {} {
-	if {$::settings(ghc_is_installed) != 0 && $::settings(ghc_is_installed) != 1 && $::settings(ghc_is_installed) != 2} {
+	if {$::settings(ghc_is_installed) != 0 && $::settings(ghc_is_installed) != 1 && $::settings(ghc_is_installed) != 2 && $::settings(ghc_is_installed) != 4} {
 		return 1
 	}
 	return 0
