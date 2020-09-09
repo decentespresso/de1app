@@ -112,6 +112,7 @@ proc make_de1_dir {} {
         utils.tcl *
         main.tcl *
         vars.tcl *
+        de1_comms.tcl *
         updater.tcl *
         misc.tcl *
         pkgIndex.tcl *
