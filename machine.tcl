@@ -403,8 +403,8 @@ array set ::settings {
 	preheat_volume 50
 	preheat_temperature 95
 	water_volume 50
-    ghc_is_installed 0
-
+	ghc_is_installed 0
+	force_acaia_heartbeat 0
 }
 
 if {[de1plus]} {
