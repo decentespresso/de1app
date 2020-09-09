@@ -1598,29 +1598,28 @@ proc ble_connect_to_de1 {} {
 	    msg "Connected to fake DE1"
 		set ::de1(device_handle) 1
 
-		# example binary string containing binary version string
-		#set version_value "\x01\x00\x00\x00\x03\x00\x00\x00\xAC\x1B\x1E\x09\x01"
-		#set version_value "\x01\x00\x00\x00\x03\x00\x00\x00\xAC\x1B\x1E\x09\x01"
-		set version_value "\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51"
-		#parse_binary_version_desc $version_value arr2
-		set ::de1(version) [array get arr2]
-		set v [de1_version_string]
+		set do_mmr_binary_test 0
+		if {$do_mmr_binary_test == 1} {
+			# example binary string containing binary version string
+			set version_value "\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51"
+			set ::de1(version) [array get arr2]
+			set v [de1_version_string]
 
-		set mmr_test "\x0C\x80\x00\x08\x14\x05\x00\x00\x03\x00\x00\x00\x71\x04\x00\x00\x00\x00\x00\x00"
-		#parse_binary_mmr_read $mmr_test arr3
-		msg [array get arr3]
+			set mmr_test "\x0C\x80\x00\x08\x14\x05\x00\x00\x03\x00\x00\x00\x71\x04\x00\x00\x00\x00\x00\x00"
+			msg [array get arr3]
 
-		#set mmr_test "\x0C\x80\x00\x08\x14\x05\x00\x00\x03\x00\x00\x00\x71\x04\x00\x00\x00\x00\x00\x00"
-		parse_binary_mmr_read_int $mmr_test arr4
-		msg [array get arr4]
+			#set mmr_test "\x0C\x80\x00\x08\x14\x05\x00\x00\x03\x00\x00\x00\x71\x04\x00\x00\x00\x00\x00\x00"
+			parse_binary_mmr_read_int $mmr_test arr4
+			msg [array get arr4]
 
-		msg "MMRead: CPU board model: '[ifexists arr4(Data0)]'"
-		msg "MMRead: machine model:  '[ifexists arr4(Data1)]'"
-		msg "MMRead: firmware version number: '[ifexists arr4(Data2)]'"
+			msg "MMRead: CPU board model: '[ifexists arr4(Data0)]'"
+			msg "MMRead: machine model:  '[ifexists arr4(Data1)]'"
+			msg "MMRead: firmware version number: '[ifexists arr4(Data2)]'"
 
-		set ::settings(cpu_board_model) [ifexists arr4(Data0)]
-		set ::settings(machine_model) [ifexists arr4(Data1)]
-		set ::settings(firmware_version_number) [ifexists arr4(Data2)]
+			set ::settings(cpu_board_model) [ifexists arr4(Data0)]
+			set ::settings(machine_model) [ifexists arr4(Data1)]
+			set ::settings(firmware_version_number) [ifexists arr4(Data2)]
+		}
 
 		return
 	}
