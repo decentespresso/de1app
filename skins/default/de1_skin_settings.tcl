@@ -1183,7 +1183,7 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 
 		add_de1_widget "calibrate" scale 1880 [expr {(3 * $calibration_row_spacing) + $calibration_labels_row}]  {} -to 170 -from 129 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 400]  -width [rescale_y_skin 90] -variable ::settings(steam_temperature) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		
-		set max_steam_flow_rate 120
+		set max_steam_flow_rate 140
 		if {[ifexists ::settings(machine_model)] == 5} {
 			# the de1cafe model has a higher maximum flow rate for steam, because it is 230V only and has 4400W of heaters available, with 4 meters of tubing to heat with
 			set max_steam_flow_rate 400
