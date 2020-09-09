@@ -2009,7 +2009,7 @@ proc de1_ble_handler { event data } {
 	#msg "de1 ble_handler '$event' [convert_string_to_hex $data]"
 	#set ::de1(wrote) 0
 
-	#set ::settings(ble_debug) 1
+	set ::settings(ble_debug) 0
 	if {$::settings(ble_debug) == 1} {
 		msg "ble event: $event $data"
 	}
