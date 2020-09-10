@@ -4,7 +4,7 @@ package provide de1_bluetooth
 set ::failed_attempt_count_connecting_to_de1 0
 set ::successful_de1_connection_count 0
 
-set ::acaia_command_buffer ""
+## Helper
 
 proc userdata_append {comment cmd {vital 0} } {
 	#set cmds [ble userdata $::de1(device_handle)]
@@ -18,105 +18,87 @@ proc userdata_append {comment cmd {vital 0} } {
 	run_next_userdata_cmd
 }
 
-proc read_de1_version {} {
-	catch {
-		userdata_append "read_de1_version" [list de1_ble read Version] 1
+
+proc run_next_userdata_cmd {} {
+	if {$::android == 1} {
+		# if running on android, only write one BLE command at a time
+		if {$::de1(wrote) == 1} {
+			#msg "Do not write, already writing to DE1, queue has [llength $::de1(cmdstack)] items"
+			return
+		}
 	}
-}
-
-# repeatedly request de1 state
-proc poll_de1_state {} {
-
-	msg "poll_de1_state"
-	read_de1_state
-	after 1000 poll_de1_state
-}
-
-proc read_de1_state {} {
-	if {$::android != 1} {
-		return
-	}
-	if {[catch {
-		userdata_append "read de1 state" [list de1_ble read StateInfo] 1
-	} err] != 0} {
-		msg "Failed to 'read de1 state' in DE1 BLE because: '$err'"
-	}
-}
-
-proc skale_timer_start {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
+	if {($::de1(device_handle) == "0" || $::de1(device_handle) == "1") && $::de1(scale_device_handle) == "0"} {
+		#msg "run_next_userdata_cmd error: de1 not connected"
 		return
 	}
 
+	if {$::de1(cmdstack) ne {}} {
 
-	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg "Skale not connected, cannot start timer"
-		return
-	}
+		set cmd [lindex $::de1(cmdstack) 0]
+		set cmds [lrange $::de1(cmdstack) 1 end]
+		set vital [lindex $cmd 2]
 
-	set timeron [binary decode hex "DD"]
-	userdata_append "Skale : timer start" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $timeron] 0
+		set result 0
+		msg ">>> [lindex $cmd 0] (-[llength $::de1(cmdstack)]) : [lindex $cmd 1]"
+		set eer ""
+		set errcode [catch {
+			set result [{*}[lindex $cmd 1]]
+		} eer]
 
-}
+		if {$errcode != 0} {
+			catch {
+				msg "run_next_userdata_cmd catch error: $::errorInfo"
+			}
+		}
 
+		if {$result != 1} {
 
-# cmdtype is either 0x0A for LED (cmddata 00=off, 01=on), or 0x0F for tare (cmdata = incremented char counter for each TARE use)
-proc decent_scale_calc_xor {cmdtype cmdddata} {
-	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata ^ 0x00 ^ 0x00 ^ 0x00}]]
-	msg "decent_scale_calc_xor for '$cmdtype' '$cmdddata' is '$xor'"
-	return $xor
-}
+			if {[string first "invalid handle" $::errorInfo] != -1 } {
+				msg "Not retrying this command because BLE handle for the device is now invalid"
+				#after 500 run_next_userdata_cmd
+			} elseif {$vital != 1 } {
+				msg "Not retrying this because it is not vital"
+				#after 500 run_next_userdata_cmd
+			} else {
+				if {$eer != 0} {
+					msg "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer) $::errorInfo"
+				} else {
+					msg "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer)"
+				}
 
-proc decent_scale_calc_xor4 {cmdtype cmdddata1 cmdddata2} {
-	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata1 ^ $cmdddata2 ^ 0x00 ^ 0x00}]]
-	msg "decent_scale_calc_xor4 for '$cmdtype' '$cmdddata1' '$cmdddata2' is '$xor'"
-	return $xor
-}
+				# test idea to keep scale from interference with DE1
+				#if {$::de1(scale_device_handle) != 0} {
+				#	ble abort $::de1(scale_device_handle)
+				#}
 
-proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} } {
-	msg "decent_scale_make_command $cmdtype $cmdddata $cmddata2"
-	if {$cmddata2 == ""} {
-		msg "1 part decent scale command"
-		set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]
-		#set hex2 [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x00"]}]
-		#msg "compare hex '$hex' to '$hex2'"
+				# john 4/28/18 not sure if we should give up on the command if it fails, or retry it
+				# retrying a command that will forever fail kind of kills the BLE abilities of the app
+
+				after 500 run_next_userdata_cmd
+				#update
+				return
+			}
+		}
+
+		set ::de1(cmdstack) $cmds
+		set ::de1(wrote) 1
+		set ::de1(previouscmd) [lindex $cmd 1]
+		if {[llength $::de1(cmdstack)] == 0} {
+			msg "BLE command queue is now empty"
+		}
+
+		# try the bluetooth stack in a second, in case there were no bluetooth commands succeeded
+		# and thus the queue doesn't keep getting tried
+		after 1000 run_next_userdata_cmd
+
 	} else {
-		msg "2 part decent scale command"
-		set hex [subst {03${cmdtype}${cmdddata}${cmddata2}0000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x$cmddata2"]}]
+		#msg "no userdata cmds to run"
 	}
-	msg "hex is '$hex' for '$cmdtype' '$cmdddata' '$cmddata2'"
-	return [binary decode hex $hex]
 }
 
-proc tare_counter_incr {} {
-	if {[info exists ::decent_scale_tare_counter] != 1} {
-		set ::decent_scale_tare_counter 253
-	} elseif {$::decent_scale_tare_counter >= 255} {
-		set ::decent_scale_tare_counter 0
-	} else {
-		incr ::decent_scale_tare_counter
-	}
 
-
-}
-
-proc int_to_hex {in} {
-	return [format %02X $in]
-}
-
-proc long_to_little_endian_hex {in} {
-	set i [format %04X $in]
-	#msg "i: '$i"
-	set i2 "[string range $i 2 3][string range $i 0 1]"
-	#msg "i2: '$i2"
-	return $i2
-}
-
-proc decent_scale_tare_cmd {} {
-	tare_counter_incr
-	set cmd [decent_scale_make_command "0F" [format %02X $::decent_scale_tare_counter]]
-	return $cmd
-}
+## Scales
+### Generics
 
 proc scale_enable_lcd {} {
 	if {$::settings(scale_type) == "atomaxskale"} {
@@ -124,18 +106,7 @@ proc scale_enable_lcd {} {
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_enable_lcd
 	}
- }
-
-
-proc decentscale_enable_lcd {} {
-	if {$::de1(scale_device_handle) == 0} {
-		return
-	}
-	set screenon [decent_scale_make_command 0A 01 01]
-	msg "decent scale screen on: '[convert_string_to_hex $screenon]' '$screenon'"
-	userdata_append "decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon] 0
 }
-
 
 proc scale_disable_lcd {} {
 	if {$::settings(scale_type) == "atomaxskale"} {
@@ -143,19 +114,6 @@ proc scale_disable_lcd {} {
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_disable_lcd
 	}
- }
-proc decentscale_disable_lcd {} {
-	if {$::de1(scale_device_handle) == 0} {
-		return
-	}
-	set screenoff [decent_scale_make_command 0A 00 00]
-
-	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg "decentscale not connected, cannot disable LCD"
-		return
-	}
-
-	userdata_append "decentscale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenoff] 0
 }
 
 proc scale_timer_start {} {
@@ -167,29 +125,6 @@ proc scale_timer_start {} {
 	}
 }
 
-
-proc decentscale_timer_start {} {
-	if {$::de1(scale_device_handle) == 0} {
-		return
-	}
-
-	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg "decentscale not connected, cannot start timer"
-		return
-	}
-
-	#set timerreset [decent_scale_make_command 0B 02]
-	#msg "decent scale timer reset: '$timerreset'"
-	#userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timerreset]
-
-	msg "decentscale_timer_start"
-	set timeron [decent_scale_make_command 0B 03 00]
-	msg "decent scale timer on: [convert_string_to_hex $timeron] '$timeron'"
-	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron] 0
-
-}
-
-
 proc scale_timer_stop {} {
 
 	if {$::settings(scale_type) == "atomaxskale"} {
@@ -197,29 +132,6 @@ proc scale_timer_stop {} {
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_timer_stop
 	}
-}
-
-
-proc decentscale_timer_stop {} {
-
-	if {$::de1(scale_device_handle) == 0} {
-		return
-	}
-	set tare [binary decode hex "D1"]
-
-	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg "decentscale not connected, cannot stop timer"
-		return
-	}
-
-	msg "decentscale_timer_stop"
-
-	set timeroff [decent_scale_make_command 0B 00 00]
-	msg "decent scale timer stop: '$timeroff'"
-	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
-
-	# cmd not yet implemented
-	#userdata_append "decentscale: timer stop" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare]
 }
 
 proc scale_timer_off {} {
@@ -231,23 +143,246 @@ proc scale_timer_off {} {
 	}
 }
 
-proc decentscale_timer_off {} {
+proc scale_tare {} {
 
-	if {$::de1(scale_device_handle) == 0} {
-		return
+	if {$::settings(scale_type) == "atomaxskale"} {
+		skale_tare
+	} elseif {$::settings(scale_type) == "decentscale"} {
+		decentscale_tare
+	} elseif {$::settings(scale_type) == "acaiascale"} {
+		acaia_tare
 	}
-
-	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg "decentscale not connected, cannot off timer"
-		return
-	}
-
-
-	set timeroff [decent_scale_make_command 0B 02 00]
-	msg "decent scale timer off: '$timeroff'"
-	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 }
 
+proc scale_enable_weight_notifications {} {
+
+	if {$::settings(scale_type) == "atomaxskale"} {
+		scale_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "decentscale"} {
+		decentscale_enable_notifications
+	} elseif {$::settings(scale_type) == "acaiascale"} {
+		acaia_enable_weight_notifications
+	}
+}
+
+proc scale_enable_button_notifications {} {
+
+	if {$::settings(scale_type) == "atomaxskale"} {
+		skale_enable_button_notifications
+	} elseif {$::settings(scale_type) == "decentscale"} {
+		# nothing
+	}
+}
+
+proc scale_enable_grams {} {
+
+	if {$::settings(scale_type) == "atomaxskale"} {
+		skale_enable_grams
+	} elseif {$::settings(scale_type) == "decentscale"} {
+		#nothing
+	}
+}
+
+proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
+
+	if {$sensorweight < 0 && $::de1_num_state($::de1(state)) == "Idle"} {
+
+		if {$::settings(tare_only_on_espresso_start) != 1} {
+
+			# one second after the negative weights have stopped, automatically do a tare
+			if {[info exists ::scheduled_scale_tare_id] == 1} {
+				after cancel $::scheduled_scale_tare_id
+			}
+			set ::scheduled_scale_tare_id [after 1000 scale_tare]
+		}
+	}
+
+	set multiplier1 0.95
+	if {$::de1(scale_weight) == ""} {
+		set ::de1(scale_weight) 0
+	}
+	set diff 0
+	set diff [expr {abs($::de1(scale_weight) - $sensorweight)}]
+	
+
+	#if {$::de1_num_state($::de1(state)) == "Idle"} 
+	if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)) } {
+		# john 5/11/18 hard set this to 5% weighting, until we're sure these other methods work well.
+		set multiplier1 0.95
+		#if {$diff > 10} {
+			#set multiplier1 0.90
+		#}
+	} else {
+		# no smoothing when the machine is idle or not pouring/preinfusion 
+		set multiplier1 0
+	}
+
+		#set multiplier1 0.9
+
+	#msg "sensorweight: $sensorweight / diff:$diff / multiplier1:$multiplier1"
+
+	#set multiplier1 0
+
+	set multiplier2 [expr {1.0 - $multiplier1}];
+	set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
+
+
+	# a much less smoothed, more raw weight, with lower latency
+	set multiplier1r 0.5
+	set multiplier2r [expr {1.0 - $multiplier1r}];
+	set thisrawweight [expr {1.0 * ($::de1(scale_sensor_weight) * $multiplier1r) + ($sensorweight * $multiplier2r)}]
+
+	if {$diff != 0} {
+		#msg "Diff: [round_to_two_digits $diff] - mult: [round_to_two_digits $multiplier1] - wt [round_to_two_digits $thisweight] - sen [round_to_two_digits $sensorweight]"
+	}
+
+	# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
+	set flow [expr { 1.0 * $scale_refresh_rate * ($thisweight - $::de1(scale_weight)) }]
+	set flow_raw [expr { 1.0 * $scale_refresh_rate * ($thisrawweight - $::de1(scale_sensor_weight)) }]
+
+	#set flow [expr {($::de1(scale_weight_rate) * $multiplier1) + ($tempflow * $multiplier2)}]
+	if {$flow < 0} {
+		set flow 0
+	}
+
+	set ::de1(scale_weight_rate) [round_to_two_digits $flow]
+	set ::de1(scale_weight_rate_raw) [round_to_two_digits $flow_raw]
+	
+	set ::de1(scale_weight) [round_to_two_digits $thisweight]
+	set ::de1(scale_sensor_weight) [round_to_two_digits $thisrawweight]
+	#msg "weight received: $thisweight : flow: $flow"
+
+
+	# (beta) stop shot-at-weight feature
+	if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion) || $::de1(substate) == $::de1_substate_types_reversed(ending)) } {
+		
+		if {$::de1(scale_sensor_weight) > $::de1(final_water_weight)} {
+			set ::de1(final_water_weight) $thisweight
+			set ::settings(drink_weight) [round_to_one_digits $::de1(final_water_weight)]
+		}
+
+
+
+		# john 1/18/19 support added for advanced shots stopping on weight, just like other shots
+		# john improve 5/2/19 with a separate (much higher value) weight option for advanced shots
+		set target_shot_weight $::settings(final_desired_shot_weight)
+		if {$::settings(settings_profile_type) == "settings_2c"} {
+			set target_shot_weight $::settings(final_desired_shot_weight_advanced)
+		}
+
+		if {$target_shot_weight != "" && $target_shot_weight > 0} {
+
+			# damian found:
+			# > after you hit the stop button, the remaining liquid that will end up in the cup is equal to about 2.6 seconds of the current flow rate, minus a 0.4 g adjustment
+			set lag_time_calibration [expr {$::de1(scale_weight_rate) * $::settings(stop_weight_before_seconds) }]
+
+			#msg "lag_time_calibration: $lag_time_calibration | target_shot_weight: $target_shot_weight | thisweight: $thisweight | scale_autostop_triggered: $::de1(scale_autostop_triggered) | timer: [espresso_timer]"
+
+			if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$target_shot_weight - $lag_time_calibration}]]} {	
+
+				if {[espresso_timer] < 5} {
+					# bad idea to tare during preinfusion, problem is there might not be a puck, so we remove the first 5 seconds of weight by doing this.
+					# scale_tare 
+				} else {
+					msg "Weight based Espresso stop was triggered at ${thisweight}g > ${target_shot_weight}g "
+					start_idle
+					say [translate {Stop}] $::settings(sound_button_in)
+					borg toast [translate "Espresso weight reached"]
+
+
+					# immediately set the DE1 state as if it were idle so that we don't repeatedly ask the DE1 to stop as we still get weight increases. There might be a slight delay between asking the DE1 to stop and it stopping.
+					set ::de1(scale_autostop_triggered) 1
+
+					# let a few seconds elapse after the shot stop command was given and keep updating the final shot weight number
+					for {set t 0} {$t < [expr {1000 * $::settings(seconds_after_espresso_stop_to_continue_weighing)}]} { set t [expr {$t + 1000}]} {
+						after $t after_shot_weight_hit_update_final_weight
+					}
+					}
+			}
+		}
+	} elseif {$::de1_num_state($::de1(state)) == "Espresso" && ( $::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating) )} {
+		if {$::de1(scale_weight) > 10} {
+			# if a cup was added during the warmup stage, about to make an espresso, then tare automatically
+			scale_tare
+		}
+	}
+}
+
+#### Atomax Skale
+proc skale_timer_start {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot start timer"
+		return
+	}
+
+	set timeron [binary decode hex "DD"]
+	userdata_append "Skale : timer start" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $timeron] 0
+
+}
+
+proc skale_enable_button_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot enable button notifications"
+		return
+	}
+
+
+	userdata_append "enable Skale button notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF82) $::cinstance($::de1(cuuid_skale_EF82))] 1
+}
+
+
+proc skale_enable_grams {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
+		return
+	}
+	set grams [binary decode hex "03"]
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot enable grams"
+		return
+	}
+
+	userdata_append "Skale : enable grams" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $grams] 1
+}
+
+proc skale_enable_lcd {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
+		return
+	}
+	set screenon [binary decode hex "ED"]
+	set displayweight [binary decode hex "EC"]
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot enable LCD"
+		return
+	}
+
+	userdata_append "Skale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $screenon] 0
+	userdata_append "Skale : display weight on LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $displayweight] 0
+
+}
+
+proc skale_disable_lcd {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
+		return
+	}
+	set screenoff [binary decode hex "EE"]
+
+	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
+		msg "Skale not connected, cannot disable LCD"
+		return
+	}
+
+	userdata_append "Skale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $screenoff] 0
+}
 
 proc skale_timer_stop {} {
 
@@ -279,43 +414,6 @@ proc skale_timer_off {} {
 	userdata_append "Skale: timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare] 0
 }
 
-
-
-proc scale_tare {} {
-
-	if {$::settings(scale_type) == "atomaxskale"} {
-		skale_tare
-	} elseif {$::settings(scale_type) == "decentscale"} {
-		decentscale_tare
-	} elseif {$::settings(scale_type) == "acaiascale"} {
-		acaia_tare
-	}
-}
-
-
-proc decentscale_tare {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
-		return
-	}
-	set tare [binary decode hex "10"]
-	set ::de1(scale_weight) 0
-	set ::de1(scale_weight_rate) 0
-	set ::de1(scale_weight_rate_raw) 0
-
-	# if this was a scheduled tare, indicate that the tare has completed
-	unset -nocomplain ::scheduled_scale_tare_id
-
-	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg "decent scale not connected, cannot tare"
-		return
-	}
-
-	set tare [decent_scale_tare_cmd]
-
-	userdata_append "decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare] 0
-}
-
-
 proc skale_tare {} {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
 		return
@@ -337,18 +435,6 @@ proc skale_tare {} {
 	userdata_append "Skale: tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare] 0
 }
 
-
-proc scale_enable_weight_notifications {} {
-
-	if {$::settings(scale_type) == "atomaxskale"} {
-		scale_enable_weight_notifications
-	} elseif {$::settings(scale_type) == "decentscale"} {
-		decentscale_enable_notifications
-	} elseif {$::settings(scale_type) == "acaiascale"} {
-		acaia_enable_weight_notifications
-	}
- }
-
 proc skale_enable_weight_notifications {} {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
 		return
@@ -362,18 +448,9 @@ proc skale_enable_weight_notifications {} {
 	userdata_append "enable Skale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF81) $::cinstance($::de1(cuuid_skale_EF81))] 1
 }
 
-proc decentscale_enable_notifications {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
-		return
-	}
 
-	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg "decent scale not connected, cannot enable weight notifications"
-		return
-	}
-
-	userdata_append "enable decent scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_read) $::cinstance($::de1(cuuid_decentscale_read))] 1
-}
+#### Acaia
+set ::acaia_command_buffer ""
 
 proc acaia_encode {msgType payload} {
 
@@ -470,87 +547,242 @@ proc acaia_enable_weight_notifications {} {
 	}
 
 	userdata_append "enable acaia scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age))] 1
+}
+
+proc acaia_parse_response { value } {
+
+	append ::acaia_command_buffer $value
+
+	if {[string bytelength $::acaia_command_buffer] > 4} {
+		# 0xEF
+		set HEADER1 239
+		# 0xDD
+		set HEADER2 221
+
+		binary scan $::acaia_command_buffer cucucucucuicucu \
+			h1 h2 msgtype len event_type weight unit neg
+		if { [info exists h1] && [info exists h2] && [info exists len]} {
+			if { ($h1 == $HEADER1) && ($h2 == $HEADER2) \
+				&& [info exists neg] \
+				&& $msgtype == 12 && $event_type == 5 } {
+				# we have valid data, extract it
+				set calulated_weight [expr {$weight / pow(10.0, $unit)}]
+				set is_negative [expr {$neg > 1.0}]
+				if {$is_negative} {
+					set calulated_weight [expr {$calulated_weight * -1.0}]
+				}
+				set sensorweight $calulated_weight
+				handle_new_weight_from_scale $sensorweight 10
+			}
+			if { [string bytelength $::acaia_command_buffer] >= $len } {
+				set ::acaia_command_buffer ""
+			}
+		}
+	}
+}
+
+#### Decent Scale
+
+
+# cmdtype is either 0x0A for LED (cmddata 00=off, 01=on), or 0x0F for tare (cmdata = incremented char counter for each TARE use)
+proc decent_scale_calc_xor {cmdtype cmdddata} {
+	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata ^ 0x00 ^ 0x00 ^ 0x00}]]
+	msg "decent_scale_calc_xor for '$cmdtype' '$cmdddata' is '$xor'"
+	return $xor
+}
+
+proc decent_scale_calc_xor4 {cmdtype cmdddata1 cmdddata2} {
+	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata1 ^ $cmdddata2 ^ 0x00 ^ 0x00}]]
+	msg "decent_scale_calc_xor4 for '$cmdtype' '$cmdddata1' '$cmdddata2' is '$xor'"
+	return $xor
+}
+
+proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} } {
+	msg "decent_scale_make_command $cmdtype $cmdddata $cmddata2"
+	if {$cmddata2 == ""} {
+		msg "1 part decent scale command"
+		set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]
+		#set hex2 [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x00"]}]
+		#msg "compare hex '$hex' to '$hex2'"
+	} else {
+		msg "2 part decent scale command"
+		set hex [subst {03${cmdtype}${cmdddata}${cmddata2}0000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x$cmddata2"]}]
+	}
+	msg "hex is '$hex' for '$cmdtype' '$cmdddata' '$cmddata2'"
+	return [binary decode hex $hex]
+}
+
+proc tare_counter_incr {} {
+	if {[info exists ::decent_scale_tare_counter] != 1} {
+		set ::decent_scale_tare_counter 253
+	} elseif {$::decent_scale_tare_counter >= 255} {
+		set ::decent_scale_tare_counter 0
+	} else {
+		incr ::decent_scale_tare_counter
+	}
+}
+
+proc decent_scale_tare_cmd {} {
+	tare_counter_incr
+	set cmd [decent_scale_make_command "0F" [format %02X $::decent_scale_tare_counter]]
+	return $cmd
+}
+
+proc decentscale_enable_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
+		msg "decent scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "enable decent scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_read) $::cinstance($::de1(cuuid_decentscale_read))] 1
+}
+
+proc decentscale_enable_lcd {} {
+	if {$::de1(scale_device_handle) == 0} {
+		return
+	}
+	set screenon [decent_scale_make_command 0A 01 01]
+	msg "decent scale screen on: '[convert_string_to_hex $screenon]' '$screenon'"
+	userdata_append "decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon] 0
+}
+
+proc decentscale_disable_lcd {} {
+	if {$::de1(scale_device_handle) == 0} {
+		return
+	}
+	set screenoff [decent_scale_make_command 0A 00 00]
+
+	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
+		msg "decentscale not connected, cannot disable LCD"
+		return
+	}
+
+	userdata_append "decentscale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenoff] 0
+}
+
+proc decentscale_timer_start {} {
+	if {$::de1(scale_device_handle) == 0} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
+		msg "decentscale not connected, cannot start timer"
+		return
+	}
+
+	#set timerreset [decent_scale_make_command 0B 02]
+	#msg "decent scale timer reset: '$timerreset'"
+	#userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timerreset]
+
+	msg "decentscale_timer_start"
+	set timeron [decent_scale_make_command 0B 03 00]
+	msg "decent scale timer on: [convert_string_to_hex $timeron] '$timeron'"
+	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron] 0
 
 }
 
-proc scale_enable_button_notifications {} {
+proc decentscale_timer_stop {} {
 
-	if {$::settings(scale_type) == "atomaxskale"} {
-		skale_enable_button_notifications
-	} elseif {$::settings(scale_type) == "decentscale"} {
-		# nothing
+	if {$::de1(scale_device_handle) == 0} {
+		return
 	}
- }
+	set tare [binary decode hex "D1"]
 
-proc skale_enable_button_notifications {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
+	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
+		msg "decentscale not connected, cannot stop timer"
 		return
 	}
 
-	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg "Skale not connected, cannot enable button notifications"
-		return
-	}
+	msg "decentscale_timer_stop"
 
+	set timeroff [decent_scale_make_command 0B 00 00]
+	msg "decent scale timer stop: '$timeroff'"
+	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 
-	userdata_append "enable Skale button notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF82) $::cinstance($::de1(cuuid_skale_EF82))] 1
+	# cmd not yet implemented
+	#userdata_append "decentscale: timer stop" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare]
 }
 
-proc scale_enable_grams {} {
+proc decentscale_timer_off {} {
 
-	if {$::settings(scale_type) == "atomaxskale"} {
-		skale_enable_grams
-	} elseif {$::settings(scale_type) == "decentscale"} {
-		#nothing
-	}
- }
-
-
-proc skale_enable_grams {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
-		return
-	}
-	set grams [binary decode hex "03"]
-
-	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg "Skale not connected, cannot enable grams"
+	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
 
-	userdata_append "Skale : enable grams" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $grams] 1
+	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
+		msg "decentscale not connected, cannot off timer"
+		return
+	}
+
+
+	set timeroff [decent_scale_make_command 0B 02 00]
+	msg "decent scale timer off: '$timeroff'"
+	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 }
 
-proc skale_enable_lcd {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
+proc decentscale_tare {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
 	}
-	set screenon [binary decode hex "ED"]
-	set displayweight [binary decode hex "EC"]
+	set tare [binary decode hex "10"]
+	set ::de1(scale_weight) 0
+	set ::de1(scale_weight_rate) 0
+	set ::de1(scale_weight_rate_raw) 0
 
-	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg "Skale not connected, cannot enable LCD"
+	# if this was a scheduled tare, indicate that the tare has completed
+	unset -nocomplain ::scheduled_scale_tare_id
+
+	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
+		msg "decent scale not connected, cannot tare"
 		return
 	}
 
-	userdata_append "Skale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $screenon] 0
-	userdata_append "Skale : display weight on LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $displayweight] 0
+	set tare [decent_scale_tare_cmd]
 
+	userdata_append "decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare] 0
 }
 
-proc skale_disable_lcd {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
-		return
+## DE1
+proc read_de1_version {} {
+	catch {
+		userdata_append "read_de1_version" [list de1_ble read Version] 1
 	}
-	set screenoff [binary decode hex "EE"]
-
-	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg "Skale not connected, cannot disable LCD"
-		return
-	}
-
-	userdata_append "Skale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $screenoff] 0
 }
 
+# repeatedly request de1 state
+proc poll_de1_state {} {
+
+	msg "poll_de1_state"
+	read_de1_state
+	after 1000 poll_de1_state
+}
+
+proc read_de1_state {} {
+	if {$::android != 1} {
+		return
+	}
+	if {[catch {
+		userdata_append "read de1 state" [list de1_ble read StateInfo] 1
+	} err] != 0} {
+		msg "Failed to 'read de1 state' in DE1 BLE because: '$err'"
+	}
+}
+
+proc int_to_hex {in} {
+	return [format %02X $in]
+}
+
+proc long_to_little_endian_hex {in} {
+	set i [format %04X $in]
+	#msg "i: '$i"
+	set i2 "[string range $i 2 3][string range $i 0 1]"
+	#msg "i2: '$i2"
+	return $i2
+}
 
 # calibration change notifications ENABLE
 proc de1_enable_calibration_notifications {} {
@@ -1091,88 +1323,6 @@ proc de1_send_waterlevel_settings {} {
 	set data [return_de1_packed_waterlevel_settings]
 	parse_binary_water_level $data arr2
 	userdata_append "Set water level settings: [array get arr2]" [list de1_ble write "WaterLevels" $data] 1
-}
-
-
-proc run_next_userdata_cmd {} {
-	if {$::android == 1} {
-		# if running on android, only write one BLE command at a time
-		if {$::de1(wrote) == 1} {
-			#msg "Do not write, already writing to DE1, queue has [llength $::de1(cmdstack)] items"
-			return
-		}
-	}
-	if {($::de1(device_handle) == "0" || $::de1(device_handle) == "1") && $::de1(scale_device_handle) == "0"} {
-		#msg "run_next_userdata_cmd error: de1 not connected"
-		return
-	}
-
-	if {$::de1(cmdstack) ne {}} {
-
-		set cmd [lindex $::de1(cmdstack) 0]
-		set cmds [lrange $::de1(cmdstack) 1 end]
-		set vital [lindex $cmd 2]
-
-		set result 0
-		msg ">>> [lindex $cmd 0] (-[llength $::de1(cmdstack)]) : [lindex $cmd 1]"
-		set eer ""
-		set errcode [catch {
-			set result [{*}[lindex $cmd 1]]
-		} eer]
-
-		if {$errcode != 0} {
-			catch {
-				msg "run_next_userdata_cmd catch error: $::errorInfo"
-			}
-		}
-
-
-
-		if {$result != 1} {
-
-			if {[string first "invalid handle" $::errorInfo] != -1 } {
-				msg "Not retrying this command because BLE handle for the device is now invalid"
-				#after 500 run_next_userdata_cmd
-			} elseif {$vital != 1 } {
-				msg "Not retrying this because it is not vital"
-				#after 500 run_next_userdata_cmd
-			} else {
-				if {$eer != 0} {
-					msg "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer) $::errorInfo"
-				} else {
-					msg "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer)"
-				}
-
-				# test idea to keep scale from interference with DE1
-				#if {$::de1(scale_device_handle) != 0} {
-				#	ble abort $::de1(scale_device_handle)
-				#}
-
-
-				# john 4/28/18 not sure if we should give up on the command if it fails, or retry it
-				# retrying a command that will forever fail kind of kills the BLE abilities of the app
-
-				after 500 run_next_userdata_cmd
-				#update
-				return
-			}
-		}
-
-
-		set ::de1(cmdstack) $cmds
-		set ::de1(wrote) 1
-		set ::de1(previouscmd) [lindex $cmd 1]
-		if {[llength $::de1(cmdstack)] == 0} {
-			msg "BLE command queue is now empty"
-		}
-
-		# try the bluetooth stack in a second, in case there were no bluetooth commands succeeded
-		# and thus the queue doesn't keep getting tried
-		after 1000 run_next_userdata_cmd
-
-	} else {
-		#msg "no userdata cmds to run"
-	}
 }
 
 proc close_all_ble_and_exit {} {
@@ -1847,164 +1997,6 @@ proc de1_ble {action command_name {data ""}} {
 	}
 }
 
-proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
-
-	if {$sensorweight < 0 && $::de1_num_state($::de1(state)) == "Idle"} {
-
-		if {$::settings(tare_only_on_espresso_start) != 1} {
-
-			# one second after the negative weights have stopped, automatically do a tare
-			if {[info exists ::scheduled_scale_tare_id] == 1} {
-				after cancel $::scheduled_scale_tare_id
-			}
-			set ::scheduled_scale_tare_id [after 1000 scale_tare]
-		}
-	}
-
-	set multiplier1 0.95
-	if {$::de1(scale_weight) == ""} {
-		set ::de1(scale_weight) 0
-	}
-	set diff 0
-	set diff [expr {abs($::de1(scale_weight) - $sensorweight)}]
-	
-
-	#if {$::de1_num_state($::de1(state)) == "Idle"} 
-	if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)) } {
-		# john 5/11/18 hard set this to 5% weighting, until we're sure these other methods work well.
-		set multiplier1 0.95
-		#if {$diff > 10} {
-			#set multiplier1 0.90
-		#}
-	} else {
-		# no smoothing when the machine is idle or not pouring/preinfusion 
-		set multiplier1 0
-	}
-
-		#set multiplier1 0.9
-
-	#msg "sensorweight: $sensorweight / diff:$diff / multiplier1:$multiplier1"
-
-	#set multiplier1 0
-
-	set multiplier2 [expr {1.0 - $multiplier1}];
-	set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
-
-
-	# a much less smoothed, more raw weight, with lower latency
-	set multiplier1r 0.5
-	set multiplier2r [expr {1.0 - $multiplier1r}];
-	set thisrawweight [expr {1.0 * ($::de1(scale_sensor_weight) * $multiplier1r) + ($sensorweight * $multiplier2r)}]
-
-	if {$diff != 0} {
-		#msg "Diff: [round_to_two_digits $diff] - mult: [round_to_two_digits $multiplier1] - wt [round_to_two_digits $thisweight] - sen [round_to_two_digits $sensorweight]"
-	}
-
-	# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
-	set flow [expr { 1.0 * $scale_refresh_rate * ($thisweight - $::de1(scale_weight)) }]
-	set flow_raw [expr { 1.0 * $scale_refresh_rate * ($thisrawweight - $::de1(scale_sensor_weight)) }]
-
-	#set flow [expr {($::de1(scale_weight_rate) * $multiplier1) + ($tempflow * $multiplier2)}]
-	if {$flow < 0} {
-		set flow 0
-	}
-
-	set ::de1(scale_weight_rate) [round_to_two_digits $flow]
-	set ::de1(scale_weight_rate_raw) [round_to_two_digits $flow_raw]
-	
-	set ::de1(scale_weight) [round_to_two_digits $thisweight]
-	set ::de1(scale_sensor_weight) [round_to_two_digits $thisrawweight]
-	#msg "weight received: $thisweight : flow: $flow"
-
-
-	# (beta) stop shot-at-weight feature
-	if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion) || $::de1(substate) == $::de1_substate_types_reversed(ending)) } {
-		
-		if {$::de1(scale_sensor_weight) > $::de1(final_water_weight)} {
-			set ::de1(final_water_weight) $thisweight
-			set ::settings(drink_weight) [round_to_one_digits $::de1(final_water_weight)]
-		}
-
-
-
-		# john 1/18/19 support added for advanced shots stopping on weight, just like other shots
-		# john improve 5/2/19 with a separate (much higher value) weight option for advanced shots
-		set target_shot_weight $::settings(final_desired_shot_weight)
-		if {$::settings(settings_profile_type) == "settings_2c"} {
-			set target_shot_weight $::settings(final_desired_shot_weight_advanced)
-		}
-
-		if {$target_shot_weight != "" && $target_shot_weight > 0} {
-
-			# damian found:
-			# > after you hit the stop button, the remaining liquid that will end up in the cup is equal to about 2.6 seconds of the current flow rate, minus a 0.4 g adjustment
-			set lag_time_calibration [expr {$::de1(scale_weight_rate) * $::settings(stop_weight_before_seconds) }]
-
-			#msg "lag_time_calibration: $lag_time_calibration | target_shot_weight: $target_shot_weight | thisweight: $thisweight | scale_autostop_triggered: $::de1(scale_autostop_triggered) | timer: [espresso_timer]"
-
-			if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$target_shot_weight - $lag_time_calibration}]]} {	
-
-				if {[espresso_timer] < 5} {
-					# bad idea to tare during preinfusion, problem is there might not be a puck, so we remove the first 5 seconds of weight by doing this.
-					# scale_tare 
-				} else {
-					msg "Weight based Espresso stop was triggered at ${thisweight}g > ${target_shot_weight}g "
-					start_idle
-					say [translate {Stop}] $::settings(sound_button_in)
-					borg toast [translate "Espresso weight reached"]
-
-
-					# immediately set the DE1 state as if it were idle so that we don't repeatedly ask the DE1 to stop as we still get weight increases. There might be a slight delay between asking the DE1 to stop and it stopping.
-					set ::de1(scale_autostop_triggered) 1
-
-					# let a few seconds elapse after the shot stop command was given and keep updating the final shot weight number
-					for {set t 0} {$t < [expr {1000 * $::settings(seconds_after_espresso_stop_to_continue_weighing)}]} { set t [expr {$t + 1000}]} {
-						after $t after_shot_weight_hit_update_final_weight
-					}
-					}
-			}
-		}
-	} elseif {$::de1_num_state($::de1(state)) == "Espresso" && ( $::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating) )} {
-		if {$::de1(scale_weight) > 10} {
-			# if a cup was added during the warmup stage, about to make an espresso, then tare automatically
-			scale_tare
-		}
-	}
-
-}
-
-proc acaia_parse_response { value } {
-
-	append ::acaia_command_buffer $value
-
-	if {[string bytelength $::acaia_command_buffer] > 4} {
-		# 0xEF
-		set HEADER1 239
-		# 0xDD
-		set HEADER2 221
-
-		binary scan $::acaia_command_buffer cucucucucuicucu \
-			h1 h2 msgtype len event_type weight unit neg
-		if { [info exists h1] && [info exists h2] && [info exists len]} {
-			if { ($h1 == $HEADER1) && ($h2 == $HEADER2) \
-				&& [info exists neg] \
-				&& $msgtype == 12 && $event_type == 5 } {
-				# we have valid data, extract it
-				set calulated_weight [expr {$weight / pow(10.0, $unit)}]
-				set is_negative [expr {$neg > 1.0}]
-				if {$is_negative} {
-					set calulated_weight [expr {$calulated_weight * -1.0}]
-				}
-				set sensorweight $calulated_weight
-				handle_new_weight_from_scale $sensorweight 10
-			}
-			if { [string bytelength $::acaia_command_buffer] >= $len } {
-				set ::acaia_command_buffer ""
-			}
-		}
-	}
-}
-
 proc de1_ble_handler { event data } {
 	#msg "de1 ble_handler '$event' [convert_string_to_hex $data]"
 	#set ::de1(wrote) 0
@@ -2070,10 +2062,14 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_scale
 						}
 					}
-				} elseif {[string first "ACAIA" $name] != -1 \
-					|| [string first "LUNAR" $name]	!= -1 \
-					|| [string first "PROCH" $name]	!= -1 } {
-					append_to_scale_bluetooth_list $address "acaiascale"
+ 				} elseif {[string first "ACAIA" $name] != -1 \
+ 					|| [string first "LUNAR" $name]    != -1 \
+ 					|| [string first "PROCH" $name]    != -1 } {
+
+					if { [string first "PROCH" $name] != -1 } {
+						set ::settings(force_acaia_heartbeat) 1
+					}
+ 					append_to_scale_bluetooth_list $address "acaiascale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
