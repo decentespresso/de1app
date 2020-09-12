@@ -581,27 +581,32 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		#}
 
 	add_de1_text "firmware_update_1" 40 20 -text [translate "Turn your DE1 off"] -font Helv_16_bold -width 1200 -fill "#444444" -anchor "nw" -justify "left" 
-		add_de1_text "firmware_update_1" 40 1500 -text "[translate "Firmware Update"] 1/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
+		add_de1_text "firmware_update_1" 40 1500 -text "[translate "Firmware Update"] - [translate "Page"] 1/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
+
+		add_de1_text "firmware_update_1" 40 1300 -text [translate "Your DE1 will need to reboot in a special way to have its firmware updated."] -font Helv_10 -width 600 -fill "#444444" -anchor "nw" -justify "left" 
+
 		add_de1_text "firmware_update_1" 2290 1508 -text [translate "Cancel"] -font Helv_10_bold -fill "#DDDDDD" -anchor "center"
 		add_de1_button "firmware_update_1" {say [translate {Cancel}] $::settings(sound_button_in); set ::de1(in_fw_update_mode) 0; page_to_show_when_off settings_3;} 1960 1200 2560 1600 ""
 		add_de1_variable "firmware_update_1" 2030 300 -text "" -font Helv_16_bold -fill "#222222" -anchor "center" -width [rescale_y_skin 700] -justify "center" -textvariable {[if {$::de1(device_handle) == 0} { page_show firmware_update_2; }; return ""]}
 
 	add_de1_text "firmware_update_2" 40 20 -text [translate "Turn your DE1 on"] -font Helv_16_bold -width 1200 -fill "#444444" -anchor "nw" -justify "left" 
-		add_de1_text "firmware_update_2" 40 1500 -text "[translate "Firmware Update"] 2/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
+		add_de1_text "firmware_update_2" 40 1500 -text "[translate "Firmware Update"] - [translate "Page"]  2/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
 		add_de1_text "firmware_update_2" 2290 1508 -text [translate "Cancel"] -font Helv_10_bold -fill "#DDDDDD" -anchor "center"
 		add_de1_button "firmware_update_2" {say [translate {Cancel}] $::settings(sound_button_in); app_exit} 1960 1200 2560 1600 ""
 		add_de1_variable "firmware_update_2" 40 120 -text [translate "It can take one minute to start"] -font Helv_8 -fill "#222222" -anchor "nw" -width [rescale_y_skin 900] -justify "left" -textvariable {[if {$::de1(device_handle) != 0} { start_firmware_update; disable_de1_reconnect; page_show firmware_update_3}; return [translate "It can take one minute to start"]]}
 
 	add_de1_variable "firmware_update_3" 40 20 -text "" -font Helv_16_bold -width 1200 -fill "#444444" -anchor "nw" -justify "left" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]} 
-		add_de1_text "firmware_update_3" 40 1500 -text "[translate "Firmware Update"] 3/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
+		add_de1_text "firmware_update_3" 40 1500 -text "[translate "Firmware Update"] - [translate "Page"]  3/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
 		add_de1_text "firmware_update_3" 2290 1508 -text [translate "Cancel"] -font Helv_10_bold -fill "#DDDDDD" -anchor "center"
 		add_de1_button "firmware_update_3" {say [translate {Exit}] $::settings(sound_button_in); app_exit} 1960 1200 2560 1600 ""
 		add_de1_variable "firmware_update_3" 730 700 -text "" -font Helv_10 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[if {$::de1(currently_erasing_firmware) != 1 && $::de1(currently_updating_firmware) != 1} {page_show firmware_update_4}; return [firmware_uploaded_label]]} 
 		add_de1_variable "firmware_update_3" 730 750 -text "" -font Helv_10 -fill "#222222" -anchor "ne" -width [rescale_y_skin 700] -justify "right" -textvariable {[firmware_update_eta_label]} 
 
 	add_de1_text "firmware_update_4" 40 20 -text [translate "Turn your DE1 off"] -font Helv_16_bold -width 1200 -fill "#444444" -anchor "nw" -justify "left" 
-		add_de1_variable "firmware_update_4" 40 1400 -text "" -font Helv_10 -width 1200 -fill "#444444" -anchor "nw" -justify "left" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]} 
-		add_de1_text "firmware_update_4" 40 1500 -text "[translate "Firmware Update"] 4/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
+		
+		#add_de1_variable "firmware_update_4" 40 1400 -text "" -font Helv_10 -width 1200 -fill "#444444" -anchor "nw" -justify "left" -textvariable {[check_firmware_update_is_available][translate $::de1(firmware_update_button_label)]} 
+		add_de1_text "firmware_update_4" 40 1400 -text [translate "Your DE1 firmware is now ready to be applied"] -font Helv_10 -width 1200 -fill "#444444" -anchor "nw" -justify "left" 
+		add_de1_text "firmware_update_4" 40 1500 -text "[translate "Firmware Update"] - [translate "Page"]  4/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
 		add_de1_text "firmware_update_4" 2290 1508 -text [translate "Cancel"] -font Helv_10_bold -fill "#DDDDDD" -anchor "center"
 		add_de1_button "firmware_update_4" {say [translate {Exit}] $::settings(sound_button_in); app_exit} 1960 1200 2560 1600 ""
 		#add_de1_variable "firmware_update_5" 60 120 -text "" -font Helv_10_bold -fill "#222222" -anchor "nw" -width [rescale_y_skin 700] -justify "left" -textvariable {[if {$::de1(currently_updating_firmware) == 0} { page_show firmware_update_5 }; return [firmware_uploaded_label]]} 
@@ -609,7 +614,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		add_de1_variable "firmware_update_4" 2030 300 -text "" -font Helv_16_bold -fill "#222222" -anchor "center" -width [rescale_y_skin 700] -justify "center" -textvariable {[if {$::de1(device_handle) == 0} { after 120000 enable_de1_reconnect; page_show firmware_update_5; }; return ""]}
 
 	add_de1_text "firmware_update_5" 40 20 -text [translate "Turn your DE1 on"] -font Helv_16_bold -width 1200 -fill "#444444" -anchor "nw" -justify "left" 
-		add_de1_text "firmware_update_5" 40 1500 -text "[translate "Firmware Update"] 5/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
+		add_de1_text "firmware_update_5" 40 1500 -text "[translate "Firmware Update"] - [translate "Page"]  5/5" -font Helv_12_bold -fill "#888888" -anchor "nw" -justify "left"
 		add_de1_text "firmware_update_5" 2290 1508 -text [translate "Exit"] -font Helv_10_bold -fill "#DDDDDD" -anchor "center"
 		add_de1_button "firmware_update_5" {say [translate {Cancel}] $::settings(sound_button_in); app_exit} 1960 1200 2560 1600 ""
 		add_de1_variable "firmware_update_5" 40 120 -text [translate "Please be patient. It can take several minutes for your DE1 to update."] -font Helv_8 -fill "#222222" -anchor "nw" -width [rescale_y_skin 840] -justify "left" -textvariable {[if {$::de1(device_handle) != 0} { app_exit }; return [translate "Please be patient. It can take several minutes for your DE1 to update."]]}
