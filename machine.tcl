@@ -794,6 +794,14 @@ proc reset_gui_starting_hotwater {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	incr ::settings(water_count)
+
+	if {$::de1(scale_device_handle) != 0} {
+		# this variable prevents the stop trigger from happening until the Tare has succeeded.
+		set ::de1(scale_autostop_triggered) 1
+		scale_tare
+		scale_timer_off
+	}
+	
 	save_settings
 
 }

@@ -1054,12 +1054,8 @@ proc waterweight_text {} {
 }
 
 proc waterweight_label_text {} {
-	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
+	if {[ifexists ::settings(scale_bluetooth_address)] == ""} {
 		return ""
-	}
-
-	if {$::android == 0} {
-		return [translate "Weight"]
 	}
 
 	if {$::de1(scale_device_handle) == "0"} {

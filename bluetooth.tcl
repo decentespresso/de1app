@@ -261,8 +261,6 @@ proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
 			set ::settings(drink_weight) [round_to_one_digits $::de1(final_water_weight)]
 		}
 
-
-
 		# john 1/18/19 support added for advanced shots stopping on weight, just like other shots
 		# john improve 5/2/19 with a separate (much higher value) weight option for advanced shots
 		set target_shot_weight $::settings(final_desired_shot_weight)
@@ -300,10 +298,32 @@ proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
 					}
 			}
 		}
-	} elseif {$::de1_num_state($::de1(state)) == "Espresso" && ( $::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating) )} {
+	} elseif { ( $::de1_num_state($::de1(state)) == "Espresso" || $::de1_num_state($::de1(state)) == "HotWater" ) && ( $::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating) )} {
 		if {$::de1(scale_weight) > 10} {
 			# if a cup was added during the warmup stage, about to make an espresso, then tare automatically
 			scale_tare
+		}
+	} elseif { $::de1_num_state($::de1(state)) == "HotWater" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion) || $::de1(substate) == $::de1_substate_types_reversed(ending)) } {
+		# "hot water: stop on weight" feature. Works with the scale, so it's more accurate.
+		# lets assume clean, filtered delicious water actually has a density of 1
+
+		# ignore first few seconds of pour as it can generate a lot of noise on the scale and trigger a false stop
+		if {[water_pour_timer] > 2.5} {
+			set water_offset_calibration  1.0
+			set target_water_weight [expr {$::settings(water_volume) - $water_offset_calibration}]
+			set current_calibrated_water_weight [round_to_one_digits $target_water_weight ]
+			set current_water_weight [round_to_one_digits $thisweight]
+
+			msg "target_water_weight = $target_water_weight, current_weight = $current_water_weight current_calibrated_water_weight = $current_calibrated_water_weight"
+			if {$::de1(scale_autostop_triggered) == 0 \
+				&&  $current_water_weight > $current_calibrated_water_weight } {
+					msg "Weight based Hot Water stop was triggered at ${thisweight}g > ${target_water_weight}g "
+					start_idle
+					say [translate {Stop}] $::settings(sound_button_in)
+					borg toast [translate "Water weight reached"]
+					set ::de1(scale_autostop_triggered) 1
+					#load_settings
+			}
 		}
 	}
 }
@@ -1724,16 +1744,12 @@ proc bluetooth_connect_to_devices {} {
 	if {$::settings(scale_bluetooth_address) != ""} {
 
 		if {[android_8_or_newer] == 1} {
-			ble_connect_to_scale
+			#ble_connect_to_scale
 		} else {
-			after 3000 ble_connect_to_scale
+			#after 3000 ble_connect_to_scale
 		}
-			#after 3000 [list userdata_append "connect to scale" ble_connect_to_scale]
-
-		#after 3000 ble_connect_to_scale
 	}
 
-#		ble_connect_to_scale
 }
 
 
@@ -1825,10 +1841,10 @@ proc ble_connect_to_scale {} {
 		return
 	}
 
-	if {[ifexists ::currently_connecting_de1_handle] != 0} {
-		msg "Already connecting to scale, don't try again"
-		return
-	}
+	#if {[ifexists ::currently_connecting_de1_handle] != 0} {
+		#msg "Currently connecting to DE1, don't try to connect to the scale right now"
+		#return
+	#}
 
 
 	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
@@ -1866,16 +1882,6 @@ proc ble_connect_to_scale {} {
 			}
 
 		}
-	}
-
-	if {$::de1(device_handle) == 0} {
-		#msg "No DE1 connected, so delay connecting to scale"
-		#after 1000 ble_connect_to_scale
-		#return
-	}
-
-	catch {
-		#ble unpair $::settings(scale_bluetooth_address)
 	}
 
 	if {[catch {
@@ -2088,12 +2094,21 @@ proc de1_ble_handler { event data } {
 
 						set ::de1(wrote) 0
 						set ::de1(cmdstack) {}
-						if {$::de1(device_handle) != 0} {
-							ble close $::de1(device_handle)
-						}
+
+						# close the associated handle
+						ble close $handle
+
+						# this should no longer be necessary since we're now explicitly closing the BLE handle associated with this disconnection notice
+						#if {$::de1(device_handle) != 0} {
+						#	ble close $::de1(device_handle)
+						#}
 
 						catch {
-							ble close $::currently_connecting_de1_handle
+							# this should no longer be necessary since we're now explicitly closing the BLE handle associated with this disconnection notice
+							if {$handle != $::currently_connecting_de1_handle} {
+								msg "Disconnected handle is not currently_connecting_de1_handle - closing it now though, something might not be right"
+								ble close $::currently_connecting_de1_handle
+							}
 						}
 
 						set ::currently_connecting_de1_handle 0
@@ -2127,9 +2142,9 @@ proc de1_ble_handler { event data } {
 
 						set ::de1(wrote) 0
 						msg "$::settings(scale_type) disconnected $data"
-						catch {
+						#catch {
 							ble close $handle
-						}
+						#}
 
 						# if the skale connection closed in the currentl one, then reset it
 						if {$handle == $::de1(scale_device_handle)} {
@@ -2241,6 +2256,9 @@ proc de1_ble_handler { event data } {
 
 						set ::de1(wrote) 0
 						set ::de1(scale_device_handle) $handle
+
+						# resend the hotwater settings, because now we can stop on weight
+						after 7000 de1_send_steam_hotwater_settings
 
 						msg "scale '$::settings(scale_type)' connected $::de1(scale_device_handle) $handle - $event $data"
 						if {$::settings(scale_type) == ""} {
@@ -2370,7 +2388,7 @@ proc de1_ble_handler { event data } {
 							parse_binary_mmr_read_int $value arr2
 
 
-							msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
+							msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr] : [array get arr2]"
 
 							if {$mmr_id == "80381C"} {
 								msg "Read: GHC is installed: '$mmr_val'"
