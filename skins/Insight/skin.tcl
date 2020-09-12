@@ -929,6 +929,7 @@ add_de1_text "water_3" 1070 250 -text [translate "2) Hot water will pour"] -font
 
 
 if {$::settings(scale_bluetooth_address) != ""} {
+	# hot water - stop on weight, optional feature when scale is connected
 	add_de1_text "water_1" 300 1300  -text [translate "WEIGHT"] -font Helv_7 -fill "#7f879a" -anchor "center" 
 	add_de1_variable "water_1" 300 1250 -text "" -font Helv_10_bold -fill "#2d3046" -anchor "center"  -textvariable {[return_weight_measurement $::settings(water_volume)]}
 } else {
