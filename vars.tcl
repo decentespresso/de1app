@@ -3075,6 +3075,16 @@ proc minutes_text {num} {
 	}
 }
 
+proc days_text {num} {
+	if {$num == 0} {
+		return [translate "immediately"]
+	} elseif {$num == 30} {
+		return [translate "One month"]
+	} else {
+		return [subst {$num [translate "days"]}]
+	}
+}
+
 proc scentone_choice {english_aroma} {
 	if {[lsearch -exact $::settings(scentone) $english_aroma] == -1} {
 		return [translate $english_aroma]
