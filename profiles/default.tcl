@@ -3,9 +3,9 @@ espresso_temperature_steps_enabled 1
 author Decent
 espresso_hold_time 4
 preinfusion_time 20
-espresso_pressure 12.0
+espresso_pressure 8.6
 espresso_decline_time 35
-pressure_end 10.0
+pressure_end 6.0
 espresso_temperature 90.0
 espresso_temperature_0 90.0
 espresso_temperature_1 88.0
@@ -30,7 +30,7 @@ final_desired_shot_volume_advanced 0
 preinfusion_guarantee 0
 profile_title Default
 profile_language en
-preinfusion_stop_pressure 11.0
+preinfusion_stop_pressure 4.0
 profile_hide 0
 final_desired_shot_volume_advanced_count_start 0
 
