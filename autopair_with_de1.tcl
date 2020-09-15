@@ -10,6 +10,7 @@ package require http 2.5
 package require tls 1.6
 ::http::register https 443 ::tls::socket
 
+source de1_comms.tcl
 source bluetooth.tcl
 source utils.tcl
 #source gui.tcl

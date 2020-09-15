@@ -107,6 +107,7 @@ proc make_de1_dir {} {
         translation.tcl *
         de1plus.tcl *
         de1.tcl *
+        de1_comms.tcl *
         gui.tcl *
         machine.tcl *
         utils.tcl *
