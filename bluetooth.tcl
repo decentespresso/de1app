@@ -1238,49 +1238,7 @@ proc de1_ble_handler { event data } {
 					if {$address == $::settings(bluetooth_address)} {
 						# fall back to scanning
 
-						set ::de1(wrote) 0
-						set ::de1(cmdstack) {}
-
-						# close the associated handle
-						ble close $handle
-
-						# this should no longer be necessary since we're now explicitly closing the BLE handle associated with this disconnection notice
-						#if {$::de1(device_handle) != 0} {
-						#	ble close $::de1(device_handle)
-						#}
-
-						catch {
-							# this should no longer be necessary since we're now explicitly closing the BLE handle associated with this disconnection notice
-							if {$handle != $::currently_connecting_de1_handle} {
-								msg "Disconnected handle is not currently_connecting_de1_handle - closing it now though, something might not be right"
-								ble close $::currently_connecting_de1_handle
-							}
-						}
-
-						set ::currently_connecting_de1_handle 0
-
-						msg "de1 disconnected"
-						set ::de1(device_handle) 0
-
-						# temporarily disable this feature as it's not clear that it's needed.
-						#set ::settings(max_ble_connect_attempts) 99999999
-						set ::settings(max_ble_connect_attempts) 10
-
-						incr ::failed_attempt_count_connecting_to_de1
-						if {$::failed_attempt_count_connecting_to_de1 > $::settings(max_ble_connect_attempts) && $::successful_de1_connection_count > 0} {
-							# if we have previously been connected to a DE1 but now can't connect, then make the UI go to Sleep
-							# and we'll try again to reconnect when the user taps the screen to leave sleep mode
-
-							# set this to zero so that when we come back from sleep we try several times to connect
-							set ::failed_attempt_count_connecting_to_de1 0
-
-							update_de1_state "$::de1_state(Sleep)\x0"
-						} else {
-
-							if {[ifexists ::de1(disable_de1_reconnect)] != 1} {
-								ble_connect_to_de1
-							}
-						}
+						de1_disconnect_handler $handle
 
 					} elseif {$address == $::settings(scale_bluetooth_address)} {
 
@@ -1340,55 +1298,8 @@ proc de1_ble_handler { event data } {
 					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
 						msg "de1 connected $event $data"
 
-						if {$::settings(scale_bluetooth_address) != ""} {
-							ble_connect_to_scale
-						}
 
-
-						incr ::successful_de1_connection_count
-						set ::failed_attempt_count_connecting_to_de1 0
-
-
-						set ::de1(wrote) 0
-						set ::de1(cmdstack) {}
-						#set ::de1(found) 1
-						set ::de1(connect_time) [clock seconds]
-						set ::de1(last_ping) [clock seconds]
-						set ::currently_connecting_de1_handle 0
-
-						#msg "Connected to DE1"
-						set ::de1(device_handle) $handle
-						append_to_de1_bluetooth_list $address
-						#return
-
-
-						#msg "connected to de1 with handle $handle"
-
-						if {[ifexists ::de1(in_fw_update_mode)] == 1} {
-							msg "in_fw_update_mode : de1 connected"
-
-							msg "Tell DE1 to start to go to SLEEP (so it's asleep during firmware upgrade)"
-							de1_send_state "go to sleep" $::de1_state(Sleep)
-							set_fan_temperature_threshold 60
-						} else {
-							de1_enable_mmr_notifications
-
-							set dothis 1
-							if {$dothis == 1} {
-								de1_enable_temp_notifications
-
-								if {[info exists ::de1(first_connection_was_made)] != 1} {
-									# on app startup, wake the machine up
-									set ::de1(first_connection_was_made) 1
-									start_idle
-								}
-
-								read_de1_state
-							}
-
-							read_de1_version
-
-						}
+						de1_connect_handler $handle $address
 
 						if {$::de1(scale_device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning (or if there is not scale to connect to and we're connected to the de1)
@@ -1504,7 +1415,12 @@ proc de1_ble_handler { event data } {
 						#de1_ble_new_value $cuuid $value
 						# change notification or read request
 						#de1_ble_new_value $cuuid $value
-
+						if {$suuid eq $::de1(suuid) \
+							&& [info exists ::de1_cuuids_to_command_names($cuuid)]} {
+							eval set command_name $::de1_cuuids_to_command_names($cuuid)
+							de1_event_handler $command_name [dict get $data value]
+							return
+						}
 
 						if {$cuuid eq $::de1(cuuid_0D)} {
 							set ::de1(last_ping) [clock seconds]

@@ -125,6 +125,348 @@ proc de1_comm {action command_name {data 0}} {
 	}
 }
 
+### Handler
+proc de1_connect_handler { handle address } {
+
+	if {$::settings(scale_bluetooth_address) != ""} {
+		ble_connect_to_scale
+	}
+
+	incr ::successful_de1_connection_count
+	set ::failed_attempt_count_connecting_to_de1 0
+
+	set ::de1(wrote) 0
+	set ::de1(cmdstack) {}
+	set ::de1(connect_time) [clock seconds]
+	set ::de1(last_ping) [clock seconds]
+	set ::currently_connecting_de1_handle 0
+
+	#msg "Connected to DE1"
+	set ::de1(device_handle) $handle
+	append_to_de1_bluetooth_list $address
+
+
+	#msg "connected to de1 with handle $handle"
+
+	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
+		msg "in_fw_update_mode : de1 connected"
+
+		msg "Tell DE1 to start to go to SLEEP (so it's asleep during firmware upgrade)"
+		de1_send_state "go to sleep" $::de1_state(Sleep)
+		set_fan_temperature_threshold 60
+	} else {
+		de1_enable_mmr_notifications
+
+		set dothis 1
+		if {$dothis == 1} {
+			de1_enable_temp_notifications
+
+			if {[info exists ::de1(first_connection_was_made)] != 1} {
+				# on app startup, wake the machine up
+				set ::de1(first_connection_was_made) 1
+				start_idle
+			}
+
+			read_de1_state
+		}
+
+		read_de1_version
+
+	}
+}
+
+proc de1_event_handler { command_name value } {
+	set previous_wrote 0
+	set previous_wrote [ifexists ::de1(wrote)]
+
+	error "Got de1_event_handler command: $command_name"
+
+	#msg "Received from DE1: '[remove_null_terminator $value]'"
+	# change notification or read request
+	#de1_comm_new_value $cuuid $value
+	# change notification or read request
+	#de1_comm_new_value $cuuid $value
+
+	if {$command_name eq "ShotSample"} {
+		set ::de1(last_ping) [clock seconds]
+		set results [update_de1_shotvalue $value]
+		#msg "Shotvalue received: $results"
+		#set ::de1(wrote) 0
+		#run_next_userdata_cmd
+		set do_this 0
+		if {$do_this == 1} {
+			# this tries to handle bad write situations, but it might have side effects if it is not working correctly.
+			# probably this should be adding a command to the top of the write queue
+			if {$previous_wrote == 1} {
+				msg "bad write reported"
+				{*}$::de1(previouscmd)
+				set ::de1(wrote) 1
+				return
+			}
+		}
+	} elseif {$command_name eq "ReadFromMMR"} {
+		# MMR read
+		msg "MMR recv read: '[convert_string_to_hex $value]'"
+
+		parse_binary_mmr_read $value arr
+		set mmr_id $arr(Address)
+		set mmr_val [ifexists arr(Data0)]
+
+		parse_binary_mmr_read_int $value arr2
+
+		msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
+
+		if {$mmr_id == "80381C"} {
+			msg "Read: GHC is installed: '$mmr_val'"
+			set ::settings(ghc_is_installed) $mmr_val
+
+			if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2} {
+				# if the GHC is present but not active, check back every 10 minutes to see if its status has changed
+				# this is only relevant if the machine is in a debug GHC mode, where the DE1 acts as if the GHC
+				# is not there until it is touched. This allows the tablet to start operations.  If (or once) the GHC is
+				# enabled, only the GHC can start operations.
+				after 600000 get_ghc_is_installed
+			}
+
+		} elseif {$mmr_id == "803808"} {
+			set ::de1(fan_threshold) $mmr_val
+			set ::settings(fan_threshold) $mmr_val
+			msg "MMRead: Fan threshold: '$mmr_val'"
+		} elseif {$mmr_id == "80380C"} {
+			msg "MMRead: tank temperature threshold: '$mmr_val'"
+			set ::de1(tank_temperature_threshold) $mmr_val
+		} elseif {$mmr_id == "803820"} {
+			msg "MMRead: group head control mode: '$mmr_val'"
+			set ::settings(ghc_mode) $mmr_val
+		} elseif {$mmr_id == "803828"} {
+			msg "MMRead: steam flow: '$mmr_val'"
+			set ::settings(steam_flow) $mmr_val
+		} elseif {$mmr_id == "803818"} {
+			msg "MMRead: hot_water_idle_temp: '[ifexists arr2(Data0)]'"
+			set ::settings(hot_water_idle_temp) [ifexists arr2(Data0)]
+
+			#mmr_read "espresso_warmup_timeout" "803838" "00"
+		} elseif {$mmr_id == "803838"} {
+			msg "MMRead: espresso_warmup_timeout: '[ifexists arr2(Data0)]'"
+			set ::settings(espresso_warmup_timeout) [ifexists arr2(Data0)]
+		} elseif {$mmr_id == "803810"} {
+			msg "MMRead: phase_1_flow_rate: '[ifexists arr2(Data0)]'"
+			set ::settings(phase_1_flow_rate) [ifexists arr2(Data0)]
+
+			if {[ifexists arr(Len)] >= 4} {
+			msg "MMRead: phase_2_flow_rate: '[ifexists arr2(Data1)]'"
+				set ::settings(phase_2_flow_rate) [ifexists arr2(Data1)]
+			}
+			if {[ifexists arr(Len)] >= 8} {
+				msg "MMRead: hot_water_idle_temp: '[ifexists arr2(Data2)]'"
+				set ::settings(hot_water_idle_temp) [ifexists arr2(Data2)]
+			}
+
+		} elseif {$mmr_id == "803834"} {
+			#parse_binary_mmr_read_int $value arr2
+
+			msg "MMRead: heater voltage: '[ifexists arr2(Data0)]' len=[ifexists arr(Len)]"
+			set ::settings(heater_voltage) [ifexists arr2(Data0)]
+
+			catch {
+				if {[ifexists ::settings(firmware_version_number)] != ""} {
+					if {$::settings(firmware_version_number) >= 1142} {
+						if {$::settings(heater_voltage) == 0} {
+							msg "Heater voltage is unknown, please set it"
+							show_settings calibrate2
+						}
+					}
+				}
+			}
+
+			if {[ifexists arr(Len)] >= 8} {
+				msg "MMRead: espresso_warmup_timeout2: '[ifexists arr2(Data1)]'"
+				set ::settings(espresso_warmup_timeout) [ifexists arr2(Data1)]
+
+				#mmr_read "hot_water_idle_temp" "803818" "00"
+				mmr_read "phase_1_flow_rate" "803810" "02"
+			}
+
+
+		} elseif {$mmr_id == "800008"} {
+			#parse_binary_mmr_read_int $value arr2
+
+			if {[ifexists arr(Len)] == 12} {
+				# it's possibly to read all 3 MMR characteristics at once
+
+				# CPU Board Model * 1000. eg: 1100 = 1.1
+				msg "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
+				set ::settings(cpu_board_model) [ifexists arr2(Data0)]
+
+				# v1.3+ Firmware Model (Unset = 0, DE1 = 1, DE1Plus = 2, DE1Pro = 3, DE1XL = 4, DE1Cafe = 5)
+				msg "MMRead: machine model:  '[ifexists arr2(Data1)]'"
+				set ::settings(machine_model) [ifexists arr2(Data1)]
+
+				# CPU Board Firmware build number. (Starts at 1000 for 1.3, increments by 1 for every build)
+				msg "MMRead: firmware version number: '[ifexists arr2(Data2)]'"
+				set ::settings(firmware_version_number) [ifexists arr2(Data2)]
+
+			} else {
+				# CPU Board Model * 1000. eg: 1100 = 1.1
+				msg "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
+				set ::settings(cpu_board_model) [ifexists arr2(Data0)]
+			}
+
+		} elseif {$mmr_id == "80000C"} {
+			parse_binary_mmr_read_int $value arr2
+
+			# v1.3+ Firmware Model (Unset = 0, DE1 = 1, DE1Plus = 2, DE1Pro = 3, DE1XL = 4, DE1Cafe = 5)
+			msg "MMRead: machine model:  '[ifexists arr2(Data0)]'"
+			set ::settings(machine_model) [ifexists arr2(Data0)]
+
+		} elseif {$mmr_id == "800010"} {
+			parse_binary_mmr_read_int $value arr2
+
+			# CPU Board Firmware build number. (Starts at 1000 for 1.3, increments by 1 for every build)
+			msg "MMRead: firmware version number: '[ifexists arr2(Data0)]'"
+			set ::settings(firmware_version_number) [ifexists arr2(Data0)]
+
+		} elseif {$mmr_id == "80382C"} {
+			msg "MMRead: steam_highflow_start: '$mmr_val'"
+			set ::settings(steam_highflow_start) $mmr_val
+		} else {
+			msg "Uknown type of direct MMR read $mmr_id on '[convert_string_to_hex $mmr_id]': $data"
+		}
+
+	} elseif {$command_name eq "Version"} {
+		set ::de1(last_ping) [clock seconds]
+		#update_de1_state $value
+		parse_binary_version_desc $value arr2
+		msg "version data received [string length $value] bytes: '$value' \"[convert_string_to_hex $value]\"  : '[array get arr2]'/ $event $data"
+		set ::de1(version) [array get arr2]
+
+		set v [de1_version_string]
+
+		# run stuff that depends on the BLE API version
+		later_new_de1_connection_setup
+
+		set ::de1(wrote) 0
+		run_next_userdata_cmd
+
+	} elseif {$command_name eq "Calibration"} {
+		#set ::de1(last_ping) [clock seconds]
+		calibration_received $value
+	} elseif {$command_name eq "WaterLevels"} {
+		set ::de1(last_ping) [clock seconds]
+		parse_binary_water_level $value arr2
+		#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
+
+		# compensate for the fact that we measure water level a few mm higher than the water uptake point
+		set mm [expr {$arr2(Level) + $::de1(water_level_mm_correction)}]
+		set ::de1(water_level) $mm
+
+	} elseif {$command_name eq "FWMapRequest"} {
+		#set ::de1(last_ping) [clock seconds]
+		parse_map_request $value arr2
+		msg "a009: [array get arr2]"
+		if {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 0} {
+			msg "BLE recv: finished erasing fw '[ifexists arr2(FWToMap)]'"
+			set ::de1(currently_erasing_firmware) 0
+			#write_firmware_now
+		} elseif {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 1} {
+			msg "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
+			#after 1000 read_fw_erase_progress
+		} elseif {$::de1(currently_erasing_firmware) == 0 && [ifexists arr2(FWToErase)] == 0} {
+			msg "BLE firmware find error BLE recv: '$value' [array get arr2]'"
+
+			if {[ifexists arr2(FirstError1)] == [expr 0xFF] && [ifexists arr2(FirstError2)] == [expr 0xFF] && [ifexists arr2(FirstError3)] == [expr 0xFD]} {
+				set ::de1(firmware_update_button_label) "Updated"
+			} else {
+				set ::de1(firmware_update_button_label) "Update failed"
+			}
+			set ::de1(currently_updating_firmware) 0
+
+		} else {
+			msg "unknown firmware cmd ack recved: [string length $value] bytes: $value : [array get arr2]"
+		}
+	} elseif {$command_name eq "ShotSettings"} {
+		set ::de1(last_ping) [clock seconds]
+		#update_de1_state $value
+		parse_binary_hotwater_desc $value arr2
+		msg "hotwater data received [string length $value] bytes: $value  : [array get arr2]"
+
+		#update_de1_substate $value
+		#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
+	} elseif {$command_name eq "DeprecatedShotDesc"} {
+		set ::de1(last_ping) [clock seconds]
+		#update_de1_state $value
+		parse_binary_shot_desc $value arr2
+		msg "shot data received [string length $value] bytes: $value  : [array get arr2]"
+	} elseif {$command_name eq "HeaderWrite"} {
+		set ::de1(last_ping) [clock seconds]
+		#update_de1_state $value
+		parse_binary_shotdescheader $value arr2
+		msg "READ shot header success: [string length $value] bytes: $value  : [array get arr2]"
+	} elseif {$command_name eq "FrameWrite"} {
+		set ::de1(last_ping) [clock seconds]
+		#update_de1_state $value
+		parse_binary_shotframe $value arr2
+		msg "shot frame received [string length $value] bytes: $value  : [array get arr2]"
+	} elseif {$command_name eq "StateInfo"} {
+		set ::de1(last_ping) [clock seconds]
+		update_de1_state $value
+
+		#if {[info exists ::globals(if_in_sleep_move_to_idle)] == 1} {
+		#	unset ::globals(if_in_sleep_move_to_idle)
+		#	if {$::de1_num_state($::de1(state)) == "Sleep"} {
+				# when making a new connection to the espresso machine, if the machine is currently asleep, then take it out of sleep
+				# but only do this check once, right after connection establisment
+		#		start_idle
+		#	}
+		#}
+		#update_de1_substate $value
+		#msg "Confirmed StateInfo read from DE1: '[remove_null_terminator $value]'"
+		set ::de1(wrote) 0
+		run_next_userdata_cmd
+	}
+}
+
+proc de1_disconnect_handler { handle } {
+	set ::de1(wrote) 0
+	set ::de1(cmdstack) {}
+
+	# close the associated handle
+	ble close $handle
+
+	catch {
+		# this should no longer be necessary since we're now explicitly closing the BLE handle associated with this disconnection notice
+		if {$handle != $::currently_connecting_de1_handle} {
+			msg "Disconnected handle is not currently_connecting_de1_handle - closing it now though, something might not be right"
+			ble close $::currently_connecting_de1_handle
+		}
+	}
+
+	set ::currently_connecting_de1_handle 0
+
+	msg "de1 disconnected"
+	set ::de1(device_handle) 0
+
+	# temporarily disable this feature as it's not clear that it's needed.
+	#set ::settings(max_ble_connect_attempts) 99999999
+	set ::settings(max_ble_connect_attempts) 10
+
+	incr ::failed_attempt_count_connecting_to_de1
+	if {$::failed_attempt_count_connecting_to_de1 > $::settings(max_ble_connect_attempts) && $::successful_de1_connection_count > 0} {
+		# if we have previously been connected to a DE1 but now can't connect, then make the UI go to Sleep
+		# and we'll try again to reconnect when the user taps the screen to leave sleep mode
+
+		# set this to zero so that when we come back from sleep we try several times to connect
+		set ::failed_attempt_count_connecting_to_de1 0
+
+		update_de1_state "$::de1_state(Sleep)\x0"
+	} else {
+
+		if {[ifexists ::de1(disable_de1_reconnect)] != 1} {
+			ble_connect_to_de1
+		}
+	}
+}
+
 ### Commands
 proc read_de1_version {} {
 	catch {

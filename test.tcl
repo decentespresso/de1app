@@ -1,26 +1,16 @@
 #!/usr/local/bin/tclsh
 
-source pkgIndex.tcl
-package require de1_updater
-package require de1_utils
-package require de1_vars
-package provide de1plus 1.0
-package require de1_binary 
+cd [file dirname [info script]]
+set f [open log.txt w]
+fconfigure $f -blocking 0
+fconfigure $f -buffersize 10000
 
-proc obs_convert_string_to_hex {chrs} {
-    
-    set toreturn {}
-    foreach {a b} [split [binary encode hex $chrs] {}] {
-    	append toreturn "$a$b "
-    }
-    return [string toupper [string trim $toreturn]]
+for {set x 0} {$x < 100000000} {incr x} {
+	puts $f "$x"
+	if {[expr {$x % 100000}] == 0} {
+		puts "Wrote $x lines"
+		update
+	}
 }
-
-#set s "\x01\x00\x00\x00\x03\x00\x00\x00\xAC\x1B\x1E\x09\x01"
-set s "\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51\x02\x04\x00\xA4\x0A\x6E\xD0\x68\x51"
-puts "'[convert_string_to_hex $s]'"
-
-parse_binary_version_desc $s arr
-puts [array get arr]
-
-#puts "BLESha: [format %X $arr(BLESha)]"
+close $f
+puts "done."

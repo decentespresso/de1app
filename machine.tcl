@@ -122,6 +122,7 @@ array set ::de1 {
 	steam_time_max 250
 	last_ping 0
 	steam_heater_temperature 150
+	connectivity "ble"
 }
 
 set ::de1(last_ping) [clock seconds]
@@ -406,6 +407,7 @@ array set ::settings {
 	water_volume 50
 	ghc_is_installed 0
 	force_acaia_heartbeat 0
+	comms_debugging 0
 }
 
 if {[de1plus]} {

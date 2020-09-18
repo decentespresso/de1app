@@ -660,6 +660,11 @@ proc msg {text} {
 		log_to_debug_file $text
 	}
 
+	if {[ifexists ::debugging] != 1} {
+		# don't keep a rolling window of debug msgs if it's not going to be displayed onscreen
+		return
+	}
+
 	incr ::debugcnt
 
 	# someone inefficent mechanism, but no better way to prepend a string exists https://stackoverflow.com/questions/10009181/tcl-string-prepend
