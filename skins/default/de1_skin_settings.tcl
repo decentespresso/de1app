@@ -266,9 +266,9 @@ if {[de1plus]} {
 		
 
 	if {$::settings(enable_fahrenheit) == 1} {
-		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.555556 0.555556 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1 %b} 2404 192 2590 750 ""
+		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.555556 0.555556 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 110 %x %y %x0 %y0 %x1 %y1 %b} 2404 192 2590 750 ""
 	} else {
-		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1 %b} 2404 192 2590 750 ""
+		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 110 %x %y %x0 %y0 %x1 %y1 %b} 2404 192 2590 750 ""
 	}
 	add_de1_variable "settings_2" 2470 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
 
@@ -350,7 +350,7 @@ add_de1_button "settings_2c" {say [translate {add}] $::settings(sound_button_in)
 
 add_de1_text "settings_2c" 1070 680 -text [translate "goal"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1070 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_setting [ifexists ::current_adv_step(temperature)]]}
-	add_de1_button "settings_2c" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1.5 .5 ::current_adv_step(temperature) $::settings(minimum_water_temperature) 100 %x %y %x0 %y0 %x1 %y1 %b; save_current_adv_shot_step; update_de1_explanation_chart} 980 310 1150 640 ""
+	add_de1_button "settings_2c" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1.5 .5 ::current_adv_step(temperature) $::settings(minimum_water_temperature) 110 %x %y %x0 %y0 %x1 %y1 %b; save_current_adv_shot_step; update_de1_explanation_chart} 980 310 1150 640 ""
 
 add_de1_text "settings_2c" 1380 680 -text [translate "sensor"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" { say [translate {sensor}] $::settings(sound_button_in); if {[ifexists ::current_adv_step(sensor)] == "water"} {  set ::current_adv_step(sensor) "coffee" } else { set ::current_adv_step(sensor) "water" }; save_current_adv_shot_step } 1200 310 1550 680 ""
