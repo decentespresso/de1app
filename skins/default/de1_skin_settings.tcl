@@ -115,11 +115,15 @@ if {[de1plus]} {
 
 	add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 		add_de1_widget "settings_2a" scale 892 850 {} -from -30 -to 90 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2 settings_2a" 892 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_hold_time) [list $::espresso_pressure_widget $::espresso_pressure_widget_label]; seconds_text $::settings(espresso_hold_time)]}
+		add_de1_variable "settings_2 settings_2a" 1192 1040 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_hold_time) [list $::espresso_pressure_widget $::espresso_pressure_widget_label]; seconds_text $::settings(espresso_hold_time)]}
+		add_de1_text "settings_2 settings_2a" 942 1010 -text "-" -font Helv_8 -fill "#888888" -anchor "nw" -width 600 -justify "left" 
+		add_de1_text "settings_2 settings_2a" 1440 1010 -text "+" -font Helv_8 -fill "#888888" -anchor "ne" -width 600 -justify "left" 
+		add_de1_button "settings_2a" {say [translate {minus}] $::settings(sound_button_in); incr ::settings(espresso_hold_time) -1; profile_has_changed_set; update_de1_explanation_chart_soon} 892 1000 1100 1100 
+		add_de1_button "settings_2a" {say [translate {plus}] $::settings(sound_button_in); incr ::settings(espresso_hold_time); profile_has_changed_set; update_de1_explanation_chart_soon } 1290 1000 1490 1100
+
 
 		set ::espresso_pressure_widget [add_de1_widget "settings_2a" scale 1516 850 {} -to 0 -from $::de1(maxpressure) -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0]
 		set ::espresso_pressure_widget_label [add_de1_variable "settings_2 settings_2a" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(espresso_pressure)]}]
-	
 
 	add_de1_text "settings_2 settings_2a" 1730 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 		add_de1_widget "settings_2 settings_2a" scale 1730 850 {} -from 0 -to 60 -background $::settings(color_stage_3) -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 605] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
@@ -679,11 +683,23 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		#}
 
 		add_de1_text "measurements" 1300 660 -text [translate "Optional features"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" checkbutton 1300 740 {} -text [translate "One-tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(one_tap_mode)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-			add_de1_widget "measurements" checkbutton 1300 800  {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-			add_de1_widget "measurements" checkbutton 1300 860  {} -text [translate "Screen saver clock"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_time_in_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-			add_de1_widget "measurements" checkbutton 1800 740  {} -text [translate "Black screen saver"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(black_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-			add_de1_widget "measurements" checkbutton 1800 800  {} -text [translate "Make a log file"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(log_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+
+			if {[ifexists ::settings(skin)] == "Insight"} {
+				# this feature is specific to the Insight skin
+				add_de1_widget "measurements" checkbutton 1800 740 {} -text [translate "One-tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(one_tap_mode)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+			}
+
+			if {[ghc_required] == 0} {
+				# this feature requires NO GHC to be installed because UL requires that all dangerous operations be started on the GHC. 
+				# The way this feature currently works is by sending a bluetooth start command after the command ends. With a GHC installed, that bluetooth command is ignored
+				# note: we could likely replicate this feature in the future with a firmware requiest to repeat the command indefinitely, and this would be UL compliant as the first time would need to be GHC started.
+				add_de1_widget "measurements" checkbutton 1800 800  {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+			}
+
+			add_de1_widget "measurements" checkbutton 1300 740  {} -text [translate "Make a log file"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(log_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+
+			add_de1_widget "measurements" checkbutton 1000 690  {} -text [translate "black"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(black_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+			add_de1_widget "measurements" checkbutton 1000 510  {} -text [translate "clock"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(display_time_in_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
 		add_de1_text "measurements" 340 480 -text [translate "Screen saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			add_de1_widget "measurements" scale 340 560 {} -from 0 -to 100 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_y_skin 100] -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
@@ -691,9 +707,15 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			add_de1_widget "measurements" scale 340 740 {} -from 1 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_y_skin 100] -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 			add_de1_variable "measurements" 340 840 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Change image every:"] [minutes_text $::settings(screen_saver_change_interval)]}
 
-			add_de1_text "measurements" 340 940 -text [translate "App update notifications"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-				add_de1_widget "measurements" scale 340 1010 {} -to 30 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 800]  -width [rescale_y_skin 100] -variable ::settings(app_update_delay_notification) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-				add_de1_variable "measurements" 340 1110 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Once stable for:"] [days_text $::settings(app_update_delay_notification)]}
+			add_de1_text "measurements" 340 940 -text [translate "App version"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+				add_de1_widget "measurements" radiobutton 340 1010  {} -value 0 -text [translate "stable"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(app_updates_beta_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+				add_de1_widget "measurements" radiobutton 340 1070  {} -value 1 -text [translate "beta"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(app_updates_beta_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+
+# grid [radiobutton .gender.maleBtn -text "Male"   -variable gender -value "Male"-command "set  myLabel1 Male"] -row 1 -column 2
+# grid [radiobutton .gender.femaleBtn -text "Female" -variable gender -value "Female"   -command "set  myLabel1 Female"] -row 1 -column 3				
+				#add_de1_widget "measurements" scale 340 1010 {} -to 30 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 800]  -width [rescale_y_skin 100] -variable ::settings(app_update_delay_notification) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+
+				#add_de1_variable "measurements" 340 1110 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Once stable for:"] [days_text $::settings(app_update_delay_notification)]}
 
 	# "done" button for all these sub-pages.
 	add_de1_text "tabletstyles languages measurements" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
@@ -1250,5 +1272,5 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#show_settings measurements
+show_settings settings_2a
 #set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1

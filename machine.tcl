@@ -197,7 +197,7 @@ array set ::settings {
 	tank_desired_water_temperature 0
 	screen_size_height {}
 	log_enabled 0
-	app_update_delay_notification 10
+	app_updates_beta_enabled 0
 	current_frame_description {}
 	mmr_enabled 0	
 	default_font_calibration 0.5
@@ -408,6 +408,7 @@ array set ::settings {
 	ghc_is_installed 0
 	force_acaia_heartbeat 0
 	comms_debugging 0
+	scale_stop_at_half_shot 0
 }
 
 if {[de1plus]} {
