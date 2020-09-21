@@ -594,6 +594,7 @@ proc decentscale_disable_lcd {} {
 
 proc decentscale_timer_start {} {
 	if {$::de1(scale_device_handle) == 0} {
+		msg "decentscale_timer_start - no scale_device_handle"
 		return
 	}
 
@@ -1330,12 +1331,13 @@ proc de1_ble_handler { event data } {
 						if {$::settings(scale_type) == "decentscale"} {
 							append_to_scale_bluetooth_list $address "decentscale"
 							#after 500 decentscale_enable_lcd
-							decentscale_enable_lcd
-							after 1000 decentscale_enable_notifications
-							after 2000 decentscale_tare
-							after 3000 decentscale_enable_lcd
-							after 4000 decentscale_timer_stop
-							after 5000 decentscale_timer_off
+							decentscale_tare
+							
+							after 1000 decentscale_enable_lcd
+							#after 2000 decentscale_timer_start
+							after 3000 decentscale_enable_notifications
+							#after 4000 decentscale_timer_stop
+							#after 5000 decentscale_timer_off
 
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
 							append_to_scale_bluetooth_list $address "atomaxskale"

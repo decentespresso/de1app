@@ -26,7 +26,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 10.0
 preinfusion_time 60
 pressure_end 10.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {Put a blind (no hole) portafilter basket into your portafilter, and then run this profile to see if there are any water leaks in your machine.  Once pressure is reached, water will be turned off and pressure held.  A small mount of pressure loss is normal, because of leaking around the pump's valve.  After two minutes of no flow, your pressure should be above 8 bar.}
 profile_title {Test for leaks}

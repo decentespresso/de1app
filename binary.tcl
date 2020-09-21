@@ -1917,8 +1917,8 @@ proc update_de1_state {statechar} {
 				#skale_timer_off
 				if {$::timer_running == 0 && $textstate == "Espresso"} {
 					#start_timers
-					scale_tare
 					scale_timer_start
+					after 200 scale_tare
 					start_espresso_timers
 					#set ::timer_running 1
 				}
