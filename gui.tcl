@@ -172,7 +172,7 @@ proc set_de1_screen_saver_directory {{dirname {}}} {
 	msg "set_de1_screen_saver_directory"
 
 	# force use of our default saver directory if the black screen saver is enabled, otherwise use whatever the skin chooses
-	if {$::settings(black_screen_saver) == 1} {
+	if {$::settings(screen_saver_change_interval) == 0} {
 		set dirname "[homedir]/saver"
 	}
 
@@ -204,7 +204,8 @@ proc setup_display_time_in_screen_saver {} {
 	set ::clocktime [clock seconds]
 	set ::previous_clocktime 0
 	
-	if {$::settings(black_screen_saver) == 1} {    
+	if {$::settings(screen_saver_change_interval) == 0} {
+		# black screen saver
 		set ::saver_clock2 [add_de1_variable "saver" 1278 898 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#111111" -width 2000 -textvariable {[time_format $::clocktime 1]}]
 		set ::saver_clock3 [add_de1_variable "saver" 1282 902 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#222222" -width 2000 -textvariable {[time_format $::clocktime 1]}]
 		set ::saver_clock [add_de1_variable "saver" 1280 900 -justify center -anchor "center" -text "" -font Helv_30_bold -fill "#444444" -width 2000 -textvariable {[time_format $::clocktime 1]}]
@@ -1011,7 +1012,10 @@ proc change_screen_saver_img {} {
 		unset -nocomplain ::change_screen_saver_image_handle
 	}
 
-	set ::change_screen_saver_image_handle [after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_img]
+
+ 	if {$::settings(screen_saver_change_interval) != 0} {
+		set ::change_screen_saver_image_handle [after [expr {60 * 1000 * $::settings(screen_saver_change_interval)}] change_screen_saver_img]
+	}
 	#set ::change_screen_saver_image_handle [after 1 change_screen_saver_img]
 	#set ::change_screen_saver_image_handle [after 100 change_screen_saver_img]
 }
@@ -1343,7 +1347,8 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	# set the brightness in one place
 	if {$page_to_show == "saver" } {
-		if {$::settings(black_screen_saver) == 1} {
+		if {$::settings(screen_saver_change_interval) == 0} {
+			# black screen saver
 			display_brightness 0
 		} else {
 			display_brightness $::settings(saver_brightness)

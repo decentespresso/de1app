@@ -367,6 +367,10 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
 
     set host "http://decentespresso.com"
     set progname "de1plus"
+    if {[ifexists ::settings(app_updates_beta_enabled)] != 1} {
+        set progname "de1stable"
+    }
+
     set url_timestamp "$host/download/sync/$progname/timestamp.txt"    
 
     set remote_timestamp {}
@@ -479,6 +483,9 @@ proc start_app_update {} {
     }
 
     set progname "de1plus"
+    if {[ifexists ::settings(app_updates_beta_enabled)] != 1} {
+        set progname "de1stable"
+    }
     #set progname "de1"
     #if {[de1plus] == 1} {
     #    set progname "de1plus"

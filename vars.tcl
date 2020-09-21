@@ -2835,6 +2835,12 @@ proc load_settings_vars {fn} {
 		set temp_settings(final_desired_shot_volume) [ifexists temp_settings(final_desired_shot_weight)]
 	}
 
+	if {[ifexists ::temp_settings(black_screen_saver) == 1} {
+		# we've moved the "black screen saver" feature from its own dedicated variable to now be a setting of "0 minutes" on the screen saver change timer
+		# this line is simply for backward compatiblity, moving the old setting to a new one
+		set temp_settings(final_desired_shot_volume) 0
+		set temp_settings(saver_brightness) 0		
+	}
 
 	catch {
 		array set ::settings [array get temp_settings]
@@ -3123,6 +3129,15 @@ proc seconds_text {num} {
 		return [translate "1 minute"]
 	} else {
 		return [subst {$num [translate "seconds"]}]
+	}
+}
+
+proc screen_saver_change_minutes {num} {
+	if {$num == 0} {
+		set ::settings(saver_brightness) 0
+		return [translate "Always black"]
+	} else {
+		return "[translate {Change image every:}] [minutes_text $num]"
 	}
 }
 
