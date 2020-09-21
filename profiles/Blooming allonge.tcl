@@ -20,10 +20,10 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {An amazing long espresso for light roasts, this is a fruit bomb of a brewing method. 5:1 ratio, 60 seconds, very fine grind. If close to the right pressure, make 0.5g dose adjustments to get to an 8-9 bar peak. The very high flow rate means small grind adjustments cause big pressure changes. A very advanced technique, extractions average 26%.}
-profile_title {Blooming Allongé}
+profile_title {Long/Blooming Allongé}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 80

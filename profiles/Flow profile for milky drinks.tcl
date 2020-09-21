@@ -28,7 +28,7 @@ final_desired_shot_weight_advanced 42
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 0
 preinfusion_guarantee 0
-profile_title {Flow profile for milky drinks}
+profile_title {Flow/for milky drinks}
 profile_language en
 preinfusion_stop_pressure 5.0
 profile_hide 0

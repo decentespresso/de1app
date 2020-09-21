@@ -90,7 +90,11 @@ proc fast_write_open {fn parms} {
     set f 0
     set errcode [catch {
         set f [open $fn $parms]
-        fconfigure $f -blocking 0
+
+        # Michael argues that there's no need to go nonblocking if you have a write buffer defined.
+        # https://3.basecamp.com/3671212/buckets/7351439/messages/3033510129#__recording_3037579684
+        # so disabling for now, to see if he's right.
+        # fconfigure $f -blocking 0
         fconfigure $f -buffersize 1000000
         set success 1
     }]
@@ -302,7 +306,11 @@ proc log_to_debug_file {text} {
                     msg "fast log file"
                     fconfigure $::logfile_handle -blocking 0 -buffering line 
                 } else {
-                    fconfigure $::logfile_handle -buffersize 102400 -blocking 0 
+                    # Michael argues that there's no need to go nonblocking if you have a write buffer defined.
+                    # https://3.basecamp.com/3671212/buckets/7351439/messages/3033510129#__recording_3037579684
+                    # so disabling for now, to see if he's right.
+                    # -blocking 0 
+                    fconfigure $::logfile_handle -buffersize 102400 
                 }
             }
         } 

@@ -20,10 +20,10 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4.0
 preinfusion_time 25
 pressure_end 6.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {Australian barista Matt Perger suggested this technique to us. The idea is to fully saturate your puck, and then squeeze the brewed coffee out using a calculated water volume.  This results in consistently brewed espresso without needing to use a scale.}
-profile_title {Preinfuse then 45ml of water}
+profile_title {Espresso/preinfuse then 45ml of water}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
 water_temperature 86.0

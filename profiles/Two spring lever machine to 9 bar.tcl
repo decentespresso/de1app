@@ -20,10 +20,10 @@ preinfusion_guarantee 1
 preinfusion_stop_pressure 4
 preinfusion_time 20
 pressure_end 0.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {A final evolution of the classic lever machine style was to add a second spring. This helped work around a deficiency with single springs, namely that the top pressure achieved went down almost immediately, rather than being held.  The second spring required more arm muscle but is often considered the final perfection of the lever espresso style.}
-profile_title {Two spring lever machine to 9 bar}
+profile_title {Lever/two spring lever machine to 9 bar}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
 water_temperature 80

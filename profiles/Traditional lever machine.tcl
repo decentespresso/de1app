@@ -23,7 +23,7 @@ final_desired_shot_weight_advanced 135
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 180
 preinfusion_guarantee 0
-profile_title {Traditional lever machine}
+profile_title {Lever/traditional lever machine}
 profile_language en
 preinfusion_stop_pressure 4.0
 profile_hide 0

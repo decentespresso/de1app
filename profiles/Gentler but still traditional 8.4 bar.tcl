@@ -20,10 +20,10 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4.0
 preinfusion_time 10
 pressure_end 6.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {Professional baristas worldwide have found that slightly lowering the pressure from 9 bar down to 8.4 produces great espresso more often.  The gentler pressure still produces traditional flavors but requires less perfect preparation skills from the barista.}
-profile_title {Gentler but still traditional 8.4 bar}
+profile_title {Gentle/but still traditional 8.4 bar}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
 water_temperature 86.0

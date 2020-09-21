@@ -20,10 +20,10 @@ preinfusion_guarantee 1
 preinfusion_stop_pressure 4
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {We recommend this pressure profile as the most likely to produce a good espresso in the most varied number of cases.  The decreasing pressure will help reduce acidity.}
-profile_title {Best overall pressure profile}
+profile_title {Espresso/best overall pressure profile}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
 water_temperature 76

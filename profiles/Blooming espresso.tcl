@@ -27,7 +27,7 @@ final_desired_shot_weight_advanced 60
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 0
 preinfusion_guarantee 0
-profile_title {Blooming Espresso}
+profile_title {Long/Blooming Espresso}
 profile_language en
 preinfusion_stop_pressure 4.0
 profile_hide 0

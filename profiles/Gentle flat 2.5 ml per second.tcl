@@ -20,10 +20,10 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4.0
 preinfusion_time 10
 pressure_end 6.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {Created by French barista Adrien Sénac of Cafeism, this innovative technique allowed Adrien to produce excellent shots from very aromatic, lightly roasted beans that he had never before managed to successfully pull.}
-profile_title {Gentle flat 2.5 ml per second}
+profile_title {Gentle/flat 2.5 ml per second}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
 water_temperature 80

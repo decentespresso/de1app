@@ -1633,7 +1633,9 @@ proc delete_selected_profile {} {
 	set w $::globals(profiles_listbox)
 	#$w selection set $::current_profile_number
 	#puts "cc: '[$w curselection]'"
-	set profile [lindex [profile_directories] [lindex [$w curselection] 0]]
+	#set profile [lindex [profile_directories] [lindex [$w curselection] 0]]
+	set profile $::profile_number_to_directory([$w curselection]) 
+
 	set fn "[homedir]/profiles/${profile}.tcl"
 	puts "todelete: '$fn'"
 
@@ -1766,6 +1768,25 @@ proc profile_type_text {} {
 	}
 }
 
+proc array_keys_sorted_by_val {arrname {sort_order -increasing}} {
+	upvar $arrname arr
+	foreach k [array names arr] {
+		set k2 "$arr($k) $k"
+		#set k2 "[format {"%0.12i"} $arr($k)] $k"
+		#puts "k2: $k2"
+		set t($k2) $k
+	}
+	
+	set toreturn {}
+
+	set keys [lsort $sort_order -dictionary [array names t]]
+	foreach k $keys {
+		set v $t($k)
+		lappend toreturn $v
+	}
+	return $toreturn
+}
+
 
 proc fill_profiles_listbox {} {
 
@@ -1778,8 +1799,28 @@ proc fill_profiles_listbox {} {
 	$widget delete 0 99999
 	set cnt 0
 	set ::current_profile_number 0
+	set grouping ""
+
+	unset -nocomplain ::profile_number_to_directory
 
 	foreach d [profile_directories] {
+
+		unset -nocomplain profile
+		catch {
+			set fn "[homedir]/profiles/$d.tcl"
+
+			array set profile [encoding convertfrom utf-8 [read_binary_file $fn]]
+		}
+
+		set profile_to_title($d) [translate [ifexists profile(profile_title)]]
+
+	}
+
+	set profiles [array_keys_sorted_by_val profile_to_title]
+	#puts [array get profile_to_title]
+	#exit
+
+	foreach d $profiles {
 		#if {$d == "CVS" || $d == "example"} {
 		#	continue
 		#}
@@ -1798,6 +1839,7 @@ proc fill_profiles_listbox {} {
 		}
 
 		set ptitle $profile(profile_title)
+
 		set pcnt [ifexists ::profile_shot_count($d)]
 		#puts "ptitle: '$ptitle '$pcnt'"
 
@@ -1806,6 +1848,8 @@ proc fill_profiles_listbox {} {
 		} else {
 			set p $ptitle
 		}
+
+
 
 		if {[ifexists ::profiles_hide_mode] != 1} {
 			if {[ifexists profile(profile_hide)] == 1} {
@@ -1816,6 +1860,21 @@ proc fill_profiles_listbox {} {
 				# mark the most frequently used profiles with a special symbol, to attract the eye to them
 				set p "$p \u25C0"
 			}
+
+			set parts [split $p /]
+			if {[llength $parts] > 1} {
+				set this_group [lindex $parts 0]
+				if {$this_group != $grouping} {
+					set grouping $this_group
+					$widget insert $cnt $this_group
+					set ::profile_number_to_directory($cnt) $d
+					incr cnt
+				}
+				set p " - [lindex $parts 1]"
+	
+			} else {
+			}
+	
 		} else {
 			# if editing what profiles to show, then use a check or empty box, to indicate which profiles will be shown
 			if {[ifexists profile(profile_hide)] == 1} {
@@ -1823,9 +1882,12 @@ proc fill_profiles_listbox {} {
 			} else {
 				set p "\u2612 $p"
 			}
+
 		}
 
 		$widget insert $cnt $p
+		set ::profile_number_to_directory($cnt) $d
+	
 
 		#msg "'$::settings(profile)' == '[ifexists profile(profile_title)]'"
 		if {[string tolower $::settings(profile)] == [string tolower [ifexists profile(profile_title)]]} {
@@ -2526,8 +2588,11 @@ proc preview_profile {} {
 
 	#set profile [$w get [$w curselection]]
 
-	set profile [lindex [profile_directories] [$w curselection]]
-	#set profile [$w get active]
+	#set profile [lindex [profile_directories] [$w curselection]]
+	set profile $::profile_number_to_directory([$w curselection]) 
+	
+
+	
 	set fn "[homedir]/profiles/${profile}.tcl"
 
 	if {[ifexists ::profiles_hide_mode] == 1} {

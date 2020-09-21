@@ -20,10 +20,10 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4.0
 preinfusion_time 30
 pressure_end 1.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {Created by a famously innovative Seattle-based espresso machine manufacturer, this technique works well with aromatic, lightly roasted coffee beans.}
-profile_title {Gentle preinfusion flow profile}
+profile_title {Gentle/preinfusion flow profile}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
 water_temperature 80
