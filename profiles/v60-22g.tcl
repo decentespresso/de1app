@@ -20,10 +20,10 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 1.5
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {Scott Rao's 22g profile for pour overs using the Decent pour over basket.}
-profile_title {V60/22g}
+profile_title {Pour over basket/V60 22g}
 settings_profile_type settings_2c2
 tank_desired_water_temperature 60
 water_temperature 80

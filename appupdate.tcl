@@ -22,6 +22,13 @@ package require tls 1.6
 ::http::register https 443 ::tls::socket
 cd "[file dirname [info script]]/"
 set ::settings(logfile) "updatelog.txt"
+
+# always log app updates
+set ::settings(log_enabled) 1
+
+# if using this tool, always update to the latest release version, never to a beta version
+set ::settings(app_updates_beta_enabled) 0
+
 set debugcnt 0
 
 proc translate {x} {return $x}

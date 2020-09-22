@@ -20,10 +20,10 @@ preinfusion_guarantee 1
 preinfusion_stop_pressure 1.5
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {You can make a pour over coffee with your espresso machine.  To do this, first remove the drip tray. Then, place a coffee mug with a filter cone on it under the espresso machine's group head.}
-profile_title {Pour over/Decent pour over}
+profile_title {Pour over basket/Decent pour over}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 80

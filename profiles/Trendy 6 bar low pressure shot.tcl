@@ -20,10 +20,10 @@ preinfusion_guarantee 1
 preinfusion_stop_pressure 4.0
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {Some lightly roasted espresso beans smell great but resist being well extracted into a drink.  The solution can be to lower the pressure to 6 bar. Try this technique if you're having trouble with a particularly sophisticated lightly roasted bean.}
-profile_title {Espresso/trendy 6 bar low pressure shot}
+profile_title {Trendy 6 bar low pressure shot}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
 water_temperature 80

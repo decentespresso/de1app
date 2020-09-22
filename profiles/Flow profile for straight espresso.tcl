@@ -20,10 +20,10 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 5.0
 preinfusion_time 20
 pressure_end 4.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {John Buckman, the founder of Decent Espresso, finds that this flow profile produces the best espresso shots for straight espresso drinks in the widest variety of circumstances. It is especially tolerant of not-yet-very-good barista technique.}
-profile_title {Flow/for straight espresso}
+profile_title {Flow profile for straight espresso}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
 water_temperature 86.0

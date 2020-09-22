@@ -23,7 +23,7 @@ pressure_end 4.0
 profile_hide 0
 profile_language en
 profile_notes {This is a very easy espresso to successfully make and is suggested if you are having difficulty making good drinks.  The pressure rises to only 6 bar and then slowly descends to 4 bar.  The resulting espresso should be free of channeling, have low acidity and quite pleasant to drink straight or with milk.}
-profile_title {Gentle/gentle and sweet}
+profile_title {Gentle and sweet}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
 water_temperature 80

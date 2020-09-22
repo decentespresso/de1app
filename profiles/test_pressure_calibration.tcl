@@ -26,7 +26,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4
 preinfusion_time 8
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {You will need a portafilter fitted with a pressure gauge that leaks or has a slow flow rate.  This profile will slowly rise to 9 bar and hold it.  Compare what is on the screen with what your analog pressure gauge tells you.  Go to Settings->Machine->Calibrate and enter the held pressure value, and then retest until the pressure until the two agree.}
 profile_title {Test/pressure calibration}

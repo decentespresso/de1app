@@ -20,10 +20,10 @@ preinfusion_guarantee 1
 preinfusion_stop_pressure 4
 preinfusion_time 5
 pressure_end 4.3
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {A light roast pressure profile that emulates the flow and temperature characteristics of the Espresso Forge manual machine. Good for medium to light roasts where you want to mute the fruit flavors and up extraction to balance the shot more in comparison to a standard flat or lever profile.}
-profile_title {Espresso Forge/Light}
+profile_title {Espresso Forge Light}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 80

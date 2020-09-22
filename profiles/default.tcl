@@ -28,7 +28,7 @@ final_desired_shot_weight_advanced 36
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 0
 preinfusion_guarantee 0
-profile_title {Espresso/Default}
+profile_title Default
 profile_language en
 preinfusion_stop_pressure 4.0
 profile_hide 0

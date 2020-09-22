@@ -26,7 +26,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 10.0
 preinfusion_time 60
 pressure_end 10.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {Put a blank (no hole) basket into a portafilter, and run this program to stress test all the O-rings and water connections.  The intent of this test is to cause a water leak at any connection, if there is a weak spot.}
 profile_title {Test/pressure release}

@@ -20,10 +20,10 @@ preinfusion_guarantee 1
 preinfusion_stop_pressure 4.0
 preinfusion_time 6
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {E61 machines evolved with time, with some models adding an optional, manually controlled preinfusion step.  In most cases, preinfusion will produce a more evenly extracted shot.}
-profile_title {E61/fast preinfusion to 9 bar}
+profile_title {E61 with fast preinfusion to 9 bar}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
 water_temperature 86.0

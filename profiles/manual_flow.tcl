@@ -20,10 +20,10 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4
 preinfusion_time 0
 pressure_end 0.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {For use with machines that have a group head controller (GHC).  Hold your finger on the GHC for the flow you want.}
-profile_title {Manual/flow control for GHC}
+profile_title {GHC/manual flow control}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
 water_temperature 80
