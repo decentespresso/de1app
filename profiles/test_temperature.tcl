@@ -29,7 +29,7 @@ pressure_end 10.0
 profile_hide 1
 profile_language en
 profile_notes {Put a pour over basket in your DE1.  Look for smooth temperature ramps between each temperature stage.  }
-profile_title Test/temperature
+profile_title {Test/temperature accuracy}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 70.00
