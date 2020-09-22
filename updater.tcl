@@ -301,7 +301,9 @@ proc log_to_debug_file {text} {
             catch {
                 set ::logfile_handle [open "[homedir]/$::settings(logfile)" w]
 
-                
+                # per https://3.basecamp.com/3671212/buckets/7351439/messages/3033510129#__recording_3039704280
+                # logging is always fast now, with only line level buffering
+                set ::settings(log_fast) 1
                 if {[ifexists ::settings(log_fast)] == "1"} {
                     msg "fast log file"
                     fconfigure $::logfile_handle -blocking 0 -buffering line 
@@ -366,11 +368,11 @@ proc scheduled_app_update_check {} {
 proc check_timestamp_for_app_update_available { {check_only 0} } {
 
     set host "http://decentespresso.com"
-    set progname "de1stable"
+    set progname "de1plus"
     if {[ifexists ::settings(app_updates_beta_enabled)] == 1} {
-        set progname "de1plus"
+        set progname "de1beta"
     }
-    puts "update timestand endpoint: '$progname'"
+    puts "update timestanp endpoint: '$progname'"
 
     set url_timestamp "$host/download/sync/$progname/timestamp.txt"    
 
@@ -483,9 +485,9 @@ proc start_app_update {} {
         set host "http://decentespresso.com"
     }
 
-    set progname "de1stable"
+    set progname "de1plus"
     if {[ifexists ::settings(app_updates_beta_enabled)] == 1} {
-        set progname "de1plus"
+        set progname "de1beta"
     }
 
     puts "update download endpoint: '$progname'"

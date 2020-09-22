@@ -598,7 +598,8 @@ proc make_de1_dir {} {
 
     set srcdir "/d/admin/code/de1beta"
     #set destdirs [list "/d/download/sync/de1" "/d/download/sync/de1plus" "/d/download/sync/de1plusbig"]
-    set destdirs [list "/d/download/sync/de1plus"]
+    #set destdirs [list "/d/download/sync/de1plus"]
+    set destdirs [list "/d/download/sync/de1beta"]
 
     # load the local manifest into memory 
     foreach {filename filesize filemtime filesha} [string trim [read_file "[homedir]/complete_manifest.txt"]] {

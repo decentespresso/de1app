@@ -16,19 +16,19 @@ package require de1_gui
 
 #file link "/d/admin/code/de1beta/desktop_app/linux" "/d/admin/code/de1beta/desktop_app/decent"
 #file link "/d/admin/code/de1beta/desktop_app/linux" "/d/admin/code/de1beta/desktop_app/decent"
-catch { file link  "/d/admin/code/de1beta/desktop_app/linux/src" "/d/download/sync/de1plus" }
-catch { file link  "/d/admin/code/de1beta/desktop_app/osx/Decent.app/Contents/Resources/de1plus" "/d/download/sync/de1plus" }
-catch { file link  "/d/admin/code/de1beta/desktop_app/win32/src" "/d/download/sync/de1plus" }
+catch { file link  "/d/admin/code/de1beta/desktop_app/linux/src" "/d/download/sync/de1beta" }
+catch { file link  "/d/admin/code/de1beta/desktop_app/osx/Decent.app/Contents/Resources/de1plus" "/d/download/sync/de1beta" }
+catch { file link  "/d/admin/code/de1beta/desktop_app/win32/src" "/d/download/sync/de1beta" }
 
 if {$argv != ""} {
 	puts "Updating apps"
 
 	# optionally purge the source directories and resync
 	# do this if we remove files from the sync list
-	file delete -force /d/download/sync/de1plus
+	file delete -force /d/download/sync/de1beta
 	file delete -force /d/download/sync/decent
-	file mkdir /d/download/sync/de1plus
-	file link /d/download/sync/decent /d/download/sync/de1plus 
+	file mkdir /d/download/sync/de1beta
+	file link /d/download/sync/decent /d/download/sync/de1beta
 	#file delete -force /d/download/sync/de1
 	file delete -force /d/download/desktop/osx/decent_osx.zip
 	file delete -force /d/download/desktop/win32/decent_win.zip
