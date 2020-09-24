@@ -673,7 +673,7 @@ proc msg {text} {
 
 	set loglines [split $::debuglog "\n"]
 
-	if {[llength $loglines] > $::settings(debuglog_window_size)} {
+	while {[llength $loglines] > $::settings(debuglog_window_size)} {
 		unshift loglines
 		set ::debuglog [join $loglines \n]
 	}
