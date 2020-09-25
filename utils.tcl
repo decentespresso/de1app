@@ -40,6 +40,18 @@ proc setup_environment {} {
 
         sdltk screensaver off
         
+        set width [winfo screenwidth .]
+        set height [winfo screenheight .]
+
+        msg "width $width $height = [sdltk size]"
+
+                pause 1000
+
+                set width [winfo screenwidth .]
+                set height [winfo screenheight .]
+
+                msg "width2 $width $height = [sdltk size]"
+
 
         if {$::settings(screen_size_width) != "" && $::settings(screen_size_height) != ""} {
             set screen_size_width $::settings(screen_size_width)
@@ -50,11 +62,14 @@ proc setup_environment {} {
 
             # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
             if {$android == 1} {
-                pause 500
-            }
+                pause 1000
 
-            set width [winfo screenwidth .]
-            set height [winfo screenheight .]
+                set width [winfo screenwidth .]
+                set height [winfo screenheight .]
+
+                msg "width2 $width $height = [sdltk size]"
+
+            }
 
             if {$width > 2300} {
                 set screen_size_width 2560
@@ -120,6 +135,9 @@ proc setup_environment {} {
             set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
         }
 
+        #set fontm 0.6
+        msg "fontm: $fontm"
+
         global helvetica_bold_font
         global helvetica_font
         set global_font_size 18
@@ -155,35 +173,35 @@ proc setup_environment {} {
         }            
 
 
-        font create global_font -family $global_font_name -size [expr {int($fontm * $global_font_size)}] 
+        font create global_font -family $global_font_name -size [expr {round($fontm * $global_font_size)}] 
 
-        font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
-        font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
-        font create Helv_11_bold -family $helvetica_bold_font -size [expr {int($fontm * 20)}] 
-        font create Helv_11 -family $helvetica_font -size [expr {int($fontm * 20)}] 
-        font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 19)}] 
-        font create Helv_10 -family $helvetica_font -size [expr {int($fontm * 19)}] 
+        font create Helv_12_bold -family $helvetica_bold_font -size [expr {round($fontm * 22)}] 
+        font create Helv_12 -family $helvetica_font -size [expr {round($fontm * 22)}] 
+        font create Helv_11_bold -family $helvetica_bold_font -size [expr {round($fontm * 20)}] 
+        font create Helv_11 -family $helvetica_font -size [expr {round($fontm * 20)}] 
+        font create Helv_10_bold -family $helvetica_bold_font -size [expr {round($fontm * 19)}] 
+        font create Helv_10 -family $helvetica_font -size [expr {round($fontm * 19)}] 
         font create Helv_1 -family $helvetica_font -size 1
-        font create Helv_4 -family $helvetica_font -size [expr {int($fontm * 8)}]
-        font create Helv_5 -family $helvetica_font -size [expr {int($fontm * 10)}]
-        font create Helv_6 -family $helvetica_font -size [expr {int($fontm * 12)}]
-        font create Helv_6_bold -family $helvetica_bold_font -size [expr {int($fontm * 12)}]
-        font create Helv_7 -family $helvetica_font -size [expr {int($fontm * 14)}]
-        font create Helv_7_bold -family $helvetica_bold_font -size [expr {int($fontm * 14)}]
-        font create Helv_8 -family $helvetica_font -size [expr {int($fontm * 16)}]
-        font create Helv_8_bold -family $helvetica_bold_font -size [expr {int($fontm * 16)}]
+        font create Helv_4 -family $helvetica_font -size [expr {round($fontm * 8)}]
+        font create Helv_5 -family $helvetica_font -size [expr {round($fontm * 10)}]
+        font create Helv_6 -family $helvetica_font -size [expr {round($fontm * 12)}]
+        font create Helv_6_bold -family $helvetica_bold_font -size [expr {round($fontm * 12)}]
+        font create Helv_7 -family $helvetica_font -size [expr {round($fontm * 14)}]
+        font create Helv_7_bold -family $helvetica_bold_font -size [expr {round($fontm * 14)}]
+        font create Helv_8 -family $helvetica_font -size [expr {round($fontm * 16)}]
+        font create Helv_8_bold -family $helvetica_bold_font -size [expr {round($fontm * 16)}]
         
-        font create Helv_9 -family $helvetica_font -size [expr {int($fontm * 18)}]
-        font create Helv_9_bold -family $helvetica_bold_font -size [expr {int($fontm * 18)}] 
-        font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
-        font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
-        font create Helv_16_bold -family $helvetica_bold_font -size [expr {int($fontm * 27)}] 
-        font create Helv_17_bold -family $helvetica_bold_font -size [expr {int($fontm * 30)}] 
-        font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 32)}] 
-        font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 35)}] 
-        font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 37)}]
-        font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
-        font create Helv_30 -family $helvetica_font -size [expr {int($fontm * 56)}]
+        font create Helv_9 -family $helvetica_font -size [expr {round($fontm * 18)}]
+        font create Helv_9_bold -family $helvetica_bold_font -size [expr {round($fontm * 18)}] 
+        font create Helv_15 -family $helvetica_font -size [expr {round($fontm * 24)}] 
+        font create Helv_15_bold -family $helvetica_bold_font -size [expr {round($fontm * 24)}] 
+        font create Helv_16_bold -family $helvetica_bold_font -size [expr {round($fontm * 27)}] 
+        font create Helv_17_bold -family $helvetica_bold_font -size [expr {round($fontm * 30)}] 
+        font create Helv_18_bold -family $helvetica_bold_font -size [expr {round($fontm * 32)}] 
+        font create Helv_19_bold -family $helvetica_bold_font -size [expr {round($fontm * 35)}] 
+        font create Helv_20_bold -family $helvetica_bold_font -size [expr {round($fontm * 37)}]
+        font create Helv_30_bold -family $helvetica_bold_font -size [expr {round($fontm * 54)}]
+        font create Helv_30 -family $helvetica_font -size [expr {round($fontm * 56)}]
 
         # enable swipe gesture translating, to scroll through listboxes
         # sdltk touchtranslate 1
