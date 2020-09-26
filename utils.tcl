@@ -40,18 +40,6 @@ proc setup_environment {} {
 
         sdltk screensaver off
         
-        set width [winfo screenwidth .]
-        set height [winfo screenheight .]
-
-        msg "width $width $height = [sdltk size]"
-
-                pause 1000
-
-                set width [winfo screenwidth .]
-                set height [winfo screenheight .]
-
-                msg "width2 $width $height = [sdltk size]"
-
 
         if {$::settings(screen_size_width) != "" && $::settings(screen_size_height) != ""} {
             set screen_size_width $::settings(screen_size_width)
@@ -62,14 +50,11 @@ proc setup_environment {} {
 
             # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
             if {$android == 1} {
-                pause 1000
-
-                set width [winfo screenwidth .]
-                set height [winfo screenheight .]
-
-                msg "width2 $width $height = [sdltk size]"
-
+                pause 500
             }
+
+            set width [winfo screenwidth .]
+            set height [winfo screenheight .]
 
             if {$width > 2300} {
                 set screen_size_width 2560
@@ -134,9 +119,6 @@ proc setup_environment {} {
             set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
             set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
         }
-
-        #set fontm 0.6
-        msg "fontm: $fontm"
 
         global helvetica_bold_font
         global helvetica_font
