@@ -542,6 +542,7 @@ add_de1_text "settings_3" 1304 750 -text [translate "Firmware"] -font Helv_10_bo
 # app update
 add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	set ::de1(app_update_button_label) [translate "Update"]
+	add_de1_text "settings_4" 1240 226 -text "v[package version de1app]" -width [rescale_y_skin 1000] -font Helv_8 -fill "#7f879a"  -justify "center" -anchor "ne"
 	add_de1_variable "settings_4" 700 416 -text $::de1(app_update_button_label) -width [rescale_y_skin 1000] -font Helv_10_bold -fill "#FFFFFF"  -justify "center" -anchor "center" -textvariable {$::de1(app_update_button_label)} 
 	add_de1_button "settings_4" {set ::de1(app_update_button_label) [translate "Updating"]; update; start_app_update} 20 306 1250 526
 
@@ -1273,5 +1274,5 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#show_settings measurements
+#show_settings settings_4
 #set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1
