@@ -197,7 +197,7 @@ array set ::settings {
 	tank_desired_water_temperature 0
 	screen_size_height {}
 	log_enabled 0
-	app_updates_beta_enabled 0
+	app_updates_beta_enabled 1
 	current_frame_description {}
 	mmr_enabled 0	
 	default_font_calibration 0.5
