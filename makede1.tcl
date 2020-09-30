@@ -57,7 +57,7 @@ if {$argv != ""} {
 	exec zip -u -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/linux/decent_linux.zip decent
 
 	cd "/d/download/sync"
-	exec zip -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/decent_source.zip de1plus
+	exec zip -x "*CVS*" -x ".DS_Store" -r /d/download/desktop/source/decent_source.zip de1beta
 
 } else {
 	#skin_convert_all
