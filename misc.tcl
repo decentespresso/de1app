@@ -568,6 +568,7 @@ proc make_de1_dir {} {
         profiles/Advanced\ spring\ lever.tcl *
         profiles/Blooming\ espresso.tcl *
         profiles/cold_brew.tcl *
+        profiles/kalita_20.tcl *
         profiles/Blooming\ allonge.tcl *
         profiles/Classic\ Italian\ espresso.tcl *
         profiles/Flow\ profile\ for\ milky\ drinks.tcl *
