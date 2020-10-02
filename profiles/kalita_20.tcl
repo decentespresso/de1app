@@ -20,7 +20,7 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes {Scott Rao's 20g profile for pour overs using the Decent pour over basket and the Kalita brewer.}
+profile_notes {We use a little lower flow rate for the Kalita than for the v60 to tame the turbulence. We have found that excessive turbulence chokes brews in the Kalita more readily than in the V60. We recommend giving the brewer a gentle spin after prewetting and after the last pulse of water has sprayed. }
 water_temperature 80
 final_desired_shot_volume 32
 final_desired_shot_weight 32

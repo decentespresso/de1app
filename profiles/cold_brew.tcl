@@ -20,7 +20,7 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes {Cold brew: this recipe works just like a hot pourover, but will take a little longer to drain and will produce slightly weaker coffee. We recommend using a 15:1 ratio to produce coffee of proper strength, which is important to combat dilution by ice.}
+profile_notes {Brewing with cold water substantially slows the flow rate of liquid through the coffee bed and often leads to choking. We set the flow rate very low for our cold brew recipe in order to provide steady flow, mitigate choking, and promote an even extraction. We recommend grinding a little coarser for cold brew than for hot-water brewing. Expect cold-brew extraction levels to be a couple of points lower than hot-water extractions.  We recommend giving the brewer a gentle spin after prewetting and after the last pulse of water has sprayed. }
 water_temperature 80
 final_desired_shot_volume 32
 final_desired_shot_weight 32

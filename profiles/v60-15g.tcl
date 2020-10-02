@@ -19,7 +19,7 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes {Scott Rao's 15g profile for pour overs using the Decent pour over basket.}
+profile_notes {We use the highest flow rate for V60 brewing, to take advantage of the extraction evenness provided by high turbulence. If you get any choking in your V60 brews,  try coarsening the grind a little.  If brews still choke, consider using the Kalita recipe for some V60 brews, such as decafs and Ethiopians, as they are more prone to choking than other coffees are. We recommend giving the brewer a gentle spin after prewetting and after the last pulse of water has sprayed.}
 water_temperature 80
 final_desired_shot_volume 32
 final_desired_shot_weight 32
