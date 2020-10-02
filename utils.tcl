@@ -1136,7 +1136,15 @@ proc load_settings {} {
     #puts "loading settings XXXXXXX"
     array set ::settings [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]
 
+
+    if {[ifexists ::settings(language)] == "ar" || [ifexists ::settings(language)] == "arb" || [ifexists ::settings(language)] == "he" || [ifexists ::settings(language)] == "heb"} {
+        set ::de1(language_rtl) 1
+    }
+
+    #set ::de1(language_rtl) 1
+    
     set ::settings(stress_test) 0
+
 
     # rao request to increase these defaults to 300 (from 120) to aid in pour-overs. Will remove this settings.tdb override in the future, once 
     # everyone's settings.tdb has had time to save this new default

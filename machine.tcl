@@ -28,6 +28,7 @@ array set ::de1 {
     found    0
     scanning 1
     device_handle 0
+    language_rtl 0
     scale_device_handle 0
     decentscale_device_handle 0
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"

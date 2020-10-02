@@ -830,6 +830,10 @@ proc timer_text {} {
 }
 
 proc return_liquid_measurement {in} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "mL"] [round_to_integer $in] }]
+    }
+
 	if {$::settings(enable_fluid_ounces) != 1} {
 		return [subst {[round_to_integer $in] [translate "mL"]}]
 	} else {
@@ -838,11 +842,18 @@ proc return_liquid_measurement {in} {
 }
 
 proc return_flow_calibration_measurement {in} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "mL/s"] [round_to_one_digits [expr {0.1 * $in}]]}]
+    }
 	return [subst {[round_to_one_digits [expr {0.1 * $in}]] [translate "mL/s"]}]
 
 }
 
 proc return_flow_measurement {in} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "mL/s"] [round_to_one_digits $in]}]
+    }
+
 	if {$::settings(enable_fluid_ounces) != 1} {
 		return [subst {[round_to_one_digits $in] [translate "mL/s"]}]
 	} else {
@@ -851,10 +862,17 @@ proc return_flow_measurement {in} {
 }
 
 proc return_pressure_measurement {in} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "bar"] [commify [round_to_one_digits $in]]}]
+    }
 	return [subst {[commify [round_to_one_digits $in]] [translate "bar"]}]
 }
 
 proc return_flow_weight_measurement {in} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "g/s"] [round_to_one_digits $in]}]
+    }
+
 	if {$::settings(enable_fluid_ounces) != 1} {
 		return [subst {[round_to_one_digits $in] [translate "g/s"]}]
 	} else {
@@ -863,6 +881,10 @@ proc return_flow_weight_measurement {in} {
 }
 
 proc return_weight_measurement {in} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "g"][round_to_one_digits $in]}]
+    }
+
 	if {$::settings(enable_fluid_ounces) != 1} {
 		return [subst {[round_to_one_digits $in][translate "g"]}]
 	} else {
@@ -916,6 +938,11 @@ proc return_stop_at_weight_measurement {in} {
 	if {$in == 0} {
 		return [translate "off"]
 	} else {
+
+	    if {$::de1(language_rtl) == 1} {
+			return [subst {[translate "g"][round_to_integer $in]}]
+		}
+
 		if {$::settings(enable_fluid_ounces) != 1} {
 			return [subst {[round_to_integer $in][translate "g"]}]
 		} else {
@@ -928,6 +955,9 @@ proc return_stop_at_weight_measurement_precise {in} {
 	if {$in == 0} {
 		return [translate "off"]
 	} else {
+	    if {$::de1(language_rtl) == 1} {
+			return [subst {[translate "g"][round_to_one_digits $in]}]
+		}
 		if {$::settings(enable_fluid_ounces) != 1} {
 			return [subst {[round_to_one_digits $in][translate "g"]}]
 		} else {
@@ -940,11 +970,85 @@ proc return_shot_weight_measurement {in} {
 	if {$in == 0} {
 		return [translate "off"]
 	} else {
+	    if {$::de1(language_rtl) == 1} {
+			return [subst {[translate "g"][round_to_one_digits $in]}]
+		}
+
 		if {$::settings(enable_fluid_ounces) != 1} {
 			return [subst {[round_to_one_digits $in][translate "g"]}]
 		} else {
 			return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
 		}
+	}
+}
+
+proc preinfusion_pour_timer_text {} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "preinfusion"] [translate "s"][espresso_preinfusion_timer]}]
+	}
+
+	return [subst {[espresso_preinfusion_timer][translate "s"] [translate "preinfusion"]}]
+}
+
+proc total_pour_timer_text {} {
+    if {$::de1(language_rtl) == 1} {
+		if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
+			return "[return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]] < [translate {total}] [translate {s}][espresso_elapsed_timer]"
+		} else {
+			return "[translate {total}] [translate {s}][espresso_elapsed_timer]"
+		}
+	}
+
+	if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
+		return "[espresso_elapsed_timer][translate {s}] [translate {total}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]]"
+	} else {
+		return "[espresso_elapsed_timer][translate {s}] [translate {total}]"
+	}
+}
+
+proc espresso_done_timer_text {} {
+	if {[espresso_done_timer] < $::settings(seconds_to_display_done_espresso)} {
+	    if {$::de1(language_rtl) == 1} {
+			return "[translate done] [translate s][espresso_done_timer]"
+	    }
+
+		return "[espresso_done_timer][translate s] [translate done]"
+	} else { 
+		return ""
+	}
+
+}
+
+proc pouring_timer_text {} {
+    if {$::de1(language_rtl) == 1} {
+		if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
+			return "[return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]] < [translate {pouring}] [translate {s}][espresso_pour_timer]"
+		} else {
+			return "[translate {pouring}] [translate {s}][espresso_pour_timer]"
+		}
+	}
+
+	if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
+		return "[espresso_pour_timer][translate {s}] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
+	} else {
+		return "[espresso_pour_timer][translate {s}] [translate {pouring}]"
+	}
+
+}
+
+proc pouring_timer_text_2 {} {
+	if {$::de1(language_rtl) == 1} {
+		if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
+			return "[return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]] < [translate {pouring}] [translate {s}][espresso_pour_timer]"
+		} else {
+			return "[translate {pouring}] [translate {s}][espresso_pour_timer]"
+		}
+	}
+
+	if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
+		return "[espresso_pour_timer][translate {s}] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
+	} else {
+		return "[espresso_pour_timer][translate {s}] [translate {pouring}]"
 	}
 }
 
@@ -1080,6 +1184,10 @@ proc espresso_goal_temp_text {} {
 	return [return_temperature_measurement $::de1(goal_temperature)]
 }
 
+proc espresso_goal_temp_text_rtl_aware {} {
+	return [subst {[return_temperature_measurement $::de1(goal_temperature)] [translate "goal"]}]
+}
+
 set ::diff_brew_temp_from_goal 0
 set ::positive_diff_brew_temp_from_goal 0
 proc diff_brew_temp_from_goal {} {
@@ -1147,6 +1255,9 @@ proc steamtemp_text {} {
 }
 
 proc pressure_text {} {
+	if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "bar"] [commify [round_to_one_digits [pressure]]]}]
+	}
 	return [subst {[commify [round_to_one_digits [pressure]]] [translate "bar"]}]
 }
 
@@ -1339,6 +1450,16 @@ proc steam_heater_temperature_text {} {
 
 proc group_head_heater_temperature_text {} {
 	return [return_temperature_measurement [group_head_heater_temperature]]
+}
+
+proc group_head_heater_temperature_text_rtl_aware {} {
+
+	return [subst {[return_temperature_measurement [group_head_heater_temperature]] [translate "metal"]}]
+}
+
+proc coffee_temp_text_rtl_aware {} {
+	return "[watertemp_text] [translate {coffee}]"
+
 }
 
 proc setting_espresso_temperature_text {} {
