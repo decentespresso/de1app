@@ -984,7 +984,7 @@ proc return_shot_weight_measurement {in} {
 
 proc preinfusion_pour_timer_text {} {
     if {$::de1(language_rtl) == 1} {
-		return [subst {[translate "preinfusion"] [translate "s"][espresso_preinfusion_timer]}]
+		return [subst {[translate "s"][espresso_preinfusion_timer] [translate "preinfusion"] }]
 	}
 
 	return [subst {[espresso_preinfusion_timer][translate "s"] [translate "preinfusion"]}]
@@ -995,7 +995,7 @@ proc total_pour_timer_text {} {
 		if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
 			return "[return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]] < [translate {total}] [translate {s}][espresso_elapsed_timer]"
 		} else {
-			return "[translate {total}] [translate {s}][espresso_elapsed_timer]"
+			return "[translate {s}][espresso_elapsed_timer] [translate {total}] "
 		}
 	}
 
@@ -1009,7 +1009,7 @@ proc total_pour_timer_text {} {
 proc espresso_done_timer_text {} {
 	if {[espresso_done_timer] < $::settings(seconds_to_display_done_espresso)} {
 	    if {$::de1(language_rtl) == 1} {
-			return "[translate done] [translate s][espresso_done_timer]"
+			return "[translate s][espresso_done_timer] [translate done]"
 	    }
 
 		return "[espresso_done_timer][translate s] [translate done]"
@@ -1022,9 +1022,10 @@ proc espresso_done_timer_text {} {
 proc pouring_timer_text {} {
     if {$::de1(language_rtl) == 1} {
 		if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
-			return "[return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]] < [translate {pouring}] [translate {s}][espresso_pour_timer]"
+			return "[translate {s}][espresso_pour_timer] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
+
 		} else {
-			return "[translate {pouring}] [translate {s}][espresso_pour_timer]"
+			return "[translate {s}][espresso_pour_timer] [translate {pouring}]"
 		}
 	}
 
@@ -1037,9 +1038,12 @@ proc pouring_timer_text {} {
 }
 
 proc pouring_timer_text_2 {} {
+	OBSOLETE
 	if {$::de1(language_rtl) == 1} {
 		if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
-			return "[return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]] < [translate {pouring}] [translate {s}][espresso_pour_timer]"
+
+			return "[translate {s}][espresso_pour_timer] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
+
 		} else {
 			return "[translate {pouring}] [translate {s}][espresso_pour_timer]"
 		}

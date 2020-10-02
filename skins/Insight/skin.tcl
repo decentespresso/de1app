@@ -741,7 +741,7 @@ add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_tempera
 
 			
 
-		add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7  -fill $lighter -width [rescale_x_skin 520] -textvariable {[pouring_timer_text_2]}  
+		add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7  -fill $lighter -width [rescale_x_skin 520] -textvariable {[pouring_timer_text]}  
 
 
 		# progress bar docs http://npg.dl.ac.uk/MIDAS/manual/ActiveTcl8.5.7.0.290198-html/bwidget/ProgressBar.html
