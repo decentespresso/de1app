@@ -20,7 +20,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4.0
 preinfusion_time 0
 pressure_end 2.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {The E61 machine was invented by Faema in 1961 and is still the most classic and most copied espresso machine design.  It is likely what most people mean when they say Professional Italian Espresso Machine}
 profile_title {E61 espresso machine}

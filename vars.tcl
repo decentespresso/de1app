@@ -2002,10 +2002,19 @@ proc fill_profiles_listbox {} {
 	
 		} else {
 			# if editing what profiles to show, then use a check or empty box, to indicate which profiles will be shown
+
 			if {[ifexists profile(profile_hide)] == 1} {
-				set p "\u2610 $p"
+				if {[language] == "he"} {
+					set p "\[   \] $p"
+				} else {
+					set p "\u2610 $p"
+				}
 			} else {
-				set p "\u2612 $p"
+				if {[language] == "he"} {
+					set p "\[X\] $p"
+				} else {
+					set p "\u2612 $p"
+				}
 			}
 
 		}
