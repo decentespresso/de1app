@@ -321,6 +321,12 @@ proc log_to_debug_file {text} {
             puts $::logfile_handle "$::debugcnt. ([clock format [clock seconds] -format "%Y-%m-%d %H:%M:%S" ]) $text"
         }
 
+        catch {
+            # if logging, display info to the screen terminal too
+            puts $text
+        }
+
+
         # temporarily do 
         #close_log_file
     }

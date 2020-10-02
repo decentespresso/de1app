@@ -678,7 +678,6 @@ proc msg {text} {
 		set ::debuglog [join $loglines \n]
 	}
 
-	puts $text
 }
 
 
@@ -764,6 +763,15 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 
 	}
 	return $btn_name
+}
+
+# truncates strings that are too long to display and add a ...message on the end.
+proc maxstring {in maxlength {optmsg {}} } {
+	if {[string length $in] > $maxlength} {
+		return "[string range $in 0 $maxlength]...$optmsg"
+	}
+
+	return $in
 }
 
 set text_cnt 0
@@ -2291,6 +2299,7 @@ proc water_level_color_check_obs {widget} {
 proc listbox_moveto {lb dest1 dest2} {
 	#puts "listbox_moveto $lb $dest1 $dest2"
 	$lb yview moveto $dest2
+
 }
 
 # convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
@@ -2319,6 +2328,11 @@ proc listbox_moveto_new {lb dest1 dest2} {
 
     $lb yview $top_item
 
+}
+
+proc scale_prevent_horiz_scroll {lb dest1 dest2} {
+	upvar $lb fieldname
+	$lb xview 0
 }
 
 # convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the listbox, rather than using the ugly Tk native scrollbar
