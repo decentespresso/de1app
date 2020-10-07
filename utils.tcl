@@ -813,6 +813,9 @@ proc android_specific_stubs {} {
             # do nothing
         } elseif {[lindex $args 0] == "systemui"} {
             # do nothing
+        } elseif {[lindex $args 0] == "osbuildinfo"} {
+            # do nothing
+            return ""
         } elseif {[lindex $args 0] == "spinner"} {
             # do nothing
         } elseif {[lindex $args 0] == "toast"} {
@@ -1133,9 +1136,31 @@ proc save_settings {} {
 }
 
 proc load_settings {} {
-    #puts "loading settings XXXXXXX"
-    array set ::settings [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]
 
+
+    #puts "loading settings XXXXXXX"
+
+    set osbuildinfo_string [borg osbuildinfo]
+
+    set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]    
+    if {[string length $settings_file_contents] == 0} {
+       
+        # if there are no settings, then set some based on what we know about this machine's settings
+        # nb : we could 
+        catch {
+            array set osbuildinfo $osbuildinfo_string
+        }
+        if {[ifexists osbuildinfo(product)] == "P80X_EEA"} {
+            # this "Teclast" tablet firmware version has an Android metadata configuration bug, and needs 20% larger fonts
+            # other Teclast tablets do not have this error.
+            set ::settings(default_font_calibration) 0.6
+        }
+    } else {
+        array set ::settings $settings_file_contents
+
+        msg "OS build info: $osbuildinfo_string"
+
+    }
 
     if {[ifexists ::settings(language)] == "ar" || [ifexists ::settings(language)] == "arb" || [ifexists ::settings(language)] == "he" || [ifexists ::settings(language)] == "heb"} {
         set ::de1(language_rtl) 1
