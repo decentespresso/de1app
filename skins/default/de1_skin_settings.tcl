@@ -701,7 +701,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			add_de1_widget "measurements" checkbutton 950 490  {} -text [translate "clock"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(display_time_in_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
 		add_de1_text "measurements" 1300 900 -text [translate "Font size"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 1300 960 {} -from 0.1 -to 2 -background #e4d1c1 -borderwidth 1 -bigincrement 0.1 -showvalue 0 -resolution 0.1 -length [rescale_x_skin 800] -width [rescale_y_skin 100] -variable ::settings(default_font_calibration) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+			add_de1_widget "measurements" scale 1300 960 {} -from 0.1 -to 2 -background #e4d1c1 -borderwidth 1 -bigincrement 0.05 -showvalue 0 -resolution 0.05 -length [rescale_x_skin 800] -width [rescale_y_skin 100] -variable ::settings(default_font_calibration) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 			add_de1_variable "measurements" 1300 1060 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(default_font_calibration)}
 
 
