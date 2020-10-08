@@ -137,8 +137,13 @@ proc make_de1_dir {} {
         sounds/KeypressStandard_120.ogg *
         sounds/KeypressDelete_120.ogg *
 
-        fonts/NotoSansCJKjp-Bold.otf *
         "fonts/Font Awesome 5 Brands-Regular-400.otf" *
+        "fonts/Font Awesome 5 Duotone-Solid-900.otf" *
+        "fonts/Font Awesome 5 Pro-Light-300.otf" *
+        "fonts/Font Awesome 5 Pro-Regular-400.otf" *
+        "fonts/Font Awesome 5 Pro-Solid-900.otf" *
+
+        fonts/NotoSansCJKjp-Bold.otf *
         fonts/NotoSansCJKjp-Regular.otf *
         fonts/notosansuibold.ttf *
         fonts/notosansuiregular.ttf *
