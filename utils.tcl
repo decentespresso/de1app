@@ -154,6 +154,7 @@ proc setup_environment {} {
 
         }            
 
+        set fontawesome [lindex [sdltk addfont "fonts/Font Awesome 5 Brands-Regular-400.otf"] 0]
 
         font create global_font -family $global_font_name -size [expr {int($fontm * $global_font_size)}] 
 
@@ -184,6 +185,10 @@ proc setup_environment {} {
         font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 37)}]
         font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
         font create Helv_30 -family $helvetica_font -size [expr {int($fontm * 56)}]
+
+        font create Fontawesome_brands_30 -family $fontawesome -size [expr {int($fontm * 56)}]
+        font create Fontawesome_brands_12 -family $fontawesome -size [expr {int($fontm * 22)}]
+        font create Fontawesome_brands_8 -family $fontawesome -size [expr {int($fontm * 16)}]
 
         # enable swipe gesture translating, to scroll through listboxes
         # sdltk touchtranslate 1

@@ -81,6 +81,10 @@ add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" $espresso_button_text_pos
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" $steam_button_text_position 100 -text [translate "STEAM"] -font $label_font -fill $toptab_unselected_color -anchor "center" 
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" $hotwater_button_text_position 100 -text [translate "WATER"] -font $label_font -fill $toptab_unselected_color -anchor "center" 
 
+
+add_de1_text "off" 100 100 -text [translate "Font \uF294 Awesome \uF287 Test"] -font Fontawesome_brands_30 -fill "#000000" -anchor "nw" 
+
+
 # labels for ESPRESSO tab on
 add_de1_text "off espresso espresso_3" $flush_button_text_position 100 -text [translate "FLUSH"] -font $label_font -fill $toptab_unselected_color -anchor "center" 
 add_de1_text "off espresso espresso_3" $espresso_button_text_position 100 -text [translate "ESPRESSO"] -font $label_font -fill "#2d3046" -anchor "center" 
