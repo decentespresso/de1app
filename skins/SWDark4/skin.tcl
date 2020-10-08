@@ -96,7 +96,7 @@ add_de1_page "water_2" "home.png"
 add_de1_page "water_3" "home.png"
 
 #Preheat
-add_de1_page "preheat preheat_1" "home_2.png"
+add_de1_page "preheat preheat_1 hotwaterrinse" "home_2.png"
 add_de1_page "preheat_2" "home_2.png"
 add_de1_page "preheat_3" "home.png"
 add_de1_page "preheat_4" "home.png"
@@ -150,7 +150,7 @@ add_de1_page "preheat_4" "home.png"
 #
 
 # new screensavers while we're at it. 
-#set_de1_screen_saver_directory "[skin_directory]/screen_saver"
+set_de1_screen_saver_directory "[skin_directory]/screen_saver"
 
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/skins/default/de1_skin_settings.tcl"
@@ -188,7 +188,7 @@ add_de1_text "steam steam_zoom" 2162.825 178.88 -text [translate "STEAM"] -font 
 
 add_de1_text "water" 2162.825 178.88  -text [translate "WATER"] -font helveticabold20 -fill "#ffffff" -anchor "center" 
 
-add_de1_text "preheat preheat_2" 2162.825 178.88  -text [translate "FLUSH"] -font helveticabold20 -fill "#ffffff" -anchor "center" 
+add_de1_text "preheat preheat_2 hotwaterrinse" 2162.825 178.88  -text [translate "FLUSH"] -font helveticabold20 -fill "#ffffff" -anchor "center" 
 
 
 # indicate whether we are connected to the DE1+ or not
@@ -213,9 +213,9 @@ if { [language] == "de" || [language] == "da" || [language] == "sv" || [language
 
 #Main Buttons
 
-add_de1_button "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off off; start_idle} 2028 296 2298 401
+add_de1_button "steam espresso preheat hotwaterrinse water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off off; start_idle} 2028 296 2298 401
 
-add_de1_variable "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" 2162.825 518.88 -text [translate "stop"] -font helveticabold18 -fill "#FFFFFF" -anchor "center" -textvariable {[stop_text_if_espresso_stoppable]} 
+add_de1_variable "steam espresso preheat hotwaterrinse water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" 2162.825 518.88 -text [translate "stop"] -font helveticabold18 -fill "#FFFFFF" -anchor "center" -textvariable {[stop_text_if_espresso_stoppable]} 
 
 # make and stop espresso button
 if {$::swdark_settings(swbrewsettings) == 1} {
@@ -245,7 +245,7 @@ add_de1_button "home off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 ste
 #add_de1_button "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off off; start_idle} 2173 360 2538 678
 
 #STOP Button when doing something
-add_de1_button "steam espresso espresso_zoomed espresso_zoomed_temperature steam_zoom_3 preheat water espresso_2 preheat_2 steam_2 water_2 steam_zoom" {after cancel {set_next_page off off; start_idle}; set_next_page off off; start_idle} 1789 20 2539 678
+add_de1_button "steam espresso espresso_zoomed espresso_zoomed_temperature steam_zoom_3 preheat hotwaterrinse water espresso_2 preheat_2 steam_2 water_2 steam_zoom" {after cancel {set_next_page off off; start_idle}; set_next_page off off; start_idle} 1789 20 2539 678
 
 
 
@@ -271,11 +271,16 @@ add_de1_button "home off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 p
 
 
 #Scale Reconnect/Tare button
-add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {connect}] $::settings(sound_button_in); skale_tare; catch {ble_connect_to_skale}; update_onscreen_variables} 2087 1270 2240 1410
+	if {$::settings(scale_bluetooth_address) != ""} {
+		add_de1_button "home off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {connect}] $::settings(sound_button_in); catch {ble_connect_to_scale}; skale_tare; update_onscreen_variables} 2087 1270 2240 1410 
+	} else {
+		add_de1_button "home off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {connect}] $::settings(sound_button_in); page_show settings_4; scanning_restart; catch {ble_connect_to_skale}; update_onscreen_variables} 2087 1270 2240 1410
+	}
+		
 
 
 #add_de1_variable "off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3" 2162 352 -text [translate "#"] -font helveticabold18 -fill "#FFFFFF" -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
-add_de1_variable "home swsettings off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 off_zoomed off_steam_zoom off_zoomed_temperature steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" 2162 350 -text [translate "#"] -font helveticabold16 -fill "#FFFFFF" -anchor "center" -textvariable {[de1_substate_text]}
+add_de1_variable "home swsettings off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 water_1 water_3 off_zoomed off_steam_zoom off_zoomed_temperature steam espresso preheat hotwaterrinse water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" 2162 350 -text [translate "#"] -font helveticabold16 -fill "#FFFFFF" -anchor "center" -textvariable {[de1_substate_text]}
 
 #add_de1_variable "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" 2162 452 -text [translate "stop"] -font helveticabold18 -fill "#FFFFFF" -anchor "center" -textvariable {[stop_text_if_espresso_stoppable]} 
 
@@ -311,10 +316,11 @@ add_de1_widget "home off espresso_1 espresso_2 espresso_3" graph 30 68 {
 	$widget element create god_line_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::chartgodpressurecol  -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color $::chartprofilestepcol  -pixels 0 ; 
 	# show the explanation
-	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 0] -color #ffffff  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
+	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::chartpressuregoallinecol -smooth $::settings(preview_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
 	$widget element create line_espresso_de1_explanation_chart_pressure_part1 -xdata espresso_de1_explanation_chart_elapsed_1 -ydata espresso_de1_explanation_chart_pressure_1 -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::chartpressurelinecol  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
 	$widget element create line_espresso_de1_explanation_chart_pressure_part2 -xdata espresso_de1_explanation_chart_elapsed_2 -ydata espresso_de1_explanation_chart_pressure_2 -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::chartweightlinecol  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
 	$widget element create line_espresso_de1_explanation_chart_pressure_part3 -xdata espresso_de1_explanation_chart_elapsed_3 -ydata espresso_de1_explanation_chart_pressure_3 -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::charttemplinecol  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
+
 
 	if {$::settings(display_pressure_delta_line) == 1} {
 		$widget element create line_espresso_pressure_delta2  -xdata espresso_elapsed -ydata espresso_pressure_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #40dc94 -pixels 0 -smooth $::settings(live_graph_smoothing_technique) 
@@ -368,7 +374,7 @@ add_de1_widget "home off espresso_1 espresso_2 espresso_3" graph 47 500 {
 	}
 
 	# show the shot configuration
-	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 0] -color #ffffff  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
+	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::chartflowlinecol  -smooth $::settings(preview_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
 	$widget element create line_espresso_de1_explanation_chart_flow_part1 -xdata espresso_de1_explanation_chart_elapsed_flow_1 -ydata espresso_de1_explanation_chart_flow_1 -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::chartpressurelinecol  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
 	$widget element create line_espresso_de1_explanation_chart_flow_part2 -xdata espresso_de1_explanation_chart_elapsed_flow_2 -ydata espresso_de1_explanation_chart_flow_2 -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::chartweightlinecol  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
 	$widget element create line_espresso_de1_explanation_chart_flow_part3 -xdata espresso_de1_explanation_chart_elapsed_flow_3 -ydata espresso_de1_explanation_chart_flow_3 -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::charttemplinecol  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
@@ -393,6 +399,7 @@ add_de1_widget "home off espresso_1 espresso_2 espresso_3" graph 30 940 {
 	$widget element create god_line_espresso_temperature_basket -xdata espresso_elapsed -ydata god_espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 6] -color $::chartgodtempcol -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 	$widget element create line_espresso_state_change_3 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color $::chartprofilestepcol  -pixels 0 ; 
 
+	$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 12] -color $::charttemplinecol  -smooth $::settings(preview_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
 
 	$widget axis configure x -color $::chartaxiscol -tickfont Helv_6; 
 	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -subdivisions 2;
@@ -632,6 +639,9 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 40 100 {
 	$widget element create god_line_espresso_flow_2x  -xdata espresso_elapsed -ydata god_espresso_flow_2x -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::chartgodflowcol -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 #	$widget element create line_espresso_resistance  -xdata espresso_elapsed -ydata espresso_resistance -symbol none -label "" -linewidth [rescale_x_skin 4] -color #e5e500 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 
 
+	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::chartflowlinecol  -smooth $::settings(preview_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
+	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure -symbol circle -label "" -linewidth [rescale_x_skin 12] -color $::chartpressuregoallinecol -smooth $::settings(preview_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
+
 	if {$::settings(display_flow_delta_line) == 1} {
 		$widget element create line_espresso_flow_delta_1  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth $::settings(live_graph_smoothing_technique) 
 	}
@@ -709,6 +719,7 @@ add_de1_widget "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zo
 	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 10] -color $::charttemplinecol -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 	$widget element create god_line_espresso_temperature_basket -xdata espresso_elapsed -ydata god_espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 6] -color $::chartgodtempcol -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 	$widget element create line_espresso_state_change_4 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color $::chartprofilestepcol -pixels 0 ; 
+	$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 12] -color $::charttemplinecol  -smooth $::settings(preview_graph_smoothing_technique) -pixels [rescale_x_skin 15]; 
 	$widget axis configure x -color $::chartaxiscol -tickfont Helv_6; 
 	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -subdivisions 5;
 
@@ -866,7 +877,8 @@ add_de1_widget "off espresso_3" graph 50 1270 {
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label "" -linewidth [rescale_x_skin 6] -color #FF2600 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color $::chartaxiscol -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3} 
+	#$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3}
+	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0 -max 4 -subdivisions 5 -majorticks {1 2 3 4}	
 
 	catch {
 		$widget grid configure -color $::chartgridcol
@@ -888,7 +900,8 @@ add_de1_widget "steam_3" graph 50 1250 {
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label "" -linewidth [rescale_x_skin 6] -color #FF2600 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);   
 
 	$widget axis configure x -color $::chartaxiscol -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3} 
+#	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3 4} 
+	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0 -max 4 -subdivisions 5 -majorticks {1 2 3 4} 
 		# grid command not always available outside of Android, so catch it so that it doesn't break the app when running-non-android
 	catch {
 		$widget grid configure -color $::chartgridcol
@@ -911,7 +924,7 @@ add_de1_widget "steam_zoom_3 off_steam_zoom steam" graph 40 100 {
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color $::charttemplinecol -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color $::chartaxiscol -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #ffffff;
+	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0.0 -max 4 -subdivisions 5 -majorticks {0.5 1 1.5 2 2.5 3 3.5 4}  -title "[translate "Flow rate"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #ffffff;
 		# grid command not always available outside of Android, so catch it so that it doesn't break the app when running-non-android
 	catch {
 		$widget grid configure -color $::chartgridcol
@@ -933,7 +946,7 @@ add_de1_widget "steam_zoom" graph 40 100 {
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color $::charttemplinecol -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color $::chartaxiscol -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #ffffff;
+	$widget axis configure y -color $::chartaxiscol -tickfont Helv_6 -min 0.0 -max 4 -subdivisions 5 -majorticks {0.5 1 1.5 2 2.5 3 3.5 4}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #ffffff;
 		# grid command not always available outside of Android, so catch it so that it doesn't break the app when running-non-android
 	catch {
 		$widget grid configure -color $::chartgridcol
@@ -1052,7 +1065,7 @@ add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos
 #######################
 # data card preheat
 add_de1_text "off" $column3_pos [expr {$pos_top + (8.75 * $spacer)}] -justify left -anchor "nw" -text [translate "Flush"] -font Helv_7_bold -fill "#ffffff" -width [rescale_x_skin 520]
-add_de1_text "preheat_2" $column1_pos [expr {$pos_top + (0 * $spacer)}] -justify left -anchor "nw" -text [translate "Flush"] -font Helv_7_bold -fill "#ffffff" -width [rescale_x_skin 520]
+add_de1_text "preheat_2 hotwaterrinse" $column1_pos [expr {$pos_top + (0 * $spacer)}] -justify left -anchor "nw" -text [translate "Flush"] -font Helv_7_bold -fill "#ffffff" -width [rescale_x_skin 520]
 #add_de1_variable "off preheat_2" $column3_pos [expr {$pos_top + (10 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]}
 #add_de1_variable "off preheat_2" $column3_pos [expr {$pos_top + (10 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -text "" -textvariable {[flush_pour_timer]}
 
@@ -1060,13 +1073,13 @@ add_de1_text "preheat_2" $column1_pos [expr {$pos_top + (0 * $spacer)}] -justify
 #add_de1_variable "off" $column3_pos [expr {$pos_top + (11 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -text "" -textvariable {[flush_pour_timer][translate "s"]} 
 
 #add_de1_text "preheat_2 preheat_4" $column1_pos [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text [translate "Pouring"] -font Helv_7_bold -fill "#ffffff" -width [rescale_x_skin 520]
-add_de1_variable "preheat_2 preheat_4" $column1_pos [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -text "" -textvariable {[translate "Pouring "][flush_pour_timer][translate "s"]} 
-add_de1_variable "preheat_2 preheat_4" $column1_pos [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -text "" -textvariable {[translate "Water Temp "][watertemp_text]}
+add_de1_variable "preheat_2 preheat_4 hotwaterrinse" $column1_pos [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -text "" -textvariable {[translate "Pouring "][flush_pour_timer][translate "s"]} 
+add_de1_variable "preheat_2 preheat_4 hotwaterrinse" $column1_pos [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -text "" -textvariable {[translate "Water Temp "][watertemp_text]}
 
 #if {$preheat_water_volume_feature_enabled == 1} {
 #	add_de1_variable "off preheat_1" $column3_pos [expr {$pos_top + (12 * $spacer)}] -text "" -font Helv_7 -fill $lighter -anchor "center" -textvariable {[return_liquid_measurement $::settings(preheat_volume)]}
 	add_de1_variable "off" $column3_pos [expr {$pos_top + (9.75 * $spacer)}] -justify left -text "" -font Helv_7 -fill $lighter -anchor "nw" -textvariable {[round_to_integer $::settings(preheat_volume)][translate "s"]}
-	add_de1_variable "preheat_2" $column1_pos [expr {$pos_top + (1 * $spacer)}] -justify left -text "" -font Helv_7 -fill $lighter -anchor "nw" -textvariable {[translate "Target Time "][round_to_integer $::settings(preheat_volume)][translate "s"]}
+	add_de1_variable "preheat_2 hotwaterrinse" $column1_pos [expr {$pos_top + (1 * $spacer)}] -justify left -text "" -font Helv_7 -fill $lighter -anchor "nw" -textvariable {[translate "Target Time "][round_to_integer $::settings(preheat_volume)][translate "s"]}
 #}
 
 #######################
