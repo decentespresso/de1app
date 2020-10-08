@@ -1279,5 +1279,5 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-show_settings settings_4
+#show_settings settings_4
 #set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1

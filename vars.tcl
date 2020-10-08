@@ -1858,10 +1858,10 @@ proc fill_ble_scale_listbox {} {
 	set one_selected 0
 	foreach d [lsort -dictionary -increasing $::scale_bluetooth_list] {
 		if {$d == [ifexists ::settings(scale_bluetooth_address)]} {
-			$widget insert $cnt " \[[checkboxchar]\] \uF294 $d"
+			$widget insert $cnt " \[[checkboxchar]\] $d"
 			set one_selected 1
 		} else {
-			$widget insert $cnt " \[   \] \uF294 $d"
+			$widget insert $cnt " \[   \] $d"
 		}
 			#$widget insert $cnt $d
 		if {[ifexists ::settings(scale_bluetooth_address)] == $d} {
