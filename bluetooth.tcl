@@ -1349,9 +1349,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_scale_bluetooth_list $address "acaiascale"
 							acaia_send_ident
-							after 2000 acaia_enable_weight_notifications
-							after 2500 acaia_send_config
-							after 5500 acaia_send_heartbeat
+							after 500 acaia_send_config
+							after 1000 acaia_enable_weight_notifications
+							after 4000 acaia_send_heartbeat
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
