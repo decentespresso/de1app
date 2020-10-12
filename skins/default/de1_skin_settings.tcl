@@ -859,7 +859,7 @@ add_de1_text "settings_3" 1304 1080  -text [translate "Water level"] -font Helv_
 
 # bluetooth scan
 #add_de1_text "settings_4" 2230 980 -text [translate "Search"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-#add_de1_button "settings_4" {set ::de1_bluetooth_list ""; say [translate {search}] $::settings(sound_button_in); ble_find_de1s} 1910 890 2550 1080
+#add_de1_button "settings_4" {set ::de1_device_list ""; say [translate {search}] $::settings(sound_button_in); ble_find_de1s} 1910 890 2550 1080
 
 set enable_spoken_buttons 0
 if {$enable_spoken_buttons == 1} {

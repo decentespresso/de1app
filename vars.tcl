@@ -1790,58 +1790,63 @@ proc checkboxchar {} {
 	return \u2713
 }
 
+proc bluetooth_character {} {
+	if {[language] == "ar" || [language] == "he"} {
+		return "BLE:"
+	}
 
-#set de1_bluetooth_list {}
+	return \uF294
+}
+
+proc usb_character {} {
+	if {[language] == "ar" || [language] == "he"} {
+		return "USB:"
+	}
+
+	return \uF287
+}
+
+#set de1_device_list {}
 proc fill_ble_listbox {} {
-
-	#puts "fill_profiles_listbox $widget"
-	#set ::settings(profile_to_save) $::settings(profile)
 
 	set widget $::ble_listbox_widget
 	$widget delete 0 99999
 	set cnt 0
 	set current_ble_number 0
-#
-#	set ble_ids [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
-	#lappend ::de1_bluetooth_list $address
-
-	if {$::android == 0} {	
-		#set ::scale_bluetooth_list [list "C1:80:A7:32:CD:A3" "C5:80:EC:A5:F9:72" "F2:C3:43:60:AB:F5"]
-		#set ::de1_bluetooth_list ""
-	}
-
-	
 
 	set one_selected 0
-	foreach d [lsort -dictionary -increasing $::de1_bluetooth_list] {
-		#$widget insert $cnt $d
-		if {$d == [ifexists ::settings(bluetooth_address)]} {
-			$widget insert $cnt " \[[checkboxchar]\] $d"
-			set one_selected 1
+	foreach d [lsort -dictionary -increasing $::de1_device_list] {
+		set addr_raw [dict get $d address]
+		set name [dict get $d name]
+		set type [dict get $d type]
+
+		set display_addr $addr_raw
+		if { $type == "ble" } { 
+			set icon [bluetooth_character]
+			set display_addr [string range $addr_raw 9 13]
+		} elseif { $type == "usb" } {
+			set icon [usb_character]
 		} else {
-			$widget insert $cnt " \[   \] $d"
+			set icon "?"
 		}
 
-		if {[ifexists ::settings(bluetooth_address)] == $d} {
+		if {$addr_raw == [ifexists ::settings(bluetooth_address)]} {
+			$widget insert $cnt " \[[checkboxchar]\] $icon $name ($display_addr)"
+			set one_selected 1
+		} else {
+			$widget insert $cnt " \[   \] $icon $name ($display_addr)"
+		}
+
+		if {[ifexists ::settings(bluetooth_address)] == $addr_raw} {
 			set current_ble_number $cnt
-			#puts "current profile of '$d' is #$cnt"
 		}
 		incr cnt
 	}
 
 	set ::de1_needs_to_be_selected 0
-	if {[llength $::de1_bluetooth_list] > 0 && $one_selected == 0} {
+	if {[llength $::de1_device_list] > 0 && $one_selected == 0} {
 		set ::de1_needs_to_be_selected 1
 	}
-
-
-	#$widget itemconfigure $current_profile_number -foreground blue
-	$widget selection set $current_ble_number;
-
-	#$widget selection set 3
-	#puts "$widget selection set $current_profile_number"
-
-	#set ::globals(ble_listbox) $widget
 
 	# john - probably makes sense for "pair" to occur on item tap
 	make_current_listbox_item_blue $widget
@@ -1857,14 +1862,20 @@ proc fill_ble_scale_listbox {} {
 
 	set one_selected 0
 	foreach d [lsort -dictionary -increasing $::scale_bluetooth_list] {
-		if {$d == [ifexists ::settings(scale_bluetooth_address)]} {
-			$widget insert $cnt " \[[checkboxchar]\] $d"
+		set addr [dict get $d address]
+		set name [dict get $d name]
+		set type [dict get $d type]
+		set icon [bluetooth_character]
+
+		if { $name eq "" } { set name $type }
+		if {$addr == [ifexists ::settings(scale_bluetooth_address)]} {
+			$widget insert $cnt " \[[checkboxchar]\] $icon $name"
 			set one_selected 1
 		} else {
-			$widget insert $cnt " \[   \] $d"
+			$widget insert $cnt " \[   \] $icon $name"
 		}
-			#$widget insert $cnt $d
-		if {[ifexists ::settings(scale_bluetooth_address)] == $d} {
+			#$widget insert $cnt $addr
+		if {[ifexists ::settings(scale_bluetooth_address)] == $addr} {
 			set current_ble_number $cnt
 		}
 		incr cnt
@@ -1873,7 +1884,7 @@ proc fill_ble_scale_listbox {} {
 	$widget selection set $current_ble_number;
 
 	set ::scale_needs_to_be_selected 0
-	if {[llength $::de1_bluetooth_list] > 0 && $one_selected == 0} {
+	if {[llength $::de1_device_list] > 0 && $one_selected == 0} {
 		set ::scale_needs_to_be_selected 1
 	}
 	
@@ -2609,16 +2620,11 @@ proc change_bluetooth_device {} {
 		return ""
 	}
 
-	#set profile [$w get [$w curselection]]
-	set was_selected [$w get [$w curselection]]
-	puts "BLE was_selected: '$was_selected'"
+	set selection_index [$w curselection]
+	set dic [lindex $::de1_device_list $selection_index]
+	set addr [dict get $dic address]
 
-	set p [string first "\] " $was_selected 0]
-	set p2 [expr {$p + 2}]
-	set profile [string range $was_selected $p2 end]
-	puts "new ble: '$profile'"
-
-	if {$profile == $::settings(bluetooth_address)} {
+	if {$addr == $::settings(bluetooth_address)} {
 		# if no change in setting, then disconnect/reconnect.
 		#return
 
@@ -2629,8 +2635,6 @@ proc change_bluetooth_device {} {
 			return
 		}
 
-
-
 		msg "reconnecting to DE1"
 
 	}
@@ -2638,14 +2642,11 @@ proc change_bluetooth_device {} {
 	set ::globals(changing_bluetooth_device) 1
 	after 5000 {set ::globals(changing_bluetooth_device) 0}
 
-
-	if {$profile != $::settings(bluetooth_address)} {
+	if {$addr != $::settings(bluetooth_address)} {
 		# if no change in setting, then disconnect/reconnect.
-		set ::settings(bluetooth_address) $profile
+		set ::settings(bluetooth_address) $addr
 		save_settings
 	}
-
-	
 
 	# disconnect (if necessary) and reconnect to the DE1 now
 	ble_connect_to_de1
@@ -2668,20 +2669,22 @@ proc change_scale_bluetooth_device {} {
 		ble_connect_to_scale
 		return
 	}
+	set selection_index [$w curselection]
+	set dic [lindex $::scale_bluetooth_list $selection_index]
+	set addr [dict get $dic address]
+	set name [dict get $dic name]
 
-	set was_selected [$w get [$w curselection]]
-	puts "BLE was_selected: '$was_selected'"
+	if { $name == "" } {
+		set name [dict get $dic type]
+	}
 
-	set p [string first "\] " $was_selected 0]
-	set p2 [expr {$p + 2}]
-	set profile [string range $was_selected $p2 end]
-#	puts "new ble: '$profile'"
-#
-	set ::settings(scale_bluetooth_address) $profile
-	set ::settings(scale_type) [ifexists ::scale_types($profile)]
-	msg "set scale type to: '$::settings(scale_type)' $profile"
+	set ::settings(scale_bluetooth_address) $addr
+	set ::settings(scale_bluetooth_name) $name
 
-	if {$profile == $::settings(scale_bluetooth_address)} {
+	set ::settings(scale_type) [ifexists ::scale_types($addr)]
+	msg "set scale type to: '$::settings(scale_type)' $addr"
+
+	if {$addr == $::settings(scale_bluetooth_address)} {
 		ble_connect_to_scale
 		return
 	}

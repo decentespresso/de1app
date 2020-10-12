@@ -1,5 +1,5 @@
 package provide de1_machine 1.0
-
+package require de1_comms 1.0
 #set ::debugging 0
 
 # ray's DE1 address (usb key #?)
@@ -327,6 +327,7 @@ array set ::settings {
 	settings_profile_type "settings_2"
 	steam_max_time 120
 	scale_bluetooth_address {}
+	scale_bluetooth_name {}
 	skale_bluetooth_address {}
 	bluetooth_address {}
 	water_max_vol 500
@@ -423,9 +424,10 @@ if {$::android != 1} {
 
 set ::settings(preinfusion_guarantee) 0
 
-
-# default the listbox to the currently set ble addresses
-set ::de1_bluetooth_list $settings(bluetooth_address)
+set ::de1_device_list {}
+if { $settings(bluetooth_address) != ""} {
+	append_to_de1_list $settings(bluetooth_address) "DE1" "ble"
+}
 
 #msg "init was run '$::settings(scale_type)'"
 

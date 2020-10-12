@@ -805,7 +805,12 @@ proc android_8_or_newer {} {
 	#return 0
 }
 
-set ::ble_scanner [ble scanner de1_ble_handler]
+
+set ::ble_scanner {}
+catch  {
+	# this will fail if this package has been loaded before "proc android_specific_stubs {}" has been run
+	set ::ble_scanner [ble scanner de1_ble_handler]
+}
 set ::scanning -1
 
 proc check_if_initial_connect_didnt_happen_quickly {} {
@@ -1055,37 +1060,25 @@ proc ble_connect_to_scale {} {
 
 }
 
-proc append_to_de1_bluetooth_list {address} {
-	set newlist $::de1_bluetooth_list
-	lappend newlist $address
-	set newlist [lsort -unique $newlist]
-
-	if {[llength $newlist] == [llength $::de1_bluetooth_list]} {
-		return
-	}
-
-	msg "Scan found DE1: $address"
-	set ::de1_bluetooth_list $newlist
-	catch {
-		fill_ble_listbox
-	}
-}
-
-
-proc append_to_scale_bluetooth_list {address name} {
+proc append_to_scale_bluetooth_list {address name type} {
 	#msg "Sca $address"
 
-	set ::scale_types($address) $name
+	set ::scale_types($address) $type
 
-	set newlist $::scale_bluetooth_list
-	lappend newlist $address
-	set newlist [lsort -unique $newlist]
-
-	if {[llength $newlist] == [llength $::scale_bluetooth_list]} {
-		return
+	foreach { entry } $::scale_bluetooth_list {
+		if { [dict get $entry address] eq $address} {
+			return
+		}
 	}
 
-	msg "Scan found Skale or Decent Scale: $address ($name)"
+	if { $name == "" } {
+		set name $type
+	}
+
+	set newlist $::scale_bluetooth_list
+	lappend newlist [dict create address $address name $name type $type]
+
+	msg "Scan found Skale or Decent Scale: $address ($type)"
 	set ::scale_bluetooth_list $newlist
 	catch {
 		fill_ble_scale_listbox
@@ -1181,7 +1174,7 @@ proc de1_ble_handler { event data } {
 			scan {
 				#msg "-- device $name found at address $address ($data)"
 				if {[string first DE1 $name] != -1} {
-					append_to_de1_bluetooth_list $address
+					append_to_de1_list $address $name "ble"
 					#if {$address == $::settings(bluetooth_address) && $::scanning != 0} {
 						#ble stop $::ble_scanner
 						#set ::scanning 0
@@ -1200,7 +1193,7 @@ proc de1_ble_handler { event data } {
 						}
 					}
 				} elseif {[string first Skale $name] != -1} {
-					append_to_scale_bluetooth_list $address "atomaxskale"
+					append_to_scale_bluetooth_list $address $name "atomaxskale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1210,7 +1203,7 @@ proc de1_ble_handler { event data } {
 					}
 
 				} elseif {[string first "Decent Scale" $name] != -1} {
-					append_to_scale_bluetooth_list $address "decentscale"
+					append_to_scale_bluetooth_list $address $name "decentscale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1225,7 +1218,7 @@ proc de1_ble_handler { event data } {
 					if { [string first "PROCH" $name] != -1 } {
 						set ::settings(force_acaia_heartbeat) 1
 					}
- 					append_to_scale_bluetooth_list $address "acaiascale"
+ 					append_to_scale_bluetooth_list $address $name "acaiascale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1303,7 +1296,7 @@ proc de1_ble_handler { event data } {
 						msg "de1 connected $event $data"
 
 
-						de1_connect_handler $handle $address
+						de1_connect_handler $handle $address "DE1"
 
 						if {$::de1(scale_device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning (or if there is not scale to connect to and we're connected to the de1)
@@ -1329,7 +1322,7 @@ proc de1_ble_handler { event data } {
 
 						#set ::de1(scale_type) [ifexists ::scale_types($address)]
 						if {$::settings(scale_type) == "decentscale"} {
-							append_to_scale_bluetooth_list $address "decentscale"
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "decentscale"
 							#after 500 decentscale_enable_lcd
 							decentscale_tare
 							
@@ -1340,14 +1333,14 @@ proc de1_ble_handler { event data } {
 							#after 5000 decentscale_timer_off
 
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
-							append_to_scale_bluetooth_list $address "atomaxskale"
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "atomaxskale"
 							#set ::de1(scale_type) "atomaxskale"
 							skale_enable_lcd
 							after 1000 skale_enable_weight_notifications
 							after 2000 skale_enable_button_notifications
 							after 3000 skale_enable_lcd
 						} elseif {$::settings(scale_type) == "acaiascale"} {
-							append_to_scale_bluetooth_list $address "acaiascale"
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "acaiascale"
 							acaia_send_ident
 							after 500 acaia_send_config
 							after 1000 acaia_enable_weight_notifications
@@ -1985,8 +1978,8 @@ proc scanning_restart {} {
 	}
 	if {$::android != 1} {
 
-		set ::scale_bluetooth_list [list "12:32:56:78:90" "32:56:78:90:12" "56:78:90:12:32"]
-		set ::de1_bluetooth_list [list "12:32:56:18:90" "32:56:78:90:13" "56:78:90:13:32"]
+		set ::de1_device_list [list [dict create address "12:32:56:78:90" name "dummy_ble" type "ble"] [dict create address "ttyS0" name "dummy_usb" type "usb"] [dict create address "192.168.0.1" name "dummy_usb" type "wifi"]]
+		set ::scale_bluetooth_list [list [dict create address "12:32:56:78:90" name "ACAIAxxx"] [dict create address "12:32:56:78:90" name "Skale2"]]
 
 		set ::scale_types(12:32:56:78:90) "decentscale"
 		set ::scale_types(32:56:78:90:12) "decentscale"

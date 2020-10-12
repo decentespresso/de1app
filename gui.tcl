@@ -1071,7 +1071,7 @@ proc de1_connected_state { {hide_delay 0} } {
 		#borg toast "[translate Connected]"
 		#borg toast "[translate Connected]"
 		return [translate Connected]
-		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_bluetooth_list"
+		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_device_list"
 	} else {
 
 #		if {[ifexists ::de1(in_fw_update_mode)] == 1} {

@@ -45,10 +45,10 @@ if {$tk != ""} {
 }
 
 proc fill_ble_listbox {} {}
-set ::de1_bluetooth_list {}
+set ::de1_device_list {}
 set ::settings(bluetooth_address) {}
 ble_find_de1s
-vwait ::de1_bluetooth_list
+vwait ::de1_device_list
 
 set success 1
 #set err [catch {
@@ -63,11 +63,11 @@ if {$err != 0} {
 
 if {$tk != ""} {
 	if {$success == 1} {
-		.hello configure -text "Found DE1: $::de1_bluetooth_list"
+		.hello configure -text "Found DE1: $::de1_device_list"
 		#pause 1000
-		set ::settings(bluetooth_address) [lindex $::de1_bluetooth_list 0]
+		set ::settings(bluetooth_address) [lindex $::de1_device_list 0]
 
-		.hello configure -text "Saving DE1: $::de1_bluetooth_list"
+		.hello configure -text "Saving DE1: $::de1_device_list"
 		save_array_to_file ::settings [settings_filename]
 		#pause 1000
 		.hello configure -text "Saved DE1!"

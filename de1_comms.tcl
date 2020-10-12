@@ -125,8 +125,110 @@ proc de1_comm {action command_name {data 0}} {
 	}
 }
 
+proc append_to_de1_list {address name type} {
+
+	foreach { entry } $::de1_device_list {
+		if { [dict get $entry address] eq $address} {
+			return
+		}
+	}
+
+	set newlist $::de1_device_list
+	lappend newlist [dict create address $address name $name type $type]
+	msg "Scan found DE1: $address"
+	set ::de1_device_list $newlist
+	catch {
+		fill_ble_listbox
+	}
+}
+
+proc append_to_de1_list {address name type} {
+
+	foreach { entry } $::de1_device_list {
+		if { [dict get $entry address] eq $address} {
+			return
+		}
+	}
+
+	set newlist $::de1_device_list
+	lappend newlist [dict create address $address name $name type $type]
+	msg "Scan found DE1: $address"
+	set ::de1_device_list $newlist
+	catch {
+		fill_ble_listbox
+	}
+}
+
+proc append_to_de1_list {address name type} {
+
+	foreach { entry } $::de1_device_list {
+		if { [dict get $entry address] eq $address} {
+			return
+		}
+	}
+
+	set newlist $::de1_device_list
+	lappend newlist [dict create address $address name $name type $type]
+	msg "Scan found DE1: $address"
+	set ::de1_device_list $newlist
+	catch {
+		fill_ble_listbox
+	}
+}
+
+proc append_to_de1_list {address name type} {
+
+	foreach { entry } $::de1_device_list {
+		if { [dict get $entry address] eq $address} {
+			return
+		}
+	}
+
+	set newlist $::de1_device_list
+	lappend newlist [dict create address $address name $name type $type]
+	msg "Scan found DE1: $address"
+	set ::de1_device_list $newlist
+	catch {
+		fill_ble_listbox
+	}
+}
+
+proc append_to_de1_list {address name type} {
+
+	foreach { entry } $::de1_device_list {
+		if { [dict get $entry address] eq $address} {
+			return
+		}
+	}
+
+	set newlist $::de1_device_list
+	lappend newlist [dict create address $address name $name type $type]
+	msg "Scan found DE1: $address"
+	set ::de1_device_list $newlist
+	catch {
+		fill_ble_listbox
+	}
+}
+
+proc append_to_de1_list {address name type} {
+
+	foreach { entry } $::de1_device_list {
+		if { [dict get $entry address] eq $address} {
+			return
+		}
+	}
+
+	set newlist $::de1_device_list
+	lappend newlist [dict create address $address name $name type $type]
+	msg "Scan found DE1: $address"
+	set ::de1_device_list $newlist
+	catch {
+		fill_ble_listbox
+	}
+}
+
 ### Handler
-proc de1_connect_handler { handle address } {
+proc de1_connect_handler { handle address name} {
 
 	if {$::settings(scale_bluetooth_address) != ""} {
 		ble_connect_to_scale
@@ -143,7 +245,7 @@ proc de1_connect_handler { handle address } {
 
 	#msg "Connected to DE1"
 	set ::de1(device_handle) $handle
-	append_to_de1_bluetooth_list $address
+	append_to_de1_list $address $name "ble"
 
 
 	#msg "connected to de1 with handle $handle"
