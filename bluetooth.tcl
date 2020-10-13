@@ -216,7 +216,7 @@ proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
 		# lets assume clean, filtered delicious water actually has a density of 1
 
 		# ignore first few seconds of pour as it can generate a lot of noise on the scale and trigger a false stop
-		if {[water_pour_timer] > 2.5} {
+		if {[water_pour_timer] > 2.5 && $::settings(water_stop_on_scale) == 1} {
 			set water_offset_calibration  1.0
 			set target_water_weight [expr {$::settings(water_volume) - $water_offset_calibration}]
 			set current_calibrated_water_weight [round_to_one_digits $target_water_weight ]

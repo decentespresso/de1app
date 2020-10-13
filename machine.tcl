@@ -406,6 +406,7 @@ array set ::settings {
 	preheat_volume 50
 	preheat_temperature 95
 	water_volume 50
+	water_stop_on_scale 1
 	ghc_is_installed 0
 	force_acaia_heartbeat 0
 	comms_debugging 0
