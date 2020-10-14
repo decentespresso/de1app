@@ -978,7 +978,7 @@ proc ble_connect_to_de1 {} {
 
 	set ::de1_name "DE1"
 	if {[catch {
-		set ::currently_connecting_de1_handle [ble connect $::settings(bluetooth_address) de1_ble_handler false]
+		set ::currently_connecting_de1_handle [ble connect [string toupper $::settings(bluetooth_address)] de1_ble_handler false]
 		msg "Connecting to DE1 on $::settings(bluetooth_address)"
 		set retcode 1
 	} err] != 0} {
@@ -1048,7 +1048,7 @@ proc ble_connect_to_scale {} {
 	}
 
 	if {[catch {
-		set ::currently_connecting_scale_handle [ble connect $::settings(scale_bluetooth_address) de1_ble_handler false]
+		set ::currently_connecting_scale_handle [ble connect [string toupper $::settings(scale_bluetooth_address)] de1_ble_handler false]
 		msg "Connecting to scale on $::settings(scale_bluetooth_address)"
 		set retcode 0
 	} err] != 0} {
