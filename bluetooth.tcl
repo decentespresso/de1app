@@ -27,6 +27,8 @@ proc scale_timer_start {} {
 		skale_timer_start
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_timer_start
+	} elseif {$::settings(scale_type) == "felicita"} {
+		felicita_start_timer
 	}
 }
 
@@ -36,6 +38,8 @@ proc scale_timer_stop {} {
 		skale_timer_stop
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_timer_stop
+	} elseif {$::settings(scale_type) == "felicita"} {
+		felicita_stop_timer
 	}
 }
 
@@ -45,6 +49,8 @@ proc scale_timer_off {} {
 		skale_timer_off
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_timer_off
+	} elseif {$::settings(scale_type) == "felicita"} {
+		felicita_reset_timer
 	}
 }
 
@@ -56,6 +62,8 @@ proc scale_tare {} {
 		decentscale_tare
 	} elseif {$::settings(scale_type) == "acaiascale"} {
 		acaia_tare
+	} elseif {$::settings(scale_type) == "felicita"} {
+		felicita_tare
 	}
 }
 
@@ -67,6 +75,8 @@ proc scale_enable_weight_notifications {} {
 		decentscale_enable_notifications
 	} elseif {$::settings(scale_type) == "acaiascale"} {
 		acaia_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "felicita"} {
+		felicita_enable_weight_notifications
 	}
 }
 
@@ -376,6 +386,98 @@ proc skale_enable_weight_notifications {} {
 	userdata_append "enable Skale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF81) $::cinstance($::de1(cuuid_skale_EF81))] 1
 }
 
+
+#### Felicita
+proc felicita_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "felicita"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_felicita))] == ""} {
+		error "Felicita Scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "enable felicita scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_felicita) $::sinstance($::de1(suuid_felicita)) $::de1(cuuid_felicita) $::cinstance($::de1(cuuid_felicita))] 1
+}
+
+proc felicita_tare {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "felicita"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_felicita))] == ""} {
+		error "Felicita Scale not connected, cannot send tare cmd"
+		return
+	}
+
+	set tare [binary decode hex "54"]
+
+	userdata_append "felicita tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_felicita) $::sinstance($::de1(suuid_felicita)) $::de1(cuuid_felicita) $::cinstance($::de1(cuuid_felicita)) $tare] 0
+	# The tare is not yet confirmed to us, we can therefore assume it worked out
+	set ::de1(scale_autostop_triggered) 0
+}
+
+proc felicita_reset_timer {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "felicita"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_felicita))] == ""} {
+		error "Felicita Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "43"]
+
+	userdata_append "felicita timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_felicita) $::sinstance($::de1(suuid_felicita)) $::de1(cuuid_felicita) $::cinstance($::de1(cuuid_felicita)) $tare] 0
+}
+proc felicita_start_timer {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "felicita"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_felicita))] == ""} {
+		error "Felicita Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "52"]
+
+	userdata_append "felicita timer start" [list ble write $::de1(scale_device_handle) $::de1(suuid_felicita) $::sinstance($::de1(suuid_felicita)) $::de1(cuuid_felicita) $::cinstance($::de1(cuuid_felicita)) $tare] 0
+}
+proc felicita_stop_timer {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "felicita"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_felicita))] == ""} {
+		error "Felicita Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "53"]
+
+	userdata_append "felicita timer stop" [list ble write $::de1(scale_device_handle) $::de1(suuid_felicita) $::sinstance($::de1(suuid_felicita)) $::de1(cuuid_felicita) $::cinstance($::de1(cuuid_felicita)) $tare] 0
+}
+
+proc felicita_parse_response { value } {
+	if {[string bytelength $value] >= 9} {
+		binary scan $value cucua1a6 h1 h2 sign weight
+		if {[info exists weight] && $h1 == 1 && $h2 == 2 } {
+			set weight [ scan $weight %d ]
+			if {$weight == ""} { return }
+			if {$sign == "-"} {
+				set weight [expr $weight * -1]
+			}
+			handle_new_weight_from_scale [expr $weight / 100.0] 10
+		}
+	}
+}
 
 #### Acaia
 set ::acaia_command_buffer ""
@@ -1211,6 +1313,15 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_scale
 						}
 					}
+				} elseif {[string first "FELICITA" $name] != -1} {
+					append_to_scale_bluetooth_list $address $name "felicita"
+
+					if {$address == $::settings(scale_bluetooth_address)} {
+						if {$::currently_connecting_scale_handle == 0} {
+							msg "Not currently connecting to scale, so trying now"
+							ble_connect_to_scale
+						}
+					}
  				} elseif {[string first "ACAIA" $name] != -1 \
  					|| [string first "LUNAR" $name]    != -1 \
  					|| [string first "PROCH" $name]    != -1 } {
@@ -1339,6 +1450,9 @@ proc de1_ble_handler { event data } {
 							after 1000 skale_enable_weight_notifications
 							after 2000 skale_enable_button_notifications
 							after 3000 skale_enable_lcd
+						} elseif {$::settings(scale_type) == "felicita"} {
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "felicita"
+							after 2000 felicita_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "acaiascale"
 							acaia_send_ident
@@ -1703,6 +1817,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_acaia_ips_age)} {
 							# acaia scale
 							acaia_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_felicita)} {
+							# felicita scale
+							felicita_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF82)} {
 							set t0 {}
 							#set t1 {}
