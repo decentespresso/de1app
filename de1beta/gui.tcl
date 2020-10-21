@@ -538,16 +538,16 @@ proc generic_button_held {btnup btndown action} {
 
 
 proc appdir {} {
-    return [file tail [homedir]]
+    return [file dirname [info script]]
 }
 
 
-proc install_update_app_icon {dir} {
+proc install_update_app_icon {} {
 	package require base64
-	set icondata_de1 [read_binary_file "/mnt/sdcard/$dir/cloud_download_icon.png"]
+	set icondata_de1 [read_binary_file "[appdir]/cloud_download_icon.png"]
 	set iconbase64_de1 [::base64::encode -maxlen 0 $icondata_de1]
 
-	set appurl "file://mnt/sdcard/$dir/appupdate.tcl"
+	set appurl "file://[file dirname [info script]]/appupdate.tcl"
 	catch {
 		set x [borg shortcut add "Decent Update" $appurl $iconbase64_de1]
 		puts "shortcut added: '$x'"
@@ -557,10 +557,10 @@ proc install_update_app_icon {dir} {
 
 proc install_de1_app_icon {} {
 	package require base64
-	set icondata_de1 [read_binary_file "/mnt/sdcard/[appdir]/de1_icon_v2.png"]
+	set icondata_de1 [read_binary_file "[appdir]/de1_icon_v2.png"]
 	set iconbase64_de1 [::base64::encode -maxlen 0 $icondata_de1]
 
-	set appurl "file://mnt/sdcard/[appdir]/de1.tcl"
+	set appurl "file://[appdir]/de1.tcl"
 	puts "appurl: $appurl"
 	catch {
 		set x [borg shortcut add "DE1" $appurl $iconbase64_de1]
@@ -574,10 +574,10 @@ proc install_de1_app_icon {} {
 
 proc install_de1plus_app_icon {} {
 	package require base64
-	set icondata_de1plus [read_binary_file "/mnt/sdcard/[appdir]/de1plus_icon_v2.png"]
+	set icondata_de1plus [read_binary_file "[appdir]/de1plus_icon_v2.png"]
 	set iconbase64_de1plus [::base64::encode -maxlen 0 $icondata_de1plus]
 
-	set appurl "file://mnt/sdcard/[appdir]/de1plus.tcl"
+	set appurl "file://[appdir]/de1plus.tcl"
 	#puts "appurl: $appurl"
 	catch {
 		set x [borg shortcut add "Decent" $appurl $iconbase64_de1plus]
@@ -585,27 +585,6 @@ proc install_de1plus_app_icon {} {
 	}
 
 	#install_update_app_icon [appdir]
-}
-
-
-proc install_this_app_icon_beta {} {
-	package require base64
-	set icondata_de1 [read_binary_file "/mnt/sdcard/de1beta/de1_icon_v2.png"]
-	set icondata_de1plus [read_binary_file "/mnt/sdcard/de1beta/de1plus_icon_v2.png"]
-	set iconbase64_de1 [::base64::encode -maxlen 0 $icondata_de1]
-	set iconbase64_de1plus [::base64::encode -maxlen 0 $icondata_de1plus]
-
-	set appurl "file://mnt/sdcard/de1beta/de1plus.tcl"
-	catch {
-		set x [borg shortcut add "Decent" $appurl $iconbase64_de1plus]
-		puts "shortcut added: '$x'"
-	}
-
-	set appurl "file://mnt/sdcard/de1beta/de1.tcl"
-	catch {
-		set x [borg shortcut add "DE1" $appurl $iconbase64_de1]
-		puts "shortcut added: '$x'"
-	}
 }
 
 proc platform_button_press {} {
