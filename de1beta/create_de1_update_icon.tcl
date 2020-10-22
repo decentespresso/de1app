@@ -8,5 +8,5 @@ source "pkgIndex.tcl"
 package require de1_main
 package require de1_gui
 
-install_update_app_icon [appdir]
+install_update_app_icon
 exit
