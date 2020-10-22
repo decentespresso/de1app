@@ -127,6 +127,7 @@ proc make_de1_dir {} {
         autopair_with_de1.tcl *
         autopair_with_de1plus.tcl *
         history_export.tcl *
+		version.tcl *
 
         history/info.txt *
         history/export/readme.txt *
