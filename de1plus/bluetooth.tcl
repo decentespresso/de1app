@@ -64,7 +64,10 @@ proc scale_tare {} {
 		acaia_tare
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_tare
+	} elseif {$::settings(scale_type) == "hiroiajimmy"} {
+		hiroia_tare
 	}
+	
 }
 
 proc scale_enable_weight_notifications {} {
@@ -77,6 +80,8 @@ proc scale_enable_weight_notifications {} {
 		acaia_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "hiroiajimmy"} {
+		hiroia_enable_weight_notifications
 	}
 }
 
@@ -478,6 +483,56 @@ proc felicita_parse_response { value } {
 		}
 	}
 }
+
+
+#### Hiroia Jimmy
+proc hiroia_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "hiroiajimmy"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_hiroiajimmy))] == ""} {
+		error "Hiroia Jimmy Scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "enable hiroiajimmy scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_hiroiajimmy) $::sinstance($::de1(suuid_hiroiajimmy)) $::de1(cuuid_hiroiajimmy_status) $::cinstance($::de1(cuuid_hiroiajimmy_status))] 1
+}
+
+proc hiroia_tare {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "hiroiajimmy"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_hiroiajimmy))] == ""} {
+		error "Hiroia Jimmy Scale not connected, cannot send tare cmd"
+		return
+	}
+
+	set tare [binary decode hex "0700"]
+
+	userdata_append "hiroiajimmy tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_hiroiajimmy) $::sinstance($::de1(suuid_hiroiajimmy)) $::de1(cuuid_hiroiajimmy_cmd) $::cinstance($::de1(cuuid_hiroiajimmy_cmd)) $tare] 0
+	# The tare is not yet confirmed to us, we can therefore assume it worked out
+	set ::de1(scale_autostop_triggered) 0
+}
+
+proc hiroia_parse_response { value } {
+	if {[string bytelength $value] >= 7} {
+		append value [binary decode hex 00]
+		binary scan $value cucucucui h1 h2 h3 h4 weight
+
+		if {[info exists weight]} {
+			if {$weight >= 8388608} {
+				set weight [expr (0xFFFFFF - $weight) * -1]
+			}
+			handle_new_weight_from_scale [expr $weight / 10.0] 10
+		} else {
+			error "weight non exist"
+		}
+	}
+}
+
 
 #### Acaia
 set ::acaia_command_buffer ""
@@ -1322,6 +1377,15 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_scale
 						}
 					}
+ 				} elseif {[string first "HIROIA JIMMY" $name] != -1} {
+					append_to_scale_bluetooth_list $address $name "hiroiajimmy"
+
+					if {$address == $::settings(scale_bluetooth_address)} {
+						if {$::currently_connecting_scale_handle == 0} {
+							msg "Not currently connecting to scale, so trying now"
+							ble_connect_to_scale
+						}
+					}
  				} elseif {[string first "ACAIA" $name] != -1 \
  					|| [string first "LUNAR" $name]    != -1 \
  					|| [string first "PROCH" $name]    != -1 } {
@@ -1453,6 +1517,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "felicita"} {
 							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "felicita"
 							after 2000 felicita_enable_weight_notifications
+						} elseif {$::settings(scale_type) == "hiroiajimmy"} {
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "hiroiajimmy"
+							after 200 hiroia_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "acaiascale"
 							acaia_send_ident
@@ -1820,6 +1887,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_felicita)} {
 							# felicita scale
 							felicita_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_hiroiajimmy_status)} {
+							# hiroia jimmy scale
+							hiroia_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF82)} {
 							set t0 {}
 							#set t1 {}
