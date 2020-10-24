@@ -60,6 +60,9 @@ array set ::de1 {
 	suuid_acaia_ips "00001820-0000-1000-8000-00805F9B34FB"
 	suuid_felicita "0000FFE0-0000-1000-8000-00805F9B34FB"
 	cuuid_felicita "0000FFE1-0000-1000-8000-00805F9B34FB"
+	suuid_hiroiajimmy "06C31822-8682-4744-9211-FEBC93E3BECE"
+	cuuid_hiroiajimmy_cmd "06C31823-8682-4744-9211-FEBC93E3BECE"
+	cuuid_hiroiajimmy_status "06C31824-8682-4744-9211-FEBC93E3BECE"
 	cinstance 0
 	fan_threshold 0
 	tank_temperature_threshold 0
