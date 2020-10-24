@@ -1,5 +1,7 @@
 package provide de1_comms 1.0
+package require de1_machine
 package require de1_bluetooth
+package require de1_usb
 
 ### Globals
 set ::failed_attempt_count_connecting_to_de1 0
@@ -118,10 +120,10 @@ proc run_next_userdata_cmd {} {
 ### Generics
 proc de1_comm {action command_name {data 0}} {
 	comms_msg "de1_comm sending action $action command $command_name data \"$data\""
-	if {$::de1(connectivity) == "ble"} {
+	if {$::settings(connectivity) == "ble"} {
 		return [de1_ble $action $command_name $data]
 	} else {
-		error "Unknown connectivity: $::de1(connectivity)"
+		error "Unknown connectivity: $::settings(connectivity)"
 	}
 }
 
@@ -138,97 +140,109 @@ proc append_to_de1_list {address name type} {
 	msg "Scan found DE1: $address"
 	set ::de1_device_list $newlist
 	catch {
-		fill_ble_listbox
+		fill_de1_listbox
 	}
 }
 
-proc append_to_de1_list {address name type} {
+proc scanning_restart {} {
+	if {$::scanning == 1} {
+		# USB scanning is pretty much instant. So there is no loss to not wait 10 additional seconds
+		usb_scan_devices
+		return
+	}
+	if {$::android != 1} {
 
-	foreach { entry } $::de1_device_list {
-		if { [dict get $entry address] eq $address} {
-			return
-		}
+		set ::de1_device_list [list [dict create address "12:32:56:78:90" name "dummy_ble" type "ble"] [dict create address "ttyS0" name "dummy_usb" type "usb"] [dict create address "192.168.0.1" name "dummy_usb" type "wifi"]]
+		set ::scale_bluetooth_list [list [dict create address "12:32:56:78:90" name "ACAIAxxx"] [dict create address "12:32:56:78:90" name "Skale2"]]
+
+		set ::scale_types(12:32:56:78:90) "decentscale"
+		set ::scale_types(32:56:78:90:12) "decentscale"
+		set ::scale_types(56:78:90:12:32) "atomaxskale"
+
+		after 200 fill_ble_scale_listbox
+		after 400 fill_de1_listbox
+
+		set ::scanning 1
+		after 3000 { set scanning 0 }
+		return
+	} else {
+		# only scan for a few seconds
+		after 10000 { stop_scanner }
 	}
 
-	set newlist $::de1_device_list
-	lappend newlist [dict create address $address name $name type $type]
-	msg "Scan found DE1: $address"
-	set ::de1_device_list $newlist
-	catch {
-		fill_ble_listbox
-	}
+	set ::scanning 1
+	ble start $::ble_scanner
+	usb_scan_devices
 }
 
-proc append_to_de1_list {address name type} {
+proc stop_scanner {} {
 
-	foreach { entry } $::de1_device_list {
-		if { [dict get $entry address] eq $address} {
-			return
-		}
+	if {$::scanning == 0} {
+		return
 	}
 
-	set newlist $::de1_device_list
-	lappend newlist [dict create address $address name $name type $type]
-	msg "Scan found DE1: $address"
-	set ::de1_device_list $newlist
-	catch {
-		fill_ble_listbox
+	if {$::de1(device_handle) == 0} {
+		# don't stop scanning if there is no DE1 connection
+		after 30000 stop_scanner
+		return
 	}
+
+	set ::scanning 0
+	ble stop $::ble_scanner
+	#userdata_append "stop scanning" [list ble stop $::ble_scanner]
 }
 
-proc append_to_de1_list {address name type} {
-
-	foreach { entry } $::de1_device_list {
-		if { [dict get $entry address] eq $address} {
-			return
-		}
-	}
-
-	set newlist $::de1_device_list
-	lappend newlist [dict create address $address name $name type $type]
-	msg "Scan found DE1: $address"
-	set ::de1_device_list $newlist
-	catch {
-		fill_ble_listbox
-	}
-}
-
-proc append_to_de1_list {address name type} {
-
-	foreach { entry } $::de1_device_list {
-		if { [dict get $entry address] eq $address} {
-			return
-		}
-	}
-
-	set newlist $::de1_device_list
-	lappend newlist [dict create address $address name $name type $type]
-	msg "Scan found DE1: $address"
-	set ::de1_device_list $newlist
-	catch {
-		fill_ble_listbox
-	}
-}
-
-proc append_to_de1_list {address name type} {
-
-	foreach { entry } $::de1_device_list {
-		if { [dict get $entry address] eq $address} {
-			return
-		}
-	}
-
-	set newlist $::de1_device_list
-	lappend newlist [dict create address $address name $name type $type]
-	msg "Scan found DE1: $address"
-	set ::de1_device_list $newlist
-	catch {
-		fill_ble_listbox
+proc comms_connect_to_de1 {} {
+	if { $::settings(connectivity) == "ble" } {
+		ble_connect_to_de1
+	} elseif { $::settings(connectivity) == "usb" } {
+		usb_connect_to_de1
+	} else {
+		msg "Connectivity not implemented"
 	}
 }
 
 ### Handler
-proc de1_connect_handler { handle address name} {
+
+proc connect_to_devices {} {
+
+	#@return
+	msg "connect_to_devices"
+
+	if {$::android != 1} {
+		comms_connect_to_de1
+	}
+
+	if {$::settings(bluetooth_address) != ""} {
+
+		if {[android_8_or_newer] == 1} {
+			# on bootpup, android 8 won't connect directly to a BLE device unless it's found by a scan
+			# this step below waits 4 seconds to see if a direct connection worked, and if not, activates a scan
+			# when a scan finds the device, then it will initiate a new connection request and that one will work
+			comms_connect_to_de1
+			after 4000 check_if_initial_connect_didnt_happen_quickly
+
+			msg "will launch check_if_initial_connect_didnt_happen_quickly in 4000ms"
+		} else {
+			# earlier android revisions can connect directly, and it's fast
+			comms_connect_to_de1
+
+		}
+	}
+
+	if {$::settings(scale_bluetooth_address) != ""} {
+
+		if {[android_8_or_newer] == 1} {
+			#ble_connect_to_scale
+		} else {
+			#after 3000 ble_connect_to_scale
+		}
+	}
+
+}
+
+
+proc de1_connect_handler { handle address name type} {
 
 	if {$::settings(scale_bluetooth_address) != ""} {
 		ble_connect_to_scale
@@ -245,7 +259,7 @@ proc de1_connect_handler { handle address name} {
 
 	#msg "Connected to DE1"
 	set ::de1(device_handle) $handle
-	append_to_de1_list $address $name "ble"
+	append_to_de1_list $address $name $type
 
 
 	#msg "connected to de1 with handle $handle"
@@ -564,7 +578,7 @@ proc de1_disconnect_handler { handle } {
 	} else {
 
 		if {[ifexists ::de1(disable_de1_reconnect)] != 1} {
-			ble_connect_to_de1
+			comms_connect_to_de1
 		}
 	}
 }

@@ -781,7 +781,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 		add_de1_widget "settings_4" listbox 55 1150 { 
 				set ::ble_listbox_widget $widget
 				bind $::ble_listbox_widget <<ListboxSelect>> ::change_bluetooth_device
-				fill_ble_listbox
+				fill_de1_listbox
 			} -background #fbfaff -font global_font -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 	add_de1_text "settings_4" 680 1100 -text [translate "Scale"] -font Helv_7_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -856,10 +856,6 @@ add_de1_text "settings_3" 1304 1080  -text [translate "Water level"] -font Helv_
 
 	#add_de1_variable "settings_4" 50 760 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] $::settings(water_refill_point)[translate mm]}
 	#add_de1_variable "settings_4" 1240 760 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[translate "Now:"] [round_to_integer $::de1(water_level)][translate mm]}
-
-# bluetooth scan
-#add_de1_text "settings_4" 2230 980 -text [translate "Search"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-#add_de1_button "settings_4" {set ::de1_device_list ""; say [translate {search}] $::settings(sound_button_in); ble_find_de1s} 1910 890 2550 1080
 
 set enable_spoken_buttons 0
 if {$enable_spoken_buttons == 1} {

@@ -108,6 +108,7 @@ proc make_de1_dir {} {
         de1plus.tcl *
         de1.tcl *
         de1_comms.tcl *
+        usb.tcl *
         gui.tcl *
         machine.tcl *
         utils.tcl *

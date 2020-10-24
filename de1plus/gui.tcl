@@ -1078,8 +1078,6 @@ proc de1_connected_state { {hide_delay 0} } {
 			}
 		} else {
 			if {$since_last_ping > 59} {
-				#ble_find_de1s
-				#ble_connect_to_de1
 				return [translate "Disconnected"]
 			}
 			return [subst {[translate "Disconnected"] : $since_last_ping}]
@@ -1124,21 +1122,6 @@ proc display_popup_android_message_if_necessary {intxt} {
 
 
 proc update_onscreen_variables { {state {}} } {
-
-	#update_chart
-
-	#save_settings
-
-	#set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
-	#if {$since_last_ping > 3} {
-		#set ::de1(last_ping) [clock seconds]
-		#if {$::android == 1} {
-			#set ::de1(found) 0
-			#ble_find_de1s
-			#ble_connect_to_de1
-		#}
-
-	#}
 
 	if {$::android == 0} {
 
@@ -2018,7 +2001,7 @@ proc ui_startup {} {
 
 	load_settings
 	setup_environment
-	bluetooth_connect_to_devices
+	connect_to_devices
 	
 	if {[ifexists ::settings(enable_shot_history_export)] == "1"} {
 		shot_history_export
@@ -2027,7 +2010,6 @@ proc ui_startup {} {
 	if {[ifexists ::settings(mark_most_popular_profiles_used)] == "1"} {
 		shot_history_count_profile_use
 	}
-	#ble_find_de1s
 	
 	setup_images_for_first_page
 	setup_images_for_other_pages

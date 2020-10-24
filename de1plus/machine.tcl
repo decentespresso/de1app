@@ -125,7 +125,6 @@ array set ::de1 {
 	steam_time_max 250
 	last_ping 0
 	steam_heater_temperature 150
-	connectivity "ble"
 }
 
 set ::de1(last_ping) [clock seconds]
@@ -413,6 +412,7 @@ array set ::settings {
 	force_acaia_heartbeat 0
 	comms_debugging 0
 	scale_stop_at_half_shot 0
+	connectivity "ble"
 }
 
 if {[de1plus]} {
@@ -428,8 +428,8 @@ if {$::android != 1} {
 set ::settings(preinfusion_guarantee) 0
 
 set ::de1_device_list {}
-if { $settings(bluetooth_address) != ""} {
-	append_to_de1_list $settings(bluetooth_address) "DE1" "ble"
+if { $::settings(bluetooth_address) != ""} {
+	append_to_de1_list $::settings(bluetooth_address) "DE1"  $::settings(connectivity)
 }
 
 #msg "init was run '$::settings(scale_type)'"
@@ -852,7 +852,7 @@ proc start_idle {} {
 
 	if {$::de1(device_handle) == 0} {
 		update_de1_state "$::de1_state(Idle)\x0"
-		ble_connect_to_de1
+		comms_connect_to_de1
 		return
 	}
 

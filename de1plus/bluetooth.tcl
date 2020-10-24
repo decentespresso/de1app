@@ -952,72 +952,6 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 }
 
 
-proc ble_find_de1s {} {
-
-	return
-	if {$::android != 1} {
-		ble_connect_to_de1
-	}
-
-	after 30000 stop_scanner
-	ble start $::ble_scanner
-}
-
-proc stop_scanner {} {
-
-	if {$::scanning == 0} {
-		return
-	}
-
-	if {$::de1(device_handle) == 0} {
-		# don't stop scanning if there is no DE1 connection
-		after 30000 stop_scanner
-		return
-	}
-
-	set ::scanning 0
-	ble stop $::ble_scanner
-	#userdata_append "stop scanning" [list ble stop $::ble_scanner]
-}
-
-proc bluetooth_connect_to_devices {} {
-
-	#@return
-	msg "bluetooth_connect_to_devices"
-
-	if {$::android != 1} {
-		ble_connect_to_de1
-	}
-
-	if {$::settings(bluetooth_address) != ""} {
-
-		if {[android_8_or_newer] == 1} {
-			# on bootpup, android 8 won't connect directly to a BLE device unless it's found by a scan
-			# this step below waits 4 seconds to see if a direct connection worked, and if not, activates a scan
-			# when a scan finds the device, then it will initiate a new connection request and that one will work
-			ble_connect_to_de1
-			after 4000 check_if_initial_connect_didnt_happen_quickly
-
-			msg "will launch check_if_initial_connect_didnt_happen_quickly in 4000ms"
-		} else {
-			# earlier android revisions can connect directly, and it's fast
-			ble_connect_to_de1
-
-		}
-	}
-
-	if {$::settings(scale_bluetooth_address) != ""} {
-
-		if {[android_8_or_newer] == 1} {
-			#ble_connect_to_scale
-		} else {
-			#after 3000 ble_connect_to_scale
-		}
-	}
-
-}
-
-
 set ::currently_connecting_de1_handle 0
 proc ble_connect_to_de1 {} {
 	msg "ble_connect_to_de1"
@@ -1057,7 +991,7 @@ proc ble_connect_to_de1 {} {
 		return
 	}
 
-	if {$::settings(bluetooth_address) == ""} {
+	if {$::settings(bluetooth_address) == "" || $::settings(connectivity) != "ble" } {
 		# if no bluetooth address set, then don't try to connect
 		return ""
 	}
@@ -1070,7 +1004,7 @@ proc ble_connect_to_de1 {} {
 			msg "disconnecting from DE1"
 			ble close $::de1(device_handle)
 			set ::de1(device_handle) "0"
-			after 1000 ble_connect_to_de1
+			after 1000 comms_connect_to_de1
 		}
 		catch {
 			#ble unpair $::settings(bluetooth_address)
@@ -1277,21 +1211,10 @@ proc de1_ble_handler { event data } {
 				#msg "-- device $name found at address $address ($data)"
 				if {[string first DE1 $name] != -1} {
 					append_to_de1_list $address $name "ble"
-					#if {$address == $::settings(bluetooth_address) && $::scanning != 0} {
-						#ble stop $::ble_scanner
-						#set ::scanning 0
-						#ble_connect_to_de1
-					#}
 					if {$address == $::settings(bluetooth_address)} {
 						if {$::currently_connecting_de1_handle == 0} {
 							msg "Not currently connecting to DE1, so trying now"
-							ble_connect_to_de1
-						} else {
-							#msg "Already connecting to DE1, so not trying now"
-							#catch {
-								#ble close $::currently_connecting_de1_handle
-							#}
-							#ble_connect_to_de1
+							comms_connect_to_de1
 						}
 					}
 				} elseif {[string first Skale $name] != -1} {
@@ -1389,25 +1312,19 @@ proc de1_ble_handler { event data } {
 					if {$::scanning > 0} {
 
 						if {$::de1(device_handle) == 0 && $::currently_connecting_de1_handle == 0} {
-							ble_connect_to_de1
+							comms_connect_to_de1
 						}
-
-						#if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != "" && $::currently_connecting_scale_handle == 0} {
-							#userdata_append "connect to scale" ble_connect_to_scale
-							#ble_connect_to_scale
-						#}
 					}
 					set ::scanning 0
 				} elseif {$state eq "discovery"} {
 					#msg "discovery"
-					#ble_connect_to_de1
 				} elseif {$state eq "connected"} {
 
 					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
 						msg "de1 connected $event $data"
 
 
-						de1_connect_handler $handle $address "DE1"
+						de1_connect_handler $handle $address "DE1" "ble"
 
 						if {$::de1(scale_device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning (or if there is not scale to connect to and we're connected to the de1)
@@ -1498,19 +1415,6 @@ proc de1_ble_handler { event data } {
 					# save the mapping because we now need it for Android 7
 					set ::cinstance($cuuid) $cinstance
 					set ::sinstance($suuid) $sinstance
-
-					#msg "discovery ::cinstance(cuuid=$cuuid) cinstance=$cinstance - $data"
-					#msg "discovery ::sinstance(suuid=$suuid) sinstance=$sinstance - $data"
-
-					#ble_connect_to_de1
-					# && ($properties & 0x10)
-					# later turn on notifications
-
-					# john don't enable all notifications
-					#set cmds [ble userdata $handle]
-					#lappend cmds [list ble enable $handle $suuid $sinstance $cuuid $cinstance]
-					#msg "enabling $suuid $sinstance $cuuid $cinstance"
-					#ble userdata $handle $cmds
 				} elseif {$state eq "connected"} {
 
 					if {$access eq "r" || $access eq "c"} {
@@ -2042,7 +1946,7 @@ proc calibration_ble_received {value} {
 proc enable_de1_reconnect {} {
 	msg "enable_de1_reconnect"
 	set ::de1(disable_de1_reconnect) 1
-	ble_connect_to_de1
+	comms_connect_to_de1
 }
 
 proc disable_de1_reconnect {} {
@@ -2087,32 +1991,4 @@ proc scanning_state_text {} {
 	}
 
 	return [translate "Search"]
-}
-
-proc scanning_restart {} {
-	if {$::scanning == 1} {
-		return
-	}
-	if {$::android != 1} {
-
-		set ::de1_device_list [list [dict create address "12:32:56:78:90" name "dummy_ble" type "ble"] [dict create address "ttyS0" name "dummy_usb" type "usb"] [dict create address "192.168.0.1" name "dummy_usb" type "wifi"]]
-		set ::scale_bluetooth_list [list [dict create address "12:32:56:78:90" name "ACAIAxxx"] [dict create address "12:32:56:78:90" name "Skale2"]]
-
-		set ::scale_types(12:32:56:78:90) "decentscale"
-		set ::scale_types(32:56:78:90:12) "decentscale"
-		set ::scale_types(56:78:90:12:32) "atomaxskale"
-
-		after 200 fill_ble_scale_listbox
-		after 400 fill_ble_listbox
-
-		set ::scanning 1
-		after 3000 { set scanning 0 }
-		return
-	} else {
-		# only scan for a few seconds
-		after 10000 { stop_scanner }
-	}
-
-	set ::scanning 1
-	ble start $::ble_scanner
 }

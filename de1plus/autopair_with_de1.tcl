@@ -44,10 +44,9 @@ if {$tk != ""} {
 	pack .hello
 }
 
-proc fill_ble_listbox {} {}
+proc fill_de1_listbox {} {}
 set ::de1_device_list {}
 set ::settings(bluetooth_address) {}
-ble_find_de1s
 vwait ::de1_device_list
 
 set success 1
