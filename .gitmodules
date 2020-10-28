@@ -1,6 +1,6 @@
 [submodule "misc"]
 	path = misc
-	url = git@github.com:decentespresso/de1plus_misc
+	url = https://github.com/decentespresso/de1plus_misc
 [submodule "psd"]
 	path = psd
-	url = git@github.com:decentespresso/de1plus_psd
+	url = https://github.com/decentespresso/de1plus_psd
