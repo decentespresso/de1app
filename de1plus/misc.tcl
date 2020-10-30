@@ -1,6 +1,6 @@
 package provide de1_misc 1.0
 
-proc make_de1_dir {} {
+proc make_de1_dir {srcdir destdirs} {
 
     set not_these  {
         splash/1280x800/1960.jpg *
@@ -604,10 +604,11 @@ proc make_de1_dir {} {
 #        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
 
-    set srcdir "/d/admin/code/de1beta"
+    #set srcdir "/d/admin/code/de1beta"
+    #set srcdir "."
     #set destdirs [list "/d/download/sync/de1" "/d/download/sync/de1plus" "/d/download/sync/de1plusbig"]
     #set destdirs [list "/d/download/sync/de1plus"]
-    set destdirs [list "/d/download/sync/de1beta"]
+    #set destdirs [list "/d/download/sync/de1beta"]
 
     # load the local manifest into memory 
     foreach {filename filesize filemtime filesha} [string trim [read_file "[homedir]/complete_manifest.txt"]] {
