@@ -413,6 +413,7 @@ array set ::settings {
 	force_acaia_heartbeat 0
 	comms_debugging 0
 	scale_stop_at_half_shot 0
+	show_risque_skins 0
 }
 
 if {[de1plus]} {

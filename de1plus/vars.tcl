@@ -1576,11 +1576,20 @@ proc skin_directories {} {
 	#puts "skin_directories: $dirs"
 	set dd {}
 	set de1plus [de1plus]
+
+	if { $::settings(show_risque_skins) } {
+		set pwd [pwd]
+		cd [homedir]/skins/
+		set risque_dirs [lsort -dictionary [glob -nocomplain  -directory "risque" *]]
+		cd $pwd
+		set dirs [concat $dirs $risque_dirs]
+	}
+
 	foreach d $dirs {
-		if {$d == "CVS" || $d == "example"} {
+		if {$d == "CVS" || $d == "example" || $d == "risque"} {
 			continue
 		}
-	    
+
 	    set fn "[homedir]/skins/$d/skin.tcl"
 	    set skintcl [read_file $fn]
 	    #set skintcl ""
