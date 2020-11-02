@@ -902,7 +902,7 @@ add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set
 #add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
 
 add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 40 10 ::settings(water_volume) 10 250 %x %y %x0 %y0 %x1 %y1 %b; save_settings; de1_send_steam_hotwater_settings} 0 560 520 1170 ""
-add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 9 1 ::settings(water_temperature) 60 100 %x %y %x0 %y0 %x1 %y1 %b; save_settings; de1_send_steam_hotwater_settings} 551 450 1000 1180 ""
+add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 9 1 ::settings(water_temperature) 20 100 %x %y %x0 %y0 %x1 %y1 %b; save_settings; de1_send_steam_hotwater_settings} 551 450 1000 1180 ""
 
 #add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_volume) 1 400 %x %y %x0 %y0 %x1 %y1} 0 210 550 1400 "mousemove"
 #add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1} 551 210 1029 1400 "mousemove"
