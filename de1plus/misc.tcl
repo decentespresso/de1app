@@ -98,7 +98,6 @@ proc make_de1_dir {srcdir destdirs} {
 
     }
 
-#            profiles/Best\ overall\ pressure\ profile.tcl *
 
 
     set files {
@@ -561,6 +560,7 @@ proc make_de1_dir {srcdir destdirs} {
         saver/2560x1600/three_women.jpg *     
         saver/2560x1600/rainbow_dj.jpg *     
 
+        profiles/Best\ overall\ pressure\ profile.tcl *
         profiles/Gentle\ and\ sweet.tcl *
         profiles/tea_portafilter.tcl *
         profiles/test_leak.tcl *
@@ -611,7 +611,7 @@ proc make_de1_dir {srcdir destdirs} {
     #set destdirs [list "/d/download/sync/de1beta"]
 
     # load the local manifest into memory 
-    foreach {filename filesize filemtime filesha} [string trim [read_file "[homedir]/complete_manifest.txt"]] {
+    foreach {filename filesize filemtime filesha} [string trim [read_file "$srcdir/complete_manifest.txt"]] {
         #puts "$filename $filecrc"
         set lmanifest_mtime($filename) $filemtime
         set lmanifest_sha($filename) $filesha
@@ -681,13 +681,17 @@ proc make_de1_dir {srcdir destdirs} {
             set files_copied 1
         }
 
+        #puts "Writing timestamp to '$destdir/timestamp.txt'"
         write_file "$destdir/timestamp.txt" $timestamp
 
+        #puts "Writing manifest txt to '$destdir/manifest.txt'"
         write_file "$destdir/manifest.txt" $manifest 
 
         # it might be that .txt files are modified, so try another extension name
+        #puts "Writing manifest tdb to '$destdir/manifest.tdb'"
         write_file "$destdir/manifest.tdb" $manifest 
 
+        #puts "Writing manifest gz to '$destdir/manifest.gz'"
         write_binary_file "$destdir/manifest.gz" [zlib gzip $manifest]
 
         incr dircount
