@@ -941,11 +941,6 @@ proc de1_packed_shot {} {
 	if {[de1plus] && [ifexists ::settings(settings_profile_type)] == "settings_2b"} {
 		return [de1_packed_shot_flow]
 	} elseif {[de1plus] && ([ifexists ::settings(settings_profile_type)] == "settings_2c" || [ifexists ::settings(settings_profile_type)] == "settings_2c2")} {
-		if {$::settings(settings_profile_type) == "settings_2c2"} {
-			# if on the LIMITS tab, indicate that this is settings_2c (aka "advanced") shot as part of the OK button process
-			set ::settings(settings_profile_type) "settings_2c"
-		}
-
 		return [de1_packed_shot_advanced]
 	}
 
