@@ -1159,7 +1159,8 @@ proc load_settings {} {
         if {[ifexists osbuildinfo(product)] == "P80X_EEA"} {
             # this "Teclast" tablet firmware version has an Android metadata configuration bug, and needs 20% larger fonts
             # other Teclast tablets do not have this error.
-            set ::settings(default_font_calibration) 0.6
+            # set ::settings(default_font_calibration) 0.6
+            # not clear if this is still needed
         }
     } else {
         array set ::settings $settings_file_contents
