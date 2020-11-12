@@ -290,7 +290,7 @@ proc is_fast_double_tap { key } {
 	set prevtime [ifexists ::last_click_time($key)]
 	if {$prevtime != ""} {
 		# check for a fast double-varName
-		if {[expr {$millinow - $prevtime}] < 180} {
+		if {[expr {$millinow - $prevtime}] < 150} {
 			msg "Fast button double-tap on $key"
 			set b 1
 		}
