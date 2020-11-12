@@ -3823,30 +3823,59 @@ proc range_check_variable {varname low high} {
 	}
 }
 
+proc range_check_shot_variables {} {
+
+	range_check_variable ::settings(espresso_temperature) 0 110
+	range_check_variable ::settings(espresso_temperature_0) 0 110
+	range_check_variable ::settings(espresso_temperature_1) 0 110
+	range_check_variable ::settings(espresso_temperature_2) 0 110
+	range_check_variable ::settings(espresso_temperature_3) 0 110
+	
+	range_check_variable ::settings(preinfusion_time) 0 60
+	range_check_variable ::settings(espresso_hold_time) 0 60
+	range_check_variable ::settings(preinfusion_flow_rate) 0 $::de1(max_flowrate_v11)
+	range_check_variable ::settings(flow_profile_hold) 0 $::de1(max_flowrate_v11)
+	range_check_variable ::settings(flow_profile_decline) 0 $::de1(max_flowrate_v11)
+
+	range_check_variable ::settings(preinfusion_stop_pressure) 0 $::de1(maxpressure)
+
+	range_check_variable ::settings(espresso_pressure) 0 $::de1(maxpressure)
+
+	range_check_variable ::settings(espresso_decline_time) 0 60
+	range_check_variable ::settings(pressure_end) 0 $::de1(maxpressure)
+	range_check_variable ::settings(final_desired_shot_volume) 0 100
+
+	range_check_variable ::settings(final_desired_shot_weight) 0 100
+	range_check_variable ::settings(final_desired_shot_weight_advanced) 0 2000
+	range_check_variable ::settings(final_desired_shot_volume) 0 2000
+	range_check_variable ::settings(final_desired_shot_volume_advanced) 0 2000
+	range_check_variable ::settings(final_desired_shot_volume_advanced_count_start) 0 20
+	range_check_variable ::settings(tank_desired_water_temperature) 0 60
+
+
+
+
+
+
+}
+
 proc change_espresso_temperature {amount} {
 
 	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
 
 		# if step temps are enabled then set the preinfusion start temp to the global temp 
 		# and then apply the relative change desired to each subsequent step
-
 		set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + $amount}]
 		set ::settings(espresso_temperature_0) $::settings(espresso_temperature)			
 		set ::settings(espresso_temperature_1) [expr {$::settings(espresso_temperature_1) + $amount}]
 		set ::settings(espresso_temperature_2) [expr {$::settings(espresso_temperature_2) + $amount}]
 		set ::settings(espresso_temperature_3) [expr {$::settings(espresso_temperature_3) + $amount}]
 
-		range_check_variable ::settings(espresso_temperature_0) 0 110
-		range_check_variable ::settings(espresso_temperature_1) 0 110
-		range_check_variable ::settings(espresso_temperature_2) 0 110
-		range_check_variable ::settings(espresso_temperature_3) 0 110
-		
-
 	} else {
 		set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + $amount}]
 	}
 
-	range_check_variable ::settings(espresso_temperature) 0 110
+	range_check_shot_variables
 }
 
 proc when_to_start_pour_tracking_advanced {} {

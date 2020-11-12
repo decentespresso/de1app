@@ -74,205 +74,171 @@ set slider_trough_color #EAEAEA
 set chart_background_color #F8F8F8
 ##############################################################################################################################################################################################################################################################################
 
-if {[de1plus]} { 
 
-	############################
-	# pressure controlled shots
+############################
+# pressure controlled shots
 
-	# preinfusing
-	add_de1_text "settings_2a settings_2b" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		# pressure profile preinfusion
-		add_de1_widget "settings_2a" scale 47 850 {} -from 0 -to 60 -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2a" 47 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_pressure_widget $::preinfusion_pressure_widget_label $::preinfusion_pressure_flow_widget $::preinfusion_pressure_flow_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
+# preinfusing
+add_de1_text "settings_2a settings_2b" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+	# pressure profile preinfusion
+	add_de1_widget "settings_2a" scale 47 850 {} -from -30 -to 90 -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+	add_de1_variable "settings_2a" 47 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_pressure_widget $::preinfusion_pressure_widget_label $::preinfusion_pressure_flow_widget $::preinfusion_pressure_flow_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
 
-		set ::preinfusion_pressure_widget [add_de1_widget "settings_2a" scale 670 850 {} -from [expr {$::de1(maxpressure) - 1}] -to 0.1 -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
-		set ::preinfusion_pressure_widget_label [add_de1_variable "settings_2a" 820 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {< $::settings(preinfusion_stop_pressure) [translate bar]}]
-
+	set ::preinfusion_pressure_widget [add_de1_widget "settings_2a" scale 670 850 {} -from [expr {$::de1(maxpressure) + 16}] -to -16 -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
+	set ::preinfusion_pressure_widget_label [add_de1_variable "settings_2a" 820 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {< $::settings(preinfusion_stop_pressure) [translate bar]}]
 
 
-		# flow profile preinfusion
-		add_de1_widget "settings_2b" scale 47 850 {} -from 0 -to 60 -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2b" 47 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_flow_pressure_guarantee_checkbox  $::preinfusion_flow_widget $::preinfusion_flow_widget_label $::preinfusion_flow_pressure_widget $::preinfusion_flow_pressure_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
-		
-		set ::preinfusion_flow_widget [add_de1_widget "settings_2b" scale 670 850 {} -to 0.1 -from $::de1(max_flowrate_v11) -tickinterval 0  -showvalue 0 -background $::settings(color_stage_1)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
-		set ::preinfusion_flow_widget_label [add_de1_variable "settings_2b" 820 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
-
-		set ::preinfusion_flow_pressure_widget [add_de1_widget "settings_2b" scale 47 1115 {} -from 0.1 -to [expr {$::de1(maxpressure) - 1}]  -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal ]
-		set ::preinfusion_flow_pressure_widget_label [add_de1_variable "settings_2b" 47 1265 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {< $::settings(preinfusion_stop_pressure) [translate bar]}]
+	# flow profile preinfusion
+	add_de1_widget "settings_2b" scale 47 850 {} -from -30 -to 90 -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+	add_de1_variable "settings_2b" 47 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_flow_pressure_guarantee_checkbox  $::preinfusion_flow_widget $::preinfusion_flow_widget_label $::preinfusion_flow_pressure_widget $::preinfusion_flow_pressure_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
 	
-		if {$::settings(enable_rise) == 1} {
-			set ::preinfusion_pressure_flow_widget [add_de1_widget "settings_2a" scale 47 1115 {} -to $::de1(max_flowrate_v11) -from 0.1 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_1)  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal ]
-			set ::preinfusion_pressure_flow_widget_label [add_de1_variable "settings_2a" 47 1265 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
-			set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 47 1320 { } -command "profile_has_changed_set; update_de1_explanation_chart_soon" -padx 0 -pady 0 -bg #FFFFFF -text [translate "rise"] -indicatoron true -font Helv_10  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF]
-		} else {
-			set ::preinfusion_pressure_flow_widget [add_de1_widget "settings_2a" scale 47 1175 {} -to $::de1(max_flowrate_v11) -from 0.1 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_1)  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal ]
-			set ::preinfusion_pressure_flow_widget_label [add_de1_variable "settings_2a" 47 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
+	set ::preinfusion_flow_widget [add_de1_widget "settings_2b" scale 670 850 {} -from [expr { 8 + $::de1(max_flowrate_v11)}] -to -8 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_1)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
+	set ::preinfusion_flow_widget_label [add_de1_variable "settings_2b" 820 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
 
-			# rise checkbox is made so that other code works, but it's off screen
-			set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 99947 1320 { } -command "profile_has_changed_set; update_de1_explanation_chart_soon" -padx 0 -pady 0 -bg #FFFFFF -text [translate "rise"] -indicatoron true -font Helv_10  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF]
-		}
+	set ::preinfusion_flow_pressure_widget [add_de1_widget "settings_2b" scale 47 1115 {} -from [expr {$::de1(maxpressure) + 16}] -to -16   -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal ]
+	set ::preinfusion_flow_pressure_widget_label [add_de1_variable "settings_2b" 47 1265 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {< $::settings(preinfusion_stop_pressure) [translate bar]}]
 
-
-	add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		add_de1_widget "settings_2a" scale 892 850 {} -from -30 -to 90 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2 settings_2a" 1192 1030 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_hold_time) [list $::espresso_pressure_widget $::espresso_pressure_widget_label]; seconds_text $::settings(espresso_hold_time)]}
-		add_de1_text "settings_2 settings_2a" 942 1000 -text "-" -font Helv_8 -fill "#888888" -anchor "nw" -width 600 -justify "left" 
-		add_de1_text "settings_2 settings_2a" 1440 1000 -text "+" -font Helv_8 -fill "#888888" -anchor "ne" -width 600 -justify "left" 
-		add_de1_button "settings_2a" {say [translate {minus}] $::settings(sound_button_in); incr ::settings(espresso_hold_time) -1; profile_has_changed_set; update_de1_explanation_chart_soon} 892 1000 1100 1200 
-		add_de1_button "settings_2a" {say [translate {plus}] $::settings(sound_button_in); incr ::settings(espresso_hold_time); profile_has_changed_set; update_de1_explanation_chart_soon } 1290 1000 1490 1200
-
-
-		set ::espresso_pressure_widget [add_de1_widget "settings_2a" scale 1516 850 {} -to 0 -from $::de1(maxpressure) -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0]
-		set ::espresso_pressure_widget_label [add_de1_variable "settings_2 settings_2a" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(espresso_pressure)]}]
-
-	add_de1_text "settings_2 settings_2a" 1730 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		add_de1_widget "settings_2 settings_2a" scale 1730 850 {} -from 0 -to 60 -background $::settings(color_stage_3) -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 605] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2 settings_2a" 1735 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_decline_time) [list $::espresso_pressure_decline_widget $::espresso_pressure_decline_widget_label]; seconds_text $::settings(espresso_decline_time)]}
-		
-		set ::espresso_pressure_decline_widget [add_de1_widget "settings_2a" scale 2360 850 {} -to 0 -from 10 -background $::settings(color_stage_3) -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470]  -width [rescale_y_skin 150] -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
-		set ::espresso_pressure_decline_widget_label [add_de1_variable "settings_2 settings_2a" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(pressure_end)]}]
-
-	# display each temperature step, and if you tap on a number, allow editing of all at once
-	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature 0.5; profile_has_changed_set } 2404 192 2590 320
-		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature -0.5; profile_has_changed_set } 2404 600 2590 730
-		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); ; toggle_espresso_steps_option; profile_has_changed_set; } 2404 370 2590 560
-
-		add_de1_variable "settings_2a settings_2b" 2470 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_temperature_setting ::settings(espresso_temperature)]}
-		add_de1_variable "settings_2a settings_2b" 820 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -textvariable {[if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { return [subst {[round_and_return_step_temperature_setting ::settings(espresso_temperature_0)] / [round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}]} else {return ""}]}
-		#add_de1_variable "settings_2a settings_2b" 674 790 -text "" -font Helv_8 -fill "#AAAAAA" -anchor "center" -textvariable {[if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { return "/" } else { return "" }]}
-		#add_de1_variable "settings_2a settings_2b" 744 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}
-		add_de1_variable "settings_2a settings_2b" 1666 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_2)]}
-		add_de1_variable "settings_2a settings_2b" 2510 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_3)]}
-
-		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { page_to_show_when_off temperature_steps } } 500 750 840 830
-		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { page_to_show_when_off temperature_steps } } 1460 750 1680 830
-		add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { page_to_show_when_off temperature_steps } } 2300 750 2530 830
-
-
-	add_de1_text "temperature_steps" 1280 290 -text [translate "Temperature Steps"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
-		add_de1_text "temperature_steps" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-		add_de1_button "temperature_steps" {say [translate {Done}] $::settings(sound_button_in); set ::settings(espresso_temperature) $::settings(espresso_temperature_0); profile_has_changed_set; page_to_show_when_off $::settings(settings_profile_type); } 980 1210 1580 1410 ""
-		add_de1_widget "temperature_steps" scale 800 460 {} -from 0 -to 110 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_0) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_widget "temperature_steps" scale 800 640 {} -from 0 -to 110 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_1) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_widget "temperature_steps" scale 800 820 {} -from 0 -to 110 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_2) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_widget "temperature_steps" scale 800 1000 {} -from 0 -to 110 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_3) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_text "temperature_steps" 780 500 -text [translate "Start"] -font Helv_10_bold -fill "#444444" -anchor "ne"
-		add_de1_text "temperature_steps" 780 680 -text [translate "Preinfusion"] -font Helv_10_bold -fill "#444444" -anchor "ne"
-		add_de1_text "temperature_steps" 780 860 -text [translate "Hold"] -font Helv_10_bold -fill "#444444" -anchor "ne"
-		add_de1_text "temperature_steps" 780 1040 -text [translate "Decline"] -font Helv_10_bold -fill "#444444" -anchor "ne"
-
-		add_de1_variable "temperature_steps" 1800 500 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_0)]}
-		add_de1_variable "temperature_steps" 1800 680 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}
-		add_de1_variable "temperature_steps" 1800 860 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_2)]}
-		add_de1_variable "temperature_steps" 1800 1040 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_3)]}
-
-	############################
-	# flow controlled shots
-
-	add_de1_text "settings_2b" 890 755 -text [translate "2: hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		add_de1_widget "settings_2b" scale 892 850 {} -from 0 -to 60 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2b" 892 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_hold_time) [list $::flow_hold_widget $::flow_hold_widget_label]; seconds_text $::settings(espresso_hold_time)]}
-
-		set ::flow_hold_widget [add_de1_widget "settings_2b" scale 1516 850 {} -to 0 -from  $::de1(max_flowrate_v11) -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(flow_profile_hold) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
-		set ::flow_hold_widget_label [add_de1_variable "settings_2b" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}]
-
-	add_de1_text "settings_2b" 1730 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		add_de1_widget "settings_2b" scale 1730 850 {} -from 0 -to 60 -background $::settings(color_stage_3) -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2b" 1735 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_decline_time) [list $::flow_decline_widget $::flow_decline_widget_label]; seconds_text $::settings(espresso_decline_time)]}
-		
-		set ::flow_decline_widget [add_de1_widget "settings_2b" scale 2360 850 {} -to 0 -from  $::de1(max_flowrate_v11) -background $::settings(color_stage_3) -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470]  -width [rescale_y_skin 150] -variable ::settings(flow_profile_decline) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
-		set ::flow_decline_widget_label [add_de1_variable "settings_2b" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_decline)]}]
-
-	add_de1_widget "settings_2b" graph 24 220 { 
-		update_de1_explanation_chart;
-		$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 5] -color #888888  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
-		$widget axis configure x -color #5a5d75 -tickfont Helv_6 -command graph_seconds_axis_format; 
-		$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 8.5 -majorticks {0 1 2 3 4 5 6 7 8} -title [translate "Flow rate"] -titlefont Helv_10 -titlecolor #5a5d75;
-		$widget element create line_espresso_de1_explanation_chart_flow_part1 -xdata espresso_de1_explanation_chart_elapsed_flow_1 -ydata espresso_de1_explanation_chart_flow_1 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_1)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
-		$widget element create line_espresso_de1_explanation_chart_flow_part2 -xdata espresso_de1_explanation_chart_elapsed_flow_2 -ydata espresso_de1_explanation_chart_flow_2 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_2)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
-		$widget element create line_espresso_de1_explanation_chart_flow_part3 -xdata espresso_de1_explanation_chart_elapsed_flow_3 -ydata espresso_de1_explanation_chart_flow_3 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_3)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
-
-		bind $widget [platform_button_press] { 
-			say [translate {refresh chart}] $::settings(sound_button_in); 
-			update_de1_explanation_chart
-		} 
-	} -plotbackground $chart_background_color -width [rescale_x_skin 2375] -height [rescale_y_skin 500] -borderwidth 1 -background #FFFFFF -plotrelief raised -plotpady 0 -plotpadx 10
-
-	############################
-
-	# preheat tank temperature
-	add_de1_text "settings_2c2" 70 230 -text [translate "Preheat water tank"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-		add_de1_widget "settings_2c2" scale 70 300 {} -to 60 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 2400]  -width [rescale_y_skin 150] -variable ::settings(tank_desired_water_temperature) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "settings_2c2" 70 450 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_temperature_setting_or_off $::settings(tank_desired_water_temperature)]}
-
-	# total water volume stopping of shots
-	add_de1_text "settings_2c2" 70 530 -text [translate "Stop at water volume"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-		add_de1_widget "settings_2c2" scale 70 600 {} -to 2000 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 1500]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "settings_2c2" 70 750 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume_advanced)]}
-		
-		add_de1_text "settings_2c2" 1670 530 -text [translate "Track water volume"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-		add_de1_widget "settings_2c2" scale 1670 600 {} -to 20 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 500]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume_advanced_count_start) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "settings_2c2" 1670 750 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[when_to_start_pour_tracking_advanced]}
-
-
-
-
-	# (beta) weight based shot ending, only displayed if a skale is connected
-	if {$::settings(scale_bluetooth_address) != ""} {
-		add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-		add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
-
-		# 1/18/19 support for weight-bsaed ending of advanced shots
-		add_de1_text "settings_2c2" 70 830 -text [translate "Stop at weight"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-		add_de1_widget "settings_2c2" scale 70 900 {} -to 2000 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 2400]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "settings_2c2" 70 1050 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
-
+	if {$::settings(enable_rise) == 1} {
+		set ::preinfusion_pressure_flow_widget [add_de1_widget "settings_2a" scale 47 1115 {} -to [expr { 4 + $::de1(max_flowrate_v11)}] -from -4 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_1)  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal ]
+		set ::preinfusion_pressure_flow_widget_label [add_de1_variable "settings_2a" 47 1265 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
+		set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 47 1320 { } -command "profile_has_changed_set; update_de1_explanation_chart_soon" -padx 0 -pady 0 -bg #FFFFFF -text [translate "rise"] -indicatoron true -font Helv_10  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF]
 	} else {
-		add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at pour:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-		add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume)]}
+		set ::preinfusion_pressure_flow_widget [add_de1_widget "settings_2a" scale 47 1175 {} -to [expr { 4 + $::de1(max_flowrate_v11)}] -from -4 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_1)  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal ]
+		set ::preinfusion_pressure_flow_widget_label [add_de1_variable "settings_2a" 47 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
+
+		# rise checkbox is made so that other code works, but it's off screen
+		set ::preinfusion_flow_pressure_guarantee_checkbox [add_de1_widget "settings_2b" checkbutton 99947 1320 { } -command "profile_has_changed_set; update_de1_explanation_chart_soon" -padx 0 -pady 0 -bg #FFFFFF -text [translate "rise"] -indicatoron true -font Helv_10  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(preinfusion_guarantee)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF]
 	}
 
 
-	add_de1_text "settings_2c settings_2c2 settings_2czoom" 240 1485 -text [translate "Steps"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	add_de1_text "settings_2c settings_2c2 settings_2czoom" 735 1485 -text [translate "Limits"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	#add_de1_text "settings_2c" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+	add_de1_widget "settings_2a" scale 892 850 {} -from -30 -to 90 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+	add_de1_variable "settings_2 settings_2a" 1192 1030 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_hold_time) [list $::espresso_pressure_widget $::espresso_pressure_widget_label]; seconds_text $::settings(espresso_hold_time)]}
+	#add_de1_text "settings_2 settings_2a" 942 1000 -text "-" -font Helv_8 -fill "#888888" -anchor "nw" -width 600 -justify "left" 
+	#add_de1_text "settings_2 settings_2a" 1440 1000 -text "+" -font Helv_8 -fill "#888888" -anchor "ne" -width 600 -justify "left" 
+	add_de1_button "settings_2a" {say [translate {minus}] $::settings(sound_button_in); incr ::settings(espresso_hold_time) -1; profile_has_changed_set; update_de1_explanation_chart_soon} 892 1000 1100 1200 
+	add_de1_button "settings_2a" {say [translate {plus}] $::settings(sound_button_in); incr ::settings(espresso_hold_time); profile_has_changed_set; update_de1_explanation_chart_soon } 1290 1000 1490 1200
 
-	add_de1_button "settings_2c2 settings_2czoom" {say [translate {Steps}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 1 1410 495 1600
-	add_de1_button "settings_2c settings_2czoom" {say [translate {Limits}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c2"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 496 1410 972 1600
+	set ::espresso_pressure_widget [add_de1_widget "settings_2a" scale 1516 850 {} -to -16 -from [expr {16 + $::de1(maxpressure)}] -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0]
+	set ::espresso_pressure_widget_label [add_de1_variable "settings_2 settings_2a" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(espresso_pressure)]}]
+
+add_de1_text "settings_2 settings_2a" 1730 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+	add_de1_widget "settings_2 settings_2a" scale 1730 850 {} -from -30 -to 90 -background $::settings(color_stage_3) -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 605] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+	add_de1_variable "settings_2 settings_2a" 1735 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_decline_time) [list $::espresso_pressure_decline_widget $::espresso_pressure_decline_widget_label]; seconds_text $::settings(espresso_decline_time)]}
+	
+	set ::espresso_pressure_decline_widget [add_de1_widget "settings_2a" scale 2360 850 {} -from [expr {$::de1(maxpressure) + 16}] -to -16 -background $::settings(color_stage_3) -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470]  -width [rescale_y_skin 150] -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
+	set ::espresso_pressure_decline_widget_label [add_de1_variable "settings_2 settings_2a" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(pressure_end)]}]
+
+# display each temperature step, and if you tap on a number, allow editing of all at once
+add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature 0.5; profile_has_changed_set } 2404 192 2590 320
+	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature -0.5; profile_has_changed_set } 2404 600 2590 730
+	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); ; toggle_espresso_steps_option; profile_has_changed_set; } 2404 370 2590 560
+
+	add_de1_variable "settings_2a settings_2b" 2470 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_temperature_setting ::settings(espresso_temperature)]}
+	add_de1_variable "settings_2a settings_2b" 820 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -textvariable {[if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { return [subst {[round_and_return_step_temperature_setting ::settings(espresso_temperature_0)] / [round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}]} else {return ""}]}
+	#add_de1_variable "settings_2a settings_2b" 674 790 -text "" -font Helv_8 -fill "#AAAAAA" -anchor "center" -textvariable {[if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { return "/" } else { return "" }]}
+	#add_de1_variable "settings_2a settings_2b" 744 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}
+	add_de1_variable "settings_2a settings_2b" 1666 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_2)]}
+	add_de1_variable "settings_2a settings_2b" 2510 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_3)]}
+
+	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { page_to_show_when_off temperature_steps } } 500 750 840 830
+	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { page_to_show_when_off temperature_steps } } 1460 750 1680 830
+	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { page_to_show_when_off temperature_steps } } 2300 750 2530 830
 
 
-	#trace add variable ::settings write profile_has_changed_set
+add_de1_text "temperature_steps" 1280 290 -text [translate "Temperature Steps"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+	add_de1_text "temperature_steps" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "temperature_steps" {say [translate {Done}] $::settings(sound_button_in); set ::settings(espresso_temperature) $::settings(espresso_temperature_0); profile_has_changed_set; page_to_show_when_off $::settings(settings_profile_type); } 980 1210 1580 1410 ""
+	add_de1_widget "temperature_steps" scale 800 460 {} -from -30 -to 140 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_0) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon"
+	add_de1_widget "temperature_steps" scale 800 640 {} -from -30 -to 140 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_1) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon"
+	add_de1_widget "temperature_steps" scale 800 820 {} -from -30 -to 140 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_2) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon"
+	add_de1_widget "temperature_steps" scale 800 1000 {} -from -30 -to 140 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_3) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon"
+	add_de1_text "temperature_steps" 780 500 -text [translate "Start"] -font Helv_10_bold -fill "#444444" -anchor "ne"
+	add_de1_text "temperature_steps" 780 680 -text [translate "Preinfusion"] -font Helv_10_bold -fill "#444444" -anchor "ne"
+	add_de1_text "temperature_steps" 780 860 -text [translate "Hold"] -font Helv_10_bold -fill "#444444" -anchor "ne"
+	add_de1_text "temperature_steps" 780 1040 -text [translate "Decline"] -font Helv_10_bold -fill "#444444" -anchor "ne"
+
+	add_de1_variable "temperature_steps" 1800 500 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_0)]}
+	add_de1_variable "temperature_steps" 1800 680 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}
+	add_de1_variable "temperature_steps" 1800 860 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_2)]}
+	add_de1_variable "temperature_steps" 1800 1040 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_3)]}
+
+############################
+# flow controlled shots
+
+add_de1_text "settings_2b" 890 755 -text [translate "2: hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+	add_de1_widget "settings_2b" scale 892 850 {} -from -30 -to 90 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+	add_de1_variable "settings_2b" 892 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_hold_time) [list $::flow_hold_widget $::flow_hold_widget_label]; seconds_text $::settings(espresso_hold_time)]}
+
+	set ::flow_hold_widget [add_de1_widget "settings_2b" scale 1516 850 {} -from [expr { 8 + $::de1(max_flowrate_v11)}] -to -8 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(flow_profile_hold) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
+	set ::flow_hold_widget_label [add_de1_variable "settings_2b" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}]
+
+add_de1_text "settings_2b" 1730 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+	add_de1_widget "settings_2b" scale 1730 850 {} -from -30 -to 90 -background $::settings(color_stage_3) -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+	add_de1_variable "settings_2b" 1735 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_decline_time) [list $::flow_decline_widget $::flow_decline_widget_label]; seconds_text $::settings(espresso_decline_time)]}
+	
+	set ::flow_decline_widget [add_de1_widget "settings_2b" scale 2360 850 {} -from [expr { 8 + $::de1(max_flowrate_v11)}] -to -8  -background $::settings(color_stage_3) -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470]  -width [rescale_y_skin 150] -variable ::settings(flow_profile_decline) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
+	set ::flow_decline_widget_label [add_de1_variable "settings_2b" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_decline)]}]
+
+add_de1_widget "settings_2b" graph 24 220 { 
+	update_de1_explanation_chart;
+	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 5] -color #888888  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
+	$widget axis configure x -color #5a5d75 -tickfont Helv_6 -command graph_seconds_axis_format; 
+	$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 8.5 -majorticks {0 1 2 3 4 5 6 7 8} -title [translate "Flow rate"] -titlefont Helv_10 -titlecolor #5a5d75;
+	$widget element create line_espresso_de1_explanation_chart_flow_part1 -xdata espresso_de1_explanation_chart_elapsed_flow_1 -ydata espresso_de1_explanation_chart_flow_1 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_1)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
+	$widget element create line_espresso_de1_explanation_chart_flow_part2 -xdata espresso_de1_explanation_chart_elapsed_flow_2 -ydata espresso_de1_explanation_chart_flow_2 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_2)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
+	$widget element create line_espresso_de1_explanation_chart_flow_part3 -xdata espresso_de1_explanation_chart_elapsed_flow_3 -ydata espresso_de1_explanation_chart_flow_3 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_3)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
+
+	bind $widget [platform_button_press] { 
+		say [translate {refresh chart}] $::settings(sound_button_in); 
+		update_de1_explanation_chart
+	} 
+} -plotbackground $chart_background_color -width [rescale_x_skin 2375] -height [rescale_y_skin 500] -borderwidth 1 -background #FFFFFF -plotrelief raised -plotpady 0 -plotpadx 10
+
+############################
+
+# preheat tank temperature
+add_de1_text "settings_2c2" 70 230 -text [translate "Preheat water tank"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+	add_de1_widget "settings_2c2" scale 70 300 {} -to 64 -from -4 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 2400]  -width [rescale_y_skin 150] -variable ::settings(tank_desired_water_temperature) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2c2" 70 450 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_temperature_setting_or_off $::settings(tank_desired_water_temperature)]}
+
+# total water volume stopping of shots
+add_de1_text "settings_2c2" 70 530 -text [translate "Stop at water volume"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+	add_de1_widget "settings_2c2" scale 70 600 {} -to 2240 -from -240 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 1500]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2c2" 70 750 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume_advanced)]}
+	
+	add_de1_text "settings_2c2" 1670 530 -text [translate "Track water volume"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+	add_de1_widget "settings_2c2" scale 1670 600 {} -to 20 -from -10 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 500]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume_advanced_count_start) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2c2" 1670 750 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[when_to_start_pour_tracking_advanced]}
+
+
+
+
+# (beta) weight based shot ending, only displayed if a skale is connected
+if {$::settings(scale_bluetooth_address) != ""} {
+	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+	add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 110 -from -10 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
+
+	# 1/18/19 support for weight-bsaed ending of advanced shots
+	add_de1_text "settings_2c2" 70 830 -text [translate "Stop at weight"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+	add_de1_widget "settings_2c2" scale 70 900 {} -to 2130 -from -130 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 2400]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2c2" 70 1050 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
 
 } else {
-
-	add_de1_text "settings_2" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		add_de1_widget "settings_2" scale 47 850 {} -from 0 -to 10 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_1)  -bigincrement 1 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {update_de1_explanation_chart_soon} -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "settings_2" 50 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[seconds_text $::settings(preinfusion_time)]}
-
-	add_de1_text "settings_2" 610 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		add_de1_widget "settings_2" scale 790 850 {} -from 5 -to 60 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 740] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2" 790 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[seconds_text $::settings(espresso_hold_time)]}
-		add_de1_widget "settings_2" scale 610 850 {} -to 1 -from $::de1(maxpressure) -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 1 -length [rescale_x_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2" 610 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(espresso_pressure)]}
-
-	add_de1_text "settings_2" 1605 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-		add_de1_widget "settings_2" scale 1600 850 {} -from 0 -to 60 -background $::settings(color_stage_3) -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 735] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-		add_de1_variable "settings_2" 1605 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_decline_time) [list $::espresso_pressure_decline_widget $::espresso_pressure_decline_widget_label]; seconds_text $::settings(espresso_decline_time)]}
-		
-		set ::espresso_pressure_decline_widget [add_de1_widget "settings_2" scale 2360 850 {} -to 0 -from 10 -background $::settings(color_stage_3) -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 470]  -width [rescale_y_skin 150] -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command update_de1_explanation_chart_soon -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
-		set ::espresso_pressure_decline_widget_label [add_de1_variable "settings_2" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(pressure_end)]}]
-		
-
-	if {$::settings(enable_fahrenheit) == 1} {
-		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 0.555556 0.555556 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 110 %x %y %x0 %y0 %x1 %y1 %b} 2404 192 2590 750 ""
-	} else {
-		add_de1_button "settings_2" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1 1 ::settings(espresso_temperature) $::settings(minimum_water_temperature) 110 %x %y %x0 %y0 %x1 %y1 %b} 2404 192 2590 750 ""
-	}
-	add_de1_variable "settings_2" 2470 600 -text "" -font Helv_7 -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_setting $::settings(espresso_temperature)]}
-
+	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at pour:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+	add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 160 -from -60 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume)]}
 }
+
+
+add_de1_text "settings_2c settings_2c2 settings_2czoom" 240 1485 -text [translate "Steps"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+add_de1_text "settings_2c settings_2c2 settings_2czoom" 735 1485 -text [translate "Limits"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+#add_de1_text "settings_2c" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+
+add_de1_button "settings_2c2 settings_2czoom" {say [translate {Steps}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 1 1410 495 1600
+add_de1_button "settings_2c settings_2czoom" {say [translate {Limits}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c2"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 496 1410 972 1600
+
 
 add_de1_widget "settings_2 settings_2a" graph 24 220 { 
 	update_de1_explanation_chart;
@@ -1281,5 +1247,5 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#show_settings settings_4
+#show_settings settings_2a
 #set ::settings(force_fw_update) 1; set ::de1(in_fw_update_mode) 1; page_to_show_when_off firmware_update_1
