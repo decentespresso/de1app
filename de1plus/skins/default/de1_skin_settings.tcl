@@ -429,6 +429,8 @@ proc set_profiles_scrollbar_dimensions {} {
 }
 
 
+# experimental feature to also load god shots with profiles
+# add_de1_widget "settings_1" checkbutton 50 1310 {} -text [translate "Also load God Shot"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(also_load_god_shot)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
 
 add_de1_widget "settings_1" graph 1330 300 { 
 		set ::preview_graph_pressure $widget

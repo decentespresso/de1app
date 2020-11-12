@@ -1974,6 +1974,13 @@ proc fill_profiles_listbox {} {
 			set profile(profile_title) "$d \u2639 \u2639 \u2639"
 		}
 
+
+		# experimental feature to also load god shots with profiles
+		# if {$profile(profile_title) == "Default" || $profile(profile_title) == "Gentle and sweet"} {
+		# 	set profile(profile_title) "$d \u2665"
+		# }
+
+
 		set ptitle $profile(profile_title)
 
 		set pcnt [ifexists ::profile_shot_count($d)]
@@ -2727,7 +2734,6 @@ proc preview_profile {} {
 
 	#set profile [lindex [profile_directories] [$w curselection]]
 	set profile $::profile_number_to_directory([$w curselection]) 
-	
 
 	
 	set fn "[homedir]/profiles/${profile}.tcl"

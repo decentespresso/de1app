@@ -272,6 +272,7 @@ array set ::settings {
 	steaming_count 0
 	profile_has_changed 0
 	water_count 0
+	also_load_god_shot 1
 	advanced_shot {}
 	water_time_max 60
 	battery_medium_trigger 90
