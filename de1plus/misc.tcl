@@ -563,6 +563,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/Best\ overall\ pressure\ profile.tcl *
         profiles/Gentle\ and\ sweet.tcl *
         profiles/tea_portafilter.tcl *
+        profiles/tea_portafilter_pressurized.tcl *
         profiles/test_leak.tcl *
         profiles/test_temperature.tcl *
         profiles/test_pressure_calibration.tcl *
