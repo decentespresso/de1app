@@ -1923,18 +1923,11 @@ proc array_keys_sorted_by_val {arrname {sort_order -increasing}} {
 	return $toreturn
 }
 
-
-proc fill_profiles_listbox {} {
-
-	# use this variable to prevent triggering preview_profile for each profile as it gets added to the listbox.  Tk would otherwise do this for each profile as its added to the listbox
-	set ::filling_profiles 1
-
-	set widget  $::globals(profiles_listbox)
-	set ::settings(profile_to_save) $::settings(profile)
-
+proc fill_specific_profiles_listbox { widget selected_profile_name} {
 	$widget delete 0 99999
+
+	set selected_profile_number 0
 	set cnt 0
-	set ::current_profile_number 0
 	set grouping ""
 
 	unset -nocomplain ::profile_number_to_directory
@@ -1949,17 +1942,11 @@ proc fill_profiles_listbox {} {
 		}
 
 		set profile_to_title($d) [translate [ifexists profile(profile_title)]]
-
 	}
 
 	set profiles [array_keys_sorted_by_val profile_to_title]
-	#puts [array get profile_to_title]
-	#exit
 
 	foreach d $profiles {
-		#if {$d == "CVS" || $d == "example"} {
-		#	continue
-		#}
 
 		set fn "[homedir]/profiles/${d}.tcl"
 		#puts "fn: $fn"
@@ -1984,8 +1971,6 @@ proc fill_profiles_listbox {} {
 		} else {
 			set p $ptitle
 		}
-
-
 
 		if {[ifexists ::profiles_hide_mode] != 1} {
 			if {[ifexists profile(profile_hide)] == 1} {
@@ -2034,20 +2019,34 @@ proc fill_profiles_listbox {} {
 		set ::profile_number_to_directory($cnt) $d
 	
 
-		#msg "'$::settings(profile)' == '[ifexists profile(profile_title)]'"
-		if {[string tolower $::settings(profile)] == [string tolower [ifexists profile(profile_title)]]} {
-			set ::current_profile_number $cnt
+		#msg "'$selected_profile_name' == '[ifexists profile(profile_title)]'"
+		if {[string tolower $selected_profile_name] == [string tolower [ifexists profile(profile_title)]]} {
+			set selected_profile_number $cnt
 			#puts "current profile of '$d' is #$cnt"
 		} elseif {[language] != "en"} {
-			if {[string tolower $::settings(profile)] == [string tolower [translate [ifexists profile(profile_title)]]]} {
-				set ::current_profile_number $cnt
+			if {[string tolower $selected_profile_name] == [string tolower [translate [ifexists profile(profile_title)]]]} {
+				set selected_profile_number $cnt
 			#	msg "translated current profile of '$d' is #$cnt"
 			}
 		}
 
 		incr cnt
 	}
-	
+
+	return $selected_profile_number
+}
+
+
+proc fill_profiles_listbox {} {
+
+	# use this variable to prevent triggering preview_profile for each profile as it gets added to the listbox.  Tk would otherwise do this for each profile as its added to the listbox
+	set ::filling_profiles 1
+
+	set widget $::globals(profiles_listbox)
+	set ::settings(profile_to_save) $::settings(profile)
+
+	set ::current_profile_number [fill_specific_profiles_listbox $widget $::settings(profile)]
+
 	$widget selection set $::current_profile_number;
 	set ::globals(profiles_listbox) $widget
 	make_current_listbox_item_blue $widget 
