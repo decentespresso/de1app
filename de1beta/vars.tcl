@@ -1923,7 +1923,7 @@ proc array_keys_sorted_by_val {arrname {sort_order -increasing}} {
 	return $toreturn
 }
 
-proc fill_specific_profiles_listbox { widget selected_profile_name} {
+proc fill_specific_profiles_listbox { widget selected_profile_name hide_mode} {
 	$widget delete 0 99999
 
 	set selected_profile_number 0
@@ -1972,7 +1972,7 @@ proc fill_specific_profiles_listbox { widget selected_profile_name} {
 			set p $ptitle
 		}
 
-		if {[ifexists ::profiles_hide_mode] != 1} {
+		if {$hide_mode != 1} {
 			if {[ifexists profile(profile_hide)] == 1} {
 				# hide this profile if it's marked to be hidden, unless we're un the profile_hide edit mode, in which case we show all profiles
 				continue
@@ -2045,7 +2045,7 @@ proc fill_profiles_listbox {} {
 	set widget $::globals(profiles_listbox)
 	set ::settings(profile_to_save) $::settings(profile)
 
-	set ::current_profile_number [fill_specific_profiles_listbox $widget $::settings(profile)]
+	set ::current_profile_number [fill_specific_profiles_listbox $widget $::settings(profile) [ifexists ::profiles_hide_mode]]
 
 	$widget selection set $::current_profile_number;
 	set ::globals(profiles_listbox) $widget
