@@ -119,18 +119,6 @@ proc skale_display_toggle {} {
         }
 }
 
-proc scale_display_toggle {} {
-    set ::swdark_settings(scale_display_state_b) $::swdark_settings(scale_display_state)
-    if {$::swdark_settings(scale_display_state_b) == "."} {
-        set ::swdark_settings(scale_display_state) " "
-        save_swdark_settings
-        scale_disable_lcd
-        } else {
-        set ::swdark_settings(scale_display_state) "."
-        scale_enable_lcd
-        save_swdark_settings
-        }
-}
 
 proc stopatweight {} {
     if {$::settings(settings_profile_type) == "settings_2c"} {
@@ -394,8 +382,10 @@ proc append_live_data_to_espresso_chart_sw {} {
   	}
 }
 
-
-
+#Code by Damian - Thanks
+proc DSx_next_step {} {
+    de1_send_state "skip to next" $::de1_state(SkipToNext)
+}
 
 
 proc append_live_data_to_espresso_chart_restesting {} {

@@ -182,7 +182,7 @@ add_de1_text "off_zoomed off_steam_zoom off_zoomed_temperature off espresso_1 es
 
 
 #Main Action Buttons when doing something
-add_de1_text "espresso espresso_zoomed espresso_temperature espresso_zoomed_temperature" 2162.825 178.88 -text [translate "ESPRESSO"] -font helveticabold20 -fill "#ffffff" -anchor "center" 
+add_de1_text "espresso espresso_zoomed espresso_temperature espresso_zoomed_temperature" 2162.825 178.88 -text [translate "ADVANCE"] -font helveticabold20 -fill "#ffffff" -anchor "center" 
 
 add_de1_text "steam steam_zoom" 2162.825 178.88 -text [translate "STEAM"] -font helveticabold20 -fill "#ffffff" -anchor "center" 
 
@@ -245,7 +245,13 @@ add_de1_button "home off espresso_1 espresso_3 preheat_1 preheat_3 preheat_4 ste
 #add_de1_button "steam espresso preheat water espresso_2 preheat_2 steam_2 water_2 espresso_zoomed espresso_zoomed_temperature steam_zoom_3 steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off off; start_idle} 2173 360 2538 678
 
 #STOP Button when doing something
-add_de1_button "steam espresso espresso_zoomed espresso_zoomed_temperature steam_zoom_3 preheat hotwaterrinse water espresso_2 preheat_2 steam_2 water_2 steam_zoom" {after cancel {set_next_page off off; start_idle}; set_next_page off off; start_idle} 1789 20 2539 678
+add_de1_button "steam steam_zoom_3 preheat hotwaterrinse water preheat_2 steam_2 water_2 steam_zoom" {after cancel {set_next_page off off; start_idle}; set_next_page off off; start_idle} 1789 20 2539 678
+
+add_de1_button "espresso espresso_zoomed espresso_zoomed_temperature espresso_2" {after cancel {set_next_page off off; start_idle}; set_next_page off off; start_idle} 1789 360 2539 678
+
+
+#Manual Shot Advance Button - full credits to Damian for the code
+add_de1_button "espresso espresso_2 espresso_zoomed espresso_zoomed_temperature" {say [translate {advance}] $::settings(sound_button_in); DSx_next_step} 1789 20 2539 337
 
 
 
@@ -274,7 +280,7 @@ add_de1_button "home off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 p
 	if {$::settings(scale_bluetooth_address) != ""} {
 		add_de1_button "home off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {connect}] $::settings(sound_button_in); catch {ble_connect_to_scale}; skale_tare; update_onscreen_variables} 2087 1270 2240 1410 
 	} else {
-		add_de1_button "home off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {connect}] $::settings(sound_button_in); page_show settings_4; scanning_restart; catch {ble_connect_to_skale}; update_onscreen_variables} 2087 1270 2240 1410
+		add_de1_button "home off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {connect}] $::settings(sound_button_in); page_show settings_4; scanning_restart; catch {ble_connect_to_scale}; update_onscreen_variables} 2087 1270 2240 1410
 	}
 		
 
