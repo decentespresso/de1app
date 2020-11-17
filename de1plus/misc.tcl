@@ -561,6 +561,7 @@ proc make_de1_dir {srcdir destdirs} {
         saver/2560x1600/rainbow_dj.jpg *     
 
         profiles/Best\ overall\ pressure\ profile.tcl *
+        profiles/weber_spring_clean.tcl *
         profiles/Gentle\ and\ sweet.tcl *
         profiles/tea_portafilter.tcl *
         profiles/tea_portafilter_pressurized.tcl *
