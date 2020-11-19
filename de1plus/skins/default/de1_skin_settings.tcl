@@ -74,6 +74,13 @@ set slider_trough_color #EAEAEA
 set chart_background_color #F8F8F8
 ##############################################################################################################################################################################################################################################################################
 
+proc set_scrollbar_dimensions { scrollbar_widget listbox_widget } {
+		# set the height of the scrollbar to be the same as the listbox
+		$scrollbar_widget configure -length [winfo height $listbox_widget]
+		set coords [.can coords $listbox_widget ]
+		set newx [expr {[winfo width $listbox_widget] + [lindex $coords 0]}]
+		.can coords $scrollbar_widget "$newx [lindex $coords 1]"
+	}
 
 ############################
 # pressure controlled shots
@@ -294,11 +301,7 @@ set ::advsteps_slider 0
 set ::advsteps_scrollbar [add_de1_widget "settings_2c" scale 10000 1 {} -from 0 -to .50 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::advsteps -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::advanced_shot_steps_widget $::advsteps_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 proc set_advsteps_scrollbar_dimensions {} {
-	# set the height of the scrollbar to be the same as the listbox
-	$::advsteps_scrollbar configure -length [winfo height $::advanced_shot_steps_widget]
-	set coords [.can coords $::advanced_shot_steps_widget ]
-	set newx [expr {[winfo width $::advanced_shot_steps_widget] + [lindex $coords 0]}]
-	.can coords $::advsteps_scrollbar "$newx [lindex $coords 1]"
+	set_scrollbar_dimensions $::advsteps_scrollbar $::advanced_shot_steps_widget
 }
 
 
@@ -386,12 +389,7 @@ set ::profiles_slider 0
 set ::profiles_scrollbar [add_de1_widget "settings_1" scale 10000 1 {} -from 0 -to 1 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::profiles_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(profiles_listbox) $::profiles_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 proc set_profiles_scrollbar_dimensions {} {
-	#return
-	# set the height of the scrollbar to be the same as the listbox
-	$::profiles_scrollbar configure -length [winfo height $::globals(profiles_listbox)]
-	set coords [.can coords $::globals(profiles_listbox) ]
-	set newx [expr {[winfo width $::globals(profiles_listbox)] + [lindex $coords 0]}]
-	.can coords $::profiles_scrollbar "$newx [lindex $coords 1]"
+	set_scrollbar_dimensions $::profiles_scrollbar $::globals(profiles_listbox)
 }
 
 
@@ -533,13 +531,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		set ::skin_scrollbar [add_de1_widget "tabletstyles" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::skin_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(tablet_styles_listbox) $::skin_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 		proc set_skins_scrollbar_dimensions {} {
-		
-			# set the height of the scrollbar to be the same as the listbox
-			$::skin_scrollbar configure -length [winfo height $::globals(tablet_styles_listbox)]
-			set coords [.can coords $::globals(tablet_styles_listbox) ]
-			set newx [expr {[winfo width $::globals(tablet_styles_listbox)] + [lindex $coords 0]}]
-			.can coords $::skin_scrollbar "$newx [lindex $coords 1]"
-			#puts "coo:= [.can coords $::languages_scrollbar ] + [winfo height $::languages_widget]"
+			set_scrollbar_dimensions $::skin_scrollbar $::globals(tablet_styles_listbox)
 		}
 
 		set pos_vert 1300
@@ -628,13 +620,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		# this moves the scrollbar to the right of the languages listbox, and sets its height correctly
 		# this can't be done until the page is rendered, because the windowing system doesn't know ahead of time the true dimensions of the listbox, not until it is rendered
 		proc set_languages_scrollbar_dimensions {} {
-		
-			# set the height of the scrollbar to be the same as the listbox
-			$::languages_scrollbar configure -length [winfo height $::languages_widget]
-			set coords [.can coords $::languages_widget ]
-			set newx [expr {[winfo width $::languages_widget] + [lindex $coords 0]}]
-			.can coords $::languages_scrollbar "$newx [lindex $coords 1]"
-			#puts "coo:= [.can coords $::languages_scrollbar ] + [winfo height $::languages_widget]"
+			set_scrollbar_dimensions $::languages_scrollbar $::languages_widget
 		}
 
 
@@ -756,11 +742,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 		set ::ble_scrollbar [add_de1_widget "settings_4" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::ble_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::ble_listbox_widget $::ble_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 		proc set_ble_scrollbar_dimensions {} {
-			# set the height of the scrollbar to be the same as the listbox
-			$::ble_scrollbar configure -length [winfo height $::ble_listbox_widget]
-			set coords [.can coords $::ble_listbox_widget ]
-			set newx [expr {[winfo width $::ble_listbox_widget] + [lindex $coords 0]}]
-			.can coords $::ble_scrollbar "$newx [lindex $coords 1]"
+			set_scrollbar_dimensions $::ble_scrollbar $::ble_listbox_widget
 		}
 
 	add_de1_text "settings_4" 680 1100 -text [translate "Scale"] -font Helv_7_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -776,11 +758,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 		set ::ble_scale_scrollbar [add_de1_widget "settings_4" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::ble_scale_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::ble_scale_listbox_widget $::ble_scale_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 		proc set_ble_scale_scrollbar_dimensions {} {
-			# set the height of the scrollbar to be the same as the listbox
-			$::ble_scale_scrollbar configure -length [winfo height $::ble_scale_listbox_widget]
-			set coords [.can coords $::ble_scale_listbox_widget ]
-			set newx [expr {[winfo width $::ble_scale_listbox_widget] + [lindex $coords 0]}]
-			.can coords $::ble_scale_scrollbar "$newx [lindex $coords 1]"
+			set_scrollbar_dimensions $::ble_scale_scrollbar $::ble_scale_listbox_widget
 		}
 
 #set_next_page off settings_4
