@@ -66,6 +66,7 @@ array set ::de1 {
 	cinstance 0
 	fan_threshold 0
 	tank_temperature_threshold 0
+	listbox_global_width_multiplier 1
 	pressure 0
 	head_temperature 0
 	mix_temperature 0

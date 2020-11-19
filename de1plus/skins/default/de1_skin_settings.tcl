@@ -74,6 +74,13 @@ set slider_trough_color #EAEAEA
 set chart_background_color #F8F8F8
 ##############################################################################################################################################################################################################################################################################
 
+proc set_scrollbar_dimensions { scrollbar_widget listbox_widget } {
+		# set the height of the scrollbar to be the same as the listbox
+		$scrollbar_widget configure -length [winfo height $listbox_widget]
+		set coords [.can coords $listbox_widget ]
+		set newx [expr {[winfo width $listbox_widget] + [lindex $coords 0]}]
+		.can coords $scrollbar_widget "$newx [lindex $coords 1]"
+	}
 
 ############################
 # pressure controlled shots
@@ -294,11 +301,7 @@ set ::advsteps_slider 0
 set ::advsteps_scrollbar [add_de1_widget "settings_2c" scale 10000 1 {} -from 0 -to .50 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::advsteps -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::advanced_shot_steps_widget $::advsteps_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 proc set_advsteps_scrollbar_dimensions {} {
-	# set the height of the scrollbar to be the same as the listbox
-	$::advsteps_scrollbar configure -length [winfo height $::advanced_shot_steps_widget]
-	set coords [.can coords $::advanced_shot_steps_widget ]
-	set newx [expr {[winfo width $::advanced_shot_steps_widget] + [lindex $coords 0]}]
-	.can coords $::advsteps_scrollbar "$newx [lindex $coords 1]"
+	set_scrollbar_dimensions $::advsteps_scrollbar $::advanced_shot_steps_widget
 }
 
 
@@ -386,12 +389,7 @@ set ::profiles_slider 0
 set ::profiles_scrollbar [add_de1_widget "settings_1" scale 10000 1 {} -from 0 -to 1 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::profiles_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(profiles_listbox) $::profiles_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 proc set_profiles_scrollbar_dimensions {} {
-	#return
-	# set the height of the scrollbar to be the same as the listbox
-	$::profiles_scrollbar configure -length [winfo height $::globals(profiles_listbox)]
-	set coords [.can coords $::globals(profiles_listbox) ]
-	set newx [expr {[winfo width $::globals(profiles_listbox)] + [lindex $coords 0]}]
-	.can coords $::profiles_scrollbar "$newx [lindex $coords 1]"
+	set_scrollbar_dimensions $::profiles_scrollbar $::globals(profiles_listbox)
 }
 
 
@@ -527,19 +525,13 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 				set ::globals(tablet_styles_listbox) $widget
 				fill_skin_listbox
 				bind $::globals(tablet_styles_listbox) <<ListboxSelect>> ::preview_tablet_skin
-			} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::globals(tablet_styles_listbox)} -yscrollcommand {scale_scroll_new $::globals(tablet_styles_listbox) ::skin_slider} -font $listbox_font -bd 0 -height $tabletstyles_listbox_length -width 30 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+			} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::globals(tablet_styles_listbox)} -yscrollcommand {scale_scroll_new $::globals(tablet_styles_listbox) ::skin_slider} -font global_font -bd 0 -height $tabletstyles_listbox_length -width 30 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
 
 		set ::skin_slider 0
 		set ::skin_scrollbar [add_de1_widget "tabletstyles" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::skin_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(tablet_styles_listbox) $::skin_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 		proc set_skins_scrollbar_dimensions {} {
-		
-			# set the height of the scrollbar to be the same as the listbox
-			$::skin_scrollbar configure -length [winfo height $::globals(tablet_styles_listbox)]
-			set coords [.can coords $::globals(tablet_styles_listbox) ]
-			set newx [expr {[winfo width $::globals(tablet_styles_listbox)] + [lindex $coords 0]}]
-			.can coords $::skin_scrollbar "$newx [lindex $coords 1]"
-			#puts "coo:= [.can coords $::languages_scrollbar ] + [winfo height $::languages_widget]"
+			set_scrollbar_dimensions $::skin_scrollbar $::globals(tablet_styles_listbox)
 		}
 
 		set pos_vert 1300
@@ -618,7 +610,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			set ::languages_widget $widget
 			bind $widget <<ListboxSelect>> ::load_language
 			fill_languages_listbox
-		} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::languages_widget} -yscrollcommand {scale_scroll_new $::languages_widget ::language_slider} -font global_font -bd 0 -height 9 -width 26 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+		} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::languages_widget} -yscrollcommand {scale_scroll_new $::languages_widget ::language_slider} -font global_font -bd 0 -height [expr {int(9 * $::globals(listbox_length_multiplier))}] -width 26 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
 
 		set ::language_slider 0
@@ -628,13 +620,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		# this moves the scrollbar to the right of the languages listbox, and sets its height correctly
 		# this can't be done until the page is rendered, because the windowing system doesn't know ahead of time the true dimensions of the listbox, not until it is rendered
 		proc set_languages_scrollbar_dimensions {} {
-		
-			# set the height of the scrollbar to be the same as the listbox
-			$::languages_scrollbar configure -length [winfo height $::languages_widget]
-			set coords [.can coords $::languages_widget ]
-			set newx [expr {[winfo width $::languages_widget] + [lindex $coords 0]}]
-			.can coords $::languages_scrollbar "$newx [lindex $coords 1]"
-			#puts "coo:= [.can coords $::languages_scrollbar ] + [winfo height $::languages_widget]"
+			set_scrollbar_dimensions $::languages_scrollbar $::languages_widget
 		}
 
 
@@ -750,18 +736,30 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 				set ::ble_listbox_widget $widget
 				bind $::ble_listbox_widget <<ListboxSelect>> ::change_bluetooth_device
 				fill_ble_listbox
-			} -background #fbfaff -font global_font -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+			} -background #fbfaff -font global_font -bd 0 -height [expr {int(3 * $::globals(listbox_length_multiplier))}] -width [expr {int(18 * $::globals(listbox_global_width_multiplier))}] -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1 -yscrollcommand {scale_scroll_new $::ble_listbox_widget ::ble_slider}
+
+		set ::ble_slider 0
+		set ::ble_scrollbar [add_de1_widget "settings_4" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::ble_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::ble_listbox_widget $::ble_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
+
+		proc set_ble_scrollbar_dimensions {} {
+			set_scrollbar_dimensions $::ble_scrollbar $::ble_listbox_widget
+		}
 
 	add_de1_text "settings_4" 680 1100 -text [translate "Scale"] -font Helv_7_bold -fill "#7f879a" -justify "left" -anchor "nw"
 		add_de1_variable "settings_4" 1240 1100 -text \[[translate "Remove"]\] -font Helv_7 -fill "#bec7db" -justify "right" -anchor "ne" -textvariable {[if {$::settings(scale_bluetooth_address) != ""} { return \[[translate "Remove"]\]} else {return "" } ] }
 		add_de1_button "settings_4" {say [translate {Remove}] $::settings(sound_button_in);set ::settings(scale_bluetooth_address) "";fill_ble_scale_listbox} 960 1100 1250 1140 ""
 		add_de1_widget "settings_4" listbox 670 1150 { 
-			set ::ble_scale_listbox_widget $widget
+				set ::ble_scale_listbox_widget $widget
 				bind $widget <<ListboxSelect>> ::change_scale_bluetooth_device
 				fill_ble_scale_listbox
-			} -background #fbfaff -font global_font -bd 0 -height 3 -width 19 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+			} -background #fbfaff -font global_font -bd 0 -height [expr {int(3 * $::globals(listbox_length_multiplier))}] -width [expr {int(18 * $::globals(listbox_global_width_multiplier))}]  -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1 -yscrollcommand {scale_scroll_new $::ble_scale_listbox_widget ::ble_scale_slider}
 
+		set ::ble_scale_slider 0
+		set ::ble_scale_scrollbar [add_de1_widget "settings_4" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::ble_scale_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::ble_scale_listbox_widget $::ble_scale_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
+		proc set_ble_scale_scrollbar_dimensions {} {
+			set_scrollbar_dimensions $::ble_scale_scrollbar $::ble_scale_listbox_widget
+		}
 
 #set_next_page off settings_4
 
@@ -990,7 +988,7 @@ add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2czoom s
 add_de1_button "settings_1 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox; set_advsteps_scrollbar_dimensions} 642 0 1277 188 
 add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" {say [translate {save}] $::settings(sound_button_in); if {$::settings(profile_has_changed) == 1} { borg toast [translate "Saved"]; save_profile } } 642 0 1277 188 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"} 1278 0 1904 188
-add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"} 1905 0 2560 188
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"; set_ble_scrollbar_dimensions; set_ble_scale_scrollbar_dimensions} 1905 0 2560 188
 
 
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font $botton_button_font -fill "#FFFFFF" -anchor "center"

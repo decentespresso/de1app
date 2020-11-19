@@ -19,6 +19,8 @@ proc setup_environment {} {
     global undroid
 
     set ::globals(listbox_length_multiplier) 1
+    set ::globals(listbox_global_width_multiplier) 1
+
     set ::globals(entry_length_multiplier) 1
 
     if {$android == 1 || $undroid == 1} {
@@ -220,6 +222,11 @@ proc setup_environment {} {
         source "bluetooth.tcl"
 
     } else {
+
+        # global font is wider on non-android
+        set ::globals(listbox_global_width_multiplier) .8
+        set ::globals(listbox_length_multiplier) 1
+
 
         expr {srand([clock milliseconds])}
 
