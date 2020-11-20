@@ -1923,18 +1923,11 @@ proc array_keys_sorted_by_val {arrname {sort_order -increasing}} {
 	return $toreturn
 }
 
-
-proc fill_profiles_listbox {} {
-
-	# use this variable to prevent triggering preview_profile for each profile as it gets added to the listbox.  Tk would otherwise do this for each profile as its added to the listbox
-	set ::filling_profiles 1
-
-	set widget  $::globals(profiles_listbox)
-	set ::settings(profile_to_save) $::settings(profile)
-
+proc fill_specific_profiles_listbox { widget selected_profile_name hide_mode} {
 	$widget delete 0 99999
+
+	set selected_profile_number 0
 	set cnt 0
-	set ::current_profile_number 0
 	set grouping ""
 
 	unset -nocomplain ::profile_number_to_directory
@@ -1949,17 +1942,11 @@ proc fill_profiles_listbox {} {
 		}
 
 		set profile_to_title($d) [translate [ifexists profile(profile_title)]]
-
 	}
 
 	set profiles [array_keys_sorted_by_val profile_to_title]
-	#puts [array get profile_to_title]
-	#exit
 
 	foreach d $profiles {
-		#if {$d == "CVS" || $d == "example"} {
-		#	continue
-		#}
 
 		set fn "[homedir]/profiles/${d}.tcl"
 		#puts "fn: $fn"
@@ -1992,9 +1979,7 @@ proc fill_profiles_listbox {} {
 			set p $ptitle
 		}
 
-
-
-		if {[ifexists ::profiles_hide_mode] != 1} {
+		if {$hide_mode != 1} {
 			if {[ifexists profile(profile_hide)] == 1} {
 				# hide this profile if it's marked to be hidden, unless we're un the profile_hide edit mode, in which case we show all profiles
 				continue
@@ -2041,22 +2026,36 @@ proc fill_profiles_listbox {} {
 		set ::profile_number_to_directory($cnt) $d
 	
 
-		#msg "'$::settings(profile)' == '[ifexists profile(profile_title)]'"
-		if {[string tolower $::settings(profile)] == [string tolower [ifexists profile(profile_title)]]} {
-			set ::current_profile_number $cnt
+		#msg "'$selected_profile_name' == '[ifexists profile(profile_title)]'"
+		if {[string tolower $selected_profile_name] == [string tolower [ifexists profile(profile_title)]]} {
+			set selected_profile_number $cnt
 			#puts "current profile of '$d' is #$cnt"
 		} elseif {[language] != "en"} {
-			if {[string tolower $::settings(profile)] == [string tolower [translate [ifexists profile(profile_title)]]]} {
-				set ::current_profile_number $cnt
+			if {[string tolower $selected_profile_name] == [string tolower [translate [ifexists profile(profile_title)]]]} {
+				set selected_profile_number $cnt
 			#	msg "translated current profile of '$d' is #$cnt"
 			}
 		}
 
 		incr cnt
 	}
-	
+
+	return $selected_profile_number
+}
+
+
+proc fill_profiles_listbox {} {
+
+	# use this variable to prevent triggering preview_profile for each profile as it gets added to the listbox.  Tk would otherwise do this for each profile as its added to the listbox
+	set ::filling_profiles 1
+
+	set widget $::globals(profiles_listbox)
+	set ::settings(profile_to_save) $::settings(profile)
+
+	set ::current_profile_number [fill_specific_profiles_listbox $widget $::settings(profile) [ifexists ::profiles_hide_mode]]
+
 	$widget selection set $::current_profile_number;
-	set ::globals(profiles_listbox) $widget
+	#set ::globals(profiles_listbox) $widget
 	make_current_listbox_item_blue $widget 
 	preview_profile 
 	$widget yview $::current_profile_number
@@ -2704,6 +2703,63 @@ proc change_scale_bluetooth_device {} {
 }
 
 
+proc select_profile { profile } {
+	set fn "[homedir]/profiles/${profile}.tcl"
+	set ::settings(profile) $profile
+	set ::settings(profile_notes) ""
+	
+	# for importing De1 profiles that don't have this feature.
+	set ::settings(preinfusion_flow_rate) 4
+
+	load_settings_vars $fn
+
+	set ::settings(profile_filename) $profile
+	#msg "profile: $profile - $::settings(profile_notes)"
+
+	#puts "Author: '[ifexists ::settings(author)]'"
+	if {[language] != "en" && $::settings(profile_language) == "en" && [ifexists ::settings(author)] == "Decent"} {
+		# the first time this profile is loaded into another language, we should try to translate the
+		# title and notes to the local language
+		set ::settings(profile_notes) [translate $::settings(profile_notes)]
+		set ::settings(profile_title) [translate $::settings(profile_title)]
+		set ::settings(profile_language) [language]
+	}
+	set ::settings(original_profile_title) $::settings(profile_title)
+
+	if {[de1plus]} {
+		
+		if {$::settings(settings_profile_type) == "settings_2" || $::settings(settings_profile_type) == "settings_profile_pressure"} {
+			set ::settings(settings_profile_type) "settings_2a"
+		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+			set ::settings(settings_profile_type) "settings_2b"
+		} elseif {$::settings(settings_profile_type) == "settings_profile_advanced" || $::settings(settings_profile_type) == "settings_2c2"} {
+			# old profile names that shouldn't exist any more, so upgrade them to the latest name
+			set ::settings(settings_profile_type) "settings_2c"
+		}
+	} else {
+		set ::settings(settings_profile_type) "settings_2"
+
+		if {$::settings(settings_profile_type) == "settings_2a"} {
+			set ::settings(settings_profile_type) "settings_2"
+		}
+	}
+
+	#puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
+	set ::settings(profile) $::settings(profile_title)
+
+	if {$::settings(enable_rise) != 1} {
+		 # "rise" feature was removed and is disabled by default
+		set ::settings(preinfusion_guarantee) 0
+	}
+
+	update_onscreen_variables
+	profile_has_not_changed_set
+
+	# as of v1.3 people can start an espresso from the group head, which means their currently selected 
+	# profile needs to sent right away to the DE1, in case the person taps the GH button to start espresso w/o leaving settings
+	send_de1_settings_soon
+}
+
 set preview_profile_counter 0
 proc preview_profile {} {
 	if {$::de1(current_context) != "settings_1"} {
@@ -2772,73 +2828,11 @@ proc preview_profile {} {
 
 	}
 
-	set ::settings(profile) $profile
-	set ::settings(profile_notes) ""
-
-
-	#if {[check_for_multiple_listbox_events_bug] == 1} {
-	#	return
-	#}
-
-	# for importing De1 profiles that don't have this feature.
-	set ::settings(preinfusion_flow_rate) 4
-
-	load_settings_vars $fn
-
-	set ::settings(profile_filename) $profile
-	#msg "profile: $profile - $::settings(profile_notes)"
-
-	#puts "Author: '[ifexists ::settings(author)]'"
-	if {[language] != "en" && $::settings(profile_language) == "en" && [ifexists ::settings(author)] == "Decent"} {
-		# the first time this profile is loaded into another language, we should try to translate the
-		# title and notes to the local language
-		set ::settings(profile_notes) [translate $::settings(profile_notes)]
-		set ::settings(profile_title) [translate $::settings(profile_title)]
-		set ::settings(profile_language) [language]
-	}
-	set ::settings(original_profile_title) $::settings(profile_title)
+	select_profile $profile
 
 	make_current_listbox_item_blue $::globals(profiles_listbox)
-	if {[de1plus]} {
-		
-		if {$::settings(settings_profile_type) == "settings_2" || $::settings(settings_profile_type) == "settings_profile_pressure"} {
-			set ::settings(settings_profile_type) "settings_2a"
-		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
-			set ::settings(settings_profile_type) "settings_2b"
-		} elseif {$::settings(settings_profile_type) == "settings_profile_advanced" || $::settings(settings_profile_type) == "settings_2c2"} {
-			# old profile names that shouldn't exist any more, so upgrade them to the latest name
-			set ::settings(settings_profile_type) "settings_2c"
-		}
-
-
-		#if {$::settings(settings_profile_type) == "settings_2c"} {
-		#}
-
-	} else {
-		set ::settings(settings_profile_type) "settings_2"
-
-		if {$::settings(settings_profile_type) == "settings_2a"} {
-			set ::settings(settings_profile_type) "settings_2"
-		}
-	}
-
-	#puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
-	set ::settings(profile) $::settings(profile_title)
-
-	if {$::settings(enable_rise) != 1} {
-		 # "rise" feature was removed and is disabled by default
-		set ::settings(preinfusion_guarantee) 0
-	}
-
-
-	update_onscreen_variables
-	profile_has_not_changed_set
-
-	# as of v1.3 people can start an espresso from the group head, which means their currently selected 
-	# profile needs to sent right away to the DE1, in case the person taps the GH button to start espresso w/o leaving settings
-	send_de1_settings_soon
-
-#set ::settings(profile_notes) [clock seconds]
+	
+	#set ::settings(profile_notes) [clock seconds]
 }
 
 
