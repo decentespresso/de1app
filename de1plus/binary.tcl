@@ -1868,6 +1868,14 @@ proc update_de1_state {statechar} {
 
 		if {$textstate == "Espresso"} {
 			reset_gui_starting_espresso
+
+			# When starting an espresso we are trying to reconnect to the scale just to be sure. This by far does not saturate the Android 5 tablets
+			#  but just to be sure it is feature gated
+			if { $::settings(reconnect_to_scale_on_espresso_start) && $::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
+				msg "try to connect to scale automatically (if it is currently disconnected)"
+				ble_connect_to_scale
+			}
+
 		} elseif {$textstate == "Steam"} {
 			reset_gui_starting_steam
 		} elseif {$textstate == "HotWater"} {

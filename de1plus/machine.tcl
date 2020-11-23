@@ -416,6 +416,7 @@ array set ::settings {
 	water_stop_on_scale 1
 	ghc_is_installed 0
 	force_acaia_heartbeat 0
+	reconnect_to_scale_on_espresso_start 1
 	comms_debugging 0
 	scale_stop_at_half_shot 0
 }
