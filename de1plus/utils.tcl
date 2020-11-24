@@ -203,16 +203,12 @@ proc setup_environment {} {
         wm attributes . -fullscreen 1
 
         # flight mode, not yet debugged
-        #if {$::settings(flight_mode_enable) == 1 && [de1plus] } {
+        #if {$::settings(flight_mode_enable) == 1 } {
         #    if {[package require de1plus] > 1} {
         #        borg sensor enable 0
         #        sdltk accelerometer 1
         #        after 200 accelerometer_check 
         #    }
-        #}
-
-        #if {[de1plus]} {
-        #    set ::settings(timer_interval) 1000
         #}
 
         # preload the speaking engine 
@@ -789,9 +785,6 @@ proc skin_directory {} {
     global screen_size_height
 
     set skindir "skins"
-    #if {[de1plus]} {
-        #set skindir "skinsplus"
-    #}
 
     #if {[ifexists ::creator] == 1} {
         #set skindir "skinscreator"
@@ -1193,15 +1186,6 @@ proc load_settings {} {
     set ::settings(seconds_to_display_done_hotwater) 300
 
     set skintcl [read_file "[skin_directory]/skin.tcl"]
-    if {![de1plus] && [string first "package require de1plus" $skintcl] != -1} {
-        puts "Error: incompatible DE1PLUS skin loaded on a DE1"
-        set ::settings(skin) "default"
-    }
-
-    if {![de1plus]} {
-        set settings(water_temperature) 80
-        set settings(water_volume) 100
-    }
 
     # copy the BLE address from Skale to the new generic "scale" BLE address (20-9-19 added support for two kinds of scales)
     if {$::settings(skale_bluetooth_address) != ""} {

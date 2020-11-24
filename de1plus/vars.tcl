@@ -1338,19 +1338,10 @@ proc return_temperature_number {in} {
 # http://www.fileformat.info/info/unicode/char/b0/index.htm
 # http://www.fileformat.info/info/unicode/char/ba/index.htm
 proc return_temperature_measurement {in} {
-	if {[de1plus]} {
-		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
-		} else {
-			return [subst {[round_to_one_digits $in]\u00B0C}]
-		}
+	if {$::settings(enable_fahrenheit) == 1} {
+		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 	} else {
-		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
-		} else {
-			return [subst {[round_to_integer $in]\u00B0C}]
-		}
-
+		return [subst {[round_to_one_digits $in]\u00B0C}]
 	}
 }
 
@@ -1365,11 +1356,7 @@ proc round_and_return_temperature_setting {varname} {
 }
 
 proc round_temperature_number {in} {
-	if {[de1plus]} {
-		return [round_to_half_integer $in]
-	} else {
-		return [round_to_integer $in]
-	}
+	return [round_to_half_integer $in]
 }
 
 proc return_temperature_setting_or_off {in} {
@@ -1382,24 +1369,15 @@ proc return_temperature_setting_or_off {in} {
 
 proc return_temperature_setting {in} {
 	#msg "return_temperature_setting: $in"
-	if {[de1plus]} {
-		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
-		} else {
-			if {[round_to_half_integer $in] == [round_to_integer $in]} {
-				# don't display a .0 on the number if it's not needed
-				return [subst {[round_to_integer $in]\u00B0C}]
-			} else {
-				return [subst {[round_to_half_integer $in]\u00B0C}]
-			}
-		}
+	if {$::settings(enable_fahrenheit) == 1} {
+		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 	} else {
-		if {$::settings(enable_fahrenheit) == 1} {
-			return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
-		} else {
+		if {[round_to_half_integer $in] == [round_to_integer $in]} {
+			# don't display a .0 on the number if it's not needed
 			return [subst {[round_to_integer $in]\u00B0C}]
+		} else {
+			return [subst {[round_to_half_integer $in]\u00B0C}]
 		}
-
 	}
 }
 
@@ -1423,13 +1401,7 @@ proc return_delta_temperature_measurement {in} {
 
 	# handle ºC vs ºF deltas
 	set in [return_temp_offset $in]
-
-	if {[de1plus]} {
-		set num [round_to_one_digits $in]
-	} else {
-		set num [round_to_integer $in]
-	}
-
+	set num [round_to_one_digits $in]
 	set t {}
 	if {$num > 0.0} {
 		set t "+$t"
@@ -1575,7 +1547,6 @@ proc skin_directories {} {
 	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/skins/" *]]
 	#puts "skin_directories: $dirs"
 	set dd {}
-	set de1plus [de1plus]
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
 			continue
@@ -1585,11 +1556,6 @@ proc skin_directories {} {
 	    set skintcl [read_file $fn]
 	    #set skintcl ""
 	    if {[string first "package require de1plus" $skintcl] != -1} {
-	    	if {!$de1plus} {
-		    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
-		    	#puts "Skipping $d"
-		    	continue
-		    }
 
 		    # keep track of which skins are DE1PLUS so we can display them differently in the listbox
 		    set ::de1plus_skins($d) 1
@@ -1708,7 +1674,6 @@ proc profile_directories {} {
 
 	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/profiles/" *.tcl]]
 	set dd {}
-	set de1plus [de1plus]
 	foreach d $dirs {
 		#if {$d == "CVS" || $d == "example"} {
 		#	continue
@@ -1716,11 +1681,7 @@ proc profile_directories {} {
 
 		set filecontents [encoding convertfrom utf-8 [read_binary_file "[homedir]/profiles/$d"]]
 	    if {[string first "settings_profile_type settings_2b" $filecontents] != -1 || [string first "settings_profile_type settings_2c" $filecontents] != -1 || [string first "settings_profile_type settings_profile_flow" $filecontents] != -1 || [string first "settings_profile_type settings_profile_advanced" $filecontents] != -1} {
-	    	if {!$de1plus} {
-		    	# don't display DE1PLUS skins to users on a DE1, because those skins will not function right
-		    	#puts "Skipping $d"
-		    	continue
-		    }
+
 		    #puts "de1+ profile: $d"
 		    # keep track of which skins are DE1PLUS so we can display them differently in the listbox
 		    set ::de1plus_profile([file rootname $d]) 1
@@ -2726,22 +2687,13 @@ proc select_profile { profile } {
 	}
 	set ::settings(original_profile_title) $::settings(profile_title)
 
-	if {[de1plus]} {
-		
-		if {$::settings(settings_profile_type) == "settings_2" || $::settings(settings_profile_type) == "settings_profile_pressure"} {
-			set ::settings(settings_profile_type) "settings_2a"
-		} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
-			set ::settings(settings_profile_type) "settings_2b"
-		} elseif {$::settings(settings_profile_type) == "settings_profile_advanced" || $::settings(settings_profile_type) == "settings_2c2"} {
-			# old profile names that shouldn't exist any more, so upgrade them to the latest name
-			set ::settings(settings_profile_type) "settings_2c"
-		}
-	} else {
-		set ::settings(settings_profile_type) "settings_2"
-
-		if {$::settings(settings_profile_type) == "settings_2a"} {
-			set ::settings(settings_profile_type) "settings_2"
-		}
+	if {$::settings(settings_profile_type) == "settings_2" || $::settings(settings_profile_type) == "settings_profile_pressure"} {
+		set ::settings(settings_profile_type) "settings_2a"
+	} elseif {$::settings(settings_profile_type) == "settings_profile_flow"} {
+		set ::settings(settings_profile_type) "settings_2b"
+	} elseif {$::settings(settings_profile_type) == "settings_profile_advanced" || $::settings(settings_profile_type) == "settings_2c2"} {
+		# old profile names that shouldn't exist any more, so upgrade them to the latest name
+		set ::settings(settings_profile_type) "settings_2c"
 	}
 
 	#puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
@@ -2947,11 +2899,8 @@ proc load_settings_vars {fn} {
 
 	#error "load_settings_vars"
 	# set the default profile type to use, this can be over-ridden by the saved profile
-	if {[de1plus]} {
-		set ::settings(settings_profile_type) "settings_2a"
-	} else {
-		set ::settings(settings_profile_type) "settings_2"
-	}
+	set ::settings(settings_profile_type) "settings_2a"
+
 
 	catch {
 		foreach {k v} [encoding convertfrom utf-8 [read_binary_file $fn]] {
@@ -3068,24 +3017,6 @@ proc save_profile {} {
 	}
 
 	profile_has_changed_set_colors
-}
-
-
-proc de1plus {} {
-    # all machines are DE1+ now
-    return 1
-
-	#puts "x: [package present de1plus 1.0]"
-	set x 0
-	catch {
-		catch {
-			if {[package present de1plus 1.0] >= 1} {
-			set x 1
-			}
-		}
-	}
-	return $x
-
 }
 
 proc save_espresso_rating_to_history {} {
