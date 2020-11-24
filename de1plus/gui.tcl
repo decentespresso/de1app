@@ -1459,8 +1459,9 @@ proc page_display_change {page_to_hide page_to_show} {
 	msg "Switched to page: $page_to_show [stacktrace]"
 
 	update_onscreen_variables
-	#after 100 update_chart
-	#after 1000 update
+
+	# make sure on-screen keyboard doesn't auto-pop up
+	sdltk textinput off
 
 }
 
