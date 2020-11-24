@@ -736,7 +736,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 				set ::ble_listbox_widget $widget
 				bind $::ble_listbox_widget <<ListboxSelect>> ::change_bluetooth_device
 				fill_ble_listbox
-			} -background #fbfaff -font global_font -bd 0 -height [expr {int(3 * $::globals(listbox_length_multiplier))}] -width [expr {int(18 * $::globals(listbox_global_width_multiplier))}] -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1 -yscrollcommand {scale_scroll_new $::ble_listbox_widget ::ble_slider}
+			} -background #fbfaff -font global_font -bd 0 -height [expr {int(3 * $::globals(listbox_length_multiplier))}] -width [expr {int(16 * $::globals(listbox_global_width_multiplier))}] -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1 -yscrollcommand {scale_scroll_new $::ble_listbox_widget ::ble_slider}
 
 		set ::ble_slider 0
 		set ::ble_scrollbar [add_de1_widget "settings_4" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::ble_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::ble_listbox_widget $::ble_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
@@ -752,7 +752,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 				set ::ble_scale_listbox_widget $widget
 				bind $widget <<ListboxSelect>> ::change_scale_bluetooth_device
 				fill_ble_scale_listbox
-			} -background #fbfaff -font global_font -bd 0 -height [expr {int(3 * $::globals(listbox_length_multiplier))}] -width [expr {int(18 * $::globals(listbox_global_width_multiplier))}]  -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1 -yscrollcommand {scale_scroll_new $::ble_scale_listbox_widget ::ble_scale_slider}
+			} -background #fbfaff -font global_font -bd 0 -height [expr {int(3 * $::globals(listbox_length_multiplier))}] -width [expr {int(16 * $::globals(listbox_global_width_multiplier))}]  -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1 -yscrollcommand {scale_scroll_new $::ble_scale_listbox_widget ::ble_scale_slider}
 
 		set ::ble_scale_slider 0
 		set ::ble_scale_scrollbar [add_de1_widget "settings_4" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::ble_scale_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::ble_scale_listbox_widget $::ble_scale_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
