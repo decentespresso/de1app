@@ -417,6 +417,7 @@ array set ::settings {
 	reconnect_to_scale_on_espresso_start 1
 	comms_debugging 0
 	scale_stop_at_half_shot 0
+	lock_screen_during_screensaver 0
 }
 
 # default de1plus skin
@@ -853,6 +854,12 @@ proc start_water {} {
 proc start_idle {} {
 	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
+	# Ensure we are not locking the screen during use.
+	# This is only relevant when waking up the machine
+	if  {[sdltk screensaver] == 1} {
+		sdltk screensaver off
+	}
+
 	if {$::de1(device_handle) == 0} {
 		update_de1_state "$::de1_state(Idle)\x0"
 		ble_connect_to_de1
@@ -941,6 +948,10 @@ proc start_sleep {} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 [list update_de1_state "$::de1_state(GoingToSleep)\x0"]
 		after 800 [list update_de1_state "$::de1_state(Sleep)\x0"]
+	}
+
+	if {$::settings(lock_screen_during_screensaver) == 1} {
+		sdltk screensaver on
 	}
 }
 
