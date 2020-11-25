@@ -28,30 +28,22 @@ if {[language] == "ar"} {
 
 add_de1_page "settings_1" "settings_1.png" "default"
 
-if {[de1plus]} {
+#add_de1_page "settings_2a" "settings_2a.png" "default"
+#add_de1_page "settings_2b" "settings_2b.png" "default"
+#if {$::settings(scale_bluetooth_address) == ""} {
+#} else {
+	add_de1_page "settings_2a" "settings_2a2.png" "default"
+	add_de1_page "settings_2b" "settings_2b2.png" "default"
+#}
+add_de1_page "settings_2c" "settings_2c.png" "default"
+add_de1_page "settings_2c2" "settings_2c2.png" "default"
+add_de1_page "settings_2czoom" "settings_2c.png" "default"
 
-	add_de1_page "settings_1" "settings_1.png" "default"
-	
-	#add_de1_page "settings_2a" "settings_2a.png" "default"
-	#add_de1_page "settings_2b" "settings_2b.png" "default"
-	#if {$::settings(scale_bluetooth_address) == ""} {
-	#} else {
-		add_de1_page "settings_2a" "settings_2a2.png" "default"
-		add_de1_page "settings_2b" "settings_2b2.png" "default"
-	#}
-	add_de1_page "settings_2c" "settings_2c.png" "default"
-	add_de1_page "settings_2c2" "settings_2c2.png" "default"
-	add_de1_page "settings_2czoom" "settings_2c.png" "default"
-
-	if {$::settings(settings_profile_type) == "settings_2"} {
-		# this happens if you switch to the de1 gui, which then saves the de1 settings default, so we need to reset it to this de1+ default
-		set ::settings(settings_profile_type) "settings_2a"
-	}
-} else {
-	set ::settings(settings_profile_type) "settings_2"
-	add_de1_page "settings_1" "settings_1.png" "default"
-	add_de1_page "settings_2" "settings_2.png" "default"
+if {$::settings(settings_profile_type) == "settings_2"} {
+	# this happens if you switch to the de1 gui, which then saves the de1 settings default, so we need to reset it to this de1+ default
+	set ::settings(settings_profile_type) "settings_2a"
 }
+
 
 add_de1_page "settings_3" "settings_3.png" "default"
 add_de1_page "settings_4" "settings_4.png" "default"
@@ -772,23 +764,21 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 #	set ::prepare_for_suitcase_toggle 0; set_next_page off travel_prepare; page_show travel_prepare; 
 #}
 
-if {[de1plus]} {
+# advanced features that are normally disabled
+#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Show water level"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_on)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Rate your espresso shots"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_rate_espresso)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-	# advanced features that are normally disabled
-	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Show water level"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_on)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (1 * $spacer)}] {} -text [translate "Blinking low water warning"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(waterlevel_indicator_blink)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (2 * $spacer)}] {} -text [translate "Show adaptive water temperature"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_espresso_water_delta_number)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (3 * $spacer)}] {} -text [translate "Rate your espresso shots"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_rate_espresso)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	
-	# not yet ready to be used, still needs some work
-	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Chart flow rate changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_flow_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+# not yet ready to be used, still needs some work
+#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (4 * $spacer)}] {} -text [translate "Chart pressure changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_pressure_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (5 * $spacer)}] {} -text [translate "Chart flow rate changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_flow_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-	# this feature is now automatically enabled if you have a bluetooth scale connected
-	#if {$::settings(skale_bluetooth_address) != ""} {
-		#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (7 * $spacer)}] {} -text [translate "Chart weight changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_weight_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-	#}
-}
+# this feature is now automatically enabled if you have a bluetooth scale connected
+#if {$::settings(skale_bluetooth_address) != ""} {
+	#add_de1_widget "settings_4" checkbutton 70 [expr {$pos_top + (7 * $spacer)}] {} -text [translate "Chart weight changes"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(display_weight_delta_line)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+#}
+
 
 add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso machine for transport"] -font Helv_15_bold -fill "#a77171" -anchor "center" -width 1000
 	add_de1_text "travel_prepare" 1520 1000 -text [translate "After you press Ok, pull the water tank forward as shown in this photograph."] -font Helv_10_bold -fill "#a77171" -anchor "nw" -width 500
@@ -923,28 +913,27 @@ add_de1_variable "settings_1" 1360 1240 -text "" -font Helv_10_bold -fill "#7f87
 
 # labels for PREHEAT tab on
 
-if {[de1plus]} {
-	set settings_label1 [translate "PROFILE"]
-	set settings_label2 [translate "Profiles"]
+set settings_label1 [translate "PROFILE"]
+set settings_label2 [translate "Profiles"]
 
-	# types of profiles available on DE1+
-	#add_de1_text "settings_2a" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-	#add_de1_text "settings_2a" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	#add_de1_text "settings_2a" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+# types of profiles available on DE1+
+#add_de1_text "settings_2a" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+#add_de1_text "settings_2a" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+#add_de1_text "settings_2a" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
 
-	#add_de1_text "settings_2b" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	#add_de1_text "settings_2b" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
-	#add_de1_text "settings_2b" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+#add_de1_text "settings_2b" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+#add_de1_text "settings_2b" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+#add_de1_text "settings_2b" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
 
-	#add_de1_text "settings_2c" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	#add_de1_text "settings_2c" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
-	#add_de1_text "settings_2c" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
+#add_de1_text "settings_2c" 240 1485 -text [translate "Pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+#add_de1_text "settings_2c" 735 1485 -text [translate "Flow"] -font Helv_10_bold -fill "#7f879a" -anchor "center" 
+#add_de1_text "settings_2c" 1220 1485 -text [translate "Advanced"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
-	#add_de1_button "settings_2b settings_2c" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 1 1410 495 1600
-	#add_de1_button "settings_2a settings_2c" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 496 1410 972 1600
-	#add_de1_button "settings_2a" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_pressure_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set; set_advsteps_scrollbar_dimensions} 974 1410 1500 1600
-	#add_de1_button "settings_2b" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_flow_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set; set_advsteps_scrollbar_dimensions } 974 1410 1500 1600
-}
+#add_de1_button "settings_2b settings_2c" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 1 1410 495 1600
+#add_de1_button "settings_2a settings_2c" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 496 1410 972 1600
+#add_de1_button "settings_2a" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_pressure_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set; set_advsteps_scrollbar_dimensions} 974 1410 1500 1600
+#add_de1_button "settings_2b" {say [translate {ADVANCED}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); copy_flow_profile_to_advanced_profile; fill_advanced_profile_steps_listbox; profile_has_changed_set; set_advsteps_scrollbar_dimensions } 974 1410 1500 1600
+
 
 set pos_preset_label 380
 set pos_profile_label 1010
@@ -1159,11 +1148,8 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 	# entry fields
 	add_de1_text "calibrate" 1880 $calibration_labels_row -text [translate "Measured"] -font Helv_8_bold -fill "#c0c4e1" -anchor "nw" 
 		add_de1_widget "calibrate" entry 1880 [expr {(1 * $calibration_row_spacing) + $calibration_labels_row}]   {
-			if {[de1plus]} {
-				set ::settings(espresso_temperature) [round_to_half_integer $::settings(espresso_temperature)]
-			} else {
-				set ::settings(espresso_temperature) [round_to_integer $::settings(espresso_temperature)]
-			}
+			set ::settings(espresso_temperature) [round_to_half_integer $::settings(espresso_temperature)]
+
 			set ::globals(widget_calibrate_temperature) $widget
 			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); $::globals(widget_calibrate_temperature) configure -state disabled; de1_send_calibration "temperature" $::settings(espresso_temperature) $::globals(calibration_espresso_temperature); de1_read_calibration "temperature" }
 		} -width [expr {int(10 * $::globals(entry_length_multiplier))}] -state normal -font Helv_15_bold -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::globals(calibration_espresso_temperature) -relief flat  -highlightthickness 1 -highlightcolor #000000 

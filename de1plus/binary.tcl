@@ -938,9 +938,9 @@ proc de1_packed_shot_flow {} {
 # being a list of packed frames
 proc de1_packed_shot {} {
 
-	if {[de1plus] && [ifexists ::settings(settings_profile_type)] == "settings_2b"} {
+	if {[ifexists ::settings(settings_profile_type)] == "settings_2b"} {
 		return [de1_packed_shot_flow]
-	} elseif {[de1plus] && ([ifexists ::settings(settings_profile_type)] == "settings_2c" || [ifexists ::settings(settings_profile_type)] == "settings_2c2")} {
+	} elseif {([ifexists ::settings(settings_profile_type)] == "settings_2c" || [ifexists ::settings(settings_profile_type)] == "settings_2c2")} {
 		return [de1_packed_shot_advanced]
 	}
 
