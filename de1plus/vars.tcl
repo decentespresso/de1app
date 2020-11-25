@@ -3819,11 +3819,11 @@ proc range_check_variable {varname low high} {
 
 proc range_check_shot_variables {} {
 
-	range_check_variable ::settings(espresso_temperature) 0 110
-	range_check_variable ::settings(espresso_temperature_0) 0 110
-	range_check_variable ::settings(espresso_temperature_1) 0 110
-	range_check_variable ::settings(espresso_temperature_2) 0 110
-	range_check_variable ::settings(espresso_temperature_3) 0 110
+	range_check_variable ::settings(espresso_temperature) 0 105
+	range_check_variable ::settings(espresso_temperature_0) 0 105
+	range_check_variable ::settings(espresso_temperature_1) 0 105
+	range_check_variable ::settings(espresso_temperature_2) 0 105
+	range_check_variable ::settings(espresso_temperature_3) 0 105
 	
 	range_check_variable ::settings(preinfusion_time) 0 60
 	range_check_variable ::settings(espresso_hold_time) 0 60
