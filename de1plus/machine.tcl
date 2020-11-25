@@ -134,9 +134,7 @@ array set ::de1 {
 
 set ::de1(last_ping) [clock seconds]
 
-if {[de1plus]} { 
-	set ::de1(maxpressure) 12 
-}
+set ::de1(maxpressure) 12 
 
 
 if {$android == 0 && $undroid == 0} {
@@ -421,10 +419,9 @@ array set ::settings {
 	scale_stop_at_half_shot 0
 }
 
-if {[de1plus]} {
-	# default de1plus skin
-	set ::settings(skin) "Insight"
-}
+# default de1plus skin
+set ::settings(skin) "Insight"
+
 
 if {$::android != 1} {
 	set ::settings(ghc_is_installed) 0

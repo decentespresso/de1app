@@ -259,25 +259,6 @@ proc homedir {} {
     return $home
 }
 
-
-proc de1plus {} {
-    # all machines are DE1+ now
-    return 1
-    #puts "x: [package present de1plus 1.0]"
-    set x 0
-    catch {
-        catch {
-            if {[package present de1plus 1.0] >= 1} {
-            set x 1
-            }
-        }
-    }
-    return $x
-
-}
-
-
-
 proc pause {time} {
     global pause_end
     after $time set pause_end 1
@@ -497,15 +478,8 @@ proc start_app_update {} {
     }
 
     puts "update download endpoint: '$progname'"
-
-    #set progname "de1"
-    #if {[de1plus] == 1} {
-    #    set progname "de1plus"
-    #}
-
     
     set remote_timestamp [check_timestamp_for_app_update_available 1]
-
 
     ##############################################################################################################
     # get manifest both as raw TXT and as gzip compressed, to detect tampering 
