@@ -1463,6 +1463,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	# make sure on-screen keyboard doesn't auto-pop up
 	sdltk textinput off
+	focus .
 
 }
 
