@@ -805,6 +805,9 @@ proc android_specific_stubs {} {
             if {[lindex $args 0] == "powerinfo"} {
                 #msg "sdltk powerinfo"
                 return [list "percent" 75]
+            } elseif {[lindex $args 0] == "textinput"} {
+                #msg "sdltk textinput"
+                return 0
             } else {
                 msg "unknown sdktk comment: '$args'"
             }

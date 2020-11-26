@@ -1202,10 +1202,11 @@ proc de1_send_shot_frames {} {
 }
 
 proc save_settings_to_de1 {} {
-	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot save_settings_to_de1"
-		return
-	}
+	# let this run even though no connection, so it can be displayed in the debug log.  Very useful info for programmers.
+	#if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+	#		msg "DE1 not connected, cannot save_settings_to_de1"
+	#		return
+	#	}
 
 	de1_send_shot_frames
 	de1_send_steam_hotwater_settings
@@ -1213,10 +1214,11 @@ proc save_settings_to_de1 {} {
 
 proc de1_send_steam_hotwater_settings {} {
 
-	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 16"
-		return
-	}
+	# let this run even though no connection, so it can be displayed in the debug log.  Very useful info for programmers.
+	#if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+	#	msg "DE1 not connected, cannot send BLE command 16"
+	#	return
+	#}
 
 	set data [return_de1_packed_steam_hotwater_settings]
 	parse_binary_hotwater_desc $data arr2

@@ -1456,7 +1456,8 @@ proc page_display_change {page_to_hide page_to_show} {
 		}
 	}
 
-	msg "Switched to page: $page_to_show [stacktrace]"
+	#msg "Switched to page: $page_to_show [stacktrace]"
+	msg "Switched to page: $page_to_show"
 
 	update_onscreen_variables
 
