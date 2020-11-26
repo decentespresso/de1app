@@ -106,6 +106,7 @@ proc make_de1_dir {srcdir destdirs} {
         translation.tcl *
         de1plus.tcl *
         de1.tcl *
+        de1app.tcl *
         de1_comms.tcl *
         gui.tcl *
         machine.tcl *
