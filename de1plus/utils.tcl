@@ -24,9 +24,9 @@ proc setup_environment {} {
     set ::globals(entry_length_multiplier) 1
 
     if {$android == 1 || $undroid == 1} {
-        #package require BLT
-        #namespace import blt::*
-        #namespace import -force blt::tile::*
+
+        # hide the android keyboard that pops up when you power back on
+        bind . <<DidEnterForeground>> hide_android_keyboard
 
         # this causes the app to exit if the main window is closed
         wm protocol . WM_DELETE_WINDOW exit
