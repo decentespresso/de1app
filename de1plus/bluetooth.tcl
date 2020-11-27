@@ -972,7 +972,7 @@ set ::scanning -1
 
 proc check_if_initial_connect_didnt_happen_quickly {} {
 	msg "check_if_initial_connect_didnt_happen_quickly"
-# on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead
+	# on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead
 	set ble_scan_started 0
 	if {$::de1(device_handle) == 0 } {
 		#msg "check_if_initial_connect_didnt_happen_quickly ::de1(device_handle) == 0"
