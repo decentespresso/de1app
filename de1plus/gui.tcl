@@ -1461,10 +1461,14 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	update_onscreen_variables
 
+	hide_android_keyboard
+
+}
+
+proc hide_android_keyboard {} {
 	# make sure on-screen keyboard doesn't auto-pop up
 	sdltk textinput off
 	focus .
-
 }
 
 proc update_de1_explanation_chart_soon  { {context {}} } {

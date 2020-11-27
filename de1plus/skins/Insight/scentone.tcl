@@ -65,7 +65,8 @@ add_de1_text "describe_espresso0" 70 346 -text [translate "Your God shots"] -fon
 add_de1_text "describe_espresso0" 70 1222 -text [translate "Save your current shot"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_widget "describe_espresso0" entry 70 1282  {
 	set ::globals(widget_god_shot_save) $widget
-	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); save_to_god_shots}
+	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); save_to_god_shots; hide_android_keyboard}
+	bind $widget <Leave> hide_android_keyboard
 	} -width [expr {int(45 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(god_espresso_name)
 
 
@@ -135,16 +136,22 @@ add_de1_text "describe_espresso" 80 360 -text [translate "Enjoyment"] -font Helv
 #	add_de1_variable "describe_espresso" 1500 980 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_aftertaste)]}
 
 	add_de1_text "describe_espresso" 80 740 -text [translate "Notes"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" multiline_entry 80 820 {} -width 50 -height 8 -font Helv_8  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(espresso_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
+	add_de1_widget "describe_espresso" multiline_entry 80 820 {
+			bind $widget <Leave> hide_android_keyboard
+	} -width 50 -height 8 -font Helv_8  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(espresso_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 
 add_de1_text "describe_espresso2" 80 360 -text [translate "Grinder"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
 	add_de1_text "describe_espresso2" 540 440 -text [translate "Model"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
-	add_de1_widget "describe_espresso2" entry 550 430 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_model) 
+	add_de1_widget "describe_espresso2" entry 550 430 {
+			bind $widget <Leave> hide_android_keyboard
+	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_model) 
 
 	add_de1_text "describe_espresso2" 540 530 -text [translate "Setting"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 520 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_setting) 
+	add_de1_widget "describe_espresso2" entry 550 520 {
+		bind $widget <Leave> hide_android_keyboard
+	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_setting) 
 
 	#set slider_trough_color2 #EAEAEA
 	add_de1_text "describe_espresso2" 540 620 -text [translate "Dose weight"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
@@ -157,23 +164,35 @@ add_de1_text "describe_espresso2" 80 360 -text [translate "Grinder"] -font Helv_
 add_de1_text "describe_espresso2" 80 790 -text [translate "Beans"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
 	add_de1_text "describe_espresso2" 540 860 -text [translate "Brand"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 850 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_brand) 
+	add_de1_widget "describe_espresso2" entry 550 850 {
+		bind $widget <Leave> hide_android_keyboard		
+	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_brand) 
 
 	add_de1_text "describe_espresso2" 540 940 -text [translate "Type"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 930 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_type) 
+	add_de1_widget "describe_espresso2" entry 550 930 {
+		bind $widget <Leave> hide_android_keyboard
+	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_type) 
 
 	add_de1_text "describe_espresso2" 540 1020 -text [translate "Roast date"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 1010 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_date) 
+	add_de1_widget "describe_espresso2" entry 550 1010 {
+		bind $widget <Leave> hide_android_keyboard		
+	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_date) 
 
 	add_de1_text "describe_espresso2" 540 1100 -text [translate "Roast level"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 550 1090 {} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_level) 
+	add_de1_widget "describe_espresso2" entry 550 1090 {
+		bind $widget <Leave> hide_android_keyboard		
+	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_level) 
 
 	add_de1_text "describe_espresso2" 540 1180 -text [translate "Notes"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" multiline_entry 550 1180 {} -width [expr {int(22 * $::globals(entry_length_multiplier))}] -height 3 -font Helv_8  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(bean_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
+	add_de1_widget "describe_espresso2" multiline_entry 550 1180 {
+		bind $widget <Leave> hide_android_keyboard
+	} -width [expr {int(22 * $::globals(entry_length_multiplier))}] -height 3 -font Helv_8  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(bean_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 
 	add_de1_text "describe_espresso2" 1340 360 -text [translate "Your name"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso2" entry 1340 430 {} -width 40 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(my_name) 
+	add_de1_widget "describe_espresso2" entry 1340 430 {
+		bind $widget <Leave> hide_android_keyboard
+	} -width 40 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(my_name) 
 
 add_de1_text "describe_espresso2" 1340 560 -text [translate "Enable these features"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 	add_de1_widget "describe_espresso2" checkbutton 1360 630 { } -command {} -padx 0 -pady 0 -bg #FFFFFF -text [translate "I weigh my drinks"] -indicatoron true -font Helv_8  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(has_scale)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
