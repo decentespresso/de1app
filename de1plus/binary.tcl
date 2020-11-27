@@ -1856,6 +1856,11 @@ proc update_de1_state {statechar} {
 	parse_state_change $statechar msg
 	set textstate [ifexists ::de1_num_state([ifexists msg(state)])]
 
+	if {[info exists msg(state)] != 1} {
+		# fix from https://3.basecamp.com/3671212/buckets/7351439/messages/3239055806#__recording_3248555671
+		msg "Empty state message received"
+		return
+	}
 	#msg "update_de1_state '[ifexists ::previous_textstate]' '$textstate'"
 
 	#msg "update_de1_state [array get msg]"
