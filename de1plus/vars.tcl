@@ -1267,14 +1267,12 @@ proc pressure_text {} {
 
 
 proc commify {number}  {
-	set sep ,
-	 while {[regsub {^([-+]?\d+)(\d\d\d)} $number "\\1$sep\\2" number]} {}
+	while {[regsub {^([-+]?\d+)(\d\d\d)} $number {\1,\2} number]} {}
 	if {[ifexists ::settings(enable_commanumbers)] == 1} {
 		set number [string map {. , , .} $number]
 	}
 	return $number
 }
-
 
 #######################
 # settings
@@ -2877,9 +2875,6 @@ proc profile_has_changed_set args {
 
 	#profile_has_changed_set_colors
 	#puts "profile_has_changed_set:\n[stacktrace]"
-
-
-
 }
 
 
