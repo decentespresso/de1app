@@ -200,18 +200,20 @@ proc set_alarms_for_de1_wake_sleep {} {
 }
 
 proc scheduler_wake {} {
-	msg "Scheduled wake occured at [clock format [clock seconds]]"
+	msg "Scheduled wake occurred at [clock format [clock seconds]]"
+	set ::scheduler_awake 1
 	start_idle
 
-	# after alarm has occured go ahead and set the alarm for tommorrow
+	# after alarm has occurred go ahead and set the alarm for tommorrow
 	after 2000 set_alarms_for_de1_wake_sleep
 }
 
 proc scheduler_sleep {} {
-	msg "Scheduled sleep occured at [clock format [clock seconds]]"
-	start_sleep
+	msg "Scheduled end occurred at [clock format [clock seconds]]"
+	unset ::scheduler_awake
+	#start_sleep
 
-	# after alarm has occured go ahead and set the alarm for tommorrow
+	# after alarm has occurred go ahead and set the alarm for tommorrow
 	after 2000 set_alarms_for_de1_wake_sleep
 }
 
