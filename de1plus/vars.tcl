@@ -1754,7 +1754,7 @@ proc bluetooth_character {} {
 		return "BLE:"
 	}
 
-	return \uF294
+	return \uE018
 }
 
 proc usb_character {} {
@@ -1763,6 +1763,14 @@ proc usb_character {} {
 	}
 
 	return \uF287
+}
+
+proc wifi_character {} {
+	if {[language] == "ar" || [language] == "he"} {
+		return "WIFI:"
+	}
+
+	return \uE019
 }
 
 #set de1_device_list {}
@@ -1785,8 +1793,10 @@ proc fill_ble_listbox {} {
 			set display_addr [string range $addr_raw 9 13]
 		} elseif { $type == "usb" } {
 			set icon [usb_character]
+		} elseif { $type == "wifi" } {
+			set icon [wifi_character]
 		} else {
-			set icon "?"
+			set icon "?${type}?"
 		}
 
 		if {$addr_raw == [ifexists ::settings(bluetooth_address)]} {
