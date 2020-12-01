@@ -1762,7 +1762,7 @@ proc usb_character {} {
 		return "USB:"
 	}
 
-	return \uF287
+	return \uE01A
 }
 
 proc wifi_character {} {
