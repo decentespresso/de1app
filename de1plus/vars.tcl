@@ -1746,7 +1746,7 @@ proc checkboxchar {} {
 		return "X"
 	}
 
-	return \u2713
+	return "\u2713"
 }
 
 proc bluetooth_character {} {
@@ -1754,7 +1754,7 @@ proc bluetooth_character {} {
 		return "BLE:"
 	}
 
-	return \uE018
+	return "\uE018"
 }
 
 proc usb_character {} {
@@ -1762,7 +1762,7 @@ proc usb_character {} {
 		return "USB:"
 	}
 
-	return \uE01A
+	return "\uE01A"
 }
 
 proc wifi_character {} {
@@ -1770,7 +1770,7 @@ proc wifi_character {} {
 		return "WIFI:"
 	}
 
-	return \uE019
+	return "\uE019"
 }
 
 #set de1_device_list {}
