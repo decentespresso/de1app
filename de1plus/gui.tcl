@@ -940,11 +940,12 @@ proc show_going_to_sleep_page  {} {
 	}
 	
 	# make scheduler work on "keep awake" logic
-	if {[ifexists ::scheduler_awake] == 1) {
+	if {[ifexists ::scheduler_awake] == 1} {
 		msg "delaying screen saver 60 sec because of scheduler"
 		stop_screen_saver_timer
                 if {$::settings(screen_saver_delay) != 0 } {
                         set ::screen_saver_alarm_handle [after 60000 "show_going_to_sleep_page"]
+		}
 		return
 	}
 
