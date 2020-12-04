@@ -193,6 +193,11 @@ proc set_alarms_for_de1_wake_sleep {} {
 
 		set sleep_seconds [expr {[next_alarm_time $::settings(scheduler_sleep)] - [clock seconds]}]
 		set ::alarms_for_de1_sleep [after [expr {1000 * $sleep_seconds}] scheduler_sleep]
+		
+		# if we are in the middle of the scheduled period at startup, set the awake flag if using new scheduler logic
+		if {[ifexists ::settings(scheduler_logic)] == 1 && $wake_seconds > $sleep_seconds} {
+			set ::scheduler_awake 1
+		}
 
 		#msg "Wake schedule set for [next_alarm_time $::settings(scheduler_wake)] in $wake_seconds seconds"
 		#msg "Sleep schedule set for [next_alarm_time $::settings(scheduler_sleep)] in $sleep_seconds seconds"
@@ -218,7 +223,7 @@ proc scheduler_sleep {} {
 	
 	# if user has chosen new scheduler logic, clear "keep awake" flag (which will allow machine to sleep per idle timer), else immediately sleep
 	if {[ifexists ::settings(scheduler_logic)] == 1} {
-                unset -nocomplain ::scheduler_awake
+                unset ::scheduler_awake
         } else {
 		start_sleep
 	}
