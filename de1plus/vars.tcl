@@ -218,7 +218,7 @@ proc scheduler_sleep {} {
 	
 	# if user has chosen new scheduler logic, clear "keep awake" flag (which will allow machine to sleep per idle timer), else immediately sleep
 	if {[ifexists ::settings(scheduler_logic)] == 1} {
-                unset ::scheduler_awake
+                unset -nocomplain ::scheduler_awake
         } else {
 		start_sleep
 	}
