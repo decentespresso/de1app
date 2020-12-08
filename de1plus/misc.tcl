@@ -566,15 +566,12 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/weber_spring_clean.tcl *
         profiles/Gentle\ and\ sweet.tcl *
         profiles/tea_portafilter.tcl *
-        profiles/tea_portafilter_pressurized.tcl *
-
         profiles/tea_portafilter_oolong_dark.tcl *
         profiles/tea_portafilter_oolong.tcl *
         profiles/tea_portafilter_chinese_green.tcl *
         profiles/tea_portafilter_japanese_green.tcl *
         profiles/tea_portafilter_white.tcl *
         profiles/tea_portafilter_tisane.tcl *
-
         profiles/test_leak.tcl *
         profiles/test_temperature.tcl *
         profiles/test_pressure_calibration.tcl *
