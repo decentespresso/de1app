@@ -1899,10 +1899,11 @@ proc update_de1_state {statechar} {
 			if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
 				msg "Back from sleep, try to connect to scale automatically (if it is currently disconnected)"
 				ble_connect_to_scale
+			} else {
+				# don't need to tare on scale wakeup
+				# scale_tare
+				scale_enable_lcd
 			}
-
-			scale_tare
-			scale_enable_lcd
 		} elseif {[ifexists ::previous_textstate] != "Sleep" && $textstate == "Sleep"} {
 			scale_disable_lcd
 		}
@@ -1925,9 +1926,11 @@ proc update_de1_state {statechar} {
 				#skale_timer_off
 				if {$::timer_running == 0 && $textstate == "Espresso"} {
 					#start_timers
-					scale_timer_start
-					after 200 scale_tare
+					
+					#scale_tare
 					start_espresso_timers
+					after 200 scale_tare
+					#after 250 scale_timer_start
 					#set ::timer_running 1
 				}
 				
@@ -1945,7 +1948,7 @@ proc update_de1_state {statechar} {
 				# shot is ended, so turn timer off
 				if {$::timer_running == 1} {
 					#set ::timer_running 0
-					scale_timer_stop
+					#scale_timer_stop
 					stop_espresso_timers
 				}
 			}

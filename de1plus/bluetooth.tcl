@@ -43,6 +43,8 @@ proc scale_timer_stop {} {
 	}
 }
 
+
+# timer off is badly named, it actually is "timer set to zero"
 proc scale_timer_off {} {
 
 	if {$::settings(scale_type) == "atomaxskale"} {
@@ -60,6 +62,9 @@ proc scale_tare {} {
 		skale_tare
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_tare
+
+		# we might want to make it standard practice on all other scales to zero the timer when the weight is zeroed too.
+		after 500 decentscale_timer_off
 	} elseif {$::settings(scale_type) == "acaiascale"} {
 		acaia_tare
 	} elseif {$::settings(scale_type) == "felicita"} {
@@ -144,6 +149,7 @@ proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
 		#set multiplier1 0.9
 
 	#msg "sensorweight: $sensorweight / diff:$diff / multiplier1:$multiplier1"
+	#msg "sensorweight: $sensorweight"
 
 	#set multiplier1 0
 
@@ -760,9 +766,9 @@ proc decentscale_timer_start {} {
 		return
 	}
 
-	set timerreset [decent_scale_make_command 0B 02 00]
-	msg "decent scale timer reset: '$timerreset'"
-	userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timerreset]
+	#set timerreset [decent_scale_make_command 0B 02 00]
+	#msg "decent scale timer reset: '$timerreset'"
+	#userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timerreset]
 
 	msg "decentscale_timer_start"
 	set timeron [decent_scale_make_command 0B 03 00]
@@ -806,6 +812,7 @@ proc decentscale_timer_off {} {
 
 
 	set timeroff [decent_scale_make_command 0B 02 00]
+
 	msg "decent scale timer off: '$timeroff'"
 	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 }

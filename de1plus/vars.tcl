@@ -305,6 +305,8 @@ proc stop_espresso_timers {} {
 	#msg "stop_timers"
 	set ::timer_running 0
 	set ::timers(espresso_stop) [clock milliseconds]
+
+	scale_timer_stop
 	#stop_timer_preinfusion
 	#stop_timer_pour
 	#set ::substate_timers(stop) [clock milliseconds]
@@ -316,6 +318,8 @@ proc start_espresso_timers {} {
 	#zz5
 	set ::timer_running 1
 	set ::timers(espresso_start) [clock milliseconds]
+
+	scale_timer_start
 	#set ::timers(millistart) [clock milliseconds]
 	#set ::substate_timers(millistart) [clock milliseconds]
 }
