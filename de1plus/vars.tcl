@@ -1157,8 +1157,9 @@ proc waterweight_text {} {
 		return [translate "Disconnected"]
 	}
 
+	return [return_weight_measurement $::de1(scale_sensor_weight)]
 
-	return [return_weight_measurement $::de1(scale_weight)]
+	#return [return_weight_measurement $::de1(scale_weight)]
 }
 
 proc waterweight_label_text {} {
