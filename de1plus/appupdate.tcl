@@ -20,7 +20,6 @@ package require crc32
 package require http 2.5
 package require tls 1.6
 ::http::register https 443 ::tls::socket
-cd "[file dirname [info script]]/"
 set ::settings(logfile) "updatelog.txt"
 
 # always log app updates
@@ -54,9 +53,27 @@ if {$tk != ""} {
 		exit 
 	} 
 	button .frame.exitapp -text " --- Exit --- " -command { exit } 
-	button .frame.resetapp -text " Reset all app settings " -command { 
+	button .frame.resetapp -text " Reset settings " -command { 
 		catch { file delete "settings.tdb"; } ; 
 		exit 
+	} 
+	button .frame.iconcreate -text " Create icon " -command { 
+
+		catch {
+			source "pkgIndex.tcl"
+			catch {
+			        # john 4-11-20 Android 10 is failing on this script, if we don't include these two dependencies
+			        package require snit
+			        package require de1_updater
+			}
+
+			package require de1_main
+			package require de1_gui
+			cd "[file dirname [info script]]"
+
+			install_de1plus_app_icon
+			after 1000 exit
+		}
 	} 
 	button .frame.resetskin -text " Reset skin " -command { 
 		catch { } ; 
@@ -68,6 +85,7 @@ if {$tk != ""} {
 	pack .frame -side bottom -pady 0 -padx 0
 
 	pack .frame.resetapp -side left -pady 10 -padx 10
+	pack .frame.iconcreate -side left -pady 10 -padx 10
 	pack .frame.resetskin -side left -pady 10 -padx 10
 	
 	# john 13-11-19 taking away this button as many users click it and it causes huge downloads.

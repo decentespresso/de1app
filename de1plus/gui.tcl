@@ -534,12 +534,32 @@ proc generic_button_held {btnup btndown action} {
 }
 
 
-
-
-
 proc appdir {} {
-    return [file dirname [info script]]
+	#return [file dirname [DirectPathname [info script]]]
+	return [file dirname [DirectPathname .]]
+	
+	#return [file dirname [info script]]
+	#return [file dirname [file join [pwd] $pathname]]
+	# this old version would give us "." if run from current directory, which wasn't helpful always for Android, which wants an absolute path
+    
 }
+
+# copied from https://wiki.tcl-lang.org/page/Making+a+Path+Absolute
+proc DirectPathname {filename} {
+     set savewd [pwd]
+     set realFile [file join $savewd $filename]
+     # Hmm.  This (unusually) looks like a job for do...while!
+     cd [file dirname $realFile]
+     set dir [pwd] ;# Always gives a canonical directory name
+     set filename [file tail $realFile]
+     while {![catch {file readlink $filename} realFile]} {
+         cd [file dirname $realFile]
+         set dir [pwd]
+         set filename [file tail $realFile]
+     }
+     cd $savewd
+     return [file join $dir $filename]
+ }
 
 
 proc install_update_app_icon {} {
@@ -547,7 +567,11 @@ proc install_update_app_icon {} {
 	set icondata_de1 [read_binary_file "[appdir]/cloud_download_icon.png"]
 	set iconbase64_de1 [::base64::encode -maxlen 0 $icondata_de1]
 
-	set appurl "file://[file dirname [info script]]/appupdate.tcl"
+	if {$icondata_de1 == ""} {
+		set icondata_de1 [read_binary_file "cloud_download_icon.png"]
+	}
+
+	set appurl "file://[appdir]/appupdate.tcl"
 	catch {
 		set x [borg shortcut add "Decent Update" $appurl $iconbase64_de1]
 		puts "shortcut added: '$x'"
@@ -558,6 +582,11 @@ proc install_update_app_icon {} {
 proc install_de1_app_icon {} {
 	package require base64
 	set icondata_de1 [read_binary_file "[appdir]/de1_icon_v2.png"]
+	
+	if {$icondata_de1 == ""} {
+		set icondata_de1 [read_binary_file "de1_icon_v2.png"]
+	}
+
 	set iconbase64_de1 [::base64::encode -maxlen 0 $icondata_de1]
 
 	set appurl "file://[appdir]/de1.tcl"
@@ -574,15 +603,16 @@ proc install_de1_app_icon {} {
 
 proc install_de1plus_app_icon {} {
 	package require base64
+	puts "icon file: '[appdir]/de1plus_icon_v2.png'"
 	set icondata_de1plus [read_binary_file "[appdir]/de1plus_icon_v2.png"]
 	set iconbase64_de1plus [::base64::encode -maxlen 0 $icondata_de1plus]
 
 	set appurl "file://[appdir]/de1plus.tcl"
 	#puts "appurl: $appurl"
-	catch {
+	#catch {
 		set x [borg shortcut add "Decent" $appurl $iconbase64_de1plus]
 		puts "shortcut added: '$x'"
-	}
+	#}
 
 	#install_update_app_icon [appdir]
 }
