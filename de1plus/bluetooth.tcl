@@ -62,9 +62,6 @@ proc scale_tare {} {
 		skale_tare
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_tare
-
-		# we might want to make it standard practice on all other scales to zero the timer when the weight is zeroed too.
-		after 500 decentscale_timer_off
 	} elseif {$::settings(scale_type) == "acaiascale"} {
 		acaia_tare
 	} elseif {$::settings(scale_type) == "felicita"} {
@@ -689,7 +686,7 @@ proc decent_scale_calc_xor4 {cmdtype cmdddata1 cmdddata2} {
 }
 
 proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} } {
-	msg "decent_scale_make_command $cmdtype $cmdddata $cmddata2"
+	msg "decent_scale_make_command $cmdtype $cmdddata $cmddata2\n[stacktrace]"
 	if {$cmddata2 == ""} {
 		msg "1 part decent scale command"
 		set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]

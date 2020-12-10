@@ -349,6 +349,10 @@ proc clear_espresso_timers {} {
 
 	set ::timer_running 0
 
+	catch {
+		scale_timer_off
+	}
+
 	#puts "clearing timers"
 }
 
