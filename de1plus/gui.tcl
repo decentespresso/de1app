@@ -931,8 +931,6 @@ proc delay_screen_saver {} {
 
 	stop_screen_saver_timer
 
-	#puts "cont: $::de1(current_context)"
-
 	if {$::settings(screen_saver_delay) != 0 } {
 		set ::screen_saver_alarm_handle [after [expr {60 * 1000 * $::settings(screen_saver_delay)}] "show_going_to_sleep_page"]
 	}
@@ -950,9 +948,20 @@ proc after_info {} {
 }
 
 proc show_going_to_sleep_page  {} {
+
+	if {$::settings(scheduler_enable) == 1} {
+		set wake [current_alarm_time $::settings(scheduler_wake)]
+		set sleep [current_alarm_time $::settings(scheduler_sleep)]
+		if {[clock seconds] > $wake && [clock seconds] < $sleep} {
+			msg "Delaying screen saver because we are during scheduled forced-awake time"
+			delay_screen_saver
+			return
+		}
+	}
+
 	if {$::de1_num_state($::de1(state)) != "Idle"} {
 		# never go to sleep if the DE1 is not idle
-		msg "delaying screen saver because de1 is not idle"
+		msg "delaying screen saver because de1 is not idle: '$::de1_num_state($::de1(state))'"
 		delay_screen_saver
 		return
 	}
@@ -968,6 +977,8 @@ proc show_going_to_sleep_page  {} {
 		delay_screen_saver
 		return
 	}	
+
+
 
 	puts "show_going_to_sleep_page"
  	if {$::de1(current_context) == "sleep" || $::de1(current_context) == "saver"} {

@@ -191,8 +191,9 @@ proc set_alarms_for_de1_wake_sleep {} {
 		set wake_seconds [expr {[next_alarm_time $::settings(scheduler_wake)] - [clock seconds]}]
 		set ::alarms_for_de1_wake [after [expr {1000 * $wake_seconds}] scheduler_wake]
 
-		set sleep_seconds [expr {[next_alarm_time $::settings(scheduler_sleep)] - [clock seconds]}]
-		set ::alarms_for_de1_sleep [after [expr {1000 * $sleep_seconds}] scheduler_sleep]
+		# scheduled sleep is now an enforced awake time and this function should not be called
+		# set sleep_seconds [expr {[next_alarm_time $::settings(scheduler_sleep)] - [clock seconds]}]
+		# set ::alarms_for_de1_sleep [after [expr {1000 * $sleep_seconds}] scheduler_sleep]
 
 		#msg "Wake schedule set for [next_alarm_time $::settings(scheduler_wake)] in $wake_seconds seconds"
 		#msg "Sleep schedule set for [next_alarm_time $::settings(scheduler_sleep)] in $sleep_seconds seconds"
@@ -208,12 +209,21 @@ proc scheduler_wake {} {
 }
 
 proc scheduler_sleep {} {
+
+	msg "OBSOLETE: scheduled sleep is now an enforced awake time and this function should not be called"
+
 	msg "Scheduled sleep occured at [clock format [clock seconds]]"
 	start_sleep
 
 	# after alarm has occured go ahead and set the alarm for tommorrow
 	after 2000 set_alarms_for_de1_wake_sleep
 }
+
+proc current_alarm_time { in } {
+	set alarm [expr {[round_date_to_nearest_day [clock seconds]] + round($in)}]
+	return $alarm
+}
+
 
 
 proc next_alarm_time { in } {
