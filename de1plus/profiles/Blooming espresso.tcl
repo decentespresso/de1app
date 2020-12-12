@@ -32,4 +32,5 @@ profile_title {Blooming Espresso}
 settings_profile_type settings_2c2
 tank_desired_water_temperature 0
 water_temperature 66.00
+beverage_type {espresso}
 

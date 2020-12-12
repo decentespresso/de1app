@@ -32,4 +32,4 @@ profile_title {Pour over basket/V60 20g in, 340g out}
 settings_profile_type settings_2c
 tank_desired_water_temperature 30
 water_temperature 80
-
+beverage_type {pourover}

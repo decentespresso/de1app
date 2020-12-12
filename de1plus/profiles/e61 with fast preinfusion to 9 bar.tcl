@@ -27,4 +27,5 @@ profile_title {E61 with fast preinfusion to 9 bar}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
 water_temperature 86.0
+beverage_type {espresso}
 

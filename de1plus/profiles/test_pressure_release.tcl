@@ -33,4 +33,4 @@ profile_title {Test/leakage stress test}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 70.00
-
+beverage_type {calibrate}

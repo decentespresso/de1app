@@ -95,7 +95,9 @@ proc fast_write_open {fn parms} {
         # https://3.basecamp.com/3671212/buckets/7351439/messages/3033510129#__recording_3037579684
         # so disabling for now, to see if he's right.
         # fconfigure $f -blocking 0
-        fconfigure $f -buffersize 1000000
+
+        # explicitly declare LF as the line feed character, as that's what it is on unix/android/macos - only windows doesn't and it causes issues
+        fconfigure $f -buffersize 1000000 -translation {lf lf}
         set success 1
     }]
 

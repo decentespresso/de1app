@@ -33,4 +33,5 @@ profile_title {Pour over basket/Cold brew 22g in, 375ml out}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 80
+beverage_type {pourover}
 
