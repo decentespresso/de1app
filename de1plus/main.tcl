@@ -20,6 +20,7 @@ package require de1_vars
 package require de1_binary
 package require de1_utils 
 package require de1_machine
+package require de1_webserver
 package require math::statistics
 package require http 2.5
 

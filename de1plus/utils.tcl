@@ -325,6 +325,10 @@ proc setup_environment {} {
     #}
 
     ############################################
+
+    if { $::settings(webserver_enabled) } {
+		start_webserver
+	}
 }
 
 proc check_if_battery_low_and_give_message {} {
