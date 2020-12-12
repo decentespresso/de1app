@@ -38,4 +38,4 @@ profile_title {Tea portafilter/oolong dark}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 80
-
+beverage_type {tea_portafilter}

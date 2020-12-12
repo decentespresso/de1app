@@ -37,4 +37,5 @@ bean_type {}
 grinder_setting {}
 grinder_dose_weight 0
 grinder_model {}
+beverage_type {espresso}
 
