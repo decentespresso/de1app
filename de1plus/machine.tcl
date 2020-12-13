@@ -419,9 +419,10 @@ array set ::settings {
 	scale_stop_at_half_shot 0
 	lock_screen_during_screensaver 0
 	webserver_enabled 0
-	webserver_magic_phrase "I really want an unsecure (non-SSL) Webserver on my coffee machine"
+	webserver_magic_phrase "I really want an unsecured (non-SSL) Webserver on my coffee machine"
 	webserver_magic_phrase_confirm ""
 	webserver_port 8080
+	webserver_authentication_key "ChangeMe"
 }
 
 # default de1plus skin
