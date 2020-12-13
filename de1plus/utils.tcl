@@ -466,6 +466,7 @@ proc random_saver_file {} {
             set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
             set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
+            borg toast [translate "Resizing images"]
             foreach fn [glob -nocomplain "[saver_directory]/2560x1600/*.jpg"] {
                 borg spinner on
                 msg "random_saver_file image create photo saver -file $fn"
@@ -584,6 +585,7 @@ proc random_splash_file {} {
             set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
             set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
+            borg toast [translate "Resizing images"]
             foreach fn [glob -nocomplain "[splash_directory]/2560x1600/*.jpg"] {
                 borg spinner on
                 msg "random_splash_file image create photo saver -file $fn"
