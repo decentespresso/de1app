@@ -129,6 +129,7 @@ proc add_de1_page {names filename {skin ""} } {
 	}
 
 	if {$make_new_image == 1} {
+        borg toast [subst {[translate "Resizing image"]\n\n[file tail $filename]}]
 		borg spinner on
     	catch {
     		file mkdir "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/"
