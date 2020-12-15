@@ -1,0 +1,4 @@
+visualizer_url http://visualizer.coffee
+visualizer_username "test"
+visualizer_password "test"
+visualizer_endpoint "api/shots/upload"
