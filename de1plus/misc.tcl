@@ -112,6 +112,7 @@ proc make_de1_dir {srcdir destdirs} {
         machine.tcl *
         utils.tcl *
         main.tcl *
+        plugins.tcl *
         vars.tcl *
         de1_comms.tcl *
         updater.tcl *
@@ -132,6 +133,9 @@ proc make_de1_dir {srcdir destdirs} {
 
         history/info.txt *
         history/export/readme.txt *
+
+        plugins/example.tcl *
+        plugins/example-settings.tdb *
 
         fw/bootfwupdate.dat *
         wallpaper/spy_1280x800.jpg *

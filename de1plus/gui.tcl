@@ -1,4 +1,5 @@
 package provide de1_gui 1.0
+package require de1_plugins 1.0
 
 proc load_skin {} {
 
@@ -2072,6 +2073,8 @@ proc ui_startup {} {
 	setup_images_for_first_page
 	setup_images_for_other_pages
 	.can itemconfigure splash -state hidden
+
+	load_plugins
 
 	#after $::settings(timer_interval) 
 	update_onscreen_variables
