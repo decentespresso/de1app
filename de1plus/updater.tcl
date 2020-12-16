@@ -810,9 +810,9 @@ proc settings_filename {} {
 
 
 proc reset_skin {} {
-    set s "settings.tdb"
-        set s [settings_filename]
     catch {
+        set s "settings.tdb"
+        set s [settings_filename]
     }
 
     array set ::settings [encoding convertfrom utf-8 [read_binary_file $s]]

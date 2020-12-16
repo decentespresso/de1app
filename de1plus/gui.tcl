@@ -15,7 +15,10 @@ proc load_skin {} {
 	} err] != 0} {
 		catch {
 			# reset te skin back to default, if their skin failed to load correctly
-			reset_skin
+			# but don't do so if ::debugging flag is enabled
+			if {[ifexists ::debugging] != 1} {
+				reset_skin
+			}
 		}
 		catch {
 			message_page [subst {[translate "Your choice of skin had an error and cannot be used."]\n\n$err}] [translate "Ok"]
