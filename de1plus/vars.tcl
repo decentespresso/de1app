@@ -3053,10 +3053,7 @@ proc save_espresso_rating_to_history {} {
 # Lazy way of decoupling from "package require" ordering.
 after idle {after 0 {register_state_change_handler Espresso Idle save_this_espresso_to_history}}
 
-proc save_this_espresso_to_history {unused_old_state unused_new_state} {
-	puts "save_this_espresso_to_history "
-	# only save shots that have at least 5 data points
-	if {!$::settings(history_saved) && [espresso_elapsed length] > 5 && [espresso_pressure length] > 5 && $::settings(should_save_history) == 1} {
+proc format_espresso_for_history {} {
 
 		#set clock [clock seconds]
 		if {[info exists ::settings(espresso_clock)] != 1} {
@@ -3105,6 +3102,17 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 	    }
 	    append espresso_data "}\n"
 
+		return $espresso_data
+	
+}
+
+
+proc save_this_espresso_to_history {unused_old_state unused_new_state} {
+	puts "save_this_espresso_to_history "
+	# only save shots that have at least 5 data points
+	if {$::settings(history_saved) && [espresso_elapsed length] > 5 && [espresso_pressure length] > 5 && $::settings(should_save_history) == 1} {
+
+		set espresso_data [format_espresso_for_history]
 		set fn "[homedir]/history/[clock format $clock -format "%Y%m%dT%H%M%S"].shot"
 		write_file $fn $espresso_data
 		msg "Save this espresso to history"
