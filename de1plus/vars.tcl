@@ -2305,6 +2305,51 @@ proc fill_languages_listbox {} {
 	$::languages_widget yview $current
 }
 
+proc toggle_extension {} {
+	set stepnum [$::extensions_widget curselection]
+	if {$stepnum == ""} {
+		return
+	}
+
+	set plugin [lindex [available_plugins] $stepnum ]
+
+	toggle_plugin $plugin
+
+	fill_extensions_listbox
+}
+
+proc fill_extensions_listbox {} {
+
+	set widget $::extensions_widget
+
+	$widget delete 0 99999
+	set cnt 0
+	set current_profile_number 9999
+	set current 0
+
+	foreach {plugin} [available_plugins] {
+		if {[plugin_enabled $plugin]} {
+			if {[language] == "he"} {
+				set p "\[X\] "
+			} else {
+				set p "\u2612 "
+			}
+		} else {
+			if {[language] == "he"} {
+				set p "\[   \] "
+			} else {
+				set p "\u2610 "
+			}
+		}
+
+		$widget insert $cnt "$p $plugin"
+		incr cnt
+	}
+
+	$widget selection set $current;
+	$::extensions_widget yview $current
+}
+
 proc fill_advanced_profile_steps_listbox {} {
 
 	set widget $::advanced_shot_steps_widget

@@ -57,6 +57,24 @@ proc load_plugin {plugin} {
 	}
 }
 
+proc plugin_enabled {plugin} {
+    if {[lsearch $::settings(enabled_plugins) $plugin] >= 0} {
+        return true
+    }
+    return false
+}
+
+proc toggle_plugin {plugin} {
+    if {[plugin_enabled $plugin]} {
+        set new [lsearch -inline -all -not -exact $::settings(enabled_plugins) $plugin]
+        set ::settings(enabled_plugins) $new
+        save_settings
+    } else {
+        lappend ::settings(enabled_plugins) $plugin
+        save_settings
+    }
+}
+
 proc available_plugins {} {
     set plugin_sources [lsort -dictionary [glob -nocomplain -tails -directory [plugin_directory] * ]]
     set plugins {}
