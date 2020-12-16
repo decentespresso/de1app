@@ -14,7 +14,7 @@ proc load_skin {} {
 		source "[skin_directory]/skin.tcl"
 	} err] != 0} {
 		catch {
-			# reset te skin back to default, if their skin failed to load correctly
+			# reset the skin back to default, if their skin failed to load correctly
 			# but don't do so if ::debugging flag is enabled
 			if {[ifexists ::debugging] != 1} {
 				reset_skin
