@@ -1251,7 +1251,7 @@ proc rescale_font {in} {
 proc skin_convert_all {} {
     skin_convert "[homedir]/saver/2560x1600"
     skin_convert "[homedir]/splash/2560x1600"
-
+    
     foreach d [lsort -increasing [skin_directories]] {
         skin_convert "[homedir]/skins/$d/2560x1600"
     }
@@ -1259,6 +1259,7 @@ proc skin_convert_all {} {
 
 proc skin_convert {indir} {
     #puts "skin_convert: $indir"
+    set pwd [pwd]
     cd $indir
     set skinfiles [concat [glob -nocomplain "*.png"] [glob -nocomplain  "*.jpg"]]
 
@@ -1339,6 +1340,9 @@ proc skin_convert {indir} {
         }
 
     }
+
+    cd $pwd
+
 }
 
 
