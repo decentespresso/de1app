@@ -7,7 +7,7 @@ proc plugin_directory {} {
 }
 
 proc plugin_settings_file {plugin} {
-    return "[homedir]/[plugin_directory]/${plugin}-settings.tdb"
+    return "[homedir]/[plugin_directory]/${plugin}/settings.tdb"
 }
 
 proc plugin_settings {plugin} {
@@ -42,7 +42,7 @@ proc load_plugin {plugin} {
 	if {[catch {
         create_plugin_namespace $plugin
         load_plugin_settings $plugin
-		source "[homedir]/[plugin_directory]/$plugin.tcl"
+		source "[homedir]/[plugin_directory]/$plugin/plugin.tcl"
         ::plugins::${plugin}::main
 	} err] != 0} {
 		catch {
@@ -57,8 +57,26 @@ proc load_plugin {plugin} {
 	}
 }
 
+proc plugin_enabled {plugin} {
+    if {[lsearch $::settings(enabled_plugins) $plugin] >= 0} {
+        return true
+    }
+    return false
+}
+
+proc toggle_plugin {plugin} {
+    if {[plugin_enabled $plugin]} {
+        set new [lsearch -inline -all -not -exact $::settings(enabled_plugins) $plugin]
+        set ::settings(enabled_plugins) $new
+        save_settings
+    } else {
+        lappend ::settings(enabled_plugins) $plugin
+        save_settings
+    }
+}
+
 proc available_plugins {} {
-    set plugin_sources [lsort -dictionary [glob -nocomplain -tails -directory [plugin_directory] *.tcl]]
+    set plugin_sources [lsort -dictionary [glob -nocomplain -tails -directory [plugin_directory] * ]]
     set plugins {}
 
     foreach p $plugin_sources {

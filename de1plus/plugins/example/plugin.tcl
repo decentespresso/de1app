@@ -6,11 +6,11 @@ set ::plugins::${plugin_name}::version 1.0
 set ::plugins::${plugin_name}::description "Minimal plugin to showcase the interface"
 
 proc on_espresso_end {old new} {
-    error "espresso ended"
+    borg toast "espresso ended"
 }
 
 proc on_function_called {call code result op} {
-    error "start_sleep called!"
+    borh toast "start_sleep called!"
 }
 
 # optional
