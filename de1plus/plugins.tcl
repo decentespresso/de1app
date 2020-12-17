@@ -26,6 +26,7 @@ proc create_plugin_namespace {plugin} {
 }
 
 proc load_plugin_settings {plugin} {
+    create_plugin_namespace $plugin
 
     set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [plugin_settings_file $plugin]]]
     msg "Settings file: $settings_file_contents"
@@ -40,7 +41,6 @@ proc save_plugin_settings {plugin} {
 
 proc load_plugin {plugin} {
 	if {[catch {
-        create_plugin_namespace $plugin
         load_plugin_settings $plugin
 		source "[homedir]/[plugin_directory]/$plugin/plugin.tcl"
         ::plugins::${plugin}::main

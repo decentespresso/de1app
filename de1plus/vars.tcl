@@ -2313,9 +2313,20 @@ proc toggle_extension {} {
 
 	set plugin [lindex [available_plugins] $stepnum ]
 
+	load_plugin_settings $plugin
+	set description ""
+	foreach {key value} [array get ::plugins::${plugin}::settings] {
+		set description "$description\n$key: $value"
+  	}
+
+	.can itemconfigure $::extensions_metatdata -text $description
+
 	toggle_plugin $plugin
 
 	fill_extensions_listbox
+	$::extensions_widget selection set $stepnum;
+	make_current_listbox_item_blue $::extensions_widget 
+
 }
 
 proc fill_extensions_listbox {} {
@@ -2324,7 +2335,6 @@ proc fill_extensions_listbox {} {
 
 	$widget delete 0 99999
 	set cnt 0
-	set current_profile_number 9999
 	set current 0
 
 	foreach {plugin} [available_plugins] {
@@ -2346,7 +2356,6 @@ proc fill_extensions_listbox {} {
 		incr cnt
 	}
 
-	$widget selection set $current;
 	$::extensions_widget yview $current
 }
 

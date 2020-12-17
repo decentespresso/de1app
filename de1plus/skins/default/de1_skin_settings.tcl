@@ -666,11 +666,13 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 	add_de1_button "settings_4" {say [translate {Extensions}] $::settings(sound_button_in); fill_extensions_listbox; page_to_show_when_off extensions; ; set_extensions_scrollbar_dimensions}  1910 520 2530 720
 
 		add_de1_text "extensions" 1280 300 -text [translate "Extensions"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
-		add_de1_widget "extensions" listbox 900 480 { 
+		add_de1_widget "extensions" listbox 340 480 { 
 			set ::extensions_widget $widget
 			bind $widget <<ListboxSelect>> ::toggle_extension
 			fill_extensions_listbox
 		} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::extensions_widget} -yscrollcommand {scale_scroll_new $::extensions_widget ::extensions_slider} -font global_font -bd 0 -height [expr {int(9 * $::globals(listbox_length_multiplier))}] -width 26 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
+
+		set ::extensions_metatdata [add_de1_text "extensions" 1200 380 -text  "" -font global_font -width 600 -fill "#444444" -anchor "nw" -justify "left" ]
 
 		set ::extensions_slider 0
 		set ::extensions_scrollbar [add_de1_widget "extensions" scale 10000 1 {} -from 0 -to 1.0 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::language_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::extensions_widget $::extensions_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
