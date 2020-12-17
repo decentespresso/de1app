@@ -9,7 +9,7 @@ set ::plugins::${plugin_name}::contact "coffee-plugins@mimoja.de"
 set ::plugins::${plugin_name}::version 1.0
 set ::plugins::${plugin_name}::description "Upload your last shot to visualizer.coffee"
 
-proc upload {content} {
+proc ::plugins::${plugin_name}::upload {content} {
     msg "uploading shot"
     borg toast "Uploading Shot"
     http::register https 443 [list ::tls::socket -servername $::plugins::visualizer_upload::settings(visualizer_url)]
@@ -34,6 +34,12 @@ proc upload {content} {
         set answer [http::data $token]
         msg "status: $status"
         msg "answer $answer"
+        if {[string length $answer] == 0} {
+            msg "No id transmitted"
+            borg toast "Upload failed!"
+            return
+        }
+
 	} err] != 0} {
         msg "Could not upload shot! $err"
         borg toast "Upload failed!"
@@ -44,15 +50,15 @@ proc upload {content} {
     http::cleanup $token
 }
 
-proc uploadShotData {old new} {
-    #if {[espresso_elapsed length] > 5 && [espresso_pressure length] > 5} {
+proc ::plugins::${plugin_name}::uploadShotData {old new} {
+    if {[espresso_elapsed length] > 5 && [espresso_pressure length] > 5} {
         set espresso_data [format_espresso_for_history]
         upload $espresso_data
-    #}
+    }
 }
 
 
 proc ::plugins::${plugin_name}::main {} {
-    register_state_change_handler Espresso Idle uploadShotData   
+    register_state_change_handler Espresso Idle ::plugins::visualizer_upload::uploadShotData   
 }
 

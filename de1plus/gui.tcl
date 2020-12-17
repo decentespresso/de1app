@@ -2031,11 +2031,12 @@ proc ui_startup {} {
 	}
 	#ble_find_de1s
 	
+	load_plugins
+	
 	setup_images_for_first_page
 	setup_images_for_other_pages
 	.can itemconfigure splash -state hidden
 
-	load_plugins
 
 	#after $::settings(timer_interval) 
 	update_onscreen_variables
