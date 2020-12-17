@@ -2287,9 +2287,44 @@ proc toggle_extension {} {
 
 	set plugin [lindex [available_plugins] $stepnum ]
 
+	source_plugin $plugin
+	set description ""
+
+	if {[info proc ::plugins::${plugin}::preload] != ""} {
+		set description [translate "Configurable: Yes"]
+	} else {
+		set description [translate "Configurable: No"]
+	}
+
+	foreach {name value} { "Version: " version "Author: " author "Contact: " contact "" description} {
+		set conf [set ::plugins::${plugin}::${value}]
+		if { $conf != {} } {
+			set description "$description\n[translate $name]$conf"
+		}
+	}
+	.can itemconfigure $::extensions_metadata -text $description
+
 	toggle_plugin $plugin
 
 	fill_extensions_listbox
+	$::extensions_widget selection set $stepnum;
+	make_current_listbox_item_blue $::extensions_widget 
+
+}
+
+proc fill_plugin_settings {} {
+	set stepnum [$::extensions_widget curselection]
+	if {$stepnum == ""} {
+		borg toast [translate "No Extensions selected"]
+		return
+	}
+
+	set plugin [lindex [available_plugins] $stepnum]
+
+	if {[info proc ::plugins::${plugin}::preload] != ""} {
+		set next_page [set ::plugins::${plugin}::ui_entry]
+		page_to_show_when_off $next_page
+	}
 }
 
 proc fill_extensions_listbox {} {
@@ -2298,7 +2333,6 @@ proc fill_extensions_listbox {} {
 
 	$widget delete 0 99999
 	set cnt 0
-	set current_profile_number 9999
 	set current 0
 
 	foreach {plugin} [available_plugins] {
@@ -2320,7 +2354,6 @@ proc fill_extensions_listbox {} {
 		incr cnt
 	}
 
-	$widget selection set $current;
 	$::extensions_widget yview $current
 }
 

@@ -22,10 +22,13 @@ proc create_plugin_namespace {plugin} {
     set ::plugins::${plugin}::contact {}
     set ::plugins::${plugin}::version {}
     set ::plugins::${plugin}::description {}
+    set ::plugins::${plugin}::plugin_loaded 0
+
     array set ::plugins::${plugin}::settings {}
 }
 
 proc load_plugin_settings {plugin} {
+    create_plugin_namespace $plugin
 
     set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [plugin_settings_file $plugin]]]
     msg "Settings file: $settings_file_contents"
@@ -38,11 +41,27 @@ proc save_plugin_settings {plugin} {
     save_array_to_file [plugin_settings $plugin] [plugin_settings_file $plugin]
 }
 
-proc load_plugin {plugin} {
-	if {[catch {
-        create_plugin_namespace $plugin
+proc source_plugin {plugin} {
         load_plugin_settings $plugin
 		source "[homedir]/[plugin_directory]/$plugin/plugin.tcl"
+        set ::plugins::${plugin}::plugin_loaded 1
+}
+
+proc plugin_preload {plugin} {
+    if {[catch {
+            source_plugin $plugin
+            if {[info proc ::plugins::${plugin}::preload] != ""} {
+                set ::plugins::${plugin}::ui_entry [::plugins::${plugin}::preload]
+            }
+	} err] != 0} {
+		catch {
+			message_page [subst {[translate "The plugin $plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
+		}
+	}
+}
+
+proc load_plugin {plugin} {
+	if {[catch {
         ::plugins::${plugin}::main
 	} err] != 0} {
 		catch {
@@ -88,6 +107,12 @@ proc available_plugins {} {
 }
 
 proc load_plugins {} {
+    # Preload all plugins
+    foreach plugin [available_plugins] {
+        plugin_preload $plugin
+    }
+
+    # start enabled plugins
     foreach plugin $::settings(enabled_plugins) {
         load_plugin $plugin
     }
