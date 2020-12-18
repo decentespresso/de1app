@@ -572,6 +572,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/tea_portafilter.tcl *
         profiles/tea_portafilter_oolong_dark.tcl *
         profiles/tea_portafilter_oolong.tcl *
+        profiles/tea_portafilter_no_pressure.tcl *
         profiles/tea_portafilter_chinese_green.tcl *
         profiles/tea_portafilter_japanese_green.tcl *
         profiles/tea_portafilter_white.tcl *
