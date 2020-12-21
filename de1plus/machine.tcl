@@ -130,6 +130,7 @@ array set ::de1 {
 	last_ping 0
 	steam_heater_temperature 150
 	connectivity "ble"
+	last_scale_ping 0
 }
 
 set ::de1(last_ping) [clock seconds]

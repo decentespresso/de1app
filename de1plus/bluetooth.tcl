@@ -105,7 +105,19 @@ proc scale_enable_grams {} {
 	}
 }
 
+proc scale_check_alive {} {
+	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
+
+	if {$since_last_ping > 5} {
+		set $::de1(scale_device_handle) 0
+	}
+}
+
 proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
+
+	set ::de1(last_scale_ping) [clock seconds]
+
+	after 5000 scale_check_alive
 
 	if { $::settings(scale_stop_at_half_shot) == 1} {
 		set sensorweight [expr $sensorweight * 2]
