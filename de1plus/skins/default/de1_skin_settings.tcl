@@ -1021,6 +1021,12 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_next_page off message; page_show message
 				after 200 app_exit
 			} else {
+
+				if {[ifexists ::settings(settings_profile_type)] == "settings_2c2"} {
+					# if they were on the LIMITS tab of the Advanced profiles, reset the ui back to the main tab
+					set ::settings(settings_profile_type) "settings_2c"
+				}
+
 				set_next_page off off; page_show off
 			}
 		} 2016 1430 2560 1600
