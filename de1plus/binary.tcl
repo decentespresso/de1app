@@ -1439,18 +1439,16 @@ proc update_de1_shotvalue {packed} {
 		set ::de1(current_frame_number) $ShotSample(FrameNumber)
 
 		if {$::settings(settings_profile_type) == "settings_2a"} {
-			if {$ShotSample(FrameNumber) == 0} {
+			if {$ShotSample(FrameNumber) == 0 || $ShotSample(FrameNumber) == 1} {
 				set framedesc [translate "1: preinfuse"]
-			} elseif {$ShotSample(FrameNumber) == 1} {
+			} elseif {$ShotSample(FrameNumber) == 2} {
 				set framedesc [translate "2: rise and hold"]
 			} else {
 				set framedesc [translate "3: decline"]
 			}
 		} elseif {$::settings(settings_profile_type) == "settings_2b"} {
-			if {$ShotSample(FrameNumber) == 0} {
+			if {$ShotSample(FrameNumber) == 0 || $ShotSample(FrameNumber) == 1} {
 				set framedesc [translate "1: preinfuse"]
-			} elseif {$ShotSample(FrameNumber) == 1} {
-				set framedesc [translate "1: rise"]
 			} elseif {$ShotSample(FrameNumber) == 2} {
 				set framedesc [translate "2: hold"]
 			} else {
