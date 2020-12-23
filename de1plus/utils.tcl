@@ -2134,6 +2134,22 @@ proc zero_pad {number len} {
     return $out
 }
 
+
+# similar to wrapped_string_part{} but looks for a / in the title, and uses that as the delimeter if it is there, otherwise wrapping as per normal
+# useful for espresso profiles, which contain a category/ in their title
+proc wrapped_profile_string_part {input threshold partnumber} {
+
+    set slashpos [string first / $input]
+    if {$slashpos != -1} {
+        if {$partnumber == 0} {
+            return [subst {[string range [string range $input 0 $slashpos] 0 $threshold]}]
+        } else {
+            return [subst {[string range [string range $input $slashpos+1 end] 0 $threshold]}]
+        }
+    } 
+    return [wrapped_string_part $input $threshold $partnumber]
+}
+
 proc wrapped_string_part {input threshold partnumber} {
     if {[string length $input] == [expr {1 + $threshold}] } {
         # wrap algorithm seems to chop off last character if there is just 1 character too many, so 
