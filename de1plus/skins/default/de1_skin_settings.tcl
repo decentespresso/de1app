@@ -960,34 +960,59 @@ set pos_machine_label 1650
 set pos_app_label 2270
 
 
+# wraps the profile description based on the / character, which is the category
+# and also moves the label of the profile type, up or down, based on how many lines of text the profile takes
+proc wrapped_profile_title {} {
+
+	set newheight [rescale_y_skin 80]
+	set final [ifexists ::settings(profile_title)]
+
+	set slashpos [string first / [ifexists ::settings(profile_title)]]
+	if {$slashpos != -1} {
+		# if there is a slash in this profile name, then add a CR after the slash
+		# limit each line to 25 characters so it fits onscreen
+		# and move the profile type up to make space
+		set newheight [rescale_y_skin 60]
+		set final [subst {[string range [string range [ifexists ::settings(profile_title)] 0 $slashpos] 0 25]\n[string range [string range [ifexists ::settings(profile_title)] $slashpos+1 end] 0 25]}]
+	}
+
+	.can coords $::tab1_profile_label [lindex [.can coords $::tab1_profile_label] 0] $newheight
+	.can coords $::tab2_profile_label [lindex [.can coords $::tab2_profile_label] 0] $newheight
+	.can coords $::tab3_profile_label [lindex [.can coords $::tab3_profile_label] 0] $newheight
+	.can coords $::tab4_profile_label [lindex [.can coords $::tab4_profile_label] 0] $newheight
+
+	return [string trim $final "\n/"]
+}
+
+
 ########################################
 # labels for tab1
 add_de1_text "settings_1" $pos_preset_label 100 -text [translate "PRESETS"] -font $settings_tab_font -fill "#2d3046" -anchor "center" 
-add_de1_variable "settings_1" $pos_profile_label 80 -text "" -font $settings_tab_font -fill "#7f879a" -anchor "center" -justify "center" -textvariable {[setting_profile_type_to_text]}
-add_de1_variable "settings_1" $pos_profile_label 130 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -justify "center" -textvariable {[string range [ifexists ::settings(profile_title)] 0 25]}
+set ::tab1_profile_label [add_de1_variable "settings_1" $pos_profile_label 60 -text "" -font $settings_tab_font -fill "#7f879a" -anchor "center" -justify "center" -textvariable {[setting_profile_type_to_text]}]
+add_de1_variable "settings_1" $pos_profile_label 130 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -justify "center" -textvariable {[wrapped_profile_title]}
 add_de1_text "settings_1" $pos_machine_label 100 -text [translate "MACHINE"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
 add_de1_text "settings_1" $pos_app_label 100 -text [translate "APP"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
 
 ########################################
 # labels for tab2
 add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" $pos_preset_label 100 -text [translate "PRESETS"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
-add_de1_variable "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" $pos_profile_label 80 -text "" -font $settings_tab_font -fill "#2d3046"  -justify "center" -anchor "center" -textvariable {[setting_profile_type_to_text]}
-add_de1_variable "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" $pos_profile_label 130 -text "" -font Helv_7 -fill "#2d3046"  -justify "center" -anchor "center" -textvariable {[string range [ifexists ::settings(profile_title)] 0 25]}
+set ::tab2_profile_label [add_de1_variable "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" $pos_profile_label 80 -text "" -font $settings_tab_font -fill "#2d3046"  -justify "center" -anchor "center" -textvariable {[setting_profile_type_to_text]}]
+add_de1_variable "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" $pos_profile_label 130 -text "" -font Helv_7 -fill "#2d3046"  -justify "center" -anchor "center" -textvariable {[wrapped_profile_title]}
 add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" $pos_machine_label 100 -text [translate "MACHINE"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
 add_de1_text "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" $pos_app_label 100 -text [translate "APP"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
 
 ########################################
 # top labels for tab3 
 add_de1_text "settings_3" $pos_preset_label 100 -text [translate "PRESETS"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
-add_de1_variable "settings_3" $pos_profile_label 80 -text "" -font $settings_tab_font -fill "#7f879a" -anchor "center"  -justify "center" -textvariable {[setting_profile_type_to_text]}
-add_de1_variable "settings_3" $pos_profile_label 130 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -justify "center" -textvariable {[string range [ifexists ::settings(profile_title)] 0 25]}
+set ::tab3_profile_label [add_de1_variable "settings_3" $pos_profile_label 80 -text "" -font $settings_tab_font -fill "#7f879a" -anchor "center"  -justify "center" -textvariable {[setting_profile_type_to_text]}]
+add_de1_variable "settings_3" $pos_profile_label 130 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -justify "center" -textvariable {[wrapped_profile_title]}
 add_de1_text "settings_3" $pos_machine_label 100 -text [translate "MACHINE"] -font $settings_tab_font -fill "#2d3046" -anchor "center" 
 add_de1_text "settings_3" $pos_app_label 100 -text [translate "APP"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
 
 # top labels for tab4
 add_de1_text "settings_4" $pos_preset_label 100 -text [translate "PRESETS"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
-add_de1_variable "settings_4" $pos_profile_label 80 -text "" -font $settings_tab_font -fill "#7f879a" -anchor "center"  -justify "center" -textvariable {[setting_profile_type_to_text]}
-add_de1_variable "settings_4" $pos_profile_label 130 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -justify "center" -textvariable {[string range [ifexists ::settings(profile_title)] 0 25]}
+set ::tab4_profile_label [add_de1_variable "settings_4" $pos_profile_label 80 -text "" -font $settings_tab_font -fill "#7f879a" -anchor "center"  -justify "center" -textvariable {[setting_profile_type_to_text]}]
+add_de1_variable "settings_4" $pos_profile_label 130 -text "" -font Helv_7 -fill "#7f879a" -anchor "center" -justify "center" -textvariable {[wrapped_profile_title]}
 add_de1_text "settings_4" $pos_machine_label 100 -text [translate "MACHINE"] -font $settings_tab_font -fill "#7f879a" -anchor "center" 
 add_de1_text "settings_4" $pos_app_label 100 -text [translate "APP"] -font $settings_tab_font -fill "#2d3046" -anchor "center" 
 
@@ -998,6 +1023,7 @@ add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2czoom s
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"; set_ble_scrollbar_dimensions; set_ble_scale_scrollbar_dimensions} 1905 0 2560 188
 
+#wrapped_profile_title
 
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font $botton_button_font -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font $botton_button_font -fill "#FFFFFF" -anchor "center"
@@ -1225,7 +1251,6 @@ proc setting_profile_type_to_text { } {
 	} else {
 		set changedicon ""
 	}
-
 
 	set in $::settings(settings_profile_type)
 	if {$in == "settings_2a"} {
