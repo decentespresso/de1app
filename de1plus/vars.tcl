@@ -2238,39 +2238,13 @@ proc copy_flow_profile_to_advanced_profile {} {
 		exit_flow_under 0 \
 	]
 
-	if {$::settings(preinfusion_guarantee) == 1} {
-		
-		set rise [list \
-			name [translate "rise"] \
-			temperature $::settings(espresso_temperature) \
-			sensor "coffee" \
-			pump "pressure" \
-			transition "fast" \
-			pressure $::settings(preinfusion_stop_pressure) \
-			seconds $::settings(flow_rise_timeout) \
-			volume $::settings(pressure_hold_stop_volumetric) \
-			exit_if 0 \
-			exit_pressure_over 11 \
-			exit_pressure_under 0 \
-			exit_flow_over 6 \
-			exit_flow_under 0 \
-		]
 
-
-		if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-			set ::settings(advanced_shot) [list $preinfusion $preinfusion2 $rise $hold $decline]
-		} else {
-			set ::settings(advanced_shot) [list $preinfusion $rise $hold $decline]
-		}
-
+	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+		set ::settings(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
 	} else {
-
-		if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-			set ::settings(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
-		} else {
-			set ::settings(advanced_shot) [list $preinfusion $hold $decline]
-		}
+		set ::settings(advanced_shot) [list $preinfusion $hold $decline]
 	}
+
 	#puts "adv: $::settings(advanced_shot)"
 	set ::current_step_number 0
 }
@@ -2771,7 +2745,6 @@ proc select_profile { profile } {
 	#puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
 	set ::settings(profile) $::settings(profile_title)
 
-	set ::settings(preinfusion_guarantee) 0
 	update_onscreen_variables
 	profile_has_not_changed_set
 
@@ -3023,7 +2996,7 @@ proc save_settings_vars {fn varlist} {
 }
 
 proc profile_vars {} {
- 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start bean_brand bean_type grinder_setting grinder_dose_weight grinder_model beverage_type}
+ 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start bean_brand bean_type grinder_setting grinder_dose_weight grinder_model beverage_type}
 }
 
 
@@ -3045,7 +3018,7 @@ proc save_profile {} {
 	# if no name then give it a name which is just a number
 	set_profile_title_untitled
 
-	#set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced preinfusion_guarantee profile_title profile_language preinfusion_stop_pressure}
+	#set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure}
 	#set profile_name_to_save $::settings(profile_to_save) 
 
 	if {$::settings(settings_profile_type) == "settings_2c2"} {

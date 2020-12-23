@@ -1720,16 +1720,6 @@ proc update_de1_explanation_chart { {context {}} } {
 
 proc update_de1_plus_flow_explanation_chart { {context {}} } {
 
-	#if {$::settings(pressure_end) > $::settings(espresso_pressure)} {
-		# the end pressure is not allowed to be higher than the hold pressure
-		#set ::settings(pressure_end) $::settings(espresso_pressure)
-	#}
-
-	#save_settings
-	#puts "update_de1_explanation_chart"
-	#espresso_de1_explanation_chart_pressure length 0
-
-
 	set seconds 0
 
 	# preinfusion
@@ -1739,10 +1729,6 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 
 		espresso_de1_explanation_chart_temperature append $::settings(espresso_temperature_0) 
 		espresso_de1_explanation_chart_temperature_10 append [expr {$::settings(espresso_temperature_0) / 10.0}]
-
-		#espresso_de1_explanation_chart_elapsed_flow_1 append $seconds
-
-
 
 		set seconds [expr {$::settings(preinfusion_flow_rate)/4}]
 
@@ -1764,34 +1750,6 @@ proc update_de1_plus_flow_explanation_chart { {context {}} } {
 		espresso_de1_explanation_chart_temperature_10 append [expr {$::settings(espresso_temperature_1) / 10.0}]
 
 
-		if {$::settings(preinfusion_guarantee) != 0} {
-			# assume 2 bar per second rise time, and a flow rate of 6 ml/s when rising
-			set time_to_rise_pressure [expr {$pressure_gained_needed / 2}]
-			if {$time_to_rise_pressure < 1} {
-				set time_to_rise_pressure 1
-			}
-
-			set seconds [expr {$seconds + $time_to_rise_pressure}]
-			espresso_de1_explanation_chart_flow append 6
-			espresso_de1_explanation_chart_elapsed_flow append $seconds
-
-			espresso_de1_explanation_chart_temperature append $::settings(espresso_temperature_1) 
-			espresso_de1_explanation_chart_temperature_10 append [expr {$::settings(espresso_temperature_1) / 10.0}]
-
-
-			if {$::settings(flow_profile_hold) > 0} {
-				set pressure_drop_needed [expr {6 - $::settings(flow_profile_hold)}]
-			} else {
-				set pressure_drop_needed 3
-			}
-			set seconds [expr {$seconds + (($pressure_drop_needed + $time_to_rise_pressure) / 2)}]
-			espresso_de1_explanation_chart_flow append 6
-			espresso_de1_explanation_chart_elapsed_flow append $seconds
-
-			espresso_de1_explanation_chart_temperature append $::settings(espresso_temperature_1) 
-			espresso_de1_explanation_chart_temperature_10 append [expr {$::settings(espresso_temperature_1) / 10.0}]
-
-		}
 	} else {
 		set seconds [expr {$::settings(flow_profile_hold)/4}]
 		espresso_de1_explanation_chart_flow append 0
