@@ -3155,10 +3155,10 @@ proc format_espresso_for_history {} {
 proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 	puts "save_this_espresso_to_history "
 	# only save shots that have at least 5 data points
-	if {$::settings(history_saved) && [espresso_elapsed length] > 5 && [espresso_pressure length] > 5 && $::settings(should_save_history) == 1} {
+	if {!$::settings(history_saved) && [espresso_elapsed length] > 5 && [espresso_pressure length] > 5 && $::settings(should_save_history) == 1} {
 
 		set espresso_data [format_espresso_for_history]
-		set fn "[homedir]/history/[clock format $clock -format "%Y%m%dT%H%M%S"].shot"
+		set fn "[homedir]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
 		write_file $fn $espresso_data
 		msg "Save this espresso to history"
 
