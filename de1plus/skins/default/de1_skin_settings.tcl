@@ -972,7 +972,7 @@ proc wrapped_profile_title {} {
 		# if there is a slash in this profile name, then add a CR after the slash
 		# limit each line to 25 characters so it fits onscreen
 		# and move the profile type up to make space
-		set newheight [rescale_y_skin 60]
+		set newheight [rescale_y_skin 50]
 		set final [subst {[string range [string range [ifexists ::settings(profile_title)] 0 $slashpos] 0 25]\n[string range [string range [ifexists ::settings(profile_title)] $slashpos+1 end] 0 25]}]
 	}
 
