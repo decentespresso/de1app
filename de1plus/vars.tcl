@@ -2771,11 +2771,7 @@ proc select_profile { profile } {
 	#puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
 	set ::settings(profile) $::settings(profile_title)
 
-	if {$::settings(enable_rise) != 1} {
-		 # "rise" feature was removed and is disabled by default
-		set ::settings(preinfusion_guarantee) 0
-	}
-
+	set ::settings(preinfusion_guarantee) 0
 	update_onscreen_variables
 	profile_has_not_changed_set
 
