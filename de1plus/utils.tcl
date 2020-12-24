@@ -435,10 +435,12 @@ proc stacktrace {} {
         set pname [lindex $lvl 0]
         append stack [string repeat " " $i]$pname
         foreach value [lrange $lvl 1 end] arg [info args $pname] {
-            if {$value eq ""} {
-                info default $pname $arg value
+            catch {
+                if {$value eq ""} {
+                    info default $pname $arg value
+                }
+                append stack " $arg='$value'"
             }
-            append stack " $arg='$value'"
         }
         append stack \n
     }
