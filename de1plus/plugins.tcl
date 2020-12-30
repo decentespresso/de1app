@@ -44,6 +44,8 @@ proc save_plugin_settings {plugin} {
 proc source_plugin {plugin} {
         load_plugin_settings $plugin
 		source "[homedir]/[plugin_directory]/$plugin/plugin.tcl"
+        array set ::plugins::${plugin}::translation [encoding convertfrom utf-8 [read_binary_file "[homedir]/[plugin_directory]/$plugin/translation.tcl"]]
+
         set ::plugins::${plugin}::plugin_loaded 1
 }
 
@@ -98,4 +100,61 @@ proc load_plugins {} {
     foreach plugin $::settings(enabled_plugins) {
         load_plugin $plugin
     }
+}
+
+# Pretty much a copy of proc translate modified for dealing with plugins
+proc plugin_translate {plugin english} {
+
+    msg "i10n $english"
+
+    if {$english == ""} { 
+        return "" 
+    }
+
+    if {[language] == "en"} {
+        return $english
+    }
+
+    if {[info exists ::plugins::${plugin}::translation($english)] == 1} {
+        array set translations [array get ::plugins::${plugin}::translation]
+        array set available $translations($english)
+        if {[info exists available([language])] == 1} {
+
+            if {[ifexists available([language])] != ""} {
+                if {[language] == "ar" && ($::android == 1 || $::undroid == 1)} {
+                    if {[ifexists available(arb)] != ""} {
+                        return $available(arb)
+                    }
+                }
+
+                if {[language] == "he" && ($::android == 1 || $::undroid == 1)} {
+                    if {[ifexists available(heb)] != ""} {
+                        return $available(heb)
+                    }
+                }
+
+                return $available([language])
+            } else {
+                return $english
+            }
+        }
+    }
+
+    if {$::android != 1} {
+        if {[info exists ::already_shown_trans($english)] != 1} {
+            set t [subst {"$english" \{}]
+            foreach {l d} [translation_langs_array] {
+                set translation($l) $english
+                append t [subst {$l "$english" }]
+            }
+            append t "\}"
+            puts "Appending new phrase: $english"
+            msg [stacktrace]
+            append_file "[homedir]/[plugin_directory]/$plugin/translation.tcl" $t
+            set ::already_shown_trans($english) 1
+        }
+    }
+
+    msg "Falling back to system translations"
+    return [translate $english]
 }
