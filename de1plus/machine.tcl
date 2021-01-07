@@ -195,6 +195,7 @@ array set ::de1_command_names_to_cuuids [reverse_array ::de1_cuuids_to_command_n
 #}
 
 array set ::settings {
+	enable_rise 0
 	force_fw_update 0
 	preset_counter 1
 	screen_size_width {}
