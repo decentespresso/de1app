@@ -880,7 +880,9 @@ proc app_exit {} {
 	}
 
 	# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
-	set_fan_temperature_threshold 0
+	if {[firmware_has_fan_sleep_bug] == 1} {
+		set_fan_temperature_threshold 0
+	}
 
 	set ::exit_app_on_sleep 1
 	start_sleep
@@ -2070,6 +2072,16 @@ proc de1_ble_handler { event data } {
 	#run_next_userdata_cmd
 
 	#msg "exited event"
+}
+
+# john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
+proc firmware_has_fan_sleep_bug {} {
+
+	if {[ifexists ::settings(firmware_sha)] == "7C24F200"} {
+		return 1
+	}
+	return 0
+
 }
 
 proc calibration_ble_received {value} {
