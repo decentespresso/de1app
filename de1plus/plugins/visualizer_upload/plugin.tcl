@@ -1,6 +1,7 @@
 package require http
 package require tls
 
+
 set plugin_name "visualizer_upload"
 
 set ::plugins::${plugin_name}::author "Johanna Schander"
@@ -17,16 +18,17 @@ proc upload {content} {
     set password $::plugins::visualizer_upload::settings(visualizer_password)
 
     set auth "Basic [binary encode base64 $username:$password]"
-    # For the moment we need to butcher the form-data format
-    set type "multipart/form-data; charset=utf-8;"
-
-    set headerl [list Authorization "$auth" Content-Type "$type"]
+    set boundary "--------[clock seconds]"
+    set type "multipart/form-data, boundary=$boundary"
+    set headerl [list Authorization "$auth"]
 
     set url "https://$::plugins::visualizer_upload::settings(visualizer_url)/$::plugins::visualizer_upload::settings(visualizer_endpoint)"
-    set body "content=$content"
+    
+    set contentHeader "Content-Disposition: form-data; name=\"file\"; filename=\"file.shot\"\r\nContent-Type: File\r\n"
+    set body "--$boundary\r\n$contentHeader\r\n$content\r\n--$boundary--\r\n"
 
     if {[catch {
-        set token [http::geturl $url -headers $headerl -method POST -query $body -timeout 30000]
+        set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 30000]
         msg $token
         set status [http::status $token]
         set answer [http::data $token]
