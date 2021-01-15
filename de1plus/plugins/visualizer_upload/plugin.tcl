@@ -19,7 +19,7 @@ proc ::plugins::${plugin_name}::upload {content} {
 
     set auth "Basic [binary encode base64 $username:$password]"
     set boundary "--------[clock seconds]"
-    set type "multipart/form-data, boundary=$boundary"
+    set type "multipart/form-data, charset=utf-8, boundary=$boundary"
     set headerl [list Authorization "$auth"]
 
     set url "https://$::plugins::visualizer_upload::settings(visualizer_url)/$::plugins::visualizer_upload::settings(visualizer_endpoint)"
