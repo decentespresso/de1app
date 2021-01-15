@@ -51,7 +51,8 @@ proc ::plugins::${plugin_name}::upload {content} {
 }
 
 proc ::plugins::${plugin_name}::uploadShotData {old new} {
-    if {[espresso_elapsed length] > 5 && [espresso_pressure length] > 5} {
+    if {[espresso_elapsed length] > 5 && [espresso_pressure length] > 5
+         && $::plugins::visualizer_upload::settings(auto_upload)} {
         set espresso_data [format_espresso_for_history]
         upload $espresso_data
     }
