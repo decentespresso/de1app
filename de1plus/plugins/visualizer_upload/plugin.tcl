@@ -1,5 +1,6 @@
 package require http
 package require tls
+package require json
 
 set plugin_name "visualizer_upload"
 
@@ -11,6 +12,9 @@ set ::plugins::${plugin_name}::description "Upload your last shot to visualizer.
 proc ::plugins::${plugin_name}::upload {content} {
     msg "uploading shot"
     borg toast "Uploading Shot"
+
+    set content [encoding convertto utf-8 $content]
+
     http::register https 443 [list ::tls::socket -servername $::plugins::visualizer_upload::settings(visualizer_url)]
 
     set username $::plugins::visualizer_upload::settings(visualizer_username)
@@ -37,22 +41,34 @@ proc ::plugins::${plugin_name}::upload {content} {
         if {$returncode == 401} {
             msg "Upload failed. Unauthorized"
             borg toast "Upload failed! Authentication failed. Please check username / password"
+            http::cleanup $token
             return
         }
         if {[string length $answer] == 0 || $returncode != 200} {
             msg "Upload failed"
             borg toast "Upload failed!"
+            http::cleanup $token
             return
         }
-
 	} err] != 0} {
         msg "Could not upload shot! $err"
         borg toast "Upload failed!"
+        http::cleanup $token
         return
     }
 
     borg toast "Upload successfull"
+
+    if {[catch {
+        set response [::json::json2dict [http::data $token]]
+        set uploaded_id [dict get $response id]
+    } err] != 0} {
+        msg "Upload successfull but unexpected server answer!"
+        return
+    }
+
     http::cleanup $token
+    return $uploaded_id
 }
 
 proc ::plugins::${plugin_name}::uploadShotData {old new} {
