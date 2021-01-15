@@ -1,7 +1,6 @@
 package require http
 package require tls
 
-
 set plugin_name "visualizer_upload"
 
 set ::plugins::${plugin_name}::author "Johanna Schander"
@@ -32,10 +31,16 @@ proc ::plugins::${plugin_name}::upload {content} {
         msg $token
         set status [http::status $token]
         set answer [http::data $token]
+        set returncode [http::ncode $token]
         msg "status: $status"
         msg "answer $answer"
-        if {[string length $answer] == 0} {
-            msg "No id transmitted"
+        if {$returncode == 401} {
+            msg "Upload failed. Unauthorized"
+            borg toast "Upload failed! Authentication failed. Please check username / password"
+            return
+        }
+        if {[string length $answer] == 0 || $returncode != 200} {
+            msg "Upload failed"
             borg toast "Upload failed!"
             return
         }
