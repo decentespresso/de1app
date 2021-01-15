@@ -23,7 +23,7 @@ proc ::plugins::${plugin_name}::upload {content} {
 
     set url "https://$::plugins::visualizer_upload::settings(visualizer_url)/$::plugins::visualizer_upload::settings(visualizer_endpoint)"
     
-    set contentHeader "Content-Disposition: form-data; name=\"file\"; filename=\"file.shot\"\r\nContent-Type: File\r\n"
+    set contentHeader "Content-Disposition: form-data; name=\"file\"; filename=\"file.shot\"\r\nContent-Type: application/octet-stream\r\n"
     set body "--$boundary\r\n$contentHeader\r\n$content\r\n--$boundary--\r\n"
 
     if {[catch {
