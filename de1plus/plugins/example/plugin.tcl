@@ -34,6 +34,21 @@ proc ::plugins::${plugin_name}::preload {} {
     return $page_name
 }
 
+
+# Preload_tab is used to acces the quick-access tabs. This offers less free space but at the same time allows
+# for easier access without moving trough the menues
+proc ::plugins::${plugin_name}::preload_tab {page_name} {
+    # The actual content. Here a list of all settings for this plugin
+    set content_textfield [add_de1_text $page_name 600 380 -text  "" -font global_font -width 600 -fill "#444444" -anchor "nw" -justify "left" ]
+    set description ""
+    foreach {key value} [array get ::plugins::example::settings] {
+		set description "$description\n$key: $value"
+  	}
+    .can itemconfigure $content_textfield -text $description
+
+    return $page_name
+}
+
 proc on_espresso_end {old new} {
     borg toast "espresso ended"
 }

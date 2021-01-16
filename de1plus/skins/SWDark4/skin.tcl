@@ -1208,7 +1208,7 @@ add_de1_button "home off espresso_1 espresso_2 espresso_3 preheat_1  preheat_3 p
 set ::settings(display_rate_espresso) 1
 if {$::settings(display_rate_espresso) == 1} {
 	add_de1_image "off off_zoomed off_zoomed_temperature" 2420 1170 "[skin_directory]/img/hearticon.png"
-	add_de1_button "off off_zoomed off_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off describe_espresso0; page_show off; set_god_shot_scrollbar_dimensions; } 2410 1160 2510 1260
+	add_de1_button "off off_zoomed off_zoomed_temperature" {say [translate {describe}] $::settings(sound_button_in); unset -nocomplain ::settings_backup; array set ::settings_backup [array get ::settings]; set_next_page off plugin_tab0; page_show off; } 2410 1160 2510 1260
 	source "[homedir]/skins/Insight/scentone.tcl"
 }
 

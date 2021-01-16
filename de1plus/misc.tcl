@@ -206,6 +206,9 @@ proc make_de1_dir {srcdir destdirs} {
         skins/default/1280x800/travel_do.jpg *
         skins/default/1280x800/travel_prepare.jpg *
         skins/default/1280x800/descalewarning.jpg *
+        skins/Insight/1280x800/plugin_tab0.jpg *
+        skins/Insight/1280x800/plugin_tab1.jpg *
+        skins/Insight/1280x800/plugin_tab2.jpg *
 
         skins/default/2560x1600/firmware_upgrade.jpg *
         skins/default/2560x1600/firmware_upgrade_on.jpg *
@@ -237,6 +240,9 @@ proc make_de1_dir {srcdir destdirs} {
         skins/default/2560x1600/travel_do.jpg *
         skins/default/2560x1600/travel_prepare.jpg *
         skins/default/2560x1600/descalewarning.jpg *
+        skins/Insight/2560x1600/plugin_tab0.jpg *
+        skins/Insight/2560x1600/plugin_tab1.jpg *
+        skins/Insight/2560x1600/plugin_tab2.jpg *
 
         skins/Antibes/skin.tcl *
         skins/Antibes/moonflower.ttf *

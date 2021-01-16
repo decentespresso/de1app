@@ -94,6 +94,18 @@ proc toggle_plugin {plugin} {
     }
 }
 
+proc toggle_plugin_tab {plugin} {
+    
+    if {[lsearch $::settings(plugin_tabs) $plugin] >= 0} {
+        set new [lsearch -inline -all -not -exact $::settings(plugin_tabs) $plugin]
+        set ::settings(plugin_tabs) $new
+
+    } else {
+        lappend ::settings(plugin_tabs) $plugin
+    }
+    save_settings
+}
+
 proc available_plugins {} {
     set plugin_sources [lsort -dictionary [glob -nocomplain -tails -directory [plugin_directory] * ]]
     set plugins {}

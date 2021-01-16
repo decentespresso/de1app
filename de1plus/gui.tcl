@@ -1322,6 +1322,25 @@ proc show_settings { {tab_to_show ""} } {
 	#preview_profile 
 }
 
+proc plugin_for_tab {tab_number} {
+
+	if {[catch {
+
+		set plugin [lindex $::settings(plugin_tabs) $tab_number]
+
+		# unset unloaded or unuseable plugins
+		if {![plugin_enabled $plugin] || [info proc ::plugins::${plugin}::preload_tab] == ""} {
+			set new [lsearch -inline -all -not -exact $::settings(plugin_tabs) $plugin]
+			set ::settings(plugin_tabs) $new
+			return ""
+		}
+
+	} err] != 0} {
+		return ""
+	}
+	return $plugin
+}
+
 proc page_to_show_when_off {page_to_show} {
 	set_next_page off $page_to_show
 	page_show $page_to_show

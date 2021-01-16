@@ -2279,7 +2279,7 @@ proc fill_languages_listbox {} {
 	$::languages_widget yview $current
 }
 
-proc toggle_extension {} {
+proc highlight_extension {} {
 	set stepnum [$::extensions_widget curselection]
 	if {$stepnum == ""} {
 		return
@@ -2296,6 +2296,12 @@ proc toggle_extension {} {
 		set description [translate "Configurable: No"]
 	}
 
+	if {[info proc ::plugins::${plugin}::preload_tab] != ""} {
+		set description "$description\n[translate "Tab Capable: Yes"]"
+	} else {
+		set description "$description\n[translate "Tab Capable: No"]"
+	}
+
 	foreach {name value} { "Version: " version "Author: " author "Contact: " contact "" description} {
 		set conf [set ::plugins::${plugin}::${value}]
 		if { $conf != {} } {
@@ -2304,13 +2310,47 @@ proc toggle_extension {} {
 	}
 	.can itemconfigure $::extensions_metadata -text $description
 
-	toggle_plugin $plugin
-
 	fill_extensions_listbox
 	$::extensions_widget selection set $stepnum;
 	make_current_listbox_item_blue $::extensions_widget 
 
 }
+
+proc extension_tab_toggle {} {
+	set stepnum [$::extensions_widget curselection]
+	if {$stepnum == ""} {
+		borg toast [translate "No Extensions selected"]
+		return
+	}
+
+	set plugin [lindex [available_plugins] $stepnum]
+
+	if {[info proc ::plugins::${plugin}::preload_tab] != ""} {
+		toggle_plugin_tab $plugin
+		save_settings
+	}
+
+	fill_extensions_listbox
+	$::extensions_widget selection set $stepnum;
+	make_current_listbox_item_blue $::extensions_widget 
+}
+
+proc extension_toggle {} {
+	set stepnum [$::extensions_widget curselection]
+	if {$stepnum == ""} {
+		borg toast [translate "No Extensions selected"]
+		return
+	}
+
+	set plugin [lindex [available_plugins] $stepnum]
+
+	toggle_plugin $plugin
+
+	fill_extensions_listbox
+	$::extensions_widget selection set $stepnum;
+	make_current_listbox_item_blue $::extensions_widget 
+}
+
 
 proc fill_plugin_settings {} {
 	set stepnum [$::extensions_widget curselection]
@@ -2348,6 +2388,12 @@ proc fill_extensions_listbox {} {
 			} else {
 				set p "\u2610 "
 			}
+		}
+
+		set plugin_tab [lsearch $::settings(plugin_tabs) $plugin] 
+
+		if {$plugin_tab >= 0} {
+			set p "${p}([translate Tab] $plugin_tab)"	
 		}
 
 		$widget insert $cnt "$p $plugin"

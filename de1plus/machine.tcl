@@ -418,6 +418,7 @@ array set ::settings {
 	scale_stop_at_half_shot 0
 	lock_screen_during_screensaver 0
 	enabled_plugins {}
+	plugin_tabs {}
 }
 
 # default de1plus skin
