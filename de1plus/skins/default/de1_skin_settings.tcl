@@ -658,7 +658,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		add_de1_text "extensions" 1280 300 -text [translate "Extensions"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 		add_de1_widget "extensions" listbox 340 480 { 
 			set ::extensions_widget $widget
-			bind $widget <<ListboxSelect>> ::toggle_extension
+			bind $widget <<ListboxSelect>> ::highlight_extension
 			fill_extensions_listbox
 		} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::extensions_widget} -yscrollcommand {scale_scroll_new $::extensions_widget ::extensions_slider} -font global_font -bd 0 -height [expr {int(9 * $::globals(listbox_length_multiplier))}] -width 26 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1
 
@@ -669,6 +669,9 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 		add_de1_text "extensions" 2200 1150 -text [translate "⚙️Settings"] -font Helv_11_bold -fill "#000000" -anchor "center" 
 		add_de1_button "extensions" {fill_plugin_settings}  2100 1010 2330 1310
+
+		add_de1_text "extensions" 1400 1150 -text [translate "⚙️Toggle"] -font Helv_11_bold -fill "#000000" -anchor "center" 
+		add_de1_button "extensions" {extension_toggle}  1300 1010 1700 1310
 
 		# this moves the scrollbar to the right of the extensions listbox, and sets its height correctly
 		# this can't be done until the page is rendered, because the windowing system doesn't know ahead of time the true dimensions of the listbox, not until it is rendered
@@ -1041,7 +1044,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_fan_temperature_threshold $::settings(fan_threshold)
 				de1_enable_water_level_notifications
 			}
-			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit saver_brightness log_enabled hot_water_idle_temp espresso_warmup_timeout scale_bluetooth_address language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins"] == 1  || [ifexists ::app_has_updated] == 1} {
+			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit saver_brightness log_enabled hot_water_idle_temp espresso_warmup_timeout scale_bluetooth_address language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 				.can itemconfigure $::message_button_label -text [translate "Wait"]

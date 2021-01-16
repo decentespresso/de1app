@@ -2279,7 +2279,7 @@ proc fill_languages_listbox {} {
 	$::languages_widget yview $current
 }
 
-proc toggle_extension {} {
+proc highlight_extension {} {
 	set stepnum [$::extensions_widget curselection]
 	if {$stepnum == ""} {
 		return
@@ -2304,13 +2304,28 @@ proc toggle_extension {} {
 	}
 	.can itemconfigure $::extensions_metadata -text $description
 
+	fill_extensions_listbox
+	$::extensions_widget selection set $stepnum;
+	make_current_listbox_item_blue $::extensions_widget
+
+}
+
+proc extension_toggle {} {
+	set stepnum [$::extensions_widget curselection]
+	if {$stepnum == ""} {
+		borg toast [translate "No Extensions selected"]
+		return
+	}
+
+	set plugin [lindex [available_plugins] $stepnum]
+
 	toggle_plugin $plugin
 
 	fill_extensions_listbox
 	$::extensions_widget selection set $stepnum;
-	make_current_listbox_item_blue $::extensions_widget 
-
+	make_current_listbox_item_blue $::extensions_widget
 }
+
 
 proc fill_plugin_settings {} {
 	set stepnum [$::extensions_widget curselection]
@@ -2330,6 +2345,8 @@ proc fill_plugin_settings {} {
 proc fill_extensions_listbox {} {
 
 	set widget $::extensions_widget
+
+	set stepnum [$::extensions_widget curselection]
 
 	$widget delete 0 99999
 	set cnt 0
@@ -2355,6 +2372,11 @@ proc fill_extensions_listbox {} {
 	}
 
 	$::extensions_widget yview $current
+
+	if {$stepnum != ""} {
+		$::extensions_widget selection set $stepnum;
+		make_current_listbox_item_blue $::extensions_widget
+	}
 }
 
 proc fill_advanced_profile_steps_listbox {} {
