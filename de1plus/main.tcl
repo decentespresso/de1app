@@ -14,6 +14,7 @@ package require tls 1.6
 
 package provide de1 1.0
 package provide de1_main 1.0
+package require de1_logging 1.0
 package require de1_updater
 package require de1_gui 
 package require de1_vars 

@@ -1,5 +1,8 @@
 package provide de1_machine 1.0
+
 package require de1_comms 1.0
+package require de1_logging 1.0
+
 #set ::debugging 0
 
 # ray's DE1 address (usb key #?)

@@ -1,6 +1,7 @@
+package provide de1_bluetooth 1.0
 
 package require de1_comms
-package provide de1_bluetooth 1.0
+package require de1_logging 1.0
 
 ## Scales
 ### Generics
