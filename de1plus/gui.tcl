@@ -2028,10 +2028,9 @@ proc ui_startup {} {
 	}
 	#ble_find_de1s
 	
-	load_plugins
-	
 	setup_images_for_first_page
 	setup_images_for_other_pages
+	load_plugins
 	.can itemconfigure splash -state hidden
 
 
