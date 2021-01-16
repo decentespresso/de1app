@@ -38,36 +38,34 @@ proc ::plugins::${plugin_name}::upload {content} {
         set returncode [http::ncode $token]
         msg "status: $status"
         msg "answer $answer"
+        http::cleanup $token
         if {$returncode == 401} {
             msg "Upload failed. Unauthorized"
             borg toast "Upload failed! Authentication failed. Please check username / password"
-            http::cleanup $token
             return
         }
         if {[string length $answer] == 0 || $returncode != 200} {
             msg "Upload failed"
             borg toast "Upload failed!"
-            http::cleanup $token
             return
         }
 	} err] != 0} {
         msg "Could not upload shot! $err"
         borg toast "Upload failed!"
-        http::cleanup $token
         return
     }
 
     borg toast "Upload successfull"
 
     if {[catch {
-        set response [::json::json2dict [http::data $token]]
+        set response [::json::json2dict $answer]
         set uploaded_id [dict get $response id]
     } err] != 0} {
         msg "Upload successfull but unexpected server answer!"
         return
     }
+    msg "Upload successfull with id: $uploaded_id"
 
-    http::cleanup $token
     return $uploaded_id
 }
 
