@@ -1,5 +1,6 @@
 package provide de1_binary 1.0
 
+package require de1_logging 1.0
 
 # from http://wiki.tcl.tk/12148
 
