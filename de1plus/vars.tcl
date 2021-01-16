@@ -1,6 +1,8 @@
 # de1 internal state live variables
 package provide de1_vars 1.0
 
+package require de1_logging 1.0
+
 #############################
 # raw data from the DE1
 

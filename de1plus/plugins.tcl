@@ -1,5 +1,7 @@
 package provide de1_plugins 1.0
 
+package require de1_logging 1.0
+
 namespace eval ::plugins {}
 
 proc plugin_directory {} {
