@@ -1927,7 +1927,7 @@ proc update_de1_state {statechar} {
 					
 					#scale_tare
 					start_espresso_timers
-					after 200 scale_tare
+					after 500 scale_tare
 					#after 250 scale_timer_start
 					#set ::timer_running 1
 				}
