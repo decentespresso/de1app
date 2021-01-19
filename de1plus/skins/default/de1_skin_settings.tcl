@@ -622,7 +622,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 		add_de1_text "measurements" 1300 660 -text [translate "Optional features"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-			if {[ifexists ::settings(skin)] == "Insight"} {
+			if {[ifexists ::settings(skin)] == "Insight" && [ghc_required] != 1} {
 				# this feature is specific to the Insight skin
 				add_de1_widget "measurements" checkbutton 1800 740 {} -text [translate "One-tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(one_tap_mode)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 			}
