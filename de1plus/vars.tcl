@@ -1,7 +1,12 @@
 # de1 internal state live variables
-package provide de1_vars 1.0
+package provide de1_vars 1.1
 
+package require lambda
+
+package require de1_device_scale 1.0
+package require de1_event 1.0
 package require de1_logging 1.0
+
 
 #############################
 # raw data from the DE1
@@ -318,7 +323,6 @@ proc stop_espresso_timers {} {
 	set ::timer_running 0
 	set ::timers(espresso_stop) [clock milliseconds]
 
-	scale_timer_stop
 	#stop_timer_preinfusion
 	#stop_timer_pour
 	#set ::substate_timers(stop) [clock milliseconds]
@@ -331,7 +335,6 @@ proc start_espresso_timers {} {
 	set ::timer_running 1
 	set ::timers(espresso_start) [clock milliseconds]
 
-	scale_timer_start
 	#set ::timers(millistart) [clock milliseconds]
 	#set ::substate_timers(millistart) [clock milliseconds]
 }
@@ -360,10 +363,6 @@ proc clear_espresso_timers {} {
 	set ::timers(espresso_pour_stop) 0
 
 	set ::timer_running 0
-
-	catch {
-		scale_timer_off
-	}
 
 	#puts "clearing timers"
 }
@@ -1100,6 +1099,19 @@ proc finalwaterweight_text {} {
 	}
 
 	return [return_weight_measurement $::de1(final_water_weight)]
+}
+
+# drink_weight is present for both espresso and hot water
+proc drink_weight_text {} {
+	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
+		return ""
+	}
+
+	if {[ifexists ::blink_water_weight] == 1} {
+		return ""
+	}
+
+	return [return_weight_measurement $::settings(drink_weight)]
 }
 
 proc dump_stack {a b c} {
@@ -3088,7 +3100,15 @@ proc save_espresso_rating_to_history {} {
 
 
 # Lazy way of decoupling from "package require" ordering.
-after idle {after 0 {register_state_change_handler Espresso Idle save_this_espresso_to_history}}
+# after idle {after 0 {register_state_change_handler Espresso Idle save_this_espresso_to_history}}
+
+::de1::event::listener::after_flow_complete_add \
+	[lambda {event_dict} {
+		save_this_espresso_to_history \
+			[dict get $event_dict previous_state] \
+			[dict get $event_dict this_state] \
+		} ]
+
 
 proc format_espresso_for_history {} {
 
@@ -3098,7 +3118,7 @@ proc format_espresso_for_history {} {
 			msg "This espresso's start time was not recorded. Possibly we didn't get the bluetooth message of state change to espresso."
 			set ::settings(espresso_clock) [clock seconds]
 		}
-		
+
 		set clock $::settings(espresso_clock)
 		set name [clock format $clock]
 
@@ -3128,10 +3148,13 @@ proc format_espresso_for_history {} {
 
 		append espresso_data "espresso_state_change {[espresso_state_change range 0 end]}\n"
 
+		catch { ::device::scale::format_for_history espresso_data }
+
 		append espresso_data "espresso_pressure_goal {[espresso_pressure_goal range 0 end]}\n"
 		append espresso_data "espresso_flow_goal {[espresso_flow_goal range 0 end]}\n"
 		append espresso_data "espresso_temperature_goal {[espresso_temperature_goal range 0 end]}\n"
 
+		catch { format_timers_for_history espresso_data }
 
 		# format settings nicely so that it is easier to read and parse
 		append espresso_data "settings {\n"
@@ -3153,7 +3176,15 @@ proc format_espresso_for_history {} {
 		append espresso_data "app_version {$app_version}\n"
 
 		return $espresso_data
-	
+
+}
+
+proc format_timers_for_history {espresso_data_name} {
+
+	upvar $espresso_data_name espresso_data
+	foreach {name reftime} [array get ::timers] {
+		append espresso_data "timers(${name}) ${reftime}\n"
+	}
 }
 
 

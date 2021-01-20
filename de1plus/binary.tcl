@@ -1,6 +1,11 @@
-package provide de1_binary 1.0
+package provide de1_binary 1.1
 
+package require lambda
+
+package require de1_event 1.0
 package require de1_logging 1.0
+
+
 
 # from http://wiki.tcl.tk/12148
 
@@ -1744,9 +1749,10 @@ proc append_live_data_to_espresso_chart {} {
 }  
 
 # System to plug-in handlers for state (not substate) changes.
-array set ::state_change_handlers {}
 
 proc register_state_change_handler {old_state_name new_state_name handler} {
+
+	msg -WARNING "DEPRECATED, see package de1_event: register_state_change_handler $old_state_name $new_state_name $handler"
   # Registers a state change handler for a specific state-to-state transition.
   #
   # Args:
@@ -1754,34 +1760,15 @@ proc register_state_change_handler {old_state_name new_state_name handler} {
   #   new_state_name: name for the "to" state.
   #   handler: callback that handles state transition.
   #     When invoked, old_state_name and new_state_name are added as arguments.
-  set event_key [make_state_change_event_key $::de1_num_state_reversed($old_state_name) $::de1_num_state_reversed($new_state_name)]
-  if {![info exists ::state_change_handlers($event_key)]} {
-    set ::state_change_handlers($event_key) [list]
-  }
-  lappend ::state_change_handlers($event_key) $handler
-}
 
-proc make_state_change_event_key {old_state new_state} {
-  # Warning: state change event does not have current substate stored in ::de1(substate).
-  # Handlers are not stored persistently, so no backward compatibility issue with changing this schema.
-  #
-  # Args:
-  #   old_state: integer representing old state.
-  #   new_state: integer representing new state.
-  return "${old_state},${new_state}"
-}
+	set lstr [format {lambda {event_dict} {
+		set ps [dict get $event_dict previous_state] ; set ts [dict get $event_dict this_state]
+		if { $ps == "%s" && $ts == "%s" } {%s $ps $ts}}} \
+			  $old_state_name $new_state_name $handler]
 
-proc emit_state_change_event {old_state new_state} {
-  # Asynchronously triggers all handlers.
-  set old_state_name $::de1_num_state($old_state)
-  set new_state_name $::de1_num_state($new_state)
-  set event_key [make_state_change_event_key $old_state $new_state]
-  if {[info exists ::state_change_handlers($event_key)]} {
-    foreach handler $::state_change_handlers($event_key) {
-      # No bracing so variables are expanded correctly.
-      after idle after 0 eval {*}$handler $old_state_name $new_state_name
-    }
-  }
+	msg -INFO "Rewritten as \[$lstr\]"
+
+	::de1::event::listener::on_major_state_change_add [{*}$lstr]
 }
 
 
@@ -1834,203 +1821,293 @@ proc parse_state_change {packed destarrname} {
 	}
 }
 
-#set ::previous_textstate ""
+
 proc update_de1_state {statechar} {
-	#::fields::unpack $statechar $spec msg bigeendian
+
+	# TODO: Get event_time from earlier in the processing chain
+
+	set event_time [expr { [clock milliseconds] / 1000.0 }]
+
 	parse_state_change $statechar msg
-	set textstate [ifexists ::de1_num_state([ifexists msg(state)])]
+
+	# Ignore "empty" state messages
+	# https://3.basecamp.com/3671212/buckets/7351439/messages/3239055806#__recording_3248555671
 
 	if {[info exists msg(state)] != 1} {
-		# fix from https://3.basecamp.com/3671212/buckets/7351439/messages/3239055806#__recording_3248555671
-		msg "Empty state message received"
+		msg -NOTICE "update_de1_state: Empty state message received"
 		return
 	}
-	#msg "update_de1_state '[ifexists ::previous_textstate]' '$textstate'"
 
-	#msg "update_de1_state [array get msg]"
+	set this_state [ifexists ::de1_num_state([ifexists msg(state)])]
+	set this_substate [ifexists ::de1_substate_types([ifexists msg(substate)])]
 
-	#puts "textstate: $textstate"
-	if {$msg(state) != $::de1(state)} {
-		msg "applying DE1 state change: $::de1(state) [array get msg] (now:$textstate) (was:[ifexists ::previous_textstate])"
-		emit_state_change_event $::de1(state) $msg(state)
-		set ::de1(state) $msg(state)
+	set previous_state [ifexists ::de1_num_state($::de1(state))]
+	set previous_substate [ifexists ::de1_substate_types($::de1(substate))]
 
-		if {$textstate == "Espresso"} {
-			reset_gui_starting_espresso
+	set event_dict [dict create \
+				event_time $event_time \
+				this_state $this_state \
+				this_substate $this_substate \
+				previous_state $previous_state \
+				previous_substate $previous_substate \
+			       ]
 
-			# When starting an espresso we are trying to reconnect to the scale just to be sure. This by far does not saturate the Android 5 tablets
-			#  but just to be sure it is feature gated
-			if { $::settings(reconnect_to_scale_on_espresso_start) && $::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
-				msg "try to connect to scale automatically (if it is currently disconnected)"
-				ble_connect_to_scale
+	# Update the global state for any consumers and timers, such as in callbacks
+	# Using `trace` on these is bad form as the app may not have caught up yet
+
+	set ::de1(state) $msg(state)
+	set ::de1(substate) $msg(substate)
+
+	set this_flow_phase [::de1::state::flow_phase $this_state $this_substate]
+	set previous_flow_phase [::de1::state::flow_phase $previous_state $previous_substate]
+
+	if { $this_flow_phase == "during" && $previous_flow_phase != "during" } {
+
+		switch $this_state {
+
+			Espresso {
+				start_espresso_timers
 			}
 
-		} elseif {$textstate == "Steam"} {
-			reset_gui_starting_steam
-		} elseif {$textstate == "HotWater"} {
-			reset_gui_starting_hotwater
-		} elseif {$textstate == "HotWaterRinse"} {
-			reset_gui_starting_hot_water_rinse
-		} elseif {$textstate == "Idle" && [ifexists ::previous_textstate] == "Steam"} {
-			msg "Scheduling check_if_steam_clogged"
-			after 3000 check_if_steam_clogged
+			Steam {
+				start_timer_steam_pour
+			}
+
+			HotWater {
+				start_timer_water_pour
+			}
+
+			HotWaterRinse {
+				start_timer_flush_pour
+			}
+
+		}
+	}
+
+	if { $this_flow_phase != "during" && $previous_flow_phase == "during" } {
+
+		switch $previous_state {
+
+			Espresso {
+				stop_espresso_timers
+			}
+
+			Steam {
+				stop_timer_steam_pour
+			}
+
+			HotWater {
+				stop_timer_water_pour
+			}
+
+			HotWaterRinse {
+				stop_timer_flush_pour
+			}
+		}
+	}
+
+	if {      ( $this_state == "Espresso" && $this_substate == "preinfusion" ) \
+	     && ! ( $previous_state == "Espresso" && $previous_substate == "preinfusion" ) } {
+		start_timer_espresso_preinfusion
+
+	}
+
+	if {    ! ( $this_state == "Espresso" && $this_substate == "preinfusion" ) \
+	     &&   ( $previous_state == "Espresso" && $previous_substate == "preinfusion" ) } {
+
+		stop_timer_espresso_preinfusion
+
+	}
+
+	if {      ( $this_state == "Espresso" && $this_substate == "pouring" ) \
+	     && ! ( $previous_state == "Espresso" && $previous_substate == "pouring" ) } {
+
+		start_timer_espresso_pour
+
+	}
+
+	if {    ! ( $this_state == "Espresso" && $this_substate == "pouring" ) \
+	     &&   ( $previous_state == "Espresso" && $previous_substate == "pouring" ) } {
+
+		stop_timer_espresso_pour
+
+	}
+
+
+
+	#
+	# Then start processing
+	#
+
+
+
+	if { $this_state != $previous_state } {
+
+		###
+		### Major state change
+		###
+
+		msg -INFO [format "DE1 major state change: %s, %s => %s, %s" \
+				   $previous_state $previous_substate \
+				   $this_state $this_substate]
+
+		::de1::event::apply::on_all_state_change_callbacks $event_dict
+		::de1::event::apply::on_major_state_change_callbacks $event_dict
+
+		switch $this_state {
+
+			Espresso {
+				# When starting an espresso we are trying to reconnect to the scale just to be sure.
+				# This by far does not saturate the Android 5 tablets
+				# but just to be sure it is feature gated
+
+				if { $::settings(reconnect_to_scale_on_espresso_start) \
+					     && $::de1(scale_device_handle) == 0 \
+					     && $::settings(scale_bluetooth_address) != ""} {
+
+					msg "try to connect to scale automatically (if it is currently disconnected)"
+					ble_connect_to_scale
+				}
+			}
+
+			Idle {
+				if { $previous_state == "Steam" } {
+					after 3000 check_if_steam_clogged
+					msg -INFO "Scheduled check_if_steam_clogged in 3 seconds"
+				}
+			}
+
+			Sleep {
+				if { $previous_state != "Sleep" } {
+					scale_disable_lcd
+				}
+			}
 		}
 
-		if {[ifexists ::previous_textstate] == "Sleep" && $textstate != "Sleep"} {
-			#msg "Coming back from SLEEP"
-			# if awakening from sleep, on Group Head Controller machines, this is not on on the tablet, and so we should
+		if { $previous_state == "Sleep" && $this_state != "Sleep"} {
+
+			# If awakening from sleep, on Group Head Controller machines,
+			# this is not on on the tablet, and so we should
 			# now try to connect to the scale upon awakening from sleep
+
 			if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
-				msg "Back from sleep, try to connect to scale automatically (if it is currently disconnected)"
+				msg -INFO "Back from sleep, try to connect to scale automatically (if it is currently disconnected)"
 				ble_connect_to_scale
 			} else {
-				# don't need to tare on scale wakeup
-				# scale_tare
 				scale_enable_lcd
 			}
-		} elseif {[ifexists ::previous_textstate] != "Sleep" && $textstate == "Sleep"} {
-			scale_disable_lcd
 		}
+
+
+
+
+	} elseif { $this_substate != $previous_substate } {
+
+		###
+		### Substate change only
+		###
+
+		msg -INFO [format "DE1 substate change: %s, %s => %s, %s" \
+				   $previous_state $previous_substate \
+				   $this_state $this_substate]
+
+		::de1::event::apply::on_all_state_change_callbacks $event_dict
+
+	}
+
+	###
+	### Flow change events
+	###
+
+
+	if { $this_flow_phase != $previous_flow_phase } {
+
+		::de1::event::apply::on_flow_change_callbacks $event_dict
+	}
+
+	#
+	# after_flow_complete will trigger after
+	# $::settings(seconds_after_espresso_stop_to_continue_weighing)
+	#     after transition to ending, but not before leaving a flow state
+	#     after transition out of a flow state, if not already pending or triggered
+	#
+	# Cases:
+	#
+	# Triggers on transition to ending:
+	#    timer fires after transition out of flow state -- apply
+	#    timer fires before transition out of flow -- wait for transition, then apply
+	# Transition directly to non-flow state:
+	#    set timer and apply when fires
+	#
+	# State 0 -- Ready
+	# State 1 -- Flow
+	# State 2 -- Pending with timer
+	# State 3 -- Waiting for Idle
+	#
+	# State 0:
+	#    Enter during-flow state ==> State 1
+	# State 1:
+	#    Leave during-flow state -- set timer ==> State 2
+	# State 2:
+	#    Timer fires, in non-flow state -- apply ==> State 0
+	#    Timer fires, in flow state -- ignore ==> State 3
+	# State 3:
+	#    Enter non-flow state -- apply ==> State 0
+	#
+
+	if { $this_flow_phase == "during" && $previous_flow_phase != "during" } {
+
+		# => State 1
+
+		# No other actions needed
+	}
+
+	if { $this_flow_phase != "during" && $previous_flow_phase == "during" } {
+
+		# State 1 ==> State 2
+
+		if { [de1::event::apply::after_flow_is_pending] } {
+			msg -WARNING "Pending after_flow_complete callbacks. " \
+				[format "Second flow started before %g seconds?" \
+					 $::settings(seconds_after_espresso_stop_to_continue_weighing)]
+		}
+
+		# TODO: Decouple this from internal representation
+
+		set ::de1::event::apply::_after_flow_complete_after_id \
+			[ after [expr { 1000 *  $::settings(seconds_after_espresso_stop_to_continue_weighing) }] \
+				  [list ::de1::event::apply::_maybe_after_flow_complete_callbacks $event_dict]
+			 ]
+
+		msg -DEBUG "after_flow_complete: Scheduled"
+
+	}
+
+	if { $::de1::event::apply::_after_flow_complete_holding_for_idle && $this_flow_phase == "" } {
+
+		# TODO: Decouple this from internal representation
+
+		set $::de1::event::apply::_after_flow_complete_holding_for_idle false
+
+		::de1::event::apply::after_flow_complete_callbacks $event_dict
+
+		msg -DEBUG "after_flow_complete: Applied deferred"
 	}
 
 
-  	if {[info exists msg(substate)] == 1} {
-		set current_de1_substate $msg(substate)
-		#set ::previous_de1_substate [ifexists de1(substate)]
 
-	  # substate of zero means no information, discard
-	  	if {$msg(substate) != $::de1(substate)} {
-			#msg "substate change: [array get msg]"
 
-			#if {$textstate == "Espresso"} {
+	###
+	### This looks wonky, but GUI will freeze if sent on every change
+	###
 
-			if {$current_de1_substate == 4 || ($current_de1_substate == 5 && $::previous_de1_substate != 4)} {
-				# tare the scale when the espresso starts and start the shot timer
-				#skale_tare
-				#skale_timer_off
-				if {$::timer_running == 0 && $textstate == "Espresso"} {
-					#start_timers
-					
-					#scale_tare
-					start_espresso_timers
-					after 500 scale_tare
-					#after 250 scale_timer_start
-					#set ::timer_running 1
-				}
-				
-				if {$textstate == "HotWaterRinse"} {
-					# tare the scale when doing a flush, in case they want to see how much water they put in (to preheat a cup)
-					scale_tare
-				}
-				
-				if {$textstate == "HotWater"} {
-					# tare the scale when doing a hot water pour, so they can compare it to the amount of water they asked for
-					scale_tare
-				}
-				
-			} elseif {($current_de1_substate != 5 || $current_de1_substate == 4) && $textstate == "Espresso"} {
-				# shot is ended, so turn timer off
-				if {$::timer_running == 1} {
-					#set ::timer_running 0
-					#scale_timer_stop
-					stop_espresso_timers
-				}
-			}
-			#}
+	if {[info exists msg(substate)] == 1} {
 
-			set ::de1(substate) $msg(substate)
-
-	  	}
-
-		if {$::previous_de1_substate == 4} {
-			stop_timer_espresso_preinfusion
-		} elseif {$::previous_de1_substate == 5} {
-			#msg "state $textstate / [ifexists ::previous_textstate]"
-
-			if {$textstate == "HotWater" || [ifexists ::previous_textstate] == "HotWater"} {
-				stop_timer_water_pour
-			} elseif {$textstate == "Steam" || [ifexists ::previous_textstate] == "Steam"} {
-				stop_timer_steam_pour
-
-			} elseif {$textstate == "Espresso" || [ifexists ::previous_textstate] == "Espresso"} {
-				stop_timer_espresso_pour
-				stop_espresso_timers
-			} elseif {$textstate == "HotWaterRinse" || [ifexists ::previous_textstate] == "HotWaterRinse"} {
-				stop_timer_flush_pour
-			} elseif {$textstate == "Idle"} {
-				# do nothing
-			} else {
-				msg "unknown timer stop: $textstate"
-				#zz12
-			}
-		} else {
-		}
-		
-		if {$current_de1_substate == 4} {
-			start_timer_espresso_preinfusion
-		} elseif {$current_de1_substate == 5 && $::previous_de1_substate != 5} {
-			if {$textstate == "HotWater"} {
-				start_timer_water_pour
-			} elseif {$textstate == "Steam"} {
-				start_timer_steam_pour
-			} elseif {$textstate == "HotWaterRinse"} {
-				start_timer_flush_pour
-			} elseif {$textstate == "Espresso"} {
-				start_timer_espresso_pour
-			} elseif {$textstate == "Idle"} {
-				# no idle timer needed
-			} else {
-				msg "unknown timer start: $textstate"
-			}
-		}
-		
-		# can be over-written by a skin
 		catch {
-			skins_page_change_due_to_de1_state_change $textstate
+			skins_page_change_due_to_de1_state_change $this_state
 		}
-
-		set ::previous_de1_substate $::de1(substate)
-	}
-
-	#set textstate $::de1_num_state($msg(state))
-	#if {$::previous_textstate != $::previous_textstate} {
-	#} else {
-	#	update
-	#}
-
-	set ::previous_textstate $textstate
-}
-
-
-proc page_change_due_to_de1_state_change {textstate} {
-	if {$textstate == "Idle"} {
-		page_display_change $::de1(current_context) "off"
-	} elseif {$textstate == "GoingToSleep"} {
-		page_display_change $::de1(current_context) "sleep" 
-	} elseif {$textstate == "Sleep"} {
-		page_display_change $::de1(current_context) "saver" 
-	} elseif {$textstate == "Steam"} {
-		page_display_change $::de1(current_context) "steam" 
-	} elseif {$textstate == "Espresso"} {
-		page_display_change $::de1(current_context) "espresso" 
-	} elseif {$textstate == "HotWater"} {
-		page_display_change $::de1(current_context) "water" 
-	} elseif {$textstate == "Refill"} {
-		page_display_change $::de1(current_context) "tankempty" 
-	} elseif {$textstate == "SteamRinse"} {
-		page_display_change $::de1(current_context) "steamrinse" 
-	} elseif {$textstate == "HotWaterRinse"} {
-		page_display_change $::de1(current_context) "hotwaterrinse" 
-	} elseif {$textstate == "Descale"} {
-		page_display_change $::de1(current_context) "descaling" 
-	} elseif {$textstate == "Clean"} {
-		page_display_change $::de1(current_context) "cleaning" 
-	} elseif {$textstate == "AirPurge"} {
-		page_display_change $::de1(current_context) "travel_do" 
 	}
 }
-
-
 
 set ble_spec 1.0
 proc use_old_ble_spec {} {

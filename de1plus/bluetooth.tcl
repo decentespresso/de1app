@@ -1,6 +1,7 @@
-package provide de1_bluetooth 1.0
+package provide de1_bluetooth 1.1
 
 package require de1_comms
+package require de1_device_scale 1.0
 package require de1_logging 1.0
 
 ## Scales
@@ -59,24 +60,14 @@ proc scale_timer_off {} {
 
 proc scale_tare {} {
 
-	if {$::settings(scale_type) == "atomaxskale"} {
-		skale_tare
-	} elseif {$::settings(scale_type) == "decentscale"} {
-		decentscale_tare
-	} elseif {$::settings(scale_type) == "acaiascale"} {
-		acaia_tare
-	} elseif {$::settings(scale_type) == "felicita"} {
-		felicita_tare
-	} elseif {$::settings(scale_type) == "hiroiajimmy"} {
-		hiroia_tare
-	}
-	
+	msg -WARNING "DEPRECATED: scale_tare is deprecated in favor of ::device::scale::tare"
+	::device::scale::tare
 }
 
 proc scale_enable_weight_notifications {} {
 
 	if {$::settings(scale_type) == "atomaxskale"} {
-		scale_enable_weight_notifications
+		skale_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_enable_notifications
 	} elseif {$::settings(scale_type) == "acaiascale"} {
@@ -106,166 +97,6 @@ proc scale_enable_grams {} {
 	}
 }
 
-proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
-
-	#if {$sensorweight > 2000} {
-		# max weight receivable by the scales we talk to, is 2kg, so ignore any greater weight, it is incorrect, and likely in fact a negative weight
-	#	set sensorweight 2000
-	#}
-
-	if { $::settings(scale_stop_at_half_shot) == 1} {
-		set sensorweight [expr $sensorweight * 2]
-	}
-
-	if {$sensorweight < 0 && $::de1_num_state($::de1(state)) == "Idle"} {
-
-		if {$::settings(tare_only_on_espresso_start) != 1} {
-
-			# one second after the negative weights have stopped, automatically do a tare
-			if {[info exists ::scheduled_scale_tare_id] == 1} {
-				after cancel $::scheduled_scale_tare_id
-			}
-			set ::scheduled_scale_tare_id [after 1000 scale_tare]
-		}
-	}
-
-	set multiplier1 0.95
-	if {$::de1(scale_weight) == ""} {
-		set ::de1(scale_weight) 0
-	}
-
-	set diff [expr {abs($::de1(scale_weight) - $sensorweight)}]
-
-	#if {$::de1_num_state($::de1(state)) == "Idle"} 
-	if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)) } {
-
-		set diff_rel [expr {($::de1(scale_weight) - $sensorweight)}]
-		if {$diff_rel > 1.0} {
-			# maximum weight change allowed in 1/10th of a second is 1gram, corresponding to a 10ml/s flow rate, in order to not have wight shocks like a pitcher rinser, cause accidental weight stopping
-			set sensorweight [expr {$::de1(scale_weight) + 1.0}]
-			set diff [expr {abs($::de1(scale_weight) - $sensorweight)}]
-		}
-		
-		# john 5/11/18 hard set this to 5% weighting, until we're sure these other methods work well.
-		set multiplier1 0.95
-		#if {$diff > 10} {
-			#set multiplier1 0.90
-		#}
-	} else {
-		# no smoothing when the machine is idle or not pouring/preinfusion 
-		set multiplier1 0
-	}
-
-		#set multiplier1 0.9
-
-	#msg "sensorweight: $sensorweight / diff:$diff / multiplier1:$multiplier1"
-	#msg "sensorweight: $sensorweight"
-
-	#set multiplier1 0
-
-	set multiplier2 [expr {1.0 - $multiplier1}];
-	set thisweight [expr {($::de1(scale_weight) * $multiplier1) + ($sensorweight * $multiplier2)}]
-
-
-	# a much less smoothed, more raw weight, with lower latency
-	set multiplier1r 0.5
-	set multiplier2r [expr {1.0 - $multiplier1r}];
-	set thisrawweight [expr {1.0 * ($::de1(scale_sensor_weight) * $multiplier1r) + ($sensorweight * $multiplier2r)}]
-
-	if {$diff != 0} {
-		#msg "Diff: [round_to_two_digits $diff] - mult: [round_to_two_digits $multiplier1] - wt [round_to_two_digits $thisweight] - sen [round_to_two_digits $sensorweight]"
-	}
-
-	# 10hz refresh rate on weight means should 10x the weight change to get a change-per-second
-	set flow [expr { 1.0 * $scale_refresh_rate * ($thisweight - $::de1(scale_weight)) }]
-	set flow_raw [expr { 1.0 * $scale_refresh_rate * ($thisrawweight - $::de1(scale_sensor_weight)) }]
-
-	#set flow [expr {($::de1(scale_weight_rate) * $multiplier1) + ($tempflow * $multiplier2)}]
-	if {$flow < 0} {
-		set flow 0
-	}
-
-	set ::de1(scale_weight_rate) [round_to_two_digits $flow]
-	set ::de1(scale_weight_rate_raw) [round_to_two_digits $flow_raw]
-	
-	set ::de1(scale_weight) [round_to_two_digits $thisweight]
-	set ::de1(scale_sensor_weight) [round_to_two_digits $thisrawweight]
-	#msg "weight received: $thisweight : flow: $flow"
-
-
-	# (beta) stop shot-at-weight feature
-	if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion) || $::de1(substate) == $::de1_substate_types_reversed(ending)) } {
-		
-		if {$::de1(scale_sensor_weight) > $::de1(final_water_weight)} {
-			set ::de1(final_water_weight) $thisweight
-			set ::settings(drink_weight) [round_to_one_digits $::de1(final_water_weight)]
-		}
-
-		# john 1/18/19 support added for advanced shots stopping on weight, just like other shots
-		# john improve 5/2/19 with a separate (much higher value) weight option for advanced shots
-		set target_shot_weight $::settings(final_desired_shot_weight)
-		if {$::settings(settings_profile_type) == "settings_2c"} {
-			set target_shot_weight $::settings(final_desired_shot_weight_advanced)
-		}
-
-		if {$target_shot_weight != "" && $target_shot_weight > 0} {
-
-			# damian found:
-			# > after you hit the stop button, the remaining liquid that will end up in the cup is equal to about 2.6 seconds of the current flow rate, minus a 0.4 g adjustment
-			set lag_time_calibration [expr {$::de1(scale_weight_rate) * $::settings(stop_weight_before_seconds) }]
-			#msg "lag_time_calibration: $lag_time_calibration | target_shot_weight: $target_shot_weight | thisweight: $thisweight | scale_autostop_triggered: $::de1(scale_autostop_triggered) | timer: [espresso_timer]"
-
-			if {$::de1(scale_autostop_triggered) == 0 && [round_to_one_digits $thisweight] > [round_to_one_digits [expr {$target_shot_weight - $lag_time_calibration}]]} {	
-
-				if {[espresso_timer] < 5} {
-					# bad idea to tare during preinfusion, problem is there might not be a puck, so we remove the first 5 seconds of weight by doing this.
-					# scale_tare 
-				} else {
-					msg "Weight based Espresso stop was triggered at ${thisweight}g > ${target_shot_weight}g "
-					start_idle
-					say [translate {Stop}] $::settings(sound_button_in)
-					borg toast [translate "Espresso weight reached"]
-
-
-					# immediately set the DE1 state as if it were idle so that we don't repeatedly ask the DE1 to stop as we still get weight increases. There might be a slight delay between asking the DE1 to stop and it stopping.
-					set ::de1(scale_autostop_triggered) 1
-
-					# let a few seconds elapse after the shot stop command was given and keep updating the final shot weight number
-					for {set t 0} {$t < [expr {1000 * $::settings(seconds_after_espresso_stop_to_continue_weighing)}]} { set t [expr {$t + 1000}]} {
-						after $t after_shot_weight_hit_update_final_weight
-					}
-					}
-			}
-		}
-	} elseif { ( $::de1_num_state($::de1(state)) == "Espresso" || $::de1_num_state($::de1(state)) == "HotWater" ) && ( $::de1(substate) == $::de1_substate_types_reversed(heating) || $::de1(substate) == $::de1_substate_types_reversed(stabilising) || $::de1(substate) == $::de1_substate_types_reversed(final heating) )} {
-		if {$::de1(scale_weight) > 10} {
-			# if a cup was added during the warmup stage, about to make an espresso, then tare automatically
-			scale_tare
-		}
-	} elseif { $::de1_num_state($::de1(state)) == "HotWater" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion) || $::de1(substate) == $::de1_substate_types_reversed(ending)) } {
-		# "hot water: stop on weight" feature. Works with the scale, so it's more accurate.
-		# lets assume clean, filtered delicious water actually has a density of 1
-
-		# ignore first few seconds of pour as it can generate a lot of noise on the scale and trigger a false stop
-		if {[water_pour_timer] > 2.5 && $::settings(water_stop_on_scale) == 1} {
-			set water_offset_calibration  1.0
-			set target_water_weight [expr {$::settings(water_volume) - $water_offset_calibration}]
-			set current_calibrated_water_weight [round_to_one_digits $target_water_weight ]
-			set current_water_weight [round_to_one_digits $thisweight]
-
-			msg "target_water_weight = $target_water_weight, current_weight = $current_water_weight current_calibrated_water_weight = $current_calibrated_water_weight"
-			if {$::de1(scale_autostop_triggered) == 0 \
-				&&  $current_water_weight > $current_calibrated_water_weight } {
-					msg "Weight based Hot Water stop was triggered at ${thisweight}g > ${target_water_weight}g "
-					start_idle
-					say [translate {Stop}] $::settings(sound_button_in)
-					borg toast [translate "Water weight reached"]
-					set ::de1(scale_autostop_triggered) 1
-					#load_settings
-			}
-		}
-	}
-}
 
 #### Atomax Skale
 proc skale_timer_start {} {
@@ -378,8 +209,6 @@ proc skale_tare {} {
 		return
 	}
 	set tare [binary decode hex "10"]
-	set ::de1(scale_weight) 0
-	set ::de1(scale_weight_rate_raw) 0
 
 	# if this was a scheduled tare, indicate that the tare has completed
 	unset -nocomplain ::scheduled_scale_tare_id
@@ -437,7 +266,6 @@ proc felicita_tare {} {
 
 	userdata_append "felicita tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_felicita) $::sinstance($::de1(suuid_felicita)) $::de1(cuuid_felicita) $::cinstance($::de1(cuuid_felicita)) $tare] 0
 	# The tare is not yet confirmed to us, we can therefore assume it worked out
-	set ::de1(scale_autostop_triggered) 0
 }
 
 proc felicita_reset_timer {} {
@@ -495,7 +323,7 @@ proc felicita_parse_response { value } {
 			if {$sign == "-"} {
 				set weight [expr $weight * -1]
 			}
-			handle_new_weight_from_scale [expr $weight / 100.0] 10
+			::device::scale::process_weight_update [expr $weight / 100.0] ;# $event_time
 		}
 	}
 }
@@ -530,7 +358,6 @@ proc hiroia_tare {} {
 
 	userdata_append "hiroiajimmy tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_hiroiajimmy) $::sinstance($::de1(suuid_hiroiajimmy)) $::de1(cuuid_hiroiajimmy_cmd) $::cinstance($::de1(cuuid_hiroiajimmy_cmd)) $tare] 0
 	# The tare is not yet confirmed to us, we can therefore assume it worked out
-	set ::de1(scale_autostop_triggered) 0
 }
 
 proc hiroia_parse_response { value } {
@@ -542,7 +369,7 @@ proc hiroia_parse_response { value } {
 			if {$weight >= 8388608} {
 				set weight [expr (0xFFFFFF - $weight) * -1]
 			}
-			handle_new_weight_from_scale [expr $weight / 10.0] 10
+			::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
 		} else {
 			error "weight non exist"
 		}
@@ -580,7 +407,6 @@ proc acaia_tare {} {
 	userdata_append "send acaia tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_acaia_ips) $::sinstance($::de1(suuid_acaia_ips)) $::de1(cuuid_acaia_ips_age) $::cinstance($::de1(cuuid_acaia_ips_age)) $tare] 1
 
 	# The tare is not yet confirmed to us, we can therefore assume it worked out
-	set ::de1(scale_autostop_triggered) 0
 }
 
 proc acaia_send_heartbeat {} {
@@ -673,7 +499,7 @@ proc acaia_parse_response { value } {
 					set calulated_weight [expr {$calulated_weight * -1.0}]
 				}
 				set sensorweight $calulated_weight
-				handle_new_weight_from_scale $sensorweight 10
+				::device::scale::process_weight_update $sensorweight ;# $event_time
 			}
 			if { [string bytelength $::acaia_command_buffer] >= $len } {
 				set ::acaia_command_buffer ""
@@ -832,9 +658,6 @@ proc decentscale_tare {} {
 		return
 	}
 	set tare [binary decode hex "10"]
-	set ::de1(scale_weight) 0
-	set ::de1(scale_weight_rate) 0
-	set ::de1(scale_weight_rate_raw) 0
 
 	# if this was a scheduled tare, indicate that the tare has completed
 	unset -nocomplain ::scheduled_scale_tare_id
@@ -851,6 +674,7 @@ proc decentscale_tare {} {
 
 proc close_all_ble_and_exit {} {
 	msg "close_all_ble_and_exit"
+	msg -DEBUG "close_all_ble_and_exit, at entrance: [ble info]"
 	if {$::scanning  == 1} {
 		catch {
 			ble stop $::ble_scanner
@@ -880,6 +704,15 @@ proc close_all_ble_and_exit {} {
 	}
 
 	#after 2000 exit
+	msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
+	foreach h [ble info] {
+		msg -NOTICE "Open BLE handle: [ble info $h]"
+		ble close $h
+	}
+	msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
+	foreach h [ble info] {
+		msg -WARNING "Open BLE handle: [ble info $h]"
+	}
 	exit 0
 }
 
@@ -1326,6 +1159,8 @@ proc de1_ble_handler { event data } {
 	#msg "de1 ble_handler '$event' [convert_string_to_hex $data]"
 	#set ::de1(wrote) 0
 
+	set event_time [expr { [clock milliseconds] / 1000.0 }]
+
 	set ::settings(ble_debug) 0
 	if {$::settings(ble_debug) == 1} {
 		msg "ble event: $event $data"
@@ -1456,6 +1291,14 @@ proc de1_ble_handler { event data } {
 
 						set ::currently_connecting_scale_handle 0
 
+						set event_dict [dict create \
+									event_time $event_time \
+									address $address \
+								       ]
+
+						::device::scale::event::apply::on_disconnect_callbacks $event_dict
+
+
 						# john 1-11-19 automatic reconnection attempts eventually kill the bluetooth stack on android 5.1
 						# john might want to make this happen automatically on Android 8, though. For now, it's a setting, which might
 						# eventually get auto-set as per the current Android version, if we can trust that to give us a reliable BLE stack.
@@ -1499,6 +1342,8 @@ proc de1_ble_handler { event data } {
 
 
 					} elseif {$::de1(scale_device_handle) == 0 && $address == $::settings(scale_bluetooth_address)} {
+
+						
 						#append_to_scale_bluetooth_list $address [ifexists ::scale_types($address)]
 						#append_to_scale_bluetooth_list $address $::settings(scale_type)
 
@@ -1518,8 +1363,6 @@ proc de1_ble_handler { event data } {
 						if {$::settings(scale_type) == "decentscale"} {
 							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "decentscale"
 							#after 500 decentscale_enable_lcd
-							decentscale_tare
-							
 							after 1000 decentscale_enable_lcd
 							#after 2000 decentscale_timer_start
 							after 3000 decentscale_enable_notifications
@@ -1555,6 +1398,12 @@ proc de1_ble_handler { event data } {
 							stop_scanner
 						}
 
+						set event_dict [dict create \
+									event_time $event_time \
+									address $address \
+								       ]
+
+						::device::scale::event::apply::on_connect_callbacks $event_dict
 
 					} else {
 						msg "doubled connection notification from $address, already connected with $address"
@@ -1863,7 +1712,7 @@ proc de1_ble_handler { event data } {
 							# Atomax scale
 							binary scan $value cus1cu t0 t1 t2 t3 t4 t5
 							set sensorweight [expr {$t1 / 10.0}]
-							handle_new_weight_from_scale $sensorweight 10
+							::device::scale::process_weight_update $sensorweight $event_time
 
 						} elseif {$cuuid eq $::de1(cuuid_decentscale_read)} {
 							# decent scale
@@ -1872,11 +1721,6 @@ proc de1_ble_handler { event data } {
 							if {[ifexists weightarray(command)] == [expr 0x0F] && [ifexists weightarray(data6)] == [expr 0xFE]} {
 								# tare cmd success is a msg back to us with the tare in 'command', and a byte6 of 0xFE
 								msg "- decent scale: tare confirmed"
-
-								set ::de1(scale_weight) 0
-
-								# after a tare, we can now use the autostop mechanism
-								set ::de1(scale_autostop_triggered) 0
 
 								return
 							} elseif {[ifexists weightarray(command)] == 0xAA} {									
@@ -1896,7 +1740,7 @@ proc de1_ble_handler { event data } {
 								set sensorweight [expr {$weightarray(weight) / 10.0}]
 								#msg "decent scale: ${sensorweight}g [array get weightarray] '[convert_string_to_hex $value]'"
 								#msg "decentscale recv read: '[convert_string_to_hex $value]'"
-								handle_new_weight_from_scale $sensorweight 10
+								::device::scale::process_weight_update $sensorweight $event_time
 							} else {
 								msg "decent scale recv: [array get weightarray]"
 							}
@@ -1962,10 +1806,6 @@ proc de1_ble_handler { event data } {
 							if {$value == $tare } {
 								msg "- Skale: tare confirmed"
 
-								# after a tare, we can now use the autostop mechanism
-								set ::de1(scale_autostop_triggered) 0
-								set ::de1(scale_weight) 0
-
 							} elseif {$value == $grams } {
 								msg "- Skale: grams confirmed"
 							} elseif {$value == $screenon } {
@@ -1974,6 +1814,8 @@ proc de1_ble_handler { event data } {
 								msg "- Skale: display weight confirmed"
 							} else {
 								msg "- Skale write received: $value vs '$tare'"
+								msg -WARNING [format "- Skale write received: %s (unrecognized)" \
+										      [binary encode hex $value]]
 							}
 						} else {
 							if {$address == $::settings(bluetooth_address)} {
@@ -2154,16 +1996,6 @@ proc enable_de1_reconnect {} {
 proc disable_de1_reconnect {} {
 	msg "disable_de1_reconnect"
 	set ::de1(disable_de1_reconnect) 1
-}
-
-proc after_shot_weight_hit_update_final_weight {} {
-
-	if {$::de1(scale_sensor_weight) > $::de1(final_water_weight)} {
-		# if the current scale weight is more than the final weight we have on record, then update the final weight
-		set ::de1(final_water_weight) $::de1(scale_sensor_weight)
-		set ::settings(drink_weight) [round_to_one_digits $::de1(final_water_weight)]
-	}
-
 }
 
 proc fast_write_open {fn parms} {
