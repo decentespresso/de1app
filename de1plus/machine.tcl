@@ -1,7 +1,14 @@
-package provide de1_machine 1.0
+package provide de1_machine 1.1
 
 package require de1_comms 1.0
 package require de1_logging 1.0
+
+###
+### NB: The array ::de1() is a global variable and not in the namespace ::de1
+###
+###     The namespace ::de1 is described after the existing globals
+###
+
 
 #set ::debugging 0
 
@@ -741,21 +748,9 @@ proc reset_gui_starting_espresso {} {
 
 
 	clear_espresso_chart
-	clear_espresso_timers
 
 	incr ::settings(espresso_count)
 	save_settings
-
-
-	#start_timers
-
-	if {$::de1(scale_device_handle) != 0} {
-		# this variable prevents the stop trigger from happening until the Tare has succeeded.
-		set ::de1(scale_autostop_triggered) 1
-		scale_tare
-		scale_timer_reset
-	}
-
 
 	if {$::settings(stress_test) == 1} {
 		# this will cease to work once the GHC is installed
@@ -819,15 +814,7 @@ proc reset_gui_starting_hotwater {} {
 	set ::de1(volume) 0
 	incr ::settings(water_count)
 
-	if {$::de1(scale_device_handle) != 0} {
-		# this variable prevents the stop trigger from happening until the Tare has succeeded.
-		set ::de1(scale_autostop_triggered) 1
-		scale_tare
-		scale_timer_reset
-	}
-	
 	save_settings
-
 }
 
 proc start_water {} {
@@ -1034,3 +1021,7 @@ proc has_flowmeter {} {
 }
 
 
+
+###
+### ::de1 namespace NOT included here (linear inclusion expected by existing code)
+###

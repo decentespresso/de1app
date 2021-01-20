@@ -3,7 +3,7 @@
 # for the DE1 software updater to run. 
 # the idea is to minimize the liklihood of breaking the updater
 
-package provide de1_updater 1.0
+package provide de1_updater 1.1
 
 package require de1_logging 1.0
 

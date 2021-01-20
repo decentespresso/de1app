@@ -1,7 +1,13 @@
-package provide de1_gui 1.0
+package provide de1_gui 1.1
 
+package require de1_de1 1.0
+package require de1_event 1.0
 package require de1_logging 1.0
 package require de1_plugins 1.0
+
+###
+### ::gui namespace defined after globals
+###
 
 proc load_skin {} {
 
@@ -30,6 +36,36 @@ proc load_skin {} {
 	}
 
 }
+
+proc page_change_due_to_de1_state_change {textstate} {
+	if {$textstate == "Idle"} {
+		page_display_change $::de1(current_context) "off"
+	} elseif {$textstate == "GoingToSleep"} {
+		page_display_change $::de1(current_context) "sleep" 
+	} elseif {$textstate == "Sleep"} {
+		page_display_change $::de1(current_context) "saver" 
+	} elseif {$textstate == "Steam"} {
+		page_display_change $::de1(current_context) "steam" 
+	} elseif {$textstate == "Espresso"} {
+		page_display_change $::de1(current_context) "espresso" 
+	} elseif {$textstate == "HotWater"} {
+		page_display_change $::de1(current_context) "water" 
+	} elseif {$textstate == "Refill"} {
+		page_display_change $::de1(current_context) "tankempty" 
+	} elseif {$textstate == "SteamRinse"} {
+		page_display_change $::de1(current_context) "steamrinse" 
+	} elseif {$textstate == "HotWaterRinse"} {
+		page_display_change $::de1(current_context) "hotwaterrinse" 
+	} elseif {$textstate == "Descale"} {
+		page_display_change $::de1(current_context) "descaling" 
+	} elseif {$textstate == "Clean"} {
+		page_display_change $::de1(current_context) "cleaning" 
+	} elseif {$textstate == "AirPurge"} {
+		page_display_change $::de1(current_context) "travel_do" 
+	}
+}
+
+
 
 proc setup_images_for_other_pages {} {
 	borg spinner on
@@ -2788,3 +2824,117 @@ proc handle_keypress {keycode} {
 #install_de1_app_icon
 #install_de1plus_app_icon
 #install_this_app_icon
+
+namespace eval ::gui::callbacks {
+
+	proc register_on_load {} {
+
+		::de1::event::listener::on_major_state_change_add -noidle \
+			::gui::callbacks::on_major_state_change
+	}
+
+
+	proc on_major_state_change {event_dict} {
+
+		switch [dict get $event_dict this_state] {
+
+			Espresso {
+				reset_gui_starting_espresso
+			}
+
+			Steam {
+				reset_gui_starting_steam
+			}
+
+			HotWater {
+				reset_gui_starting_hotwater
+			}
+
+			HotWaterRinse {
+				reset_gui_starting_hot_water_rinse
+			}
+
+		}
+	}
+
+
+	# Not being loaded at this time as seems to freeze the GUI
+	# See binary.tcl: proc update_de1_state {statechar} as of early 2021
+
+	proc only_when_substate_present {event_dict} {
+
+		set this_state [dict get $event_dict this_state]
+		set this_substate [dict get $event_dict this_substate]
+
+		if { [dict get $event_dict this_substate] != "" } {
+
+			msg -DEBUG "::skins_page_change_due_to_de1_state_change for ${this_state},${this_substate}"
+
+			#
+			# This looks wonky, but GUI will freeze if sent on every change
+			# logic and catch use after earlier code in binary.tcl: proc update_de1_state {statechar}
+			#
+			try {
+				skins_page_change_due_to_de1_state_change  [dict get $event_dict this_state]
+			} on error {result opts_dict} {
+				msg -ERROR "::skins_page_change_due_to_de1_state_change ${this_state} $result $opts_dict"
+			}
+		}
+	}
+
+	register_on_load
+
+} ;# ::gui::callbacks
+
+
+
+namespace eval ::gui::notify {
+
+	proc scale_event {event_id args} {
+
+		switch -exact -- $event_id {
+
+			abandoning_updates {
+
+				borg toast [translate {ABANDONING scale updates}]
+			}
+
+			retrying_updates {
+
+				borg toast "[translate {Retrying scale updates}] [join $args]"
+			}
+
+			timeout_updates {
+
+				borg toast "[translate {TIMEOUT scale updates}] [join $args]"
+			}
+
+			not_connected {
+
+				set what [translate {WARNING: Scale not connected}]
+				borg toast $what
+				say $what $::settings(sound_button_in)
+			}
+
+			no_updates {
+
+				set what [translate {WARNING: Scale not updating}]
+				borg toast $what
+				say $what $::settings(sound_button_in)
+			}
+
+			record_complete {
+
+				set what [translate {Enjoy!}]
+				borg toast $what
+				say $what $::settings(sound_button_in)
+			}
+
+			saw_stop {
+
+				borg toast [translate {Stopping for weight}]
+			}
+		}
+	}
+
+} ;# ::gui::notify

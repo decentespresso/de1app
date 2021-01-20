@@ -1,4 +1,4 @@
-package provide de1_utils 1.0
+package provide de1_utils 1.1
 
 package require de1_logging 1.0
 
@@ -430,23 +430,48 @@ proc stackprocs {} {
     return $stack
 }
 
-proc stacktrace {} {
-    set stack "Stack trace:\n"
-    for {set i 1} {$i < [info level]} {incr i} {
-        set lvl [info level -$i]
-        set pname [lindex $lvl 0]
-        append stack [string repeat " " $i]$pname
-        foreach value [lrange $lvl 1 end] arg [info args $pname] {
-            catch {
-                if {$value eq ""} {
-                    info default $pname $arg value
-                }
-                append stack " $arg='$value'"
-            }
-        }
-        append stack \n
-    }
-    return $stack
+proc stacktrace {args} {
+
+	set label_args [expr { "-label_args" in $args }]
+
+	# Original code apparently from https://wiki.tcl-lang.org/page/List+the+call+stack
+	# Notes there suggest that there are also problems with namespaces with the implementation
+	# (This concern is not resolved at this time)
+
+	set stack "Stack trace:\n"
+
+	for {set i 1} {$i < [info level]} {incr i} {
+
+		set level [info level -$i]
+		set frame [info frame -$i]
+
+		append stack [string repeat " " $i]
+
+		if { ! $label_args } {
+
+			append stack $level
+
+		} else {
+			set pname [lindex $lvl 0]
+			if { [info proc $pname] } {
+				append stack $pname
+				foreach value [lrange $lvl 1 end] arg [info args $pname] {
+					catch {
+						if {$value eq ""} {
+							info default $pname $arg value
+						}
+						append stack " $arg='$value'"
+					}
+				}
+
+			} else {
+
+				append stack $lvl
+			}
+		}
+		append stack \n
+	}
+	return $stack
 }
 
 proc random_saver_file {} {
