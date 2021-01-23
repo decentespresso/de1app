@@ -37,6 +37,52 @@ proc iconik_toggle_cleaning {} {
 		select_profile "weber_spring_clean"
 }
 
+proc is_connected {} {return [expr {[clock seconds] - $::de1(last_ping)} < 5]}
+proc is_scale_disconnected {} {return [expr $::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""]}
+
+proc iconik_get_status_text {} {
+	if {[is_connected] != 1} {
+		return [translate "disconnected"]
+	}
+
+	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
+		return [translate "scale disconnected"]
+	} 
+
+	switch $::de1(substate) {
+		"-" { 
+			return [translate "starting"]
+		}
+		0 {
+			return [translate"ready"]
+		}
+		1 {
+			return [translate "heating"]
+		}
+		3 {
+			return [translate "stabilising"]
+		}
+		4 {
+			return [translate "preinfusion"]
+		}
+		5 {
+			return [translate "pouring"]
+		}
+		6 {
+			return [translate "ending"]
+		}
+		17 {
+			return [translate "refilling"]
+		}
+		default {
+			set result [de1_connected_state 0]
+			if {$result == ""} { return "unknown" }
+			return $result
+		}
+	}
+
+}
+
 proc iconik_toggle_steam_settings {slot} {
 	# TODO: use dict
 	if {$slot == 1} {

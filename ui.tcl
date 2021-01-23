@@ -43,16 +43,20 @@ add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (80 + 300) / 2.0 ] -wid
 
 rounded_rectangle "off" 1580 60 2480 170  [rescale_x_skin 80] $::color_button
 add_de1_variable "off" [expr (1580 + 2480) / 2.0 ] [expr (80 + 170) / 2.0 ] -width 300  -text "" -font $::font_button_small -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::iconik_settings(profile1_title)} 
-add_de1_button "off" { say [translate "steam"] $::settings(sound_button_in); select_profile $::iconik_settings(profile1)} 1580 60 2480 160
+add_de1_button "off" { say [translate "steam"] $::settings(sound_button_in); select_profile $::iconik_settings(profile1); save_settings} 1580 60 2480 160
 
 rounded_rectangle "off" 1580 190 2480 300 [rescale_x_skin 80] $::color_button
 add_de1_variable "off" [expr (1580 + 2480) / 2.0 ] [expr (190 + 300) / 2.0 ] -width 300  -text "" -font $::font_button_small -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::iconik_settings(profile2_title)} 
-add_de1_button "off" { say [translate "steam"] $::settings(sound_button_in); select_profile $::iconik_settings(profile2)} 1580 200 2480 300
+add_de1_button "off" { say [translate "steam"] $::settings(sound_button_in); select_profile $::iconik_settings(profile2); save_settings} 1580 200 2480 300
 
 ## Recipe
 
-rounded_rectangle "off" 80 400 680 1220 [rescale_x_skin 80] $::color_button
+rounded_rectangle "off" 80 400 680 1100 [rescale_x_skin 80] $::color_button
 add_de1_variable "off" [expr (80 + 680) / 2.0 ] [expr (400 + 1220) / 2.0 ] -width 280  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::settings(profile_notes)}
+
+rounded_rectangle "off" 80 1120 680 1220 [rescale_x_skin 80] $::color_button
+add_de1_variable "off" [expr (80 + 680) / 2.0 ] [expr (1120 + 1220) / 2.0 ] -width 280  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_get_status_text]}
+
 
 ## Bottom buttons
 
