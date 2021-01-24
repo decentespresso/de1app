@@ -20,73 +20,96 @@ set_de1_screen_saver_directory "[homedir]/saver"
 add_de1_button "saver" {say [translate "wake"] $::settings(sound_button_in); iconik_wakeup} 0 0 2560 1600
 
 # Profile QuickSettings
-create_button "settings_1" 1140 1020 1240 1120 "1" $::font_button $::color_button $::color_button_text_dark {set ::iconik_settings(profile1) $settings(profile_filename); set ::iconik_settings(profile1_title) $settings(profile_title); iconik_save_settings; borg toast [translate "Saved in slot 1"]}
-create_button "settings_1" 1140 1220 1240 1320 "2" $::font_button $::color_button $::color_button_text_dark {set ::iconik_settings(profile2) $settings(profile_filename); set ::iconik_settings(profile2_title) $settings(profile_title); iconik_save_settings; borg toast [translate "Saved in slot 2"]}
+create_button "settings_1" 1140 1020 1240 1120 "1" $::font_button $::color_button $::color_button_text_light {iconik_save_profile 1}
+create_button "settings_1" 1140 1150 1240 1250 "2" $::font_button $::color_button $::color_button_text_light {iconik_save_profile 2}
+create_button "settings_1" 1140 1280 1240 1380 "3" $::font_button $::color_button $::color_button_text_light {iconik_save_profile 3}
 
 
-## Upper buttons
+# Upper buttons
+## Background
+rectangle "off" 0 0 2560 180 $::color_background_highlight
 
-rectangle "off" 0 0 2560 360 $::color_button_text_light
+## Espresso Target Weight
+rounded_rectangle "off" 80 30 480 150 [rescale_x_skin 80] $::color_button_secondary
+add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width 100  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Target:\n[round_to_one_digits [iconik_get_final_weight]]} 
+create_button "off" 80 50 160 130 [translate "-"] $::font_description $::color_button_secondary $::color_button_text_light { say [translate "steam"] $::settings(sound_button_in); set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) - 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) - 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
+create_button "off" 400 50 480 130 [translate "+"] $::font_description $::color_button_secondary $::color_button_text_light { say [translate "steam"] $::settings(sound_button_in); set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) + 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) + 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
 
-rounded_rectangle "off" 80 60 380 300 [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (80 + 380) / 2.0 ] [expr (80 + 300) / 2.0 ] -width 300  -text "" -font $::font_button -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Target:\n[round_to_one_digits [iconik_get_final_weight]]} 
-create_button "off" 400 60 500 160 [translate "+"] $::font_button $::color_button_up $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) + 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) + 1}]; profile_has_changed_set; save_profile; save_settings}
-create_button "off" 400 200 500 300 [translate "-"] $::font_button $::color_button_down $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) - 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) - 1}]; profile_has_changed_set; save_profile; save_settings}
+## Espresso Temperature
+rounded_rectangle "off" 580 30 980 150 [rescale_x_skin 80] $::color_button_secondary
+add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width 100  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Temp:\n[round_to_one_digits $::settings(espresso_temperature)]°C} 
+create_button "off" 580 50 660 130 [translate "-"] $::font_description $::color_button_secondary $::color_button_text_light { say [translate "steam"] $::settings(sound_button_in); set ::settings(espresso_temperature) [expr {[round_to_one_digits $::settings(espresso_temperature)] - 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
+create_button "off" 900 50 980 130 [translate "+"] $::font_description $::color_button_secondary $::color_button_text_light { say [translate "steam"] $::settings(sound_button_in); set ::settings(espresso_temperature) [expr {[round_to_one_digits $::settings(espresso_temperature)] + 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
 
-rounded_rectangle "off" 580 60 880 300 [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (580 + 880) / 2.0 ] [expr (80 + 300) / 2.0 ] -width 300  -text "" -font $::font_button -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Temp:\n[round_to_one_digits $::settings(espresso_temperature)]°C} 
-create_button "off" 900 60 1000 160 [translate "+"] $::font_button $::color_button_up $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::settings(espresso_temperature) [expr {[round_to_one_digits $::settings(espresso_temperature)] + 0.5}]; profile_has_changed_set; save_profile; save_settings}
-create_button "off" 900 200 1000 300 [translate "-"] $::font_button $::color_button_down $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::settings(espresso_temperature) [expr {[round_to_one_digits $::settings(espresso_temperature)] - 0.5}]; profile_has_changed_set; save_profile; save_settings}
+## Water Volume
+rounded_rectangle "off" 1080 30 1480 150 [rescale_x_skin 80] $::color_button_secondary
+add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width 100  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Water:\n[round_to_one_digits $::settings(water_volume)]ml\n$::settings(water_temperature)°C} 
+create_button "off" 1080 50 1160 130 [translate "-"] $::font_description $::color_button_secondary $::color_button_text_light { say [translate "steam"] $::settings(sound_button_in); set ::settings(water_volume) [expr {$::settings(water_volume) - 1}]; de1_send_steam_hotwater_settings; save_settings}
+create_button "off" 1400 50 1480 130 [translate "+"] $::font_description $::color_button_secondary $::color_button_text_light { say [translate "steam"] $::settings(sound_button_in); set ::settings(water_volume) [expr {$::settings(water_volume) + 1}]; de1_send_steam_hotwater_settings; save_settings}
 
-rounded_rectangle "off"  1080 60 1480 300 [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (80 + 300) / 2.0 ] -width 300  -text "" -font $::font_button -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Time:\n[total_pour_timer_text]} 
+## Steam
+rounded_rectangle "off" 1580 30 1980 150 [rescale_x_skin 80] $::color_button_secondary
+add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width 100  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Steam:\n[round_to_one_digits $::settings(steam_timeout)]s} 
+create_button "off" 1580 50 1660 130 [translate "-"] $::font_description $::color_button_secondary $::color_button_text_light { say [translate "steam"] $::settings(sound_button_in); set ::settings(steam_timeout) [expr {$::settings(steam_timeout) - 1}]; de1_send_steam_hotwater_settings; save_settings}
+create_button "off" 1900 50 1980 130 [translate "+"] $::font_description $::color_button_secondary $::color_button_text_light { say [translate "steam"] $::settings(sound_button_in); set ::settings(steam_timeout) [expr {$::settings(steam_timeout) + 1}]; de1_send_steam_hotwater_settings; save_profile}
 
-rounded_rectangle "off" 1580 60 2480 170  [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (1580 + 2480) / 2.0 ] [expr (80 + 170) / 2.0 ] -width 300  -text "" -font $::font_button_small -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::iconik_settings(profile1_title)} 
-add_de1_button "off" { say [translate "steam"] $::settings(sound_button_in); select_profile $::iconik_settings(profile1); save_settings} 1580 60 2480 160
+## Time
+rounded_rectangle "off"  2080 30 2480 150 [rescale_x_skin 80] $::color_button_secondary
+add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width 180  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Time:\n[total_pour_timer_text]} 
 
-rounded_rectangle "off" 1580 190 2480 300 [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (1580 + 2480) / 2.0 ] [expr (190 + 300) / 2.0 ] -width 300  -text "" -font $::font_button_small -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::iconik_settings(profile2_title)} 
-add_de1_button "off" { say [translate "steam"] $::settings(sound_button_in); select_profile $::iconik_settings(profile2); save_settings} 1580 200 2480 300
+# Recipe
+rounded_rectangle "off" 80 210 680 1110 [rescale_x_skin 80] $::color_button
+add_de1_variable "off" [expr (80 + 680) / 2.0 ] [expr (260 + 360) / 2.0 ] -width 280  -text "" -font $::font_button_small -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::settings(profile_title)}
+add_de1_variable "off" [expr (80 + 680) / 2.0 ] [expr (360 + 1110) / 2.0 ] -width 280  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::settings(profile_notes)}
 
-## Recipe
+## Presets
 
-rounded_rectangle "off" 80 400 680 1100 [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (80 + 680) / 2.0 ] [expr (400 + 1220) / 2.0 ] -width 280  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::settings(profile_notes)}
+### Coffee
+rounded_rectangle "off" 80 1140 480 1380  [rescale_x_skin 80] $::color_button
+add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::iconik_settings(profile1_title)} 
+add_de1_button "off" { say [translate "steam"] $::settings(sound_button_in); select_profile $::iconik_settings(profile1); save_settings_to_de1; save_settings} 80 1140 480 1380
 
-rounded_rectangle "off" 80 1120 680 1220 [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (80 + 680) / 2.0 ] [expr (1120 + 1220) / 2.0 ] -width 280  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_get_status_text]}
+rounded_rectangle "off" 580 1140 980 1380 [rescale_x_skin 80] $::color_button
+add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::iconik_settings(profile2_title)} 
+add_de1_button "off" { say [translate "steam"] $::settings(sound_button_in); select_profile $::iconik_settings(profile2); save_settings_to_de1; save_settings} 580 1140 980 1380
+
+rounded_rectangle "off" 1080 1140 1480 1380 [rescale_x_skin 80] $::color_button
+add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::iconik_settings(profile3_title)} 
+add_de1_button "off" { say [translate "steam"] $::settings(sound_button_in); select_profile $::iconik_settings(profile3); save_settings_to_de1; save_settings} 1080 1140 1480 1380
+
+### Steam Presets
+
+rounded_rectangle "off" 1580 1140 1980 1380 [rescale_x_skin 80] $::color_button
+add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 100  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Steam Preset 1:\n$::iconik_settings(steam_timeout1)} 
+add_de1_button "off" {iconik_toggle_steam_settings 1} 1580 1140 1980 1380
+
+rounded_rectangle "off" 2080 1140 2480 1380 [rescale_x_skin 80] $::color_button
+add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 100  -text "" -font $::font_description -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Steam Preset 2:\n$::iconik_settings(steam_timeout2)} 
+add_de1_button "off" {iconik_toggle_steam_settings 2} 2080 1140 2480 1380 
 
 
 ## Bottom buttons
 
-rectangle "off" 0 1260 2560 1600 $::color_button_text_light
+rectangle "off" 0 1410 2560 1600 $::color_background_highlight
 
-rounded_rectangle "off" 200 1320 380 1560 [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (200 + 380) / 2.0 ] [expr (1320 + 1560) / 2.0 ] -width 300  -text "" -font $::font_button -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Steam:\n[round_to_one_digits $::settings(steam_timeout)]s} 
-create_button "off" 400 1320 500 1420 [translate "+"] $::font_button $::color_button_up $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::settings(steam_timeout) [expr {$::settings(steam_timeout) + 1}]; de1_send_steam_hotwater_settings}
-create_button "off" 400 1460 500 1560 [translate "-"] $::font_button $::color_button_down $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::settings(steam_timeout) [expr {$::settings(steam_timeout) - 1}]; de1_send_steam_hotwater_settings}
+## Flush
+rounded_rectangle "off" 80 1440 480 1560 [rescale_x_skin 80] $::color_button_tertiary
+add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1440 + 1560) / 2.0 ] -width 200  -text "" -font $::font_description -fill $::color_button_text_dark -anchor "center" -justify "center" -state "hidden" -textvariable {Flush:\n[round_to_one_digits $::iconik_settings(flush_timeout)]s} 
+create_button "off" 80 1460 160 1540 [translate "-"] $::font_description $::color_button_tertiary $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) - 0.5}]; iconik_save_settings}
+create_button "off" 400 1460 480 1540 [translate "+"] $::font_description $::color_button_tertiary $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) + 0.5}]; iconik_save_settings}
 
-rounded_rectangle "off" 80 1320 180 1420 [rescale_x_skin 80] $::color_button_up
-add_de1_variable "off" [expr (80 + 180) / 2.0 ] [expr (1320 + 1420) / 2.0 ] -width 100  -text "" -font $::font_description -fill $::color_button_text_dark -anchor "center" -justify "center" -state "hidden" -textvariable {$::iconik_settings(steam_timeout1)} 
-add_de1_button "off" {iconik_toggle_steam_settings 1} 80 1320 180 1420
+## Status
+rounded_rectangle "off" 580 1440 980 1560 [rescale_x_skin 80] $::color_button_tertiary
+add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (1440 + 1560) / 2.0 ] -width 280  -text "" -font $::font_description -fill $::color_button_text_dark -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_get_status_text]}
 
-rounded_rectangle "off" 80 1460 180 1560 [rescale_x_skin 80] $::color_button_up
-add_de1_variable "off" [expr (80 + 180) / 2.0 ] [expr (1460 + 1560) / 2.0 ] -width 100  -text "" -font $::font_description -fill $::color_button_text_dark -anchor "center" -justify "center" -state "hidden" -textvariable {$::iconik_settings(steam_timeout2)} 
-add_de1_button "off" {iconik_toggle_steam_settings 2} 80 1460 180 1560 
-
-rounded_rectangle "off" 580 1320 880 1560 [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (580 + 880) / 2.0 ] [expr (1320 + 1560) / 2.0 ] -width 300  -text "" -font $::font_button -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Flush:\n[round_to_one_digits $::iconik_settings(flush_timeout)]s} 
-create_button "off" 900 1320 1000 1420 [translate "+"] $::font_button $::color_button_up $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) + 0.5}]; iconik_save_settings}
-create_button "off" 900 1460 1000 1560 [translate "-"] $::font_button $::color_button_down $::color_button_text_dark { say [translate "steam"] $::settings(sound_button_in); set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) - 0.5}]; iconik_save_settings}
-
-create_button "off" 1080 1320 1480 1560 [translate "Clean"] $::font_button $::color_button $::color_button_text_light { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning }
-create_button "off" 1580 1320 1980 1560 [translate "Settings"] $::font_button $::color_button $::color_button_text_light { say [translate "settings"] $::settings(sound_button_in); show_settings }
-create_button "off" 2080 1320 2480 1560 [translate "Sleep"] $::font_button $::color_button $::color_button_text_light { say [translate "settings"] $::settings(sound_button_in); start_sleep }
+## MISC buttons
+create_button "off" 1080 1440 1480 1560 [translate "Clean"] $::font_description $::color_button_tertiary $::color_button_text_dark { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning }
+create_button "off" 1580 1440 1980 1560 [translate "Settings"] $::font_description $::color_button_tertiary $::color_button_text_dark { say [translate "settings"] $::settings(sound_button_in); show_settings }
+create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_description $::color_button_tertiary $::color_button_text_dark { say [translate "settings"] $::settings(sound_button_in); start_sleep }
 
 ## Graph
 
-add_de1_widget "off" graph 780 400 {
+add_de1_widget "off" graph 780 240 {
 
 	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #69fdb3  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
 	$widget element create line2_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 12] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
@@ -98,8 +121,6 @@ add_de1_widget "off" graph 780 400 {
 	$widget element create line_espresso_flow_goal_2x  -xdata espresso_elapsed -ydata espresso_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #7aaaff -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5}; 
 	$widget element create line_espresso_flow_2x  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 12] -color #4e85f4 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes $::settings(chart_dashes_flow);   
 	$widget element create god_line_espresso_flow_2x  -xdata espresso_elapsed -ydata god_espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 24] -color #e4edff -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
-
-
 
 	if {$::settings(chart_total_shot_flow) == 1} {
 		$widget element create line_espresso_total_flow  -xdata espresso_elapsed -ydata espresso_water_dispensed -symbol none -label "" -linewidth [rescale_x_skin 6] -color #98c5ff -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);
@@ -132,10 +153,10 @@ add_de1_widget "off" graph 780 400 {
 	$widget axis configure y -color #5a5d75 -tickfont Helv_7_bold -min 0.0 -max $::settings(zoomed_y_axis_scale) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20} -hide 0; 
 
 	# show the explanation for pressure
-	$widget element create line_espresso_de1_explanation_chart_pressure_zoomed -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 16] -color #47e098  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_de1_explanation_chart_pressure_zoomed -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 16] -color $::color_primary  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 	# show the explanation for flow
-	$widget element create line_espresso_de1_explanation_chart_flow_zoom -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow  -label "" -linewidth [rescale_x_skin 18] -color #98c5ff  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_de1_explanation_chart_flow_zoom -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow  -label "" -linewidth [rescale_x_skin 18] -color $::color_secondary  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 
 } -plotbackground $::color_background -width [rescale_x_skin 1700] -height [rescale_y_skin 840] -borderwidth 1 -background $::color_background -plotrelief flat -plotpady 0 -plotpadx 10

@@ -42,41 +42,41 @@ proc is_scale_disconnected {} {return [expr $::de1(scale_device_handle) == 0 && 
 
 proc iconik_get_status_text {} {
 	if {[is_connected] != 1} {
-		return [translate "disconnected"]
+		return [translate "Disconnected"]
 	}
 
 	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
-		return [translate "scale disconnected"]
+		return [translate "Scale disconnected"]
 	} 
 
 	switch $::de1(substate) {
 		"-" { 
-			return [translate "starting"]
+			return [translate "Starting"]
 		}
 		0 {
-			return [translate"ready"]
+			return [translate "Ready"]
 		}
 		1 {
-			return [translate "heating"]
+			return [translate "Heating"]
 		}
 		3 {
-			return [translate "stabilising"]
+			return [translate "Stabilising"]
 		}
 		4 {
-			return [translate "preinfusion"]
+			return [translate "Preinfusion"]
 		}
 		5 {
-			return [translate "pouring"]
+			return [translate "Pouring"]
 		}
 		6 {
-			return [translate "ending"]
+			return [translate "Ending"]
 		}
 		17 {
-			return [translate "refilling"]
+			return [translate "Refilling"]
 		}
 		default {
 			set result [de1_connected_state 0]
-			if {$result == ""} { return "unknown" }
+			if {$result == ""} { return "Unknown state" }
 			return $result
 		}
 	}
@@ -100,6 +100,24 @@ proc iconik_toggle_steam_settings {slot} {
 
 proc timout_flush {old new}  {
 	after [round_to_integer [expr $::iconik_settings(flush_timeout) * 1000]] start_idle
+}
+
+proc iconik_save_profile {slot} {
+	#TODO use DICT
+	if {$slot == 1} {
+		set ::iconik_settings(profile1) $::settings(profile_filename);
+		set ::iconik_settings(profile1_title) $::settings(profile_title); 
+	}
+	if {$slot == 2} {
+		set ::iconik_settings(profile2) $::settings(profile_filename);
+		set ::iconik_settings(profile2_title) $::settings(profile_title); 
+	}
+	if {$slot == 3} {
+		set ::iconik_settings(profile3) $::settings(profile_filename);
+		set ::iconik_settings(profile3_title) $::settings(profile_title); 
+	}
+	iconik_save_settings
+	borg toast [translate "Saved in slot $slot"]
 }
 
 register_state_change_handler "Idle" "HotWaterRinse" timout_flush

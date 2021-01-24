@@ -1,10 +1,18 @@
 # colours
 set ::color_text "#eee"
 set ::color_background "#FFFFFF"
-# 3d537a is nice as well
-set ::color_button "#f6373d" 
-set ::color_button_up "#b8d4d5"
-set ::color_button_down "#b8d4d5"
+set ::color_background_highlight "#EEEEEE"
+
+set ::color_primary "#3d537a"  
+set ::color_primary_light "#417491"  
+set ::color_secondary "#DEBA37"  
+set ::color_secondary_light "#F5B731"  
+
+
+set ::color_button "#3d537a"  
+set ::color_button_secondary "#DEBA37"
+set ::color_button_tertiary "#b8d4d5"
+
 set ::color_button_text_light "#eee"
 set ::color_button_text_dark "#111"
 
@@ -16,9 +24,13 @@ set ::font_button [get_font "Mazzard Regular" 22]
 array set ::iconik_settings {
     profile1  {default}
     profile2 {low pressure lever machine at 6 bar}
+    profile3 {low pressure lever machine at 6 bar}
 
     profile1_title {Default}
     profile2_title {Lever at 6 Bar}
+    profile3_title {Lever at 6 Bar}
+
+    profiles {}
 
     flush_timeout 2
 
