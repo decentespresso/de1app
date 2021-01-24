@@ -46,7 +46,7 @@ proc iconik_get_status_text {} {
 	}
 
 	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
-		return [translate "Scale disconnected. Tap here"]
+		return [translate "Scale disconnected.\nTap here"]
 	} 
 
 	switch $::de1(substate) {
@@ -86,20 +86,37 @@ proc iconik_get_status_text {} {
 proc iconik_status_tap {} {
 	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
 		ble_connect_to_scale
-	} 
+	}
+}
+
+proc iconic_steam_tap {up} {
+
+	if {$up == "up"} {
+		set ::settings(steam_timeout) [expr {$::settings(steam_timeout) + 1}]
+	} else {
+		set ::settings(steam_timeout) [expr {$::settings(steam_timeout) - 1}]
+	}
+
+	if {$::iconik_settings(steam_active_slot) == 1} {
+		set ::iconik_settings(steam_timeout1) $::settings(steam_timeout)
+	} else {
+		set ::iconik_settings(steam_timeout2) $::settings(steam_timeout)
+	}
+
+	save_settings
+	de1_send_steam_hotwater_settings
 }
 
 proc iconik_toggle_steam_settings {slot} {
-	# TODO: use dict
+
 	if {$slot == 1} {
 		set new_steam_timeout $::iconik_settings(steam_timeout1)
-		set ::iconik_settings(steam_timeout1) $::settings(steam_timeout)
 	} else {
 		set new_steam_timeout $::iconik_settings(steam_timeout2)
-		set ::iconik_settings(steam_timeout2) $::settings(steam_timeout)
 	}
 	iconik_save_settings
 	set ::settings(steam_timeout) $new_steam_timeout
+	set ::iconik_settings(steam_active_slot) $slot
 	save_settings
 	de1_send_steam_hotwater_settings
 }
