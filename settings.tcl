@@ -5,6 +5,8 @@ set ::color_background_highlight "#EEEEEE"
 
 set ::color_primary "#3d537a"  
 set ::color_primary_light "#417491"  
+set ::color_primary_dark "##414A91"  
+
 set ::color_secondary "#DEBA37"  
 set ::color_secondary_light "#F5B731"  
 
