@@ -101,6 +101,7 @@ create_button "off" 400 1460 480 1540 [translate "+"] $::font_description $::col
 ## Status
 rounded_rectangle "off" 580 1440 980 1560 [rescale_x_skin 80] $::color_button_tertiary
 add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (1440 + 1560) / 2.0 ] -width 280  -text "" -font $::font_description -fill $::color_button_text_dark -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_get_status_text]}
+add_de1_button "off" { iconik_status_tap } 580 1440 980 1560
 
 ## MISC buttons
 create_button "off" 1080 1440 1480 1560 [translate "Clean"] $::font_description $::color_button_tertiary $::color_button_text_dark { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning }

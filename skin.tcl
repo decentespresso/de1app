@@ -46,7 +46,7 @@ proc iconik_get_status_text {} {
 	}
 
 	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
-		return [translate "Scale disconnected"]
+		return [translate "Scale disconnected. Tap here"]
 	} 
 
 	switch $::de1(substate) {
@@ -81,6 +81,12 @@ proc iconik_get_status_text {} {
 		}
 	}
 
+}
+
+proc iconik_status_tap {} {
+	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
+		ble_connect_to_scale
+	} 
 }
 
 proc iconik_toggle_steam_settings {slot} {
