@@ -20,7 +20,9 @@ create_grid
 
 #dont change page on state change
 proc skins_page_change_due_to_de1_state_change { textstate } {
-    if {$textstate == "Sleep"} {
+	if {$textstate == "Idle"} {
+		page_display_change $::de1(current_context) "off"
+    } elseif {$textstate == "Sleep"} {
 		page_display_change $::de1(current_context) "saver"
     } elseif {$textstate == "Refill"} {
 		page_display_change $::de1(current_context) "tankempty" 

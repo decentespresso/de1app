@@ -40,11 +40,12 @@ add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width
 create_button "off" 580 50 660 130 [translate "-"] $::font_tiny $::color_button_secondary $::color_button_text_light {  set ::settings(espresso_temperature) [expr {[round_to_one_digits $::settings(espresso_temperature)] - 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
 create_button "off" 900 50 980 130 [translate "+"] $::font_tiny $::color_button_secondary $::color_button_text_light {  set ::settings(espresso_temperature) [expr {[round_to_one_digits $::settings(espresso_temperature)] + 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
 
-## Water Volume
+## Espresso Target Weight
 rounded_rectangle "off" 1080 30 1480 150 [rescale_x_skin 80] $::color_button_secondary
-add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Water $::settings(water_temperature)°C:\n[round_to_one_digits $::settings(water_volume)]ml} 
-create_button "off" 1080 50 1160 130 [translate "-"] $::font_tiny $::color_button_secondary $::color_button_text_light {  set ::settings(water_volume) [expr {$::settings(water_volume) - 1}]; de1_send_steam_hotwater_settings; save_settings}
-create_button "off" 1400 50 1480 130 [translate "+"] $::font_tiny $::color_button_secondary $::color_button_text_light {  set ::settings(water_volume) [expr {$::settings(water_volume) + 1}]; de1_send_steam_hotwater_settings; save_settings}
+add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Bev. weight:\n[round_to_one_digits [iconik_get_final_weight]]} 
+create_button "off" 1080 50 1160 130 [translate "-"] $::font_tiny $::color_button_secondary $::color_button_text_light { set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) - 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) - 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
+create_button "off" 1400 50 1480 130 [translate "+"] $::font_tiny $::color_button_secondary $::color_button_text_light { set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) + 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) + 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
+
 
 ## Steam
 rounded_rectangle "off" 1580 30 1980 150 [rescale_x_skin 80] $::color_button_secondary
@@ -52,16 +53,16 @@ add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (30 + 150) / 2.0 ] -wid
 create_button "off" 1580 50 1660 130 [translate "-"] $::font_tiny $::color_button_secondary $::color_button_text_light {iconic_steam_tap down}
 create_button "off" 1900 50 1980 130 [translate "+"] $::font_tiny $::color_button_secondary $::color_button_text_light {iconic_steam_tap up}
 
-## Espresso Target Weight
+## Water Volume
 rounded_rectangle "off" 2080 30 2480 150 [rescale_x_skin 80] $::color_button_secondary
-add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Bev. weight:\n[round_to_one_digits [iconik_get_final_weight]]} 
-create_button "off" 2080 50 2160 130 [translate "-"] $::font_tiny $::color_button_secondary $::color_button_text_light { set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) - 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) - 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
-create_button "off" 2400 50 2480 130 [translate "+"] $::font_tiny $::color_button_secondary $::color_button_text_light { set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) + 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) + 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
+add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {Water $::settings(water_temperature)°C:\n[round_to_one_digits $::settings(water_volume)]ml} 
+create_button "off" 2080 50 2160 130 [translate "-"] $::font_tiny $::color_button_secondary $::color_button_text_light {  set ::settings(water_volume) [expr {$::settings(water_volume) - 1}]; de1_send_steam_hotwater_settings; save_settings}
+create_button "off" 2400 50 2480 130 [translate "+"] $::font_tiny $::color_button_secondary $::color_button_text_light {  set ::settings(water_volume) [expr {$::settings(water_volume) + 1}]; de1_send_steam_hotwater_settings; save_settings}
 
 # Recipe
-rounded_rectangle "off" 80 230 760 1110 [rescale_x_skin 80] $::color_button
-add_de1_variable "off" [expr (80 + 760) / 2.0 ] [expr (260 + 360) / 2.0 ] -width [rescale_x_skin 640]  -text "" -font $::font_big -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::settings(profile_title)}
-add_de1_variable "off" [expr (80 + 760) / 2.0 ] [expr (360 + 1110) / 2.0 ] -width [rescale_x_skin 640]  -text "" -font $::font_small -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::settings(profile_notes)}
+rounded_rectangle "off" 80 210 760 1110 [rescale_x_skin 80] $::color_button
+add_de1_variable "off" [expr (80 + 760) / 2.0 ] [expr (240 + 240) / 2.0 ] -width [rescale_x_skin 640]  -text "" -font $::font_big -fill $::color_button_text_light -anchor "n" -justify "center" -state "hidden" -textvariable {$::settings(profile_title)}
+add_de1_variable "off" [expr (80 + 760) / 2.0 ] [expr (320 + 1110) / 2.0 ] -width [rescale_x_skin 640]  -text "" -font $::font_small -fill $::color_button_text_light -anchor "center" -justify "center" -state "hidden" -textvariable {$::settings(profile_notes)}
 
 # Presets
 
