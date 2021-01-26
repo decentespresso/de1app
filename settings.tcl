@@ -1,6 +1,7 @@
 array set ::default_theme {
     background "#FFFFFF"
     background_highlight "#EEEEEE"
+    background_text "#414A91"
 
     primary "#3D5682"
     primary_light "#417491"
@@ -20,6 +21,7 @@ array set ::default_theme {
 array set ::dark_theme {
     background "#121212"
     background_highlight "#121212"
+    background_text "#FFFFFF"
 
     primary "#BB86FC"
     primary_light "#BB86FC"
@@ -39,8 +41,9 @@ array set ::dark_theme {
 array set ::purple_theme {
     background "#3c3c48"
     background_highlight "#343444"
+    background_text "#FFFFFF"
 
-    primary "#3c3a5c"
+    primary "#b73f49"
     primary_light "#4f4d7a"
     primary_dark "#32304d"
 
