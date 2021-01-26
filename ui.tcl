@@ -43,9 +43,11 @@ create_button "settings_4" 880 1480 1180 1580 "Purple" $::font_big $::purple_the
 ## Background
 rectangle "off" 0 0 2560 180 [theme background_highlight]
 
-## Time
-rounded_rectangle "off"  80 30 480 150 [rescale_x_skin 80] [theme button_secondary]
-add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Time:\n[total_pour_timer_text]} 
+## Flush
+rounded_rectangle "off" 80 30 480 150 [rescale_x_skin 80] [theme button_secondary]
+add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width 200  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Flush:\n[round_to_one_digits $::iconik_settings(flush_timeout)]s} 
+create_button "off" 80 30 160 150 [translate "-"] $::font_tiny [theme button_secondary] [theme button_text_light] {  set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) - 0.5}]; iconik_save_settings}
+create_button "off" 400 30 480 150 [translate "+"] $::font_tiny [theme button_secondary] [theme button_text_light] {  set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) + 0.5}]; iconik_save_settings}
 
 
 ## Espresso Temperature
@@ -74,9 +76,33 @@ create_button "off" 2080 50 2160 130 [translate "-"] $::font_tiny [theme button_
 create_button "off" 2400 50 2480 130 [translate "+"] $::font_tiny [theme button_secondary] [theme button_text_light] {  set ::settings(water_volume) [expr {$::settings(water_volume) + 1}]; de1_send_steam_hotwater_settings; save_settings}
 
 # Recipe
-rounded_rectangle "off" 80 210 760 1110 [rescale_x_skin 80] [theme button]
-add_de1_variable "off" [expr (80 + 760) / 2.0 ] [expr (240 + 240) / 2.0 ] -width [rescale_x_skin 640]  -text "" -font $::font_big -fill [theme button_text_light] -anchor "n" -justify "center" -state "hidden" -textvariable {$::settings(profile_title)}
-add_de1_variable "off" [expr (80 + 760) / 2.0 ] [expr (320 + 1110) / 2.0 ] -width [rescale_x_skin 640]  -text "" -font $::font_small -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {$::settings(profile_notes)}
+rounded_rectangle "off" 80 210 480 1110 [rescale_x_skin 80] [theme button]
+add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (240 + 240) / 2.0 ] -width [rescale_x_skin 380]  -text "" -font $::font_big -fill [theme button_text_light] -anchor "n" -justify "center" -state "hidden" -textvariable {$::settings(profile_title)}
+
+### TIME
+set column1_pos  [expr (80 + 20)  ]
+set column2_pos  [expr $column1_pos + 500] 
+
+set pos_top 480
+set spacer 38
+
+add_de1_text "off" $column1_pos [expr {$pos_top + (0 * $spacer)}] -justify left -anchor "nw" -text [translate "Time"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
+add_de1_variable "off" $column1_pos [expr {$pos_top + (1 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny -fill [theme button_text_dark] -width [rescale_x_skin 520] -textvariable {[preinfusion_pour_timer_text]} 
+add_de1_variable "off" $column1_pos [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny -fill [theme button_text_dark] -width [rescale_x_skin 520] -textvariable {[total_pour_timer_text]}  
+add_de1_variable "off" $column1_pos [expr {$pos_top + (4 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny -fill [theme button_text_dark] -width [rescale_x_skin 520] -textvariable {[espresso_done_timer_text]} 
+add_de1_variable "off" $column1_pos [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny -fill [theme button_text_dark] -width [rescale_x_skin 520] -textvariable {[pouring_timer_text]}  
+# Volume
+
+add_de1_text "off" $column1_pos [expr {$pos_top + (6 * $spacer)}] -justify left -anchor "nw" -text [translate "Volume"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
+add_de1_variable "off" $column1_pos [expr {$pos_top + (7 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[preinfusion_volume]} 
+add_de1_variable "off" $column1_pos [expr {$pos_top + (8 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[pour_volume]}
+add_de1_variable "off" $column1_pos [expr {$pos_top + (9 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+
+
+add_de1_text "off" $column1_pos [expr {$pos_top + (11 * $spacer)}] -justify left -anchor "nw" -text [translate "Peak pressure"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
+add_de1_variable "off" $column1_pos [expr {$pos_top + (12 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {7.4 bar}
+add_de1_text "off" $column1_pos [expr {$pos_top + (13 * $spacer)}] -justify left -anchor "nw" -text [translate "Minimum flow"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
+add_de1_variable "off" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {1.2 ml/ s}
 
 # Presets
 
@@ -108,18 +134,13 @@ add_de1_button "off" {iconik_toggle_steam_settings 2} 2080 1140 2480 1380
 
 rectangle "off" 0 1410 2560 1600 [theme background_highlight]
 
-## Flush
-rounded_rectangle "off" 80 1440 480 1560 [rescale_x_skin 80] [theme button_tertiary]
-add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1440 + 1560) / 2.0 ] -width 200  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Flush:\n[round_to_one_digits $::iconik_settings(flush_timeout)]s} 
-create_button "off" 80 1460 160 1540 [translate "-"] $::font_tiny [theme button_tertiary] [theme button_text_light] {  set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) - 0.5}]; iconik_save_settings}
-create_button "off" 400 1460 480 1540 [translate "+"] $::font_tiny [theme button_tertiary] [theme button_text_light] {  set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) + 0.5}]; iconik_save_settings}
-
 ## Status
-rounded_rectangle "off" 580 1440 980 1560 [rescale_x_skin 80] [theme button_tertiary]
-add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (1440 + 1560) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_get_status_text]}
-add_de1_button "off" { iconik_status_tap } 580 1440 980 1560
+rounded_rectangle "off" 80 1440 480 1560 [rescale_x_skin 80] [theme button_tertiary]
+add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1440 + 1560) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_get_status_text]}
+add_de1_button "off" { iconik_status_tap } 80 1440 480 1560
 
 ## MISC buttons
+create_button "off" 580 1440 980 1560 [translate "History"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); borg toast "TODO" }
 create_button "off" 1080 1440 1480 1560 [translate "Clean"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning }
 create_button "off" 1580 1440 1980 1560 [translate "Settings"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); show_settings }
 create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); start_sleep }
