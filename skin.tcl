@@ -10,6 +10,7 @@ set ::debugging 0
 source "[skin_directory]/settings.tcl"
 
 iconik_load_settings
+iconik_save_settings
 
 source "[skin_directory]/framework.tcl"
 source "[skin_directory]/ui.tcl"
@@ -17,6 +18,8 @@ source "[skin_directory]/ui.tcl"
 create_grid
 .can itemconfigure "grid" -state "hidden" 
 #.can itemconfigure "grid" -state "normal" 
+
+
 
 #dont change page on state change
 proc skins_page_change_due_to_de1_state_change { textstate } {

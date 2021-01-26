@@ -2,7 +2,7 @@
 # Functions for creating the Metric menu framework
 
 proc add_background { contexts } {
-	set background_id [.can create rect 0 0 [rescale_x_skin 2560] [rescale_y_skin 1600] -fill $::color_background -width 0 -state "hidden"]
+	set background_id [.can create rect 0 0 [rescale_x_skin 2560] [rescale_y_skin 1600] -fill [theme background] -width 0 -state "hidden"]
 	add_visual_items_to_contexts $contexts $background_id
 }
 
