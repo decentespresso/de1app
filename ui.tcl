@@ -100,7 +100,7 @@ create_button "off" 1400 50 1480 130 [translate "+"] $::font_tiny [theme button_
 
 ## Steam
 rounded_rectangle "off" 1580 30 1980 150 [rescale_x_skin 80] [theme button_secondary]
-add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam $::iconik_settings(steam_active_slot):\n[round_to_one_digits $::settings(steam_timeout)]s} 
+add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam $::iconik_settings(steam_active_slot):\n[iconik_get_steam_time]} 
 create_button "off" 1580 50 1660 130 [translate "-"] $::font_tiny [theme button_secondary] [theme button_text_light] {iconic_steam_tap down}
 create_button "off" 1900 50 1980 130 [translate "+"] $::font_tiny [theme button_secondary] [theme button_text_light] {iconic_steam_tap up}
 

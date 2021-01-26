@@ -182,6 +182,17 @@ proc iconik_get_min_flow {} {
 	return [round_to_one_digits $::iconik_min_flow]
 }
 
+proc iconik_get_steam_time {} {
+	set target_steam_time [round_to_one_digits $::settings(steam_timeout)]
+	if {[info exists ::timers(steam_pour_start)] == 1 && $::de1_num_state($::de1(state)) == "Steam"} {
+		set current_steam_time [expr {([clock milliseconds] - $::timers(steam_pour_start))/1000}]
+		return "$current_steam_time / $target_steam_time"
+	}
+	
+	return $target_steam_time
+	
+}
+
 
 proc iconik_fill_history_listbox {} {
 	#puts "fill_history_listbox $widget" 
