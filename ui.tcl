@@ -10,7 +10,8 @@ proc iconik_temperature {val} {
 		set temp [round_to_one_digits [celsius_to_fahrenheit $val]]
 		return "$temp F"
 	}
-	return [round_to_one_digits $val]" °C"
+	set temp [round_to_one_digits $val]
+	return "$temp °C"
 }
 
 proc iconik_get_final_weight {} {
