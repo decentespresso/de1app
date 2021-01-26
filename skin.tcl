@@ -154,29 +154,31 @@ set ::iconik_max_pressure 0
 set ::iconik_min_flow 20
 
 proc iconik_get_max_pressure {} {
-	if { $::de1(substate) == 1 || $::de1(substate) == 3} {
-		set ::iconik_max_pressure 0
-	} 
-	if { $::de1(substate) == 4 || $::de1(substate) == 5} {
-		if {$::de1(pressure) > $::iconik_max_pressure} {
-			set ::iconik_max_pressure $::de1(pressure)
+	if {$::de1_num_state($::de1(state)) == "Espresso"} {
+		if {$::de1(substate) >= $::de1_substate_types_reversed("pouring")} {
+			if {$::de1(pressure) > $::iconik_max_pressure} {
+				set ::iconik_max_pressure $::de1(pressure)
+			}
+		} else {
+			set ::iconik_max_pressure 0
 		}
 	}
-	return $::iconik_max_pressure
+	return [round_to_one_digits $::iconik_max_pressure]
 }
 
 proc iconik_get_min_flow {} {
-	if { $::de1(substate) == 1 || $::de1(substate) == 3} {
-		set ::iconik_min_flow 20
-	} 
-	if { $::de1(substate) == 4 || $::de1(substate) == 5} {
-		if {$::de1(pressure) < $::iconik_min_flow} {
-			set ::iconik_min_flow $::de1(flow)
+	if {$::de1_num_state($::de1(state)) == "Espresso"} {
+		if {$::de1_substate_types($::de1(substate)) == "pouring"} {
+			if {$::de1(flow) < $::iconik_min_flow} {
+				set ::iconik_min_flow $::de1(flow)
+			}
+		} else {
+			set ::iconik_min_flow 20
 		}
 	}
 	if {$::iconik_min_flow == 20} {
 		return 0;
 	}
-	return $::iconik_min_flow
+	return [round_to_one_digits $::iconik_min_flow]
 }
 
