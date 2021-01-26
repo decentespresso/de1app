@@ -1512,9 +1512,10 @@ proc page_display_change {page_to_hide page_to_show} {
 }
 
 proc hide_android_keyboard {} {
-	# make sure on-screen keyboard doesn't auto-pop up
+	# make sure on-screen keyboard doesn't auto-pop up, and if
+	# physical keyboard is connected, make sure navbar stays hidden
 	sdltk textinput off
-	focus .
+	focus .can
 }
 
 proc update_de1_explanation_chart_soon  { {context {}} } {
@@ -2761,55 +2762,60 @@ proc profile_title {} {
 # the number version causes the state to arrive as if the DE1 has caused it, such as from the GHC.  
 # This is useful for testing that the GUI responds correctly to GHC caused events.  
 
+# NOTE:
+# proc hide_android_keyboard {}, in addition to hiding the on-screen keyboard, keeps the navbar hidden when
+# a physical keyboard is connected. This may, however, also redirect keypresses from the physical keyboard.
+# Using the CTRL modifier key with the desired key can bypass this issue.
+
 proc handle_keypress {keycode} {
 	msg "Keypress detected: $keycode / $::some_droid"
 
 	if {($::some_droid != 1 && $keycode == 101) || ($::some_droid == 1 && $keycode == 8)} {
-		# e = espresso 
+		# e = espresso (emulate GUI button press)
 		start_espresso
 
 	} elseif {($::some_droid != 1 && $keycode == 32) || ($::some_droid == 1 && $keycode == 44)} {
-		# space = idle
+		# space = idle (emulate GUI button press)
 		start_idle
 
 	} elseif {($::some_droid != 1 && $keycode == 102) || ($::some_droid == 1 && $keycode == 9)} {
-		# f = flush
+		# f = flush (emulate GUI button press)
 		start_flush
 
 	} elseif {($::some_droid != 1 && $keycode == 115) || ($::some_droid == 1 && $keycode == 22)} {
-		# s = steam
+		# s = steam (emulate GUI button press)
 		start_steam
 
 	} elseif {($::some_droid != 1 && $keycode == 119) || ($::some_droid == 1 && $keycode == 26)} {
-		# w = water
+		# w = water (emulate GUI button press)
 		start_water
 
 	} elseif {($::some_droid != 1 && $keycode == 112) || ($::some_droid == 1 && $keycode == 19)} {
-		# w = water
+		# p = sleep (emulate GUI button press)
 		start_sleep
 
 	} elseif {($::some_droid != 1 && $keycode == 50) || ($::some_droid == 1 && $keycode == 31)} {
-		# ctrl-e = espresso or 2 on android
+		# 2 = espresso (emulate GHC button press)
 		update_de1_state "$::de1_state(Espresso)\x0"
 		de1_send_state "make espresso" $::de1_state(Espresso)
 
 	} elseif {($::some_droid != 1 && $keycode == 48) || ($::some_droid == 1 && $keycode == 39)} {
-		# ctrl-space = idle or 0 on android
+		# 0 = idle (emulate GHC button press)
 		update_de1_state "$::de1_state(Idle)\x0"
 		de1_send_state "go idle" $::de1_state(Idle)
 
 	} elseif {($::some_droid != 1 && $keycode == 49) || ($::some_droid == 1 && $keycode == 30)} {
-		# ctrl-f = flush or 1 on android
+		# 1 = flush (emulate GHC button press)
 		update_de1_state "$::de1_state(HotWaterRinse)\x0"
 		de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
 
 	} elseif {($::some_droid != 1 && $keycode == 51) || ($::some_droid == 1 && $keycode	== 32)} {
-		# ctrl-s = steam or 3 on android
+		# 3 = steam (emulate GHC button press)
 		update_de1_state "$::de1_state(Steam)\x0"
 		de1_send_state "make steam" $::de1_state(Steam)
 
 	} elseif {($::some_droid != 1 && $keycode == 52) || ($::some_droid == 1 && $keycode == 33)} {
-		# ctrl-w = water or 4 on android
+		# 4 = water (emulate GHC button press)
 		update_de1_state "$::de1_state(HotWater)\x0"
 		de1_send_state "make hot water" $::de1_state(HotWater)
 	}
