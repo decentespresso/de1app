@@ -182,3 +182,36 @@ proc iconik_get_min_flow {} {
 	return [round_to_one_digits $::iconik_min_flow]
 }
 
+
+proc iconik_fill_history_listbox {} {
+	#puts "fill_history_listbox $widget" 
+	set widget $::globals(iconik_history)
+	$widget delete 0 99999
+	set cnt 0
+
+	set history_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+
+    foreach shot_file $history_files {
+        set tailname [file tail $shot_file]
+        set newfile [file rootname $tailname]
+        set fname "history/$newfile.csv" 
+
+		array unset -nocomplain shot
+		catch {
+			array set shot [read_file "history/$shot_file"]
+		}
+		if {[array size shot] == 0} {
+			msg "Corrupted shot history item: 'history/$shot_file'"
+			continue
+		}
+		set dbg [array get shot]
+		msg "Read history item: $fname"
+
+		$widget insert $cnt [translate $fname]
+		incr cnt
+
+	}
+}
+
+proc ::iconik_show_past_shot {} {}
+

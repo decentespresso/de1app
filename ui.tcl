@@ -22,7 +22,42 @@ proc iconik_get_final_weight {} {
     }
 }
 
-add_background "off"
+add_background "off history"
+
+# History Page
+
+add_de1_widget "iconik_history" listbox 80 60 { 
+	set ::globals(iconik_history) $widget
+	iconik_fill_history_listbox
+	bind $::globals(iconik_history) <<ListboxSelect>> ::iconik_show_past_shot
+} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::globals(iconik_history)} -yscrollcommand {scale_scroll_new $::globals(iconik_history) ::skin_slider} -font global_font -bd 0 -height [rescale_y_skin 1880] -width [rescale_x_skin 500] -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -selectbackground #c0c4e1
+
+
+add_de1_widget "history" graph 580 80 {
+	#Target
+	$widget element create past_line_espresso_de1_explanation_chart_pressure_zoomed -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 16] -color [theme primary]  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create past_line_espresso_de1_explanation_chart_flow_zoom -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow  -label "" -linewidth [rescale_x_skin 18] -color [theme secondary]  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+
+	$widget element create past_line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8]  -color [theme primary_light]  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
+	$widget element create past_line2_espresso_pressure     -xdata espresso_elapsed -ydata espresso_pressure      -symbol none -label "" -linewidth [rescale_x_skin 12] -color [theme primary]        -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+
+	$widget element create past_line_espresso_flow_2x  -xdata espresso_elapsed -ydata espresso_flow_2x -symbol none -label "" -linewidth [rescale_x_skin 8] -color #4e85f4 -smooth $::settings(live_graph_smoothing_technique) -pixels 0;
+	$widget element create past_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata espresso_flow_weight_2x -symbol none -label "" -linewidth [rescale_x_skin 8] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0;
+    $widget element create past_line_espresso_flow_goal_2x  -xdata espresso_elapsed -ydata espresso_flow_goal_2x -symbol none -label "" -linewidth [rescale_x_skin 8] -color #7aaaff -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5};
+	#$widget element create past_line_espresso_temperature_goal_01 -xdata espresso_elapsed -ydata espresso_temperature_goal_01 -symbol none -label ""  -linewidth [rescale_x_skin 5] -color #ffa5a6 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
+	#$widget element create past_line_espresso_temperature_basket_01 -xdata espresso_elapsed -ydata espresso_temperature_basket_01 -symbol none -label ""  -linewidth [rescale_x_skin 5] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0;
+	#$widget element create past_line_espresso_resistance  -xdata espresso_elapsed -ydata espresso_resistance -symbol none -label "" -linewidth [rescale_x_skin 5] -color #e5e500 -smooth $::settings(live_graph_smoothing_technique) -pixels 0
+
+	#$widget element create past_line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth 3 -color #AAAAAA  -pixels 0 ;
+
+	$widget axis configure x -color [theme background_text] -tickfont Helv_7 -min 0.0;
+	$widget axis configure y -color [theme background_text] -tickfont Helv_7 -min 0.0 -max 12 -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}  -hide 0;
+	$widget grid configure -color $::DSx_settings(grid_colour)
+} -plotbackground [theme background] -width [rescale_x_skin 1880] -height [rescale_y_skin 1340] -borderwidth 1 -background [theme background] -plotrelief flat
+
+
+create_button "history" 580 1440 1880 1560 [translate "Done"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); page_to_show_when_off "off" }
+
 
 # Return from screensaver
 set_de1_screen_saver_directory "[homedir]/saver"
@@ -102,7 +137,7 @@ add_de1_variable "off" $column1_pos [expr {$pos_top + (9 * $spacer)}] -justify l
 add_de1_text "off" $column1_pos [expr {$pos_top + (11 * $spacer)}] -justify left -anchor "nw" -text [translate "Peak pressure"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
 add_de1_variable "off" $column1_pos [expr {$pos_top + (12 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[iconik_get_max_pressure] bar}
 add_de1_text "off" $column1_pos [expr {$pos_top + (13 * $spacer)}] -justify left -anchor "nw" -text [translate "Minimum flow"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
-add_de1_variable "off" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[iconik_get_min_flow] ml/ s}
+add_de1_variable "off" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[iconik_get_min_flow]  ml/ s}
 
 # Presets
 
@@ -140,7 +175,7 @@ add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1440 + 1560) / 2.0 ] -wid
 add_de1_button "off" { iconik_status_tap } 80 1440 480 1560
 
 ## MISC buttons
-create_button "off" 580 1440 980 1560 [translate "History"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); borg toast "TODO" }
+create_button "off" 580 1440 980 1560 [translate "History"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_fill_history_listbox; page_to_show_when_off "history" }
 create_button "off" 1080 1440 1480 1560 [translate "Clean"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning }
 create_button "off" 1580 1440 1980 1560 [translate "Settings"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); show_settings }
 create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); start_sleep }
