@@ -44,8 +44,8 @@ array set ::purple_theme {
     background_text "#FFFFFF"
 
     primary "#b73f49"
-    primary_light "#4f4d7a"
-    primary_dark "#32304d"
+    primary_light "#c74f59"
+    primary_dark "#a72f39"
 
     secondary "#e2a3b6"
     secondary_light "#bf8a9a"
