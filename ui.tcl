@@ -34,10 +34,9 @@ create_button "settings_1" 1140 1150 1240 1250 "2" $::font_big [theme button] [t
 create_button "settings_1" 1140 1280 1240 1380 "3" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 3}
 
 # Skin theme buttons
-create_button "settings_4" 80 1440 380 1540 "Default" $::font_big $::default_theme(button) $::default_theme(button_text_light) {set ::iconik_settings(theme) "::default_theme"; iconik_save_settings; borg toast "Theme changed, please restart"}
-create_button "settings_4" 480 1440 780 1540 "Dark" $::font_big $::dark_theme(button)    $::dark_theme(button_text_light) {set ::iconik_settings(theme) "::dark_theme"; iconik_save_settings; borg toast "Theme changed, please restart"}
-
-
+create_button "settings_4" 80 1480 380 1580 "Default"  $::font_big $::default_theme(button) $::default_theme(button_text_light) {set ::iconik_settings(theme) "::default_theme"; iconik_save_settings; borg toast "Theme changed, please restart"}
+create_button "settings_4" 480 1480 780 1580 "Dark"    $::font_big $::dark_theme(button)     $::dark_theme(button_text_light)   {set ::iconik_settings(theme) "::dark_theme";    iconik_save_settings; borg toast "Theme changed, please restart"}
+create_button "settings_4" 880 1480 1180 1580 "Purple" $::font_big $::purple_theme(button)   $::purple_theme(button_text_light) {set ::iconik_settings(theme) "::purple_theme";  iconik_save_settings; borg toast "Theme changed, please restart"}
 
 
 # Upper buttons
