@@ -155,8 +155,8 @@ set ::iconik_min_flow 20
 
 proc iconik_get_max_pressure {} {
 	if {$::de1_num_state($::de1(state)) == "Espresso"} {
-		if {$::de1(substate) >= $::de1_substate_types_reversed("pouring")} {
-			if {$::de1(pressure) > $::iconik_max_pressure} {
+		if {$::de1(substate) >= $::de1_substate_types_reversed(pouring)} {
+			if {$::de1(pressure) >= $::iconik_max_pressure} {
 				set ::iconik_max_pressure $::de1(pressure)
 			}
 		} else {
@@ -169,7 +169,7 @@ proc iconik_get_max_pressure {} {
 proc iconik_get_min_flow {} {
 	if {$::de1_num_state($::de1(state)) == "Espresso"} {
 		if {$::de1_substate_types($::de1(substate)) == "pouring"} {
-			if {$::de1(flow) < $::iconik_min_flow} {
+			if {$::de1(flow) <= $::iconik_min_flow} {
 				set ::iconik_min_flow $::de1(flow)
 			}
 		} else {
