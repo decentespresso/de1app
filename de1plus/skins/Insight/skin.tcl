@@ -1,4 +1,4 @@
-set ::debugging 1
+set ::debugging 0
 
 msg "rtl $::de1(language_rtl)"
 
