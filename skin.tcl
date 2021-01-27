@@ -261,7 +261,6 @@ proc iconik_fill_history_listbox {} {
 	}
 
 	set $::history_widget widget
-	set_history_scrollbar_dimensions
 }
 
 proc iconik_show_past_shot {} {
