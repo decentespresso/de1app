@@ -104,7 +104,7 @@ create_settings_button "off" 1580 30 1980 150 "" $::font_tiny [theme button_seco
 add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam $::iconik_settings(steam_active_slot):\n[iconik_get_steam_time]} 
 
 ## Water Volume
-create_settings_button "off" 2080 30 2480 150 "" $::font_tiny [theme button_secondary] [theme button_text_light]  {  set ::settings(water_volume) [expr {$::settings(water_volume) - 1}]; de1_send_steam_hotwater_settings; save_settings} {  set ::settings(water_volume) [expr {$::settings(water_volume) + 1}]; de1_send_steam_hotwater_settings; save_settings}
+create_settings_button "off" 2080 30 2480 150 "" $::font_tiny [theme button_secondary] [theme button_text_light]  {  set ::settings(water_volume) [expr {$::settings(water_volume) - 5}]; de1_send_steam_hotwater_settings; save_settings} {  set ::settings(water_volume) [expr {$::settings(water_volume) + 5}]; de1_send_steam_hotwater_settings; save_settings}
 add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Water [iconik_temperature $::settings(water_temperature)]:\n[round_to_integer $::settings(water_volume)]ml} 
 
 # Recipe
