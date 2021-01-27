@@ -62,6 +62,9 @@ proc iconik_get_status_text {} {
 			return [translate "Starting"]
 		}
 		0 {
+			if {$::settings(scale_bluetooth_address) != ""} {
+				return [translate "Ready\nScale connected"]
+			}
 			return [translate "Ready"]
 		}
 		1 {
