@@ -119,7 +119,7 @@ add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (30 + 150) / 2.0 ] -wid
 
 # Recipe
 rounded_rectangle "off" 80 210 480 1110 [rescale_x_skin 80] [theme button]
-add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (240 + 240) / 2.0 ] -width [rescale_x_skin 380]  -text "" -font $::font_big -fill [theme button_text_light] -anchor "n" -justify "center" -state "hidden" -textvariable {$::settings(profile_title)}
+add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (240 + 240) / 2.0 ] -width [rescale_x_skin 380]  -text "" -font $::font_big -fill [theme button_text_light] -anchor "n" -justify "center" -state "hidden" -textvariable {[string range $::settings(profile_title) 0 28]}
 
 ### TIME
 set column1_pos  [expr (80 + 20)  ]
