@@ -238,7 +238,7 @@ proc iconik_fill_history_listbox {} {
 	$widget delete 0 99999
 	set cnt 0
 
-	set ::history_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+	set ::history_files [lsort -dictionary -decreasing [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
 
     foreach shot_file $::history_files {
         set tailname [file tail $shot_file]
