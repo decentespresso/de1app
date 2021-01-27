@@ -107,6 +107,7 @@ add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (30 + 150) / 2.0 ] -wid
 create_settings_button "off" 2080 30 2480 150 "" $::font_tiny [theme button_secondary] [theme button_text_light]  {  set ::settings(water_volume) [expr {$::settings(water_volume) - 1}]; de1_send_steam_hotwater_settings; save_settings} {  set ::settings(water_volume) [expr {$::settings(water_volume) + 1}]; de1_send_steam_hotwater_settings; save_settings}
 add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Water [iconik_temperature $::settings(water_temperature)]:\n[round_to_one_digits $::settings(water_volume)]ml} 
 
+# Water level
 # Recipe
 rounded_rectangle "off" 80 210 480 1110 [rescale_x_skin 80] [theme button]
 add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (240 + 240) / 2.0 ] -width [rescale_x_skin 380]  -text "" -font $::font_big -fill [theme button_text_light] -anchor "n" -justify "center" -state "hidden" -textvariable {$::settings(profile_title)}
@@ -114,8 +115,7 @@ add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (240 + 240) / 2.0 ] -width
 ### TIME
 set column1_pos  [expr (80 + 20)  ]
 set column2_pos  [expr $column1_pos + 500] 
-
-set pos_top 480
+set pos_top 400
 set spacer 38
 
 add_de1_text "off" $column1_pos [expr {$pos_top + (0 * $spacer)}] -justify left -anchor "nw" -text [translate "Time"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
@@ -135,6 +135,10 @@ add_de1_text "off" $column1_pos [expr {$pos_top + (11 * $spacer)}] -justify left
 add_de1_variable "off" $column1_pos [expr {$pos_top + (12 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[iconik_get_max_pressure] bar}
 add_de1_text "off" $column1_pos [expr {$pos_top + (13 * $spacer)}] -justify left -anchor "nw" -text [translate "Minimum flow"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
 add_de1_variable "off" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[iconik_get_min_flow]  ml/ s}
+
+add_de1_text "off" $column1_pos [expr {$pos_top + (16 * $spacer)}] -justify left -anchor "nw" -text [translate "Waterlevel"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
+add_de1_variable "off" $column1_pos [expr {$pos_top + (17 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {Limit: $::settings(water_refill_point) Current: $::de1(water_level)}
+
 
 # Presets
 
