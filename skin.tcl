@@ -4,8 +4,8 @@ package require de1plus 1.0
 
 source "[homedir]/skins/default/standard_includes.tcl"
 
-set ::skindebug 0
-set ::debugging 0
+set ::skindebug 1
+set ::debugging 1
 
 source "[skin_directory]/settings.tcl"
 
@@ -39,7 +39,11 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
 }
 
 proc iconik_toggle_cleaning {} {
-		select_profile "weber_spring_clean"
+	if {$::iconik_settings(cleanup_use_profile)} {
+		select_profile $::iconik_settings(cleanup_profile)
+	} else {
+		start_cleaning
+	}
 }
 
 proc is_connected {} {return [expr {[clock seconds] - $::de1(last_ping)} < 5]}
@@ -114,11 +118,8 @@ proc iconic_steam_tap {up} {
 
 proc iconik_toggle_steam_settings {slot} {
 
-	if {$slot == 1} {
-		set new_steam_timeout $::iconik_settings(steam_timeout1)
-	} else {
-		set new_steam_timeout $::iconik_settings(steam_timeout2)
-	}
+	set new_steam_timeout [dict get $::iconik_settings(steam_profiles) $slot timeout]
+
 	iconik_save_settings
 	set ::settings(steam_timeout) $new_steam_timeout
 	set ::iconik_settings(steam_active_slot) $slot
@@ -126,24 +127,26 @@ proc iconik_toggle_steam_settings {slot} {
 	de1_send_steam_hotwater_settings
 }
 
+proc iconik_toggle_profile {slot} {
+
+	set profile [dict get $::iconik_settings(profiles) $slot name]
+
+	select_profile $profile
+	save_settings_to_de1
+	save_settings
+}
+
 proc timout_flush {old new}  {
 	after [round_to_integer [expr $::iconik_settings(flush_timeout) * 1000]] start_idle
 }
 
 proc iconik_save_profile {slot} {
-	#TODO use DICT
-	if {$slot == 1} {
-		set ::iconik_settings(profile1) $::settings(profile_filename);
-		set ::iconik_settings(profile1_title) $::settings(profile_title); 
-	}
-	if {$slot == 2} {
-		set ::iconik_settings(profile2) $::settings(profile_filename);
-		set ::iconik_settings(profile2_title) $::settings(profile_title); 
-	}
-	if {$slot == 3} {
-		set ::iconik_settings(profile3) $::settings(profile_filename);
-		set ::iconik_settings(profile3_title) $::settings(profile_title); 
-	}
+	set profiles $::iconik_settings(profiles)
+
+	dict set profiles $slot name $::settings(profile_filename)
+	dict set profiles $slot title $::settings(profile_title)
+
+	set ::iconik_settings(profiles) $profiles
 	iconik_save_settings
 	borg toast [translate "Saved in slot $slot"]
 }

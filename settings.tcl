@@ -65,23 +65,16 @@ set ::font_small [get_font "Mazzard Regular" 18]
 set ::font_big [get_font "Mazzard Regular" 22]
 
 array set ::iconik_settings {
-    profile1  {default}
-    profile2 {low pressure lever machine at 6 bar}
-    profile3 {low pressure lever machine at 6 bar}
+    profiles {1 {name default title Default} 2 {name {Gentle and sweet} title {Gentle and sweet}} 3 {name rao_allonge title {Rao Allongé}}}
+    steam_profiles {1 {timeout {26}} 2 {timeout {30}}}
 
-    profile1_title {Default}
-    profile2_title {Lever at 6 Bar}
-    profile3_title {Lever at 6 Bar}
+    flush_timeout 3
+    steam_active_slot 0
 
-    profiles {}
+    theme "::default_theme"
 
-    flush_timeout 2
-
-    steam_timeout1 26
-    steam_timeout2 30
-    steam_active_slot 1
-
-    theme "::dark_theme"
+    cleanup_use_profile 0
+    cleanup_profile "weber_spring_clean"
 }
 
 proc theme {cntx} {
