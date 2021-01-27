@@ -12,13 +12,16 @@ source "[skin_directory]/settings.tcl"
 iconik_load_settings
 iconik_save_settings
 
+blt::vector create history_elapsed history_pressure_goal history_flow_goal
+blt::vector create history_pressure history_flow
+blt::vector create history_weight
+
 source "[skin_directory]/framework.tcl"
 source "[skin_directory]/ui.tcl"
 
 create_grid
 .can itemconfigure "grid" -state "hidden"
 #.can itemconfigure "grid" -state "normal"
-
 
 #dont change page on state change
 proc skins_page_change_due_to_de1_state_change { textstate } {
@@ -231,13 +234,13 @@ proc iconik_get_steam_time {} {
 
 proc iconik_fill_history_listbox {} {
 	#puts "fill_history_listbox $widget"
-	set widget $::globals(iconik_history)
+	set widget $::history_widget
 	$widget delete 0 99999
 	set cnt 0
 
-	set history_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+	set ::history_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
 
-    foreach shot_file $history_files {
+    foreach shot_file $::history_files {
         set tailname [file tail $shot_file]
         set newfile [file rootname $tailname]
         set fname "history/$newfile.csv"
@@ -253,11 +256,32 @@ proc iconik_fill_history_listbox {} {
 		set dbg [array get shot]
 		msg "Read history item: $fname"
 
-		$widget insert $cnt [translate $fname]
+		$widget insert $cnt $newfile
 		incr cnt
-
 	}
+
+	set $::history_widget widget
+	set_history_scrollbar_dimensions
 }
 
-proc ::iconik_show_past_shot {} {}
+proc iconik_show_past_shot {} {
+	set stepnum [$::history_widget curselection]
+	if {$stepnum == ""} {
+		return
+	}
 
+	set shotfile [lindex $::history_files $stepnum]
+	set fn "[homedir]/history/$shotfile"
+
+	array set past_shot [encoding convertfrom utf-8 [read_binary_file $fn]]
+
+	msg "Read shot $fn"
+
+	history_elapsed set $past_shot(espresso_elapsed)
+	history_pressure_goal set $past_shot(espresso_pressure_goal)
+	history_flow_goal set $past_shot(espresso_flow_goal)
+	history_pressure set $past_shot(espresso_pressure)
+	history_flow set $past_shot(espresso_flow)
+	history_weight set $past_shot(espresso_weight)
+
+}
