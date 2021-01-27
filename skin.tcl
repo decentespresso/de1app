@@ -20,7 +20,6 @@ create_grid
 #.can itemconfigure "grid" -state "normal" 
 
 
-
 #dont change page on state change
 proc skins_page_change_due_to_de1_state_change { textstate } {
 	if {$textstate == "Idle"} {
@@ -152,6 +151,14 @@ proc iconik_save_profile {slot} {
 }
 
 register_state_change_handler "Idle" "HotWaterRinse" timout_flush
+
+
+proc iconik_show_settings {} {
+	if {$::settings(settings_profile_type) == "settings_2c"} {
+		#fill_advanced_profile_steps_listbox
+	}
+	show_settings $::settings(settings_profile_type)
+}
 
 set ::iconik_max_pressure 0
 set ::iconik_min_flow 20

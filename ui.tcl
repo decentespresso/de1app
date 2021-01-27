@@ -174,7 +174,7 @@ add_de1_button "off" { iconik_status_tap } 80 1440 480 1560
 ## MISC buttons
 create_button "off" 580 1440 980 1560 [translate "History"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_fill_history_listbox; page_to_show_when_off "history" }
 create_button "off" 1080 1440 1480 1560 [translate "Clean"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning }
-create_button "off" 1580 1440 1980 1560 [translate "Settings"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); show_settings }
+create_button "off" 1580 1440 1980 1560 [translate "Settings"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_show_settings}
 create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); start_sleep }
 
 ## Graph
