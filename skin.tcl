@@ -16,8 +16,8 @@ source "[skin_directory]/framework.tcl"
 source "[skin_directory]/ui.tcl"
 
 create_grid
-.can itemconfigure "grid" -state "hidden" 
-#.can itemconfigure "grid" -state "normal" 
+.can itemconfigure "grid" -state "hidden"
+#.can itemconfigure "grid" -state "normal"
 
 
 #dont change page on state change
@@ -27,13 +27,13 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
     } elseif {$textstate == "Sleep"} {
 		page_display_change $::de1(current_context) "saver"
     } elseif {$textstate == "Refill"} {
-		page_display_change $::de1(current_context) "tankempty" 
+		page_display_change $::de1(current_context) "tankempty"
 	} elseif {$textstate == "Descale"} {
-		page_display_change $::de1(current_context) "descaling" 
+		page_display_change $::de1(current_context) "descaling"
 	} elseif {$textstate == "Clean"} {
-		page_display_change $::de1(current_context) "cleaning" 
+		page_display_change $::de1(current_context) "cleaning"
 	} elseif {$textstate == "AirPurge"} {
-		page_display_change $::de1(current_context) "travel_do" 
+		page_display_change $::de1(current_context) "travel_do"
 	}
 }
 
@@ -55,10 +55,10 @@ proc iconik_get_status_text {} {
 
 	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
 		return [translate "Scale disconnected.\nTap here"]
-	} 
+	}
 
 	switch $::de1(substate) {
-		"-" { 
+		"-" {
 			return [translate "Starting"]
 		}
 		0 {
@@ -114,6 +114,34 @@ proc iconic_steam_tap {up} {
 	de1_send_steam_hotwater_settings
 }
 
+proc iconik_temperature_adjust {up} {
+	if {$::settings(settings_profile_type) == "settings_2c2" || $::settings(settings_profile_type) == "settings_2c"} {
+		set new_profile {}
+		foreach step $::settings(advanced_shot) {
+			array set step_array $step
+			if {$up == "up"} {
+				set step_array(temperature) [round_to_one_digits [expr {$step_array(temperature) + 0.5}]]
+			} else {
+				set step_array(temperature) [round_to_one_digits [expr {$step_array(temperature) - 0.5}]]
+			}
+			lappend new_profile [array get step_array]
+		}
+		set ::settings(advanced_shot) $new_profile
+		array set ::current_adv_step [lindex $::settings(advanced_shot) 0]
+
+	} else {
+		if {$up == "up"} {
+			set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + 0.5}]
+		} else {
+			set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) - 0.5}]
+		}
+	}
+	profile_has_changed_set;
+	save_profile
+	save_settings_to_de1
+	save_settings
+}
+
 proc iconik_toggle_steam_settings {slot} {
 
 	set new_steam_timeout [dict get $::iconik_settings(steam_profiles) $slot timeout]
@@ -153,8 +181,8 @@ register_state_change_handler "Idle" "HotWaterRinse" timout_flush
 
 
 proc iconik_show_settings {} {
-	if {$::settings(settings_profile_type) == "settings_2c"} {
-		#fill_advanced_profile_steps_listbox
+	if {$::settings(settings_profile_type) == "settings_2c2" || $::settings(settings_profile_type) == "settings_2c"} {
+		fill_advanced_profile_steps_listbox
 	}
 	show_settings $::settings(settings_profile_type)
 }
@@ -197,12 +225,12 @@ proc iconik_get_steam_time {} {
 		set current_steam_time [expr {([clock milliseconds] - $::timers(steam_pour_start))/1000}]
 		return "$current_steam_time / ${target_steam_time}s"
 	}
-	
+
 	return "${target_steam_time}s"
 }
 
 proc iconik_fill_history_listbox {} {
-	#puts "fill_history_listbox $widget" 
+	#puts "fill_history_listbox $widget"
 	set widget $::globals(iconik_history)
 	$widget delete 0 99999
 	set cnt 0
@@ -212,7 +240,7 @@ proc iconik_fill_history_listbox {} {
     foreach shot_file $history_files {
         set tailname [file tail $shot_file]
         set newfile [file rootname $tailname]
-        set fname "history/$newfile.csv" 
+        set fname "history/$newfile.csv"
 
 		array unset -nocomplain shot
 		catch {

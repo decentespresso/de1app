@@ -5,7 +5,21 @@ proc iconik_wakeup {} {
 	start_idle
 }
 
-proc iconik_temperature {val} {
+proc iconik_water_temperature {} {
+	if {$::settings(enable_fahrenheit) == 1} {
+		set temp [round_to_one_digits [celsius_to_fahrenheit $::settings(water_temperature)]]
+		return "$temp F"
+	}
+	set temp [round_to_one_digits $::settings(water_temperature)]
+	return "$temp °C"
+}
+
+proc iconik_expresso_temperature {} {
+	if {$::settings(settings_profile_type) == "settings_2c2" || $::settings(settings_profile_type) == "settings_2c"} {
+		set val $::current_adv_step(temperature)
+	} else {
+		set val $::settings(espresso_temperature)
+	}
 	if {$::settings(enable_fahrenheit) == 1} {
 		set temp [round_to_one_digits [celsius_to_fahrenheit $val]]
 		return "$temp F"
@@ -23,7 +37,6 @@ proc iconik_get_final_weight {} {
 }
 
 proc iconik_profile_title {slot} {
-	msg [dict get $::iconik_settings(profiles) $slot]
 	return [dict get $::iconik_settings(profiles) $slot title]
 }
 
@@ -92,8 +105,8 @@ create_settings_button "off" 80 30 480 150 "" $::font_tiny [theme button_seconda
 add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width 200  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Flush:\n[round_to_one_digits $::iconik_settings(flush_timeout)]s}      
 
 ## Espresso Temperature
-create_settings_button "off" 580 30 980 150 "" $::font_tiny [theme button_secondary] [theme button_text_light] {  set ::settings(espresso_temperature) [expr {[round_to_one_digits $::settings(espresso_temperature)] - 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}  {  set ::settings(espresso_temperature) [expr {[round_to_one_digits $::settings(espresso_temperature)] + 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
-add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Temp:\n [iconik_temperature  $::settings(espresso_temperature)]} 
+create_settings_button "off" 580 30 980 150 "" $::font_tiny [theme button_secondary] [theme button_text_light] {iconik_temperature_adjust down} {iconik_temperature_adjust up}
+add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Temp:\n [iconik_expresso_temperature]} 
 
 ## Espresso Target Weight
 create_settings_button "off" 1080 30 1480 150 "" $::font_tiny [theme button_secondary] [theme button_text_light]  { set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) - 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) - 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} { set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) + 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) + 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
@@ -105,7 +118,7 @@ add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (30 + 150) / 2.0 ] -wid
 
 ## Water Volume
 create_settings_button "off" 2080 30 2480 150 "" $::font_tiny [theme button_secondary] [theme button_text_light]  {  set ::settings(water_volume) [expr {$::settings(water_volume) - 5}]; de1_send_steam_hotwater_settings; save_settings} {  set ::settings(water_volume) [expr {$::settings(water_volume) + 5}]; de1_send_steam_hotwater_settings; save_settings}
-add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Water [iconik_temperature $::settings(water_temperature)]:\n[round_to_integer $::settings(water_volume)]ml} 
+add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Water [iconik_water_temperature]:\n[round_to_integer $::settings(water_volume)]ml} 
 
 # Recipe
 rounded_rectangle "off" 80 210 480 1110 [rescale_x_skin 80] [theme button]
