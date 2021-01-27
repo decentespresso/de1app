@@ -105,11 +105,7 @@ proc iconic_steam_tap {up} {
 		set ::settings(steam_timeout) [expr {$::settings(steam_timeout) - 1}]
 	}
 
-	if {$::iconik_settings(steam_active_slot) == 1} {
-		set ::iconik_settings(steam_timeout1) $::settings(steam_timeout)
-	} else {
-		set ::iconik_settings(steam_timeout2) $::settings(steam_timeout)
-	}
+	dict set ::iconik_settings(steam_profiles) $::iconik_settings(steam_active_slot) timeout $::settings(steam_timeout)
 
 	save_settings
 	de1_send_steam_hotwater_settings
@@ -193,16 +189,14 @@ proc iconik_get_min_flow {} {
 }
 
 proc iconik_get_steam_time {} {
-	set target_steam_time [round_to_one_digits $::settings(steam_timeout)]
+	set target_steam_time [round_to_integer $::settings(steam_timeout)]
 	if {[info exists ::timers(steam_pour_start)] == 1 && $::de1_num_state($::de1(state)) == "Steam"} {
 		set current_steam_time [expr {([clock milliseconds] - $::timers(steam_pour_start))/1000}]
-		return "$current_steam_time / $target_steam_time"
+		return "$current_steam_time / ${target_steam_time}s"
 	}
 	
-	return $target_steam_time
-	
+	return "${target_steam_time}s"
 }
-
 
 proc iconik_fill_history_listbox {} {
 	#puts "fill_history_listbox $widget" 
