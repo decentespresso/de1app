@@ -75,6 +75,8 @@ array set ::iconik_settings {
 
     cleanup_use_profile 0
     cleanup_profile "weber_spring_clean"
+
+    show_steam 0
 }
 
 proc theme {cntx} {

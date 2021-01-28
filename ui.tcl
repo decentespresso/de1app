@@ -192,6 +192,13 @@ create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_tiny [theme 
 
 ## Graph
 
+# 900 default
+set espresso_graph_height 900
+
+if {$::iconik_settings(show_steam) == 1} {
+	set espresso_graph_height 600
+}
+
 add_de1_widget "off" graph 580 230 {
 
 	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color [theme primary_light]  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
@@ -232,8 +239,8 @@ add_de1_widget "off" graph 580 230 {
 	$widget element create god_line2_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 24] -color #c5ffe7  -smooth $::settings(live_graph_smoothing_technique) -pixels 0;
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ;
 
-	$widget axis configure x -color [theme background_text] -tickfont Helv_7_bold;
-	$widget axis configure y -color [theme background_text] -tickfont Helv_7_bold -min 0.0 -max $::settings(zoomed_y_axis_scale) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20} -hide 0;
+	$widget axis configure x -color [theme background_text] -tickfont Helv_6;
+	$widget axis configure y -color [theme background_text] -tickfont Helv_6 -min 0.0 -max $::settings(zoomed_y_axis_scale) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20} -hide 0;
 
 	# show the explanation for pressure
 	$widget element create line_espresso_de1_explanation_chart_pressure_zoomed -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 16] -color [theme primary]  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0;
@@ -242,4 +249,17 @@ add_de1_widget "off" graph 580 230 {
 	$widget element create line_espresso_de1_explanation_chart_flow_zoom -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow  -label "" -linewidth [rescale_x_skin 18] -color [theme secondary]  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0;
 
 
-} -plotbackground [theme background] -width [rescale_x_skin 1880] -height [rescale_y_skin 900] -borderwidth 1 -background [theme background] -plotrelief flat -plotpady 0 -plotpadx 10
+} -plotbackground [theme background] -width [rescale_x_skin 1880] -height [rescale_y_skin $espresso_graph_height] -borderwidth 1 -background [theme background] -plotrelief flat -plotpady 0 -plotpadx 10
+
+
+if {$::iconik_settings(show_steam) == 1} {
+	add_de1_widget "off" graph 580 830 { 
+		$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color #86C240  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+		$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color #43B1E3  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow); 
+		$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label "" -linewidth [rescale_x_skin 6] -color #FF2600 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+
+		$widget axis configure x -color [theme background_text] -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
+		$widget axis configure y -color [theme background_text] -tickfont Helv_6 -min 0 -max 4 -subdivisions 5 -majorticks {1 2 3 4}	
+
+	} -plotbackground [theme background] -width [rescale_x_skin 1880] -height [rescale_y_skin 300] -borderwidth 1 -background [theme background] -plotrelief flat
+}
