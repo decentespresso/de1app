@@ -240,11 +240,11 @@ proc iconik_get_final_weight {} {
 	}
 
 	set current ""
-	if {[is_scale_disconnected != 1]} {
-		set current $::de1(scale_weight)
+	if {$::de1(scale_device_handle) != 0 && $::settings(scale_bluetooth_address) != ""} {
+		set current "$::de1(scale_weight) / "
 	}
 
-	return "$current / $target"
+	return "$current$target"
 }
 
 
