@@ -28,14 +28,6 @@ proc iconik_expresso_temperature {} {
 	return "$temp °C"
 }
 
-proc iconik_get_final_weight {} {
-	if {$::settings(settings_profile_type) == "settings_2c"} {
-    	return $::settings(final_desired_shot_weight_advanced)
-    } else {
-    	return $::settings(final_desired_shot_weight)
-    }
-}
-
 proc iconik_profile_title {slot} {
 	return [dict get $::iconik_settings(profiles) $slot title]
 }

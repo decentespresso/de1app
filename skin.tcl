@@ -232,6 +232,22 @@ proc iconik_get_steam_time {} {
 	return "${target_steam_time}s"
 }
 
+proc iconik_get_final_weight {} {
+	if {$::settings(settings_profile_type) == "settings_2c"} {
+		set target $::settings(final_desired_shot_weight_advanced)
+	} else {
+		set target $::settings(final_desired_shot_weight)
+	}
+
+	set current ""
+	if {[is_scale_disconnected != 1]} {
+		set current $::de1(scale_weight)
+	}
+
+	return "$current / $target"
+}
+
+
 proc iconik_fill_history_listbox {} {
 	#puts "fill_history_listbox $widget"
 	set widget $::history_widget
