@@ -71,7 +71,7 @@ proc set_history_scrollbar_dimensions {} {
 create_button "history" 580 1440 1880 1560 [translate "Done"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); page_to_show_when_off "off" }
 
 # Return from screensaver
-set_de1_screen_saver_directory "[homedir]/saver"
+set_de1_screen_saver_directory [homedir]$::iconik_settings(saver_dir)
 add_de1_button "saver" {say [translate "wake"] $::settings(sound_button_in); iconik_wakeup} 0 0 2560 1600
 
 # Profile QuickSettings
