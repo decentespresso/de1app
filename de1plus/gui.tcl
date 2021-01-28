@@ -1389,9 +1389,6 @@ proc page_display_change {page_to_hide page_to_show} {
 		borg systemui $::android_full_screen_flags  
 	} else {
 		display_brightness $::settings(app_brightness)
-
-		# let the Android controls show for 5 seconds, and if the user doesn't use them in that time, then hide them
-		after 5000 borg systemui $::android_full_screen_flags
 	}
 
 

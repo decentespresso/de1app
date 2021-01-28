@@ -856,6 +856,10 @@ proc get_set_tablet_brightness { {setting ""} } {
     # only call the Android setting if the setting needs to be changed.
     if {$actual != $setting} {
         borg brightness $setting
+
+        # hide the bar that is made visible by changing brightness
+        borg systemui $::android_full_screen_flags
+
     }
 }
 
