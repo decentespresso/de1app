@@ -313,7 +313,7 @@ proc decent_scale_weight_read_spec2 {} {
 	set spec {
 		model {char {} {} {unsigned} {}}
 		wtype {char {} {} {unsigned} {}}
-		weight {Short {} {} {unsigned} {}}
+		weight {Short {} {} {signed} {}}
 		rate {Short {} {} {unsigned} {}}
 		xor {char {} {} {unsigned} {}}
 	}
