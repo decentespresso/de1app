@@ -107,6 +107,11 @@ proc scale_enable_grams {} {
 
 proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
 
+	if {$sensorweight > 2000} {
+		# max weight receivable by the scales we talk to, is 2kg, so ignore any greater weight, it is incorrect
+		set sensorweight 2000
+	}
+
 	if { $::settings(scale_stop_at_half_shot) == 1} {
 		set sensorweight [expr $sensorweight * 2]
 	}
@@ -135,7 +140,7 @@ proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
 
 		set diff_rel [expr {($::de1(scale_weight) - $sensorweight)}]
 		if {$diff_rel > 1.0} {
-			# maximum change allowed in 1/10th of a second is 1gram, corresponding to a 10ml/s flow rate, in order to not have wight shocks like a pitcher rinser, cause accidental weight stopping
+			# maximum weight change allowed in 1/10th of a second is 1gram, corresponding to a 10ml/s flow rate, in order to not have wight shocks like a pitcher rinser, cause accidental weight stopping
 			set sensorweight [expr {$::de1(scale_weight) + 1.0}]
 			set diff [expr {abs($::de1(scale_weight) - $sensorweight)}]
 		}
