@@ -127,12 +127,20 @@ proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
 	if {$::de1(scale_weight) == ""} {
 		set ::de1(scale_weight) 0
 	}
-	set diff 0
+#	set diff 0
 	set diff [expr {abs($::de1(scale_weight) - $sensorweight)}]
-	
+
 
 	#if {$::de1_num_state($::de1(state)) == "Idle"} 
 	if {$::de1_num_state($::de1(state)) == "Espresso" && ($::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)) } {
+
+		if {$diff > 1.0} {
+			# maximum change allowed in 1/10th of a second is 1gram, corresponding to a 10ml/s flow rate, in order to not have wight shocks like a pitcher rinser, cause accidental weight stopping
+			set diff [expr {abs($::de1(scale_weight) - $sensorweight)}]
+			set sensorweight [expr {$::de1(scale_weight) + 1.0}]
+		}
+		
+
 		# john 5/11/18 hard set this to 5% weighting, until we're sure these other methods work well.
 		set multiplier1 0.95
 		#if {$diff > 10} {
