@@ -107,10 +107,10 @@ proc scale_enable_grams {} {
 
 proc handle_new_weight_from_scale { sensorweight scale_refresh_rate } {
 
-	if {$sensorweight > 2000} {
-		# max weight receivable by the scales we talk to, is 2kg, so ignore any greater weight, it is incorrect
-		set sensorweight 2000
-	}
+	#if {$sensorweight > 2000} {
+		# max weight receivable by the scales we talk to, is 2kg, so ignore any greater weight, it is incorrect, and likely in fact a negative weight
+	#	set sensorweight 2000
+	#}
 
 	if { $::settings(scale_stop_at_half_shot) == 1} {
 		set sensorweight [expr $sensorweight * 2]
