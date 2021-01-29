@@ -1,5 +1,6 @@
-visualizer_url visualizer.coffee
-visualizer_username "demo@demo"
-visualizer_password "passwd"
-visualizer_endpoint "api/shots/upload"
 auto_upload 1
+visualizer_endpoint api/shots/upload
+visualizer_password passwd
+visualizer_url visualizer.coffee
+visualizer_username demo@demo123
+

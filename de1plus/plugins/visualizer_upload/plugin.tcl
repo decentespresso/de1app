@@ -9,6 +9,45 @@ set ::plugins::${plugin_name}::contact "coffee-plugins@mimoja.de"
 set ::plugins::${plugin_name}::version 1.0
 set ::plugins::${plugin_name}::description "Upload your last shot to visualizer.coffee"
 
+# Paint settings screen
+proc ::plugins::${plugin_name}::preload {} {
+
+    # Unique name per page
+    set page_name "plugin_visualizer_page_default"
+
+    # Background image and "Done" button
+    add_de1_page "$page_name" "settings_message.png" "default"
+    add_de1_text $page_name 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+    add_de1_button $page_name {say [translate {Done}] $::settings(sound_button_in); save_plugin_settings visualizer_upload;  fill_extensions_listbox; page_to_show_when_off extensions; set_extensions_scrollbar_dimensions}  980 1210 1580 1410 ""
+
+    # Headline
+    add_de1_text $page_name 1280 300 -text [translate "Visualizer Upload"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center"
+
+    # Username
+    add_de1_text $page_name 280 480 -text [translate "Username"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
+    # The actual content. Here a list of all settings for this plugin
+    add_de1_widget "$page_name" entry 280 540  {
+        set ::globals(widget_profile_name_to_save) $widget
+        bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; save_plugin_settings visualizer_upload; hide_android_keyboard}
+        bind $widget <Leave> hide_android_keyboard
+    } -width [expr {int(38 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::visualizer_upload::settings(visualizer_username) -relief flat  -highlightthickness 1 -highlightcolor #000000
+
+    # Password
+    add_de1_text $page_name 280 660 -text [translate "Password"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
+    # The actual content. Here a list of all settings for this plugin
+    add_de1_widget "$page_name" entry 280 720  {
+        set ::globals(widget_profile_name_to_save) $widget
+        bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; save_plugin_settings visualizer_upload; hide_android_keyboard}
+        bind $widget <Leave> hide_android_keyboard
+    } -width [expr {int(38 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::visualizer_upload::settings(visualizer_password) -relief flat  -highlightthickness 1 -highlightcolor #000000
+
+    # Auto-Upload
+    add_de1_widget "$page_name" checkbutton 280 840 {} -text [translate "Auto-Upload"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::plugins::visualizer_upload::settings(auto_upload)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
+
+    return $page_name
+}
+
+
 proc ::plugins::${plugin_name}::upload {content} {
     msg "uploading shot"
     borg toast "Uploading Shot"
@@ -26,7 +65,7 @@ proc ::plugins::${plugin_name}::upload {content} {
     set headerl [list Authorization "$auth"]
 
     set url "https://$::plugins::visualizer_upload::settings(visualizer_url)/$::plugins::visualizer_upload::settings(visualizer_endpoint)"
-    
+
     set contentHeader "Content-Disposition: form-data; name=\"file\"; filename=\"file.shot\"\r\nContent-Type: application/octet-stream\r\n"
     set body "--$boundary\r\n$contentHeader\r\n$content\r\n--$boundary--\r\n"
 
@@ -79,6 +118,6 @@ proc ::plugins::${plugin_name}::uploadShotData {old new} {
 
 
 proc ::plugins::${plugin_name}::main {} {
-    register_state_change_handler Espresso Idle ::plugins::visualizer_upload::uploadShotData   
+    register_state_change_handler Espresso Idle ::plugins::visualizer_upload::uploadShotData
 }
 
