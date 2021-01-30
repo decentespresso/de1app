@@ -161,6 +161,11 @@ proc iconik_toggle_profile {slot} {
 	set profile [dict get $::iconik_settings(profiles) $slot name]
 
 	select_profile $profile
+
+	if {$::settings(settings_profile_type) == "settings_2c2" || $::settings(settings_profile_type) == "settings_2c"} {
+		array set ::current_adv_step [lindex $::settings(advanced_shot) 0]
+	}
+
 	save_settings_to_de1
 	save_settings
 }
