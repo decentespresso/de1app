@@ -36,43 +36,23 @@ proc iconik_steam_timeout {slot} {
 	return [dict get $::iconik_settings(steam_profiles) $slot timeout]
 }
 
-add_background "off history"
-
 # History Page
 
-add_de1_widget "history" graph 680 80 {
-	#Target
-	$widget element create line_history_espresso_pressure_goal -xdata history_elapsed -ydata history_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color [theme primary_light]  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
-	$widget element create line_history_espresso_flow_goal -xdata history_elapsed -ydata history_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color [theme secondary_light] -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5};
-	$widget element create line_history_espresso_pressure -xdata history_elapsed -ydata history_pressure  -symbol none -label "" -linewidth [rescale_x_skin 12] -color [theme primary]  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure);
-	$widget element create line_history_espresso_flow -xdata history_elapsed -ydata history_flow -symbol none -label "" -linewidth [rescale_x_skin 12] -color  [theme secondary] -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes $::settings(chart_dashes_flow);
-
-	$widget element create line_history_espresso_weight -xdata history_elapsed -ydata history_weight -symbol none -label "" -linewidth [rescale_x_skin 6] -color #f8b888 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);
-	$widget axis configure x -color [theme background_text] -tickfont Helv_7 -min 0.0;
-	$widget axis configure y -color [theme background_text] -tickfont Helv_7 -min 0.0 -max 12 -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}  -hide 0;
-	$widget grid configure -color [theme background_text]
-
-} -plotbackground [theme background] -width [rescale_x_skin 1860] -height [rescale_y_skin 1340] -borderwidth 1 -background [theme background] -plotrelief flat
-
-add_de1_widget "history" listbox 80	80 {
-	set ::history_widget $widget
-	bind $::history_widget <<ListboxSelect>> ::iconik_show_past_shot
-	iconik_fill_history_listbox
-} -background #fbfaff -font Helv_9 -bd 0 -height 18 -width 16 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single -foreground [theme primary] -selectbackground [theme primary_dark]  -selectforeground [theme button_text_light] -yscrollcommand {scale_scroll_new $::history_widget ::history_slider}
-
-set ::history_slider 0
-set ::history_scrollbar [add_de1_widget "history" scale 10000 1 {} -from 0 -to .90 -bigincrement 0.2 -background [theme primary] -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::history_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::history_widget $::history_slider}  -foreground [theme background] -troughcolor [theme background] -borderwidth 2  -highlightthickness 0]
-
-proc set_history_scrollbar_dimensions {} {
-	set_scrollbar_dimensions $::history_scrollbar $::history_widget
-}
-
-
-create_button "history" 580 1440 1880 1560 [translate "Done"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); page_to_show_when_off "off" }
+source "[skin_directory]/history_viewer.tcl"
 
 # Return from screensaver
 set_de1_screen_saver_directory [homedir]$::iconik_settings(saver_dir)
 add_de1_button "saver" {say [translate "wake"] $::settings(sound_button_in); iconik_wakeup} 0 0 2560 1600
+
+add_background "off"
+
+
+# Water level indicator
+if {$::iconik_settings(show_water_level_indicator) == 1} {
+	# water level sensor 
+	add_de1_widget "off" scale 0 0 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background [theme primary] -foreground [theme secondary] -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1600] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor [theme background] -borderwidth 0  -highlightthickness 0
+}
+
 
 # Profile QuickSettings
 create_button "settings_1" 1140 1020 1240 1120 "1" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 1}
@@ -124,19 +104,21 @@ add_de1_variable "off" $column1_pos [expr {$pos_top + (1 * $spacer)}] -justify l
 add_de1_variable "off" $column1_pos [expr {$pos_top + (3 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny -fill [theme button_text_dark] -width [rescale_x_skin 520] -textvariable {[total_pour_timer_text]}
 add_de1_variable "off" $column1_pos [expr {$pos_top + (4 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny -fill [theme button_text_dark] -width [rescale_x_skin 520] -textvariable {[espresso_done_timer_text]}
 add_de1_variable "off" $column1_pos [expr {$pos_top + (2 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny -fill [theme button_text_dark] -width [rescale_x_skin 520] -textvariable {[pouring_timer_text]}
-# Volume
 
+# Volume
 add_de1_text "off" $column1_pos [expr {$pos_top + (6 * $spacer)}] -justify left -anchor "nw" -text [translate "Volume"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
 add_de1_variable "off" $column1_pos [expr {$pos_top + (7 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[preinfusion_volume]}
 add_de1_variable "off" $column1_pos [expr {$pos_top + (8 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[pour_volume]}
 add_de1_variable "off" $column1_pos [expr {$pos_top + (9 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[watervolume_text]}
 
 
+# Max pressure, min flow
 add_de1_text "off" $column1_pos [expr {$pos_top + (11 * $spacer)}] -justify left -anchor "nw" -text [translate "Peak pressure"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
 add_de1_variable "off" $column1_pos [expr {$pos_top + (12 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[iconik_get_max_pressure] bar}
 add_de1_text "off" $column1_pos [expr {$pos_top + (13 * $spacer)}] -justify left -anchor "nw" -text [translate "Minimum flow"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
 add_de1_variable "off" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[iconik_get_min_flow]  ml/ s}
 
+# water refill
 add_de1_text "off" $column1_pos [expr {$pos_top + (16 * $spacer)}] -justify left -anchor "nw" -text [translate "Waterlevel"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
 add_de1_variable "off" $column1_pos [expr {$pos_top + (17 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {Lim: $::settings(water_refill_point) Curr: [round_to_one_digits $::de1(water_level)]}
 
@@ -177,7 +159,7 @@ add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1440 + 1560) / 2.0 ] -wid
 add_de1_button "off" { iconik_status_tap } 80 1440 480 1560
 
 ## MISC buttons
-create_button "off" 580 1440 980 1560 [translate "History"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_fill_history_listbox; page_to_show_when_off "history"; set_history_scrollbar_dimensions}
+create_button "off" 580 1440 980 1560 [translate "History"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); show_history_page}
 create_button "off" 1080 1440 1480 1560 [translate "Clean"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning }
 create_button "off" 1580 1440 1980 1560 [translate "Settings"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_show_settings}
 create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); start_sleep }

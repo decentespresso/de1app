@@ -79,6 +79,8 @@ array set ::iconik_settings {
     show_steam 0
 
     saver_dir {/saver}
+
+    show_water_level_indicator 0
 }
 
 proc theme {cntx} {
