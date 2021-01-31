@@ -29,3 +29,12 @@ core
 
 release
 de1plus/plugins/visualizer_upload/settings.tdb
+de1plus/plugins/web_api/settings.tdb
+
+# DE1 app run-time files
+
+/de1plus/history/
+/de1plus/log.txt
+/de1plus/log.txt.*
+/de1plus/settings.tdb
+/de1plus/tmp/
