@@ -1432,7 +1432,7 @@ proc update_de1_shotvalue {packed} {
 	if {$::previous_FrameNumber != [ifexists ShotSample(FrameNumber)]} {
 		# draw a vertical line at each frame change
 
-		if {$::previous_FrameNumber > 0} {
+		if {$::previous_FrameNumber >= 0} {
 			# don't draw a line a the first frame change
 			set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
 		}

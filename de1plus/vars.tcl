@@ -3129,9 +3129,19 @@ proc format_espresso_for_history {} {
 		append espresso_data "espresso_temperature_mix {[espresso_temperature_mix range 0 end]}\n"
 		append espresso_data "espresso_water_dispensed {[espresso_water_dispensed range 0 end]}\n"
 
+		append espresso_data "espresso_pressure_delta {[espresso_pressure_delta range 0 end]}\n"	
+		append espresso_data "espresso_flow_delta_negative {[espresso_flow_delta_negative range 0 end]}\n"	
+		append espresso_data "espresso_flow_delta_negative_2x {[espresso_flow_delta_negative_2x range 0 end]}\n"	
+
+		append espresso_data "espresso_resistance {[espresso_resistance range 0 end]}\n"	
+		append espresso_data "espresso_resistance_weight {[espresso_resistance_weight range 0 end]}\n"	
+
+		append espresso_data "espresso_state_change {[espresso_state_change range 0 end]}\n"
+
 		append espresso_data "espresso_pressure_goal {[espresso_pressure_goal range 0 end]}\n"
 		append espresso_data "espresso_flow_goal {[espresso_flow_goal range 0 end]}\n"
-		append espresso_data "espresso_temperature_goal {[espresso_temperature_goal range 0 end]}\n"		
+		append espresso_data "espresso_temperature_goal {[espresso_temperature_goal range 0 end]}\n"
+
 
 		# format settings nicely so that it is easier to read and parse
 		append espresso_data "settings {\n"
@@ -3148,6 +3158,9 @@ proc format_espresso_for_history {} {
 	        append espresso_data [subst {\t[list $k] [list $v]\n}]
 	    }
 	    append espresso_data "}\n"
+
+		set app_version [package version de1app]
+		append espresso_data "app_version {$app_version}\n"
 
 		return $espresso_data
 	
