@@ -437,7 +437,7 @@ array set ::settings {
 
 	maximum_flow_range_advanced 0.6
 	maximum_pressure_range_advanced 0.6
-
+	high_vibration_scale_filtering False
 }
 
 # default de1plus skin
