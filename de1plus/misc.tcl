@@ -617,6 +617,9 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/v60-15g.tcl *
         profiles/v60-20g.tcl *
         profiles/v60-22g.tcl *
+
+        plugins/visualizer_upload/plugin.tcl *
+        plugins/visualizer_upload/settings.tdb *
     }
 #        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
