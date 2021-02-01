@@ -519,10 +519,10 @@ proc make_de1_dir {srcdir destdirs} {
 
         skins/MimojaCafe/1280x800/icon.jpg *
         skins/MimojaCafe/2560x1600/icon.jpg *
-        skins/MimojaCafe/fonts/Mazzard Light.otf *
-        skins/MimojaCafe/fonts/Mazzard Medium.otf *
-        skins/MimojaCafe/fonts/Mazzard Regular.otf *
-        skins/MimojaCafe/fonts/Mazzard SemiBold.otf *
+        skins/MimojaCafe/fonts/Mazzard\ Light.otf *
+        skins/MimojaCafe/fonts/Mazzard\ Medium.otf *
+        skins/MimojaCafe/fonts/Mazzard\ Regular.otf *
+        skins/MimojaCafe/fonts/Mazzard\ SemiBold.otf *
         skins/MimojaCafe/framework.tcl *
         skins/MimojaCafe/LICENSE *
         skins/MimojaCafe/settings.tcl *
