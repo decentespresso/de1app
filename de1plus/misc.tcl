@@ -524,7 +524,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/MimojaCafe/fonts/Mazzard\ Regular.otf *
         skins/MimojaCafe/fonts/Mazzard\ SemiBold.otf *
         skins/MimojaCafe/framework.tcl *
-        skins/MimojaCafe/LICENSE *
         skins/MimojaCafe/settings.tcl *
         skins/MimojaCafe/skin.tcl *
         skins/MimojaCafe/history_viewer.tcl *
