@@ -501,8 +501,32 @@ namespace eval ::device::scale::history {
 			::device::scale::history::flow_estimate_time_fd
 		}
 
-		# TODO: Switch to final_weight_estimate after flow
-		#       Should this be median instead?
+		proc ::device::scale::history::final_weight_estimate {} {
+			::device::scale::history::weight_estimate_median
+		}
+	}
+
+	proc setup_median_estimation_mapping {args} {
+
+		proc ::device::scale::history::weight_estimate {} {
+			::device::scale::history::weight_estimate_median
+		}
+
+		proc ::device::scale::history::flow_estimate_raw {} {
+			::device::scale::history::flow_estimate_median
+		}
+
+		proc ::device::scale::history::flow_estimate_raw_time {} {
+			::device::scale::history::flow_estimate_time_median
+		}
+
+		proc ::device::scale::history::flow_estimate {} {
+			::device::scale::history::flow_estimate_median
+		}
+
+		proc ::device::scale::history::flow_estimate_time {} {
+			::device::scale::history::flow_estimate_time_median
+		}
 
 		proc ::device::scale::history::final_weight_estimate {} {
 			::device::scale::history::weight_estimate_median
@@ -527,8 +551,27 @@ namespace eval ::device::scale::history {
 	variable _lslr_state
 	array set _lslr_state [list valid False m 0 b 0]
 
+	# Used for finite-difference, LSLR, as well as most of median estimation
+	# 11 samples is 10 intervals, ~1 second
+
 	proc samples_for_estimate {} {
 		expr { 11 }
+	}
+
+	# Used for median flow estimation "end points"
+	# on a base of samples_for_estimate
+	#
+	# 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+	# ---------           --------------    <= samples_for_median_ends
+	#     |.....................|           <= samples_for_estimate
+
+	proc samples_for_median_ends {} {
+		expr { 5 }
+	}
+
+	proc samples_for_shift_register {} {
+
+		expr { [samples_for_estimate] + [samples_for_median_ends] - 1 }
 	}
 
 	proc shift_in {shift_register value} {
@@ -543,8 +586,8 @@ namespace eval ::device::scale::history {
 
 	proc init {} {
 
-		variable _scale_raw_weight [lrepeat [samples_for_estimate] 0]
-		variable _scale_raw_arrival [lrepeat [samples_for_estimate] 0]
+		variable _scale_raw_weight [lrepeat [samples_for_shift_register] 0]
+		variable _scale_raw_arrival [lrepeat [samples_for_shift_register] 0]
 
 		variable scale_raw_weight_shot
 		variable scale_raw_arrival_shot
@@ -607,6 +650,12 @@ namespace eval ::device::scale::history {
 	}
 
 
+	#
+	# Finite-difference flow estimate
+	#
+	# Nominal delay flow: 5 -- (samples_for_estimate - 1) / 2
+	#
+
 	proc flow_estimate_fd {} {
 
 		variable _scale_raw_weight
@@ -631,6 +680,13 @@ namespace eval ::device::scale::history {
 		expr { ( [lindex $_scale_raw_arrival end] + [lindex $_scale_raw_arrival end-$intervals] ) / 2.0 }
 	}
 
+
+	#
+	# Least squares linear regression
+	#
+	# Nominal delay mass: 0
+	# Nominal delay flow: 5 -- (samples_for_estimate - 1) / 2
+	#
 
 	proc _lslr_clear {} {
 
@@ -719,10 +775,18 @@ namespace eval ::device::scale::history {
 	}
 
 
-	proc weight_estimate_median {} {
+	#
+	# Median
+	#
+	# Nominal delay mass: 5 -- (samples_for_estimate - 1) / 2
+	# Nominal delay flow: 7 -- (samples_for_estimate - 1) / 2 + (samples_for_median_ends - 1) / 2
+	#
 
-		set sorted [lsort -real -increasing \
-				    [lrange $::device::scale::history::_scale_raw_weight 0 [expr { [samples_for_estimate] - 1 }]]]
+	proc median {numeric_list} {
+
+		if {[llength $numeric_list] == 0} {return 0}
+
+		set sorted [lsort -real -increasing $numeric_list]
 		set nlist [llength $sorted]
 		set half [expr { $nlist / 2 }]
 		if { $nlist % 2 } {
@@ -730,6 +794,11 @@ namespace eval ::device::scale::history {
 		} else {
 			return [expr { ( [lindex $sorted [expr { $half - 1 }]] + [lindex $sorted $half] ) / 2.0 }]
 		}
+	}
+
+	proc weight_estimate_median {} {
+
+		return [median [lrange $::device::scale::history::_scale_raw_weight 0 [expr { [samples_for_estimate] - 1 }]]]
 	}
 
 	proc weight_estimate_time_median {} {
@@ -742,6 +811,58 @@ namespace eval ::device::scale::history {
 
 		set intervals [ expr { [samples_for_estimate] - 1 }]
 		expr { ( [lindex $_scale_raw_arrival end] + [lindex $_scale_raw_arrival end-$intervals] ) / 2.0 }
+	}
+
+
+	# Median flow estimates are the difference between medians
+	# taken at the begining and delayed by (samples_for_estimate - 1)
+	#
+	# 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+	# ---------           --------------    <= samples_for_median_ends
+	#     |.....................|           <= samples_for_estimate
+
+	proc flow_estimate_median {} {
+
+		set new_i0 0
+		set new_i1 [expr { [samples_for_median_ends] - 1 } ]
+		set old_i0 [expr { [samples_for_estimate] - 1 } ]
+		set old_i1 [expr { $old_i0 + [samples_for_median_ends] - 1 } ]
+
+		set new_t0 [lindex $::device::scale::history::_scale_raw_arrival end]
+		set new_t1 [lindex $::device::scale::history::_scale_raw_arrival end-$new_i1]
+		set old_t0 [lindex $::device::scale::history::_scale_raw_arrival end-$old_i0]
+		set old_t1 [lindex $::device::scale::history::_scale_raw_arrival end-$old_i1]
+
+		set dt [expr { (($new_t0 + $new_t1) / 2.0) - (($old_t0 + $old_t1) / 2.0) }]
+
+		# Return 0 until the shift register is filled
+
+		if { $old_t1 == 0 } { return 0 }
+
+		# Newest elements are at the end of the list, "backwards" from lindex
+
+		set new [median [lrange $::device::scale::history::_scale_raw_weight end-$new_i1 end-$new_i0]]
+		set old [median [lrange $::device::scale::history::_scale_raw_weight end-$old_i1 end-$old_i0]]
+
+		return [expr { ($new - $old) / $dt }]
+	}
+
+	proc flow_estimate_time_median {} {
+
+
+		set new_i0 0
+		set new_i1 [expr { [samples_for_median_ends] - 1 } ]
+		set old_i0 [expr { [samples_for_estimate] - 1 } ]
+		set old_i1 [expr { $old_i0 + [samples_for_median_ends] - 1 } ]
+
+		set new_t0 [lindex $::device::scale::history::_scale_raw_arrival end]
+		set new_t1 [lindex $::device::scale::history::_scale_raw_arrival end-$new_i1]
+		set old_t0 [lindex $::device::scale::history::_scale_raw_arrival end-$old_i0]
+		set old_t1 [lindex $::device::scale::history::_scale_raw_arrival end-$old_i1]
+
+		if { $old_t1 == 0 } { return 0 }
+
+		return [expr { ((($new_t0 + $new_t1) / 2.0) + (($old_t0 + $old_t1) / 2.0)) / 2.0 }]
 	}
 
 
@@ -764,6 +885,8 @@ namespace eval ::device::scale::history {
 			set ::settings(drink_weight) [round_to_one_digits $cwe]
 #		}
 	}
+
+
 
 
 	proc is_recording {} {
@@ -902,7 +1025,7 @@ namespace eval ::device::scale::saw {
 		set ::device::scale::saw::lag_time_estimation  0.5
 
 		proc ::device::scale::saw::flow_now {} {
-			::device::scale::history::flow_estimate_fd
+			::device::scale::history::flow_estimate_median
 		}
 	}
 
@@ -1102,8 +1225,19 @@ namespace eval ::device::scale::callbacks {
 		set ::device::scale::_tare_holdoff_initial 200
 		set ::device::scale::_tare_holdoff_repeat  200
 
-		::device::scale::history::setup_default_estimation_mapping
-		::device::scale::saw::setup_default_estimation_mapping
+		if { [info exists ::settings(high_vibration_scale_filtering) ] \
+			     && $::settings(high_vibration_scale_filtering) } {
+
+			::device::scale::history::setup_median_estimation_mapping
+			::device::scale::saw::setup_median_estimation_mapping
+			msg -NOTICE "::device::scale: high_vibration_scale_filtering selected"
+
+		} else {
+
+			::device::scale::history::setup_default_estimation_mapping
+			::device::scale::saw::setup_default_estimation_mapping
+			msg -NOTICE "::device::scale: default filtering selected"
+		}
 
 		switch $::settings(scale_type) {
 
