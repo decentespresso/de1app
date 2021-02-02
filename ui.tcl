@@ -66,7 +66,7 @@ create_button "settings_1" 1140 1150 1240 1250 "2" $::font_big [theme button] [t
 create_button "settings_1" 1140 1280 1240 1380 "3" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 3}
 
 # Skin settings buttons
-create_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1080 1460 1480 1580 "Skin Settings"  $::font_big $::default_theme(button) $::default_theme(button_text_light) { page_to_show_when_off "iconik_settings"}
+create_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1080 1460 1480 1580 "Skin Settings"  $::font_big [theme button] [theme button_text_light] { page_to_show_when_off "iconik_settings"}
 
 # Upper buttons
 ## Background
