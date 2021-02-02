@@ -13,6 +13,8 @@ blt::vector create history_resistance_weight history_resistance
 
 blt::vector create history_flow_delta_negative_2x history_flow_delta_negative history_pressure_delta
 
+array set ::past_shot {}
+
 proc show_history_page {} {
 	fill_history_listbox
 	page_to_show_when_off "history"
@@ -50,6 +52,17 @@ proc fill_history_listbox {} {
 	set $::history_widget widget
 }
 
+proc past_title {} {
+	if {[info exists ::past_shot(settings)] == 1} {
+		array set settings_array $::past_shot(settings)
+		return $settings_array(profile_title)
+	}
+
+	return ""
+}
+
+
+
 proc show_past_shot {} {
 	set stepnum [$::history_widget curselection]
 	if {$stepnum == ""} {
@@ -59,30 +72,28 @@ proc show_past_shot {} {
 	set shotfile [lindex $::history_files $stepnum]
 	set fn "[homedir]/history/$shotfile"
 
-	array set past_shot [encoding convertfrom utf-8 [read_binary_file $fn]]
+	array set ::past_shot [encoding convertfrom utf-8 [read_binary_file $fn]]
 
 	msg "Read shot $fn"
 
-	history_elapsed set $past_shot(espresso_elapsed)
-	history_pressure_goal set $past_shot(espresso_pressure_goal)
-	history_flow_goal set $past_shot(espresso_flow_goal)
-	history_pressure set $past_shot(espresso_pressure)
-	history_flow set $past_shot(espresso_flow)
-	history_weight set $past_shot(espresso_weight)
-
-	msg "exists:"
-	msg [array get past_shot]
+	history_elapsed set $::past_shot(espresso_elapsed)
+	history_pressure_goal set $::past_shot(espresso_pressure_goal)
+	history_flow_goal set $::past_shot(espresso_flow_goal)
+	history_pressure set $::past_shot(espresso_pressure)
+	history_flow set $::past_shot(espresso_flow)
+	history_weight set $::past_shot(espresso_weight)
 
 	# New 1.34.5 shot fields
-	history_temperature_goal set $past_shot(espresso_temperature_goal)
-	history_state_change set $past_shot(espresso_state_change)
-	history_resistance_weight set $past_shot(espresso_resistance_weight)
-	history_resistance set $past_shot(espresso_resistance)
-	history_flow_delta_negative_2x set $past_shot(espresso_flow_delta_negative_2x)
-	history_flow_delta_negative set $past_shot(espresso_flow_delta_negative)
-	history_pressure_delta set $past_shot(espresso_pressure_delta)
-}
+	history_temperature_goal set $::past_shot(espresso_temperature_goal)
+	history_state_change set $::past_shot(espresso_state_change)
+	history_resistance_weight set $::past_shot(espresso_resistance_weight)
+	history_resistance set $::past_shot(espresso_resistance)
+	history_flow_delta_negative_2x set $::past_shot(espresso_flow_delta_negative_2x)
+	history_flow_delta_negative set $::past_shot(espresso_flow_delta_negative)
+	history_pressure_delta set $::past_shot(espresso_pressure_delta)
 
+	#msg $::past_shot(settings)
+}
 
 #
 # UI
@@ -90,7 +101,8 @@ proc show_past_shot {} {
 
 add_background "history"
 
-add_de1_widget "history" graph 680 80 {
+
+add_de1_widget "history" graph 680 240 {
 	#Target
 	$widget element create line_history_espresso_pressure_goal -xdata history_elapsed -ydata history_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color [theme primary_light]  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
 	$widget element create line_history_espresso_flow_goal -xdata history_elapsed -ydata history_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color [theme secondary_light] -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5};
@@ -111,7 +123,7 @@ add_de1_widget "history" graph 680 80 {
 
 	$widget axis configure x -color [theme background_text] -tickfont Helv_7 -min 0.0;
 	$widget axis configure y -color [theme background_text] -tickfont Helv_7 -min 0.0 -max 12 -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}  -hide 0;
-} -plotbackground [theme background] -width [rescale_x_skin 1860] -height [rescale_y_skin 1340] -borderwidth 1 -background [theme background] -plotrelief flat
+} -plotbackground [theme background] -width [rescale_x_skin 1860] -height [rescale_y_skin 1180] -borderwidth 1 -background [theme background] -plotrelief flat
 
 add_de1_widget "history" listbox 80	80 {
 	set ::history_widget $widget
@@ -125,5 +137,7 @@ set ::history_scrollbar [add_de1_widget "history" scale 10000 1 {} -from 0 -to .
 proc set_history_scrollbar_dimensions {} {
 	set_scrollbar_dimensions $::history_scrollbar $::history_widget
 }
+
+add_de1_variable "history" 80 1260 -width [rescale_x_skin 380]  -text "" -font $::font_big -fill [theme primary_light] -anchor "nw" -justify "center" -state "hidden" -textvariable {[past_title]}
 
 create_button "history" 580 1440 1880 1560 [translate "Done"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); page_to_show_when_off "off" }
