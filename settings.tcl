@@ -79,9 +79,9 @@ array set ::red_theme {
 }
 
 # fonts
-set ::font_tiny {}
-set ::font_small {}
-set ::font_big .{}
+set ::font_tiny [get_font "Mazzard Regular" 16]
+set ::font_small [get_font "Mazzard Regular" 18]
+set ::font_big [get_font "Mazzard Regular" 22]
 
 array set ::iconik_settings {
     profiles {1 {name default title Default} 2 {name {Gentle and sweet} title {Gentle and sweet}} 3 {name rao_allonge title {Rao Allongé}}}
@@ -102,8 +102,6 @@ array set ::iconik_settings {
 
     show_water_level_indicator 0
     water_temperature_overwride 95
-
-    font {Mazzard Regular}
 }
 
 proc theme {cntx} {
@@ -132,8 +130,4 @@ proc iconik_save_settings {} {
 
 proc iconik_load_settings {} {
     array set ::iconik_settings [encoding convertfrom utf-8 [read_binary_file [iconik_settings_filename]]]
-
-    set ::font_tiny [get_font {$::iconik_settings(font)} 16]
-    set ::font_small [get_font {$::iconik_settings(font)} 18]
-    set ::font_big [get_font {$::iconik_settings(font)} 22]
 }
