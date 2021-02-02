@@ -100,6 +100,7 @@ array set ::iconik_settings {
     saver_dir {/saver}
 
     show_water_level_indicator 0
+    water_temperature_overwride 95
 }
 
 proc theme {cntx} {

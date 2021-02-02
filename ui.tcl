@@ -7,10 +7,10 @@ proc iconik_wakeup {} {
 
 proc iconik_water_temperature {} {
 	if {$::settings(enable_fahrenheit) == 1} {
-		set temp [round_to_one_digits [celsius_to_fahrenheit $::settings(water_temperature)]]
+		set temp [round_to_one_digits [celsius_to_fahrenheit $::iconik_settings(water_temperature_overwride)]]
 		return "$temp F"
 	}
-	set temp [round_to_one_digits $::settings(water_temperature)]
+	set temp [round_to_one_digits $::iconik_settings(water_temperature_overwride)]
 	return "$temp °C"
 }
 

@@ -152,6 +152,12 @@ proc iconik_toggle_steam_settings {slot} {
 	de1_send_steam_hotwater_settings
 }
 
+proc iconik_save_water_temperature {} {
+	set ::settings(water_temperature) $::iconik_settings(water_temperature_overwride)
+	de1_send_steam_hotwater_settings
+	save_settings
+}
+
 proc iconik_toggle_profile {slot} {
 
 	set profile [dict get $::iconik_settings(profiles) $slot name]
@@ -162,6 +168,7 @@ proc iconik_toggle_profile {slot} {
 		array set ::current_adv_step [lindex $::settings(advanced_shot) 0]
 	}
 
+	iconik_save_water_temperature
 	save_settings_to_de1
 	save_settings
 }
