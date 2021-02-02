@@ -57,6 +57,7 @@ proc plugin_preload {plugin} {
 		catch {
 			message_page [subst {[translate "The plugin $plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
 		}
+        msg "Error laoding plugin $plugin: $err"
 	}
 }
 
