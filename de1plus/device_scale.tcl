@@ -877,13 +877,11 @@ namespace eval ::device::scale::history {
 		} else {
 
 			set cwe [::device::scale::history::final_weight_estimate]
+			set cwe [::tcl::mathfunc::max $cwe [set $::device::scale::history::_final_weight_name]]
 		}
 
-#		if { [set $::device::scale::history::_final_weight_name] < $cwe } {
-
-			set $::device::scale::history::_final_weight_name $cwe
-			set ::settings(drink_weight) [round_to_one_digits $cwe]
-#		}
+		set $::device::scale::history::_final_weight_name $cwe
+		set ::settings(drink_weight) [round_to_one_digits $cwe]
 	}
 
 
