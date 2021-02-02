@@ -3,6 +3,8 @@
 # Logic
 #
 
+array set ::history {}
+
 blt::vector create history_elapsed history_pressure_goal history_flow_goal history_temperature_goal
 
 blt::vector create history_pressure history_flow

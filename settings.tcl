@@ -96,6 +96,7 @@ array set ::iconik_settings {
     cleanup_profile "weber_spring_clean"
 
     show_steam 0
+    show_ghc_buttons 0
 
     saver_dir {/saver}
 

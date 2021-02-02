@@ -167,10 +167,25 @@ create_button "off" 1080 1440 1480 1560 [translate "Clean"] $::font_tiny [theme 
 create_button "off" 1580 1440 1980 1560 [translate "Settings"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_show_settings}
 create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); start_sleep }
 
+
+## GHC buttons
+if {$::iconik_settings(show_ghc_buttons) == 1} {
+	create_button "off" 2180 210 2480 390  "Espresso"  $::font_big [theme button_tertiary]   [theme button_text_light] {start_espresso}
+	create_button "off" 2180 450 2480 630  "Steam"     $::font_big [theme button_tertiary]   [theme button_text_light] {start_water}
+	create_button "off" 2180 690 2480 870  "Water"     $::font_big [theme button_tertiary]   [theme button_text_light] {start_steam}
+	create_button "off" 2180 930 2480 1110 "Stop"      $::font_big [theme button_tertiary]   [theme button_text_light] {start_idle}
+}
+
+
 ## Graph
 
 # 900 default
 set espresso_graph_height 900
+set espresso_graph_width 1880
+
+if {$::iconik_settings(show_ghc_buttons) == 1} {
+	set espresso_graph_width 1540
+}
 
 if {$::iconik_settings(show_steam) == 1} {
 	set espresso_graph_height 600
@@ -226,7 +241,7 @@ add_de1_widget "off" graph 580 230 {
 	$widget element create line_espresso_de1_explanation_chart_flow_zoom -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow  -label "" -linewidth [rescale_x_skin 18] -color [theme secondary]  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0;
 
 
-} -plotbackground [theme background] -width [rescale_x_skin 1880] -height [rescale_y_skin $espresso_graph_height] -borderwidth 1 -background [theme background] -plotrelief flat -plotpady 0 -plotpadx 10
+} -plotbackground [theme background] -width [rescale_x_skin $espresso_graph_width] -height [rescale_y_skin $espresso_graph_height] -borderwidth 1 -background [theme background] -plotrelief flat -plotpady 0 -plotpadx 10
 
 
 if {$::iconik_settings(show_steam) == 1} {
@@ -238,5 +253,5 @@ if {$::iconik_settings(show_steam) == 1} {
 		$widget axis configure x -color [theme background_text] -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 		$widget axis configure y -color [theme background_text] -tickfont Helv_6 -min 0 -max 4 -subdivisions 5 -majorticks {1 2 3 4}	
 
-	} -plotbackground [theme background] -width [rescale_x_skin 1880] -height [rescale_y_skin 300] -borderwidth 1 -background [theme background] -plotrelief flat
+	} -plotbackground [theme background] -width [rescale_x_skin $espresso_graph_width] -height [rescale_y_skin 300] -borderwidth 1 -background [theme background] -plotrelief flat
 }
