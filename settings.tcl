@@ -58,6 +58,25 @@ array set ::purple_theme {
     button_text_dark "#CCCCCC"
 }
 
+array set ::red_theme {
+    background "#FFFFFF"
+    background_highlight "#f5f3f4"
+    background_text "#a4161a"
+
+    primary "#ba181b"
+    primary_light "#e5383b"
+    primary_dark "#a4161a"
+
+    secondary "#0b090a"
+    secondary_light "#161a1d"
+
+    button "#ba181b"
+    button_secondary "#ba181b"
+    button_tertiary "#ba181b"
+
+    button_text_light "#eee"
+    button_text_dark "#CCCCCC"
+}
 
 # fonts
 set ::font_tiny [get_font "Mazzard Regular" 16]

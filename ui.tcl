@@ -40,6 +40,12 @@ proc iconik_steam_timeout {slot} {
 
 source "[skin_directory]/history_viewer.tcl"
 
+
+# Settings Page
+
+source "[skin_directory]/settings_screen.tcl"
+
+
 # Return from screensaver
 set_de1_screen_saver_directory [homedir]$::iconik_settings(saver_dir)
 add_de1_button "saver" {say [translate "wake"] $::settings(sound_button_in); iconik_wakeup} 0 0 2560 1600
@@ -59,11 +65,8 @@ create_button "settings_1" 1140 1020 1240 1120 "1" $::font_big [theme button] [t
 create_button "settings_1" 1140 1150 1240 1250 "2" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 2}
 create_button "settings_1" 1140 1280 1240 1380 "3" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 3}
 
-# Skin theme buttons
-create_button "settings_4" 80 1480 380 1580 "Default"  $::font_big $::default_theme(button) $::default_theme(button_text_light) {set ::iconik_settings(theme) "::default_theme"; iconik_save_settings; borg toast "Theme changed, please restart"}
-create_button "settings_4" 480 1480 780 1580 "Dark"    $::font_big $::dark_theme(button)     $::dark_theme(button_text_light)   {set ::iconik_settings(theme) "::dark_theme";    iconik_save_settings; borg toast "Theme changed, please restart"}
-create_button "settings_4" 880 1480 1180 1580 "Purple" $::font_big $::purple_theme(button)   $::purple_theme(button_text_light) {set ::iconik_settings(theme) "::purple_theme";  iconik_save_settings; borg toast "Theme changed, please restart"}
-
+# Skin settings buttons
+create_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1080 1460 1480 1580 "Skin Settings"  $::font_big $::default_theme(button) $::default_theme(button_text_light) { page_to_show_when_off "iconik_settings"}
 
 # Upper buttons
 ## Background
