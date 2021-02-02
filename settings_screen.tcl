@@ -44,6 +44,6 @@ add_de1_variable "iconik_settings" [expr (2080 + 2480) / 2.0 ] [expr (1200 + 132
 create_button "iconik_settings" 1800 240 2000 420  "Default"  $::font_big $::default_theme(button)   $::default_theme(button_text_light) {set ::iconik_settings(theme) "::default_theme"; iconik_save_settings; borg toast "Theme changed, please restart"}
 create_button "iconik_settings" 1800 480 2000 660  "Dark"     $::font_big $::dark_theme(button)      $::dark_theme(button_text_light)    {set ::iconik_settings(theme) "::dark_theme";    iconik_save_settings; borg toast "Theme changed, please restart"}
 create_button "iconik_settings" 1800 720 2000 900  "Purple"   $::font_big $::purple_theme(button)    $::purple_theme(button_text_light)  {set ::iconik_settings(theme) "::purple_theme";  iconik_save_settings; borg toast "Theme changed, please restart"}
-create_button "iconik_settings" 1800 960 2000 1140 "Material" $::font_big $::red_theme(button)       $::red_theme(button_text_light)     {set ::iconik_settings(theme) "::red_theme";     iconik_save_settings; borg toast "Theme changed, please restart"}
+create_button "iconik_settings" 1800 960 2000 1140 "Red"      $::font_big $::red_theme(button)       $::red_theme(button_text_light)     {set ::iconik_settings(theme) "::red_theme";     iconik_save_settings; borg toast "Theme changed, please restart"}
 
 
