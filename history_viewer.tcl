@@ -140,6 +140,6 @@ proc set_history_scrollbar_dimensions {} {
 	set_scrollbar_dimensions $::history_scrollbar $::history_widget
 }
 
-add_de1_variable "history" 80 1260 -width [rescale_x_skin 380]  -text "" -font $::font_big -fill [theme primary_light] -anchor "nw" -justify "center" -state "hidden" -textvariable {[past_title]}
+add_de1_variable "history" 80 1360 -width [rescale_x_skin 380]  -text "" -font $::font_big -fill [theme primary_light] -anchor "nw" -justify "center" -state "hidden" -textvariable {[past_title]}
 
 create_button "history" 580 1440 1880 1560 [translate "Done"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); page_to_show_when_off "off" }
