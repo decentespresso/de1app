@@ -185,8 +185,8 @@ create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_tiny [theme 
 ## GHC buttons
 if {$::iconik_settings(show_ghc_buttons) == 1} {
 	create_button "off" 2180 210 2480 390  "Espresso"  $::font_big [theme button_tertiary]   [theme button_text_light] {start_espresso}
-	create_button "off" 2180 450 2480 630  "Steam"     $::font_big [theme button_tertiary]   [theme button_text_light] {start_water}
-	create_button "off" 2180 690 2480 870  "Water"     $::font_big [theme button_tertiary]   [theme button_text_light] {start_steam}
+	create_button "off" 2180 450 2480 630  "Water"     $::font_big [theme button_tertiary]   [theme button_text_light] {start_water}
+	create_button "off" 2180 690 2480 870  "Steam"     $::font_big [theme button_tertiary]   [theme button_text_light] {start_steam}
 	create_button "off" 2180 930 2480 1110 "Stop"      $::font_big [theme button_tertiary]   [theme button_text_light] {start_idle}
 }
 
