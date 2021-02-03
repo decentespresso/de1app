@@ -11,6 +11,9 @@ array set ::default_theme {
     secondary_light "#F28705"
 
     button "#3D5682"
+    button_coffee "#3D5682"
+    button_steam "#417491"
+
     button_secondary "#F27405"
     button_tertiary "#182130"
 
@@ -31,6 +34,8 @@ array set ::dark_theme {
     secondary_light "#03DAC6"
 
     button "#1E1E1E"
+    button_coffee "#1E1E1E"
+    button_steam "#1E1E1E"
     button_secondary "#1E1E1E"
     button_tertiary "#1E1E1E"
 
@@ -51,6 +56,8 @@ array set ::purple_theme {
     secondary_light "#bf8a9a"
 
     button "#b73f49"
+    button_coffee "#b73f49"
+    button_steam "#c74f59"
     button_secondary "#3d3b5e"
     button_tertiary "#7a354b"
 
@@ -71,6 +78,8 @@ array set ::red_theme {
     secondary_light "#161a1d"
 
     button "#ba181b"
+    button_coffee "#ba181b"
+    button_steam "#e5383b"
     button_secondary "#ba181b"
     button_tertiary "#ba181b"
 
@@ -84,7 +93,7 @@ set ::font_small [get_font "Mazzard Regular" 18]
 set ::font_big [get_font "Mazzard Regular" 22]
 
 array set ::iconik_settings {
-    profiles {1 {name default title Default} 2 {name {Gentle and sweet} title {Gentle and sweet}} 3 {name rao_allonge title {Rao Allongé}}}
+    profiles {1 {name default title Default} 2 {name {Gentle and sweet} title {Gentle and sweet}} 3 {name rao_allonge title {Rao Allongé}} 4 {name {Classic Italian espresso} title {Classic Italian espresso}} 5 {name {Blooming espresso} title {Blooming Espresso}}}
     steam_profiles {1 {timeout {26}} 2 {timeout {30}}}
 
     flush_timeout 3
@@ -97,6 +106,7 @@ array set ::iconik_settings {
 
     show_steam 0
     show_ghc_buttons 0
+    steam_presets_enabled 1
 
     saver_dir {/saver}
 

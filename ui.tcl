@@ -61,9 +61,14 @@ if {$::iconik_settings(show_water_level_indicator) == 1} {
 
 
 # Profile QuickSettings
-create_button "settings_1" 1140 1020 1240 1120 "1" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 1}
-create_button "settings_1" 1140 1150 1240 1250 "2" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 2}
-create_button "settings_1" 1140 1280 1240 1380 "3" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 3}
+create_button "settings_1" 80 1460 200 1580 "1" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 1}
+create_button "settings_1" 220 1460 340 1580 "2" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 2}
+create_button "settings_1" 360 1460 480 1580 "3" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 3}
+
+if {$::iconik_settings(steam_presets_enabled) == 0} {
+	create_button "settings_1" 500 1460 620 1580 "4" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 4}
+	create_button "settings_1" 640 1460 760 1580 "5" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 5}
+}
 
 # Skin settings buttons
 create_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1080 1460 1480 1580 "Skin Settings"  $::font_big [theme button] [theme button_text_light] { page_to_show_when_off "iconik_settings"}
@@ -129,28 +134,37 @@ add_de1_variable "off" $column1_pos [expr {$pos_top + (17 * $spacer)}] -justify 
 # Presets
 
 ## Coffee
-rounded_rectangle "off" 80 1140 480 1380  [rescale_x_skin 80] [theme button]
-add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Coffee:\n[iconik_profile_title 1]}
+rounded_rectangle "off" 80 1140 480 1380  [rescale_x_skin 80] [theme button_coffee]
+add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 1]}
 add_de1_button "off" {iconik_toggle_profile 1} 80 1140 480 1380
 
-rounded_rectangle "off" 580 1140 980 1380 [rescale_x_skin 80] [theme button]
-add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Coffee:\n[iconik_profile_title 2]}
+rounded_rectangle "off" 580 1140 980 1380 [rescale_x_skin 80] [theme button_coffee]
+add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 2]}
 add_de1_button "off" {iconik_toggle_profile 2} 580 1140 980 1380
 
-rounded_rectangle "off" 1080 1140 1480 1380 [rescale_x_skin 80] [theme button]
-add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Coffee:\n[iconik_profile_title 3]}
+rounded_rectangle "off" 1080 1140 1480 1380 [rescale_x_skin 80] [theme button_coffee]
+add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 3]}
 add_de1_button "off" {iconik_toggle_profile 3} 1080 1140 1480 1380
 
-## Steam Presets
+if {$::iconik_settings(steam_presets_enabled) == 1} {
+	## Steam Presets
+	rounded_rectangle "off" 1580 1140 1980 1380 [rescale_x_skin 80] [theme button_steam]
+	add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 100  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam 1:\n[iconik_steam_timeout 1]s}
+	add_de1_button "off" {iconik_toggle_steam_settings 1} 1580 1140 1980 1380
 
-rounded_rectangle "off" 1580 1140 1980 1380 [rescale_x_skin 80] [theme button]
-add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 100  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam 1:\n[iconik_steam_timeout 1]s}
-add_de1_button "off" {iconik_toggle_steam_settings 1} 1580 1140 1980 1380
+	rounded_rectangle "off" 2080 1140 2480 1380 [rescale_x_skin 80] [theme button_steam]
+	add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 100  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam 2:\n[iconik_steam_timeout 2]s}
+	add_de1_button "off" {iconik_toggle_steam_settings 2} 2080 1140 2480 1380
+} else {
+	# Two more coffee presets
+	rounded_rectangle "off" 1580 1140 1980 1380 [rescale_x_skin 80] [theme button_coffee]
+	add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 4]}
+	add_de1_button "off" {iconik_toggle_profile 2} 580 1140 980 1380
 
-rounded_rectangle "off" 2080 1140 2480 1380 [rescale_x_skin 80] [theme button]
-add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 100  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam 2:\n[iconik_steam_timeout 2]s}
-add_de1_button "off" {iconik_toggle_steam_settings 2} 2080 1140 2480 1380
-
+	rounded_rectangle "off" 2080 1140 2480 1380 [rescale_x_skin 80] [theme button_coffee]
+	add_de1_variable "off"  [expr (2080 + 2480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 5]}
+	add_de1_button "off" {iconik_toggle_profile 3} 1080 1140 1480 1380
+}
 
 ## Bottom buttons
 
