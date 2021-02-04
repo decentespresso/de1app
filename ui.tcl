@@ -159,11 +159,11 @@ if {$::iconik_settings(steam_presets_enabled) == 1} {
 	# Two more coffee presets
 	rounded_rectangle "off" 1580 1140 1980 1380 [rescale_x_skin 80] [theme button_coffee]
 	add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 4]}
-	add_de1_button "off" {iconik_toggle_profile 2} 580 1140 980 1380
+	add_de1_button "off" {iconik_toggle_profile 4} 1580 1140 1980 1380
 
 	rounded_rectangle "off" 2080 1140 2480 1380 [rescale_x_skin 80] [theme button_coffee]
 	add_de1_variable "off"  [expr (2080 + 2480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 5]}
-	add_de1_button "off" {iconik_toggle_profile 3} 1080 1140 1480 1380
+	add_de1_button "off" {iconik_toggle_profile 5} 2080 1140 2480 1380
 }
 
 ## Bottom buttons
