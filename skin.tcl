@@ -159,6 +159,7 @@ proc iconik_save_water_temperature {} {
 }
 
 proc iconik_toggle_profile {slot} {
+	god_shot_clear
 
 	set profile [dict get $::iconik_settings(profiles) $slot name]
 
