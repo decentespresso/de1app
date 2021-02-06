@@ -91,6 +91,12 @@ namespace eval ::device::scale {
 
 	variable _tare_last_requested 0
 
+	# If a tare is requested and "0" is seen within this limit
+	# will call ::device::scale::on_tare_seen
+
+	variable _tare_awaiting_zero_ms 1000
+	variable _tare_awaiting_zero False
+
 	variable _delayed_tare_id ""
 
 	# Show "normal" messages around waiting for updates in the GUI?
@@ -163,6 +169,18 @@ namespace eval ::device::scale {
 		if { $event_time == 0 } {set event_time [expr { [clock milliseconds] / 1000.0 }]}
 
 		::device::scale::watchdog_tickle ::device::scale::_watchdog_entry_id entry
+
+		if { $sensorweight == 0 \
+			     && $::device::scale::_tare_awaiting_zero  \
+			     && [expr {[clock milliseconds] - $::device::scale::_tare_last_requested}] \
+					<  $::device::scale::_tare_awaiting_zero_ms } {
+
+			set ::device::scale::_tare_awaiting_zero False
+			::device::scale::on_tare_seen
+
+			msg -DEBUG [format "Tare delay: %i ms" \
+					    [expr {[clock milliseconds] - $::device::scale::_tare_last_requested}]]
+		}
 
 		::device::scale::period::estimate_update $event_time
 		::device::scale::history::push_mass $sensorweight $event_time
@@ -284,11 +302,21 @@ namespace eval ::device::scale {
 
 		set ::device::scale::_tare_last_requested [clock milliseconds]
 
+		set ::device::scale::_tare_awaiting_zero True
 
 		# See process_weight_update for this feature related to auto-tare on Idle
 
 		after cancel $::device::scale::_delayed_tare_id
 		set ::device::scale::_delayed_tare_id ""
+	}
+
+
+	# Median time from tare request to zero weight ~330 ms on Skale 2 and can be over 500 ms
+	# Reset at least history-based estimates due to "external" change
+
+	proc on_tare_seen {args} {
+
+		::device::scale::history::on_tare_seen {*}$args
 	}
 
 	#
@@ -607,6 +635,15 @@ namespace eval ::device::scale::history {
 		_lslr_clear
 	}
 
+	proc on_tare_seen {args} {
+
+		variable _scale_raw_weight [lrepeat [samples_for_shift_register] 0]
+		variable _scale_raw_arrival [lrepeat [samples_for_shift_register] 0]
+
+		_lslr_clear
+
+		msg -DEBUG "::device::scale::history::on_tare_seen"
+	}
 
 	proc reset_shot_record {} {
 
@@ -616,7 +653,7 @@ namespace eval ::device::scale::history {
 		set scale_raw_weight_shot  [list]
 		set scale_raw_arrival_shot [list]
 
-		msg -DEBUG "::device::scale::reset_shot_record"
+		msg -DEBUG "::device::scale::history::reset_shot_record"
 	}
 
 
