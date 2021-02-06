@@ -272,12 +272,14 @@ proc iconik_after_espresso { old new } {
 
 proc iconik_before_cleanup_profile {} {
 	set ::history_to_restore_after_cleanup $::settings(should_save_history)
-	#borg toast [translate "before cleanup $::history_to_restore_after_cleanup"]
-	set ::settings(should_save_history) 0
+	if {$::iconik_settings(cleanup_bypass_shot_history) == 1} {
+		set ::settings(should_save_history) 0
+	}
 }
 
 proc iconik_after_cleanup_profile {} {
-	#borg toast [translate "after cleanup"]
 	set ::settings(should_save_history) $::history_to_restore_after_cleanup
-	select_profile $::profile_to_restore_after_cleanup
+	if {$::iconik_settings(cleanup_restore_selected_profile) == 1} {
+		select_profile $::profile_to_restore_after_cleanup
+	}
 }

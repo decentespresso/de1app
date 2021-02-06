@@ -103,6 +103,8 @@ array set ::iconik_settings {
 
     cleanup_use_profile 0
     cleanup_profile "weber_spring_clean"
+    cleanup_bypass_shot_history 0
+    cleanup_restore_selected_profile 0
 
     show_steam 0
     show_ghc_buttons 0
@@ -111,6 +113,7 @@ array set ::iconik_settings {
     saver_dir {/saver}
 
     show_water_level_indicator 0
+    show_ml_instead_of_water_level 0
     water_temperature_overwride 95
 }
 
