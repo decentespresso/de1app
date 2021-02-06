@@ -190,7 +190,8 @@ proc iconik_save_profile {slot} {
 }
 
 register_state_change_handler "Idle" "HotWaterRinse" timout_flush
-
+register_state_change_handler "Espresso" "Idle" iconik_after_espresso
+register_state_change_handler "Idle" "Espresso" iconik_before_espresso
 
 proc iconik_show_settings {} {
 	if {$::settings(settings_profile_type) == "settings_2c2" || $::settings(settings_profile_type) == "settings_2c"} {
@@ -254,4 +255,32 @@ proc iconik_get_final_weight {} {
 	}
 
 	return "$current$target"
+}
+
+proc iconik_is_cleanup {} {
+	if { $::iconik_settings(cleanup_profile) == $::settings(profile_filename) } {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+proc iconik_before_espresso { old new } {
+	if { [iconik_is_cleanup] == 1 } {
+		iconik_before_cleanup_profile
+	} 
+}
+
+proc iconik_after_espresso { old new } {
+	if { [iconik_is_cleanup] == 1 } {
+		iconik_after_cleanup_profile
+	}
+}
+
+proc iconik_before_cleanup_profile {} {
+	set ::settings(should_save_history) 0
+}
+
+proc iconik_after_cleanup_profile {} {
+	set ::settings(should_save_history) 1
 }
