@@ -6,7 +6,6 @@ source "[homedir]/skins/default/standard_includes.tcl"
 
 set ::skindebug 0
 set ::debugging 0
-set ::profile_to_restore_after_cleanup {}
 set ::history_to_restore_after_cleanup {}
 
 source "[skin_directory]/settings.tcl"
@@ -40,7 +39,10 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
 
 proc iconik_toggle_cleaning {} {
 	if {$::iconik_settings(cleanup_use_profile)} {
-		set ::profile_to_restore_after_cleanup $::settings(profile_filename)
+		if {$::iconik_settings(cleanup_restore_selected_profile) == 1} {
+			set ::iconik_settings(tmp_profile_to_restore_after_cleanup) $::settings(profile_filename)
+			iconik_save_settings
+		}
 		select_profile $::iconik_settings(cleanup_profile)
 	} else {
 		start_cleaning
@@ -280,6 +282,6 @@ proc iconik_before_cleanup_profile {} {
 proc iconik_after_cleanup_profile {} {
 	set ::settings(should_save_history) $::history_to_restore_after_cleanup
 	if {$::iconik_settings(cleanup_restore_selected_profile) == 1} {
-		select_profile $::profile_to_restore_after_cleanup
+		select_profile $::iconik_settings(tmp_profile_to_restore_after_cleanup)
 	}
 }
