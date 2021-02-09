@@ -64,6 +64,10 @@ proc fill_history_listbox {} {
 }
 
 proc god_shot_from_history {} {
+	set stepnum [$::history_widget curselection]
+	if {$stepnum == ""} {
+		return
+	}
     set ::settings(god_espresso_pressure) [history_pressure range 0 end]
     set ::settings(god_espresso_temperature_basket) [history_temperature_basket range 0 end]
     set ::settings(god_espresso_flow) [history_flow range 0 end]
