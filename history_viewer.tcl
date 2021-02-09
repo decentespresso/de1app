@@ -134,6 +134,8 @@ proc show_past_shot {} {
 
 add_background "history"
 
+add_de1_variable "history" 680 60 -width [rescale_x_skin 900]  -text "" -font $::font_big -fill [theme primary_light] -anchor "nw" -justify "center" -state "hidden" -textvariable {[past_title]}
+
 add_de1_widget "history" graph 680 240 {
 	#Target
 	$widget element create line_history_espresso_pressure_goal -xdata history_elapsed -ydata history_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color [theme primary_light]  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
@@ -171,8 +173,6 @@ set ::history_scrollbar [add_de1_widget "history" scale 10000 1 {} -from 0 -to .
 proc set_history_scrollbar_dimensions {} {
 	set_scrollbar_dimensions $::history_scrollbar $::history_widget
 }
-
-add_de1_variable "history" 80 1360 -width [rescale_x_skin 380]  -text "" -font $::font_big -fill [theme primary_light] -anchor "nw" -justify "center" -state "hidden" -textvariable {[past_title]}
 
 create_button "history" 580 1440 1160 1560 [translate "Make Reference / Godshot"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); god_shot_from_history; page_to_show_when_off "off" }
 create_button "history" 1210 1440 1880 1560 [translate "Done"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); page_to_show_when_off "off" }
