@@ -84,7 +84,12 @@ proc past_title {} {
 	return ""
 }
 
-
+proc load_history_field {target field} {
+	if {[info exists ::past_shot($field)] == 1} {
+		set value [set ::past_shot($field)]
+		$target set $value
+	}
+}
 
 proc show_past_shot {} {
 	set stepnum [$::history_widget curselection]
@@ -99,27 +104,24 @@ proc show_past_shot {} {
 
 	msg "Read shot $fn"
 
-	history_elapsed set $::past_shot(espresso_elapsed)
-	history_pressure_goal set $::past_shot(espresso_pressure_goal)
-	history_flow_goal set $::past_shot(espresso_flow_goal)
-	history_pressure set $::past_shot(espresso_pressure)
-	history_flow set $::past_shot(espresso_flow)
-	history_flow_weight set $::past_shot(espresso_flow_weight)
-	history_weight set $::past_shot(espresso_weight)
-	history_temperature_basket set $::past_shot(espresso_temperature_basket)
-	history_temperature_mix set $::past_shot(espresso_temperature_mix)
-	history_temperature_goal set $::past_shot(espresso_temperature_goal)
-
+	load_history_field history_elapsed            espresso_elapsed
+	load_history_field history_pressure_goal      espresso_pressure_goal
+	load_history_field history_pressure           espresso_pressure
+	load_history_field history_flow_goal          espresso_flow_goal
+	load_history_field history_flow               espresso_flow
+	load_history_field history_flow_weight        espresso_flow_weight
+	load_history_field history_weight             espresso_weight
+	load_history_field history_temperature_basket espresso_temperature_basket
+	load_history_field history_temperature_mix    espresso_temperature_mix
+	load_history_field history_temperature_goal   espresso_temperature_goal
 	# New 1.34.5 shot fields
-	history_temperature_goal set $::past_shot(espresso_temperature_goal)
-	history_state_change set $::past_shot(espresso_state_change)
-	history_resistance_weight set $::past_shot(espresso_resistance_weight)
-	history_resistance set $::past_shot(espresso_resistance)
-	history_flow_delta_negative_2x set $::past_shot(espresso_flow_delta_negative_2x)
-	history_flow_delta_negative set $::past_shot(espresso_flow_delta_negative)
-	history_pressure_delta set $::past_shot(espresso_pressure_delta)
-
-	#msg $::past_shot(settings)
+	load_history_field history_temperature_goal       espresso_temperature_goal
+	load_history_field history_state_change           espresso_state_change
+	load_history_field history_resistance_weight      espresso_resistance_weight
+	load_history_field history_resistance             espresso_resistance
+	load_history_field history_flow_delta_negative_2x espresso_flow_delta_negative_2x
+	load_history_field history_flow_delta_negative    espresso_flow_delta_negative
+	load_history_field history_pressure_delta         espresso_pressure_delta
 }
 
 #
