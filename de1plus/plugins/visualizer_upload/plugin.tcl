@@ -108,16 +108,21 @@ proc ::plugins::${plugin_name}::upload {content} {
     return $uploaded_id
 }
 
-proc ::plugins::${plugin_name}::uploadShotData {old new} {
+proc ::plugins::${plugin_name}::uploadShotData {} {
     if {[espresso_elapsed length] > 5 && [espresso_pressure length] > 5
          && $::plugins::visualizer_upload::settings(auto_upload)} {
         set espresso_data [format_espresso_for_history]
-        upload $espresso_data
+        ::plugins::visualizer_upload::upload $espresso_data
     }
 }
 
+proc ::plugins::${plugin_name}::async_dispatch {old new} {
+    after 100 ::plugins::visualizer_upload::uploadShotData
+}
+
+
 
 proc ::plugins::${plugin_name}::main {} {
-    register_state_change_handler Espresso Idle ::plugins::visualizer_upload::uploadShotData
+    register_state_change_handler Espresso Idle ::plugins::visualizer_upload::async_dispatch
 }
 
