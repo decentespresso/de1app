@@ -969,6 +969,13 @@ proc wrapped_profile_title {} {
 		# and move the profile type up to make space
 		set newheight [rescale_y_skin 50]
 		set final [subst {[string range [string range [ifexists ::settings(profile_title)] 0 $slashpos] 0 25]\n[string range [string range [ifexists ::settings(profile_title)] $slashpos+1 end] 0 25]}]
+	} else {
+		set final [wrap_string [ifexists ::settings(profile_title)] 25]
+
+		if {[string first \n $final] != -1} {
+			set newheight [rescale_y_skin 50]
+		}
+
 	}
 
 	.can coords $::tab1_profile_label [lindex [.can coords $::tab1_profile_label] 0] $newheight
