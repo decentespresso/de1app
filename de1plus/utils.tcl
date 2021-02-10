@@ -2193,6 +2193,14 @@ proc wrapped_string_part {input threshold partnumber} {
 proc wrap_string {input {threshold 75} {returnlist 0}} {
     set result_rows [list]
     set start_of_line_index 0
+
+    # john there's a bug in this proc, which I borrowed from the tcl wiki and did not write.  
+    # A string of length theshold+1 gets truncated by 1 character
+    # this "if" statement is a work around, where we simply accept a +1 overage on the threshold, instead of wrapping it
+    if {[expr {-1 + [string length $input]}] <= $threshold} {
+        return $input
+    }
+
     while 1 {
         
         set this_line [string range $input $start_of_line_index [expr $start_of_line_index + $threshold - 1]]
