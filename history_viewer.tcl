@@ -30,14 +30,20 @@ proc fill_history_listbox {} {
 	#puts "fill_history_listbox $widget"
 	set widget $::history_widget
 	$widget delete 0 99999
+	$::history_widget delete 0 99999
 	set cnt 0
+	set ::history_files {}
 
-	set ::history_files [lsort -dictionary -decreasing [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+	set files [lsort -dictionary -decreasing [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
 
-    foreach shot_file $::history_files {
+    foreach shot_file $files {
         set tailname [file tail $shot_file]
         set newfile [file rootname $tailname]
         set fname "history/$newfile.csv"
+
+		if {$cnt == $::iconik_settings(max_history_items)} {
+			break;
+		}
 
 		array unset -nocomplain shot
 		catch {
@@ -47,17 +53,15 @@ proc fill_history_listbox {} {
 			msg "Corrupted shot history item: 'history/$shot_file'"
 			continue
 		}
-		set dbg [array get shot]
+		array set shot_settings $shot(settings)
 
-		if {$::history_match_profile == 1} {
-			array set shot_settings $shot(settings)
-			if {$shot_settings(profile_to_save) != $::settings(profile_to_save)} {
-				continue
-			}
+		if {$::history_match_profile == 1 && $shot_settings(profile_title) ne $::settings(profile_title)} {
+			continue
+		} else {
+			$widget insert $cnt $newfile
+			incr cnt
+			lappend ::history_files $shot_file
 		}
-
-		$widget insert $cnt $newfile
-		incr cnt		
 	}
 
 	set $::history_widget widget

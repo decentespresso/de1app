@@ -116,6 +116,8 @@ array set ::iconik_settings {
     show_water_level_indicator 0
     show_ml_instead_of_water_level 1
     water_temperature_overwride 95
+
+    max_history_items 100
 }
 
 proc theme {cntx} {
