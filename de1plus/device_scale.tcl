@@ -1219,10 +1219,10 @@ namespace eval ::device::scale::saw {
 
 	proc warn_if_scale_not_reporting {args} {
 
-		set last_update_ago [expr { ( ([clock milliseconds] / 1000.0) - [::device::scale::last_weight_update_time] ) }]
+		set last_update_ago [expr { ( ([clock milliseconds] / 1000.0) \
+						      - [::device::scale::last_weight_update_time] ) }]
 
 		if { $last_update_ago > $::device::scale::warn_if_no_updates_within \
-			     && $::device::scale::saw::_target > 0 \
 			     &&  [::device::scale::expecting_present] } {
 
 			msg -NOTICE "::device::scale::saw::warn_if_scale_not_reporting last at $last_update_ago seconds ago"
