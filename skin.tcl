@@ -194,6 +194,14 @@ proc iconik_save_profile {slot} {
 	borg toast [translate "Saved in slot $slot"]
 }
 
+proc iconik_save_cleaning_profile {} {
+
+	set ::iconik_settings(cleanup_profile) $::settings(profile_filename)
+
+	iconik_save_settings
+	borg toast [translate "Saved in as cleaning profile"]
+}
+
 register_state_change_handler "Idle" "HotWaterRinse" timout_flush
 register_state_change_handler "Espresso" "Idle" iconik_after_espresso
 register_state_change_handler "Idle" "Espresso" iconik_before_espresso

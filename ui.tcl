@@ -70,6 +70,10 @@ if {$::iconik_settings(steam_presets_enabled) == 0} {
 	create_button "settings_1" 640 1460 760 1580 "5" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 5}
 }
 
+if {$::iconik_settings(cleanup_use_profile) == 1} {
+	create_button "settings_1" 780 1460 940 1580 "Clean" $::font_big [theme button] [theme button_text_light] {iconik_save_cleaning_profile}
+}
+
 # Skin settings buttons
 create_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1080 1460 1480 1580 "Skin Settings"  $::font_big [theme button] [theme button_text_light] { page_to_show_when_off "iconik_settings"}
 

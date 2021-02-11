@@ -20,15 +20,6 @@ add_de1_widget "iconik_settings" checkbutton 160 660 {} -text [translate "Reconn
 add_de1_widget "iconik_settings" checkbutton 160 720 {} -text [translate "Try reconnecting to the scale forever (Can exhaust the tablet)"] -indicatoron true  -font $::font_tiny -bg [theme background] -anchor nw -foreground [theme background_text] -variable ::settings(automatically_ble_reconnect_forever_to_scale)  -borderwidth 0 -selectcolor [theme background] -highlightthickness 0 -activebackground [theme background]  -bd 0 -activeforeground [theme background_text] -relief flat -bd 0
 add_de1_widget "iconik_settings" checkbutton 160 780 {} -text [translate "Double the scale input / Spouted portafilter scale mode"] -indicatoron true  -font $::font_tiny -bg [theme background] -anchor nw -foreground [theme background_text] -variable ::settings(scale_stop_at_half_shot)  -borderwidth 0 -selectcolor [theme background] -highlightthickness 0 -activebackground [theme background]  -bd 0 -activeforeground [theme background_text] -relief flat -bd 0
 
-# Cleanup profile name
-add_de1_text iconik_settings 180 840 -text [translate "Cleanup Profile name"] -font $::font_tiny -width 300 -fill [theme background_text] -anchor "nw"
-# The actual content. Here a list of all settings for this plugin
-add_de1_widget "iconik_settings" entry 180 900  {
-    set ::globals(widget_profile_name_to_save) $widget
-    bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; iconik_save_settings; hide_android_keyboard}
-    bind $widget <Leave> hide_android_keyboard
-} -width [expr {int(38 * $::globals(entry_length_multiplier))}] -font $::font_tiny  -borderwidth 1 -bg [theme background_highlight]  -foreground [theme background_text] -textvariable ::iconik_settings(cleanup_profile) -relief flat  -highlightthickness 1 -highlightcolor [theme button_text_light]
-
 # Screensaver folder
 add_de1_text iconik_settings 180 960 -text [translate "Screensaver folder"] -font $::font_tiny -width 300 -fill [theme background_text] -anchor "nw"
 # The actual content. Here a list of all settings for this plugin
