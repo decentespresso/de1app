@@ -2,7 +2,7 @@ advanced_shot {{exit_if 1 flow 4.00 volume 100 transition fast exit_flow_under 0
 author Decent
 bean_brand {}
 bean_type {}
-beverage_type espresso
+beverage_type cleaning
 espresso_decline_time 30
 espresso_hold_time 10
 espresso_pressure 8.4
