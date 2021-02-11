@@ -55,7 +55,7 @@ add_background "off"
 
 # Water level indicator
 if {$::iconik_settings(show_water_level_indicator) == 1} {
-	# water level sensor 
+	# water level sensor
 	add_de1_widget "off" scale 0 0 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background [theme primary] -foreground [theme secondary] -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1600] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor [theme background] -borderwidth 0  -highlightthickness 0
 }
 
@@ -190,12 +190,39 @@ create_button "off" 1580 1440 1980 1560 [translate "Settings"] $::font_tiny [the
 create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); start_sleep }
 
 
+proc ghc_text_or_stop {text} {
+	if { $::de1(substate) >= 1} {
+		return [translate Stop]
+	}
+	return $text
+}
+
+proc ghc_action_or_stop {action} {
+	if { $::de1(substate) >= 1} {
+		start_idle
+		return
+	}
+	$action
+}
+
+
 ## GHC buttons
 if {$::iconik_settings(show_ghc_buttons) == 1} {
-	create_button "off" 2180 210 2480 390  "Espresso"  $::font_big [theme button_tertiary]   [theme button_text_light] {start_espresso}
-	create_button "off" 2180 450 2480 630  "Water"     $::font_big [theme button_tertiary]   [theme button_text_light] {start_water}
-	create_button "off" 2180 690 2480 870  "Steam"     $::font_big [theme button_tertiary]   [theme button_text_light] {start_steam}
-	create_button "off" 2180 930 2480 1110 "Stop"      $::font_big [theme button_tertiary]   [theme button_text_light] {start_idle}
+	rounded_rectangle "off" 2180 210 2480 390 [rescale_x_skin 80] [theme button_tertiary]
+	add_de1_variable "off" [expr (2180 + 2480) / 2.0 ] [expr (210 + 390) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[ghc_text_or_stop "Espresso"]}
+	add_de1_button "off" { ghc_action_or_stop start_espresso } 2180 210 2480 390
+
+	rounded_rectangle "off" 2180 450 2480 630 [rescale_x_skin 80] [theme button_tertiary]
+	add_de1_variable "off" [expr (2180 + 2480) / 2.0 ] [expr (450 + 630) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[ghc_text_or_stop "Water"]}
+	add_de1_button "off" { ghc_action_or_stop start_water} 2180 450 2480 630
+
+	rounded_rectangle "off" 2180 690 2480 870 [rescale_x_skin 80] [theme button_tertiary]
+	add_de1_variable "off" [expr (2180 + 2480) / 2.0 ] [expr (690 + 870) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[ghc_text_or_stop "Steam"]}
+	add_de1_button "off" { ghc_action_or_stop start_steam} 2180 690 2480 870
+
+	rounded_rectangle "off" 2180 930 2480 1110 [rescale_x_skin 80] [theme button_tertiary]
+	add_de1_variable "off" [expr (2180 + 2480) / 2.0 ] [expr (930 + 1110) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[ghc_text_or_stop "Flush"]}
+	add_de1_button "off" { ghc_action_or_stop start_flush} 2180 930 2480 1110
 }
 
 
@@ -267,13 +294,13 @@ add_de1_widget "off" graph 580 230 {
 
 
 if {$::iconik_settings(show_steam) == 1} {
-	add_de1_widget "off" graph 580 830 { 
-		$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color #86C240  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
-		$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color #43B1E3  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow); 
-		$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label "" -linewidth [rescale_x_skin 6] -color #FF2600 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+	add_de1_widget "off" graph 580 830 {
+		$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color #86C240  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure);
+		$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color #43B1E3  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);
+		$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label "" -linewidth [rescale_x_skin 6] -color #FF2600 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);
 
-		$widget axis configure x -color [theme background_text] -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-		$widget axis configure y -color [theme background_text] -tickfont Helv_6 -min 0 -max 4 -subdivisions 5 -majorticks {1 2 3 4}	
+		$widget axis configure x -color [theme background_text] -tickfont Helv_6 -linewidth [rescale_x_skin 2]
+		$widget axis configure y -color [theme background_text] -tickfont Helv_6 -min 0 -max 4 -subdivisions 5 -majorticks {1 2 3 4}
 
 	} -plotbackground [theme background] -width [rescale_x_skin $espresso_graph_width] -height [rescale_y_skin 300] -borderwidth 1 -background [theme background] -plotrelief flat
 }

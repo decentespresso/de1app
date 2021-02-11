@@ -57,6 +57,10 @@ proc iconik_get_status_text {} {
 		return [translate "Disconnected"]
 	}
 
+	if {$::currently_connecting_scale_handle != 0} {
+		return  [translate "Scale reconnecting"]
+	}
+
 	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
 		return [translate "Scale disconnected.\nTap here"]
 	}
@@ -69,6 +73,7 @@ proc iconik_get_status_text {} {
 			if {$::settings(scale_bluetooth_address) != ""} {
 				return [translate "Ready\nScale connected"]
 			}
+
 			return [translate "Ready"]
 		}
 		1 {
@@ -273,7 +278,7 @@ proc iconik_get_final_weight {} {
 proc iconik_is_cleanup {} { return [ expr { $::iconik_settings(cleanup_profile) == $::settings(profile_filename) } ] }
 
 proc iconik_before_espresso { old new } {
-	if { [iconik_is_cleanup] } { iconik_before_cleanup_profile } 
+	if { [iconik_is_cleanup] } { iconik_before_cleanup_profile }
 }
 
 proc iconik_after_espresso { old new } {
