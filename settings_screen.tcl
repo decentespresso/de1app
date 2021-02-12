@@ -3,10 +3,10 @@ set ::version_string "Version 1.2"
 
 add_background "iconik_settings"
 
-create_button "iconik_settings" 580 1440 1880 1560 [translate "Done"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_save_settings; page_to_show_when_off "off" }
-add_de1_text "iconik_settings" 1230 1380 -text "Restart the app via settings after making changes" -anchor center -justify center -font $::font_small
+create_button "iconik_settings" 580 1440 1880 1560 $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_save_settings; page_to_show_when_off "off" } { [translate "Done"]}
+add_de1_text "iconik_settings" 1230 1380 -text "Restart the app via settings after making changes" -anchor center -justify center -font $::font_small -fill [theme background_text]
 
-add_de1_text "iconik_settings" 160 60 -text "$::version_string" -anchor center -justify center -font $::font_tiny
+add_de1_text "iconik_settings" 160 60 -text "$::version_string" -anchor center -justify center -font $::font_tiny -fill [theme background_text]
 add_de1_widget "iconik_settings" checkbutton 160 120 {} -text [translate "Have Steam Presets"] -indicatoron true  -font $::font_tiny -bg [theme background] -anchor nw -foreground [theme background_text] -variable ::iconik_settings(steam_presets_enabled)  -borderwidth 0 -selectcolor [theme background] -highlightthickness 0 -activebackground [theme background]  -bd 0 -activeforeground [theme background_text] -relief flat -bd 0
 add_de1_widget "iconik_settings" checkbutton 160 180 {} -text [translate "Show Steam Graph"] -indicatoron true  -font $::font_tiny -bg [theme background] -anchor nw -foreground [theme background_text] -variable ::iconik_settings(show_steam)  -borderwidth 0 -selectcolor [theme background] -highlightthickness 0 -activebackground [theme background]  -bd 0 -activeforeground [theme background_text] -relief flat -bd 0
 add_de1_widget "iconik_settings" checkbutton 160 240 {} -text [translate "Show Start/Stop buttons (required on non-GHC machines)"] -indicatoron true  -font $::font_tiny -bg [theme background] -anchor nw -foreground [theme background_text] -variable ::iconik_settings(show_ghc_buttons)  -borderwidth 0 -selectcolor [theme background] -highlightthickness 0 -activebackground [theme background]  -bd 0 -activeforeground [theme background_text] -relief flat -bd 0
@@ -21,9 +21,9 @@ add_de1_widget "iconik_settings" checkbutton 160 720 {} -text [translate "Try re
 add_de1_widget "iconik_settings" checkbutton 160 780 {} -text [translate "Double the scale input / Spouted portafilter scale mode"] -indicatoron true  -font $::font_tiny -bg [theme background] -anchor nw -foreground [theme background_text] -variable ::settings(scale_stop_at_half_shot)  -borderwidth 0 -selectcolor [theme background] -highlightthickness 0 -activebackground [theme background]  -bd 0 -activeforeground [theme background_text] -relief flat -bd 0
 
 # Screensaver folder
-add_de1_text iconik_settings 180 960 -text [translate "Screensaver folder"] -font $::font_tiny -width 300 -fill [theme background_text] -anchor "nw"
+add_de1_text iconik_settings 180 840 -text [translate "Screensaver folder"] -font $::font_tiny -width 300 -fill [theme background_text] -anchor "nw"
 # The actual content. Here a list of all settings for this plugin
-add_de1_widget "iconik_settings" entry 180 1020  {
+add_de1_widget "iconik_settings" entry 180 900  {
     set ::globals(widget_profile_name_to_save) $widget
     bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; iconik_save_settings; hide_android_keyboard}
     bind $widget <Leave> hide_android_keyboard
@@ -31,18 +31,18 @@ add_de1_widget "iconik_settings" entry 180 1020  {
 
 
 # System Settings button
-create_button "iconik_settings" 2080 240 2480 1140 [translate "System Settings"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_save_settings; iconik_show_settings}
-
+create_button "iconik_settings" 2080 1440 2480 1560 $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_save_settings; iconik_show_settings} {[translate "System Settings"] }
 
 ## Water Temp
-create_settings_button "iconik_settings" 2080 1200 2480 1320 "" $::font_tiny [theme button_secondary] [theme button_text_light]  {  set ::iconik_settings(water_temperature_overwride) [expr {$::iconik_settings(water_temperature_overwride) - 5}]; iconik_save_water_temperature} {  set ::iconik_settings(water_temperature_overwride) [expr {$::iconik_settings(water_temperature_overwride) + 5}];iconik_save_water_temperature}
-add_de1_variable "iconik_settings" [expr (2080 + 2480) / 2.0 ] [expr (1200 + 1320) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Water [iconik_water_temperature]}
-
+create_settings_button "iconik_settings" 1800 60 2260 180 $::font_tiny [theme button_secondary] [theme button_text_light]  {  set ::iconik_settings(water_temperature_overwride) [expr {$::iconik_settings(water_temperature_overwride) - 5}]; iconik_save_water_temperature} {  set ::iconik_settings(water_temperature_overwride) [expr {$::iconik_settings(water_temperature_overwride) + 5}];iconik_save_water_temperature} {Water [iconik_water_temperature]}
 
 # Skin theme buttons
-create_button "iconik_settings" 1800 240 2000 420  "Default"  $::font_big $::default_theme(button)   $::default_theme(button_text_light) {set ::iconik_settings(theme) "::default_theme"; iconik_save_settings; borg toast "Theme changed, please restart"}
-create_button "iconik_settings" 1800 480 2000 660  "Dark"     $::font_big $::dark_theme(button)      $::dark_theme(button_text_light)    {set ::iconik_settings(theme) "::dark_theme";    iconik_save_settings; borg toast "Theme changed, please restart"}
-create_button "iconik_settings" 1800 720 2000 900  "Purple"   $::font_big $::purple_theme(button)    $::purple_theme(button_text_light)  {set ::iconik_settings(theme) "::purple_theme";  iconik_save_settings; borg toast "Theme changed, please restart"}
-create_button "iconik_settings" 1800 960 2000 1140 "Red"      $::font_big $::red_theme(button)       $::red_theme(button_text_light)     {set ::iconik_settings(theme) "::red_theme";     iconik_save_settings; borg toast "Theme changed, please restart"}
+create_button "iconik_settings" 1800 240 2000 420 $::font_big $::default_theme(button) $::default_theme(button_text_light) {set ::iconik_settings(theme) "::default_theme"; iconik_save_settings; borg toast "Theme changed, please restart"}  "Default" 
+create_button "iconik_settings" 1800 480 2000 660 $::font_big $::dark_theme(button)    $::dark_theme(button_text_light)    {set ::iconik_settings(theme) "::dark_theme";    iconik_save_settings; borg toast "Theme changed, please restart"} "Dark" 
+create_button "iconik_settings" 2060 480 2260 660 $::font_big $::cocoa_theme(button)   $::cocoa_theme(button_text_light)   {set ::iconik_settings(theme) "::cocoa_theme";   iconik_save_settings; borg toast "Theme changed, please restart"}  "Cocoa"
+create_button "iconik_settings" 1800 720 2000 900 $::font_big $::purple_theme(button)  $::purple_theme(button_text_light)  {set ::iconik_settings(theme) "::purple_theme";  iconik_save_settings; borg toast "Theme changed, please restart"} "Purple" 
+create_button "iconik_settings" 2060 720 2260 900 $::font_big $::red_theme(button)     $::red_theme(button_text_light)     {set ::iconik_settings(theme) "::red_theme";     iconik_save_settings; borg toast "Theme changed, please restart"} "Red"  
+
+
 
 

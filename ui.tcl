@@ -61,45 +61,40 @@ if {$::iconik_settings(show_water_level_indicator) == 1} {
 
 
 # Profile QuickSettings
-create_button "settings_1" 80 1460 200 1580 "1" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 1}
-create_button "settings_1" 220 1460 340 1580 "2" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 2}
-create_button "settings_1" 360 1460 480 1580 "3" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 3}
+create_button "settings_1" 80 1460 200 1580  $::font_big [theme button] [theme button_text_light] {iconik_save_profile 1} "1"
+create_button "settings_1" 220 1460 340 1580  $::font_big [theme button] [theme button_text_light] {iconik_save_profile 2} "2"
+create_button "settings_1" 360 1460 480 1580 $::font_big [theme button] [theme button_text_light] {iconik_save_profile 3}  "3"
 
 if {$::iconik_settings(steam_presets_enabled) == 0} {
-	create_button "settings_1" 500 1460 620 1580 "4" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 4}
-	create_button "settings_1" 640 1460 760 1580 "5" $::font_big [theme button] [theme button_text_light] {iconik_save_profile 5}
+	create_button "settings_1" 500 1460 620 1580 $::font_big [theme button] [theme button_text_light] {iconik_save_profile 4} "4" 
+	create_button "settings_1" 640 1460 760 1580 $::font_big [theme button] [theme button_text_light] {iconik_save_profile 5} "5" 
 }
 
 if {$::iconik_settings(cleanup_use_profile) == 1} {
-	create_button "settings_1" 780 1460 940 1580 "Clean" $::font_big [theme button] [theme button_text_light] {iconik_save_cleaning_profile}
+	create_button "settings_1" 780 1460 940 1580 $::font_big [theme button] [theme button_text_light] {iconik_save_cleaning_profile} "Clean"
 }
 
 # Skin settings buttons
-create_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1080 1460 1480 1580 "Skin Settings"  $::font_big [theme button] [theme button_text_light] { page_to_show_when_off "iconik_settings"}
+create_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2c2 settings_3 settings_4" 1080 1460 1480 1580 $::font_big [theme button] [theme button_text_light] { page_to_show_when_off "iconik_settings"} "Skin Settings" 
 
 # Upper buttons
 ## Background
 rectangle "off" 0 0 2560 180 [theme background_highlight]
 
 ## Flush
-create_settings_button "off" 80 30 480 150 "" $::font_tiny [theme button_secondary] [theme button_text_light]  {  set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) - 0.5}]; iconik_save_settings} {  set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) + 0.5}]; iconik_save_settings}
-add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width 200  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Flush:\n[round_to_one_digits $::iconik_settings(flush_timeout)]s}
+create_settings_button "off" 80 30 480 150 $::font_tiny [theme button_secondary] [theme button_text_light]  {set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) - 0.5}]; iconik_save_settings} {  set ::iconik_settings(flush_timeout) [expr {$::iconik_settings(flush_timeout) + 0.5}]; iconik_save_settings} {Flush:\n[round_to_one_digits $::iconik_settings(flush_timeout)]s}
 
 ## Espresso Temperature
-create_settings_button "off" 580 30 980 150 "" $::font_tiny [theme button_secondary] [theme button_text_light] {iconik_temperature_adjust down} {iconik_temperature_adjust up}
-add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Temp:\n [iconik_expresso_temperature]}
+create_settings_button "off" 580 30 980 150 $::font_tiny [theme button_secondary] [theme button_text_light] {iconik_temperature_adjust down} {iconik_temperature_adjust up} {Temp:\n [iconik_expresso_temperature]}
 
 ## Espresso Target Weight
-create_settings_button "off" 1080 30 1480 150 "" $::font_tiny [theme button_secondary] [theme button_text_light]  { set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) - 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) - 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} { set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) + 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) + 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings}
-add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Bev. weight:\n [iconik_get_final_weight]g}
+create_settings_button "off" 1080 30 1480 150 $::font_tiny [theme button_secondary] [theme button_text_light] {set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) - 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) - 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} { set ::settings(final_desired_shot_weight) [expr {$::settings(final_desired_shot_weight) + 1}];set ::settings(final_desired_shot_weight_advanced) [expr {$::settings(final_desired_shot_weight_advanced) + 1}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} {Bev. weight:\n [iconik_get_final_weight]g}
 
 ## Steam
-create_settings_button "off" 1580 30 1980 150 "" $::font_tiny [theme button_secondary] [theme button_text_light] {iconic_steam_tap down} {iconic_steam_tap up}
-add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam $::iconik_settings(steam_active_slot):\n[iconik_get_steam_time]}
+create_settings_button "off" 1580 30 1980 150 $::font_tiny [theme button_secondary] [theme button_text_light] {iconic_steam_tap down} {iconic_steam_tap up} {Steam $::iconik_settings(steam_active_slot):\n[iconik_get_steam_time]}
 
 ## Water Volume
-create_settings_button "off" 2080 30 2480 150 "" $::font_tiny [theme button_secondary] [theme button_text_light]  {  set ::settings(water_volume) [expr {$::settings(water_volume) - 5}]; de1_send_steam_hotwater_settings; save_settings} {  set ::settings(water_volume) [expr {$::settings(water_volume) + 5}]; de1_send_steam_hotwater_settings; save_settings}
-add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (30 + 150) / 2.0 ] -width [rescale_x_skin 280]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Water [iconik_water_temperature]:\n[round_to_integer $::settings(water_volume)]ml}
+create_settings_button "off" 2080 30 2480 150 $::font_tiny [theme button_secondary] [theme button_text_light] {set ::settings(water_volume) [expr {$::settings(water_volume) - 5}]; de1_send_steam_hotwater_settings; save_settings} {  set ::settings(water_volume) [expr {$::settings(water_volume) + 5}]; de1_send_steam_hotwater_settings; save_settings} {Water [iconik_water_temperature]:\n[round_to_integer $::settings(water_volume)]ml}
 
 # Recipe
 rounded_rectangle "off" 80 210 480 1110 [rescale_x_skin 80] [theme button]
@@ -142,52 +137,32 @@ if {$::iconik_settings(show_ml_instead_of_water_level) == 1} {
 # Presets
 
 ## Coffee
-rounded_rectangle "off" 80 1140 480 1380  [rescale_x_skin 80] [theme button_coffee]
-add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 1]}
-add_de1_button "off" {iconik_toggle_profile 1} 80 1140 480 1380
+create_button "off" 80 1140 480 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {iconik_toggle_profile 1} {[iconik_profile_title 1]}
+create_button "off" 580 1140 980 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {iconik_toggle_profile 2} {[iconik_profile_title 2]}
+create_button "off" 1080 1140 1480 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {iconik_toggle_profile 3} {[iconik_profile_title 3]}
 
-rounded_rectangle "off" 580 1140 980 1380 [rescale_x_skin 80] [theme button_coffee]
-add_de1_variable "off" [expr (580 + 980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 2]}
-add_de1_button "off" {iconik_toggle_profile 2} 580 1140 980 1380
-
-rounded_rectangle "off" 1080 1140 1480 1380 [rescale_x_skin 80] [theme button_coffee]
-add_de1_variable "off" [expr (1080 + 1480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 3]}
-add_de1_button "off" {iconik_toggle_profile 3} 1080 1140 1480 1380
 
 if {$::iconik_settings(steam_presets_enabled) == 1} {
 	## Steam Presets
-	rounded_rectangle "off" 1580 1140 1980 1380 [rescale_x_skin 80] [theme button_steam]
-	add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 100  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam 1:\n[iconik_steam_timeout 1]s}
-	add_de1_button "off" {iconik_toggle_steam_settings 1} 1580 1140 1980 1380
+	create_button "off"  1580 1140 1980 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {Steam 1:\n[iconik_steam_timeout 2]s} {[iconik_toggle_steam_settings 1]}
+	create_button "off" 2080 1140 2480 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {Steam 2:\n[iconik_steam_timeout 2]s} {[iconik_toggle_steam_settings 2]}
 
-	rounded_rectangle "off" 2080 1140 2480 1380 [rescale_x_skin 80] [theme button_steam]
-	add_de1_variable "off" [expr (2080 + 2480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 100  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {Steam 2:\n[iconik_steam_timeout 2]s}
-	add_de1_button "off" {iconik_toggle_steam_settings 2} 2080 1140 2480 1380
 } else {
 	# Two more coffee presets
-	rounded_rectangle "off" 1580 1140 1980 1380 [rescale_x_skin 80] [theme button_coffee]
-	add_de1_variable "off" [expr (1580 + 1980) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 4]}
-	add_de1_button "off" {iconik_toggle_profile 4} 1580 1140 1980 1380
-
-	rounded_rectangle "off" 2080 1140 2480 1380 [rescale_x_skin 80] [theme button_coffee]
-	add_de1_variable "off"  [expr (2080 + 2480) / 2.0 ] [expr (1140 + 1380) / 2.0 ] -width 180  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_profile_title 5]}
-	add_de1_button "off" {iconik_toggle_profile 5} 2080 1140 2480 1380
+	create_button "off"  1580 1140 1980 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {iconik_toggle_profile 4} {[iconik_profile_title 4]}
+	create_button "off" 2080 1140 2480 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {iconik_toggle_profile 5} {[iconik_profile_title 5]}
 }
 
 ## Bottom buttons
 
 rectangle "off" 0 1410 2560 1600 [theme background_highlight]
 
-## Status
-rounded_rectangle "off" 80 1440 480 1560 [rescale_x_skin 80] [theme button_tertiary]
-add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (1440 + 1560) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[iconik_get_status_text]}
-add_de1_button "off" { iconik_status_tap } 80 1440 480 1560
-
-## MISC buttons
-create_button "off" 580 1440 980 1560 [translate "History"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); show_history_page}
-create_button "off" 1080 1440 1480 1560 [translate "Clean"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning }
-create_button "off" 1580 1440 1980 1560 [translate "Settings"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_show_settings}
-create_button "off" 2080 1440 2480 1560 [translate "Sleep"] $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); start_sleep }
+## Status and MISC buttons
+create_button "off" 80 1440 480 1560    $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_status_tap } {[iconik_get_status_text]}
+create_button "off" 580 1440 980 1560   $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); show_history_page} {[translate "History"]}
+create_button "off" 1080 1440 1480 1560 $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning } { [translate "Clean"]} 
+create_button "off" 1580 1440 1980 1560 $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_show_settings} {[translate "Settings"]}
+create_button "off" 2080 1440 2480 1560 $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); start_sleep } { [translate "Sleep"]}
 
 
 proc ghc_text_or_stop {text} {
@@ -208,21 +183,10 @@ proc ghc_action_or_stop {action} {
 
 ## GHC buttons
 if {$::iconik_settings(show_ghc_buttons) == 1} {
-	rounded_rectangle "off" 2180 210 2480 390 [rescale_x_skin 80] [theme button_tertiary]
-	add_de1_variable "off" [expr (2180 + 2480) / 2.0 ] [expr (210 + 390) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[ghc_text_or_stop "Espresso"]}
-	add_de1_button "off" { ghc_action_or_stop start_espresso } 2180 210 2480 390
-
-	rounded_rectangle "off" 2180 450 2480 630 [rescale_x_skin 80] [theme button_tertiary]
-	add_de1_variable "off" [expr (2180 + 2480) / 2.0 ] [expr (450 + 630) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[ghc_text_or_stop "Water"]}
-	add_de1_button "off" { ghc_action_or_stop start_water} 2180 450 2480 630
-
-	rounded_rectangle "off" 2180 690 2480 870 [rescale_x_skin 80] [theme button_tertiary]
-	add_de1_variable "off" [expr (2180 + 2480) / 2.0 ] [expr (690 + 870) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[ghc_text_or_stop "Steam"]}
-	add_de1_button "off" { ghc_action_or_stop start_steam} 2180 690 2480 870
-
-	rounded_rectangle "off" 2180 930 2480 1110 [rescale_x_skin 80] [theme button_tertiary]
-	add_de1_variable "off" [expr (2180 + 2480) / 2.0 ] [expr (930 + 1110) / 2.0 ] -width 280  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable {[ghc_text_or_stop "Flush"]}
-	add_de1_button "off" { ghc_action_or_stop start_flush} 2180 930 2480 1110
+	create_button "off" 2180 210 2480 390  $::font_tiny [theme button_tertiary] [theme button_text_light] { ghc_action_or_stop start_espresso } {[ghc_text_or_stop "Espresso"]}
+	create_button "off" 2180 450 2480 630  $::font_tiny [theme button_tertiary] [theme button_text_light] { ghc_action_or_stop start_water}     {[ghc_text_or_stop "Water"]}
+	create_button "off" 2180 690 2480 870  $::font_tiny [theme button_tertiary] [theme button_text_light] { ghc_action_or_stop start_steam}     {[ghc_text_or_stop "Steam"]}
+	create_button "off" 2180 930 2480 1110 $::font_tiny [theme button_tertiary] [theme button_text_light] { ghc_action_or_stop start_flush}     {[ghc_text_or_stop "Flush"]} 
 }
 
 

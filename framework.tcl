@@ -7,17 +7,18 @@ proc add_background { contexts } {
 }
 
 # add a regular button
-proc create_button { contexts x1 y1 x2 y2 text font backcolor textcolor action } {
+proc create_button { contexts x1 y1 x2 y2 font backcolor textcolor action variable } {
 	rounded_rectangle $contexts  $x1 $y1 $x2 $y2 [rescale_x_skin 80] $backcolor
-	add_de1_text $contexts [expr ($x1 + $x2) / 2.0 ] [expr ($y1 + $y2) / 2.0 ] -text $text -font $font -fill $textcolor -anchor "center" -state "hidden"
+	add_de1_variable "$contexts"  [expr ($x1 + $x2) / 2.0 ] [expr ($y1 + $y2) / 2.0 ] -width [expr ($x2 - $x1) - 80]  -text "" -font $::font_tiny -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable $variable
 	add_de1_button $contexts $action $x1 $y1 $x2 $y2
 }
 
-proc create_settings_button { contexts x1 y1 x2 y2 text font backcolor textcolor action_down action_up} {
+proc create_settings_button { contexts x1 y1 x2 y2 font backcolor textcolor action_down action_up variable} {
 	rounded_rectangle $contexts  $x1 $y1 $x2 $y2 [rescale_x_skin 80] $backcolor
 
 	add_de1_text $contexts [expr ($x1 + 40)] [expr ($y1 + $y2) / 2.0 ] -text "-" -font $font -fill $textcolor -anchor "center" -state "hidden"
 	add_de1_text $contexts [expr ($x2 - 40) ] [expr ($y1 + $y2) / 2.0 ] -text "+" -font $font -fill $textcolor -anchor "center" -state "hidden"
+	add_de1_variable "$contexts" [expr ($x1 + $x2) / 2.0 ] [expr ($y1 + $y2) / 2.0 ] -width [expr ($x2 - $x1) - 80]  -text "" -font $font -fill [theme button_text_light] -anchor "center" -justify "center" -state "hidden" -textvariable $variable
 	add_de1_button $contexts $action_down $x1 $y1 [expr ($x1 + $x2) / 2.0 ] $y2
 	add_de1_button $contexts $action_up   [expr ($x1 + $x2) / 2.0 ] $y1 $x2 $y2
 }
