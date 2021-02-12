@@ -20,7 +20,7 @@ array set ::default_theme {
     button_text_light "#eee"
     button_text_dark "#CCCCCC"
 }
-
+# By Brian K
 array set ::dark_theme {
     background "#121212"
     background_highlight "#121212"
@@ -87,6 +87,7 @@ array set ::red_theme {
     button_text_dark "#CCCCCC"
 }
 
+# By Ryan Schubert
 array set ::cocoa_theme {
     background "#1e1e1e"
     background_highlight "#1e1e1e"
