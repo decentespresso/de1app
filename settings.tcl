@@ -87,6 +87,28 @@ array set ::red_theme {
     button_text_dark "#CCCCCC"
 }
 
+array set ::cocoa_theme {
+    background "#1e1e1e"
+    background_highlight "#1e1e1e"
+    background_text "#FFFFFF"
+
+    primary "#18c37e"
+    primary_light "#18c37e"
+    primary_dark "#18c37e"
+
+    secondary "#4e85f4"
+    secondary_light "#4e85f4"
+
+    button "#363636"
+    button_coffee "#3d322d"
+    button_steam "#363636"
+    button_secondary "#363636"
+    button_tertiary "#363636"
+
+    button_text_light "#FFFFFF"
+    button_text_dark "#969eb1"
+}
+
 # fonts
 set ::font_tiny [get_font "Mazzard Regular" 16]
 set ::font_small [get_font "Mazzard Regular" 18]
