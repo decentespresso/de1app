@@ -20,6 +20,11 @@ create_grid
 .can itemconfigure "grid" -state "hidden"
 #.can itemconfigure "grid" -state "normal"
 
+if {$::settings(grinder_setting) == {}} {
+	set ::settings(grinder_setting) 0
+}
+
+
 #dont change page on state change
 proc skins_page_change_due_to_de1_state_change { textstate } {
 	if {$textstate == "Idle"} {

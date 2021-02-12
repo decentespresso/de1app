@@ -133,6 +133,7 @@ array set ::iconik_settings {
     show_steam 0
     show_ghc_buttons 0
     steam_presets_enabled 1
+    show_grinder_settings_on_main_page 0
 
     saver_dir {/saver}
 
