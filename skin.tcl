@@ -13,6 +13,8 @@ source "[skin_directory]/settings.tcl"
 iconik_load_settings
 iconik_save_settings
 
+set ::settings(stress_test) 1
+
 source "[skin_directory]/framework.tcl"
 source "[skin_directory]/ui.tcl"
 
