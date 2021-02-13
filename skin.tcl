@@ -225,6 +225,11 @@ proc iconik_show_settings {} {
 	show_settings $::settings(settings_profile_type)
 }
 
+proc iconik_select_profile {} {
+	fill_profiles_listbox
+	show_settings settings_1;
+}
+
 set ::iconik_max_pressure 0
 set ::iconik_min_flow 20
 

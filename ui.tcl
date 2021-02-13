@@ -104,6 +104,7 @@ if {$::iconik_settings(show_grinder_settings_on_main_page) == 0} {
 # Recipe
 rounded_rectangle "off" 80 210 480 1110 [rescale_x_skin 80] [theme button]
 add_de1_variable "off" [expr (80 + 480) / 2.0 ] [expr (240 + 240) / 2.0 ] -width [rescale_x_skin 380]  -text "" -font $::font_big -fill [theme button_text_light] -anchor "n" -justify "center" -state "hidden" -textvariable {[string range $::settings(profile_title) 0 28]}
+add_de1_button "off" { say [translate "settings"] $::settings(sound_button_in); iconik_show_settings} 80 240 480 360
 
 ### TIME
 set column1_pos  [expr (80 + 20)  ]
@@ -166,7 +167,7 @@ rectangle "off" 0 1410 2560 1600 [theme background_highlight]
 create_button "off" 80 1440 480 1560    $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_status_tap } {[iconik_get_status_text]}
 create_button "off" 580 1440 980 1560   $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); show_history_page} {[translate "History"]}
 create_button "off" 1080 1440 1480 1560 $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_toggle_cleaning } { [translate "Clean"]} 
-create_button "off" 1580 1440 1980 1560 $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_show_settings} {[translate "Settings"]}
+create_button "off" 1580 1440 1980 1560 $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); iconik_select_profile } {[translate "Settings"]}
 create_button "off" 2080 1440 2480 1560 $::font_tiny [theme button_tertiary] [theme button_text_light] { say [translate "settings"] $::settings(sound_button_in); start_sleep } { [translate "Sleep"]}
 
 
