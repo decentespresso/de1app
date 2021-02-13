@@ -8,80 +8,10 @@
 
 package provide de1_de1 1.0
 
+package require lambda
+
 package require de1_event 1.0
 package require de1_logging 1.0
-
-namespace eval ::de1::state {
-
-	proc current_state {} {
-
-		expr { $::de1_num_state($::de1(state)) }
-	}
-
-	proc current_substate {} {
-
-		expr { $::de1_substate_types($::de1(substate)) }
-	}
-
-	proc is_flow_state {{state_text "None"} {substate_text "None"}} {
-
-		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
-		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
-
-		expr { $state_text in { {Espresso} {Steam} {HotWater} {HotWaterRinse} } }
-	}
-
-	proc flow_phase {{state_text "None"} {substate_text "None"}} {
-
-		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
-		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
-
-		if { ! [is_flow_state $state_text] } { return "" }
-
-		switch $substate_text {
-
-			starting 	{ return "before" }
-			ready 		{ return "before" }
-			heating 	{ return "before" }
-			"final heating"	{ return "before" }
-			stabilising 	{ return "before" }
-
-			preinfusion 	{ return "during" }
-			pouring 	{ return "during" }
-
-			ending 		{ return "after" }
-
-			default		{ return "" }
-		}
-	}
-
-	proc is_flow_before_state {{state_text "None"} {substate_text "None"}} {
-
-		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
-		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
-
-		expr { [flow_phase $state_text $substate_text] == "before" }
-	}
-
-	proc is_flow_during_state {{state_text "None"} {substate_text "None"}} {
-
-		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
-		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
-
-		expr { [flow_phase $state_text $substate_text] == "during" }
-
-	}
-
-	proc is_flow_after_state {{state_text "None"} {substate_text "None"}} {
-
-		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
-		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
-
-		expr { [flow_phase $state_text $substate_text] == "after" }
-
-	}
-}
-
 
 namespace eval ::de1::event::listener {
 
@@ -123,17 +53,30 @@ namespace eval ::de1::event::listener {
 		::event::listener::_generic_add ::de1::event::listener::_after_flow_complete_lists {*}$args
 	}
 
+	proc on_connect_add {args} {
+
+		::event::listener::_generic_add ::de1::event::listener::_on_connect_lists {*}$args
+	}
+
+	proc on_disconnect_add {args} {
+
+		::event::listener::_generic_add ::de1::event::listener::_on_disconnect_lists {*}$args
+	}
+
 
 	foreach callback_list [list \
 				       ::de1::event::listener::_on_major_state_change_lists \
 				       ::de1::event::listener::_on_all_state_change_lists \
 				       ::de1::event::listener::_on_flow_change_lists \
 				       ::de1::event::listener::_after_flow_complete_lists \
+				       ::de1::event::listener::_on_connect_lists \
+				       ::de1::event::listener::_on_disconnect_lists \
 				      ] {
 
 		::event::listener::_init_callback_list $callback_list
 	}
-}
+
+} ;# ::de1::event::listener
 
 
 namespace eval ::de1::event::apply {
@@ -226,6 +169,88 @@ namespace eval ::de1::event::apply {
 					    [::de1::state::current_state] [::de1::state::current_substate]]
 		}
 	}
-}
+
+	proc on_connect_callbacks {args} {
+
+		::event::apply::_generic ::de1::event::listener::_on_connect_lists {*}$args
+	}
+
+	proc on_disconnect_callbacks {args} {
+
+		::event::apply::_generic ::de1::event::listener::_on_disconnect_lists {*}$args
+	}
+
+} ;# ::de1::event::apply
 
 
+namespace eval ::de1::state {
+
+	proc current_state {} {
+
+		expr { $::de1_num_state($::de1(state)) }
+	}
+
+	proc current_substate {} {
+
+		expr { $::de1_substate_types($::de1(substate)) }
+	}
+
+	proc is_flow_state {{state_text "None"} {substate_text "None"}} {
+
+		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
+		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
+
+		expr { $state_text in { {Espresso} {Steam} {HotWater} {HotWaterRinse} } }
+	}
+
+	proc flow_phase {{state_text "None"} {substate_text "None"}} {
+
+		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
+		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
+
+		if { ! [is_flow_state $state_text] } { return "" }
+
+		switch $substate_text {
+
+			starting 	{ return "before" }
+			ready 		{ return "before" }
+			heating 	{ return "before" }
+			"final heating"	{ return "before" }
+			stabilising 	{ return "before" }
+
+			preinfusion 	{ return "during" }
+			pouring 	{ return "during" }
+
+			ending 		{ return "after" }
+
+			default		{ return "" }
+		}
+	}
+
+	proc is_flow_before_state {{state_text "None"} {substate_text "None"}} {
+
+		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
+		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
+
+		expr { [flow_phase $state_text $substate_text] == "before" }
+	}
+
+	proc is_flow_during_state {{state_text "None"} {substate_text "None"}} {
+
+		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
+		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
+
+		expr { [flow_phase $state_text $substate_text] == "during" }
+
+	}
+
+	proc is_flow_after_state {{state_text "None"} {substate_text "None"}} {
+
+		if { $state_text == "None" } { set state_text [::de1::state::current_state] }
+		if { $substate_text == "None" } { set substate_text [::de1::state::current_substate] }
+
+		expr { [flow_phase $state_text $substate_text] == "after" }
+
+	}
+
+} ;# ::de1:::state
