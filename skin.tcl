@@ -226,11 +226,8 @@ proc iconik_show_settings {} {
 }
 
 proc iconik_select_profile {} {
-	show_settings
-	set_next_page off settings_1
-	page_show off
-	set ::settings(active_settings_tab) settings_1
-	start_idle
+	fill_profiles_listbox
+	show_settings settings_1;
 }
 
 set ::iconik_max_pressure 0
