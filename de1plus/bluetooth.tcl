@@ -673,6 +673,11 @@ proc decentscale_tare {} {
 }
 
 proc close_all_ble_and_exit {} {
+
+	###
+	### NB: Disconnect events are intentionally not called here
+	###
+
 	msg "close_all_ble_and_exit"
 	msg -DEBUG "close_all_ble_and_exit, at entrance: [ble info]"
 	if {$::scanning  == 1} {
@@ -830,6 +835,12 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 		#msg "check_if_initial_connect_didnt_happen_quickly ::de1(device_handle) == 0"
 		catch {
 			ble close $::currently_connecting_de1_handle
+
+			# TODO: Evaluate: Probably not appropriate to call here
+			# as though possibly connected, on_connect hasn't been called
+
+			::de1::event::apply::on_disconnect_callbacks \
+				[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
 		}
 		catch {
 			set ::currently_connecting_de1_handle 0
@@ -843,6 +854,13 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 		msg "on initial startup, if a direct connection to scale doesn't work quickly, start a scan instead"
 		catch {
 			ble close $::currently_connecting_scale_handle
+
+			# TODO: Evaluate: Probably not appropriate to call here
+			# as though possibly connected, on_connect hasn't been called
+
+			::device::scale::event::apply::on_disconnect_callbacks \
+				[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
+
 		}
 		catch {
 			set ::currently_connecting_scale_handle 0
@@ -977,6 +995,8 @@ proc ble_connect_to_de1 {} {
 			msg "disconnecting from DE1"
 			ble close $::de1(device_handle)
 			set ::de1(device_handle) "0"
+			::de1::event::apply::on_disconnect_callbacks \
+				[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
 			after 1000 ble_connect_to_de1
 		}
 		catch {
@@ -1332,6 +1352,8 @@ proc de1_ble_handler { event data } {
 					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
 						msg "de1 connected $event $data"
 
+						::de1::event::apply::on_connect_callbacks \
+							[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
 
 						de1_connect_handler $handle $address "DE1"
 
@@ -1343,7 +1365,7 @@ proc de1_ble_handler { event data } {
 
 					} elseif {$::de1(scale_device_handle) == 0 && $address == $::settings(scale_bluetooth_address)} {
 
-						
+
 						#append_to_scale_bluetooth_list $address [ifexists ::scale_types($address)]
 						#append_to_scale_bluetooth_list $address $::settings(scale_type)
 
@@ -1723,7 +1745,7 @@ proc de1_ble_handler { event data } {
 								msg "- decent scale: tare confirmed"
 
 								return
-							} elseif {[ifexists weightarray(command)] == 0xAA} {									
+							} elseif {[ifexists weightarray(command)] == 0xAA} {
 								msg "Decentscale BUTTON $weightarray(data3) pressed"
 								if {[ifexists $weightarray(data3)] == 1} {
 									# button 1 "O" pressed
