@@ -225,6 +225,14 @@ proc iconik_show_settings {} {
 	show_settings $::settings(settings_profile_type)
 }
 
+proc iconik_select_profile {} {
+	show_settings
+	set_next_page off settings_1
+	page_show off
+	set ::settings(active_settings_tab) settings_1
+	start_idle
+}
+
 set ::iconik_max_pressure 0
 set ::iconik_min_flow 20
 
