@@ -150,8 +150,8 @@ create_button "off" 1080 1140 1480 1380 $::font_tiny [theme button_coffee] [them
 
 if {$::iconik_settings(steam_presets_enabled) == 1} {
 	## Steam Presets
-	create_button "off"  1580 1140 1980 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {[iconik_toggle_steam_settings 1]} {Steam 1:\n[iconik_steam_timeout 1]s}
-	create_button "off" 2080 1140 2480 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {[iconik_toggle_steam_settings 2]} {Steam 2:\n[iconik_steam_timeout 2]s} 
+	create_button "off" 1580 1140 1980 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {iconik_toggle_steam_settings 1} {Steam 1:\n[iconik_steam_timeout 1]s}
+	create_button "off" 2080 1140 2480 1380 $::font_tiny [theme button_coffee] [theme button_text_light] {iconik_toggle_steam_settings 2} {Steam 2:\n[iconik_steam_timeout 2]s} 
 
 } else {
 	# Two more coffee presets
