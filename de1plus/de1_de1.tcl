@@ -63,6 +63,13 @@ namespace eval ::de1::event::listener {
 		::event::listener::_generic_add ::de1::event::listener::_on_disconnect_lists {*}$args
 	}
 
+	proc on_shotvalue_available_add {args} {
+
+		::event::listener::_generic_add ::de1::event::listener::_on_shotvalue_available_lists {*}$args
+	}
+
+
+
 
 	foreach callback_list [list \
 				       ::de1::event::listener::_on_major_state_change_lists \
@@ -71,6 +78,7 @@ namespace eval ::de1::event::listener {
 				       ::de1::event::listener::_after_flow_complete_lists \
 				       ::de1::event::listener::_on_connect_lists \
 				       ::de1::event::listener::_on_disconnect_lists \
+				       ::de1::event::listener::_on_shotvalue_available_lists \
 				      ] {
 
 		::event::listener::_init_callback_list $callback_list
@@ -180,7 +188,186 @@ namespace eval ::de1::event::apply {
 		::event::apply::_generic ::de1::event::listener::_on_disconnect_lists {*}$args
 	}
 
+	proc on_shotvalue_available_callbacks {args} {
+
+		::event::apply::_generic ::de1::event::listener::_on_shotvalue_available_lists {*}$args
+	}
+
 } ;# ::de1::event::apply
+
+
+namespace eval ::de1 {
+
+	proc line_voltage_nom {} {
+
+		if {[info exists ::settings(heater_voltage)]} {
+			return [expr { double($::settings(heater_voltage)) }]
+		} else {
+			return False
+		}
+	}
+
+	# When line frequency is reported by the firmware,
+	# prefer over estimation from arrival times
+
+	proc line_frequency_nom {} {
+
+		if {[info exists ::settings(line_frequency)] && $::settings(line_frequency)} {
+
+			return [expr { double($::settings(line_frequency)) }]
+		} else {
+
+			return [::de1::_line_frequency_guess]
+		}
+	}
+
+	proc _line_frequency_guess {} {
+
+		# Korea, Peru, Philippines, and some other nations run ~230 V, 60 Hz
+		# Try to catch Korea, even if likely called before a user has a chance to set language
+
+		if {[::de1_line_voltage_nom] == 230} {
+			if {[info exists ::settings(language)] && $::settings(language) == "kr" } {
+				return 60.0
+			} else {
+				return 50.0
+			}
+		} else if {[::de1_line_voltage_nom] == 120} {
+			return 60.0
+		} else {
+			return 50.0
+		}
+	}
+
+
+	#
+	# Line-frequency estimation (determines DE1's firmware shot-reporting period as of 2021-02)
+	#
+
+	# ::settings() hasn't been loaded at this point in execution, so have to check on connect
+	# See proc load_settings {} in utils.tcl and load_settings_vars {} in vars.tcl as of 2021-02
+
+	proc _maybe_start_line_frequency_estimator {args} {
+
+		if {   ! [info exists ::settings(line_frequency)] \
+			       || ( $::settings(line_frequency) != 50 && $::settings(line_frequency) != 60 ) \
+			       || (    [info exists ::settings(line_frequency_always_estimate)] \
+					       && $::settings(line_frequency_always_estimate) ) } {
+
+			::de1::_start_line_frequency_estimator
+		}
+	}
+
+	::de1::event::listener::on_connect_add -idle ::de1::_maybe_start_line_frequency_estimator
+
+	variable _line_frequency_estimator_registered False
+
+	proc _start_line_frequency_estimator {{restart False}} {
+
+		if { [info exists ::de1::_line_frequency_estimate_running] } {
+			if { $restart } {
+				msg -INFO "_start_line_frequency_estimator: Restarting."
+			} else {
+				msg -NOTICE "_start_line_frequency_estimator: Already running. Not restarting."
+				return
+			}
+		}
+
+		set ::de1::_line_frequency_estimate_start_time 0
+		set ::de1::_line_frequency_estimate_start_count 0
+		set ::de1::_line_frequency_estimate_skip_updates False
+		set ::de1::_line_frequency_estimate_running True
+
+		if { ! $::de1::_line_frequency_estimator_registered } {
+			::de1::event::listener::on_shotvalue_available_add ::de1::_line_frequency_estimator
+			set ::de1::_line_frequency_estimator_registered True
+			msg -DEBUG "::de1::_start_line_frequency_estimator, registered listener"
+		}
+
+		msg -DEBUG "::de1::_start_line_frequency_estimator, waiting for updates"
+	}
+
+	proc _line_frequency_estimator {event_dict} {
+
+		if { $::de1::_line_frequency_estimate_skip_updates } { return }
+
+		if { [::de1::_bluetooth_xmit_queue_depth] > 1 } {
+			set qd [::de1::_bluetooth_xmit_queue_depth]
+			set holdoff_time_ms [expr { max( 1000, [expr { $qd * 100 + 100 }] ) }]
+			msg -INFO [format "::de1::_line_frequency_estimator: Bluetooth too busy for accuracy (%d). Rescheduling in %d ms." \
+					   $qd $holdoff_time_ms]
+			set ::de1::_line_frequency_estimate_skip_updates True
+			after $holdoff_time_ms ::de1::_start_line_frequency_estimator True
+			return
+		}
+
+		# Need to distinguish 250 ms from 208.3 ms period, ~ 20 ms threshold
+		# Standard deviation of arrivals ~ 40 ms; 5 sigma => ~ 4 ms, ~100 samples, ~25 seconds
+		# However, if samples are within 250 ms of "mark", then worst-case for two is 500 ms
+		# 500 ms on a 10 second time base is 5%, less than half the 20% rate difference.
+
+		set min_window 10.0
+
+
+		set sample_time [dict get $event_dict SampleTime]
+		set update_received [dict get $event_dict update_received]
+
+		if { $::de1::_line_frequency_estimate_start_time == 0  } {
+
+			set ::de1::_line_frequency_estimate_start_time $update_received
+			set ::de1::_line_frequency_estimate_start_count $sample_time
+
+			msg -DEBUG "::de1::_line_frequency_estimator: First update received"
+
+		} elseif { $update_received - $::de1::_line_frequency_estimate_start_time < $min_window } {
+
+			# pass
+
+		} else {
+
+			set dt [expr { $update_received - $::de1::_line_frequency_estimate_start_time }]
+			set dc [expr { $sample_time - $::de1::_line_frequency_estimate_start_count }]
+
+			# Manage 16-bit counter roll of the "zero-cross" counter (100 or 120 Hz)
+			if { $dc < 0 } { set dc [expr { $dc + 65535 }]}
+
+			set hz_est [expr { ( $dc / 2 ) / $dt }]
+
+			if { 45.0 < $hz_est && $hz_est < 55.0 } {
+
+				set ::settings(line_frequency) 50.0
+				msg -INFO [format "::de1::_line_frequency_estimator: %.0f Hz inferred from %6.3f estimate" \
+						   $::settings(line_frequency) $hz_est]
+
+			} elseif { 55.0 < $hz_est && $hz_est < 65.0 } {
+
+				set ::settings(line_frequency) 60.0
+				msg -INFO [format "::de1::_line_frequency_estimator: %.0f Hz inferred from %6.3f estimate" \
+						   $::settings(line_frequency) $hz_est]
+
+			} else {
+				msg -ERROR [format "::de1::_line_frequency_estimator: Time not set from %6.3f estimate" \
+						    $hz_est]
+
+			}
+
+			set ::de1::_line_frequency_estimate_skip_updates True
+			unset -nocomplain ::de1::_line_frequency_estimate_running
+		}
+	}
+
+	#
+	# Used for empirical test for "too busy to get good timing"
+	#
+	# TODO: This depends on what is presently in de1_comms.tcl
+	#
+
+	proc _bluetooth_xmit_queue_depth {} {
+
+		return [llength $::de1(cmdstack)]
+	}
+
+} ;# ::de1
 
 
 namespace eval ::de1::state {
@@ -253,4 +440,4 @@ namespace eval ::de1::state {
 
 	}
 
-} ;# ::de1:::state
+} ;# ::de1::state

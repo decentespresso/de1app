@@ -1253,17 +1253,18 @@ proc bintest2 {} {
 }
 
 set ::previous_FrameNumber -1
-proc update_de1_shotvalue {packed} {
+proc update_de1_shotvalue {packed {update_received 0}} {
+
+	if { $update_received == 0 } { set update_received [expr {[clock milliseconds] / 1000.0}] }
 
 	if {[string length $packed] < 7} {
 		# this should never happen
-		msg "ERROR: short packed message"
+		msg -ERROR [format "update_de1_shotvalue: short packed message: %d < 7" [string length $packed]]
 		return
 	}
 
-  	# the timer stores hundreds of a second, so we take the half cycles, divide them by hertz/2 to get seconds, and then multiple that all by 100 to get 100ths of a second, stored as an int
 	set spec_old {
-		Timer {Short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
+		SampleTime {Short {} {} {unsigned} {}}
 		GroupPressure {char {} {} {unsigned} {$val / 16.0}}
 		GroupFlow {char {} {} {unsigned} {$val / 16.0}}
 		MixTemp {Short {} {} {unsigned} {$val / 256.0}}
@@ -1276,9 +1277,11 @@ proc update_de1_shotvalue {packed} {
 		SteamTemp {Short {} {} {unsigned} {$val / 256.0}}
 	}
 
-	# HeatTemp is a 24bit number, which Tcl doesn't have, so we grab it as 3 chars and manually convert it to a number	
+	# HeadTemp is a 24bit number, which Tcl doesn't have
+	# Grab it as 3 chars and manually convert it to a number
+
   	set spec {
-		Timer {Short {} {} {unsigned} {int(100 * ($val / ($::de1(hertz) * 2.0)))}}
+		SampleTime {Short {} {} {unsigned} {}}
 		GroupPressure {Short {} {} {unsigned} {$val / 4096.0}}
 		GroupFlow {Short {} {} {unsigned} {$val / 4096.0}}
 		MixTemp {Short {} {} {unsigned} {$val / 256.0}}
@@ -1310,30 +1313,30 @@ proc update_de1_shotvalue {packed} {
 	}
 
   	if {[info exists ShotSample(SteamTemp)] != 1} {
-  		# if we get no steam temp then this is the old BLE spec and auto-adjust to doing so, but discard this first temperature report as part of this auto-adjusting
+		# If we get no steam temp then this is the old BLE spec
+		# auto-adjust to doing so, but discard this first temperature report
+		# as part of this auto-adjusting
 	 	set ::ble_spec 0.9
 	 	return
 	 }
 
-	#msg "update_de1_shotvalue [array get ShotSample]"
+	# SampleTime, at least during a shot, is measured in half-cycles; 100 or 120 Hz
+	# During sleep, it has been observed to drop to 1/3 of the "awake" rate
 
-	#this is the number of milliseconds between BLE updates
-	set delta 0
+	# Unwrap 16-bit unsigned int SampleTime
+	# Much of this proc could be refactored into ::de1 and ::gui
+	# Neither ::previous_timer nor ShotSample(Timer) were used elsewhere in prior code
 
-	#set ::de1(timer) $ShotSample(Timer)
-	if {[info exists ::previous_timer] != 1} {
-		# we throw out the first shot sample update because we don't have a previous time to copare it to, to calculate difference-between-updates
-		msg "previous timer was undefined so settings to $ShotSample(Timer)"
-		set ::previous_timer $ShotSample(Timer)
-		return
-	} elseif {$::previous_timer == 0} {
-		#msg "previous timer was zero so settings to $ShotSample(Timer)"
-		set ::previous_timer $ShotSample(Timer)
-		return
+	if { [info exists ::de1::_sampletime_previous] } {
+
+		set dhc [expr { $ShotSample(SampleTime) - $::de1::_sampletime_previous }]
+		if { $dhc < 0 } { set dhc [expr { $dhc - 65536 }] }
+		set dt_for_flow_summation [expr { $dhc / ( 2.0 * [::de1::line_frequency_nom] ) }]
+
+	} else {
+		set dt_for_flow_summation 0.0
 	}
-
-	set delta [expr {$ShotSample(Timer) - $::previous_timer}]
-	set ::previous_timer $ShotSample(Timer)
+	set ::de1::_sampletime_previous $ShotSample(SampleTime)
 
 	if {$::previous_FrameNumber != [ifexists ShotSample(FrameNumber)]} {
 		# draw a vertical line at each frame change
@@ -1402,21 +1405,17 @@ proc update_de1_shotvalue {packed} {
 	set ::de1(steam_heater_temperature) $ShotSample(SteamTemp)
 	#msg "Steam temp, $::de1(steam_heater_temperature)"
 
-	set water_volume_dispensed_since_last_update [expr {$ShotSample(GroupFlow) * ($delta/100.0)}]
+	set water_volume_dispensed_since_last_update [expr { $ShotSample(GroupFlow) * $dt_for_flow_summation }]
+	#
+	# Properly unwrapping the 16-bit value should prevent the conditions previously seen in the code
+	# retain the checks in case there is something else going on
+	#
 	if {$water_volume_dispensed_since_last_update < 0} {
-		# occasionally the water volume dispensed numbers are negative, which causes bugs downstream
-		# not sure why this happens, but maybe it originates in the DE1 firmware.
-		# this if() statement is an attempt to catch this problem and solve it.  Not sure if it will succeed.
 		set water_volume_dispensed_since_last_update 0
-		msg "WARNING negative water volume dispensed: $water_volume_dispensed_since_last_update"
+		msg -WARN "negative water volume dispensed: $water_volume_dispensed_since_last_update"
 	} elseif {$water_volume_dispensed_since_last_update > 1000} {
-		# occasionally the water volume dispensed numbers are odd, which causes bugs downstream
-		# not sure why this happens, but maybe it originates in the DE1 firmware.
-		# this if() statement is an attempt to catch this problem and solve it.  Not sure if it will succeed.
-
-		# not sure if HUGE numbers ever happen, but this will catch it, correct for it, and log it.
 		set water_volume_dispensed_since_last_update 0
-		msg "WARNING HUGE amount of water volume dispensed: $water_volume_dispensed_since_last_update"
+		msg -WARN "HUGE amount of water volume dispensed: $water_volume_dispensed_since_last_update"
 	}
 	set ::de1(volume) [expr {$::de1(volume) + $water_volume_dispensed_since_last_update}]
 
@@ -1443,6 +1442,14 @@ proc update_de1_shotvalue {packed} {
 	set ::de1(goal_temperature) $ShotSample(SetHeadTemp)
 
 	append_live_data_to_espresso_chart
+
+	set event_dict [dict create \
+				event_time [expr {[clock milliseconds] / 1000.0}] \
+				update_received $update_received \
+				{*}[array get ShotSample]
+		       ]
+
+	::de1::event::apply::on_shotvalue_available_callbacks $event_dict
 
 	# return the parsed array of what we just received so that we can display it to a debug log if desired
 	return [array get ShotSample]
