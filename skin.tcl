@@ -1,5 +1,3 @@
-# Barney's Metric skin
-package provide metric 0.5
 package require de1plus 1.0
 
 source "[homedir]/skins/default/standard_includes.tcl"
