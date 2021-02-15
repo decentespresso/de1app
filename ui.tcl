@@ -127,9 +127,9 @@ add_de1_variable "off" $column1_pos [expr {$pos_top + (9 * $spacer)}] -justify l
 
 # Max pressure, min flow
 add_de1_text "off" $column1_pos [expr {$pos_top + (11 * $spacer)}] -justify left -anchor "nw" -text [translate "Pressure"] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
-add_de1_variable "off" $column1_pos [expr {$pos_top + (12 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {$::de1(pressure) bar ([iconik_get_max_pressure] peak)}
+add_de1_variable "off" $column1_pos [expr {$pos_top + (12 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[round_to_one_digits $::de1(pressure)] bar ([iconik_get_max_pressure] peak)}
 add_de1_text "off" $column1_pos [expr {$pos_top + (13 * $spacer)}] -justify left -anchor "nw" -text [translate Flow] -font $::font_tiny -fill  [theme button_text_light] -width [rescale_x_skin 520]
-add_de1_variable "off" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {$::de1(flow) ml/s ([iconik_get_min_flow] min)}
+add_de1_variable "off" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font $::font_tiny  -fill  [theme button_text_dark]  -width [rescale_x_skin 520] -textvariable {[round_to_one_digits $::de1(flow)] ml/s ([iconik_get_min_flow] min)}
 
 # water refill
 if {$::iconik_settings(show_ml_instead_of_water_level) == 1} {
