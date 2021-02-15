@@ -33,7 +33,7 @@ add_de1_widget "iconik_settings" entry 180 960  {
 
 
 ## Dose / Grind settings
-create_settings_button "iconik_settings" 180 1080 580 1200 $::font_tiny [theme button_secondary] [theme button_text_light] { set ::settings(grinder_dose_weight) [expr {$::settings(grinder_dose_weight) - 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} { set ::settings(grinder_dose_weight) [expr {$::settings(grinder_dose_weight) + 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} {Dose:\n $::settings(grinder_dose_weight)}
+create_settings_button "iconik_settings" 180 1080 580 1200 $::font_tiny [theme button_secondary] [theme button_text_light] { set ::settings(grinder_dose_weight) [expr {$::settings(grinder_dose_weight) - 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} { set ::settings(grinder_dose_weight) [expr {$::settings(grinder_dose_weight) + 0.5}]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} {Dose:\n $::settings(grinder_dose_weight) ([iconik_get_ratio_text])}
 create_settings_button "iconik_settings" 680 1080 1080 1200 $::font_tiny [theme button_secondary] [theme button_text_light]  { set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - 0.1}]]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} { set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + 0.1}]]; profile_has_changed_set; save_profile; save_settings_to_de1; save_settings} {Grinder Setting:\n $::settings(grinder_setting)}
 
 ## Water / Steam settings

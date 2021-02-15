@@ -270,12 +270,24 @@ proc iconik_get_steam_time {} {
 	return "${target_steam_time}s"
 }
 
-proc iconik_get_final_weight {} {
+proc iconik_final_weight {} {
 	if {$::settings(settings_profile_type) == "settings_2c"} {
 		set target $::settings(final_desired_shot_weight_advanced)
 	} else {
 		set target $::settings(final_desired_shot_weight)
 	}
+	return $target
+}
+
+proc iconik_get_ratio_text {} {
+	set weight [iconik_final_weight]
+	set dose $::settings(grinder_dose_weight)
+
+	return 1:[round_to_one_digits [expr $weight / $dose ]]
+}
+
+proc iconik_get_final_weight_text {} {
+	set target [iconik_final_weight]
 
 	set current ""
 	if {$::de1(scale_device_handle) != 0 && $::settings(scale_bluetooth_address) != ""} {
