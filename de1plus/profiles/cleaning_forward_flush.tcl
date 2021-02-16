@@ -33,7 +33,7 @@ preinfusion_time 20
 pressure_end 6.0
 profile_hide 1
 profile_language en
-profile_notes {We recommend this pressure profile as the most likely to produce a good espresso in the most varied number of cases.  The decreasing pressure will help reduce acidity.}
+profile_notes {Use this profile with some cleaning product in a blind (no hole) portafilter basket, to thoroughly clean the inside of the group head.}
 profile_title {Cleaning/Forward flush}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
