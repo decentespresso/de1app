@@ -9,3 +9,6 @@
 [submodule "de1plus/skins/MimojaCafe"]
 	path = de1plus/skins/MimojaCafe
 	url = https://github.com/Mimoja/de1app_skin_MimojaCafe
+[submodule "de1plus/plugins/SDB"]
+	path = de1plus/plugins/SDB
+	url = https://github.com/ebengoechea/de1app_plugin_SDB
