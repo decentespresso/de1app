@@ -640,6 +640,9 @@ proc make_de1_dir {srcdir destdirs} {
 
         plugins/DPx_Screen_Saver/plugin.tcl *
         plugins/DPx_Steam_Stop/plugin.tcl *
+
+        plugins/keyboard_control/plugin.tcl *
+        plugins/keyboard_control/settings.tdb *
     }
 #        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
