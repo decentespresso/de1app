@@ -38,10 +38,11 @@ proc load_plugin_settings {plugin} {
 	    msg "Settings file: $settings_file_contents"
 	    if {[string length $settings_file_contents] != 0} {
 	        array set [plugin_settings $plugin] $settings_file_contents
+            return 1
 	    }
-	} else {
-		msg "Settings file $fn not found"
 	}
+	msg "Settings file $fn not found"
+    return 0
 }
 
 proc save_plugin_settings {plugin} {
@@ -50,7 +51,12 @@ proc save_plugin_settings {plugin} {
 
 proc source_plugin {plugin} {
         load_plugin_settings $plugin
+        if {[file exists "[homedir]/[plugin_directory]/$plugin/plugin.tcl"] != 1} {
+            msg "Plugin $plugin does not exist"
+            return 0
+        }
 		source "[homedir]/[plugin_directory]/$plugin/plugin.tcl"
+        return 1
 }
 
 proc plugin_preload {plugin} {
@@ -77,8 +83,12 @@ proc load_plugin {plugin} {
 	}
 	
 	if {[catch {
-        ::plugins::${plugin}::main
-		set ::plugins::${plugin}::plugin_loaded 1
+        if {[info proc ::plugins::${plugin}::main] != ""} {
+            ::plugins::${plugin}::main
+        } else {
+            borg toast "loaded empty plugin $plugin"
+        }
+        set ::plugins::${plugin}::plugin_loaded 1
 	} err] != 0} {
 		catch {
 			# remove from enabled plugins
@@ -123,12 +133,14 @@ proc toggle_plugin {plugin} {
 }
 
 proc available_plugins {} {
-    set plugin_sources [lsort -dictionary [glob -nocomplain -tails -directory [plugin_directory] * ]]
+    set plugin_sources [lsort -dictionary [glob -nocomplain -tails -type d -directory [plugin_directory] * ]]
     set plugins {}
 
     foreach p $plugin_sources {
         set fbasename [file rootname [file tail $p]]
-        lappend plugins $fbasename
+        if {[file exists "[homedir]/[plugin_directory]/$fbasename/plugin.tcl"] == 1} {
+            lappend plugins $fbasename
+        }
     }
 
     return $plugins
