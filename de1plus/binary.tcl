@@ -1411,11 +1411,17 @@ proc update_de1_shotvalue {packed {update_received 0}} {
 	# retain the checks in case there is something else going on
 	#
 	if {$water_volume_dispensed_since_last_update < 0} {
+		msg -WARN "Negative water volume dispensed, setting to 0:" \
+			"$ShotSample(GroupFlow) * $dt_for_flow_summation =" \
+			"$water_volume_dispensed_since_last_update" \
+			"during [::de1::state::current_state],[::de1::state::current_substate]"
 		set water_volume_dispensed_since_last_update 0
-		msg -WARN "negative water volume dispensed: $water_volume_dispensed_since_last_update"
 	} elseif {$water_volume_dispensed_since_last_update > 1000} {
+		msg -WARN "Excessive water volume dispensed, setting to 0:" \
+			"$ShotSample(GroupFlow) * $dt_for_flow_summation =" \
+			"$water_volume_dispensed_since_last_update" \
+			"during [::de1::state::current_state],[::de1::state::current_substate]"
 		set water_volume_dispensed_since_last_update 0
-		msg -WARN "HUGE amount of water volume dispensed: $water_volume_dispensed_since_last_update"
 	}
 	set ::de1(volume) [expr {$::de1(volume) + $water_volume_dispensed_since_last_update}]
 
