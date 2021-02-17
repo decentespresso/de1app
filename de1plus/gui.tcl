@@ -2934,6 +2934,12 @@ namespace eval ::gui::notify {
 
 				borg toast [translate {Stopping for weight}]
 			}
+
+			default {
+
+				msg -ERROR "::gui::notify::scale_event called without matching event_id: $event_id $args"
+			}
+
 		}
 	}
 
