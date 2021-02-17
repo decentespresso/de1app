@@ -15,3 +15,6 @@
 [submodule "de1plus/plugins/keyboard_control"]
 	path = de1plus/plugins/keyboard_control
 	url = https://github.com/vjapolitzer/de1app_plugin_keyboard_control
+[submodule "de1plus/plugins/DGUI"]
+	path = de1plus/plugins/DGUI
+	url = https://github.com/ebengoechea/de1app_plugin_DGUI

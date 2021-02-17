@@ -643,6 +643,13 @@ proc make_de1_dir {srcdir destdirs} {
 
         plugins/keyboard_control/plugin.tcl *
         plugins/keyboard_control/settings.tdb *
+
+        plugins/DGUI/DGUI.tcl *
+        plugins/DGUI/plugin.tcl *
+        plugins/DGUI/setup_DSx.tcl *
+        plugins/DGUI/setup_Insight.tcl *
+        plugins/DGUI/setup_MimojaCafe.tcl *
+
     }
 #        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
