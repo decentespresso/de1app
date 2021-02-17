@@ -61,8 +61,13 @@ proc plugin_preload {plugin} {
 }
 
 proc load_plugin {plugin} {
+	global loaded_plugins
+	if { ![info exists ::loaded_plugins] } { set loaded_plugins {} }
+	if { [lsearch -exact $loaded_plugins $plugin] > -1 } return
+	
 	if {[catch {
         ::plugins::${plugin}::main
+		lappend loaded_plugins $plugin
 	} err] != 0} {
 		catch {
 			# remove from enabled plugins
