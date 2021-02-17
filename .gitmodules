@@ -12,3 +12,6 @@
 [submodule "de1plus/plugins/SDB"]
 	path = de1plus/plugins/SDB
 	url = https://github.com/ebengoechea/de1app_plugin_SDB
+[submodule "de1plus/plugins/keyboard_control"]
+	path = de1plus/plugins/keyboard_control
+	url = https://github.com/vjapolitzer/de1app_plugin_keyboard_control
