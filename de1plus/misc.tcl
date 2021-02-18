@@ -120,7 +120,7 @@ proc make_de1_dir {srcdir destdirs} {
         vars.tcl *
         de1_comms.tcl *
         updater.tcl *
-	logging.tcl *
+        logging.tcl *
         misc.tcl *
         pkgIndex.tcl *
         de1_icon_v2.png *
@@ -134,7 +134,10 @@ proc make_de1_dir {srcdir destdirs} {
         autopair_with_de1.tcl *
         autopair_with_de1plus.tcl *
         history_export.tcl *
-		version.tcl *
+        version.tcl *
+        profile.tcl *
+
+        profiles_v2/README *
 
         history/info.txt *
         history/export/readme.txt *

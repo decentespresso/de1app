@@ -1165,7 +1165,7 @@ proc de1_send_shot_frames {} {
 
 	msg "de1_send_shot_frames"
 
-	set parts [de1_packed_shot]
+	set parts [de1_packed_shot_wrapper]
 	set header [lindex $parts 0]
 
 	####
@@ -1189,7 +1189,7 @@ proc de1_send_shot_frames {} {
 		msg "frame #$cnt: [string length $packed_frame] bytes: [array get arr3]"
 		####
 
-		userdata_append "Espresso frame #$cnt: [array get arr3] (FLAGS: [parse_shot_flag $arr3(Flag)])"  [list de1_comm write "FrameWrite" $packed_frame] 1
+		userdata_append "Espresso frame #$cnt: [array get arr3] (FLAGS: [parse_shot_flag [ifexists arr3(Flag)]])"  [list de1_comm write "FrameWrite" $packed_frame] 1
 	}
 
 	# only set the tank temperature for advanced profile shots

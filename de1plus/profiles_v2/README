@@ -1,0 +1,1 @@
+# This folder contains the json encoded new profile format we are testing in this beta
