@@ -1,6 +1,7 @@
 package provide de1_binary 1.0
 
 package require de1_logging 1.0
+package require de1_profile 2.0
 
 # from http://wiki.tcl.tk/12148
 
@@ -567,6 +568,10 @@ proc make_shot_flag {enabled_features} {
 
 proc parse_shot_flag {num} {
 
+	if {$num == {}} {
+		return {}
+	}
+
 	set enabled_features {}
 
 	if {[expr {$num & 0x01}] } {
@@ -625,6 +630,13 @@ proc parse_binary_shotframe {packed destarrname} {
 	array set specarr $spec
 
    	::fields::unpack $packed $spec ShotSample bigeendian
+	if {$ShotSample(FrameToWrite) >= 32} {
+		set spec [spec_extshotframe]
+		array unset specarr *
+		array unset ShotSample *
+		array set specarr $spec
+		::fields::unpack $packed $spec ShotSample bigeendian
+	}
 	foreach {field val} [array get ShotSample] {
 		set specparts $specarr($field)
 		set extra [lindex $specparts 4]
@@ -741,7 +753,36 @@ proc spec_shotframe {} {
 	return $spec
 }
 
-proc make_chunked_packed_shot_sample {hdrarrname framenames} {
+proc spec_extshotframe {} {
+	set spec {
+		FrameToWrite {char {} {} {unsigned} {$val}}
+		MaxFlowOrPressure {char {} {} {unsigned} {$val / 16.0}}
+		MaxFoPRange {char {} {} {unsigned} {$val / 16.0}}
+		Pad1  {char {} {} {unsigned} {$val}}
+		Pad2  {char {} {} {unsigned} {$val}}
+		Pad3  {char {} {} {unsigned} {$val}}
+		Pad4  {char {} {} {unsigned} {$val}}
+		Pad5  {char {} {} {unsigned} {$val}}
+	}
+	return $spec
+}
+
+proc spec_shottail {} {
+	# Unused. Use highest bit to enable / disable preinfusion tracking
+	#MaxTotalVolume {char {} {} {unsigned} {$val }}
+	set spec {
+		FrameToWrite {char {} {} {unsigned} {$val}}
+		MaxTotalVolume {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
+		Pad1  {char {} {} {unsigned} {$val}}
+		Pad2  {char {} {} {unsigned} {$val}}
+		Pad3  {char {} {} {unsigned} {$val}}
+		Pad4  {char {} {} {unsigned} {$val}}
+		Pad5  {char {} {} {unsigned} {$val}}
+	}
+	return $spec
+}
+
+proc make_chunked_packed_shot_sample {hdrarrname framenames extension_framenames tail_framename} {
 	upvar $hdrarrname hdrarr
 
 	set packed_header [::fields::pack [spec_shotdescheader] hdrarr]
@@ -753,14 +794,23 @@ proc make_chunked_packed_shot_sample {hdrarrname framenames} {
 		upvar $framearrname $hdrarrname
 		lappend packed_frames [::fields::pack [spec_shotframe] $hdrarrname]
 	}
+
+	foreach framearrname $extension_framenames {
+		upvar $framearrname $hdrarrname
+		lappend packed_frames [::fields::pack [spec_extshotframe] $hdrarrname]
+	}
+
+	upvar $tail_framename tailarr
+	lappend packed_frames [::fields::pack [spec_shottail] tailarr]
+
 	return [list $packed_header $packed_frames]
 }
 
 
 
-proc de1_packed_shot_advanced {} {
+proc de1_packed_shot {shot_list} {
 
-	puts "de1_packed_shot_advanced"
+	msg "de1_packed_shot" $shot_list
 
 	set hdr(HeaderV) 1
 	set hdr(MinimumPressure) 0
@@ -768,15 +818,19 @@ proc de1_packed_shot_advanced {} {
 
 	set cnt 0
 
+	array set profile $shot_list
+
 	# for now, we are defaulting to IgnoreLimit as our starting flag, because we are not setting constraints of max pressure or max flow
 	set frame_names ""
-	foreach step $::settings(advanced_shot) {
+	set extension_frames ""
+
+	foreach step $profile(advanced_shot) {
 		unset -nocomplain props
 		array set props $step
 
 		set frame_name "frame_$cnt"
+		set extension_frame "ext_frame_$cnt"
 		lappend frame_names $frame_name
-
 
 		set features {IgnoreLimit}
 
@@ -834,191 +888,55 @@ proc de1_packed_shot_advanced {} {
 		# max water volume feature, per-step
 		array set $frame_name [list MaxVol [convert_float_to_U10P0 $props(volume)]]
 
+		#Extension Frame
+		if {[ifexists props(max_flow_or_pressure)] != 0 && [ifexists props(max_flow_or_pressure)] != {}} {
+			array set $extension_frame [list FrameToWrite [expr $cnt + 32]]
+			array set $extension_frame [list MaxFlowOrPressure [convert_float_to_U8P4 $props(max_flow_or_pressure)]]
+			array set $extension_frame [list MaxFoPRange [convert_float_to_U8P4 $props(max_flow_or_pressure_range)]]
+			array set $extension_frame [list Pad1 0]
+			array set $extension_frame [list Pad2 0]
+			array set $extension_frame [list Pad3 0]
+			array set $extension_frame [list Pad4 0]
+			array set $extension_frame [list Pad5 0]
+
+			lappend extension_frames $extension_frame
+			msg "Settings extension frame for " $cnt [array get $extension_frame]
+		}
 		incr cnt
 	}
 
 	set hdr(NumberOfFrames) $cnt
 	
 	# advanced shots can define when to start counting pour
-	set NumberOfPreinfuseFrames [ifexists ::settings(final_desired_shot_volume_advanced_count_start)]
+	set NumberOfPreinfuseFrames [ifexists profile(final_desired_shot_volume_advanced_count_start)]
 	if {$NumberOfPreinfuseFrames == ""} {
 		set NumberOfPreinfuseFrames 0
 	}
 	set hdr(NumberOfPreinfuseFrames) $NumberOfPreinfuseFrames
 
-	return [make_chunked_packed_shot_sample hdr $frame_names]
+	set tail(FrameToWrite) $cnt
+	set tail(MaxTotalVolume) 0
+	set tail(Pad1) 0
+	set tail(Pad2) 0
+	set tail(Pad3) 0
+	set tail(Pad4) 0
+	set tail(Pad5) 0
 
-}
+	return [make_chunked_packed_shot_sample hdr $frame_names $extension_frames tail]
 
-proc de1_packed_shot_flow {} {
-
-	set hdr(HeaderV) 1
-	set hdr(MinimumPressure) 0
-	set hdr(MaximumFlow) [convert_float_to_U8P4 6]
-
-
-	set temp_bump_time_seconds $::settings(temp_bump_time_seconds)
-
-
-	set mixtempflag ""
-	set hdr(NumberOfFrames) 4
-	set hdr(NumberOfPreinfuseFrames) 2
-
-
-	#####################################################################################
-	# preinfusion 2 second temp bump step, if needed
-	set frame1(FrameToWrite) 0
-	set frame1(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-	set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
-	
-	# this frame is OFF unless needed, in which case it is just 2 seconds long
-	set frame1(FrameLen) [convert_float_to_F8_1_7 0]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set frame1(FrameLen) [convert_float_to_F8_1_7 $temp_bump_time_seconds]
-	}
-
-	set frame1(MaxVol) [convert_float_to_U10P0 0]
-	set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
-	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_0)]
-	}
-
-	#####################################################################################
-	# after temp bump step, still in preinfusion if needed
-	set frame2(FrameToWrite) 1
-	set frame2(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-	set frame2(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
-	set frame2(MaxVol) [convert_float_to_U10P0 0]
-	set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
-	set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
-	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set second_frame_len [expr {$::settings(preinfusion_time) - $temp_bump_time_seconds}]		
-		if {$second_frame_len < 0} { 
-			set second_frame_len 0
-		}
-		set frame2(FrameLen) [convert_float_to_F8_1_7 $second_frame_len]
-		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_1)]
-	}
-
-
-	#####################################################################################
-	# hold
-	set frame3(FrameToWrite) 2
-	set frame3(Flag) [make_shot_flag "CtrlF IgnoreLimit $mixtempflag"] 
-	set frame3(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_hold)]
-	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
-	set frame3(TriggerVal) 0
-	set frame3(MaxVol) [convert_float_to_U10P0 0]
-	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_2)]
-	}
-
-	#####################################################################################
-	# decline
-	set frame4(FrameToWrite) 3
-	set frame4(Flag) [make_shot_flag "CtrlF IgnoreLimit Interpolate $mixtempflag"] 
-	set frame4(SetVal) [convert_float_to_U8P4 $::settings(flow_profile_decline)]
-	set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
-	set frame4(MaxVol) [convert_float_to_U10P0 0]
-	set frame4(TriggerVal) 0
-	set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_3)]
-	}
-
-	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3 frame4]]
 }
 
 
 # return two values as a list, with the 1st being the packed header, and the 2nd value itself
 # being a list of packed frames
-proc de1_packed_shot {} {
-
+proc de1_packed_shot_wrapper {} {
 	if {[ifexists ::settings(settings_profile_type)] == "settings_2b"} {
-		return [de1_packed_shot_flow]
+		return [de1_packed_shot [::profile::flow_to_advanced_list]]
 	} elseif {([ifexists ::settings(settings_profile_type)] == "settings_2c" || [ifexists ::settings(settings_profile_type)] == "settings_2c2")} {
-		return [de1_packed_shot_advanced]
+		return [de1_packed_shot [::profile::settings_to_advanced_list]]
+	} else {
+		return [de1_packed_shot [::profile::pressure_to_advanced_list]]
 	}
-
-	set hdr(HeaderV) 1
-	set hdr(MinimumPressure) 0
-	set hdr(MaximumFlow) [convert_float_to_U8P4 6]
-
-	set mixtempflag ""
-	set hdr(NumberOfFrames) 4
-	set hdr(NumberOfPreinfuseFrames) 2
-
-	set temp_bump_time_seconds $::settings(temp_bump_time_seconds)
-
-	#####################################################################################
-	# preinfusion 2 second temp bump step, if needed
-	set frame1(FrameToWrite) 0
-	set frame1(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-	set frame1(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
-	
-	# this frame is OFF unless needed, in which case it is just 2 seconds long
-	set frame1(FrameLen) [convert_float_to_F8_1_7 0]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set frame1(FrameLen) [convert_float_to_F8_1_7 $temp_bump_time_seconds]
-	}
-
-	set frame1(MaxVol) [convert_float_to_U10P0 0]
-	set frame1(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
-	set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set frame1(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_0)]
-	}
-
-	#####################################################################################
-	# after temp bump step, still in preinfusion if needed
-	set frame2(FrameToWrite) 1
-	set frame2(Flag) [make_shot_flag "CtrlF DoCompare DC_GT IgnoreLimit $mixtempflag"] 
-	set frame2(SetVal) [convert_float_to_U8P4 $::settings(preinfusion_flow_rate)]
-	set frame2(MaxVol) [convert_float_to_U10P0 0]
-	set frame2(TriggerVal) [convert_float_to_U8P4 $::settings(preinfusion_stop_pressure)]
-	set frame2(FrameLen) [convert_float_to_F8_1_7 $::settings(preinfusion_time)]
-	set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set second_frame_len [expr {$::settings(preinfusion_time) - $temp_bump_time_seconds}]		
-		if {$second_frame_len < 0} { 
-			set second_frame_len 0
-		}
-		set frame2(FrameLen) [convert_float_to_F8_1_7 $second_frame_len]
-		set frame2(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_1)]
-	}
-
-	#####################################################################################
-	# hold
-	set frame3(FrameToWrite) 2
-	set frame3(Flag) [make_shot_flag "IgnoreLimit $mixtempflag"] 
-	set frame3(SetVal) [convert_float_to_U8P4 $::settings(espresso_pressure)]
-	set frame3(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_hold_time)]
-	set frame3(TriggerVal) 0
-	set frame3(MaxVol) [convert_float_to_U10P0 0]
-	set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set frame3(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_2)]
-	}
-
-
-	#####################################################################################
-	# decline
-	set frame4(FrameToWrite) 3
-	set frame4(Flag) [make_shot_flag "IgnoreLimit Interpolate $mixtempflag"] 
-	set frame4(SetVal) [convert_float_to_U8P4 $::settings(pressure_end)]
-	set frame4(FrameLen) [convert_float_to_F8_1_7 $::settings(espresso_decline_time)]
-	set frame4(TriggerVal) 0
-	set frame4(MaxVol) [convert_float_to_U10P0 0]
-	set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature)]
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-		set frame4(Temp) [convert_float_to_U8P1 $::settings(espresso_temperature_3)]
-	}
-
-	return [make_chunked_packed_shot_sample hdr [list frame1 frame2 frame3 frame4]]
-
 }
 
 
@@ -1143,10 +1061,7 @@ proc parse_firmware_file_header {packed destarrname} {
 			set Version($field) [expr $extra]
 		}
 	}
-
 }
-
-
 
 proc parse_map_request {packed destarrname} {
 	upvar $destarrname Version
