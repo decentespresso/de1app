@@ -21,8 +21,10 @@ proc create_plugin_namespace {plugin} {
     set ::plugins::${plugin}::author {}
     set ::plugins::${plugin}::contact {}
     set ::plugins::${plugin}::version {}
+	set ::plugins::${plugin}::name {}
     set ::plugins::${plugin}::description {}
-    set ::plugins::${plugin}::plugin_loaded 0
+    set ::plugins::${plugin}::plugin_preloaded 0
+	set ::plugins::${plugin}::plugin_loaded 0
 
     array set ::plugins::${plugin}::settings {}
 }
@@ -30,11 +32,16 @@ proc create_plugin_namespace {plugin} {
 proc load_plugin_settings {plugin} {
     create_plugin_namespace $plugin
 
-    set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [plugin_settings_file $plugin]]]
-    msg "Settings file: $settings_file_contents"
-    if {[string length $settings_file_contents] != 0} {
-        array set [plugin_settings $plugin] $settings_file_contents
-    }
+	set fn [plugin_settings_file $plugin]
+	if { [file exists $fn] } {
+	    set settings_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]
+	    msg "Settings file: $settings_file_contents"
+	    if {[string length $settings_file_contents] != 0} {
+	        array set [plugin_settings $plugin] $settings_file_contents
+	    }
+	} else {
+		msg "Settings file $fn not found"
+	}
 }
 
 proc save_plugin_settings {plugin} {
@@ -44,15 +51,19 @@ proc save_plugin_settings {plugin} {
 proc source_plugin {plugin} {
         load_plugin_settings $plugin
 		source "[homedir]/[plugin_directory]/$plugin/plugin.tcl"
-        set ::plugins::${plugin}::plugin_loaded 1
 }
 
 proc plugin_preload {plugin} {
+	if { [plugin_preloaded $plugin] } {
+		return
+	}
+	
     if {[catch {
             source_plugin $plugin
             if {[info proc ::plugins::${plugin}::preload] != ""} {
                 set ::plugins::${plugin}::ui_entry [::plugins::${plugin}::preload]
             }
+            set ::plugins::${plugin}::plugin_preloaded 1
 	} err] != 0} {
 		catch {
 			info_page [subst {[translate "The plugin $plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
@@ -61,8 +72,13 @@ proc plugin_preload {plugin} {
 }
 
 proc load_plugin {plugin} {
+	if { [plugin_loaded $plugin] } {
+		return
+	}
+	
 	if {[catch {
         ::plugins::${plugin}::main
+		set ::plugins::${plugin}::plugin_loaded 1
 	} err] != 0} {
 		catch {
 			# remove from enabled plugins
@@ -81,6 +97,18 @@ proc plugin_enabled {plugin} {
         return true
     }
     return false
+}
+
+proc plugin_available {plugin} {
+	return [expr {[lsearch [available_plugins] $plugin] >= 0}]
+}
+
+proc plugin_preloaded {plugin} {
+	return [expr {[info exists ::plugins::${plugin}::plugin_preloaded] && [subst \$::plugins::${plugin}::plugin_preloaded] == 1}]
+}
+
+proc plugin_loaded {plugin} {
+	return [expr {[info exists ::plugins::${plugin}::plugin_loaded] && [subst \$::plugins::${plugin}::plugin_loaded] == 1}]
 }
 
 proc toggle_plugin {plugin} {
