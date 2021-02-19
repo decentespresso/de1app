@@ -830,10 +830,8 @@ proc de1_packed_shot_advanced {} {
 		array set $frame_name [list FrameLen [convert_float_to_F8_1_7 $props(seconds)]]
 		array set $frame_name [list TriggerVal [convert_float_to_U8P4 $TriggerVal]]
 
-		# MaxVol feature has been disabled 5/11/18
-		array set $frame_name [list MaxVol [convert_float_to_U10P0 0]]
-		#set props(volume) 10
-		#array set $frame_name [list MaxVol [convert_float_to_U10P0 $props(volume)]]
+		# max water volume feature, per-step
+		array set $frame_name [list MaxVol [convert_float_to_U10P0 $props(volume)]]
 
 		incr cnt
 	}
