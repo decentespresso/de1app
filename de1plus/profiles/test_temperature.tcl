@@ -1,5 +1,6 @@
-advanced_shot {{exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 90.00 name 90c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 seconds 20.00 exit_pressure_under 0} {exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 80.00 name 80c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 exit_pressure_under 0 seconds 30.00} {exit_if 0 flow 4.00 volume 100 transition fast exit_flow_under 0 temperature 70.00 name 70c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 exit_pressure_under 0 seconds 30.00}}
+advanced_shot {{exit_if 0 flow 4.00 volume 500 transition fast exit_flow_under 0 temperature 90.00 name 90c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 seconds 20.00 exit_pressure_under 0} {exit_if 0 flow 4.00 volume 500 transition fast exit_flow_under 0 temperature 80.00 name 80c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 exit_pressure_under 0 seconds 30.00} {exit_if 0 flow 4.00 volume 500 transition fast exit_flow_under 0 temperature 70.00 name 70c pressure 9.00 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 10.0 exit_pressure_under 0 seconds 30.00}}
 author Decent
+beverage_type calibrate
 espresso_decline_time 30
 espresso_hold_time 30
 espresso_pressure 10.0
@@ -26,11 +27,11 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 10.0
 preinfusion_time 60
 pressure_end 10.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {Put a pour over basket in your DE1.  Look for smooth temperature ramps between each temperature stage.  }
 profile_title {Test/temperature accuracy}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 70.00
-beverage_type {calibrate}
+

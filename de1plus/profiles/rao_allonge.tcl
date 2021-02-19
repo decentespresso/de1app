@@ -1,10 +1,10 @@
-advanced_shot {{exit_if 0 flow 4.50 volume 100 transition fast exit_flow_under 0 temperature 92.00 name {hold at 4.5 ml/s} sensor coffee pump flow exit_flow_over 6 exit_pressure_over 11 seconds 60.00 exit_pressure_under 0}}
+advanced_shot {{exit_if 0 flow 4.50 volume 500 transition fast exit_flow_under 0 temperature 92.00 name {hold at 4.5 ml/s} sensor coffee pump flow exit_flow_over 6 exit_pressure_over 11 seconds 60.00 exit_pressure_under 0}}
 author Decent
 espresso_decline_time 18
 espresso_hold_time 10
 espresso_pressure 8.6
 espresso_temperature 92.00
-final_desired_shot_volume 100
+final_desired_shot_volume 500
 final_desired_shot_volume_advanced 180
 final_desired_shot_weight 32
 final_desired_shot_weight_advanced 135
