@@ -55,7 +55,7 @@ proc plugin_preload {plugin} {
             }
 	} err] != 0} {
 		catch {
-			message_page [subst {[translate "The plugin $plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
+			info_page [subst {[translate "The plugin $plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
 		}
 	}
 }
@@ -71,7 +71,7 @@ proc load_plugin {plugin} {
             save_settings
 		}
 		catch {
-			message_page [subst {[translate "The plugin $plugin could not be loaded. Disabled"]\n\n$err}] [translate "Ok"]
+			info_page [subst {[translate "The plugin $plugin could not be loaded. Disabled"]\n\n$err}] [translate "Ok"]
 		}
 	}
 }
