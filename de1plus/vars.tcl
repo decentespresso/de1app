@@ -2280,26 +2280,43 @@ proc fill_languages_listbox {} {
 }
 
 proc highlight_extension {} {
-	set stepnum [$::extensions_widget curselection]
+	set stepnum [$::extensions_widget curselection]	
 	if {$stepnum == ""} {
+		set ::extension_highlighted -1
 		return
+	}
+	if { [info exists ::extension_highlighted] } {
+		if { $::extension_highlighted == $stepnum } {
+			set plugin [lindex [available_plugins] $stepnum]
+			toggle_plugin $plugin
+			
+			fill_extensions_listbox
+			$::extensions_widget selection set $stepnum
+			make_current_listbox_item_blue $::extensions_widget
+			return
+		} else {
+			set ::extension_highlighted $stepnum
+		}
+	} else {
+		set ::extension_highlighted $stepnum
 	}
 
 	set plugin [lindex [available_plugins] $stepnum ]
 
-	source_plugin $plugin
+	# ENRIQUE: Why needed, already done at startup??? COMMENTED
+	#source_plugin $plugin 
 	set description ""
 
 	if {[info proc ::plugins::${plugin}::preload] != ""} {
-		set description [translate "Configurable: Yes"]
+		canvas_show "$::extensions_settings $::extensions_settings_button"
 	} else {
-		set description [translate "Configurable: No"]
+		canvas_hide "$::extensions_settings $::extensions_settings_button"
 	}
 
-	foreach {name value} { "Version: " version "Author: " author "Contact: " contact "" description} {
+	foreach {name value} { "Version: " version "Author: " author "Contact: " contact "\n" description} {
 		set conf [set ::plugins::${plugin}::${value}]
 		if { $conf != {} } {
-			set description "$description\n[translate $name]$conf"
+			append description "[translate $name]$conf\n"
 		}
 	}
 	.can itemconfigure $::extensions_metadata -text $description
@@ -2310,27 +2327,10 @@ proc highlight_extension {} {
 
 }
 
-proc extension_toggle {} {
-	set stepnum [$::extensions_widget curselection]
-	if {$stepnum == ""} {
-		borg toast [translate "No Extensions selected"]
-		return
-	}
-
-	set plugin [lindex [available_plugins] $stepnum]
-
-	toggle_plugin $plugin
-
-	fill_extensions_listbox
-	$::extensions_widget selection set $stepnum;
-	make_current_listbox_item_blue $::extensions_widget
-}
-
-
 proc fill_plugin_settings {} {
 	set stepnum [$::extensions_widget curselection]
 	if {$stepnum == ""} {
-		borg toast [translate "No Extensions selected"]
+		borg toast [translate "No extension selected"]
 		return
 	}
 
@@ -2366,14 +2366,22 @@ proc fill_extensions_listbox {} {
 				set p "\u2610 "
 			}
 		}
+		
+		if { [info exists ::plugins::${plugin}::name ] && [subst \$::plugins::${plugin}::name] ne "" } {
+			set plugin_name [subst \$::plugins::${plugin}::name]
+		} else {
+			set plugin_name $plugin
+		}
 
-		$widget insert $cnt "$p $plugin"
+		$widget insert $cnt "$p $plugin_name"
 		incr cnt
 	}
 
 	$::extensions_widget yview $current
 
-	if {$stepnum != ""} {
+	if {$stepnum == ""} {
+		canvas_hide "$::extensions_settings $::extensions_settings_button"
+	} else {
 		$::extensions_widget selection set $stepnum;
 		make_current_listbox_item_blue $::extensions_widget
 	}
