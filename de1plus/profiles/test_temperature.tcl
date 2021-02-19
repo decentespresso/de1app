@@ -27,7 +27,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 10.0
 preinfusion_time 60
 pressure_end 10.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {Put a pour over basket in your DE1.  Look for smooth temperature ramps between each temperature stage.  }
 profile_title {Test/temperature accuracy}

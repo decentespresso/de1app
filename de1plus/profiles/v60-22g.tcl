@@ -26,7 +26,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 1.5
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {We use the highest flow rate for V60 brewing, to take advantage of the extraction evenness provided by high turbulence. If you get any choking in your V60 brews,  try coarsening the grind a little.  If brews still choke, consider using the Kalita recipe for some V60 brews, such as decafs and Ethiopians, as they are more prone to choking than other coffees are. We recommend giving the brewer a gentle spin after prewetting and after the last pulse of water has sprayed.}
 profile_title {Pour over basket/V60 22g in, 375g out}
