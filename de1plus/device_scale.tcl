@@ -3,7 +3,7 @@ package provide de1_device_scale 1.0
 package require de1_de1 1.1
 package require de1_event 1.0
 package require de1_logging 1.0
-package require de1_gui 1.1
+package require de1_gui 1.2
 
 
 namespace eval ::device::scale::event::listener {
@@ -260,7 +260,17 @@ namespace eval ::device::scale {
 			}
 		}
 
-		::device::scale::event::apply::on_update_available_callbacks {} ;# What is in scope that is worth catching?
+		set event_dict [ dict create \
+					 event_time		[expr {[clock milliseconds] / 1000.0}] \
+					 reported_weight	$sensorweight \
+					 report_time		$event_time \
+					 weight_raw		$thisrawweight \
+					 weight_filtered	$thisweight \
+					 flow_raw		$flow_raw \
+					 flow_filtered		$flow \
+					]
+
+		::device::scale::event::apply::on_update_available_callbacks $event_dict
 
 		::device::scale::watchdog_tickle ::device::scale::_watchdog_leave_id leave
 	}
@@ -1081,7 +1091,7 @@ namespace eval ::device::scale::saw {
 			set stop_early_by [expr { $_early_by_grams + [flow_now] * $_early_by_flow }]
 
 			if {    [$_mode_timer] > $_ignore_first_seconds \
-					&& $::de1(scale_autostop_triggered) == 0 \
+					&& ! $::de1(scale_autostop_triggered) \
 					&& [round_to_one_digits $thisweight] > \
 						[round_to_one_digits [expr { $_target - $stop_early_by }]]} {
 
@@ -1090,7 +1100,7 @@ namespace eval ::device::scale::saw {
 				# As there might be a delay between request and stop
 				# and weight updates keep arriving, don't ask twice
 
-				set ::de1(scale_autostop_triggered) 1
+				set ::de1(scale_autostop_triggered) True
 
 				msg -INFO "Weight based stop was triggered at ${thisweight} g for ${_target} g target"
 				::gui::notify::scale_event saw_stop
@@ -1206,7 +1216,7 @@ namespace eval ::device::scale::saw {
 
 		if {[::device::scale::saw::is_tracking_state [dict get $event_dict this_state]]} {
 
-			set ::de1(scale_autostop_triggered) 0
+			set ::de1(scale_autostop_triggered) False
 		}
 
 		switch  [dict get $event_dict this_state] {

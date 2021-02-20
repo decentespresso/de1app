@@ -6,12 +6,18 @@
 # These are not in machine.tcl due to apparent assumptions on inclusion order
 #
 
-package provide de1_de1 1.0
+package provide de1_de1 1.1
 
 package require lambda
 
 package require de1_event 1.0
 package require de1_logging 1.0
+
+
+
+###
+### ::de1::event::listener
+###
 
 namespace eval ::de1::event::listener {
 
@@ -86,6 +92,11 @@ namespace eval ::de1::event::listener {
 
 } ;# ::de1::event::listener
 
+
+
+###
+### ::de1::event::apply
+###
 
 namespace eval ::de1::event::apply {
 
@@ -196,7 +207,20 @@ namespace eval ::de1::event::apply {
 } ;# ::de1::event::apply
 
 
+
+###
+### ::de1::event::listener
+###
+
 namespace eval ::de1 {
+
+	proc init {} {
+
+		::de1::state::init
+		msg -DEBUG "::de1::init done"
+	}
+
+	::de1::event::listener::on_connect_add [lambda {args} ::de1::init]
 
 	proc line_voltage_nom {} {
 
@@ -370,7 +394,20 @@ namespace eval ::de1 {
 } ;# ::de1
 
 
+
+###
+### ::de1::state
+###
+
 namespace eval ::de1::state {
+
+	proc init {} {
+
+		::de1::state::reset_framenumbers
+		unset -nocomplain ::de1::state::_previous_shotsample_update_time
+
+		msg -DEBUG "::de1::state::init done"
+	}
 
 	proc current_state {} {
 
@@ -440,4 +477,423 @@ namespace eval ::de1::state {
 
 	}
 
+	proc reset_framenumbers {} {
+		set ::de1(current_frame_number) 0
+	}
+
+	# Use the existing global
+	proc current_framenumber {} {
+		return $::de1(current_frame_number)
+	}
+
 } ;# ::de1::state
+
+
+
+###
+### ::de1::state::update
+###
+
+namespace eval ::de1::state::update {
+
+	proc from_shotvalue {packed {update_received 0}} {
+
+		if { $update_received == 0 } { set update_received [expr {[clock milliseconds] / 1000.0}] }
+
+		# TODO: Consider capturing early (on packet arrival) along with update_received
+		#       in a generic way for all packets
+
+		# Capture for downstreaam consumers of events as well as local use
+
+		set this_state [::de1::state::current_state]
+		set this_substate [::de1::state::current_substate]
+
+		array set ShotSample {}
+
+		::de1::packet::shotsample_parse $packed ShotSample
+
+		# SampleTime not present in prior code
+		set ::de1(pressure) 			$ShotSample(GroupPressure)
+		set ::de1(flow)				$ShotSample(GroupFlow)
+		set ::de1(mix_temperature)		$ShotSample(MixTemp)
+		set ::de1(head_temperature)		$ShotSample(HeadTemp)
+		# SetMixTemp not present in prior code
+		set ::de1(goal_temperature)		$ShotSample(SetHeadTemp)
+		set ::de1(goal_pressure)		$ShotSample(SetGroupPressure)
+		set ::de1(goal_flow)			$ShotSample(SetGroupFlow)
+		set ::de1(current_frame_number)		$ShotSample(FrameNumber)
+		set ::de1(steam_heater_temperature)	$ShotSample(SteamTemp)
+
+
+
+		# TODO: Determine if excessive change in SampleTime should invalidate all deltas
+		#       Probably should include determined intersample time in event_dict
+
+		# SampleTime, at least during a shot, is measured in half-cycles; 100 or 120 Hz
+		# During sleep, it has been observed to drop to 1/3 of the "awake" rate
+
+		# Unwrap 16-bit unsigned int SampleTime
+		# Much of this proc could be refactored into ::de1 and ::gui
+		# Neither ::previous_timer nor ShotSample(Timer) were used elsewhere in prior code
+
+		if { [info exists ::de1::_previous_shotsample_update_time] } {
+
+			set dhc [expr { $ShotSample(SampleTime) \
+						- $::de1::_previous_shotsample_update_time }]
+			if { $dhc < 0 } { set dhc [expr { $dhc - 65536 }] }
+			set intersample_time [expr { $dhc / ( 2.0 * [::de1::line_frequency_nom] ) }]
+
+		} else {
+			set intersample_time 0.0
+		}
+
+		set ::de1::_previous_shotsample_update_time $ShotSample(SampleTime)
+
+
+		set water_volume_dispensed_since_last_update \
+			[expr { $ShotSample(GroupFlow) * $intersample_time }]
+		#
+		# Properly unwrapping the 16-bit value for the time delta
+		# should prevent the conditions previously seen in the code
+		# retain the checks in case there is something else going on
+		#
+
+		if {$water_volume_dispensed_since_last_update < 0} {
+			msg -WARN "Negative water volume dispensed, setting to 0:" \
+				"$ShotSample(GroupFlow) * $intersample_time =" \
+				"$water_volume_dispensed_since_last_update" \
+				"during $this_state,$this_substate"
+			set water_volume_dispensed_since_last_update 0
+
+		} elseif {$water_volume_dispensed_since_last_update > 1000} {
+			msg -WARN "Excessive water volume dispensed, setting to 0:" \
+				"$ShotSample(GroupFlow) * $intersample_time =" \
+				"$water_volume_dispensed_since_last_update" \
+				"during $this_state,$this_substate"
+			set water_volume_dispensed_since_last_update 0
+		}
+
+		set ::de1(volume) [expr {$::de1(volume) + $water_volume_dispensed_since_last_update}]
+
+		# TODO: Are there any ill effects of capturing flow for other states???
+		#       If not, do so (and probably share active states with SAW)
+
+		# keep track of water volume during espresso, but not steam
+
+		if {$this_state == "Espresso"} {
+
+			switch -- $this_substate {
+
+				preinfusion {
+					set ::de1(preinfusion_volume) \
+						[expr {$::de1(preinfusion_volume) \
+							       + $water_volume_dispensed_since_last_update}]
+				}
+
+				pouring {
+					set ::de1(pour_volume) \
+						[expr {$::de1(pour_volume) \
+							       + $water_volume_dispensed_since_last_update}]
+				}
+			}
+		}
+
+		::de1::sav::check_for_sav
+
+
+		set event_dict [dict create \
+					event_time [expr {[clock milliseconds] / 1000.0}] \
+					update_received $update_received \
+					{*}[array get ShotSample] \
+					this_state $this_state \
+					this_substate $this_substate \
+				       ]
+
+		::de1::event::apply::on_shotvalue_available_callbacks $event_dict
+
+		return
+
+	} ;# from_shotvalue
+
+} ;# ::de1::state::update
+
+
+
+###
+### ::de1::packet
+###
+
+namespace eval ::de1::packet {
+
+	# No uses of former ::ble_spec found in code as of 2020-02
+	# other than within parsing of ShotSample in binary.tcl
+	# Logic around ble_spec detection retained from prior code
+	# TODO: This should be rewritten to use versions from the DE1
+
+	set ::de1::packet::ble_spec 1.0
+
+	proc use_old_ble_spec {} {
+
+		# Extracted from binary.tcl - 2021-02
+
+		if {$::de1::packet::ble_spec < 1.0} {
+			return 1
+		}
+		return 0
+	}
+
+
+	proc shotsample_parse {t_shotsample target_array_name} {
+
+		upvar $target_array_name ShotSample
+
+		# Extracted from update_de1_shotvalue in binary.tcl - 2021-02
+		# Logic retained from that code at this time
+
+		if {[string length $t_shotsample] < 7} {
+			# this should never happen
+			msg -ERROR [format "::de1::packet::shotsample_parse:" \
+					    "short t_shotsample message: %d < 7" \
+					    [string length $t_shotsample]]
+			return
+		}
+
+		set spec_old {
+			SampleTime {Short {} {} {unsigned} {}}
+			GroupPressure {char {} {} {unsigned} {$val / 16.0}}
+			GroupFlow {char {} {} {unsigned} {$val / 16.0}}
+			MixTemp {Short {} {} {unsigned} {$val / 256.0}}
+			HeadTemp {Short {} {} {unsigned} {$val / 256.0}}
+			SetMixTemp {Short {} {} {unsigned} {$val / 256.0}}
+			SetHeadTemp {Short {} {} {unsigned} {$val / 256.0}}
+			SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
+			SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
+			FrameNumber {char {} {} {unsigned} {}}
+			SteamTemp {Short {} {} {unsigned} {$val / 256.0}}
+		}
+
+		# HeadTemp is a 24bit number, which Tcl doesn't have
+		# Grab it as 3 chars and manually convert it to a number
+
+		set spec {
+			SampleTime {Short {} {} {unsigned} {}}
+			GroupPressure {Short {} {} {unsigned} {$val / 4096.0}}
+			GroupFlow {Short {} {} {unsigned} {$val / 4096.0}}
+			MixTemp {Short {} {} {unsigned} {$val / 256.0}}
+			HeadTemp1 {char {} {} {unsigned} {}}
+			HeadTemp2 {char {} {} {unsigned} {}}
+			HeadTemp3 {char {} {} {unsigned} {}}
+			SetMixTemp {Short {} {} {unsigned} {$val / 256.0}}
+			SetHeadTemp {Short {} {} {unsigned} {$val / 256.0}}
+			SetGroupPressure {char {} {} {unsigned} {$val / 16.0}}
+			SetGroupFlow {char {} {} {unsigned} {$val / 16.0}}
+			FrameNumber {char {} {} {unsigned} {}}
+			SteamTemp {char {} {} {unsigned} {}}
+		}
+
+		if {[use_old_ble_spec] == 1} {
+			array set specarr $spec_old
+			::fields::unpack $t_shotsample $spec_old ShotSample bigeendian
+		} else {
+			array set specarr $spec
+			::fields::unpack $t_shotsample $spec ShotSample bigeendian
+		}
+
+		foreach {field val} [array get ShotSample] {
+			set specparts $specarr($field)
+			set extra [lindex $specparts 4]
+			if {$extra != ""} {
+				set ShotSample($field) [expr $extra]
+			}
+		}
+
+		if {[info exists ShotSample(SteamTemp)] != 1} {
+			# Logic around ble_spec detection retained from prior code (2021-02):
+			# If we get no steam temp then this is the old BLE spec
+			# auto-adjust to doing so, but discard this first temperature report
+			# as part of this auto-adjusting
+			set ::de1::packet::ble_spec 0.9
+			return
+		}
+
+		# Update logic to have ShotSample(HeadTemp) always be available
+
+		if {[use_old_ble_spec] == 1} {
+			# pass
+		} else {
+			set ShotSample(HeadTemp) [convert_3_char_to_U24P16 \
+							  $ShotSample(HeadTemp1) \
+							  $ShotSample(HeadTemp2) \
+							  $ShotSample(HeadTemp3)]
+		}
+
+	} ;# shotsample_parse
+
+} ;# ::de1::packet
+
+
+
+###
+### ::de1::sav
+###
+
+namespace eval ::de1::sav {
+
+	variable _target 0
+	variable _is_active_flag False
+
+	proc init {} {
+
+		set ::de1::sav::_is_active_flag False
+	}
+
+	# TODO: Unify SAV and SAW tracing_state definitions
+	# TODO: Confirm no ill effects and implement for HotWater
+	#       See ::de1::state::update::fro_shotvalue
+
+	proc is_tracking_state {{state_text "None"} {substate_text "None"}} {
+
+		if { $state_text == "None" } { set state_text $::de1_num_state($::de1(state)) }
+
+		expr { $state_text in {{Espresso} {HotWater}} }
+	}
+
+	proc is_active {} {
+
+		expr {$::de1::sav::_is_active_flag}
+	}
+
+
+	proc start_active {} {
+
+		if { [::de1::sav::is_active] } {
+			msg -NOTICE "::de1::sav::start_active: already active"
+
+		} else {
+			set ::de1::sav::_is_active_flag True
+			msg -DEBUG "::de1::sav::start_active"
+		}
+	}
+
+	proc stop_active {} {
+
+		if { ! [::de1::sav::is_active] } {
+			msg -NOTICE "::de1::sav::stop_active: already not active"
+
+		} else {
+			set  ::de1::sav::_is_active_flag False
+			msg -DEBUG "::de1::sav::stop_active"
+		}
+	}
+
+	proc on_espresso_start {args} {
+
+		variable _target
+
+		switch $::settings(settings_profile_type) {
+			settings_2c	{ set _target $::settings(final_desired_shot_volume_advanced) }
+			default 	{ set _target $::settings(final_desired_shot_volume) }
+		}
+		# Ensure testable with > 0
+		set _target [scan $_target %g]
+
+		msg -DEBUG "::de1::sav::on_espresso_start"
+	}
+
+	proc on_hotwater_start {args} {
+
+		variable _target
+
+		set _target $::settings(water_volume)
+
+		# Ensure testable with > 0
+		set _target [scan $_target %g]
+
+		msg -DEBUG "::de1::sav::on_hotwater_start"
+	}
+
+	proc on_major_state_change {event_dict} {
+
+		set this_state [dict get $event_dict this_state]
+
+		switch -exact $this_state {
+
+			Espresso {
+				::de1::sav::on_espresso_start
+			}
+
+			HotWater {
+				::de1::sav::on_hotwater_start
+			}
+
+			default {
+				return
+			}
+		}
+	}
+
+	::de1::event::listener::on_major_state_change_add -noidle \
+		::de1::sav::on_major_state_change
+
+
+	proc on_flow_change {event_dict} {
+
+		set this_state [dict get $event_dict this_state]
+
+		if { [::de1::sav::is_tracking_state $this_state] } {
+
+			set this_flow  [::de1::state::flow_phase \
+						    $this_state \
+						    [dict get $event_dict this_substate] ]
+
+			set previous_flow  [::de1::state::flow_phase \
+						    [dict get $event_dict previous_state] \
+						    [dict get $event_dict previous_substate] ]
+
+			if { $this_flow == "during" && $previous_flow != "during" } {
+
+				::de1::sav::start_active
+
+			} elseif { $this_flow != "during" && $previous_flow == "during" } {
+
+				::de1::sav::stop_active
+			}
+		}
+	}
+
+	::de1::event::listener::on_flow_change_add -noidle \
+		::de1::sav::on_flow_change
+
+
+	proc check_for_sav {} {
+
+		# Previous logic only enabled SAV for "non-advanced" profiles
+		# if there was no bluetooth address for the scale configured.
+		# It did not check for connectivity or updates from the scale.
+		# This was counter to the consistent guidance on Diaspora
+		# that the logic is "which ever trips first, SAV or SAW".
+
+		# Use the existing ::de1(scale_autostop_triggered) flag
+
+		variable _target
+
+		if {[::de1::sav::is_tracking_state] && $_target > 0 \
+		    && ! $::de1(scale_autostop_triggered) } {
+
+			if { $::de1(pour_volume) >= $_target } {
+
+				start_idle
+				set ::de1(scale_autostop_triggered) True
+
+				msg -INFO "Water volume based Espresso stop was triggered at:" \
+					"$::de1(pour_volume) ml >" \
+					"$::settings(final_desired_shot_volume_advanced) ml"
+
+				::gui::notify::de1_event sav_stop
+			}
+		}
+	}
+
+	::de1::sav::init
+
+} ;# ::de1::sav

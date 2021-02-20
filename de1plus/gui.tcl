@@ -1,6 +1,6 @@
-package provide de1_gui 1.1
+package provide de1_gui 1.2
 
-package require de1_de1 1.0
+package require de1_de1 1.1
 package require de1_event 1.0
 package require de1_logging 1.0
 package require de1_plugins 1.0
@@ -1170,6 +1170,21 @@ proc display_popup_android_message_if_necessary {intxt} {
 	
 }
 
+# For JB's GUI-driver, get some reasonable "t0" to derive DE1 SampleTime
+# It also needs the period, in seconds, which can't be determined from the DE1
+# ::settings() hasn't been loaded as this point, nor has ::machine(hertz)
+
+# With no viable information available, hard-wire 50 Hz for now
+
+if {$::android == 0} {
+	namespace eval ::gui {
+		variable _arbitrary_t0 [expr { [clock milliseconds] / 1000.0 }]
+		variable _st_period [expr { 1.0 / ( 2.0 * 50 ) }]
+		msg -INFO "GUI driver using 50 Hz, hard-wired, for DE1 SampleTime"
+	}
+}
+
+set _last_st 0
 
 proc update_onscreen_variables { {state {}} } {
 
@@ -1191,8 +1206,9 @@ proc update_onscreen_variables { {state {}} } {
 	if {$::android == 0} {
 
 		if {[expr {int(rand() * 100)}] > 96} {
-			set ::state_change_chart_value [expr {$::state_change_chart_value * -1}]
-			
+			set ::gui::state::_state_change_chart_value \
+				[expr {$::gui::state::_state_change_chart_value * -1}]
+
 			if {[expr {rand()}] > 0.5} {
 				set ::settings(current_frame_description) [translate "pouring"]
 			} else {
@@ -1239,13 +1255,41 @@ proc update_onscreen_variables { {state {}} } {
 		#	set ::de1(substate) 0
 		#}
 
+		# JB's GUI driver needs an event_dict
+
+		# NB: This seems to be getting called at a 10 Hz rate
+		#     which is faster than the DE1's 25/(2 * line frequency)
+
+		set _now [expr {[clock milliseconds] / 1000.0}]
+		# SampleTime is a 16-bit counter of zero crossings
+		set _de1_sample_time \
+			[expr { int( ( $_now - $::gui::_arbitrary_t0 ) \
+					     / $::gui::_st_period ) % 65536 }]
+		set event_dict [dict create \
+					event_time 	$_now \
+					update_received	$_now \
+					SampleTime	$_de1_sample_time \
+					GroupPressure	$::de1(pressure) \
+					GroupFlow	$::de1(flow) \
+					MixTemp		$::de1(mix_temperature) \
+					HeadTemp	$::de1(head_temperature) \
+					SetHeadTemp	$::de1(goal_temperature) \
+					SetGroupPressure $::de1(goal_pressure) \
+					SetGroupFlow	$::de1(goal_flow) \
+					FrameNumber	$::de1(current_frame_number) \
+					SteamTemp	$::de1(steam_heater_temperature) \
+					this_state	[::de1::state::current_state] \
+					this_substate	[::de1::state::current_substate] \
+				       ]
+
 		if {$::de1(state) == 4} {
-			append_live_data_to_espresso_chart
+			::de1::event::apply::on_shotvalue_available_callbacks $event_dict
 		} elseif {$::de1(state) == 5} {
 			#steaming
-			append_live_data_to_espresso_chart
+			::de1::event::apply::on_shotvalue_available_callbacks $event_dict
 		}
-	}
+
+	} ;# $::android == 0
 
 	# update the timers
   	#set state_timerkey "$::de1(state)"
@@ -2825,14 +2869,75 @@ proc handle_keypress {keycode} {
 #install_de1plus_app_icon
 #install_this_app_icon
 
-namespace eval ::gui::callbacks {
 
-	proc register_on_load {} {
+namespace eval ::gui::state {
 
-		::de1::event::listener::on_major_state_change_add -noidle \
-			::gui::callbacks::on_major_state_change
+
+	# ::state_change_chart_value -- also used by append_live_data_to_espresso_chart
+
+	variable _state_change_chart_value 10000000
+
+	# As GUI updates can be asynchronous to DE1 state changes
+	# keep track of the GUI's state separately
+
+	# -1 is retained from the previous logic as an indicator
+	# to not draw a frame separator at the start of the shot
+	# as well as to set the current_frame_description
+	# See further that previous logic now in
+	# ::gui::update::shot_frame_info
+
+	variable _previous_framenumber -1
+	variable _current_framenumber -1
+
+	proc init {} {
+
+		::gui::state::reset_framenumbers
+		::gui::state::reset_shotsample_deltas
+		msg -DEBUG "::gui::state::init done"
 	}
 
+	proc reset_framenumbers {} {
+
+		set ::gui::state::_current_framenumber -1
+		set ::gui::state::_previous_framenumber -1
+	}
+
+	proc current_framenumber {} {
+		return $::gui::state::_current_framenumber
+	}
+
+	proc previous_framenumber {} {
+		return $::gui::state::_previous_framenumber
+	}
+
+	proc reset_shotsample_deltas {} {
+
+		set ::gui::state::_delta_flow 0
+		set ::gui::state::_delta_pressure 0
+		set ::gui::state::_previous_flow 0
+		set ::gui::state::_previous_pressure 0
+	}
+
+} ;# ::gui::state
+
+::de1::event::listener::on_connect_add [lambda {args} {
+	::gui::state::reset_framenumbers
+	::gui::state::reset_shotsample_deltas
+}]
+
+
+# JB's off-line GUI driver needs some variables initialized
+# that are normally done on DE1 connect
+
+if {$::android == 0} {
+	::gui::state::reset_framenumbers
+	::gui::state::reset_shotsample_deltas
+}
+
+
+
+
+namespace eval ::gui::callbacks {
 
 	proc on_major_state_change {event_dict} {
 
@@ -2857,8 +2962,22 @@ namespace eval ::gui::callbacks {
 		}
 	}
 
+	::de1::event::listener::on_major_state_change_add -noidle  ::gui::callbacks::on_major_state_change
 
-	# Not being loaded at this time as seems to freeze the GUI
+
+	proc on_shotvalue_available {event_dict} {
+
+		# Preserve order from code prior to 2021-02
+
+		::gui::update::shot_frame_info $event_dict
+		::gui::update::append_live_data_to_espresso_chart $event_dict
+	}
+
+	::de1::event::listener::on_shotvalue_available_add ::gui::callbacks::on_shotvalue_available
+
+
+
+	# only_when_substate_present is not being loaded at this time as seems to freeze the GUI
 	# See binary.tcl: proc update_de1_state {statechar} as of early 2021
 
 	proc only_when_substate_present {event_dict} {
@@ -2881,8 +3000,6 @@ namespace eval ::gui::callbacks {
 			}
 		}
 	}
-
-	register_on_load
 
 } ;# ::gui::callbacks
 
@@ -2943,4 +3060,365 @@ namespace eval ::gui::notify {
 		}
 	}
 
+
+
+	proc de1_event {event_id args} {
+
+		switch -exact -- $event_id {
+
+			sav_stop {
+
+				borg toast [translate {Stopping for volume}]
+			}
+
+			default {
+
+				msg -ERROR "::gui::notify::de1_event called without matching event_id: $event_id $args"
+			}
+		}
+	}
+
 } ;# ::gui::notify
+
+namespace eval ::gui::update {
+
+	proc shot_frame_info {event_dict} {
+
+		# Logic extracted from update_de1_shotvalue in binary.tcl - 2021-02
+
+		set ::gui::state::_previous_framenumber [::gui::state::current_framenumber]
+		set ::gui::state::_current_framenumber [dict get $event_dict FrameNumber]
+
+		set this_substate [dict get $event_dict this_substate]
+
+
+		if {[::gui::state::current_framenumber] != [::gui::state::previous_framenumber]} {
+
+			# draw a vertical line at each frame change
+
+			# The following logic, retained from prior versions, is likely a noop
+			# as the updates from the DE1 will set the framenumber to 0 or higher
+
+			if {[::gui::state::previous_framenumber] >= 0} {
+				# don't draw a line a the first frame change
+				set ::gui::state::_state_change_chart_value \
+					[expr {$::gui::state::_state_change_chart_value * -1}]
+			}
+
+			switch $::settings(settings_profile_type) {
+
+				settings_2a {
+
+					switch [::gui::state::current_framenumber] {
+						0 -
+						1 { set framedesc [translate "1: preinfuse"] }
+						2 { set framedesc [translate "2: rise and hold"] }
+						default { set framedesc [translate "3: decline"] }
+					}
+				}
+
+				settings_2b {
+
+					switch [::gui::state::current_framenumber] {
+						0 -
+						1 { set framedesc [translate "1: preinfuse"] }
+						2 { set framedesc [translate "2: hold"] }
+						default { set framedesc [translate "3: decline"] }
+					}
+				}
+
+				settings_2c {
+
+					array set thisadvstep \
+						[lindex $::settings(advanced_shot) \
+							 [::gui::state::current_framenumber]]
+
+					set framedesc [format "%s: %s" \
+							       [expr {1 + [::gui::state::current_framenumber]}] \
+							       [ifexists thisadvstep(name)] \
+							      ]
+				}
+
+				default { set framedesc "-" }
+			}
+
+			switch -- $this_substate {
+
+				preinfusion -
+				pouring {
+					set ::settings(current_frame_description) $framedesc
+					display_popup_android_message_if_necessary $framedesc
+				}
+
+				default { set ::settings(current_frame_description) "" }
+			}
+		}
+
+		# These are checked on every update as the frame number doesn't change.
+		# The previous logic, duplicated here, to suppress drawing the first "line"
+		# as well as that to set the first frame's lable is dependent on
+		# continually overriding the previous value to -1,
+		# as the DE1 updates set it on every report.
+
+		switch -- $this_substate {
+
+			ending {
+				set ::settings(current_frame_description) [translate "ending"]
+				::gui::state::reset_framenumbers
+			}
+
+			heating -
+			stabilising -
+			"final heating" {
+				set ::settings(current_frame_description) [translate "heating"]
+				::gui::state::reset_framenumbers
+			}
+
+			default {}
+		}
+
+	} ;# shot_frame_info
+
+
+	proc append_live_data_to_espresso_chart {event_dict} {
+
+		set this_state [dict get $event_dict this_state]
+		set this_substate [dict get $event_dict this_substate]
+		set this_flow [dict get $event_dict GroupFlow]
+		set this_pressure [dict get $event_dict GroupPressure]
+
+		# As this gets called every 4-5 times a second, and usually does nothing
+		# bail out early and simplify the logic that follows
+
+		if { ! [::de1::state::is_flow_state \
+				[dict get $event_dict this_state] \
+				[dict get $event_dict this_substate]] } { return }
+
+		# Intentionally not returning on non-flow substates to allow for recording during "ending"
+
+		dict with event_dict {
+
+			# TODO: If only tracking during flow states, the first sample will be "bad"
+			#       Either need to run on every sample, or reset on entering a flow state
+
+			# TODO: Decide how to make these dimensionally meaningful
+			#       Probably should be "per second", which would divide by 4 or about 5 (50/60 Hz)
+
+			set ::gui::state::_delta_flow \
+				[expr { $this_flow - $::gui::state::_previous_flow }]
+			set ::gui::state::_delta_pressure \
+				[expr { $this_pressure - $::gui::state::_previous_pressure }]
+
+			set ::gui::state::_previous_flow $this_flow
+			set ::gui::state::_previous_pressure $this_pressure
+
+			switch -- $this_state {
+
+				Espresso {
+					if { [::de1::state::is_flow_during_state $this_state $this_substate] } {
+
+						# Change to estimated DE1 time, when implemented
+
+						set millitime [espresso_millitimer $update_received]
+						set mtime [expr {$millitime/1000.0}]
+
+						# Everything from here on is logically and computationally
+						# from previous code. References to $::de1() replaced with
+						# references to $event_dict contents
+
+						set last_elapsed_time_index [expr {[espresso_elapsed length] - 1}]
+						set last_elapsed_time 0
+						if {$last_elapsed_time_index >= 0} {
+							set last_elapsed_time \
+								[espresso_elapsed range \
+									 $last_elapsed_time_index \
+									 $last_elapsed_time_index]
+						}
+
+						if {$mtime > $last_elapsed_time} {
+
+							# this is for handling cases where a god shot
+							# has already loaded a time axis
+
+							espresso_elapsed append $mtime
+						}
+
+						if {$::de1(scale_weight) == ""} {
+							set ::de1(scale_weight) 0
+						}
+						espresso_weight append \
+							[round_to_two_digits $::de1(scale_weight)]
+						espresso_weight_chartable append \
+							[round_to_two_digits [expr {0.10 * $::de1(scale_weight)}]]
+
+						espresso_pressure append [round_to_two_digits $GroupPressure]
+						espresso_flow append [round_to_two_digits $GroupFlow]
+						espresso_flow_2x append [round_to_two_digits \
+										 [expr {2.0 * $GroupFlow}]]
+
+						set resistance 0
+						catch {
+							# main calculation, based on laminar flow. # linear adjustment
+							set resistance [round_to_two_digits \
+										[expr {$GroupPressure \
+										       / pow($GroupFlow, 2) }]]
+						}
+						espresso_resistance append $resistance
+
+
+						if {$::de1(scale_weight_rate) != ""} {
+
+							# if a bluetooth scale is recording shot weight,
+							# graph it along with the flow meter
+
+							espresso_flow_weight append \
+								[round_to_two_digits \
+									 $::de1(scale_weight_rate)]
+
+							espresso_flow_weight_raw append \
+								[round_to_two_digits \
+									 $::de1(scale_weight_rate_raw)]
+
+							espresso_flow_weight_2x append \
+								[expr {2.0 * [round_to_two_digits \
+										      $::de1(scale_weight_rate)] }]
+
+							set resistance_weight 0
+							catch {
+								if {    $GroupPressure != 0 \
+										&& $::de1(scale_weight_rate) != "" \
+										&& $::de1(scale_weight_rate) != 0} {
+
+									# if the scale is available,
+									# use that instead of the flowmeter calculation,
+									# to determine resistance
+
+									set resistance_weight [round_to_two_digits \
+										[expr {$GroupPressure \
+										       / pow($::de1(scale_weight_rate), 2) }]]
+								}
+							}
+
+							espresso_resistance_weight append $resistance_weight
+						}
+
+						# diff_flow_rate is defined in vars.tcl, as of 2021-02
+						# On Android, it now returns $::gui::state::_delta_flow
+
+						set flow_delta [diff_flow_rate]
+						set negative_flow_delta_for_chart 0
+
+
+						if {$this_substate == "preinfusion"} {
+
+							# don't track flow rate delta during preinfusion
+							# because the puck is absorbing water,
+							# and so the numbers aren't useful
+							# (likely just pump variability)
+
+							set flow_delta 0
+						}
+
+						if {$flow_delta > 0} {
+
+							if {$::settings(enable_negative_flow_charts) == 1} {
+
+								# experimental chart from the top
+
+								set negative_flow_delta_for_chart \
+									[expr {6.0 - (10.0 * $flow_delta)}]
+
+								set negative_flow_delta_for_chart_2x \
+									[expr {12.0 - (10.0 * $flow_delta)}]
+
+								espresso_flow_delta_negative append \
+									$negative_flow_delta_for_chart
+
+								espresso_flow_delta_negative_2x append \
+									$negative_flow_delta_for_chart_2x
+							}
+
+							espresso_flow_delta append 0
+
+						} else {
+
+							espresso_flow_delta append [expr {abs(10*$flow_delta)}]
+
+							if {$::settings(enable_negative_flow_charts) == 1} {
+
+								espresso_flow_delta_negative append 6
+								espresso_flow_delta_negative_2x append 12
+							}
+						}
+
+						# diff_pressure is defined in vars.tcl, as of 2021-02
+						# On Android, it now returns $::gui::state::_delta_pressure
+
+						set pressure_delta [diff_pressure]
+						espresso_pressure_delta append [expr {abs ($pressure_delta) / $millitime}]
+
+						espresso_temperature_mix append \
+							[return_temperature_number $MixTemp]
+
+						espresso_temperature_basket append \
+							[return_temperature_number $HeadTemp]
+
+						espresso_state_change append $::gui::state::_state_change_chart_value
+
+						# don't chart goals at zero, instead take them off the chart
+
+						if {$SetGroupFlow == 0} {
+							espresso_flow_goal append "-1"
+							espresso_flow_goal_2x append "-1"
+						} else {
+							espresso_flow_goal append $SetGroupFlow
+							espresso_flow_goal_2x append [expr {2.0 * $SetGroupFlow}]
+						}
+
+						# don't chart goals at zero, instead take them off the chart
+
+						if {$::de1(goal_pressure) == 0} {
+							espresso_pressure_goal append "-1"
+						} else {
+							espresso_pressure_goal append $SetGroupPressure
+						}
+
+						espresso_temperature_goal append \
+							[return_temperature_number $SetHeadTemp]
+
+
+						set total_water_volume \
+							[expr {$::de1(preinfusion_volume) + $::de1(pour_volume)}]
+
+						set total_water_volume_divided \
+							[expr {0.1 * ($::de1(preinfusion_volume) + $::de1(pour_volume))}]
+
+						espresso_water_dispensed append $total_water_volume_divided
+
+					}
+				}
+
+				Steam {
+					if { [::de1::state::is_flow_during_state $this_state $this_substate] } {
+
+						steam_pressure append [round_to_two_digits $GroupPressure]
+						steam_flow append [round_to_two_digits $GroupFlow]
+
+						if {$::settings(enable_fahrenheit) == 1} {
+							steam_temperature append \
+								[round_to_integer [celsius_to_fahrenheit $SteamTemp]]
+						} else {
+							steam_temperature append [round_to_integer $SteamTemp]
+						}
+
+						steam_elapsed append [expr {[steam_pour_millitimer $update_received]/1000.0}]
+					}
+				}
+
+				default {}
+			}
+
+		}
+	} ;# append_live_data_to_espresso_chart
+
+} ;# ::gui::update

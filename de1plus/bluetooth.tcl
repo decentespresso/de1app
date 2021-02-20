@@ -1508,8 +1508,7 @@ proc de1_ble_handler { event data } {
 
 						if {$cuuid eq $::de1(cuuid_0D)} {
 							set ::de1(last_ping) [clock seconds]
-							set results [update_de1_shotvalue $value]
-							#msg "Shotvalue received: $results"
+							::de1::state::update::from_shotvalue $value $event_time
 							#set ::de1(wrote) 0
 							#run_next_userdata_cmd
 							set do_this 0

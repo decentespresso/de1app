@@ -1,4 +1,4 @@
-package provide de1_comms 1.0
+package provide de1_comms 1.1
 
 package require de1_bluetooth
 package require de1_logging 1.0
@@ -279,7 +279,10 @@ proc de1_connect_handler { handle address name} {
 	}
 }
 
-proc de1_event_handler { command_name value } {
+proc de1_event_handler { command_name value {update_received 0}} {
+
+	if { $update_received == 0 } { set update_received [expr {[clock milliseconds] / 1000.0}] }
+
 	set previous_wrote 0
 	set previous_wrote [ifexists ::de1(wrote)]
 
@@ -293,8 +296,7 @@ proc de1_event_handler { command_name value } {
 
 	if {$command_name eq "ShotSample"} {
 		set ::de1(last_ping) [clock seconds]
-		set results [update_de1_shotvalue $value]
-		#msg "Shotvalue received: $results"
+		::de1::state::update::from_shotvalue $value $update_received
 		#set ::de1(wrote) 0
 		#run_next_userdata_cmd
 		set do_this 0

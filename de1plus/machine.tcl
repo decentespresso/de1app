@@ -1,6 +1,6 @@
-package provide de1_machine 1.1
+package provide de1_machine 1.2
 
-package require de1_comms 1.0
+package require de1_comms 1.1
 package require de1_logging 1.0
 
 ###
@@ -93,7 +93,7 @@ array set ::de1 {
 	widget_current_profile_name_color_normal "#ff6b6b"
 	widget_current_profile_name_color_changed "#969eb1"
 	water_level_mm_correction 5
-	scale_autostop_triggered 1
+	scale_autostop_triggered True
 	water_level_full_point 40
 	connect_time 0
 	water_level 20
@@ -718,8 +718,6 @@ proc start_steam {} {
 
 proc reset_gui_starting_espresso {} {
 
-	set ::previous_FrameNumber -1
-
 	set ::settings(history_saved) 0
 
 	set ::de1(timer) 0
@@ -728,9 +726,10 @@ proc reset_gui_starting_espresso {} {
 	set ::de1(preinfusion_volume) 0
 	set ::de1(pour_volume) 0
 	set ::de1(current_frame_number) 0
+	::de1::state::reset_framenumbers
 
 	# only works if a BLE scale is attached
-	set ::de1(final_espresso_weight) 0	
+	set ::de1(final_espresso_weight) 0
 
 	############
 	# clear any description of the previous espresso

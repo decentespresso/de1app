@@ -1,5 +1,5 @@
 # de1 internal state live variables
-package provide de1_vars 1.1
+package provide de1_vars 1.2
 
 package require lambda
 
@@ -375,10 +375,17 @@ proc espresso_timer {} {
 	return [expr {([clock milliseconds] - $::timers(espresso_start) )/1000}]
 }
 
-proc espresso_millitimer {} {
-	return [expr {([clock milliseconds] - $::timers(espresso_start))}]
-	#global start_millitimer
-	#return [expr {[clock milliseconds] - $start_millitimer}]
+proc espresso_millitimer {{time_reference 0}} {
+
+	# Accept seconds or ms, always returns ms; 10000000000 is Sat Nov 20 09:46:40 PST 2286
+
+	if { $time_reference == 0 } {
+		set time_reference [clock milliseconds]
+	} elseif { $time_reference < 10000000000 } {
+		set time_reference [expr { $time_reference * 1000. }]
+	}
+
+	return [expr { $time_reference - $::timers(espresso_start) }]
 }
 
 proc espresso_elapsed_timer {} {
@@ -453,7 +460,17 @@ proc steam_pour_timer {} {
 	}
 }
 
-proc steam_pour_millitimer {} {
+proc steam_pour_millitimer {{time_reference 0}} {
+
+	# Accept seconds or ms, always returns ms; 10000000000 is Sat Nov 20 09:46:40 PST 2286
+
+	if { $time_reference == 0 } {
+		set time_reference [clock milliseconds]
+	} elseif { $time_reference < 10000000000 } {
+		set time_reference [expr { $time_reference * 1000. }]
+	}
+
+
 	if {[info exists ::timers(steam_pour_start)] != 1} {
 		return 0
 	}
@@ -462,10 +479,10 @@ proc steam_pour_millitimer {} {
 		return 0
 	} elseif {$::timers(steam_pour_stop) == 0} {
 		# no stop, so show current elapsed time
-		return [expr {([clock milliseconds] - $::timers(steam_pour_start))/1}]
+		return [expr {$time_reference - $::timers(steam_pour_start)}]
 	} else {
 		# stop occured, so show that.
-		return [expr {($::timers(steam_pour_stop) - $::timers(steam_pour_start))/1}]
+		return [expr {$::timers(steam_pour_stop) - $::timers(steam_pour_start)}]
 	}
 }
 
@@ -1216,7 +1233,7 @@ proc diff_pressure {} {
 		return [expr {3 - (rand() * 6)}]
 	}
 
-	return $::de1(pressure_delta)
+	return $::gui::state::_delta_pressure
 }
 
 proc diff_flow_rate {} {
@@ -1224,7 +1241,7 @@ proc diff_flow_rate {} {
 		return [expr {3 - (rand() * 6)}]
 	}
 
-	return $::de1(flow_delta)
+	return $::gui::state::_delta_flow
 }
 
 proc diff_flow_rate_text {} {
