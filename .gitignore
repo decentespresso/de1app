@@ -28,3 +28,4 @@ core
 # CVS default ignores end
 
 release
+de1plus/plugins/visualizer_upload/settings.tdb

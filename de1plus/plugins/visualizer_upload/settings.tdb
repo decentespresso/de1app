@@ -1,6 +1,0 @@
-auto_upload 1
-visualizer_endpoint api/shots/upload
-visualizer_password passwd
-visualizer_url visualizer.coffee
-visualizer_username demo@demo123
-
