@@ -2288,7 +2288,7 @@ proc highlight_extension {} {
 	if { [info exists ::extension_highlighted] } {
 		if { $::extension_highlighted == $stepnum } {
 			set plugin [lindex [available_plugins] $stepnum]
-			toggle_plugin $plugin
+			plugins toggle $plugin
 			
 			fill_extensions_listbox
 			$::extensions_widget selection set $stepnum

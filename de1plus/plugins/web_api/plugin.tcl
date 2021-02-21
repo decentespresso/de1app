@@ -3,33 +3,46 @@ package require de1_machine
 
 set plugin_name "web_api"
 
-set ::plugins::${plugin_name}::author "Johanna Schander"
-set ::plugins::${plugin_name}::contact "coffee-plugins@mimoja.de"
-set ::plugins::${plugin_name}::version 1.0
-set ::plugins::${plugin_name}::description "Minimal webserver to toggle the DE1s power state"
+namespace eval ::plugins::${plugin_name} {
 
-proc ::plugins::${plugin_name}::main {} {
+    variable author "Johanna Schander"
+    variable contact "coffee-plugins@mimoja.de"
+    variable version 1.0
+    variable description "Minimal webserver to toggle the DE1s power state"
+    variable name "Web API"
 
-    if { $::plugins::web_api::settings(webserver_magic_phrase_confirm) != $::plugins::web_api::settings(webserver_magic_phrase)} {
-        after 2000 {error "Webserver confirmation string not found or incorrect"}
-        return
-    }
+    proc main {} {
+        # Create settings if non-existant
+        if {[array size ::plugins::web_api::settings] == 0} {
+            array set ::plugins::web_api::settings {
+                webserver_magic_phrase "I really want an unsecured (non-SSL) Webserver on my coffee machine"
+                webserver_magic_phrase_confirm ""
+                webserver_port 8080
+                webserver_authentication_key "ChangeMe"
+            }
+            save_plugin_settings web_api
+        }
 
-    if { $::plugins::web_api::settings(webserver_authentication_key) == "ChangeMe"} {
-        after 2000 {error "Please change the Webserver auth key!"}
-        return
-    }
-    # Define handlers
-    ::wibble::handle /on togglePowerOn
-    ::wibble::handle /off togglePowerOff
-    ::wibble::handle / notfound
+        if { $::plugins::web_api::settings(webserver_magic_phrase_confirm) != $::plugins::web_api::settings(webserver_magic_phrase)} {
+            after 2000 [list info_page [translate "Webserver confirmation string not found or incorrect"] [translate "Ok"]]
+            return
+        }
 
-    # Start a server and enter the event loop if not already there.
-    catch {
-        ::wibble::listen 8080
+        if { $::plugins::web_api::settings(webserver_authentication_key) == "ChangeMe"} {
+            after 2000 [list info_page [translate "Please change the Webserver auth key!"] [translate "Ok"]]
+            return
+        }
+        # Define handlers
+        ::wibble::handle /on togglePowerOn
+        ::wibble::handle /off togglePowerOff
+        ::wibble::handle / notfound
+
+        # Start a server and enter the event loop if not already there.
+        catch {
+            ::wibble::listen 8080
+        }
     }
 }
-
 proc ::wibble::check_auth {state} {
     set auth [dict getnull $state request query auth]
     set auth [lindex $auth 1]
