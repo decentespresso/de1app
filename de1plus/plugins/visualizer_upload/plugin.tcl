@@ -58,6 +58,11 @@ proc ::plugins::${plugin_name}::upload {content} {
     set username $::plugins::visualizer_upload::settings(visualizer_username)
     set password $::plugins::visualizer_upload::settings(visualizer_password)
 
+    if {$username eq "demo@demo123"} {
+        borg toast "Please configure your username in the settings"
+        return
+    }
+
     set auth "Basic [binary encode base64 $username:$password]"
     set boundary "--------[clock seconds]"
     set type "multipart/form-data, charset=utf-8, boundary=$boundary"
