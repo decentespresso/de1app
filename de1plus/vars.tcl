@@ -2303,11 +2303,9 @@ proc highlight_extension {} {
 
 	set plugin [lindex [available_plugins] $stepnum ]
 
-	# ENRIQUE: Why needed, already done at startup??? COMMENTED
-	#source_plugin $plugin 
 	set description ""
 
-	if {[info proc ::plugins::${plugin}::preload] != ""} {
+	if {[info proc ::plugins::${plugin}::preload] != "" && [info exists ::plugins::${plugin}::ui_entry] && [set ::plugins::${plugin}::ui_entry] != ""} {
 		canvas_show "$::extensions_settings $::extensions_settings_button"
 	} else {
 		canvas_hide "$::extensions_settings $::extensions_settings_button"
@@ -2324,7 +2322,6 @@ proc highlight_extension {} {
 	fill_extensions_listbox
 	$::extensions_widget selection set $stepnum;
 	make_current_listbox_item_blue $::extensions_widget
-
 }
 
 proc fill_plugin_settings {} {
