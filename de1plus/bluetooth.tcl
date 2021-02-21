@@ -1348,7 +1348,7 @@ proc de1_ble_handler { event data } {
 			msg "-- device '$name' found at address $address"
 			scan {
 				#msg "-- device $name found at address $address ($data)"
-				if {[string first DE1 $name] != -1} {
+				if {[string first DE1 $name] == 0} {
 					append_to_de1_list $address $name "ble"
 					#if {$address == $::settings(bluetooth_address) && $::scanning != 0} {
 						#ble stop $::ble_scanner
@@ -1367,7 +1367,7 @@ proc de1_ble_handler { event data } {
 							#ble_connect_to_de1
 						}
 					}
-				} elseif {[string first Skale $name] != -1} {
+				} elseif {[string first Skale $name] == 0} {
 					append_to_scale_bluetooth_list $address $name "atomaxskale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
@@ -1377,7 +1377,7 @@ proc de1_ble_handler { event data } {
 						}
 					}
 
-				} elseif {[string first "Decent Scale" $name] != -1} {
+				} elseif {[string first "Decent Scale" $name] == 0} {
 					append_to_scale_bluetooth_list $address $name "decentscale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
@@ -1386,7 +1386,7 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_scale
 						}
 					}
-				} elseif {[string first "FELICITA" $name] != -1} {
+				} elseif {[string first "FELICITA" $name] == 0} {
 					append_to_scale_bluetooth_list $address $name "felicita"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
@@ -1395,7 +1395,7 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_scale
 						}
 					}
- 				} elseif {[string first "HIROIA JIMMY" $name] != -1} {
+ 				} elseif {[string first "HIROIA JIMMY" $name] == 0} {
 					append_to_scale_bluetooth_list $address $name "hiroiajimmy"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
@@ -1404,9 +1404,9 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_scale
 						}
 					}
- 				} elseif {[string first "ACAIA" $name] != -1 \
- 					|| [string first "LUNAR" $name]    != -1 \
- 					|| [string first "PROCH" $name]    != -1 } {
+ 				} elseif {[string first "ACAIA" $name] == 0 \
+ 					|| [string first "LUNAR" $name]    == 0 \
+ 					|| [string first "PROCH" $name]    == 0 } {
 
 					if { [string first "PROCH" $name] != -1 } {
 						set ::settings(force_acaia_heartbeat) 1
