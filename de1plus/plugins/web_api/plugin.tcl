@@ -7,8 +7,8 @@ namespace eval ::plugins::${plugin_name} {
 
     variable author "Johanna Schander"
     variable contact "coffee-plugins@mimoja.de"
-    variable version 1.0
-    variable description "Minimal webserver to toggle the DE1s power state"
+    variable version 1.1
+    variable description "Minimal webserver to report, enable, and disable the DE1's power state"
     variable name "Web API"
 
     proc main {} {
@@ -35,6 +35,7 @@ namespace eval ::plugins::${plugin_name} {
         # Define handlers
         ::wibble::handle /on togglePowerOn
         ::wibble::handle /off togglePowerOff
+        ::wibble::handle /status checkStatus
         ::wibble::handle / notfound
 
         # Start a server and enter the event loop if not already there.
@@ -90,5 +91,25 @@ proc ::wibble::togglePowerOff {state} {
     dict set response status 200
     dict set state response header content-type "" {application/json charset utf-8}
     dict set response content "{status: \"ok\"}"
+    sendresponse $response
+}
+
+proc ::wibble::checkStatus {state} {
+    if { ![check_auth $state] } {
+        return;
+    }
+
+    dict set response status 200
+    dict set state response header content-type "" {text/plain charset utf-8}
+    
+    # Returning a simple text 1 if the machine is in anything other than an sleep state. Return text 0 if sleep.
+    # Return values chosen by cribbing from Supereg/homebridge-http-switch
+
+    if { $::de1_num_state($::de1(state)) != "Sleep" } {
+        dict set response content "1"
+    } else {
+        dict set response content "0"
+    }
+    
     sendresponse $response
 }
