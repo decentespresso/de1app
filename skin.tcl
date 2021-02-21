@@ -18,8 +18,12 @@ create_grid
 .can itemconfigure "grid" -state "hidden"
 #.can itemconfigure "grid" -state "normal"
 
-if {$::settings(grinder_setting) == {}} {
+if {[info exists ::settings(grinder_setting)] != 1 || $::settings(grinder_setting) == {}} {
 	set ::settings(grinder_setting) 0
+}
+
+if {[info exists ::settings(grinder_dose_weight)] != 1 || $::settings(grinder_dose_weight) == {}} {
+	set ::settings(grinder_dose_weight) 0
 }
 
 
