@@ -557,45 +557,6 @@ proc flush_done_timer {} {
 	}
 }
 
-
-proc obsolete_event_timer_calculate {state destination_state previous_states} {
-
-
-
-	set eventtime [get_timer $state $destination_state]
-	 set beforetime 0
-	foreach s $previous_states {
-		set thistime [get_timer $state $s]
-		if {$thistime > $beforetime} {
-			set beforetime $thistime
-		}
-	}
-
-	
-
-	set elapsed [expr {($eventtime - $beforetime)/100}]
-	if {$elapsed < 0} {
-		# this means that the event has not yet started
-		return 0
-	}
-
-	return $elapsed
-}
-
-#proc preinfusion_timer {} {
-#	return [event_timer_calculate "Espresso" "preinfusion" {"stabilising" "final heating" "heating"} ]
-#}
-
-
-#proc pour_timer {} {
-#	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "stabilising" "final heating" "heating"} ]
-#}
-
-#proc done_timer {} {
-#	return [event_timer_calculate "Idle" "ready" {"pouring" "preinfusion" "stabilising" "final heating" "heating"} ]
-#}
-
-
 proc steam_timer {} {
 zz1
 	return [pour_timer]
