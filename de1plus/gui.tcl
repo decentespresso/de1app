@@ -2031,7 +2031,7 @@ proc ui_startup {} {
 	
 	setup_images_for_first_page
 	setup_images_for_other_pages
-	load_plugins
+	plugins init
 	.can itemconfigure splash -state hidden
 
 
