@@ -5,8 +5,8 @@ set plugin_name "web_api"
 
 set ::plugins::${plugin_name}::author "Johanna Schander"
 set ::plugins::${plugin_name}::contact "coffee-plugins@mimoja.de"
-set ::plugins::${plugin_name}::version 1.0
-set ::plugins::${plugin_name}::description "Minimal webserver to toggle the DE1s power state"
+set ::plugins::${plugin_name}::version 1.1
+set ::plugins::${plugin_name}::description "Minimal webserver to report, enable, and disable the DE1's power state"
 
 proc ::plugins::${plugin_name}::main {} {
 
@@ -22,6 +22,7 @@ proc ::plugins::${plugin_name}::main {} {
     # Define handlers
     ::wibble::handle /on togglePowerOn
     ::wibble::handle /off togglePowerOff
+    ::wibble::handle /status checkStatus
     ::wibble::handle / notfound
 
     # Start a server and enter the event loop if not already there.
@@ -77,5 +78,25 @@ proc ::wibble::togglePowerOff {state} {
     dict set response status 200
     dict set state response header content-type "" {application/json charset utf-8}
     dict set response content "{status: \"ok\"}"
+    sendresponse $response
+}
+
+proc ::wibble:checkStatus {state} {
+    if { ![check_auth $state] } {
+        return;
+    }
+
+    dict set response status 200
+    dict set state response header content-type "" {application/json charset utf-8}
+    
+    # Returning a simple text 1 if the machine is in anything other than an idle state. Return text 0 if idle.
+    # Return values chosen by cribbing from Supereg/homebridge-http-switch
+
+    if { $::de1_num_state($::de1(state)) != 0 } {
+        dict set response content "{1}"
+    } else {
+        dict set response content "{0}"
+    }
+    
     sendresponse $response
 }
