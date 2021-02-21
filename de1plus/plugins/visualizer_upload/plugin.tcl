@@ -12,6 +12,18 @@ set ::plugins::${plugin_name}::description "Upload your last shot to visualizer.
 # Paint settings screen
 proc ::plugins::${plugin_name}::preload {} {
 
+    # Create settings if non-existant
+    if {[array size ::plugins::visualizer_upload::settings] == 0} {
+        array set  ::plugins::visualizer_upload::settings {
+            auto_upload 1
+            visualizer_endpoint api/shots/upload
+            visualizer_password passwd
+            visualizer_url visualizer.coffee
+            visualizer_username demo@demo123
+        }
+        save_plugin_settings visualizer_upload
+    }
+
     # Unique name per page
     set page_name "plugin_visualizer_page_default"
 
