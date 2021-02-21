@@ -1333,19 +1333,6 @@ proc bintest2 {} {
 
 }
 
-proc obsolete_get_timer {state substate} {
-
-  set timerkey "$::de1_num_state_reversed($state)-$::de1_substate_types_reversed($substate)"
-  set timer 0
-
-  catch {
-	set timer $::timers($timerkey)
-  }
-
-  #puts "$timerkey - timer $state $substate : $timer [array get ::timers]"
-  return $timer
-}
-
 set ::previous_FrameNumber -1
 proc update_de1_shotvalue {packed} {
 
