@@ -81,21 +81,21 @@ proc ::wibble::togglePowerOff {state} {
     sendresponse $response
 }
 
-proc ::wibble:checkStatus {state} {
+proc ::wibble::checkStatus {state} {
     if { ![check_auth $state] } {
         return;
     }
 
     dict set response status 200
-    dict set state response header content-type "" {application/json charset utf-8}
+    dict set state response header content-type "" {text/plain charset utf-8}
     
     # Returning a simple text 1 if the machine is in anything other than an idle state. Return text 0 if idle.
     # Return values chosen by cribbing from Supereg/homebridge-http-switch
 
-    if { $::de1_num_state($::de1(state)) != 0 } {
-        dict set response content "{1}"
+    if { $::de1_num_state != 0 } {
+        dict set response content "1"
     } else {
-        dict set response content "{0}"
+        dict set response content "0"
     }
     
     sendresponse $response
