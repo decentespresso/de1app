@@ -89,7 +89,7 @@ proc ::wibble::checkStatus {state} {
     dict set response status 200
     dict set state response header content-type "" {text/plain charset utf-8}
     
-    # Returning a simple text 1 if the machine is in anything other than an idle state. Return text 0 if idle.
+    # Returning a simple text 1 if the machine is in anything other than an sleep state. Return text 0 if sleep.
     # Return values chosen by cribbing from Supereg/homebridge-http-switch
 
     if { $::de1_num_state($::de1(state)) != "Sleep" } {
