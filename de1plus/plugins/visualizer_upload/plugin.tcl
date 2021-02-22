@@ -39,7 +39,6 @@ proc ::plugins::${plugin_name}::preload {} {
     add_de1_text $page_name 280 480 -text [translate "Username"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
     # The actual content. Here a list of all settings for this plugin
     add_de1_widget "$page_name" entry 280 540  {
-        set ::globals(widget_profile_name_to_save) $widget
         bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; save_plugin_settings visualizer_upload; hide_android_keyboard}
         bind $widget <Leave> hide_android_keyboard
     } -width [expr {int(38 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::visualizer_upload::settings(visualizer_username) -relief flat  -highlightthickness 1 -highlightcolor #000000
