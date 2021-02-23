@@ -1,4 +1,0 @@
-webserver_magic_phrase "I really want an unsecured (non-SSL) Webserver on my coffee machine"
-webserver_magic_phrase_confirm ""
-webserver_port 8080
-webserver_authentication_key "ChangeMe"

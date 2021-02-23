@@ -1,4 +1,6 @@
 package provide de1_gui 1.0
+
+package require de1_logging 1.0
 package require de1_plugins 1.0
 
 proc load_skin {} {
@@ -658,42 +660,6 @@ proc platform_button_unpress {} {
 	}
 	return {<ButtonRelease-1>}
 }
-
-
-set cnt 0
-set debugcnt 0
-set ::debuglog {}	
-# display a debug message into the on-screen debug window, if that's enabled
-# also saves the info to the log file.				
-proc msg {text} {
-
-	if {$text == ""} {
-		return
-	}
-
-	catch {
-		log_to_debug_file $text
-	}
-
-	if {[ifexists ::debugging] != 1} {
-		# don't keep a rolling window of debug msgs if it's not going to be displayed onscreen
-		return
-	}
-
-	incr ::debugcnt
-
-	# someone inefficent mechanism, but no better way to prepend a string exists https://stackoverflow.com/questions/10009181/tcl-string-prepend
-	set ::debuglog "$::debugcnt) $text\n$::debuglog"
-
-	set loglines [split $::debuglog "\n"]
-
-	while {[llength $loglines] > $::settings(debuglog_window_size)} {
-		unshift loglines
-		set ::debuglog [join $loglines \n]
-	}
-
-}
-
 
 
 proc add_variable_item_to_context {context label_name varcmd} {
@@ -2031,7 +1997,7 @@ proc ui_startup {} {
 	
 	setup_images_for_first_page
 	setup_images_for_other_pages
-	load_plugins
+	plugins init
 	.can itemconfigure splash -state hidden
 
 

@@ -1,6 +1,8 @@
 # de1 internal state live variables
 package provide de1_vars 1.0
 
+package require de1_logging 1.0
+
 #############################
 # raw data from the DE1
 
@@ -556,45 +558,6 @@ proc flush_done_timer {} {
 		return [expr {([clock milliseconds] - $::timers(flush_pour_stop))/1000}]
 	}
 }
-
-
-proc obsolete_event_timer_calculate {state destination_state previous_states} {
-
-
-
-	set eventtime [get_timer $state $destination_state]
-	 set beforetime 0
-	foreach s $previous_states {
-		set thistime [get_timer $state $s]
-		if {$thistime > $beforetime} {
-			set beforetime $thistime
-		}
-	}
-
-	
-
-	set elapsed [expr {($eventtime - $beforetime)/100}]
-	if {$elapsed < 0} {
-		# this means that the event has not yet started
-		return 0
-	}
-
-	return $elapsed
-}
-
-#proc preinfusion_timer {} {
-#	return [event_timer_calculate "Espresso" "preinfusion" {"stabilising" "final heating" "heating"} ]
-#}
-
-
-#proc pour_timer {} {
-#	return [event_timer_calculate "Espresso" "pouring" {"preinfusion" "stabilising" "final heating" "heating"} ]
-#}
-
-#proc done_timer {} {
-#	return [event_timer_calculate "Idle" "ready" {"pouring" "preinfusion" "stabilising" "final heating" "heating"} ]
-#}
-
 
 proc steam_timer {} {
 zz1
@@ -2288,7 +2251,7 @@ proc highlight_extension {} {
 	if { [info exists ::extension_highlighted] } {
 		if { $::extension_highlighted == $stepnum } {
 			set plugin [lindex [available_plugins] $stepnum]
-			toggle_plugin $plugin
+			plugins toggle $plugin
 			
 			fill_extensions_listbox
 			$::extensions_widget selection set $stepnum

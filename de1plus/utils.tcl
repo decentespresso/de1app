@@ -1,5 +1,7 @@
 package provide de1_utils 1.0
 
+package require de1_logging 1.0
+
 # from https://developer.android.com/reference/android/view/View.html#SYSTEM_UI_FLAG_IMMERSIVE
 set SYSTEM_UI_FLAG_IMMERSIVE_STICKY 0x00001000
 set SYSTEM_UI_FLAG_FULLSCREEN 0x00000004

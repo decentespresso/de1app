@@ -1,5 +1,6 @@
 package provide de1_binary 1.0
 
+package require de1_logging 1.0
 
 # from http://wiki.tcl.tk/12148
 
@@ -1329,19 +1330,6 @@ proc bintest2 {} {
 		puts "$field : $val "
 	}
 
-}
-
-proc obsolete_get_timer {state substate} {
-
-  set timerkey "$::de1_num_state_reversed($state)-$::de1_substate_types_reversed($substate)"
-  set timer 0
-
-  catch {
-	set timer $::timers($timerkey)
-  }
-
-  #puts "$timerkey - timer $state $substate : $timer [array get ::timers]"
-  return $timer
 }
 
 set ::previous_FrameNumber -1

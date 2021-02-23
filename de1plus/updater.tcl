@@ -5,6 +5,8 @@
 
 package provide de1_updater 1.0
 
+package require de1_logging 1.0
+
 proc determine_if_android {} {
 
     set ::android 0
@@ -133,7 +135,7 @@ proc percent20encode {in} {
     set out $in
     regsub -all " " $out "%20" out
     #regsub -all "&" $out "%26" out
-    regsub -all {"} $out "%22" out
+    regsub -all "\"" $out "%22" out
     regsub -all {#} $out "%23" out
     regsub -all {'} $out "%27" out
     regsub -all {!} $out "%21" out
@@ -268,52 +270,6 @@ proc pause {time} {
     unset -nocomplain pause_end
 }
 
-
-
-proc log_to_debug_file {text} {
-
-    if {[ifexists ::settings(log_enabled)] == "1" && [ifexists ::settings(logfile)] != ""} {
-        if {[ifexists ::logfile_handle] == "0"} {
-            # do nothing, no logging is possible (such as OSX readonly file system)
-            return
-        }
-
-        if {[ifexists ::logfile_handle] == ""} {
-
-            set ::logfile_handle "0"
-            catch {
-                set ::logfile_handle [open "[homedir]/$::settings(logfile)" w]
-
-                # per https://3.basecamp.com/3671212/buckets/7351439/messages/3033510129#__recording_3039704280
-                # logging is always fast now, with only line level buffering
-                set ::settings(log_fast) 1
-                if {[ifexists ::settings(log_fast)] == "1"} {
-                    msg "fast log file"
-                    fconfigure $::logfile_handle -blocking 0 -buffering line 
-                } else {
-                    # Michael argues that there's no need to go nonblocking if you have a write buffer defined.
-                    # https://3.basecamp.com/3671212/buckets/7351439/messages/3033510129#__recording_3037579684
-                    # so disabling for now, to see if he's right.
-                    # -blocking 0 
-                    fconfigure $::logfile_handle -buffersize 102400 
-                }
-            }
-        } 
-
-        catch {
-            puts $::logfile_handle "$::debugcnt. ([clock format [clock seconds] -format "%Y-%m-%d %H:%M:%S" ]) $text"
-        }
-
-        catch {
-            # if logging, display info to the screen terminal too
-            puts $text
-        }
-
-
-        # temporarily do 
-        #close_log_file
-    }
-}
 
 
 proc verify_decent_tls_certificate {} {
