@@ -1505,7 +1505,11 @@ proc list_remove_element {list toremove} {
 
 proc web_browser {url} {
     msg "Browser '$url'"
-    borg activity android.intent.action.VIEW $url text/html
+	if { $::android == 1 } {
+		borg activity android.intent.action.VIEW $url text/html
+	} elseif { $::tcl_platform(platform) eq "windows" } {
+		eval exec [auto_execok start] $url
+	}	
 }
 
 proc font_width {untranslated_txt font} {
