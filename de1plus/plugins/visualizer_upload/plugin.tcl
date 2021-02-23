@@ -61,7 +61,7 @@ namespace eval ::plugins::${plugin_name} {
 
 
     proc upload {content} {
-        msg "uploading shot"
+        msg [namespace current] "uploading shot"
         borg toast "Uploading Shot"
 
         set content [encoding convertto utf-8 $content]
@@ -92,21 +92,21 @@ namespace eval ::plugins::${plugin_name} {
             set status [http::status $token]
             set answer [http::data $token]
             set returncode [http::ncode $token]
-            msg "status: $status"
-            msg "answer $answer"
+            msg [namespace current] "status: $status"
+            msg [namespace current] "answer $answer"
             http::cleanup $token
             if {$returncode == 401} {
-                msg "Upload failed. Unauthorized"
+                msg [namespace current] "Upload failed. Unauthorized"
                 borg toast "Upload failed! Authentication failed. Please check username / password"
                 return
             }
             if {[string length $answer] == 0 || $returncode != 200} {
-                msg "Upload failed"
+                msg [namespace current] "Upload failed"
                 borg toast "Upload failed!"
                 return
             }
         } err] != 0} {
-            msg "Could not upload shot! $err"
+            msg [namespace current] "Could not upload shot! $err"
             borg toast "Upload failed!"
             return
         }
@@ -117,10 +117,10 @@ namespace eval ::plugins::${plugin_name} {
             set response [::json::json2dict $answer]
             set uploaded_id [dict get $response id]
         } err] != 0} {
-            msg "Upload successfull but unexpected server answer!"
+            msg [namespace current] "Upload successfull but unexpected server answer!"
             return
         }
-        msg "Upload successfull with id: $uploaded_id"
+        msg [namespace current] "Upload successfull with id: $uploaded_id"
 
         return $uploaded_id
     }

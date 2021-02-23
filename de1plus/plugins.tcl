@@ -71,7 +71,7 @@ namespace eval ::plugins {
 
     proc read {plugin} {
         if {[file exists "[homedir]/[plugin_directory]/$plugin/plugin.tcl"] != 1} {
-            msg "Plugin $plugin does not exist"
+            msg [namespace current] "Plugin $plugin does not exist"
             return 0
         }
 
@@ -81,7 +81,7 @@ namespace eval ::plugins {
     }
 
     proc preload {plugin} {
-        msg "preloading $plugin"
+        msg [namespace current] "preloading $plugin"
         if { [preloaded $plugin] } {
             return
         }
@@ -102,7 +102,7 @@ namespace eval ::plugins {
         plugins load_settings $plugin
         
         if {[catch {
-                msg "sourcing $plugin" 
+                msg [namespace current] "sourcing $plugin" 
                 if {[::plugins::read $plugin] != 1} {
                     error "sourcing failed"
                 }
@@ -188,7 +188,7 @@ namespace eval ::plugins {
 
 
     proc load_settings {plugin} {
-        msg "loading settings for $plugin"
+        msg [namespace current] "loading settings for $plugin"
         set fn [plugin_settings_file $plugin]
         if { [file exists $fn] } {
             set settings_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]
@@ -197,7 +197,7 @@ namespace eval ::plugins {
                 return 1
             }
         }
-        msg "Settings file $fn not found"
+        msg [namespace current] "Settings file $fn not found"
         return 0
     }
 

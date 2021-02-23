@@ -53,20 +53,18 @@ namespace eval ::plugins::${plugin_name} {
     # official distribution if you are not beeing run from your main
     # REQUIRED
     proc main {} {
-        msg [array get settings]
-        msg [namespace current]
-        msg "Accessing loaded settings: $::plugins::example::settings(amazing_feature)"
-        msg "Changing settings"
+        msg [namespace current] "Accessing loaded settings: $::plugins::example::settings(amazing_feature)"
+        msg [namespace current] "Changing settings"
         set settings(amazing_feature) 3
-        msg "Saving settings"
+        msg [namespace current] "Saving settings"
         save_plugin_settings "example"
-        msg "Dumping settings:"
+        msg [namespace current] "Dumping settings:"
         msg [array get settings]
 
-        msg "registering espresso ending handler"
+        msg [namespace current] "registering espresso ending handler"
         register_state_change_handler "Espresso" "Idle" ::plugins::example::on_espresso_end
 
-        msg "Tracing function call"
+        msg [namespace current] "Tracing function call"
         trace add execution start_sleep leave ::plugins::example::on_function_called
     }
 }
