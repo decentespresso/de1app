@@ -1,17 +1,14 @@
 set plugin_name "DPx_Steam_Stop"
 
+namespace eval ::plugins::${plugin_name} {
 # These are shown in the plugin selection page
-set ::plugins::${plugin_name}::author "Damian"
-set ::plugins::${plugin_name}::contact "via Diaspora"
-set ::plugins::${plugin_name}::version 1.0
-set ::plugins::${plugin_name}::description "This plugin will change stopping steam via the tablet\r- First tap will start gentle puffs\r- Second tap will end and purge"
+variable author "Damian"
+variable contact "via Diaspora"
+variable version 1.1
+variable description "This plugin will change stopping steam via the tablet\r- First tap will start gentle puffs\r- Second tap will end and purge"
 
-proc ::plugins::${plugin_name}::main {} {
-    DPx_start_idle
-
-}
 proc DPx_start_idle {} {
-    proc start_idle {} {
+    proc ::start_idle {} {
         msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
         if  {[sdltk screensaver] == 1} {
@@ -55,4 +52,10 @@ proc DPx_start_idle {} {
             after 200 [list update_de1_state "$::de1_state(Idle)\x0"]
         }
     }
+}
+
+proc main {} {
+    DPx_start_idle
+}
+
 }

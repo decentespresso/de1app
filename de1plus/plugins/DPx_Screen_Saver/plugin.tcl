@@ -1,36 +1,36 @@
 # Change package name for you extension / plugin
 set plugin_name "DPx_Screen_Saver"
 
-
+namespace eval ::plugins::${plugin_name} {
 # These are shown in the plugin selection page
-set ::plugins::${plugin_name}::author "Damian"
-set ::plugins::${plugin_name}::contact "via Diaspora"
-set ::plugins::${plugin_name}::version 1.0
-set ::plugins::${plugin_name}::description "A plugin that allows users to select an alternate screen saver directory, for skins that don't already do so"
+variable author "Damian"
+variable contact "via Diaspora"
+variable version 1.1
+variable description "A plugin that allows users to select an alternate screen saver directory, for skins that don't already do so"
 
 # preload is called on app start even if the plugin is disabled. Can be used to show
 # dynamic informations on the settings overview. Please dont put logic here
 # needs to return the page you want to be shown first
-proc ::plugins::${plugin_name}::preload {} {
+proc preload {} {
     # Unique name per page
     set page_name "DPx_SS_options"
 
     # Background image and "Done" button
     add_de1_page "$page_name" "settings_message.png" "default"
     add_de1_text $page_name 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button $page_name {say [translate {Done}] $::settings(sound_button_in); fill_extensions_listbox; page_to_show_when_off extensions; set_extensions_scrollbar_dimensions;}  980 1210 1580 1410 ""
+	add_de1_button $page_name {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off extensions; }  980 1210 1580 1410 ""
 
     # Headline
     add_de1_text $page_name 1280 300 -text [translate "DPx Screen Saver"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center"
 
     # The actual content. Here a list of all settings for this plugin
-    add_de1_variable $page_name 1280 600 -justify center -anchor "n" -font Helv_10 -fill "#444444" -textvariable {[DPx_message]}
-    add_de1_button "$page_name" {say [translate {awake}] $::settings(sound_button_in); DPx_create_mysaver} 1000 450 1560 750
+    add_de1_variable $page_name 1280 600 -justify center -anchor "n" -font Helv_10 -fill "#444444" -textvariable {[::plugins::DPx_Screen_Saver::message]}
+    add_de1_button "$page_name" {say [translate {awake}] $::settings(sound_button_in); ::plugins::DPx_Screen_Saver::create_mysaver} 1000 450 1560 750
 
     return $page_name
 }
 
-proc DPx_create_mysaver {} {
+proc create_mysaver {} {
     if {[file exists [homedir]/MySaver/${::screen_size_width}x${::screen_size_height}] != 1} {
         set path [homedir]/MySaver/${::screen_size_width}x${::screen_size_height}
         file mkdir $path
@@ -38,7 +38,7 @@ proc DPx_create_mysaver {} {
     }
 }
 
-proc DPx_message {args} {
+proc message {args} {
     if {[file exists [homedir]/MySaver/${::screen_size_width}x${::screen_size_height}] != 1} {
         return "I could not find MySaver/${::screen_size_width}x${::screen_size_height} folder\r If you tap  **HERE** I'll create them for you"
     }
@@ -50,7 +50,7 @@ proc DPx_message {args} {
     return "MySaver/${::screen_size_width}x${::screen_size_height} found with [llength $file_list] files\r\rAll looks good!"
 }
 
-proc DPx_check_MySaver_exists {args} {
+proc check_MySaver_exists {args} {
     set dir "[homedir]/MySaver"
     set file_list [glob -nocomplain "$dir/*"]
     if {[llength $file_list] != 0} {
@@ -66,10 +66,10 @@ proc DPx_check_MySaver_exists {args} {
 # official distribution if you are not beeing run from your main
 # REQUIRED
 
-proc ::plugins::${plugin_name}::main {} {
-    trace add execution load_skin leave DPx_check_MySaver_exists
+proc main {} {
+    trace add execution load_skin leave ::plugins::DPx_Screen_Saver::check_MySaver_exists
 
 }
 
-
+}
 
