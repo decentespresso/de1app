@@ -120,6 +120,7 @@ proc make_de1_dir {srcdir destdirs} {
         vars.tcl *
         de1_comms.tcl *
         updater.tcl *
+	logging.tcl *
         misc.tcl *
         pkgIndex.tcl *
         de1_icon_v2.png *
