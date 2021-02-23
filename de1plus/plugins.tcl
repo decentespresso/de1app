@@ -92,9 +92,7 @@ proc load_plugin {plugin} {
 	} err] != 0} {
 		catch {
 			# remove from enabled plugins
-            set idx [lsearch $::settings(enabled_plugins) $plugin]
-            set $::settings(enabled_plugins) [lreplace $::settings(enabled_plugins) $idx $idx]
-            save_settings
+            disable_plugin $plugin
 		}
 		catch {
 			info_page [subst {[translate "The plugin $plugin could not be loaded. Disabled"]\n\n$err}] [translate "Ok"]
@@ -123,13 +121,30 @@ proc plugin_loaded {plugin} {
 
 proc toggle_plugin {plugin} {
     if {[plugin_enabled $plugin]} {
-        set new [lsearch -inline -all -not -exact $::settings(enabled_plugins) $plugin]
-        set ::settings(enabled_plugins) $new
-        save_settings
+        disable_plugin $plugin
     } else {
-        lappend ::settings(enabled_plugins) $plugin
-        save_settings
+        enable_plugin $plugin
     }
+    return [plugin_enabled $plugin]
+}
+
+proc disable_plugin {plugin} {
+    if {[plugin_enabled $plugin] == 0} {
+        return 0;
+    }
+    set new [lsearch -inline -all -not -exact $::settings(enabled_plugins) $plugin]
+    set ::settings(enabled_plugins) $new
+    save_settings
+    return 1;
+}
+
+proc enable_plugin {plugin} {
+    if {[plugin_enabled $plugin]} {
+        return 0;
+    }
+    lappend ::settings(enabled_plugins) $plugin
+    save_settings
+    return 1;
 }
 
 proc available_plugins {} {
