@@ -17,6 +17,8 @@ namespace eval ::plugins::${plugin_name} {
     }
 
     proc build_ui {}  {
+        variable settings
+
         # Unique name per page
         set page_name "plugin_example_page_default"
 
@@ -31,7 +33,7 @@ namespace eval ::plugins::${plugin_name} {
         # The actual content. Here a list of all settings for this plugin
         set content_textfield [add_de1_text $page_name 600 380 -text  "" -font global_font -width 600 -fill "#444444" -anchor "nw" -justify "left" ]
         set description ""
-        foreach {key value} [array get ::plugins::example::settings] {
+        foreach {key value} [array get settings] {
             set description "$description\n$key: $value"
         }
         .can itemconfigure $content_textfield -text $description
@@ -53,7 +55,9 @@ namespace eval ::plugins::${plugin_name} {
     # official distribution if you are not beeing run from your main
     # REQUIRED
     proc main {} {
-        msg [namespace current] "Accessing loaded settings: $::plugins::example::settings(amazing_feature)"
+        variable settings
+
+        msg [namespace current] "Accessing loaded settings: $settings(amazing_feature)"
         msg [namespace current] "Changing settings"
         set settings(amazing_feature) 3
         msg [namespace current] "Saving settings"
