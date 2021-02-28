@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Get the relative path for this script file
 SCRIPT_DIR=$(dirname "$0")
 
 # You should put undroidwish into your path to have this script work
