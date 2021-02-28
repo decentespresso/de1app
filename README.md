@@ -18,7 +18,7 @@ brew install tcl-tk
 
 Install undroidwish
 1. Download MacOS dmg from: http://www.androwish.org/download/index.html
-2. Double click to install dmg
+2. Click the downloaded dmg to install
 3. Drag `undroidwish` application from the mounted dmg into `Applications` folder
 4. Add `undroidwish` to your path: `sudo ln -s /Applications/undroidwish.app/Contents/MacOS/undroidwish /usr/local/bin/.`
 
