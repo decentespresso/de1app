@@ -5,6 +5,9 @@ package require json
 
 namespace eval ::profile {
 
+    variable current {}
+    variable profile_version 2
+
     proc pressure_to_advanced_list {} {
         array set temp_advanced [settings_to_advanced_list]
 
@@ -242,16 +245,52 @@ namespace eval ::profile {
         return [array get temp_advanced]
     }
 
+    proc advanced_list_to_settings {list} {
+        array set ::settings $list
+        set ::current_step_number 0
+    }
+
     proc legacy_profile_to_v2 {profile_list} {
         array set legacy_profile $profile_list
 
         set huddle_steps {}
         foreach step $legacy_profile(advanced_shot) {
             unset -nocomplain props
-            lappend huddle_steps [huddle create {*}$step]
+            array set props $step
+
+            set huddle_step [huddle create \
+                name [ifexists props(name)] \
+                temperature [ifexists props(temperature)] \
+                sensor [ifexists props(sensor)] \
+                pump [ifexists props(pump)] \
+                transition [ifexists props(transition)] \
+                pressure [ifexists props(pressure)] \
+                flow [ifexists props(flow)] \
+                seconds [ifexists props(seconds)] \
+                volume [ifexists props(volume)] \
+            ]
+            if {[ifexists props(exit_if)] == 1} {
+                if {[ifexists props(exit_type)] == "pressure_under"} {
+                    set exit_type "pressure"
+                    set exit_condition "under"
+                    set exit_value $props(exit_pressure_under)
+                } elseif {[ifexists props(exit_type)] == "pressure_over"} {
+                    set exit_type "pressure"
+                    set exit_condition "over"
+                    set exit_value $props(exit_pressure_over)
+                } elseif {[ifexists props(exit_type)] == "flow_under"} {
+                    set exit_type "flow"
+                    set exit_condition "under"
+                    set exit_value  $props(exit_flow_under)
+                } elseif {[ifexists props(exit_type)] == "flow_over"} {
+                    set exit_type "flow"
+                    set exit_condition "over"
+                    set exit_value $props(exit_flow_over)
+                }
+                huddle append huddle_step exit [huddle create type $exit_type condition $exit_condition value $exit_value]
+            }
+            lappend huddle_steps $huddle_step
         }
-
-
         set profile_type "advanced"
 
         if { $legacy_profile(settings_profile_type) eq "settings_2a" } {
@@ -262,28 +301,29 @@ namespace eval ::profile {
 
         # we are not using a huddle spec as we are renaming and removing fields
         set profile [huddle create \
-            title $legacy_profile(profile_title)\
-            author $legacy_profile(author) \
-            notes $legacy_profile(profile_notes) \
-            type $legacy_profile(beverage_type) \
+            title [ifexists legacy_profile(profile_title)]\
+            author [ifexists legacy_profile(author)] \
+            notes [ifexists legacy_profile(profile_notes)] \
+            type [ifexists legacy_profile(beverage_type)] \
             steps [huddle list {*}$huddle_steps] \
-            tank_temperature $legacy_profile(tank_desired_water_temperature) \
-            target_weight $legacy_profile(final_desired_shot_weight_advanced) \
-            target_volume $legacy_profile(final_desired_shot_volume_advanced) \
-            target_volume_count_start $legacy_profile(final_desired_shot_volume_advanced_count_start) \
-            legacy_profile_type $legacy_profile(settings_profile_type) \
+            tank_temperature [ifexists legacy_profile(tank_desired_water_temperature)] \
+            target_weight [ifexists legacy_profile(final_desired_shot_weight_advanced)] \
+            target_volume [ifexists legacy_profile(final_desired_shot_volume_advanced)] \
+            target_volume_count_start [ifexists legacy_profile(final_desired_shot_volume_advanced_count_start)] \
+            legacy_profile_type [ifexists legacy_profile(settings_profile_type)] \
             type $profile_type \
-            lang $legacy_profile(profile_language) \
-            hidden $legacy_profile(profile_hide) \
-            reference_file $legacy_profile(profile_filename) \
+            lang [ifexists legacy_profile(profile_language)] \
+            hidden [ifexists legacy_profile(profile_hide)] \
+            reference_file [ifexists legacy_profile(profile_filename)] \
             changes_since_last_espresso {} \
+            version $::profile::profile_version\
         ]
 
         return $profile
     }
 
-    proc save {} {
-        set profile_filename $::settings(profile_filename) 
+    proc sync_from_legacy {} {
+        variable current
         if {[ifexists ::settings(settings_profile_type)] == "settings_2b"} {
             set data [legacy_profile_to_v2 [flow_to_advanced_list]]
         } elseif {([ifexists ::settings(settings_profile_type)] == "settings_2c" || [ifexists ::settings(settings_profile_type)] == "settings_2c2")} {
@@ -291,9 +331,45 @@ namespace eval ::profile {
         } else {
             set data [legacy_profile_to_v2 [pressure_to_advanced_list]]
         }
+        set current $data
+    }
 
-        msg [namespace current] "successfully converted a legacy profile to the new format"
-        #set fn "[::homedir]/profiles_v2/${profile_filename}.json"
-        #write_file $fn [huddle jsondump $data]
+    proc save {filename} {
+        variable current
+        sync_from_legacy
+        write_file $filename [huddle jsondump $current]
+    }
+
+    proc convert_all_legacy_to_v2 {} {
+        set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/profiles/" *.tcl]]
+
+        foreach d $dirs {
+            msg [namespace current] "Converting profile" $d "to version 2"
+            set fn "[homedir]/profiles/${d}"
+
+            set fbasename [file rootname [file tail $d]]
+            set target_file "[homedir]/profiles_v2/${fbasename}.json"
+
+            # Set the settings like we need them for conversion
+            set ::settings(profile) $d
+            set ::settings(profile_notes) ""
+            
+            # for importing De1 profiles that don't have this feature.
+            set ::settings(preinfusion_flow_rate) 4
+
+            # Disable limits by default
+            set ::settings(maximum_pressure) 0
+            set ::settings(maximum_flow) 0
+            set ::settings(maximum_flow_pressure_range) 0.6
+
+            # If the profile does not set hiding yet
+            set ::settings(profile_hide) 0
+
+            catch {
+                set settings_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]    
+                array set ::settings $settings_file_contents
+                save $target_file
+            }
+        }
     }
 }
