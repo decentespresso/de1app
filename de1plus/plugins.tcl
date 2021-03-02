@@ -141,7 +141,7 @@ namespace eval ::plugins {
     }
 
     proc list {} {
-        set plugin_sources [lsort -dictionary [glob -nocomplain -tails -type d -directory [plugin_directory] * ]]
+        set plugin_sources [lsort -dictionary [glob -nocomplain -tails -type d -directory "[homedir]/[plugin_directory]" * ]]
         set plugins {}
 
         foreach p $plugin_sources {
@@ -203,7 +203,7 @@ namespace eval ::plugins {
 
     proc init {} {
         # Preload all plugins
-        foreach plugin [available_plugins] {
+        foreach plugin [plugins list] {
             plugins preload $plugin
         }
 
