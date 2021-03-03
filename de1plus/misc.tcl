@@ -137,7 +137,7 @@ proc make_de1_dir {srcdir destdirs} {
         version.tcl *
         profile.tcl *
 
-        profiles_v2/README *
+        profiles_v2/readme.txt *
 
         history/info.txt *
         history/export/readme.txt *
