@@ -2166,14 +2166,6 @@ proc after_shot_weight_hit_update_final_weight {} {
 
 }
 
-proc fast_write_open {fn parms} {
-	set f [open $fn $parms]
-	fconfigure $f -blocking 0
-	fconfigure $f -buffersize 1000000
-	return $f
-}
-
-
 proc scanning_state_text {} {
 	if {$::scanning == 1} {
 		return [translate "Searching"]
