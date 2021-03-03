@@ -1,14 +1,13 @@
 #!/usr/local/bin/tclsh
 
 cd "[file dirname [info script]]/"
+source "pkgIndex.tcl"
+package require de1_updater
 
 # do an app update on the de1plus code base, if this is a de1plus machine
 if {[file exists "de1plus.tcl"] == 1} {
 	package provide de1plus 1.0
 }
-
-
-source "updater.tcl"
 
 determine_if_android
 
