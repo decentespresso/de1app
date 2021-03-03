@@ -216,7 +216,7 @@ array set ::settings {
 	display_time_in_screen_saver 0
 	steam_over_temp_threshold 180
 	disable_long_press 0
-	steam_over_pressure_threshold 5
+	steam_over_pressure_threshold 6
 	automatically_ble_reconnect_forever_to_scale 0
 	chart_total_shot_flow 1
 	tare_only_on_espresso_start 0
@@ -967,7 +967,7 @@ proc start_sleep {} {
 
 proc check_if_steam_clogged {} {
 
-msg "check_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_clogged"
+	#msg "check_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_clogged"
 
 	if {[steam_pressure length] < 30} {
 		# if steaming was for less than 3 seconds, then don't run this test, as that was just a short purge
@@ -984,7 +984,8 @@ msg "check_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_
 		# change temp threshold for clogging to a Fahrenheit number, as steam temp logging is in their temp system
 		set ::settings(steam_over_temp_threshold) [celsius_to_fahrenheit 180]
 	}
-	set ::settings(steam_over_pressure_threshold) 5
+	
+	set ::settings(steam_over_pressure_threshold) 6
 
 	set bad_pressure 0
 	set bad_temp 0
