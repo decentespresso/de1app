@@ -196,7 +196,7 @@ namespace eval ::logging {
 				# Avoid reentrant call
 				after idle [list msg -INFO "fast log file: "]
 			} else {
-				fconfigure $::logging::_log_fh -buffersize 102400
+				fconfigure $::logging::_log_fh -buffersize 65536
 			}
 		}
 	}
