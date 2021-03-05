@@ -77,13 +77,6 @@ proc set_scrollbar_dimensions { scrollbar_widget listbox_widget } {
 ############################
 # pressure controlled shots
 
-proc settings_flow_label {} {
-	if {$::settings(maximum_flow) > 0} {
-		return "$::settings(maximum_flow) [translate ml/s]"
-	}
-	return [translate "off"]
-}
-
 # preinfusing
 add_de1_text "settings_2a settings_2b" 45 755 -text [translate "1: preinfuse"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 	# pressure profile preinfusion
@@ -118,12 +111,7 @@ add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font He
 	set ::espresso_pressure_widget [add_de1_widget "settings_2a" scale 1516 850 {} -to -16 -from [expr {16 + $::de1(maxpressure)}] -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0]
 	set ::espresso_pressure_widget_label [add_de1_variable "settings_2 settings_2a" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(espresso_pressure)]}]
 
-add_de1_text "settings_2a" 890 1100 -text [translate "3: limit flow"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-	add_de1_widget "settings_2a" scale 892 1175 {} -from 0 -to 15 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 546] -width [rescale_y_skin 150] -variable ::settings(maximum_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-	add_de1_variable "settings_2a" 892 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[settings_flow_label]}
-
-
-add_de1_text "settings_2 settings_2a" 1730 755 -text [translate "4: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+add_de1_text "settings_2 settings_2a" 1730 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 	add_de1_widget "settings_2 settings_2a" scale 1730 850 {} -from -30 -to 90 -background $::settings(color_stage_3) -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 605] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 	add_de1_variable "settings_2 settings_2a" 1735 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_decline_time) [list $::espresso_pressure_decline_widget $::espresso_pressure_decline_widget_label]; seconds_text $::settings(espresso_decline_time)]}
 	
@@ -167,14 +155,6 @@ add_de1_text "temperature_steps" 1280 290 -text [translate "Temperature Steps"] 
 ############################
 # flow controlled shots
 
-proc settings_pressure_label {} {
-	if {$::settings(maximum_pressure) > 0} {
-		return "$::settings(maximum_pressure) bar"
-	}
-	return [translate "off"]
-}
-
-
 add_de1_text "settings_2b" 890 755 -text [translate "2: hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 	add_de1_widget "settings_2b" scale 892 850 {} -from -30 -to 90 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 	add_de1_variable "settings_2b" 892 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_hold_time) [list $::flow_hold_widget $::flow_hold_widget_label]; seconds_text $::settings(espresso_hold_time)]}
@@ -182,11 +162,7 @@ add_de1_text "settings_2b" 890 755 -text [translate "2: hold"] -font Helv_10_bol
 	set ::flow_hold_widget [add_de1_widget "settings_2b" scale 1516 850 {} -from [expr { 8 + $::de1(max_flowrate_v11)}] -to -8 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(flow_profile_hold) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 	set ::flow_hold_widget_label [add_de1_variable "settings_2b" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}]
 
-add_de1_text "settings_2b" 890 1100 -text [translate "3: limit pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-	add_de1_widget "settings_2b" scale 892 1175 {} -from 0 -to 15 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 546] -width [rescale_y_skin 150] -variable ::settings(maximum_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-	add_de1_variable "settings_2b" 892 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[settings_pressure_label]}
-
-add_de1_text "settings_2b" 1730 755 -text [translate "4: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+add_de1_text "settings_2b" 1730 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 	add_de1_widget "settings_2b" scale 1730 850 {} -from -30 -to 90 -background $::settings(color_stage_3) -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 	add_de1_variable "settings_2b" 1735 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_decline_time) [list $::flow_decline_widget $::flow_decline_widget_label]; seconds_text $::settings(espresso_decline_time)]}
 	
@@ -229,7 +205,7 @@ add_de1_text "settings_2c2" 70 530 -text [translate "Stop at water volume"] -fon
 
 # (beta) weight based shot ending, only displayed if a skale is connected
 if {$::settings(scale_bluetooth_address) != ""} {
-	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "5: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 	add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 110 -from -10 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
 
@@ -239,7 +215,7 @@ if {$::settings(scale_bluetooth_address) != ""} {
 	add_de1_variable "settings_2c2" 70 1050 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
 
 } else {
-	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "5: stop at pour:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at pour:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 	add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 160 -from -60 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume)]}
 }
@@ -278,7 +254,7 @@ add_de1_widget "settings_2 settings_2a" graph 24 220 {
 add_de1_text "settings_2c" 70 230 -text [translate "Steps"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" 
 
 add_de1_text "settings_2c" 984 240 -text [translate "1: Temperature"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
-add_de1_variable "settings_2c" 1600 240 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "nw" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "flow"} {return [translate "2: Pump by Flow"]} else {return [translate "2: Pump by Pressure"]}]}
+add_de1_text "settings_2c" 1600 240 -text [translate "2: Pump"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
 add_de1_text "settings_2c" 984 830 -text [translate "3: Maximum"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
@@ -332,76 +308,13 @@ add_de1_text "settings_2c" 1380 680 -text [translate "sensor"] -font Helv_6 -fil
 	add_de1_button "settings_2c" { say [translate {sensor}] $::settings(sound_button_in); if {[ifexists ::current_adv_step(sensor)] == "water"} {  set ::current_adv_step(sensor) "coffee" } else { set ::current_adv_step(sensor) "water" }; save_current_adv_shot_step } 1200 310 1550 680 ""
 	add_de1_variable "settings_2c" 1380 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate [ifexists ::current_adv_step(sensor)]]}
 
-proc settings2c_pressure_button {direction} {
-	say [translate {pressure}] $::settings(sound_button_in)
+add_de1_text "settings_2c" 1710 680 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 2010 680 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+	add_de1_button "settings_2c" { say [translate {flow}] $::settings(sound_button_in); set ::current_adv_step(pump) "flow";  vertical_clicker 1.9 .1 ::current_adv_step(flow) 0 11 %x %y %x0 %y0 %x1 %y1 %b;  save_current_adv_shot_step; update_de1_explanation_chart} 1580 310 1820 640 ""
+	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "pressure"; vertical_clicker 1.9 .1 ::current_adv_step(pressure) 0 12 %x %y %x0 %y0 %x1 %y1 %b; update_onscreen_variables; save_current_adv_shot_step; update_de1_explanation_chart} 1890 310 2120 640 ""
+	add_de1_variable "settings_2c" 1710 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable { [ if {[ifexists ::current_adv_step(pump)] == "flow"} { return [return_flow_measurement $::current_adv_step(flow)] } else { return "-" } ]  }
+	add_de1_variable "settings_2c" 2010 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "pressure"} {return_pressure_measurement $::current_adv_step(pressure)} else { return "-" }] }
 
-	if {[ifexists ::current_adv_step(pump)] == "pressure"} {
-		if {$direction eq "up"} {
-			set ::current_adv_step(pressure) [expr {$::current_adv_step(pressure) + 0.2}];
-		} else {
-			set ::current_adv_step(pressure) [expr {$::current_adv_step(pressure) - 0.2}];
-		}
-	} else { 
-		if {$direction eq "up"} {
-			set ::current_adv_step(max_flow_or_pressure) [expr {$::current_adv_step(max_flow_or_pressure) + 1}];
-		} else {
-			set ::current_adv_step(max_flow_or_pressure) [expr {$::current_adv_step(max_flow_or_pressure) - 1}];
-		}
-	}
-	update_onscreen_variables
-	save_current_adv_shot_step
-	update_de1_explanation_chart
-}
-
-proc settings2c_flow_button {direction} {
-	say [translate {pressure}] $::settings(sound_button_in)
-
-	if {[ifexists ::current_adv_step(pump)] == "flow"} {
-		if {$direction eq "up"} {
-			set ::current_adv_step(flow) [expr {$::current_adv_step(flow) + 0.2}];
-		} else {
-			set ::current_adv_step(flow) [expr {$::current_adv_step(flow) - 0.2}];
-		}
-	} else { 
-		if {$direction eq "up"} {
-			set ::current_adv_step(max_flow_or_pressure) [expr {$::current_adv_step(max_flow_or_pressure) + 1}];
-		} else {
-			set ::current_adv_step(max_flow_or_pressure) [expr {$::current_adv_step(max_flow_or_pressure) - 1}];
-		}
-	}
-	update_onscreen_variables
-	save_current_adv_shot_step
-	update_de1_explanation_chart
-}
-
-proc settings2c_pressure_label {} {
-	if {$::current_adv_step(max_flow_or_pressure) > 0} {
-		return "$::current_adv_step(max_flow_or_pressure) bar"
-	}
-	return [translate "off"]
-}
-
-proc settings2c_flow_label {} {
-	if {$::current_adv_step(max_flow_or_pressure) > 0} {
-		return "$::current_adv_step(max_flow_or_pressure) [translate ml/s]"
-	}
-	return [translate "off"]
-}
-
-
-
-add_de1_variable "settings_2c" 1710 680 -text ""  -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center"  -textvariable {[if {[ifexists ::current_adv_step(pump)] == "flow"} {return [translate "flow"]} else { return [translate "flow limit"] }]}
-add_de1_variable "settings_2c" 2010 680 -text ""  -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center"  -textvariable {[if {[ifexists ::current_adv_step(pump)] == "pressure"} {return [translate "pressure"]} else { return [translate "pressure limit"] }]}
-	add_de1_button "settings_2c" { settings2c_flow_button up } 1580 310 1820 380 ""
-	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "flow"; update_onscreen_variables; save_current_adv_shot_step; update_de1_explanation_chart} 1580 380 1820 570 ""
-	add_de1_button "settings_2c" { settings2c_flow_button down } 1580 570 1820 640 ""
-
-
-	add_de1_button "settings_2c" { settings2c_pressure_button up } 1890 310 2120 380 ""
-	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "pressure"; update_onscreen_variables; save_current_adv_shot_step; update_de1_explanation_chart} 1890 380 2120 570 ""
-	add_de1_button "settings_2c" { settings2c_pressure_button down } 1890 570 2120 640 ""
-	add_de1_variable "settings_2c" 1710 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable { [ if {[ifexists ::current_adv_step(pump)] == "flow"} { return [return_flow_measurement $::current_adv_step(flow)] } else { settings2c_flow_label } ]  }
-	add_de1_variable "settings_2c" 2010 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "pressure"} {return_pressure_measurement $::current_adv_step(pressure)} else { settings2c_pressure_label }] }
 
 
 add_de1_text "settings_2c" 2345 680 -text [translate "transition"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 

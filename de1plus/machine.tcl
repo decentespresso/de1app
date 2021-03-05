@@ -421,10 +421,6 @@ array set ::settings {
 	scale_stop_at_half_shot 0
 	lock_screen_during_screensaver 0
 	enabled_plugins {}
-
-	maximum_flow 15
-	maximum_pressure 15
-	maximum_flow_pressure_range 0.6
 }
 
 # default de1plus skin

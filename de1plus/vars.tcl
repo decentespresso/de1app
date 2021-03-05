@@ -2435,10 +2435,7 @@ proc load_advanced_profile_step {{force 0}} {
 	#set stepnum [current_adv_step]
 
 	unset -nocomplain ::current_adv_step
-	# max flow / max pressure are not always set, so we set it now
-	array set ::current_adv_step {max_flow_or_pressure 0 max_flow_or_pressure_range 0.6}
 	array set ::current_adv_step [lindex $::settings(advanced_shot) $stepnum]
-
 
 	make_current_listbox_item_blue $::advanced_shot_steps_widget
 
@@ -2744,11 +2741,6 @@ proc select_profile { profile } {
 	# for importing De1 profiles that don't have this feature.
 	set ::settings(preinfusion_flow_rate) 4
 
-	# Disable limits by default
-	set ::settings(maximum_pressure) 0
-	set ::settings(maximum_flow) 0
-	set ::settings(maximum_flow_pressure_range) 0.6
-
 	load_settings_vars $fn
 
 	set ::settings(profile_filename) $profile
@@ -3027,7 +3019,7 @@ proc save_settings_vars {fn varlist} {
 }
 
 proc profile_vars {} {
- 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_flow_pressure_range maximum_flow}
+ 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type}
 }
 
 
@@ -3072,10 +3064,8 @@ proc save_profile {} {
 	# moves the cursor to the end of the seletion after showing the "saved" message.
 	after 1000 "set ::settings(profile_title) \{$::settings(profile_title)\}; $::globals(widget_profile_name_to_save) icursor 999"
 
-	# Save V2 of profiles in parallel
-	::profile::save
-
 	if {[save_settings_vars $fn [profile_vars]] == 1} {
+		#set ::settings(profile) $profile_name_to_save
 		set ::settings(profile) $::settings(profile_title)
 
 		fill_profiles_listbox 
