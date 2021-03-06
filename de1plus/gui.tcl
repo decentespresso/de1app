@@ -276,14 +276,14 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 # finger down gives a http://blog.tcl.tk/39474
 proc translate_coordinates_finger_down_x { x } {
 
-	if {$::android == 1} {
+	if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
 	 	return [expr {$x * [winfo screenwidth .] / 10000}]
 	 }
 	 return $x
 }
 proc translate_coordinates_finger_down_y { y } {
 
-	if {$::android == 1} {
+	if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
 	 	return [expr {$y * [winfo screenheight .] / 10000}]
 	 }
 	 return $y
@@ -628,7 +628,7 @@ proc platform_button_press {} {
 	global android 
 	global undroid
 	#return {<Motion>}
-	if {$android == 1} {
+	if {$android == 1 && $::settings(use_finger_down_for_tap) == 1} {
 		return {<<FingerDown>>}
 		#return {<ButtonPress-1>}
 	}
@@ -647,7 +647,7 @@ proc platform_button_long_press {} {
 
 proc platform_finger_down {} {
 	global android 
-	if {$android == 1} {
+	if {$android == 1 && $::settings(use_finger_down_for_tap) == 1} {
 		return {<<FingerDown>>}
 	}
 	return {<ButtonPress-1>}
