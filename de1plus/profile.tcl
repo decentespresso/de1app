@@ -295,7 +295,7 @@ namespace eval ::profile {
                 }
                 huddle append huddle_step exit [huddle create type $exit_type condition $exit_condition value $exit_value]
             }
-            if {[info exists props(max_flow_or_pressure)]  && [info exists props(max_flow_or_pressure_range)]} {
+            if {[ifexists props(max_flow_or_pressure)] >= 0 && [info exists props(max_flow_or_pressure_range)]} {
                 huddle append huddle_step limiter [huddle create value $props(max_flow_or_pressure) range $props(max_flow_or_pressure_range)]
             }
             lappend huddle_steps $huddle_step

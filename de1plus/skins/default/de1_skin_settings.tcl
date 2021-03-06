@@ -233,7 +233,7 @@ proc apply_range_to_all_steps {ignored} {
 	set new_profile {}
 	foreach step $::settings(advanced_shot) {
 		array set step_array $step
-		if {$step_array(pump) == "flow"} {
+		if {$step_array(pump) == "pressure"} {
 			set value $::settings(maximum_flow_range_advanced)
 		} else {
 			set value $::settings(maximum_pressure_range_advanced)
