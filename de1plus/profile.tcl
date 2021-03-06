@@ -60,6 +60,10 @@ namespace eval ::profile {
             exit_flow_over 6 \
             exit_flow_under 0 \
         ]
+        if {$::settings(maximum_flow) != 0 && $::settings(maximum_flow) != {}} {
+            lappend preinfusion2 max_flow_or_pressure $::settings(maximum_flow)
+            lappend preinfusion2 max_flow_or_pressure_range $::settings(maximum_flow_range)
+        }
 
         set hold [list \
             name [translate "rise and hold"] \
@@ -75,9 +79,11 @@ namespace eval ::profile {
             exit_pressure_under 0 \
             exit_flow_over 6 \
             exit_flow_under 0 \
-            max_flow_or_pressure $::settings(maximum_flow) \
-            max_flow_or_pressure_range $::settings(maximum_flow_pressure_range) \
         ]
+        if {$::settings(maximum_flow) != 0 && $::settings(maximum_flow) != {}} {
+            lappend hold max_flow_or_pressure $::settings(maximum_flow)
+            lappend hold max_flow_or_pressure_range $::settings(maximum_flow_range)
+        }
 
         set decline [list \
             name [translate "decline"] \
@@ -93,10 +99,11 @@ namespace eval ::profile {
             exit_pressure_under 0 \
             exit_flow_over 6 \
             exit_flow_under 0 \
-            max_flow_or_pressure $::settings(maximum_flow) \
-            max_flow_or_pressure_range $::settings(maximum_flow_pressure_range) \
         ]
-
+        if {$::settings(maximum_flow) != 0 && $::settings(maximum_flow) != {}} {
+            lappend decline max_flow_or_pressure $::settings(maximum_flow)
+            lappend decline max_flow_or_pressure_range $::settings(maximum_flow_range)
+        }
 
         if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
             set temp_advanced(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
@@ -106,7 +113,7 @@ namespace eval ::profile {
 
         set temp_advanced(final_desired_shot_weight_advanced) $::settings(final_desired_shot_weight)
         set temp_advanced(final_desired_shot_volume_advanced) $::settings(final_desired_shot_volume)
-        set temp_advanced(final_desired_shot_volume_advanced_count_start) 1
+        set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
 
         return [array get temp_advanced]
     }
@@ -148,10 +155,6 @@ namespace eval ::profile {
             exit_flow_over 6 \
             exit_flow_under 0 \
         ]
-        if {$::settings(maximum_pressure) != 0 && $::settings(maximum_pressure) != {}} {
-            lappend preinfusion max_flow_or_pressure $::settings(maximum_pressure)
-            lappend preinfusion max_flow_or_pressure_range $::settings(maximum_flow_pressure_range)
-        }
 
         set preinfusion2 [list \
             name [translate "preinfusion"] \
@@ -169,12 +172,10 @@ namespace eval ::profile {
             exit_pressure_under 0 \
             exit_flow_over 6 \
             exit_flow_under 0 \
-            max_flow_or_pressure $::settings(maximum_pressure) \
-            max_flow_or_pressure_range $::settings(maximum_flow_pressure_range) \
         ]
         if {$::settings(maximum_pressure) != 0 && $::settings(maximum_pressure) != {}} {
             lappend preinfusion2 max_flow_or_pressure $::settings(maximum_pressure)
-            lappend preinfusion2 max_flow_or_pressure_range $::settings(maximum_flow_pressure_range)
+            lappend preinfusion2 max_flow_or_pressure_range $::settings(maximum_pressure_range)
         }
 
         set hold [list \
@@ -191,12 +192,10 @@ namespace eval ::profile {
             exit_pressure_under 0 \
             exit_flow_over 6 \
             exit_flow_under 0 \
-            max_flow_or_pressure $::settings(maximum_pressure) \
-            max_flow_or_pressure_range $::settings(maximum_flow_pressure_range) \
         ]
         if {$::settings(maximum_pressure) != 0 && $::settings(maximum_pressure) != {}} {
-            lappend decline max_flow_or_pressure $::settings(maximum_pressure)
-            lappend decline max_flow_or_pressure_range 0,6
+            lappend hold max_flow_or_pressure $::settings(maximum_pressure)
+            lappend hold max_flow_or_pressure_range $::settings(maximum_pressure_range)
         }
 
         set decline [list \
@@ -216,7 +215,7 @@ namespace eval ::profile {
         ]
         if {$::settings(maximum_pressure) != 0 && $::settings(maximum_pressure) != {}} {
             lappend decline max_flow_or_pressure $::settings(maximum_pressure)
-            lappend decline max_flow_or_pressure_range 0.6
+            lappend decline max_flow_or_pressure_range $::settings(maximum_pressure_range)
         }
 
 

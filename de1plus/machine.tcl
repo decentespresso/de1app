@@ -423,9 +423,14 @@ array set ::settings {
 	lock_screen_during_screensaver 0
 	enabled_plugins {}
 
-	maximum_flow 15
-	maximum_pressure 15
-	maximum_flow_pressure_range 0.6
+	maximum_flow 0
+	maximum_flow_range 0.6
+	maximum_pressure 0
+	maximum_pressure_range 0.6
+
+	maximum_flow_range_advanced 0.6
+	maximum_pressure_range_advanced 0.6
+
 }
 
 # default de1plus skin
