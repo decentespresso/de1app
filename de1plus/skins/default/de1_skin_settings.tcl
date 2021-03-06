@@ -781,7 +781,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		set ::extensions_slider 0
 		set ::extensions_scrollbar [add_de1_widget "extensions" scale 10000 1 {} -from 0 -to 1.0 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::language_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::extensions_widget $::extensions_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
-		set ::extensions_settings [add_de1_text "extensions" 2180 1150 -text [translate "⚙️ Settings"] -font Helv_11_bold -fill "#000000" -anchor "center"]
+		set ::extensions_settings [add_de1_text "extensions" 2180 1150 -text "⚙️ [translate "Settings"]" -font Helv_11_bold -fill "#000000" -anchor "center"]
 		set ::extensions_settings_button [add_de1_button "extensions" {fill_plugin_settings}  2100 1010 2330 1310]
 
 		# this moves the scrollbar to the right of the extensions listbox, and sets its height correctly
