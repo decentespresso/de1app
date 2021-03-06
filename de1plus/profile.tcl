@@ -118,6 +118,9 @@ namespace eval ::profile {
         set temp_advanced(final_desired_shot_volume_advanced) $::settings(final_desired_shot_volume)
         set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
 
+        set temp_advanced(maximum_pressure_range_advanced) $::settings(maximum_pressure_range)
+        set temp_advanced(maximum_flow_range_advanced) $::settings(maximum_flow_range)
+
         return [array get temp_advanced]
     }
 
@@ -232,6 +235,9 @@ namespace eval ::profile {
         set temp_advanced(final_desired_shot_volume_advanced) $::settings(final_desired_shot_volume)
         set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
 
+        set temp_advanced(maximum_pressure_range_advanced) $::settings(maximum_pressure_range)
+        set temp_advanced(maximum_flow_range_advanced) $::settings(maximum_flow_range)
+
         return [array get temp_advanced]
     }
 
@@ -288,6 +294,9 @@ namespace eval ::profile {
                     set exit_value $props(exit_flow_over)
                 }
                 huddle append huddle_step exit [huddle create type $exit_type condition $exit_condition value $exit_value]
+            }
+            if {[info exists props(max_flow_or_pressure)]  && [info exists props(max_flow_or_pressure_range)]} {
+                huddle append huddle_step limiter [huddle create value $props(max_flow_or_pressure) range $props(max_flow_or_pressure_range)]
             }
             lappend huddle_steps $huddle_step
         }
@@ -350,6 +359,10 @@ namespace eval ::profile {
             set fbasename [file rootname [file tail $d]]
             set target_file "[homedir]/profiles_v2/${fbasename}.json"
 
+            if {[file exists $target_file]} {
+                #continue
+            }
+
             # Set the settings like we need them for conversion
             set ::settings(profile) $d
             set ::settings(profile_notes) ""
@@ -358,9 +371,12 @@ namespace eval ::profile {
             set ::settings(preinfusion_flow_rate) 4
 
             # Disable limits by default
-            set ::settings(maximum_pressure) 0
             set ::settings(maximum_flow) 0
-            set ::settings(maximum_flow_pressure_range) 0.6
+            set ::settings(maximum_pressure) 0
+            set ::settings(maximum_flow_range) 0.6
+            set ::settings(maximum_pressure_range) 0.6
+            set ::settings(maximum_flow_range_advanced) 0.6
+            set ::settings(maximum_pressure_range_advanced) 0.6
 
             # If the profile does not set hiding yet
             set ::settings(profile_hide) 0
