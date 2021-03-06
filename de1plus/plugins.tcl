@@ -112,7 +112,7 @@ namespace eval ::plugins {
                 set ${plugin}::plugin_preloaded 1
         } err] != 0} {
             catch {
-                info_page [subst {[translate "The plugin $plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
+                info_page [subst {${plugin}:[translate "The plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
             }
         }
     }
@@ -135,7 +135,7 @@ namespace eval ::plugins {
                 disable_plugin $plugin
             }
             catch {
-                info_page [subst {[translate "The plugin $plugin could not be loaded. Disabled"]\n\n$err}] [translate "Ok"]
+                info_page [subst {${plugin}:[translate "The plugin could not be loaded. Disabled"]\n\n$err}] [translate "Ok"]
             }
         }
     }
