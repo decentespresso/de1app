@@ -63,10 +63,6 @@ namespace eval ::profile {
             exit_flow_over 6 \
             exit_flow_under 0 \
         ]
-        if {$::settings(maximum_flow) != 0 && $::settings(maximum_flow) != {}} {
-            lappend preinfusion2 max_flow_or_pressure $::settings(maximum_flow)
-            lappend preinfusion2 max_flow_or_pressure_range $::settings(maximum_flow_range)
-        }
 
         set hold [list \
             name [translate "rise and hold"] \
@@ -179,10 +175,6 @@ namespace eval ::profile {
             exit_flow_over 6 \
             exit_flow_under 0 \
         ]
-        if {$::settings(maximum_pressure) != 0 && $::settings(maximum_pressure) != {}} {
-            lappend preinfusion2 max_flow_or_pressure $::settings(maximum_pressure)
-            lappend preinfusion2 max_flow_or_pressure_range $::settings(maximum_pressure_range)
-        }
 
         set hold [list \
             name [translate "hold"] \
