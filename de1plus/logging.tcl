@@ -22,6 +22,13 @@ namespace eval ::logging {
 	variable severity_limit_console 7
 	variable severity_limit_window  7
 
+	# NB: Android default limit is Info. See commit message or
+	#     https://developer.android.com/studio/command-line/logcat
+
+	variable severity_limit_android 7
+
+	variable android_logger_tag DE1
+
 	variable severity_default 6
 
 	variable severity_option_to_number
@@ -50,6 +57,23 @@ namespace eval ::logging {
 		7 DEBUG
 	}
 	variable severity_max [tcl::mathfunc::max {*}[array names severity_to_string]]
+
+
+	# See https://www.androwish.org/home/wiki?name=Android+facilities
+	#     https://developer.android.com/reference/android/util/Log
+	#     The Android "verbose" level is not used at this time
+
+	variable severity_to_borg_log_priority
+	array set severity_to_borg_log_priority {
+		0 fatal
+		1 fatal
+		2 error
+		3 error
+		4 warn
+		5 info
+		6 info
+		7 debug
+	}
 
 	variable recent_log_lines [list]
 
@@ -114,6 +138,14 @@ namespace eval ::logging {
 		if { $severity <= $::logging::severity_limit_console } {
 			catch {
 				puts $formatted_output
+			}
+		}
+
+		if { $severity <= $::logging::severity_limit_android } {
+			catch {
+				borg log $::logging::severity_to_borg_log_priority($severity) \
+					$::logging::android_logger_tag \
+					$message
 			}
 		}
 
