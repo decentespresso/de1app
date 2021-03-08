@@ -2795,6 +2795,12 @@ proc load_settings_vars {fn} {
 		set temp_settings(final_desired_shot_volume) [ifexists temp_settings(final_desired_shot_weight)]
 	}
 
+	# properly reset beverage_type if not provided in the profile, o/w the beverage_type of the last profile with it
+	#	defined will be persisted throughout all subsequent shots.
+	if { ![info exists temp_settings(beverage_type)] } {
+		set temp_settings(beverage_type) {}
+	}
+		
 	if {[ifexists ::temp_settings(black_screen_saver)] == 1} {
 		# we've moved the "black screen saver" feature from its own dedicated variable to now be a setting of "0 minutes" on the screen saver change timer
 		# this line is simply for backward compatiblity, moving the old setting to a new one
