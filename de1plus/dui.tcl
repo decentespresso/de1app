@@ -13,21 +13,21 @@
 #		as a parameter (instead of always using global variables).
 
 # TODOs: CHANGES TO DECOUPLE THIS LAYER AS A TOTALLY INDEPENDENT COMPONENT
-#	- Global variables that must change to the gui namespace variables:
-#		::de1(current_context) -> ::gui::page::current_page
+#	- Global variables that must change to the dui namespace variables:
+#		::de1(current_context) -> ::dui::page::current_page
 #		::existing_labels array (one item per page)
 #		::all_labels (list with all labels, sorted) Can't this be get from the canvas tags???)
-#		screensaver integrated in the gui or not? -> An action on the "saver" page can make it work
+#		screensaver integrated in the dui or not? -> An action on the "saver" page can make it work
 #		Idle/stress test in page display_change ?? -> Add a way to add before_show/after_show/hide actions
 #		::delayed_image_load system
 #	- Global utility functions that are used here:
 #		ifexists
 
-package provide de1_dgui 1.0
+package provide de1_dui 1.0
 
 package require de1_logging 1.0
 
-namespace eval ::gui {
+namespace eval ::dui {
 	namespace export theme aspect symbol page item add_text add_variable add_button add_entry add_listbox add_widget \
 		hide_android_keyboard
 	namespace ensemble create
@@ -36,7 +36,7 @@ namespace eval ::gui {
 	#	'<theme>.button.debug_outline' so it's visible against the theme background.
 	variable debug_buttons 0
 	
-	# Set to 1 to default to create a namespace ::gui::page::<page_name> for each new created page
+	# Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created page
 	variable create_page_namespaces 0
 	
 	### THEME SUB-ENSEMBLE ###
@@ -91,15 +91,15 @@ namespace eval ::gui {
 	### ASPECT SUB-ENSEMBLE ###
 	# Aspects are the variables that define the default options for each item/widget in a theme.
 	# They are stored with labels that use the syntax "<theme>.<widget/type>.<option>?.<style>?".
-	# The theme is always specified globally using 'gui theme current <theme_name>', and cannot be modified for 
+	# The theme is always specified globally using 'dui theme current <theme_name>', and cannot be modified for 
 	#	individual items/widgets.
-	# Whenever an item/widget is added to the canvas using the 'gui add_*' commands, its default options are
+	# Whenever an item/widget is added to the canvas using the 'dui add_*' commands, its default options are
 	#	taken from the theme aspects, unless they are overridden explicitly in the 'add_*' call.
 	# Different styles can be added to any item/widget type, by adding aspects with a ".<style>" suffix.
 	# If the 'add_*' call includes a -style option, each default aspect option will be taken from the style. If that
 	#	option is not available for the style, the non-style option version will be used. 
 	# If an aspect is not defined for the current theme, the aspect from the 'default' theme will be used,
-	#	or a default can be provided directly by client code using the -default tag of the 'gui aspect get' command.  
+	#	or a default can be provided directly by client code using the -default tag of the 'dui aspect get' command.  
 	namespace eval aspect {
 		namespace export add exists get list
 		namespace ensemble create
@@ -163,8 +163,8 @@ namespace eval ::gui {
 		# 	-style style_name to add all aspects to that style.
 		proc add { args } {
 			variable aspects
-			set theme [gui::args::get_option -theme [gui theme current] 1]
-			set style [gui::args::get_option -style "" 1]
+			set theme [dui::args::get_option -theme [dui theme current] 1]
+			set style [dui::args::get_option -style "" 1]
 			
 			for { set i 0 } { $i < [llength $args] } { incr i 2 } {
 				set var "${theme}.[lindex $args $i]"
@@ -188,8 +188,8 @@ namespace eval ::gui {
 		#	-style style_name to query only that style
 		proc exists { aspect args } {
 			variable aspects
-			set theme [gui::args::get_option -theme [gui theme current]]
-			set style [gui::args::get_option -style ""]
+			set theme [dui::args::get_option -theme [dui theme current]]
+			set style [dui::args::get_option -style ""]
 			set aspect_name "${theme}.$aspect"
 			if { $style ne "" } {
 				append aspect_name .$style
@@ -204,9 +204,9 @@ namespace eval ::gui {
 		#	-default value to return in case the aspect is undefined
 		proc get { aspect args } {
 			variable aspects
-			set theme [gui::args::get_option -theme [gui theme current]]
-			set style [gui::args::get_option -style ""]
-			set default [gui::args::get_option -default ""]
+			set theme [dui::args::get_option -theme [dui theme current]]
+			set style [dui::args::get_option -style ""]
+			set default [dui::args::get_option -default ""]
 
 			if { $style ne "" && [info exists aspects($theme.$aspect.$style)] } {
 				return $aspects($theme.$aspect.$style)
@@ -234,23 +234,23 @@ namespace eval ::gui {
 		#	returns the full aspect name including the theme prefix.
 		proc list { args } {
 			variable aspects
-			if { [string is true [gui::args::get_option -all_themes 0]] } {
+			if { [string is true [dui::args::get_option -all_themes 0]] } {
 				set theme_len 0
 				set pattern {^[0-9a-zA-Z]+\.}
 			} else {
-				set theme [gui::args::get_option -theme [gui theme current]]
+				set theme [dui::args::get_option -theme [dui theme current]]
 				set theme_len [expr {[string length $theme]+1}]
 				set pattern "^$theme."
 			}
 			
-			set type [gui::args::get_option -type ""]
+			set type [dui::args::get_option -type ""]
 			if { $type eq "" } {
 				append pattern {[0-9a-zA-Z]+\.}
 			} else {
 				append pattern "$type."
 			}
 			
-			set style [gui::args::get_option -style ""]
+			set style [dui::args::get_option -style ""]
 			if { $style eq "" } {
 				append pattern {[0-9a-zA-Z]+$}
 			} else {
@@ -368,13 +368,13 @@ namespace eval ::gui {
 	}
 	
 	### ARGS SUB-ENSEMBLE ###
-	# A set of tools to manipulate named options in the 'args' argument to gui commands. 
+	# A set of tools to manipulate named options in the 'args' argument to dui commands. 
 	# These are heavily used in the 'add' commands that create widgets, with the general objectives of:
 	#	1) pass-through any aspect parameter explicitly defined by the user to the main widget creation command,
 	#		or otherwise use the theme and style default values. 	
 	#	2) extract the options that won't be passed through to the main widget creation command, but to other one,
 	#		like aspect values passed to the label creation command in add_button (-label_font, -label_fill...)
-	# These namespace commands are not exported, should normally only be used inside the gui namespace, where
+	# These namespace commands are not exported, should normally only be used inside the dui namespace, where
 	#	they're called using qualified names.
 	namespace eval args {
 		# Adds a named option "-option_name option_value" to a named argument list if the option doesn't exist in the list.
@@ -461,7 +461,7 @@ namespace eval ::gui {
 			upvar $proc_args largs
 			set style [get_option -style "" 1 $largs]
 			foreach aspect $aspects {
-				args::add_option_if_not_exists -$aspect [gui aspect get "$type.$aspect" -style $style] $largs 
+				args::add_option_if_not_exists -$aspect [dui aspect get "$type.$aspect" -style $style] $largs 
 			}
 		}
 	}
@@ -490,17 +490,17 @@ namespace eval ::gui {
 		#  -bg_img background image file to use
 		#  -bg_color background color to use, in case no background image is defined
 		#  -skin passed to ::add_de1_page if necessary
-		#  -create_ns will create a page namespace ::gui::page::<page_name>
+		#  -create_ns will create a page namespace ::dui::page::<page_name>
 		proc add { pages args } {
 			array set opts $args
 				
-			set style [gui::args::get_option -style "" 1]
-			set bg_img [gui::args::get_option -bg_img [gui aspect get page.bg_img -style $style]]
+			set style [dui::args::get_option -style "" 1]
+			set bg_img [dui::args::get_option -bg_img [dui aspect get page.bg_img -style $style]]
 			if { $bg_img ne "" } {
-				::add_de1_page $pages $bg_img [gui::args::get_option -skin ""] 
+				::add_de1_page $pages $bg_img [dui::args::get_option -skin ""] 
 				#add_de1_image $page 0 0 $bg_img
 			} else {
-				set bg_color [gui::args::get_option -bg_color [gui aspect get page.bg_color -style $style]]
+				set bg_color [dui::args::get_option -bg_color [dui aspect get page.bg_color -style $style]]
 				if { $bg_color ne "" } {
 					foreach c $pages {
 						#set tag "${c}.background"
@@ -511,15 +511,15 @@ namespace eval ::gui {
 				}
 			}
 			
-			if { [string is true [gui::args::get_option -create_ns ::gui::create_page_namespaces 0]] } {
+			if { [string is true [dui::args::get_option -create_ns ::dui::create_page_namespaces 0]] } {
 				foreach page $pages {
 					if { [is_namespace $page] } {
-						namespace eval ::gui::page::$page {
+						namespace eval ::dui::page::$page {
 							namespace export *
 							namespace ensemble create
 						}				
 					} else {
-						namespace eval ::gui::page::$page {
+						namespace eval ::dui::page::$page {
 							namespace export *
 							namespace ensemble create
 							
@@ -531,7 +531,7 @@ namespace eval ::gui {
 						}
 					}
 					
-#					namespace eval ::gui::page {
+#					namespace eval ::dui::page {
 #						namespace export $page
 #					}
 				}
@@ -539,7 +539,7 @@ namespace eval ::gui {
 		}
 		
 		proc is_namespace { page } {
-			return [namespace exists "::gui::page::$page" ]
+			return [namespace exists "::dui::page::$page" ]
 			#return [expr {[string range $page 0 1] eq "::" && [info exists ${page}::widgets]}]
 		}
 			
@@ -729,7 +729,7 @@ namespace eval ::gui {
 		proc add_action { page event cmd } {
 			variable actions
 			if { [lsearch "before_show after_show hide" $event] == -1 } {
-				error "'$event' is not a valid event for gui add_action"
+				error "'$event' is not a valid event for dui add_action"
 			}
 			if { ![info exists actions($page)] } {
 				array set actions($page) {}
@@ -843,7 +843,7 @@ namespace eval ::gui {
 				set page $::de1(current_context)
 			}
 	#		if { $enabled_color eq "" } { 
-	#			set enabled_color [gui aspect get $::plugins::DGUI::font_color 
+	#			set enabled_color [dui aspect get $::plugins::DGUI::font_color 
 	#		}
 	#		if { $disabled_color eq "" } { 
 	#			set disabled_color $::plugins::DGUI::disabled_color
@@ -928,15 +928,15 @@ namespace eval ::gui {
 		set x [rescale_x_skin $x]
 		set y [rescale_y_skin $y]
 		incr text_cnt
-		set base_tag [gui::args::get_option -tag "text_$text_cnt" 1]
+		set base_tag [dui::args::get_option -tag "text_$text_cnt" 1]
 		foreach c $pages {
 			lappend tag "$c.$base_tag"
 		}
 		
 #		args::complete_with_theme_aspects text "fill activefill disabledfill anchor justify"
-		set style [gui::args::get_option -style "" 1]
+		set style [dui::args::get_option -style "" 1]
 		foreach aspect "fill activefill disabledfill anchor justify" {
-			gui::args::add_option_if_not_exists -$aspect [gui aspect get "text.$aspect" -style $style]
+			dui::args::add_option_if_not_exists -$aspect [dui aspect get "text.$aspect" -style $style]
 		}
 				
 		.can create text $x $y -tag $tag -state hidden {*}$args
@@ -951,23 +951,23 @@ namespace eval ::gui {
 	#  -textvariable Tcl code. Not the name of a variable, but code to be evaluated. So, to refer to global variable 'x' 
 	#		you must use '{$::x}', not '::x'.
 	# 		If -textvariable gives a plain name instead of code to be evaluted (no brackets, parenthesis, ::, etc.) 
-	#		and the first page in 'pages' is a namespace, uses {$::gui::pages::<page>::data(<textvariable>)}. 
+	#		and the first page in 'pages' is a namespace, uses {$::dui::pages::<page>::data(<textvariable>)}. 
 	#		Also in this case, if -tag is not specified, uses the textvariable name as tag.
-	# All others passed through to the 'gui add_text' command
+	# All others passed through to the 'dui add_text' command
 	proc add_variable { pages x y args } {
 		global variable_labels
 		
 		set first_page [lindex $pages 0]
-		set is_ns [gui::page::is_namespace $first_page]
-		set varcmd [gui::args::get_option -textvariable "" 1]
+		set is_ns [dui::page::is_namespace $first_page]
+		set varcmd [dui::args::get_option -textvariable "" 1]
 		if { $varcmd eq "" } {
 			msg -WARN [namespace current] "no -textvariable passed to add_variable"
 			return
 		} elseif { $is_ns && [string is wordchar $varcmd] } {
-			if { ![gui::args::has_option -tag] } {
-				gui::args::add_option_if_not_exists -tag $varcmd 
+			if { ![dui::args::has_option -tag] } {
+				dui::args::add_option_if_not_exists -tag $varcmd 
 			}
-			set varcmd "\$::gui::page::${first_page}::data($varcmd)"
+			set varcmd "\$::dui::page::${first_page}::data($varcmd)"
 		}
 
 		set tags [add_text $pages $x $y {*}$args]
@@ -1002,7 +1002,7 @@ namespace eval ::gui {
 	#	-labelvariable, to use a variable as label text
 	#	-label_pos a list with 2 elements between 0 and 1 that specify the x and y percentages where to position
 	#		the label inside the button
-	#	-label_* (-label_fill -label_outline etc.) are passed through to 'gui add_text' or 'gui add_variable'
+	#	-label_* (-label_fill -label_outline etc.) are passed through to 'dui add_text' or 'dui add_variable'
 	#	-radius for rounded rectangles, and -arc_offset for rounded outline rectangles
 	#	All others passed through to the respective visible button creation command.
 	proc add_button { pages cmd x0 y0 x1 y1 args } {
@@ -1014,24 +1014,24 @@ namespace eval ::gui {
 		set ry0 [rescale_y_skin $y0]
 		set ry1 [rescale_y_skin $y1]
 
-		set base_tag [gui::args::get_option -tag "btn_$button_cnt" 1]
+		set base_tag [dui::args::get_option -tag "btn_$button_cnt" 1]
 		foreach c $pages {
 			lappend tag "$c.$base_tag"
 			lappend button_tag "$c.$base_tag.button"
 			lappend label_tag "$c.$base_tag.label"
 		}
 
-		set style [gui::args::get_option -style "" 1]
+		set style [dui::args::get_option -style "" 1]
 
-		set label [gui::args::get_option -label "" 1]
-		set labelvar [gui::args::get_option -labelvariable "" 1]
+		set label [dui::args::get_option -label "" 1]
+		set labelvar [dui::args::get_option -labelvariable "" 1]
 		if { $label ne "" || $labelvar ne "" } {
-			set label_args [gui::args::extract_prefixed -label_]
+			set label_args [dui::args::extract_prefixed -label_]
 			foreach aspect "anchor justify fill activefill disabledfill" {
-				gui::args::add_option_if_not_exists -$aspect [gui aspect get button_label.$aspect -style $style -default {}] label_args
+				dui::args::add_option_if_not_exists -$aspect [dui aspect get button_label.$aspect -style $style -default {}] label_args
 			}
 			
-			set label_pos [gui::args::get_option -pos [gui aspect get button_label.pos -style $style -default {0.5 0.5}] 1 label_args]
+			set label_pos [dui::args::get_option -pos [dui aspect get button_label.pos -style $style -default {0.5 0.5}] 1 label_args]
 			set xlabel [expr {$x0+int($x1-$x0)*[lindex $label_pos 0]}]
 			set ylabel [expr {$y0+int($y1-$y0)*[lindex $label_pos 1]}]
 		}
@@ -1039,10 +1039,10 @@ namespace eval ::gui {
 		# As soon as the rect has a non-zero width (or maybe an outline or fill?), its "clickable" area becomes only
 		#	the border, so if a visible rectangular button is needed, we have to add an invisible clickable rect on 
 		#	top of it.
-		if { $style eq "" && ![gui::args::has_option -shape]} {
+		if { $style eq "" && ![dui::args::has_option -shape]} {
 			if { $debug_buttons == 1 } {
 				set width 1
-				set outline [gui aspect get button.debug_outline -style $style -default "black"]
+				set outline [dui aspect get button.debug_outline -style $style -default "black"]
 			} else {
 				set width 0
 			}
@@ -1052,26 +1052,26 @@ namespace eval ::gui {
 				item add_to_pages $pages "$base_tag.button"
 			}
 		} else {
-			set shape [gui::args::get_option -shape [gui aspect get button.shape -style $style -default rect] 1]
+			set shape [dui::args::get_option -shape [dui aspect get button.shape -style $style -default rect] 1]
 			
 			if { $shape eq "round" } {
-				set fill [gui::args::get_option -fill [gui aspect get button.fill -style $style]]
-				set disabledfill [gui::args::get_option -disabledfill [gui aspect get button.disabledfill -style $style]]
-				set radius [gui::args::get_option -radius [gui aspect get button.radius -style $style -default 40]]
+				set fill [dui::args::get_option -fill [dui aspect get button.fill -style $style]]
+				set disabledfill [dui::args::get_option -disabledfill [dui aspect get button.disabledfill -style $style]]
+				set radius [dui::args::get_option -radius [dui aspect get button.radius -style $style -default 40]]
 				
 				rounded_rectangle $x0 $y0 $x1 $y1 $radius $fill $disabledfill $button_tag 
 				item add_to_pages $pages "$base_tag.button"
 			} elseif { $shape eq "outline" } {
-				set outline [gui::args::get_option -outline [gui aspect get button.outline -style $style]]
-				set disabledoutline [gui::args::get_option -disabledoutline [gui aspect get button.disabledoutline -style $style]]
-				set arc_offset [gui::args::get_option -arc_offset [gui aspect get button.arc_offset -style $style -default 50]]
-				set width [gui::args::get_option -width [gui aspect get button.width -style $style -default 3]]
+				set outline [dui::args::get_option -outline [dui aspect get button.outline -style $style]]
+				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get button.disabledoutline -style $style]]
+				set arc_offset [dui::args::get_option -arc_offset [dui aspect get button.arc_offset -style $style -default 50]]
+				set width [dui::args::get_option -width [dui aspect get button.width -style $style -default 3]]
 				
 				rounded_rectangle_outline $x0 $y0 $x1 $y1 $arc_offset $outline $disabledoutline $width $button_tag
 				item add_to_pages $pages "$base_tag.button"
 			} else {
 				foreach aspect "fill activefill disabledfill outline disabledoutline activeoutline width" {
-					gui::args::add_option_if_not_exists -$aspect [gui aspect get button.$aspect -style $style]
+					dui::args::add_option_if_not_exists -$aspect [dui aspect get button.$aspect -style $style]
 				}					
 				.can create rect $rx0 $ry0 $rx1 $ry1 -tag $button_tag -state hidden {*}$args
 				item add_to_pages $pages "$base_tag.button"
@@ -1151,20 +1151,20 @@ namespace eval ::gui {
 		global widget_cnt	
 		
 		incr widget_cnt	
-		set base_tag [gui::args::get_option -tag "w_${type}_$widget_cnt" 1]
+		set base_tag [dui::args::get_option -tag "w_${type}_$widget_cnt" 1]
 		set widget ".can.$base_tag"
 		if { [info exists ::$widget] } {
 			error "Widget with name '$widget' already exists"
 			return
 		}
 		
-		set style [gui::args::get_option -style "" 1]
-		foreach a [gui aspect list -type $type -style $style] {
+		set style [dui::args::get_option -style "" 1]
+		foreach a [dui aspect list -type $type -style $style] {
 			set opt [lindex [split $a .] end]
-			gui::args::add_option_if_not_exists -$opt [gui aspect get $a -style $style]
+			dui::args::add_option_if_not_exists -$opt [dui aspect get $a -style $style]
 		}		
 		# Anchor is no longer hardcoded but can be defined on the call or on the theme aspect
-		set anchor [gui::args::get_option -anchor nw 1]
+		set anchor [dui::args::get_option -anchor nw 1]
 		
 		try {
 			$type $widget {*}$args
