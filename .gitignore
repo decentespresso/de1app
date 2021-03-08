@@ -38,3 +38,5 @@ de1plus/plugins/web_api/settings.tdb
 /de1plus/log.txt.*
 /de1plus/settings.tdb
 /de1plus/tmp/
+/de1plus/profiles_v2/*.json
+/de1plus/history_v2/*.json
