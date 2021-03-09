@@ -305,7 +305,7 @@ namespace eval ::profile {
             title [ifexists legacy_profile(profile_title)]\
             author [ifexists legacy_profile(author)] \
             notes [ifexists legacy_profile(profile_notes)] \
-            type [ifexists legacy_profile(beverage_type)] \
+            beverage_type [ifexists legacy_profile(beverage_type)] \
             steps [huddle list {*}$huddle_steps] \
             tank_temperature [ifexists legacy_profile(tank_desired_water_temperature)] \
             target_weight [ifexists legacy_profile(final_desired_shot_weight_advanced)] \

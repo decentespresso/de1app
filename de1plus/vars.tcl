@@ -2974,6 +2974,80 @@ proc format_espresso_for_history {} {
 	
 }
 
+proc format_espresso_to_json {} {
+
+		if {[info exists ::settings(espresso_clock)] != 1} {
+			# in theory, this should never occur.
+			msg "This espresso's start time was not recorded. Possibly we didn't get the bluetooth message of state change to espresso."
+			set ::settings(espresso_clock) [clock seconds]
+		}
+		
+		set clock $::settings(espresso_clock)
+		set date [clock format $clock]
+		set app_version [package version de1app]
+
+		set pressure [huddle create \
+			pressure [huddle list {*}[espresso_elapsed range 0 end]] \
+			goal [huddle list {*}[espresso_pressure_goal range 0 end]] \
+			delta [huddle list {*}[espresso_pressure_delta range 0 end]] \
+			delta_negative [huddle list {*}[espresso_flow_delta_negative range 0 end]] \
+		]
+
+		set flow [huddle create \
+			flow [huddle list {*}[espresso_flow range 0 end]] \
+			by_weight [huddle list {*}[espresso_flow_weight range 0 end]] \
+			by_weight_raw [huddle list {*}[espresso_flow_weight_raw range 0 end]] \
+			goal [huddle list {*}[espresso_flow_goal range 0 end]] \
+		]
+
+		set temperature [huddle create \
+			basket [huddle list {*}[espresso_temperature_basket range 0 end]] \
+			mix [huddle list {*}[espresso_temperature_mix range 0 end]] \
+			goal [huddle list {*}[espresso_temperature_goal range 0 end]] \
+		]
+
+		set totals [huddle create \
+			weight [huddle list {*}[espresso_weight range 0 end]] \
+			water_dispensed [huddle list {*}[espresso_water_dispensed range 0 end]] \
+		]
+
+		set resistance [huddle create \
+			resistance [huddle list {*}[espresso_resistance range 0 end]] \
+			by_weight [huddle list {*}[espresso_resistance_weight range 0 end]] \
+		]
+
+		set app_data [huddle create \
+			settings [huddle create {*}[array get ::settings]] \
+			machine_state [huddle create {*}[array get ::DE1]] \
+		]
+
+		set app_specifics [huddle create \
+			app_name "DE1App" \
+			app_version $app_version \
+			data $app_data \
+		]
+
+		::profile::sync_from_legacy
+
+		set espresso_data [huddle create \
+			version 2 \
+			date $date \
+			timestamp $clock \
+			elapsed [huddle list {*}[espresso_elapsed range 0 end]] \
+			pressure $pressure \
+			flow $flow \
+			temperature $temperature \
+			totals $totals \
+			resistance $resistance \
+			state_change [huddle list {*}[espresso_state_change range 0 end]] \
+			profile $::profile::current \
+			app $app_specifics \
+		]
+
+
+		return [huddle jsondump $espresso_data]
+}
+
 
 proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 	puts "save_this_espresso_to_history "
@@ -2983,6 +3057,10 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 		set espresso_data [format_espresso_for_history]
 		set fn "[homedir]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
 		write_file $fn $espresso_data
+
+		set espresso_data [format_espresso_to_json]
+		set fn "[homedir]/history_v2/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].json"
+		#write_file $fn $espresso_data
 		msg "Save this espresso to history"
 
 		set ::settings(history_saved) 1

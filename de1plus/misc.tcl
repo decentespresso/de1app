@@ -142,6 +142,8 @@ proc make_de1_dir {srcdir destdirs} {
         history/info.txt *
         history/export/readme.txt *
 
+        history_v2/readme.txt *
+
         fw/bootfwupdate.dat *
         wallpaper/spy_1280x800.jpg *
         wallpaper/spy_2560x1600.jpg *
