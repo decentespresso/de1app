@@ -27,6 +27,8 @@ package provide de1_dui 1.0
 
 package require de1_logging 1.0
 
+set ::settings(enabled_plugins) {dui_demo}
+
 namespace eval ::dui {
 	namespace export theme aspect symbol page item add_text add_variable add_button add_entry add_listbox add_widget \
 		hide_android_keyboard
@@ -141,9 +143,9 @@ namespace eval ::dui {
 			default.button.radius 40
 			default.button.arc_offset 50
 			
-			default.button_label.pos {0.9 0.1}
-			default.button_label.anchor ne
-			default.button_label.justify right
+			default.button_label.pos {0.5 0.5}
+			default.button_label.anchor center
+			default.button_label.justify center
 			default.button_label.fill "#ffffff"
 			default.button_label.activefill "#ffffff"
 			default.button_label.disabledfill "#ffffff"
@@ -254,6 +256,8 @@ namespace eval ::dui {
 			if { $style eq "" } {
 				append pattern {[0-9a-zA-Z]+$}
 			} else {
+			
+				
 				append pattern "\[0-9a-zA-Z\]+.$style\$"
 			}
 			
@@ -505,7 +509,7 @@ namespace eval ::dui {
 					foreach c $pages {
 						#set tag "${c}.background"
 						.can create rect 0 0 [rescale_x_skin 2560] [rescale_y_skin 1600] -fill $bg_color -width 0 \
-							-tag [list pages $c] -state "hidden"
+							-tags  [list pages $c] -state "hidden"
 						#item add_to_pages $c $tag
 					}
 				}
@@ -514,12 +518,14 @@ namespace eval ::dui {
 			if { [string is true [dui::args::get_option -create_ns ::dui::create_page_namespaces 0]] } {
 				foreach page $pages {
 					if { [is_namespace $page] } {
-						namespace eval ::dui::page::$page {
+						namespace eval ::dui::pages::$page {
 							namespace export *
 							namespace ensemble create
+							
+							variable page_drawn 0
 						}				
 					} else {
-						namespace eval ::dui::page::$page {
+						namespace eval ::dui::pages::$page {
 							namespace export *
 							namespace ensemble create
 							
@@ -528,6 +534,8 @@ namespace eval ::dui {
 							
 							variable data
 							array set data {}
+							
+							variable page_drawn 0
 						}
 					}
 					
@@ -539,7 +547,7 @@ namespace eval ::dui {
 		}
 		
 		proc is_namespace { page } {
-			return [namespace exists "::dui::page::$page" ]
+			return [namespace exists "::dui::pages::$page"]
 			#return [expr {[string range $page 0 1] eq "::" && [info exists ${page}::widgets]}]
 		}
 			
@@ -560,12 +568,14 @@ namespace eval ::dui {
 		}
 		
 		proc display_change { page_to_hide page_to_show } {
-			variable nextpage
-			variable exit_app_on_sleep
 			delay_screen_saver
-		
+			
+			# EB
+			hide_is_ns [is_namespace $page_to_hide]
+			show_is_ns [is_namespace $page_to_show]
+			
 			set key "machine:$page_to_show"
-			if {[ifexists nextpage($key)] != ""} {
+			if {[ifexists ::nextpage($key)] != ""} {
 				# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
 				set page_to_show $::nextpage($key)
 			}
@@ -582,7 +592,7 @@ namespace eval ::dui {
 				msg [namespace current] "discarding intermediate sleep/off state msg"
 				return 
 			} elseif {$page_to_show == "saver"} {
-				if {[ifexists exit_app_on_sleep] == 1} {
+				if {[ifexists ::exit_app_on_sleep] == 1} {
 					get_set_tablet_brightness 0
 					close_all_ble_and_exit
 				}
@@ -606,7 +616,7 @@ namespace eval ::dui {
 				display_brightness $::settings(app_brightness)
 			}
 		
-		
+			
 			if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {
 		
 				msg "Doing next stress test step: '$::idle_next_step '"
@@ -614,8 +624,7 @@ namespace eval ::dui {
 				unset -nocomplain ::idle_next_step 
 				eval $todo
 			}
-		
-		
+					
 			#global current_context
 			set ::de1(current_context) $page_to_show
 		
@@ -752,6 +761,13 @@ namespace eval ::dui {
 			}
 		}
 	}
+
+	### PAGES SUB-ENSEMBLE ###
+	# Just a container namespace for client code to create UI pages are children namespaces of this.
+	namespace eval pages {
+		namespace export *
+		namespace ensemble create
+	}
 	
 	### ITEMS SUB-ENSEMBLE ###
 	# Items are visual items added to the canvas, either canvas items (text, arcs, lines...) or Tk widgets.
@@ -763,16 +779,17 @@ namespace eval ::dui {
 		proc add_to_pages { pages tags } {
 			global existing_labels
 			foreach page $pages {
-				foreach tag $tags {
-					set full_tag "$page.$tag"
-					set page_tags [ifexists existing_labels($page)]
-					if { [lsearch $page_tags $full_tag] > -1 } {
-						msg -WARN [namespace current] "tag/label '$full_tag' already exists in page '$page'"
+				set page_tags [ifexists existing_labels($page)]
+				foreach tag $tags {					
+					if { $tag in $page_tags } {
+						#msg -WARN [namespace current] "tag/label '$tag' already exists in page '$page'"
+						error "label '$tag' already exists in page '$page'"
 					} else {
-						lappend page_tags $full_tag
+						msg [namespace current] "adding tag '$tag' to page '$page'"
+						lappend page_tags $tag
 					}
-					set existing_labels($page) $page_tags
 				}
+				set existing_labels($page) $page_tags
 			}
 		}
 
@@ -783,37 +800,40 @@ namespace eval ::dui {
 			set page_tags [ifexists existing_labels($page)]
 	
 			set labels {}
-			foreach tn $tags {
-				if { $tn eq "*" || $tn eq "" } {
-					lappend labels {*}$page_tags
-				} elseif { [string range $tn end end] eq "*" } {
-					set tn "$page.$tn"
-					set some_found 0
-					if { [string range $tn end-1 end] eq ".*" } {
-						set tn [string range $tn 0 end-2]
-					} else { 
-						set tn [string range $tn 0 end-1]
-					}
-					if { [lsearch $page_tags $tn] > -1 } {
-						set some_found 1
-						lappend labels $tn
-					}
-					set match_tags [lsearch -all -inline -glob $page_tags "$tn.*"]
-					if { [llength $match_tags] > 0 } {
-						set some_found 1
-						lappend labels {*}$match_tags
-					}
-				
-					if { $some_found == 0 } {
-						msg -ERROR [namespace current] "cannot find any canvas tags $tn.*"
-					}
+			foreach tag $tags {
+				if { $tag eq "*" || $tag eq "" } {
+					lappend labels [.can find withtag p:$page]
+					#lappend labels {*}$page_tags
+				} elseif { [string range $tag end end] eq "*" } {
+					lappend labels [.can find withtag "p:$page&&$tag"]
+#					set tag "$page.$tag"
+#					set some_found 0
+#					if { [string range $tag end-1 end] eq ".*" } {
+#						set tag [string range $tag 0 end-2]
+#					} else { 
+#						set tag [string range $tag 0 end-1]
+#					}
+#					if { [lsearch $page_tags $tag] > -1 } {
+#						set some_found 1
+#						lappend labels $tag
+#					}
+#					set match_tags [lsearch -all -inline -glob $page_tags "$tag.*"]
+#					if { [llength $match_tags] > 0 } {
+#						set some_found 1
+#						lappend labels {*}$match_tags
+#					}
+#				
+#					if { $some_found == 0 } {
+#						msg -ERROR [namespace current] "cannot find any canvas tags $tag.*"
+#					}
 				} else {
-					set tn "$page.$tn"
-					if { [lsearch $page_tags $tn] > -1 } {
-						lappend labels $tn
-					} else {
-						msg -ERROR [namespace current] "cannot find canvas tag $tn"
-					}
+					lappend labels [.can find withtag "p:$page&&$tag"]
+#					set tag "$page.$tag"
+#					if { [lsearch $page_tags $tag] > -1 } {
+#						lappend labels $tag
+#					} else {
+#						msg -ERROR [namespace current] "cannot find canvas tag $tag"
+#					}
 				}
 			}
 			return $labels
@@ -823,13 +843,12 @@ namespace eval ::dui {
 		#	(window entries, listboxes, etc.)
 		proc config { page tags args } {
 			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works
-			foreach tn [get $page $tags] {
-				#msg [namespace current] "config" "tag '$tn' type: [.can type $tn]"
-				if { [.can type $tn] eq "window" } {
-					set tn_parts [split $tn .]
-					.can.[lindex $tn_parts end] configure {*}$args
+			foreach tag [get $page $tags] {
+				#msg [namespace current] "config" "tag '$tag' of type '[.can type $tag]'"
+				if { [.can type $tag] eq "window" } {
+					[.can itemcget $tag -window] configure {*}$args
 				} else {
-					.can itemconfigure $tn {*}$args
+					.can itemconfigure $tag {*}$args
 				}
 			}
 		}
@@ -920,7 +939,7 @@ namespace eval ::dui {
 	# Add text items to the canvas. Returns the list of all added tags (one per page).
 	#
 	# Named options:
-	#	-tag a label that allows to access the created canvas items
+	#	-tags a label that allows to access the created canvas items
 	#	-style to apply the default aspects of the provided style
 	#	All others passed through to the 'canvas create text' command
 	proc add_text { pages x y args } {
@@ -928,9 +947,11 @@ namespace eval ::dui {
 		set x [rescale_x_skin $x]
 		set y [rescale_y_skin $y]
 		incr text_cnt
-		set base_tag [dui::args::get_option -tag "text_$text_cnt" 1]
-		foreach c $pages {
-			lappend tag "$c.$base_tag"
+		set tags [dui::args::get_option -tags "text_$text_cnt" 1]
+		set main_tag [lindex $tags 0]
+		dui::fail_if_tag_exists $main_tag
+		foreach p $pages {
+			lappend tags "p:$p"
 		}
 		
 #		args::complete_with_theme_aspects text "fill activefill disabledfill anchor justify"
@@ -939,10 +960,10 @@ namespace eval ::dui {
 			dui::args::add_option_if_not_exists -$aspect [dui aspect get "text.$aspect" -style $style]
 		}
 				
-		.can create text $x $y -tag $tag -state hidden {*}$args
+		.can create text $x $y -tags $tags -state hidden {*}$args
 
-		item add_to_pages $pages $base_tag
-		return $tag
+		item add_to_pages $pages $main_tag
+		return $main_tag
 	}
 	
 	# Adds text to a page that is the result of evaluating some code. The text shown is updated automatically whenever
@@ -952,7 +973,7 @@ namespace eval ::dui {
 	#		you must use '{$::x}', not '::x'.
 	# 		If -textvariable gives a plain name instead of code to be evaluted (no brackets, parenthesis, ::, etc.) 
 	#		and the first page in 'pages' is a namespace, uses {$::dui::pages::<page>::data(<textvariable>)}. 
-	#		Also in this case, if -tag is not specified, uses the textvariable name as tag.
+	#		Also in this case, if -tags is not specified, uses the textvariable name as tag.
 	# All others passed through to the 'dui add_text' command
 	proc add_variable { pages x y args } {
 		global variable_labels
@@ -964,24 +985,19 @@ namespace eval ::dui {
 			msg -WARN [namespace current] "no -textvariable passed to add_variable"
 			return
 		} elseif { $is_ns && [string is wordchar $varcmd] } {
-			if { ![dui::args::has_option -tag] } {
-				dui::args::add_option_if_not_exists -tag $varcmd 
+			if { ![dui::args::has_option -tags] } {
+				dui::args::add_option_if_not_exists -tags $varcmd 
 			}
-			set varcmd "\$::dui::page::${first_page}::data($varcmd)"
+			set varcmd "\$::dui::pages::${first_page}::data($varcmd)"
 		}
 
-		set tags [add_text $pages $x $y {*}$args]
+		set tag [add_text $pages $x $y {*}$args]
 		foreach page $pages {
-			foreach tag $tags {
-#				if { ![info exists variable_labels($page)] } {
-#					set variable_labels($page) [list $tag $varcmd]
-#				} else {
-				lappend variable_labels($page) [list $tag $varcmd]
-#				}
-			}
+			msg [namespace current] "adding variable with tag '$tag' to page '$page'"
+			lappend variable_labels($page) [list $tag $varcmd]
 		}
 		
-		return $tags
+		return $tag
 	}
 		
 	# Add button items to the canvas. Returns the list of all added tags (one per page).
@@ -990,12 +1006,12 @@ namespace eval ::dui {
 	#	to generate a visible button instead.
 	# Invisible buttons can show their clickable area while debugging, by setting namespace variable debug_buttons=1.
 	#	In that case, the outline color is given by aspect 'button.debug_outline' (or black if undefined).
-	# Generates up to 3 canvas items/tags per page. Default one is named upon the provided -tag and corresponds to 
+	# Generates up to 3 canvas items/tags per page. Default one is named upon the provided -tags and corresponds to 
 	#	the invisible "clickable" area. If a visible button is generated, it its assigned tag "<tag>.button".
 	#	If a label is specified, it gets tag "<tag>.label". Returns the list of all added tags.
 	#
 	# Named options:  
-	#	-tag a label that allows to access the created canvas items
+	#	-tags a label that allows to access the created canvas items
 	#	-shape any of 'rect', 'rounded' (Barney/MimojaCafe style) or 'outline' (DSx style)
 	#	-style to apply the default aspects of the provided style
 	#	-label label text, in case a label is to be shown inside the button
@@ -1014,11 +1030,18 @@ namespace eval ::dui {
 		set ry0 [rescale_y_skin $y0]
 		set ry1 [rescale_y_skin $y1]
 
-		set base_tag [dui::args::get_option -tag "btn_$button_cnt" 1]
-		foreach c $pages {
-			lappend tag "$c.$base_tag"
-			lappend button_tag "$c.$base_tag.button"
-			lappend label_tag "$c.$base_tag.label"
+#		set base_tag [dui::args::get_option -tags "btn_$button_cnt" 1]
+		incr button_cnt
+		set tags [dui::args::get_option -tags "btn_$button_cnt" 1]
+		set main_tag [lindex $tags 0]
+		dui::fail_if_tag_exists "$main_tag $main_tag.btn $main_tag.lbl"
+		lappend tags $main_tag*			
+		set button_tags [list $main_tag.btn $main_tag.*]
+		set label_tags [list $main_tag.lbl $main_tag.*]
+		foreach p $pages {
+			lappend tags p:$p
+			lappend button_tags p:$p
+			#lappend label_tags p:$p # Already added in add_text or add_variable
 		}
 
 		set style [dui::args::get_option -style "" 1]
@@ -1048,8 +1071,8 @@ namespace eval ::dui {
 			}
 
 			if { $width > 0 } {
-				.can create rect $rx0 $ry0 $rx1 $ry1 -outline $outline -width $width -tag $button_tag -state hidden
-				item add_to_pages $pages "$base_tag.button"
+				.can create rect $rx0 $ry0 $rx1 $ry1 -outline $outline -width $width -tags $button_tags -state hidden
+				item add_to_pages $pages [lindex $button_tags 0]
 			}
 		} else {
 			set shape [dui::args::get_option -shape [dui aspect get button.shape -style $style -default rect] 1]
@@ -1059,42 +1082,42 @@ namespace eval ::dui {
 				set disabledfill [dui::args::get_option -disabledfill [dui aspect get button.disabledfill -style $style]]
 				set radius [dui::args::get_option -radius [dui aspect get button.radius -style $style -default 40]]
 				
-				rounded_rectangle $x0 $y0 $x1 $y1 $radius $fill $disabledfill $button_tag 
-				item add_to_pages $pages "$base_tag.button"
+				rounded_rectangle $x0 $y0 $x1 $y1 $radius $fill $disabledfill $button_tags 
+				item add_to_pages $pages [lindex $button_tags 0]
 			} elseif { $shape eq "outline" } {
 				set outline [dui::args::get_option -outline [dui aspect get button.outline -style $style]]
 				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get button.disabledoutline -style $style]]
 				set arc_offset [dui::args::get_option -arc_offset [dui aspect get button.arc_offset -style $style -default 50]]
 				set width [dui::args::get_option -width [dui aspect get button.width -style $style -default 3]]
 				
-				rounded_rectangle_outline $x0 $y0 $x1 $y1 $arc_offset $outline $disabledoutline $width $button_tag
-				item add_to_pages $pages "$base_tag.button"
+				rounded_rectangle_outline $x0 $y0 $x1 $y1 $arc_offset $outline $disabledoutline $width $button_tags
+				item add_to_pages $pages [lindex $button_tags 0]
 			} else {
 				foreach aspect "fill activefill disabledfill outline disabledoutline activeoutline width" {
 					dui::args::add_option_if_not_exists -$aspect [dui aspect get button.$aspect -style $style]
 				}					
-				.can create rect $rx0 $ry0 $rx1 $ry1 -tag $button_tag -state hidden {*}$args
-				item add_to_pages $pages "$base_tag.button"
+				.can create rect $rx0 $ry0 $rx1 $ry1 -tags $button_tags -state hidden {*}$args
+				item add_to_pages $pages [lindex $button_tags 0]
 			}
 		}
 		
 		if { $label ne "" } {
-			add_text $pages $xlabel $ylabel -text $label -tag "$base_tag.label" {*}$label_args
+			add_text $pages $xlabel $ylabel -text $label -tags $label_tags {*}$label_args
 		} elseif { $labelvar ne "" } {
-			add_variable $pages $xlabel $ylabel -textvariable $labelvar -tag "$base_tag.label" {*}$label_args 
+			add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags {*}$label_args 
 		}
 		
 		# Clickable rect
-		.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 0 -tag $tag -state hidden
+		.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden
 		regsub {%x0} $cmd $rx0 cmd
 		regsub {%x1} $cmd $rx1 cmd
 		regsub {%y0} $cmd $ry0 cmd
 		regsub {%y1} $cmd $ry1 cmd
-		foreach t $tag {
-			.can bind $t [platform_button_press] $cmd
-		}
-		item add_to_pages $pages $base_tag
-		return $tag
+		#foreach t $tag {
+			.can bind $main_tag [platform_button_press] $cmd
+		#}
+		item add_to_pages $pages $main_tag
+		return $main_tag
 	}
 	
 	# Discovered through Johanna's MimojaCafe skin code, attributed to Barney.
@@ -1105,17 +1128,17 @@ namespace eval ::dui {
 		set y1 [rescale_y_skin $y1]
 		
 		.can create oval $x0 $y0 [expr $x0 + $radius] [expr $y0 + $radius] -fill $colour -disabledfill $disabled \
-			-outline $colour -disabledoutline $disabled -width 0 -tag $tag -state "hidden"
+			-outline $colour -disabledoutline $disabled -width 0 -tags $tag -state "hidden"
 		.can create oval [expr $x1-$radius] $y0 $x1 [expr $y0 + $radius] -fill $colour -disabledfill $disabled \
-			-outline $colour -disabledoutline $disabled -width 0 -tag $tag -state "hidden"
+			-outline $colour -disabledoutline $disabled -width 0 -tags $tag -state "hidden"
 		.can create oval $x0 [expr $y1-$radius] [expr $x0+$radius] $y1 -fill $colour -disabledfill $disabled \
-			-outline $colour -disabledoutline $disabled -width 0 -tag $tag -state "hidden"
+			-outline $colour -disabledoutline $disabled -width 0 -tags $tag -state "hidden"
 		.can create oval [expr $x1-$radius] [expr $y1-$radius] $x1 $y1 -fill $colour -disabledfill $disabled \
-			-outline $colour -disabledoutline $disabled -width 0 -tag $tag -state "hidden"
+			-outline $colour -disabledoutline $disabled -width 0 -tags $tag -state "hidden"
 		.can create rectangle [expr $x0 + ($radius/2.0)] $y0 [expr $x1-($radius/2.0)] $y1 -fill $colour \
-			-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tag $tag -state "hidden"
+			-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tag -state "hidden"
 		.can create rectangle $x0 [expr $y0 + ($radius/2.0)] $x1 [expr $y1-($radius/2.0)] -fill $colour \
-			-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tag $tag -state "hidden"
+			-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tag -state "hidden"
 	}
 	
 	# Inspired by Barney's rounded_rectangle, mimic DSx buttons showing a button outline without a fill.
@@ -1126,35 +1149,36 @@ namespace eval ::dui {
 		set y1 [rescale_y_skin $y1]
 	
 		.can create arc [expr $x0] [expr $y0+$arc_offset] [expr $x0+$arc_offset] [expr $y0] -style arc -outline $colour \
-			-width [expr $width-1] -tag $tag -start 90 -disabledoutline $disabled -state "hidden"
+			-width [expr $width-1] -tags $tag -start 90 -disabledoutline $disabled -state "hidden"
 		.can create arc [expr $x0] [expr $y1-$arc_offset] [expr $x0+$arc_offset] [expr $y1] -style arc -outline $colour \
-			-width [expr $width-1] -tag $tag -start 180 -disabledoutline $disabled -state "hidden"
+			-width [expr $width-1] -tags $tag -start 180 -disabledoutline $disabled -state "hidden"
 		.can create arc [expr $x1-$arc_offset] [expr $y0] [expr $x1] [expr $y0+$arc_offset] -style arc -outline $colour \
-			-width [expr $width-1] -tag $tag -start 0 -disabledoutline $disabled -state "hidden"
+			-width [expr $width-1] -tags $tag -start 0 -disabledoutline $disabled -state "hidden"
 		.can create arc [expr $x1-$arc_offset] [expr $y1] [expr $x1] [expr $y1-$arc_offset] -style arc -outline $colour \
-			-width [expr $width-1] -tag $tag -start -90 -disabledoutline $disabled -state "hidden"
+			-width [expr $width-1] -tags $tag -start -90 -disabledoutline $disabled -state "hidden"
 		
 		.can create line [expr $x0+$arc_offset/2] [expr $y0] [expr $x1-$arc_offset/2] [expr $y0] -fill $colour \
-			-width $width -tag $tag -disabledfill $disabled -state "hidden"
+			-width $width -tags $tag -disabledfill $disabled -state "hidden"
 		.can create line [expr $x1] [expr $y0+$arc_offset/2] [expr $x1] [expr $y1-$arc_offset/2] -fill $colour \
-			-width $width -tag $tag -disabledfill $disabled -state "hidden"
+			-width $width -tags $tag -disabledfill $disabled -state "hidden"
 		.can create line [expr $x0+$arc_offset/2] [expr $y1] [expr $x1-$arc_offset/2] [expr $y1] -fill $colour \
-			-width $width -tag $tag -disabledfill $disabled -state "hidden"
+			-width $width -tags $tag -disabledfill $disabled -state "hidden"
 		.can create line [expr $x0] [expr $y0+$arc_offset/2] [expr $x0] [expr $y1-$arc_offset/2] -fill $colour \
-			-width $width -tag $tag -disabledfill $disabled -state "hidden"		
+			-width $width -tags $tag -disabledfill $disabled -state "hidden"		
 	}
 
 	# Named options:
-	#	-tag
+	#	-tags
 	#	-anchor anchor wrt the {x y} coordinates on the '.can create window' command
 	proc add_widget { pages type x y {cmd {}} args } {
 		global widget_cnt	
 		
 		incr widget_cnt	
-		set base_tag [dui::args::get_option -tag "w_${type}_$widget_cnt" 1]
-		set widget ".can.$base_tag"
+		set tags [dui::args::get_option -tags "w_${type}_$widget_cnt" 1]
+		set main_tag [lindex $tags 0]
+		set widget .can.$main_tag
 		if { [info exists ::$widget] } {
-			error "Widget with name '$widget' already exists"
+			error "$type widget with name '$widget' already exists"
 			return
 		}
 		
@@ -1191,14 +1215,14 @@ namespace eval ::dui {
 	
 		set x [rescale_x_skin $x]
 		set y [rescale_y_skin $y]
-		foreach c $pages {
-			lappend tag "$c.$base_tag"
+		foreach p $pages {
+			lappend tags p:$p
 		}
 		
 		if {$type == "scrollbar"} {
-			set windowname [.can create window  $x $y -window $widget -anchor $anchor -tag $tag -state hidden -height 245]
+			set windowname [.can create window  $x $y -window $widget -anchor $anchor -tags $tags -state hidden -height 245]
 		} else {
-			set windowname [.can create window $x $y -window $widget -anchor $anchor -tag $tag -state hidden]
+			set windowname [.can create window $x $y -window $widget -anchor $anchor -tags $tags -state hidden]
 		}
 		#puts "winfo: [winfo children .can]"
 		#.can bind $windowname [platform_button_press] "msg click"
@@ -1206,12 +1230,43 @@ namespace eval ::dui {
 		# EB: Maintain this? I don't find any use of this array in the app code
 		#set ::tclwindows($widget) [list $x $y]
 	
-		item add_to_pages $pages $base_tag
-		return $widget 
+		item add_to_pages $pages $main_tag
+		return $widget
 	}
 	
-	proc add_entry {} {
+	proc add_entry { pages x y {cmd {}} args } {
+		global widget_cnt
 		
+		set first_page [lindex $pages 0]
+		set is_ns [dui::page::is_namespace $first_page]
+		
+#		incr widget_cnt
+#		set has_tags [dui::args::has_option -tags]
+#		set tags [dui::args::get_option -tags "w_entry_$widget_cnt" 1]
+#		set main_tag [lindex $tags 0]
+		
+		set txtvar [dui::args::get_option -textvariable "" 1]
+		if { $txtvar eq "" } {
+			if { [dui::args::has_option -tags] && $is_ns } {
+				set main_tag [lindex [dui::args::get_option -tags] 0]
+				if { [string is wordchar $main_tag] } {
+					set txtvar "::dui::pages::${first_page}::data($main_tag)"
+				}
+			}
+			#msg -WARN [namespace current] "no -textvariable passed to add_entry"
+		} elseif { $is_ns && [string is wordchar $txtvar] } {
+			if { ![dui::args::has_option -tags] } {
+				dui::args::add_option_if_not_exists -tags $txtvar 
+			}
+			set txtvar "::dui::pages::${first_page}::data($txtvar)"
+		}
+		
+		set widget [dui add_widget $pages entry $x $y {
+			bind $widget <Return> { hide_android_keyboard ; focus [tk_focusNext %W] }
+			$cmd
+		} -exportselection 1 -textvariable $txtvar {*}$args ]
+	
+		return $widget
 	}
 	
 	proc add_listbox {} {
@@ -1219,7 +1274,16 @@ namespace eval ::dui {
 	}
 		
 
-	### GENERAL TOOLS ###	
+	### GENERAL TOOLS ###
+	# This is called on every add_* proc so as to prevent duplicated main tags (a likely source of unexpected errors)
+	proc fail_if_tag_exists { tags } {
+		foreach tag $tags { 
+			if { [.can find withtag $tag] ne "" } {
+				error "Tag '$tag' already exists in the canvas, duplicated canvas items tags are not allowed"
+			}
+		}
+	}
+	
 	# Computes the anchor point coordinates with respect to the provided bounding box coordinates, returns a list 
 	#	with 2 elements.
 	# Anchor valid values are center, n, ne, e, se, s, sw, w, nw.
