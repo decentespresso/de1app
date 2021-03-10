@@ -295,7 +295,7 @@ array set ::settings {
 	orientation "landscape"
 	grinder_dose_weight 0
 	scentone {}
-	seconds_after_espresso_stop_to_continue_weighing 8
+	after_flow_complete_delay 5
 	display_volumetric_usage 0
 	one_tap_mode 0
 	allow_unheated_water 1

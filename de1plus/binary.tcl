@@ -1551,7 +1551,7 @@ proc update_de1_state {statechar} {
 
 	#
 	# after_flow_complete will trigger after
-	# $::settings(seconds_after_espresso_stop_to_continue_weighing)
+	# $::settings(after_flow_complete_delay)
 	#     after transition to ending, but not before leaving a flow state
 	#     after transition out of a flow state, if not already pending or triggered
 	#
@@ -1593,13 +1593,13 @@ proc update_de1_state {statechar} {
 		if { [de1::event::apply::after_flow_is_pending] } {
 			msg -WARNING "Pending after_flow_complete callbacks. " \
 				[format "Second flow started before %g seconds?" \
-					 $::settings(seconds_after_espresso_stop_to_continue_weighing)]
+					 $::settings(after_flow_complete_delay)]
 		}
 
 		# TODO: Decouple this from internal representation
 
 		set ::de1::event::apply::_after_flow_complete_after_id \
-			[ after [expr { 1000 *  $::settings(seconds_after_espresso_stop_to_continue_weighing) }] \
+			[ after [expr { 1000 *  $::settings(after_flow_complete_delay) }] \
 				  [list ::de1::event::apply::_maybe_after_flow_complete_callbacks $event_dict]
 			 ]
 
