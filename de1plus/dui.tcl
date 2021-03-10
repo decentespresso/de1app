@@ -22,10 +22,18 @@
 #		::delayed_image_load system
 #	- Global utility functions that are used here:
 #		ifexists
+#		$::fontm
+#		$::android, $::undroid
 
 package provide de1_dui 1.0
 
 package require de1_logging 1.0
+package require Tk
+catch {
+	# tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
+	package require tkblt
+	namespace import blt::*
+}
 
 set ::settings(enabled_plugins) {dui_demo}
 
@@ -109,15 +117,16 @@ namespace eval ::dui {
 		variable aspects
 		# TBD default.button_label.activefill needed? On buttons the invisible rectangle "hides" the text and
 		#	it seems they never become active.
+		# $::helvetica_font
 		array set aspects {
 			default.page.bg_img {}
 			default.page.bg_color "#edecfa"
 			
-			default.font.family Helv
-			default.font.size 12
+			default.font.font_family notosansuiregular
+			default.font.font_size 16
 			
-			default.text.font Helv
-			default.text.font_size 12
+			default.text.font_family notosansuiregular
+			default.text.font_size 16
 			default.text.fill "#7f879a"
 			default.text.activefill orange
 			default.text.disabledfill "#ddd"
@@ -130,8 +139,8 @@ namespace eval ::dui {
 			default.entry.relief sunken
 			default.entry.bg "#ffffff"
 			
-			default.button.font Helv
-			default.button.font_size 12
+			default.button.font_family notosansuiregular
+			default.button.font_size 18
 			default.button.debug_outline black
 			default.button.fill "#c0c5e3"
 			default.button.activefill "#c0c5e3"
@@ -157,7 +166,6 @@ namespace eval ::dui {
 			default.entry.relief.special flat
 			default.entry.bg.special yellow
 			default.entry.width.special 1
-			
 		}
 		
 		# Named options:
@@ -207,19 +215,24 @@ namespace eval ::dui {
 		proc get { aspect args } {
 			variable aspects
 			set theme [dui::args::get_option -theme [dui theme current]]
-			set style [dui::args::get_option -style ""]
+			set style [dui::args::get_option -style ""]			
 			set default [dui::args::get_option -default ""]
-
+			set last_aspect [lindex [split $aspect .] end]
+			
 			if { $style ne "" && [info exists aspects($theme.$aspect.$style)] } {
 				return $aspects($theme.$aspect.$style)
 			} elseif { [info exists aspects($theme.$aspect)] } {
 				return $aspects($theme.$aspect)
 			} elseif { $default ne "" } {
 				return $default
+			} elseif { [string range $last_style 0 4] eq "font_" && [info exists aspects($theme.font.$last_aspect)] } {
+				return $aspects($theme.font.$last_aspect)
 			} elseif { $style ne "" && [info exists aspects(default.$aspect.$style)] } {
 				return $aspects(default.$aspect.$style)
 			} elseif { [info exists aspects(default.$aspect)] } {
 				return $aspects(default.$aspect)
+			} elseif { [string range $last_aspect 0 4] eq "font_" && [info exists aspects(default.font.$last_aspect)]} {
+				return $aspects(default.font.$last_aspect)
 			} else {
 				msg -NOTICE [namespace current] "aspect '$theme.$aspect' not found and no alternative available"
 				return ""
@@ -349,15 +362,92 @@ namespace eval ::dui {
 
 	### FONTS SUB-ENSEMBLE ###
 	namespace eval font {
-		namespace export add get exists
+		namespace export add get width set_in_args
 		namespace ensemble create
 
-		proc load {} {
-			
+		#variable loaded_fonts {}
+		#variable skin_fonts {}
+		
+		# Barney  https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
+		proc load { name filename pcsize {androidsize {}} } {
+			global loaded_fonts
+			# calculate font size
+			set familyname ""
+		
+			if {($::android == 1 || $::undroid == 1) && $androidsize != ""} {
+				set pcsize $androidsize
+			}
+			set platform_font_size [expr {int(1.0 * $::fontm * $pcsize)}]
+		
+#			if {[language] == "zh-hant" || [language] == "zh-hans"} {
+#				set filename ""
+#				set familyname $::helvetica_font
+#			} elseif {[language] == "th"} {
+#				set filename "[dir]/sarabun.ttf"
+#			}
+		
+			if {[info exists ::loaded_fonts] != 1} {
+				set loaded_fonts list
+			}
+			set fontindex [lsearch $loaded_fonts $filename]
+			if {$fontindex != -1} {
+				set familyname [lindex $loaded_fonts [expr $fontindex + 1]]
+			} elseif {($::android == 1 || $::undroid == 1) && $filename != ""} {
+				catch {
+					set familyname [lindex [sdltk addfont $filename] 0]
+				}
+		
+				if {$familyname == ""} {
+					msg -WARN [namespace current] "load" "Unable to get familyname from 'sdltk addfont $filename'"
+				} else {
+					lappend loaded_fonts $filename $familyname
+				}
+			}
+		
+			if {[info exists familyname] != 1 || $familyname == ""} {
+				msg -NOTICE [namespace current] "Font familyname not available; using name '$name'."
+				set familyname $name
+			}
+		
+			catch {
+				font create $name -family $familyname -size $platform_font_size
+			}
+			msg -INFO [namespace current] "added font name: \"$name\" family: \"$familyname\" size: $platform_font_size filename: \"$filename\""			
 		}
 		
-		proc get { } {
-			
+		# Barney writes: https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
+		# I created a wrapper function that you might be interested in adopting. It makes working with fonts even simpler by removing the need to pre-load fonts before using them.
+		# Here's the syntax for using the get_font function in a call to add_de1_text:
+		# add_de1_text "off" 100 100 -text "Hi!" -font [get_font "Comic Sans" 12] 
+		proc get { font_name size } {
+			if {[info exists ::skin_fonts] != 1} {
+				set ::skin_fonts list
+			}
+		
+			set font_key "$font_name $size"
+			set font_index [lsearch $::skin_fonts $font_key]
+			if {$font_index == -1} {
+				# load the font if needed. 
+		
+				# support for both OTF and TTF files
+				if {[file exists "[skin_directory]/fonts/$font_name.otf"] == 1} {
+					load_font $font_key "[skin_directory]/fonts/$font_name.otf" $size
+					lappend ::skin_fonts $font_key
+				} elseif {[file exists "[skin_directory]/fonts/$font_name.ttf"] == 1} {
+					load_font $font_key "[skin_directory]/fonts/$font_name.ttf" $size
+					lappend ::skin_fonts $font_key
+				} elseif {[file exists "[homedir]/fonts/$font_name.otf"] == 1} {
+					load_font $font_key "[homedir]/fonts/$font_name.otf" $size
+					lappend ::skin_fonts $font_key
+				} elseif {[file exists "[homedir]/fonts/$font_name.ttf"] == 1} {
+					load_font $font_key "[homedir]/fonts/$font_name.ttf" $size
+					lappend ::skin_fonts $font_key	
+				} else {
+					msg -WARN [namespace current] "Unable to load font '$font_key'"
+				}
+			}
+		
+			return $font_key
 		}
 		
 		proc width {untranslated_txt font} {
@@ -366,9 +456,45 @@ namespace eval ::dui {
 				# not sure why font measurements are half off on osx but not on android
 				return [expr {2 * $x}]
 			#}
-			return $x
+			#return $x
+		}
+
+		proc list {} {
+			return ::loaded_fonts
 		}
 		
+		# Handles -font_* options in the args:
+		#	1) if -font is provided in the args, does nothing
+		#	2) otherwise, uses -font_family and -font_size in the args, or, if not provided, from the theme type & style,
+		#		and modifies the args to use a -font specification according to the provided options..
+		#		If the type does not provide any font definition, uses the <theme>.font.font_* value.
+		#		Relative font sizes +1/-1/+2 etc. can be defined, with respect to whatever font size is defined in the 
+		#		theme for that type & style.
+		proc set_in_args { type {style ""} {args_name args} } {
+			upvar $args_name args
+			if { ![dui::args::has_option -font] } {
+				set font_family [dui::args::get_option $type.font_family [dui aspect get $type.font_family -style $style] 1]
+				set default_size [dui aspect get $type.font_size -style $style]
+				set font_size [dui::args::get_option font_size $default_size 1]
+				if { [string range $font_size 0 0] in "- +" } {
+					set font_size [expr $default_size$font_size]
+				}
+				dui::args::add_option_if_not_exists -font [get $font_family $font_size]
+			}		
+		}
+		
+		# Returns the current fonts directory (if path is not specified) or sets it to path. 
+#		proc dir { {font_path {}} } {
+#			variable dir
+#			if { $font_path eq "" } {
+#				return $dir
+#			} else {
+#				set dir $font_path
+#				if { ![file isdirectory $font_path] } {
+#					msg -ERROR [namespace current] "dir" "'$font_path' is not a valid path"
+#				}
+#			}
+#		}
 	}
 	
 	### ARGS SUB-ENSEMBLE ###
@@ -470,10 +596,10 @@ namespace eval ::dui {
 		}
 	}
 
-	### PAGES SUB-ENSEMBLE ###
-	# AT THE MOMENT ONLY page_add SHOULD BE USED AS OTHERS BREAK BACKWARDS COMPATIBILITY #
+	### PAGE SUB-ENSEMBLE ###
+	# AT THE MOMENT ONLY page_add SHOULD BE USED AS OTHERS MAY BREAK BACKWARDS COMPATIBILITY #
 	namespace eval page {
-#		namespace export add set_next show_when_off show back_to_previous
+#		namespace export add set_next show_when_off show
 		namespace export *
 		namespace ensemble create
 
@@ -481,9 +607,9 @@ namespace eval ::dui {
 		variable actions
 		array set actions {}
 		
-		variable nextpage
-		array set nextpage {}
-		variable exit_app_on_sleep 0
+		#variable nextpage
+		#array set nextpage {}
+		#variable exit_app_on_sleep 0
 		
 		# 'page add' accommodates both simple-style skin/plugin pages using the same background image or colored rectangle 
 		#	for all pages (which can be defined in the theme), or Insight-style customized with a background image per-page,
@@ -547,32 +673,32 @@ namespace eval ::dui {
 		}
 		
 		proc is_namespace { page } {
-			return [namespace exists "::dui::pages::$page"]
+			return [expr [namespace exists "::dui::pages::$page"] && [info exists ::dui::pages::${page}::data]]
 			#return [expr {[string range $page 0 1] eq "::" && [info exists ${page}::widgets]}]
 		}
 			
 		proc set_next { machinepage guipage } {
-			variable nextpage
+			#variable nextpage
 			#msg "set_next_page $machinepage $guipage"
 			set key "machine:$machinepage"
-			set nextpage($key) $guipage
+			set ::nextpage($key) $guipage
 		}
 
-		proc show_when_off { page_to_show } {
+		proc show_when_off { page_to_show args } {
 			set_next off $page_to_show
-			show $page_to_show
+			show $page_to_show {*}$args
 		}
 				
-		proc show { page_to_show } {
-			page_display_change $::de1(current_context) $page_to_show
+		proc show { page_to_show args } {
+			display_change $::de1(current_context) $page_to_show {*}$args
 		}
 		
-		proc display_change { page_to_hide page_to_show } {
+		proc display_change { page_to_hide page_to_show args } {
 			delay_screen_saver
 			
 			# EB
-			hide_is_ns [is_namespace $page_to_hide]
-			show_is_ns [is_namespace $page_to_show]
+			set hide_is_ns [is_namespace $page_to_hide]
+			set show_is_ns [is_namespace $page_to_show]
 			
 			set key "machine:$page_to_show"
 			if {[ifexists ::nextpage($key)] != ""} {
@@ -588,33 +714,35 @@ namespace eval ::dui {
 		
 			msg [namespace current] "page_display_change $page_to_hide->$page_to_show"
 				
-			if {$page_to_hide == "sleep" && $page_to_show == "off"} {
-				msg [namespace current] "discarding intermediate sleep/off state msg"
-				return 
-			} elseif {$page_to_show == "saver"} {
-				if {[ifexists ::exit_app_on_sleep] == 1} {
-					get_set_tablet_brightness 0
-					close_all_ble_and_exit
-				}
-			}
+			# This should be handled by the main app adding actions to the sleep/off/saver pages
+#			if {$page_to_hide == "sleep" && $page_to_show == "off"} {
+#				msg [namespace current] "discarding intermediate sleep/off state msg"
+#				return 
+#			} elseif {$page_to_show == "saver"} {
+#				if {[ifexists ::exit_app_on_sleep] == 1} {
+#					get_set_tablet_brightness 0
+#					close_all_ble_and_exit
+#				}
+#			}
 		
 			# signal the page change with a sound
 			say "" $::settings(sound_button_out)
 			#msg "page_display_change $page_to_show"
 			#set start [clock milliseconds]
 		
+			# This should be added on the main app as a load action on the "saver" page
 			# set the brightness in one place
-			if {$page_to_show == "saver" } {
-				if {$::settings(screen_saver_change_interval) == 0} {
-					# black screen saver
-					display_brightness 0
-				} else {
-					display_brightness $::settings(saver_brightness)
-				}
-				borg systemui $::android_full_screen_flags  
-			} else {
-				display_brightness $::settings(app_brightness)
-			}
+#			if {$page_to_show == "saver" } {
+#				if {$::settings(screen_saver_change_interval) == 0} {
+#					# black screen saver
+#					display_brightness 0
+#				} else {
+#					display_brightness $::settings(saver_brightness)
+#				}
+#				borg systemui $::android_full_screen_flags  
+#			} else {
+#				display_brightness $::settings(app_brightness)
+#			}
 		
 			
 			if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {
@@ -624,7 +752,25 @@ namespace eval ::dui {
 				unset -nocomplain ::idle_next_step 
 				eval $todo
 			}
-					
+			
+			# EB
+			foreach action [actions $page_to_show load] {
+				eval $action
+			}
+			if { $show_is_ns && [info procs ::dui::pages::${page_to_show}::load] ne ""} {
+				set page_loaded [::dui::pages::${page_to_show}::load $page_to_hide {*}$args]
+				if { ![string is true $page_loaded] } {
+					return
+				}
+			}
+
+			foreach action [actions $page_to_hide hide] {
+				eval $action
+			}			
+			if { $hide_is_ns && [info procs ::dui::pages::${page_to_hide}::hide] ne "" } {
+				::dui::pages::${page_to_hide}::hide $page_to_show
+			}
+			
 			#global current_context
 			set ::de1(current_context) $page_to_show
 		
@@ -686,35 +832,58 @@ namespace eval ::dui {
 		
 			} 
 		
-			set these_labels [ifexists ::existing_labels($page_to_show)]
-			#msg "these_labels: $these_labels"
-		
-			if {[info exists ::all_labels] != 1} {
-				set ::all_labels {}
-				foreach {page labels} [array get ::existing_labels]  {
-					set ::all_labels [concat $::all_labels $labels]
-				}
-				set ::all_labels [lsort -unique $::all_labels]
-			}
+#			set these_labels [ifexists ::existing_labels($page_to_show)]
+#			#msg "these_labels: $these_labels"
+#		
+#			if {[info exists ::all_labels] != 1} {
+#				set ::all_labels {}
+#				foreach {page labels} [array get ::existing_labels]  {
+#					set ::all_labels [concat $::all_labels $labels]
+#				}
+#				set ::all_labels [lsort -unique $::all_labels]
+#			}
 		
 			#msg "Hiding [llength $::all_labels] labels"
-			foreach label $::all_labels {
-				if {[.can itemcget $label -state] != "hidden"} {
-					.can itemconfigure $label -state hidden
-					#msg "hiding: '$label'"
+#			foreach label $::all_labels {
+#				if {[.can itemcget $label -state] != "hidden"} {
+#					.can itemconfigure $label -state hidden
+#					#msg "hiding: '$label'"
+#				}
+#			}
+
+			# EB NO NEED TO USE ::all_labels, can do with canvas tags
+			foreach tag [.can find withtag all] {
+				if { [.can itemcget $tag -state] ne "hidden" } {
+					.can itemconfigure $tag -state hidden
 				}
 			}
-		
+			
 			#msg "Showing [llength $these_labels] labels"
-			foreach label $these_labels {
-				.can itemconfigure $label -state normal
-				#msg "showing: '$label'"
+#			foreach label $these_labels {
+#				.can itemconfigure $label -state normal
+#				#msg "showing: '$label'"
+#			}
+			
+			# EB NO NEED TO USE ::existing_labels, can do with canvas tags, provided p:<page_name> tags were used.
+			foreach tag [.can find withtag p:$page_to_show] {
+				.can itemconfigure $tag -state normal
 			}
-		
-			update
+
+			foreach action [actions $page_to_show show] {
+				eval $action
+			}
+			if { $show_is_ns } {
+				if { [info procs ::dui::pages::${page_to_show}::show] ne "" } {
+					::dui::pages::${page_to_show}::show $page_to_hide
+				}
+				set ::dui::pages::${page_to_show}::page_drawn 1
+			}
+			
 			#set end [clock milliseconds]
 			#puts "elapsed: [expr {$end - $start}]"
 		
+			# The old actions system, equivalent to the new page "show" event action. 
+			# Left temporarilly for compatibility.
 			global actions
 			if {[info exists actions($page_to_show)] == 1} {
 				foreach action $actions($page_to_show) {
@@ -722,48 +891,35 @@ namespace eval ::dui {
 					msg "action: '$action"
 				}
 			}
-		
+
+			update
+						
 			#msg "Switched to page: $page_to_show [stacktrace]"
 			msg "Switched to page: $page_to_show"
 		
 			update_onscreen_variables
-		
-			hide_android_keyboard
-		
-		}
-		
-		proc back_to_previous {} {
+			dui hide_android_keyboard
 		}
 		
 		proc add_action { page event cmd } {
 			variable actions
-			if { [lsearch "before_show after_show hide" $event] == -1 } {
+			if { $event ni "load show hide" } {
 				error "'$event' is not a valid event for dui add_action"
 			}
-			if { ![info exists actions($page)] } {
-				array set actions($page) {}
-			}
-			array set page_actions $actions($page)
-			if { ![info exists page_actions($event)] } {
-				set page_actions($event) {}
-			}
-			lappend page_actions($event) $cmd
-			set actions($page) $page_actions
+			lappend actions($page,$event) $cmd
 		}
 		
-		proc actions { page {event {}} } {
+		proc actions { page event } {
 			variable actions
-			if { $event eq "" } {
-				return [array get [ifexists actions($page)]]
-			} else {
-				array set page_actions [ifexists actions($page)]
-				return [array get [ifexists page_actions(event)]]
+			if { $event ni "load show hide" } {
+				error "'$event' is not a valid event for dui add_action"
 			}
+			return [ifexists actions($page,$event)]
 		}
 	}
 
 	### PAGES SUB-ENSEMBLE ###
-	# Just a container namespace for client code to create UI pages are children namespaces of this.
+	# Just a container namespace for client code to create UI pages as children namespaces.
 	namespace eval pages {
 		namespace export *
 		namespace ensemble create
@@ -776,6 +932,7 @@ namespace eval ::dui {
 		namespace ensemble create
 	
 		# Keep track of what labels are displayed in what pages. Warns if a label already exists.
+		# THIS IS NO LONGER NEEDED, AS PAGE HIDE/SHOW IS NOW MANAGED USING THE CANVAS TAGS.
 		proc add_to_pages { pages tags } {
 			global existing_labels
 			foreach page $pages {
@@ -941,6 +1098,7 @@ namespace eval ::dui {
 	# Named options:
 	#	-tags a label that allows to access the created canvas items
 	#	-style to apply the default aspects of the provided style
+	#	-aspect_type to query default aspects for type different than "text"
 	#	All others passed through to the 'canvas create text' command
 	proc add_text { pages x y args } {
 		global text_cnt
@@ -955,10 +1113,18 @@ namespace eval ::dui {
 		}
 		
 #		args::complete_with_theme_aspects text "fill activefill disabledfill anchor justify"
+		set aspect_type [dui::args::get_option -aspect_type text 1]
 		set style [dui::args::get_option -style "" 1]
 		foreach aspect "fill activefill disabledfill anchor justify" {
-			dui::args::add_option_if_not_exists -$aspect [dui aspect get "text.$aspect" -style $style]
+			dui::args::add_option_if_not_exists -$aspect [dui aspect get "$aspect_type.$aspect" -style $style]
 		}
+		font set_in_args text $style
+		
+#		if { ![dui::args::has_option -font] } {
+#			set font_family [dui::args::get_option font_family [dui aspect get text.font_family -style $style] 1]
+#			set font_size [dui::args::get_option font_size [dui aspect get text.font_size -style $style] 1]
+#			dui::args::add_option_if_not_exists -font [font get $font_family $font_size]
+#		}
 				
 		.can create text $x $y -tags $tags -state hidden {*}$args
 
@@ -1102,9 +1268,9 @@ namespace eval ::dui {
 		}
 		
 		if { $label ne "" } {
-			add_text $pages $xlabel $ylabel -text $label -tags $label_tags {*}$label_args
+			add_text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type button_label {*}$label_args
 		} elseif { $labelvar ne "" } {
-			add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags {*}$label_args 
+			add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags -aspect_type button_label {*}$label_args 
 		}
 		
 		# Clickable rect
