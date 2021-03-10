@@ -1091,7 +1091,7 @@ namespace eval ::device::scale::saw {
 			set stop_early_by [expr { $_early_by_grams + [flow_now] * $_early_by_flow }]
 
 			if {    [$_mode_timer] > $_ignore_first_seconds \
-					&& ! $::de1(scale_autostop_triggered) \
+					&& ! $::de1(app_autostop_triggered) \
 					&& [round_to_one_digits $thisweight] > \
 						[round_to_one_digits [expr { $_target - $stop_early_by }]]} {
 
@@ -1100,7 +1100,7 @@ namespace eval ::device::scale::saw {
 				# As there might be a delay between request and stop
 				# and weight updates keep arriving, don't ask twice
 
-				set ::de1(scale_autostop_triggered) True
+				set ::de1(app_autostop_triggered) True
 
 				msg -INFO "Weight based stop was triggered at ${thisweight} g for ${_target} g target"
 				::gui::notify::scale_event saw_stop
@@ -1167,6 +1167,8 @@ namespace eval ::device::scale::saw {
 		# Ensure testable with > 0
 		set _target [scan $_target %g]
 
+		if { $_target > 0 } { set ::de1(app_autostop_triggered) False }
+
 		set _early_by_grams 0
 		set _early_by_flow [expr { $::settings(stop_weight_before_seconds) \
 						   + [::device::scale::sensor_lag] \
@@ -1198,6 +1200,8 @@ namespace eval ::device::scale::saw {
 		# Ensure testable with > 0
 		set _target [scan $_target %g]
 
+		if { $_target > 0 } { set ::de1(app_autostop_triggered) False }
+
 		set _early_by_grams 0
 		set _early_by_flow [expr { 0.0 \
 						   + [::device::scale::sensor_lag] \
@@ -1213,11 +1217,6 @@ namespace eval ::device::scale::saw {
 	}
 
 	proc on_major_state_change {event_dict} {
-
-		if {[::device::scale::saw::is_tracking_state [dict get $event_dict this_state]]} {
-
-			set ::de1(scale_autostop_triggered) False
-		}
 
 		switch  [dict get $event_dict this_state] {
 

@@ -797,6 +797,8 @@ namespace eval ::de1::sav {
 		# Ensure testable with > 0
 		set _target [scan $_target %g]
 
+		if { $_target > 0 } { set ::de1(app_autostop_triggered) False }
+
 		msg -DEBUG "::de1::sav::on_espresso_start"
 	}
 
@@ -808,6 +810,8 @@ namespace eval ::de1::sav {
 
 		# Ensure testable with > 0
 		set _target [scan $_target %g]
+
+		if { $_target > 0 } { set ::de1(app_autostop_triggered) False }
 
 		msg -DEBUG "::de1::sav::on_hotwater_start"
 	}
@@ -873,17 +877,17 @@ namespace eval ::de1::sav {
 		# This was counter to the consistent guidance on Diaspora
 		# that the logic is "which ever trips first, SAV or SAW".
 
-		# Use the existing ::de1(scale_autostop_triggered) flag
+		# Use the existing ::de1(app_autostop_triggered) flag
 
 		variable _target
 
 		if {[::de1::sav::is_tracking_state] && $_target > 0 \
-		    && ! $::de1(scale_autostop_triggered) } {
+		    && ! $::de1(app_autostop_triggered) } {
 
 			if { $::de1(pour_volume) >= $_target } {
 
 				start_idle
-				set ::de1(scale_autostop_triggered) True
+				set ::de1(app_autostop_triggered) True
 
 				msg -INFO "Water volume based Espresso stop was triggered at:" \
 					"$::de1(pour_volume) ml >" \
