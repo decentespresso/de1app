@@ -104,15 +104,11 @@ namespace eval ::profile {
             lappend decline max_flow_or_pressure_range $::settings(maximum_flow_range)
         }
 
-        if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-            set temp_advanced(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
-        } else {
-            set temp_advanced(advanced_shot) [list $preinfusion2 $hold $decline]
-        }
+        set temp_advanced(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
+        set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
 
         set temp_advanced(final_desired_shot_weight_advanced) $::settings(final_desired_shot_weight)
         set temp_advanced(final_desired_shot_volume_advanced) $::settings(final_desired_shot_volume)
-        set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
 
         set temp_advanced(maximum_pressure_range_advanced) $::settings(maximum_pressure_range)
         set temp_advanced(maximum_flow_range_advanced) $::settings(maximum_flow_range)
@@ -217,15 +213,11 @@ namespace eval ::profile {
         }
 
 
-        if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
-            set temp_advanced(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
-        } else {
-            set temp_advanced(advanced_shot) [list $preinfusion $hold $decline]
-        }
+        set temp_advanced(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
+        set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
 
         set temp_advanced(final_desired_shot_weight_advanced) $::settings(final_desired_shot_weight)
         set temp_advanced(final_desired_shot_volume_advanced) $::settings(final_desired_shot_volume)
-        set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
 
         set temp_advanced(maximum_pressure_range_advanced) $::settings(maximum_pressure_range)
         set temp_advanced(maximum_flow_range_advanced) $::settings(maximum_flow_range)
