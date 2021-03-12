@@ -69,7 +69,7 @@ namespace eval ::device::scale {
 
 	# Level in g over which will auto-tare before flow
 
-	variable autotare_threshold 0.1
+	variable autotare_threshold 0.04
 
 	# Consider scale "lost" if no weight update within (seconds)
 
@@ -208,7 +208,8 @@ namespace eval ::device::scale {
 		# Scheduled tare as per existing logic
 		# Note that it previously was never "reset" other than by skale_tare
 
-		if {$sensorweight < 0 && [::de1::state::current_state] == "Idle"} {
+		if {$sensorweight < -$::device::scale::autotare_threshold \
+			    && [::de1::state::current_state] == "Idle"} {
 
 			if {$::settings(tare_only_on_espresso_start) != 1} {
 
