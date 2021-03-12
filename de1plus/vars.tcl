@@ -3435,7 +3435,7 @@ proc de1_version_string {} {
 		after 5000 [list info_page "[translate {Your DE1 firmware has been upgraded}]\n\n$version" [translate "Ok"]]
 	}
 	
-	array set modelarr [list 0 [translate "unknown"] 1 DE1 2 DE1+ 3 DE1PRO 4 DE1XL 5 DE1XXL]
+	array set modelarr [list 0 [translate "unknown"] 1 DE1 2 DE1+ 3 DE1PRO 4 DE1XL 5 DE1CAFE 6 DE1XXL 7 DE1XXXL]
 
 	set brev ""
 	if {[ifexists ::settings(cpu_board_model)] != ""} {
