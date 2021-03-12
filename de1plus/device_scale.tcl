@@ -268,6 +268,9 @@ namespace eval ::device::scale {
 					 weight_filtered	$thisweight \
 					 flow_raw		$flow_raw \
 					 flow_filtered		$flow \
+					 scale_is_recording	[;:device::scale::history::is_recording] \
+					 this_state		[::de1::state::current_state] \
+					 this_substate		[::de1::state::current_substate] \
 					]
 
 		::device::scale::event::apply::on_update_available_callbacks $event_dict
