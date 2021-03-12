@@ -29,20 +29,20 @@ namespace eval ::profile {
         }
 
         set preinfusion [list \
-            name [translate "preinfusion"] \
-            temperature $::settings(espresso_temperature) \
+            name [translate "preinfusion temp boost"] \
+            temperature $::settings(espresso_temperature_0) \
             sensor "coffee" \
             pump "flow" \
             transition "fast" \
             pressure 1 \
             flow $::settings(preinfusion_flow_rate) \
             seconds $first_frame_len \
-            volume $::settings(preinfusion_stop_volumetric) \
+            volume 0 \
             exit_if "1" \
             exit_type "pressure_over" \
             exit_pressure_over $::settings(preinfusion_stop_pressure) \
             exit_pressure_under 0 \
-            exit_flow_over 6 \
+            exit_flow_over 0 \
             exit_flow_under 0 \
         ]
 
@@ -55,7 +55,7 @@ namespace eval ::profile {
             pressure 1 \
             flow $::settings(preinfusion_flow_rate) \
             seconds $second_frame_len \
-            volume $::settings(preinfusion_stop_volumetric) \
+            volume 0 \
             exit_if "1" \
             exit_type "pressure_over" \
             exit_pressure_over $::settings(preinfusion_stop_pressure) \
@@ -72,11 +72,11 @@ namespace eval ::profile {
             transition "fast" \
             pressure $::settings(espresso_pressure) \
             seconds $::settings(espresso_hold_time) \
-            volume $::settings(pressure_hold_stop_volumetric) \
+            volume 0 \
             exit_if 0 \
-            exit_pressure_over 11 \
+            exit_pressure_over 0 \
             exit_pressure_under 0 \
-            exit_flow_over 6 \
+            exit_flow_over 0 \
             exit_flow_under 0 \
         ]
         if {$::settings(maximum_flow) != 0 && $::settings(maximum_flow) != {}} {
@@ -92,9 +92,9 @@ namespace eval ::profile {
             transition "smooth" \
             pressure $::settings(pressure_end) \
             seconds $::settings(espresso_decline_time) \
-            volume $::settings(pressure_decline_stop_volumetric) \
+            volume 0 \
             exit_if 0 \
-            exit_pressure_over 11 \
+            exit_pressure_over 0 \
             exit_pressure_under 0 \
             exit_flow_over 6 \
             exit_flow_under 0 \
@@ -104,8 +104,13 @@ namespace eval ::profile {
             lappend decline max_flow_or_pressure_range $::settings(maximum_flow_range)
         }
 
-        set temp_advanced(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
-        set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
+        if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+            set temp_advanced(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
+            set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
+        } else {
+            set temp_advanced(advanced_shot) [list $preinfusion2 $hold $decline]
+            set temp_advanced(final_desired_shot_volume_advanced_count_start) 1
+        }
 
         set temp_advanced(final_desired_shot_weight_advanced) $::settings(final_desired_shot_weight)
         set temp_advanced(final_desired_shot_volume_advanced) $::settings(final_desired_shot_volume)
@@ -137,20 +142,20 @@ namespace eval ::profile {
         }
 
         set preinfusion [list \
-            name [translate "preinfusion"] \
-            temperature $::settings(espresso_temperature) \
+            name [translate "preinfusion boost"] \
+            temperature $::settings(espresso_temperature_0) \
             sensor "coffee" \
             pump "flow" \
             transition "fast" \
             pressure 1 \
             flow $::settings(preinfusion_flow_rate) \
             seconds $first_frame_len \
-            volume $::settings(preinfusion_stop_volumetric) \
+            volume 0 \
             exit_if "1" \
             exit_type "pressure_over" \
             exit_pressure_over $::settings(preinfusion_stop_pressure) \
             exit_pressure_under 0 \
-            exit_flow_over 6 \
+            exit_flow_over 0 \
             exit_flow_under 0 \
         ]
 
@@ -163,12 +168,12 @@ namespace eval ::profile {
             pressure 1 \
             flow $::settings(preinfusion_flow_rate) \
             seconds $second_frame_len \
-            volume $::settings(preinfusion_stop_volumetric) \
+            volume 0 \
             exit_if "1" \
             exit_type "pressure_over" \
             exit_pressure_over $::settings(preinfusion_stop_pressure) \
             exit_pressure_under 0 \
-            exit_flow_over 6 \
+            exit_flow_over 0 \
             exit_flow_under 0 \
         ]
 
@@ -180,9 +185,9 @@ namespace eval ::profile {
             transition "fast" \
             flow $::settings(flow_profile_hold) \
             seconds $::settings(espresso_hold_time) \
-            volume $::settings(flow_hold_stop_volumetric) \
+            volume 0 \
             exit_if 0 \
-            exit_pressure_over 11 \
+            exit_pressure_over 0 \
             exit_pressure_under 0 \
             exit_flow_over 6 \
             exit_flow_under 0 \
@@ -200,11 +205,11 @@ namespace eval ::profile {
             transition "smooth" \
             flow $::settings(flow_profile_decline) \
             seconds $::settings(espresso_decline_time) \
-            volume $::settings(flow_decline_stop_volumetric) \
+            volume 0 \
             exit_if 0 \
-            exit_pressure_over 11 \
+            exit_pressure_over 0 \
             exit_pressure_under 0 \
-            exit_flow_over 6 \
+            exit_flow_over 0 \
             exit_flow_under 0
         ]
         if {$::settings(maximum_pressure) != 0 && $::settings(maximum_pressure) != {}} {
@@ -212,9 +217,13 @@ namespace eval ::profile {
             lappend decline max_flow_or_pressure_range $::settings(maximum_pressure_range)
         }
 
-
-        set temp_advanced(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
-        set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
+        if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+            set temp_advanced(advanced_shot) [list $preinfusion $preinfusion2 $hold $decline]
+            set temp_advanced(final_desired_shot_volume_advanced_count_start) 2
+        } else {
+            set temp_advanced(advanced_shot) [list $preinfusion2 $hold $decline]
+            set temp_advanced(final_desired_shot_volume_advanced_count_start) 1
+        }
 
         set temp_advanced(final_desired_shot_weight_advanced) $::settings(final_desired_shot_weight)
         set temp_advanced(final_desired_shot_volume_advanced) $::settings(final_desired_shot_volume)
