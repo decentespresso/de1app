@@ -3435,7 +3435,7 @@ proc de1_version_string {} {
 		after 5000 [list info_page "[translate {Your DE1 firmware has been upgraded}]\n\n$version" [translate "Ok"]]
 	}
 	
-	array set modelarr [list 0 [translate "unknown"] 1 DE1 2 DE1+ 3 DE1PRO 4 DE1XL 5 DE1CAFE]
+	array set modelarr [list 0 [translate "unknown"] 1 DE1 2 DE1+ 3 DE1PRO 4 DE1XL 5 DE1XXL]
 
 	set brev ""
 	if {[ifexists ::settings(cpu_board_model)] != ""} {
@@ -3753,7 +3753,7 @@ proc range_check_shot_variables {} {
 	range_check_variable ::settings(final_desired_shot_volume) 0 2000
 	range_check_variable ::settings(final_desired_shot_volume_advanced) 0 2000
 	range_check_variable ::settings(final_desired_shot_volume_advanced_count_start) 0 20
-	range_check_variable ::settings(tank_desired_water_temperature) 0 60
+	range_check_variable ::settings(tank_desired_water_temperature) 0 45
 
 
 
