@@ -51,6 +51,8 @@ namespace eval ::dui {
 	variable create_page_namespaces 0
 	# Set to 1 to trim leading and trailing whitespace when modifying the value in entry boxes 
 	variable trim_entries 0
+	# Set to 1 to default to use editor pages if available 
+	variable use_editor_pages 1
 	
 	### THEME SUB-ENSEMBLE ###
 	# Themes are just names that serve as groupings for sets of aspect variables. They define a "visual identity"
@@ -1614,6 +1616,9 @@ msg [namespace current] disable "page=$page, tags=$tags"
 	#  -default_value Default value passed to the page editor if the -editor_page option is specified
 	#  -trim if 1, trims leading and trailing whitespace after editing the value. Defaults to the value of 
 	#		$dui::trim_entries.
+	#  -editor_page A page name that serves as a full page editor for the value, or "1" to use the default page
+	#		editor if it defined for the -data_type. The first argument of that page must be the fully qualified name 
+	#		of the variable that holds the value.
 	proc add_entry { pages x y {cmd {}} args } {
 #		global widget_cnt		
 #		set first_page [lindex $pages 0]
@@ -1646,7 +1651,8 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		# Data type and validation
 		set data_type [dui::args::get_option -data_type "text" 1]
 		set n_decimals [dui::args::get_option -n_decimals 0 1]
-		set trim  [dui::args::get_option -trim $dui::trim_entries 1]
+		set trim  [dui::args::get_option -trim $::dui::trim_entries 1]
+		set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages 1]
 		foreach fn {min_value max_value small_increment big_increment default_value} {
 			set $fn [dui::args::get_option -$fn "" 1]
 		}
@@ -1684,6 +1690,24 @@ msg [namespace current] disable "page=$page, tags=$tags"
 			bind $widget <Leave> $leave_cmd
 		}
 		
+		# Invoke editor page on double tap (maybe other editors in the future, e.g. a date editor)		
+		if { $editor_page ne "" && ![string is false $editor_page] && $textvariable ne ""} {
+			set editor_cmd ""
+			if { [string is true $editor_page] && $data_type eq "numeric" } {
+				set editor_cmd ::dui::pages::numeric_editor::load_page 
+			} elseif { ![string is true $editor_page] } {
+				set editor_cmd $editor_page
+			}
+
+			if { $editor_cmd ne "" } {
+				set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ 
+					$editor_cmd $textvariable -n_decimals $n_decimals -min_value $min_value -max_value $max_value \
+						-default_value $default_value -small_increment $small_increment -big_increment $big_increment
+				\}"
+				bind $widget <Double-Button-1> $editor_cmd
+			}
+		}
+			
 		return $widget
 	}
 	
