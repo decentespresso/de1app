@@ -12,7 +12,8 @@ Suggestions, improvements, and contributions are welcome.
 
 # Revision History
 
-2020-03-10 – Initial release
+* 2020-03-10 – Initial release
+* 2020-03-14 – Autotare threshold updated. Minor corrections and clarfications.
 
 # Related Reading
 
@@ -20,16 +21,16 @@ Suggestions, improvements, and contributions are welcome.
 
 Desribing what happens during a typical shot can put things into perspective before diving into implementation details. Most of what is described below is implemented with a mix of code from previous versions (which may have moved in location and/or been modestly refactored) and new code introduced in early 2021. Code that is not implemented in the core, or the response of the GUI to events or calls are indicated by use of *italics.*
 
-> NB: This represents the process for frame-derived shot profiles. This will likely change with FROTH-driven profiles.
+> NB: This represents the process for frame-derived shot profiles. How FROTH-driven profiles will be managed has not yet been determined (2021-03).
 
 ## Go!
 
-The shot is started either with a tap of the GHC, or, with machines without a GHC, sending a request to start Espresso from the tablet.
+The shot is started either with a tap of the GHC, or, with machines without a GHC, sending a request to enter Espresso mode from the tablet.
 
 ## Initialization
 
 The DE1 update packets indicate a transition from
-Idle to Espresso. The change is detected in a BLE message about changes in DE1 state and the internal state is updated correspondingly.
+Idle mode to Espresso mode. The change is detected in a BLE message about changes in DE1 state and the internal state is updated correspondingly.
 
 Several `::de1::state` functions change return values, such as:
 
@@ -53,7 +54,7 @@ These events trigger several other actions, as follows:
 
 Any callbacks registered with the legacy `::register_state_change_handler` are called if they have a key of Idle -> Espresso
 
-> Although callbacks may be registered with the above method, it has been deprecated. Rewriting calling code against the new event system is strongly suggested. The logs contain the automated rewrite to calls to this method.
+> Although callbacks may be registered with the above method, it has been deprecated. Directly rewriting calling code against the new event system is strongly suggested. The logs contain the automated rewrite to calls to this method.
 
 ### Scale Setup
 
@@ -75,18 +76,18 @@ The scale code begins looking for the reference time of `espresso_clock` (manage
 
 #### Pre-Shot Tare Management
 
-As Espresso is in `::device::scale::autotare_states` (Espresso and HotWater, by default), a tare is scheduled for `$::device::scale::_tare_holdoff_initial` in the future, defaulting to 200 ms, with an exception for the Decent Scale at 500 ms (see commit a8a61e1 Jan-18-2020).
+As Espresso mode is in `::device::scale::autotare_states` (Espresso and HotWater, by default), a tare is scheduled for `$::device::scale::_tare_holdoff_initial` in the future, defaulting to 200 ms, with an exception for the Decent Scale at 500 ms (see commit a8a61e1 Jan-18-2021).
 
-The scale starts checking for "a cup being added" prior to the flow starting. If it is more than `$::device::scale::autotare_threshold ` off of zero (default, 0.0, so 0.1 g will trigger), it requests a tare by calling `::device::scale::tare`
+The scale starts checking for "a cup being added" prior to the start of delivery of the shot. If it is more than `$::device::scale::autotare_threshold` off of zero (default, 0.04, so 0.1 g will trigger, but still resist vibratation and drift on an 0.01 g scale), it requests a tare by calling `::device::scale::tare`
 
-Tare requests are now rate limited to no more ofteh than `$::device::scale::_tare_holdoff_repeat` (200 ms default).
+Tare requests are now rate limited to no more often than `$::device::scale::_tare_holdoff_repeat` (200 ms default).
 
 Any time tare is seen, the scale code resets its internal calculations, to prevent the tare event for being misinterpreted as an actual change in weight.
 
 <a name="saw_setup"></a>
 #### SAW Setup
 
-The SAW target is set to the value given by ` $::settings(final_desired_shot_weight)` or `$::settings(final_desired_shot_weight_advanced)`, depending on the profile type.
+The SAW target is set to the value given by `$::settings(final_desired_shot_weight)` or `$::settings(final_desired_shot_weight_advanced)`, depending on the profile type.
 
 SAW parameters for "stopping early" are determined from the current estimates of overall system lag and the value of `$::settings(stop_weight_before_seconds)`.
 
@@ -199,11 +200,11 @@ If SAV is triggered, the GUI is notified by a call to
 
 Checking for SAW has a hold off as noted above in [SAW Setup](#saw_setup). Once past the hold off, if the current weight estimate is greater than
 
-* The target weight
-* Less the offset in grams (default, 0)
-* Less the current flow estimate multiplied by the factor precalculated in [SAW Setup](#saw_setup)
+* The target weight ...
+* ... less the offset in grams (default, 0) ...
+* ... less the current flow estimate multiplied by the time factor precalculated in [SAW Setup](#saw_setup)
 
-a request for Idle is triggered if one has not already been requested, as indicated by `$::de1(scale_autostop_triggered)`
+a request for Idle is triggered if one has not already been requested, as indicated by `$::de1(app_autostop_triggered)`
 
 If SAV is triggered, the GUI is notified by a call to
 
@@ -284,7 +285,7 @@ At this point, a timer is set for the `::de1::event::apply::after_flow_complete_
 
 The purpose of this callback is primarily to delay events related to "shot done" (such as determination final drink weight or saving the completed shot record) long enough for everything to settle down. Although the ending phase *may* be long enough for this, it can be very short. This event will be fired a minimum of time later, but not before exiting the Espresso state.
 
-NB: The `event_dict` for the pending event is captured at this time, not when the event is fired.
+> NB: The `event_dict` for the pending event is captured at this time, not when the event is fired.
 
 ### Scale Switches To Final-Weight Determination
 
