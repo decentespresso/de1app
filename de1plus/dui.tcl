@@ -49,6 +49,8 @@ namespace eval ::dui {
 	
 	# Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created page
 	variable create_page_namespaces 0
+	# Set to 1 to trim leading and trailing whitespace when modifying the value in entry boxes 
+	variable trim_entries 0
 	
 	### THEME SUB-ENSEMBLE ###
 	# Themes are just names that serve as groupings for sets of aspect variables. They define a "visual identity"
@@ -1477,6 +1479,11 @@ msg [namespace current] disable "page=$page, tags=$tags"
 	#	-tags
 	#	-anchor anchor wrt the {x y} coordinates on the '.can create window' command
 	#   -label or -labelvariable
+	#	-label_pos can be a pair of absolute coordinates; a pair of relative coordinates with respect to the widget
+	#		top-left coordinates {x y}, if they start by "-" or "+"; or a position marker and optional positive or
+	#		negative x and y offsets. The marker and offsets are used in a relocate_text_wrt call on the page show 
+	#		event, so that it is repositioned dynamically for widgets whose size is defined in characters instead
+	#		of pixels.
 	#	-label_* passed through to add_text 
 	proc add_widget { pages type x y {cmd {}} args } {
 #		global widget_cnt	
@@ -1526,7 +1533,6 @@ msg [namespace current] disable "page=$page, tags=$tags"
 					set ylabel [expr {$y+$ylabel}]
 				}				
 			} else {
-				# PENDING ADJUSTMENT AFTER-SHOW
 				set xlabel [expr {$x-20}]
 				set ylabel [expr {$y-3}]
 				set xlabel_offset 0
@@ -1594,9 +1600,22 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		return $widget
 	}
 	
+	# Add a text entry box. Adds validation and full page editor call on top of add_widget.
+	#
+	# Named options:
+	#  -data_type if 'numeric' and -vcmd is undefined, adds validation based on the following parameters:
+	#  -n_decimals number of decimals allowed. Defaults to 0 if undefined.
+	#  -min_value minimum value accepted
+	#  -max_value maximum value accepted
+	#  -small_increment small increment used on clicker controls. Not used by default, but is passed to page editors
+	#		if the -editor_page option is specified 
+	#  -big_increment big increment used on clicker controls. Not used by default, but is passed to page editors
+	#		if the -editor_page option is specified
+	#  -default_value Default value passed to the page editor if the -editor_page option is specified
+	#  -trim if 1, trims leading and trailing whitespace after editing the value. Defaults to the value of 
+	#		$dui::trim_entries.
 	proc add_entry { pages x y {cmd {}} args } {
-		global widget_cnt
-		
+#		global widget_cnt		
 #		set first_page [lindex $pages 0]
 #		set is_ns [dui::page::is_namespace $first_page]		
 #		incr widget_cnt
@@ -1624,9 +1643,47 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		set style [dui::args::get_option -style "" 0]
 		font set_in_args entry $style
 		
-		set widget [dui add_widget $pages entry $x $y $cmd -exportselection 1 {*}$args ]
+		# Data type and validation
+		set data_type [dui::args::get_option -data_type "text" 1]
+		set n_decimals [dui::args::get_option -n_decimals 0 1]
+		set trim  [dui::args::get_option -trim $dui::trim_entries 1]
+		foreach fn {min_value max_value small_increment big_increment default_value} {
+			set $fn [dui::args::get_option -$fn "" 1]
+		}
+		
+		if { ![dui::args::has_option -vcmd] } {
+			set vcmd ""
+			if { $data_type eq "numeric" } {
+				set vcmd [list ::dui::validate_numeric %P $n_decimals $min_value $max_value]
+			}
+			
+			if { $vcmd ne "" } {
+				dui::args::add_option_if_not_exists -vcmd $vcmd
+				dui::args::add_option_if_not_exists -validate key
+			}
+		}
+		
+		set widget [dui add_widget $pages entry $x $y $cmd -exportselection 1 {*}$args]
 	
-		bind $widget <Return> { hide_android_keyboard ; focus [tk_focusNext %W] }
+		# Default actions on leaving a text entry: Trim text, format if needed, and hide_android_keyboard
+		bind $widget <Return> { dui hide_android_keyboard ; focus [tk_focusNext %W] }
+		
+		set textvariable [dui::args::get_option -textvariable]
+		if { $textvariable ne "" } {
+			set leave_cmd ""
+			if { $data_type in "text long_text category" } {
+				if { [string is true $trim] } {
+					append leave_cmd "set $textvariable \[string trim \$$textvariable\];"
+				}
+			} elseif { $data_type eq "numeric" } {
+				append leave_cmd "if \{\$$textvariable ne \{\} \} \{ 
+					set $textvariable \[format \"%%.${n_decimals}f\" \$$textvariable\] 
+				\};"
+			} 
+			append leave_cmd "dui hide_android_keyboard;"
+			bind $widget <Leave> $leave_cmd
+		}
+		
 		return $widget
 	}
 	
@@ -1648,6 +1705,47 @@ msg [namespace current] disable "page=$page, tags=$tags"
 				error "Tag '$tag' already exists in the canvas, duplicated canvas items tags are not allowed"
 			}
 		}
+	}
+	
+	# Command to invoke from the -vcmd option to validate numeric entries, with -validate key.
+	# Returns 1 if empty or a valid numeric value in the requested range, 0 otherwise.
+	# Trims leading zeros to avoid octal arithmetic.
+	proc validate_numeric { value {n_decimals 0} {min_value {}} {max_value {}} } {
+		set value [string trimleft $value 0]
+		if { $value eq {} } {
+			return 1
+		}
+		if { $value eq "." && $n_decimals > 0 } {
+			return 1
+		}
+		if { $value eq "-" } {
+			return [expr {($min_value eq "" || ([string is double $min_value] && $min_value < 0))}]
+		}
+		
+		if { $n_decimals eq "" || $n_decimals == 0 } {
+			if { ![string is entier $value] } {
+				return 0
+			}			
+		} elseif { ![string is double $value] } {
+			return 0
+		} else {
+			set parts [split $value .]
+			set dec_part ""
+			if { [llength $parts] > 1 } {
+				set dec_part [lindex $parts 1]
+			} 
+			if { $dec_part ne "" && [string length $dec_part] > $n_decimals } {
+				return 0
+			}
+		}
+		
+		if { $min_value ne "" && [string is double $min_value] && $value < $min_value } {
+			return 0
+		}
+		if { $max_value ne "" && [string is double $max_value] && $value > $max_value } {
+			return 0
+		}
+		return 1
 	}
 	
 	# Computes the anchor point coordinates with respect to the provided bounding box coordinates, returns a list 
