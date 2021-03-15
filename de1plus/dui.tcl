@@ -39,7 +39,7 @@ set ::settings(enabled_plugins) {dui_demo}
 
 namespace eval ::dui {
 	namespace export init canvas theme aspect symbol font page item \
-		add_text add_variable add_symbol add_button add_widget add_entry add_listbox \
+		add_text add_variable add_symbol add_button add_widget add_entry add_checkbox add_listbox \
 		hide_android_keyboard
 	namespace ensemble create
 
@@ -195,6 +195,15 @@ namespace eval ::dui {
 			default.entry.relief.special flat
 			default.entry.bg.special yellow
 			default.entry.width.special 1
+			
+			default.checkbox.font_family "Font Awesome 5 Pro-Regular-400"
+			default.checkbox.font_size 16
+			default.checkbox.anchor nw
+			default.checkbox.justify left
+			
+			default.checkbox_label.pos "e 45 0"
+			default.checkbox_label.anchor w
+			default.checkbox_label.justify left
 		}
 		#default.button.disabledfill "#ddd"
 		
@@ -333,6 +342,8 @@ namespace eval ::dui {
 		namespace export add get exists
 		namespace ensemble create
 				
+		variable font_filename "Font Awesome 5 Pro-Regular-400"
+		
 		variable symbols
 		array set symbols {
 			square "\uf0c8"
@@ -453,7 +464,7 @@ namespace eval ::dui {
 				set ::skin_fonts list
 			}
 		
-			set font_key "$font_name $size"
+			set font_key "\"$font_name\" $size"
 			set font_index [lsearch $::skin_fonts $font_key]
 			if {$font_index == -1} {
 				# load the font if needed. 
@@ -1192,6 +1203,64 @@ msg [namespace current] disable "page=$page, tags=$tags"
 			return $tags
 		}
 		
+		# Processes the -label* named options in 'args' and produces the label according to the provided options.
+		# All the -label* options are removed from 'args'.
+		proc process_label { pages x y type style {proc_args args} } {
+			upvar $proc_args largs
+			set label [dui::args::get_option -label "" 1 largs]
+			set labelvar [dui::args::get_option -labelvariable "" 1 largs]
+			if { $label eq "" && $labelvar eq "" } {
+				return
+			}
+			
+			set tags [dui::args::get_option -tags "" 0 largs]
+			set main_tag [lindex $tags 0]
+			
+			set label_tags [list $main_tag.lbl {*}[lrange $tags 1 end]]	
+			set label_args [dui::args::extract_prefixed -label_ largs]
+			foreach aspect "anchor justify fill activefill disabledfill font_family font_size" {
+				dui::args::add_option_if_not_exists -$aspect [dui aspect get ${type}_label $aspect -style $style \
+					-default {} -default_type text] label_args
+			}
+			set label_pos [dui::args::get_option -pos [dui aspect get ${type}_label pos -style $style \
+				-default "w -20 0"] 1 label_args]
+			if { [llength $label_pos] == 2 && [string is integer [lindex $label_pos 0]] && \
+					[string is integer [lindex $label_pos 1]] } {
+				set xlabel [lindex $label_pos 0]
+				if { [string range $xlabel 0 0] in "- +" } {
+					set xlabel [expr {$x+$xlabel}]
+				}
+				set ylabel [lindex $label_pos 1]
+				if { [string range $ylabel 0 0] in "- +" } {
+					set ylabel [expr {$y+$ylabel}]
+				}				
+			} else {
+				set xlabel [expr {$x-20}]
+				set ylabel [expr {$y-3}]
+				set xlabel_offset 0
+				set ylabel_offset 0
+				if { [llength $label_pos] > 1 } {
+					set xlabel_offset [rescale_x_skin [lindex $label_pos 1]] 
+				}
+				if { [llength $label_pos] > 2 } {
+					set ylabel_offset [rescale_y_skin [lindex $label_pos 2]] 
+				}				
+				set after_show_cmd "::dui::relocate_text_wrt $main_tag.lbl $main_tag [lindex $label_pos 0] \
+					$xlabel_offset $ylabel_offset [dui::args::get_option -anchor nw 0 label_args]"
+				foreach page $pages {
+					dui page add_action $page show $after_show_cmd
+				}
+			}
+
+			if { $label ne "" } {
+				set w [dui add_text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label \
+					{*}$label_args]
+			} elseif { $labelvar ne "" } {
+				set w [dui add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
+					-aspect_type ${type}_label {*}$label_args] 
+			}
+			return $w
+		}
 	}
 	
 	### INITIALIZE ###
@@ -1232,7 +1301,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		foreach aspect "fill activefill disabledfill anchor justify" {
 			dui::args::add_option_if_not_exists -$aspect [dui aspect get $aspect_type $aspect -style $style]
 		}
-		font set_in_args text $style
+		font::set_in_args text $style
 		
 #		if { ![dui::args::has_option -font] } {
 #			set font_family [dui::args::get_option font_family [dui aspect get text.font_family -style $style] 1]
@@ -1297,7 +1366,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		}
 		
 		set symbol [dui symbol get $symbol]
-		dui::args::add_option_if_not_exists -font_family "Font Awesome 5 Pro-Regular-400"
+		dui::args::add_option_if_not_exists -font_family $dui::symbol::font_filename
 		
 		return [dui add_text $pages $x $y -text $symbol -aspect_type symbol {*}$args]
 	}
@@ -1493,10 +1562,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		set rx [rescale_x_skin $x]
 		set ry [rescale_y_skin $y]
 		
-#		incr widget_cnt	
-#		set tags [dui::args::get_option -tags "w_${type}_$widget_cnt" 1]
-#		set main_tag [lindex $tags 0]
-		set tags [item::complete_tags_and_var $pages $type "" 0 args 1]		
+		set tags [item::complete_tags_and_var $pages $type "" 0 args 0]
 		set main_tag [lindex $tags 0]
 		
 		set widget $can.$main_tag
@@ -1513,46 +1579,9 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		# Anchor is no longer hardcoded but can be defined on the call or on the theme aspect
 		set anchor [dui::args::get_option -anchor nw 1]
 
-		# Extract -label related options, if specified
-		set label [dui::args::get_option -label "" 1]
-		set labelvar [dui::args::get_option -labelvariable "" 1]
-		if { $label ne "" || $labelvar ne "" } {
-			set label_tags [list $main_tag.lbl {*}[lrange $tags 1 end]]	
-			set label_args [dui::args::extract_prefixed -label_]
-			foreach aspect "anchor justify fill activefill disabledfill font_family font_size" {
-				dui::args::add_option_if_not_exists -$aspect [dui aspect get ${type}_label $aspect -style $style \
-					-default {} -default_type text] label_args
-			}
-			
-			set label_pos [dui::args::get_option -pos [dui aspect get ${type}_label pos -style $style -default "w -20"] 1 label_args]
-			if { [llength $label_pos] == 2 && [string is integer [lindex $label_pos 0]] && [string is integer [lindex $label_pos 1]] } {
-				set xlabel [lindex $label_pos 0]
-				if { [string range $xlabel 0 0] in "- +" } {
-					set xlabel [expr {$x+$xlabel}]
-				}
-				set ylabel [lindex $label_pos 1]
-				if { [string range $ylabel 0 0] in "- +" } {
-					set ylabel [expr {$y+$ylabel}]
-				}				
-			} else {
-				set xlabel [expr {$x-20}]
-				set ylabel [expr {$y-3}]
-				set xlabel_offset 0
-				set ylabel_offset 0
-				if { [llength $label_pos] > 1 } {
-					set xlabel_offset [rescale_x_skin [lindex $label_pos 1]] 
-				}
-				if { [llength $label_pos] > 2 } {
-					set ylabel_offset [rescale_y_skin [lindex $label_pos 2]] 
-				}				
-				set after_show_cmd "::dui::relocate_text_wrt $main_tag.lbl $main_tag [lindex $label_pos 0] \
-					$xlabel_offset $ylabel_offset [dui::args::get_option -anchor 0 label_args]"
-				foreach page $pages {
-					dui page add_action $page show $after_show_cmd
-				}
-			} 
-		}
+		dui::item::process_label $pages $x $y $type $style
 		
+		dui::args::remove_option -tags
 		try {
 			$type $widget {*}$args
 		} on error err {
@@ -1576,23 +1605,11 @@ msg [namespace current] disable "page=$page, tags=$tags"
 			msg -ERROR [namespace current] "evaluating $type widget '$widget' command \{ $cmd \}: $err" 
 		}
 	
-#		foreach p $pages {
-#			lappend tags p:$p
-#		}
-		
-		if { $label ne "" } {
-			add_text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label {*}$label_args
-		} elseif { $labelvar ne "" } {
-			add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags -aspect_type ${type}_label {*}$label_args 
-		}
-		
 		if {$type eq "scrollbar"} {
 			set windowname [$can create window  $rx $ry -window $widget -anchor $anchor -tags $tags -state hidden -height 245]
 		} else {
 			set windowname [$can create window $rx $ry -window $widget -anchor $anchor -tags $tags -state hidden]
 		}
-		#puts "winfo: [winfo children .can]"
-		#.can bind $windowname [platform_button_press] "msg click"
 			
 		# EB: Maintain this? I don't find any use of this array in the app code
 		#set ::tclwindows($widget) [list $x $y]
@@ -1646,7 +1663,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 #			set txtvar "::dui::pages::${first_page}::data($txtvar)"
 #		}
 		set style [dui::args::get_option -style "" 0]
-		font set_in_args entry $style
+		font::set_in_args entry $style
 		
 		# Data type and validation
 		set data_type [dui::args::get_option -data_type "text" 1]
@@ -1711,9 +1728,26 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		return $widget
 	}
 	
+	#  Adds a checkbox using Fontawesome symbols (which can be resized to any font size) instead of the tiny Tk 
+	#	checkbutton.
 	proc add_checkbox { pages x y {cmd {}} args } {
+		set tags [item::complete_tags_and_var $pages checkbox -textvariable]
+		set main_tag [lindex $tags 0]
 		
+		set style [dui::args::get_option -style "" 0]
+		font::set_in_args checkbox $style
+		set checkvar [dui::args::get_option -textvariable "" 1]
 		
+		dui::item::process_label $pages $x $y checkbox $style
+		
+		dui add_variable $pages $x $y -textvariable \
+			"\[lindex \$::dui::symbol::checkbox_symbols_map \[string is true \$$checkvar\]\]" {*}$args
+
+		set cmd "if { \[string is true \$$checkvar\] } { set $checkvar 0 } else { set $checkvar 1 }; $cmd"
+		set button_tags [list $main_tag.btn {*}[lrange $tags 1 end]]		
+		dui add_button $pages $cmd [expr {$x-5}] [expr {$y-5}] [expr {$x+60}] [expr {$y+60}] ] -tags $button_tags
+		
+		return $main_tag
 	}
 	
 	proc add_listbox {} {
@@ -1726,7 +1760,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 	proc fail_if_tag_exists { tags } {
 		foreach tag $tags { 
 			if { [.can find withtag $tag] ne "" } {
-				error "Tag '$tag' already exists in the canvas, duplicated canvas items tags are not allowed"
+				error "Tag '$tag' already exists in the canvas, duplicated canvas items main tags are not allowed"
 			}
 		}
 	}
