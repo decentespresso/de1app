@@ -22,7 +22,7 @@
 #		::delayed_image_load system
 #	- Global utility functions that are used here:
 #		ifexists
-#		$::fontm
+#		$::fontm, $::globals(entry_length_multiplier)
 #		$::android, $::undroid
 
 package provide de1_dui 1.0
@@ -204,6 +204,41 @@ namespace eval ::dui {
 			default.checkbox_label.pos "e 45 0"
 			default.checkbox_label.anchor w
 			default.checkbox_label.justify left
+			
+			default.listbox.relief flat
+			default.listbox.borderwidth 1
+			default.listbox.foreground black
+			default.listbox.background pink
+			default.listbox.selectforeground white
+			default.listbox.selectbackground black
+			default.listbox.selectborderwidth 0
+			default.listbox.disabledforeground white
+			default.listbox.selectbackground black
+			default.listbox.highlightthickness 1
+			default.listbox.highlightcolor orange
+			default.listbox.selectmode browser
+			default.listbox.justify left
+
+			default.listbox_label.pos "wn -10 0"
+			default.listbox_label.anchor ne
+			default.listbox_label.justify right
+			
+			default.scrollbar.width 75
+			default.scrollbar.length 75
+			default.scrollbar.sliderlength 75
+			default.scrollbar.from 0.0
+			default.scrollbar.to 1.0
+			default.scrollbar.bigincrement 0.2
+			default.scrollbar.borderwidth 1
+			default.scrollbar.showvalue 0
+			default.scrollbar.resolution 0.01
+			default.scrollbar.background "#d3dbf3"
+			default.scrollbar.foreground "#FFFFFF"
+			default.scrollbar.troughcolor "#f7f6fa"
+			default.scrollbar.relief flat
+			default.scrollbar.borderwidth 0
+			default.scrollbar.highlightthickness 0
+			
 		}
 		#default.button.disabledfill "#ddd"
 		
@@ -984,6 +1019,8 @@ namespace eval ::dui {
 		namespace ensemble create
 	
 		variable item_cnt 0
+		variable sliders
+		array set sliders {}
 		
 		# Keep track of what labels are displayed in what pages. Warns if a label already exists.
 		# THIS IS NO LONGER NEEDED, AS PAGE HIDE/SHOW IS NOW MANAGED USING THE CANVAS TAGS.
@@ -1216,7 +1253,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 			set tags [dui::args::get_option -tags "" 0 largs]
 			set main_tag [lindex $tags 0]
 			
-			set label_tags [list $main_tag.lbl {*}[lrange $tags 1 end]]	
+			set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]	
 			set label_args [dui::args::extract_prefixed -label_ largs]
 			foreach aspect "anchor justify fill activefill disabledfill font_family font_size" {
 				dui::args::add_option_if_not_exists -$aspect [dui aspect get ${type}_label $aspect -style $style \
@@ -1245,7 +1282,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 				if { [llength $label_pos] > 2 } {
 					set ylabel_offset [rescale_y_skin [lindex $label_pos 2]] 
 				}				
-				set after_show_cmd "::dui::relocate_text_wrt $main_tag.lbl $main_tag [lindex $label_pos 0] \
+				set after_show_cmd "::dui::relocate_text_wrt ${main_tag}-lbl $main_tag [lindex $label_pos 0] \
 					$xlabel_offset $ylabel_offset [dui::args::get_option -anchor nw 0 label_args]"
 				foreach page $pages {
 					dui page add_action $page show $after_show_cmd
@@ -1261,6 +1298,113 @@ msg [namespace current] disable "page=$page, tags=$tags"
 			}
 			return $w
 		}
+
+		# Processes the -yscrollbar* named options in 'args' and produces the scrollbar slider widget according to 
+		#	the provided options.
+		# All the -yscrollbar* options are removed from 'args'.
+		# Returns 0 if the scrollbar is not created, or the widget name if it is. 
+		proc process_yscrollbar { pages x y type style {proc_args args} } {
+			upvar $proc_args largs			
+			set ysb [dui::args::get_option -yscrollbar "" 1 largs]
+
+			if { $ysb eq "" } {
+				set sb_args [dui::args::extract_prefixed -yscrollbar_ largs]
+				if { [llength $sb_args] == 0 } {
+					return 0
+				}
+			} elseif { [string is false $ysb] } {
+				return 0
+			} else {
+				set sb_args [dui::args::extract_prefixed -yscrollbar_ largs]
+			}
+		
+			set tags [dui::args::get_option -tags "" 0 largs]
+			set main_tag [lindex $tags 0]			
+			set sb_tags [list ${main_tag}-ysb {*}[lrange $tags 1 end]]
+
+			foreach a [dui aspect list -type scrollbar -style $style] {
+				set a_value [dui aspect get ${type}_yscrollbar $a -style $style -default {} -default_type scrollbar]
+				if { $a eq "height" } {
+					if { $a_value eq "" } {
+						set a_value 75
+					}
+					set a_value [rescale_y_skin $a_value]
+				} elseif { $a in "length sliderlength" } {
+					if { $a_value eq "" } {
+						set a_value 75
+					}
+					set a_value [rescale_x_skin $a_value]
+				}
+				dui::args::add_option_if_not_exists -$a $a_value sb_args
+			}
+			
+			set var [dui::args::get_option -variable "" 1 sb_args]
+			if { $var eq "" } {
+				set var "::dui::item::sliders($main_tag)"
+				set $var 0
+			}
+			set cmd [dui::args::get_option -command "" 1 sb_args]
+			if { $cmd eq "" } {
+				set cmd "::dui::item::listbox_moveto $main_tag \$$var"
+			}
+			
+			foreach page $pages {
+				dui page add_action $page show "::dui::item::set_yscrollbar_dim $page $main_tag ${main_tag}-ysb"
+			}
+			
+			return [dui add_widget $pages scale 10000 $y {} -tags $sb_tags -variable $var -command $cmd {*}$sb_args]
+		}
+		
+		# Configures a page listbox yscrollbar locations and sizes. Run once the page is shown for then to be dynamically 
+		# positioned.
+		proc set_yscrollbar_dim { page widget_tag {scrollbar_tag {}} } {
+			set can [dui canvas]
+			if { $scrollbar_tag eq "" } {
+				set scrollbar_tag ${main_tag}-ysb
+			}
+			
+			lassign [$can bbox $widget_tag] x0 y0 x1 y1
+			[$can itemcget $scrollbar_tag -window] configure -length [expr {$y1-$y0}]
+			$can coords $scrollbar_tag "$x1 $y0"
+		}
+		
+		# convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the 
+		#	listbox, rather than using the ugly Tk native scrollbar
+		proc listbox_moveto { listbox_tag dest1 dest2 } {
+			set lb [[dui canvas] itemcget $listbox_tag -window]
+			# get number of items visible in list box
+			set visible_items [lindex [split [$lb configure -height] " "] 4]
+			# get total items in listbox
+			set total_items [$lb size]
+			# if all the items fit on screen then there is nothing to do
+			if {$visible_items >= $total_items} {return}
+			# determine which item would be at the top if the last items is at the bottom
+			set last_top_item [expr $total_items - $visible_items]
+			# determine which item should be at the top for the requested value
+			set top_item [expr int(round($last_top_item * $dest2))]
+		
+			$lb yview $top_item
+		}
+		
+		# convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the 
+		#	listbox, rather than using the ugly Tk native scrollbar
+		proc scale_scroll { listbox_tag slider_varname dest1 dest2} {
+			set lb [[dui canvas] itemcget $listbox_tag -window]
+			# get number of items visible in list box
+			set visible_items [lindex [split [$lb configure -height] " "] 4]
+			# get total items in listbox
+			set total_items [$lb size]
+			# if all the items fit on screen then there is nothing to do
+			if {$visible_items >= $total_items} {return}
+			# determine which item would be at the top if the last items is at the bottom
+			set last_top_item [expr $total_items - $visible_items]
+			# determine what percentage of the way down the current top item is
+			set rescaled_value [expr $dest1 * $total_items / $last_top_item]
+		
+			upvar $slider_varname fieldname
+			set fieldname $rescaled_value
+		}
+				
 	}
 	
 	### INITIALIZE ###
@@ -1405,10 +1549,10 @@ msg [namespace current] disable "page=$page, tags=$tags"
 #		incr button_cnt
 #		set tags [dui::args::get_option -tags "btn_$button_cnt" 1]
 #		set main_tag [lindex $tags 0]
-#		dui::fail_if_tag_exists "$main_tag $main_tag.btn $main_tag.lbl"
+#		dui::fail_if_tag_exists "$main_tag $main_tag-btn $main_tag-lbl"
 #		lappend tags $main_tag*
-#		set button_tags [list $main_tag.btn $main_tag*]
-#		set label_tags [list $main_tag.lbl $main_tag*]
+#		set button_tags [list $main_tag-btn $main_tag*]
+#		set label_tags [list $main_tag-lbl $main_tag*]
 #		foreach p $pages {
 #			lappend tags p:$p
 #			lappend button_tags p:$p
@@ -1416,14 +1560,14 @@ msg [namespace current] disable "page=$page, tags=$tags"
 #		}
 		set tags [item::complete_tags_and_var $pages button {} 1]
 		set main_tag [lindex $tags 0]
-		set button_tags [list $main_tag.btn {*}[lrange $tags 1 end]]
+		set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
 		
 		set style [dui::args::get_option -style "" 1]
 
 		set label [dui::args::get_option -label "" 1]
 		set labelvar [dui::args::get_option -labelvariable "" 1]
 		if { $label ne "" || $labelvar ne "" } {
-			set label_tags [list $main_tag.lbl {*}[lrange $tags 1 end]]	
+			set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]	
 			set label_args [dui::args::extract_prefixed -label_]
 			foreach aspect "anchor justify fill activefill disabledfill font_family font_size" {
 				dui::args::add_option_if_not_exists -$aspect [dui aspect get button_label $aspect -style $style \
@@ -1637,31 +1781,9 @@ msg [namespace current] disable "page=$page, tags=$tags"
 	#		editor if it defined for the -data_type. The first argument of that page must be the fully qualified name 
 	#		of the variable that holds the value.
 	proc add_entry { pages x y {cmd {}} args } {
-#		global widget_cnt		
-#		set first_page [lindex $pages 0]
-#		set is_ns [dui::page::is_namespace $first_page]		
-#		incr widget_cnt
-#		set has_tags [dui::args::has_option -tags]
-#		set tags [dui::args::get_option -tags "w_entry_$widget_cnt" 1]
-#		set main_tag [lindex $tags 0]
 		set tags [item::complete_tags_and_var $pages entry -textvariable]
 		set main_tag [lindex $tags 0]
 		
-#		set txtvar [dui::args::get_option -textvariable "" 1]
-#		if { $txtvar eq "" } {
-#			if { [dui::args::has_option -tags] && $is_ns } {
-#				set main_tag [lindex [dui::args::get_option -tags] 0]
-#				if { [string is wordchar $main_tag] } {
-#					set txtvar "::dui::pages::${first_page}::data($main_tag)"
-#				}
-#			}
-#			#msg -WARN [namespace current] "no -textvariable passed to add_entry"
-#		} elseif { $is_ns && [string is wordchar $txtvar] } {
-#			if { ![dui::args::has_option -tags] } {
-#				dui::args::add_option_if_not_exists -tags $txtvar 
-#			}
-#			set txtvar "::dui::pages::${first_page}::data($txtvar)"
-#		}
 		set style [dui::args::get_option -style "" 0]
 		font::set_in_args entry $style
 		
@@ -1686,7 +1808,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 			}
 		}
 		
-		set widget [dui add_widget $pages entry $x $y $cmd -exportselection 1 {*}$args]
+		set widget [dui add_widget $pages entry $x $y $cmd {*}$args]
 	
 		# Default actions on leaving a text entry: Trim text, format if needed, and hide_android_keyboard
 		bind $widget <Return> { dui hide_android_keyboard ; focus [tk_focusNext %W] }
@@ -1744,14 +1866,31 @@ msg [namespace current] disable "page=$page, tags=$tags"
 			"\[lindex \$::dui::symbol::checkbox_symbols_map \[string is true \$$checkvar\]\]" {*}$args
 
 		set cmd "if { \[string is true \$$checkvar\] } { set $checkvar 0 } else { set $checkvar 1 }; $cmd"
-		set button_tags [list $main_tag.btn {*}[lrange $tags 1 end]]		
+		set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]		
 		dui add_button $pages $cmd [expr {$x-5}] [expr {$y-5}] [expr {$x+60}] [expr {$y+60}] ] -tags $button_tags
 		
 		return $main_tag
 	}
 	
-	proc add_listbox {} {
+	proc add_listbox { pages x y {cmd {}} args } {
+		set tags [item::complete_tags_and_var $pages listbox -listvariable]
+		set main_tag [lindex $tags 0]
 		
+		set style [dui::args::get_option -style "" 0]
+		font::set_in_args listbox $style
+		set width [dui::args::get_option -width "" 1]
+		if { $width ne "" && [string is entier $width] } {
+			dui::args::add_option_if_not_exists -width [expr {int($width * $::globals(entry_length_multiplier))}]
+		}
+
+		dui::item::process_label $pages $x $y listbox $style
+		set ysb [dui::item::process_yscrollbar $pages $x $y listbox $style]
+		if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
+			dui::args::add_option_if_not_exists -yscrollcommand \
+				"::dui::item::scale_scroll $main_tag ::dui::item::sliders($main_tag)"
+		}
+		
+		return [dui add_widget $pages listbox $x $y $cmd {*}$args]
 	}
 		
 
