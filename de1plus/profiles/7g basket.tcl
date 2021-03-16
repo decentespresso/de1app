@@ -3,7 +3,7 @@ author Decent
 beverage_type espresso
 espresso_decline_time 10
 espresso_hold_time 6
-espresso_pressure 9.0
+espresso_pressure 7.5
 espresso_temperature 90.0
 espresso_temperature_0 90.0
 espresso_temperature_1 90.0
