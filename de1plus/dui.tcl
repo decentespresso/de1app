@@ -166,13 +166,14 @@ namespace eval ::dui {
 			default.button_label.pos {0.5 0.5}
 			default.button_label.anchor center
 			default.button_label.font_family notosansuiregular
-			default.button_label.font_size 18
+			default.button_label.font_size 16
 			default.button_label.justify center
 			default.button_label.fill "#ffffff"
 			default.button_label.activefill "#ffffff"
 			default.button_label.disabledfill black
 
-			default.button_symbol.pos {0.5 0.5}
+			default.button_symbol.pos {0.2 0.5}
+			default.button_symbol.font_size 24
 			default.button_symbol.anchor center
 			default.button_symbol.justify center
 			default.button_symbol.fill "#ffffff"
@@ -326,16 +327,16 @@ namespace eval ::dui {
 			
 			set type [dui::args::get_option -type ""]
 			if { $type eq "" } {
-				append pattern {[0-9a-zA-Z]+\.}
+				append pattern {[0-9a-zA-Z_]+\.}
 			} else {
 				append pattern "$type."
 			}
 			
 			set style [dui::args::get_option -style ""]
 			if { $style eq "" } {
-				append pattern {[0-9a-zA-Z]+$}
+				append pattern {[0-9a-zA-Z_]+$}
 			} else {
-				append pattern "\[0-9a-zA-Z\]+.$style\$"
+				append pattern "\[0-9a-zA-Z_\]+.$style\$"
 			}
 			
 			msg [namespace current] list "pattern='$pattern'"
@@ -349,23 +350,6 @@ namespace eval ::dui {
 				}
 			}
 			
-			#msg [namespace current] "list, aspect_names='$aspect_names'"
-#			if { $theme_len == 0 } {
-#				set result $aspect_names
-#			} else { 
-#				foreach a $aspect_names {
-#					lappend result [string range $a $theme_len end]
-#				}
-#			}
-#			
-#			if { $style ne "" } {
-#				set style_len [expr {[string length $style]+1}]
-#				foreach a $result {
-#					lappend new_result [string range $a 0 end-$style_len]
-#				}
-#				set result $new_result
-#			}
-#			#msg [namespace current] "list, result='$result'"
 			return $result
 		}
 	}	
@@ -537,30 +521,7 @@ namespace eval ::dui {
 		proc list {} {
 			return ::loaded_fonts
 		}
-		
-		# Handles -font_* options in the args:
-		#	1) if -font is provided in the args, does nothing
-		#	2) otherwise, uses -font_family and -font_size in the args, or, if not provided, from the theme type & style,
-		#		and modifies the args to use a -font specification according to the provided options..
-		#		If the type does not provide any font definition, uses the <theme>.font.font_* value.
-		#		Relative font sizes +1/-1/+2 etc. can be defined, with respect to whatever font size is defined in the 
-		#		theme for that type & style.
-		proc set_in_args { type {style ""} {args_name args} } {
-			upvar $args_name args
-			if { $type eq "" } {
-				set type font
-			}
-			if { ![dui::args::has_option -font] } {
-				set font_family [dui::args::get_option -font_family [dui aspect get $type font_family -style $style] 1]
-				set default_size [dui aspect get $type font_size -style $style]
-				set font_size [dui::args::get_option -font_size $default_size 1]
-				if { [string range $font_size 0 0] in "- +" } {
-					set font_size [expr $default_size$font_size]
-				}
-				dui::args::add_option_if_not_exists -font [get $font_family $font_size]
-			}		
-		}
-		
+			
 		# Returns the current fonts directory (if path is not specified) or sets it to path. 
 #		proc dir { {font_path {}} } {
 #			variable dir
@@ -587,8 +548,8 @@ namespace eval ::dui {
 	namespace eval args {
 		# Adds a named option "-option_name option_value" to a named argument list if the option doesn't exist in the list.
 		# Returns the option value.
-		proc add_option_if_not_exists { option_name option_value {proc_args args} } {
-			upvar $proc_args largs	
+		proc add_option_if_not_exists { option_name option_value {args_name args} } {
+			upvar $args_name largs	
 			if { [string range $option_name 0 0] ne "-" } { set option_name "-$option_name" }
 			set opt_idx [lsearch $largs $option_name]
 			if {  $opt_idx == -1 } {
@@ -600,8 +561,8 @@ namespace eval ::dui {
 		}
 		
 		# Removes the named option "-option_name" from the named argument list, if it exists.
-		proc remove_option { option_name {proc_args args} } {
-			upvar $proc_args largs
+		proc remove_option { option_name {args_name args} } {
+			upvar $args_name largs
 			if { [string range $option_name 0 0] ne "-" } { set option_name "-$option_name" }	
 			set option_idx [lsearch $largs $option_name]
 			if { $option_idx > -1 } {
@@ -615,8 +576,8 @@ namespace eval ::dui {
 		}
 		
 		# Returns 1 if the named arguments list has a named option "-option_name".
-		proc has_option { option_name {proc_args args} } {
-			upvar $proc_args largs
+		proc has_option { option_name {args_name args} } {
+			upvar $args_name largs
 			if { [string range $option_name 0 0] ne "-" } { set option_name "-$option_name" }	
 			set n [llength $largs]
 			set option_idx [lsearch $largs $option_name]
@@ -624,8 +585,8 @@ namespace eval ::dui {
 		}
 		
 		# Returns the value of the named option in the named argument list
-		proc get_option { option_name {default_value {}} {rm_option 0} {proc_args args} } {
-			upvar $proc_args largs	
+		proc get_option { option_name {default_value {}} {rm_option 0} {args_name args} } {
+			upvar $args_name largs	
 			if { [string range $option_name 0 0] ne "-" } { set option_name "-$option_name" }
 			set n [llength $largs]
 			set option_idx [lsearch $largs $option_name]
@@ -643,14 +604,14 @@ namespace eval ::dui {
 		# Extracts from args all pairs whose key start by the prefix. And returns the extracted named options in a new
 		# args list that contains the pairs, with the prefix stripped from the keys. 
 		# For example, "-label_fill X" will return "-fill X" if prefix="-label_", and args will be emptied.
-		proc extract_prefixed { prefix {proc_args args} } {
-			upvar $proc_args largs
+		proc extract_prefixed { prefix {args_name args} } {
+			upvar $args_name largs
 			set new_args {}
 			set n [expr {[string length $prefix]-1}]
 			set i 0 
 			while { $i < [llength $largs] } { 
 				if { [string range [lindex $largs $i] 0 $n] eq $prefix } {
-					lappend new_args "-[string range [lindex $largs $i] 7 end]"
+					lappend new_args "-[string range [lindex $largs $i] [expr {$n+1}] end]"
 					lappend new_args [lindex $largs [expr {$i+1}]]
 					set largs [lreplace $largs $i [expr {$i+1}]]
 				} else {
@@ -665,14 +626,250 @@ namespace eval ::dui {
 		#	theme and optional style to the, unless it is already available in the args.
 		# Also removes the -style tag.
 		# DOES NOT WORK, DOESN'T RECOGNIZE $largs in the second line
-		proc complete_with_theme_aspects { type aspects {proc_args args } } {
-			upvar $proc_args largs
+		proc complete_with_theme_aspects { type aspects {args_name args } } {
+			upvar $args_name largs
 			set style [get_option -style "" 1 $largs]
 			foreach aspect $aspects {
 				args::add_option_if_not_exists -$aspect [dui aspect get "$type.$aspect" -style $style] $largs 
 			}
 		}
 		
+		# "Private" method to complete the tags and -<type>variable arguments in a standard way.
+		# If -tags is in the args, use the first tag as main tag, otherwise assigns an auto-increment counter tag,
+		#	using 2 counters, one for text items, another for widgets.
+		# Raises an error if a main tag already exists, as no duplicates are allowed.
+		# Adds page tags in the form "p:$page" to the tags. This allows showing and hiding pages, or retrieving items
+		#	by their tag name plus the page in which they appear.
+		# If a varoption argument is specified (e.g. "-textvariable"), and the first page in $pages is a page
+		#	namespace, then:
+		#		- if the varoption is not found in the arguments, or it's the empty string, uses the namespace 
+		#			variable data(<main_tag>)
+		#		- if the varoption is found and it is a plain name instead of a fully qualified name, such as 
+		#			"-textvariable pressure", uses the namespace variable data(<varoption>), e.g. data(pressure).
+		proc process_tags_and_var { pages type {varoption {}} {add_multi 0} {args_name args} {rm_tags 0} } {
+			variable item_cnt
+			upvar $args_name largs
+			
+			set tags [dui::args::get_option -tags {} 1 largs]
+			set auto_assign_tag 0
+			if { [llength $tags] == 0 } {
+				set main_tag "${type}_[incr item_cnt]"
+				set tags $main_tag
+#				if { $type eq "text" || $type eq "variable" } {
+#					global text_cnt
+#					set main_tag "text_[incr item_cnt]"
+#					set tags $main_tag
+#				} elseif { $type eq "button" } {
+#					global button_cnt
+#					set main_tag "btn_[incr text_cnt]"
+#					incr button_cnt
+#					#		set tags [dui::args::get_option -tags "btn_$button_cnt" 1]
+#					
+#				} elseif { $type eq "widget" } {
+#					incr widget_cnt
+#					set main_tag "w_${type}_$widget_cnt"
+#					set tags $main_tag
+#				} else {
+#					error "dui item complete_tags_and_var, type='$type', but must be either 'text' or 'widget'"
+#				}
+				set auto_assign_tag 1
+			} else {
+				set main_tag [lindex $tags 0]
+			}
+			dui::fail_if_tag_exists $main_tag
+			
+			if { $add_multi == 1 && "$main_tag*" ni $tags } {
+				lappend tags "$main_tag*"
+			}
+			
+			foreach p $pages {
+				if { "p:$p" ni $tags } { 
+					lappend tags "p:$p"
+				}
+			}
+			if { $rm_tags == 0 } {
+				dui::args::add_option_if_not_exists -tags $tags largs
+			}
+						
+			if { $varoption ne "" } {
+				set first_page [lindex $pages 0]
+				set is_ns [dui::page::is_namespace $first_page]
+	
+				if { $is_ns == 1 } {
+					if { [string range $varoption 0 0 ] ne "-" } {
+						set varoption -$varoption
+					}
+					set varname [dui::args::get_option $varoption "" 1 largs]
+					if { $varname eq "" } {
+						if { ! $auto_assign_tag } {
+							if { $type eq "variable" } {
+								set varname "\$::dui::pages::${first_page}::data($main_tag)"
+							} else {
+								set varname "::dui::pages::${first_page}::data($main_tag)"
+							}
+						}
+					} elseif { [string is wordchar $varname] } {
+						if { $type eq "variable" } {
+							set varname "\$::dui::pages::${first_page}::data($varname)"
+						} else {
+							set varname "::dui::pages::${first_page}::data($varname)"
+						}
+					}
+					
+					if { $varname eq "" } {
+						msg -WARN [namespace current] complete_tags_and_var "no $varoption specified for item $main_tag"
+					} else {
+						dui::args::add_option_if_not_exists $varoption $varname largs
+					}
+				}
+			}
+			
+			return $tags
+		}
+				
+		# Handles -font_* options in the args:
+		#	1) if -font is provided in the args, does nothing
+		#	2) otherwise, uses -font_family and -font_size in the args, or, if not provided, from the theme type & style,
+		#		and modifies the args to use a -font specification according to the provided options..
+		#		If the type does not provide any font definition, uses the <theme>.font.font_* value.
+		#		Relative font sizes +1/-1/+2 etc. can be defined, with respect to whatever font size is defined in the 
+		#		theme for that type & style.
+		# Returns the font.
+		proc process_font { type {style ""} {args_name args} } {
+			upvar $args_name largs
+			if { $type eq "" } {
+				set type font
+			}
+			if { [dui::args::has_option -font largs] } {
+				set font [dui::args::get_option -font "" 0 largs]
+			} else {
+				set font_family [dui::args::get_option -font_family [dui aspect get $type font_family -style $style] 1 largs]
+				set default_size [dui aspect get $type font_size -style $style]
+				set font_size [dui::args::get_option -font_size $default_size 1 largs]
+				if { [string range $font_size 0 0] in "- +" } {
+					set font_size [expr $default_size$font_size]
+				}
+				set font [dui font get $font_family $font_size]
+				dui::args::add_option_if_not_exists -font $font largs
+			}
+			return $font
+		}
+
+		# Processes the -label* named options in 'args' and produces the label according to the provided options.
+		# All the -label* options are removed from 'args'.
+		# Returns the main tag of the created text. 
+		proc process_label { pages x y type style {args_name args} } {
+			upvar $args_name largs
+			set label [dui::args::get_option -label "" 1 largs]
+			set labelvar [dui::args::get_option -labelvariable "" 1 largs]
+			if { $label eq "" && $labelvar eq "" } {
+				return
+			}
+			
+			set tags [dui::args::get_option -tags "" 0 largs]
+			set main_tag [lindex $tags 0]
+			
+			set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]	
+			set label_args [dui::args::extract_prefixed -label_ largs]
+			foreach aspect "anchor justify fill activefill disabledfill font_family font_size" {
+				dui::args::add_option_if_not_exists -$aspect [dui aspect get ${type}_label $aspect -style $style \
+					-default {} -default_type text] label_args
+			}
+			set label_pos [dui::args::get_option -pos [dui aspect get ${type}_label pos -style $style \
+				-default "w -20 0"] 1 label_args]
+			if { [llength $label_pos] == 2 && [string is integer [lindex $label_pos 0]] && \
+					[string is integer [lindex $label_pos 1]] } {
+				set xlabel [lindex $label_pos 0]
+				if { [string range $xlabel 0 0] in "- +" } {
+					set xlabel [expr {$x+$xlabel}]
+				}
+				set ylabel [lindex $label_pos 1]
+				if { [string range $ylabel 0 0] in "- +" } {
+					set ylabel [expr {$y+$ylabel}]
+				}				
+			} else {
+				set xlabel [expr {$x-20}]
+				set ylabel [expr {$y-3}]
+				set xlabel_offset 0
+				set ylabel_offset 0
+				if { [llength $label_pos] > 1 } {
+					set xlabel_offset [rescale_x_skin [lindex $label_pos 1]] 
+				}
+				if { [llength $label_pos] > 2 } {
+					set ylabel_offset [rescale_y_skin [lindex $label_pos 2]] 
+				}				
+				set after_show_cmd "::dui::relocate_text_wrt ${main_tag}-lbl $main_tag [lindex $label_pos 0] \
+					$xlabel_offset $ylabel_offset [dui::args::get_option -anchor nw 0 label_args]"
+				foreach page $pages {
+					dui page add_action $page show $after_show_cmd
+				}
+			}
+
+			if { $label ne "" } {
+				set w [dui add_text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label \
+					{*}$label_args]
+			} elseif { $labelvar ne "" } {
+				set w [dui add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
+					-aspect_type ${type}_label {*}$label_args] 
+			}
+			return $w
+		}
+
+		# Processes the -yscrollbar* named options in 'args' and produces the scrollbar slider widget according to 
+		#	the provided options.
+		# All the -yscrollbar* options are removed from 'args'.
+		# Returns 0 if the scrollbar is not created, or the widget name if it is. 
+		proc process_yscrollbar { pages x y type style {args_name args} } {
+			upvar $args_name largs			
+			set ysb [dui::args::get_option -yscrollbar "" 1 largs]
+
+			if { $ysb eq "" } {
+				set sb_args [dui::args::extract_prefixed -yscrollbar_ largs]
+				if { [llength $sb_args] == 0 } {
+					return 0
+				}
+			} elseif { [string is false $ysb] } {
+				return 0
+			} else {
+				set sb_args [dui::args::extract_prefixed -yscrollbar_ largs]
+			}
+		
+			set tags [dui::args::get_option -tags "" 0 largs]
+			set main_tag [lindex $tags 0]			
+			set sb_tags [list ${main_tag}-ysb {*}[lrange $tags 1 end]]
+
+			foreach a [dui aspect list -type scrollbar -style $style] {
+				set a_value [dui aspect get ${type}_yscrollbar $a -style $style -default {} -default_type scrollbar]
+				if { $a eq "height" } {
+					if { $a_value eq "" } {
+						set a_value 75
+					}
+					set a_value [rescale_y_skin $a_value]
+				} elseif { $a in "length sliderlength" } {
+					if { $a_value eq "" } {
+						set a_value 75
+					}
+					set a_value [rescale_x_skin $a_value]
+				}
+				dui::args::add_option_if_not_exists -$a $a_value sb_args
+			}
+			
+			set var [dui::args::get_option -variable "" 1 sb_args]
+			if { $var eq "" } {
+				set var "::dui::item::sliders($main_tag)"
+				set $var 0
+			}
+			set cmd [dui::args::get_option -command "" 1 sb_args]
+			if { $cmd eq "" } {
+				set cmd "::dui::item::listbox_moveto $main_tag \$$var"
+			}
+			
+			foreach page $pages {
+				dui page add_action $page show "::dui::item::set_yscrollbar_dim $page $main_tag ${main_tag}-ysb"
+			}
+			
+			return [dui add_widget $pages scale 10000 $y {} -tags $sb_tags -variable $var -command $cmd {*}$sb_args]
+		}		
 	}
 
 	### PAGE SUB-ENSEMBLE ###
@@ -1146,215 +1343,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		proc hide { page tags { check_context 1} } {
 			show_or_hide 0 $page $tags $check_context
 		}
-	
-		# "Private" method to complete the tags and -<type>variable arguments in a standard way.
-		# If -tags is in the args, use the first tag as main tag, otherwise assigns an auto-increment counter tag,
-		#	using 2 counters, one for text items, another for widgets.
-		# Raises an error if a main tag already exists, as no duplicates are allowed.
-		# Adds page tags in the form "p:$page" to the tags. This allows showing and hiding pages, or retrieving items
-		#	by their tag name plus the page in which they appear.
-		# If a varoption argument is specified (e.g. "-textvariable"), and the first page in $pages is a page
-		#	namespace, then:
-		#		- if the varoption is not found in the arguments, or it's the empty string, uses the namespace 
-		#			variable data(<main_tag>)
-		#		- if the varoption is found and it is a plain name instead of a fully qualified name, such as 
-		#			"-textvariable pressure", uses the namespace variable data(<varoption>), e.g. data(pressure).
-		proc complete_tags_and_var { pages type {varoption {}} {add_multi 0} {proc_args args} {rm_tags 0} } {
-			variable item_cnt
-			upvar $proc_args largs
 			
-			set tags [dui::args::get_option -tags {} 1 largs]
-			set auto_assign_tag 0
-			if { [llength $tags] == 0 } {
-				set main_tag "${type}_[incr item_cnt]"
-				set tags $main_tag
-#				if { $type eq "text" || $type eq "variable" } {
-#					global text_cnt
-#					set main_tag "text_[incr item_cnt]"
-#					set tags $main_tag
-#				} elseif { $type eq "button" } {
-#					global button_cnt
-#					set main_tag "btn_[incr text_cnt]"
-#					incr button_cnt
-#					#		set tags [dui::args::get_option -tags "btn_$button_cnt" 1]
-#					
-#				} elseif { $type eq "widget" } {
-#					incr widget_cnt
-#					set main_tag "w_${type}_$widget_cnt"
-#					set tags $main_tag
-#				} else {
-#					error "dui item complete_tags_and_var, type='$type', but must be either 'text' or 'widget'"
-#				}
-				set auto_assign_tag 1
-			} else {
-				set main_tag [lindex $tags 0]
-			}
-			dui::fail_if_tag_exists $main_tag
-			
-			if { $add_multi == 1 && "$main_tag*" ni $tags } {
-				lappend tags "$main_tag*"
-			}
-			
-			foreach p $pages {
-				if { "p:$p" ni $tags } { 
-					lappend tags "p:$p"
-				}
-			}
-			if { $rm_tags == 0 } {
-				dui::args::add_option_if_not_exists -tags $tags largs
-			}
-						
-			if { $varoption ne "" } {
-				set first_page [lindex $pages 0]
-				set is_ns [dui::page::is_namespace $first_page]
-	
-				if { $is_ns == 1 } {
-					if { [string range $varoption 0 0 ] ne "-" } {
-						set varoption -$varoption
-					}
-					set varname [dui::args::get_option $varoption "" 1 largs]
-					if { $varname eq "" } {
-						if { ! $auto_assign_tag } {
-							if { $type eq "variable" } {
-								set varname "\$::dui::pages::${first_page}::data($main_tag)"
-							} else {
-								set varname "::dui::pages::${first_page}::data($main_tag)"
-							}
-						}
-					} elseif { [string is wordchar $varname] } {
-						if { $type eq "variable" } {
-							set varname "\$::dui::pages::${first_page}::data($varname)"
-						} else {
-							set varname "::dui::pages::${first_page}::data($varname)"
-						}
-					}
-					
-					if { $varname eq "" } {
-						msg -WARN [namespace current] complete_tags_and_var "no $varoption specified for item $main_tag"
-					} else {
-						dui::args::add_option_if_not_exists $varoption $varname largs
-					}
-				}
-			}
-			
-			return $tags
-		}
-		
-		# Processes the -label* named options in 'args' and produces the label according to the provided options.
-		# All the -label* options are removed from 'args'.
-		proc process_label { pages x y type style {proc_args args} } {
-			upvar $proc_args largs
-			set label [dui::args::get_option -label "" 1 largs]
-			set labelvar [dui::args::get_option -labelvariable "" 1 largs]
-			if { $label eq "" && $labelvar eq "" } {
-				return
-			}
-			
-			set tags [dui::args::get_option -tags "" 0 largs]
-			set main_tag [lindex $tags 0]
-			
-			set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]	
-			set label_args [dui::args::extract_prefixed -label_ largs]
-			foreach aspect "anchor justify fill activefill disabledfill font_family font_size" {
-				dui::args::add_option_if_not_exists -$aspect [dui aspect get ${type}_label $aspect -style $style \
-					-default {} -default_type text] label_args
-			}
-			set label_pos [dui::args::get_option -pos [dui aspect get ${type}_label pos -style $style \
-				-default "w -20 0"] 1 label_args]
-			if { [llength $label_pos] == 2 && [string is integer [lindex $label_pos 0]] && \
-					[string is integer [lindex $label_pos 1]] } {
-				set xlabel [lindex $label_pos 0]
-				if { [string range $xlabel 0 0] in "- +" } {
-					set xlabel [expr {$x+$xlabel}]
-				}
-				set ylabel [lindex $label_pos 1]
-				if { [string range $ylabel 0 0] in "- +" } {
-					set ylabel [expr {$y+$ylabel}]
-				}				
-			} else {
-				set xlabel [expr {$x-20}]
-				set ylabel [expr {$y-3}]
-				set xlabel_offset 0
-				set ylabel_offset 0
-				if { [llength $label_pos] > 1 } {
-					set xlabel_offset [rescale_x_skin [lindex $label_pos 1]] 
-				}
-				if { [llength $label_pos] > 2 } {
-					set ylabel_offset [rescale_y_skin [lindex $label_pos 2]] 
-				}				
-				set after_show_cmd "::dui::relocate_text_wrt ${main_tag}-lbl $main_tag [lindex $label_pos 0] \
-					$xlabel_offset $ylabel_offset [dui::args::get_option -anchor nw 0 label_args]"
-				foreach page $pages {
-					dui page add_action $page show $after_show_cmd
-				}
-			}
-
-			if { $label ne "" } {
-				set w [dui add_text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label \
-					{*}$label_args]
-			} elseif { $labelvar ne "" } {
-				set w [dui add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
-					-aspect_type ${type}_label {*}$label_args] 
-			}
-			return $w
-		}
-
-		# Processes the -yscrollbar* named options in 'args' and produces the scrollbar slider widget according to 
-		#	the provided options.
-		# All the -yscrollbar* options are removed from 'args'.
-		# Returns 0 if the scrollbar is not created, or the widget name if it is. 
-		proc process_yscrollbar { pages x y type style {proc_args args} } {
-			upvar $proc_args largs			
-			set ysb [dui::args::get_option -yscrollbar "" 1 largs]
-
-			if { $ysb eq "" } {
-				set sb_args [dui::args::extract_prefixed -yscrollbar_ largs]
-				if { [llength $sb_args] == 0 } {
-					return 0
-				}
-			} elseif { [string is false $ysb] } {
-				return 0
-			} else {
-				set sb_args [dui::args::extract_prefixed -yscrollbar_ largs]
-			}
-		
-			set tags [dui::args::get_option -tags "" 0 largs]
-			set main_tag [lindex $tags 0]			
-			set sb_tags [list ${main_tag}-ysb {*}[lrange $tags 1 end]]
-
-			foreach a [dui aspect list -type scrollbar -style $style] {
-				set a_value [dui aspect get ${type}_yscrollbar $a -style $style -default {} -default_type scrollbar]
-				if { $a eq "height" } {
-					if { $a_value eq "" } {
-						set a_value 75
-					}
-					set a_value [rescale_y_skin $a_value]
-				} elseif { $a in "length sliderlength" } {
-					if { $a_value eq "" } {
-						set a_value 75
-					}
-					set a_value [rescale_x_skin $a_value]
-				}
-				dui::args::add_option_if_not_exists -$a $a_value sb_args
-			}
-			
-			set var [dui::args::get_option -variable "" 1 sb_args]
-			if { $var eq "" } {
-				set var "::dui::item::sliders($main_tag)"
-				set $var 0
-			}
-			set cmd [dui::args::get_option -command "" 1 sb_args]
-			if { $cmd eq "" } {
-				set cmd "::dui::item::listbox_moveto $main_tag \$$var"
-			}
-			
-			foreach page $pages {
-				dui page add_action $page show "::dui::item::set_yscrollbar_dim $page $main_tag ${main_tag}-ysb"
-			}
-			
-			return [dui add_widget $pages scale 10000 $y {} -tags $sb_tags -variable $var -command $cmd {*}$sb_args]
-		}
-		
 		# Configures a page listbox yscrollbar locations and sizes. Run once the page is shown for then to be dynamically 
 		# positioned.
 		proc set_yscrollbar_dim { page widget_tag {scrollbar_tag {}} } {
@@ -1429,7 +1418,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		set x [rescale_x_skin $x]
 		set y [rescale_y_skin $y]
 		
-		set tags [item::complete_tags_and_var $pages text ""]
+		set tags [args::process_tags_and_var $pages text ""]
 		set main_tag [lindex $tags 0]
 #		incr text_cnt
 #		set tags [dui::args::get_option -tags "text_$text_cnt" 1]
@@ -1445,7 +1434,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		foreach aspect "fill activefill disabledfill anchor justify" {
 			dui::args::add_option_if_not_exists -$aspect [dui aspect get $aspect_type $aspect -style $style]
 		}
-		font::set_in_args text $style
+		dui::args::process_font text $style
 		
 #		if { ![dui::args::has_option -font] } {
 #			set font_family [dui::args::get_option font_family [dui aspect get text.font_family -style $style] 1]
@@ -1472,7 +1461,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 	proc add_variable { pages x y args } {
 		global variable_labels
 		
-		set tags [item::complete_tags_and_var $pages "variable" -textvariable]
+		set tags [args::process_tags_and_var $pages "variable" -textvariable]
 #		set first_page [lindex $pages 0]
 #		set is_ns [dui::page::is_namespace $first_page]
 #		set varcmd [dui::args::get_option -textvariable "" 1]
@@ -1558,12 +1547,16 @@ msg [namespace current] disable "page=$page, tags=$tags"
 #			lappend button_tags p:$p
 #			#lappend label_tags p:$p # Already added in add_text or add_variable
 #		}
-		set tags [item::complete_tags_and_var $pages button {} 1]
+		set tags [args::process_tags_and_var $pages button {} 1]
 		set main_tag [lindex $tags 0]
 		set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
 		
 		set style [dui::args::get_option -style "" 1]
 
+		# Note this cannot be processed by 'dui item process_label' as this one processes the positioning of the
+		#	label differently (inside), also we need to extract label options from the args before painting the 
+		#	background button (as $args is passed to the painting proc) but not create the label until after that
+		#	button has been painted.
 		set label [dui::args::get_option -label "" 1]
 		set labelvar [dui::args::get_option -labelvariable "" 1]
 		if { $label ne "" || $labelvar ne "" } {
@@ -1580,6 +1573,24 @@ msg [namespace current] disable "page=$page, tags=$tags"
 			set ylabel [expr {$y0+int($y1-$y0)*[lindex $label_pos 1]}]
 		}
 		
+		# Process symbol
+		set symbol [dui::args::get_option -symbol "" 1]
+		if { $symbol ne "" } {
+			set symbol_tags [list ${main_tag}-sym {*}[lrange $tags 1 end]]	
+			set symbol_args [dui::args::extract_prefixed -symbol_]
+msg "dui add_button symbol_args='$symbol_args'"			
+			foreach a [dui aspect list -type button_symbol -style $style] {
+msg "dui add_button using aspect '$a'"				
+				dui::args::add_option_if_not_exists -$a \
+					[dui aspect get button_symbol $a -style $style -default {} -default_type symbol] symbol_args
+			}
+msg "dui add_button symbol_args='$symbol_args'"			
+			set symbol_pos [dui::args::get_option -pos [dui aspect get button_symbol pos -style $style -default {0.5 0.5} \
+				-default_type symbol] 1 symbol_args]
+			set xsymbol [expr {$x0+int($x1-$x0)*[lindex $symbol_pos 0]}]
+			set ysymbol [expr {$y0+int($y1-$y0)*[lindex $symbol_pos 1]}]
+		}
+				
 		# As soon as the rect has a non-zero width (or maybe an outline or fill?), its "clickable" area becomes only
 		#	the border, so if a visible rectangular button is needed, we have to add an invisible clickable rect on 
 		#	top of it.
@@ -1628,6 +1639,10 @@ msg [namespace current] disable "page=$page, tags=$tags"
 			add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags -aspect_type button_label {*}$label_args 
 		}
 		
+		if { $symbol ne "" } {
+			add_symbol $pages $xsymbol $ysymbol -text $symbol -tags $symbol_tags {*}$symbol_args
+		}
+		
 		# Clickable rect
 		$can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden
 		regsub {%x0} $cmd $rx0 cmd
@@ -1641,7 +1656,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		return $main_tag
 	}
 	
-	# Discovered through Johanna's MimojaCafe skin code, attributed to Barney.
+	# Taken from Johanna's MimojaCafe skin code, attributed to Barney.
 	proc rounded_rectangle { x0 y0 x1 y1 radius colour disabled tags } {
 		set can [dui canvas]
 		set x0 [rescale_x_skin $x0] 
@@ -1706,11 +1721,12 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		set rx [rescale_x_skin $x]
 		set ry [rescale_y_skin $y]
 		
-		set tags [item::complete_tags_and_var $pages $type "" 0 args 0]
+		set tags [args::process_tags_and_var $pages $type "" 0 args 0]
 		set main_tag [lindex $tags 0]
 		
 		set widget $can.$main_tag
 		if { [info exists ::$widget] } {
+			msg -ERROR [namespace current] "$type widget with name '$widget' already exists"
 			error "$type widget with name '$widget' already exists"
 			return
 		}
@@ -1719,11 +1735,15 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		foreach a [dui aspect list -type $type -style $style] {
 			#msg [namespace current] add_widget "type=$type, style=$style, a=$a"
 			dui::args::add_option_if_not_exists -$a [dui aspect get $type $a -style $style]
-		}		
+		}
+msg "dui add_widget, args before font='$args'"
+		dui::args::process_font $type $style
+msg "dui add_widget, args after font='$args'"
+		
 		# Anchor is no longer hardcoded but can be defined on the call or on the theme aspect
 		set anchor [dui::args::get_option -anchor nw 1]
 
-		dui::item::process_label $pages $x $y $type $style
+		dui::args::process_label $pages $x $y $type $style
 		
 		dui::args::remove_option -tags
 		try {
@@ -1781,11 +1801,10 @@ msg [namespace current] disable "page=$page, tags=$tags"
 	#		editor if it defined for the -data_type. The first argument of that page must be the fully qualified name 
 	#		of the variable that holds the value.
 	proc add_entry { pages x y {cmd {}} args } {
-		set tags [item::complete_tags_and_var $pages entry -textvariable]
+		set tags [args::process_tags_and_var $pages entry -textvariable 1]
 		set main_tag [lindex $tags 0]
 		
-		set style [dui::args::get_option -style "" 0]
-		font::set_in_args entry $style
+#		set style [dui::args::get_option -style "" 0]
 		
 		# Data type and validation
 		set data_type [dui::args::get_option -data_type "text" 1]
@@ -1853,14 +1872,14 @@ msg [namespace current] disable "page=$page, tags=$tags"
 	#  Adds a checkbox using Fontawesome symbols (which can be resized to any font size) instead of the tiny Tk 
 	#	checkbutton.
 	proc add_checkbox { pages x y {cmd {}} args } {
-		set tags [item::complete_tags_and_var $pages checkbox -textvariable]
+		set tags [args::process_tags_and_var $pages checkbox -textvariable 1]
 		set main_tag [lindex $tags 0]
 		
 		set style [dui::args::get_option -style "" 0]
-		font::set_in_args checkbox $style
+		dui::args::process_font checkbox $style
 		set checkvar [dui::args::get_option -textvariable "" 1]
 		
-		dui::item::process_label $pages $x $y checkbox $style
+		dui::args::process_label $pages $x $y checkbox $style
 		
 		dui add_variable $pages $x $y -textvariable \
 			"\[lindex \$::dui::symbol::checkbox_symbols_map \[string is true \$$checkvar\]\]" {*}$args
@@ -1873,18 +1892,18 @@ msg [namespace current] disable "page=$page, tags=$tags"
 	}
 	
 	proc add_listbox { pages x y {cmd {}} args } {
-		set tags [item::complete_tags_and_var $pages listbox -listvariable]
+		set tags [args::process_tags_and_var $pages listbox -listvariable 1]
 		set main_tag [lindex $tags 0]
 		
 		set style [dui::args::get_option -style "" 0]
-		font::set_in_args listbox $style
+#		dui::args::process_font listbox $style
 		set width [dui::args::get_option -width "" 1]
 		if { $width ne "" && [string is entier $width] } {
 			dui::args::add_option_if_not_exists -width [expr {int($width * $::globals(entry_length_multiplier))}]
 		}
 
-		dui::item::process_label $pages $x $y listbox $style
-		set ysb [dui::item::process_yscrollbar $pages $x $y listbox $style]
+#		dui::args::process_label $pages $x $y listbox $style
+		set ysb [dui::args::process_yscrollbar $pages $x $y listbox $style]
 		if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
 			dui::args::add_option_if_not_exists -yscrollcommand \
 				"::dui::item::scale_scroll $main_tag ::dui::item::sliders($main_tag)"
@@ -1893,7 +1912,6 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		return [dui add_widget $pages listbox $x $y $cmd {*}$args]
 	}
 		
-
 	### GENERAL TOOLS ###
 	# This is called on every add_* proc so as to prevent duplicated main tags (a likely source of unexpected errors)
 	proc fail_if_tag_exists { tags } {
