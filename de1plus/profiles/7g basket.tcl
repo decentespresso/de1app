@@ -34,7 +34,7 @@ preinfusion_time 8
 pressure_end 4.5
 profile_hide 1
 profile_language en
-profile_notes {This profile is optimized for the 7g Decent Basket.  Because it takes less than half as much coffee grounds as the 15g basket, which the Default profile is optimized for.  You should weigh out 7g of beans and dose them into the center mini-basket at the bottom.  You'll need a small tamper, not the usual 58mm one.  The flow rate is slowed down to compensate for the smaller dose and to prevent disturbing the puck.  A lower pressure is used to compensate for the lower puck integrity.  Final shot weight should be between 18 to 28 grams.}
+profile_notes {This profile is optimized for the 7g Decent Basket.  You should weigh 7g of beans and dose them into the center mini-basket at the bottom.  You'll need a small 36mm tamper.  The flow rate is slowed down to prevent disturbing the puck.  A lower pressure is used to compensate for the lower puck integrity.  Final shot weight should be 18 to 28 grams.}
 profile_title {7g basket}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
