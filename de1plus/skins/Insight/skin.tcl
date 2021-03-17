@@ -6,7 +6,7 @@ package require de1plus 1.0
 
 source "[homedir]/skins/default/standard_includes.tcl"
 
-namespace eval ::skin::insight::graphs {}
+namespace eval ::skin::insight::graph {}
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
