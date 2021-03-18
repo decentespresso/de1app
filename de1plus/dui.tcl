@@ -35,7 +35,7 @@ catch {
 	namespace import blt::*
 }
 
-set ::settings(enabled_plugins) {dui_demo}
+set ::settings(enabled_plugins) {dui_demo SDB}
 
 namespace eval ::dui {
 	namespace export init canvas theme aspect symbol font page item \
@@ -59,7 +59,7 @@ namespace eval ::dui {
 	#	by setting default option values for widgets (colors, fonts, backgrounds, etc.), which are called "aspects"
 	#	in this framework.
 	namespace eval theme {
-		namespace export add exists list current
+		namespace export add get set exists list
 		namespace ensemble create
 		
 		variable themes { default }
@@ -77,6 +77,22 @@ namespace eval ::dui {
 			return $themes
 		}
 
+		# Returns the current active theme
+		proc get {} {
+			variable current
+			return $current
+		}
+		
+		# Changes the current active theme, adding it to the list if it doesn't exist (with a NOTICE on the log).
+		proc set { {theme {}} } {
+			variable current
+			if { ![exists $theme] } {
+				msg -NOTICE [namespace current] "current theme '$theme' not previously added"
+				add $theme
+			}
+			::set current $theme
+		}
+		
 		proc exists { theme } {
 			variable themes
 			return [expr { [lsearch $themes $theme] > -1 } ]
@@ -85,22 +101,7 @@ namespace eval ::dui {
 		proc list {} {
 			variable themes
 			return $themes
-		}
-		
-		# Without arguments, return the current theme. With an argument, changes the current theme, adding it to 
-		#	the list if it doesn't exist (with a NOTICE on the log).
-		proc current { {current_theme {}} } {
-			variable current
-			if { $current_theme eq "" } {
-				return $current
-			} else {
-				if { ![exists $current_theme] } {
-					msg -NOTICE [namespace current] "current theme '$current_theme' not previously added"
-					add $current_theme
-				}
-				::set current $current_theme
-			}
-		}
+		}		
 	}
 	
 	### ASPECT SUB-ENSEMBLE ###
@@ -116,7 +117,7 @@ namespace eval ::dui {
 	# If an aspect is not defined for the current theme, the aspect from the 'default' theme will be used,
 	#	or a default can be provided directly by client code using the -default tag of the 'dui aspect get' command.  
 	namespace eval aspect {
-		namespace export add exists get list
+		namespace export set get exists list
 		namespace ensemble create
 		
 		variable aspects
@@ -150,13 +151,13 @@ namespace eval ::dui {
 			default.symbol.anchor nw
 			default.symbol.justify left
 			
-			default.entry.relief sunken
+			default.entry.relief flat
 			default.entry.bg "#ffffff"
 			
 			default.button.debug_outline black
 			default.button.fill "#c0c5e3"
 			default.button.activefill "#c0c5e3"
-			default.button.disabledfill orange
+			default.button.disabledfill "#cccccc"
 			default.button.outline "white"
 			default.button.disabledoutline "pink"
 			default.button.activeoutline "orange"
@@ -165,7 +166,7 @@ namespace eval ::dui {
 			default.button_label.pos {0.5 0.5}
 			default.button_label.anchor center
 			default.button_label.font_family notosansuiregular
-			default.button_label.font_size 16
+			default.button_label.font_size 18
 			default.button_label.justify center
 			default.button_label.fill "#ffffff"
 			default.button_label.activefill "#ffffff"
@@ -177,18 +178,18 @@ namespace eval ::dui {
 			default.button_symbol.justify center
 			default.button_symbol.fill "#ffffff"
 			default.button_symbol.activefill "#ffffff"
-			default.button_symbol.disabledfill "#ffffff"
+			default.button_symbol.disabledfill black
 
 			default.button_state.pos {0.5 0.5}
 			default.button_state.anchor center
 			default.button_state.justify center
 			default.button_state.fill "#ffffff"
 			default.button_state.activefill "#ffffff"
-			default.button_state.disabledfill "#ffffff"
+			default.button_state.disabledfill black
 			
 			default.entry.relief flat
-			default.entry.bg pink
-			default.entry.width 5
+			default.entry.bg white
+			default.entry.width 2
 			default.entry.font_family notosansuiregular
 			default.entry.font_size 16
 			
@@ -201,19 +202,19 @@ namespace eval ::dui {
 			default.checkbox.anchor nw
 			default.checkbox.justify left
 			
-			default.checkbox_label.pos "e 45 0"
-			default.checkbox_label.anchor w
+			default.checkbox_label.pos "w 45 0"
+			default.checkbox_label.anchor e
 			default.checkbox_label.justify left
 			
 			default.listbox.relief flat
 			default.listbox.borderwidth 1
-			default.listbox.foreground black
-			default.listbox.background pink
+			default.listbox.foreground "#7f879a"
+			default.listbox.background "#ffffff"
 			default.listbox.selectforeground white
 			default.listbox.selectbackground black
 			default.listbox.selectborderwidth 0
-			default.listbox.disabledforeground white
-			default.listbox.selectbackground black
+			default.listbox.disabledforeground "#cccccc"
+			default.listbox.selectbackground "#cccccc"
 			default.listbox.highlightthickness 1
 			default.listbox.highlightcolor orange
 			default.listbox.selectmode browser
@@ -223,7 +224,7 @@ namespace eval ::dui {
 			default.listbox_label.anchor ne
 			default.listbox_label.justify right
 			
-			default.scrollbar.width 75
+			default.scrollbar.width 50
 			default.scrollbar.length 75
 			default.scrollbar.sliderlength 75
 			default.scrollbar.from 0.0
@@ -238,39 +239,39 @@ namespace eval ::dui {
 			default.scrollbar.relief flat
 			default.scrollbar.borderwidth 0
 			default.scrollbar.highlightthickness 0
-			
 		}
 		#default.button.disabledfill "#ddd"
-		#default.button.radius 40
-		#default.button.arc_offset 50
+		#default.button.radius 40 -- only include if the button style has shape=round
+		#default.button.arc_offset 50 -- only include if the button style has shape=outline
 				
 		# Named options:
-		# 	-theme theme_name: to add to a theme different than the current one
-		#	-type type_name: use this type for all added aspects.
-		# 	-style style_name: use this style for all added aspects.
-		proc add { args } {
+		# 	-theme theme_name: to add to a theme different than the current one.
+		#	-type type_name: adds this type for all added aspects.
+		# 	-style style_name: adds this style for all added aspects.
+		# value-pairs can be passed directly in the args, or as a single-argument list.
+		proc set { args } {
 			variable aspects
-			set theme [dui::args::get_option -theme [dui theme current] 1]
-			set type [dui::args::get_option -type "" 1]
-			set style [dui::args::get_option -style "" 1]
-			set prefix "$theme."
+			::set theme [dui::args::get_option -theme [dui theme get] 1]
+			::set type [dui::args::get_option -type "" 1]
+			::set style [dui::args::get_option -style "" 1]
+			::set prefix "$theme."
 			if { $type ne "" } {
 				append prefix "$type."
 			}
-			set suffix ""
+			::set suffix ""
 			if { $style ne "" } {
-				set suffix ".$style"
+				::set suffix ".$style"
 			}
 			
 			if { [llength $args] == 1 } {
-				set args [lindex $args 0]
+				::set args [lindex $args 0]
 			}
-			for { set i 0 } { $i < [llength $args] } { incr i 2 } {
-				set var "$prefix[lindex $args $i]$suffix"
+			for { ::set i 0 } { $i < [llength $args] } { incr i 2 } {
+				::set var "$prefix[lindex $args $i]$suffix"
 #				if { $style ne "" && [string range $var end-[string length $style] end] ne ".$style" } {
 #					append var ".$style"
 #				}
-				set value [lindex $args [expr {$i+1}]]
+				::set value [lindex $args [expr {$i+1}]]
 				if { [info exists aspects($var)] } {
 					if { $aspects($var) eq $value } {
 						msg -NOTICE [namespace current] "aspect '$var' already exists, new value is equal to old"
@@ -278,22 +279,8 @@ namespace eval ::dui {
 						msg -NOTICE [namespace current] "aspect '$var' already exists, old value='$aspects($var)', new value='$value'"
 					}
 				}
-				set aspects($var) $value
+				::set aspects($var) $value
 			}
-		}
-		
-		# Named options:
-		#	-theme theme_name to check for a theme different than the current one
-		#	-style style_name to query only that style
-		proc exists { type aspect args } {
-			variable aspects
-			set theme [dui::args::get_option -theme [dui theme current]]
-			set style [dui::args::get_option -style ""]
-			set aspect_name "$theme.$type.$aspect"
-			if { $style ne "" } {
-				append aspect_name .$style
-			}
-			return [info exists aspects($aspect_name)]
 		}
 		
 		# Named options:
@@ -304,10 +291,10 @@ namespace eval ::dui {
 		#	-default_type to search the same aspect in this type, in case it's not defined for the requested type
 		proc get { type aspect args } {
 			variable aspects
-			set theme [dui::args::get_option -theme [dui theme current]]
-			set style [dui::args::get_option -style ""]			
-			set default [dui::args::get_option -default ""]
-			set default_type [dui::args::get_option -default_type ""]
+			::set theme [dui::args::get_option -theme [dui theme get]]
+			::set style [dui::args::get_option -style ""]			
+			::set default [dui::args::get_option -default ""]
+			::set default_type [dui::args::get_option -default_type ""]
 			
 			if { $style ne "" && [info exists aspects($theme.$type.$aspect.$style)] } {
 				return $aspects($theme.$type.$aspect.$style)
@@ -328,6 +315,20 @@ namespace eval ::dui {
 		}
 		
 		# Named options:
+		#	-theme theme_name to check for a theme different than the current one
+		#	-style style_name to query only that style
+		proc exists { type aspect args } {
+			variable aspects
+			::set theme [dui::args::get_option -theme [dui theme get]]
+			::set style [dui::args::get_option -style ""]
+			::set aspect_name "$theme.$type.$aspect"
+			if { $style ne "" } {
+				append aspect_name .$style
+			}
+			return [info exists aspects($aspect_name)]
+		}
+				
+		# Named options:
 		# 	-theme theme_name to return for a theme different than the current one. If not specified and -all_themes=0
 		#		(the default), returns aspects for the currently active theme only.
 		#	-type to return only the aspects for that type (e.g. "entry", "text", etc.)
@@ -336,29 +337,29 @@ namespace eval ::dui {
 		#	returns the full aspect name including the theme prefix.
 		proc list { args } {
 			variable aspects
-			set theme [dui::args::get_option -theme [dui theme current]]
-			set pattern "^$theme."
+			::set theme [dui::args::get_option -theme [dui theme get]]
+			::set pattern "^${theme}\\."
 			
-			set type [dui::args::get_option -type ""]
+			::set type [dui::args::get_option -type ""]
 			if { $type eq "" } {
-				append pattern {[0-9a-zA-Z_]+\.}
+				append pattern "\[0-9a-zA-Z_\]+\\."
 			} else {
-				append pattern "$type."
+				append pattern "${type}\\."
 			}
 			
-			set style [dui::args::get_option -style ""]
+			::set style [dui::args::get_option -style ""]
 			if { $style eq "" } {
-				append pattern {[0-9a-zA-Z_]+$}
+				append pattern "\[0-9a-zA-Z_\]+\$"
 			} else {
-				append pattern "\[0-9a-zA-Z_\]+.$style\$"
+				append pattern "\[0-9a-zA-Z_\]+\\.${style}\$"
 			}
 			
 			msg [namespace current] list "pattern='$pattern'"
 			
-			set result {}
+			::set result {}			
 			foreach full_aspect [array names aspects -regexp $pattern] {
-				set aspect_parts [split $full_aspect .]
-				set aspect [lindex $aspect_parts 2]
+				::set aspect_parts [split $full_aspect .]
+				::set aspect [lindex $aspect_parts 2]
 				if { $aspect ne "" } {
 					lappend result $aspect
 				}
@@ -372,7 +373,7 @@ namespace eval ::dui {
 	# This set of commands allow defining Fontawesome Regular symbols by name, then use them in the code by their name.
 	# To find out the unicode values of the available symbols, see https://fontawesome.com/icons?d=gallery
 	namespace eval symbol {
-		namespace export add get exists
+		namespace export set get exists list
 		namespace ensemble create
 				
 		variable font_filename "Font Awesome 5 Pro-Regular-400"
@@ -398,18 +399,23 @@ namespace eval ::dui {
 		variable checkbox_symbols_map {"\uf0c8" "\uf14a"}
 
 		# Define Fontawesome symbols by name. If a symbol name is already defined and the value differs, it is NOT 
-		#	redefined, and a warning added to the log.		
-		proc add { args } {
+		#	redefined, and a warning added to the log.
+		# value-pairs can be passed directly in the args, or as a single-argument list.
+		proc set { args } {
 			variable symbols
 			
-			set n [expr {[llength $args]-1}]
-			for { set i 0 } { $i < $n } { incr i 2 } {
-				set sn [lindex $args $i]
-				set sv [lindex $args [expr {$i+1}]]
-				set idx [lsearch [array names symbols] $sn]
+			::set n [expr {[llength $args]-1}]
+			if { $n == 0 } {
+				::set args [lindex $args 0]
+				::set n [expr {[llength $args]-1}]
+			}
+			for { ::set i 0 } { $i < $n } { incr i 2 } {
+				::set sn [lindex $args $i]
+				::set sv [lindex $args [expr {$i+1}]]
+				::set idx [lsearch [array names symbols] $sn]
 				if { $idx == -1 } {
 					msg -INFO [namespace current] "add symbol $sn='$sv'"
-					set symbols($sn) $sv
+					::set symbols($sn) $sv
 				} elseif { $symbols($sn) ne $sv } {
 					msg -WARN [namespace current ] "symbol '$sn' already defined with a different value"
 				}
@@ -430,6 +436,11 @@ namespace eval ::dui {
 		proc exists { symbol } {
 			variable symbols
 			return [info exists symbols($symbol)]
+		}
+		
+		proc list { } {
+			variable symbols
+			return [array names symbols]
 		}
 	}
 
@@ -560,6 +571,8 @@ namespace eval ::dui {
 	# These namespace commands are not exported, should normally only be used inside the dui namespace, where
 	#	they're called using qualified names.
 	namespace eval args {
+		variable item_cnt 0
+				
 		# Adds a named option "-option_name option_value" to a named argument list if the option doesn't exist in the list.
 		# Returns the option value.
 		proc add_option_if_not_exists { option_name option_value {args_name args} } {
@@ -659,18 +672,31 @@ namespace eval ::dui {
 			set tags [get_option -tags {} 1 largs]
 			set auto_assign_tag 0
 			if { [llength $tags] == 0 } {
-				set main_tag "${type}_[incr item_cnt]"
+				# Add 'dui_' prefix to avoid clashing with the existing tag system. 
+				# TODO Remove 'dui_' when base code has been migrated.
+				set main_tag "dui_${type}_[incr item_cnt]"
 				set tags $main_tag
 				set auto_assign_tag 1
-			} else {
+			} else {				
 				set main_tag [lindex $tags 0]
 			}
+			# We need to ensure GLOBAL main tag uniqueness while we coexist with the old labelling system.
+			# Once it's unified, we'll request only uniqueness PER PAGE.
 			if { [$can find withtag $main_tag] ne "" } {
-				set msg "Tag '$main_tag' already exists in the canvas, duplicated canvas items main tags are not allowed"
+				set msg "Main tag '$main_tag' already exists in canvas, duplicates are not allowed"
 				msg [namespace current] process_tags_and_var $msg
 				error $msg
 				return
 			}
+			# Change to this when there's no need to coexist with the old labelling system
+#			foreach page $pages { 
+#				if { [$can find withtag p:$page&&$main_tag] ne "" } {
+#					set msg "Main tag '$main_tag' already exists in canvas page '$page', duplicates are not allowed"
+#					msg [namespace current] process_tags_and_var $msg
+#					error $msg
+#					return
+#				}
+#			}
 			
 			if { $add_multi == 1 && "$main_tag*" ni $tags } {
 				lappend tags "$main_tag*"
@@ -773,7 +799,7 @@ namespace eval ::dui {
 				remove_option -font_size largs
 			} else {
 				set font_family [get_option -font_family [dui aspect get $type font_family -style $style] 1 largs]
-				set default_size [dui aspect get $type font_size -style $style]
+				set default_size [dui aspect get $type font_size -style $style]				
 				set font_size [get_option -font_size $default_size 1 largs]
 				if { [string range $font_size 0 0] in "- +" } {
 					set font_size [expr $default_size$font_size]
@@ -1178,8 +1204,8 @@ namespace eval ::dui {
 			# EB NO NEED TO USE ::existing_labels, can do with canvas tags, provided p:<page_name> tags were used.
 			set items_to_show [$can find withtag p:$page_to_show]
 			if { [llength $items_to_show] > 0 } {
-				foreach tag $items_to_show {
-					$can itemconfigure $tag -state normal
+				foreach item $items_to_show {
+					$can itemconfigure $item -state normal
 				}
 			} else {
 				# Backward-compatible for pages that are not created using the new tags system.
@@ -1251,12 +1277,12 @@ namespace eval ::dui {
 		namespace export *
 		namespace ensemble create
 	
-		variable item_cnt 0
 		variable sliders
 		array set sliders {}
 		
 		# Keep track of what labels are displayed in what pages. Warns if a label already exists.
-		# THIS IS NO LONGER NEEDED, AS PAGE HIDE/SHOW IS NOW MANAGED USING THE CANVAS TAGS.
+		# In the future this shouldn't be needed, as dui manages what to show using canvas tags. But it's needed
+		#	while the old and new systems coexist.
 		proc add_to_pages { pages tags } {
 			global existing_labels
 			foreach page $pages {
@@ -1294,8 +1320,8 @@ namespace eval ::dui {
 			return [unique_list $ids]
 		}
 		
-		# If the provided tags match canvas items that are widgets (=windows), return the window commands, otherwise
-		#	empty.
+		# If the provided tags match canvas items that are widgets (=windows), return the window command/pathname, 
+		#	otherwise empty.
 		proc get_widget { page tags } {
 			set can [dui canvas]
 			set widgets {}
@@ -1471,7 +1497,7 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		set main_tag [lindex $tags 0]
 
 		set style [dui::args::get_option -style "" 1]		
-		dui::args::process_aspects text $style "" "pos"
+		dui::args::process_aspects text $style "" "pos"		
 		dui::args::process_font text $style
 				
 		try {
@@ -1679,13 +1705,15 @@ msg [namespace current] disable "page=$page, tags=$tags"
 		}
 		
 		if { $label ne "" } {
-			add_text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type button_label {*}$label_args
+			add_text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type button_label -style $style {*}$label_args
 		} elseif { $labelvar ne "" } {
-			add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags -aspect_type button_label {*}$label_args 
+			add_variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags -aspect_type button_label \
+				-style $style {*}$label_args 
 		}
 		
 		if { $symbol ne "" } {
-			add_symbol $pages $xsymbol $ysymbol -text $symbol -tags $symbol_tags -aspect_type button_symbol {*}$symbol_args
+			add_symbol $pages $xsymbol $ysymbol -text $symbol -tags $symbol_tags -aspect_type button_symbol \
+				-style $style {*}$symbol_args
 		}
 		
 		# Clickable rect
