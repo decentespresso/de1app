@@ -525,16 +525,19 @@ proc make_de1_dir {srcdir destdirs} {
 
         skins/MimojaCafe/1280x800/icon.jpg *
         skins/MimojaCafe/2560x1600/icon.jpg *
+        skins/MimojaCafe/fonts/Font\ Awesome\ 5\ Free-Solid-900.otf *
         skins/MimojaCafe/fonts/Mazzard\ Light.otf *
         skins/MimojaCafe/fonts/Mazzard\ Medium.otf *
         skins/MimojaCafe/fonts/Mazzard\ Regular.otf *
         skins/MimojaCafe/fonts/Mazzard\ SemiBold.otf *
         skins/MimojaCafe/framework.tcl *
-        skins/MimojaCafe/settings.tcl *
-	skins/MimojaCafe/settings_screen.tcl *
-        skins/MimojaCafe/skin.tcl *
         skins/MimojaCafe/history_viewer.tcl *
-        skins/MimojaCafe/ui.tcl *
+        skins/MimojaCafe/interfaces/default_settings_screen.tcl *
+        skins/MimojaCafe/interfaces/default_ui.tcl *
+        skins/MimojaCafe/interfaces/magadan_settings_screen.tcl *
+        skins/MimojaCafe/interfaces/magadan_ui.tcl *
+        skins/MimojaCafe/settings.tcl *
+        skins/MimojaCafe/skin.tcl *
 
         saver/1280x800/black_saver.jpg *
         saver/1280x800/Black\ Steel.jpg *
