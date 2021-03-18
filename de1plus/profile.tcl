@@ -342,6 +342,17 @@ namespace eval ::profile {
         write_file $filename [huddle jsondump $current]
     }
 
+    proc all {} {
+        set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/profiles_v2/" *.json]]
+        set profiles {}
+        foreach fn $dirs {
+            set profile_contents [encoding convertfrom utf-8 [read_binary_file "[homedir]/profiles_v2/$fn"]]
+            set d2 [json::json2dict $profile_contents]
+            lappend profiles [huddle create {*}$d2]
+        }
+        return $profiles
+    }
+
     proc convert_all_legacy_to_v2 {} {
         set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/profiles/" *.tcl]]
 
