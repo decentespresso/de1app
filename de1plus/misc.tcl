@@ -539,6 +539,28 @@ proc make_de1_dir {srcdir destdirs} {
         skins/MimojaCafe/settings.tcl *
         skins/MimojaCafe/skin.tcl *
 
+        skins/metric/1280x800/icon.jpg *
+        skins/metric/2560x1600/icon.jpg *
+        skins/metric/fonts/Mazzard\ Light.otf *
+        skins/metric/fonts/Mazzard\ Medium.otf *
+        skins/metric/fonts/Mazzard\ Regular.otf *
+        skins/metric/fonts/Mazzard\ SemiBold.otf *
+        skins/metric/packages/constants.tcl *
+        skins/metric/packages/framework.tcl *
+        skins/metric/packages/functions.tcl *
+        skins/metric/packages/meter.tcl *
+        skins/metric/packages/settings.tcl *
+        skins/metric/packages/statusbar.tcl *
+        skins/metric/pages/debug.tcl *
+        skins/metric/pages/espresso.tcl *
+        skins/metric/pages/espresso_done.tcl *
+        skins/metric/pages/flush.tcl *
+        skins/metric/pages/home.tcl *
+        skins/metric/pages/steam.tcl *
+        skins/metric/pages/water.tcl *
+        skins/metric/README.md *
+        skins/metric/skin.tcl *
+
         saver/1280x800/black_saver.jpg *
         saver/1280x800/Black\ Steel.jpg *
         saver/1280x800/Cozy-Home.jpg *

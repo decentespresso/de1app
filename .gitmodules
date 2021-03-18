@@ -18,3 +18,6 @@
 [submodule "de1plus/plugins/DGUI"]
 	path = de1plus/plugins/DGUI
 	url = https://github.com/ebengoechea/de1app_plugin_DGUI
+[submodule "de1plus/skins/metric"]
+	path = de1plus/skins/metric
+	url = https://github.com/barneyhawes/decent-metric/
