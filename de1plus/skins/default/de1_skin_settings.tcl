@@ -374,12 +374,15 @@ proc settings2c_pressure_button {direction} {
 			set ::current_adv_step(max_flow_or_pressure) [round_to_one_digits [expr {$::current_adv_step(max_flow_or_pressure) - 0.1}]];
 		}
 	}
-	if {$::current_adv_step(max_flow_or_pressure) < 0} {
+
+	if {[ifexists $::current_adv_step(max_flow_or_pressure)] < 0} {
 		set ::current_adv_step(max_flow_or_pressure) 0
 	}
-	if {$::current_adv_step(pressure) < 0} {
+
+	if {[ifexists $::current_adv_step(pressure)] < 0} {
 		set ::current_adv_step(pressure) 0
 	}
+
 	update_onscreen_variables
 	save_current_adv_shot_step
 	update_de1_explanation_chart
@@ -401,12 +404,15 @@ proc settings2c_flow_button {direction} {
 			set ::current_adv_step(max_flow_or_pressure) [round_to_one_digits [expr {$::current_adv_step(max_flow_or_pressure) - 0.1}]];
 		}
 	}
-	if {$::current_adv_step(max_flow_or_pressure) < 0} {
+
+	if {[ifexists $::current_adv_step(max_flow_or_pressure)] < 0} {
 		set ::current_adv_step(max_flow_or_pressure) 0
 	}
-	if {$::current_adv_step(flow) < 0} {
+
+	if {[ifexists $::current_adv_step(flow)] < 0} {
 		set ::current_adv_step(flow) 0
 	}
+
 	update_onscreen_variables
 	save_current_adv_shot_step
 	update_de1_explanation_chart
