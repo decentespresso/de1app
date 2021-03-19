@@ -12,7 +12,7 @@ proc scale_enable_lcd {} {
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_enable_lcd
 		# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
-		after 500 decentscale_enable_lcd
+		after 1000 decentscale_enable_lcd
 	}
 }
 
