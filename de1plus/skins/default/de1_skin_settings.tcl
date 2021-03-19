@@ -375,11 +375,11 @@ proc settings2c_pressure_button {direction} {
 		}
 	}
 
-	if {[ifexists $::current_adv_step(max_flow_or_pressure)] < 0} {
+	if {[ifexists ::current_adv_step(max_flow_or_pressure)] < 0} {
 		set ::current_adv_step(max_flow_or_pressure) 0
 	}
 
-	if {[ifexists $::current_adv_step(pressure)] < 0} {
+	if {[ifexists ::current_adv_step(pressure)] < 0} {
 		set ::current_adv_step(pressure) 0
 	}
 
@@ -405,11 +405,11 @@ proc settings2c_flow_button {direction} {
 		}
 	}
 
-	if {[ifexists $::current_adv_step(max_flow_or_pressure)] < 0} {
+	if {[ifexists ::current_adv_step(max_flow_or_pressure)] < 0} {
 		set ::current_adv_step(max_flow_or_pressure) 0
 	}
 
-	if {[ifexists $::current_adv_step(flow)] < 0} {
+	if {[ifexists ::current_adv_step(flow)] < 0} {
 		set ::current_adv_step(flow) 0
 	}
 
