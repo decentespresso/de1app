@@ -1760,7 +1760,7 @@ proc update_de1_state {statechar} {
 		msg "Empty state message received"
 		return
 	}
-	#msg "update_de1_state '[ifexists ::previous_textstate]' '$textstate'"
+	#msg "update_de1_state '[ifexists ::previous_textstate]' '$textstate' [array get msg]"
 
 	#msg "update_de1_state [array get msg]"
 
@@ -1789,6 +1789,10 @@ proc update_de1_state {statechar} {
 		} elseif {$textstate == "Idle" && [ifexists ::previous_textstate] == "Steam"} {
 			msg "Scheduling check_if_steam_clogged"
 			after 3000 check_if_steam_clogged
+		} elseif {$textstate == "Idle" && [ifexists ::previous_textstate] == "Espresso"} {
+			# it's possible for the DE1 to go from ESPRESSO directly to IDLE without having a "ending espresso" stage
+			# this is why this check is here, as well as a substate change check below
+			stop_espresso_timers
 		}
 
 		if {[ifexists ::previous_textstate] == "Sleep" && $textstate != "Sleep"} {
@@ -1815,22 +1819,15 @@ proc update_de1_state {statechar} {
 
 	  # substate of zero means no information, discard
 	  	if {$msg(substate) != $::de1(substate)} {
-			#msg "substate change: [array get msg]"
-
-			#if {$textstate == "Espresso"} {
+			msg "substate change: [array get msg]"
 
 			if {$current_de1_substate == 4 || ($current_de1_substate == 5 && $::previous_de1_substate != 4)} {
 				# tare the scale when the espresso starts and start the shot timer
 				#skale_tare
 				#skale_timer_off
 				if {$::timer_running == 0 && $textstate == "Espresso"} {
-					#start_timers
-					
-					#scale_tare
 					start_espresso_timers
-					after 500 scale_tare
-					#after 250 scale_timer_start
-					#set ::timer_running 1
+					scale_tare
 				}
 				
 				if {$textstate == "HotWaterRinse"} {
@@ -1846,21 +1843,20 @@ proc update_de1_state {statechar} {
 			} elseif {($current_de1_substate != 5 || $current_de1_substate == 4) && $textstate == "Espresso"} {
 				# shot is ended, so turn timer off
 				if {$::timer_running == 1} {
-					#set ::timer_running 0
-					#scale_timer_stop
 					stop_espresso_timers
 				}
 			}
-			#}
 
 			set ::de1(substate) $msg(substate)
 
+	  	} else {
+	  		msg "no substate change"
 	  	}
 
 		if {$::previous_de1_substate == 4} {
 			stop_timer_espresso_preinfusion
 		} elseif {$::previous_de1_substate == 5} {
-			#msg "state $textstate / [ifexists ::previous_textstate]"
+			msg "ending state $textstate / [ifexists ::previous_textstate]"
 
 			if {$textstate == "HotWater" || [ifexists ::previous_textstate] == "HotWater"} {
 				stop_timer_water_pour

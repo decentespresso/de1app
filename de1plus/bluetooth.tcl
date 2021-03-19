@@ -11,6 +11,8 @@ proc scale_enable_lcd {} {
 		skale_enable_lcd
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_enable_lcd
+		# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
+		after 500 decentscale_enable_lcd
 	}
 }
 
@@ -19,6 +21,8 @@ proc scale_disable_lcd {} {
 		skale_disable_lcd
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_disable_lcd
+		# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
+		after 500 decentscale_disable_lcd
 	}
 }
 
@@ -28,6 +32,8 @@ proc scale_timer_start {} {
 		skale_timer_start
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_timer_start
+		# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
+		after 500 decentscale_timer_start
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_start_timer
 	}
@@ -35,10 +41,14 @@ proc scale_timer_start {} {
 
 proc scale_timer_stop {} {
 
+	#msg "scale_timer_stop\n[stacktrace]"
+
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_timer_stop
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_timer_stop
+		# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
+		after 500 decentscale_timer_stop
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_stop_timer
 	}
@@ -46,14 +56,16 @@ proc scale_timer_stop {} {
 
 
 # timer off is badly named, it actually is "timer set to zero"
-proc scale_timer_off {} {
+proc scale_timer_reset {} {
 
 	if {$::settings(scale_type) == "atomaxskale"} {
-		skale_timer_off
+		skale_timer_reset
 	} elseif {$::settings(scale_type) == "decentscale"} {
-		decentscale_timer_off
+		decentscale_timer_reset
+		# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
+		after 500 decentscale_timer_reset
 	} elseif {$::settings(scale_type) == "felicita"} {
-		felicita_reset_timer
+		felicita_timer_reset
 	}
 }
 
@@ -358,7 +370,7 @@ proc skale_timer_stop {} {
 	userdata_append "Skale: timer stop" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare] 0
 }
 
-proc skale_timer_off {} {
+proc skale_timer_reset {} {
 
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomaxskale"} {
 		return
@@ -366,11 +378,11 @@ proc skale_timer_off {} {
 	set tare [binary decode hex "D0"]
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg "Skale not connected, cannot off timer"
+		msg "Skale not connected, cannot reset timer"
 		return
 	}
 
-	userdata_append "Skale: timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare] 0
+	userdata_append "Skale: timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_skale) $::sinstance($::de1(suuid_skale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare] 0
 }
 
 proc skale_tare {} {
@@ -440,7 +452,7 @@ proc felicita_tare {} {
 	set ::de1(scale_autostop_triggered) 0
 }
 
-proc felicita_reset_timer {} {
+proc felicita_timer_reset {} {
 
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "felicita"} {
 		return
@@ -743,6 +755,7 @@ proc decentscale_enable_notifications {} {
 }
 
 proc decentscale_enable_lcd {} {
+
 	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
@@ -809,22 +822,22 @@ proc decentscale_timer_stop {} {
 	#userdata_append "decentscale: timer stop" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare]
 }
 
-proc decentscale_timer_off {} {
+proc decentscale_timer_reset {} {
 
 	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg "decentscale not connected, cannot off timer"
+		msg "decentscale not connected, cannot RESET timer"
 		return
 	}
 
 
 	set timeroff [decent_scale_make_command 0B 02 00]
 
-	msg "decent scale timer off: '$timeroff'"
-	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
+	msg "decent scale timer reset: '$timeroff'"
+	userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 }
 
 proc decentscale_tare {} {
@@ -1520,9 +1533,9 @@ proc de1_ble_handler { event data } {
 							#after 500 decentscale_enable_lcd
 							decentscale_tare
 							
-							after 1000 decentscale_enable_lcd
+							after 2000 decentscale_enable_lcd
 							#after 2000 decentscale_timer_start
-							after 3000 decentscale_enable_notifications
+							after 4000 decentscale_enable_notifications
 							#after 4000 decentscale_timer_stop
 							#after 5000 decentscale_timer_off
 

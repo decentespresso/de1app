@@ -315,39 +315,27 @@ proc stop_timer_flush_pour {} {
 }
 
 proc stop_espresso_timers {} {
+	if {$::timer_running != 1} {
+		return
+	}
 	#msg "stop_timers"
 	set ::timer_running 0
 	set ::timers(espresso_stop) [clock milliseconds]
 
 	scale_timer_stop
-	#stop_timer_preinfusion
-	#stop_timer_pour
-	#set ::substate_timers(stop) [clock milliseconds]
 }
 
 proc start_espresso_timers {} {
-	#msg "stop_timers"
-	#clear_timers
-	#zz5
 	set ::timer_running 1
 	set ::timers(espresso_start) [clock milliseconds]
 
 	scale_timer_start
-	#set ::timers(millistart) [clock milliseconds]
-	#set ::substate_timers(millistart) [clock milliseconds]
 }
 
 proc clear_espresso_timers {} {
-	#msg "clear_timers"
-	#global start_timer
-	#global start_millitimer
-	#set ::start_timer [clock seconds]
-	#set ::start_millitimer [clock milliseconds]
-	#set now [clock seconds]
-#zz1
+
 	unset -nocomplain ::timers
 	set ::timers(espresso_start) 0
-	#set ::timers(millistart) 0
 	set ::timers(espresso_stop) 0
 
 	unset -nocomplain ::substate_timers
@@ -363,10 +351,8 @@ proc clear_espresso_timers {} {
 	set ::timer_running 0
 
 	catch {
-		scale_timer_off
+		scale_timer_reset
 	}
-
-	#puts "clearing timers"
 }
 
 clear_espresso_timers

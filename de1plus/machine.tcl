@@ -753,7 +753,7 @@ proc reset_gui_starting_espresso {} {
 		# this variable prevents the stop trigger from happening until the Tare has succeeded.
 		set ::de1(scale_autostop_triggered) 1
 		scale_tare
-		scale_timer_off
+		scale_timer_reset
 	}
 
 
@@ -823,7 +823,7 @@ proc reset_gui_starting_hotwater {} {
 		# this variable prevents the stop trigger from happening until the Tare has succeeded.
 		set ::de1(scale_autostop_triggered) 1
 		scale_tare
-		scale_timer_off
+		scale_timer_reset
 	}
 	
 	save_settings
