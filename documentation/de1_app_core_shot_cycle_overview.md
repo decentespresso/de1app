@@ -12,8 +12,9 @@ Suggestions, improvements, and contributions are welcome.
 
 # Revision History
 
-* 2020-03-10 – Initial release
-* 2020-03-14 – Autotare threshold updated. Minor corrections and clarfications.
+* 2021-03-22 – Reflect code changes that removed previous scheduled tare
+* 2021-03-14 – Autotare threshold updated. Minor corrections and clarfications.
+* 2021-03-10 – Initial release
 
 # Related Reading
 
@@ -76,13 +77,11 @@ The scale code begins looking for the reference time of `espresso_clock` (manage
 
 #### Pre-Shot Tare Management
 
-As Espresso mode is in `::device::scale::autotare_states` (Espresso and HotWater, by default), a tare is scheduled for `$::device::scale::_tare_holdoff_initial` in the future, defaulting to 200 ms, with an exception for the Decent Scale at 500 ms (see commit a8a61e1 Jan-18-2021).
+As Espresso mode is in `$::device::scale::autotare_states` (Espresso and HotWater, by default), the app starts checking for "a cup being added" prior to the start of delivery of the shot. If it is more than `$::device::scale::tare_threshold` off of zero (default, 0.04, so 0.1 g will trigger, but still resist vibratation and drift on an 0.01 g scale), it requests a tare by calling `::device::scale::tare`
 
-The scale starts checking for "a cup being added" prior to the start of delivery of the shot. If it is more than `$::device::scale::autotare_threshold` off of zero (default, 0.04, so 0.1 g will trigger, but still resist vibratation and drift on an 0.01 g scale), it requests a tare by calling `::device::scale::tare`
+Tare requests are now rate limited to no more often than `$::device::scale::_tare_holdoff` (200 ms default). A tare is "seen" if, after one is requested by the app, the reported weight is within `$::device::scale::tare_threshold` of zero, within `$::device::scale::_tare_awaiting_zero_ms` (1000 ms default) of the request.
 
-Tare requests are now rate limited to no more often than `$::device::scale::_tare_holdoff_repeat` (200 ms default).
-
-Any time tare is seen, the scale code resets its internal calculations, to prevent the tare event for being misinterpreted as an actual change in weight.
+Any time tare is seen, the scale code resets its internal calculations, to prevent the tare event for being misinterpreted as an actual change in weight. At this time, there is not detection of tare performed on the scale directly. (The Atomax Skale II "tare" button action is handled by the app, not the scale itself.)
 
 <a name="saw_setup"></a>
 #### SAW Setup
