@@ -227,7 +227,6 @@ array set ::settings {
 	steam_over_pressure_threshold 6
 	automatically_ble_reconnect_forever_to_scale 0
 	chart_total_shot_flow 1
-	tare_only_on_espresso_start 0
 	steam_over_pressure_count_trigger 10
 	heater_voltage ""
 	steam_over_temp_count_trigger 10

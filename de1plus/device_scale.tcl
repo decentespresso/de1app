@@ -1,4 +1,4 @@
-package provide de1_device_scale 1.1
+package provide de1_device_scale 1.2
 
 package require de1_de1 1.1
 package require de1_event 1.0
@@ -77,20 +77,18 @@ namespace eval ::device::scale {
 	#     slightly more delay (500ms) with tare on espresso start,
 	#     to make sure we don't have a ble command splat with decent scale
 
-	variable _tare_holdoff_initial	200
-	variable _tare_holdoff_repeat	200
+	variable _tare_holdoff	200
 
 	# Level in g over which will auto-tare before flow
+	# also used to detect a tare request returning "close enough" to zero
 
-	variable autotare_threshold 0.04
+	variable tare_threshold 0.04
 
 	# Consider scale "lost" if no weight update within (seconds)
 
 	variable warn_if_no_updates_within 1.0
 
 	variable run_timer False
-
-	variable _initial_tare_after_id ""
 
 	variable _last_weight_update_time 0
 
@@ -107,6 +105,9 @@ namespace eval ::device::scale {
 
 	# If a tare is requested and "0" is seen within this limit
 	# will call ::device::scale::on_tare_seen
+
+	# "0" is within less than ::device::scale::tare_threshold
+	# (scales reporting at 0.005 g may not hit 0.000 under light vibration)
 
 	variable _tare_awaiting_zero_ms 1000
 	variable _tare_awaiting_zero False
@@ -184,7 +185,7 @@ namespace eval ::device::scale {
 
 		::device::scale::watchdog_tickle ::device::scale::_watchdog_entry_id entry
 
-		if { $reported_weight == 0 \
+		if { [expr { abs($reported_weight) < $::device::scale::tare_threshold }] \
 			     && $::device::scale::_tare_awaiting_zero  \
 			     && [expr {[clock milliseconds] - $::device::scale::_tare_last_requested}] \
 					<  $::device::scale::_tare_awaiting_zero_ms } {
@@ -273,28 +274,10 @@ namespace eval ::device::scale {
 
 			# Was a cup was added during the warmup stage?
 
-			if { abs($reported_weight) > $::device::scale::autotare_threshold  \
-				     && $::device::scale::_initial_tare_after_id == "" \
+			if { abs($reported_weight) > $::device::scale::tare_threshold  \
 				     && [::device::scale::is_autotare_state] } {
 
 				::device::scale::tare
-			}
-		}
-
-
-		# Potentially schedule tare as per existing logic
-		# Note that it previously was never "reset" other than by skale_tare
-
-		if {$reported_weight < -$::device::scale::autotare_threshold \
-			    && [::de1::state::current_state] == "Idle"} {
-
-			if {$::settings(tare_only_on_espresso_start) != 1} {
-
-				# one second after the negative weights have stopped,
-				# automatically do a tare
-
-				after cancel $::device::scale::_delayed_tare_id
-				set ::device::scale::_delayed_tare_id [after 1000 ::device::scale::tare]
 			}
 		}
 
@@ -331,7 +314,7 @@ namespace eval ::device::scale {
 
 		set since_last_tare [expr {[clock milliseconds] - $::device::scale::_tare_last_requested}]
 
-		if { $since_last_tare < $::device::scale::_tare_holdoff_repeat } {
+		if { $since_last_tare < $::device::scale::_tare_holdoff } {
 
 			if { "-force" in $args } {
 				msg -NOTICE [format "tare request -force after %d ms (%.3f)" \
@@ -367,11 +350,6 @@ namespace eval ::device::scale {
 		set ::device::scale::_tare_last_requested [clock milliseconds]
 
 		set ::device::scale::_tare_awaiting_zero True
-
-		# See process_weight_update for this feature related to auto-tare on Idle
-
-		after cancel $::device::scale::_delayed_tare_id
-		set ::device::scale::_delayed_tare_id ""
 	}
 
 
@@ -1350,13 +1328,6 @@ namespace eval ::device::scale::callbacks {
 
 		set this_state [dict get $event_dict this_state]
 
-		if { [::device::scale::is_autotare_state $this_state] } {
-
-			set ::device::scale::_initial_tare_after_id \
-				[after $::device::scale::_tare_holdoff_initial \
-					 { device::scale::tare ; set ::device::scale::_initial_tare_after_id "" }]
-		}
-
 		if { [::de1::state::is_flow_state $this_state] && $::device::scale::run_timer } {
 			scale_timer_reset
 		}
@@ -1367,9 +1338,8 @@ namespace eval ::device::scale::callbacks {
 		::device::scale::init
 		::device::scale::watchdog_first
 
-		set ::device::scale::run_timer		   False
-		set ::device::scale::_tare_holdoff_initial 200
-		set ::device::scale::_tare_holdoff_repeat  200
+		set ::device::scale::run_timer	    False
+		set ::device::scale::_tare_holdoff  200
 
 		if { [info exists ::settings(high_vibration_scale_filtering) ] \
 			     && $::settings(high_vibration_scale_filtering) } {
@@ -1394,8 +1364,6 @@ namespace eval ::device::scale::callbacks {
 				# See commit a8a61e1 Jan-18-2020:
 				#     slightly more delay (500ms) with tare on espresso start,
 				#     to make sure we don't have a ble command splat with decent scale
-
-				set ::device::scale::_tare_holdoff_initial 500
 
 				# (Here is a good place to select different weight-estimation algorithms)
 			}
