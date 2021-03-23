@@ -4,6 +4,7 @@ package require de1_de1 1.1
 package require de1_event 1.0
 package require de1_logging 1.1
 package require de1_plugins 1.0
+package require de1_dui 1.0
 
 ###
 ### ::gui namespace defined after globals
@@ -1371,6 +1372,10 @@ proc display_brightness {percentage} {
 
 
 proc page_display_change {page_to_hide page_to_show} {
+	::dui::page::display_change $page_to_hide $page_to_show
+	return
+	
+	#msg [stacktrace]
 
 	#if {$page_to_hide == ""} {
 	#}
