@@ -1237,6 +1237,9 @@ proc load_settings {} {
         set ::settings(scale_type) "atomaxskale"
     }
 
+    if {[ifexists ::settings(stop_weight_before_seconds)] > 1.0 } {
+        set ::settings(stop_weight_before_seconds) 0.15
+    }
 
     blt::vector create espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance
     blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow espresso_water_dispensed espresso_flow_weight_raw espresso_de1_explanation_chart_temperature  espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_selected_step
@@ -1252,9 +1255,6 @@ proc load_settings {} {
     #espresso_temperature_goal append [expr {$::settings(espresso_temperature) - 5}]
     #espresso_elapsed append 0    
     clear_espresso_chart
-
-    
-
 }
 
 proc skin_xscale_factor {} {

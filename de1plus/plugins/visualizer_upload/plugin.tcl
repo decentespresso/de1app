@@ -196,11 +196,6 @@ namespace eval ::plugins::${plugin_name} {
             set settings(last_upload_result) [translate "Not uploaded: auto-upload is not enabled"]
             save_plugin_settings visualizer_upload
             return
-        }	
-        if { $::settings(history_saved) != 1 } {
-            set settings(last_upload_result) [translate "Not uploaded: shot was not saved to history"]
-            save_plugin_settings visualizer_upload
-            return
         }
         if {[espresso_elapsed length] < 6 && [espresso_pressure length] < 6 } {
             set settings(last_upload_result) [translate "Not uploaded: shot was too short"]
