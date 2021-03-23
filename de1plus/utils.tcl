@@ -2184,7 +2184,9 @@ proc wrapped_profile_string_part {input threshold partnumber} {
             return [subst {[string range [string range $input $slashpos+1 end] 0 $threshold]}]
         }
     } 
-    return [wrapped_string_part $input $threshold $partnumber]
+    set w [wrapped_string_part $input $threshold $partnumber]
+    #msg "Wrapped part $partnumber for threshold $threshold from '$input' = '$w'"
+    return $w
 }
 
 proc wrapped_string_part {input threshold partnumber} {
@@ -2193,8 +2195,8 @@ proc wrapped_string_part {input threshold partnumber} {
         # work around that by adding a space when needed.
         append input " "
     }
-    #msg "wrapped_string_part $input ([string length $input]) $threshold"
     set l [wrap_string $input $threshold 1]
+    #msg "wrapped_string_part '$input' ([string length $input]) t=$threshold = '$l'"
     return [lindex $l $partnumber]
 }
 
@@ -2228,7 +2230,7 @@ proc wrap_string {input {threshold 75} {returnlist 0}} {
     # john there's a bug in this proc, which I borrowed from the tcl wiki and did not write.  
     # A string of length theshold+1 gets truncated by 1 character
     # this "if" statement is a work around, where we simply accept a +1 overage on the threshold, instead of wrapping it
-    if {[expr {-1 + [string length $input]}] <= $threshold} {
+    if {([string length $input] - 1) <= $threshold} {
         return $input
     }
 
