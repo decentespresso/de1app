@@ -2098,6 +2098,7 @@ proc ui_startup {} {
 	vwait forever
 }
 
+package require snit
 # from https://wiki.tcl-lang.org/25189
 snit::widget multiline_entry {
     delegate option * to text
