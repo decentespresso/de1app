@@ -43,8 +43,8 @@
 package provide de1_dui 1.0
 
 package require de1_logging 1.0
-package require de1_updater 1.0
-package require de1_utils 1.0
+package require de1_updater 1.1
+package require de1_utils 1.1
 package require Tk
 catch {
 	# tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
@@ -878,9 +878,9 @@ msg [namespace current] get "font_key='$font_key' 0"
 						
 			if { $varoption ne "" } {
 				set first_page [lindex $pages 0]
-				set is_ns [dui::page::is_namespace $first_page]
+				set ns [dui::page::get_namespace $first_page]
 	
-				if { $is_ns == 1 } {
+				if { $ns ne "" } {
 					if { [string range $varoption 0 0 ] ne "-" } {
 						set varoption -$varoption
 					}
@@ -888,16 +888,16 @@ msg [namespace current] get "font_key='$font_key' 0"
 					if { $varname eq "" } {
 						if { ! $auto_assign_tag } {
 							if { $type eq "variable" } {
-								set varname "\$::dui::pages::${first_page}::data($main_tag)"
+								set varname "\$${ns}::data($main_tag)"
 							} else {
-								set varname "::dui::pages::${first_page}::data($main_tag)"
+								set varname "${ns}::data($main_tag)"
 							}
 						}
 					} elseif { [string is wordchar $varname] } {
 						if { $type eq "variable" } {
-							set varname "\$::dui::pages::${first_page}::data($varname)"
+							set varname "\$${ns}::data($varname)"
 						} else {
-							set varname "::dui::pages::${first_page}::data($varname)"
+							set varname "${ns}::data($varname)"
 						}
 					}
 					
@@ -1117,16 +1117,21 @@ msg [namespace current] get "font_key='$font_key' 0"
 	### PAGE SUB-ENSEMBLE ###
 	# AT THE MOMENT ONLY page_add SHOULD BE USED AS OTHERS MAY BREAK BACKWARDS COMPATIBILITY #
 	namespace eval page {
-		namespace export add current is_namespace get_namespace set_next show_when_off show add_action actions
-#		namespace export *
+		namespace export add current get_namespace set_next show_when_off show add_action actions
 		namespace ensemble create
 
-		# Tcl code to run for specific pages when their 'before_show', 'after_show' or 'hide' events take place.
-		variable actions
-		array set actions {}
-		
-		variable pages_ns
-		array set pages_ns {}
+		# Metadata for every added page. Array names have the form '<page_name>,<type>', where <type> can be:
+		#	'ns': Page namespace. Empty string if the page doesn't have a namespace.
+		#	'load': Tcl code to run when the page is going to be shown, but before if is actually shown.
+		#	'show': Tcl code to run just after the page is shown. 
+		#	'hide': Tcl code to run just after the page is hidden.
+		variable pages_data 
+		array set pages_data {}
+#		variable actions
+#		array set actions {}
+#		
+#		variable pages_ns
+#		array set pages_ns {}
 		
 		#variable nextpage
 		#array set nextpage {}
@@ -1141,14 +1146,25 @@ msg [namespace current] get "font_key='$font_key' 0"
 		#  -bg_img background image file to use
 		#  -bg_color background color to use, in case no background image is defined
 		#  -skin passed to ::add_de1_page if necessary
-		#  -use_ns will create a page namespace ::dui::page::<page_name>
-		#  -namespace either a value that can be interpreted as a boolean, or an existing namespace.
-		#		If 'true' or equivalent, uses namespace ::dui::page::<firt_page_name>, creating it if necessary.
-		#		If the option is not specified, uses value ::dui::create_page_namespaces as default.
-		#		If the namespace doesn't exist, creates it. If it doesn't have a 'data' array variable, creates it.
+		#  -namespace either a value that can be a boolean, or a list of namespaces names.
+		#		If the option is not specified, uses ::dui::create_page_namespaces as default. Then:
+		#		If 'true' or equivalent, uses namespace ::dui::pages::<page_name> for each page, creating it if necessary.
+		#		If 'false' or equivalent, uses no page namespace.
+		#		Otherwise, uses the passed namespaces for each page. A namespace can be provided for each page, or
+		#			a common namespace can be used for all of them. If the namespace does not exist yet, it is created,
+		#			and the data array variable is defined. 
 		proc add { pages args } {
+			variable pages_data
 			array set opts $args
 			set can [dui canvas]
+			
+			foreach page $pages {
+				if { ![string is wordchar $page] } {
+					error "Page names can only have letters, numbers and underscores. '$page' is not valid."
+				} elseif { [info exists pages_data($page,ns)] } {
+					error "Page names must be unique. '$page' is duplicated."
+				}
+			}
 			
 			set style [dui::args::get_option -style "" 1]
 			set bg_img [dui::args::get_option -bg_img [dui aspect get page.bg_img -style $style]]
@@ -1167,29 +1183,63 @@ msg [namespace current] get "font_key='$font_key' 0"
 				}
 			}
 							
-			if { [string is true [dui::args::get_option -create_ns ::dui::create_page_namespaces 0]] } {
+			set ns [dui::args::get_option -namespace $::dui::create_page_namespaces 0]
+			if { [string is true -strict $ns] } {
 				foreach page $pages {
-					if { [is_namespace $page] } {
-						namespace eval ::dui::pages::$page {
-							namespace export *
-							namespace ensemble create
-							
-							variable page_drawn 0
-						}				
+					set ns ::dui::pages::${page}
+				}				
+			} elseif { [string is false -strict $ns] } {
+				set ns ""
+			} 
+			
+			if { $ns eq "" } {
+				foreach page $pages {
+					set pages_data($page,ns) {}
+				}
+			} else {
+				# If the page namespace does not exist, create it. Also ensure it has the needed variables.
+				foreach page $pages page_ns $ns {
+msg [namespace current] "Assigning page namespace page='$page', ns='$ns'"
+					set pages_data($page,ns) $page_ns
+					
+					if { [namespace exists $page_ns] } {
+						if { ![info exists ${page_ns}::data] } {
+							namespace eval $page_ns {
+								variable data
+								array set data {}
+							}
+						}
 					} else {
-						namespace eval ::dui::pages::$page {
+						namespace eval $page_ns {
 							namespace export *
 							namespace ensemble create
-							
-							variable items
-							array set items {}
 							
 							variable data
 							array set data {}
-							
-							variable page_drawn 0
 						}
 					}
+					
+#					if { [is_namespace $page] } {
+#						namespace eval ::dui::pages::$page {
+#							namespace export *
+#							namespace ensemble create
+#							
+#							variable page_drawn 0
+#						}				
+#					} else {
+#						namespace eval ::dui::pages::$page {
+#							namespace export *
+#							namespace ensemble create
+#							
+#							variable items
+#							array set items {}
+#							
+#							variable data
+#							array set data {}
+#							
+#							variable page_drawn 0
+#						}
+#					}
 					
 #					namespace eval ::dui::page {
 #						namespace export $page
@@ -1203,19 +1253,15 @@ msg [namespace current] get "font_key='$font_key' 0"
 			return $::de1(current_context)
 		}
 		
-		# If several pages are passed, only usees the first one
-		proc is_namespace { page } {
-			set page [lindex $page 0]
-			return [expr [namespace exists "::dui::pages::$page"] && [info exists ::dui::pages::${page}::data]]
-			#return [expr {[string range $page 0 1] eq "::" && [info exists ${page}::widgets]}]
-		}
-		
-		# If several pages are passed, only usees the first one
+		# If several pages are passed, only uses the first one. Checks that the namespace actually exists, if it
+		#	doesn't returns an empty string.
 		proc get_namespace { page } {
+			variable pages_data
 			set page [lindex $page 0]
-			set ns ""
-			if { [namespace exists "::dui::pages::$page"] } {
-				set ns "::dui::pages::$page"
+			set ns [ifexists pages_data($page,ns)]
+			if { $ns ne "" && ![namespace exists $ns] } {
+				msg -WARN [namespace current] "page namespace '$ns' not found"
+				set ns ""
 			} 
 			return $ns
 		}
@@ -1241,8 +1287,8 @@ msg [namespace current] get "font_key='$font_key' 0"
 			delay_screen_saver
 			
 			# EB
-			set hide_is_ns [is_namespace $page_to_hide]
-			set show_is_ns [is_namespace $page_to_show]
+			set hide_ns [get_namespace $page_to_hide]
+			set show_ns [get_namespace $page_to_show]
 			
 			set key "machine:$page_to_show"
 			if {[ifexists ::nextpage($key)] != ""} {
@@ -1300,9 +1346,10 @@ msg [namespace current] get "font_key='$font_key' 0"
 			foreach action [actions $page_to_show load] {
 				eval $action
 			}
-			if { $show_is_ns && [info procs ::dui::pages::${page_to_show}::load] ne ""} {
-				set page_loaded [::dui::pages::${page_to_show}::load $page_to_hide {*}$args]
+			if { $show_ns ne "" && [info procs ${show_ns}::load] ne "" } {
+				set page_loaded [${show_ns}::load $page_to_hide $page_to_show {*}$args]
 				if { ![string is true $page_loaded] } {
+					# Interrupt the loading: don't show the new page
 					return
 				}
 			}
@@ -1310,8 +1357,8 @@ msg [namespace current] get "font_key='$font_key' 0"
 			foreach action [actions $page_to_hide hide] {
 				eval $action
 			}			
-			if { $hide_is_ns && [info procs ::dui::pages::${page_to_hide}::hide] ne "" } {
-				::dui::pages::${page_to_hide}::hide $page_to_show
+			if { $hide_ns ne "" && [info procs ${hide_ns}::hide] ne "" } {
+				${hide_ns}::hide $page_to_hide $page_to_show
 			}
 
 			#global current_context
@@ -1424,11 +1471,10 @@ msg [namespace current] get "font_key='$font_key' 0"
 			foreach action [actions $page_to_show show] {
 				eval $action
 			}
-			if { $show_is_ns } {
-				if { [info procs ::dui::pages::${page_to_show}::show] ne "" } {
-					::dui::pages::${page_to_show}::show $page_to_hide
-				}
-				set ::dui::pages::${page_to_show}::page_drawn 1
+			
+			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
+				${show_ns}::show $page_to_hide $page_to_show
+				#set ::dui::pages::${page_to_show}::page_drawn 1
 			}
 			
 			#set end [clock milliseconds]
@@ -1454,19 +1500,19 @@ msg [namespace current] get "font_key='$font_key' 0"
 		}
 		
 		proc add_action { page event tclcode } {
-			variable actions
-			if { $event ni "load show hide" } {
-				error "'$event' is not a valid event for dui add_action"
+			variable pages_data
+			if { $event ni [list load show hide] } {
+				error "'$event' is not a valid event for 'dui page add_action'"
 			}
-			lappend actions($page,$event) $tclcode
+			lappend pages_data($page,$event) $tclcode
 		}
 		
 		proc actions { page event } {
-			variable actions
-			if { $event ni "load show hide" } {
-				error "'$event' is not a valid event for dui add_action"
+			variable pages_data
+			if { $event ni [list load show hide] } {
+				error "'$event' is not a valid event for 'dui page add_action'"
 			}
-			return [ifexists actions($page,$event)]
+			return [ifexists pages_data($page,$event)]
 		}
 	}
 
@@ -2303,12 +2349,13 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			if { $cmd eq "" } {
 				msg -WARN [namespace current] button "button '$main_tag' does not have a command"
 			} else {
-				set first_page [lindex $pages 0]
-				if { [dui::page::is_namespace $first_page] } { 
-					if { [string is wordchar $cmd] && [info proc ::dui::pages::${first_page}::$cmd] ne "" } {
-						set cmd ::dui::pages::${first_page}::$cmd
+				set ns [dui page get_namespace [lindex $pages 0]] 
+				#set first_page [lindex $pages 0]
+				if { $ns ne "" } { 
+					if { [string is wordchar $cmd] && [info proc ${ns}::$cmd] ne "" } {
+						set cmd ${ns}::$cmd
 					}				
-					regsub {%NS} $cmd "::dui::pages::$first_page" cmd
+					regsub {%NS} $cmd $ns cmd
 				}
 				regsub {%x0} $cmd $rx cmd
 				regsub {%x1} $cmd $rx1 cmd
@@ -2576,12 +2623,13 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			dui::args::process_label $pages $x $y checkbox $style
 			set cmd [dui::args::get_option -command "" 1]
 			
-			set first_page [lindex $pages 0]
-			if { [dui::page::is_namespace $first_page] } { 
-				if { [string is wordchar $cmd] && [info proc ::dui::pages::${first_page}::$cmd] ne "" } {
-					set cmd ::dui::pages::${first_page}::$cmd
+			#set first_page [lindex $pages 0]
+			set ns [dui::page::get_namespace [lindex $pages 0]]
+			if { $ns ne "" } { 
+				if { [string is wordchar $cmd] && [info proc ${ns}::$cmd] ne "" } {
+					set cmd ${ns}::$cmd
 				}		
-				regsub {%NS} $cmd "::dui::pages::$first_page" cmd
+				regsub {%NS} $cmd $ns cmd
 			}
 			if { $checkvar ne "" } {
 				set cmd "if { \[string is true \$$checkvar\] } { set $checkvar 0 } else { set $checkvar 1 }; $cmd"
@@ -3232,5 +3280,5 @@ dui init
 #dui font add_dirs "[skin_directory]/fonts" "[homedir]/fonts"
 dui font add_dirs "[homedir]/fonts"
 
-set ::settings(enabled_plugins) {}
+set ::settings(enabled_plugins) {dui_demo}
 # dui_demo SDB github
