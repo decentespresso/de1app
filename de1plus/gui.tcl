@@ -1180,7 +1180,7 @@ if {$::android == 0} {
 	namespace eval ::gui {
 		variable _arbitrary_t0 [expr { [clock milliseconds] / 1000.0 }]
 		variable _st_period [expr { 1.0 / ( 2.0 * 50 ) }]
-		msg -INFO "GUI driver using 50 Hz, hard-wired, for DE1 SampleTime"
+		# msg -INFO "GUI driver using 50 Hz, hard-wired, for DE1 SampleTime"
 	}
 }
 
