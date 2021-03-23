@@ -1036,9 +1036,9 @@ msg [namespace current] get "font_key='$font_key' 0"
 				if { [llength $label_pos] > 2 } {
 					set ylabel_offset [rescale_y_skin [lindex $label_pos 2]] 
 				}				
-				set after_show_cmd "::dui::item::relocate_text_wrt $pages ${main_tag}-lbl $main_tag [lindex $label_pos 0] \
-					$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]"				
 				foreach page $pages {
+					set after_show_cmd "::dui::item::relocate_text_wrt $page ${main_tag}-lbl $main_tag [lindex $label_pos 0] \
+						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]"									
 					dui page add_action $page show $after_show_cmd
 				}
 			}
@@ -1202,20 +1202,22 @@ msg [namespace current] get "font_key='$font_key' 0"
 msg [namespace current] "Assigning page namespace page='$page', ns='$ns'"
 					set pages_data($page,ns) $page_ns
 					
-					if { [namespace exists $page_ns] } {
-						if { ![info exists ${page_ns}::data] } {
+					if { $page_ns ne "" } {
+						if { [namespace exists $page_ns] } {
+							if { ![info exists ${page_ns}::data] } {
+								namespace eval $page_ns {
+									variable data
+									array set data {}
+								}
+							}
+						} else {
 							namespace eval $page_ns {
+								namespace export *
+								namespace ensemble create
+								
 								variable data
 								array set data {}
 							}
-						}
-					} else {
-						namespace eval $page_ns {
-							namespace export *
-							namespace ensemble create
-							
-							variable data
-							array set data {}
 						}
 					}
 					
@@ -1499,12 +1501,14 @@ msg [namespace current] "Assigning page namespace page='$page', ns='$ns'"
 			dui hide_android_keyboard
 		}
 		
-		proc add_action { page event tclcode } {
+		proc add_action { pages event tclcode } {
 			variable pages_data
 			if { $event ni [list load show hide] } {
 				error "'$event' is not a valid event for 'dui page add_action'"
 			}
-			lappend pages_data($page,$event) $tclcode
+			foreach page $pages {
+				lappend pages_data($page,$event) $tclcode
+			}
 		}
 		
 		proc actions { page event } {
@@ -1690,6 +1694,7 @@ msg [namespace current] "Assigning page namespace page='$page', ns='$ns'"
 		#	around text labels.
 		proc relocate_text_wrt { page tag wrt { pos w } { xoffset 0 } { yoffset 0 } { anchor {} } { move_too {} } } {
 			set can [dui canvas]
+			set page [lindex $page 0]
 			set tag [get $page [lindex $tag 0]]
 			set wrt [get $page [lindex $wrt 0]]
 			lassign [$can bbox $wrt] x0 y0 x1 y1 
