@@ -3048,14 +3048,12 @@ namespace eval ::gui::notify {
 			}
 
 			record_complete {
-
-				#set what [translate {Enjoy!}]
-				#borg toast $what
-				#say $what $::settings(sound_button_in)
+				set what [translate {Enjoy!}]
+				borg toast $what
+				say $what $::settings(sound_button_in)
 			}
 
 			saw_stop {
-
 				borg toast [translate {Stopping for weight}]
 			}
 
@@ -3066,8 +3064,6 @@ namespace eval ::gui::notify {
 
 		}
 	}
-
-
 
 	proc de1_event {event_id args} {
 
