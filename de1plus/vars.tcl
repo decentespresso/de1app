@@ -3844,3 +3844,16 @@ proc when_to_start_pour_tracking_advanced {} {
 		return [translate "Immediately"]
 	}
 }
+
+proc app_updates_policy_as_text {} {
+	set progname "stable"
+    if {[ifexists ::settings(app_updates_beta_enabled)] == 1} {
+        set progname "beta"
+    } elseif {[ifexists ::settings(app_updates_beta_enabled)] == 2} {
+        set progname "nightly"
+    }
+
+ 	return [translate $progname]
+}
+
+
