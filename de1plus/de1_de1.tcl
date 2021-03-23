@@ -250,13 +250,13 @@ namespace eval ::de1 {
 		# Korea, Peru, Philippines, and some other nations run ~230 V, 60 Hz
 		# Try to catch Korea, even if likely called before a user has a chance to set language
 
-		if {[::de1_line_voltage_nom] == 230} {
+		if {[::de1::line_voltage_nom] == 230} {
 			if {[info exists ::settings(language)] && $::settings(language) == "kr" } {
 				return 60.0
 			} else {
 				return 50.0
 			}
-		} else if {[::de1_line_voltage_nom] == 120} {
+		} elseif {[::de1::line_voltage_nom] == 120} {
 			return 60.0
 		} else {
 			return 50.0
