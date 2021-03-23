@@ -136,6 +136,9 @@ proc make_de1_dir {srcdir destdirs} {
         history_export.tcl *
         version.tcl *
         profile.tcl *
+	de1_de1.tcl *
+	device_scale.tcl *
+	event.tcl *
 
         profiles_v2/readme.txt *
 

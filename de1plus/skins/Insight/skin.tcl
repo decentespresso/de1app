@@ -740,13 +740,13 @@ add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos
 #######################
 # weight
 add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (12.5 * $spacer)}] -justify right -anchor "nw" -font Helv_7_bold -fill $dark -width [rescale_x_skin 520] -textvariable {[waterweight_label_text]}
-	#add_de1_variable "" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -textvariable {[finalwaterweight_text]}
+	#add_de1_variable "" $column1_pos [expr {$pos_top + (14 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -textvariable {[drink_weight_text]}
 	add_de1_variable "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (13.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill $lighter -width [rescale_x_skin 520] -textvariable {[if {$::de1(scale_sensor_weight) == ""} { return "" } elseif {$::settings(scale_bluetooth_address) != "" && $::settings(final_desired_shot_weight) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
 			return "[finalwaterweight_text] < [return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]"
 		} elseif {$::settings(scale_bluetooth_address) != "" && $::settings(final_desired_shot_weight_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
-			return "[finalwaterweight_text] < [return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]"			
+			return "[drink_weight_text] < [return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]"			
 		} else {
-			return "[finalwaterweight_text]"
+			return "[drink_weight_text]"
 		}]}  
 
 
@@ -1101,6 +1101,7 @@ bind Canvas <KeyPress> {handle_keypress %k}
 profile_has_changed_set_colors
 
 proc skins_page_change_due_to_de1_state_change { textstate } {
+
 	page_change_due_to_de1_state_change $textstate
 
 	if {$textstate == "Steam"} {

@@ -1,7 +1,14 @@
-package provide de1_machine 1.0
+package provide de1_machine 1.2
 
-package require de1_comms 1.0
+package require de1_comms 1.1
 package require de1_logging 1.0
+
+###
+### NB: The array ::de1() is a global variable and not in the namespace ::de1
+###
+###     The namespace ::de1 is described after the existing globals
+###
+
 
 #set ::debugging 0
 
@@ -86,7 +93,7 @@ array set ::de1 {
 	widget_current_profile_name_color_normal "#ff6b6b"
 	widget_current_profile_name_color_changed "#969eb1"
 	water_level_mm_correction 5
-	scale_autostop_triggered 1
+	app_autostop_triggered True
 	water_level_full_point 40
 	connect_time 0
 	water_level 20
@@ -220,7 +227,6 @@ array set ::settings {
 	steam_over_pressure_threshold 6
 	automatically_ble_reconnect_forever_to_scale 0
 	chart_total_shot_flow 1
-	tare_only_on_espresso_start 0
 	steam_over_pressure_count_trigger 10
 	heater_voltage ""
 	steam_over_temp_count_trigger 10
@@ -288,7 +294,7 @@ array set ::settings {
 	orientation "landscape"
 	grinder_dose_weight 0
 	scentone {}
-	seconds_after_espresso_stop_to_continue_weighing 8
+	after_flow_complete_delay 5
 	display_volumetric_usage 0
 	one_tap_mode 0
 	allow_unheated_water 1
@@ -430,7 +436,7 @@ array set ::settings {
 
 	maximum_flow_range_advanced 0.6
 	maximum_pressure_range_advanced 0.6
-
+	high_vibration_scale_filtering False
 }
 
 # default de1plus skin
@@ -711,8 +717,6 @@ proc start_steam {} {
 
 proc reset_gui_starting_espresso {} {
 
-	set ::previous_FrameNumber -1
-
 	set ::settings(history_saved) 0
 
 	set ::de1(timer) 0
@@ -721,9 +725,10 @@ proc reset_gui_starting_espresso {} {
 	set ::de1(preinfusion_volume) 0
 	set ::de1(pour_volume) 0
 	set ::de1(current_frame_number) 0
+	::de1::state::reset_framenumbers
 
 	# only works if a BLE scale is attached
-	set ::de1(final_espresso_weight) 0	
+	set ::de1(final_espresso_weight) 0
 
 	############
 	# clear any description of the previous espresso
@@ -741,21 +746,9 @@ proc reset_gui_starting_espresso {} {
 
 
 	clear_espresso_chart
-	clear_espresso_timers
 
 	incr ::settings(espresso_count)
 	save_settings
-
-
-	#start_timers
-
-	if {$::de1(scale_device_handle) != 0} {
-		# this variable prevents the stop trigger from happening until the Tare has succeeded.
-		set ::de1(scale_autostop_triggered) 1
-		scale_tare
-		scale_timer_reset
-	}
-
 
 	if {$::settings(stress_test) == 1} {
 		# this will cease to work once the GHC is installed
@@ -819,15 +812,7 @@ proc reset_gui_starting_hotwater {} {
 	set ::de1(volume) 0
 	incr ::settings(water_count)
 
-	if {$::de1(scale_device_handle) != 0} {
-		# this variable prevents the stop trigger from happening until the Tare has succeeded.
-		set ::de1(scale_autostop_triggered) 1
-		scale_tare
-		scale_timer_reset
-	}
-	
 	save_settings
-
 }
 
 proc start_water {} {
@@ -1034,3 +1019,7 @@ proc has_flowmeter {} {
 }
 
 
+
+###
+### ::de1 namespace NOT included here (linear inclusion expected by existing code)
+###

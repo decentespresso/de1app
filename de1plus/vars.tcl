@@ -1,8 +1,13 @@
 # de1 internal state live variables
-package provide de1_vars 1.0
+package provide de1_vars 1.2
 
+package require lambda
+
+package require de1_device_scale 1.0
+package require de1_event 1.0
 package require de1_logging 1.0
 package require de1_profile 2.0
+
 
 #############################
 # raw data from the DE1
@@ -370,10 +375,17 @@ proc espresso_timer {} {
 	return [expr {([clock milliseconds] - $::timers(espresso_start) )/1000}]
 }
 
-proc espresso_millitimer {} {
-	return [expr {([clock milliseconds] - $::timers(espresso_start))}]
-	#global start_millitimer
-	#return [expr {[clock milliseconds] - $start_millitimer}]
+proc espresso_millitimer {{time_reference 0}} {
+
+	# Accept seconds or ms, always returns ms; 10000000000 is Sat Nov 20 09:46:40 PST 2286
+
+	if { $time_reference == 0 } {
+		set time_reference [clock milliseconds]
+	} elseif { $time_reference < 10000000000 } {
+		set time_reference [expr { $time_reference * 1000. }]
+	}
+
+	return [expr { $time_reference - $::timers(espresso_start) }]
 }
 
 proc espresso_elapsed_timer {} {
@@ -448,7 +460,17 @@ proc steam_pour_timer {} {
 	}
 }
 
-proc steam_pour_millitimer {} {
+proc steam_pour_millitimer {{time_reference 0}} {
+
+	# Accept seconds or ms, always returns ms; 10000000000 is Sat Nov 20 09:46:40 PST 2286
+
+	if { $time_reference == 0 } {
+		set time_reference [clock milliseconds]
+	} elseif { $time_reference < 10000000000 } {
+		set time_reference [expr { $time_reference * 1000. }]
+	}
+
+
 	if {[info exists ::timers(steam_pour_start)] != 1} {
 		return 0
 	}
@@ -457,10 +479,10 @@ proc steam_pour_millitimer {} {
 		return 0
 	} elseif {$::timers(steam_pour_stop) == 0} {
 		# no stop, so show current elapsed time
-		return [expr {([clock milliseconds] - $::timers(steam_pour_start))/1}]
+		return [expr {$time_reference - $::timers(steam_pour_start)}]
 	} else {
 		# stop occured, so show that.
-		return [expr {($::timers(steam_pour_stop) - $::timers(steam_pour_start))/1}]
+		return [expr {$::timers(steam_pour_stop) - $::timers(steam_pour_start)}]
 	}
 }
 
@@ -1089,6 +1111,19 @@ proc finalwaterweight_text {} {
 	return [return_weight_measurement $::de1(final_water_weight)]
 }
 
+# drink_weight is present for both espresso and hot water
+proc drink_weight_text {} {
+	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
+		return ""
+	}
+
+	if {[ifexists ::blink_water_weight] == 1} {
+		return ""
+	}
+
+	return [return_weight_measurement $::settings(drink_weight)]
+}
+
 proc dump_stack {a b c} {
 	msg ---
 	msg [stacktrace]
@@ -1198,7 +1233,7 @@ proc diff_pressure {} {
 		return [expr {3 - (rand() * 6)}]
 	}
 
-	return $::de1(pressure_delta)
+	return $::gui::state::_delta_pressure
 }
 
 proc diff_flow_rate {} {
@@ -1206,7 +1241,7 @@ proc diff_flow_rate {} {
 		return [expr {3 - (rand() * 6)}]
 	}
 
-	return $::de1(flow_delta)
+	return $::gui::state::_delta_flow
 }
 
 proc diff_flow_rate_text {} {
@@ -2895,7 +2930,15 @@ proc save_espresso_rating_to_history {} {
 
 
 # Lazy way of decoupling from "package require" ordering.
-after idle {after 0 {register_state_change_handler Espresso Idle save_this_espresso_to_history}}
+# after idle {after 0 {register_state_change_handler Espresso Idle save_this_espresso_to_history}}
+
+::de1::event::listener::after_flow_complete_add \
+	[lambda {event_dict} {
+		save_this_espresso_to_history \
+			[dict get $event_dict previous_state] \
+			[dict get $event_dict this_state] \
+		} ]
+
 
 proc format_espresso_for_history {} {
 
@@ -2905,7 +2948,7 @@ proc format_espresso_for_history {} {
 			msg "This espresso's start time was not recorded. Possibly we didn't get the bluetooth message of state change to espresso."
 			set ::settings(espresso_clock) [clock seconds]
 		}
-		
+
 		set clock $::settings(espresso_clock)
 		set name [clock format $clock]
 
@@ -2935,10 +2978,13 @@ proc format_espresso_for_history {} {
 
 		append espresso_data "espresso_state_change {[espresso_state_change range 0 end]}\n"
 
+		catch { ::device::scale::format_for_history espresso_data }
+
 		append espresso_data "espresso_pressure_goal {[espresso_pressure_goal range 0 end]}\n"
 		append espresso_data "espresso_flow_goal {[espresso_flow_goal range 0 end]}\n"
 		append espresso_data "espresso_temperature_goal {[espresso_temperature_goal range 0 end]}\n"
 
+		catch { format_timers_for_history espresso_data }
 
 		# format settings nicely so that it is easier to read and parse
 		append espresso_data "settings {\n"
@@ -2963,7 +3009,15 @@ proc format_espresso_for_history {} {
 		append espresso_data "profile [huddle jsondump $::profile::current]"
 
 		return $espresso_data
-	
+
+}
+
+proc format_timers_for_history {espresso_data_name} {
+
+	upvar $espresso_data_name espresso_data
+	foreach {name reftime} [array get ::timers] {
+		append espresso_data "timers(${name}) ${reftime}\n"
+	}
 }
 
 proc format_espresso_to_json {} {
