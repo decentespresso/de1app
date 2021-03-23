@@ -2436,6 +2436,8 @@ proc calibration_gui_init {} {
 		after 5000 de1_read_calibration "pressure" "factory"
 		after 6000 de1_read_calibration "flow" "factory"
 
+		after 7000 get_calibration_flow_multiplier
+
 	}
 }
 
@@ -3047,9 +3049,9 @@ namespace eval ::gui::notify {
 
 			record_complete {
 
-				set what [translate {Enjoy!}]
-				borg toast $what
-				say $what $::settings(sound_button_in)
+				#set what [translate {Enjoy!}]
+				#borg toast $what
+				#say $what $::settings(sound_button_in)
 			}
 
 			saw_stop {

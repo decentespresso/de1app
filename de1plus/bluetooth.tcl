@@ -1568,6 +1568,9 @@ proc de1_ble_handler { event data } {
 							} elseif {$mmr_id == "803838"} {
 								msg "MMRead: espresso_warmup_timeout: '[ifexists arr2(Data0)]'"
 								set ::settings(espresso_warmup_timeout) [ifexists arr2(Data0)]
+							} elseif {$mmr_id == "80383C"} {
+								msg "MMRead: flow estimate multiplier: '[ifexists arr2(Data0)]' = [round_to_two_digits [expr {[ifexists arr2(Data0)] / 1000.0}]]"
+								set ::settings(calibration_flow_multiplier) [round_to_two_digits [expr {[ifexists arr2(Data0)] / 1000.0}]]
 							} elseif {$mmr_id == "803810"} {
 								msg "MMRead: phase_1_flow_rate: '[ifexists arr2(Data0)]'"
 								set ::settings(phase_1_flow_rate) [ifexists arr2(Data0)]

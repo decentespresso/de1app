@@ -1103,9 +1103,19 @@ proc get_fan_threshold {} {
 	mmr_read "get_fan_threshold" "803808" "00"
 }
 
+proc get_calibration_flow_multiplier {} {
+	msg "Reading calibraton flow multiplier"
+	mmr_read "get_calibration_flow_multiplier" "80383C" "00"
+}
+
 proc set_fan_temperature_threshold {temp} {
 	msg "Setting fan temperature to '$temp'"
 	mmr_write "set_fan_temperature_threshold" "803808" "04" [zero_pad [int_to_hex $temp] 2]
+}
+
+proc set_calibration_flow_multiplier {m} {
+	msg "Setting calibration flow multiplier to '$m'"
+	mmr_write "set_calibration_flow_multiplier" "80383C" "04" [zero_pad [long_to_little_endian_hex [expr {int(1000 * $m)}] ] 2]
 }
 
 proc get_tank_temperature_threshold {} {

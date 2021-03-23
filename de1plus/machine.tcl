@@ -235,6 +235,7 @@ array set ::settings {
 	active_settings_tab settings_2a
 	espresso_temperature_steps_enabled 0
 	chart_total_shot_weight 1
+	calibration_flow_multiplier 1
 	phase_1_flow_rate 20
 	phase_2_flow_rate 40
 	ghc_mode 0
