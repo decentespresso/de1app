@@ -2231,7 +2231,7 @@ proc wrap_string {input {threshold 75} {returnlist 0}} {
     # A string of length theshold+1 gets truncated by 1 character
     # this "if" statement is a work around, where we simply accept a +1 overage on the threshold, instead of wrapping it
     if {([string length $input] - 1) <= $threshold} {
-        return $input
+        #return $input
     }
 
     while 1 {
