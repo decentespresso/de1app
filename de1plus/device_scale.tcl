@@ -1326,10 +1326,31 @@ namespace eval ::device::scale::callbacks {
 
 	proc on_major_state_change {event_dict} {
 
+		# Right now, nothing to do if not connected
+
+		if { ! [::device::scale::is_connected] } { return }
+
 		set this_state [dict get $event_dict this_state]
 
-		if { [::de1::state::is_flow_state $this_state] && $::device::scale::run_timer } {
+		if { [::de1::state::is_flow_state $this_state] \
+			     && $::device::scale::run_timer } {
+
 			scale_timer_reset
+		}
+
+		# The DE1 can go directly from Idle to Hotwater
+		# without going through the heating substates
+		# As a result, the scale may not zero.
+		# Honor auto-tare states and don't "beep" scales if unnecessary
+
+		if { $this_state == "HotWater" \
+			     && [::device::scale::is_autotare_state $this_state] } {
+
+			if { abs([::device::scale::history::weight]) \
+				     > $::device::scale::tare_threshold } {
+
+				::device::scale::tare
+			}
 		}
 	}
 
