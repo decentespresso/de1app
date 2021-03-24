@@ -79,7 +79,7 @@ proc set_scrollbar_dimensions { scrollbar_widget listbox_widget } {
 
 proc settings_flow_label {} {
 	if {$::settings(maximum_flow) > 0} {
-		return "$::settings(maximum_flow) [translate "ml/s within"] $::settings(maximum_flow_range) [translate "ml/s"]"
+		return "$::settings(maximum_flow) [translate "ml/s"]"
 	}
 	return [translate "off"]
 }
@@ -120,9 +120,8 @@ add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font He
 
 
 # Flow limit
-add_de1_text "settings_2a" 890 1100 -text [translate "3: (BETA!) limit flow"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-	add_de1_widget "settings_2a" scale 892 1175 {} -from 0 -to 8 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 546] -width [rescale_y_skin 75] -variable ::settings(maximum_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-	add_de1_widget "settings_2a" scale 892 1250 {} -from 0 -to 6 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 546] -width [rescale_y_skin 75] -variable ::settings(maximum_flow_range) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+add_de1_text "settings_2a" 890 1100 -text [translate "3: limit flow"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+	add_de1_widget "settings_2a" scale 892 1175 {} -from 0 -to 8 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 546] -width [rescale_y_skin 150] -variable ::settings(maximum_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 
 add_de1_variable "settings_2a" 892 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[settings_flow_label]}
 
@@ -173,7 +172,7 @@ add_de1_text "temperature_steps" 1280 290 -text [translate "Temperature Steps"] 
 
 proc settings_pressure_label {} {
 	if {$::settings(maximum_pressure) > 0 && $::settings(maximum_pressure) != {}} {
-		return "$::settings(maximum_pressure) [translate "bar within"] $::settings(maximum_pressure_range) [translate "bar"]"
+		return "$::settings(maximum_pressure) [translate "bar"]"
 	}
 	return [translate "off"]
 }
@@ -186,9 +185,8 @@ add_de1_text "settings_2b" 890 755 -text [translate "2: hold"] -font Helv_10_bol
 	set ::flow_hold_widget [add_de1_widget "settings_2b" scale 1516 850 {} -from [expr { 8 + $::de1(max_flowrate_v11)}] -to -8 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(flow_profile_hold) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 	set ::flow_hold_widget_label [add_de1_variable "settings_2b" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}]
 
-add_de1_text "settings_2b" 890 1100 -text [translate "3: (BETA!) limit pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
-	add_de1_widget "settings_2b" scale 892 1175 {} -from 0 -to 12 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 546] -width [rescale_y_skin 75] -variable ::settings(maximum_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-	add_de1_widget "settings_2b" scale 892 1250 {} -from 0 -to 6 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 546] -width [rescale_y_skin 75] -variable ::settings(maximum_pressure_range) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+add_de1_text "settings_2b" 890 1100 -text [translate "3: limit pressure"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
+	add_de1_widget "settings_2b" scale 892 1175 {} -from 0 -to 12 -background #e4d1c1 -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 546] -width [rescale_y_skin 150] -variable ::settings(maximum_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 	add_de1_variable "settings_2b" 892 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[settings_pressure_label]}
 
 add_de1_text "settings_2b" 1730 755 -text [translate "4: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 

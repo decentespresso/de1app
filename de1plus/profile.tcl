@@ -81,7 +81,7 @@ namespace eval ::profile {
         ]
         if {$::settings(maximum_flow) != 0 && $::settings(maximum_flow) != {}} {
             lappend hold max_flow_or_pressure $::settings(maximum_flow)
-            lappend hold max_flow_or_pressure_range $::settings(maximum_flow_range)
+            lappend hold max_flow_or_pressure_range $::settings(maximum_flow_range_default)
         }
 
         set decline [list \
@@ -101,7 +101,7 @@ namespace eval ::profile {
         ]
         if {$::settings(maximum_flow) != 0 && $::settings(maximum_flow) != {}} {
             lappend decline max_flow_or_pressure $::settings(maximum_flow)
-            lappend decline max_flow_or_pressure_range $::settings(maximum_flow_range)
+            lappend decline max_flow_or_pressure_range $::settings(maximum_flow_range_default)
         }
 
         if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
@@ -115,8 +115,8 @@ namespace eval ::profile {
         set temp_advanced(final_desired_shot_weight_advanced) $::settings(final_desired_shot_weight)
         set temp_advanced(final_desired_shot_volume_advanced) $::settings(final_desired_shot_volume)
 
-        set temp_advanced(maximum_pressure_range_advanced) $::settings(maximum_pressure_range)
-        set temp_advanced(maximum_flow_range_advanced) $::settings(maximum_flow_range)
+        set temp_advanced(maximum_pressure_range_advanced) $::settings(maximum_pressure_range_default)
+        set temp_advanced(maximum_flow_range_advanced) $::settings(maximum_flow_range_default)
 
         return [array get temp_advanced]
     }
@@ -194,7 +194,7 @@ namespace eval ::profile {
         ]
         if {$::settings(maximum_pressure) != 0 && $::settings(maximum_pressure) != {}} {
             lappend hold max_flow_or_pressure $::settings(maximum_pressure)
-            lappend hold max_flow_or_pressure_range $::settings(maximum_pressure_range)
+            lappend hold max_flow_or_pressure_range $::settings(maximum_pressure_range_default)
         }
 
         set decline [list \
@@ -214,7 +214,7 @@ namespace eval ::profile {
         ]
         if {$::settings(maximum_pressure) != 0 && $::settings(maximum_pressure) != {}} {
             lappend decline max_flow_or_pressure $::settings(maximum_pressure)
-            lappend decline max_flow_or_pressure_range $::settings(maximum_pressure_range)
+            lappend decline max_flow_or_pressure_range $::settings(maximum_pressure_range_default)
         }
 
         if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
@@ -228,8 +228,8 @@ namespace eval ::profile {
         set temp_advanced(final_desired_shot_weight_advanced) $::settings(final_desired_shot_weight)
         set temp_advanced(final_desired_shot_volume_advanced) $::settings(final_desired_shot_volume)
 
-        set temp_advanced(maximum_pressure_range_advanced) $::settings(maximum_pressure_range)
-        set temp_advanced(maximum_flow_range_advanced) $::settings(maximum_flow_range)
+        set temp_advanced(maximum_pressure_range_advanced) $::settings(maximum_pressure_range_default)
+        set temp_advanced(maximum_flow_range_advanced) $::settings(maximum_flow_range_default)
 
         return [array get temp_advanced]
     }
@@ -377,8 +377,6 @@ namespace eval ::profile {
             # Disable limits by default
             set ::settings(maximum_flow) 0
             set ::settings(maximum_pressure) 0
-            set ::settings(maximum_flow_range) 0.6
-            set ::settings(maximum_pressure_range) 0.6
             set ::settings(maximum_flow_range_advanced) 0.6
             set ::settings(maximum_pressure_range_advanced) 0.6
 
