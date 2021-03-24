@@ -29,6 +29,8 @@
 #		screensaver integrated in the dui or not? -> An action on the "saver" page can make it work
 #		Idle/stress test in page display_change ?? -> Add a way to add before_show/after_show/hide actions
 #		::delayed_image_load system
+#		::screen_size_width and ::screen_size_height
+#
 #	- Global utility functions that are used here:
 #		ifexists
 #		$::fontm, $::globals(entry_length_multiplier)
@@ -46,11 +48,13 @@ package require de1_logging 1.0
 package require de1_updater 1.1
 package require de1_utils 1.1
 package require Tk
+package require tksvg
 catch {
 	# tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
 	package require tkblt
 	namespace import blt::*
 }
+
 
 namespace eval ::dui {
 	namespace export init canvas theme aspect symbol font page item add hide_android_keyboard
@@ -1185,8 +1189,9 @@ msg [namespace current] get "font_key='$font_key' 0"
 							
 			set ns [dui::args::get_option -namespace $::dui::create_page_namespaces 0]
 			if { [string is true -strict $ns] } {
+				set ns {}
 				foreach page $pages {
-					set ns ::dui::pages::${page}
+					lappend ns ::dui::pages::${page}
 				}				
 			} elseif { [string is false -strict $ns] } {
 				set ns ""
@@ -1199,7 +1204,9 @@ msg [namespace current] get "font_key='$font_key' 0"
 			} else {
 				# If the page namespace does not exist, create it. Also ensure it has the needed variables.
 				foreach page $pages page_ns $ns {
-msg [namespace current] "Assigning page namespace page='$page', ns='$ns'"
+					if { $page_ns eq "" } {
+						set page_ns [lindex $ns 0]
+					}
 					set pages_data($page,ns) $page_ns
 					
 					if { $page_ns ne "" } {
@@ -1220,29 +1227,7 @@ msg [namespace current] "Assigning page namespace page='$page', ns='$ns'"
 							}
 						}
 					}
-					
-#					if { [is_namespace $page] } {
-#						namespace eval ::dui::pages::$page {
-#							namespace export *
-#							namespace ensemble create
-#							
-#							variable page_drawn 0
-#						}				
-#					} else {
-#						namespace eval ::dui::pages::$page {
-#							namespace export *
-#							namespace ensemble create
-#							
-#							variable items
-#							array set items {}
-#							
-#							variable data
-#							array set data {}
-#							
-#							variable page_drawn 0
-#						}
-#					}
-					
+
 #					namespace eval ::dui::page {
 #						namespace export $page
 #					}
@@ -1291,7 +1276,6 @@ msg [namespace current] "Assigning page namespace page='$page', ns='$ns'"
 			# EB
 			set hide_ns [get_namespace $page_to_hide]
 			set show_ns [get_namespace $page_to_show]
-			
 			set key "machine:$page_to_show"
 			if {[ifexists ::nextpage($key)] != ""} {
 				# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
@@ -1536,6 +1520,10 @@ msg [namespace current] "Assigning page namespace page='$page', ns='$ns'"
 		variable sliders
 		array set sliders {}
 		
+		# A list of paths where to look for image files. Inside this, it will look in the
+		#	<resolution_width>x<resolution_height> folder.
+		variable img_dirs {}
+		
 		# Keep track of what labels are displayed in what pages. Warns if a label already exists.
 		# In the future this shouldn't be needed, as dui manages what to show using canvas tags. But it's needed
 		#	while the old and new systems coexist.
@@ -1683,6 +1671,31 @@ msg [namespace current] "Assigning page namespace page='$page', ns='$ns'"
 			show_or_hide 0 $page $tags $check_context
 		}
 
+		proc add_image_dirs { args } {
+			variable img_dirs
+			if { [llength $args] == 1 } {
+				set args [lindex $args 0]
+			}
+			
+			foreach dir $args {
+				if { [file isdirectory $dir] } {
+					if { $dir in $img_dirs } {
+						msg -NOTICE [namespace current] "images directory '$dir' was already in the list"
+					} else {
+						lappend img_dirs $dir
+						msg [namespace current] "adding image directory '$dir'"
+					}
+				} else {
+					msg -ERROR [namespace current] "images directory '$dir' not found"
+				}
+			}
+		}
+		
+		proc image_dirs {} {
+			variable img_dirs
+			return $img_dirs
+		}
+		
 		# Moves a text canvas item with respect to another item or widget, i.e. to a position relative to another one.
 		# pos can be any of "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es".
 		# xoffset and yoffset define a fixed offset with respect to the coordinates obtained from processing 'pos'. 
@@ -2374,7 +2387,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			return $main_tag
 		}
 
-		# Adds canvas items to pages
+		# Adds canvas items (arcs, ovals, lines, etc.) to pages
 		proc canvas_item { type pages args } {
 			set can [dui canvas]
 			
@@ -2411,7 +2424,74 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			dui item add_to_pages $pages $main_tag
 			return $main_tag
 		}
-		
+
+		# Extra named options:
+		#	-type The type of image, defaults to 'photo'
+		#	-canvas_* Options to be passed through to the canvas create command
+		proc image { pages x y filename args } {
+			set can [dui canvas]
+
+			if { $filename eq "" } {
+				set msg "An image filename is required"
+				msg -ERROR [namespace current] image $msg
+				error $msg
+				return
+			} 
+			if { [file dirname $filename] eq "." } {
+				foreach dir [dui item image_dirs] {
+					set full_fn "$dir/${::screen_size_width}x${::screen_size_height}/$filename"
+					if { [file exists $full_fn] } {
+						set filename $full_fn
+						break
+					}
+				}
+			}
+			if { ![file exists $filename] } {
+				# TBD: Do resizing if the 2560x1600 image file exists, as in background images?
+				set msg "Image filename '$filename' not found"
+				msg -ERROR [namespace current] image $msg
+				error $msg
+				return	
+			}
+
+			set x [rescale_x_skin $x]
+			set y [rescale_y_skin $y]
+			set tags [dui::args::process_tags_and_var $pages image ""]
+			set main_tag [lindex $tags 0]
+			set style [dui::args::get_option -style "" 1]
+			dui::args::process_aspects image $style ""
+			set type [dui::args::get_option -type photo 1]
+			
+			# Options that are to be passed to the 'canvas create' command instead of the image creation command.
+			# Using this we can modify the canvas image anchor or other options.
+			set canvas_args [dui::args::extract_prefixed -canvas_]
+			dui::args::add_option_if_not_exists -anchor nw canvas_args
+			
+			dui::args::remove_option -tags
+			try {
+				::image create $type $main_tag -file "$filename" {*}$args
+			} on error err {
+				set msg "can't create image '$main_tag' in page(s) '$pages': $err"
+				msg -ERROR [namespace current] $msg
+				error $msg
+				return	
+			}
+			
+			try {
+				[dui canvas] create image $x $y -image $main_tag -tags $tags -state hidden {*}$canvas_args
+			} on error err {
+				set msg "can't add image '$main_tag' in page(s) '$pages' to canvas: $err"
+				msg -ERROR [namespace current] $msg
+				error $msg
+				return
+			}
+	
+			msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args'" 
+			
+			dui item add_to_pages $pages $main_tag
+			return $main_tag
+		}
+				
 		# Named options:
 		#	-tags
 		#	-canvas_anchor, canvas_width, canvas_height are passed to the canvas create command.
@@ -2427,7 +2507,6 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 		#			%W the widget pathname
 		#			%NS the page namespace, if it has one, o/w an empty string
 		proc widget { type pages x y args } {
-	#		global widget_cnt	
 			set can [dui canvas]
 			set rx [rescale_x_skin $x]
 			set ry [rescale_y_skin $y]
@@ -2464,7 +2543,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 				dui::args::add_option_if_not_exists -height [rescale_y_skin [dui::args::get_option -height 0 1 canvas_args]] canvas_args 
 			}				
 			if { $type eq "scrollbar" } {
-				# From the original add_de1_widget, why this?
+				# From the original add_de1_widget, but WHY this?
 				dui::args::add_option_if_not_exists -height 245 canvas_args
 			}
 			
@@ -3284,6 +3363,7 @@ namespace eval ::dui::pages::dui_number_editor {
 dui init
 #dui font add_dirs "[skin_directory]/fonts" "[homedir]/fonts"
 dui font add_dirs "[homedir]/fonts"
-
+# dui item add_image_dirs "[homedir]/skins/$::settings(skin)" "[homedir]/skins/default"
+dui item add_image_dirs "[homedir]/skins/Insight" "[homedir]/skins/default"
 set ::settings(enabled_plugins) {dui_demo}
 # dui_demo SDB github
