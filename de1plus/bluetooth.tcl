@@ -1089,6 +1089,12 @@ proc ble_connect_to_scale {} {
 		}
 	}
 
+	if {[llength $::de1(cmdstack)] > 2} {
+		msg -INFO "Too much backpressure, waiting with the connect"
+		after 300 ble_connect_to_scale
+		return
+	}
+
 	if {[catch {
 		set ::currently_connecting_scale_handle [ble connect [string toupper $::settings(scale_bluetooth_address)] de1_ble_handler false]
 		msg "Connecting to scale on $::settings(scale_bluetooth_address)"
