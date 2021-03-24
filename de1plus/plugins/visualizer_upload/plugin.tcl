@@ -235,7 +235,12 @@ namespace eval ::plugins::${plugin_name} {
     }
     
     proc main {} {
-        register_state_change_handler Espresso Idle ::plugins::visualizer_upload::async_dispatch
+        ::de1::event::listener::after_flow_complete_add \
+            [lambda {event_dict} {
+            ::plugins::visualizer_upload::async_dispatch \
+                [dict get $event_dict previous_state] \
+                [dict get $event_dict this_state] \
+            } ]
     }
 
 }

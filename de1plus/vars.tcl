@@ -2928,10 +2928,6 @@ proc save_espresso_rating_to_history {} {
 	save_this_espresso_to_history {} {}
 }
 
-
-# Lazy way of decoupling from "package require" ordering.
-# after idle {after 0 {register_state_change_handler Espresso Idle save_this_espresso_to_history}}
-
 ::de1::event::listener::after_flow_complete_add \
 	[lambda {event_dict} {
 		save_this_espresso_to_history \
