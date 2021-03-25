@@ -3383,8 +3383,10 @@ proc check_firmware_update_is_available {} {
 
 	# new method, directly comparing the incremented version number
 	if {[ifexists ::de1(Firmware_file_Version)] != "" && [ifexists ::settings(firmware_version_number)] != ""} {
-		if {[ifexists ::de1(Firmware_file_Version)] != [ifexists ::settings(firmware_version_number)]} {
+		if {[ifexists ::de1(Firmware_file_Version)] > [ifexists ::settings(firmware_version_number)]} {
 			set ::de1(firmware_update_button_label) "Firmware update available"
+		} elseif {[ifexists ::de1(Firmware_file_Version)] < [ifexists ::settings(firmware_version_number)]} {
+			set ::de1(firmware_update_button_label) "Firmware downgrade available"
 		}
 
 	}
