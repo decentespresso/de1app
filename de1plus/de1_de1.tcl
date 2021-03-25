@@ -540,7 +540,7 @@ namespace eval ::de1::state::update {
 
 			set dhc [expr { $ShotSample(SampleTime) \
 						- $::de1::_previous_shotsample_update_time }]
-			if { $dhc < 0 } { set dhc [expr { $dhc - 65536 }] }
+			if { $dhc < 0 } { set dhc [expr { $dhc + 65536 }] }
 			set intersample_time [expr { $dhc / ( 2.0 * [::de1::line_frequency_nom] ) }]
 
 		} else {
@@ -578,27 +578,39 @@ namespace eval ::de1::state::update {
 		# TODO: Are there any ill effects of capturing flow for other states???
 		#       If not, do so (and probably share active states with SAW)
 
-		# keep track of water volume during espresso, but not steam
+		if { [::de1::sav::is_tracking_state $this_state] } {
 
-		if {$this_state == "Espresso"} {
+			switch -exact -- $this_state {
 
-			switch -- $this_substate {
+				Espresso {
 
-				preinfusion {
-					set ::de1(preinfusion_volume) \
-						[expr {$::de1(preinfusion_volume) \
-							       + $water_volume_dispensed_since_last_update}]
+					switch -- $this_substate {
+
+						preinfusion {
+							set ::de1(preinfusion_volume) \
+								[expr {$::de1(preinfusion_volume) \
+									       + $water_volume_dispensed_since_last_update}]
+						}
+
+						pouring {
+							set ::de1(pour_volume) \
+								[expr {$::de1(pour_volume) \
+									       + $water_volume_dispensed_since_last_update}]
+						}
+					}
 				}
 
-				pouring {
+				default {
+
 					set ::de1(pour_volume) \
 						[expr {$::de1(pour_volume) \
 							       + $water_volume_dispensed_since_last_update}]
 				}
 			}
-		}
 
-		::de1::sav::check_for_sav
+			::de1::sav::check_for_sav
+
+		}
 
 
 		set event_dict [dict create \
@@ -882,7 +894,7 @@ namespace eval ::de1::sav {
 		variable _target
 
 		if {[::de1::sav::is_tracking_state] && $_target > 0 \
-		    && ! $::de1(app_autostop_triggered) } {
+			    && ! $::de1(app_autostop_triggered) } {
 
 			if { $::de1(pour_volume) >= $_target } {
 

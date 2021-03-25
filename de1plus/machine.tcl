@@ -811,6 +811,7 @@ proc start_espresso {} {
 proc reset_gui_starting_hotwater {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
+	set ::de1(pour_volume) 0
 	incr ::settings(water_count)
 
 	save_settings
