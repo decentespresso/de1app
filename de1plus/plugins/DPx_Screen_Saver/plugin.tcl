@@ -61,7 +61,7 @@ proc check_MySaver_exists {args} {
 }
 
 # This file will be sourced to display meta-data. Dont put any code into the
-# general scope as there are no quarantees about when it will be run.
+# general scope as there are no guarantees about when it will be run.
 # For security reasons it is highly unlikely you will find the plugin in the
 # official distribution if you are not beeing run from your main
 # REQUIRED
