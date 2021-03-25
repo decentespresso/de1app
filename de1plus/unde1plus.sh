@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Change working directory for this script to its parent directory so that it
+# can be called from anywhere.
+cd "$(dirname "$0")"
+
 # You should put undroidwish into your path to have this script work
 # 
 # On Mac OSX, you can for example do this this:
