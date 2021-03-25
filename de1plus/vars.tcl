@@ -331,6 +331,7 @@ proc stop_espresso_timers {} {
 }
 
 proc start_espresso_timers {} {
+	clear_espresso_timers
 	set ::timer_running 1
 	set ::timers(espresso_start) [clock milliseconds]
 
