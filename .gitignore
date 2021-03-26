@@ -30,6 +30,7 @@ core
 release
 de1plus/plugins/visualizer_upload/settings.tdb
 de1plus/plugins/web_api/settings.tdb
+de1plus/plugins/log_upload/settings.tdb
 
 # DE1 app run-time files
 
