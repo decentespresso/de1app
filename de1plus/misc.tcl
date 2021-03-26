@@ -670,6 +670,8 @@ proc make_de1_dir {srcdir destdirs} {
 
         plugins/visualizer_upload/plugin.tcl *
 
+        plugins/log_upload/plugin.tcl *
+
         plugins/SDB/SDB.tcl *
         plugins/SDB/plugin.tcl *
 

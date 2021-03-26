@@ -12,6 +12,25 @@ namespace eval ::plugins::${plugin_name} {
     variable name "Log Uploader"
 
 
+    proc rounded_rectangle {contexts x1 y1 x2 y2 radius colour } {
+        set x1 [rescale_x_skin $x1] 
+        set y1 [rescale_y_skin $y1] 
+        set x2 [rescale_x_skin $x2] 
+        set y2 [rescale_y_skin $y2]
+        if { [info exists ::_rect_id] != 1 } { set ::_rect_id 0 }
+        set tag "rect_$::_rect_id"
+        .can create oval $x1 $y1 [expr $x1 + $radius] [expr $y1 + $radius] -fill $colour -outline $colour -width 0 -tag $tag -state "hidden"
+        .can create oval [expr $x2-$radius] $y1 $x2 [expr $y1 + $radius] -fill $colour -outline $colour -width 0 -tag $tag -state "hidden"
+        .can create oval $x1 [expr $y2-$radius] [expr $x1+$radius] $y2 -fill $colour -outline $colour -width 0 -tag $tag -state "hidden"
+        .can create oval [expr $x2-$radius] [expr $y2-$radius] $x2 $y2 -fill $colour -outline $colour -width 0 -tag $tag -state "hidden"
+        .can create rectangle [expr $x1 + ($radius/2.0)] $y1 [expr $x2-($radius/2.0)] $y2 -fill $colour -outline $colour -width 0 -tag $tag -state "hidden"
+        .can create rectangle $x1 [expr $y1 + ($radius/2.0)] $x2 [expr $y2-($radius/2.0)] -fill $colour -outline $colour -width 0 -tag $tag -state "hidden"
+        add_visual_items_to_contexts $contexts $tag
+        incr ::_rect_id
+        return $tag
+    }
+
+
     proc create_button { contexts x1 y1 x2 y2 font backcolor textcolor action variable } {
         rounded_rectangle $contexts  $x1 $y1 $x2 $y2 [rescale_x_skin 80] $backcolor
         add_de1_variable "$contexts"  [expr ($x1 + $x2) / 2.0 ] [expr ($y1 + $y2) / 2.0 ] -width [rescale_x_skin [expr ($x2 - $x1) - 20]]  -text "" -font $font -fill $textcolor -anchor "center" -justify "center" -state "hidden" -textvariable $variable
