@@ -2066,7 +2066,6 @@ proc run_de1_app {} {
 
 proc ui_startup {} {
 
-	::profile::convert_all_legacy_to_v2
 	load_settings
 	::profile::sync_from_legacy
 	setup_environment
