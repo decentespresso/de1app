@@ -11,6 +11,15 @@ namespace eval ::plugins::${plugin_name} {
     variable description "Upload your logfiles to transfer.sh"
     variable name "Log Uploader"
 
+    proc add_visual_items_to_contexts { contexts tags } {
+        set context_list [split $contexts " "]
+        set tag_list [split $tags " " ]
+        foreach context $context_list {
+            foreach tag $tag_list {
+                add_visual_item_to_context $context $tag
+            }
+        }
+    }
 
     proc rounded_rectangle {contexts x1 y1 x2 y2 radius colour } {
         set x1 [rescale_x_skin $x1] 
