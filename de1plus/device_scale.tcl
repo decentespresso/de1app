@@ -592,6 +592,10 @@ namespace eval ::device::scale::history {
 		}
 	}
 
+	# Make sure there is always some defined mapping
+	setup_default_estimation_mapping
+
+
 	proc setup_median_estimation_mapping {args} {
 
 		proc ::device::scale::history::weight_filtered {} {
@@ -1134,6 +1138,10 @@ namespace eval ::device::scale::saw {
 			::device::scale::history::flow_fd
 		}
 	}
+
+	# Make sure there is always some defined mapping
+	setup_default_estimation_mapping
+
 
 	proc setup_median_estimation_mapping {args} {
 
