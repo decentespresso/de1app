@@ -49,7 +49,7 @@ namespace eval ::de1::event::listener {
 
 	#
 	# after_flow_complete will trigger for ::de1::is_flow_state after
-	# $::settings(seconds_after_espresso_stop_to_continue_weighing)
+	# $::settings(after_flow_complete_delay) seconds
 	#     after transition to ending, but not before leaving a flow state
 	#     after transition out of a flow state, if not already pending or triggered
 	#
