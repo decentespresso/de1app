@@ -6,7 +6,7 @@
 # These are not in machine.tcl due to apparent assumptions on inclusion order
 #
 
-package provide de1_de1 1.1
+package provide de1_de1 1.2
 
 package require lambda
 
@@ -131,32 +131,36 @@ namespace eval ::de1::event::apply {
 	}
 
 
-	proc after_flow_is_pending {} {
+	proc after_flow_complete_is_pending {} {
 
 		variable _after_flow_complete_after_id
 		variable _after_flow_complete_holding_for_idle
 
-		expr { $_after_flow_complete_after_id != "" }
+		expr { $_after_flow_complete_after_id != "" \
+			       || $_after_flow_complete_holding_for_idle }
 	}
 
 	# It's not clear that these always should be cancelled on the start of a new flow cycle
 	# Though saving the shot history is one use case (which gets reset on a new Espresso cycle)
 	# there may be others that should be allowed to run to completion
 
-	# after_flow_cancel_pending provided should there be a "good" use case for it in the future
+	# after_flow_complete_cancel_pending provided should there be a "good" use case for it in the future
 
-	proc after_flow_cancel_pending {} {
+	proc after_flow_complete_cancel_pending {} {
 
 		variable _after_flow_complete_after_id
 		variable _after_flow_complete_holding_for_idle
 
-		if { [after_flow_is_pending] } {
+		if { [::de1::after_flow_complete_is_pending] } {
+
 			after cancel $_after_flow_complete_after_id
 			set _after_flow_complete_after_id ""
 
+			set _after_flow_complete_holding_for_idle False
+
 			msg -WARNING "Cancelled after_flow_complete callbacks. " \
 				[format "Second flow started before %g seconds?" \
-					 $::settings(seconds_after_espresso_stop_to_continue_weighing)]
+					 $::settings(after_flow_complete_delay)]
 		}
 	}
 
@@ -172,7 +176,7 @@ namespace eval ::de1::event::apply {
 
 		if { ! [::de1::state::is_flow_state [::de1::state::current_state]] } {
 
-			set $::de1::event::apply::_after_flow_complete_holding_for_idle false
+			set ::de1::event::apply::_after_flow_complete_holding_for_idle False
 
 			::de1::event::apply::after_flow_complete_callbacks {*}${args}
 
@@ -182,7 +186,7 @@ namespace eval ::de1::event::apply {
 
 		} else {
 
-			set $::de1::event::apply::_after_flow_complete_holding_for_idle true
+			set ::de1::event::apply::_after_flow_complete_holding_for_idle True
 
 			msg -DEBUG [format "after_flow_complete: Deferred for non-flow during %s,%s by apply::_maybe_after..." \
 					    [::de1::state::current_state] [::de1::state::current_substate]]
