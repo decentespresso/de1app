@@ -1579,6 +1579,10 @@ proc update_de1_state {statechar} {
 	#    Enter non-flow state -- apply ==> State 0
 	#
 
+
+	# TODO: Keep all this logic in one place (other half is in de1_de1.tcl in 1.34.x)
+
+
 	if { $this_flow_phase == "during" && $previous_flow_phase != "during" } {
 
 		# => State 1
@@ -1590,18 +1594,23 @@ proc update_de1_state {statechar} {
 
 		# State 1 ==> State 2
 
-		if { [de1::event::apply::after_flow_is_pending] } {
+		if { [::de1::event::apply::after_flow_complete_is_pending] } {
+
+			# Chosing not to cancel existing at this time; valid use cases unclear
+			# See notes before ::de1::event::apply::after_flow_complete_cancel_pending
+
 			msg -WARNING "Pending after_flow_complete callbacks. " \
 				[format "Second flow started before %g seconds?" \
 					 $::settings(after_flow_complete_delay)]
 		}
 
-		# TODO: Decouple this from internal representation
 
 		set ::de1::event::apply::_after_flow_complete_after_id \
 			[ after [expr { 1000 *  $::settings(after_flow_complete_delay) }] \
 				  [list ::de1::event::apply::_maybe_after_flow_complete_callbacks $event_dict]
 			 ]
+
+		set ::de1::event::apply::_after_flow_complete_holding_for_idle True
 
 		msg -DEBUG "after_flow_complete: Scheduled"
 
@@ -1611,7 +1620,7 @@ proc update_de1_state {statechar} {
 
 		# TODO: Decouple this from internal representation
 
-		set $::de1::event::apply::_after_flow_complete_holding_for_idle false
+		set ::de1::event::apply::_after_flow_complete_holding_for_idle False
 
 		::de1::event::apply::after_flow_complete_callbacks $event_dict
 
