@@ -14,12 +14,21 @@
 #	- Add "widget combos" as a unit with a single command (e.g. button+label+clickable_button, or 
 #		listbox+label+scrollbar) and operate with them as a unit too for showing/hiding, enabling/disabling, etc.
 #		Avoid having to manually configure scrollbars and the like on page show.
-#	- Pages load/show/hide events. 
+#	- Pages as namespaces. A default "page container parent namespace" is offered (::dui::pages::<page_name>), but any
+#		namespace can be used through the '-namespace' option of 'dui page add', or even a single namespace for 
+#		several pages.
+#	- Pages load/show/hide events, can be added directly with 'dui page add_action' or through page namespace 
+#		standard procs with the same names.
 #	- Allow to pass arguments to pages, so they can be loaded/started/shown with a set of parameters. This allows 
 #		more easily apply the same page to different data/object, as the data reference to be used can be passed
 #		as a parameter (instead of always using global variables).
-#	- Pages as namespaces.
-#	- Map all coordinates and dimensions in pixels to the current resolution (before widths and the like were not mapped)
+#	- Map all coordinates and dimensions in pixels to the current resolution (before widths and the like were not 
+#		mapped, only the positions)
+#
+# IMPORTANT DESIGN CONSIDERATION:
+#	- In this package we're building item/widget compound bundles in a very simple way.  
+#		Several options were studied, like overloading megawidgets (see https://wiki.tcl-lang.org/page/Overloading+widgets),
+#		but that seemed to add unneeded complexity vs the simple design here, which is relativelly easy to follow.
 #
 # TODOs: CHANGES TO DECOUPLE THIS LAYER AS A TOTALLY INDEPENDENT COMPONENT
 #	- Global variables that must change to the dui namespace variables:
@@ -36,12 +45,6 @@
 #		$::fontm, $::globals(entry_length_multiplier)
 #		$::android, $::undroid
 
-#		dui add variable $page 1280 200 -tags existing_labels -textvariable \
-#			{Existing page labels: $::existing_labels(dui_demo1)} -width 1150
-#		dui add dscale $page 1280 200 -length 800 -variable ::test_slider
-#		
-#		dui add variable $page 1280 300 -textvariable {$::test_slider2}
-
 package provide de1_dui 1.0
 
 package require de1_logging 1.0
@@ -57,7 +60,7 @@ catch {
 
 
 namespace eval ::dui {
-	namespace export init canvas theme aspect symbol font page item add hide_android_keyboard
+	namespace export init setup_ui canvas theme aspect symbol font page item add hide_android_keyboard
 	namespace ensemble create
 
 	# Set to 1 while debugging to see the "clickable" areas. Also may need to redefine aspect 
@@ -903,6 +906,8 @@ msg [namespace current] get "font_key='$font_key' 0"
 						} else {
 							set varname "${ns}::data($varname)"
 						}
+					} else {
+						regsub -all {%NS} $varname $ns varname
 					}
 					
 					if { $varname eq "" } {
@@ -992,7 +997,7 @@ msg [namespace current] get "font_key='$font_key' 0"
 		# Returns the main tag of the created text.
 		# pos_type can be either 'rel' (relative, normally outside of the main widget) or 'inside' (inside the widget,
 		#	as for buttons)
-		proc process_label { pages x y type {style {}} {args_name args} } {
+		proc process_label { pages x y type {style {}} {wrt_tag {}} {args_name args} } {
 			upvar $args_name largs
 			set label [get_option -label "" 1 largs]
 			set labelvar [get_option -labelvariable "" 1 largs]
@@ -1005,6 +1010,9 @@ msg [namespace current] get "font_key='$font_key' 0"
 			
 			set tags [get_option -tags "" 0 largs]
 			set main_tag [lindex $tags 0]
+			if { $wrt_tag eq "" } {
+				set wrt_tag $main_tag
+			}
 			
 			set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]	
 			set label_args [extract_prefixed -label_ largs]
@@ -1041,20 +1049,20 @@ msg [namespace current] get "font_key='$font_key' 0"
 					set ylabel_offset [rescale_y_skin [lindex $label_pos 2]] 
 				}				
 				foreach page $pages {
-					set after_show_cmd "::dui::item::relocate_text_wrt $page ${main_tag}-lbl $main_tag [lindex $label_pos 0] \
+					set after_show_cmd "::dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
 						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]"									
 					dui page add_action $page show $after_show_cmd
 				}
 			}
 
 			if { $label ne "" } {
-				set w [dui add text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label \
+				set id [dui add text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label \
 					{*}$label_args]
 			} elseif { $labelvar ne "" } {
-				set w [dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
+				set id [dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
 					-aspect_type ${type}_label {*}$label_args] 
 			}
-			return $w
+			return $id
 		}
 
 		# Processes the -yscrollbar* named options in 'args' and produces the scrollbar slider widget according to 
@@ -1121,7 +1129,7 @@ msg [namespace current] get "font_key='$font_key' 0"
 	### PAGE SUB-ENSEMBLE ###
 	# AT THE MOMENT ONLY page_add SHOULD BE USED AS OTHERS MAY BREAK BACKWARDS COMPATIBILITY #
 	namespace eval page {
-		namespace export add current get_namespace set_next show_when_off show add_action actions
+		namespace export add current exists list get_namespace set_next show_when_off show add_action actions
 		namespace ensemble create
 
 		# Metadata for every added page. Array names have the form '<page_name>,<type>', where <type> can be:
@@ -1214,7 +1222,13 @@ msg [namespace current] get "font_key='$font_key' 0"
 							if { ![info exists ${page_ns}::data] } {
 								namespace eval $page_ns {
 									variable data
-									array set data {}
+									array set $data {}
+								}
+							}
+							if { ![info exists ${page_ns}::widgets] } {
+								namespace eval $page_ns {
+									variable widgets
+									array set widgets {}
 								}
 							}
 						} else {
@@ -1224,13 +1238,12 @@ msg [namespace current] get "font_key='$font_key' 0"
 								
 								variable data
 								array set data {}
+								
+								variable widgets
+								array set widgets {}
 							}
 						}
 					}
-
-#					namespace eval ::dui::page {
-#						namespace export $page
-#					}
 				}
 			}
 		}
@@ -1238,6 +1251,20 @@ msg [namespace current] get "font_key='$font_key' 0"
 		proc current {} {
 			# Later on dui will keep the current page. At the moment, just use the global variable 
 			return $::de1(current_context)
+		}
+		
+		proc exists { page } {
+			variable pages_data
+			return [info exists pages_data($page,ns)]
+		}
+		
+		proc list {} {
+			variable pages_data
+			set pages {}
+			foreach arrname [array names pages_data "*,ns"] {
+				lappend pages [string range $arrname 0 end-3]
+			}
+			return $pages
 		}
 		
 		# If several pages are passed, only uses the first one. Checks that the namespace actually exists, if it
@@ -1487,7 +1514,7 @@ msg [namespace current] get "font_key='$font_key' 0"
 		
 		proc add_action { pages event tclcode } {
 			variable pages_data
-			if { $event ni [list load show hide] } {
+			if { $event ni {load show hide} } {
 				error "'$event' is not a valid event for 'dui page add_action'"
 			}
 			foreach page $pages {
@@ -1497,7 +1524,7 @@ msg [namespace current] get "font_key='$font_key' 0"
 		
 		proc actions { page event } {
 			variable pages_data
-			if { $event ni [list load show hide] } {
+			if { $event ni {load show hide} } {
 				error "'$event' is not a valid event for 'dui page add_action'"
 			}
 			return [ifexists pages_data($page,$event)]
@@ -1520,8 +1547,8 @@ msg [namespace current] get "font_key='$font_key' 0"
 		variable sliders
 		array set sliders {}
 		
-		# A list of paths where to look for image files. Inside this, it will look in the
-		#	<resolution_width>x<resolution_height> folder.
+		# A list of paths where to look for image files. Within each, it will look in the
+		#	<resolution_width>x<resolution_height> subfolder.
 		variable img_dirs {}
 		
 		# Keep track of what labels are displayed in what pages. Warns if a label already exists.
@@ -1557,16 +1584,51 @@ msg [namespace current] get "font_key='$font_key' 0"
 		#	related tags (e.g. a listbox with its label and scrollbar)
 		# Use the empty string, "*", or "all" to return all tags in the page. Leave the page empty to not filter
 		#	to a specific page.
-		proc get { page tags } {
+		# Allows specifiying items/widgets in 3 ways:
+		#	1) As a page + a list of canvas tags
+		#	2) As a list of canvas item IDs (integer numbers) if only one argument is specified. They are then
+		#		returned without changes.
+		#	3) As a canvas widget pathname. Then it is returned without changes.
+		# The second form is there to allow passing the contents of data(widgets) directly to this function. 
+		proc get { page_or_ids_or_widgets {tags {}} } {
 			set can [dui canvas]
-			set ids {}
-			foreach tag $tags {
-				if { $page eq "" } {
-					lappend ids {*}[$can find withtag $tag]
-				} elseif { $tag eq "*" || $tag eq "" || $tag eq "all"} {
-					lappend ids {*}[$can find withtag "p:$page"]
+			if { $tags eq "" } {
+				if { $page_or_ids_or_widgets eq "" } {
+					return ""
+				}
+				
+				set result {}
+				if { [string is integer [lindex $page_or_ids_or_widgets 0]] } {
+					foreach id $page_or_ids_or_widgets {						
+						if { [$can find withtag $id] eq $id } {
+							lappend result $id
+						}
+					}
 				} else {
-					lappend ids {*}[$can find withtag "p:$page&&$tag"]
+					foreach w $page_or_ids_or_widgets {
+						if { [winfo exists $w] } {
+							lappend result $w
+						}
+					}
+				}
+				return [unique_list $result]
+			}
+			
+			set ids {}
+			set page [lindex $page_or_ids_or_widgets 0] 
+			foreach tag $tags {
+				if {  $page eq "" } {
+					set found [$can find withtag $tag]
+				} elseif { $tag eq "*" || $tag eq "" || $tag eq "all"} {
+					set found [$can find withtag "p:$page"]
+				} else {
+					set found [$can find withtag "p:$page&&$tag"]
+					
+				}
+				if { $found eq "" } {
+					msg -NOTICE [namespace current] get: "no canvas tag matches '$tag' in page '$page'"
+				} else {
+					lappend ids {*}$found
 				}
 			}
 
@@ -1578,32 +1640,57 @@ msg [namespace current] get "font_key='$font_key' 0"
 		# If page is non-empty, searches the widget in the dui canvas by tag and returns its pathanme if it's a 
 		#	widget/window, or and empty string if it's not found or not a window.
 		# This is used by all 'dui item' subcommands that use Tk widgets, so that client code can refer to them
-		#	both by canvas page/tag or by widget pathname.
-		proc get_widget { page tag_or_widget } {
-			if { $page eq "" } {
-				set widget [lindex $tag_or_widget 0]
-				if { winfo exists $widget } {
-					return $widget
-				}
+		#	by any of canvas ID, page/canvas tag, or by widget pathname.
+		# proc get_widget { page {tag_or_widget {}} }
+		proc get_widget { page_or_ids_or_widget {tag {}} } {			
+			set widget [lindex [get $page_or_ids_or_widget $tag] 0]
+			if { [winfo exists $widget] } {
+				return $widget
 			} else {
 				set can [dui canvas]
-				set item [get [lindex $page 0] [lindex $tag_or_widget 0]]
-				if { [$can type $item] eq "window" } {
-					return [$can itemcget $item -window]
+				if { [$can type $widget] eq "window" } {
+					return [$can itemcget $widget -window]
 				}
 			}
 			return ""
+			
+#			if { $page eq "" } {
+#				set widget [lindex $tag_or_widget 0]
+#				if { winfo exists $widget } {
+#					return $widget
+#				}
+#			} else {
+#				set can [dui canvas]
+#				set item [get [lindex $page 0] [lindex $tag_or_widget 0]]
+#				if { [$can type $item] eq "window" } {
+#					return [$can itemcget $item -window]
+#				}
+#			}
+#			return ""
 		}
 		
 		# Provides a single interface to configure options for both canvas items (text, arcs...) and canvas widgets 
 		#	(window entries, listboxes, etc.)
-		proc config { page tags args } {
+		# Allows specifiying items/widgets in 3 ways:
+		#	1) As a list of widgets pathnames (.can.my_entry, etc.)
+		#	2) As a list of canvas item IDs (integer numbers)
+		#	3) As a page name as first argument, and a list of tag names as second argument
+		proc config { page_or_ids_or_widgets args } {
 			set can [dui canvas]
+			if { [string range [lindex $args 0] 0 0] eq "-" || [lindex $args 0] eq "" } {
+				set items [get $page_or_ids_or_widgets]
+			} else {
+				set items [get $page_or_ids_or_widgets [lindex $args 0]]
+				set args [lrange $args 1 end]
+			}
+				
 			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, iterating
 			#	is often needed.
-			foreach item [get $page $tags] {
-				#msg [namespace current] "config:" "tag '$tag' of type '[$can type $tag]' with '$args'"
-				if { [$can type $item] eq "window" } {
+			foreach item $items {
+				#msg [namespace current] "config:" "item '$item' of type '[$can type $tag]' with '$args'"
+				if { [winfo exists $item] } {
+					$item configure {*}$args
+				} elseif { [$can type $item] eq "window" } {
 					[$can itemcget $item -window] configure {*}$args
 				} else {
 					$can itemconfigure $item {*}$args
@@ -1611,56 +1698,98 @@ msg [namespace current] get "font_key='$font_key' 0"
 			}
 		}
 		
+#		proc config { page tags args } {
+#			set can [dui canvas]
+#			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, iterating
+#			#	is often needed.
+#			foreach item [get $page $tags] {
+#				#msg [namespace current] "config:" "tag '$tag' of type '[$can type $tag]' with '$args'"
+#				if { [$can type $item] eq "window" } {
+#					[$can itemcget $item -window] configure {*}$args
+#				} else {
+#					$can itemconfigure $item {*}$args
+#				}
+#			}
+#		}
+
+		proc cget { page_or_ids_or_widgets args } {
+			set can [dui canvas]
+			if { [string range [lindex $args 0] 0 0] eq "-" || [lindex $args 0] eq "" } {
+				set items [get $page_or_ids_or_widgets]
+			} else {
+				set items [get $page_or_ids_or_widgets [lindex $args 0]]
+				set args [lrange $args 1 end]
+			}
+				
+			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, iterating
+			#	is often needed.
+			set result {}
+			foreach item $items {
+				#msg [namespace current] "config:" "item '$item' of type '[$can type $tag]' with '$args'"
+				if { [winfo exists $item] } {
+					lappend result [$item cget {*}$args]
+				} elseif { [$can type $item] eq "window" } {
+					lappend result [[$can itemcget $item -window] cget {*}$args]
+				} else {
+					lappend result [$can itemcget $item {*}$args]
+				}
+			}
+			return $result
+		}
+		
 		# "Smart" widgets enabler or disabler. 'enabled' can take any value equivalent to boolean (1, true, yes, etc.) 
 		# For text, changes its fill color to the default or provided font or disabled color.
 		# For other widgets like rectangle "clickable" button areas, enables or disables them.
 		# Does nothing if the widget is hidden.
-		proc enable_or_disable { enabled page tags { enabled_color {}} { disabled_color {} } } {
-			set can [dui canvas]
-			if { $page eq "" } {
-				set page [dui page current]
-			}
+		proc enable_or_disable { enabled page_or_ids_or_widgets {tags {}} } {
+			#set can [dui canvas]
+#			if { $page eq "" } {
+#				set page [dui page current]
+#			}
 			
-			if { [string is true $enabled] } {
-				set color $enabled_color
+			if { [string is true $enabled] || $enabled eq "enable" } {
 				set state normal
 			} else {
-				set color $disabled_color
 				set state disabled
 			}
 			
-			config $page $tags -state $state
+			config $page_or_ids_or_widgets $tags -state $state
 		} 
 		
 		# "Smart" widgets disabler. 
 		# For text, changes its fill color to the default or provided disabled color.
 		# For other widgets like rectangle "clickable" button areas, disables them.
 		# Does nothing if the widget is hidden. 
-		proc disable { page tags { disabled_color {}} } {
-			enable_or_disable 0 $page $tags {} $disabled_color
+		proc disable { page_or_ids_or_widgets {tags {}} } {
+			enable_or_disable 0 $page_or_ids_or_widgets $tags
 		}
 		
-		proc enable { page tags { enabled_color {} } } {
-			enable_or_disable 1 $page $tags $enabled_color {}
+		proc enable { page_or_ids_or_widgets {tags {}} } {
+			enable_or_disable 1 $page_or_ids_or_widgets $tags
 		}
 		
 		# "Smart" widgets shower or hider. 'show' can take any value equivalent to boolean (1, true, yes, etc.)
 		# If check_context=1, only hides or shows if the items page is the currently active page. This is useful,
 		#	for example, if you're showing after a delay, as the page/page may have been changed in between.
-		proc show_or_hide { show page tags { check_context 1 } } {
-			if { $page eq "" } {
-				set page [dui page current]
-			} elseif { $check_context && $page ne [dui page current] } {
-				return
+		proc show_or_hide { show page_or_ids_or_widgets {tags {}} { check_context 1 } } {
+			if { $tags eq "" && [llength $page_or_ids_or_widgets] == 1 && [dui page exists $page_or_ids_or_widgets] && $check_context } {
+				if { $page_or_ids_or_widgets ne [dui page current] } {
+					return
+				}
 			}
+#			if { $page eq "" } {
+#				set page [dui page current]
+#			} elseif { $check_context && $page ne [dui page current] } {
+#				return
+#			}
 			
-			if { [string is true $show] } {
+			if { [string is true $show] || $show eq "show" } {
 				set state normal
 			} else {
 				set state hidden
 			}
 			
-			config $page $tags -state $state
+			config $page_or_ids_or_widgets $tags -state $state
 		}
 		
 		proc show { page tags { check_context 1} } {
@@ -1884,8 +2013,8 @@ msg [namespace current] get "font_key='$font_key' 0"
 		# Returns the values of the selected items in a listbox. If a 'values' list is provided, returns the matching
 		# items in that list instead of matching to listbox entries, unless 'values' is shorter than the listbox,
 		# in which case indexes not reachable from 'values' are taken from the listbox values.
-		proc listbox_get_selection { page tag_or_widget {values {}} } {
-			set widget [get_widget $page $tag_or_widget]
+		proc listbox_get_selection { page_or_id_or_widget tag {values {}} } {
+			set widget [get_widget $page_or_id_or_widget $tag]
 			set cursel [$widget curselection]
 			if { $cursel eq "" } return {}
 		
@@ -1910,8 +2039,8 @@ msg [namespace current] get "font_key='$font_key' 0"
 		# Sets the selected items in a listbox, matching the string values.
 		# If a 'values' list is provided, 'selected' is matched against that list instead of the actual values shown in the listbox.
 		# If 'reset_current' is 1, clears the previous selection first.
-		proc listbox_set_selection { page tag_or_widget selected { values {} } { reset_current 1 } } {
-			set widget [get_widget $page $tag_or_widget]
+		proc listbox_set_selection { page_or_id_or_widget tag selected { values {} } { reset_current 1 } } {
+			set widget [get_widget $page_or_id_or_widget $tag]
 			if { $selected eq "" } return
 			if { $values eq "" } { 
 				set values [$widget get 0 end]
@@ -1942,52 +2071,58 @@ msg [namespace current] get "font_key='$font_key' 0"
 		}
 		
 		# Adapted from Johanna's MimojaCafe skin code, attributed to Barney.
+		# Return the canvas IDs of all created items.
 		proc rounded_rectangle { x0 y0 x1 y1 radius colour disabled tags } {
 			set can [dui canvas]
+			set ids {}
 			set x0 [rescale_x_skin $x0] 
 			set y0 [rescale_y_skin $y0] 
 			set x1 [rescale_x_skin $x1] 
 			set y1 [rescale_y_skin $y1]
 			
-			$can create oval $x0 $y0 [expr $x0 + $radius] [expr $y0 + $radius] -fill $colour -disabledfill $disabled \
-				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"
-			$can create oval [expr $x1-$radius] $y0 $x1 [expr $y0 + $radius] -fill $colour -disabledfill $disabled \
-				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"
-			$can create oval $x0 [expr $y1-$radius] [expr $x0+$radius] $y1 -fill $colour -disabledfill $disabled \
-				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"
-			$can create oval [expr $x1-$radius] [expr $y1-$radius] $x1 $y1 -fill $colour -disabledfill $disabled \
-				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"
-			$can create rectangle [expr $x0 + ($radius/2.0)] $y0 [expr $x1-($radius/2.0)] $y1 -fill $colour \
-				-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"
-			$can create rectangle $x0 [expr $y0 + ($radius/2.0)] $x1 [expr $y1-($radius/2.0)] -fill $colour \
-				-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"
+			lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius] [expr $y0 + $radius] -fill $colour -disabledfill $disabled \
+				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+			lappend ids [$can create oval [expr $x1-$radius] $y0 $x1 [expr $y0 + $radius] -fill $colour -disabledfill $disabled \
+				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+			lappend ids [$can create oval $x0 [expr $y1-$radius] [expr $x0+$radius] $y1 -fill $colour -disabledfill $disabled \
+				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+			lappend ids [$can create oval [expr $x1-$radius] [expr $y1-$radius] $x1 $y1 -fill $colour -disabledfill $disabled \
+				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+			lappend ids [$can create rectangle [expr $x0 + ($radius/2.0)] $y0 [expr $x1-($radius/2.0)] $y1 -fill $colour \
+				-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+			lappend ids [$can create rectangle $x0 [expr $y0 + ($radius/2.0)] $x1 [expr $y1-($radius/2.0)] -fill $colour \
+				-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+			return $ids
 		}
 		
 		# Inspired on Barney's rounded_rectangle, mimic DSx buttons showing a button outline without a fill.
+		# Return the canvas IDs of all created items.
 		proc rounded_rectangle_outline { x0 y0 x1 y1 arc_offset colour disabled width tags } {
 			set can [dui canvas]
+			set ids {}
 			set x0 [rescale_x_skin $x0] 
 			set y0 [rescale_y_skin $y0] 
 			set x1 [rescale_x_skin $x1] 
 			set y1 [rescale_y_skin $y1]
 		
-			$can create arc [expr $x0] [expr $y0+$arc_offset] [expr $x0+$arc_offset] [expr $y0] -style arc -outline $colour \
-				-width [expr $width-1] -tags $tags -start 90 -disabledoutline $disabled -state "hidden"
-			$can create arc [expr $x0] [expr $y1-$arc_offset] [expr $x0+$arc_offset] [expr $y1] -style arc -outline $colour \
-				-width [expr $width-1] -tags $tags -start 180 -disabledoutline $disabled -state "hidden"
-			$can create arc [expr $x1-$arc_offset] [expr $y0] [expr $x1] [expr $y0+$arc_offset] -style arc -outline $colour \
-				-width [expr $width-1] -tags $tags -start 0 -disabledoutline $disabled -state "hidden"
-			$can create arc [expr $x1-$arc_offset] [expr $y1] [expr $x1] [expr $y1-$arc_offset] -style arc -outline $colour \
-				-width [expr $width-1] -tags $tags -start -90 -disabledoutline $disabled -state "hidden"
+			lappends ids [$can create arc [expr $x0] [expr $y0+$arc_offset] [expr $x0+$arc_offset] [expr $y0] -style arc -outline $colour \
+				-width [expr $width-1] -tags $tags -start 90 -disabledoutline $disabled -state "hidden"]
+			lappend ids [$can create arc [expr $x0] [expr $y1-$arc_offset] [expr $x0+$arc_offset] [expr $y1] -style arc -outline $colour \
+				-width [expr $width-1] -tags $tags -start 180 -disabledoutline $disabled -state "hidden"]
+			lappend ids [$can create arc [expr $x1-$arc_offset] [expr $y0] [expr $x1] [expr $y0+$arc_offset] -style arc -outline $colour \
+				-width [expr $width-1] -tags $tags -start 0 -disabledoutline $disabled -state "hidden"]
+			lappend ids [$can create arc [expr $x1-$arc_offset] [expr $y1] [expr $x1] [expr $y1-$arc_offset] -style arc -outline $colour \
+				-width [expr $width-1] -tags $tags -start -90 -disabledoutline $disabled -state "hidden"]
 			
-			$can create line [expr $x0+$arc_offset/2] [expr $y0] [expr $x1-$arc_offset/2] [expr $y0] -fill $colour \
-				-width $width -tags $tags -disabledfill $disabled -state "hidden"
-			$can create line [expr $x1] [expr $y0+$arc_offset/2] [expr $x1] [expr $y1-$arc_offset/2] -fill $colour \
-				-width $width -tags $tags -disabledfill $disabled -state "hidden"
-			$can create line [expr $x0+$arc_offset/2] [expr $y1] [expr $x1-$arc_offset/2] [expr $y1] -fill $colour \
-				-width $width -tags $tags -disabledfill $disabled -state "hidden"
-			$can create line [expr $x0] [expr $y0+$arc_offset/2] [expr $x0] [expr $y1-$arc_offset/2] -fill $colour \
-				-width $width -tags $tags -disabledfill $disabled -state "hidden"		
+			lappend ids [$can create line [expr $x0+$arc_offset/2] [expr $y0] [expr $x1-$arc_offset/2] [expr $y0] -fill $colour \
+				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
+			lappend ids[$can create line [expr $x1] [expr $y0+$arc_offset/2] [expr $x1] [expr $y1-$arc_offset/2] -fill $colour \
+				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
+			lappend ids[$can create line [expr $x0+$arc_offset/2] [expr $y1] [expr $x1-$arc_offset/2] [expr $y1] -fill $colour \
+				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
+			lappend ids[$can create line [expr $x0] [expr $y0+$arc_offset/2] [expr $x0] [expr $y1-$arc_offset/2] -fill $colour \
+				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
+			return $ids
 		}
 		
 		# Moves the slider in the dscale to the provided position. This has 2 modes:
@@ -1995,16 +2130,23 @@ msg [namespace current] get "font_key='$font_key' 0"
 		#		position of the slider within the scale, given by slider_coord.
 		#	2) If slider_coord is not specified, uses the value of $varname and moves the slider to match the value.
 		# Needs 'args' at the end because this is called from a 'trace add variable'.
-		proc dscale_moveto { page dscale_tag varname from to {digits 0} {slider_coord {}} args } {
-msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname, from=$from, to=$to, digits=$digits, coord=$slider_coord"			
+		proc dscale_moveto { page dscale_tag varname from to {digits 0} {slider_coord {}} args } {			
 			set can [dui canvas]
 			set slider [dui item get $page "${dscale_tag}-crc"]
+			if { $slider eq "" } return
+			lassign [$can bbox $slider] sx0 sy0 sx1 sy1
+			# Return if the page is not currently visible
+			if {$sx0 eq "" } return		
+			
 			set back [dui item get $page "${dscale_tag}-bck"]
 			set front [dui item get $page "${dscale_tag}-frn"]
+			if { $slider eq "" || $back eq "" || $front eq "" } {
+				return
+			}
 			
 			lassign [$can coords $back] bx0 by0 bx1 by1
 			lassign [$can coords $front] fx0 fy0 fx1 fy1
-			lassign [$can bbox $slider] sx0 sy0 sx1 sy1	
+				
 			set swidth [expr {$sx1-$sx0}]
 			set sheight [expr {$sy1-$sy0}]
 			if { ($bx1 - $bx0) >= ($by1 -$by0) } {
@@ -2015,14 +2157,19 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			
 			set varvalue ""
 			if { $slider_coord eq "" && $varname ne "" } {
-				catch { set varvalue [subst \$$varname] }
+				if { [info exists $varname] } {
+					set varvalue [subst \$$varname] 
+				} else {
+					set varvalue $from
+					set $varname $varvalue
+				}
 				if { [string is double -strict $varvalue] } {
-					if { $varvalue < $from } {
-						set slider_coord [switch $orient {h $bx0 v $by0}]
-					} elseif { $varvalue > $to } {
-						set slider_coord [switch $orient {h $bx1 v $by1}]
+					if { $varvalue <= $from } {
+						switch $orient h {set slider_coord $bx0} v {set slider_coord $by0}
+					} elseif { $varvalue >= $to } {
+						switch $orient h {set slider_coord [expr {$bx1-$swidth/2}]} v {set slider_coord $by1}
 					} elseif { $orient eq "h" } {
-						set slider_coord [expr {$bx0+($bx1-$bx0)*$varvalue/($to-$from)}]
+						set slider_coord [expr {($bx0+$swidth/2)+(($bx1-$swidth/2)-($bx0+$swidth/2))*$varvalue/($to-$from)}]
 					} else {
 						set slider_coord [expr {$by0+($by1-$by0)*$varvalue/($to-$from)}]
 					}
@@ -2033,21 +2180,22 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			
 			if { $orient eq "h" } {
 				# Horizontal
-				if { $slider_coord <= $bx0 } {
-					$can coords $front $bx0 $by0 [expr {$bx0+1}] $by1
+				if { ($slider_coord-$swidth/2) <= $bx0 } {
+					$can coords $front $bx0 $by0 [expr {$bx0+$swidth/2}] $by1
 					$can coords $slider $bx0 $sy0 [expr {$bx0+$swidth}] $sy1
 					if { $varvalue eq "" } { set $varname $from }
 					#set dx [expr {$bx0-$sx0}] 
-				} elseif { $slider_coord >= [expr {$bx1-($sx1-$sx0)}]} {
-					$can coords $front $bx0 $by0 $bx1 $by1
+				} elseif { $slider_coord >= ($bx1-$swidth/2) } {
+					$can coords $front $bx0 $by0 [expr {$bx1-$swidth/2}] $by1
 					$can coords $slider [expr {$bx1-$swidth}] $sy0 $bx1 $sy1
 					if { $varvalue eq "" } { set $varname $to }
 					#set dx [expr {$sx1-$bx1}]
 				} else {
-					$can coords $front $bx0 $by0 [expr {$slider_coord+$swidth/2}] $by1
-					$can move $slider [expr {$slider_coord-$sx0}] 0
-					if { $varvalue eq "" } { 
-						set $varname [format "%.${digits}f" [expr {($to-$from)*($slider_coord-$bx0)/($bx1-$swidth-$bx0)}]]
+					$can coords $front $bx0 $by0 $slider_coord $by1
+					$can move $slider [expr {$slider_coord-($swidth/2)-$sx0}] 0
+					if { $varvalue eq "" } {
+						set $varname [format "%.${digits}f" [expr {$from+\
+							($to-$from)*(($slider_coord-$swidth/2-$bx0)/($bx1-$swidth-$bx0))}]]
 					}
 				} 
 			} else {
@@ -2056,7 +2204,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 					$can coords $slider $bx0 $sy0 [expr {$bx0+$swidth}] $sy1
 					if { $varvalue eq "" } { set $varname $from }
 					#set dx [expr {$bx0-$sx0}] 
-				} elseif { $slider_coord >= [expr {$bx1-($sx1-$sx0)}]} {
+				} elseif { $slider_coord >= [expr {$bx1-$swidth}]} {
 					$can coords $front $bx0 $by0 $bx1 $by1
 					$can coords $slider [expr {$bx1-$swidth}] $sy0 $bx1 $sy1
 					if { $varvalue eq "" } { set $varname $to }
@@ -2065,23 +2213,21 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 					$can coords $front $bx0 $by0 [expr {$slider_coord+$swidth/2}] $by1
 					$can move $slider [expr {$slider_coord-$sx0}] 0
 					if { $varvalue eq "" } { 
-						set $varname [format "%.${digits}f" [expr {($to-$from)*($slider_coord-$bx0)/($bx1-$swidth-$bx0)}]] 						
+						set $varname [format "%.${digits}f" [expr {($to-$from)*($slider_coord-$bx0)/($bx1-$swidth-$bx0}]]					
 					}
 				} 
 			}
-			
-			set ::test_slider2 "coord=$slider_coord, from=$from, to=$to, var=[subst \$$varname]"
 		}
 		
-		proc change_var_in_range { var change min max {digits {}} } {
+		proc change_var_in_range { var change min max {n_decimals {}} } {
 			set newvalue [expr {[ifexists $var 0]+$change}]
 			if { $newvalue < $min } {
 				set newvalue $min
 			} elseif { $newvalue > $max } {
 				set newvalue $max
 			} 
-			if { $digits ne "" } {
-				set newvalue [format "%.${digits}f" $newvalue]
+			if { $n_decimals ne "" } {
+				set newvalue [format "%.${n_decimals}f" $newvalue]
 			}
 			set $var $newvalue
 		}
@@ -2092,8 +2238,11 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 		namespace export *
 		namespace ensemble create
 		
-		::variable dscales
-		array set dscales {}
+		# Not needed at the moment. For basic operation we don't need to keep the dscale state anywhere. The
+		# 	calls in the bind events are enough, as they include all the info in their arguments.
+		# This may be needed in the future if we want client code to invoke methods on dscales easilyt.
+#		::variable dscales
+#		array set dscales {}
 		
 		proc theme { args } {
 			dui theme add {*}$args
@@ -2113,6 +2262,14 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 
 		proc font { args } {
 			dui font load {*}$args
+		}
+		
+		proc font_dirs { args } {
+			dui font add_dirs {*}$args
+		}
+		
+		proc image_dirs { args } {
+			dui item add_image_dirs {*}$args 
 		}
 		
 		# Add text items to the canvas. Returns the list of all added tags (one per page).
@@ -2141,18 +2298,21 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			}
 			
 			try {
-				[dui canvas] create text $x $y -state hidden {*}$args
+				set id [[dui canvas] create text $x $y -state hidden {*}$args]
 			} on error err {
 				set msg "can't add text '$main_tag' in page(s) '$pages' to canvas: $err"
 				msg -ERROR [namespace current] $msg
 				error $msg
 				return
 			}
-	
-			msg -INFO [namespace current] text "'$main_tag' to page(s) '$pages' with args '$args'" 
 			
+			set ns [dui page get_namespace $pages]
+			if { $ns ne "" } {
+				set ${ns}::widgets($main_tag) $id
+			}
 			dui item add_to_pages $pages $main_tag
-			return $main_tag
+			msg -INFO [namespace current] text "'$main_tag' to page(s) '$pages' with args '$args'"
+			return $id
 		}
 		
 		# Adds text to a page that is the result of evaluating some code. The text shown is updated automatically whenever
@@ -2168,9 +2328,10 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			global variable_labels
 			
 			set tags [dui::args::process_tags_and_var $pages "variable" -textvariable]
+			set main_tag [lindex $tags 0]
 			set varcmd [dui::args::get_option -textvariable "" 1]
 	
-			set main_tag [dui add text $pages $x $y {*}$args]
+			set id [dui add text $pages $x $y {*}$args]
 			
 			if { $varcmd ne "" } {
 				foreach page $pages {
@@ -2179,7 +2340,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 				}
 			}
 			
-			return $main_tag
+			return $id
 		}
 		
 		
@@ -2233,7 +2394,8 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 		proc button { pages x y args } {
 			set debug_buttons $::dui::debug_buttons
 			set can [dui canvas]
-	
+			set ns [dui page get_namespace $pages]
+			
 			set cmd [dui::args::get_option -command {} 1]
 			set style [dui::args::get_option -style "" 1]
 			dui::args::process_aspects button $style
@@ -2247,7 +2409,8 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			set bheight [dui::args::get_option -bheight "" 1]
 			if { $bheight ne "" } {
 				set y1 [expr {$y+$bheight}]
-			}		
+			}		 
+			
 			if { [llength $args] > 0 && [string is entier [lindex $args 0]] } {
 				if { $x1 <= 0 } {
 					set x1 [lindex $args 0]
@@ -2261,10 +2424,10 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 				set args [lrange $args 1 end]
 			}
 			if { $x1 <= 0 } {
-				set x1 [expr {x+100}]
+				set x1 [expr {$x+100}]
 			}
 			if { $y1 <= 0 } {
-				set y1 [expr {y+100}]
+				set y1 [expr {$y+100}]
 			}
 			
 			set rx [rescale_x_skin $x]
@@ -2310,6 +2473,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			# As soon as the rect has a non-zero width (or maybe an outline or fill?), its "clickable" area becomes only
 			#	the border, so if a visible rectangular button is needed, we have to add an invisible clickable rect on 
 			#	top of it.
+			set ids {}
 			if { $style eq "" && ![dui::args::has_option -shape]} {
 				if { $debug_buttons == 1 } {
 					set width 1
@@ -2319,8 +2483,12 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 				}
 	
 				if { $width > 0 } {
-					$can create rect $rx $ry $rx1 $ry1 -outline $outline -width $width -tags $button_tags -state hidden
-					dui item add_to_pages $pages [lindex $button_tags 0]
+					set ids [$can create rect $rx $ry $rx1 $ry1 -outline $outline -width $width -tags $button_tags \
+						-state hidden]
+#					if { $ns ne "" } {
+#						set ${ns}::widgets([lindex $button_tags 0]) $ids
+#					}
+#					dui item add_to_pages $pages [lindex $button_tags 0]
 				}
 			} else {		
 				dui::args::remove_option -debug_outline
@@ -2331,30 +2499,45 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 					set disabledfill [dui::args::get_option -disabledfill [dui aspect get button disabledfill -style $style]]
 					set radius [dui::args::get_option -radius [dui aspect get button radius -style $style -default 40]]
 					
-					dui item rounded_rectangle $x $y $x1 $y1 $radius $fill $disabledfill $button_tags 
-					dui item add_to_pages $pages [lindex $button_tags 0]
+					set ids [dui item rounded_rectangle $x $y $x1 $y1 $radius $fill $disabledfill $button_tags]
+#					if { $ns ne "" } {
+#						set ${ns}::widgets([lindex $button_tags 0]) $ids
+#					}					
+#					dui item add_to_pages $pages [lindex $button_tags 0]
 				} elseif { $shape eq "outline" } {
 					set outline [dui::args::get_option -outline [dui aspect get button outline -style $style]]
 					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get button disabledoutline -style $style]]
 					set arc_offset [dui::args::get_option -arc_offset [dui aspect get button arc_offset -style $style -default 50]]
 					set width [dui::args::get_option -width [dui aspect get button width -style $style -default 3]]
 					
-					dui item rounded_rectangle_outline $x $y $x1 $y1 $arc_offset $outline $disabledoutline $width $button_tags
-					dui item add_to_pages $pages [lindex $button_tags 0]
+					set ids [dui item rounded_rectangle_outline $x $y $x1 $y1 $arc_offset $outline $disabledoutline \
+						$width $button_tags]
+#					if { $ns ne "" } {
+#						set ${ns}::widgets([lindex $button_tags 0]) $ids
+#					}					
+#					dui item add_to_pages $pages [lindex $button_tags 0]
 				} else {
 	#				foreach aspect "fill activefill disabledfill outline disabledoutline activeoutline width" {
 	#					dui::args::add_option_if_not_exists -$aspect [dui aspect get button $aspect -style $style]
 	#				}					
-					$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args
-					dui item add_to_pages $pages [lindex $button_tags 0]
+					set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
+#					if { $ns ne "" } {
+#						set ${ns}::widgets([lindex $button_tags 0]) $ids
+#					}					
+#					dui item add_to_pages $pages [lindex $button_tags 0]
 				}
 			}
+			if { $ids ne "" && $ns ne "" } {
+				set ${ns}::widgets([lindex $button_tags 0]) $ids
+				dui item add_to_pages $pages [lindex $button_tags 0]
+			}					
 			
 			if { $label ne "" } {
-				dui add text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type button_label -style $style {*}$label_args
+				dui add text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type button_label \
+					-style $style {*}$label_args
 			} elseif { $labelvar ne "" } {
-				dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags -aspect_type button_label \
-					-style $style {*}$label_args 
+				dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
+					-aspect_type button_label -style $style {*}$label_args 
 			}
 			
 			if { $symbol ne "" } {
@@ -2363,7 +2546,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			}
 			
 			# Clickable rect
-			$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden
+			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden]
 			if { $cmd eq "" } {
 				msg -WARN [namespace current] button "button '$main_tag' does not have a command"
 			} else {
@@ -2373,7 +2556,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 					if { [string is wordchar $cmd] && [info proc ${ns}::$cmd] ne "" } {
 						set cmd ${ns}::$cmd
 					}				
-					regsub {%NS} $cmd $ns cmd
+					regsub -all {%NS} $cmd $ns cmd
 				}
 				regsub {%x0} $cmd $rx cmd
 				regsub {%x1} $cmd $rx1 cmd
@@ -2383,8 +2566,11 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			$can bind $main_tag [platform_button_press] $cmd
 			
 			msg -INFO [namespace current] button "'$main_tag' to page(s) '$pages' with args '$args'"
+			if { $ns ne "" } {
+				set ${ns}::widgets($main_tag) $id
+			}								
 			dui item add_to_pages $pages $main_tag
-			return $main_tag
+			return $id
 		}
 
 		# Adds canvas items (arcs, ovals, lines, etc.) to pages
@@ -2411,17 +2597,21 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			dui::args::process_aspects $type $style "" "pos"
 					
 			try {
-				[dui canvas] create $type {*}$coords -state hidden {*}$args
+				set w [[dui canvas] create $type {*}$coords -state hidden {*}$args]
 			} on error err {
 				set msg "can't add $type '$main_tag' in page(s) '$pages' to canvas: $err"
 				msg -ERROR [namespace current] $msg
 				error $msg
 				return
 			}
-	
-			msg -INFO [namespace current] canvas_item "$type '$main_tag' to page(s) '$pages' with args '$args'" 
-			
+
+			set ns [dui page get_namespace $pages]
+			if { $ns ne "" } {
+				set ${ns}::widgets($main_tag) $w
+			}
 			dui item add_to_pages $pages $main_tag
+			
+			msg -INFO [namespace current] canvas_item "$type '$main_tag' to page(s) '$pages' with args '$args'"
 			return $main_tag
 		}
 
@@ -2469,7 +2659,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			
 			dui::args::remove_option -tags
 			try {
-				::image create $type $main_tag -file "$filename" {*}$args
+				set w [::image create $type $main_tag -file "$filename" {*}$args]
 			} on error err {
 				set msg "can't create image '$main_tag' in page(s) '$pages': $err"
 				msg -ERROR [namespace current] $msg
@@ -2486,9 +2676,14 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 				return
 			}
 	
-			msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args'" 
-			
+			 
+			set ns [dui page get_namespace $pages]
+			if { $ns ne "" } {
+				set ${ns}::widgets($main_tag) $w
+			}			
 			dui item add_to_pages $pages $main_tag
+			
+			msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args'"			
 			return $main_tag
 		}
 				
@@ -2515,7 +2710,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			set tags [dui::args::process_tags_and_var $pages $type "" 0 args 0]
 			set main_tag [lindex $tags 0]
 			
-			set widget $can.[lindex $pages 0]_$main_tag
+			set widget $can.[lindex $pages 0]-$main_tag
 			if { [info exists ::$widget] } {
 				set msg "$type widget with name '$widget' already exists"
 				msg -ERROR [namespace current] $msg
@@ -2559,7 +2754,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 				error $msg
 				return			
 			}
-				
+			
 			# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
 			if {$type eq "graph" && ($::android == 1 || $::undroid == 1)} {
 				$widget grid configure -dashes "" -color #DDDDDD -hide 0 -minor 1 
@@ -2569,8 +2764,8 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 		
 			# Additional code to run when creating this widget, such as chart configuration instructions
 			if { $tclcode ne "" } {
-				regsub {%W} $tclcode $widget tclcode
-				regsub {%NS} $tclcode $ns tclcode
+				regsub -all {%W} $tclcode $widget tclcode
+				regsub -all {%NS} $tclcode $ns tclcode
 				try {  
 					# It should be safer to run 'uplevel #0 $tclcode', but inherited code would break, so at the moment
 					# 	we eval in the current context (but it's unsafe, may redefine local variables like $x, $pages, etc.)
@@ -2596,7 +2791,10 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			# EB: Maintain this? I don't find any use of this array in the app code
 			#set ::tclwindows($widget) [list $x $y]
 			msg -INFO [namespace current] widget "$type '$main_tag' to page(s) '$pages' with args '$args'"
-			
+
+			if { $ns ne "" } {
+				set "${ns}::widgets($main_tag)" $widget
+			}			
 			dui item add_to_pages $pages $main_tag
 			return $widget
 		}
@@ -2671,19 +2869,19 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 				bind $widget <Leave> $leave_cmd
 			}
 			
-			# Invoke editor page on double tap (maybe other editors in the future, e.g. a date editor)		
+			# Invoke editor page on double tap (maybe other editors in the future, e.g. a date editor)
 			if { $editor_page ne "" && ![string is false $editor_page] && $textvariable ne ""} {
 				set editor_cmd ""
 				if { [string is true $editor_page] && $data_type eq "numeric" } {
-					set editor_cmd "dui page show_when_off ::dui::pages::dui_number_editor" 
+					set editor_cmd "dui page show_when_off dui_number_editor" 
 				} elseif { ![string is true $editor_page] } {
 					set editor_cmd "dui page show_when_off $editor_page"
 				}
 	
 				if { $editor_cmd ne "" } {
 					set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ 
-						$editor_cmd $textvariable -n_decimals $n_decimals -min $min -max $max \
-							-default $default -small_increment $small_increment -big_increment $big_increment
+						$editor_cmd $textvariable -n_decimals \"$n_decimals\" -min \"$min\" -max \"$max\" \
+							-default \"$default\" -small_increment \"$small_increment\" -big_increment \"$big_increment\"
 					\}"
 					bind $widget <Double-Button-1> $editor_cmd
 				}
@@ -2713,7 +2911,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 				if { [string is wordchar $cmd] && [info proc ${ns}::$cmd] ne "" } {
 					set cmd ${ns}::$cmd
 				}		
-				regsub {%NS} $cmd $ns cmd
+				regsub -all {%NS} $cmd $ns cmd
 			}
 			if { $checkvar ne "" } {
 				set cmd "if { \[string is true \$$checkvar\] } { set $checkvar 0 } else { set $checkvar 1 }; $cmd"
@@ -2731,6 +2929,7 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 		proc listbox { pages x y args } {
 			set tags [dui::args::process_tags_and_var $pages listbox -listvariable 1]
 			set main_tag [lindex $tags 0]
+			set ids {}
 			
 			set style [dui::args::get_option -style "" 0]
 			set width [dui::args::get_option -width "" 1]
@@ -2768,14 +2967,14 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 		# -plus_minus
 		# -default ?
 		proc dscale { pages x y args } {
-			set can [dui canvas]
+			set can [dui canvas]			
 			set tags [dui::args::process_tags_and_var $pages dscale -variable 1]
 			set main_tag [lindex $tags 0]
-			
+			set ns [dui page get_namespace $pages]
+												
 			set style [dui::args::get_option -style "" 0]
 			dui::args::process_aspects dscale $style ""
-			#dui::args::process_label $pages $x $y dscale $style
-			
+			dui::args::process_label $pages $x $y dscale $style ${main_tag}-bck
 			set var [dui::args::get_option -variable "" 1]
 			set orient [string range [dui::args::get_option -orient horizontal] 0 0]
 			set from [dui::args::get_option -from 0]
@@ -2792,7 +2991,6 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			set smallinc [dui::args::get_option -smallincrement 1]
 			set biginc [dui::args::get_option -bigincrement 10]
 			set plus_minus [string is true [dui::args::get_option -plus_minus 1]]
-			
 			set pm_width 0
 			if { $plus_minus } {
 				set pm_width 20
@@ -2813,70 +3011,132 @@ msg [namespace current] "dscale_moveto page=$page, tag=$dscale_tag, var=$varname
 			} else {
 				set length [rescale_x_skin $length]
 				set sliderlength [rescale_x_skin $sliderlength]
-				set width [rescale_y_skin $width]				
+				set width [rescale_y_skin $width]
 				set x [expr {$x+$pm_width}]
 				set x1 [expr {$x+$length-$pm_width}]
-				set x1f [expr {$x+($x1-$x)/2}]
+				set x1f [expr {$x+$sliderlength/2}]
 				set y1 $y
 				set y1f $y
 				set moveto_cmd [list dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $digits %x]
 				
 				if { $plus_minus } {
 					# -font [dui font get notosansuiregular 12]
-					$can create text [expr {$x-$pm_width}] [expr {$y-3}] -text "-" -anchor w -justify left  -font [dui font get notosansuiregular 18] \
-						-fill $foreground -disabledfill $disabledforeground -tags [list ${main_tag}-dec {*}$tags] \
-						-state hidden
-					$can create rect [expr {$x-$pm_width-20}] [expr {$y-$sliderlength/2}] $x [expr {$y+$sliderlength/2}] \
-						-fill {} -width 0 -tags [list ${main_tag}-tdec {*}$tags] -state hidden
+					set id [$can create text [expr {$x-$pm_width}] [expr {$y-3}] -text "-" -anchor w -justify left  \
+						-font [dui font get notosansuiregular 18] -fill $foreground -disabledfill $disabledforeground \
+						-tags [list ${main_tag}-dec {*}$tags] -state hidden]
+					lappend ids $id
+					if { $ns ne "" } {
+						set "${ns}::widgets(${main_tag}-dec)" $id
+					}							
+					set id [$can create rect [expr {$x-$pm_width-20}] [expr {$y-$sliderlength/2}] $x [expr {$y+$sliderlength/2}] \
+						-fill {} -width 0 -tags [list ${main_tag}-tdec {*}$tags] -state hidden]					
 					$can bind ${main_tag}-tdec [platform_button_press] [list dui item change_var_in_range $var \
-						[expr {-$smallinc}] $from $to $digits]
+						-$smallinc $from $to $digits]
+					$can bind ${main_tag}-tdec <Triple-ButtonPress-1> [list dui item change_var_in_range $var \
+						-$biginc $from $to $digits]
+					lappend ids $id
+					if { $ns ne "" } {
+						set "${ns}::widgets(${main_tag}-tdec)" $id
+					}							
 					
-					$can create text [expr {$x1+$pm_width}] [expr {$y-1}] -text "+" -anchor e -justify right -font [dui font get notosansuiregular 16] \
+					set id [$can create text [expr {$x1+$pm_width}] [expr {$y-1}] -text "+" -anchor e -justify right -font [dui font get notosansuiregular 16] \
 						-fill $foreground -disabledfill $disabledforeground -tags [list ${main_tag}-inc {*}$tags] \
-						-state hidden
-					$can create rect $x1 [expr {$y-$sliderlength/2}] [expr {$x1+$pm_width+20}] [expr {$y+$sliderlength/2}] \
-						-fill {} -width 0 -tags [list ${main_tag}-tinc {*}$tags] -state hidden
+						-state hidden]
+					lappend ids $id
+					if { $ns ne "" } {
+						set "${ns}::widgets(${main_tag}-inc)" $id
+					}											
+					set id [$can create rect $x1 [expr {$y-$sliderlength/2}] [expr {$x1+$pm_width+20}] [expr {$y+$sliderlength/2}] \
+						-fill {} -width 0 -tags [list ${main_tag}-tinc {*}$tags] -state hidden]
 					$can bind ${main_tag}-tinc [platform_button_press] [list dui item change_var_in_range $var \
 						$smallinc $from $to $digits]
+					$can bind ${main_tag}-tinc <Triple-ButtonPress-1> [list dui item change_var_in_range $var \
+						$biginc $from $to $digits]
+					lappend ids $id
+					if { $ns ne "" } {
+						set "${ns}::widgets(${main_tag}-tinc)" $id
+					}
 				}
 				
 			}
 			
-			$can create line $x $y $x1 $y1 -width $width -fill $background -disabledfill $disabledbackground \
-				-capstyle round -tags [list ${main_tag}-bck {*}$tags] -state hidden
-			$can create line $x $y $x1f $y1f -width $width -fill $foreground -disabledfill $disabledforeground \
-				-capstyle round -tags [list ${main_tag}-frn {*}$tags] -state hidden
-			$can create rect  $x [expr {$y-$sliderlength/2}] $x1 [expr {$y1+$sliderlength/2}] -fill {} -width 0 \
-				-tags [list ${main_tag}-tap {*}$tags] -state hidden
-			$can bind ${main_tag}-tap [platform_button_press] $moveto_cmd 
-						
-			$can create oval [expr {$x1f-($sliderlength/2)}] [expr {$y1f-($sliderlength/2)}] \
+			set id [$can create line $x $y $x1 $y1 -width $width -fill $background -disabledfill $disabledbackground \
+				-capstyle round -tags [list ${main_tag}-bck {*}$tags] -state hidden]
+			lappend ids $id
+			if { $ns ne "" } {
+				set "${ns}::widgets(${main_tag}-bck)" $id
+			}
+			set id [$can create line $x $y $x1f $y1f -width $width -fill $foreground -disabledfill $disabledforeground \
+				-capstyle round -tags [list ${main_tag}-frn {*}$tags] -state hidden]
+			lappend ids $id
+			if { $ns ne "" } {
+				set "${ns}::widgets(${main_tag}-frn)" $id
+			}			
+			set id [$can create rect  $x [expr {$y-$sliderlength/2}] $x1 [expr {$y1+$sliderlength/2}] -fill {} -width 0 \
+				-tags [list ${main_tag}-tap {*}$tags] -state hidden]			
+			$can bind ${main_tag}-tap [platform_button_press] $moveto_cmd
+			lappend ids $id
+			if { $ns ne "" } {
+				set "${ns}::widgets(${main_tag}-tap)" $id
+			}
+									
+			set id [$can create oval [expr {$x1f-($sliderlength/2)}] [expr {$y1f-($sliderlength/2)}] \
 				[expr {$x1f+($sliderlength/2)}] [expr {$y1f+($sliderlength/2)}] -fill $foreground \
-				-disabledfill $disabledforeground -width 0 -tags [list {*}$tags ${main_tag}-crc] -state hidden 
+				-disabledfill $disabledforeground -width 0 -tags [list {*}$tags ${main_tag}-crc] -state hidden] 
 			$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
+			lappend ids $id			
+			if { $ns ne "" } {
+				set "${ns}::widgets(${main_tag}-crc)" $id
+				set "${ns}::widgets($main_tag)" $ids
+			}
 			
-#			trace add variable $var write [list ::dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $digits ""]
+			set update_cmd [list ::dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $digits ""]
+			trace add variable $var write $update_cmd
+			# Force initializing the slider position
+			dui page add_action $pages show $update_cmd
 			
 			dui item add_to_pages $pages $main_tag
-			return $main_tag
+			return $ids
 		}
 	}
 	
 	### INITIALIZE ###
 	proc init {} {
-		
-#		foreach page {dui_number_editor} {
-#			if { [proc info ::dui::pages::${page}::setup] ne "" } {
-#				::dui::pages::${page}::setup
-#			}
-#		}
 	}
 	
 	proc canvas {} {
 		return ".can"
 	}
 	
-	### COMMANDS TO ADD ITEMS & WIDGETS TO THE CANVAS ###
+	proc setup_ui {} {
+		# Launch setup methods of pages created with 'dui add page'
+		set applied_ns {}
+		foreach page [page list] {
+			set ns [page get_namespace $page]
+			if { $ns ne "" && $ns ni $applied_ns } {
+				if { [info proc ${ns}::setup] eq "" } {
+					msg [namespace current] -NOTICE "page namespace '${ns}' does not have a setup method"
+				} else {
+					#msg [namespace current] setup_ui "running ${ns}::setup"
+					${ns}::setup
+				}
+				lappend applied_ns $ns
+			}
+		}
+		
+		# Launch setup methods of pages created as sub-namespaces of ::dui::pages (which do not require 'dui add page')
+		foreach ns [namespace children ::dui::pages] {
+			if { $ns ni $applied_ns } {
+				if { [info proc ${ns}::setup] eq "" } {
+					msg [namespace current] -NOTICE "page namespace '${ns}' does not have a setup method"
+				} else {
+					#msg [namespace current] setup_ui "running ${ns}::setup"
+					${ns}::setup
+				}
+				lappend applied_ns $ns
+			}
+		}
+	}
 	
 	
 
@@ -3014,7 +3274,6 @@ namespace eval ::dui::pages::dui_number_editor {
 	array set widgets {}
 		
 	variable data
-	# page_name "::dui::pages::dui_number_editor"
 	array set data {		
 		previous_page {}
 		callback_cmd {}
@@ -3029,12 +3288,11 @@ namespace eval ::dui::pages::dui_number_editor {
 		small_increment {}
 		big_increment {}
 		previous_values {}
-		value_format {}
 	}
 
 	proc setup {} {
 		variable data
-		#variable widgets
+		variable widgets
 		set page [namespace tail [namespace current]]
 #		set incs_font_size 6
 
@@ -3044,23 +3302,22 @@ namespace eval ::dui::pages::dui_number_editor {
 			button_label.pos {0.5 0.9} button_label.font_size 6 button_label.anchor center}
 		
 		# Page and title
-		dui page add $page -create_ns 1		
+		dui page add $page -namespace [namespace current]
 		dui add variable $page 1280 100 -tags dui_ne_page_title -textvariable page_title -style page_title
 		
 		# Value being edited
 		set x_left_center 550; set y 275
-		dui add entry $page $x_left_center $y -tags value -width 5 -data_type numeric 
+		dui add entry $page $x_left_center $y -tags value -width 6 -data_type numeric -font_size +2 
 		
 		# Erase button
-		dui add symbol $page $x_left_center [expr {$y+140}] eraser -size medium -has_button 1 \
-			-button_cmd { set ::dui::pages::dui_number_editor::data(value) "" }
+#		dui add symbol $page $x_left_center [expr {$y+140}] eraser -size medium -has_button 1 \
+#			-button_cmd { set ::dui::pages::dui_number_editor::data(value) "" }
 		
 		# Increment/Decrement value arrows 
-		incr y 45; set y_symbol_offset 5; set y_label_offset 90
+		incr y 45; set y_symbol_offset 0; set y_label_offset 90
 		dui add button $page [expr {$x_left_center-100}] [expr {$y+$y_symbol_offset}] -tags small_decr \
-			-symbol chevron_left -label_variable \
-			{-[format [::dui::pages::dui_number_editor::value_format] $::dui::pages::dui_number_editor::data(small_increment)]} \
-			-command { ::dui::pages::dui_number_editor::incr_value [expr -$::dui::pages::dui_number_editor::data(small_increment)] }
+			-symbol chevron_left -label_variable {-[format [%NS::value_format] $%NS::data(small_increment)]} \
+			-command { %NS::incr_value -$%NS::data(small_increment) }
 		
 #		dui add symbol $page [expr {$x_left_center-100}] [expr {$y+$y_symbol_offset}] chevron_left \
 #			-size medium -anchor center \
@@ -3175,38 +3432,54 @@ namespace eval ::dui::pages::dui_number_editor {
 #			{::dui::pages::dui_number_editor::enter_character .} -label_font_size $numpad_font_size	
 	}
 	
-	# Accepts any of the named options -page_title, -min_value, -max_value, -n_decimals, -default_value, 
-	# -small_increment and -big_increment. If not specified, they are taken from the data dictionary entry for 'field_name'.
-	proc load { num_variable args } {
+	# Accepts any of the named options -page_title, -callback_cmd, -min, -max, -n_decimals, -default, -small_increment  
+	#	and -big_increment. If any from -min on is not defined or an empty string, the page does not load.
+	proc load { page_to_hide page_to_show num_variable args } {
 		variable data
 		array set opts $args
 		set page [namespace tail [namespace current]]
 			
-		foreach fn [array names data] {
-			set data($fn) {}
+		set data(num_variable) $num_variable 
+		if { $data(num_variable) eq "" } {
+			msg -WARN [namespace current] load: "num_variable is required"
+			return 0
 		}
-
-		set data(num_variable) $num_variable
-		foreach fn {callback_cmd previous_values} {
-			if { [info exists opts(-$fn)] } {
-				set data($fn) $opts(-$fn)
+		if { ![info exists $num_variable] } {
+			set $num_variable ""
+		}
+		
+		set data(previous_page) $page_to_hide
+		
+		set fields {page_title callback_cmd previous_values default min max n_decimals small_increment big_increment}
+		foreach fn $fields {
+			set data($fn) [ifexists opts(-$fn)]
+		}
+		foreach fn [lrange $fields 4 end] {
+			if { $data($fn) eq "" } {
+				msg -WARN [namespace current] load: "-$fn is required"
+				return 0
 			}
 		}
-		set data(page_title) [ifexists opts(-page_title) [translate "Edit number"]]
-		set data(min) [ifexists opts(-min) 0]
-		set data(max) [ifexists opts(-max) 100]
-		set data(default) [ifexists opts(-default) $data(min)]
-		set data(small_increment) [ifexists opts(-small_increment) 1.0]
-		set data(big_increment) [ifexists opts(-small_increment) 10.0]
+		if { $data(max) <= $data(min) } {
+			msg -WARN [namespace current] load: "max ($data(max)) must be bigger than min ($data(min))"
+			return 0			
+		}
+		
+		if { $data(page_title) eq "" } {
+			set data(page_title) [translate "Edit number"]
+		}
+		if { $data(default) eq "" } {
+			set data(default) $data(min)
+		}
 		
 		return 1
 	}
 	
-	proc show { page_to_hide } {
-		#set_previous_page $ns
+	proc show { page_to_hide page_to_show } {
 		variable data
-		dui item enable_or_disable [expr $data(n_decimals)>0] $page "num_dot*"
-		dui item enable_or_disable [expr [llength $data(previous_values)]>0] "previous_values*" $ns
+		set page [namespace tail [namespace current]]
+		dui item enable_or_disable [expr {$data(n_decimals)>0}] $page "num_dot*"
+		dui item enable_or_disable [expr {[llength $data(previous_values)]>0}] $page "previous_values*"
 	
 		if { $data(num_variable) ne "" && [subst \$$data(num_variable)] ne "" } {
 			# Without the delay, the value is not selected. Tcl misteries...
@@ -3231,16 +3504,16 @@ namespace eval ::dui::pages::dui_number_editor {
 	}
 	
 	proc select_value {} {
-		set widget [dui item get_widget dui_number_editor value]
-		focus $widget
-		$widget selection range 0 end 
+		variable widgets
+		focus $widgets(value)
+		$widgets(value) selection range 0 end 
 	}
 	
 	proc value_change {} {
 		variable data
-		set widget [dui item get_widget dui_number_editor value]
-		
+		variable widgets
 		set widget $widgets(value)
+		
 		if { $data(value) ne "" } {
 			if { $data(min) ne "" && $data(value) < $data(min) } {
 				$widget configure -foreground [dui aspect get text fill -style error]
@@ -3254,7 +3527,8 @@ namespace eval ::dui::pages::dui_number_editor {
 	
 	proc enter_character { char } {
 		variable data
-		set widget [dui item get_widget dui_number_editor value]
+		variable widgets
+		set widget $widgets(value)
 		
 		set max_len [string length [expr round($data(max))]]
 		if { $data(n_decimals) > 0 } { 
@@ -3318,8 +3592,8 @@ namespace eval ::dui::pages::dui_number_editor {
 	}
 	
 	proc previous_values_select {} {
-		set widget [dui item get_widget dui_number_editor previous_values]
-		set new_value [dui item listbox_get_selection $widget]
+		variable widgets		
+		set new_value [dui item listbox_get_selection $widgets(previous_values)]
 		if { $new_value ne "" } { 
 			set_value $new_value 
 		}
@@ -3365,5 +3639,5 @@ dui init
 dui font add_dirs "[homedir]/fonts"
 # dui item add_image_dirs "[homedir]/skins/$::settings(skin)" "[homedir]/skins/default"
 dui item add_image_dirs "[homedir]/skins/Insight" "[homedir]/skins/default"
-set ::settings(enabled_plugins) {dui_demo}
+set ::settings(enabled_plugins) {}
 # dui_demo SDB github
