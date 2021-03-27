@@ -6,7 +6,7 @@
 # These are not in machine.tcl due to apparent assumptions on inclusion order
 #
 
-package provide de1_de1 1.2
+package provide de1_de1 1.3
 
 package require lambda
 
@@ -885,6 +885,26 @@ namespace eval ::de1::sav {
 		::de1::sav::on_flow_change
 
 
+	# Beta testing revealed challenges with "basic" profiles
+	# triggering early due to unrealistically low SAV levels
+	# and a cumbersome UX for changing those levels at this time,
+	# requiring "deleting" the scale and multiple app restarts.
+
+	# Disabing in-app SAV for basic profiles:
+	#   settings_2a -- basic pressure
+	#   settings_2b -- basic flow
+	# when a scale is expected to be present
+	# (should preserve ability to use with HotWater)
+
+	# ::de1::sav::skip_sav_check can be overriden by skins or extensions
+
+	proc skip_sav_check {} {
+
+		expr { $::settings(settings_profile_type) in {{settings_2a} {settings_2b}} \
+			       && [::device::scale::expecting_present] }
+	}
+
+
 	proc check_for_sav {} {
 
 		# Previous logic only enabled SAV for "non-advanced" profiles
@@ -898,6 +918,7 @@ namespace eval ::de1::sav {
 		variable _target
 
 		if {[::de1::sav::is_tracking_state] && $_target > 0 \
+			    && ! [::de1::sav::skip_sav_check] \
 			    && ! $::de1(app_autostop_triggered) } {
 
 			if { $::de1(pour_volume) >= $_target } {
@@ -905,9 +926,9 @@ namespace eval ::de1::sav {
 				start_idle
 				set ::de1(app_autostop_triggered) True
 
-				msg -INFO "Water volume based Espresso stop was triggered at:" \
-					"$::de1(pour_volume) ml >" \
-					"$::settings(final_desired_shot_volume_advanced) ml"
+				msg -INFO "Volume based stop was triggered at:" \
+					"${::de1(pour_volume)} ml for" \
+					"${_target} ml target"
 
 				::gui::notify::de1_event sav_stop
 			}
