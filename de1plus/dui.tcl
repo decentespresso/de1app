@@ -851,12 +851,18 @@ msg [namespace current] get "font_key='$font_key' 0"
 				set auto_assign_tag 1
 			} else {				
 				set main_tag [lindex $tags 0]
+				if { [string is integer $main_tag] || ![regexp {^([A-Za-z0-9_\-])+$} $main_tag] } {
+					set msg "Main tag '$main_tag' can only have letters, numbers, underscores and hyphens, and cannot be a number"
+					msg [namespace current] process_tags_and_var: $msg
+					error $msg
+					return
+				}
 			}
 			# We need to ensure GLOBAL main tag uniqueness while we coexist with the old labelling system.
 			# Once it's unified, we'll request only uniqueness PER PAGE.
 			if { [$can find withtag $main_tag] ne "" } {
 				set msg "Main tag '$main_tag' already exists in canvas, duplicates are not allowed"
-				msg [namespace current] process_tags_and_var $msg
+				msg [namespace current] process_tags_and_var: $msg
 				error $msg
 				return
 			}
@@ -2231,6 +2237,118 @@ msg [namespace current] get "font_key='$font_key' 0"
 			}
 			set $var $newvalue
 		}
+		
+		# Computes the anchor point coordinates with respect to the provided bounding box coordinates, returns a list 
+		#	with 2 elements. 
+		# Has more valid values than usual anchor: n, ne, nw, e, en, ew, s, sw, se, w, wn, ws.
+		proc anchor_inside_box { anchor x0 y0 x1 y1 {xoffset 0} {yoffset 0} } {
+			if { $anchor eq "center" } {
+				set x [expr {$x0+int(($x1-$x0)/2)+$xoffset}]
+				set y [expr {$y0+int(($y1-$y0)/2)+$yoffset}]
+				return [list $x $y]
+			}
+			
+			set anchor1 [string range $anchor 0 0]
+			set anchor2 [string range $anchor 1 1]
+			
+			if { $anchor1 eq "w" || $anchor1 eq ""} {
+				set x [expr {$x0+$xoffset}]
+				
+				if { $anchor2 eq "n" } {
+					set y [expr {$y0+$yoffset}]
+				} elseif { $anchor2 eq "s" } {
+					set y [expr {$y1+$yoffset}]
+				} else {
+					set y [expr {$y0+int(($y1-$y0)/2)+$yoffset}]
+				}
+			} elseif { $anchor1 eq "e" } {
+				set x [expr {$x1+$xoffset}]
+				
+				if { $anchor2 eq "n" } {
+					set y [expr {$y0+$yoffset}]
+				} elseif { $anchor2 eq "s" } {
+					set y [expr {$y1+$yoffset}]
+				} else {
+					set y [expr {$y0+int(($y1-$y0)/2)+$yoffset}]
+				}			
+			} elseif { $anchor1 eq "n" } {
+				set y [expr {$y0+$yoffset}]
+				
+				if { $anchor2 eq "w" } {
+					set x [expr {$x0+$xoffset}]
+				} elseif { $anchor2 eq "e" } {
+					set x [expr {$x1+$xoffset}]
+				} else {
+					set x [expr {$x0+int(($x1-$x0)/2)+$xoffset}]
+				}
+			} elseif { $anchor1 eq "s" } {
+				set y [expr {$y1+$yoffset}]
+				
+				if { $anchor2 eq "w" } {
+					set x [expr {$x0+$xoffset}]
+				} elseif { $anchor2 eq "e" } {
+					set x [expr {$x1+$xoffset}]
+				} else {
+					set x [expr {$x0+int(($x1-$x0)/2)+$xoffset}]
+				}
+			} else {
+				return [list "" ""]
+			}
+			
+			return [list $x $y]
+		}
+	
+		# Given a box reference coordinates {x0 y0} and dimensions {width height}, returns a 4-element list with the new 
+		#	"nw" and "se" coordinates corresponding to anchoring the box to {x0 y0} with the 'anchor' specification.
+		# This works like setting canvas text coordinates and an anchor point, but for boxes like buttons.
+		# Optional x and y-offsets can be defined to move the targets once they have been computed.
+		# Anchor valid values are center, n, ne, nw, s, se, sw, w, e
+		proc anchor_coords { anchor x y width height {xoffset 0} {yoffset 0} } {
+			if { $anchor eq "center" } {
+				set x0 [expr {$x-$width/2+$xoffset}]
+				set y0 [expr {$y-$height/2+$yoffset}]
+				set x1 [expr {$x+$width/2+$xoffset}]
+				set y1 [expr {$y+$height/2+$yoffset}]
+				return [list $x0 $y0 $x1 $y1]
+			}
+			
+			set anchor1 [string range $anchor 0 0]
+			set anchor2 [string range $anchor 1 1]
+			
+			if { $anchor1 eq "w" && $anchor2 eq ""} {
+				set x0 [expr {$x+$xoffset}]
+				set y0 [expr {$y-$height/2+$yoffset}]
+			} elseif { $anchor1 eq "e" && $anchor2 eq "" } {
+				set x0 [expr {$x-$width+$xoffset}]
+				set y0 [expr {$y-$height/2+$yoffset}]
+			} elseif { $anchor1 eq "n" } {
+				set y0 [expr {$y+$yoffset}]
+				
+				if { $anchor2 eq "w" } {
+					set x0 [expr {$x+$xoffset}]
+				} elseif { $anchor2 eq "e" } {
+					set x0 [expr {$x-$width+$xoffset}]
+				} elseif { $anchor2 eq "" }  {
+					set x0 [expr {$x-$width/2+$xoffset}]
+				}
+			} elseif { $anchor1 eq "s" } {
+				set y0 [expr {$y-$height+$yoffset}]
+				
+				if { $anchor2 eq "w" } {
+					set x0 [expr {$x+$xoffset}]
+				} elseif { $anchor2 eq "e" } {
+					set x0 [expr {$x-$width+$xoffset}]
+				} elseif { $anchor2 eq "" }  {
+					set x0 [expr {$x-$width/2+$xoffset}]
+				}
+			} else {
+				return [list "" "" "" ""]
+			}
+
+			set x1 [expr {$x0+$width+$xoffset}]
+			set y1 [expr {$y0+$height+$yoffset}]
+			return [list $x0 $y0 $x1 $y1]
+		}
 	}
 
 	### ADD SUBENSEMBLE: COMMANDS TO CREATE CANVAS ITEMS AND WIDGETS AND ADD THEM TO THE CANVAS ###
@@ -2428,6 +2546,11 @@ msg [namespace current] get "font_key='$font_key' 0"
 			}
 			if { $y1 <= 0 } {
 				set y1 [expr {$y+100}]
+			}
+			
+			set anchor [dui::args::get_option -anchor nw 1]
+			if { $anchor ne "nw" } {
+				lassign [dui::item::anchor_coords $anchor $x $y [expr {$x1-$x}] [expr {$y1-$y}]] x y x1 y1
 			}
 			
 			set rx [rescale_x_skin $x]
@@ -3184,66 +3307,6 @@ msg [namespace current] get "font_key='$font_key' 0"
 		return 1
 	}
 	
-	# Computes the anchor point coordinates with respect to the provided bounding box coordinates, returns a list 
-	#	with 2 elements.
-	# Anchor valid values are center, n, ne, e, se, s, sw, w, nw.
-	proc anchor_point { anchor x0 y0 x1 y1 {xoffset 0} {yoffset 0} } {
-		if { $anchor eq "center" } {
-			set x [expr {$x0+int(($x1-$x0)/2)+$xoffset}]
-			set y [expr {$y0+int(($y1-$y0)/2)+$yoffset}]
-			return [list $x $y]
-		}
-		
-		set anchor1 [string range $anchor 0 0]
-		set anchor2 [string range $anchor 1 1]
-		
-		if { $anchor1 eq "w" || $anchor1 eq ""} {
-			set x [expr {$x0+$xoffset}]
-			
-			if { $anchor2 eq "n" } {
-				set y [expr {$y0+$yoffset}]
-			} elseif { $anchor2 eq "s" } {
-				set y [expr {$y1+$yoffset}]
-			} else {
-				set y [expr {$y0+int(($y1-$y0)/2)+$yoffset}]
-			}
-		} elseif { $anchor1 eq "e" } {
-			set x [expr {$x1+$xoffset}]
-			
-			if { $anchor2 eq "n" } {
-				set y [expr {$y0+$yoffset}]
-			} elseif { $anchor2 eq "s" } {
-				set y [expr {$y1+$yoffset}]
-			} else {
-				set y [expr {$y0+int(($y1-$y0)/2)+$yoffset}]
-			}			
-		} elseif { $anchor1 eq "n" } {
-			set y [expr {$y0+$yoffset}]
-			
-			if { $anchor2 eq "w" } {
-				set x [expr {$x0+$xoffset}]
-			} elseif { $anchor2 eq "e" } {
-				set x [expr {$x1+$xoffset}]
-			} else {
-				set x [expr {$x0+int(($x1-$x0)/2)+$xoffset}]
-			}
-		} elseif { $anchor1 eq "s" } {
-			set y [expr {$y1+$yoffset}]
-			
-			if { $anchor2 eq "w" } {
-				set x [expr {$x0+$xoffset}]
-			} elseif { $anchor2 eq "e" } {
-				set x [expr {$x1+$xoffset}]
-			} else {
-				set x [expr {$x0+int(($x1-$x0)/2)+$xoffset}]
-			}
-		} else {
-			return [list "" ""]
-		}
-		
-		return [list $x $y]
-	}
-
 	proc hide_android_keyboard {} {
 		# make sure on-screen keyboard doesn't auto-pop up, and if
 		# physical keyboard is connected, make sure navbar stays hidden
@@ -3297,70 +3360,51 @@ namespace eval ::dui::pages::dui_number_editor {
 #		set incs_font_size 6
 
 		# Declare styles
-		dui aspect set -style dne_clicker {button.shape round button.bwidth 70 button.bheight 80 
-			button_symbol.pos {0.5 0.4} button_symbol.anchor center 
-			button_label.pos {0.5 0.9} button_label.font_size 6 button_label.anchor center}
+		dui aspect set -style dne_clicker {button.shape round button.bwidth 100 button.bheight 100 
+			button.radius 20 button.anchor center
+			button_symbol.pos {0.5 0.4} button_symbol.anchor center button_symbol.font_size 20
+			button_label.pos {0.5 0.9} button_label.font_size 9 button_label.anchor center}
 		
 		# Page and title
 		dui page add $page -namespace [namespace current]
 		dui add variable $page 1280 100 -tags dui_ne_page_title -textvariable page_title -style page_title
 		
-		# Value being edited
-		set x_left_center 550; set y 275
-		dui add entry $page $x_left_center $y -tags value -width 6 -data_type numeric -font_size +2 
-		
-		# Erase button
-#		dui add symbol $page $x_left_center [expr {$y+140}] eraser -size medium -has_button 1 \
-#			-button_cmd { set ::dui::pages::dui_number_editor::data(value) "" }
-		
-		# Increment/Decrement value arrows 
-		incr y 45; set y_symbol_offset 0; set y_label_offset 90
-		dui add button $page [expr {$x_left_center-100}] [expr {$y+$y_symbol_offset}] -tags small_decr \
-			-symbol chevron_left -label_variable {-[format [%NS::value_format] $%NS::data(small_increment)]} \
+		# Value being edited. Use the center coordinates of the text entry as reference for the whole row.
+		set x 600; set y 275
+		dui add entry $page $x $y -tags value -width 6 -data_type numeric -font_size +2 -canvas_anchor center \
+			-justify center
+				
+		# Decrement value arrows
+		set hoffset 50; set bspace 140
+		dui add button $page [expr {$x-$hoffset-$bspace}] $y -tags small_decr -style dne_clicker \
+			-symbol chevron_left -labelvariable {-[format [%NS::value_format] $%NS::data(small_increment)]} \
 			-command { %NS::incr_value -$%NS::data(small_increment) }
 		
-#		dui add symbol $page [expr {$x_left_center-100}] [expr {$y+$y_symbol_offset}] chevron_left \
-#			-size medium -anchor center \
-#			-has_button 1 -button_cmd { ::dui::pages::dui_number_editor::incr_value [expr -$::dui::pages::dui_number_editor::data(small_increment)] }
-#		dui add variable $page [expr {$x_left_center-100}] [expr {$y+$y_label_offset}] \
-#			{-[format [::dui::pages::dui_number_editor::value_format] $::dui::pages::dui_number_editor::data(small_increment)]} \
-#			-anchor center -font_size $incs_font_size
+		dui add button $page [expr {$x-$hoffset-$bspace*2}] $y -tags big_decr -style dne_clicker \
+			-symbol chevron_double_left -labelvariable {-[format [%NS::value_format] $%NS::data(big_increment)]} \
+			-command { %NS::incr_value -$%NS::data(big_increment) } 
+
+		dui add button $page [expr {$x-$hoffset-$bspace*3}] $y -tags to_min -style dne_clicker \
+			-symbol arrow_to_left -labelvariable {[format [%NS::value_format] $%NS::data(min)]} \
+			-command { %NS::set_value -$%NS::data(min) } 
+
+		# Increment value arrows
+		dui add button $page [expr {$x+$hoffset+$bspace}] $y -tags small_incr -style dne_clicker \
+			-symbol chevron_right -labelvariable {+[format [%NS::value_format] $%NS::data(small_increment)]} \
+			-command { %NS::incr_value $%NS::data(small_increment) }
+			
+		dui add button $page [expr {$x+$hoffset+$bspace*2}] $y -tags big_incr -style dne_clicker \
+			-symbol chevron_double_right -labelvariable {+[format [%NS::value_format] $%NS::data(big_increment)]} \
+			-command { %NS::incr_value $%NS::data(big_increment) } 
+	
+		dui add button $page [expr {$x+$hoffset+$bspace*3}] $y -tags to_max -style dne_clicker \
+			-symbol arrow_to_right -labelvariable {[format [%NS::value_format] $%NS::data(max)]} \
+			-command { %NS::set_value $%NS::data(max) } 
 		
-#		dui add symbol $page [expr {$x_left_center-260}] [expr {$y+$y_symbol_offset}] chevron_double_left \
-#			-size medium -anchor center \
-#			-has_button 1 -button_cmd { ::dui::pages::dui_number_editor::incr_value [expr -$::dui::pages::dui_number_editor::data(big_increment)] }
-#		dui add variable $page [expr {$x_left_center-260}] [expr {$y+$y_label_offset}] \
-#			{-[format [::dui::pages::dui_number_editor::value_format] $::dui::pages::dui_number_editor::data(big_increment)]} \
-#			-anchor center -font_size $incs_font_size
-#	
-#		dui add symbol $page [expr {$x_left_center-400}] [expr {$y+$y_symbol_offset}] arrow_to_left \
-#			-size medium -anchor center \
-#			-has_button 1 -button_cmd { ::dui::pages::dui_number_editor::set_value $::dui::pages::dui_number_editor::data(min) }
-#		dui add variable $page [expr {$x_left_center-400}] [expr {$y+$y_label_offset}] \
-#			{[format [::dui::pages::dui_number_editor::value_format] $::dui::pages::dui_number_editor::data(min)]} \
-#			-anchor center -font_size $incs_font_size
-#		
-#		dui add symbol $page [expr {$x_left_center+360}] [expr {$y+$y_symbol_offset}] chevron_right \
-#			-size medium -anchor center \
-#			-has_button 1 -button_cmd { ::dui::pages::dui_number_editor::incr_value $::dui::pages::dui_number_editor::data(small_increment) }
-#		dui add variable $page [expr {$x_left_center+360}] [expr {$y+$y_label_offset}] \
-#			{+[format [::dui::pages::dui_number_editor::value_format] $::dui::pages::dui_number_editor::data(small_increment)]} \
-#			-anchor center -font_size $incs_font_size
-#		
-#		dui add symbol $page [expr {$x_left_center+510}] [expr {$y+$y_symbol_offset}] chevron_double_right \
-#			-size medium -anchor center \
-#			-has_button 1 -button_cmd { ::dui::pages::dui_number_editor::incr_value $::dui::pages::dui_number_editor::data(big_increment) }
-#		dui add variable $page [expr {$x_left_center+510}] [expr {$y+$y_label_offset}] \
-#			{+[format [::dui::pages::dui_number_editor::value_format] $::dui::pages::dui_number_editor::data(big_increment)]} \
-#			-anchor center -font_size $incs_font_size
-#	
-#		dui add symbol $page [expr {$x_left_center+670}] [expr {$y+$y_symbol_offset}] arrow_to_right \
-#			-size medium -anchor center \
-#			-has_button 1 -button_cmd { ::dui::pages::dui_number_editor::set_value $::dui::pages::dui_number_editor::data(max) }
-#		dui add variable $page [expr {$x_left_center+670}] [expr {$y+$y_label_offset}] \
-#			{[format "%.$::dui::pages::dui_number_editor::data(n_decimals)f" $::dui::pages::dui_number_editor::data(max)]} \
-#			-anchor center -font_size $incs_font_size
-#	
+		# Erase button
+		#		dui add symbol $page $x_left_center [expr {$y+140}] eraser -size medium -has_button 1 \
+		#			-button_cmd { set ::dui::pages::dui_number_editor::data(value) "" }
+		
 #		# Previous values listbox
 #		dui add listbox $page previous_values 450 600 450 680 16 9 -label [translate "Previous values"] \
 #			-font_size $::plugins::DGUI::section_font_size 
