@@ -1,4 +1,6 @@
-package provide de1_logging 1.0
+package provide de1_logging 1.1
+
+package require lambda
 
 # Originally in gui.tcl
 proc msg {args} {
@@ -202,5 +204,59 @@ namespace eval ::logging {
 	}
 
 	::logging::init
-}
 
+
+
+	# General "dumper" for catch/try results
+
+	proc log_error_result_opts_dict {result opts_dict {tag ""}} {
+
+		set opts_dict_lines {}
+		dict for {_k _v} $opts_dict {
+			lappend opts_dict_lines [format "%s %s" $_k $_v]
+		}
+
+		::logging::default_logger -ERROR [format "%s%s%s\n%s" \
+							  $tag \
+							  [expr { $tag != "" ? " " : "" }] \
+							  $result \
+							  [join $opts_dict_lines "\n"] ]
+	}
+
+	#
+	# Prepend logging of background errors
+	# to the current error handler
+	#
+
+	variable _previous_bgerror [interp bgerror {}]
+
+	proc _logging_bgerror {result opts_dict} {
+
+		::logging::log_error_result_opts_dict $result $opts_dict
+
+		# Effectively undocumented is bgerror is run in a loop context
+		# See tk/library/bgerror.tcl for details of the Tk implementation
+
+		# Catch the break and bubble up
+
+		# The modal error dialog will prevent "proper" timestamps
+		# on later errors. As multiple, different, unrelated
+		# run-time errors should rarely occur in the field
+		# avoid the complexity of using the idle queue at this time.
+
+		# From https://www.tcl-lang.org/man/tcl/TclCmd/catch.htm
+		#  TCL_OK sets inner_result
+		#  TCL_ERROR sets inner_result to an error message
+		#  TCL_RETURN, TCL_BREAK, and TCL_CONTINUE are unspecified
+
+		catch { $::logging::_previous_bgerror $result $opts_dict } inner_result inner_dict
+
+		return -code [dict get $inner_dict -code] $inner_result
+	}
+
+
+	msg -INFO "Overriding existing bgerror handler ${_previous_bgerror}"
+
+	interp bgerror {} ::logging::_logging_bgerror
+
+}
