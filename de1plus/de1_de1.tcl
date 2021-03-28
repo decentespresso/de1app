@@ -172,6 +172,8 @@ namespace eval ::de1::event::apply {
 
 		# Timer has fired, defer if still in a flow phase (such as "ending")
 
+		set ::de1::event::apply::_after_flow_complete_after_id ""
+
 		# args represent state at time scheduled, not now
 
 		if { ! [::de1::state::is_flow_state [::de1::state::current_state]] } {

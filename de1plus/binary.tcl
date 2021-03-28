@@ -1616,7 +1616,9 @@ proc update_de1_state {statechar} {
 
 	}
 
-	if { $::de1::event::apply::_after_flow_complete_holding_for_idle && $this_flow_phase == "" } {
+	if { $::de1::event::apply::_after_flow_complete_holding_for_idle \
+		     && $::de1::event::apply::_after_flow_complete_after_id == "" \
+		     && $this_flow_phase == "" } {
 
 		# TODO: Decouple this from internal representation
 
