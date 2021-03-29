@@ -2429,13 +2429,13 @@ proc calibration_gui_init {} {
 
 		after 1000 de1_read_calibration "temperature"
 		after 2000 de1_read_calibration "pressure"
-		after 3000 de1_read_calibration "flow"
+		after 3000 get_calibration_flow_multiplier
+		#after 3000 de1_read_calibration "flow"
 
 		after 4000 de1_read_calibration "temperature" "factory"
 		after 5000 de1_read_calibration "pressure" "factory"
-		after 6000 de1_read_calibration "flow" "factory"
+		#after 6000 de1_read_calibration "flow" "factory"
 
-		after 7000 get_calibration_flow_multiplier
 
 	}
 }
