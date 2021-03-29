@@ -1159,12 +1159,18 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				unset -nocomplain ::profiles_hide_mode 
 				fill_profiles_listbox
 			}
-			if {[array_item_difference ::settings ::settings_backup "steam_temperature calibration_flow_multiplier steam_flow water_refill_point fan_threshold"] == 1} {
+			if {[ifexists ::settings_backup(calibration_flow_multiplier)] != [ifexists ::settings(calibration_flow_multiplier)]} {				
+				set_calibration_flow_multiplier $::settings(calibration_flow_multiplier)
+			}
+			if {[ifexists ::settings_backup(fan_threshold)] != [ifexists ::settings(fan_threshold)]} {				
+				set_fan_temperature_threshold $::settings(fan_threshold)
+			}
+			if {[ifexists ::settings_backup(water_refill_point)] != [ifexists ::settings(water_refill_point)]} {				
+				de1_send_waterlevel_settings
+			}
+			if {[array_item_difference ::settings ::settings_backup "steam_temperature steam_flow"] == 1} {
 				# resend the calibration settings if they were changed
 				de1_send_steam_hotwater_settings
-				de1_send_waterlevel_settings
-				set_calibration_flow_multiplier $::settings(calibration_flow_multiplier)
-				set_fan_temperature_threshold $::settings(fan_threshold)
 				de1_enable_water_level_notifications
 			}
 			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout scale_bluetooth_address language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
