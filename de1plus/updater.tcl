@@ -777,5 +777,7 @@ proc reset_skin {} {
 
     array set ::settings [encoding convertfrom utf-8 [read_binary_file $s]]
     set ::settings(skin) "Insight"
+    set ::settings(enabled_plugins) ""
+
     save_array_to_file ::settings $s
 }
