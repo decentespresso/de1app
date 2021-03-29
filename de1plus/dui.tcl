@@ -51,7 +51,7 @@ package require de1_logging 1.0
 package require de1_updater 1.1
 package require de1_utils 1.1
 package require Tk
-package require tksvg
+catch { package require tksvg }
 catch {
 	# tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
 	package require tkblt
@@ -260,6 +260,7 @@ namespace eval ::dui {
 			
 			default.listbox_label.font_family.section_title notosansuibold
 			
+			default.scrollbar.orient vertical
 			default.scrollbar.width 50
 			default.scrollbar.length 75
 			default.scrollbar.sliderlength 75
@@ -276,8 +277,21 @@ namespace eval ::dui {
 			default.scrollbar.borderwidth 0
 			default.scrollbar.highlightthickness 0
 	
+			default.dscale.orient horizontal
 			default.dscale.foreground "#4e85f4"
 			default.dscale.background "#7f879a"
+			default.scale.sliderlength 75
+			
+			default.scale.orient horizontal
+			default.scale.foreground "#FFFFFF"
+			default.scale.background "#e4d1c1"
+			default.scale.troughcolor "#EAEAEA"
+			default.scale.showvalue 0
+			default.scale.relief flat
+			default.scale.borderwidth 0
+			default.scale.highlightthickness 0
+			default.scale.sliderlength 125
+			default.scale.width 150
 			
 			default.rect.fill.insight_back_box "#ededfa"
 			default.rect.width.insight_back_box 0
@@ -2148,7 +2162,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#		position of the slider within the scale, given by slider_coord.
 		#	2) If slider_coord is not specified, uses the value of $varname and moves the slider to match the value.
 		# Needs 'args' at the end because this is called from a 'trace add variable'.
-		proc dscale_moveto { page dscale_tag varname from to {digits 0} {slider_coord {}} args } {			
+		proc dscale_moveto { page dscale_tag varname from to {resolution 1} {n_decimals 0} {slider_coord {}} args } {			
 			set can [dui canvas]
 			set slider [dui item get $page "${dscale_tag}-crc"]
 			if { $slider eq "" } return
@@ -2181,6 +2195,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					set varvalue $from
 					set $varname $varvalue
 				}
+				# TESTING
+				set varvalue [number_in_range $varvalue 0 $from $to $resolution $n_decimals]
+
 				if { [string is double -strict $varvalue] } {
 					if { $varvalue <= $from } {
 						switch $orient h {set slider_coord $bx0} v {set slider_coord $by0}
@@ -2212,11 +2229,12 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					$can coords $front $bx0 $by0 $slider_coord $by1
 					$can move $slider [expr {$slider_coord-($swidth/2)-$sx0}] 0
 					if { $varvalue eq "" } {
-						set $varname [format "%.${digits}f" [expr {$from+\
-							($to-$from)*(($slider_coord-$swidth/2-$bx0)/($bx1-$swidth-$bx0))}]]
+						set newcoord [expr {$from+($to-$from)*(($slider_coord-$swidth/2-$bx0)/($bx1-$swidth-$bx0))}]
+						set $varname [number_in_range $newcoord {} $from $to $resolution $n_decimals]  
 					}
 				} 
 			} else {
+				# Vertical
 				if { $slider_coord <= $bx0 } {
 					$can coords $front $bx0 $by0 [expr {$bx0+1}] $by1
 					$can coords $slider $bx0 $sy0 [expr {$bx0+$swidth}] $sy1
@@ -2231,23 +2249,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					$can coords $front $bx0 $by0 [expr {$slider_coord+$swidth/2}] $by1
 					$can move $slider [expr {$slider_coord-$sx0}] 0
 					if { $varvalue eq "" } { 
-						set $varname [format "%.${digits}f" [expr {($to-$from)*($slider_coord-$bx0)/($bx1-$swidth-$bx0}]]					
+						set $varname [format "%.${n_decimals}f" [expr {($to-$from)*($slider_coord-$bx0)/($bx1-$swidth-$bx0}]]					
 					}
 				} 
 			}
-		}
-		
-		proc change_var_in_range { var change min max {n_decimals {}} } {
-			set newvalue [expr {[ifexists $var 0]+$change}]
-			if { $newvalue < $min } {
-				set newvalue $min
-			} elseif { $newvalue > $max } {
-				set newvalue $max
-			} 
-			if { $n_decimals ne "" } {
-				set newvalue [format "%.${n_decimals}f" $newvalue]
-			}
-			set $var $newvalue
 		}
 		
 		# Computes the anchor point coordinates with respect to the provided bounding box coordinates, returns a list 
@@ -2364,6 +2369,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 	}
 
 	### ADD SUBENSEMBLE: COMMANDS TO CREATE CANVAS ITEMS AND WIDGETS AND ADD THEM TO THE CANVAS ###
+	### THESE WORK AS FACADES TO THE WIDGET CREATE AND CANVAS CREATE COMMANDS, TO SIMPLIFY CREATION, STYLING,
+	###		AND ADDING EXTRA COMMONLY USED FUNCTIONALITY.
 	namespace eval add {
 		namespace export *
 		namespace ensemble create
@@ -3042,7 +3049,6 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		proc listbox { pages x y args } {
 			set tags [dui::args::process_tags_and_var $pages listbox -listvariable 1]
 			set main_tag [lindex $tags 0]
-			set ids {}
 			
 			set style [dui::args::get_option -style "" 0]
 			set width [dui::args::get_option -width "" 1]
@@ -3063,22 +3069,28 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			return [dui add widget listbox $pages $x $y {*}$args]
 		}
 		
-		# Options name to match those in Tk slider widget.
-		# -orient
+		# Creates a "new style" slider from canvas items. Returns a list with the canvas IDs of all pieces.
+		#
+		# Names of most options are defined to match those in Tk scale widget, except we use "n_decimals" instead
+		#	of "digits", and we add "smallincrement" which defaults to "resolution" but can be different.		
+		# -orient "horizontal" (default) or "vertical"
 		# -length line length (vertical or horizontal total distance)
-		# -width line width 
-		# -sliderlength
-		# -from
-		# -to
-		# -variable
+		# -width width of the back lines 
+		# -sliderlength width/height or the slider circle
+		# -from minimum accepted value
+		# -to maximum accepted value
+		# -variable name of the variable
 		# -foreground (main color for left part and circle)
 		# -disabledforeground
 		# -background (color for right part)
 		# -disabledbackground
-		# -small_increment
-		# -big_increment
-		# -plus_minus
-		# -default ?
+		# -smallincrement
+		# -bigincrement
+		# -plus_minus 0 or 1
+		# -default default value when the variable is empty (used only by the page editor to assign an initial value
+		#	if we start from an empty string)
+		# -page_editor 0, 1 (=use default number editor), or an editor page name.
+		# -page_editor_title 
 		proc dscale { pages x y args } {
 			set can [dui canvas]			
 			set tags [dui::args::process_tags_and_var $pages dscale -variable 1]
@@ -3090,10 +3102,24 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set label_id [dui::args::process_label $pages $x $y dscale $style ${main_tag}-bck]
 			set var [dui::args::get_option -variable "" 1]
 			set orient [string range [dui::args::get_option -orient horizontal] 0 0]
-			set from [dui::args::get_option -from 0]
-			set to [dui::args::get_option -max [expr {$from+100}]]
-			set digits [dui::args::get_option -digits 0]
+			
+			set resolution [dui::args::get_option -resolution 1]
+			set n_decimals [dui::args::get_option -n_decimals ""]
+			if { $n_decimals eq "" } {
+				set n_decimals [string length [lindex [split $resolution .] 1]]
+			}
+			set from [number_in_range [dui::args::get_option -from 0] 0 {} {} $resolution $n_decimals]
+			set to [number_in_range [dui::args::get_option -to [expr {$from+100}]] 0 {} {} $resolution $n_decimals]
 			set default [dui::args::get_option -default [expr {($from-$to)/2}]]
+			set smallinc [dui::args::get_option -smallincrement $resolution]
+			if { $smallinc < $resolution } {
+				set smallinc $resolution
+			}
+			set biginc [dui::args::get_option -bigincrement [expr {($from-$to)/10}]]
+			if { $biginc < $smallinc } {
+				set biginc $smallinc
+			}			
+			
 			set width [dui::args::get_option -width 8]
 			set length [dui::args::get_option -length 300]
 			set sliderlength [dui::args::get_option -sliderlength 25]
@@ -3101,8 +3127,6 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set disabledforeground [dui::args::get_option -disabledforeground grey]
 			set background [dui::args::get_option -background grey]
 			set disabledbackground [dui::args::get_option -disabledforeground grey]
-			set smallinc [dui::args::get_option -smallincrement 1]
-			set biginc [dui::args::get_option -bigincrement 10]
 			set plus_minus [string is true [dui::args::get_option -plus_minus 1]]
 			set pm_width 0
 			if { $plus_minus } {
@@ -3111,6 +3135,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			
 			set x [rescale_x_skin $x]
 			set y [rescale_y_skin $y]
+			set moveto_cmd [list dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $resolution $n_decimals]
 			if { $orient eq "v" } {
 				set length [rescale_y_skin $length]
 				set sliderlength [rescale_y_skin $sliderlength]
@@ -3120,7 +3145,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				set x1f $x
 				set y1 [expr {$y+$length-$pm_width}]
 				set y1f [expr {$y+($y1-$y)/2}]
-				set moveto_cmd [list dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $digits %y]
+				lappend moveto_cmd %y
 			} else {
 				set length [rescale_x_skin $length]
 				set sliderlength [rescale_x_skin $sliderlength]
@@ -3130,7 +3155,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				set x1f [expr {$x+$sliderlength/2}]
 				set y1 $y
 				set y1f $y
-				set moveto_cmd [list dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $digits %x]
+				lappend moveto_cmd %x
 				
 				if { $plus_minus } {
 					# -font [dui font get notosansuiregular 12]
@@ -3143,10 +3168,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					}							
 					set id [$can create rect [expr {$x-$pm_width-20}] [expr {$y-$sliderlength/2}] $x [expr {$y+$sliderlength/2}] \
 						-fill {} -width 0 -tags [list ${main_tag}-tdec {*}$tags] -state hidden]					
-					$can bind ${main_tag}-tdec [platform_button_press] [list dui item change_var_in_range $var \
-						-$smallinc $from $to $digits]
-					$can bind ${main_tag}-tdec <Triple-ButtonPress-1> [list dui item change_var_in_range $var \
-						-$biginc $from $to $digits]
+					$can bind ${main_tag}-tdec [platform_button_press] [list set_var_in_range $var {} \
+						-$smallinc $from $to $resolution $n_decimals]
+					$can bind ${main_tag}-tdec <Triple-ButtonPress-1> [list set_var_in_range $var {} \
+						-$biginc $from $to $resolution $n_decimals]
 					lappend ids $id
 					if { $ns ne "" } {
 						set "${ns}::widgets(${main_tag}-tdec)" $id
@@ -3161,10 +3186,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					}											
 					set id [$can create rect $x1 [expr {$y-$sliderlength/2}] [expr {$x1+$pm_width+20}] [expr {$y+$sliderlength/2}] \
 						-fill {} -width 0 -tags [list ${main_tag}-tinc {*}$tags] -state hidden]
-					$can bind ${main_tag}-tinc [platform_button_press] [list dui item change_var_in_range $var \
-						$smallinc $from $to $digits]
-					$can bind ${main_tag}-tinc <Triple-ButtonPress-1> [list dui item change_var_in_range $var \
-						$biginc $from $to $digits]
+					$can bind ${main_tag}-tinc [platform_button_press] [list set_var_in_range $var {} \
+						$smallinc $from $to $resolution $n_decimals ]
+					$can bind ${main_tag}-tinc <Triple-ButtonPress-1> [list set_var_in_range $var {} \
+						$biginc $from $to $resolution $n_decimals]
 					lappend ids $id
 					if { $ns ne "" } {
 						set "${ns}::widgets(${main_tag}-tinc)" $id
@@ -3203,17 +3228,14 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				set "${ns}::widgets($main_tag)" $ids
 			}
 			
-			set update_cmd [list ::dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $digits ""]
+			set update_cmd [lreplace $moveto_cmd end end ""]
 			trace add variable $var write $update_cmd
 			# Force initializing the slider position
 			dui page add_action $pages show $update_cmd
 			
-			# Invoke number editor page on tap of the label
+			# Invoke number editor page when the label is clicked
 			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages]
 			if { $editor_page ne "" && ![string is false $editor_page] && $var ne "" && $label_id ne "" } {
-				# TO BE CHANGED
-				set n_decimals $digits
-				
 				if { [string is true $editor_page] } {
 					set editor_page "dui_number_editor" 
 				}
@@ -3227,6 +3249,83 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			
 			dui item add_to_pages $pages $main_tag
 			return $ids
+		}
+		
+		proc scale { pages x y args } {
+			set can [dui canvas]			
+			set tags [dui::args::process_tags_and_var $pages scale -variable 1]
+			set main_tag [lindex $tags 0]
+			#set ns [dui page get_namespace $pages]
+
+			set style [dui::args::get_option -style "" 0]
+			foreach a [dui aspect list -type scale -style $style] {
+				dui::args::add_option_if_not_exists -$a [dui aspect get scale $a -style $style]
+			}
+			set orient [dui::args::get_option -orient h]
+			set sliderlength [dui::args::get_option -sliderlength {} 1]
+			set width [dui::args::get_option -width {} 1]
+			set length [dui::args::get_option -length {} 1]
+			if { [string range $orient 0 0] eq "v" } {
+				if { $sliderlength ne "" } {
+					dui::args::add_option_if_not_exists -sliderlength [rescale_y_skin $sliderlength]
+				}
+				if { $length ne "" } {
+					dui::args::add_option_if_not_exists -length [rescale_y_skin $length]
+				}
+				if { $width ne "" } {
+					dui::args::add_option_if_not_exists -width [rescale_x_skin $width]
+				}		
+			} else {
+				if { $sliderlength ne "" } {
+					dui::args::add_option_if_not_exists -sliderlength [rescale_x_skin $sliderlength]
+				}
+				if { $length ne "" } {
+					dui::args::add_option_if_not_exists -length [rescale_x_skin $length]
+				}
+				if { $width ne "" } {
+					dui::args::add_option_if_not_exists -width [rescale_y_skin $width]
+				}
+			}
+			
+			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages 1]
+			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
+			set n_decimals [dui::args::get_option -n_decimals "" 1]
+			
+			set widget [dui add widget scale $pages $x $y {*}$args]
+			
+			# Invoke number editor page when the label is clicked
+			set label_id [$can find withtag ${main_tag}-lbl]
+			set var [dui::args::get_option -variable "" 0]
+			if { $editor_page ne "" && ![string is false $editor_page] && $var ne "" && $label_id ne "" } {
+				if { [string is true $editor_page] } {
+					set editor_page "dui_number_editor" 
+				}
+				
+				# This code copied verbatim from 'dui add dscale'. Maybe encapsulate it somehow?
+				set resolution [dui::args::get_option -resolution 1]
+				if { $n_decimals eq "" } {
+					set n_decimals [string length [lindex [split $resolution .] 1]]
+				}
+				set from [number_in_range [dui::args::get_option -from 0] 0 {} {} $resolution $n_decimals]
+				set to [number_in_range [dui::args::get_option -to [expr {$from+100}]] 0 {} {} $resolution $n_decimals]
+				set default [dui::args::get_option -default [expr {($from-$to)/2}]]
+				set smallinc [dui::args::get_option -smallincrement $resolution]
+				if { $smallinc < $resolution } {
+					set smallinc $resolution
+				}
+				set biginc [dui::args::get_option -bigincrement [expr {($from-$to)/10}]]
+				if { $biginc < $smallinc } {
+					set biginc $smallinc
+				}			
+					
+				set editor_cmd [list dui page show_when_off $editor_page $var -n_decimals $n_decimals -min $from \
+					-max $to -default $default -small_increment $smallinc -big_increment $biginc \
+					-page_title $editor_page_title]
+				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
+				$can bind $label_id [platform_button_press] $editor_cmd
+			}
+
+			return $widget
 		}
 	}
 	
@@ -3324,7 +3423,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 }
 
 
-# General utilities
+# General utilities (TO BE MOVED TO utils.tcl or similar)
 # Returns the list with duplicates removed, keeping the original list sorting of elements, unlike 'lsort -unique'.
 # See discussion in https://wiki.tcl-lang.org/page/Unique+Element+List
 proc unique_list {list} {
@@ -3336,6 +3435,44 @@ proc unique_list {list} {
 	}
 	return $new
 }
+
+# Sets or changes a numeric value within a valid range, using the given resolution, and formats it 
+#	with the given number of decimals.
+# This is normally used from scales or clickers.
+proc number_in_range { {value 0} {change 0} {min {}} {max {}} {resolution 1} {n_decimals 0} } {
+	if { $value eq "" || ![string is double $value] } {
+		set newvalue 0
+	} else {
+		set newvalue $value
+	} 
+	if { $change ne "" && $change != 0 } {
+		set newvalue [expr {$newvalue+$change}]
+	}
+	if { $min ne "" && $newvalue < $min } {
+		set newvalue $min
+	} 
+	if { $max ne "" && $newvalue > $max } {
+		set newvalue $max
+	} 
+	if { $resolution != 1 } {
+		set newvalue [expr {int($newvalue/$resolution)*$resolution}]
+	}
+	if { $n_decimals ne "" } {
+		set newvalue [format "%.${n_decimals}f" $newvalue]
+	}
+	return $newvalue
+}
+
+# Sets or changes a global variable value using the parameters specified by proc 'change_in_range'.
+# Takes the same arguments as 'number_in_range. If 'value' is undefined, uses the current value of the variable.
+# This is normally used from scales or clickers.
+proc set_var_in_range { variable {value {}} args } {
+	if { $value eq "" } {
+		set value [ifexists $variable 0]
+	}
+	set $variable [number_in_range $value {*}$args]
+}
+
 
 ### FULL-PAGE EDITORS ################################################################################################
 
@@ -3435,7 +3572,7 @@ namespace eval ::dui::pages::dui_number_editor {
 		set width 280; set height 220; set hspace 80; set vspace 60
 		set row 0; set col 0
 		
-		foreach line { {7 8 9} {4 5 6} {1 2 3} {"Del" 0 "."} } {
+		foreach line { {7 8 9} {4 5 6} {1 2 3} {Del 0 .} } {
 			foreach num $line {
 				set x [expr {$x_base+$col*($width+$hspace)}]
 				set y [expr {$y_base+$row*($height+$vspace)}]
