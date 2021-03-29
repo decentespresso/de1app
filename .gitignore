@@ -27,6 +27,8 @@ _$*
 core
 # CVS default ignores end
 
+/de1plus/build-info
+
 release
 de1plus/plugins/visualizer_upload/settings.tdb
 de1plus/plugins/web_api/settings.tdb
