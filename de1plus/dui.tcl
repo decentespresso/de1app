@@ -151,6 +151,7 @@ namespace eval ::dui {
 #		default.listbox.highlightthickness 1
 #		default.listbox.highlightcolor orange
 #		default.listbox.foreground "#7f879a"
+#		default.symbol.font_family "Font Awesome 5 Pro-Regular-400"
 		array set aspects {
 			default.page.bg_img {}
 			default.page.bg_color "#d7d9e6"
@@ -214,6 +215,13 @@ namespace eval ::dui {
 			default.button_state.activefill "#ffffff"
 			default.button_state.disabledfill black
 			
+			default.button.shape.insight_ok round
+			default.button.radius.insight_ok 30
+			default.button.bwidth.insight_ok 480
+			default.button.bheight.insight_ok 118
+			default.button_label.font_family.insight_ok notosansuibold
+			default.button_label.font_size.insight_ok 19
+			
 			default.entry.relief flat
 			default.entry.bg white
 			default.entry.width 2
@@ -270,6 +278,13 @@ namespace eval ::dui {
 	
 			default.dscale.foreground "#4e85f4"
 			default.dscale.background "#7f879a"
+			
+			default.rect.fill.insight_back_box "#ededfa"
+			default.rect.width.insight_back_box 0
+			default.line.fill.insight_back_box_shadow "#c7c9d5"
+			default.line.width.insight_back_box_shadow 2
+			default.rect.fill.insight_front_box white
+			default.rect.width.insight_front_box 0
 		}
 		#default.button.disabledfill "#ddd"
 		#default.button.radius 40 -- only include if the button style has shape=round
@@ -583,10 +598,11 @@ namespace eval ::dui {
 						set familyname [lindex $loaded_fonts [expr $fontindex + 1]]
 					} else {
 						try {
-							set familyname [lindex [sdltk addfont $filename] 0]
-							lappend loaded_fonts $filename $familyname
+							foreach familyname [sdltk addfont $filename] {
+								lappend loaded_fonts $filename $familyname
+							}
 						} on error err {
-							msg -ERROR [namespace current] load "unable to get familyname from 'sdltk addfont $filename': $err"
+							msg -ERROR [namespace current] load "unable to get familyname from 'sdltk addfont $filename', or font already added: $err"
 						}
 					}
 				} else {
@@ -684,13 +700,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#	first.
 		proc get { family_name size args } {
 			#variable skin_fonts
-			#variable font_dirs
-			
-msg [namespace current] get "family_name='$family_name' 0" 			
+			#variable font_dirs			
 			set family_name [add_or_get_familyname $family_name]
-msg [namespace current] get "family_name='$family_name' 1"			
 			set font_key [key $family_name $size {*}$args]
-msg [namespace current] get "font_key='$font_key' 0"
 			if { $font_key ni [::font names] } {
 				set font_key [load $family_name $size "" {*}$args]
 			}
@@ -1008,7 +1020,7 @@ msg [namespace current] get "font_key='$font_key' 0"
 			set label [get_option -label "" 1 largs]
 			set labelvar [get_option -labelvariable "" 1 largs]
 			if { $label eq "" && $labelvar eq "" } {
-				return
+				return ""
 			}
 			if { $style eq "" } {
 				set style [get_option -style "" 0 largs]
@@ -1056,7 +1068,7 @@ msg [namespace current] get "font_key='$font_key' 0"
 				}				
 				foreach page $pages {
 					set after_show_cmd "::dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
-						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]"									
+						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]"	
 					dui page add_action $page show $after_show_cmd
 				}
 			}
@@ -2608,10 +2620,6 @@ msg [namespace current] get "font_key='$font_key' 0"
 				if { $width > 0 } {
 					set ids [$can create rect $rx $ry $rx1 $ry1 -outline $outline -width $width -tags $button_tags \
 						-state hidden]
-#					if { $ns ne "" } {
-#						set ${ns}::widgets([lindex $button_tags 0]) $ids
-#					}
-#					dui item add_to_pages $pages [lindex $button_tags 0]
 				}
 			} else {		
 				dui::args::remove_option -debug_outline
@@ -2623,10 +2631,6 @@ msg [namespace current] get "font_key='$font_key' 0"
 					set radius [dui::args::get_option -radius [dui aspect get button radius -style $style -default 40]]
 					
 					set ids [dui item rounded_rectangle $x $y $x1 $y1 $radius $fill $disabledfill $button_tags]
-#					if { $ns ne "" } {
-#						set ${ns}::widgets([lindex $button_tags 0]) $ids
-#					}					
-#					dui item add_to_pages $pages [lindex $button_tags 0]
 				} elseif { $shape eq "outline" } {
 					set outline [dui::args::get_option -outline [dui aspect get button outline -style $style]]
 					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get button disabledoutline -style $style]]
@@ -2635,19 +2639,8 @@ msg [namespace current] get "font_key='$font_key' 0"
 					
 					set ids [dui item rounded_rectangle_outline $x $y $x1 $y1 $arc_offset $outline $disabledoutline \
 						$width $button_tags]
-#					if { $ns ne "" } {
-#						set ${ns}::widgets([lindex $button_tags 0]) $ids
-#					}					
-#					dui item add_to_pages $pages [lindex $button_tags 0]
 				} else {
-	#				foreach aspect "fill activefill disabledfill outline disabledoutline activeoutline width" {
-	#					dui::args::add_option_if_not_exists -$aspect [dui aspect get button $aspect -style $style]
-	#				}					
 					set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
-#					if { $ns ne "" } {
-#						set ${ns}::widgets([lindex $button_tags 0]) $ids
-#					}					
-#					dui item add_to_pages $pages [lindex $button_tags 0]
 				}
 			}
 			if { $ids ne "" && $ns ne "" } {
@@ -2950,6 +2943,7 @@ msg [namespace current] get "font_key='$font_key' 0"
 			set n_decimals [dui::args::get_option -n_decimals 0 1]
 			set trim  [dui::args::get_option -trim $::dui::trim_entries 1]
 			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages 1]
+			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
 			foreach fn {min max default small_increment big_increment} {
 				set $fn [dui::args::get_option -$fn "" 1]
 			}
@@ -2994,20 +2988,16 @@ msg [namespace current] get "font_key='$font_key' 0"
 			
 			# Invoke editor page on double tap (maybe other editors in the future, e.g. a date editor)
 			if { $editor_page ne "" && ![string is false $editor_page] && $textvariable ne ""} {
-				set editor_cmd ""
 				if { [string is true $editor_page] && $data_type eq "numeric" } {
-					set editor_cmd "dui page show_when_off dui_number_editor" 
-				} elseif { ![string is true $editor_page] } {
-					set editor_cmd "dui page show_when_off $editor_page"
-				}
+					set editor_page "dui_number_editor" 
+				} 
 	
-				if { $editor_cmd ne "" } {
-					set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ 
-						$editor_cmd $textvariable -n_decimals \"$n_decimals\" -min \"$min\" -max \"$max\" \
-							-default \"$default\" -small_increment \"$small_increment\" -big_increment \"$big_increment\"
-					\}"
-					bind $widget <Double-Button-1> $editor_cmd
-				}
+				set editor_cmd [list dui page show_when_off $editor_page $textvariable -n_decimals $n_decimals -min $min \
+					-max $max -default $default -small_increment $small_increment -big_increment $big_increment \
+					-page_title $editor_page_title]
+				set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
+				
+				bind $widget <Double-Button-1> $editor_cmd
 			}
 				
 			return $widget
@@ -3097,13 +3087,13 @@ msg [namespace current] get "font_key='$font_key' 0"
 												
 			set style [dui::args::get_option -style "" 0]
 			dui::args::process_aspects dscale $style ""
-			dui::args::process_label $pages $x $y dscale $style ${main_tag}-bck
+			set label_id [dui::args::process_label $pages $x $y dscale $style ${main_tag}-bck]
 			set var [dui::args::get_option -variable "" 1]
 			set orient [string range [dui::args::get_option -orient horizontal] 0 0]
 			set from [dui::args::get_option -from 0]
 			set to [dui::args::get_option -max [expr {$from+100}]]
 			set digits [dui::args::get_option -digits 0]
-#			set default [dui::args::get_option -default [expr {($max-$min)/2}]]
+			set default [dui::args::get_option -default [expr {($from-$to)/2}]]
 			set width [dui::args::get_option -width 8]
 			set length [dui::args::get_option -length 300]
 			set sliderlength [dui::args::get_option -sliderlength 25]
@@ -3217,6 +3207,23 @@ msg [namespace current] get "font_key='$font_key' 0"
 			trace add variable $var write $update_cmd
 			# Force initializing the slider position
 			dui page add_action $pages show $update_cmd
+			
+			# Invoke number editor page on tap of the label
+			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages]
+			if { $editor_page ne "" && ![string is false $editor_page] && $var ne "" && $label_id ne "" } {
+				# TO BE CHANGED
+				set n_decimals $digits
+				
+				if { [string is true $editor_page] } {
+					set editor_page "dui_number_editor" 
+				}
+				set editor_page_title [dui::args::get_option -editor_page_title]
+				set editor_cmd [list dui page show_when_off $editor_page $var -n_decimals $n_decimals -min $from \
+					-max $to -default $default -small_increment $smallinc -big_increment $biginc \
+					-page_title $editor_page_title]
+				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
+				$can bind $label_id [platform_button_press] $editor_cmd
+			}
 			
 			dui item add_to_pages $pages $main_tag
 			return $ids
@@ -3341,7 +3348,6 @@ namespace eval ::dui::pages::dui_number_editor {
 		previous_page {}
 		callback_cmd {}
 		page_title {}
-		#show_previous_values 1		
 		num_variable {}
 		value {}
 		min {}
@@ -3354,28 +3360,37 @@ namespace eval ::dui::pages::dui_number_editor {
 	}
 
 	proc setup {} {
-		variable data
+		variable data 
 		variable widgets
 		set page [namespace tail [namespace current]]
 #		set incs_font_size 6
-
-		# Declare styles
-		dui aspect set -style dne_clicker {button.shape round button.bwidth 100 button.bheight 100 
-			button.radius 20 button.anchor center
-			button_symbol.pos {0.5 0.4} button_symbol.anchor center button_symbol.font_size 20
-			button_label.pos {0.5 0.9} button_label.font_size 9 button_label.anchor center}
 		
 		# Page and title
 		dui page add $page -namespace [namespace current]
 		dui add variable $page 1280 100 -tags dui_ne_page_title -textvariable page_title -style page_title
 		
+		# Insight-style background shapes
+		dui add canvas_item rect $page 10 190 2550 1430 -style insight_back_box
+		dui add canvas_item line $page 14 188 2552 189 -style insight_back_box_shadow
+		dui add canvas_item line $page 2551 188 2552 1426 -style insight_back_box_shadow
+
+		dui add canvas_item rect $page 22 210 1270 600 -style insight_front_box
+		dui add canvas_item rect $page 22 620 1270 1410 -style insight_front_box
+		dui add canvas_item rect $page 1290 210 2536 1410 -style insight_front_box
+		
 		# Value being edited. Use the center coordinates of the text entry as reference for the whole row.
-		set x 600; set y 275
-		dui add entry $page $x $y -tags value -width 6 -data_type numeric -font_size +2 -canvas_anchor center \
+		set x 625; set y 390
+		dui add entry $page $x $y -tags value -width 6 -data_type numeric -font_size +6 -canvas_anchor center \
 			-justify center
 				
-		# Decrement value arrows
-		set hoffset 50; set bspace 140
+		# Increment/decrement clicker buttons style
+		dui aspect set -style dne_clicker {button.shape round button.bwidth 120 button.bheight 140 
+			button.radius 20 button.anchor center
+			button_symbol.pos {0.5 0.4} button_symbol.anchor center button_symbol.font_size 20
+			button_label.pos {0.5 0.8} button_label.font_size 10 button_label.anchor center}
+		
+		# Decrement value arrows		
+		set hoffset 45; set bspace 140
 		dui add button $page [expr {$x-$hoffset-$bspace}] $y -tags small_decr -style dne_clicker \
 			-symbol chevron_left -labelvariable {-[format [%NS::value_format] $%NS::data(small_increment)]} \
 			-command { %NS::incr_value -$%NS::data(small_increment) }
@@ -3406,74 +3421,40 @@ namespace eval ::dui::pages::dui_number_editor {
 		#			-button_cmd { set ::dui::pages::dui_number_editor::data(value) "" }
 		
 #		# Previous values listbox
-#		dui add listbox $page previous_values 450 600 450 680 16 9 -label [translate "Previous values"] \
-#			-font_size $::plugins::DGUI::section_font_size 
-#		bind $widgets(previous_values) <<ListboxSelect>> ::dui::pages::dui_number_editor::previous_values_select
-#		
+		dui add listbox $page 450 780 -tags previous_values -canvas_width 350 -canvas_height 550 -yscrollbar 1 \
+			-label [translate "Previous values"] -label_style section_font_size -label_pos {450 700} -label_anchor nw 
+		bind $widgets(previous_values) <<ListboxSelect>> ::dui::pages::dui_number_editor::previous_values_select
+		
 #		# Numeric type pad
-#		set x_base 1450; set y_base 225
-#		set width 280; set height 220; set space 70
-#		set numpad_font_size 12
-#		
-#		set x [expr {$x_base+0*($width+$space)}]
-#		set y [expr {$y_base+0*($height+$space)}]
-#		dui add button $page num7 $x $y [expr {$x+$width}] [expr {$y+$height}] "7" \
-#			{::dui::pages::dui_number_editor::enter_character 7} -label_font_size $numpad_font_size
-#		
-#		set x [expr {$x_base+1*($width+$space)}]
-#		set y [expr {$y_base+0*($height+$space)}]
-#		dui add button $page num8 $x $y [expr {$x+$width}] [expr {$y+$height}] "8" \
-#			{::dui::pages::dui_number_editor::enter_character 8} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+2*($width+$space)}]
-#		set y [expr {$y_base+0*($height+$space)}]
-#		dui add button $page num9 $x $y [expr {$x+$width}] [expr {$y+$height}] "9" \
-#			{::dui::pages::dui_number_editor::enter_character 9} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+0*($width+$space)}]
-#		set y [expr {$y_base+1*($height+$space)}]
-#		dui add button $page num4 $x $y [expr {$x+$width}] [expr {$y+$height}] "4" \
-#			{::dui::pages::dui_number_editor::enter_character 4} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+1*($width+$space)}]
-#		set y [expr {$y_base+1*($height+$space)}]
-#		dui add button $page num5 $x $y [expr {$x+$width}] [expr {$y+$height}] "5" \
-#			{::dui::pages::dui_number_editor::enter_character 5} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+2*($width+$space)}]
-#		set y [expr {$y_base+1*($height+$space)}]
-#		dui add button $page num6 $x $y [expr {$x+$width}] [expr {$y+$height}] "6" \
-#			{::dui::pages::dui_number_editor::enter_character 6} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+0*($width+$space)}]
-#		set y [expr {$y_base+2*($height+$space)}]
-#		dui add button $page num1 $x $y [expr {$x+$width}] [expr {$y+$height}] "1" \
-#			{::dui::pages::dui_number_editor::enter_character 1} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+1*($width+$space)}]
-#		set y [expr {$y_base+2*($height+$space)}]
-#		dui add button $page num2 $x $y [expr {$x+$width}] [expr {$y+$height}] "2" \
-#			{::dui::pages::dui_number_editor::enter_character 2} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+2*($width+$space)}]
-#		set y [expr {$y_base+2*($height+$space)}]
-#		dui add button $page num3 $x $y [expr {$x+$width}] [expr {$y+$height}] "3" \
-#			{::dui::pages::dui_number_editor::enter_character 3} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+0*($width+$space)}]
-#		set y [expr {$y_base+3*($height+$space)}]
-#		dui add button $page num_del $x $y [expr {$x+$width}] [expr {$y+$height}] "Del" \
-#			{::dui::pages::dui_number_editor::enter_character DEL} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+1*($width+$space)}]
-#		set y [expr {$y_base+3*($height+$space)}]
-#		dui add button $page num0 $x $y [expr {$x+$width}] [expr {$y+$height}] "0" \
-#			{::dui::pages::dui_number_editor::enter_character 0} -label_font_size $numpad_font_size
-#	
-#		set x [expr {$x_base+2*($width+$space)}]
-#		set y [expr {$y_base+3*($height+$space)}]
-#		dui add button $page num_dot $x $y [expr {$x+$width}] [expr {$y+$height}] "." \
-#			{::dui::pages::dui_number_editor::enter_character .} -label_font_size $numpad_font_size	
+		dui aspect set -style dne_pad_button {button.shape round button.bwidth 280 button.bheight 220 
+			button.radius 20 button.anchor nw
+			button_label.pos {0.5 0.5} button_label.font_family notosansuibold 
+			button_label.font_size 24 button_label.anchor center}
+		
+		set x_base 1425; set y_base 290
+		set width 280; set height 220; set hspace 80; set vspace 60
+		set row 0; set col 0
+		
+		foreach line { {7 8 9} {4 5 6} {1 2 3} {"Del" 0 "."} } {
+			foreach num $line {
+				set x [expr {$x_base+$col*($width+$hspace)}]
+				set y [expr {$y_base+$row*($height+$vspace)}]
+				if { $num eq "." } {
+					set tag "num_dot"
+				} else {
+					set tag "num$num"
+				}
+				
+				dui add button $page $x $y [expr {$x+$width}] [expr {$y+$height}] -tags $tag -style dne_pad_button \
+					-label "$num" -command [list %NS::enter_character $num] 
+				
+				incr col
+			}
+			set col 0
+			incr row
+		}
+		
+		dui add button $page 1035 1460 -tags dne_settings_ok -style insight_ok -command page_done -label [translate Ok]
 	}
 	
 	# Accepts any of the named options -page_title, -callback_cmd, -min, -max, -n_decimals, -default, -small_increment  
@@ -3554,7 +3535,7 @@ namespace eval ::dui::pages::dui_number_editor {
 	}
 	
 	proc value_change {} {
-		variable data
+		variable data 
 		variable widgets
 		set widget $widgets(value)
 		
@@ -3584,7 +3565,7 @@ namespace eval ::dui::pages::dui_number_editor {
 		#[selection own] eq $widget
 		if { $idx > -1 } {
 			set idx_last [$widget index sel.last]
-			if { $char eq "DEL" } {
+			if { $char eq "Del" } {
 				set data(value) "[string range $data(value) 0 [expr {$idx-1}]][string range $data(value) $idx_last end]"
 			} else {
 				set data(value) "[string range $data(value) 0 [expr {$idx-1}]]$char[string range $data(value) $idx_last end]"
@@ -3594,7 +3575,7 @@ namespace eval ::dui::pages::dui_number_editor {
 			$widget icursor [expr {$idx+1}]
 		} else {	
 			set idx [$widget index insert]
-			if { $char eq "DEL" } {
+			if { $char eq "Del" } {
 				set data(value) "[string range $data(value) 0 [expr {$idx-2}]][string range $data(value) $idx end]"
 				if { $idx > 0 } { $widget icursor [expr {$idx-1}] }
 			} elseif { [string length $data(value)] < $max_len } {
