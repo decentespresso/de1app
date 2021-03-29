@@ -1,5 +1,6 @@
 package provide de1_plugins 1.0
-package require de1_logging 1.0
+
+package require de1_logging 1.1
 
 proc plugin_directory {} {
     return "plugins"
@@ -110,7 +111,8 @@ namespace eval ::plugins {
                     set ${plugin}::ui_entry [${plugin}::preload]
                 }
                 set ${plugin}::plugin_preloaded 1
-        } err] != 0} {
+        } err opts_dict] != 0} {
+	    ::logging::log_error_result_opts_dict $err $opts_dict
             catch {
                 info_page [subst {${plugin}:[translate "The plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
             }
@@ -129,7 +131,8 @@ namespace eval ::plugins {
                 borg toast "loaded empty plugin $plugin"
             }
             set ${plugin}::plugin_loaded 1
-        } err] != 0} {
+        } err opts_dict] != 0} {
+	    ::logging::log_error_result_opts_dict $err $opts_dict
             catch {
                 # remove from enabled plugins
                 disable_plugin $plugin
