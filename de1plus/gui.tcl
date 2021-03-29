@@ -2,7 +2,7 @@ package provide de1_gui 1.2
 
 package require de1_de1 1.1
 package require de1_event 1.0
-package require de1_logging 1.0
+package require de1_logging 1.1
 package require de1_plugins 1.0
 
 ###
@@ -20,7 +20,8 @@ proc load_skin {} {
 
 	if {[catch {
 		source "[skin_directory]/skin.tcl"
-	} err] != 0} {
+	} err opts_dict ] != 0} {
+		::logging::log_error_result_opts_dict $err $opts_dict
 		catch {
 			# reset the skin back to default, if their skin failed to load correctly
 			# but don't do so if ::debugging flag is enabled
