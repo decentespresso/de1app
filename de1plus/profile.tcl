@@ -15,7 +15,7 @@ namespace eval ::profile {
         set temp_advanced(final_desired_shot_volume_advanced_count_start) 0
 
         if {[ifexists temp_advanced(espresso_temperature_steps_enabled)] == 1} {
-            set temp_bump_time_seconds $temp_advanced(temp_bump_time_seconds)
+            set temp_bump_time_seconds $::settings(temp_bump_time_seconds)
             set first_frame_len $temp_bump_time_seconds
 
             set second_frame_len [expr {$temp_advanced(preinfusion_time) - $temp_bump_time_seconds}]		
