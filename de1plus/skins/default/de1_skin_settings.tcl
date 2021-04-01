@@ -62,6 +62,11 @@ set ::infopage_label [add_de1_text "infopage" 1280 800 -text "" -font Helv_10_bo
 set ::infopage_button_label [add_de1_text "infopage" 1280 1310 -text "" -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
 set ::infopage_button [add_de1_button "infopage" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off off; page_show off} 980 1210 1580 1410 ""]
 
+set ::versionpage_label [add_de1_text "versionpage" 1280 800 -text "" -font Helv_10_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
+set ::versionpage_button_label [add_de1_text "versionpage" 1280 1310 -text "" -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
+set ::versionpage_link [add_de1_button "versionpage" {web_browser $::changelog_link} 80 60 2480 1160  ""]
+set ::versionpage_button [add_de1_button "versionpage" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off off; page_show off} 980 1210 1580 1410 ""]
+
 set slider_trough_color #EAEAEA
 set chart_background_color #F8F8F8
 ##############################################################################################################################################################################################################################################################################

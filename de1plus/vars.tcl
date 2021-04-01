@@ -2470,6 +2470,17 @@ proc info_page {msg buttonmsg} {
 	}
 }
 
+proc version_page {msg buttonmsg} {
+	if {[catch {
+		.can itemconfigure $::versionpage_label -text $msg
+		.can itemconfigure $::versionpage_button_label -text $buttonmsg
+		set_next_page off versionpage; 
+		page_show off
+	} err] != 0} {
+		msg "info_page failed because: '$err'"
+	}
+}
+
 proc change_bluetooth_device {} {
 
 

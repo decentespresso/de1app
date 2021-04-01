@@ -2086,6 +2086,13 @@ proc ui_startup {} {
 	plugins init
 	.can itemconfigure splash -state hidden
 
+	set app_version [package version de1app]
+
+	if {$::settings(last_version) != $app_version && [ifexists ::changelog_link] != "" && [ifexists ::settings(app_updates_beta_enabled)] < 2} {
+		version_page "Version updated from $::settings(last_version) to $app_version.\n Tap here to open the changelog" [translate "Ok"]
+		set ::settings(last_version) $app_version
+		save_settings
+	}
 
 	#after $::settings(timer_interval) 
 	update_onscreen_variables
