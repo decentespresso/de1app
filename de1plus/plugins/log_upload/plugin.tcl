@@ -160,16 +160,24 @@ namespace eval ::plugins::${plugin_name} {
         set settings(last_upload_log) ""
 
         if {$::settings(log_enabled) != 1} {
-            msg "logging disabled, cannot upload log"
-            set settings(last_upload_result) [translate "logging disabled, cannot upload log"]
-            plugins save_settings log_upload
+            set log_file_contents "Logging Disabled!"
+        } else {
+            flush $::logging::_log_fh
+            set log_file_contents [read_binary_file "[homedir]/$::settings(logfile)"]
         }
 
-        flush $::logging::_log_fh
+        set shotfiles [lsort -dictionary -decreasing [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+        if {[llength $shotfiles] < 1} {
+            set shotfile_contents [format_espresso_for_history]
+        } else {
+            set shot_file [lindex $shotfiles 0]
+            set shotfile_contents [read_file "[homedir]/history/$shot_file"]
+        }
 
-        set log_file_contents [read_binary_file "[homedir]/$::settings(logfile)"]
+        set settings_contents [array get ::settings]
+        set spacer "--------------"
 
-        ::plugins::log_upload::upload $log_file_contents
+        ::plugins::log_upload::upload "$shotfile_contents\n$spacer\n$settings_contents\n$spacer\n$log_file_contents"
     }
 
     proc browse {} {
