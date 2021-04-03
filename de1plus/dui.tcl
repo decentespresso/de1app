@@ -1,37 +1,8 @@
 # ##### TEMPORAL DEV COMMENTS ####
-# source "D:/Enrique/OneDrive/Documentos/Personal/Leisure/Coffee/Decent/de1plus_git/de1app/de1plus/logging.tcl"
-# source "D:/Enrique/OneDrive/Documentos/Personal/Leisure/Coffee/Decent/de1plus_git/de1app/de1plus/utils.tcl"
-# source "D:/Enrique/OneDrive/Documentos/Personal/Leisure/Coffee/Decent/de1plus_git/de1app/de1plus/updater.tcl"
-# source "D:/Enrique/OneDrive/Documentos/Personal/Leisure/Coffee/Decent/de1plus_git/de1app/de1plus/dui.tcl"
-# THINGS THIS DOES:
-#	- Remove duplication & hardcoded values
-#	- Consistent API instead of scattered functions
-#	- Set default aspect values by theme. User only has to defined options that differ from the default.
-#		Also allow to define item styles within a theme, so all style options are applied to those items that 
-#		have that -style.
-#	- Allow users to define the name/tag of canvas items and widgets, so they can be easily retrieved.
-#	- Fontawesome symbols by name
-#	- Add "widget combos" as a unit with a single command (e.g. button+label+clickable_button, or 
-#		listbox+label+scrollbar) and operate with them as a unit too for showing/hiding, enabling/disabling, etc.
-#		Avoid having to manually configure scrollbars and the like on page show.
-#	- Pages as namespaces. A default "page container parent namespace" is offered (::dui::pages::<page_name>), but any
-#		namespace can be used through the '-namespace' option of 'dui page add', or even a single namespace for 
-#		several pages.
-#	- Pages load/show/hide events, can be added directly with 'dui page add_action' or through page namespace 
-#		standard procs with the same names.
-#	- Allow to pass arguments to pages, so they can be loaded/started/shown with a set of parameters. This allows 
-#		more easily apply the same page to different data/object, as the data reference to be used can be passed
-#		as a parameter (instead of always using global variables).
-#	- Map all coordinates and dimensions in pixels to the current resolution (before widths and the like were not 
-#		mapped, only the positions)
 #
-# IMPORTANT DESIGN CONSIDERATION:
-#	- In this package we're building item/widget compound bundles in a very simple way.  
-#		Several options were studied, like overloading megawidgets (see https://wiki.tcl-lang.org/page/Overloading+widgets),
-#		but that seemed to add unneeded complexity vs the simple design here, which is relativelly easy to follow.
-#
-# TODOs: CHANGES TO DECOUPLE THIS LAYER AS A TOTALLY INDEPENDENT COMPONENT
+# TODOs: SOME CHANGES TO DECOUPLE THIS LAYER AS A TOTALLY INDEPENDENT COMPONENT
 #	- Global variables that must change to the dui namespace variables:
+#		FONTS! Make Insight font creation compatible with the more generic/general fonts mechanism proposed here.
 #		::de1(current_context) -> ::dui::page::current_page
 #		::existing_labels array (one item per page)
 #		::all_labels (list with all labels, sorted) Can't this be get from the canvas tags???)
@@ -40,7 +11,7 @@
 #		::delayed_image_load system
 #		::screen_size_width and ::screen_size_height
 #
-#	- Global utility functions that are used here:
+#	- Global utility functions that are used here
 #		ifexists
 #		$::fontm, $::globals(entry_length_multiplier)
 #		$::android, $::undroid
@@ -51,6 +22,7 @@ package require de1_logging 1.0
 package require de1_updater 1.1
 package require de1_utils 1.1
 package require Tk
+package require snit
 catch { package require tksvg }
 catch {
 	# tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
@@ -60,19 +32,21 @@ catch {
 
 
 namespace eval ::dui {
-	namespace export init setup_ui canvas theme aspect symbol font page item add hide_android_keyboard
+	namespace export init setup_ui config cget canvas theme aspect symbol font page item add hide_android_keyboard
 	namespace ensemble create
 
 	# Set to 1 while debugging to see the "clickable" areas. Also may need to redefine aspect 
 	#	'<theme>.button.debug_outline' so it's visible against the theme background.
 	variable debug_buttons 0
 	
-	# Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created page
- 
+	# Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created page, unless
+	#	a different namespace is provided in the -namespace option of 'dui page add'.
 	variable create_page_namespaces 0
-	# Set to 1 to trim leading and trailing whitespace when modifying the value in entry boxes 
+	
+	# Set to 1 to trim leading and trailing whitespace when modifying the values in entry boxes 
 	variable trim_entries 0
-	# Set to 1 to default to use editor pages if available 
+	
+	# Set to 1 to default to use editor pages if available (currently only for numbers) 
 	variable use_editor_pages 1
 	
 	### THEME SUB-ENSEMBLE ###
@@ -186,41 +160,41 @@ namespace eval ::dui {
 			default.entry.relief flat
 			default.entry.bg white
 			
-			default.button.debug_outline black
-			default.button.fill "#c0c5e3"
-			default.button.disabledfill "#ddd"
-			default.button.outline white
-			default.button.disabledoutline "pink"
-			default.button.activeoutline "orange"
-			default.button.width 0
+			default.dbutton.debug_outline black
+			default.dbutton.fill "#c0c5e3"
+			default.dbutton.disabledfill "#ddd"
+			default.dbutton.outline white
+			default.dbutton.disabledoutline "pink"
+			default.dbutton.activeoutline "orange"
+			default.dbutton.width 0
 			
-			default.button_label.pos {0.5 0.5}
-			default.button_label.anchor center
-			default.button_label.font_size 18
-			default.button_label.justify center
-			default.button_label.fill white
-			default.button_label.disabledfill "#ccc"
+			default.dbutton_label.pos {0.5 0.5}
+			default.dbutton_label.anchor center
+			default.dbutton_label.font_size 18
+			default.dbutton_label.justify center
+			default.dbutton_label.fill white
+			default.dbutton_label.disabledfill "#ccc"
 
-			default.button_symbol.pos {0.2 0.5}
-			default.button_symbol.font_size 24
-			default.button_symbol.anchor center
-			default.button_symbol.justify center
-			default.button_symbol.fill white
-			default.button_symbol.disabledfill "#ccc"
+			default.dbutton_symbol.pos {0.2 0.5}
+			default.dbutton_symbol.font_size 24
+			default.dbutton_symbol.anchor center
+			default.dbutton_symbol.justify center
+			default.dbutton_symbol.fill white
+			default.dbutton_symbol.disabledfill "#ccc"
 
-			default.button_state.pos {0.5 0.5}
-			default.button_state.anchor center
-			default.button_state.justify center
-			default.button_state.fill "#ffffff"
-			default.button_state.activefill "#ffffff"
-			default.button_state.disabledfill black
+			default.dbutton_state.pos {0.5 0.5}
+			default.dbutton_state.anchor center
+			default.dbutton_state.justify center
+			default.dbutton_state.fill "#ffffff"
+			default.dbutton_state.activefill "#ffffff"
+			default.dbutton_state.disabledfill black
 			
-			default.button.shape.insight_ok round
-			default.button.radius.insight_ok 30
-			default.button.bwidth.insight_ok 480
-			default.button.bheight.insight_ok 118
-			default.button_label.font_family.insight_ok notosansuibold
-			default.button_label.font_size.insight_ok 19
+			default.dbutton.shape.insight_ok round
+			default.dbutton.radius.insight_ok 30
+			default.dbutton.bwidth.insight_ok 480
+			default.dbutton.bheight.insight_ok 118
+			default.dbutton_label.font_family.insight_ok notosansuibold
+			default.dbutton_label.font_size.insight_ok 19
 			
 			default.entry.relief flat
 			default.entry.bg white
@@ -231,16 +205,24 @@ namespace eval ::dui {
 			default.entry.relief.special flat
 			default.entry.bg.special yellow
 			default.entry.width.special 1
+
+			default.multiline_entry.relief flat
+			default.multiline_entry.bg white
+			default.multiline_entry.width 2
+			default.multiline_entry.font_family notosansuiregular
+			default.multiline_entry.font_size 16
+			default.multiline_entry.width 15
+			default.multiline_entry.height 5			
 			
-			default.checkbox.font_family "Font Awesome 5 Pro-Regular-400"
-			default.checkbox.font_size 18
-			default.checkbox.fill black
-			default.checkbox.anchor nw
-			default.checkbox.justify left
+			default.dcheckbox.font_family "Font Awesome 5 Pro-Regular-400"
+			default.dcheckbox.font_size 18
+			default.dcheckbox.fill black
+			default.dcheckbox.anchor nw
+			default.dcheckbox.justify left
 			
-			default.checkbox_label.pos "e 80 0"
-			default.checkbox_label.anchor w
-			default.checkbox_label.justify left
+			default.dcheckbox_label.pos "e 80 0"
+			default.dcheckbox_label.anchor w
+			default.dcheckbox_label.justify left
 			
 			default.listbox.relief flat
 			default.listbox.borderwidth 0
@@ -280,7 +262,7 @@ namespace eval ::dui {
 			default.dscale.orient horizontal
 			default.dscale.foreground "#4e85f4"
 			default.dscale.background "#7f879a"
-			default.scale.sliderlength 75
+			default.dscale.sliderlength 75
 			
 			default.scale.orient horizontal
 			default.scale.foreground "#FFFFFF"
@@ -435,7 +417,7 @@ namespace eval ::dui {
 			}
 			
 			if { $values != 1 && ([llength $type] > 1 || $style ne "") } {
-				return [unique_list $result]
+				return [lunique $result]
 			} else {
 				return $result
 			}
@@ -468,8 +450,8 @@ namespace eval ::dui {
 			eye "\uf06e"
 		}
 
-		# Used to map booleans to their checkbox representation (square/square_check) in fontawesome.
-		variable checkbox_symbols_map {"\uf0c8" "\uf14a"}
+		# Used to map booleans to their dcheckbox representation (square/square_check) in fontawesome.
+		variable dcheckbox_symbols_map {"\uf0c8" "\uf14a"}
 
 		# Define Fontawesome symbols by name. If a symbol name is already defined and the value differs, it is NOT 
 		#	redefined, and a warning added to the log.
@@ -583,13 +565,9 @@ namespace eval ::dui {
 							set filename "$dir/$filename"
 							set file_found 1
 						} elseif { [file exists "$dir/$filename.otf"] } {
-							#load $font_key "$dir/$font_name.otf" $size "" {*}$args
-							#lappend skin_fonts $font_key
 							set filename  "$dir/$filename.otf"
 							set file_found 1
 						} elseif { [file exists "$dir/$filename.ttf"] } {
-#							load $font_key "$dir/$font_name.ttf" $size "" {*}$args
-#							lappend skin_fonts $font_key
 							set filename  "$dir/$filename.ttf"
 							set file_found 1
 						}
@@ -744,19 +722,6 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				return [::font names]
 			}
 		}
-			
-		# Returns the current fonts directory (if path is not specified) or sets it to path. 
-#		proc dir { {font_path {}} } {
-#			variable dir
-#			if { $font_path eq "" } {
-#				return $dir
-#			} else {
-#				set dir $font_path
-#				if { ![file isdirectory $font_path] } {
-#					msg -ERROR [namespace current] "dir" "'$font_path' is not a valid path"
-#				}
-#			}
-#		}
 	}
 	
 	### ARGS SUB-ENSEMBLE ###
@@ -765,7 +730,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 	#	1) pass-through any aspect parameter explicitly defined by the user to the main widget creation command,
 	#		or otherwise use the theme and style default values. 	
 	#	2) extract the options that won't be passed through to the main widget creation command, but to other one,
-	#		like aspect values passed to the label creation command in 'add button' (-label_font, -label_fill...)
+	#		like aspect values passed to the label creation command in 'add dbutton' (-label_font, -label_fill...)
 	# These namespace commands are not exported, should normally only be used inside the dui namespace, where
 	#	they're called using qualified names.
 	namespace eval args {
@@ -884,14 +849,19 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					return
 				}
 			}
-			# We need to ensure GLOBAL main tag uniqueness while we coexist with the old labelling system.
+			# We need to ensure GLOBAL main tag uniqueness while we coexist with the old labelling system, otherwise
+			#	duplicated tags in several pages will be shown in all pages in which they appear.
 			# Once it's unified, we'll request only uniqueness PER PAGE.
-			if { [$can find withtag $main_tag] ne "" } {
-				set msg "Main tag '$main_tag' already exists in canvas, duplicates are not allowed"
-				msg [namespace current] process_tags_and_var: $msg
-				error $msg
-				return
+			#if { [$can find withtag $main_tag] ne "" }
+			foreach page $pages {
+				if { [$can find withtag $main_tag&&p:$page] ne "" } {
+					set msg "Main tag '$main_tag' already exists in page '$page', duplicates are not allowed"
+					msg [namespace current] process_tags_and_var: $msg
+					error $msg
+					return
+				}
 			}
+			
 			# Change to this when there's no need to coexist with the old labelling system
 #			foreach page $pages { 
 #				if { [$can find withtag p:$page&&$main_tag] ne "" } {
@@ -926,17 +896,21 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					set varname [get_option $varoption "" 1 largs]
 					if { $varname eq "" } {
 						if { ! $auto_assign_tag } {
+							set varname "${ns}::data($main_tag)"
+							if { ![info exists $varname] } {
+								set $varname {}
+							}							
 							if { $type eq "variable" } {
-								set varname "\$${ns}::data($main_tag)"
-							} else {
-								set varname "${ns}::data($main_tag)"
-							}
+								set varname "\$$varname"
+							} 
 						}
 					} elseif { [string is wordchar $varname] } {
+						set varname "${ns}::data($varname)"
+						if { ![info exists $varname] } {
+							set $varname {}
+						}						
 						if { $type eq "variable" } {
-							set varname "\$${ns}::data($varname)"
-						} else {
-							set varname "${ns}::data($varname)"
+							set varname "\$$varname"
 						}
 					} else {
 						regsub -all {%NS} $varname $ns varname
@@ -968,7 +942,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { [dui::args::has_option -aspect_type largs] } {
 				set default_type $type
 				set type [dui::args::get_option -aspect_type "" 1 largs]
-				set types [unique_list [list $type $default_type]]
+				set types [lunique [list $type $default_type]]
 			} else {
 				set types $type
 			}
@@ -1027,8 +1001,6 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		# Processes the -label* named options in 'args' and produces the label according to the provided options.
 		# All the -label* options are removed from 'args'.
 		# Returns the main tag of the created text.
-		# pos_type can be either 'rel' (relative, normally outside of the main widget) or 'inside' (inside the widget,
-		#	as for buttons)
 		proc process_label { pages x y type {style {}} {wrt_tag {}} {args_name args} } {
 			upvar $args_name largs
 			set label [get_option -label "" 1 largs]
@@ -1048,10 +1020,6 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			
 			set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]	
 			set label_args [extract_prefixed -label_ largs]
-#			foreach aspect "anchor justify fill activefill disabledfill font_family font_size" {
-#				add_option_if_not_exists -$aspect [dui aspect get ${type}_label $aspect -style $style \
-#					-default {} -default_type text] label_args
-#			}
 			foreach aspect [dui aspect list -type [list ${type}_label text] -style $style] {
 				add_option_if_not_exists -$aspect [dui aspect get ${type}_label $aspect -style $style \
 					-default {} -default_type text] label_args
@@ -1141,13 +1109,14 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 			
 			set var [get_option -variable "" 1 sb_args]
+			set first_page [lindex $pages 0]
 			if { $var eq "" } {
-				set var "::dui::item::sliders($main_tag)"
+				set var "::dui::item::sliders($first_page,$main_tag)"
 				set $var 0
 			}
 			set cmd [get_option -command "" 1 sb_args]
 			if { $cmd eq "" } {
-				set cmd "::dui::item::listbox_moveto $main_tag \$$var"
+				set cmd "::dui::item::scrolled_widget_moveto $first_page $main_tag \$$var"
 			}
 			
 			foreach page $pages {
@@ -1164,19 +1133,14 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		namespace export add current exists list get_namespace set_next show_when_off show add_action actions
 		namespace ensemble create
 
-		# Metadata for every added page. Array names have the form '<page_name>,<type>', where <type> can be:
+		# Metadata for every added page. Array keys have the form '<page_name>,<type>', where <type> can be:
 		#	'ns': Page namespace. Empty string if the page doesn't have a namespace.
-		#	'load': Tcl code to run when the page is going to be shown, but before if is actually shown.
-		#	'show': Tcl code to run just after the page is shown. 
-		#	'hide': Tcl code to run just after the page is hidden.
+		#	'load': List of Tcl callbacks to run when the page is going to be shown, but before if is actually shown.
+		#	'show': List of Tcl callbacks to run just after the page is shown. 
+		#	'hide': List of Tcl callbacks to run just after the page is hidden.
 		variable pages_data 
 		array set pages_data {}
-#		variable actions
-#		array set actions {}
-#		
-#		variable pages_ns
-#		array set pages_ns {}
-		
+
 		#variable nextpage
 		#array set nextpage {}
 		#variable exit_app_on_sleep 0
@@ -1483,12 +1447,14 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 #				}
 #			}
 
-			# EB NO NEED TO USE ::all_labels like commented code above, can do with canvas tags ??
-			foreach item [$can find withtag all] {
-				if { [$can itemcget $item -state] ne "hidden" } {
-					$can itemconfigure $item -state hidden
-				}
-			}
+			# EB NO NEED TO USE ::all_labels like commented code above, can do with canvas tags. 
+			# Not even looping needed! Just hide everything!??
+			$can itemconfigure all -state hidden
+#			foreach item [$can find withtag all] {
+#				if { [$can itemcget $item -state] ne "hidden" } {
+#					$can itemconfigure $item -state hidden
+#				}
+#			}
 
 			try {
 				$can itemconfigure $page_to_show -state normal
@@ -1499,11 +1465,16 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			#msg "Showing [llength $these_labels] labels"
 
 			# Backward-compatible for pages that are not created using the new tags system.
-			foreach label $these_labels {
-				$can itemconfigure $label -state normal
-				#msg "showing: '$label'"
+			# WARNING: Until we remove this code we may have a problem with duplicated tags in two pages if they are 
+			#	created with DUI but without a namespace, as they will not be detected as using the new system and
+			#	this legacy code will show them in both pages.
+			if { $show_ns eq "" } {
+				foreach label $these_labels {
+					$can itemconfigure $label -state normal
+					#msg "showing: '$label'"
+				}
 			}
-
+			
 			# New dui system, no need to use ::existing_labels, can do with canvas tags, provided p:<page_name> tags 
 			#	were used.
 			set items_to_show [$can find withtag p:$page_to_show]
@@ -1526,7 +1497,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			#puts "elapsed: [expr {$end - $start}]"
 		
 			# The old actions system, equivalent to the new page "show" event action. 
-			# Left temporarilly for compatibility.
+			# Left temporarily for compatibility.
 			global actions
 			if {[info exists actions($page_to_show)] == 1} {
 				foreach action $actions($page_to_show) {
@@ -1562,18 +1533,12 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			return [ifexists pages_data($page,$event)]
 		}
 	}
-
-	### PAGES SUB-ENSEMBLE ###
-	# Just a container namespace for client code to create UI pages as children namespaces.
-	namespace eval pages {
-		namespace export *
-		namespace ensemble create
-	}
 	
 	### ITEMS SUB-ENSEMBLE ###
 	# Items are visual items added to the canvas, either canvas items (text, arcs, lines...) or Tk widgets.
 	namespace eval item {
-		namespace export *
+		namespace export add add_to_pages get get_widget config cget enable_or_disable enable disable \
+			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection
 		namespace ensemble create
 	
 		variable sliders
@@ -1584,8 +1549,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		variable img_dirs {}
 		
 		# Keep track of what labels are displayed in what pages. Warns if a label already exists.
-		# In the future this shouldn't be needed, as dui manages what to show using canvas tags. But it's needed
-		#	while the old and new systems coexist.
+		# (SEMI-OBSOLETE): In the future this shouldn't be needed, as dui manages what to show using canvas tags. 
+		#	But it's needed while the old and new systems coexist.
 		proc add_to_pages { pages tags } {
 			global existing_labels
 			foreach page $pages {
@@ -1621,7 +1586,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#	2) As a list of canvas item IDs (integer numbers) if only one argument is specified. They are then
 		#		returned without changes.
 		#	3) As a canvas widget pathname. Then it is returned without changes.
-		# The second form is there to allow passing the contents of data(widgets) directly to this function. 
+		# The second form is there to allow passing the contents of widgets(tag) directly to this function. 
 		proc get { page_or_ids_or_widgets {tags {}} } {
 			set can [dui canvas]
 			if { $tags eq "" } {
@@ -1643,7 +1608,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 						}
 					}
 				}
-				return [unique_list $result]
+				return [lunique $result]
 			}
 			
 			set ids {}
@@ -1664,7 +1629,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				}
 			}
 
-			return [unique_list $ids]
+			return [lunique $ids]
 		}
 		
 		# If page is empty, 'tag_or_widget' should be a widget pathname, and returns it if it exists, or an empty
@@ -1992,60 +1957,84 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 		}
 		
-		# Configures a page listbox yscrollbar locations and sizes. Run once the page is shown for then to be dynamically 
-		# positioned.
+		# Configures a page listbox yscrollbar scale location and size. Run once the page is shown for then to be  
+		# dynamically positioned.
 		proc set_yscrollbar_dim { page widget_tag {scrollbar_tag {}} } {
 			set can [dui canvas]
 			if { $scrollbar_tag eq "" } {
-				set scrollbar_tag ${main_tag}-ysb
+				set scrollbar_tag ${widget_tag}-ysb
+			}
+			set widget [get $page $widget_tag]
+			set yscb [get $page $scrollbar_tag]
+			
+			lassign [$can bbox $widget] x0 y0 x1 y1
+			[$can itemcget $yscb -window] configure -length [expr {$y1-$y0}]
+			$can coords $yscb [list $x1 $y0]
+		}
+		
+		# convenience function to link a scale widget with a listbox or a multiline_entry so that the scale becomes a 
+		#	scrollbar to the widget, rather than using the ugly Tk native scrollbar
+		proc scale_scroll { page widget_tag slider_varname dest1 dest2 } {
+			set widget [get_widget $page $widget_tag]
+			set class [winfo class $widget]
+			
+			if { $class eq "Listbox" } {
+				# get number of items visible in list box
+				set visible_items [lindex [split [$widget configure -height] " "] 4]
+				# get total items in listbox
+				set total_items [$widget size]
+
+				# if all the items fit on screen then there is nothing to do
+				if { $visible_items >= $total_items } {
+					return
+				}
+				# determine which item would be at the top if the last items is at the bottom
+				set last_top_item [expr $total_items - $visible_items]
+				# determine what percentage of the way down the current top item is
+				set rescaled_value [expr $dest1 * $total_items / $last_top_item]
+			} elseif { $class eq "Multiline_entry" } {
+				set rescaled_value $dest1
+			} else {
+				msg -WARNING [namespace current] scale_scroll "cannot scroll a widget of class '$class'"
+				return
 			}
 			
-			lassign [$can bbox $widget_tag] x0 y0 x1 y1
-			[$can itemcget $scrollbar_tag -window] configure -length [expr {$y1-$y0}]
-			$can coords $scrollbar_tag "$x1 $y0"
-		}
-		
-		# convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the 
-		#	listbox, rather than using the ugly Tk native scrollbar
-		proc listbox_moveto { listbox_tag dest1 dest2 } {
-			set lb [[dui canvas] itemcget $listbox_tag -window]
-			# get number of items visible in list box
-			set visible_items [lindex [split [$lb configure -height] " "] 4]
-			# get total items in listbox
-			set total_items [$lb size]
-			# if all the items fit on screen then there is nothing to do
-			if {$visible_items >= $total_items} {return}
-			# determine which item would be at the top if the last items is at the bottom
-			set last_top_item [expr $total_items - $visible_items]
-			# determine which item should be at the top for the requested value
-			set top_item [expr int(round($last_top_item * $dest2))]
-		
-			$lb yview $top_item
-		}
-		
-		# convenience function to link a "scale" widget with a "listbox" so that the scale becomes a scrollbar to the 
-		#	listbox, rather than using the ugly Tk native scrollbar
-		proc scale_scroll { listbox_tag slider_varname dest1 dest2} {
-			set lb [[dui canvas] itemcget $listbox_tag -window]
-			# get number of items visible in list box
-			set visible_items [lindex [split [$lb configure -height] " "] 4]
-			# get total items in listbox
-			set total_items [$lb size]
-			# if all the items fit on screen then there is nothing to do
-			if {$visible_items >= $total_items} {return}
-			# determine which item would be at the top if the last items is at the bottom
-			set last_top_item [expr $total_items - $visible_items]
-			# determine what percentage of the way down the current top item is
-			set rescaled_value [expr $dest1 * $total_items / $last_top_item]
-		
 			upvar $slider_varname fieldname
 			set fieldname $rescaled_value
+		}
+		
+		# convenience function to link a scale widget with a listbox or a multiline_entry so that the scale becomes 
+		#	a scrollbar to the widget, rather than using the ugly Tk native scrollbar
+		proc scrolled_widget_moveto { page widget_tag dest1 dest2 } {
+			set widget [get_widget $page $widget_tag]
+			set class [winfo class $widget]
+
+			if { $class eq "Listbox" } {
+				# get number of items visible in list box
+				set visible_items [lindex [split [$widget configure -height] " "] 4]
+				# get total items in listbox
+				set total_items [$widget size]
+				# if all the items fit on screen then there is nothing to do
+				if {$visible_items >= $total_items} {
+					return
+				}
+				# determine which item would be at the top if the last items is at the bottom
+				set last_top_item [expr $total_items - $visible_items]
+				# determine which item should be at the top for the requested value
+				set top_item [expr int(round($last_top_item * $dest2))]
+				
+				$widget yview $top_item
+			} elseif { $class eq "Multiline_entry" } {
+				$widget yview moveto $dest2
+			} else {
+				msg -WARNING [namespace current] scrolled_widget_moveto "cannot 'move to' a widget of class '$class'"
+			}
 		}
 		
 		# Returns the values of the selected items in a listbox. If a 'values' list is provided, returns the matching
 		# items in that list instead of matching to listbox entries, unless 'values' is shorter than the listbox,
 		# in which case indexes not reachable from 'values' are taken from the listbox values.
-		proc listbox_get_selection { page_or_id_or_widget tag {values {}} } {
+		proc listbox_get_selection { page_or_id_or_widget {tag {}} {values {}} } {
 			set widget [get_widget $page_or_id_or_widget $tag]
 			set cursel [$widget curselection]
 			if { $cursel eq "" } return {}
@@ -2087,7 +2076,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				}
 			}
 			
-			if { $reset_current == 1 } { $widget selection clear 0 end }	
+			if { [string is true $reset_current] } { 
+				$widget selection clear 0 end 
+			}	
 			if { [$widget cget -selectmode] eq "single" && [llength $selected] > 1 } {
 				set selected [lindex $selected end]
 			}
@@ -2162,7 +2153,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#		position of the slider within the scale, given by slider_coord.
 		#	2) If slider_coord is not specified, uses the value of $varname and moves the slider to match the value.
 		# Needs 'args' at the end because this is called from a 'trace add variable'.
-		proc dscale_moveto { page dscale_tag varname from to {resolution 1} {n_decimals 0} {slider_coord {}} args } {			
+		proc dscale_moveto { page dscale_tag varname from to {resolution 1} {n_decimals 0} {slider_coord {}} args } {
 			set can [dui canvas]
 			set slider [dui item get $page "${dscale_tag}-crc"]
 			if { $slider eq "" } return
@@ -2188,43 +2179,42 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 			
 			set varvalue ""
+			# If no slider_coord is given, reads the value from whatever is in variable $varname and transforms it
+			#	to a slider_coord value.
 			if { $slider_coord eq "" && $varname ne "" } {
 				if { [info exists $varname] } {
-					set varvalue [subst \$$varname] 
+					set varvalue [number_in_range [subst \$$varname] 0 $from $to $resolution $n_decimals]  
 				} else {
-					set varvalue $from
+					set varvalue [number_in_range $from 0 $from $to $resolution $n_decimals]
 					set $varname $varvalue
 				}
-				# TESTING
-				set varvalue [number_in_range $varvalue 0 $from $to $resolution $n_decimals]
 
 				if { [string is double -strict $varvalue] } {
 					if { $varvalue <= $from } {
-						switch $orient h {set slider_coord $bx0} v {set slider_coord $by0}
+						switch $orient h {set slider_coord $bx0} v {set slider_coord [expr {$by1-$sheight/2}]}
 					} elseif { $varvalue >= $to } {
-						switch $orient h {set slider_coord [expr {$bx1-$swidth/2}]} v {set slider_coord $by1}
+						switch $orient h {set slider_coord [expr {$bx1-$swidth/2}]} v {set slider_coord $by0 }
 					} elseif { $orient eq "h" } {
-						set slider_coord [expr {($bx0+$swidth/2)+(($bx1-$swidth/2)-($bx0+$swidth/2))*$varvalue/($to-$from)}]
+						set slider_coord [expr {($bx0+$swidth/2)+($bx1-$bx0-$swidth)*$varvalue/($to-$from)}]
 					} else {
-						set slider_coord [expr {$by0+($by1-$by0)*$varvalue/($to-$from)}]
+						set slider_coord [expr {($by1-$sheight/2)+($by1-$by0-$sheight)*$varvalue/($from-$to)}]
 					}
 				} else {
 					return
 				}
 			}
 			
+			# Move the slider to slider_coord (x-axis for horizontal scale, y-axis for vertical scale) 
 			if { $orient eq "h" } {
 				# Horizontal
 				if { ($slider_coord-$swidth/2) <= $bx0 } {
 					$can coords $front $bx0 $by0 [expr {$bx0+$swidth/2}] $by1
 					$can coords $slider $bx0 $sy0 [expr {$bx0+$swidth}] $sy1
 					if { $varvalue eq "" } { set $varname $from }
-					#set dx [expr {$bx0-$sx0}] 
 				} elseif { $slider_coord >= ($bx1-$swidth/2) } {
 					$can coords $front $bx0 $by0 [expr {$bx1-$swidth/2}] $by1
 					$can coords $slider [expr {$bx1-$swidth}] $sy0 $bx1 $sy1
 					if { $varvalue eq "" } { set $varname $to }
-					#set dx [expr {$sx1-$bx1}]
 				} else {
 					$can coords $front $bx0 $by0 $slider_coord $by1
 					$can move $slider [expr {$slider_coord-($swidth/2)-$sx0}] 0
@@ -2235,21 +2225,20 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				} 
 			} else {
 				# Vertical
-				if { $slider_coord <= $bx0 } {
-					$can coords $front $bx0 $by0 [expr {$bx0+1}] $by1
-					$can coords $slider $bx0 $sy0 [expr {$bx0+$swidth}] $sy1
-					if { $varvalue eq "" } { set $varname $from }
-					#set dx [expr {$bx0-$sx0}] 
-				} elseif { $slider_coord >= [expr {$bx1-$swidth}]} {
-					$can coords $front $bx0 $by0 $bx1 $by1
-					$can coords $slider [expr {$bx1-$swidth}] $sy0 $bx1 $sy1
+				if { ($slider_coord-$sheight/2) <= $by0 } {
+					$can coords $front $bx0 [expr {$by0+$sheight/2}] $bx1 $by1
+					$can coords $slider $sx0 $by0 $sx1 [expr {$by0+$sheight}]
 					if { $varvalue eq "" } { set $varname $to }
-					#set dx [expr {$sx1-$bx1}]
+				} elseif { ($slider_coord+$sheight/2) >= $by1 } {
+					$can coords $front $bx0 [expr {$by1-$sheight/2}] $bx1 $by1
+					$can coords $slider $sx0 [expr {$by1-$sheight}] $sx1 $by1
+					if { $varvalue eq "" } { set $varname $from }
 				} else {
-					$can coords $front $bx0 $by0 [expr {$slider_coord+$swidth/2}] $by1
-					$can move $slider [expr {$slider_coord-$sx0}] 0
-					if { $varvalue eq "" } { 
-						set $varname [format "%.${n_decimals}f" [expr {($to-$from)*($slider_coord-$bx0)/($bx1-$swidth-$bx0}]]					
+					$can coords $front $bx0 [expr {$slider_coord+$sheight/2}] $bx1 $by1
+					$can move $slider 0 [expr {$slider_coord-$sheight/2-$sy0}]
+					if { $varvalue eq "" } {
+						set newcoord [expr {$from+($to-$from)*($by1-$slider_coord-$sheight/2)/($by1-$sheight-$by0)}]
+						set $varname [number_in_range $newcoord {} $from $to $resolution $n_decimals]
 					}
 				} 
 			}
@@ -2369,8 +2358,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 	}
 
 	### ADD SUBENSEMBLE: COMMANDS TO CREATE CANVAS ITEMS AND WIDGETS AND ADD THEM TO THE CANVAS ###
-	### THESE WORK AS FACADES TO THE WIDGET CREATE AND CANVAS CREATE COMMANDS, TO SIMPLIFY CREATION, STYLING,
-	###		AND ADDING EXTRA COMMONLY USED FUNCTIONALITY.
+	### These work as "facades" to the widget create and canvas commands, to simplify creation, styling and adding
+	###		extra commonly used functionality.
+	
 	namespace eval add {
 		namespace export *
 		namespace ensemble create
@@ -2407,6 +2397,48 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		
 		proc image_dirs { args } {
 			dui item add_image_dirs {*}$args 
+		}
+		
+		# Adds canvas items (arcs, ovals, lines, etc.) to pages
+		proc canvas_item { type pages args } {
+			set can [dui canvas]
+			
+			set coords {}
+			set i 0
+			while { [llength $args] > 0 && [string is entier [lindex $args 0]] } {
+				if { $i % 2 == 0 } {
+					set coord [rescale_x_skin [lindex $args 0]]
+				} else {
+					set coord [rescale_y_skin [lindex $args 0]]
+				}
+				lappend coords $coord 
+				set args [lrange $args 1 end]
+				incr i
+			}
+					
+			set tags [dui::args::process_tags_and_var $pages $type ""]
+			set main_tag [lindex $tags 0]
+	
+			set style [dui::args::get_option -style "" 1]
+			dui::args::process_aspects $type $style "" "pos"
+					
+			try {
+				set w [[dui canvas] create $type {*}$coords -state hidden {*}$args]
+			} on error err {
+				set msg "can't add $type '$main_tag' in page(s) '$pages' to canvas: $err"
+				msg -ERROR [namespace current] $msg
+				error $msg
+				return
+			}
+
+			set ns [dui page get_namespace $pages]
+			if { $ns ne "" } {
+				set ${ns}::widgets($main_tag) $w
+			}
+			dui item add_to_pages $pages $main_tag
+			
+			msg -INFO [namespace current] canvas_item "$type '$main_tag' to page(s) '$pages' with args '$args'"
+			return $main_tag
 		}
 		
 		# Add text items to the canvas. Returns the list of all added tags (one per page).
@@ -2498,7 +2530,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			return [dui add text $pages $x $y -text $symbol {*}$args]
 		}
 		
-		# Add button items to the canvas. Returns the list of all added tags (one per page).
+		# Add dbutton items to the canvas. Returns the list of all added tags (one per page).
 		#
 		# Defaults to an "invisible" button, i.e. a rectangular "clickable" area. Specify the -style or -shape argument
 		#	to generate a visible button instead.
@@ -2528,14 +2560,14 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#		given in -symbol_* that are passed through to 'dui add symbol'
 		#	-radius for rounded rectangles, and -arc_offset for rounded outline rectangles
 		#	All others passed through to the respective visible button creation command.
-		proc button { pages x y args } {
+		proc dbutton { pages x y args } {
 			set debug_buttons $::dui::debug_buttons
 			set can [dui canvas]
 			set ns [dui page get_namespace $pages]
 			
 			set cmd [dui::args::get_option -command {} 1]
 			set style [dui::args::get_option -style "" 1]
-			dui::args::process_aspects button $style
+			dui::args::process_aspects dbutton $style
 	
 			set x1 0
 			set y1 0
@@ -2577,7 +2609,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set ry [rescale_y_skin $y]
 			set ry1 [rescale_y_skin $y1]
 					
-			set tags [dui::args::process_tags_and_var $pages button {} 1]
+			set tags [dui::args::process_tags_and_var $pages dbutton {} 1]
 			set main_tag [lindex $tags 0]
 			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
 			
@@ -2591,8 +2623,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]	
 				set label_args [dui::args::extract_prefixed -label_]
 				
-				foreach aspect [dui aspect list -type [list button_label text] -style $style] {
-					dui::args::add_option_if_not_exists -$aspect [dui aspect get button_label $aspect -style $style \
+				foreach aspect [dui aspect list -type [list dbutton_label text] -style $style] {
+					dui::args::add_option_if_not_exists -$aspect [dui aspect get dbutton_label $aspect -style $style \
 						-default {} -default_type text] label_args
 				}
 				
@@ -2606,7 +2638,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { $symbol ne "" } {
 				set symbol_tags [list ${main_tag}-sym {*}[lrange $tags 1 end]]	
 				set symbol_args [dui::args::extract_prefixed -symbol_]
-				set symbol_pos [dui::args::get_option -pos [dui aspect get button_symbol pos -style $style -default {0.5 0.5} \
+				set symbol_pos [dui::args::get_option -pos [dui aspect get dbutton_symbol pos -style $style -default {0.5 0.5} \
 					-default_type symbol] 1 symbol_args]
 				set xsymbol [expr {$x+int($x1-$x)*[lindex $symbol_pos 0]}]
 				set ysymbol [expr {$y+int($y1-$y)*[lindex $symbol_pos 1]}]
@@ -2619,7 +2651,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { $style eq "" && ![dui::args::has_option -shape]} {
 				if { $debug_buttons == 1 } {
 					set width 1
-					set outline [dui aspect get button debug_outline -style $style -default "black"]
+					set outline [dui aspect get dbutton debug_outline -style $style -default "black"]
 				} else {
 					set width 0
 				}
@@ -2630,21 +2662,21 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				}
 			} else {		
 				dui::args::remove_option -debug_outline
-				set shape [dui::args::get_option -shape [dui aspect get button shape -style $style -default rect] 1]
+				set shape [dui::args::get_option -shape [dui aspect get dbutton shape -style $style -default rect] 1]
 				
 				if { $shape eq "round" } {
-					set fill [dui::args::get_option -fill [dui aspect get button fill -style $style]]
-					set disabledfill [dui::args::get_option -disabledfill [dui aspect get button disabledfill -style $style]]
-					set radius [dui::args::get_option -radius [dui aspect get button radius -style $style -default 40]]
+					set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
+					set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
+					set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
 					
-					set ids [dui item rounded_rectangle $x $y $x1 $y1 $radius $fill $disabledfill $button_tags]
+					set ids [dui::item::rounded_rectangle $x $y $x1 $y1 $radius $fill $disabledfill $button_tags]
 				} elseif { $shape eq "outline" } {
-					set outline [dui::args::get_option -outline [dui aspect get button outline -style $style]]
-					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get button disabledoutline -style $style]]
-					set arc_offset [dui::args::get_option -arc_offset [dui aspect get button arc_offset -style $style -default 50]]
-					set width [dui::args::get_option -width [dui aspect get button width -style $style -default 3]]
+					set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
+					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
+					set arc_offset [dui::args::get_option -arc_offset [dui aspect get dbutton arc_offset -style $style -default 50]]
+					set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
 					
-					set ids [dui item rounded_rectangle_outline $x $y $x1 $y1 $arc_offset $outline $disabledoutline \
+					set ids [dui::item::rounded_rectangle_outline $x $y $x1 $y1 $arc_offset $outline $disabledoutline \
 						$width $button_tags]
 				} else {
 					set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
@@ -2656,22 +2688,22 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}					
 			
 			if { $label ne "" } {
-				dui add text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type button_label \
+				dui add text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type dbutton_label \
 					-style $style {*}$label_args
 			} elseif { $labelvar ne "" } {
 				dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
-					-aspect_type button_label -style $style {*}$label_args 
+					-aspect_type dbutton_label -style $style {*}$label_args 
 			}
 			
 			if { $symbol ne "" } {
-				dui add symbol $pages $xsymbol $ysymbol -text $symbol -tags $symbol_tags -aspect_type button_symbol \
+				dui add symbol $pages $xsymbol $ysymbol -text $symbol -tags $symbol_tags -aspect_type dbutton_symbol \
 					-style $style {*}$symbol_args
 			}
 			
 			# Clickable rect
 			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden]
 			if { $cmd eq "" } {
-				msg -WARN [namespace current] button "button '$main_tag' does not have a command"
+				msg -WARN [namespace current] dbutton "dbutton '$main_tag' does not have a command"
 			} else {
 				set ns [dui page get_namespace [lindex $pages 0]] 
 				#set first_page [lindex $pages 0]
@@ -2688,54 +2720,12 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 			$can bind $main_tag [platform_button_press] $cmd
 			
-			msg -INFO [namespace current] button "'$main_tag' to page(s) '$pages' with args '$args'"
+			msg -INFO [namespace current] dbutton "'$main_tag' to page(s) '$pages' with args '$args'"
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $id
 			}								
 			dui item add_to_pages $pages $main_tag
 			return $id
-		}
-
-		# Adds canvas items (arcs, ovals, lines, etc.) to pages
-		proc canvas_item { type pages args } {
-			set can [dui canvas]
-			
-			set coords {}
-			set i 0
-			while { [llength $args] > 0 && [string is entier [lindex $args 0]] } {
-				if { $i % 2 == 0 } {
-					set coord [rescale_x_skin [lindex $args 0]]
-				} else {
-					set coord [rescale_y_skin [lindex $args 0]]
-				}
-				lappend coords $coord 
-				set args [lrange $args 1 end]
-				incr i
-			}
-					
-			set tags [dui::args::process_tags_and_var $pages $type ""]
-			set main_tag [lindex $tags 0]
-	
-			set style [dui::args::get_option -style "" 1]
-			dui::args::process_aspects $type $style "" "pos"
-					
-			try {
-				set w [[dui canvas] create $type {*}$coords -state hidden {*}$args]
-			} on error err {
-				set msg "can't add $type '$main_tag' in page(s) '$pages' to canvas: $err"
-				msg -ERROR [namespace current] $msg
-				error $msg
-				return
-			}
-
-			set ns [dui page get_namespace $pages]
-			if { $ns ne "" } {
-				set ${ns}::widgets($main_tag) $w
-			}
-			dui item add_to_pages $pages $main_tag
-			
-			msg -INFO [namespace current] canvas_item "$type '$main_tag' to page(s) '$pages' with args '$args'"
-			return $main_tag
 		}
 
 		# Extra named options:
@@ -2880,7 +2870,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			
 			# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
 			if {$type eq "graph" && ($::android == 1 || $::undroid == 1)} {
-				$widget grid configure -dashes "" -color #DDDDDD -hide 0 -minor 1 
+				$widget grid configure -dashes "" -color "#DDDDDD" -hide 0 -minor 1 
 				$widget configure -borderwidth 0
 				#$widget grid configure -hide 0
 			}
@@ -2929,9 +2919,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#  -n_decimals number of decimals allowed. Defaults to 0 if undefined.
 		#  -min minimum value accepted
 		#  -max maximum value accepted
-		#  -small_increment small increment used on clicker controls. Not used by default, but is passed to page editors
+		#  -smallincrement small increment used on clicker controls. Not used by default, but is passed to page editors
 		#		if the -editor_page option is specified 
-		#  -big_increment big increment used on clicker controls. Not used by default, but is passed to page editors
+		#  -bigincrement big increment used on clicker controls. Not used by default, but is passed to page editors
 		#		if the -editor_page option is specified
 		#  -default Default value passed to the page editor if the -editor_page option is specified
 		#  -trim if 1, trims leading and trailing whitespace after editing the value. Defaults to the value of 
@@ -2943,15 +2933,13 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set tags [dui::args::process_tags_and_var $pages entry -textvariable 1]
 			set main_tag [lindex $tags 0]
 			
-	#		set style [dui::args::get_option -style "" 0]
-			
 			# Data type and validation
 			set data_type [dui::args::get_option -data_type "text" 1]
 			set n_decimals [dui::args::get_option -n_decimals 0 1]
 			set trim  [dui::args::get_option -trim $::dui::trim_entries 1]
 			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages 1]
 			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
-			foreach fn {min max default small_increment big_increment} {
+			foreach fn {min max default smallincrement bigincrement} {
 				set $fn [dui::args::get_option -$fn "" 1]
 			}
 			
@@ -3000,7 +2988,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				} 
 	
 				set editor_cmd [list dui page show_when_off $editor_page $textvariable -n_decimals $n_decimals -min $min \
-					-max $max -default $default -small_increment $small_increment -big_increment $big_increment \
+					-max $max -default $default -smallincrement $smallincrement -bigincrement $bigincrement \
 					-page_title $editor_page_title]
 				set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
 				
@@ -3009,20 +2997,78 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				
 			return $widget
 		}
-		
-		#  Adds a checkbox using Fontawesome symbols (which can be resized to any font size) instead of the tiny Tk 
-		#	checkbutton.
-		# Named options:
-		#	-textvariable the name of the boolean variable to map the checkbox to.
-		#	-command optional tcl code to run when the checkbox is clicked. 
-		proc checkbox { pages x y args } {
-			set tags [dui::args::process_tags_and_var $pages checkbox -textvariable 1]
+
+		proc multiline_entry { pages x y args } {
+			set tags [dui::args::process_tags_and_var $pages multiline_entry -textvariable 1]
 			set main_tag [lindex $tags 0]
 			
 			set style [dui::args::get_option -style "" 0]
-			dui::args::process_font checkbox $style
+			set data_type [dui::args::get_option -data_type "text" 1]
+			set trim  [dui::args::get_option -trim $::dui::trim_entries 1]
+			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages 1]
+			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
+			
+			set width [dui::args::get_option -width "" 1]
+			if { $width ne "" } {
+				dui::args::add_option_if_not_exists -width [expr {int($width * $::globals(entry_length_multiplier))}]
+			}
+			set height [dui::args::get_option -height "" 1]
+			if { $height ne "" } {
+				dui::args::add_option_if_not_exists -height [expr {int($height * $::globals(listbox_length_multiplier))}]
+			}
+	
+			set ysb [dui::args::process_yscrollbar $pages $x $y multiline_entry $style]
+			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
+				set first_page [lindex $pages 0]
+				dui::args::add_option_if_not_exists -yscrollcommand \
+					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
+			}
+							
+			set widget [dui add widget multiline_entry $pages $x $y {*}$args]
+		
+			# Default actions on leaving a text entry: Trim text, format if needed, and hide_android_keyboard
+			bind $widget <Return> { dui hide_android_keyboard ; focus [tk_focusNext %W] }
+			
+			set textvariable [dui::args::get_option -textvariable]
+			if { $textvariable ne "" } {
+				set leave_cmd ""
+				if { $data_type in {text long_text category} && [string is true $trim] } {
+					append leave_cmd "set $textvariable \[string trim \$$textvariable\];"
+				} 
+				append leave_cmd "dui hide_android_keyboard;"
+				bind $widget <Leave> $leave_cmd
+			}
+			
+			# Double-tapping doesn't work on multiline entries. Think of an alternative way, e.g. show a "dropdown arrow"
+	#		if { $editor_page ne "" && ![string is false $editor_page] && $textvariable ne ""} {
+	#			if { [string is true $editor_page] && $data_type eq "numeric" } {
+	#				set editor_page "dui_number_editor" 
+	#			} 
+	#
+	#			set editor_cmd [list dui page show_when_off $editor_page $textvariable -n_decimals $n_decimals -min $min \
+	#				-max $max -default $default -smallincrement $smallincrement -bigincrement $bigincrement \
+	#				-page_title $editor_page_title]
+	#			set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
+	#			
+	#			bind $widget <Double-Button-1> $editor_cmd
+	#		}
+				
+			return $widget
+		}
+	
+		#  Adds a checkbox using Fontawesome symbols (which can be resized to any font size) instead of the tiny Tk 
+		#	checkbutton.
+		# Named options:
+		#	-textvariable the name of the boolean variable to map the dcheckbox to.
+		#	-command optional tcl code to run when the dcheckbox is clicked. 
+		proc dcheckbox { pages x y args } {
+			set tags [dui::args::process_tags_and_var $pages dcheckbox -textvariable 1]
+			set main_tag [lindex $tags 0]
+			
+			set style [dui::args::get_option -style "" 0]
+			dui::args::process_font dcheckbox $style
 			set checkvar [dui::args::get_option -textvariable "" 1]
-			dui::args::process_label $pages $x $y checkbox $style
+			dui::args::process_label $pages $x $y dcheckbox $style
 			set cmd [dui::args::get_option -command "" 1]
 			
 			#set first_page [lindex $pages 0]
@@ -3038,10 +3084,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 			
 			dui add variable $pages $x $y -textvariable \
-				"\[lindex \$::dui::symbol::checkbox_symbols_map \[string is true \$$checkvar\]\]" -aspect_type checkbox {*}$args
+				"\[lindex \$::dui::symbol::dcheckbox_symbols_map \[string is true \$$checkvar\]\]" -aspect_type dcheckbox {*}$args
 	
 			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]		
-			dui add button $pages [expr {$x-5}] [expr {$y-5}] [expr {$x+60}] [expr {$y+60}] ] -tags $button_tags -command $cmd
+			dui add dbutton $pages [expr {$x-5}] [expr {$y-5}] [expr {$x+60}] [expr {$y+60}] ] -tags $button_tags -command $cmd
 			
 			return $main_tag
 		}
@@ -3062,35 +3108,44 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 	
 			set ysb [dui::args::process_yscrollbar $pages $x $y listbox $style]
 			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
+				set first_page [lindex $pages 0]
 				dui::args::add_option_if_not_exists -yscrollcommand \
-					"::dui::item::scale_scroll $main_tag ::dui::item::sliders($main_tag)"
+					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
+								
+#				dui::args::add_option_if_not_exists -yscrollcommand \
+#					"::dui::item::scale_scroll $main_tag ::dui::item::sliders($main_tag)"
 			}
 			
 			return [dui add widget listbox $pages $x $y {*}$args]
 		}
 		
-		# Creates a "new style" slider from canvas items. Returns a list with the canvas IDs of all pieces.
+		# Creates a "new style" scale built from canvas items. Returns a list with the canvas IDs of all pieces.
+		# The {x,y} coordinates give the starting position of the back line (NOT the "bounding" rectangle).
 		#
 		# Names of most options are defined to match those in Tk scale widget, except we use "n_decimals" instead
-		#	of "digits", and we add "smallincrement" which defaults to "resolution" but can be different.		
-		# -orient "horizontal" (default) or "vertical"
-		# -length line length (vertical or horizontal total distance)
-		# -width width of the back lines 
-		# -sliderlength width/height or the slider circle
-		# -from minimum accepted value
-		# -to maximum accepted value
-		# -variable name of the variable
-		# -foreground (main color for left part and circle)
+		#	of "digits", and we add "smallincrement" which defaults to "resolution" but can be different.
+		#
+		# -orient: "horizontal" (default) or "vertical"
+		# -length: line length (vertical or horizontal total distance)
+		# -width: width of the back lines 
+		# -sliderlength: width/height or the slider circle
+		# -from: minimum accepted value
+		# -to: maximum accepted value
+		# -variable: name of the global variable
+		# -foreground: color for left/bottom line portion and circle
 		# -disabledforeground
-		# -background (color for right part)
+		# -background: color of the back line
 		# -disabledbackground
-		# -smallincrement
-		# -bigincrement
-		# -plus_minus 0 or 1
-		# -default default value when the variable is empty (used only by the page editor to assign an initial value
+		# -resolution: minimum step size. Defaults to 1 (integers)
+		# -n_decimals: number of decimals to use when formatting the number values.
+		# -smallincrement: passed to the full page number editor, and used when tapping the plus/minus. 
+		#		Defaults to the same value as -resolution, if not specified.
+		# -bigincrement: passed to the full page number editor, and used when tapping repeteadly the plus/minus.
+		# -plus_minus: 0 or 1 (default) to hide/show the plus and minus on the extremes.
+		# -default: default value when the variable is empty (used only by the page editor to assign an initial value
 		#	if we start from an empty string)
-		# -page_editor 0, 1 (=use default number editor), or an editor page name.
-		# -page_editor_title 
+		# -editor_page: 0, 1 (=use default number editor), or an editor page name.
+		# -editor_page_title: the page title to show on the page editor 
 		proc dscale { pages x y args } {
 			set can [dui canvas]			
 			set tags [dui::args::process_tags_and_var $pages dscale -variable 1]
@@ -3128,45 +3183,120 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set background [dui::args::get_option -background grey]
 			set disabledbackground [dui::args::get_option -disabledforeground grey]
 			set plus_minus [string is true [dui::args::get_option -plus_minus 1]]
-			set pm_width 0
-			if { $plus_minus } {
-				set pm_width 20
-			}
+			set pm_length 0
 			
 			set x [rescale_x_skin $x]
 			set y [rescale_y_skin $y]
 			set moveto_cmd [list dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $resolution $n_decimals]
 			if { $orient eq "v" } {
+				# VERTICAL SCALE
+				if { $plus_minus } {
+					set pm_length [rescale_y_skin 40]
+				}
 				set length [rescale_y_skin $length]
 				set sliderlength [rescale_y_skin $sliderlength]
+				set pm_length [rescale_y_skin $pm_length]
 				set width [rescale_x_skin $width]
-				set y [expr {$y+$pm_width}]
 				set x1 $x
-				set x1f $x
-				set y1 [expr {$y+$length-$pm_width}]
-				set y1f [expr {$y+($y1-$y)/2}]
+				set y [expr {$y+$pm_length}]
+				set y1 [expr {$y+$length-$pm_length*2}]
+				set yf [expr {$y1-$sliderlength/2}]
 				lappend moveto_cmd %y
+
+				if { $plus_minus } {
+					set id [$can create text $x [expr {$y-$pm_length*2/3}] -text "+" -anchor s -justify center \
+						-font [dui font get notosansuiregular 16] -fill $foreground -disabledfill $disabledforeground \
+						-tags [list ${main_tag}-inc {*}$tags] -state hidden]
+					lappend ids $id
+					if { $ns ne "" } {
+						set "${ns}::widgets(${main_tag}-inc)" $id
+					}							
+					set id [$can create rect [expr {$x-$sliderlength}] [expr {$y-$pm_length-10}] [expr {$x+$sliderlength/2}] $y \
+						-fill {} -width 0 -tags [list ${main_tag}-tinc {*}$tags] -state hidden]					
+					$can bind ${main_tag}-tinc [platform_button_press] [list set_var_in_range $var {} \
+						$smallinc $from $to $resolution $n_decimals]
+					$can bind ${main_tag}-tinc <Triple-ButtonPress-1> [list set_var_in_range $var {} \
+						$biginc $from $to $resolution $n_decimals]
+					lappend ids $id
+					if { $ns ne "" } {
+						set "${ns}::widgets(${main_tag}-tinc)" $id
+					}
+					
+					set id [$can create text $x [expr {$y1+$pm_length*1/3}] -text "-" -anchor n -justify center \
+						-font [dui font get notosansuiregular 18] -fill $foreground -disabledfill $disabledforeground \
+						-tags [list ${main_tag}-dec {*}$tags] -state hidden]
+					lappend ids $id
+					if { $ns ne "" } {
+						set "${ns}::widgets(${main_tag}-dec)" $id
+					}											
+					set id [$can create rect [expr {$x-$sliderlength/2}] $y1 [expr {$x+$sliderlength/2}] [expr {$y1+$pm_length+10}] \
+						-fill {} -width 0 -tags [list ${main_tag}-tdec {*}$tags] -state hidden]
+					$can bind ${main_tag}-tdec [platform_button_press] [list set_var_in_range $var {} \
+						-$smallinc $from $to $resolution $n_decimals ]
+					$can bind ${main_tag}-tdec <Triple-ButtonPress-1> [list set_var_in_range $var {} \
+						-$biginc $from $to $resolution $n_decimals]
+					lappend ids $id
+					if { $ns ne "" } {
+						set "${ns}::widgets(${main_tag}-tdec)" $id
+					}
+				}
+				
+				# Vertical back line
+				set id [$can create line $x $y $x $y1 -width $width -fill $background -disabledfill $disabledbackground \
+					-capstyle round -tags [list ${main_tag}-bck {*}$tags] -state hidden]
+				lappend ids $id
+				if { $ns ne "" } {
+					set "${ns}::widgets(${main_tag}-bck)" $id
+				}
+				# Vertical front line (from min on the bottom to variable value)
+				set id [$can create line $x $yf $x $y1 -width $width -fill $foreground -disabledfill $disabledforeground \
+					-capstyle round -tags [list ${main_tag}-frn {*}$tags] -state hidden]
+				lappend ids $id
+				if { $ns ne "" } {
+					set "${ns}::widgets(${main_tag}-frn)" $id
+				}			
+				# Vertical "clickable" rectangle. Use the "bounding" box that contains both lines and circle. 
+				set id [$can create rect [expr {$x-$sliderlength/2}] $y [expr {$x+$sliderlength/2}] $y1 -fill {} -width 0 \
+					-tags [list ${main_tag}-tap {*}$tags] -state hidden]			
+				$can bind ${main_tag}-tap [platform_button_press] $moveto_cmd
+				lappend ids $id
+				if { $ns ne "" } {
+					set "${ns}::widgets(${main_tag}-tap)" $id
+				}
+				# Vertical circle slider
+				set id [$can create oval [expr {$x-$sliderlength/2}] [expr {$yf-$sliderlength/2}] \
+					[expr {$x+$sliderlength/2}] [expr {$yf+$sliderlength/2}] -fill $foreground \
+					-disabledfill $disabledforeground -width 0 -tags [list {*}$tags ${main_tag}-crc] -state hidden] 
+				$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
+				lappend ids $id			
+				if { $ns ne "" } {
+					set "${ns}::widgets(${main_tag}-crc)" $id
+					set "${ns}::widgets($main_tag)" $ids
+				}								
 			} else {
+				# HORIZONTAL SCALE
+				if { $plus_minus } {
+					set pm_length [rescale_x_skin 40]
+				}				
 				set length [rescale_x_skin $length]
 				set sliderlength [rescale_x_skin $sliderlength]
 				set width [rescale_y_skin $width]
-				set x [expr {$x+$pm_width}]
-				set x1 [expr {$x+$length-$pm_width}]
+				set x [expr {$x+$pm_length}]
+				set x1 [expr {$x+$length-$pm_length*2}]
 				set x1f [expr {$x+$sliderlength/2}]
 				set y1 $y
 				set y1f $y
 				lappend moveto_cmd %x
 				
 				if { $plus_minus } {
-					# -font [dui font get notosansuiregular 12]
-					set id [$can create text [expr {$x-$pm_width}] [expr {$y-3}] -text "-" -anchor w -justify left  \
+					set id [$can create text [expr {$x-$pm_length}] [expr {$y-3}] -text "-" -anchor w -justify left  \
 						-font [dui font get notosansuiregular 18] -fill $foreground -disabledfill $disabledforeground \
 						-tags [list ${main_tag}-dec {*}$tags] -state hidden]
 					lappend ids $id
 					if { $ns ne "" } {
 						set "${ns}::widgets(${main_tag}-dec)" $id
 					}							
-					set id [$can create rect [expr {$x-$pm_width-20}] [expr {$y-$sliderlength/2}] $x [expr {$y+$sliderlength/2}] \
+					set id [$can create rect [expr {$x-$pm_length-20}] [expr {$y-$sliderlength/2}] $x [expr {$y+$sliderlength/2}] \
 						-fill {} -width 0 -tags [list ${main_tag}-tdec {*}$tags] -state hidden]					
 					$can bind ${main_tag}-tdec [platform_button_press] [list set_var_in_range $var {} \
 						-$smallinc $from $to $resolution $n_decimals]
@@ -3177,14 +3307,14 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 						set "${ns}::widgets(${main_tag}-tdec)" $id
 					}							
 					
-					set id [$can create text [expr {$x1+$pm_width}] [expr {$y-1}] -text "+" -anchor e -justify right -font [dui font get notosansuiregular 16] \
+					set id [$can create text [expr {$x1+$pm_length}] [expr {$y-1}] -text "+" -anchor e -justify right -font [dui font get notosansuiregular 16] \
 						-fill $foreground -disabledfill $disabledforeground -tags [list ${main_tag}-inc {*}$tags] \
 						-state hidden]
 					lappend ids $id
 					if { $ns ne "" } {
 						set "${ns}::widgets(${main_tag}-inc)" $id
 					}											
-					set id [$can create rect $x1 [expr {$y-$sliderlength/2}] [expr {$x1+$pm_width+20}] [expr {$y+$sliderlength/2}] \
+					set id [$can create rect $x1 [expr {$y-$sliderlength/2}] [expr {$x1+$pm_length+20}] [expr {$y+$sliderlength/2}] \
 						-fill {} -width 0 -tags [list ${main_tag}-tinc {*}$tags] -state hidden]
 					$can bind ${main_tag}-tinc [platform_button_press] [list set_var_in_range $var {} \
 						$smallinc $from $to $resolution $n_decimals ]
@@ -3196,36 +3326,38 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					}
 				}
 				
-			}
-			
-			set id [$can create line $x $y $x1 $y1 -width $width -fill $background -disabledfill $disabledbackground \
-				-capstyle round -tags [list ${main_tag}-bck {*}$tags] -state hidden]
-			lappend ids $id
-			if { $ns ne "" } {
-				set "${ns}::widgets(${main_tag}-bck)" $id
-			}
-			set id [$can create line $x $y $x1f $y1f -width $width -fill $foreground -disabledfill $disabledforeground \
-				-capstyle round -tags [list ${main_tag}-frn {*}$tags] -state hidden]
-			lappend ids $id
-			if { $ns ne "" } {
-				set "${ns}::widgets(${main_tag}-frn)" $id
-			}			
-			set id [$can create rect  $x [expr {$y-$sliderlength/2}] $x1 [expr {$y1+$sliderlength/2}] -fill {} -width 0 \
-				-tags [list ${main_tag}-tap {*}$tags] -state hidden]			
-			$can bind ${main_tag}-tap [platform_button_press] $moveto_cmd
-			lappend ids $id
-			if { $ns ne "" } {
-				set "${ns}::widgets(${main_tag}-tap)" $id
-			}
-									
-			set id [$can create oval [expr {$x1f-($sliderlength/2)}] [expr {$y1f-($sliderlength/2)}] \
-				[expr {$x1f+($sliderlength/2)}] [expr {$y1f+($sliderlength/2)}] -fill $foreground \
-				-disabledfill $disabledforeground -width 0 -tags [list {*}$tags ${main_tag}-crc] -state hidden] 
-			$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
-			lappend ids $id			
-			if { $ns ne "" } {
-				set "${ns}::widgets(${main_tag}-crc)" $id
-				set "${ns}::widgets($main_tag)" $ids
+				# Horizontal back line
+				set id [$can create line $x $y $x1 $y1 -width $width -fill $background -disabledfill $disabledbackground \
+					-capstyle round -tags [list ${main_tag}-bck {*}$tags] -state hidden]
+				lappend ids $id
+				if { $ns ne "" } {
+					set "${ns}::widgets(${main_tag}-bck)" $id
+				}
+				# Horizontal front line (from min on the left to variable value)
+				set id [$can create line $x $y $x1f $y1f -width $width -fill $foreground -disabledfill $disabledforeground \
+					-capstyle round -tags [list ${main_tag}-frn {*}$tags] -state hidden]
+				lappend ids $id
+				if { $ns ne "" } {
+					set "${ns}::widgets(${main_tag}-frn)" $id
+				}			
+				# Horizontal "clickable" rectangle. Use the "bounding" box that contains both lines and circle. 
+				set id [$can create rect  $x [expr {$y-$sliderlength/2}] $x1 [expr {$y1+$sliderlength/2}] -fill {} -width 0 \
+					-tags [list ${main_tag}-tap {*}$tags] -state hidden]			
+				$can bind ${main_tag}-tap [platform_button_press] $moveto_cmd
+				lappend ids $id
+				if { $ns ne "" } {
+					set "${ns}::widgets(${main_tag}-tap)" $id
+				}
+				# Horizontal circle slider
+				set id [$can create oval [expr {$x1f-($sliderlength/2)}] [expr {$y1f-($sliderlength/2)}] \
+					[expr {$x1f+($sliderlength/2)}] [expr {$y1f+($sliderlength/2)}] -fill $foreground \
+					-disabledfill $disabledforeground -width 0 -tags [list {*}$tags ${main_tag}-crc] -state hidden] 
+				$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
+				lappend ids $id			
+				if { $ns ne "" } {
+					set "${ns}::widgets(${main_tag}-crc)" $id
+					set "${ns}::widgets($main_tag)" $ids
+				}
 			}
 			
 			set update_cmd [lreplace $moveto_cmd end end ""]
@@ -3241,7 +3373,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				}
 				set editor_page_title [dui::args::get_option -editor_page_title]
 				set editor_cmd [list dui page show_when_off $editor_page $var -n_decimals $n_decimals -min $from \
-					-max $to -default $default -small_increment $smallinc -big_increment $biginc \
+					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
 					-page_title $editor_page_title]
 				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
 				$can bind $label_id [platform_button_press] $editor_cmd
@@ -3319,7 +3451,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				}			
 					
 				set editor_cmd [list dui page show_when_off $editor_page $var -n_decimals $n_decimals -min $from \
-					-max $to -default $default -small_increment $smallinc -big_increment $biginc \
+					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
 					-page_title $editor_page_title]
 				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
 				$can bind $label_id [platform_button_press] $editor_cmd
@@ -3367,9 +3499,33 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		}
 	}
 	
-	
-
+	# Sets dui configuration variables. Logs a warning if the variable does not exist.
+	proc config { args } {
+		array set opts $args
+		if { [llength $args] == 1 } {
+			set args [lindex $args 0]
+		}
 		
+		foreach key [array names opts] {
+			if { [info exists ::dui::$key] } {
+				set ::dui::$key [string is true -strict $opts($key)]
+			} else {
+				msg -WARN [namespace current] config: "invalid variable name '$key'"
+			}
+		}
+	}
+	
+	# Gets a dui configuration variable value. Returns an empty string if the variable is not recognized, and issues
+	#	a log notice.
+	proc cget { varname } {
+		if { [info exists ::dui::$varname] } {
+			return [subst \$::dui::$varname]
+		} else {
+			msg -NOTICE [namespace current] cget: "invalid variable name '$varname'"
+			return ""
+		}
+	}
+	
 	### GENERAL TOOLS ###
 	
 	# Command to invoke from the -vcmd option to validate numeric entries, with -validate key.
@@ -3423,10 +3579,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 }
 
 
-# General utilities (TO BE MOVED TO utils.tcl or similar)
+# General utilities (TO BE MOVED TO de1_utils.tcl or similar)
 # Returns the list with duplicates removed, keeping the original list sorting of elements, unlike 'lsort -unique'.
 # See discussion in https://wiki.tcl-lang.org/page/Unique+Element+List
-proc unique_list {list} {
+proc lunique {list} {
 	set new {}
 	foreach item $list {
 		if { $item ni $new } {
@@ -3476,6 +3632,13 @@ proc set_var_in_range { variable {value {}} args } {
 
 ### FULL-PAGE EDITORS ################################################################################################
 
+### PAGES SUB-ENSEMBLE ###
+# Just a container namespace for client code to create UI pages as children namespaces.
+namespace eval ::dui::pages {
+	namespace export *
+	namespace ensemble create
+}
+
 namespace eval ::dui::pages::dui_number_editor {
 	variable widgets
 	array set widgets {}
@@ -3491,8 +3654,8 @@ namespace eval ::dui::pages::dui_number_editor {
 		max {}
 		default {}
 		n_decimals {}
-		small_increment {}
-		big_increment {}
+		smallincrement {}
+		bigincrement {}
 		previous_values {}
 	}
 
@@ -3521,35 +3684,35 @@ namespace eval ::dui::pages::dui_number_editor {
 			-justify center
 				
 		# Increment/decrement clicker buttons style
-		dui aspect set -style dne_clicker {button.shape round button.bwidth 120 button.bheight 140 
-			button.radius 20 button.anchor center
-			button_symbol.pos {0.5 0.4} button_symbol.anchor center button_symbol.font_size 20
-			button_label.pos {0.5 0.8} button_label.font_size 10 button_label.anchor center}
+		dui aspect set -style dne_clicker {dbutton.shape round dbutton.bwidth 120 dbutton.bheight 140 
+			dbutton.radius 20 dbutton.anchor center
+			dbutton_symbol.pos {0.5 0.4} dbutton_symbol.anchor center dbutton_symbol.font_size 20
+			dbutton_label.pos {0.5 0.8} dbutton_label.font_size 10 dbutton_label.anchor center}
 		
 		# Decrement value arrows		
 		set hoffset 45; set bspace 140
-		dui add button $page [expr {$x-$hoffset-$bspace}] $y -tags small_decr -style dne_clicker \
-			-symbol chevron_left -labelvariable {-[format [%NS::value_format] $%NS::data(small_increment)]} \
-			-command { %NS::incr_value -$%NS::data(small_increment) }
+		dui add dbutton $page [expr {$x-$hoffset-$bspace}] $y -tags small_decr -style dne_clicker \
+			-symbol chevron_left -labelvariable {-[format [%NS::value_format] $%NS::data(smallincrement)]} \
+			-command { %NS::incr_value -$%NS::data(smallincrement) }
 		
-		dui add button $page [expr {$x-$hoffset-$bspace*2}] $y -tags big_decr -style dne_clicker \
-			-symbol chevron_double_left -labelvariable {-[format [%NS::value_format] $%NS::data(big_increment)]} \
-			-command { %NS::incr_value -$%NS::data(big_increment) } 
+		dui add dbutton $page [expr {$x-$hoffset-$bspace*2}] $y -tags big_decr -style dne_clicker \
+			-symbol chevron_double_left -labelvariable {-[format [%NS::value_format] $%NS::data(bigincrement)]} \
+			-command { %NS::incr_value -$%NS::data(bigincrement) } 
 
-		dui add button $page [expr {$x-$hoffset-$bspace*3}] $y -tags to_min -style dne_clicker \
+		dui add dbutton $page [expr {$x-$hoffset-$bspace*3}] $y -tags to_min -style dne_clicker \
 			-symbol arrow_to_left -labelvariable {[format [%NS::value_format] $%NS::data(min)]} \
 			-command { %NS::set_value -$%NS::data(min) } 
 
 		# Increment value arrows
-		dui add button $page [expr {$x+$hoffset+$bspace}] $y -tags small_incr -style dne_clicker \
-			-symbol chevron_right -labelvariable {+[format [%NS::value_format] $%NS::data(small_increment)]} \
-			-command { %NS::incr_value $%NS::data(small_increment) }
+		dui add dbutton $page [expr {$x+$hoffset+$bspace}] $y -tags small_incr -style dne_clicker \
+			-symbol chevron_right -labelvariable {+[format [%NS::value_format] $%NS::data(smallincrement)]} \
+			-command { %NS::incr_value $%NS::data(smallincrement) }
 			
-		dui add button $page [expr {$x+$hoffset+$bspace*2}] $y -tags big_incr -style dne_clicker \
-			-symbol chevron_double_right -labelvariable {+[format [%NS::value_format] $%NS::data(big_increment)]} \
-			-command { %NS::incr_value $%NS::data(big_increment) } 
+		dui add dbutton $page [expr {$x+$hoffset+$bspace*2}] $y -tags big_incr -style dne_clicker \
+			-symbol chevron_double_right -labelvariable {+[format [%NS::value_format] $%NS::data(bigincrement)]} \
+			-command { %NS::incr_value $%NS::data(bigincrement) } 
 	
-		dui add button $page [expr {$x+$hoffset+$bspace*3}] $y -tags to_max -style dne_clicker \
+		dui add dbutton $page [expr {$x+$hoffset+$bspace*3}] $y -tags to_max -style dne_clicker \
 			-symbol arrow_to_right -labelvariable {[format [%NS::value_format] $%NS::data(max)]} \
 			-command { %NS::set_value $%NS::data(max) } 
 		
@@ -3563,8 +3726,8 @@ namespace eval ::dui::pages::dui_number_editor {
 		bind $widgets(previous_values) <<ListboxSelect>> ::dui::pages::dui_number_editor::previous_values_select
 		
 #		# Numeric type pad
-		dui aspect set -style dne_pad_button {button.shape round button.bwidth 280 button.bheight 220 
-			button.radius 20 button.anchor nw
+		dui aspect set -style dne_pad_button {dbutton.shape round dbutton.bwidth 280 dbutton.bheight 220 
+			dbutton.radius 20 dbutton.anchor nw
 			button_label.pos {0.5 0.5} button_label.font_family notosansuibold 
 			button_label.font_size 24 button_label.anchor center}
 		
@@ -3582,7 +3745,7 @@ namespace eval ::dui::pages::dui_number_editor {
 					set tag "num$num"
 				}
 				
-				dui add button $page $x $y [expr {$x+$width}] [expr {$y+$height}] -tags $tag -style dne_pad_button \
+				dui add dbutton $page $x $y [expr {$x+$width}] [expr {$y+$height}] -tags $tag -style dne_pad_button \
 					-label "$num" -command [list %NS::enter_character $num] 
 				
 				incr col
@@ -3591,11 +3754,11 @@ namespace eval ::dui::pages::dui_number_editor {
 			incr row
 		}
 		
-		dui add button $page 1035 1460 -tags dne_settings_ok -style insight_ok -command page_done -label [translate Ok]
+		dui add dbutton $page 1035 1460 -tags dne_settings_ok -style insight_ok -command page_done -label [translate Ok]
 	}
 	
-	# Accepts any of the named options -page_title, -callback_cmd, -min, -max, -n_decimals, -default, -small_increment  
-	#	and -big_increment. If any from -min on is not defined or an empty string, the page does not load.
+	# Accepts any of the named options -page_title, -callback_cmd, -min, -max, -n_decimals, -default, -smallincrement  
+	#	and -bigincrement. If any from -min on is not defined or an empty string, the page does not load.
 	proc load { page_to_hide page_to_show num_variable args } {
 		variable data
 		array set opts $args
@@ -3612,7 +3775,7 @@ namespace eval ::dui::pages::dui_number_editor {
 		
 		set data(previous_page) $page_to_hide
 		
-		set fields {page_title callback_cmd previous_values default min max n_decimals small_increment big_increment}
+		set fields {page_title callback_cmd previous_values default min max n_decimals smallincrement bigincrement}
 		foreach fn $fields {
 			set data($fn) [ifexists opts(-$fn)]
 		}
