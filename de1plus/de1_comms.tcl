@@ -980,7 +980,15 @@ proc mmr_write { note address length value} {
 }
 
 proc set_tank_temperature_threshold {temp} {
+
+	###
+	### NB: The BLE queue is not thread safe
+	###
+
 	msg "Setting desired water tank temperature to '$temp' [stacktrace]"
+
+	catch { after cancel $::_pending_tank_temperature_change }
+	remove_matching_ble_queue_entries {^MMR set_tank_temperature_threshold}
 
 	if {$temp < 10} {
 		# no point in circulating the water if the desired temp is <10ºC, or no preheating.
@@ -990,7 +998,14 @@ proc set_tank_temperature_threshold {temp} {
 		# then a few seconds later, set it to the real, desired value
 		set hightemp 60
 		mmr_write "set_tank_temperature_threshold" "80380C" "04" [zero_pad [int_to_hex $hightemp] 2]
-		after 4000 [list mmr_write "set_tank_temperature_threshold" "80380C" "04" [zero_pad [int_to_hex $temp] 2]]
+
+		# Retain existing logic here
+		# NB: This  does not guarantee a 4-second water-circulation period
+		#     especially when the queue has a significant depth to it
+
+		set ::_pending_tank_temperature_change \
+			[after 4000 [list mmr_write "set_tank_temperature_threshold" \
+					     "80380C" "04" [zero_pad [int_to_hex $temp] 2] ] ]
 	}
 }
 
@@ -1033,7 +1048,13 @@ proc set_heater_tweaks {} {
 }
 
 proc set_steam_flow {desired_flow} {
-	#return
+
+	###
+	### NB: The BLE queue is not thread safe
+	###
+
+	remove_matching_ble_queue_entries {^MMR set_steam_flow}
+
 	msg "Setting steam flow rate to '$desired_flow'"
 	mmr_write "set_steam_flow" "803828" "04" [zero_pad [int_to_hex $desired_flow] 2]
 }
@@ -1072,7 +1093,13 @@ proc set_heater_voltage {heater_voltage} {
 
 
 proc set_steam_highflow_start {desired_seconds} {
-	#return
+
+	###
+	### NB: The BLE queue is not thread safe
+	###
+
+	remove_matching_ble_queue_entries {^MMR set_steam_highflow_start}
+
 	msg "Setting steam high flow rate start seconds to '$desired_seconds'"
 	mmr_write "set_steam_highflow_start" "80382C" "04" [zero_pad [int_to_hex $desired_seconds] 2]
 }
@@ -1172,8 +1199,49 @@ proc de1_send_state {comment msg} {
 }
 
 
+proc remove_matching_ble_queue_entries {comment_regexp} {
+
+	###
+	### NB: The BLE queue is not thread safe
+	###
+
+	# Any new DE1 shot frames or steam/hot water settings
+	# are just going to be overwritten.
+	# Remove them before adding new requests to the queue
+
+	set old_stack $::de1(cmdstack)
+	set old_length [llength $old_stack]
+
+	set new_stack {}
+	foreach cmd $old_stack {
+		if { ! [regexp "$comment_regexp" [lindex $cmd 0]] } {
+			lappend new_stack $cmd
+		} else {
+			msg -DEBUG "ble_queue: Removing" \
+				[string range [lindex $cmd 0] 0 30] \
+				"... for '$comment_regexp'"
+		}
+	}
+	set new_length [llength $new_stack]
+
+	if { $old_length != $new_length } {
+		msg -INFO [format "ble_queue: Removed stale '%s' from queue; %d to %d (%d removed)" \
+				   $comment_regexp \
+				   $old_length $new_length \
+				   [expr {$old_length - $new_length}]]
+	} else {
+		msg -DEBUG [format "ble_queue: No stale '%s' on queue; %d" \
+				     $comment_regexp $new_length]
+	}
+
+	set ::de1(cmdstack) $new_stack
+}
 
 proc de1_send_shot_frames {} {
+
+	###
+	### NB: The BLE queue is not thread safe
+	###
 
 	msg "de1_send_shot_frames"
 
@@ -1186,6 +1254,9 @@ proc de1_send_shot_frames {} {
 	#msg "frame header of [string length $header] bytes parsed: $header [array get arr2]"
 	####
 
+
+	remove_matching_ble_queue_entries {^Espresso header:}
+	remove_matching_ble_queue_entries {^Espresso frame #}
 
 	userdata_append "Espresso header: [array get arr2]" [list de1_comm write "HeaderWrite" $header] 1
 
@@ -1211,11 +1282,15 @@ proc de1_send_shot_frames {} {
 		set_tank_temperature_threshold 0
 	}
 
-
 	return
 }
 
 proc save_settings_to_de1 {} {
+
+	###
+	### NB: The BLE queue is not thread safe
+	###
+
 	# let this run even though no connection, so it can be displayed in the debug log.  Very useful info for programmers.
 	#if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 	#		msg "DE1 not connected, cannot save_settings_to_de1"
@@ -1228,11 +1303,18 @@ proc save_settings_to_de1 {} {
 
 proc de1_send_steam_hotwater_settings {} {
 
+	###
+	### NB: The BLE queue is not thread safe
+	###
+
 	# let this run even though no connection, so it can be displayed in the debug log.  Very useful info for programmers.
 	#if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 	#	msg "DE1 not connected, cannot send BLE command 16"
 	#	return
 	#}
+
+
+	remove_matching_ble_queue_entries {^Set water/steam settings:}
 
 	set data [return_de1_packed_steam_hotwater_settings]
 	parse_binary_hotwater_desc $data arr2
