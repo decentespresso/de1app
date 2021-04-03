@@ -1,4 +1,4 @@
-package provide de1_device_scale 1.3
+package provide de1_device_scale 1.4
 
 package require de1_de1 1.1
 package require de1_event 1.0
@@ -124,6 +124,7 @@ namespace eval ::device::scale {
 	# See also on_connect callbacks for initialization
 
 	proc init {} {
+
 		period::init
 		history::init
 	}
@@ -693,21 +694,6 @@ namespace eval ::device::scale::history {
 		variable _scale_raw_weight [lrepeat [samples_for_shift_register] 0]
 		variable _scale_raw_arrival [lrepeat [samples_for_shift_register] 0]
 
-		variable scale_raw_weight_shot
-		variable scale_raw_arrival_shot
-
-		variable _final_weight_name
-
-		variable _espresso_start 0
-
-		variable _is_recording_flag
-
-		# This will clear _is_recording_flag; is set to False on loading module
-
-		if { [is_recording] } { stop_recording }
-
-		reset_shot_record
-
 		_lslr_clear
 	}
 
@@ -1055,7 +1041,7 @@ namespace eval ::device::scale::history {
 	}
 
 
-	proc on_state_change {event_dict} {
+	proc on_major_state_change {event_dict} {
 
 		variable _final_weight_name
 
@@ -1444,7 +1430,7 @@ namespace eval ::device::scale::callbacks {
 
 	::de1::event::listener::on_major_state_change_add -noidle ::device::scale::callbacks::on_major_state_change
 
-	::de1::event::listener::on_major_state_change_add ::device::scale::history::on_state_change
+	::de1::event::listener::on_major_state_change_add ::device::scale::history::on_major_state_change
 
 	::de1::event::listener::on_major_state_change_add ::device::scale::saw::on_major_state_change
 
