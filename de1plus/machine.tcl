@@ -484,6 +484,7 @@ array set ::de1_state {
     Clean \x12
     InBootLoader \x13
     AirPurge \x14
+	SchedIdle \x15
 }
 
 
