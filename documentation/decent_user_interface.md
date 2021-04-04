@@ -1,18 +1,17 @@
 # Decent User Interface
 
 ## Contents
-
-1. [Objective](#objective)
-2. [Revision history](#revision_history)
-3. [Overview](#revision_history)
-4. [Example](#example)
-5. [History](#history)
-6. [Details and API](#api)
-	6.1. [Environment setup](#environment_setup)
-	6.2. [Themes, aspects and styles](#aspects)
-	6.3. [Fonts](#fonts)
-	6.4. [Pages](#pages)
-	6.5. [Visual items (GUI elements)](#items)
+- [Objective](#objective)
+- [Revision history](#revision_history)
+- [Overview](#revision_history)
+- [Example](#example)
+- [History](#history)
+- [Details and API](#api)
+  - [Environment setup](#environment_setup)
+  - [Themes, aspects and styles](#aspects)
+  - [Fonts](#fonts)
+  - [Pages](#pages)
+  - [Visual items (GUI elements)](#items)
 
 <a name="objective"></a>
 
@@ -52,7 +51,7 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 
 The DE1 app was developed by [John Buckman](https://github.com/decentjohn), cofounder of [Decent Espresso](https://decentespresso.com/), and it included all the mechanisms to build an elegant platform-independent touch interface on top of Tk.
 
-The DUI package first release was conceived and programmed by [Enrique Bengoechea](https://github.com/ebengoechea) as an extension of the existing GUI infrastructure code in the DE1 app, to make skin and extension writing for the Decent espresso machine easier. It came as an spin-off from the Describe Your Espreso (DYE) plugin, which started as a DSx plugin. Migrating it to a DE1 app plugin required lots of GUI changes, so the GUI part was taken off DYE and moved to its own plugin, DGUI. Then, the interest of [Johanna](https://github.com/mimoja) encouraged Enrique to refine it to make into the core DE1 app.
+The DUI package first release was developed by [Enrique Bengoechea](https://github.com/ebengoechea) as an extension of the existing GUI infrastructure code in the DE1 app, to make skin and extension writing for the Decent espresso machine easier. It came as an spin-off from the Describe Your Espresso (DYE) plugin, which started as a DSx plugin. Migrating it to a DE1 app plugin required lots of GUI changes, so the GUI part was taken off DYE and moved to its own plugin, DGUI. Then, the interest of [Johanna](https://github.com/mimoja) encouraged Enrique to refine it and make into the core DE1 app.
 
 Much of DUI first release took code and ideas from [Barney](https://github.com/barneyhawes)'s Metric skin, [Damian](https://github.com/damian-au)'s DSx skin, and [Johanna](https://github.com/mimoja)'s MimojaCafe skin.
 
@@ -75,7 +74,7 @@ Tk widgets.
 3. The ability to name and group elements together for creation, deletion, access, moving, etc., via the powerful tags 
 mechanism.
 
-The DUI canvas is initialized on startup and works as the Tk [geometry manager](https://wiki.tcl-lang.org/page/Geometry+Managers). All children elements (canvas items and Tk widgets, which we'll, from now on, refer to as "visual items" or "GUI elements") are positioned and sized on it using coordinates and dimensions in a fixed-size, non-scrollable space of 2560x1800 pixels.
+The DUI canvas is initialized on startup and works as the Tk [geometry manager](https://wiki.tcl-lang.org/page/Geometry+Managers). All children elements (canvas items and Tk widgets, which we'll, from now on, refer to as "visual items" or "GUI elements") are positioned and sized on it using coordinates and dimensions in a fixed-size, non-scrollable space of 2560x1600 pixels.
 DUI transforms all these coordinates and sizes to the actual ones depending on the current screen resolution.
 
 The interface is organized in [pages](#pages). A page is just a named background element (either an image or a colored rectangle) with visual items added on top. Each visual item can be added to one or several pages, which allows easily building sets of similar pages that share most of their GUI elements. Pages are usually defined on startup:
@@ -89,7 +88,7 @@ Nevertheless, for code clarity and proper encapsulation, creating pages directly
 commands, which are similar to the previous `add_de1_<item_type>` procedures. These commands are the workhorse
 of DUI. They offer a *facade* to the lower-level Tk interface and add a good number of facilities on top:
 
-1. Transform all coordinates and dimensions from a fixed-size space of 2560x1800 to the actual resolution in use.
+1. Transform all coordinates and dimensions from a fixed-size space of 2560x1600 to the actual resolution in use.
 2. *[New]* Assign meaningful labels to all visual items added to the canvas, using the canvas tag system. The labels are based 
 on the first  element of the list provided by the calling code in the `-tags` argument, or on automatically-generated 
 labels if `-tags` is not provided.
@@ -111,8 +110,8 @@ and use the namespace `data` array as default for any non-fully qualified variab
 Note that the `add_de1_<type>` commands in use before DUI only tackled the steps without *"[New]"*.
 All others needed to be handled by skin/plugin code, but now are directly provided by the framework.
 
-After the pages and all its visual elements are created, normally during app startup, they are shown during the app lifecycle using the `dui page show <page_name> <args>` command. This will hide all the canvas items of the currently visible page, and show all the canvas items of the new page. Client code can create
-callbacks that run whenever a specific page is loaded (after the `page show` command is invoked, but before the page is shown), after the page is shown, or when the page is hidden. This can be done by creating standard procs (named `load`, `show` and `hide`) in the page namespace, or by using command `dui page add_action`.
+After the pages and all its visual elements are created, normally during app startup, they are shown during the app lifecycle using the `dui page show <page_name> <args>` command. This will hide all the canvas items of the currently visible page, and show all the canvas items of the new page. Client code can create 
+callbacks that run whenever a specific page is loaded (after the `page show` command is invoked, but before the page is shown), after the page is shown, or when the page is hidden. This can be done by creating standard procs (named `load`, `show` and `hide`) in the page namespace, or by using command `dui page add_action` if page namespaces are not useed.
 
 <a name="example"></a>
 
@@ -124,7 +123,7 @@ callbacks that run whenever a specific page is loaded (after the `page show` com
 
 ## Details and API
 
-The `de1_dui` package offers a single command: DUI. This is an namespace ensemble with several ensemble subcommands:
+The `de1_dui` package offers a single command: `dui`. This is an namespace ensemble with several ensemble subcommands:
 `dui theme`, `dui aspect`, `dui font`, `dui page`, `dui item` and `dui add`, each of which offers 
 its own set of commands.
 
@@ -136,6 +135,8 @@ For theming and styling both the Tk [resource database](https://wiki.tcl-lang.or
 [themed widgets](https://tkdocs.com/tutorial/styles.html) were evaluated as possible solutions, but none seemed ideal for our needs.
 
 I also opted for building item/widget compound bundles in a very simple way: manipulate the **args** and wrap calls to create a  _facade_ . I considered other alternatives, like [overloading megawidgets](https://wiki.tcl-lang.org/page/Overloading+widgets), but that seemed to add unneeded complexity vs the simple design here, which is relatively easy to follow and still allows low-level access by client code to everything. Probably something like [snit](https://core.tcl-lang.org/tcllib/doc/tcllib-1-18/embedded/www/tcllib/files/modules/snit/snit.html) would have been a very good option, but I found it too late.
+
+Canvas-based new controls have their names prefixed by a "d" (**d**button, **d**slider, **d**checkbox, etc.) Currently they don't keep state internally, but depend on the global or namespace variable they reflect, and have all necessary parameters passed to them on the callbacks built at runtime when the are created and added to pages. This means that they are controlled indirectly by manipulating the variable, and there are no methods no modify their configuration (such as minimum and maximum values accepted) after creation. This shouldn't be hard to change in the future, if the need arises.
 
 It is highly recommended that code in skins and extensions use as little low-level Tk functionality as possible, and try to use DUI calls instead. This should make it much more future-proof. If you find needing to write code that tweaks how DUI makes things, please consider adding your extensions to the core DUI by making a GitHub Pull Request.
 
@@ -161,24 +162,28 @@ You can change some default behaviours with the `dui config` command, or obtain 
 The following options are suported (`<boolean>` may be any value that can be casted to a boolean: 0/1, yes/no, 
 true/false, etc. as accepted by `[string is true]`).
 
+
+<a name="dui_config"></a>
+
 **dui config**  _option value_   _?option value...?_
 
->Sets the value of a global dui configuration option. Most options are boolean, and its value is coerced to 0/1 using
-`[string is true]`. Valid options are:
+	 Sets the value of a global dui configuration option. Most options are boolean, and its value is coerced to 0/1 using `[string is true]`. Valid options are:
 
-> **debug_buttons** (default 1) Set to 1 while debugging to draw a border around "clickable" areas. May need to
-redefine the border color using aspect `<theme>.button.debug_outline` to make it visible against the theme
-background.
+- **debug_buttons** (default 1) Set to 1 while debugging to draw a border around "clickable" areas. May need to redefine the border color using aspect `<theme>.button.debug_outline` to make it visible against the theme background.
 
-> **create_page_namespaces** (default 0) Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created page, unless a different namespace is provided in the `-namespace` option of `dui page add`.
+- **create_page_namespaces** (default 0) Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created page, unless a different namespace is provided in the `-namespace` option of `dui page add`.
 
-> **trim_entries** (default 0) Set to 1 to trim leading and trailing whitespace from modified values in entry boxes.
+- **trim_entries** (default 0) Set to 1 to trim leading and trailing whitespace from modified values in entry boxes.
 
-> **use_editor_pages** (default 1) Set to 1 to default to use editor pages if available (currently only for numbers).
+- **use_editor_pages** (default 1) Set to 1 to default to use editor pages if available (currently only for numbers).
+
+
+<a name="dui_cget"></a>
 
 **dui cget**  _option_
-
-> Returns the current value of the requested configuration option.
+<ul>
+<li style="list-style-type: none;">Returns the current value of the requested configuration option.</li>
+</ul>
  
 <a name="aspects"></a>
 
@@ -260,27 +265,43 @@ dui add text test_page 200 200 -text [translate "Some text"] -fill black
 
 #### `dui theme`
 
+<a name="dui_theme_add"></a>
+
 **dui theme add**  _theme_name_   _?theme_name ...?_
 
 >Adds all the provided names to the list of valid themes.
+
+
+<a name="dui_theme_set"></a>
 
 **dui theme set**  _theme_name_
 
 >Sets the current active theme. This theme will be used on all `dui add <item_type>` commands from this point in the code until a new theme is set. The theme name is added to the list of valid themes if it's not already in the list.
 
+
+<a name="dui_theme_get"></a>
+
 **dui theme get**
 
 >Returns the name of the currently active theme.
 
+
+<a name="dui_theme_exists"></a>
+
 **dui theme exists**  _theme_name_
 
 >Returns whether the provided theme name has been added to the list of valid themes.
+
+
+<a name="dui_theme_list"></a>
 
 **dui theme list**
 
 >Returns a list with all valid themes.
 
 #### `dui aspect`
+
+<a name="dui_aspect_set"></a>
 
 **dui aspect set**  _?-option value ...?  aspect aspect  ?aspect value ...?_
 
@@ -294,6 +315,9 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 
 >The possible values are those accepted by the corresponding `dui add <type>` command, widget create command, or canvas create command.
 
+
+<a name="dui_aspect_get"></a>
+
 **dui aspect get**  _type aspect ?-option value ...?_
 
 >Return the value of the requested aspect, under the currently active theme unless the aspect name defines other theme or the **-theme** option is specified. Supports the same type values as **dui aspect set**.
@@ -306,16 +330,22 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 
 >**-default**  _option_value_
 
->>Value to return in case the requested aspect is not defined.
+> >Value to return in case the requested aspect is not defined.
 
 >**-default_type**  _type_
 
->>If the aspect is not defined for the requested type, try the same option for this type as default. 
+> >If the aspect is not defined for the requested type, try the same option for this type as default. 
 Normally used internally and not so much for final user code.
+
+
+<a name="dui_aspect_exists"></a>
 
 **dui aspect exists**  _type aspect ?-option option_value ...?_
 
 >Return whether the specified aspect exists. Uses the same options as **dui aspect set**.
+
+
+<a name="dui_aspect_list"></a>
 
 **dui aspect list**  ?-option option_value ...?_
 
@@ -337,7 +367,7 @@ hiding all others.
 
 Each page is just a background element, which can be either a full-page size image or a colored rectangle. This element
 receives the same label as the page name. Once the page is added, visual items can be added to it at fixed 
-coordinates in a 2560x1800 pixels space. The coordinates and other dimension options are mapped automatically to the 
+coordinates in a 2560x1600 pixels space. The coordinates and other dimension options are mapped automatically to the 
 current resolution.
 Note that  _only landscape screen/tablet position is supported_ .
 
@@ -390,6 +420,8 @@ DUI offers the base namespace **::dui::pages** where page namespaces can be crea
 
 #### `dui page`
 
+<a name="dui_page_add"></a>
+
 **dui page add**  _page_name ?-option option_value ...?_
 
 >Declares a new GUI page.  _page_name_  can only have letters, numbers and underscores, and page names cannot be
@@ -399,46 +431,61 @@ duplicated.
 
 >**-theme**  _theme_name_
 
->>Uses the aspects of the **page** type from theme  _theme_name_  instead of the aspects from the currently active
+> >Uses the aspects of the **page** type from theme  _theme_name_  instead of the aspects from the currently active
 theme. Used rarely, as the usual choice is to apply the default options from the current theme.
 
 >**-style**  _style_name*
 
->>Uses as default options the aspects from style  _style_name_  for the **page** type. If an aspect is not defined
+> >Uses as default options the aspects from style  _style_name_  for the **page** type. If an aspect is not defined
 for the requested style, the unstyled aspect is used.
 
 >**-bg_img**  _filename_
 
->>Uses an image as background. At the moment this case is delegated to the legacy proc **add_de1_page**. This has
+> >Uses an image as background. At the moment this case is delegated to the legacy proc **add_de1_page**. This has
 precedence over **-bg_color**.
 
 >**-bg_color**  _color_spec_
 
->>Uses a solid color rectangle as background, in case no background image is defined.
+> >Uses a solid color rectangle as background, in case no background image is defined.
 
 >**-namespace**  _true_false_or_namespace_
 
->>Either a boolean (1/0, true/false, etc.) or a fully qualified namespace name. If  _true_ , uses the page namespace 
+> >Either a boolean (1/0, true/false, etc.) or a fully qualified namespace name. If  _true_ , uses the page namespace 
 **::dui::pages::&lt;page_name&gt;**; if  _false_ , no page namespace is used; otherwise uses the provided namespace.
 If the namespace does not exist, it is created. If the namespace does not already have the **widgets** and **data** array
 variables, they are created. If this option is not specified, it takes its default value from the DUI configuration 
 variable **create_page_namespaces**.
 
+
+<a name="dui_page_current"></a>
+
 **dui page current**
 
 >Returns the name of the currently visible page.
+
+
+<a name="dui_page_exists"></a>
 
 **dui page exists**  _page_name_
 
 >Returns whether the page  _page_name_  exists (=has been added).
 
+
+<a name="dui_page_list"></a>
+
 **dui page list**
 
 >Returns a list of all added pages.
 
+
+<a name="dui_page_get_namespace"></a>
+
 **dui page get_namespace**  _page_name_
 
 >Returns the page namespace of  _page_name_ , or an empty string if the page has no associated namespace.
+
+
+<a name="dui_page_show"></a>
 
 **dui page show**  _page_name ?args?_
 
@@ -451,10 +498,16 @@ of the page to hide and the name of the page to show. All additional arguments i
 page *load* command and/or to the page load action. This allows passing values to pages instead of relying on
 global variables.
 
+
+<a name="dui_page_add_action"></a>
+
 **dui page add_action**  _page_name event tcl_code_
 
 >Adds the callback action in  _tcl_code_  to the specified  _event_  of  _page_ . Possible events are **load**, 
 **show** and **hide**. All added callback actions are run in the order in which they were added.
+
+
+<a name="dui_page_actions"></a>
 
 **dui page actions**  _page_name event_
 
@@ -478,7 +531,7 @@ elements, removing as much burden as sensible from client (skin & plugin) code.
 
 The <strong>dui add &lt;item_type&gt;</strong> family of commands perform a good number of actions:
 
-1. Transform all coordinates and dimensions from a fixed-size space of 2560x1800 to the actual resolution in use.
+1. Transform all coordinates and dimensions from a fixed-size space of 2560x1600 to the actual resolution in use.
 2. Assign meaningful labels to all visual items added to the canvas, using the canvas tag system. The labels are based 
 on the first  element of the list provided by the calling code in the `-tags` argument, or on automatically-generated 
 labels if `-tags` is not provided.
@@ -496,6 +549,9 @@ and use the namespace `data` array as default for any non-fully qualified variab
 9. Add the visual items to the canvas, hidden.
 10. Assign each visual item to the pages where it should appear.
 11. Return the handle of the created item (canvas IDs for canvas items, and pathnames for Tk widgets)
+
+
+<a name="retrieving_items"></a>
 
 #### Identifying and retrieving items
 
@@ -540,6 +596,8 @@ not one but several items).
 
 #### Visual items API
 
+<a name="dui_item"></a>
+
 #### `dui item`
 
 The **dui item** ensemble includes most commands to deal with visual GUI elements, except those dealing with creating the items and adding them to pages. Because the **dui add** are so often used, the shorthand **dui add** is offered (yet **dui item add** also works).
@@ -547,9 +605,14 @@ The **dui item** ensemble includes most commands to deal with visual GUI element
 The following commands form the exported API of `dui item`, but the ensemble includes a good number of extra commands that are not exported but can still be accessed using fully qualified calls such as **::dui::item::relocate_txt_wrt**. These are normally only used internally by other DUI procs, but may on occasion be useful for client code too, for example if it builds its own sets of compound widgets. Their usage is documented in the source code.
 
 
+<a name="dui_item_add"></a>
+
 **dui item add**  _type ?subtype? page x y ?option option_value...?_
 
 >Same as the equivalent **dui add** call.
+
+
+<a name="dui_item_get"></a>
 
 **dui item get**  _ids_or_widgets_
 
@@ -559,17 +622,26 @@ The following commands form the exported API of `dui item`, but the ensemble inc
 
 >The two-arguments call is more commonly used by final code, and return the  _unique_  canvas IDs of the items matching  _tags_  in the requested  _page_ . If  _page_  is a list with several pages, only the first one is used. Add "*" to a main tag name to return all the items in a widget compound. Use `all` or an empty string as  _tags_  to return the IDs of all the page elements.
 
+
+<a name="dui_item_get_widget"></a>
+
 **dui item get_widget**  _ids_or_widgets_
 
 **dui item get_widget**  _page tags_
 
 >Return unique valid widget pathnames corresponding to the provided canvas IDs, widget pathnames, or page and tags combinations.
 
+
+<a name="dui_item_config"></a>
+
 **dui item config**  _page_or_ids_or_widgets ?tags? option value ?option value ...?_
 
 >Modify the configuration options of the canvas item or widget. 
 Items are selected in the same way as in **dui item get**.
 If it is a widget, the options are passed to the widget configure command, if it is a canvas item the options are passed to the canvas itemconfig command.
+
+
+<a name="dui_item_cget"></a>
 
 **dui item cget**  _page_or_ids_or_widgets ?tags? option_
 
@@ -578,6 +650,8 @@ Items are selected in the same way as in **dui item get**.
 Option may have any of the values accepted by the create widget command if it is a widget, or by the canvas create item
 command if it is a canvas item.
 
+
+<a name="dui_item_enable_or_disable"></a>
 
 **dui item enable**  _page_or_ids_or_widgets ?tags?_
 
@@ -589,6 +663,9 @@ command if it is a canvas item.
 Items are selected in the same way as in **dui item get**. Add a "*" suffix to a main tag to enable or disable all the items in a widget compound at once.
 _enabled_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
 
+
+<a name="dui_item_show_or_hide"></a>
+
 **dui item show**  _page_or_ids_or_widgets ?tags?_
 
 **dui item hide**  _page_or_ids_or_widgets ?tags?_
@@ -599,21 +676,36 @@ _enabled_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
 Items are selected in the same way as in **dui item get**. Add a "*" suffix to a main tag to show or hide all the items in a widget compound at once.
 _show_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
 
+
+<a name="dui_item_add_image_dirs"></a>
+
 **dui item add_image_dirs**  _dirname ?dirname ...?_
 
 >Append new folders to the list of directories that will be searched when an image filename without a full path is provided to **dui add image**.
+
+
+<a name="dui_item_image_dirs"></a>
 
 **dui item image_dirs**
 
 >Return the current list of directories that will be searched when an image filename without a full path is provided to **dui add image**.
 
+
+<a name="dui_item_listbox_get_selection"></a>
+
 **dui item listbox_get_selection**  _page_or_id_or_widget ?tag values?_
 
 >Gets the selected items from the specified listbox widget. If  _values_  is specified, the return string is looked up in the  _values_  list instead of the values in the listbox itself (using the same indexes). If the  _values_  list is shorter than the actual list of values being shown in the listbox and the selected item cannot be matched in  _values_ , return the matching string from the listbox values.
 
+
+<a name="dui_item_listbox_set_selection"></a>
+
 **dui item listbox_set_selection**  _page_or_id_or_widget tag selected ?values reset_current?_
 
 >Selects the items matching the  _selected_  string in the specified listbox widget. If a  _values_  list is provided,  _selected_  is matched against  _values_  instead of the list values. If  _reset_current_  is 1 (or any other value that is coerced to a boolean  _true_ ), the current selection is reset first (this is only relevant with listboxes that accept multiple selections).
+
+
+<a name="dui_add"></a>
 
 #### `dui add`
 
@@ -627,7 +719,7 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 **{coords}**
 
->Normally the **x** and **y** coordinates where the item must be placed, in a 2560x1800 pixels space that will be mapped to the actual resolution in use. Some items like canvas lines or rectangles may take additional coordinates. 
+>Normally the **x** and **y** coordinates where the item must be placed, in a 2560x1600 pixels space that will be mapped to the actual resolution in use. Some items like canvas lines or rectangles may take additional coordinates. 
 >Note that canvas items and widgets must be placed in fixed locations, unlike other geometry managers like [grid](https://www.tcl.tk/man/tcl8.6/TkCmd/grid.htm). While this works great in most DE1 app pages, it's not ideal under some circunstances. Most notable is when using text-based data input, as the dimensions of entries or listboxes widgets are defined in number of characters (which are font-dependent) and not in pixels, and other widgets must be placed on their right or bottom sides. A few workarounds for these cases are:
 >1. Use pixel instead of character dimensions, using the **-canvas_width** and **-canvas_height** options instead of the **-width** and **-height** options of widgets like entries and listboxes.
 >2. Reposition items relative to others dynamically, using procs such as the (non exported) **::dui::item::relocate_text_wrt** or **::dui::item::set_yscrollbar_dim**. Because the actual dimensions of items are not accessible until the page is painted for the first time, these must be called on the page **show** command or **show** event action.
@@ -687,19 +779,19 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >The following substitutions are available:
 
->>-**%W**: Substituted by the widget pathname.
+> >-**%W**: Substituted by the widget pathname.
 
->>-**%NS**: Substituted by the page namespace, is one is used, or an empty string otherwise.
+> >-**%NS**: Substituted by the page namespace, is one is used, or an empty string otherwise.
 
 > _DESIGN NOTE_ : This is maintained at the moment for backwards compatibility, but evaluating this code in the creation proc context seems pretty unsafe, as it can modify any local variable. Given that DUI provides the mechanisms to easily access the created widgets once they're created, maintaining this doesn't seem really necessary.
 
 
 
-**-label_***option*** **  _value_
+**-label_** _option_   _value_
 
-**-symbol_***option*** **  _value_
+**-symbol_** _option_   _value_
 
-**-yscrollbar_***option*** **  _value_
+**-yscrollbar_** _option_   _value_
 
 >When a **dui add** command creates a control  _compound_ , use the corresponding prefix on the option names to pass those options to the "sub-item" creation command.
 
@@ -735,19 +827,30 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 ##### Commands to add GUI elements
 
+<a name="dui_add_canvas_item"></a>
+
 **dui add canvas_item**  _type pages x y ?{extra_coords}? ?-option value ...?_
 
 >Generic command to add canvas items of type  _type_  to DUI pages. Some canvas items like **text** or **image** have their own **dui add** command with extra features, but this is offered for extensions and for adding items such as lines or ovals that don't have their own **dui add** command.
 
+
+<a name="dui_add_widget"></a>
+
 **dui add widget**  _type pages x y ?-option value ...?_
 
 >Generic command to create Tk widgets of type  _type_  and add them to DUI pages. Many widgets like **entry** or **listbox** have their own **dui add** command with extra features, but this is offered for extensions and other non directly supported widgets.
+
+
+<a name="dui_add_text"></a>
 
 **dui add text**  _pages x y ?-option value ...?_
 
 >Create a text label and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
 
 >Non-DUI options are passed-through to [canvas create text](https://www.tcl-lang.org/man/tcl/TkCmd/canvas.htm#M156).
+
+
+<a name="dui_add_variable"></a>
 
 **dui add variable**  _pages x y ?-option value ...?_
 
@@ -757,9 +860,12 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >**-textvariable**  _tcl_code_
 
->>Callback Tcl code that returns the string to be shown. This will be evaluated continuously while the page is shown and on the idle state, updating the text whenever the result of the evaluation changes. If the page has a namespace and  _tcl_code_  is a plain name (only letters, numbers and underscores, no brackets etc.), or if no **-textvariable** is provided at all (in this case the main tag will be used), then the callback will be `{$::<page_namespace>::data(<tcl_code_or_main_tag>)}`.
+> >Callback Tcl code that returns the string to be shown. This will be evaluated continuously while the page is shown and on the idle state, updating the text whenever the result of the evaluation changes. If the page has a namespace and  _tcl_code_  is a plain name (only letters, numbers and underscores, no brackets etc.), or if no **-textvariable** is provided at all (in this case the main tag will be used), then the callback will be `{$::<page_namespace>::data(<tcl_code_or_main_tag>)}`.
 
->>You can use `%NS` anywhere in  _tcl_code_  and it will be substituted by the page namespace.
+> >You can use `%NS` anywhere in  _tcl_code_  and it will be substituted by the page namespace.
+
+
+<a name="dui_add_image"></a>
 
 **dui add image**  _pages x y filename ?-option value ...?_
 
@@ -769,6 +875,9 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >Non-DUI options are passed-through to [image create](https://www.tcl-lang.org/man/tcl/TkCmd/image.htm). The default image type is **photo**.
 
+
+<a name="dui_add_dbutton"></a>
+
 **dui add dbutton**  _pages x y ?x1 y1? ?-option value ...?_
 
 >Create a "dui button" (a rectangular "clickable" area) from canvas primitive shapes and add it to the requested  _pages_  at coordinates  _{x y}_ . 
@@ -777,13 +886,13 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >Return the list of all canvas IDs that form the button compound. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
->>&lt;main_tag&gt;: the invisible "clickable" rectangle;
+> >&lt;main_tag&gt;: the invisible "clickable" rectangle;
 
->>&lt;main_tag&gt;-btn: the background button shape, which may itself be composed of several canvas items such as lines, rectangles and ovals;
+> >&lt;main_tag&gt;-btn: the background button shape, which may itself be composed of several canvas items such as lines, rectangles and ovals;
 
->>&lt;main_tag&gt;-lbl: (optional) label text;
+> >&lt;main_tag&gt;-lbl: (optional) label text;
 
->>&lt;main_tag&gt;-sym (optional) symbol text.
+> >&lt;main_tag&gt;-sym (optional) symbol text.
 
 >During development, especially with invisible background buttons, you may want to set the global DUI configuration variable **debug_buttons** to 1 using `dui config debug_buttons 1`, as this will make the clickable area visible by drawing the button border. If the default black color of this border is not visible against the theme background, you can change it by modifying the **debug_outline** dbutton aspect (i.e. `dui aspect set -type dbutton debug_outline yellow`).
 
@@ -791,54 +900,56 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >**-bheight**  _height_
 
->>Normally button dimensions are defined giving the rectangle top-left coordinates  _{x y}_  and bottom-down coordinates  _{x1 y1}_ , but  _{x1 y1}_  can be replaced by named options **-bwidth** and **-bheight**. This is most often used for defining a dbutton style for buttons that are always the same size.  _width_  and  _height_  must be pixel sizes in a 2560x1600 screen, and they are transformed automatically to the actual resolution.
+> >Normally button dimensions are defined giving the rectangle top-left coordinates  _{x y}_  and bottom-down coordinates  _{x1 y1}_ , but  _{x1 y1}_  can be replaced by named options **-bwidth** and **-bheight**. This is most often used for defining a dbutton style for buttons that are always the same size.  _width_  and  _height_  must be pixel sizes in a 2560x1600 screen, and they are transformed automatically to the actual resolution.
 
 >**-shape**  _shape_
 
->>Shape determines how the background button should be painted, and it accepts the following values:
+> >Shape determines how the background button should be painted, and it accepts the following values:
 
->>-empty string: no background / invisible clickable area.
+> >-empty string: no background / invisible clickable area.
 
->>-**rect**: A rectangle. This accepts as formatting options those taken by **canvas create rect**.
+> >-**rect**: A rectangle. This accepts as formatting options those taken by **canvas create rect**.
 
->>-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and **-radius** (determines how "round" the rectangle corners are).
+> >-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and **-radius** (determines how "round" the rectangle corners are).
 
->>-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-arc_offset** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border).
+> >-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-arc_offset** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border).
 
 >**-command**  _tcl_code_
 
->>Callback Tcl code to run when the button is clicked. In addition to the standard substitutions, DUI adds the following:
+> >Callback Tcl code to run when the button is clicked. In addition to the standard substitutions, DUI adds the following:
 
->>**%NS**: The page namespace, if defined.
+> >**%NS**: The page namespace, if defined.
 
->>**%x0, %y0, %x1, %y1**: top-left and botton-right coordinates of the button rectangle.
+> >**%x0, %y0, %x1, %y1**: top-left and botton-right coordinates of the button rectangle.
 
 >**-label**  _text_
 
 >**-labelvariable**  _tcl_code_
 
->>If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, inside the button. 
+> >If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, inside the button. 
 
 >**-label_pos**  _{horizontal_percentage vertical_percentage}_
 
->>Determines the location of the label inside the button rectangle, given by horizontal and vertical percentages. For example, for placing a label in the center of the button, use `-label_pos {0.5 0.5}` (and, probably, also `-label_anchor center`).
+> >Determines the location of the label inside the button rectangle, given by horizontal and vertical percentages. For example, for placing a label in the center of the button, use `-label_pos {0.5 0.5}` (and, probably, also `-label_anchor center`).
 
 >**-label_***option*** **  _value_
 
->>Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
 
 >**-symbol**  _symbol_name_
 
->>Place a Fontawesome symbol inside the button. 
+> >Place a Fontawesome symbol inside the button. 
 
 >**-symbol_pos**  _{horizontal_percentage vertical_percentage}_
 
->>Determines the location of the symbol inside the button rectangle, given by horizontal and vertical percentages. For example, for placing a symbol on the left side of the button, use `-symbol_pos {0.15 0.5}` (and, probably, also `-symbol_anchor center`).
+> >Determines the location of the symbol inside the button rectangle, given by horizontal and vertical percentages. For example, for placing a symbol on the left side of the button, use `-symbol_pos {0.15 0.5}` (and, probably, also `-symbol_anchor center`).
 
 >**-symbol_***option*** **  _value_
 
->>Use this syntax to pass additional options to the symbol creation command **dui add symbol**.
+> >Use this syntax to pass additional options to the symbol creation command **dui add symbol**.
 
+
+<a name="dui_add_entry"></a>
 
 **dui add entry**  _pages x y ?-option value ...?_
 
@@ -846,73 +957,76 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >Return the pathname of the entry widget. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
->>&lt;main_tag&gt;: the entry widget.
+> >&lt;main_tag&gt;: the entry widget.
 
->>&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
+> >&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
 
 >Non-DUI options are passed-through to the [entry](https://www.tcl.tk/man/tcl8.6/TkCmd/entry.htm) command.
 
 >**-data_type**  _data_type_
 
->>Define the data type. Only useful value at the moment is "numeric", though more types will be supported in the future. If the  _data_type_  is numeric and a validation command **-vcmd** is not provided in the call, validation is automatically added using the values of options **-n_decimals**, **-min**, and **-max**.
+> >Define the data type. Only useful value at the moment is "numeric", though more types will be supported in the future. If the  _data_type_  is numeric and a validation command **-vcmd** is not provided in the call, validation is automatically added using the values of options **-n_decimals**, **-min**, and **-max**.
 
 >**-n_decimals**  _number_
 
->>For `-data type numeric`, the number of decimal places to use when formatting the number.
+> >For `-data type numeric`, the number of decimal places to use when formatting the number.
 
 >**-min**  _number_
 
->>For `-data type numeric`, the minimum value of the variable.
+> >For `-data type numeric`, the minimum value of the variable.
 
 >**-max**  _number_
 
->>For `-data type numeric`, the maximum value of the variable.
+> >For `-data type numeric`, the maximum value of the variable.
 
 >**-smallincrement**  _number_
 
->>For `-data type numeric`, small increment used on associated clicker or scale controls. Not used directly, but passed to page editors if the **-editor_page** option is specified
+> >For `-data type numeric`, small increment used on associated clicker or scale controls. Not used directly, but passed to page editors if the **-editor_page** option is specified
 
 >**-bigincrement**  _number_
 
->>For `-data type numeric`, big increment used on associated clicker or scale controls. Not used directly, but passed to page editors if the **-editor_page** option is specified
+> >For `-data type numeric`, big increment used on associated clicker or scale controls. Not used directly, but passed to page editors if the **-editor_page** option is specified
 
 >**-default**  _number_
 
->>For `-data type numeric`, default value to assign the first time a clicker is clicked if the variable value is empty. Not used directly, but passed to page editors if the **-editor_page** option is specified
+> >For `-data type numeric`, default value to assign the first time a clicker is clicked if the variable value is empty. Not used directly, but passed to page editors if the **-editor_page** option is specified
 
 >**-trim**  _true_or_false_
 
->>If true, trims leading and trailing whitespace after the user edits the value. Default is taken from the value of DUI configuration variable **trim_entries**.
+> >If true, trims leading and trailing whitespace after the user edits the value. Default is taken from the value of DUI configuration variable **trim_entries**.
 
 >**-editor_page**  _true_or_false_or_page_
 
->>If  _true_  or the name of a page, a full page number editor will be launched when the entry receives a double-click. If  _true_  (or any equivalent value such as 1, yes, etc.) is given, the default number editor page that comes with DUI (`dui_number_editor`) will be used. If  _false_ , no page editor will be used. If this is not specified in the call, the default value is taken from the DUI configuration variable **use_editors_pages**.
+> >If  _true_  or the name of a page, a full page number editor will be launched when the entry receives a double-click. If  _true_  (or any equivalent value such as 1, yes, etc.) is given, the default number editor page that comes with DUI (`dui_number_editor`) will be used. If  _false_ , no page editor will be used. If this is not specified in the call, the default value is taken from the DUI configuration variable **use_editors_pages**.
 
->>The editor page will receive all necessary parameters (-variable, -n_decimals, -min, -max, -smallincrement, -bigincrement, -default and -page_title). If a custom number editor page is used, it needs to have the same argument signature as ``::dui::pages::dui_number_editor::load``.
+> >The editor page will receive all necessary parameters (-variable, -n_decimals, -min, -max, -smallincrement, -bigincrement, -default and -page_title). If a custom number editor page is used, it needs to have the same argument signature as ``::dui::pages::dui_number_editor::load``.
 
 >**-editor_page_title**  _title_
 
->>The page title to show on the editor page.
+> >The page title to show on the editor page.
 
 >**-label**  _text_
 
 >**-labelvariable**  _tcl_code_
 
->>If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, associated to the entry.
+> >If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, associated to the entry.
 
 >**-label_pos**  _{x y}_
 
 >**-label_pos**  _{anchor ?x_offset? ?y_offset?}_
 
->>A list that determines the location of the label. If a pair of numeric coordinates are provided, they are interpreted as direct coordinates in the screen. If the first list item is not a number, it is interpreted as an anchor point relative to the edges of the entry widget, and the label will be moved to the target position when the page is shown. 
+> >A list that determines the location of the label. If a pair of numeric coordinates are provided, they are interpreted as direct coordinates in the screen. If the first list item is not a number, it is interpreted as an anchor point relative to the edges of the entry widget, and the label will be moved to the target position when the page is shown. 
 
->>Valid anchor values are "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es". To get the label placed exactly as you want you normally also have to play with **-label_anchor** and **-label_justify**.
+> >Valid anchor values are "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es". To get the label placed exactly as you want you normally also have to play with **-label_anchor** and **-label_justify**.
 
->>The anchor value can optionally be followed by an  _x_offset_  and a  _y_offset_ , which will move the position by those fixed offsets after the anchor point is determined.
+> >The anchor value can optionally be followed by an  _x_offset_  and a  _y_offset_ , which will move the position by those fixed offsets after the anchor point is determined.
 
 >**-label_***option*** **  _value_
 
->>Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+
+
+<a name="dui_add_multiline_entry"></a>
 
 **dui add multiline_entry**  _pages x y ?-option value ...?_
 
@@ -922,46 +1036,48 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >Return the pathname of the text widget. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
->>&lt;main_tag&gt;: the multiline_entry widget.
+> >&lt;main_tag&gt;: the multiline_entry widget.
 
->>&lt;main_tag&gt;-ysb: (optional) the pathname of the yscrollbar scale.
+> >&lt;main_tag&gt;-ysb: (optional) the pathname of the yscrollbar scale.
 
->>&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
+> >&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
 
 >Non-DUI options are passed-through to the [text](https://www.tcl.tk/man/tcl8.4/TkCmd/text.htm) command.
 
 >**-data_type**  _data_type_
 
->>Define the data type. Only useful value at the moment is "numeric", though more types will be supported in the future. If the  _data_type_  is numeric and a validation command **-vcmd** is not provided in the call, validation is automatically added using the values of options **-n_decimals**, **-min**, and **-max**.
+> >Define the data type. Only useful value at the moment is "numeric", though more types will be supported in the future. If the  _data_type_  is numeric and a validation command **-vcmd** is not provided in the call, validation is automatically added using the values of options **-n_decimals**, **-min**, and **-max**.
 
 >**-label**  _text_
 
 >**-labelvariable**  _tcl_code_
 
->>If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, associated to the entry.
+> >If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, associated to the entry.
 
 >**-label_pos**  _{x y}_
 
 >**-label_pos**  _{anchor ?x_offset? ?y_offset?}_
 
->>A list that determines the location of the label. If a pair of numeric coordinates are provided, they are interpreted as direct coordinates in the screen. If the first list item is not a number, it is interpreted as an anchor point relative to the edges of the entry widget, and the label will be moved to the target position when the page is shown. 
+> >A list that determines the location of the label. If a pair of numeric coordinates are provided, they are interpreted as direct coordinates in the screen. If the first list item is not a number, it is interpreted as an anchor point relative to the edges of the entry widget, and the label will be moved to the target position when the page is shown. 
 
->>Valid anchor values are "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es". To get the label placed exactly as you want you normally also have to play with **-label_anchor** and **-label_justify**.
+> >Valid anchor values are "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es". To get the label placed exactly as you want you normally also have to play with **-label_anchor** and **-label_justify**.
 
->>The anchor value can optionally be followed by an  _x_offset_  and a  _y_offset_ , which will move the position by those fixed offsets after the anchor point is determined.
+> >The anchor value can optionally be followed by an  _x_offset_  and a  _y_offset_ , which will move the position by those fixed offsets after the anchor point is determined.
 
 >**-label_***option*** **  _value_
 
->>Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
 
 >**-yscrollbar**  _true_or_false_
 
->>If  _true_ , a vertical scrollbar is added to the right side of the listbox. The scrollbar is actually a Tk scale widget, not a Tk scrollbar widget. 
+> >If  _true_ , a vertical scrollbar is added to the right side of the listbox. The scrollbar is actually a Tk scale widget, not a Tk scrollbar widget. 
 
 >**-yscrollbar_***option*** **  _value_
 
->>Use this syntax to pass additional options to the yscrollbar scale creation command.
+> >Use this syntax to pass additional options to the yscrollbar scale creation command.
 
+
+<a name="dui_add_listbox"></a>
 
 **dui add listbox**  _pages x y ?-option value ...?_
 
@@ -969,11 +1085,11 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >Return the pathname of the listbox widget. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
->>&lt;main_tag&gt;: the listbox widget.
+> >&lt;main_tag&gt;: the listbox widget.
 
->>&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
+> >&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
 
->>&lt;main_tag&gt;-ysb: (optional) the Tk scale widget used as vertical scrollbar.
+> >&lt;main_tag&gt;-ysb: (optional) the Tk scale widget used as vertical scrollbar.
 
 >Non-DUI options are passed-through to the [listbox](https://www.tcl.tk/man/tcl8.6/TkCmd/listbox.htm) command.
 
@@ -981,29 +1097,32 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >**-labelvariable**  _tcl_code_
 
->>If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, associated to the listbox.
+> >If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, associated to the listbox.
 
 >**-label_pos**  _{x y}_
 
 >**-label_pos**  _{anchor ?x_offset? ?y_offset?}_
 
->>A list that determines the location of the label. If a pair of numeric coordinates are provided, they are interpreted as direct coordinates in the screen. If the first list item is not a number, it is interpreted as an anchor point relative to the edges of the listbox widget, and the label will be moved to the target position when the page is shown. 
+> >A list that determines the location of the label. If a pair of numeric coordinates are provided, they are interpreted as direct coordinates in the screen. If the first list item is not a number, it is interpreted as an anchor point relative to the edges of the listbox widget, and the label will be moved to the target position when the page is shown. 
 
->>Valid anchor values are "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es". To get the label placed exactly as you want you normally also have to play with **-label_anchor** and **-label_justify**.
+> >Valid anchor values are "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es". To get the label placed exactly as you want you normally also have to play with **-label_anchor** and **-label_justify**.
 
->>The anchor value can optionally be followed by an  _x_offset_  and a  _y_offset_ , which will move the position by those fixed offsets after the anchor point is determined.
+> >The anchor value can optionally be followed by an  _x_offset_  and a  _y_offset_ , which will move the position by those fixed offsets after the anchor point is determined.
 
 >**-label_***option*** **  _value_
 
->>Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
 
 >**-yscrollbar**  _true_or_false_
 
->>If  _true_ , a vertical scrollbar is added to the right side of the listbox. The scrollbar is actually a Tk scale widget, not a Tk scrollbar widget. 
+> >If  _true_ , a vertical scrollbar is added to the right side of the listbox. The scrollbar is actually a Tk scale widget, not a Tk scrollbar widget. 
 
 >**-yscrollbar_***option*** **  _value_
 
->>Use this syntax to pass additional options to the yscrollbar scale creation command.
+> >Use this syntax to pass additional options to the yscrollbar scale creation command.
+
+
+<a name="dui_add_dcheckbox"></a>
 
 **dui add dcheckbox**  _pages x y ?-option value ...?_
 
@@ -1015,24 +1134,24 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >Return the canvas ID of the checkbox symbols text. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
->>&lt;main_tag&gt;: the checkbox symbol text.
+> >&lt;main_tag&gt;: the checkbox symbol text.
 
->>&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
+> >&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
 
 >Non-DUI options are passed-through to the [canvas create text](https://www.tcl-lang.org/man/tcl/TkCmd/canvas.htm#M156) command.
 
 >**-texvariable**  _variable_name_
 
->>Name of the global variable whose value will be shown in the checkbox. Clicking the checkbox modifies the variable value, and if the variable value changes anywhere, then the checkbox will automatically update itself to reflect the new value.
+> >Name of the global variable whose value will be shown in the checkbox. Clicking the checkbox modifies the variable value, and if the variable value changes anywhere, then the checkbox will automatically update itself to reflect the new value.
 
->>If not specified and a page namespace is used, uses `::<page_namespace>::data(<main_tag>)`.
+> >If not specified and a page namespace is used, uses `::<page_namespace>::data(<main_tag>)`.
 
->>If a plain name is given (only letters, numbers and underscores) and a page namespace is used, uses ``::<page_namespace>::data(<textvariable>)`.
+> >If a plain name is given (only letters, numbers and underscores) and a page namespace is used, uses ``::<page_namespace>::data(<textvariable>)`.
 
 >**-command**  _tcl_code_
 
->>Optional callback code to run when the checkbox is clicked.
->>In addition to the usual substituttions, **%NS** will be replaced by the page namespace name, or the empty string if no page namespace is used.
+> >Optional callback code to run when the checkbox is clicked.
+> >In addition to the usual substituttions, **%NS** will be replaced by the page namespace name, or the empty string if no page namespace is used.
 
 **dui add scale**  _pages x y ?-option value ...?_
 
@@ -1040,6 +1159,8 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >Non-DUI options are passed-through to the [scale create](https://www.tcl-lang.org/man/tcl/TkCmd/scale.htm) command.
 
+
+<a name="dui_add_dscale"></a>
 
 **dui add dscale**  _pages x y ?-option value ...?_
 
@@ -1049,106 +1170,162 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >Return the list of all canvas IDs that form the scale compound. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
->>&lt;main_tag&gt;: the slider circle;
+> >&lt;main_tag&gt;: the slider circle;
 
->>&lt;main_tag&gt;-bck: the background line;
+> >&lt;main_tag&gt;-bck: the background line;
 
->>&lt;main_tag&gt;-frn: the foregroundline;
+> >&lt;main_tag&gt;-frn: the foregroundline;
 
->>&lt;main_tag&gt;-tap: the "clickable" rectangle covering the background;
+> >&lt;main_tag&gt;-tap: the "clickable" rectangle covering the background;
 
->>&lt;main_tag&gt;-inc: the plus sign;
+> >&lt;main_tag&gt;-inc: the plus sign;
 
->>&lt;main_tag&gt;-tinc: the "clickable" rectangle over the plus sign;
+> >&lt;main_tag&gt;-tinc: the "clickable" rectangle over the plus sign;
 
->>&lt;main_tag&gt;-dec: the minus sign;
+> >&lt;main_tag&gt;-dec: the minus sign;
 
->>&lt;main_tag&gt;-tdec: the "clickable" rectangle over the minus sign;
+> >&lt;main_tag&gt;-tdec: the "clickable" rectangle over the minus sign;
 
->>&lt;main_tag&gt;-lbl: (optional) label text;
+> >&lt;main_tag&gt;-lbl: (optional) label text;
 
 
 >**-orient**  _horizontal_or_vertical_
 
->>Orientation of the scale. Defaults to horizontal. Actually only the first character is used.
+> >Orientation of the scale. Defaults to horizontal. Actually only the first character is used.
 
 >**-variable**  _variable_name_
 
->>Name of the global variable whose value will be shown in the dscale. Editing the scale modifies the variable value, and if the variable value changes anywhere, then the scale slider will automatically update itself to reflect the new value.
+> >Name of the global variable whose value will be shown in the dscale. Editing the scale modifies the variable value, and if the variable value changes anywhere, then the scale slider will automatically update itself to reflect the new value.
 
->>If not specified and a page namespace is used, uses `::<page_namespace>::data(<main_tag>)`.
+> >If not specified and a page namespace is used, uses `::<page_namespace>::data(<main_tag>)`.
 
->>If a plain name is given (only letters, numbers and underscores) and a page namespace is used, uses ``::<page_namespace>::data(<textvariable>)`.
+> >If a plain name is given (only letters, numbers and underscores) and a page namespace is used, uses ``::<page_namespace>::data(<textvariable>)`.
 
->>**%NS** in  _variable_name_  will be substituted by the page namespace, or an empty string if no page namespace is used.
+> >**%NS** in  _variable_name_  will be substituted by the page namespace, or an empty string if no page namespace is used.
 
 >**-length**  _length_
 
->>Total horizontal or vertical distance of the background line of the scale, in pixels in a 2560x1800 space that will be transformed to the actual resolution.
+> >Total horizontal or vertical distance of the background line of the scale, in pixels in a 2560x1600 space that will be transformed to the actual resolution.
 
 >**-width**  _width_
 
->>Width of the background and foreground scale lines, in pixels in a 2560x1800 space that will be transformed to the actual resolution.
+> >Width of the background and foreground scale lines, in pixels in a 2560x1600 space that will be transformed to the actual resolution.
 
 >**-sliderlength**  _length_
 
->>Width and height or the slider circle, in pixels in a 2560x1800 space that will be transformed to the actual resolution.
+> >Width and height or the slider circle, in pixels in a 2560x1600 space that will be transformed to the actual resolution.
 
 >**-from**  _number_
 
->>The minimum accepted value of the variable.
+> >The minimum accepted value of the variable.
 
 >**-to**  _number_
 
->>The maximum accepted value of the variable.
+> >The maximum accepted value of the variable.
 
 >**-foreground**  _color_
 
->>The fill color of the foreground scale line (the part of the line that marks the variable value, i.e. the left section in horizontal scales, and the bottom section in vertical scales), and the slider circle, when the control is enabled.
+> >The fill color of the foreground scale line (the part of the line that marks the variable value, i.e. the left section in horizontal scales, and the bottom section in vertical scales), and the slider circle, when the control is enabled.
 
 >**-disabledforeground**  _color_
 
->>The fill color of the foreground scale line and the slider circle when the control is disabled.
+> >The fill color of the foreground scale line and the slider circle when the control is disabled.
 
 >**-background**  _color_
 
->>The fill color of the background line when the control is enabled.
+> >The fill color of the background line when the control is enabled.
 
 >**-disabledbackground**  _color_
 
->>The fill color of the background line when the control is disabled.
+> >The fill color of the background line when the control is disabled.
 
 >**-resolution**  _number_
 
->>The minimum step size. Default is 1 (integers).
+> >The minimum step size. Default is 1 (integers).
 
 >**-n_decimals**  _integer_
 
->>Number of decimals to use when formatting the number values. Default is 0.
+> >Number of decimals to use when formatting the number values. Default is 0.
 
 >**-smallincrement**  _number_
 
->>Passed to the full page number editor, and used when tapping the plus/minus. Default  the same value as **-resolution**, if not specified.
+> >Passed to the full page number editor, and used when tapping the plus/minus. Default  the same value as **-resolution**, if not specified.
 
 >**-bigincrement**  _number_
 
->>Passed to the full page number editor, and used when tapping repeteadly the plus/minus (currently implemented as triple-click, but may change).
+> >Passed to the full page number editor, and used when tapping repeteadly the plus/minus (currently implemented as triple-click, but may change).
 
 >**-plus_minus**  _true_of_false_
 
->>Whether to show (default) or hide the plus and minus on the line extremes.
+> >Whether to show (default) or hide the plus and minus on the line extremes.
 
 >**-default**  _number_
 
->>Default value when the variable is empty. This is normally used only by the page editor to assign an initial value if the variable is the empty string.
+> >Default value when the variable is empty. This is normally used only by the page editor to assign an initial value if the variable is the empty string.
 
 >**-editor_page**  _true_or_false_or_page_
 
->>If  _true_  or the name of a page, a full page number editor will be launched when the scale label is clicked. If  _true_  (or any equivalent value such as 1, yes, etc.), the default number editor page that comes with DUI (`dui_number_editor`) will be used. If  _false_ , no page editor will be used. If this is not specified in the call, the default value is taken from the DUI configuration variable **use_editors_pages**.
+> >If  _true_  or the name of a page, a full page number editor will be launched when the scale label is clicked. If  _true_  (or any equivalent value such as 1, yes, etc.), the default number editor page that comes with DUI (`dui_number_editor`) will be used. If  _false_ , no page editor will be used. If this is not specified in the call, the default value is taken from the DUI configuration variable **use_editors_pages**.
 
->>The editor page will receive all necessary parameters (-variable, -n_decimals, -min, -max, -smallincrement, -bigincrement, -default and -page_title). If a custom number editor page is used, it needs to have the same argument signature as ``::dui::pages::dui_number_editor::load``.
+> >The editor page will receive all necessary parameters (-variable, -n_decimals, -min, -max, -smallincrement, -bigincrement, -default and -page_title). If a custom number editor page is used, it needs to have the same argument signature as ``::dui::pages::dui_number_editor::load``.
 
 >**-editor_page_title**  _title_
 
->>The page title to show on the editor page.
+> >The page title to show on the editor page.
 
+
+<a name="dui_add_drater"></a>
+
+**dui add drater**  _pages x y ?-option value ...?_
+
+>Create a "dui rater" widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+
+>The "drater" allows to rate something by assining it a number of stars (or other symbol). It can map to any integer variable, and allows as an option to use half-stars.
+
+>Return the list of all canvas IDs that form the "drater" compound. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
+
+> >&lt;main_tag&gt;: the "clickable" rectangle bounding all star symbols;
+
+> >&lt;main_tag&gt;-&lt;number&gt;: each of the star symbols;
+
+> >&lt;main_tag&gt;-h&lt;number&gt;: (optional) each of the half star symbols;
+
+> >&lt;main_tag&gt;-lbl: (optional) label text;
+
+>**-variable**  _variable_name_
+
+> >Name of the global variable whose value will be shown in the drater. Clicking on the stars modifies the variable value, and if the variable value changes anywhere, then the active stars update to reflect the new value.
+
+> >If not specified and a page namespace is used, uses `::<page_namespace>::data(<main_tag>)`.
+
+> >If a plain name is given (only letters, numbers and underscores) and a page namespace is used, uses ``::<page_namespace>::data(<variable>)`.
+
+> >**%NS** in  _variable_name_  will be substituted by the page namespace, or an empty string if no page namespace is used.
+
+>**-width**  _length_
+
+> >Total horizontal distance occupied by the drater, in pixels in a 2560x1600 space, will be transformed to the actual resolution.
+
+>**-n_ratings**  _integer_
+
+> >The number of stars to show.
+
+>**-use_halfs**  _true_or_false_
+
+> >Whether to use half stars. Default is  _true_ .
+
+>**-min**  _integer_
+
+> >The minimum accepted value of the variable.
+
+>**-max**  _integer_
+
+> >The maximum accepted value of the variable.
+
+>**-fill**  _color_
+
+> >The fill color of the stars when they are active (to show that the rating is achieved).
+
+>**-disabledfill**  _color_
+
+> >The fill color of the stars when they are inactive (to show that the rating is not achieved).
