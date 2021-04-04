@@ -275,6 +275,10 @@ namespace eval ::dui {
 			default.scale.sliderlength 125
 			default.scale.width 150
 			
+			default.drater.fill "#7f879a" 
+			default.drater.disabledfill pink
+			default.drater.font_size 20
+			
 			default.rect.fill.insight_back_box "#ededfa"
 			default.rect.width.insight_back_box 0
 			default.line.fill.insight_back_box_shadow "#c7c9d5"
@@ -751,17 +755,19 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		}
 		
 		# Removes the named option "-option_name" from the named argument list, if it exists.
-		proc remove_option { option_name {args_name args} } {
+		proc remove_options { option_names {args_name args} } {
 			upvar $args_name largs
-			if { [string range $option_name 0 0] ne "-" } { set option_name "-$option_name" }	
-			set option_idx [lsearch $largs $option_name]
-			if { $option_idx > -1 } {
-				if { $option_idx == [expr {[llength $largs]-1}] } {
-					set value_idx $option_idx 
-				} else {
-					set value_idx [expr {$option_idx+1}]
+			foreach option_name $option_names {
+				if { [string range $option_name 0 0] ne "-" } { set option_name "-$option_name" }	
+				set option_idx [lsearch $largs $option_name]
+				if { $option_idx > -1 } {
+					if { $option_idx == [expr {[llength $largs]-1}] } {
+						set value_idx $option_idx 
+					} else {
+						set value_idx [expr {$option_idx+1}]
+					}
+					set largs [lreplace $largs $option_idx $value_idx]
 				}
-				set largs [lreplace $largs $option_idx $value_idx]
 			}
 		}
 		
@@ -979,7 +985,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { [has_option -font largs] } {
 				set font [get_option -font "" 0 largs]
 				foreach f {family size weight slant underline overstrike} {
-					remove_option -font_$f largs
+					remove_options -font_$f largs
 				}
 			} else {
 				set font_family [get_option -font_family [dui aspect get $type font_family -style $style] 1 largs]
@@ -2244,6 +2250,120 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 		}
 		
+		# Paints each of the symbols of a drater control compound, according to the value of the underlying variable.
+		# Needs 'args' at the end because this is called from a 'trace add variable'.
+		proc drater_draw { page tag variable {n_ratings 5} {use_halfs 1} {min 0} {max 10} args } {
+			set button_id [dui item get $page ${tag}-btn]
+			
+			if { $button_id eq "" } { return }
+			if { [dui item cget $button_id -state] ne "normal" } { return }
+			set can [dui canvas]
+			
+#			if { ($min eq "" || $min == 0 ) && ($max eq "" || $max == 0) } {
+#				set current_val [return_zero_if_blank [subst \$$variable]]
+#			} else {
+#				set current_val [expr {int(([return_zero_if_blank [subst \$$variable]] - 1) / \
+#					(($max-$min) / ($n_ratings*$halfs_mult))) + 1}]
+#			}
+			if { $use_halfs == 1 } { set halfs_mult 2 } else { set halfs_mult 1 }
+			set current_val [number_in_range [subst \$$variable] "" $min $max "" 0]
+			set current_val [expr {int(($current_val - 1) / (($max-$min) / ($n_ratings*$halfs_mult))) + 1}]
+			
+			for { set i 1 } { $i <= $n_ratings } { incr i } {
+				set wn [dui item get $page ${tag}-$i]
+				if { $use_halfs == 1 } {
+					set wnh [dui item get $page ${tag}-h$i]
+				}
+				if { [expr {$i * $halfs_mult}] <= $current_val } {
+					#.can itemconfig $wn -fill $::plugins::DGUI::font_color
+					$can itemconfig $wn -state normal
+					if { $use_halfs == 1 } { $can itemconfig $wnh -state hidden } 
+				} else {
+					if { $use_halfs == 1 } {
+						if { [expr {$i * $halfs_mult - 1}] == $current_val } {
+							$can itemconfig $wn -state disabled
+							#.can itemconfig $wn -fill $::plugins::DGUI::disabled_color
+							$can itemconfig $wnh -state normal 
+							#.can itemconfig $wnh -fill $::plugins::DGUI::font_color
+						} else {
+							$can itemconfig $wn -state disabled
+							$can itemconfig $wnh -state hidden
+#							.can itemconfig $wn -fill $::plugins::DGUI::disabled_color
+#							.can itemconfig $wnh -state hidden 
+						}
+					} else {
+						$can itemconfig $wn -state disabled
+						#.can itemconfig $wn -fill $::plugins::DGUI::disabled_color
+					}
+				}
+			}
+		}
+		
+		# Similar to a horizontal_clicker but for arbitrary discrete values like rating stars. 
+		proc drater_clicker { variable inx iny x0 y0 x1 y1 {n_ratings 5} {use_halfs 1} {min 0} {max 10} } {
+msg [namespace current] drater_clicker  "variable=$variable, inx=$inx, iny=$iny, x0=$x0, y0=$y0, x1=$x1, y1=$y1, n_ratings=$n_ratings, use_halfs=$use_halfs, min=$min, max=$max"			
+			set x [translate_coordinates_finger_down_x $inx]
+			set y [translate_coordinates_finger_down_y $iny]
+			set xrange [expr {$x1 - $x0}]
+			set xoffset [expr {$x - $x0}]
+			if { $use_halfs == 1 } { set halfs_mult 2 } else { set halfs_mult 1 }
+			
+			set interval [expr {int($xrange / $n_ratings)}] 
+			set clicked_val [expr {(int($xoffset / $interval) + 1) * $halfs_mult}]
+msg [namespace current] drater_clicker "x=$x, y=$y, clicked_val=$clicked_val, interval=$interval, xrange=$xrange, xoffset=$xoffset, halfs_mult=$halfs_mult" 
+			
+			set current_val [number_in_range [subst \$$variable] "" $min $max "" 0]
+msg [namespace current] drater_clicker "current_val=$current_val" 								
+			set current_val [expr {int(($current_val - 1) / (($max-$min) / ($n_ratings*$halfs_mult))) + 1}]	
+			
+			if { $current_val == $clicked_val && $current_val > 0 } {
+				set clicked_val [expr {$clicked_val-1}]
+			} elseif { $use_halfs == 1 && $current_val > 0 && $clicked_val == [expr {$current_val+1}] } {
+				set clicked_val [expr {$clicked_val-2}]
+			}
+			
+			set $variable [expr {int($min + (($max - $min) * $clicked_val / ($n_ratings*$halfs_mult))) }]
+			
+			#msg [namespace current] "$variable=[subst \$$variable]\rcurrent_value=$current_val, clicked_val=$$clicked_val\rnew_val=[subst \$$variable]"	
+		}
+		
+		# Taken verbatim from Damian's DSx.
+		proc horizontal_clicker {bigincrement smallincrement variable min max x y x0 y0 x1 y1} {
+			set x [translate_coordinates_finger_down_x $x]
+			set y [translate_coordinates_finger_down_y $y]
+			set xrange [expr {$x1 - $x0}]
+			set xoffset [expr {$x - $x0}]
+			set midpoint [expr {$x0 + ($xrange / 2)}]
+			set onequarterpoint [expr {$x0 + ($xrange / 5)}]
+			set threequarterpoint [expr {$x1 - ($xrange / 5)}]
+			if {[info exists $variable] != 1} {
+				# if the variable doesn't yet exist, initiialize it with a zero value
+				set $variable 0
+			}
+			set currentval [subst \$$variable]
+			set newval $currentval
+			if {$x < $onequarterpoint} {
+				set newval [expr "1.0 * \$$variable - $bigincrement"]
+			} elseif {$x < $midpoint} {
+				set newval [expr "1.0 * \$$variable - $smallincrement"]
+			} elseif {$x < $threequarterpoint} {
+				set newval [expr "1.0 * \$$variable + $smallincrement"]
+			} else {
+				set newval [expr "1.0 * \$$variable + $bigincrement"]
+			}
+			set newval [round_to_two_digits $newval]
+		
+			if {$newval > $max} {
+				set $variable $max
+			} elseif {$newval < $min} {
+				set $variable $min
+			} else {
+				set $variable [round_to_two_digits $newval]
+			}
+			update_onscreen_variables
+			return
+		}
+				
 		# Computes the anchor point coordinates with respect to the provided bounding box coordinates, returns a list 
 		#	with 2 elements. 
 		# Has more valid values than usual anchor: n, ne, nw, e, en, ew, s, sw, se, w, wn, ws.
@@ -2661,7 +2781,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 						-state hidden]
 				}
 			} else {		
-				dui::args::remove_option -debug_outline
+				dui::args::remove_options -debug_outline
 				set shape [dui::args::get_option -shape [dui aspect get dbutton shape -style $style -default rect] 1]
 				
 				if { $shape eq "round" } {
@@ -2770,7 +2890,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set canvas_args [dui::args::extract_prefixed -canvas_]
 			dui::args::add_option_if_not_exists -anchor nw canvas_args
 			
-			dui::args::remove_option -tags
+			dui::args::remove_options -tags
 			try {
 				set w [::image create $type $main_tag -file "$filename" {*}$args]
 			} on error err {
@@ -2857,7 +2977,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			
 			dui::args::process_label $pages $x $y $type $style
 			
-			dui::args::remove_option -tags
+			dui::args::remove_options -tags
 			set tclcode [dui::args::get_option -tclcode "" 1]
 			try {
 				::$type $widget {*}$args
@@ -3459,6 +3579,78 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 
 			return $widget
 		}
+		
+		# Adds a "rater" made of clickable stars (or other symbol). Maps to any existing INTEGER variable.
+		# Named options:
+		#	-variable, the name of the global variable with the rating. 
+		#	-symbol, default "star"
+		#	-n_ratings, default 5
+		#	-use_halfs, default 1
+		#	-min, default 0
+		#	-max, default 10
+		proc drater { pages x y args } {
+			set ids {}
+			set tags [dui::args::process_tags_and_var $pages drater -variable {} args 1]
+			set main_tag [lindex $tags 0]
+
+			set ratingvar [dui::args::get_option -variable "" 1]
+			if { ![info exists $ratingvar] } { set $ratingvar {} }
+			
+			set style [dui::args::get_option -style "" 0]
+			dui::args::process_aspects drater $style ""
+			set label_id [dui::args::process_label $pages $x $y drater $style ${main_tag}]
+			
+			set use_halfs [string is true [dui::args::get_option -use_halfs 1 1]]
+			set symbol [dui::args::get_option -symbol "star" 1]
+			if { $use_halfs == 1 } {
+				if { [dui symbol exists "half_$symbol"] } {
+					set half_symbol [dui symbol get "half_$symbol"]
+				} else {
+					set half_symbol [dui symbol get half_star]
+				}
+			}		
+			if { [dui symbol exists $symbol] } {
+				set symbol [dui symbol get $symbol]
+			} else {
+				set symbol [dui symbol get star]
+			}
+
+			set n_ratings [dui::args::get_option -n_ratings 5 1]
+			set min [dui::args::get_option -min 0 1]
+			set max [dui::args::get_option -max 10 1]
+			set width [dui::args::get_option -width 500 1]
+			dui::args::remove_options {-anchor -justify}
+			
+			set space [expr {$width / $n_ratings}]	
+			for { set i 1 } { $i <= $n_ratings } { incr i } {
+				set star_tags [list ${main_tag}-$i $main_tag [lrange $tags 1 end]]
+				set half_star_tags [list ${main_tag}-h$i $main_tag [lrange $tags 1 end]]
+				
+				set id [dui add symbol $pages [expr {$x+$space/2+$space*($i-1)}] [expr {$y+25}] -symbol $symbol \
+						-anchor center -justify center -tags $star_tags -aspect_type drater {*}$args]
+				lappend ids $id
+					#-fill $::plugins::DGUI::disabled_color -anchor "center" -justify "center" -text $symbol]
+				if { $use_halfs == 1 } {
+					set id [dui add symbol $pages [expr {$x+$space/2+$space*($i-1)}] [expr {$y+25}] -symbol $half_symbol \
+						-anchor center -justify center -tags $half_star_tags -aspect_type drater {*}$args]
+					lappend ids $id
+					#if { $has_ns } { set "${page}::widgets(${widget_name}_rating_half$i)" $w }
+				}		
+			}
+		
+			set rating_cmd [list ::dui::item::drater_clicker $ratingvar %x %y %%x0 %%y0 %%x1 %%y1 \
+				$n_ratings $use_halfs $min $max]				
+			set button_tags [list ${main_tag}-btn [lrange $tags 1 end]]
+			set id [dui add dbutton $pages $x [expr {$y-15}] [expr {$x+$width}] [expr {$y+70}] -command $rating_cmd \
+				-tags $button_tags]
+			lappend ids $id
+						
+			trace add variable $ratingvar write [list ::dui::item::drater_draw [lindex $pages 0] $main_tag \
+				$ratingvar $n_ratings $use_halfs $min $max]
+			
+			return $ids
+		}
+
 	}
 	
 	### INITIALIZE ###
@@ -3595,9 +3787,15 @@ proc lunique {list} {
 # Sets or changes a numeric value within a valid range, using the given resolution, and formats it 
 #	with the given number of decimals.
 # This is normally used from scales or clickers.
-proc number_in_range { {value 0} {change 0} {min {}} {max {}} {resolution 1} {n_decimals 0} } {
+proc number_in_range { {value 0} {change 0} {min {}} {max {}} {resolution 0} {n_decimals {}} } {
 	if { $value eq "" || ![string is double $value] } {
-		set newvalue 0
+		if { $min ne "" } {
+			set newvalue $min
+		} elseif { $max ne "" && $max >= 0 } {
+			set newvalue 0
+		} else {
+			set newvalue $max
+		}
 	} else {
 		set newvalue $value
 	} 
@@ -3610,7 +3808,7 @@ proc number_in_range { {value 0} {change 0} {min {}} {max {}} {resolution 1} {n_
 	if { $max ne "" && $newvalue > $max } {
 		set newvalue $max
 	} 
-	if { $resolution != 1 } {
+	if { $resolution ne "" && $resolution != 0 } {
 		set newvalue [expr {int($newvalue/$resolution)*$resolution}]
 	}
 	if { $n_decimals ne "" } {
