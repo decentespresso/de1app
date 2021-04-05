@@ -167,9 +167,9 @@ true/false, etc. as accepted by `[string is true]`).
 
 **dui config**  _option value_   _?option value...?_
 
-	 Sets the value of a global dui configuration option. Most options are boolean, and its value is coerced to 0/1 using `[string is true]`. Valid options are:
+	Sets the value of a global dui configuration option. Most options are boolean, and its value is coerced to 0/1 using `[string is true]`. Valid options are:
 
-- **debug_buttons** (default 1) Set to 1 while debugging to draw a border around "clickable" areas. May need to redefine the border color using aspect `<theme>.button.debug_outline` to make it visible against the theme background.
+- **debug_buttons** (default 1) Set to 1 while debugging to draw a border around "clickable" areas. May need to redefine the border color using aspect `<theme>.dbutton.debug_outline` to make it visible against the theme background.
 
 - **create_page_namespaces** (default 0) Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created page, unless a different namespace is provided in the `-namespace` option of `dui page add`.
 
@@ -181,9 +181,9 @@ true/false, etc. as accepted by `[string is true]`).
 <a name="dui_cget"></a>
 
 **dui cget**  _option_
-<ul>
-<li style="list-style-type: none;">Returns the current value of the requested configuration option.</li>
-</ul>
+
+>Returns the current value of the requested configuration option.
+
  
 <a name="aspects"></a>
 
@@ -711,7 +711,7 @@ _show_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
 
 ##### Common options
 
-A few **dui add * ** commands just offer convenience shorthands to other commands, such as **dui add theme** or **dui add page**, but most procs are used to add GUI elements to pages. All those share a number of options that are listed here instead of listing them for every command.
+A few **dui add** commands just offer convenience shorthands to other commands, such as **dui add theme** or **dui add page**, but most procs are used to add GUI elements to pages. All those share a number of options that are listed here instead of listing them for every command.
 
 **pages**
 
@@ -771,7 +771,7 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 **-canvas_***option*** **  _value_
 
->When creating Tk widgets with a **dui add** command, most options are passed through to the widget **create** command. The set of **-canvas_* ** options serve to pass some options to the **canvas create** command instead. This is useful, for example, to override the width and height in characters of text-based widgets and use pixel sizes instead (e.g. **-canvas_width 200 -canvas_height 450**) or to change the default "nw" anchoring (e.g. **-canvas_anchor center**).
+>When creating Tk widgets with a **dui add** command, most options are passed through to the widget **create** command. The set of  **-canvas_* ** options serve to pass some options to the **canvas create** command instead. This is useful, for example, to override the width and height in characters of text-based widgets and use pixel sizes instead (e.g. **-canvas_width 200 -canvas_height 450**) or to change the default "nw" anchoring (e.g. **-canvas_anchor center**).
 
 **-tclcode**  _tcl_code_
 
@@ -916,7 +916,9 @@ A few **dui add * ** commands just offer convenience shorthands to other command
 
 >**-command**  _tcl_code_
 
-> >Callback Tcl code to run when the button is clicked. In addition to the standard substitutions, DUI adds the following:
+> >Callback Tcl code to run when the button is clicked. When the page has a namesapce, if a plain name is used (only letters, numbers and underscores) and the namespace has a command with that name, it is used. If not specified and the page namespace has a command with the same number as the main tag, it is used.
+
+> >In addition to the standard substitutions, DUI adds the following:
 
 > >**%NS**: The page namespace, if defined.
 

@@ -213,6 +213,14 @@ namespace eval ::dui {
 			default.multiline_entry.font_size 16
 			default.multiline_entry.width 15
 			default.multiline_entry.height 5			
+
+			default.dcombobox.relief flat
+			default.dcombobox.bg white
+			default.dcombobox.width 2
+			default.dcombobox.font_family notosansuiregular
+			default.dcombobox.font_size 16
+			
+			default.dcombobox_ddarrow.font_size 24
 			
 			default.dcheckbox.font_family "Font Awesome 5 Pro-Regular-400"
 			default.dcheckbox.font_size 18
@@ -822,9 +830,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		### These are used from most 'dui add *' commands, for homogeneous handling of the same types of named options.
 		
 		# Complete the tags and -<type>variable arguments in the args list in a standard way.
-		# If -tags is in the args, use the first tag as main tag, otherwise assigns an auto-increment counter tag,
-		#	using 2 counters, one for text items, another for widgets.
-		# Raises an error if a main tag already exists, as no duplicates are allowed.
+		# If -tags is in the args, use the first tag as main tag, otherwise assigns an auto-increment counter.
+		# Raises an error if a main tag already exists in the same page, as no duplicates are allowed.
 		# Adds page tags in the form "p:$page" to the tags. This allows showing and hiding pages, or retrieving items
 		#	by their tag name plus the page in which they appear.
 		# If a varoption argument is specified (e.g. "-textvariable"), and the first page in $pages is a page
@@ -833,6 +840,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#			variable data(<main_tag>)
 		#		- if the varoption is found and it is a plain name instead of a fully qualified name, such as 
 		#			"-textvariable pressure", uses the namespace variable data(<varoption>), e.g. data(pressure).
+		#		- otherwise, substitutes %NS in -textvariable by the page namespace, if one is used, or the empty 
+		#			string otherwise.
+		# -add_multi 1 instructs to add the "<main_tag>*" compound indicator to the list of tags.
 		proc process_tags_and_var { pages type {varoption {}} {add_multi 0} {args_name args} {rm_tags 0} } {
 			variable item_cnt
 			upvar $args_name largs
@@ -1055,8 +1065,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					set ylabel_offset [rescale_y_skin [lindex $label_pos 2]] 
 				}				
 				foreach page $pages {
-					set after_show_cmd "::dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
-						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]"	
+#					set after_show_cmd "::dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
+#						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]"
+					set after_show_cmd [list ::dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
+						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]]						
 					dui page add_action $page show $after_show_cmd
 				}
 			}
@@ -2823,12 +2835,12 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 			# Clickable rect
 			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden]
 			if { $cmd eq "" } {
-				msg -WARN [namespace current] dbutton "dbutton '$main_tag' does not have a command"
+				if { $ns ne "" && [namespace which -command "${ns}::${main_tag}"] ne "" } {
+					set cmd "${ns}::${main_tag}"
+				}
 			} else {
-				set ns [dui page get_namespace [lindex $pages 0]] 
-				#set first_page [lindex $pages 0]
 				if { $ns ne "" } { 
-					if { [string is wordchar $cmd] && [info proc ${ns}::$cmd] ne "" } {
+					if { [string is wordchar $cmd] && [namespace which -command "${ns}::$cmd"] ne "" } {
 						set cmd ${ns}::$cmd
 					}				
 					regsub -all {%NS} $cmd $ns cmd
@@ -2838,9 +2850,14 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 				regsub {%y0} $cmd $ry cmd
 				regsub {%y1} $cmd $ry1 cmd
 			}
-			$can bind $main_tag [platform_button_press] $cmd
+			if { $cmd eq "" } {
+				msg -WARN [namespace current] dbutton "'$main_tag' in page(s) '$pages' does not have a command"
+			} else {
+				$can bind $id [platform_button_press] $cmd
+			}
 			
 			msg -INFO [namespace current] dbutton "'$main_tag' to page(s) '$pages' with args '$args'"
+if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"}			
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $id
 			}								
@@ -2952,10 +2969,11 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 			}
 			
 			set style [dui::args::get_option -style "" 1]
-			foreach a [dui aspect list -type $type -style $style] {
-				#msg [namespace current] widget "type=$type, style=$style, a=$a"
-				dui::args::add_option_if_not_exists -$a [dui aspect get $type $a -style $style]
-			}
+			dui::args::process_aspects $type $style
+#			foreach a [dui aspect list -type $type -style $style] {
+#				#msg [namespace current] widget "type=$type, style=$style, a=$a"
+#				dui::args::add_option_if_not_exists -$a [dui aspect get $type $a -style $style]
+#			}
 	
 			dui::args::process_font $type $style
 	
@@ -3175,7 +3193,71 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 				
 			return $widget
 		}
-	
+
+		# A text entry box with a "dropdown arrow" symbol on its right that allows to select the value from a list
+		#	that opens in a new page. 
+		# Extra named options:
+		# 	-items
+		#	-item_ids
+		#	-item_type
+		#	-select_cmd
+		#	-select_callback_cmd
+		
+		proc dcombobox { pages x y args } {			
+			set tags [dui::args::process_tags_and_var $pages dcombobox -textvariable 1]
+			set main_tag [lindex $tags 0]
+			set ns [dui page get_namespace $pages]
+			
+			#set style [dui::args::get_option -style "" 0]
+
+			set items [dui::args::get_option -items {} 1]
+			#set item_ids [dui::args::get_option -item_ids {} 1]
+			#set item_type [dui::args::get_option -item_type {} 1]
+
+			set textvariable [dui::args::get_option -textvariable {} 0]
+			set callback_cmd [dui::args::get_option -select_callback_cmd {} 1]
+			if { $callback_cmd eq "" } {
+				if { $ns ne "" && [namespace which -command "${ns}::select_${main_tag}_callback"] ne "" } {
+					set callback_cmd "${ns}::select_${main_tag}_callback"
+				}
+			} elseif { [string is wordchar $callback_cmd] && $ns ne "" && [namespace which -command "${ns}::$callback_cmd"] ne "" } {
+				set callback_cmd "${ns}::$callback_cmd"
+			}
+			
+			set select_cmd [dui::args::get_option -select_cmd {} 1]
+			if { $select_cmd eq "" } {
+				set select_cmd [list dui page show_when_off dui_item_selector $textvariable $items]
+				if { $callback_cmd ne "" } {
+					lappend select_cmd -callback_cmd $callback_cmd
+				}
+				foreach fn {item_type item_ids page_title listbox_width} { 
+					if { [dui::args::has_option -$fn] } {
+						lappend select_cmd -$fn [dui::args::get_option -$fn {} 1]
+					}
+				}
+				#set select_cmd [list say "select" $::settings(sound_button_in) \; {*}$select_cmd ]
+			}
+
+			set w [dui add entry $pages $x $y -aspect_type dcombobox {*}$args]
+			bind $w <Double-Button-1> $select_cmd
+			
+			# Dropdown selection arrow
+			set arrow_tags [list ${main_tag}-dda {*}[lrange $tags 1 end]]
+			set arrow_id [dui add symbol $pages $x $y -symbol sort_down -tags $arrow_tags -anchor w -justify left \
+				-aspect_type dcombobox_ddarrow -state hidden] 
+			[dui canvas] bind $arrow_id [platform_button_press] $select_cmd
+			
+			foreach page $pages {
+				set after_show_cmd [list ::dui::item::relocate_text_wrt $page ${main_tag}-dda $main_tag e 20 -10]
+				dui page add_action $page show $after_show_cmd
+			}
+			
+#			dui add dbutton $pages [expr {$x-5}] [expr {$y+}]  -command $select_cmd  \
+#				[expr {$x_widget+360}] [expr {$y_widget+68}] ]
+			
+			return $w
+		}
+		
 		#  Adds a checkbox using Fontawesome symbols (which can be resized to any font size) instead of the tiny Tk 
 		#	checkbutton.
 		# Named options:
@@ -3231,7 +3313,6 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 				set first_page [lindex $pages 0]
 				dui::args::add_option_if_not_exists -yscrollcommand \
 					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
-								
 #				dui::args::add_option_if_not_exists -yscrollcommand \
 #					"::dui::item::scale_scroll $main_tag ::dui::item::sliders($main_tag)"
 			}
@@ -3629,12 +3710,10 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 				set id [dui add symbol $pages [expr {$x+$space/2+$space*($i-1)}] [expr {$y+25}] -symbol $symbol \
 						-anchor center -justify center -tags $star_tags -aspect_type drater {*}$args]
 				lappend ids $id
-					#-fill $::plugins::DGUI::disabled_color -anchor "center" -justify "center" -text $symbol]
 				if { $use_halfs == 1 } {
 					set id [dui add symbol $pages [expr {$x+$space/2+$space*($i-1)}] [expr {$y+25}] -symbol $half_symbol \
 						-anchor center -justify center -tags $half_star_tags -aspect_type drater {*}$args]
 					lappend ids $id
-					#if { $has_ns } { set "${page}::widgets(${widget_name}_rating_half$i)" $w }
 				}		
 			}
 		
@@ -3645,8 +3724,13 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 				-tags $button_tags]
 			lappend ids $id
 						
-			trace add variable $ratingvar write [list ::dui::item::drater_draw [lindex $pages 0] $main_tag \
-				$ratingvar $n_ratings $use_halfs $min $max]
+			set draw_cmd [list ::dui::item::drater_draw [lindex $pages 0] $main_tag $ratingvar $n_ratings $use_halfs $min $max]
+			trace add variable $ratingvar write $draw_cmd
+			# Force drawing the stars correctly whenever we show the page (as all stars are shown in normal state 
+			#	when the page is shown).
+			foreach page $pages {
+				dui page add_action $page show $draw_cmd
+			}
 			
 			return $ids
 		}
@@ -3861,11 +3945,10 @@ namespace eval ::dui::pages::dui_number_editor {
 		variable data 
 		variable widgets
 		set page [namespace tail [namespace current]]
-#		set incs_font_size 6
 		
 		# Page and title
-		dui page add $page -namespace [namespace current]
-		dui add variable $page 1280 100 -tags dui_ne_page_title -textvariable page_title -style page_title
+		dui page add $page -namespace 1
+		dui add variable $page 1280 100 -tags page_title -style page_title
 		
 		# Insight-style background shapes
 		dui add canvas_item rect $page 10 190 2550 1430 -style insight_back_box
@@ -3951,8 +4034,10 @@ namespace eval ::dui::pages::dui_number_editor {
 			set col 0
 			incr row
 		}
-		
-		dui add dbutton $page 1035 1460 -tags dne_settings_ok -style insight_ok -command page_done -label [translate Ok]
+
+		# Ok and Cancel buttons
+		dui add dbutton $page 750 1460 -tags page_cancel -style insight_ok -label [translate Cancel]
+		dui add dbutton $page 1330 1460 -tags page_done -style insight_ok -label [translate Ok]
 	}
 	
 	# Accepts any of the named options -page_title, -callback_cmd, -min, -max, -n_decimals, -default, -smallincrement  
@@ -4153,6 +4238,251 @@ namespace eval ::dui::pages::dui_number_editor {
 			dui page show_when_off $data(previous_page)
 		}
 	}
+}
+
+namespace eval ::dui::pages::dui_item_selector {
+	variable widgets
+	array set widgets {}
+	
+	# NOTE that we use "item_values" to hold all available items, not "items" as the listbox widget, as we need
+	# to have the full list always stored. So the "items" listbox widget does not have a list_variable but we
+	# directly add to it, and it may contain a filtered version of "item_values".	
+	variable data
+	array set data {
+		previous_page {}
+		callback_cmd {}
+		page_title {}
+		variable {} 
+		item_type {}
+		selectmode {browser}
+		filter_string {}
+		filter_indexes {}
+		item_ids {}
+		item_values {}
+		empty_items_msg {}
+		listbox_width 1775
+	}
+		
+	proc setup {} {
+		variable widgets
+		variable data
+		set page [namespace tail [namespace current]]
+		set font_size +1
+		
+		# Page and title
+		dui page add $page -namespace 1
+		dui add variable $page 1280 100 -tags page_title -style page_title
+		
+		# Insight-style background shapes
+		dui add canvas_item rect $page 10 190 2550 1430 -style insight_back_box
+		dui add canvas_item line $page 14 188 2552 189 -style insight_back_box_shadow
+		dui add canvas_item line $page 2551 188 2552 1426 -style insight_back_box_shadow
+		dui add canvas_item rect $page 22 210 2536 1410 -style insight_front_box
+		
+		# Items search entry box
+		dui add entry $page 1280 250 -tags filter_string -canvas_width $data(listbox_width) -canvas_anchor n \
+			-font_size $font_size -label [translate Filter] -label_pos {wn -20 3} -label_anchor ne \
+			-label_justify right -label_font_size $font_size 
+		bind $widgets(filter_string) <KeyRelease> ::dui::pages::dui_item_selector::filter_string_change 
+		
+		# Empty category message
+		dui add variable $page 1280 750 -tags empty_items_msg -style remark -font_size +2 -anchor center \
+			-justify "center" -state hidden
+	
+		# Items listbox: Don't use $data(items) as listvariable, as the list changes dynamically with the filter string!
+		dui add listbox $page 1280 350 -tags items -listvariable {} -canvas_width $data(listbox_width) -canvas_height 1000 \
+			-canvas_anchor n -font_size $font_size -label [translate "Values"] -label_pos {wn -20 3} \
+			-label_anchor ne -label_justify right -label_font_size $font_size -yscrollbar 1
+		
+		bind $widgets(items) <<ListboxSelect>> ::dui::pages::dui_item_selector::items_select
+		bind $widgets(items) <Double-Button-1> ::dui::pages::dui_item_selector::page_done
+				
+		# Ok and Cancel buttons
+		dui add dbutton $page 750 1460 -tags page_cancel -style insight_ok -label [translate Cancel]
+		dui add dbutton $page 1330 1460 -tags page_done -style insight_ok -label [translate Ok]
+	}
+	
+	# Named options:
+	#	-page_title
+	#	-item_type: an optional string to identify the type of data being edited. This is occasionally useful when
+	#		passed to a callback command, so that a single callback can be used for several item types.
+	#	-item_ids: use this to assign a lookup value that identifies the selected item, such as a unique ID.
+	#	-callback_cmd: an optional command to be executed when control is returned to the calling page (i.e. when "Ok" of "Cancel" are clicked). 
+	#		It must be a function with three arguments {item_id item_value item_type} that processes the result and moves 
+	#		to the source page (or somewhere else). 
+	#	-selected: list of items to be selected when the page is open. If some of them is not in 'items', it is appended
+	#		to the list.
+	#	-selectmode: single, browser, multiple or extended.
+	#	-empty_items_msg: text to show if there are no items to select.
+	#	-listbox_width: the width in pixels of the filter entry and the items listbox.
+	
+	proc load { page_to_hide page_to_show variable items args } {
+		variable data
+		variable widgets
+		array set opts $args
+
+		if { $page_to_hide eq "" } {
+			msg -WARN [namespace current] load "NO PAGE TO HIDE"
+		}
+		set data(previous_page) $page_to_hide
+		set data(page_title) [ifexists opts(-page_title) [translate "Select an item"]]
+		
+		# If no selected is given, but variable is given and it has a current value, use it as selected.
+		set data(variable) $variable
+		set selected [ifexists opts(-selected) ""]
+		if { $variable ne "" && $selected eq "" && [subst "\$$variable"] ne "" } {
+			set selected [subst "\$$data(variable)"]
+		}	
+		# Add the current/selected value if not included in the list of available items
+		set data(item_ids) [ifexists opts(-item_ids)]
+		if { $selected ne "" } {
+			if { $selected ni $items } {
+				if { [llength $data(item_ids)] > 0 } { 
+					lappend data(item_ids) -1 
+				}
+				lappend items $selected
+			}
+		}
+		set data(item_values) $items
+		set data(item_type) [ifexists opts(-item_type)]
+		set data(callback_cmd) [ifexists opts(-callback_cmd)]
+		set data(selectmode) [ifexists opts(-selectmode) "browser"]
+		set data(empty_items_msg) [ifexists opts(-empty_items_msg) [translate "There are no available items to show"]]
+		set data(listbox_width) [number_in_range [ifexists opts(-listbox_width) 1775] {} 200 2100 {} 0]
+		set data(filter_string) {}
+		set data(filter_indexes) {}
+	
+		# We load the widget items directly instead of mapping it to a listvariable, as it may have either the full
+		# list or a filtered one.	
+		$widgets(items) delete 0 end
+		$widgets(items) insert 0 {*}$items
+		
+		if { $selected ne "" } {		
+			set idx [lsearch -exact $items $selected]
+			if { $idx >= 0 } {
+				$widgets(items) selection set $idx
+				$widgets(items) see $idx
+				items_select
+			}
+		}
+	}
+	
+	proc show { page_to_hide page_to_show } {
+		variable data
+		variable widgets
+		set can [dui canvas]
+		set page [namespace tail [namespace current]]
+	
+		set lst [dui item get $page items]
+		lassign [$can bbox $lst] x0 y0 x1 y1
+		set target_width [rescale_x_skin $data(listbox_width)]
+		if { [expr {abs($x1-$x0-$target_width) > 10}] } {
+			$can itemconfig $lst -width $target_width
+			$can itemconfig [dui item get $page filter_string] -width $target_width
+			# Reposition the labels and scrollbars
+			foreach action [dui page actions $page show] {
+				eval $action
+			}			
+		}
+
+		set n_items [llength $data(item_values)] 
+		if { $n_items == 0 } {
+			say [translate "no choices"] $::settings(sound_button_out)
+			dui item hide $page {filter_string* items*}
+		}
+		
+		dui item show_or_hide [expr {$n_items == 0}] $page empty_items_msg	
+	}
+
+	proc filter_string_change {} {
+		variable data
+		variable widgets
+		
+		set items_widget $widgets(items)
+		set item_values $data(item_values)
+		set filter_string $data(filter_string) 
+		set filter_indexes $data(filter_indexes)
+		
+		if { [string length $filter_string ] < 3 } {
+			# Show full list
+			if { [llength $item_values] > [$items_widget index end] } {
+				$items_widget delete 0 end
+				$items_widget insert 0 {*}$item_values
+			}
+			set filter_indexes {}
+		} else {
+			set filter_indexes [lsearch -all -nocase $item_values "*$filter_string*"]
+	
+			$items_widget delete 0 end
+			set i 0
+			foreach idx $filter_indexes { 
+				$items_widget insert $i [lindex $item_values $idx]
+				incr i 
+			}
+		}
+	}
+	
+	proc items_select {} {
+#		variable data
+#		variable widgets
+#		set widget $widgets(items)
+#		
+#		if { $data(allow_modify) == 1 } {
+#			if { [$widget curselection] eq "" } {
+#				set data(modified_value) {}
+#			} else {
+#				set data(modified_value) [$widget get [$widget curselection]]
+#			}
+#		}	
+	}
+		
+	proc page_cancel {} {
+		variable data
+		say [translate {cancel}] $::settings(sound_button_in)
+msg [namespace current] "PREVIOUS_PAGE=$data(previous_page), CALLBACK_CMD=$data(callback_cmd)"	
+		if { $data(callback_cmd) ne "" } {
+			$data(callback_cmd) {} {} $data(item_type)
+		} else {
+			dui page show_when_off $data(previous_page)
+		}
+	}
+		
+	proc page_done {} {
+		variable data
+		variable widgets
+		say [translate {done}] $::settings(sound_button_in)
+msg [namespace current] "PREVIOUS_PAGE=$data(previous_page), CALLBACK_CMD=$data(callback_cmd)"
+		set items_widget $widgets(items)
+		set item_value {}
+		set item_id {}
+		
+		# TODO: Return a list if selectmode=multiple/extended
+		if {[$items_widget curselection] ne ""} {
+			set sel_idx [$items_widget curselection]
+			set item_value [$items_widget get $sel_idx]
+						
+			if { [llength $data(item_ids)] == 0 } {
+				set item_id $item_value
+			} else {
+				if { [llength $data(filter_indexes)] > 0 } {
+					set new_sel_idx [lindex $data(filter_indexes) $sel_idx]
+					set sel_idx $new_sel_idx
+				}
+				set item_id [lindex $data(item_ids) $sel_idx]
+			}
+		}
+	
+		
+		if { $data(callback_cmd) ne "" } {
+			$data(callback_cmd) $item_id $item_value $data(item_type)
+		} else {
+			if { $data(variable) ne "" } {
+				set $data(variable) $item_value
+			}
+			dui page show_when_off $data(previous_page)
+		}
+	}
+
 }
 
 ### JUST FOR TESTING
