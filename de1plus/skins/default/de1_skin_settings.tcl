@@ -1295,7 +1295,6 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		}
 		add_de1_variable "calibrate" 500 [expr {(4 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
 		add_de1_variable "calibrate" 500 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_flow_calibration $::settings(steam_flow)]}
-		#add_de1_variable "calibrate" 500 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(stop_weight_before_seconds)}
 
 	add_de1_text "calibrate" 760 $calibration_labels_row -text [translate "Factory"] -font Helv_8_bold -fill "#c0c4e1" -anchor "ne" 
 		add_de1_variable "calibrate" 760 [expr {(1 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_plus_or_minus_number $::de1(factory_calibration_temperature)]}
@@ -1305,7 +1304,6 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		}
 		add_de1_variable "calibrate" 760 [expr {(4 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
 		add_de1_variable "calibrate" 760 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_flow_calibration $::settings(steam_flow)]}
-		#add_de1_variable "calibrate" 760 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {$::settings(stop_weight_before_seconds)}
 
 
 	add_de1_text "calibrate" 850 $calibration_labels_row -text [translate "Sensor"] -font Helv_8_bold -fill "#c0c4e1" -anchor "nw" 
@@ -1316,7 +1314,7 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		}
 		add_de1_text "calibrate" 850 [expr {(4 * $calibration_row_spacing) + $calibration_labels_row}]  -text [translate "Steam temperature"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" 
 		add_de1_text "calibrate" 850 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row}]  -text [translate "Steam flow rate"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" 
-		add_de1_text "calibrate2" 1350 1000 -text [translate "Stop at weight"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
+		add_de1_text "calibrate2" 1350 1000 -text [translate "Stop at weight offset"] -font Helv_9_bold -fill "#7f879a" -anchor "nw"
 		add_de1_text "calibrate" 850 [expr {(6 * $calibration_row_spacing) + $calibration_labels_row}]  -text [translate "Fan turns on at:"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" 
 
 
@@ -1381,7 +1379,7 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		add_de1_widget "calibrate" scale 1880 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row - [rescale_y_skin 16]}]  {} -to $max_steam_flow_rate -from 40 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 10 -length [rescale_x_skin 400]  -width [rescale_y_skin 90] -variable ::settings(steam_flow) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 
 		add_de1_widget "calibrate2" scale 1350 1060  {} -to 1 -from -1 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement .1 -resolution .01 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(stop_weight_before_seconds) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "calibrate2" 1970 1080  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[seconds_text $::settings(stop_weight_before_seconds)]}
+		add_de1_variable "calibrate2" 1970 1080  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[format "%.2f %s" $::settings(stop_weight_before_seconds) [translate {seconds}]]}
 
 #add_de1_widget "calibrate2" scale 1350 860  {} -to 80 -from 5 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(phase_2_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 #add_de1_variable "calibrate2" 1970 880  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_flow_calibration_measurement $::settings(phase_2_flow_rate)]}
