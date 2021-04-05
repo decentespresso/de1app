@@ -1237,6 +1237,9 @@ proc load_settings {} {
         set ::settings(scale_type) "atomaxskale"
     }
 
+    # Transitional for v1.35 where this adjustment became relative to expected delay
+    # There is no physical reason for this limit, only to assist users upgrading
+
     if {[ifexists ::settings(stop_weight_before_seconds)] > 1.0 } {
         set ::settings(stop_weight_before_seconds) 0.15
     }
