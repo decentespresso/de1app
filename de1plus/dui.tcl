@@ -42,12 +42,14 @@ namespace eval ::dui {
 	# create_page_namespaces: Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created 
 	#	page, unless a different namespace is provided in the -namespace option of 'dui page add'.
 	# trim_entries: Set to 1 to trim leading and trailing whitespace when modifying the values in entry boxes. 
-	# use_editor_pages: Set to 1 to default to use editor pages if available (currently only for numbers) 	
+	# use_editor_pages: Set to 1 to default to use editor pages if available (currently only for numbers)
+	# timer_interval: Number of milliseconds between updates of on-screen variables (in the active page)
 	array set settings {
 		debug_buttons 0
 		create_page_namespaces 0
 		trim_entries 0
 		use_editor_pages 1
+		timer_interval 100
 	}
 	
 	### PLATFORM SUB-ENSEMBLE ###
@@ -868,9 +870,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set tags [get_option -tags {} 1 largs]
 			set auto_assign_tag 0
 			if { [llength $tags] == 0 } {
-				# Add 'dui_' prefix to avoid clashing with the existing tag system. 
-				# TODO Remove 'dui_' when base code has been migrated.
-				set main_tag "dui_${type}_[incr item_cnt]"
+				set main_tag "${type}_[incr item_cnt]"
 				set tags $main_tag
 				set auto_assign_tag 1
 			} else {				
@@ -882,10 +882,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					return
 				}
 			}
-			# We need to ensure GLOBAL main tag uniqueness while we coexist with the old labelling system, otherwise
-			#	duplicated tags in several pages will be shown in all pages in which they appear.
-			# Once it's unified, we'll request only uniqueness PER PAGE.
-			#if { [$can find withtag $main_tag] ne "" }
+			# Main tags must be unique per-page.
 			foreach page $pages {
 				if { [$can find withtag $main_tag&&p:$page] ne "" } {
 					set msg "Main tag '$main_tag' already exists in page '$page', duplicates are not allowed"
@@ -893,17 +890,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					error $msg
 					return
 				}
-			}
-			
-			# Change to this when there's no need to coexist with the old labelling system
-#			foreach page $pages { 
-#				if { [$can find withtag p:$page&&$main_tag] ne "" } {
-#					set msg "Main tag '$main_tag' already exists in canvas page '$page', duplicates are not allowed"
-#					msg [namespace current] process_tags_and_var $msg
-#					error $msg
-#					return
-#				}
-#			}
+			}			
 			
 			if { $add_multi == 1 && "$main_tag*" ni $tags } {
 				lappend tags "$main_tag*"
@@ -1175,7 +1162,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 	### PAGE SUB-ENSEMBLE ###
 	# AT THE MOMENT ONLY page_add SHOULD BE USED AS OTHERS MAY BREAK BACKWARDS COMPATIBILITY #
 	namespace eval page {
-		namespace export add current exists list get_namespace set_next show_when_off show add_action actions
+		namespace export add current exists list get_namespace set_next show_when_off show add_action actions \
+			add_items add_variable
 		namespace ensemble create
 
 		# Metadata for every added page. Array keys have the form '<page_name>,<type>', where <type> can be:
@@ -1183,9 +1171,18 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#	'load': List of Tcl callbacks to run when the page is going to be shown, but before if is actually shown.
 		#	'show': List of Tcl callbacks to run just after the page is shown. 
 		#	'hide': List of Tcl callbacks to run just after the page is hidden.
+		#	'variables': List of canvas_ids-tcl_code variable pairs to update on the page while it's visible.  
 		variable pages_data 
 		array set pages_data {}
+		
+		# A cache to only update variables whose values have actually changed. 
+		variable variables_cache
+		array set variables_cache {}
 
+		# Keep track of which variables we have already warned about in update_onscreen_variables, otherwise the log
+		#	can fill with thousands of identical entries and destroy performance.
+		variable warned_variables {}
+		
 		#variable nextpage
 		#array set nextpage {}
 		#variable exit_app_on_sleep 0
@@ -1231,7 +1228,6 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 						#set tag "${c}.background"
 						$can create rect 0 0 [rescale_x_skin 2560] [rescale_y_skin 1600] -fill $bg_color -width 0 \
 							-tags  [list pages $c] -state "hidden"
-						#dui item add_to_pages $c $tag
 					}
 				}
 			}
@@ -1357,7 +1353,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		
 			msg [namespace current] display_change "$page_to_hide->$page_to_show"
 				
-			# EB: This should be handled by the main app adding actions to the sleep/off/saver pages
+			# TODO: This should be handled by the main app adding actions to the sleep/off/saver pages
 			if {$page_to_hide == "sleep" && $page_to_show == "off"} {
 				msg [namespace current] "discarding intermediate sleep/off state msg"
 				return 
@@ -1373,7 +1369,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			#msg "page_display_change $page_to_show"
 			#set start [clock milliseconds]
 		
-			# EB: This should be added on the main app as a load action on the "saver" page
+			# TODO: This should be added on the main app as a load action on the "saver" page
 			# set the brightness in one place
 			if {$page_to_show == "saver" } {
 				if {$::settings(screen_saver_change_interval) == 0} {
@@ -1394,9 +1390,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				unset -nocomplain ::idle_next_step 
 				eval $todo
 			}
-			
-			# EB
 
+			# run load actions
 			foreach action [actions $page_to_show load] {
 				eval $action
 			}
@@ -1408,6 +1403,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				}
 			}
 
+			# run hide actions
 			foreach action [actions $page_to_hide hide] {
 				eval $action
 			}			
@@ -1415,7 +1411,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				${hide_ns}::hide $page_to_hide $page_to_show
 			}
 
-			#global current_context
+			# update global page
 			set ::de1(current_context) $page_to_show
 		
 			#puts "page_display_change hide:$page_to_hide show:$page_to_show"
@@ -1467,72 +1463,25 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		
 			}
 		
-#			try {
-#				$can itemconfigure $page_to_show -state normal
-#			} on error err {
-#				msg -ERROR [namespace current ] display_change "showing page $page_to_show: $err"
-#			}
-		
-#			set these_labels [ifexists ::existing_labels($page_to_show)]
-#			#msg "these_labels: $these_labels"
-#					
-#			if {[info exists ::all_labels] != 1} {
-#				set ::all_labels {}
-#				foreach {page labels} [array get ::existing_labels]  {
-#					set ::all_labels [concat $::all_labels $labels]
-#				}
-#				set ::all_labels [lsort -unique $::all_labels]
-#			}
-		
-			#msg "Hiding [llength $::all_labels] labels"
-#			foreach label $::all_labels {
-#				if {[$can itemcget $label -state] != "hidden"} {
-#					$can itemconfigure $label -state hidden
-#					#msg "hiding: '$label'"
-#				}
-#			}
-
-			# EB NO NEED TO USE ::all_labels like commented code above, can do with canvas tags. 
-			# Not even looping needed! Just hide everything!??
+			# hide all canvas items at once!
 			$can itemconfigure all -state hidden
-#			foreach item [$can find withtag all] {
-#				if { [$can itemcget $item -state] ne "hidden" } {
-#					$can itemconfigure $item -state hidden
-#				}
-#			}
 
+			# show background, then all page items
 			try {
 				$can itemconfigure $page_to_show -state normal
 			} on error err {
 				msg -ERROR [namespace current ] display_change "showing page $page_to_show: $err"
 			}
-			
-			#msg "Showing [llength $these_labels] labels"
+						
+			# new dui system, show page items using the "p:<page_name>" tags 
+			foreach item [$can find withtag p:$page_to_show] {
+				$can itemconfigure $item -state normal
+			}
 
-			# Backward-compatible for pages that are not created using the new tags system.
-			# WARNING: Until we remove this code we may have a problem with duplicated tags in two pages if they are 
-			#	created with DUI but without a namespace, as they will not be detected as using the new system and
-			#	this legacy code will show them in both pages.
-#			if { $show_ns eq "" } {
-#				foreach label $these_labels {
-#					$can itemconfigure $label -state normal
-#					#msg "showing: '$label'"
-#				}
-#			}
-			
-			# New dui system, no need to use ::existing_labels, can do with canvas tags, provided p:<page_name> tags 
-			#	were used.
-			#set items_to_show [$can find withtag p:$page_to_show]
-			#if { [llength $items_to_show] > 0 } {
-				foreach item [$can find withtag p:$page_to_show] {
-					$can itemconfigure $item -state normal
-				}
-			#} 
-			
+			# run show actions
 			foreach action [actions $page_to_show show] {
 				eval $action
-			}
-			
+			}			
 			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
 				${show_ns}::show $page_to_hide $page_to_show
 				#set ::dui::pages::${page_to_show}::page_drawn 1
@@ -1540,23 +1489,11 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			
 			#set end [clock milliseconds]
 			#puts "elapsed: [expr {$end - $start}]"
-		
-			# The old actions system, equivalent to the new page "show" event action. 
-			# No need to keep as add_de1_action has now been mapped to 'dui page add_action <page> show'
-#			global actions
-#			if {[info exists actions($page_to_show)] == 1} {
-#				foreach action $actions($page_to_show) {
-#					eval $action
-#					msg "action: '$action"
-#				}
-#			}
-
+			
 			update
-						
-			#msg "Switched to page: $page_to_show [stacktrace]"
-		
 			update_onscreen_variables
 			dui platform hide_android_keyboard
+			#msg "Switched to page: $page_to_show [stacktrace]"
 		}
 		
 		proc add_action { pages event tclcode } {
@@ -1576,43 +1513,13 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 			return [ifexists pages_data($page,$event)]
 		}
-	}
-	
-	### ITEMS SUB-ENSEMBLE ###
-	# Items are visual items added to the canvas, either canvas items (text, arcs, lines...) or Tk widgets.
-	namespace eval item {
-		namespace export add add_to_pages get get_widget config cget enable_or_disable enable disable \
-			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection
-		namespace ensemble create
-	
-		variable sliders
-		array set sliders {}
-		
-		# A list of paths where to look for image files. Within each, it will look in the
-		#	<resolution_width>x<resolution_height> subfolder.
-		variable img_dirs {}
 		
 		# Keep track of what labels are displayed in what pages. This is done through the "p:<page_name>" canvas tags 
 		#	associated to each item.
 		# This is provided for backwards-compatibility and as a helper for client code that creates its own GUI 
 		#	elements, but is NOT USED by DUI. The construction of the tags in dui::args::process_tags_and_var does
 		#	the job.
-		proc add_to_pages { pages tags } {
-#			global existing_labels
-#			foreach page $pages {
-#				set page_tags [ifexists existing_labels($page)]
-#				foreach tag $tags {					
-#					if { $tag in $page_tags } {
-#						#msg -WARN [namespace current] "tag/label '$tag' already exists in page '$page'"
-#						error "label '$tag' already exists in page '$page'"
-#					} else {
-#						msg [namespace current] "adding tag '$tag' to page '$page'"
-#						lappend page_tags $tag
-#					}
-#				}
-#				set existing_labels($page) $page_tags
-#			}
-			
+		proc add_items { pages tags } {
 			set can [dui canvas]
 			foreach tag $tags {
 				set item_tags [$can gettags $tag]
@@ -1627,6 +1534,82 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 		}
 		
+		proc add_variable { pages id tcl_code } {
+			variable pages_data
+			
+			if { $tcl_code ne "" } {
+				#msg [namespace current] add_variable "with id '$id' to pages '$pages'"
+				foreach page $pages {
+					lappend pages_data(${page},variables) $id $tcl_code
+				}
+			}
+		}
+		
+		# NOTE: state argument not used in the command, need to keep it???
+		proc update_onscreen_variables { } {
+			variable update_onscreen_variables_alarm_handle
+			variable pages_data
+			variable variables_cache
+			variable warned_variables
+			
+			set can [dui canvas]
+			set current_page [current]
+						
+			set something_updated 0	
+			if {[info exists pages_data(${current_page},variables)] == 1} {
+				set ids_to_update $pages_data(${current_page},variables) 
+				foreach {id varcode} $ids_to_update {
+					set varvalue ""
+					try {
+						set varvalue [subst $varcode]
+					} on error err {
+						# The log can fill with thousands of identical entries if this is hit, so we save those already
+						#	warned about, to warn just once per ID.
+						if { $id ni $warned_variables } {  
+							msg -ERROR [namespace current] update_onscreen_variables: $err
+							lappend warned_variables $id
+						}
+					}
+		
+					if { [ifexists variables_cache($id)] ne $varvalue } {
+						$can itemconfig $id -text $varvalue
+						set variables_cache($id) $varvalue
+						set something_updated 1
+					}
+				}
+			}
+		
+			# john 3-10-19 not sure we need to do a forced screen update
+			# See also https://wiki.tcl-lang.org/page/Update+considered+harmful
+#			if {$something_updated == 1} {
+#				update
+#			}
+		
+			#set y [clock milliseconds]
+			#puts "elapsed: [expr {$y - $x}] $something_updated"
+		
+			if {[info exists update_onscreen_variables_alarm_handle] == 1} {
+				after cancel $update_onscreen_variables_alarm_handle
+				unset update_onscreen_variables_alarm_handle
+			}
+			set update_onscreen_variables_alarm_handle [after [dui cget timer_interval] ::update_onscreen_variables]
+		}
+	}
+	
+	### ITEMS SUB-ENSEMBLE ###
+	# Items are visual items added to the canvas, either canvas items (text, arcs, lines...) or Tk widgets.
+	namespace eval item {
+		namespace export add get get_widget config cget enable_or_disable enable disable \
+			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection
+		namespace ensemble create
+	
+		variable sliders
+		array set sliders {}
+		
+		# A list of paths where to look for image files. Within each, it will look in the
+		#	<resolution_width>x<resolution_height> subfolder.
+		variable img_dirs {}
+				
 		# Just a wrapper for the add_* commands, for consistency of the API
 		proc add { type args } {
 			if { [info proc ::dui::add::$type] ne "" } {
@@ -1754,20 +1737,6 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 		}
 		
-#		proc config { page tags args } {
-#			set can [dui canvas]
-#			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, iterating
-#			#	is often needed.
-#			foreach item [get $page $tags] {
-#				#msg [namespace current] "config:" "tag '$tag' of type '[$can type $tag]' with '$args'"
-#				if { [$can type $item] eq "window" } {
-#					[$can itemcget $item -window] configure {*}$args
-#				} else {
-#					$can itemconfigure $item {*}$args
-#				}
-#			}
-#		}
-
 		proc cget { page_or_ids_or_widgets args } {
 			set can [dui canvas]
 			if { [string range [lindex $args 0] 0 0] eq "-" || [lindex $args 0] eq "" } {
@@ -2603,11 +2572,11 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $w
 			}
-			#dui item add_to_pages $pages $main_tag
 			
-			msg -INFO [namespace current] canvas_item "$type '$main_tag' to page(s) '$pages' with args '$args'"
+			#msg -INFO [namespace current] canvas_item "$type '$main_tag' to page(s) '$pages' with args '$args'"
 			return $main_tag
 		}
+		
 		
 		# Add text items to the canvas. Returns the list of all added tags (one per page).
 		#
@@ -2652,8 +2621,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $id
 			}
-			#dui item add_to_pages $pages $main_tag
-			msg -INFO [namespace current] text "'$main_tag' to page(s) '$pages' with args '$args'"
+			#msg -INFO [namespace current] text "'$main_tag' to page(s) '$pages' with args '$args'"
 			return $id
 		}
 		
@@ -2671,17 +2639,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			
 			set tags [dui::args::process_tags_and_var $pages "variable" -textvariable]
 			set main_tag [lindex $tags 0]
-			set varcmd [dui::args::get_option -textvariable "" 1]
+			set varcode [dui::args::get_option -textvariable "" 1]
 	
 			set id [dui add text $pages $x $y {*}$args]
-			
-			if { $varcmd ne "" } {
-				foreach page $pages {
-					msg [namespace current] variable "with tag '$main_tag' to page(s) '$page'"
-					lappend variable_labels($page) [list $main_tag $varcmd]
-				}
-			}
-			
+			dui page add_variable $pages $id $varcode
 			return $id
 		}
 		
@@ -2857,8 +2818,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 			if { $ids ne "" && $ns ne "" } {
 				set ${ns}::widgets([lindex $button_tags 0]) $ids
-				#dui item add_to_pages $pages [lindex $button_tags 0]
-			}					
+			}
 			
 			if { $label ne "" } {
 				dui add text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type dbutton_label \
@@ -2897,12 +2857,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				$can bind $id [platform_button_press] $cmd
 			}
 			
-			msg -INFO [namespace current] dbutton "'$main_tag' to page(s) '$pages' with args '$args'"
-if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"}			
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $id
-			}								
-			#dui item add_to_pages $pages $main_tag
+			}
+			#msg -INFO [namespace current] dbutton "'$main_tag' to page(s) '$pages' with args '$args'"			
 			return $id
 		}
 
@@ -2974,9 +2932,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $w
 			}			
-			#dui item add_to_pages $pages $main_tag
-			
-			msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args'"			
+			#msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args'"			
 			return $main_tag
 		}
 				
@@ -3012,12 +2968,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			}
 			
 			set style [dui::args::get_option -style "" 1]
-			dui::args::process_aspects $type $style
-#			foreach a [dui aspect list -type $type -style $style] {
-#				#msg [namespace current] widget "type=$type, style=$style, a=$a"
-#				dui::args::add_option_if_not_exists -$a [dui aspect get $type $a -style $style]
-#			}
-	
+			dui::args::process_aspects $type $style	
 			dui::args::process_font $type $style
 	
 			# Options that are to be passed to the 'canvas create' command instead of the widget creation command.
@@ -3086,14 +3037,13 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 				return
 			}
 				
-			# EB: Maintain this? I don't find any use of this array in the app code
+			# TBD: Maintain this? I don't find any use of this array in the app code
 			#set ::tclwindows($widget) [list $x $y]
-			msg -INFO [namespace current] widget "$type '$main_tag' to page(s) '$pages' with args '$args'"
+			#msg -INFO [namespace current] widget "$type '$main_tag' to page(s) '$pages' with args '$args'"
 
 			if { $ns ne "" } {
 				set "${ns}::widgets($main_tag)" $widget
 			}			
-			#dui item add_to_pages $pages $main_tag
 			return $widget
 		}
 		
@@ -3631,7 +3581,6 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 				$can bind $label_id [platform_button_press] $editor_cmd
 			}
 			
-			#dui item add_to_pages $pages $main_tag
 			return $ids
 		}
 		
@@ -3838,9 +3787,13 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 		
 		foreach key [array names opts] {
 			if { [info exists settings($key)] } {
-				set settings($key) [string is true -strict $opts($key)]
+				if { $key in {debug_buttons create_page_namespaces trim_entries use_editor_pages} } {
+					set settings($key) [string is true -strict $opts($key)]
+				} else {
+					set settings($key) $opts($key)
+				}
 			} else {
-				msg -WARN [namespace current] config: "invalid setting variable '$key'"
+				msg -WARN [namespace current] config: "invalid settings variable '$key'"
 			}
 		}
 	}
@@ -3852,7 +3805,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 		if { [info exists settings($varname)] } {
 			return $settings($varname)
 		} else {
-			msg -NOTICE [namespace current] cget: "invalid setting variable '$varname'"
+			msg -NOTICE [namespace current] cget: "invalid settings variable '$varname'"
 			return ""
 		}
 	}

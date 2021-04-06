@@ -705,7 +705,7 @@ proc add_variable_item_to_context {context label_name varcmd} {
 
 
 proc add_visual_item_to_context {context label_name} {
-	dui item add_to_pages $context $label_name
+	dui page add_items $context $label_name
 	
 #	global existing_labels
 #	set existing_text_labels [ifexists existing_labels($context)]
@@ -811,7 +811,7 @@ proc add_de1_text {args} {
 #	return $label_name
 }
 
-set image_cnt 0
+#set image_cnt 0
 proc add_de1_image {args} {
 	return [dui add image [lindex $args 0] [lindex $args 1] [lindex $args 2] [lindex $args 3] -theme none]
 	
@@ -837,7 +837,7 @@ proc add_de1_image {args} {
 
 
 # derivced from sample code at http://wiki.tcl.tk/17067
-set widget_cnt 0
+#set widget_cnt 0
 proc add_de1_widget {args} {
 	return [dui add widget [lindex $args 1] [lindex $args 0] [lindex $args 2] [lindex $args 3] -tclcode [lindex $args 4] \
 		-theme none {*}[lrange $args 5 end]]
@@ -906,28 +906,31 @@ proc add_de1_widget {args} {
 
 
 proc add_de1_variable {args} {
-
 	set varcmd [lindex [unshift args] 0]
 	set lastcmd [unshift args]
 	if {$lastcmd != "-textvariable"} {
-		msg -WARNING "last -command needs to be -textvariable on a add_de1_variable line. You entered: '$lastcmd'"
+		msg -WARN add_de1_variable "last -command needs to be -textvariable on a add_de1_variable line. You entered: '$lastcmd'"
 		return
 	}
-	set contexts [lindex $args 0]
-	set label_name [eval add_de1_text $args]
-
-	# john 24-1-20 now unneeded code https://3.basecamp.com/3671212/buckets/7351439/messages/2360038011
-	#set x [rescale_x_skin [lindex $args 1]]
-	#set y [rescale_y_skin [lindex $args 2]]
-	#set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
-	#eval $torun
-	#incr ::text_cnt
-
-	foreach context $contexts {
-		# keep track of what labels are displayed in what contexts
-		add_variable_item_to_context $context $label_name $varcmd
-	}
-	return $label_name
+	
+	return [dui add variable [lindex $args 0] [lindex $args 1] [lindex $args 2] -compatibility_mode 1 \
+		-textvariable $varcmd {*}[lrange $args 3 end]]
+	
+#	set contexts [lindex $args 0]
+#	set label_name [eval add_de1_text $args]
+#
+#	# john 24-1-20 now unneeded code https://3.basecamp.com/3671212/buckets/7351439/messages/2360038011
+#	#set x [rescale_x_skin [lindex $args 1]]
+#	#set y [rescale_y_skin [lindex $args 2]]
+#	#set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
+#	#eval $torun
+#	#incr ::text_cnt
+#
+#	foreach context $contexts {
+#		# keep track of what labels are displayed in what contexts
+#		add_variable_item_to_context $context $label_name $varcmd
+#	}
+#	return $label_name
 }
 
 proc stop_screen_saver_timer {} {
@@ -1299,48 +1302,49 @@ proc update_onscreen_variables { {state {}} } {
   	#set ::timers($state_timerkey) $now
   	#set ::substate_timers($timerkey) $now
 
-
-	#set x [clock milliseconds]
-	global variable_labels
-	set something_updated 0
-	if {[info exists variable_labels($::de1(current_context))] == 1} {
-		set labels_to_update $variable_labels($::de1(current_context)) 
-		foreach label_to_update $labels_to_update {
-			set label_name [lindex $label_to_update 0]
-			set label_cmd [lindex $label_to_update 1]
-			
-			set label_value ""
-			set errcode [catch {
-				set label_value [subst $label_cmd]
-			}]
-
-
-		    if {$errcode != 0} {
-		        catch {
-		            msg -ERROR "update_onscreen_variables error: $::errorInfo"
-		        }
-		    }
-
-			if {[ifexists ::labelcache($label_name)] != $label_value} {
-				.can itemconfig $label_name -text $label_value
-				set ::labelcache($label_name) $label_value
-				set something_updated 1
-			}
-		}
-	}
-
-	if {$something_updated == 1} {
-		# john 3-10-19 not sure we need to do a forced screen update
-		#update
-	}
-
-	#set y [clock milliseconds]
-
-	if {[info exists ::update_onscreen_variables_alarm_handle] == 1} {
-		after cancel $::update_onscreen_variables_alarm_handle
-		unset ::update_onscreen_variables_alarm_handle
-	}
-	set ::update_onscreen_variables_alarm_handle [after $::settings(timer_interval) update_onscreen_variables]
+  	::dui::page::update_onscreen_variables 
+#	#set x [clock milliseconds]
+#	global variable_labels
+#	set something_updated 0
+#	if {[info exists variable_labels($::de1(current_context))] == 1} {
+#		set labels_to_update $variable_labels($::de1(current_context)) 
+#		foreach label_to_update $labels_to_update {
+#			set label_name [lindex $label_to_update 0]
+#			set label_cmd [lindex $label_to_update 1]
+#			
+#			set label_value ""
+#			set errcode [catch {
+#				set label_value [subst $label_cmd]
+#			}]
+#
+#
+#		    if {$errcode != 0} {
+#		        catch {
+#		            msg "update_onscreen_variables error: $::errorInfo"
+#		        }
+#		    }
+#
+#			if {[ifexists ::labelcache($label_name)] != $label_value} {
+#				.can itemconfig $label_name -text $label_value
+#				set ::labelcache($label_name) $label_value
+#				set something_updated 1
+#			}
+#		}
+#	}
+#
+#	if {$something_updated == 1} {
+#		# john 3-10-19 not sure we need to do a forced screen update
+#		#update
+#	}
+#
+#	#set y [clock milliseconds]
+#	#puts "elapsed: [expr {$y - $x}] $something_updated"
+#
+#	if {[info exists ::update_onscreen_variables_alarm_handle] == 1} {
+#		after cancel $::update_onscreen_variables_alarm_handle
+#		unset ::update_onscreen_variables_alarm_handle
+#	}
+#	set ::update_onscreen_variables_alarm_handle [after $::settings(timer_interval) update_onscreen_variables]
 }
 
 proc set_next_page {machinepage guipage} {

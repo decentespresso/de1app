@@ -434,6 +434,8 @@ duplicated.
 > >Uses the aspects of the **page** type from theme  _theme_name_  instead of the aspects from the currently active
 theme. Used rarely, as the usual choice is to apply the default options from the current theme.
 
+> >Use the special value "**none**" as  _theme_name_  to not apply any aspects to the visual item.
+
 >**-style**  _style_name*
 
 > >Uses as default options the aspects from style  _style_name_  for the **page** type. If an aspect is not defined
@@ -588,9 +590,11 @@ not one but several items).
 
 4. DUI itself adds several tags to the list:
 
-	-One `p:<page_name>` tag per page in which the item appears. This is internally used to locate items in pages, find out which ones to show when a page has to be shown, etc.
+  -One `p:<page_name>` tag per page in which the item appears. This is internally used to locate items in pages, find out which ones to show when a page has to be shown, etc.
 	
-	-One common `<main_tag>*` tag to all canvas items created in the call. This is useful for control "compounds", such as an entry and its label; a listbox, its label and its crollbars; or each line, rectangle, oval, and text items used to create canvas-based controls such as rounded-rectangle buttons or dsliders. Using this notation, all individual items in a compound can be shown, hidden, enabled, disabled, recolored or moved at once using calls like **dui item enable espresso pressure_chart*** while still retaining the possibility of accessing and modifying each of the invididual elements.
+  -One common `<main_tag>*` tag to all canvas items created in the call. This is useful for control "compounds", such as an entry and its label; a listbox, its label and its crollbars; or each line, rectangle, oval, and text items used to create canvas-based controls such as rounded-rectangle buttons or dsliders. Using this notation, all individual items in a compound can be shown, hidden, enabled, disabled, recolored or moved at once using calls like **dui item enable espresso pressure_chart*** while still retaining the possibility of accessing and modifying each of the invididual elements.
+  
+  -For Tk widgets, the widget pathname is added as a tag, to allow "reverse searching" from pathnames to canvas IDs.
 
 <a name="items_api"></a>
 
