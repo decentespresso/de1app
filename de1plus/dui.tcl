@@ -16,7 +16,7 @@
 #		$::fontm, $::globals(entry_length_multiplier)
 #		$::android, $::undroid
 #		$::android_full_screen_flags
-
+#################################
 package provide de1_dui 1.0
 
 package require de1_logging 1.0
@@ -312,6 +312,13 @@ namespace eval ::dui {
 			default.line.width.insight_back_box_shadow 2
 			default.rect.fill.insight_front_box white
 			default.rect.width.insight_front_box 0
+			
+			default.graph.plotbackground "#F8F8F8"
+			default.graph.borderwidth 1
+			default.graph.background white
+			default.graph.plotrelief raised
+			default.graph.plotpady 0 
+			default.graph.plotpadx 10
 		}
 		#default.button.disabledfill "#ddd"
 		#default.button.radius 40 -- only include if the button style has shape=round
@@ -3001,7 +3008,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}			
 			
 			# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
-			if {$type eq "graph" && ($::android == 1 || $::undroid == 1)} {
+			# Kept temporarily for backwards-compatibility when using 'add_de1_widget graph' or 'dui add widget graph'. 
+			# Recommended current use is 'dui add graph'
+			if { $type eq "graph" && ($::android == 1 || $::undroid == 1) } {
 				$widget grid configure -dashes "" -color "#DDDDDD" -hide 0 -minor 1 
 				$widget configure -borderwidth 0
 				#$widget grid configure -hide 0
@@ -3737,6 +3746,24 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			return $ids
 		}
 
+		proc graph { pages x y args } {
+#			set tags [dui::args::process_tags_and_var $pages graph {} 1]
+#			set main_tag [lindex $tags 0]
+			
+			#set style [dui::args::get_option -style "" 0]
+			set width [dui::args::get_option -width "" 1]
+			if { $width ne "" } {
+				dui::args::add_option_if_not_exists -width [rescale_x_skin $width]
+			}
+			set height [dui::args::get_option -height "" 1]
+			if { $height ne "" } {
+				dui::args::add_option_if_not_exists -height [rescale_y_skin $height]
+			}
+#			dui::args::process_font listbox $style
+			
+			return [dui add widget graph $pages $x $y {*}$args]
+			
+		}
 	}
 	
 	### INITIALIZE ###
@@ -4453,7 +4480,7 @@ msg [namespace current] "PREVIOUS_PAGE=$data(previous_page), CALLBACK_CMD=$data(
 		variable data
 		variable widgets
 		say [translate {done}] $::settings(sound_button_in)
-msg [namespace current] "PREVIOUS_PAGE=$data(previous_page), CALLBACK_CMD=$data(callback_cmd)"
+
 		set items_widget $widgets(items)
 		set item_value {}
 		set item_id {}
@@ -4488,11 +4515,5 @@ msg [namespace current] "PREVIOUS_PAGE=$data(previous_page), CALLBACK_CMD=$data(
 }
 
 ### JUST FOR TESTING
-
-dui init
-#dui font add_dirs "[skin_directory]/fonts" "[homedir]/fonts"
-dui font add_dirs "[homedir]/fonts"
-# dui item add_image_dirs "[homedir]/skins/$::settings(skin)" "[homedir]/skins/default"
-dui item add_image_dirs "[homedir]/skins/Insight" "[homedir]/skins/default"
 set ::settings(enabled_plugins) {}
 # dui_demo SDB github
