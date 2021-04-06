@@ -705,79 +705,81 @@ proc add_variable_item_to_context {context label_name varcmd} {
 
 
 proc add_visual_item_to_context {context label_name} {
-	global existing_labels
-	set existing_text_labels [ifexists existing_labels($context)]
-	lappend existing_text_labels $label_name
-	set existing_labels($context) $existing_text_labels
+	dui item add_to_pages $context $label_name
+	
+#	global existing_labels
+#	set existing_text_labels [ifexists existing_labels($context)]
+#	lappend existing_text_labels $label_name
+#	set existing_labels($context) $existing_text_labels
 }
 
-set button_cnt 0
+#set button_cnt 0
 proc add_de1_action {context tclcmd} {
-	global actions
-	if {[info exists actions(context)] == 1} {
-		lappend actions($context) $tclcmd
-	} else {
-		set actions($context) $tclcmd
-	}
+	dui page add_action $context show $tclcmd
+	
+#	global actions
+#	if {[info exists actions(context)] == 1} {
+#		lappend actions($context) $tclcmd
+#	} else {
+#		set actions($context) $tclcmd
+#	}
 }
 
 proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
-	global button_cnt
-
-	incr button_cnt
-	set btn_name ".btn_$button_cnt"
-	#set btn_name $bname
-	global skindebug
-	set width 0
-	if {[info exists skindebug] == 1} {
-		if {$skindebug == 1} {
-			set width 1
-		}
-	}
-	set rx0 [rescale_x_skin $x0]
-	set rx1 [rescale_x_skin $x1]
-	set ry0 [rescale_y_skin $y0]
-	set ry1 [rescale_y_skin $y1]
-	.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
-	if {[info exists skindebug] == 1} {
-		if {$skindebug == 1} {
-			.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden 
-			#add_visual_item_to_context $displaycontext ${btn_name}_lines
-		}
-	}
-
-
-	#set tclcode [list page_display_change $displaycontext $newcontext]
-
-	regsub {%x0} $tclcode $rx0 tclcode
-	regsub {%x1} $tclcode $rx1 tclcode
-	regsub {%y0} $tclcode $ry0 tclcode
-	regsub {%y1} $tclcode $ry1 tclcode
-
-	if {[string first buttonlongpress $options] != -1} {
-		.can bind $btn_name [platform_button_long_press] $tclcode
-	} elseif {[string first buttonnativepress $options] != -1} {
-		.can bind $btn_name [platform_button_native_press] $tclcode
-	} else {
-		.can bind $btn_name [platform_button_press] $tclcode
-	}
+	dui add dbutton $displaycontexts $x0 $y0 $x1 $y1 -command $tclcode -theme none 
 	
-#	if {$::settings(disable_long_press) != 1 } {
-#		.can bind $btn_name [platform_button_long_press] $tclcode
+#	global button_cnt
+#
+#	incr button_cnt
+#	set btn_name ".btn_$button_cnt"
+#	#set btn_name $bname
+#	global skindebug
+#	set width 0
+#	if {[info exists skindebug] == 1} {
+#		if {$skindebug == 1} {
+#			set width 1
+#		}
 #	}
-
-#	if {[string first mousemove $options] != -1} {
-#		.can bind $btn_name [platform_finger_down] $tclcode
+#	set rx0 [rescale_x_skin $x0]
+#	set rx1 [rescale_x_skin $x1]
+#	set ry0 [rescale_y_skin $y0]
+#	set ry1 [rescale_y_skin $y1]
+#	.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 0 -tag $btn_name -state hidden
+#	if {[info exists skindebug] == 1} {
+#		if {$skindebug == 1} {
+#			.can create rect $rx0 $ry0 $rx1 $ry1 -fill {} -outline black -width 1 -tag ${btn_name}_lines -state hidden 
+#			#add_visual_item_to_context $displaycontext ${btn_name}_lines
+#		}
 #	}
-
-	foreach displaycontext $displaycontexts {
-		add_visual_item_to_context $displaycontext $btn_name
-		if {[ifexists skindebug] == 1} {
-			add_visual_item_to_context $displaycontext ${btn_name}_lines
-		}
-
-	}
-	return $btn_name
+#
+#	#puts "binding $btn_name to switch to new context: '$newcontext'"
+#
+#	#set tclcode [list page_display_change $displaycontext $newcontext]
+#
+#	regsub {%x0} $tclcode $rx0 tclcode
+#	regsub {%x1} $tclcode $rx1 tclcode
+#	regsub {%y0} $tclcode $ry0 tclcode
+#	regsub {%y1} $tclcode $ry1 tclcode
+#
+#	.can bind $btn_name [platform_button_press] $tclcode
+#	
+##	if {$::settings(disable_long_press) != 1 } {
+##		.can bind $btn_name [platform_button_long_press] $tclcode
+##	}
+#
+##	if {[string first mousemove $options] != -1} {
+#		#puts "mousemove detected"
+##		.can bind $btn_name [platform_finger_down] $tclcode
+##	}
+#
+#	foreach displaycontext $displaycontexts {
+#		add_visual_item_to_context $displaycontext $btn_name
+#		if {[ifexists skindebug] == 1} {
+#			add_visual_item_to_context $displaycontext ${btn_name}_lines
+#		}
+#
+#	}
+#	return $btn_name
 }
 
 # truncates strings that are too long to display and add a ...message on the end.
@@ -789,107 +791,117 @@ proc maxstring {in maxlength {optmsg {}} } {
 	return $in
 }
 
-set text_cnt 0
+#set text_cnt 0
 proc add_de1_text {args} {
-	global text_cnt
-	incr text_cnt
-	set contexts [lindex $args 0]
-	set label_name "text_$text_cnt"
-	# keep track of what labels are displayed in what contexts
-	set x [rescale_x_skin [lindex $args 1]]
-	set y [rescale_y_skin [lindex $args 2]]
-	set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
-	eval $torun
-
-	foreach context $contexts {
-		add_visual_item_to_context $context $label_name
-	}
-	return $label_name
+	return [dui add text [lindex $args 0] [lindex $args 1] [lindex $args 2] -compatibility_mode 1 {*}[lrange $args 3 end]]
+	
+#	global text_cnt
+#	incr text_cnt
+#	set contexts [lindex $args 0]
+#	set label_name "text_$text_cnt"
+#	# keep track of what labels are displayed in what contexts
+#	set x [rescale_x_skin [lindex $args 1]]
+#	set y [rescale_y_skin [lindex $args 2]]
+#	set torun [concat [list .can create text] $x $y [lrange $args 3 end] -tag $label_name -state hidden]
+#	eval $torun
+#
+#	foreach context $contexts {
+#		add_visual_item_to_context $context $label_name
+#	}
+#	return $label_name
 }
 
 set image_cnt 0
 proc add_de1_image {args} {
-
-	global image_cnt
-	incr image_cnt
-	set contexts [lindex $args 0]
-	set label_name "image_$image_cnt"
-	# keep track of what labels are displayed in what contexts
-	set x [rescale_x_skin [lindex $args 1]]
-	set y [rescale_y_skin [lindex $args 2]]
-	set fn [lindex $args 3]
-
-	image create photo $label_name -file $fn
-	.can create image [list $x $y] -anchor nw -image $label_name -tag $label_name -state hidden 
-
-	foreach context $contexts {
-		add_visual_item_to_context $context $label_name
-	}
-
-	return $label_name
+	return [dui add image [lindex $args 0] [lindex $args 1] [lindex $args 2] [lindex $args 3] -theme none]
+	
+#	msg "add_de1_image $args"
+#	global image_cnt
+#	incr image_cnt
+#	set contexts [lindex $args 0]
+#	set label_name "image_$image_cnt"
+#	# keep track of what labels are displayed in what contexts
+#	set x [rescale_x_skin [lindex $args 1]]
+#	set y [rescale_y_skin [lindex $args 2]]
+#	set fn [lindex $args 3]
+#
+#	image create photo $label_name -file $fn
+#	.can create image [list $x $y] -anchor nw -image $label_name -tag $label_name -state hidden 
+#
+#	foreach context $contexts {
+#		add_visual_item_to_context $context $label_name
+#	}
+#
+#	return $label_name
 }
 
 
 # derivced from sample code at http://wiki.tcl.tk/17067
 set widget_cnt 0
 proc add_de1_widget {args} {
-	global widget_cnt
-	set contexts [lindex $args 0]
+	return [dui add widget [lindex $args 1] [lindex $args 0] [lindex $args 2] [lindex $args 3] -tclcode [lindex $args 4] \
+		-theme none {*}[lrange $args 5 end]]
 
-	incr widget_cnt
-	set widgettype [lindex $args 1]
-
-	set widget ".can.w_${widgettype}_$widget_cnt"
-
-	set errcode 0
-	set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
-	#set errcode [catch { 
-		eval $torun
-	#} err]
-
-	if {$errcode == 1} {
-		msg -ERROR "add_de1_widget: $err" \
-			"while running" \
-			$torun
-	}
-
-	# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
-	if {$widgettype == "graph" && ($::android == 1 || $::undroid == 1)} {
-		$widget grid configure -dashes "" -color #DDDDDD -hide 0 -minor 1 
-		$widget configure -borderwidth 0
-		#$widget grid configure -hide 0
-	}
-
-	# the 4th parameter gives additional code to run when creating this widget, such as chart configuration instructions
-	set errcode [catch { 
-		eval [lindex $args 4]
-	} err]
-
-	if {$errcode == 1} {
-		msg -ERROR "add_de1_widget: $err" \
-			"while running" \
-			[lindex $args 4]
-	}
-	#.can create window [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state normal
-	#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
-	set x [rescale_x_skin [lindex $args 2]]
-	set y [rescale_y_skin [lindex $args 3]]
-
-	if {$widgettype == "scrollbar"} {
-		set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden -height 245]
-	} else {
-		set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden]
-	}
-	#.can bind $windowname [platform_button_press] "msg click"
-	
-
-		
-	set ::tclwindows($widget) [lrange $args 2 3]
-
-	foreach context $contexts {
-		add_visual_item_to_context $context $widget
-	}
-	return $widget 
+#	global widget_cnt
+#	set contexts [lindex $args 0]
+#
+#	incr widget_cnt
+#	set widgettype [lindex $args 1]
+#
+#	set widget ".can.w_${widgettype}_$widget_cnt"
+#
+#	set errcode 0
+#	set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
+#	#msg $torun
+#	#set errcode [catch { 
+#		eval $torun
+#	#} err]
+#
+#	if {$errcode == 1} {
+#		puts $err
+#		puts "while running" 
+#		puts $torun
+#	}
+#
+#	# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
+#	if {$widgettype == "graph" && ($::android == 1 || $::undroid == 1)} {
+#		$widget grid configure -dashes "" -color #DDDDDD -hide 0 -minor 1 
+#		$widget configure -borderwidth 0
+#		#$widget grid configure -hide 0
+#	}
+#
+#	# the 4th parameter gives additional code to run when creating this widget, such as chart configuration instructions
+#	set errcode [catch { 
+#		eval [lindex $args 4]
+#	} err]
+#
+#	if {$errcode == 1} {
+#		puts $err
+#		puts "while running" 
+#		puts [lindex $args 4]
+#	}
+#	#.can create window [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state normal
+#	#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
+#	set x [rescale_x_skin [lindex $args 2]]
+#	set y [rescale_y_skin [lindex $args 3]]
+#
+#	if {$widgettype == "scrollbar"} {
+#		set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden -height 245]
+#	} else {
+#		set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden]
+#	}
+#	#puts "winfo: [winfo children .can]"
+#	#.can bind $windowname [platform_button_press] "msg click"
+#	
+#
+#		
+#	set ::tclwindows($widget) [lrange $args 2 3]
+#
+#	foreach context $contexts {
+#		#puts "add_visual_item_to_context $context '$widget'"
+#		add_visual_item_to_context $context $widget
+#	}
+#	return $widget 
 }
 
 
@@ -1344,11 +1356,13 @@ proc show_settings { {tab_to_show ""} } {
 	if {$tab_to_show == ""} {
 		page_to_show_when_off $::settings(active_settings_tab)
 		scheduler_feature_hide_show_refresh
-		set_profiles_scrollbar_dimensions
-		set_advsteps_scrollbar_dimensions
+#		set_profiles_scrollbar_dimensions
+#		set_advsteps_scrollbar_dimensions
 	} else {
 		page_to_show_when_off $tab_to_show
 	}
+	set_profiles_scrollbar_dimensions
+	set_advsteps_scrollbar_dimensions
 
 	update_de1_explanation_chart
 
@@ -1373,114 +1387,131 @@ proc display_brightness {percentage} {
 
 proc page_display_change {page_to_hide page_to_show} {
 	::dui::page::display_change $page_to_hide $page_to_show
-	return
 	
-	#msg [stacktrace]
-
-	#if {$page_to_hide == ""} {
-	#}
-
-	delay_screen_saver
-
-	set key "machine:$page_to_show"
-	if {[ifexists ::nextpage($key)] != ""} {
-		# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
-		set page_to_show $::nextpage($key)
-	}
-
-	if {$::de1(current_context) == $page_to_show} {
-		#jbtemp
-		return 
-	}
-
-	msg -DEBUG "page_display_change $page_to_hide->$page_to_show"
-
-
-	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
-		msg -DEBUG "discarding intermediate sleep/off state msg"
-		return 
-	} elseif {$page_to_show == "saver"} {
-		if {[ifexists ::exit_app_on_sleep] == 1} {
-			get_set_tablet_brightness 0
-			close_all_ble_and_exit
-		}
-	}
-
-	# signal the page change with a sound
-	say "" $::settings(sound_button_out)
-	#set start [clock milliseconds]
-
-	# set the brightness in one place
-	if {$page_to_show == "saver" } {
-		if {$::settings(screen_saver_change_interval) == 0} {
-			# black screen saver
-			display_brightness 0
-		} else {
-			display_brightness $::settings(saver_brightness)
-		}
-		borg systemui $::android_full_screen_flags  
-	} else {
-		display_brightness $::settings(app_brightness)
-	}
-
-
-	if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {
-
-		msg -DEBUG "Doing next stress test step: '$::idle_next_step '"
-		set todo $::idle_next_step 
-		unset -nocomplain ::idle_next_step 
-		eval $todo
-	}
-
-
-	#global current_context
-	set ::de1(current_context) $page_to_show
-
-	catch {
-		.can itemconfigure $page_to_hide -state hidden
-	}
-	#.can itemconfigure [list "pages" "splash" "saver"] -state hidden
-
-	if {[info exists ::delayed_image_load($page_to_show)] == 1} {
-		set pngfilename	$::delayed_image_load($page_to_show)
-
-		set errcode [catch {
-			# this can happen if the image file has been moved/deleted underneath the app
-			#fallback is to at least not crash
-			msg -DEBUG "page_display_change image create photo $page_to_show -file $pngfilename" 
-			image create photo $page_to_show -file $pngfilename
-		}]
-
-	    if {$errcode != 0} {
-	        catch {
-	            msg -ERROR "image create photo error: $::errorInfo"
-	        }
-	    }
-
-	    foreach {page img} [array get ::delayed_image_load] {
-	    	if {$img == $pngfilename} {
-	    		
-	    		# Matching delayed image load to every page that references it
-	    		# this avoids loading the same iamge over and over, for each page referencing it
-
-				set errcode [catch {
-					# this error can happen if the image file has been moved/deleted underneath the app, fallback is to at least not crash
-					.can itemconfigure $page -image $page_to_show -state hidden					
-				}]
-
-			    if {$errcode != 0} {
-			        catch {
-			            msg -ERROR ".can itemconfigure page_to_show ($page/$page_to_show) error: $::errorInfo"
-			        }
-			    }
-
-				unset -nocomplain ::delayed_image_load($page)
-	    	}
-	    }
-
-	}
-
-
+#	#msg [stacktrace]
+#
+#	#if {$page_to_hide == ""} {
+#	#}
+#
+#	delay_screen_saver
+#
+#	set key "machine:$page_to_show"
+#	if {[ifexists ::nextpage($key)] != ""} {
+#		# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
+#		set page_to_show $::nextpage($key)
+#	}
+#
+#	if {$::de1(current_context) == $page_to_show} {
+#		#jbtemp
+#		#msg "page_display_change returning because ::de1(current_context) == $page_to_show"
+#		return 
+#	}
+#
+#	msg "page_display_change $page_to_hide->$page_to_show"
+#
+#
+#	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
+#		msg "discarding intermediate sleep/off state msg"
+#		return 
+#	} elseif {$page_to_show == "saver"} {
+#		if {[ifexists ::exit_app_on_sleep] == 1} {
+#			get_set_tablet_brightness 0
+#			close_all_ble_and_exit
+#		}
+#	}
+#
+#	# signal the page change with a sound
+#	say "" $::settings(sound_button_out)
+#	#msg "page_display_change $page_to_show"
+#	#set start [clock milliseconds]
+#
+#	# set the brightness in one place
+#	if {$page_to_show == "saver" } {
+#		if {$::settings(screen_saver_change_interval) == 0} {
+#			# black screen saver
+#			display_brightness 0
+#		} else {
+#			display_brightness $::settings(saver_brightness)
+#		}
+#		borg systemui $::android_full_screen_flags  
+#	} else {
+#		display_brightness $::settings(app_brightness)
+#	}
+#
+#
+#	if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {
+#
+#		msg "Doing next stress test step: '$::idle_next_step '"
+#		set todo $::idle_next_step 
+#		unset -nocomplain ::idle_next_step 
+#		eval $todo
+#	}
+#
+#
+#	#global current_context
+#	set ::de1(current_context) $page_to_show
+#
+#	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
+#	catch {
+#		.can itemconfigure $page_to_hide -state hidden
+#	}
+#	#.can itemconfigure [list "pages" "splash" "saver"] -state hidden
+#
+#	if {[info exists ::delayed_image_load($page_to_show)] == 1} {
+#		set pngfilename	$::delayed_image_load($page_to_show)
+#		msg "Loading skin image from disk: $pngfilename"
+#		
+#		set errcode [catch {
+#			# this can happen if the image file has been moved/deleted underneath the app
+#			#fallback is to at least not crash
+#			msg "page_display_change image create photo $page_to_show -file $pngfilename" 
+#			image create photo $page_to_show -file $pngfilename
+#			#msg "image create photo $page_to_show -file $pngfilename"
+#		}]
+#
+#	    if {$errcode != 0} {
+#	        catch {
+#	            msg "image create photo error: $::errorInfo"
+#	        }
+#	    }
+#
+#	    foreach {page img} [array get ::delayed_image_load] {
+#	    	if {$img == $pngfilename} {
+#	    		
+#	    		# Matching delayed image load to every page that references it
+#	    		# this avoids loading the same iamge over and over, for each page referencing it
+#
+#				set errcode [catch {
+#					# this error can happen if the image file has been moved/deleted underneath the app, fallback is to at least not crash
+#					.can itemconfigure $page -image $page_to_show -state hidden					
+#				}]
+#
+#			    if {$errcode != 0} {
+#			        catch {
+#			            msg ".can itemconfigure page_to_show ($page/$page_to_show) error: $::errorInfo"
+#			        }
+#			    }
+#
+#				unset -nocomplain ::delayed_image_load($page)
+#	    	}
+#	    }
+#
+#	}
+#
+#	set errcode [catch {
+#		.can itemconfigure $page_to_show -state normal
+#	}]
+#
+#	if {$errcode != 0} {
+#		catch {
+#			msg ".can itemconfigure page_to_show error: $::errorInfo"
+#		}
+#
+#	} 
+#
+#	set these_labels [ifexists ::existing_labels($page_to_show)]
+#	#msg "these_labels: $these_labels"
+#
 #	if {[info exists ::all_labels] != 1} {
 #		set ::all_labels {}
 #		foreach {page labels} [array get ::existing_labels]  {
@@ -1489,57 +1520,52 @@ proc page_display_change {page_to_hide page_to_show} {
 #		set ::all_labels [lsort -unique $::all_labels]
 #	}
 #
+#	#msg "Hiding [llength $::all_labels] labels"
 #	foreach label $::all_labels {
 #		if {[.can itemcget $label -state] != "hidden"} {
 #			.can itemconfigure $label -state hidden
+#			#msg "hiding: '$label'"
 #		}
 #	}
-	.can itemconfigure all -state hidden
-
-	set errcode [catch {
-		.can itemconfigure $page_to_show -state normal
-	}]
-
-	if {$errcode != 0} {
-		catch {
-			msg -ERROR ".can itemconfigure page_to_show error: $::errorInfo"
-		}
-
-	}
-
-	set these_labels [ifexists ::existing_labels($page_to_show)]
-	foreach label $these_labels {
-		.can itemconfigure $label -state normal
-	}
-
-	update
-	#set end [clock milliseconds]
-
-	global actions
-	if {[info exists actions($page_to_show)] == 1} {
-		foreach action $actions($page_to_show) {
-			eval $action
-			msg -INFO "Page entry action: $page_to_show: '$action'"
-		}
-	}
-
-	msg -INFO "Switched to page: $page_to_show"
-
-	update_onscreen_variables
-
-	hide_android_keyboard
+#
+#	#msg "Showing [llength $these_labels] labels"
+#	foreach label $these_labels {
+#		.can itemconfigure $label -state normal
+#		#msg "showing: '$label'"
+#	}
+#
+#	update
+#	#set end [clock milliseconds]
+#	#puts "elapsed: [expr {$end - $start}]"
+#
+#	global actions
+#	if {[info exists actions($page_to_show)] == 1} {
+#		foreach action $actions($page_to_show) {
+#			eval $action
+#			msg "action: '$action"
+#		}
+#	}
+#
+#	#msg "Switched to page: $page_to_show [stacktrace]"
+#	msg "Switched to page: $page_to_show"
+#
+#	update_onscreen_variables
+#
+#	hide_android_keyboard
 
 }
 
 proc hide_android_keyboard {} {
-	# make sure on-screen keyboard doesn't auto-pop up, and if
-	# physical keyboard is connected, make sure navbar stays hidden
-	sdltk textinput off
-
-	# this auto-hides the bottom android controls, which can appear if a gesture was made
-	borg systemui $::android_full_screen_flags
+	dui platform hide_android_keyboard
 	
-	focus .can
+#	# make sure on-screen keyboard doesn't auto-pop up, and if
+#	# physical keyboard is connected, make sure navbar stays hidden
+#	sdltk textinput off
+#
+#	# this auto-hides the bottom android controls, which can appear if a gesture was made
+#	borg systemui $::android_full_screen_flags
+#	
+#	focus .can
 }
 
 proc update_de1_explanation_chart_soon  { {context {}} } {

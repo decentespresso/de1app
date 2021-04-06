@@ -71,13 +71,17 @@ set slider_trough_color #EAEAEA
 set chart_background_color #F8F8F8
 ##############################################################################################################################################################################################################################################################################
 
-proc set_scrollbar_dimensions { scrollbar_widget listbox_widget } {
-		# set the height of the scrollbar to be the same as the listbox
+proc set_scrollbar_dimensions { scrollbar_widget listbox_widget } {	
+	# set the height of the scrollbar to be the same as the listbox
+	set listbox_height [winfo height $listbox_widget]
+	# A safeguard in case the scrollbar is not currently hidden
+	if { $listbox_height > 1 } {
 		$scrollbar_widget configure -length [winfo height $listbox_widget]
-		set coords [.can coords $listbox_widget ]
-		set newx [expr {[winfo width $listbox_widget] + [lindex $coords 0]}]
-		.can coords $scrollbar_widget "$newx [lindex $coords 1]"
+		set newx [expr {[winfo width $listbox_widget] + [winfo x $listbox_widget]}]
+		# BEWARE this depends on the canvas being able to retrieve the scrollbar by pathname intead of tag or id
+		.can coords $scrollbar_widget "$newx [winfo y $listbox_widget]"
 	}
+}
 
 ############################
 # pressure controlled shots
@@ -504,7 +508,7 @@ add_de1_widget "settings_1" listbox 50 305 {
 set ::profiles_slider 0
 
 # draw the scrollbar off screen so that it gets resized and moved to the right place on the first draw
-set ::profiles_scrollbar [add_de1_widget "settings_1" scale 10000 1 {} -from 0 -to 1.0 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::profiles_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(profiles_listbox) $::profiles_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
+set ::profiles_scrollbar [add_de1_widget "settings_1" scale 10000 1 {} -from 0 -to 1.0 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::profiles_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(profiles_listbox) $::profiles_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0 -orient vertical]
 
 proc set_profiles_scrollbar_dimensions {} {
 	set_scrollbar_dimensions $::profiles_scrollbar $::globals(profiles_listbox)

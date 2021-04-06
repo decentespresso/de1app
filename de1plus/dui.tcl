@@ -15,6 +15,7 @@
 #		ifexists
 #		$::fontm, $::globals(entry_length_multiplier)
 #		$::android, $::undroid
+#		$::android_full_screen_flags
 
 package provide de1_dui 1.0
 
@@ -32,22 +33,38 @@ catch {
 
 
 namespace eval ::dui {
-	namespace export init setup_ui config cget canvas theme aspect symbol font page item add hide_android_keyboard
+	namespace export init setup_ui config cget canvas platform theme aspect symbol font page item add
 	namespace ensemble create
 
-	# Set to 1 while debugging to see the "clickable" areas. Also may need to redefine aspect 
+	variable settings
+	# debug_buttons: Set to 1 while debugging to see the "clickable" areas. Also may need to redefine aspect 
 	#	'<theme>.button.debug_outline' so it's visible against the theme background.
-	variable debug_buttons 0
+	# create_page_namespaces: Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created 
+	#	page, unless a different namespace is provided in the -namespace option of 'dui page add'.
+	# trim_entries: Set to 1 to trim leading and trailing whitespace when modifying the values in entry boxes. 
+	# use_editor_pages: Set to 1 to default to use editor pages if available (currently only for numbers) 	
+	array set settings {
+		debug_buttons 0
+		create_page_namespaces 0
+		trim_entries 0
+		use_editor_pages 1
+	}
 	
-	# Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created page, unless
-	#	a different namespace is provided in the -namespace option of 'dui page add'.
-	variable create_page_namespaces 0
-	
-	# Set to 1 to trim leading and trailing whitespace when modifying the values in entry boxes 
-	variable trim_entries 0
-	
-	# Set to 1 to default to use editor pages if available (currently only for numbers) 
-	variable use_editor_pages 1
+	### PLATFORM SUB-ENSEMBLE ###
+	# System-related stuff
+	namespace eval platform {
+		namespace export hide_android_keyboard
+		namespace ensemble create
+		
+		proc hide_android_keyboard {} {
+			# make sure on-screen keyboard doesn't auto-pop up, and if
+			# physical keyboard is connected, make sure navbar stays hidden
+			sdltk textinput off
+			#	# this auto-hides the bottom android controls, which can appear if a gesture was made
+			borg systemui $::android_full_screen_flags
+			focus [dui canvas]
+		}		
+	}
 	
 	### THEME SUB-ENSEMBLE ###
 	# Themes are just names that serve as groupings for sets of aspect variables. They define a "visual identity"
@@ -951,6 +968,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		# TBD: Allow 'type' to be a list from higher to lower precedence. 
 		proc process_aspects { type {style {}} {aspects {}} {exclude {}} {args_name args} } {
 			upvar $args_name largs
+			set theme [dui::args::get_option -theme [dui theme get] 1 largs]
+			if { $theme eq "none" } {
+				return
+			}
 			if { $style eq "" } {
 				set style [get_option -style "" 0 largs]
 			}
@@ -964,11 +985,11 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 			
 			if { $aspects eq "" } {
-				set aspects [dui aspect list -type $types -style $style]
+				set aspects [dui aspect list -theme $theme -type $types -style $style]
 			}
 			foreach aspect $aspects {
 				if { $aspect ni $exclude } {
-					add_option_if_not_exists -$aspect [dui aspect get $type $aspect -style $style \
+					add_option_if_not_exists -$aspect [dui aspect get $type $aspect -theme $theme -style $style \
 						-default_type $default_type] largs
 				}
 			}
@@ -983,6 +1004,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#		Relative font sizes +1/-1/+2 etc. can be defined, with respect to whatever font size is defined in the 
 		#		theme for that type & style.
 		# Returns the font.
+		# Because this is on "dui add widget", it may make some widget creators fail, if they don't support the -font
+		#	attribute, such as ProgressBar.
 		proc process_font { type {style {}} {args_name args} } {
 			upvar $args_name largs
 			if { $type eq "" } {
@@ -991,15 +1014,15 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { $style eq "" } {
 				set style [get_option -style "" 0 largs]
 			}
-			
+						
 			if { [has_option -font largs] } {
 				set font [get_option -font "" 0 largs]
 				foreach f {family size weight slant underline overstrike} {
 					remove_options -font_$f largs
 				}
-			} else {
+			} elseif { $type in {text entry multiline_entry listbox scale graph} } {
 				set font_family [get_option -font_family [dui aspect get $type font_family -style $style] 1 largs]
-				set default_size [dui aspect get $type font_size -style $style]				
+				set default_size [dui aspect get $type font_size -style $style]	
 				set font_size [get_option -font_size $default_size 1 largs]
 				if { [string range $font_size 0 0] in "- +" } {
 					set font_size [expr $default_size$font_size]
@@ -1010,6 +1033,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				set overstrike [get_option -font_overstrike false 1 largs]
 				set font [dui font get $font_family $font_size -weight $weight -slant $slant -underline $underline -overstrike $overstrike]
 				add_option_if_not_exists -font $font largs
+			} else {
+				# Some widget, like ProgressBar, doesn't has a -font option.
+				# In this cases we may also query for accepted configuration options and check if -font is supported.
+				set font {}
 			}
 			return $font
 		}
@@ -1209,7 +1236,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				}
 			}
 							
-			set ns [dui::args::get_option -namespace $::dui::create_page_namespaces 0]
+			set ns [dui::args::get_option -namespace [dui cget create_page_namespaces] 0]
 			if { [string is true -strict $ns] } {
 				set ns {}
 				foreach page $pages {
@@ -1314,9 +1341,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set can [dui canvas]
 			delay_screen_saver
 			
-			# EB
 			set hide_ns [get_namespace $page_to_hide]
 			set show_ns [get_namespace $page_to_show]
+			
 			set key "machine:$page_to_show"
 			if {[ifexists ::nextpage($key)] != ""} {
 				# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
@@ -1446,7 +1473,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 #				msg -ERROR [namespace current ] display_change "showing page $page_to_show: $err"
 #			}
 		
-			set these_labels [ifexists ::existing_labels($page_to_show)]
+#			set these_labels [ifexists ::existing_labels($page_to_show)]
 #			#msg "these_labels: $these_labels"
 #					
 #			if {[info exists ::all_labels] != 1} {
@@ -1486,21 +1513,21 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			# WARNING: Until we remove this code we may have a problem with duplicated tags in two pages if they are 
 			#	created with DUI but without a namespace, as they will not be detected as using the new system and
 			#	this legacy code will show them in both pages.
-			if { $show_ns eq "" } {
-				foreach label $these_labels {
-					$can itemconfigure $label -state normal
-					#msg "showing: '$label'"
-				}
-			}
+#			if { $show_ns eq "" } {
+#				foreach label $these_labels {
+#					$can itemconfigure $label -state normal
+#					#msg "showing: '$label'"
+#				}
+#			}
 			
 			# New dui system, no need to use ::existing_labels, can do with canvas tags, provided p:<page_name> tags 
 			#	were used.
-			set items_to_show [$can find withtag p:$page_to_show]
-			if { [llength $items_to_show] > 0 } {
-				foreach item $items_to_show {
+			#set items_to_show [$can find withtag p:$page_to_show]
+			#if { [llength $items_to_show] > 0 } {
+				foreach item [$can find withtag p:$page_to_show] {
 					$can itemconfigure $item -state normal
 				}
-			} 
+			#} 
 			
 			foreach action [actions $page_to_show show] {
 				eval $action
@@ -1515,22 +1542,21 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			#puts "elapsed: [expr {$end - $start}]"
 		
 			# The old actions system, equivalent to the new page "show" event action. 
-			# Left temporarily for compatibility.
-			global actions
-			if {[info exists actions($page_to_show)] == 1} {
-				foreach action $actions($page_to_show) {
-					eval $action
-					msg "action: '$action"
-				}
-			}
+			# No need to keep as add_de1_action has now been mapped to 'dui page add_action <page> show'
+#			global actions
+#			if {[info exists actions($page_to_show)] == 1} {
+#				foreach action $actions($page_to_show) {
+#					eval $action
+#					msg "action: '$action"
+#				}
+#			}
 
 			update
 						
 			#msg "Switched to page: $page_to_show [stacktrace]"
-			msg "Switched to page: $page_to_show"
 		
 			update_onscreen_variables
-			dui hide_android_keyboard
+			dui platform hide_android_keyboard
 		}
 		
 		proc add_action { pages event tclcode } {
@@ -1566,26 +1592,41 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#	<resolution_width>x<resolution_height> subfolder.
 		variable img_dirs {}
 		
-		# Keep track of what labels are displayed in what pages. Warns if a label already exists.
-		# (SEMI-OBSOLETE): In the future this shouldn't be needed, as dui manages what to show using canvas tags. 
-		#	But it's needed while the old and new systems coexist.
+		# Keep track of what labels are displayed in what pages. This is done through the "p:<page_name>" canvas tags 
+		#	associated to each item.
+		# This is provided for backwards-compatibility and as a helper for client code that creates its own GUI 
+		#	elements, but is NOT USED by DUI. The construction of the tags in dui::args::process_tags_and_var does
+		#	the job.
 		proc add_to_pages { pages tags } {
-			global existing_labels
-			foreach page $pages {
-				set page_tags [ifexists existing_labels($page)]
-				foreach tag $tags {					
-					if { $tag in $page_tags } {
-						#msg -WARN [namespace current] "tag/label '$tag' already exists in page '$page'"
-						error "label '$tag' already exists in page '$page'"
-					} else {
-						msg [namespace current] "adding tag '$tag' to page '$page'"
-						lappend page_tags $tag
+#			global existing_labels
+#			foreach page $pages {
+#				set page_tags [ifexists existing_labels($page)]
+#				foreach tag $tags {					
+#					if { $tag in $page_tags } {
+#						#msg -WARN [namespace current] "tag/label '$tag' already exists in page '$page'"
+#						error "label '$tag' already exists in page '$page'"
+#					} else {
+#						msg [namespace current] "adding tag '$tag' to page '$page'"
+#						lappend page_tags $tag
+#					}
+#				}
+#				set existing_labels($page) $page_tags
+#			}
+			
+			set can [dui canvas]
+			foreach tag $tags {
+				set item_tags [$can gettags $tag]
+				msg [namespace current] new_add_to_pages "existing_tags=$item_tags"
+				foreach page $pages {
+					if { "p:$page" ni $item_tags } {
+						lappend item_tags "p:$page"
 					}
 				}
-				set existing_labels($page) $page_tags
+				msg [namespace current] new_add_to_pages "new_tags=$item_tags"
+				$can itemconfigure $tags -tags $item_tags
 			}
 		}
-
+		
 		# Just a wrapper for the add_* commands, for consistency of the API
 		proc add { type args } {
 			if { [info proc ::dui::add::$type] ne "" } {
@@ -2313,7 +2354,6 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		
 		# Similar to a horizontal_clicker but for arbitrary discrete values like rating stars. 
 		proc drater_clicker { variable inx iny x0 y0 x1 y1 {n_ratings 5} {use_halfs 1} {min 0} {max 10} } {
-msg [namespace current] drater_clicker  "variable=$variable, inx=$inx, iny=$iny, x0=$x0, y0=$y0, x1=$x1, y1=$y1, n_ratings=$n_ratings, use_halfs=$use_halfs, min=$min, max=$max"			
 			set x [translate_coordinates_finger_down_x $inx]
 			set y [translate_coordinates_finger_down_y $iny]
 			set xrange [expr {$x1 - $x0}]
@@ -2321,11 +2361,8 @@ msg [namespace current] drater_clicker  "variable=$variable, inx=$inx, iny=$iny,
 			if { $use_halfs == 1 } { set halfs_mult 2 } else { set halfs_mult 1 }
 			
 			set interval [expr {int($xrange / $n_ratings)}] 
-			set clicked_val [expr {(int($xoffset / $interval) + 1) * $halfs_mult}]
-msg [namespace current] drater_clicker "x=$x, y=$y, clicked_val=$clicked_val, interval=$interval, xrange=$xrange, xoffset=$xoffset, halfs_mult=$halfs_mult" 
-			
+			set clicked_val [expr {(int($xoffset / $interval) + 1) * $halfs_mult}]			
 			set current_val [number_in_range [subst \$$variable] "" $min $max "" 0]
-msg [namespace current] drater_clicker "current_val=$current_val" 								
 			set current_val [expr {int(($current_val - 1) / (($max-$min) / ($n_ratings*$halfs_mult))) + 1}]	
 			
 			if { $current_val == $clicked_val && $current_val > 0 } {
@@ -2334,8 +2371,7 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 				set clicked_val [expr {$clicked_val-2}]
 			}
 			
-			set $variable [expr {int($min + (($max - $min) * $clicked_val / ($n_ratings*$halfs_mult))) }]
-			
+			set $variable [expr {int($min + (($max - $min) * $clicked_val / ($n_ratings*$halfs_mult))) }]	
 			#msg [namespace current] "$variable=[subst \$$variable]\rcurrent_value=$current_val, clicked_val=$$clicked_val\rnew_val=[subst \$$variable]"	
 		}
 		
@@ -2567,7 +2603,7 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $w
 			}
-			dui item add_to_pages $pages $main_tag
+			#dui item add_to_pages $pages $main_tag
 			
 			msg -INFO [namespace current] canvas_item "$type '$main_tag' to page(s) '$pages' with args '$args'"
 			return $main_tag
@@ -2575,10 +2611,12 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 		
 		# Add text items to the canvas. Returns the list of all added tags (one per page).
 		#
-		# Named options:
-		#	-tags a label that allows to access the created canvas items
-		#	-style to apply the default aspects of the provided style
-		#	-aspect_type to query default aspects for type different than "text"
+		# New named options:
+		#	-tags: a label that allows to access the created canvas items
+		#	-style: to apply the default aspects of the provided style
+		#	-aspect_type: to query default aspects for type different than "text"
+		#	-compatibility_mode: set to 0 to be backwards-compatible with add_de1_text calls (don't apply aspects,
+		#		font suboptions and don't rescale width)
 		#	All others passed through to the 'canvas create text' command
 		proc text { pages x y args } {
 			global text_cnt
@@ -2587,15 +2625,18 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 			
 			set tags [dui::args::process_tags_and_var $pages text ""]
 			set main_tag [lindex $tags 0]
-	
-			set style [dui::args::get_option -style "" 1]		
-			dui::args::process_aspects text $style "" "pos"		
-			dui::args::process_font text $style
-					
-			set width [dui::args::get_option -width {} 1]
-			if { $width ne "" } {
-				set width [rescale_x_skin $width]
-				dui::args::add_option_if_not_exists -width $width
+			
+			set compatibility_mode [string is true [dui::args::get_option -compatibility_mode 0 1]]
+			if { ! $compatibility_mode } {
+				set style [dui::args::get_option -style "" 1]
+				dui::args::process_aspects text $style "" "pos"		
+				dui::args::process_font text $style
+						
+				set width [dui::args::get_option -width {} 1]
+				if { $width ne "" } {
+					set width [rescale_x_skin $width]
+					dui::args::add_option_if_not_exists -width $width
+				}
 			}
 			
 			try {
@@ -2611,7 +2652,7 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $id
 			}
-			dui item add_to_pages $pages $main_tag
+			#dui item add_to_pages $pages $main_tag
 			msg -INFO [namespace current] text "'$main_tag' to page(s) '$pages' with args '$args'"
 			return $id
 		}
@@ -2693,7 +2734,7 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 		#	-radius for rounded rectangles, and -arc_offset for rounded outline rectangles
 		#	All others passed through to the respective visible button creation command.
 		proc dbutton { pages x y args } {
-			set debug_buttons $::dui::debug_buttons
+			set debug_buttons [dui cget debug_buttons]
 			set can [dui canvas]
 			set ns [dui page get_namespace $pages]
 			
@@ -2816,7 +2857,7 @@ msg [namespace current] drater_clicker "current_val=$current_val"
 			}
 			if { $ids ne "" && $ns ne "" } {
 				set ${ns}::widgets([lindex $button_tags 0]) $ids
-				dui item add_to_pages $pages [lindex $button_tags 0]
+				#dui item add_to_pages $pages [lindex $button_tags 0]
 			}					
 			
 			if { $label ne "" } {
@@ -2861,7 +2902,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $id
 			}								
-			dui item add_to_pages $pages $main_tag
+			#dui item add_to_pages $pages $main_tag
 			return $id
 		}
 
@@ -2870,30 +2911,32 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 		#	-canvas_* Options to be passed through to the canvas create command
 		proc image { pages x y filename args } {
 			set can [dui canvas]
-
-			if { $filename eq "" } {
-				set msg "An image filename is required"
-				msg -ERROR [namespace current] image $msg
-				error $msg
-				return
-			} 
-			if { [file dirname $filename] eq "." } {
-				foreach dir [dui item image_dirs] {
-					set full_fn "$dir/${::screen_size_width}x${::screen_size_height}/$filename"
-					if { [file exists $full_fn] } {
-						set filename $full_fn
-						break
+			# No-file images are used in the default skin to generate "dummy" pages or something like that...
+#			if { $filename eq "" } {
+#				set msg "An image filename is required"
+#				msg -ERROR [namespace current] image $msg
+#				error $msg
+#				return
+#			}
+			if { $filename ne "" } {
+				if { [file dirname $filename] eq "." } {
+					foreach dir [dui item image_dirs] {
+						set full_fn "$dir/${::screen_size_width}x${::screen_size_height}/$filename"
+						if { [file exists $full_fn] } {
+							set filename $full_fn
+							break
+						}
 					}
 				}
+				if { ![file exists $filename] } {
+					# TBD: Do resizing if the 2560x1600 image file exists, as in background images?
+					set msg "Image filename '$filename' not found"
+					msg -ERROR [namespace current] image $msg
+					error $msg
+					return	
+				}
 			}
-			if { ![file exists $filename] } {
-				# TBD: Do resizing if the 2560x1600 image file exists, as in background images?
-				set msg "Image filename '$filename' not found"
-				msg -ERROR [namespace current] image $msg
-				error $msg
-				return	
-			}
-
+			
 			set x [rescale_x_skin $x]
 			set y [rescale_y_skin $y]
 			set tags [dui::args::process_tags_and_var $pages image ""]
@@ -2931,7 +2974,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $w
 			}			
-			dui item add_to_pages $pages $main_tag
+			#dui item add_to_pages $pages $main_tag
 			
 			msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args'"			
 			return $main_tag
@@ -3004,7 +3047,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 				msg -ERROR [namespace current] $msg
 				error $msg
 				return			
-			}
+			}			
 			
 			# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
 			if {$type eq "graph" && ($::android == 1 || $::undroid == 1)} {
@@ -3030,6 +3073,10 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 				}
 			}
 			
+			# Allow using widget pathnames to retrieve canvas items (also needed for backwards compatiblity with 
+			#	existing code)
+			lappend tags $widget
+			
 			try {
 				set windowname [$can create window  $rx $ry -window $widget -tags $tags -state hidden {*}$canvas_args]
 			} on error err {
@@ -3046,7 +3093,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			if { $ns ne "" } {
 				set "${ns}::widgets($main_tag)" $widget
 			}			
-			dui item add_to_pages $pages $main_tag
+			#dui item add_to_pages $pages $main_tag
 			return $widget
 		}
 		
@@ -3074,12 +3121,13 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			# Data type and validation
 			set data_type [dui::args::get_option -data_type "text" 1]
 			set n_decimals [dui::args::get_option -n_decimals 0 1]
-			set trim  [dui::args::get_option -trim $::dui::trim_entries 1]
-			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages 1]
+			set trim  [dui::args::get_option -trim [dui cget trim_entries] 1]
+			set editor_page [dui::args::get_option -editor_page [dui cget use_editor_pages] 1]
 			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
 			foreach fn {min max default smallincrement bigincrement} {
 				set $fn [dui::args::get_option -$fn "" 1]
 			}
+#			dui::args::process_font entry [dui::args::get_option -style {}]
 			
 			set width [dui::args::get_option -width "" 1]
 			if { $width ne "" } {
@@ -3101,7 +3149,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			set widget [dui add widget entry $pages $x $y {*}$args]
 		
 			# Default actions on leaving a text entry: Trim text, format if needed, and hide_android_keyboard
-			bind $widget <Return> { dui hide_android_keyboard ; focus [tk_focusNext %W] }
+			bind $widget <Return> { dui platform hide_android_keyboard ; focus [tk_focusNext %W] }
 			
 			set textvariable [dui::args::get_option -textvariable]
 			if { $textvariable ne "" } {
@@ -3115,7 +3163,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 						set $textvariable \[format \"%%.${n_decimals}f\" \$$textvariable\] 
 					\};"
 				} 
-				append leave_cmd "dui hide_android_keyboard;"
+				append leave_cmd "dui platform hide_android_keyboard;"
 				bind $widget <Leave> $leave_cmd
 			}
 			
@@ -3142,9 +3190,10 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			
 			set style [dui::args::get_option -style "" 0]
 			set data_type [dui::args::get_option -data_type "text" 1]
-			set trim  [dui::args::get_option -trim $::dui::trim_entries 1]
-			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages 1]
+			set trim  [dui::args::get_option -trim [dui cget trim_entries] 1]
+			set editor_page [dui::args::get_option -editor_page [dui cget use_editor_pages] 1]
 			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
+#			dui::args::process_font multiline_entry $style
 			
 			set width [dui::args::get_option -width "" 1]
 			if { $width ne "" } {
@@ -3165,7 +3214,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			set widget [dui add widget multiline_entry $pages $x $y {*}$args]
 		
 			# Default actions on leaving a text entry: Trim text, format if needed, and hide_android_keyboard
-			bind $widget <Return> { dui hide_android_keyboard ; focus [tk_focusNext %W] }
+			bind $widget <Return> { dui platform hide_android_keyboard ; focus [tk_focusNext %W] }
 			
 			set textvariable [dui::args::get_option -textvariable]
 			if { $textvariable ne "" } {
@@ -3173,7 +3222,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 				if { $data_type in {text long_text category} && [string is true $trim] } {
 					append leave_cmd "set $textvariable \[string trim \$$textvariable\];"
 				} 
-				append leave_cmd "dui hide_android_keyboard;"
+				append leave_cmd "dui platform hide_android_keyboard;"
 				bind $widget <Leave> $leave_cmd
 			}
 			
@@ -3207,8 +3256,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			set tags [dui::args::process_tags_and_var $pages dcombobox -textvariable 1]
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
-			
-			#set style [dui::args::get_option -style "" 0]
+			set style [dui::args::get_option -style "" 0]
 
 			set items [dui::args::get_option -items {} 1]
 			#set item_ids [dui::args::get_option -item_ids {} 1]
@@ -3237,7 +3285,9 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 				}
 				#set select_cmd [list say "select" $::settings(sound_button_in) \; {*}$select_cmd ]
 			}
-
+			
+#			dui::args::process_font dcombobox $style
+			
 			set w [dui add entry $pages $x $y -aspect_type dcombobox {*}$args]
 			bind $w <Double-Button-1> $select_cmd
 			
@@ -3268,7 +3318,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			set main_tag [lindex $tags 0]
 			
 			set style [dui::args::get_option -style "" 0]
-			dui::args::process_font dcheckbox $style
+#			dui::args::process_font dcheckbox $style
 			set checkvar [dui::args::get_option -textvariable "" 1]
 			dui::args::process_label $pages $x $y dcheckbox $style
 			set cmd [dui::args::get_option -command "" 1]
@@ -3307,7 +3357,8 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			if { $height ne "" } {
 				dui::args::add_option_if_not_exists -height [expr {int($height * $::globals(listbox_length_multiplier))}]
 			}
-	
+#			dui::args::process_font listbox $style
+			
 			set ysb [dui::args::process_yscrollbar $pages $x $y listbox $style]
 			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
 				set first_page [lindex $pages 0]
@@ -3567,7 +3618,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			dui page add_action $pages show $update_cmd
 			
 			# Invoke number editor page when the label is clicked
-			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages]
+			set editor_page [dui::args::get_option -editor_page [dui cget use_editor_pages]]
 			if { $editor_page ne "" && ![string is false $editor_page] && $var ne "" && $label_id ne "" } {
 				if { [string is true $editor_page] } {
 					set editor_page "dui_number_editor" 
@@ -3580,7 +3631,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 				$can bind $label_id [platform_button_press] $editor_cmd
 			}
 			
-			dui item add_to_pages $pages $main_tag
+			#dui item add_to_pages $pages $main_tag
 			return $ids
 		}
 		
@@ -3594,6 +3645,8 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 			foreach a [dui aspect list -type scale -style $style] {
 				dui::args::add_option_if_not_exists -$a [dui aspect get scale $a -style $style]
 			}
+#			dui::args::process_font scale $style
+			
 			set orient [dui::args::get_option -orient h]
 			set sliderlength [dui::args::get_option -sliderlength {} 1]
 			set width [dui::args::get_option -width {} 1]
@@ -3620,7 +3673,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 				}
 			}
 			
-			set editor_page [dui::args::get_option -editor_page $::dui::use_editor_pages 1]
+			set editor_page [dui::args::get_option -editor_page [dui cget use_editor_pages] 1]
 			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
 			set n_decimals [dui::args::get_option -n_decimals "" 1]
 			
@@ -3777,16 +3830,17 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 	
 	# Sets dui configuration variables. Logs a warning if the variable does not exist.
 	proc config { args } {
+		variable settings
 		array set opts $args
 		if { [llength $args] == 1 } {
 			set args [lindex $args 0]
 		}
 		
 		foreach key [array names opts] {
-			if { [info exists ::dui::$key] } {
-				set ::dui::$key [string is true -strict $opts($key)]
+			if { [info exists settings($key)] } {
+				set settings($key) [string is true -strict $opts($key)]
 			} else {
-				msg -WARN [namespace current] config: "invalid variable name '$key'"
+				msg -WARN [namespace current] config: "invalid setting variable '$key'"
 			}
 		}
 	}
@@ -3794,10 +3848,11 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 	# Gets a dui configuration variable value. Returns an empty string if the variable is not recognized, and issues
 	#	a log notice.
 	proc cget { varname } {
-		if { [info exists ::dui::$varname] } {
-			return [subst \$::dui::$varname]
+		variable settings
+		if { [info exists settings($varname)] } {
+			return $settings($varname)
 		} else {
-			msg -NOTICE [namespace current] cget: "invalid variable name '$varname'"
+			msg -NOTICE [namespace current] cget: "invalid setting variable '$varname'"
 			return ""
 		}
 	}
@@ -3845,13 +3900,7 @@ if { $main_tag eq "page_done" } { msg [namespace current] dbutton "COMMAND=$cmd"
 		return 1
 	}
 	
-	proc hide_android_keyboard {} {
-		# make sure on-screen keyboard doesn't auto-pop up, and if
-		# physical keyboard is connected, make sure navbar stays hidden
-		sdltk textinput off
-		focus .can
-	}
-		
+
 }
 
 
