@@ -695,12 +695,17 @@ proc platform_button_unpress {} {
 
 
 proc add_variable_item_to_context {context label_name varcmd} {
-	global variable_labels
-	#if {[info exists variable_labels($context)] != 1} {
-	#	set variable_labels($context) [list $label_name $varcmd]
-	#} else {
-		lappend variable_labels($context) [list $label_name $varcmd]
-	#}
+	msg -WARN "add_variable_item_to_context is OBSOLETE, please use DUI instead"
+	# This may or may not work as dui::page::add_variable takes canvas IDs instead of labels.
+	dui::page::add_variable $context $label_name $varcmd
+	
+#	#puts "varcmd: '$varcmd'"
+#	global variable_labels
+#	#if {[info exists variable_labels($context)] != 1} {
+#	#	set variable_labels($context) [list $label_name $varcmd]
+#	#} else {
+#		lappend variable_labels($context) [list $label_name $varcmd]
+#	#}
 }
 
 
@@ -1190,6 +1195,7 @@ if {$::android == 0} {
 
 set _last_st 0
 
+# TODO (EB): Move the first part of this proc to a parametrized action run from 'dui page update_onscreen_variables'
 proc update_onscreen_variables { {state {}} } {
 
 	#update_chart
@@ -2102,9 +2108,12 @@ proc ui_startup {} {
 	}
 
 	### EB STARTUP DUI PAGES ###
+	# auto-setup of DUI pages. dui init and setting of folders may need to be done before skin & plugins inits?
+	#dui init
+	dui font add_dirs "[homedir]/fonts"
+	dui item add_image_dirs "[homedir]/skins/$::settings(skin)" "[homedir]/skins/default"
 	dui setup_ui
-	###
-
+		
 	.can itemconfigure splash -state hidden
 	
 	#after $::settings(timer_interval) 
