@@ -944,3 +944,14 @@ namespace eval ::de1::sav {
 	::de1::sav::init
 
 } ;# ::de1::sav
+
+#
+# As the DE1 events aren't available when logging is enabled,
+# set up a log flush on Sleep here
+#
+
+::de1::event::listener::on_major_state_change_add [lambda {event_dict} {
+	if { [dict get $event_dict this_state] == "Sleep" } {
+		after idle ::logging::flush_log
+	}
+}]
