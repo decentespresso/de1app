@@ -219,25 +219,31 @@ namespace eval ::logging {
 			}
 		}
 
-		# https://3.basecamp.com/3671212/buckets/7351439/messages/3033510129#__recording_3039704280
-		# logging is always fast now, with only line level buffering
-		#
-		# https://3.basecamp.com/3671212/buckets/7351439/messages/3033510129#__recording_3037579684
-		# Michael argues that there's no need to go nonblocking
-		# if you have a write buffer defined.
-		# so disabling for now, to see if he's right.
+		# Open the log, set to 64 kB buffering due to flash-wear concerns
 
 		catch {
 			set ::logging::_log_fh [open "${de1root}/$::settings(logfile)" w]
+			fconfigure $::logging::_log_fh -buffersize 65536
+		}
+	}
 
-			set ::settings(log_fast) 1
-			if {[safe_get ::settings(log_fast)] == "1"} {
-				fconfigure $::logging::_log_fh -blocking 0 -buffering line
-				# Avoid reentrant call
-				after idle [list msg -INFO "fast log file: "]
+
+	# flush_log should only be called when required
+	# such as just prior to an upload of the logs
+	#
+	# Use of Android logging via logcat
+	# is suggested for real-time monitoring
+
+	proc flush_log {} {
+
+		if { $::logging::_log_fh != "" } {
+			if { [catch {::flush $::logging::_log_fh} result opts_dict] != 0 } {
+				msg -ERROR "::logging::flush failed: $result $opts_dict"
 			} else {
-				fconfigure $::logging::_log_fh -buffersize 65536
+				msg -NOTICE "::logging::flush_log"
 			}
+		} else {
+				msg -NOTICE "::logging::flush_log: No filehandle to flush"
 		}
 	}
 
