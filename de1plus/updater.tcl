@@ -319,7 +319,8 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
     } elseif {[ifexists ::settings(app_updates_beta_enabled)] == 2} {
         set progname "de1nightly"
     }
-    puts "update timestanp endpoint: '$progname'"
+    msg "checking for updates"
+    msg "update timestanp endpoint: '$progname'"
 
     set url_timestamp "$host/download/sync/$progname/timestamp.txt"    
 
@@ -335,11 +336,13 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
     catch {
         set remote_timestamp [string trim [decent_http_get $url_timestamp]]
     }
-    #puts "timestamp: '$remote_timestamp'"
+    msg "Remote timestamp: '$remote_timestamp'"
 
     set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
+    msg "Local timestamp: '$local_timestamp'"
+
     if {$remote_timestamp == ""} {
-        puts "unable to fetch remote timestamp"
+        msg "unable to fetch remote timestamp"
         log_to_debug_file "unable to fetch remote timestamp"
 
         if {$check_only != 1} {
@@ -355,13 +358,7 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
 
         puts "Local timestamp is the same as remote timestamp, so no need to update"
         log_to_debug_file "Local timestamp is the same as remote timestamp, so no need to update"
-        return 0
-        
-        # we can return at this point, if we're very confident that the sync is correct
-        # john 4/18/18 we want to check all files anyway, to fill in any missing local files, so we are going to ignore the time stamps being equal
-        #set ::de1(app_update_button_label) [translate "Up to date"]; 
-        #set ::app_updating 0
-        #return
+        return $local_timestamp
     }
 
     catch {
@@ -442,6 +439,11 @@ proc start_app_update {} {
     puts "update download endpoint: '$progname'"
     
     set remote_timestamp [check_timestamp_for_app_update_available 1]
+    if {$remote_timestamp < 0} {
+        msg "Could not fetch remote timestamp. Aborting update"
+        set ::app_updating 0
+        return -1
+    }
 
     ##############################################################################################################
     # get manifest both as raw TXT and as gzip compressed, to detect tampering 
