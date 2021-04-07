@@ -20,7 +20,6 @@ namespace eval ::logging {
 
 	variable severity_limit_logfile 7
 	variable severity_limit_console 7
-	variable severity_limit_window  7
 
 	# NB: Android default limit is Info. See commit message or
 	#     https://developer.android.com/studio/command-line/logcat
@@ -74,8 +73,6 @@ namespace eval ::logging {
 		6 info
 		7 debug
 	}
-
-	variable recent_log_lines [list]
 
 	variable _log_fh ""
 
@@ -147,23 +144,6 @@ namespace eval ::logging {
 					$::logging::android_logger_tag \
 					$message
 			}
-		}
-
-		if { $severity <= $::logging::severity_limit_window \
-			     && [safe_get ::debugging] == 1 } {
-
-			if {[info exists ::settings(debugging_window_size)]} {
-				set last_line_index \
-					[expr { max(0, [safe_get ::settings(debugging_window_size] - 2]) } ]
-			} else {
-				set last_line_index 98
-			}
-
-			set ::logging::recent_log_lines \
-				[list $formatted_output \
-					 {*}[lrange $::logging::recent_log_lines 0 $last_line_index]]
-
-			set ::debuglog [join $::logging::recent_log_lines "\n"]
 		}
 	}
 
