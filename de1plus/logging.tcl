@@ -255,6 +255,7 @@ namespace eval ::logging {
 	}
 
 
+	# should not display a debug message on package load, only as procs run
 	msg -INFO "Overriding existing bgerror handler ${_previous_bgerror}"
 
 	interp bgerror {} ::logging::_logging_bgerror
