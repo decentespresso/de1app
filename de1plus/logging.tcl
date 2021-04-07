@@ -166,7 +166,7 @@ namespace eval ::logging {
 
 		# Try log rotation
 
-		set to_rotate {{log.txt}}
+		set to_rotate [list $::settings(logfile)]
 		set retain 10
 
 		foreach f $to_rotate {
