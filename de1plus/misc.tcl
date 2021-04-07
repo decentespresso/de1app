@@ -537,7 +537,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/MimojaCafe/history_viewer.tcl *
         skins/MimojaCafe/interfaces/default_settings_screen.tcl *
         skins/MimojaCafe/interfaces/default_ui.tcl *
-        skins/MimojaCafe/interfaces/magadan_settings_screen.tcl *
         skins/MimojaCafe/interfaces/magadan_ui.tcl *
         skins/MimojaCafe/settings.tcl *
         skins/MimojaCafe/skin.tcl *
