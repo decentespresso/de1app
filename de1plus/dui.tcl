@@ -1530,7 +1530,6 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set can [dui canvas]
 			foreach tag $tags {
 				set item_tags [$can gettags $tag]
-				msg [namespace current] new_add_to_pages "existing_tags=$item_tags"
 				foreach page $pages {
 					if { "p:$page" ni $item_tags } {
 						lappend item_tags "p:$page"
@@ -2966,7 +2965,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set tags [dui::args::process_tags_and_var $pages $type "" 0 args 0]
 			set main_tag [lindex $tags 0]
 			
-			set widget $can.[lindex $pages 0]-$main_tag
+			# Widget names after ".can" cannot start by an uppercase letter, so we make the page name lowercase.
+			set widget $can.[string tolower [lindex $pages 0]]-$main_tag
 			if { [info exists ::$widget] } {
 				set msg "$type widget with name '$widget' already exists"
 				msg -ERROR [namespace current] $msg
@@ -2990,7 +2990,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				dui::args::add_option_if_not_exists -height [rescale_y_skin [dui::args::get_option -height 0 1 canvas_args]] canvas_args 
 			}				
 			if { $type eq "scrollbar" } {
-				# From the original add_de1_widget, but WHY this?
+				# From the original add_de1_widget, but WHY this? Also, scrollbars are no longer used, scales
+				#	are used instead...
 				dui::args::add_option_if_not_exists -height 245 canvas_args
 			}
 			
