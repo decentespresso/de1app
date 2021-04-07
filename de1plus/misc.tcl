@@ -812,9 +812,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/2560x1600/SbuttonF.png *
         skins/DSx/2560x1600/SbuttonS.png *
         skins/DSx/2560x1600/SbuttonW.png *
-        skins/DSx/DSx_Code_Files/Damian's\ LM\ Leva.tcl *
-        skins/DSx/DSx_Code_Files/Damian's\ LRv2.tcl *
-        skins/DSx/DSx_Code_Files/Damian's\ LRv3.tcl *
         skins/DSx/DSx_Code_Files/DSx_functions.tcl *
         skins/DSx/DSx_Code_Files/DSx_skin.tcl *
         skins/DSx/DSx_Code_Files/png/click_no_box1280.png *
@@ -931,7 +928,6 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/Cremina.tcl *
         profiles/manual_flow.tcl *
         profiles/manual_pressure.tcl *
-        profiles/Londinium-R-by-Damian.tcl *
         profiles/Advanced\ spring\ lever.tcl *
         profiles/Blooming\ espresso.tcl *
         profiles/cold_brew.tcl *
@@ -960,6 +956,10 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/v60-15g.tcl *
         profiles/v60-20g.tcl *
         profiles/v60-22g.tcl *
+
+        profiles/Damian's\ LM\ Leva.tcl *
+        profiles/Damian's\ LRv2.tcl *
+        profiles/Damian's\ LRv3.tcl *
 
         plugins/visualizer_upload/plugin.tcl *
 
