@@ -98,12 +98,6 @@ proc make_de1_dir {srcdir destdirs} {
 
     }
 
-
-        # plugins/example.tcl *
-        # plugins/example-settings.tdb *
-
-
-
     set files {
         binary.tcl *
         bluetooth.tcl *
@@ -136,9 +130,9 @@ proc make_de1_dir {srcdir destdirs} {
         history_export.tcl *
         version.tcl *
         profile.tcl *
-	de1_de1.tcl *
-	device_scale.tcl *
-	event.tcl *
+        de1_de1.tcl *
+        device_scale.tcl *
+        event.tcl *
 
         profiles_v2/readme.txt *
 
@@ -259,8 +253,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Antibes/2560x1600/nothing_on.png *
         skins/Antibes/2560x1600/steam_on.png *
         skins/Antibes/2560x1600/tea_on.png *    
-
-
 
         skins/SWDark4/screen_saver/2560x1600/saver-1.jpg *
         skins/SWDark4/screen_saver/2560x1600/saver-2.jpg *
@@ -526,22 +518,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Insight/2560x1600/describe_espresso.jpg *
         skins/Insight/2560x1600/describe_espresso2.jpg *
 
-        skins/MimojaCafe/1280x800/icon.jpg *
-        skins/MimojaCafe/2560x1600/icon.jpg *
-        skins/MimojaCafe/fonts/Font\ Awesome\ 5\ Free-Solid-900.otf *
-        skins/MimojaCafe/fonts/Mazzard\ Light.otf *
-        skins/MimojaCafe/fonts/Mazzard\ Medium.otf *
-        skins/MimojaCafe/fonts/Mazzard\ Regular.otf *
-        skins/MimojaCafe/fonts/Mazzard\ SemiBold.otf *
-        skins/MimojaCafe/framework.tcl *
-        skins/MimojaCafe/history_viewer.tcl *
-        skins/MimojaCafe/interfaces/default_settings_screen.tcl *
-        skins/MimojaCafe/interfaces/default_ui.tcl *
-        skins/MimojaCafe/interfaces/magadan_settings_screen.tcl *
-        skins/MimojaCafe/interfaces/magadan_ui.tcl *
-        skins/MimojaCafe/settings.tcl *
-        skins/MimojaCafe/skin.tcl *
-
         skins/metric/1280x800/icon.jpg *
         skins/metric/2560x1600/icon.jpg *
         skins/metric/fonts/Mazzard\ Light.otf *
@@ -686,16 +662,26 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/DGUI/setup_DSx.tcl *
         plugins/DGUI/setup_Insight.tcl *
         plugins/DGUI/setup_MimojaCafe.tcl *
-
     }
-#        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
-#        profiles/Powerful\ 10\ bar\ shot.tcl *
 
-    #set srcdir "/d/admin/code/de1beta"
-    #set srcdir "."
-    #set destdirs [list "/d/download/sync/de1" "/d/download/sync/de1plus" "/d/download/sync/de1plusbig"]
-    #set destdirs [list "/d/download/sync/de1plus"]
-    #set destdirs [list "/d/download/sync/de1beta"]
+    # Have skins deal with their own filelist if they want to
+    set skin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "[homedir]/skins" * ]]
+
+    foreach s $skin_folders {
+        set fbasename [file rootname [file tail $s]]
+        if {[file exists "[homedir]/skins/$fbasename/filelist.txt"] == 1} {
+            set a [open "[homedir]/skins/$fbasename/filelist.txt"]
+            set lines [split [read $a] "\n"]
+            close $a;
+            foreach line $lines {
+                if {$line eq {}} {
+                    continue
+                }
+                lappend files $line * \n
+            }
+        }
+    }
+
 
     # load the local manifest into memory 
     foreach {filename filesize filemtime filesha} [string trim [read_file "$srcdir/complete_manifest.txt"]] {
