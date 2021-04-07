@@ -21,3 +21,6 @@
 [submodule "de1plus/skins/metric"]
 	path = de1plus/skins/metric
 	url = https://github.com/barneyhawes/decent-metric/
+[submodule "de1plus/skins/DSx"]
+	path = de1plus/skins/DSx
+	url = https://github.com/Damian-AU/DSx
