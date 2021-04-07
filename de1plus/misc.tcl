@@ -978,6 +978,7 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/DGUI/setup_Insight.tcl *
         plugins/DGUI/setup_MimojaCafe.tcl *
 
+	plugins/log_debug/plugin.tcl *
     }
 #        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
