@@ -852,7 +852,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/DSx_Plugins/DSx_plugin_UI.dsx *
         skins/DSx/DSx_Plugins/DSx_theme.dsx *
         skins/DSx/DSx_Plugins/DSx_workflow.dsx *
-        skins/DSx/DSx_Plugins/DSx_v34.dsx
+        skins/DSx/DSx_Plugins/DSx_v34.dsx *
         skins/DSx/DSx_Plugins/Pizza_dough.off *
         skins/DSx/DSx_Plugins/wake_to_pinkcup.off *
         skins/DSx/skin.tcl *
