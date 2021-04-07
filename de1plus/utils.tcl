@@ -37,7 +37,7 @@ proc setup_environment {} {
         wm title . "Decent"
 
         # force the screen into landscape if it isn't yet
-        msg "orientation: [borg screenorientation]"
+        msg -DEBUG "orientation: [borg screenorientation]"
         if {[borg screenorientation] != "landscape" && [borg screenorientation] != "reverselandscape"} {
             borg screenorientation $::settings(orientation)
         }
@@ -330,7 +330,6 @@ proc setup_environment {} {
 }
 
 proc check_if_battery_low_and_give_message {} {
-    #msg "check_if_battery_low_and_give_message [battery_percent]"
     if {[battery_percent] < 10 && $::android == 1} {
         info_page [subst {[translate "We noticed that your battery power is very low."]\n\n[translate "Maybe you are turning your DE1 off using the power switch on the back?"]\n\n[translate "If so, that prevents the tablet from charging."]\n\n[translate "Instead, put the DE1 to sleep by tapping the power icon in the App."]}] [translate "Ok"]
     }
@@ -343,8 +342,6 @@ proc battery_percent {} {
     if {$percent == ""} {
         set percent 100
     }
-
-    #msg "battery_percent: $percent"
 
     return $percent
 }
@@ -366,7 +363,7 @@ proc check_battery_low {brightness_to_use} {
     if {$percent < $::settings(battery_very_low_trigger)} {
         if {$current_brightness > $::settings(battery_very_low_brightness)} {
             get_set_tablet_brightness $::settings(battery_very_low_brightness)
-            msg "Battery is very low ($percent < $::settings(battery_very_low_trigger)) so lowering screen to $::settings(battery_very_low_brightness)"
+            msg -WARNING "Battery is very low ($percent < $::settings(battery_very_low_trigger)) so lowering screen to $::settings(battery_very_low_brightness)"
         }
         if {$brightness_to_use > $::settings(battery_very_low_brightness)} {
             return $::settings(battery_very_low_brightness)
@@ -374,7 +371,7 @@ proc check_battery_low {brightness_to_use} {
     } elseif {$percent < $::settings(battery_low_trigger)} {
         if {$current_brightness > $::settings(battery_low_brightness)} {
             get_set_tablet_brightness $::settings(battery_low_brightness)
-            msg "Battery is low ($percent < $::settings(battery_low_trigger)) so lowering screen to $::settings(battery_low_brightness)"
+            msg -WARNING "Battery is low ($percent < $::settings(battery_low_trigger)) so lowering screen to $::settings(battery_low_brightness)"
         }
         if {$brightness_to_use > $::settings(battery_low_brightness)} {
             return $::settings(battery_low_brightness)
@@ -383,7 +380,7 @@ proc check_battery_low {brightness_to_use} {
     } elseif {$percent < $::settings(battery_medium_trigger)} {
         if {$current_brightness > $::settings(battery_medium_brightness)} {
             get_set_tablet_brightness $::settings(battery_medium_brightness)
-            msg "Battery is medium ($percent < $::settings(battery_medium_trigger)) so lowering screen to $::settings(battery_medium_brightness)"
+            msg -NOTICE "Battery is medium ($percent < $::settings(battery_medium_trigger)) so lowering screen to $::settings(battery_medium_brightness)"
         }
         if {$brightness_to_use > $::settings(battery_medium_brightness)} {
             return $::settings(battery_medium_brightness)
@@ -498,12 +495,12 @@ proc random_saver_file {} {
             foreach fn [glob -nocomplain "[saver_directory]/2560x1600/*.jpg"] {
                 borg toast [subst {[translate "Resizing image"]\n\n[file tail $fn]}]
                 borg spinner on
-                msg "random_saver_file image create photo saver -file $fn"
+                msg -DEBUG "random_saver_file image create photo saver -file $fn"
                 image create photo saver -file $fn
                 photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
 
                 set resized_filename "[saver_directory]/${::screen_size_width}x${::screen_size_height}/[file tail $fn]"
-                puts "saving resized image to: $resized_filename"
+                msg -DEBUG  "saving resized image to: $resized_filename"
                 borg spinner off
 
                 saver write $resized_filename   -format {jpeg -quality 50}
@@ -536,7 +533,7 @@ proc tcl_introspection {} {
             set acnt 0
             foreach a [after info] {
                 incr acnt
-                append txt "$acnt - " [after info $a]\n"
+                append txt "$acnt -  [after info $a]\n"
             }
         }
 
@@ -589,7 +586,7 @@ proc tcl_introspection {} {
         append txt "TOTAL global variable memory used: $total bytes\n\n"
 
 
-        msg $txt
+        msg -DEBUG $txt
     }
 
     after [expr {60 * 60 * 1000}] tcl_introspection
@@ -617,7 +614,7 @@ proc random_splash_file {} {
             foreach fn [glob -nocomplain "[splash_directory]/2560x1600/*.jpg"] {
                 borg toast [subst {[translate "Resizing image"]\n\n[file tail $fn]}]
                 borg spinner on
-                msg "random_splash_file image create photo saver -file $fn"
+                msg -DEBUG "random_splash_file image create photo saver -file $fn"
                 image create photo saver -file $fn
                 photoscale saver $rescale_images_y_ratio $rescale_images_x_ratio
 
@@ -800,8 +797,8 @@ proc translate {english} {
                 append t [subst {$l "$english" }]
             }
             append t "\}"
-            puts "Appending new phrase: $english"
-            msg [stacktrace]
+            msg -NOTICE "Appending new phrase: $english" \
+		    [stacktrace]
             append_file "[homedir]/translation.tcl" $t
             set ::already_shown_trans($english) 1
         }
@@ -829,18 +826,16 @@ proc skin_directory {} {
 
 proc android_specific_stubs {} {
 
-    proc ble {args} { msg "ble $args"; return 1 }
+    proc ble {args} { msg -DEBUG "ble $args"; return 1 }
     
     if {$::android != 1 && $::undroid != 1} {
         proc sdltk {args} {
             if {[lindex $args 0] == "powerinfo"} {
-                #msg "sdltk powerinfo"
                 return [list "percent" 75]
             } elseif {[lindex $args 0] == "textinput"} {
-                #msg "sdltk textinput"
                 return 0
             } else {
-                msg "unknown sdktk comment: '$args'"
+                msg -ERROR "unknown sdktk comment: '$args'"
             }
         }
     }
@@ -864,7 +859,7 @@ proc android_specific_stubs {} {
             if {[lindex $args 1] == ""} {
                 return 70
             } else {
-                msg "borg $args"
+                msg -DEBUG "borg $args"
             }
 
         } else {
@@ -1003,7 +998,6 @@ proc accelerometer_data_read {} {
     #   set xvalue [lindex [lindex $a 11] 0]
     #   lappend reads $xvalue
     #}
-    #msg "reads: $reads"
 
     #set a [borg sensor get 0]
     #set a 
@@ -1013,7 +1007,6 @@ proc accelerometer_data_read {} {
     mean_accelbuffer
     set xvalue $::ACCEL(e3)
 
-    #msg "xvalue : $xvalue $::ACCEL(e1) $::ACCEL(e2) $::ACCEL(e3)"
 
     return $xvalue;
 
@@ -1069,7 +1062,6 @@ proc accelerometer_check {} {
             set ::settings(flying) 0
             start_idle
         }
-        #msg "accelerometer angle: $angle"
     }
     after 200 accelerometer_check
 }
@@ -1112,7 +1104,7 @@ proc append_file {filename data} {
         set success 1
     }]
     if {$errcode != 0} {
-        msg "append_file $::errorInfo"
+        msg -ERROR "append_file $::errorInfo"
     }
     return $success
 }
@@ -1163,12 +1155,13 @@ proc save_settings {} {
 
             set sv [ifexists ::settings_saved($k)]
             if {$sv != $v} {
-                msg "New setting: '$k' = '$v' (was '$sv')"
+                msg -DEBUG "New setting: '$k' = '$v' (was '$sv')"
             }
         }
     }
 
-    msg "saving settings: [stacktrace]"
+    msg -INFO "saving settings"
+    msg -DEBUG [stacktrace]
     save_array_to_file ::settings [settings_filename]
 
     catch {
@@ -1203,7 +1196,7 @@ proc load_settings {} {
     } else {
         array set ::settings $settings_file_contents
 
-        msg "OS build info: $osbuildinfo_string"
+        msg -NOTICE "OS build info: $osbuildinfo_string"
 
     }
 
@@ -1423,21 +1416,21 @@ proc load_font {name fn pcsize {androidsize {}} } {
         }
 
         if {$familyname == ""} {
-            msg "Unable to get familyname from 'sdltk addfont $fn'"
+            msg -ERROR "Unable to get familyname from 'sdltk addfont $fn'"
         } else {
             lappend ::loaded_fonts $fn $familyname
         }
     }
 
     if {[info exists familyname] != 1 || $familyname == ""} {
-        msg "Font familyname not available; using name '$name'."
+        msg -WARNING "Font familyname not available; using name '$name'."
         set familyname $name
     }
 
     catch {
         font create $name -family $familyname -size $platform_font_size
     }
-    msg "added font name: \"$name\" family: \"$familyname\" size: $platform_font_size filename: \"$fn\""
+    msg -DEBUG "added font name: \"$name\" family: \"$familyname\" size: $platform_font_size filename: \"$fn\""
 }
 
 # Barney writes: https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
@@ -1462,7 +1455,7 @@ proc get_font { font_name size } {
             load_font $font_key "[skin_directory]/fonts/$font_name.ttf" $size
             lappend ::skin_fonts $font_key
         } else {
-            msg "Unable to load font '$font_key'"
+            msg -ERROR "Unable to load font '$font_key'"
         }
     }
 
@@ -1470,6 +1463,9 @@ proc get_font { font_name size } {
 }
 
 proc load_font_obsolete {name fn pcsize {androidsize {}} } {
+
+	msg -WARNING "Unexpected use of load_font_obsolete [stacktrace]"
+
     if {$androidsize == ""} {
         set androidsize $pcsize
     }
@@ -1506,7 +1502,7 @@ proc load_font_obsolete {name fn pcsize {androidsize {}} } {
             catch {
                 set result [sdltk addfont $fn]
             }
-            msg "addfont of '$fn' finished with fonts added: '$result'"
+            msg -DEBUG "addfont of '$fn' finished with fonts added: '$result'"
             if {$name != $result} {
                 puts "Warning, font name used does not equal Android font name added: '$name' != '$result'"
             }
@@ -1516,7 +1512,7 @@ proc load_font_obsolete {name fn pcsize {androidsize {}} } {
             
         } else {
             font create "$name" -family "$name" -size [expr {int(1.0 * $pcsize * $::fontm)}]
-            msg "font create \"$name\" -family \"$name\" -size [expr {int(1.0 * $pcsize * $::fontm)}]"
+            msg -DEBUG "font create \"$name\" -family \"$name\" -size [expr {int(1.0 * $pcsize * $::fontm)}]"
         }
 
     }
@@ -1532,7 +1528,7 @@ proc list_remove_element {list toremove} {
 }
 
 proc web_browser {url} {
-    msg "Browser '$url'"
+    msg -INFO "Browser '$url'"
 	if { $::android == 1 } {
 		borg activity android.intent.action.VIEW $url text/html
 	} elseif { $::tcl_platform(platform) eq "windows" } {
@@ -1579,7 +1575,6 @@ proc array_keyvalue_sorted_by_val_limited {arrname {sort_order -increasing} {lim
         if {$limit != -1 && [llength $toreturn] >= $limit} {
             break
         }
-        #msg "$k"
     }
     return $toreturn
 }
@@ -1598,7 +1593,7 @@ proc shot_history_count_profile_use {} {
             array set sett [ifexists arr(settings)]
         }
             if {[array size arr] == 0} {
-                msg "Corrupted shot history item during count: 'history/$d'"
+                msg -ERROR "Corrupted shot history item during count: 'history/$d'"
                 continue
             }
 
@@ -1610,9 +1605,6 @@ proc shot_history_count_profile_use {} {
             incr profile_all_shot_count($profile)
         }
     }
-
-    #msg "Count of shots by espresso profile: [array get profile_all_shot_count]"
-    #msg "array_kv_keys_sorted_by_val: [array_keyvalue_sorted_by_val_limited profile_all_shot_count -decreasing 10]"
 
     # only keep the top 5 profiles in this global array, which will be marked with a heart symbol to indicate that they are the user's favrite profiles
     array set ::profile_shot_count [array_keyvalue_sorted_by_val_limited profile_all_shot_count -decreasing 6]
@@ -1655,10 +1647,10 @@ proc shot_history_export {} {
                 array set arr [read_file "history/$d"]
             }
             if {[array size arr] == 0} {
-                msg "Corrupted shot history item: 'history/$d'"
+                msg -ERROR "Corrupted shot history item: 'history/$d'"
                 continue
             }
-            msg "Exporting history item: $fname"
+            msg -INFO "Exporting history item: $fname"
             export_csv arr $fname
         }
 
@@ -1674,10 +1666,10 @@ proc shot_history_export {} {
 
                 }
                 if {[array size arr] == 0} {
-                    msg "Corrupted shot history item: 'history/$d'"
+                    msg -ERROR "Corrupted shot history item: 'history/$d'"
                     continue
                 }
-                msg "Exporting history item to JSON: $jsonfname"
+                msg -INFO "Exporting history item to JSON: $jsonfname"
                 export_json $ftxt $jsonfname
             }
         }
@@ -2188,7 +2180,6 @@ proc wrapped_profile_string_part {input threshold partnumber} {
         }
     } 
     set w [wrapped_string_part $input $threshold $partnumber]
-    #msg "Wrapped part $partnumber for threshold $threshold from '$input' = '$w'"
     return $w
 }
 
@@ -2199,7 +2190,6 @@ proc wrapped_string_part {input threshold partnumber} {
         append input " "
     }
     set l [wrap_string $input $threshold 1]
-    #msg "wrapped_string_part '$input' ([string length $input]) t=$threshold = '$l'"
     return [lindex $l $partnumber]
 }
 

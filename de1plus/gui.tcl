@@ -32,7 +32,7 @@ proc load_skin {} {
 		catch {
 			message_page [subst {[translate "Your choice of skin had an error and cannot be used."]\n\n$err}] [translate "Ok"]
 		}
-		msg "Failed to 'load_skin' because: '$err'"
+		msg -ERROR "Failed to 'load_skin' because: '$err'"
 		after 10000 exit
 	}
 
@@ -105,7 +105,7 @@ proc photoscale {img sx {sy ""} } {
 }
 
 proc photoscale_not_android {img sx {sy ""} } {
-	msg "photoscale $img $sx $sy"
+	msg -DEBUG "photoscale $img $sx $sy"
     if { $sx == 1 && ($sy eq "" || $sy == 1) } {
         return;   # Nothing to do!
     }
@@ -125,7 +125,7 @@ proc photoscale_not_android {img sx {sy ""} } {
 
 
 proc photoscale_android {img sx {sy ""} } {
-	msg "photoscale $img $sx $sy"
+	msg -DEBUG "photoscale $img $sx $sy"
     if { $sx == 1 && ($sy eq "" || $sy == 1) } {
         return;   # Nothing to do!
     }
@@ -164,11 +164,11 @@ proc add_de1_page {names filename {skin ""} } {
 		# no redoing, as these are shipping with the app
 	} elseif {[file exists $pngfilename] != 1} {
 		set make_new_image 1
-		msg "Making new image because destination image does not exist: $pngfilename"
+		msg -DEBUG "Making new image because destination image does not exist: $pngfilename"
 	} elseif {[file mtime $srcfilename] > [file mtime $pngfilename]} {
 		# if the source image is newer than the target image, 
 		set make_new_image 1
-		msg "Making new image because date of src image is newer: $srcfilename"
+		msg -DEBUG "Making new image because date of src image is newer: $srcfilename"
 	}
 
 	if {$make_new_image == 1} {
@@ -182,7 +182,6 @@ proc add_de1_page {names filename {skin ""} } {
         set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
         set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
-		#msg "photoscale $names $::rescale_images_x_ratio $::rescale_images_y_ratio"
 		image create photo $names -file $srcfilename
 		photoscale $names $rescale_images_y_ratio $rescale_images_x_ratio
 		borg spinner off
@@ -192,7 +191,7 @@ proc add_de1_page {names filename {skin ""} } {
 	} else {
 		if {$::settings(preload_all_page_images) == 1} {
 			set iname [image create photo $names -file $pngfilename]
-			msg "loading page: '$names' with image '$pngfilename' with tclname: '$iname'"
+			msg -DEBUG "loading page: '$names' with image '$pngfilename' with tclname: '$iname'"
 			#image create photo $names 			$names -file $pngfilename
 		}
 	}
@@ -213,8 +212,6 @@ proc add_de1_page {names filename {skin ""} } {
 
 proc set_de1_screen_saver_directory {{dirname {}}} {
 
-	msg "set_de1_screen_saver_directory"
-
 	# force use of our default saver directory if the black screen saver is enabled, otherwise use whatever the skin chooses
 	if {$::settings(screen_saver_change_interval) == 0} {
 		set dirname "[homedir]/saver"
@@ -225,6 +222,8 @@ proc set_de1_screen_saver_directory {{dirname {}}} {
 	if {$dirname != ""} {
 		set saver_directory $dirname
 	}
+
+	msg -INFO "set_de1_screen_saver_directory: $::saver_directory"
 
 	#set pngfilename [random_saver_file]
 	set names "saver"
@@ -303,7 +302,6 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 	}
 
 	#set $var $finalvalue
-	#msg "vertical slider $x $y $x0 $y0  $x1 $y1 = $range = $finalvalue = $varname"
 
 	eval set $varname $finalvalue
 
@@ -335,7 +333,7 @@ proc is_fast_double_tap { key } {
 	if {$prevtime != ""} {
 		# check for a fast double-varName
 		if {[expr {$millinow - $prevtime}] < 150} {
-			msg "Fast button double-tap on $key"
+			msg -INFO "Fast button double-tap on $key"
 			set b 1
 		}
 	}
@@ -346,7 +344,6 @@ proc is_fast_double_tap { key } {
 
 proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1 {b 0} } {
 	# b = which button was tapped
-	#msg "Var: $varname : Button $b  $x $y $x0 $y0 $x1 $y1 "
 
 	set x [translate_coordinates_finger_down_x $x]
 	set y [translate_coordinates_finger_down_y $y]
@@ -454,7 +451,7 @@ proc canvas'textvar {canvas tag _var args} {
 # optional "alsobind" allows us to put text on top of a pressable button and have the text also bound to the same down/up/leave actions
 proc up_down_button_create {actionscript btn_images img_loc key_loc buttontype {alsobind {}} } {
 
-	msg "up_down_button_create"
+	msg -DEBUG "up_down_button_create"
 
 	if {$buttontype != "onetime" && $buttontype != "holdrepeats"} {
 		puts "ERROR unknown buttontype $buttontype"
@@ -812,7 +809,6 @@ proc add_de1_text {args} {
 set image_cnt 0
 proc add_de1_image {args} {
 
-	msg "add_de1_image $args"
 	global image_cnt
 	incr image_cnt
 	set contexts [lindex $args 0]
@@ -846,7 +842,6 @@ proc add_de1_widget {args} {
 
 	set errcode 0
 	set torun [concat [list $widgettype $widget] [lrange $args 5 end] ]
-	#msg $torun
 	#set errcode [catch { 
 		eval $torun
 	#} err]
@@ -929,7 +924,6 @@ proc stop_screen_saver_timer {} {
 	if {[info exists ::screen_saver_alarm_handle] == 1} {
 		after cancel $::screen_saver_alarm_handle
 		unset -nocomplain ::screen_saver_alarm_handle
-		#msg "unset old saver alarm"
 	}
 
 }
@@ -942,8 +936,6 @@ proc delay_screen_saver {} {
 	if {$::settings(screen_saver_delay) != 0 } {
 		set ::screen_saver_alarm_handle [after [expr {60 * 1000 * $::settings(screen_saver_delay)}] "show_going_to_sleep_page"]
 	}
-
-	#msg "delay_screen_saver: [ifexists ::screen_saver_alarm_handle] [after_info]"
 }
 
 proc after_info {} {
@@ -961,7 +953,7 @@ proc show_going_to_sleep_page  {} {
 		set wake [current_alarm_time $::settings(scheduler_wake)]
 		set sleep [current_alarm_time $::settings(scheduler_sleep)]
 		if {[clock seconds] > $wake && [clock seconds] < $sleep} {
-			msg "Delaying screen saver because we are during scheduled forced-awake time"
+			msg -INFO "Delaying screen saver because we are during scheduled forced-awake time"
 			delay_screen_saver
 			return
 		}
@@ -969,19 +961,19 @@ proc show_going_to_sleep_page  {} {
 
 	if {$::de1_num_state($::de1(state)) != "Idle"} {
 		# never go to sleep if the DE1 is not idle
-		msg "delaying screen saver because de1 is not idle: '$::de1_num_state($::de1(state))'"
+		msg -INFO "delaying screen saver because de1 is not idle: '$::de1_num_state($::de1(state))'"
 		delay_screen_saver
 		return
 	}
 
     if {[ifexists ::app_updating] == 1} {
-		msg "delaying screen saver because tablet app is updating"
+		msg -INFO "delaying screen saver because tablet app is updating"
 		delay_screen_saver
 		return
 	}
 
 	if {$::de1(currently_updating_firmware) == 1 || [ifexists ::de1(in_fw_update_mode)] == 1} {
-		msg "delaying screen saver because firmware is updating"
+		msg -INFO "delaying screen saver because firmware is updating"
 		delay_screen_saver
 		return
 	}	
@@ -1009,11 +1001,9 @@ proc change_screen_saver_img {} {
 
 	if {[llength [ifexists ::saver_files_cache]] == 1} {
 		# no need to change the background screen saver image if it's only 1
-		#msg "xxxxno need to change the background screen saver image if it's only 1"
 		return
 	}
 
-	#msg "change_screen_saver_img $::de1(current_context) '[page_displaying_now]'"
 	#if {$::de1(current_context) == "saver"} {
 		#catch {
 			# image delete is not needed, as Tk silently replaces the existing image if the object has the same name
@@ -1025,7 +1015,6 @@ proc change_screen_saver_img {} {
 		set err ""
 		set errcode [catch {
 			# this can happen during an upgrade
-			#msg "image create photo saver -file $fn"
 			image create photo saver -file $fn
 			
 			# BUG FIX: this was causing a new canvas item to be created each time a screen saver object was created
@@ -1181,7 +1170,7 @@ if {$::android == 0} {
 	namespace eval ::gui {
 		variable _arbitrary_t0 [expr { [clock milliseconds] / 1000.0 }]
 		variable _st_period [expr { 1.0 / ( 2.0 * 50 ) }]
-		# msg -INFO "GUI driver using 50 Hz, hard-wired, for DE1 SampleTime"
+		msg -DEBUG "GUI driver using 50 Hz, hard-wired, for DE1 SampleTime"
 	}
 }
 
@@ -1317,7 +1306,7 @@ proc update_onscreen_variables { {state {}} } {
 
 		    if {$errcode != 0} {
 		        catch {
-		            msg "update_onscreen_variables error: $::errorInfo"
+		            msg -ERROR "update_onscreen_variables error: $::errorInfo"
 		        }
 		    }
 
@@ -1345,7 +1334,6 @@ proc update_onscreen_variables { {state {}} } {
 }
 
 proc set_next_page {machinepage guipage} {
-	#msg "set_next_page $machinepage $guipage"
 	set key "machine:$machinepage"
 	set ::nextpage($key) $guipage
 }
@@ -1388,8 +1376,6 @@ proc display_brightness {percentage} {
 
 proc page_display_change {page_to_hide page_to_show} {
 
-	#msg [stacktrace]
-
 	#if {$page_to_hide == ""} {
 	#}
 
@@ -1403,15 +1389,14 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	if {$::de1(current_context) == $page_to_show} {
 		#jbtemp
-		#msg "page_display_change returning because ::de1(current_context) == $page_to_show"
 		return 
 	}
 
-	msg "page_display_change $page_to_hide->$page_to_show"
+	msg -DEBUG "page_display_change $page_to_hide->$page_to_show"
 
 
 	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
-		msg "discarding intermediate sleep/off state msg"
+		msg -DEBUG "discarding intermediate sleep/off state msg"
 		return 
 	} elseif {$page_to_show == "saver"} {
 		if {[ifexists ::exit_app_on_sleep] == 1} {
@@ -1422,7 +1407,6 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	# signal the page change with a sound
 	say "" $::settings(sound_button_out)
-	#msg "page_display_change $page_to_show"
 	#set start [clock milliseconds]
 
 	# set the brightness in one place
@@ -1441,7 +1425,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {
 
-		msg "Doing next stress test step: '$::idle_next_step '"
+		msg -DEBUG "Doing next stress test step: '$::idle_next_step '"
 		set todo $::idle_next_step 
 		unset -nocomplain ::idle_next_step 
 		eval $todo
@@ -1459,19 +1443,17 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	if {[info exists ::delayed_image_load($page_to_show)] == 1} {
 		set pngfilename	$::delayed_image_load($page_to_show)
-		msg "Loading skin image from disk: $pngfilename"
-		
+
 		set errcode [catch {
 			# this can happen if the image file has been moved/deleted underneath the app
 			#fallback is to at least not crash
-			msg "page_display_change image create photo $page_to_show -file $pngfilename" 
+			msg -DEBUG "page_display_change image create photo $page_to_show -file $pngfilename" 
 			image create photo $page_to_show -file $pngfilename
-			#msg "image create photo $page_to_show -file $pngfilename"
 		}]
 
 	    if {$errcode != 0} {
 	        catch {
-	            msg "image create photo error: $::errorInfo"
+	            msg -ERROR "image create photo error: $::errorInfo"
 	        }
 	    }
 
@@ -1488,7 +1470,7 @@ proc page_display_change {page_to_hide page_to_show} {
 
 			    if {$errcode != 0} {
 			        catch {
-			            msg ".can itemconfigure page_to_show ($page/$page_to_show) error: $::errorInfo"
+			            msg -ERROR ".can itemconfigure page_to_show ($page/$page_to_show) error: $::errorInfo"
 			        }
 			    }
 
@@ -1499,8 +1481,6 @@ proc page_display_change {page_to_hide page_to_show} {
 	}
 
 
-	#msg "these_labels: $these_labels"
-
 #	if {[info exists ::all_labels] != 1} {
 #		set ::all_labels {}
 #		foreach {page labels} [array get ::existing_labels]  {
@@ -1509,11 +1489,9 @@ proc page_display_change {page_to_hide page_to_show} {
 #		set ::all_labels [lsort -unique $::all_labels]
 #	}
 #
-#	#msg "Hiding [llength $::all_labels] labels"
 #	foreach label $::all_labels {
 #		if {[.can itemcget $label -state] != "hidden"} {
 #			.can itemconfigure $label -state hidden
-#			#msg "hiding: '$label'"
 #		}
 #	}
 	.can itemconfigure all -state hidden
@@ -1524,16 +1502,14 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	if {$errcode != 0} {
 		catch {
-			msg ".can itemconfigure page_to_show error: $::errorInfo"
+			msg -ERROR ".can itemconfigure page_to_show error: $::errorInfo"
 		}
 
-	} 
-	
-	#msg "Showing [llength $these_labels] labels"
-	set these_labels [ifexists ::existing_labels($page_to_show)]	
+	}
+
+	set these_labels [ifexists ::existing_labels($page_to_show)]
 	foreach label $these_labels {
 		.can itemconfigure $label -state normal
-		#msg "showing: '$label'"
 	}
 
 	update
@@ -1544,12 +1520,11 @@ proc page_display_change {page_to_hide page_to_show} {
 	if {[info exists actions($page_to_show)] == 1} {
 		foreach action $actions($page_to_show) {
 			eval $action
-			msg "action: '$action"
+			msg -INFO "Page entry action: $page_to_show: '$action'"
 		}
 	}
 
-	#msg "Switched to page: $page_to_show [stacktrace]"
-	msg "Switched to page: $page_to_show"
+	msg -INFO "Switched to page: $page_to_show"
 
 	update_onscreen_variables
 
@@ -2054,7 +2029,7 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 proc setup_images_for_first_page {} {
 	
-	msg "setup_images_for_first_page"
+	msg -DEBUG "setup_images_for_first_page"
 	set fn [random_splash_file]
 	image create photo splash -file $fn 
 	.can create image {0 0} -anchor nw -image splash -tag splash -state normal
@@ -2393,7 +2368,8 @@ proc calibration_gui_init {} {
 	if {[ifexists ::settings(enable_fahrenheit)] == 1} {
 		set ::settings(enable_fahrenheit) 0
 		set ::calibration_disabled_fahrenheit 1
-		msg "Calibration disabled Fahrenheit"
+		msg -NOTICE "Calibration disabled Fahrenheit" \
+			"::settings(enable_farenheit) has been set to 0"
 	}
 
 	# set the entry fields back to normal
@@ -2828,7 +2804,7 @@ proc profile_title {} {
 # Using the CTRL modifier key with the desired key can bypass this issue.
 
 proc handle_keypress {keycode} {
-	msg "Keypress detected: $keycode / $::some_droid"
+	msg -DEBUG "Keypress detected: $keycode / $::some_droid"
 
 	if {($::some_droid != 1 && $keycode == 101) || ($::some_droid == 1 && $keycode == 8)} {
 		# e = espresso (emulate GUI button press)

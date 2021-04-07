@@ -31,8 +31,10 @@ proc userdata_append {comment cmd {vital 0} } {
 	#ble userdata $::de1(device_handle) $cmds
 	lappend ::de1(cmdstack) [list $comment $cmd $vital]
 
+	msg -INFO "Adding to BLE queue: '$comment'"
+
 	if {[llength $::de1(cmdstack)] > 20} {
-		msg "Warning, BLE queue is [llength $::de1(cmdstack)] long"
+		msg -WARNING "Warning, BLE queue is [llength $::de1(cmdstack)] long"
 	}
 	run_next_userdata_cmd
 }
@@ -42,12 +44,11 @@ proc run_next_userdata_cmd {} {
 	if {$::android == 1} {
 		# if running on android, only write one BLE command at a time
 		if {$::de1(wrote) == 1} {
-			#msg "Do not write, already writing to DE1, queue has [llength $::de1(cmdstack)] items"
 			return
 		}
 	}
 	if {($::de1(device_handle) == "0" || $::de1(device_handle) == "1") && $::de1(scale_device_handle) == "0"} {
-		comms_msg "run_next_userdata_cmd error: de1 not connected"
+		comms_msg -DEBUG "run_next_userdata_cmd error: de1 not connected"
 		return
 	}
 
@@ -58,7 +59,7 @@ proc run_next_userdata_cmd {} {
 		set vital [lindex $cmd 2]
 
 		set result 0
-		msg ">>> [lindex $cmd 0] (-[llength $::de1(cmdstack)]) : [lindex $cmd 1]"
+		msg -INFO "BLE >>> [lindex $cmd 0] (-[llength $::de1(cmdstack)]) : [lindex $cmd 1]"
 		set eer ""
 		set errcode [catch {
 			set result [{*}[lindex $cmd 1]]
@@ -66,23 +67,23 @@ proc run_next_userdata_cmd {} {
 
 		if {$errcode != 0} {
 			catch {
-				comms_msg "run_next_userdata_cmd catch error: $::errorInfo"
+				msg -ERROR "run_next_userdata_cmd catch error: $::errorInfo"
 			}
 		}
 
 		if {$result != 1} {
 
 			if {[string first "invalid handle" $::errorInfo] != -1 } {
-				comms_msg "Not retrying this command because BLE handle for the device is now invalid"
+				comms_msg -INFO "Not retrying this command because BLE handle for the device is now invalid"
 				#after 500 run_next_userdata_cmd
 			} elseif {$vital != 1 } {
-				comms_msg "Not retrying this because it is not vital"
+				comms_msg -INFO "Not retrying this because it is not vital"
 				#after 500 run_next_userdata_cmd
 			} else {
 				if {$eer != 0} {
-					comms_msg "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer) $::errorInfo"
+					comms_msg -INFO "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer) $::errorInfo"
 				} else {
-					comms_msg "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer)"
+					comms_msg -INFO "BLE command failed, will retry ($result): [lindex $cmd 1] ($eer)"
 				}
 
 				# test idea to keep scale from interference with DE1
@@ -103,7 +104,7 @@ proc run_next_userdata_cmd {} {
 		set ::de1(wrote) 1
 		set ::de1(previouscmd) [lindex $cmd 1]
 		if {[llength $::de1(cmdstack)] == 0} {
-			msg "BLE command queue is now empty"
+			msg -INFO "BLE command queue is now empty"
 		}
 
 		# try the bluetooth stack in a second, in case there were no bluetooth commands succeeded
@@ -111,13 +112,13 @@ proc run_next_userdata_cmd {} {
 		after 1000 run_next_userdata_cmd
 
 	} else {
-		#msg "no userdata cmds to run"
+		#
 	}
 }
 
 ### Generics
 proc de1_comm {action command_name {data 0}} {
-	comms_msg "de1_comm sending action $action command $command_name data \"$data\""
+	comms_msg -DEBUG "de1_comm sending action $action command $command_name data \"$data\""
 	if {$::de1(connectivity) == "ble"} {
 		return [de1_ble $action $command_name $data]
 	} else {
@@ -135,7 +136,7 @@ proc append_to_de1_list {address name type} {
 
 	set newlist $::de1_device_list
 	lappend newlist [dict create address $address name $name type $type]
-	msg "Scan found DE1: $address"
+	msg -INFO "Scan found DE1: $address"
 	set ::de1_device_list $newlist
 	catch {
 		fill_ble_listbox
@@ -158,17 +159,13 @@ proc de1_connect_handler { handle address name} {
 	set ::de1(last_ping) [clock seconds]
 	set ::currently_connecting_de1_handle 0
 
-	#msg "Connected to DE1"
 	set ::de1(device_handle) $handle
 	append_to_de1_list $address $name "ble"
 
-
-	#msg "connected to de1 with handle $handle"
-
 	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
-		msg "in_fw_update_mode : de1 connected"
+		msg -NOTICE "in_fw_update_mode : de1 connected"
 
-		msg "Tell DE1 to start to go to SLEEP (so it's asleep during firmware upgrade)"
+		msg -NOTICE "Tell DE1 to start to go to SLEEP (so it's asleep during firmware upgrade)"
 		de1_send_state "go to sleep" $::de1_state(Sleep)
 		set_fan_temperature_threshold 60
 	} else {
@@ -201,7 +198,6 @@ proc de1_event_handler { command_name value {update_received 0}} {
 
 	error "Got de1_event_handler command: $command_name"
 
-	#msg "Received from DE1: '[remove_null_terminator $value]'"
 	# change notification or read request
 	#de1_comm_new_value $cuuid $value
 	# change notification or read request
@@ -217,7 +213,7 @@ proc de1_event_handler { command_name value {update_received 0}} {
 			# this tries to handle bad write situations, but it might have side effects if it is not working correctly.
 			# probably this should be adding a command to the top of the write queue
 			if {$previous_wrote == 1} {
-				msg "bad write reported"
+				msg -ERROR "BLE: bad write reported"
 				{*}$::de1(previouscmd)
 				set ::de1(wrote) 1
 				return
@@ -225,7 +221,7 @@ proc de1_event_handler { command_name value {update_received 0}} {
 		}
 	} elseif {$command_name eq "ReadFromMMR"} {
 		# MMR read
-		msg "MMR recv read: '[convert_string_to_hex $value]'"
+		msg -DEBUG "MMR recv read: '[convert_string_to_hex $value]'"
 
 		parse_binary_mmr_read $value arr
 		set mmr_id $arr(Address)
@@ -233,10 +229,10 @@ proc de1_event_handler { command_name value {update_received 0}} {
 
 		parse_binary_mmr_read_int $value arr2
 
-		msg "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
+		msg -INFO "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr]"
 
 		if {$mmr_id == "80381C"} {
-			msg "Read: GHC is installed: '$mmr_val'"
+			msg -INFO "Read: GHC is installed: '$mmr_val'"
 			set ::settings(ghc_is_installed) $mmr_val
 
 			if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2} {
@@ -250,48 +246,48 @@ proc de1_event_handler { command_name value {update_received 0}} {
 		} elseif {$mmr_id == "803808"} {
 			set ::de1(fan_threshold) $mmr_val
 			set ::settings(fan_threshold) $mmr_val
-			msg "MMRead: Fan threshold: '$mmr_val'"
+			msg -INFO "MMRead: Fan threshold: '$mmr_val'"
 		} elseif {$mmr_id == "80380C"} {
-			msg "MMRead: tank temperature threshold: '$mmr_val'"
+			msg -INFO "MMRead: tank temperature threshold: '$mmr_val'"
 			set ::de1(tank_temperature_threshold) $mmr_val
 		} elseif {$mmr_id == "803820"} {
-			msg "MMRead: group head control mode: '$mmr_val'"
+			msg -INFO "MMRead: group head control mode: '$mmr_val'"
 			set ::settings(ghc_mode) $mmr_val
 		} elseif {$mmr_id == "803828"} {
-			msg "MMRead: steam flow: '$mmr_val'"
+			msg -INFO "MMRead: steam flow: '$mmr_val'"
 			set ::settings(steam_flow) $mmr_val
 		} elseif {$mmr_id == "803818"} {
-			msg "MMRead: hot_water_idle_temp: '[ifexists arr2(Data0)]'"
+			msg -INFO "MMRead: hot_water_idle_temp: '[ifexists arr2(Data0)]'"
 			set ::settings(hot_water_idle_temp) [ifexists arr2(Data0)]
 
 			#mmr_read "espresso_warmup_timeout" "803838" "00"
 		} elseif {$mmr_id == "803838"} {
-			msg "MMRead: espresso_warmup_timeout: '[ifexists arr2(Data0)]'"
+			msg -INFO "MMRead: espresso_warmup_timeout: '[ifexists arr2(Data0)]'"
 			set ::settings(espresso_warmup_timeout) [ifexists arr2(Data0)]
 		} elseif {$mmr_id == "803810"} {
-			msg "MMRead: phase_1_flow_rate: '[ifexists arr2(Data0)]'"
+			msg -INFO "MMRead: phase_1_flow_rate: '[ifexists arr2(Data0)]'"
 			set ::settings(phase_1_flow_rate) [ifexists arr2(Data0)]
 
 			if {[ifexists arr(Len)] >= 4} {
-			msg "MMRead: phase_2_flow_rate: '[ifexists arr2(Data1)]'"
+			msg -INFO "MMRead: phase_2_flow_rate: '[ifexists arr2(Data1)]'"
 				set ::settings(phase_2_flow_rate) [ifexists arr2(Data1)]
 			}
 			if {[ifexists arr(Len)] >= 8} {
-				msg "MMRead: hot_water_idle_temp: '[ifexists arr2(Data2)]'"
+				msg -INFO "MMRead: hot_water_idle_temp: '[ifexists arr2(Data2)]'"
 				set ::settings(hot_water_idle_temp) [ifexists arr2(Data2)]
 			}
 
 		} elseif {$mmr_id == "803834"} {
 			#parse_binary_mmr_read_int $value arr2
 
-			msg "MMRead: heater voltage: '[ifexists arr2(Data0)]' len=[ifexists arr(Len)]"
+			msg -INFO "MMRead: heater voltage: '[ifexists arr2(Data0)]' len=[ifexists arr(Len)]"
 			set ::settings(heater_voltage) [ifexists arr2(Data0)]
 
 			catch {
 				if {[ifexists ::settings(firmware_version_number)] != ""} {
 					if {$::settings(firmware_version_number) >= 1142} {
 						if {$::settings(heater_voltage) == 0} {
-							msg "Heater voltage is unknown, please set it"
+							msg -WARNING "Heater voltage is unknown, please set it"
 							show_settings calibrate2
 						}
 					}
@@ -299,7 +295,7 @@ proc de1_event_handler { command_name value {update_received 0}} {
 			}
 
 			if {[ifexists arr(Len)] >= 8} {
-				msg "MMRead: espresso_warmup_timeout2: '[ifexists arr2(Data1)]'"
+				msg -INFO "MMRead: espresso_warmup_timeout2: '[ifexists arr2(Data1)]'"
 				set ::settings(espresso_warmup_timeout) [ifexists arr2(Data1)]
 
 				#mmr_read "hot_water_idle_temp" "803818" "00"
@@ -314,20 +310,20 @@ proc de1_event_handler { command_name value {update_received 0}} {
 				# it's possibly to read all 3 MMR characteristics at once
 
 				# CPU Board Model * 1000. eg: 1100 = 1.1
-				msg "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
+				msg -INFO "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
 				set ::settings(cpu_board_model) [ifexists arr2(Data0)]
 
 				# v1.3+ Firmware Model (Unset = 0, DE1 = 1, DE1Plus = 2, DE1Pro = 3, DE1XL = 4, DE1Cafe = 5)
-				msg "MMRead: machine model:  '[ifexists arr2(Data1)]'"
+				msg -INFO "MMRead: machine model:  '[ifexists arr2(Data1)]'"
 				set ::settings(machine_model) [ifexists arr2(Data1)]
 
 				# CPU Board Firmware build number. (Starts at 1000 for 1.3, increments by 1 for every build)
-				msg "MMRead: firmware version number: '[ifexists arr2(Data2)]'"
+				msg -INFO "MMRead: firmware version number: '[ifexists arr2(Data2)]'"
 				set ::settings(firmware_version_number) [ifexists arr2(Data2)]
 
 			} else {
 				# CPU Board Model * 1000. eg: 1100 = 1.1
-				msg "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
+				msg -INFO "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
 				set ::settings(cpu_board_model) [ifexists arr2(Data0)]
 			}
 
@@ -335,28 +331,28 @@ proc de1_event_handler { command_name value {update_received 0}} {
 			parse_binary_mmr_read_int $value arr2
 
 			# v1.3+ Firmware Model (Unset = 0, DE1 = 1, DE1Plus = 2, DE1Pro = 3, DE1XL = 4, DE1Cafe = 5)
-			msg "MMRead: machine model:  '[ifexists arr2(Data0)]'"
+			msg -INFO "MMRead: machine model:  '[ifexists arr2(Data0)]'"
 			set ::settings(machine_model) [ifexists arr2(Data0)]
 
 		} elseif {$mmr_id == "800010"} {
 			parse_binary_mmr_read_int $value arr2
 
 			# CPU Board Firmware build number. (Starts at 1000 for 1.3, increments by 1 for every build)
-			msg "MMRead: firmware version number: '[ifexists arr2(Data0)]'"
+			msg -INFO "MMRead: firmware version number: '[ifexists arr2(Data0)]'"
 			set ::settings(firmware_version_number) [ifexists arr2(Data0)]
 
 		} elseif {$mmr_id == "80382C"} {
-			msg "MMRead: steam_highflow_start: '$mmr_val'"
+			msg -INFO "MMRead: steam_highflow_start: '$mmr_val'"
 			set ::settings(steam_highflow_start) $mmr_val
 		} else {
-			msg "Uknown type of direct MMR read $mmr_id on '[convert_string_to_hex $mmr_id]': $data"
+			msg -ERROR "Uknown type of direct MMR read $mmr_id on '[convert_string_to_hex $mmr_id]': $data"
 		}
 
 	} elseif {$command_name eq "Version"} {
 		set ::de1(last_ping) [clock seconds]
 		#update_de1_state $value
 		parse_binary_version_desc $value arr2
-		msg "version data received [string length $value] bytes: '$value' \"[convert_string_to_hex $value]\"  : '[array get arr2]'/ $event $data"
+		msg -DEBUG "version data received [string length $value] bytes: '$value' \"[convert_string_to_hex $value]\"  : '[array get arr2]'/ $event $data"
 		set ::de1(version) [array get arr2]
 
 		set v [de1_version_string]
@@ -373,7 +369,6 @@ proc de1_event_handler { command_name value {update_received 0}} {
 	} elseif {$command_name eq "WaterLevels"} {
 		set ::de1(last_ping) [clock seconds]
 		parse_binary_water_level $value arr2
-		#msg "water level data received [string length $value] bytes: $value  : [array get arr2]"
 
 		# compensate for the fact that we measure water level a few mm higher than the water uptake point
 		set mm [expr {$arr2(Level) + $::de1(water_level_mm_correction)}]
@@ -382,16 +377,16 @@ proc de1_event_handler { command_name value {update_received 0}} {
 	} elseif {$command_name eq "FWMapRequest"} {
 		#set ::de1(last_ping) [clock seconds]
 		parse_map_request $value arr2
-		msg "a009: [array get arr2]"
+		msg -DEBUG "a009: [array get arr2]"
 		if {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 0} {
-			msg "BLE recv: finished erasing fw '[ifexists arr2(FWToMap)]'"
+			msg -NOTICE "BLE recv: finished erasing fw '[ifexists arr2(FWToMap)]'"
 			set ::de1(currently_erasing_firmware) 0
 			#write_firmware_now
 		} elseif {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 1} {
-			msg "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
+			msg -NOTICE "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
 			#after 1000 read_fw_erase_progress
 		} elseif {$::de1(currently_erasing_firmware) == 0 && [ifexists arr2(FWToErase)] == 0} {
-			msg "BLE firmware find error BLE recv: '$value' [array get arr2]'"
+			msg -ERROR "BLE firmware find error BLE recv: '$value' [array get arr2]'"
 
 			if {[ifexists arr2(FirstError1)] == [expr 0xFF] && [ifexists arr2(FirstError2)] == [expr 0xFF] && [ifexists arr2(FirstError3)] == [expr 0xFD]} {
 				set ::de1(firmware_update_button_label) "Updated"
@@ -401,31 +396,30 @@ proc de1_event_handler { command_name value {update_received 0}} {
 			set ::de1(currently_updating_firmware) 0
 
 		} else {
-			msg "unknown firmware cmd ack recved: [string length $value] bytes: $value : [array get arr2]"
+			msg -ERROR "unknown firmware cmd ack recved: [string length $value] bytes: $value : [array get arr2]"
 		}
 	} elseif {$command_name eq "ShotSettings"} {
 		set ::de1(last_ping) [clock seconds]
 		#update_de1_state $value
 		parse_binary_hotwater_desc $value arr2
-		msg "hotwater data received [string length $value] bytes: $value  : [array get arr2]"
+		msg -INFO "hotwater data received [string length $value] bytes: $value  : [array get arr2]"
 
 		#update_de1_substate $value
-		#msg "Confirmed a00e read from DE1: '[remove_null_terminator $value]'"
 	} elseif {$command_name eq "DeprecatedShotDesc"} {
 		set ::de1(last_ping) [clock seconds]
 		#update_de1_state $value
 		parse_binary_shot_desc $value arr2
-		msg "shot data received [string length $value] bytes: $value  : [array get arr2]"
+		msg -INFO "shot data received [string length $value] bytes: $value  : [array get arr2]"
 	} elseif {$command_name eq "HeaderWrite"} {
 		set ::de1(last_ping) [clock seconds]
 		#update_de1_state $value
 		parse_binary_shotdescheader $value arr2
-		msg "READ shot header success: [string length $value] bytes: $value  : [array get arr2]"
+		msg -INFO "READ shot header success: [string length $value] bytes: $value  : [array get arr2]"
 	} elseif {$command_name eq "FrameWrite"} {
 		set ::de1(last_ping) [clock seconds]
 		#update_de1_state $value
 		parse_binary_shotframe $value arr2
-		msg "shot frame received [string length $value] bytes: $value  : [array get arr2]"
+		msg -INFO "shot frame received [string length $value] bytes: $value  : [array get arr2]"
 	} elseif {$command_name eq "StateInfo"} {
 		set ::de1(last_ping) [clock seconds]
 		update_de1_state $value
@@ -439,7 +433,6 @@ proc de1_event_handler { command_name value {update_received 0}} {
 		#	}
 		#}
 		#update_de1_substate $value
-		#msg "Confirmed StateInfo read from DE1: '[remove_null_terminator $value]'"
 		set ::de1(wrote) 0
 		run_next_userdata_cmd
 	}
@@ -455,14 +448,14 @@ proc de1_disconnect_handler { handle } {
 	catch {
 		# this should no longer be necessary since we're now explicitly closing the BLE handle associated with this disconnection notice
 		if {$handle != $::currently_connecting_de1_handle} {
-			msg "Disconnected handle is not currently_connecting_de1_handle - closing it now though, something might not be right"
+			msg -ERROR "Disconnected handle is not currently_connecting_de1_handle - closing it now though, something might not be right"
 			ble close $::currently_connecting_de1_handle
 		}
 	}
 
 	set ::currently_connecting_de1_handle 0
 
-	msg "de1 disconnected"
+	msg -NOTICE "de1 disconnected"
 	set ::de1(device_handle) 0
 
 	# temporarily disable this feature as it's not clear that it's needed.
@@ -496,7 +489,7 @@ proc read_de1_version {} {
 # repeatedly request de1 state
 proc poll_de1_state {} {
 
-	msg "poll_de1_state"
+	msg -DEBUG "poll_de1_state"
 	read_de1_state
 	after 1000 poll_de1_state
 }
@@ -508,7 +501,7 @@ proc read_de1_state {} {
 	if {[catch {
 		userdata_append "read de1 state" [list de1_comm read StateInfo] 1
 	} err] != 0} {
-		msg "Failed to 'read de1 state' in DE1 BLE because: '$err'"
+		msg -ERROR "Failed to 'read de1 state' in DE1 BLE because: '$err'"
 	}
 }
 
@@ -516,7 +509,7 @@ proc read_de1_state {} {
 # calibration change notifications ENABLE
 proc de1_enable_calibration_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 1"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 1"
 		return
 	}
 
@@ -526,7 +519,7 @@ proc de1_enable_calibration_notifications {} {
 # calibration change notifications DISABLE
 proc de1_disable_calibration_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 2"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 2"
 		return
 	}
 
@@ -536,7 +529,7 @@ proc de1_disable_calibration_notifications {} {
 # temp changes
 proc de1_enable_temp_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 3"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 3"
 		return
 	}
 
@@ -546,7 +539,7 @@ proc de1_enable_temp_notifications {} {
 # status changes
 proc de1_enable_state_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 4"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 4"
 		return
 	}
 
@@ -555,7 +548,7 @@ proc de1_enable_state_notifications {} {
 
 proc de1_disable_temp_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 5"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 5"
 		return
 	}
 
@@ -564,7 +557,7 @@ proc de1_disable_temp_notifications {} {
 
 proc de1_disable_state_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 6"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 6"
 		return
 	}
 
@@ -586,7 +579,7 @@ proc mmr_available {} {
 				# mmr feature became available at this version number
 				set ::settings(mmr_enabled) 1
 			} else {
-				msg "MMR is not enabled on this DE1 BLE API <4 #: [de1_version_bleapi]"
+				msg -NOTICE "MMR is not enabled on this DE1 BLE API <4 #: [de1_version_bleapi]"
 				set ::settings(mmr_enabled) 0
 			}
 
@@ -602,12 +595,12 @@ proc mmr_available {} {
 proc de1_enable_mmr_notifications {} {
 
 	if {[mmr_available] == 0} {
-		msg "Unable to de1_enable_mmr_notifications because MMR not available"
+		msg -NOTICE "Unable to de1_enable_mmr_notifications because MMR not available"
 		return
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 7"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 7"
 		return
 	}
 
@@ -618,7 +611,7 @@ proc de1_enable_mmr_notifications {} {
 # water level notifications
 proc de1_enable_water_level_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 7"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 7"
 		return
 	}
 
@@ -627,7 +620,7 @@ proc de1_enable_water_level_notifications {} {
 
 proc de1_disable_water_level_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 8"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 8"
 		return
 	}
 
@@ -637,7 +630,7 @@ proc de1_disable_water_level_notifications {} {
 # firmware update command notifications (not writing new fw, this is for erasing and switching firmware)
 proc de1_enable_maprequest_notifications {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 9"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 9"
 		return
 	}
 
@@ -649,13 +642,12 @@ proc fwfile {} {
 	set fw "[homedir]/fw/bootfwupdate.dat"
 
 	if {[info exists ::de1(Firmware_file_Version)] != 1} {
-		msg "reading firmware file metadata"
+		msg -INFO "reading firmware file metadata"
 		parse_firmware_file_header [read_binary_file $fw] arr
-		#msg "firmware file info: [array get arr]"
 		foreach {k v} [array get arr] {
 			set varname "Firmware_file_$k"
 			set varvalue $arr($k)
-			msg "$varname : $varvalue"
+			msg -INFO "$varname : $varvalue"
 			set ::de1($varname) $varvalue
 		}
 	}
@@ -670,10 +662,10 @@ proc fwfile {} {
 		# please do not bypass this test and load the new firmware on your v1.0 v1.1 machines yet.  Once we have new firmware is known to work on those older machines, we'll get rid of the 2nd firmware image.
 
 		# note that ghc_is_installed=1 ghc hw is there but unused, whereas ghc_is_installed=3 ghc hw is required.
-		msg "using v1.3 firmware"
+		msg -NOTICE "using v1.3 firmware"
 		return "[homedir]/fw/bootfwupdate2.dat"
 	} else {
-		msg "using v1.1 firmware"
+		msg -NOTICE "using v1.1 firmware"
 		return "[homedir]/fw/bootfwupdate.dat"
 	}
 }
@@ -685,7 +677,7 @@ proc start_firmware_update {} {
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 		if {$::android == 1} {
-			msg "DE1 not connected, cannot send BLE command 10"
+			msg -DEBUG "DE1 not connected, cannot send BLE command 10"
 			return
 		}
 	}
@@ -704,12 +696,12 @@ proc start_firmware_update {} {
 	}
 
 	if {$::de1(currently_erasing_firmware) == 1} {
-		msg "Already erasing firmware"
+		msg -INFO "Already erasing firmware"
 		return
 	}
 
 	if {$::de1(currently_updating_firmware) == 1} {
-		msg "Already updating firmware"
+		msg -INFO "Already updating firmware"
 		return
 	}
 
@@ -764,14 +756,13 @@ proc start_firmware_update {} {
 
 #proc get_firmware_file_specs {} {
 #	parse_firmware_file_header [read_binary_file [fwfile]] arr
-#	msg "firmware file info: [array get arr]"
 #}
 
 proc write_firmware_now {} {
 	set ::de1(currently_updating_firmware) 1
 	set ::de1(currently_erasing_firmware) 0
 	set ::de1(firmware_update_start_time) [clock milliseconds]
-	msg "Start writing firmware now [stacktrace]"
+	msg -NOTICE "Start writing firmware now [stacktrace]"
 
 	set ::de1(firmware_update_binary) [read_binary_file [fwfile]]
 	set ::de1(firmware_bytes_uploaded) 0
@@ -783,11 +774,11 @@ proc write_firmware_now {} {
 proc firmware_upload_next {} {
 
 	if {$::android == 1} {
-		msg "firmware_upload_next $::de1(firmware_bytes_uploaded)"
+		msg -INFO "firmware_upload_next $::de1(firmware_bytes_uploaded)"
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 11"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 11"
 		return
 	}
 
@@ -840,7 +831,7 @@ proc firmware_upload_next {} {
 
 proc mmr_read {note address length} {
 	if {[mmr_available] == 0} {
-		msg "Unable to mmr_read because MMR not available"
+		msg -NOTICE "Unable to mmr_read because MMR not available"
 		return
 	}
 
@@ -850,23 +841,23 @@ proc mmr_read {note address length} {
 	set data "$mmrlen${mmrloc}[binary decode hex 00000000000000000000000000000000]"
 
 	if {$::android != 1} {
-		msg "MMR non-android requesting read $address:$length [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc]: with comment [convert_string_to_hex $data]"
+		msg -DEBUG "MMR non-android requesting read $address:$length [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc]: with comment [convert_string_to_hex $data]"
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 11"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 11"
 		return
 	}
 
 	set cmt "MMR requesting read '$note' [convert_string_to_hex $mmrlen] bytes of firmware data from [convert_string_to_hex $mmrloc] with '[convert_string_to_hex $data]'"
-	msg "queing $cmt"
+	msg -INFO "queing $cmt"
 	userdata_append $cmt [list de1_comm write "ReadFromMMR" $data] 1
 
 }
 
 proc mmr_write { note address length value} {
 	if {[mmr_available] == 0} {
-		msg "Unable to mmr_read because MMR not available"
+		msg -NOTICE "Unable to mmr_write because MMR not available"
 		return
 	}
 
@@ -875,18 +866,16 @@ proc mmr_write { note address length value} {
 	set mmrval [binary decode hex $value]
 	set data "$mmrlen${mmrloc}${mmrval}[binary decode hex 0000000000000000000000000000000000]"
 
-	#msg "mmr write length [string length $data]"
 	if {[string length $data] > 20} {
 		set data [string range $data 0 19]
-		#msg "mmr new write length [string length $data]"
 	}
 
 	if {$::android != 1} {
-		msg "MMR $note writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]"
+		msg -DEBUG "MMR $note writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]"
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 11"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 11"
 		return
 	}
 	userdata_append "MMR $note writing [convert_string_to_hex $mmrlen] bytes of firmware data to [convert_string_to_hex $mmrloc] with value [convert_string_to_hex $mmrval] : with comment [convert_string_to_hex $data]" [list de1_comm write "WriteToMMR" $data] 1
@@ -898,7 +887,8 @@ proc set_tank_temperature_threshold {temp} {
 	### NB: The BLE queue is not thread safe
 	###
 
-	msg "Setting desired water tank temperature to '$temp' [stacktrace]"
+	msg -INFO "Setting desired water tank temperature to '$temp'"
+	msg -DEBUG [stacktrace]
 
 	catch { after cancel $::_pending_tank_temperature_change }
 	remove_matching_ble_queue_entries {^MMR set_tank_temperature_threshold}
@@ -944,7 +934,7 @@ proc get_heater_tweaks_obs {} {
 }
 
 proc get_heater_voltage {} {
-	msg "Getting heater voltage"
+	msg -INFO "Getting heater voltage"
 	mmr_read "get_heater_voltage" "803834" "01"
 }
 
@@ -968,12 +958,12 @@ proc set_steam_flow {desired_flow} {
 
 	remove_matching_ble_queue_entries {^MMR set_steam_flow}
 
-	msg "Setting steam flow rate to '$desired_flow'"
+	msg -INFO "Setting steam flow rate to '$desired_flow'"
 	mmr_write "set_steam_flow" "803828" "04" [zero_pad [int_to_hex $desired_flow] 2]
 }
 
 proc get_steam_flow {} {
-	msg "Getting steam flow rate"
+	msg -INFO "Getting steam flow rate"
 	mmr_read "get_steam_flow" "803828" "00"
 }
 
@@ -983,23 +973,23 @@ proc get_3_mmr_cpuboard_machinemodel_firmwareversion {} {
 }
 
 proc get_cpu_board_model {} {
-	msg "Getting CPU board model"
+	msg -INFO "Getting CPU board model"
 	mmr_read "get_cpu_board_model" "800008" "00"
 }
 
 proc get_machine_model {} {
-	msg "Getting machine model"
+	msg -INFO "Getting machine model"
 	mmr_read "get_machine_model" "80000C" "00"
 }
 
 proc get_firmware_version_number {} {
-	msg "Getting firmware version number"
+	msg -INFO "Getting firmware version number"
 	mmr_read "get_firmware_version_number" "800010" "00"
 }
 
 proc set_heater_voltage {heater_voltage} {
 	#return
-	msg "Setting heater voltage to '$heater_voltage'"
+	msg -INFO "Setting heater voltage to '$heater_voltage'"
 	mmr_write "set_heater_voltage" "803834" "04" [zero_pad [int_to_hex $heater_voltage] 2]
 }
 
@@ -1013,53 +1003,53 @@ proc set_steam_highflow_start {desired_seconds} {
 
 	remove_matching_ble_queue_entries {^MMR set_steam_highflow_start}
 
-	msg "Setting steam high flow rate start seconds to '$desired_seconds'"
+	msg -INFO "Setting steam high flow rate start seconds to '$desired_seconds'"
 	mmr_write "set_steam_highflow_start" "80382C" "04" [zero_pad [int_to_hex $desired_seconds] 2]
 }
 
 proc get_steam_highflow_start {} {
-	msg "Getting steam high flow rate start seconds "
+	msg -INFO "Getting steam high flow rate start seconds "
 	mmr_read "get_steam_highflow_start" "80382C" "00"
 }
 
 
 proc set_ghc_mode {desired_mode} {
-	msg "Setting group head control mode '$desired_mode'"
+	msg -INFO "Setting group head control mode '$desired_mode'"
 	mmr_write "set_ghc_mode" "803820" "04" [zero_pad [int_to_hex $desired_mode] 2]
 }
 
 proc get_ghc_mode {} {
-	msg "Reading group head control mode"
+	msg -INFO "Reading group head control mode"
 	mmr_read "get_ghc_mode" "803820" "00"
 }
 
 proc get_ghc_is_installed {} {
-	msg "Reading whether the group head controller (GHC) is installed or not"
+	msg -INFO "Reading whether the group head controller (GHC) is installed or not"
 	mmr_read "get_ghc_is_installed" "80381C" "00"
 }
 
 proc get_fan_threshold {} {
-	msg "Reading at what temperature the PCB fan turns on"
+	msg -INFO "Reading at what temperature the PCB fan turns on"
 	mmr_read "get_fan_threshold" "803808" "00"
 }
 
 proc get_calibration_flow_multiplier {} {
-	msg "Reading calibraton flow multiplier"
+	msg -INFO "Reading calibraton flow multiplier"
 	mmr_read "get_calibration_flow_multiplier" "80383C" "00"
 }
 
 proc set_fan_temperature_threshold {temp} {
-	msg "Setting fan temperature to '$temp'"
+	msg -INFO "Setting fan temperature to '$temp'"
 	mmr_write "set_fan_temperature_threshold" "803808" "04" [zero_pad [int_to_hex $temp] 2]
 }
 
 proc set_calibration_flow_multiplier {m} {
-	msg "Setting calibration flow multiplier to '$m'"
+	msg -INFO "Setting calibration flow multiplier to '$m'"
 	mmr_write "set_calibration_flow_multiplier" "80383C" "04" [zero_pad [long_to_little_endian_hex [expr {int(1000 * $m)}] ] 2]
 }
 
 proc get_tank_temperature_threshold {} {
-	msg "Reading desired water tank temperature"
+	msg -INFO "Reading desired water tank temperature"
 	mmr_read "get_tank_temperature_threshold" "80380C" "00"
 }
 
@@ -1082,7 +1072,7 @@ proc de1_cause_refill_now_if_level_low {} {
 
 proc de1_send_waterlevel_settings {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 12"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 12"
 		return
 	}
 
@@ -1094,7 +1084,7 @@ proc de1_send_waterlevel_settings {} {
 
 proc de1_send_state {comment msg} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 13"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 13"
 		return
 	}
 
@@ -1102,12 +1092,10 @@ proc de1_send_state {comment msg} {
 	delay_screen_saver
 
 	#if {$::de1(device_handle) == "0"} {
-	#	msg "error: de1 not connected"
 	#	return
 	#}
 
 	#set ::de1(substate) -
-	#msg "Sending to DE1: '$msg'"
 	userdata_append $comment [list de1_comm write "RequestedState" "$msg"] 1
 }
 
@@ -1156,7 +1144,7 @@ proc de1_send_shot_frames {} {
 	### NB: The BLE queue is not thread safe
 	###
 
-	msg "de1_send_shot_frames"
+	msg -INFO "de1_send_shot_frames"
 
 	set parts [de1_packed_shot_wrapper]
 	set header [lindex $parts 0]
@@ -1164,7 +1152,6 @@ proc de1_send_shot_frames {} {
 	####
 	# this is purely for testing the parser/deparser
 	parse_binary_shotdescheader $header arr2
-	#msg "frame header of [string length $header] bytes parsed: $header [array get arr2]"
 	####
 
 
@@ -1181,8 +1168,7 @@ proc de1_send_shot_frames {} {
 		incr cnt
 		unset -nocomplain arr3
 		parse_binary_shotframe $packed_frame arr3
-		#msg "frame #$cnt data parsed [string length $packed_frame] bytes: $packed_frame  : [array get arr3]"
-		msg "frame #$cnt: [string length $packed_frame] bytes: [array get arr3]"
+		msg -DEBUG "frame #$cnt: [string length $packed_frame] bytes: [array get arr3]"
 		####
 
 		userdata_append "Espresso frame #$cnt: [array get arr3] (FLAGS: [parse_shot_flag [ifexists arr3(Flag)]])"  [list de1_comm write "FrameWrite" $packed_frame] 1
@@ -1206,7 +1192,6 @@ proc save_settings_to_de1 {} {
 
 	# let this run even though no connection, so it can be displayed in the debug log.  Very useful info for programmers.
 	#if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-	#		msg "DE1 not connected, cannot save_settings_to_de1"
 	#		return
 	#	}
 
@@ -1222,7 +1207,6 @@ proc de1_send_steam_hotwater_settings {} {
 
 	# let this run even though no connection, so it can be displayed in the debug log.  Very useful info for programmers.
 	#if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-	#	msg "DE1 not connected, cannot send BLE command 16"
 	#	return
 	#}
 
@@ -1239,7 +1223,7 @@ proc de1_send_steam_hotwater_settings {} {
 
 proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 17"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 17"
 		return
 	}
 
@@ -1250,7 +1234,7 @@ proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 	} elseif {$calib_target == "temperature"} {
 		set target 2
 	} else {
-		msg "Unknown calibration send target: '$calib_target'"
+		msg -ERROR "Unknown calibration send target: '$calib_target'"
 		return
 	}
 
@@ -1270,7 +1254,7 @@ proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 
 proc de1_read_calibration {calib_target {factory 0} } {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		msg "DE1 not connected, cannot send BLE command 18"
+		msg -DEBUG "DE1 not connected, cannot send BLE command 18"
 		return
 	}
 
@@ -1282,7 +1266,7 @@ proc de1_read_calibration {calib_target {factory 0} } {
 	} elseif {$calib_target == "temperature"} {
 		set target 2
 	} else {
-		msg "Unknown calibration write target: '$calib_target'"
+		msg -ERROR "Unknown calibration write target: '$calib_target'"
 		return
 	}
 
@@ -1308,7 +1292,6 @@ proc de1_read_calibration {calib_target {factory 0} } {
 
 proc de1_read_hotwater {} {
 	#if {$::de1(device_handle) == "0"} {
-	#	msg "error: de1 not connected"
 	#	return
 	#}
 
@@ -1317,7 +1300,6 @@ proc de1_read_hotwater {} {
 
 proc de1_read_shot_header {} {
 	#if {$::de1(device_handle) == "0"} {
-	#	msg "error: de1 not connected"
 	#	return
 	#}
 
@@ -1325,7 +1307,6 @@ proc de1_read_shot_header {} {
 }
 proc de1_read_shot_frame {} {
 	#if {$::de1(device_handle) == "0"} {
-	#	msg "error: de1 not connected"
 	#	return
 	#}
 
