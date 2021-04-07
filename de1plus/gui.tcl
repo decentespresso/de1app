@@ -2053,7 +2053,12 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 proc setup_images_for_first_page {} {
 	
 	msg "setup_images_for_first_page"
-	set fn [random_splash_file]
+	set fn "[skin_directory]/${::screen_size_width}x${::screen_size_height}/splash.jpg"
+	if {![file exists $fn]} {
+		msg "$fn does not exist. Using default wallpaper"
+		set fn [random_splash_file]
+	}
+	
 	image create photo splash -file $fn 
 	.can create image {0 0} -anchor nw -image splash -tag splash -state normal
 	pack .can
