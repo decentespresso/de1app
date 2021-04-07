@@ -631,7 +631,6 @@ proc decentscale_timer_stop {} {
 	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
-	set tare [binary decode hex "D1"]
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
 		msg "decentscale not connected, cannot stop timer"
@@ -644,8 +643,6 @@ proc decentscale_timer_stop {} {
 	msg "decent scale timer stop: '$timeroff'"
 	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 
-	# cmd not yet implemented
-	#userdata_append "decentscale: timer stop" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_skale_EF80) $::cinstance($::de1(cuuid_skale_EF80)) $tare]
 }
 
 proc decentscale_timer_reset {} {
