@@ -151,6 +151,13 @@ namespace eval ::logging {
 
 	proc init {} {
 
+		# Set the default limit to INFO for Stable builds
+
+		if { [regexp {^[0-9]+\.[0.9]+$} [package version de1app]] } {
+
+			set ::logging::severity_limit_logfile 6
+		}
+
 		set de1root [file normalize [file dirname [info script]]]
 
 		# Get log-related parameters from settings.tdb
