@@ -812,7 +812,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/2560x1600/SbuttonF.png *
         skins/DSx/2560x1600/SbuttonS.png *
         skins/DSx/2560x1600/SbuttonW.png *
-        skins/DSx/DSx_Code_Files/Damian's\ LM Leva.tcl *
+        skins/DSx/DSx_Code_Files/Damian's\ LM\ Leva.tcl *
         skins/DSx/DSx_Code_Files/Damian's\ LRv2.tcl *
         skins/DSx/DSx_Code_Files/Damian's\ LRv3.tcl *
         skins/DSx/DSx_Code_Files/DSx_functions.tcl *
@@ -830,9 +830,9 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/DSx_Code_Files/png/store_button1280.png *
         skins/DSx/DSx_Code_Files/png/store_button1920.png *
         skins/DSx/DSx_Code_Files/png/store_button2560.png *
-        skins/DSx/DSx_Font_Files/alarm clock.ttf *
-        skins/DSx/DSx_Font_Files/Bradley Hand Bold.ttf *
-        skins/DSx/DSx_Font_Files/Comic Sans MS.ttf *
+        skins/DSx/DSx_Font_Files/alarm\ clock.ttf *
+        skins/DSx/DSx_Font_Files/Bradley\ Hand\ Bold.ttf *
+        skins/DSx/DSx_Font_Files/Comic\ Sans\ MS.ttf *
         skins/DSx/DSx_Font_Files/Font\ Awesome\ 5\ Brands-Regular-400.otf *
         skins/DSx/DSx_Font_Files/Font\ Awesome\ 5\ Duotone-Solid-900.otf *
         skins/DSx/DSx_Font_Files/Font\ Awesome\ 5\ Pro-Light-300.otf *
