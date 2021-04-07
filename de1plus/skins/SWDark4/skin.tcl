@@ -296,11 +296,6 @@ add_de1_variable "home swsettings off espresso_1 espresso_3 preheat_1 preheat_3 
 # espresso charts
 
 set charts_width 1700
-if {$::debugging == 1} {
-	set charts_width 400
-	add_de1_variable "home off espresso espresso_3" 450 220 -text "" -font Helv_6 -fill "#8b8b8b" -anchor "nw" -justify left -width [rescale_y_skin 1560] -textvariable {$::debuglog}
-	add_de1_variable "steam steam_1 steam_3 preheat_1 preheat_2 preheat_3 preheat_4 water water_1 water_3" 50 220 -text "" -font Helv_6 -fill "#8b8b8b" -anchor "nw" -justify left -width [rescale_y_skin 1560] -textvariable {$::debuglog}
-}
 
 	
 	# not yet ready to be used, still needs some work
