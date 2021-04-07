@@ -227,7 +227,6 @@ proc set_de1_screen_saver_directory {{dirname {}}} {
 
 	#set pngfilename [random_saver_file]
 	set names "saver"
-	#puts $pngfilename
 	#image create photo $names -file $pngfilename
 	image create photo $names 
 
@@ -438,7 +437,7 @@ proc round_one_digits {amount} {
 
 
 proc canvas'textvar {canvas tag _var args} {
-	puts "UNUSED CURRENTLY"
+	msg -WARNING "Unexpected use of canvas'textvar"
     upvar 1 $_var var
     if { [llength $args] } {
         $canvas itemconfig $tag -text $var
@@ -454,7 +453,7 @@ proc up_down_button_create {actionscript btn_images img_loc key_loc buttontype {
 	msg -DEBUG "up_down_button_create"
 
 	if {$buttontype != "onetime" && $buttontype != "holdrepeats"} {
-		puts "ERROR unknown buttontype $buttontype"
+		msg -ERROR "unknown buttontype $buttontype"
 		return
 	}
 
@@ -511,13 +510,11 @@ proc generic_push_button_settings {btnup btndown action change buttontype} {
 			if {[ifexists genericstate($btnup)] != ""} {
 				# cancel the held-button timer when they 
 				after cancel $genericstate($btnup)
-				#puts "cancelling held timer $genericstate($btnup) for $btnup"
 			}
 		}
 
 		if {$change == "leave"} {
 			if {[ifexists genericstate($btndown)] != "down"} {
-				#puts "skipping leave event because they never pressed the button down"
 				return
 			}
 
@@ -526,27 +523,23 @@ proc generic_push_button_settings {btnup btndown action change buttontype} {
 			update
 			set genericstate($btndown) "up"
 			set genericstate($btnup) ""
-			#puts "leave button $btnup"
 		} elseif {$change == "up"} {
 			# this is the up button event
 			if {$genericstate($btndown) == "up"} {
-				#puts "skipping up event because already left the button"
 				return
 			}
 
-			#puts "- $btnup : $genericstate($btndown) - $genericstate($btnup) "
 
 			.can itemconfigure $btnup -state normal
 			.can itemconfigure $btndown -state hidden
 			update
 			set genericstate($btnup) ""
-			#puts "evaling action with previous state $genericstate($btndown)"
 			if {$genericstate($btndown) != "held"} {
 				eval $action
 			}
 			set genericstate($btndown) "up"
 		} else {
-			puts "unknown action $change"
+			msg -ERROR "unknown action $change"
 		}
 	}
 }
@@ -557,7 +550,6 @@ proc generic_button_held {btnup btndown action} {
 	# button has been pressed down for a while, so activate a down/up press
 	if {$genericstate($btndown) == "held" || $genericstate($btndown) == "down"} {
 		set genericstate($btndown) "held"		
-		#puts "button $btnup held evaling function now"
 		eval $action
 		update
 		#generic_push_button_settings $btnup $btndown $action "up"
@@ -570,7 +562,7 @@ proc generic_button_held {btnup btndown action} {
 	} elseif {$genericstate($btndown) == "up"} {
 		#no longer held
 	} else {
-		puts "unknown held state: '$genericstate($btndown)'"
+		msg -ERROR "unknown held state: '$genericstate($btndown)'"
 	}
 }
 
@@ -615,7 +607,7 @@ proc install_update_app_icon {} {
 	set appurl "file://[appdir]/appupdate.tcl"
 	catch {
 		set x [borg shortcut add "Decent Update" $appurl $iconbase64_de1]
-		puts "shortcut added: '$x'"
+		msg -NOTICE "shortcut added: '$x'"
 	}
 
 }
@@ -631,10 +623,10 @@ proc install_de1_app_icon {} {
 	set iconbase64_de1 [::base64::encode -maxlen 0 $icondata_de1]
 
 	set appurl "file://[appdir]/de1.tcl"
-	puts "appurl: $appurl"
+	msg -DEBUG "appurl: $appurl"
 	catch {
 		set x [borg shortcut add "DE1" $appurl $iconbase64_de1]
-		puts "shortcut added: '$x'"
+		msg -NOTICE "shortcut added: '$x'"
 	}
 
 	#install_update_app_icon [appdir]
@@ -644,15 +636,14 @@ proc install_de1_app_icon {} {
 
 proc install_de1plus_app_icon {} {
 	package require base64
-	puts "icon file: '[appdir]/de1plus_icon_v2.png'"
+	msg -DEBUG "icon file: '[appdir]/de1plus_icon_v2.png'"
 	set icondata_de1plus [read_binary_file "[appdir]/de1plus_icon_v2.png"]
 	set iconbase64_de1plus [::base64::encode -maxlen 0 $icondata_de1plus]
 
 	set appurl "file://[appdir]/de1plus.tcl"
-	#puts "appurl: $appurl"
 	#catch {
 		set x [borg shortcut add "Decent" $appurl $iconbase64_de1plus]
-		puts "shortcut added: '$x'"
+		msg -NOTICE "shortcut added: '$x'"
 	#}
 
 	#install_update_app_icon [appdir]
@@ -697,7 +688,6 @@ proc platform_button_unpress {} {
 
 
 proc add_variable_item_to_context {context label_name varcmd} {
-	#puts "varcmd: '$varcmd'"
 	global variable_labels
 	#if {[info exists variable_labels($context)] != 1} {
 	#	set variable_labels($context) [list $label_name $varcmd]
@@ -749,7 +739,6 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 		}
 	}
 
-	#puts "binding $btn_name to switch to new context: '$newcontext'"
 
 	#set tclcode [list page_display_change $displaycontext $newcontext]
 
@@ -765,7 +754,6 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 #	}
 
 #	if {[string first mousemove $options] != -1} {
-		#puts "mousemove detected"
 #		.can bind $btn_name [platform_finger_down] $tclcode
 #	}
 
@@ -847,9 +835,9 @@ proc add_de1_widget {args} {
 	#} err]
 
 	if {$errcode == 1} {
-		puts $err
-		puts "while running" 
-		puts $torun
+		msg -ERROR "add_de1_widget: $err" \
+			"while running" \
+			$torun
 	}
 
 	# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
@@ -865,9 +853,9 @@ proc add_de1_widget {args} {
 	} err]
 
 	if {$errcode == 1} {
-		puts $err
-		puts "while running" 
-		puts [lindex $args 4]
+		msg -ERROR "add_de1_widget: $err" \
+			"while running" \
+			[lindex $args 4]
 	}
 	#.can create window [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state normal
 	#set windowname [.can create window  [lindex $args 2] [lindex $args 3] -window $widget  -anchor nw -tag $widget -state hidden]
@@ -879,7 +867,6 @@ proc add_de1_widget {args} {
 	} else {
 		set windowname [.can create window  $x $y -window $widget  -anchor nw -tag $widget -state hidden]
 	}
-	#puts "winfo: [winfo children .can]"
 	#.can bind $windowname [platform_button_press] "msg click"
 	
 
@@ -887,7 +874,6 @@ proc add_de1_widget {args} {
 	set ::tclwindows($widget) [lrange $args 2 3]
 
 	foreach context $contexts {
-		#puts "add_visual_item_to_context $context '$widget'"
 		add_visual_item_to_context $context $widget
 	}
 	return $widget 
@@ -899,7 +885,7 @@ proc add_de1_variable {args} {
 	set varcmd [lindex [unshift args] 0]
 	set lastcmd [unshift args]
 	if {$lastcmd != "-textvariable"} {
-		puts "WARNING: last -command needs to be -textvariable on a add_de1_variable line. You entered: '$lastcmd'"
+		msg -WARNING "last -command needs to be -textvariable on a add_de1_variable line. You entered: '$lastcmd'"
 		return
 	}
 	set contexts [lindex $args 0]
@@ -980,7 +966,7 @@ proc show_going_to_sleep_page  {} {
 
 
 
-	puts "show_going_to_sleep_page"
+	msg -INFO "show_going_to_sleep_page"
  	if {$::de1(current_context) == "sleep" || $::de1(current_context) == "saver"} {
  		return
  	}
@@ -1324,7 +1310,6 @@ proc update_onscreen_variables { {state {}} } {
 	}
 
 	#set y [clock milliseconds]
-	#puts "elapsed: [expr {$y - $x}] $something_updated"
 
 	if {[info exists ::update_onscreen_variables_alarm_handle] == 1} {
 		after cancel $::update_onscreen_variables_alarm_handle
@@ -1341,7 +1326,7 @@ proc set_next_page {machinepage guipage} {
 proc show_settings { {tab_to_show ""} } {
 	backup_settings; 
 
-	puts "show_settings"
+	msg -INFO "show_settings"
 
 	if {$tab_to_show == ""} {
 		page_to_show_when_off $::settings(active_settings_tab)
@@ -1369,7 +1354,6 @@ proc page_show {page_to_show} {
 
 proc display_brightness {percentage} {
 	set percentage [check_battery_low $percentage]
-	#puts "brightness: $percentage %"
 	get_set_tablet_brightness $percentage
 }
 
@@ -1435,7 +1419,6 @@ proc page_display_change {page_to_hide page_to_show} {
 	#global current_context
 	set ::de1(current_context) $page_to_show
 
-	#puts "page_display_change hide:$page_to_hide show:$page_to_show"
 	catch {
 		.can itemconfigure $page_to_hide -state hidden
 	}
@@ -1514,7 +1497,6 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	update
 	#set end [clock milliseconds]
-	#puts "elapsed: [expr {$end - $start}]"
 
 	global actions
 	if {[info exists actions($page_to_show)] == 1} {
@@ -1559,8 +1541,6 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 }
 
 proc update_de1_explanation_chart { {context {}} } {
-	#puts "update_de1_explanation_chart"
-	#puts "update_de1_explanation_chart 1: $::settings(settings_profile_type)"
 
 	espresso_de1_explanation_chart_elapsed length 0
 	espresso_de1_explanation_chart_temperature length 0
@@ -1609,7 +1589,6 @@ proc update_de1_explanation_chart { {context {}} } {
 		return
 	}
 
-	#puts "update_de1_explanation_chart 2"
 
 	set seconds 0
 
@@ -1678,13 +1657,11 @@ proc update_de1_explanation_chart { {context {}} } {
 	set approximate_ramptime [expr {0.01 + (abs($espresso_pressure - $preinfusion_pressure) * 0.5)}]
 	set pressure_hold_time $::settings(espresso_hold_time)
 
-	#puts "approximate_ramptime: $approximate_ramptime / pressure_hold_time: $pressure_hold_time"
 	if {$approximate_ramptime > $pressure_hold_time} {
 		set espresso_pressure [expr {$pressure_hold_time * 2}]
 	}
 
 
-	#puts "pressure_hold_time: $pressure_hold_time"
 
 	set espresso_decline_time $::settings(espresso_decline_time)
 	#if {$pressure_hold_time > $approximate_ramptime} {
@@ -1909,7 +1886,6 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 		set pump [ifexists props(pump)]
 
-		#puts "$cnt [array get props]\n"
 
 		set theseconds [ifexists props(seconds)]
 		set transition [ifexists props(transition)]
@@ -1920,7 +1896,6 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 		}
 
 		if {$pump == "pressure"} {
-			#puts "pressure [ifexists props(pressure)] $seconds"
 
 			if {$previous_pump == "flow"} {
 				espresso_de1_explanation_chart_pressure append [ifexists props(pressure)]
@@ -1969,7 +1944,6 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 
 
 		} elseif {$pump == "flow"} {
-			#puts "flow [ifexists props(flow)] $seconds"
 
 			if {$previous_pump == "pressure"} {
 				espresso_de1_explanation_chart_flow append [ifexists props(flow)]
@@ -2237,7 +2211,6 @@ proc water_level_color_check {widget} {
 		return
 	}
 
-	#puts water_level_color_check
 
 	if {[info exists ::water_level_color_check_count] != 1} {
 		set ::water_level_color_check_count  0
@@ -2258,7 +2231,6 @@ proc water_level_color_check {widget} {
 	#set start_blinking_level $::settings(waterlevel_blink_start_offset)
 	set blinkrate $::settings(waterlevel_indicator_blink_rate)
 
-	#puts "$::de1(water_level) | $start_blinking_level | $remaining_water"
 	set color [lindex $colors $::water_level_color_check_count]
 	if {$remaining_water > 7} {
 		# check the water rate infrequently if there is enough water and don't blink it
@@ -2430,7 +2402,6 @@ proc import_god_shots_from_common_format {} {
 
 
 	set import_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/import/common/" *.csv]]
-	#puts "import_files: $import_files"
 	foreach import_file $import_files {
 		set import_files_array($import_file) 1
 	}
@@ -2442,7 +2413,6 @@ proc import_god_shots_from_common_format {} {
 	}
 
 	set files_to_import [array names import_files_array]
-	#puts "files_to_import: $files_to_import"
 	if {$files_to_import != ""} {
 		foreach file_to_import $files_to_import {
 			set fn_import "[homedir]/godshots/import/common/$file_to_import"
@@ -2450,7 +2420,7 @@ proc import_god_shots_from_common_format {} {
 			if {[file exist $fn_export] == 1} {
 				continue
 			}
-			puts "Importing common file format into god shot from '$fn_import' to '$fn_export'"
+			msg -INFO "Importing common file format into god shot from '$fn_import' to '$fn_export'"
 
 			set import_espresso_elapsed {}
 			set import_espresso_pressure {}
@@ -2472,7 +2442,7 @@ proc import_god_shots_from_common_format {} {
 				incr linecnt
 				if {$linecnt == 1} {
 					set labels [split $line ,]
-					puts "labels: '[join $labels |]'"
+					msg -DEBUG "labels: '[join $labels |]'"
 					continue
 				}
 
@@ -2480,7 +2450,6 @@ proc import_god_shots_from_common_format {} {
 				if {[lindex $parts 0] == "meta"} {
 					set metatype [string trim [lindex $parts 9]]
 					set metadata [string trim [lindex $parts 10]]
-					#puts "metadata: '$metadata' / metatype: '$metatype'"
 					if {[string tolower $metatype] == "date"} {
 					 	set meta(clock) [iso8601stringparse $metadata]
 					} else {
@@ -2499,7 +2468,6 @@ proc import_god_shots_from_common_format {} {
 						set momentarray($labelname) $part
 					}
 
-					#puts [array get momentarray]
 
 					if {[ifexists momentarray(elapsed)] != ""} {
 						lappend import_espresso_elapsed [ifexists momentarray(elapsed)]
@@ -2515,7 +2483,7 @@ proc import_god_shots_from_common_format {} {
 
 			# we have no gravimetric flow data, but we have weight data, then remake the gravimetric flow rate list
 			if {[lsort -unique [ifexists import_espresso_flow]] == 0} {
-				puts "we have no gravimetric flow data, but we have weight data, so remaking the gravimetric flow rate list using incremental weight data"
+				msg -DEBUG "we have no gravimetric flow data, but we have weight data, so remaking the gravimetric flow rate list using incremental weight data"
 				set import_espresso_flow {}
 				set previous_weight 0
 				set previous_time 0
@@ -2541,7 +2509,6 @@ proc import_god_shots_from_common_format {} {
 						set diff_weight_per_second 0
 					}
 
-					#puts "cnt $cnt: $this_time $this_weight = $diff_weight_per_second"
 					set multiplier2 [expr {1 - $multiplier1}];
 					set smoothed_flow_rate [expr {($smoothed_flow_rate * $multiplier1) + ($diff_weight_per_second * $multiplier2)}]
 
@@ -2567,20 +2534,14 @@ espresso_notes [list [join $notes_list { - }]]
 }]
 
 			write_file $fn_export $exportdata
-
-			#puts [array get meta]
-			#puts ---
-		
 		}
 	}
-
 }
 
 proc god_shot_files {} {
 	import_god_shots_from_common_format
 
 	set files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/" *.shot]]
-	#puts "skin_directories: $dirs"
 	set dd {}
 	foreach f $files {
 	    
@@ -2594,13 +2555,13 @@ proc god_shot_files {} {
 	    } else {
 	    	set fnexport "[homedir]/godshots/export/columnar/[file rootname $f].csv"
 			if {[file exists $fnexport] != 1} { 
-				puts "Exporting God Shot file from $fn to $fnexport" 
+				msg -INFO "Exporting God Shot file from $fn to $fnexport" 
 				export_csv godprops $fnexport
 			}
 
 	    	set fnexport_common "[homedir]/godshots/export/common/[file rootname $f].csv"
 			if {[file exists $fnexport_common] != 1} { 
-				puts "Exporting God Shot file from $fn to $fnexport_common" 
+				msg -INFO "Exporting God Shot file from $fn to $fnexport_common" 
 				export_csv_common_format godprops $fnexport_common
 			}
 
@@ -2610,14 +2571,12 @@ proc god_shot_files {} {
 		lappend dd $name $f 
 	}
 
-	#puts "god shots: '$dd'"
 	return $dd
 }
 
 
 
 proc fill_god_shots_listbox {} {
-	#puts "fill_skin_listbox $widget" 
 	unset -nocomplain ::god_shot_filenames
 	set widget $::globals(god_shots_widget)
 	$widget delete 0 99999
@@ -2655,13 +2614,11 @@ proc save_to_god_shots {} {
 		return 
 	}
 
-	#puts "ll2: '[llength [espresso_pressure range 0 end]]'"
 
 	set clock [clock seconds]
 	set filename [subst {[clock format $clock -format "%Y%m%dT%H%M%S"].shot}]
 
 	set files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/" *.shot]]
-	#puts "skin_directories: $dirs"
 	set dd {}
 	set msg [translate "Saved"]
 	set updated 0
@@ -2670,7 +2627,7 @@ proc save_to_god_shots {} {
 	    array unset -nocomplete godprops
 	    array set godprops [encoding convertfrom utf-8[read_binary_file $fn]]
 	    if {[ifexists godprops(name)] == $::settings(god_espresso_name)} {
-	    	puts "found pre-existing god shot $f with the same description"
+	    	msg -NOTICE "found pre-existing god shot $f with the same description"
 	    	set filename $f
 	    	set msg [translate "Updated"]
 	    	set updated 1
@@ -2703,7 +2660,7 @@ proc save_to_god_shots {} {
 	if {$updated != 1} {
 		fill_god_shots_listbox
 	}
-	puts "save_to_god_shots ran"
+	msg -INFO "save_to_god_shots ran"
 
 	god_shot_save
 
@@ -2732,7 +2689,6 @@ proc load_god_shot { {force 0} } {
 
 	if {$::de1(current_context) != "describe_espresso0" && $force == 0} {
 		# spurious tk call from Android
-		#puts "retruning"
 		return 
 	}
 
@@ -2741,7 +2697,6 @@ proc load_god_shot { {force 0} } {
 		return 
 	}
 	set f [ifexists ::god_shot_filenames($stepnum)]
-	#puts "god shot: $stepnum $f"
 	if {$stepnum == ""} {
 		return
 	}

@@ -673,7 +673,8 @@ proc fwfile {} {
 
 proc start_firmware_update {} {
 
-	puts "start_firmware_update : [stacktrace]"
+	msg -NOTICE "start_firmware_update"
+	msg -DEBUG [stacktrace]
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 		if {$::android == 1} {
