@@ -15,15 +15,13 @@ proc int_to_hex {in} {
 
 proc long_to_little_endian_hex {in} {
 	set i [format %04X $in]
-	#msg "i: '$i"
 	set i2 "[string range $i 2 3][string range $i 0 1]"
-	#msg "i2: '$i2"
 	return $i2
 }
 
-proc comms_msg {text} {
+proc comms_msg {args} {
 	if {$::settings(comms_debugging) == 1} {
-		msg $text
+		msg {*}$args
 	}
 }
 
