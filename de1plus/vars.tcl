@@ -351,10 +351,6 @@ proc clear_espresso_timers {} {
 	set ::timers(espresso_pour_stop) 0
 
 	set ::timer_running 0
-
-	catch {
-		scale_timer_reset
-	}
 }
 
 clear_espresso_timers
