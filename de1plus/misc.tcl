@@ -136,9 +136,9 @@ proc make_de1_dir {srcdir destdirs} {
         history_export.tcl *
         version.tcl *
         profile.tcl *
-	de1_de1.tcl *
-	device_scale.tcl *
-	event.tcl *
+        de1_de1.tcl *
+        device_scale.tcl *
+        event.tcl *
 
         profiles_v2/readme.txt *
 
@@ -253,14 +253,12 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Antibes/1280x800/icon.jpg *
         skins/Antibes/1280x800/nothing_on.png *
         skins/Antibes/1280x800/steam_on.png *
-        skins/Antibes/1280x800/tea_on.png *    
+        skins/Antibes/1280x800/tea_on.png *
         skins/Antibes/2560x1600/espresso_on.png *
         skins/Antibes/2560x1600/icon.jpg *
         skins/Antibes/2560x1600/nothing_on.png *
         skins/Antibes/2560x1600/steam_on.png *
-        skins/Antibes/2560x1600/tea_on.png *    
-
-
+        skins/Antibes/2560x1600/tea_on.png *
 
         skins/SWDark4/screen_saver/2560x1600/saver-1.jpg *
         skins/SWDark4/screen_saver/2560x1600/saver-2.jpg *
@@ -310,12 +308,12 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Borg/1280x800/icon.jpg *
         skins/Borg/1280x800/nothing_on.png *
         skins/Borg/1280x800/steam_on.png *
-        skins/Borg/1280x800/tea_on.png *    
+        skins/Borg/1280x800/tea_on.png *
         skins/Borg/2560x1600/espresso_on.png *
         skins/Borg/2560x1600/icon.jpg *
         skins/Borg/2560x1600/nothing_on.png *
         skins/Borg/2560x1600/steam_on.png *
-        skins/Borg/2560x1600/tea_on.png *    
+        skins/Borg/2560x1600/tea_on.png *
 
         skins/Aztec/skin.tcl *
         skins/Aztec/aztec.ttf *
@@ -323,12 +321,12 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Aztec/1280x800/icon.jpg *
         skins/Aztec/1280x800/nothing_on.png *
         skins/Aztec/1280x800/steam_on.png *
-        skins/Aztec/1280x800/tea_on.png *    
+        skins/Aztec/1280x800/tea_on.png *
         skins/Aztec/2560x1600/espresso_on.png *
         skins/Aztec/2560x1600/icon.jpg *
         skins/Aztec/2560x1600/nothing_on.png *
         skins/Aztec/2560x1600/steam_on.png *
-        skins/Aztec/2560x1600/tea_on.png *    
+        skins/Aztec/2560x1600/tea_on.png *
 
         skins/Constructivism/skin.tcl *
         skins/Constructivism/orbitron.ttf *
@@ -336,12 +334,12 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Constructivism/1280x800/icon.jpg *
         skins/Constructivism/1280x800/nothing_on.png *
         skins/Constructivism/1280x800/steam_on.png *
-        skins/Constructivism/1280x800/tea_on.png *    
+        skins/Constructivism/1280x800/tea_on.png *
         skins/Constructivism/2560x1600/espresso_on.png *
         skins/Constructivism/2560x1600/icon.jpg *
         skins/Constructivism/2560x1600/nothing_on.png *
         skins/Constructivism/2560x1600/steam_on.png *
-        skins/Constructivism/2560x1600/tea_on.png *    
+        skins/Constructivism/2560x1600/tea_on.png *
 
         skins/Roman\ Gods/skin.tcl *
         skins/Roman\ Gods/renaissance.ttf *
@@ -349,12 +347,12 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Roman\ Gods/1280x800/icon.jpg *
         skins/Roman\ Gods/1280x800/nothing_on.png *
         skins/Roman\ Gods/1280x800/steam_on.png *
-        skins/Roman\ Gods/1280x800/tea_on.png *    
+        skins/Roman\ Gods/1280x800/tea_on.png *
         skins/Roman\ Gods/2560x1600/espresso_on.png *
         skins/Roman\ Gods/2560x1600/icon.jpg *
         skins/Roman\ Gods/2560x1600/nothing_on.png *
         skins/Roman\ Gods/2560x1600/steam_on.png *
-        skins/Roman\ Gods/2560x1600/tea_on.png *    
+        skins/Roman\ Gods/2560x1600/tea_on.png *
 
         skins/8-BIT/skin.tcl *
         skins/8-BIT/pixel.ttf *
@@ -364,13 +362,13 @@ proc make_de1_dir {srcdir destdirs} {
         skins/8-BIT/1280x800/icon.jpg *
         skins/8-BIT/1280x800/nothing_on.png *
         skins/8-BIT/1280x800/steam_on.png *
-        skins/8-BIT/1280x800/tea_on.png *    
+        skins/8-BIT/1280x800/tea_on.png *
         skins/8-BIT/2560x1600/espresso_on.png *
         skins/8-BIT/2560x1600/espresso_on_plus.png *
         skins/8-BIT/2560x1600/icon.jpg *
         skins/8-BIT/2560x1600/nothing_on.png *
         skins/8-BIT/2560x1600/steam_on.png *
-        skins/8-BIT/2560x1600/tea_on.png *    
+        skins/8-BIT/2560x1600/tea_on.png *
 
         skins/Teal\ Modern/skin.tcl *
         skins/Teal\ Modern/novocento.ttf *
@@ -378,12 +376,12 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Teal\ Modern/1280x800/icon.jpg *
         skins/Teal\ Modern/1280x800/nothing_on.png *
         skins/Teal\ Modern/1280x800/steam_on.png *
-        skins/Teal\ Modern/1280x800/tea_on.png *    
+        skins/Teal\ Modern/1280x800/tea_on.png *
         skins/Teal\ Modern/2560x1600/espresso_on.png *
         skins/Teal\ Modern/2560x1600/icon.jpg *
         skins/Teal\ Modern/2560x1600/nothing_on.png *
         skins/Teal\ Modern/2560x1600/steam_on.png *
-        skins/Teal\ Modern/2560x1600/tea_on.png *    
+        skins/Teal\ Modern/2560x1600/tea_on.png *
 
         skins/Green\ Cups/skin.tcl *
         skins/Green\ Cups/leaguegoth.ttf *
@@ -391,36 +389,36 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Green\ Cups/1280x800/icon.jpg *
         skins/Green\ Cups/1280x800/nothing_on.png *
         skins/Green\ Cups/1280x800/steam_on.png *
-        skins/Green\ Cups/1280x800/tea_on.png *    
+        skins/Green\ Cups/1280x800/tea_on.png *
         skins/Green\ Cups/2560x1600/espresso_on.png *
         skins/Green\ Cups/2560x1600/icon.jpg *
         skins/Green\ Cups/2560x1600/nothing_on.png *
         skins/Green\ Cups/2560x1600/steam_on.png *
-        skins/Green\ Cups/2560x1600/tea_on.png *    
+        skins/Green\ Cups/2560x1600/tea_on.png *
 
         skins/Croissant/skin.tcl *
         skins/Croissant/1280x800/espresso_on.png *
         skins/Croissant/1280x800/icon.jpg *
         skins/Croissant/1280x800/nothing_on.png *
         skins/Croissant/1280x800/steam_on.png *
-        skins/Croissant/1280x800/tea_on.png *    
+        skins/Croissant/1280x800/tea_on.png *
         skins/Croissant/2560x1600/espresso_on.png *
         skins/Croissant/2560x1600/icon.jpg *
         skins/Croissant/2560x1600/nothing_on.png *
         skins/Croissant/2560x1600/steam_on.png *
-        skins/Croissant/2560x1600/tea_on.png *    
+        skins/Croissant/2560x1600/tea_on.png *
 
         skins/Noir/skin.tcl *
         skins/Noir/1280x800/espresso_on.png *
         skins/Noir/1280x800/icon.jpg *
         skins/Noir/1280x800/nothing_on.png *
         skins/Noir/1280x800/steam_on.png *
-        skins/Noir/1280x800/tea_on.png *    
+        skins/Noir/1280x800/tea_on.png *
         skins/Noir/2560x1600/espresso_on.png *
         skins/Noir/2560x1600/icon.jpg *
         skins/Noir/2560x1600/nothing_on.png *
         skins/Noir/2560x1600/steam_on.png *
-        skins/Noir/2560x1600/tea_on.png *    
+        skins/Noir/2560x1600/tea_on.png *
 
         skins/Three\ Women/skin.tcl *
         skins/Three\ Women/painthand.ttf *
@@ -428,12 +426,12 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Three\ Women/1280x800/icon.jpg *
         skins/Three\ Women/1280x800/nothing_on.png *
         skins/Three\ Women/1280x800/steam_on.png *
-        skins/Three\ Women/1280x800/tea_on.png *    
+        skins/Three\ Women/1280x800/tea_on.png *
         skins/Three\ Women/2560x1600/espresso_on.png *
         skins/Three\ Women/2560x1600/icon.jpg *
         skins/Three\ Women/2560x1600/nothing_on.png *
         skins/Three\ Women/2560x1600/steam_on.png *
-        skins/Three\ Women/2560x1600/tea_on.png *    
+        skins/Three\ Women/2560x1600/tea_on.png *
 
         skins/Rodent/skin.tcl *
         skins/Rodent/Heroes\ Legend.ttf *
@@ -441,12 +439,12 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Rodent/1280x800/icon.jpg *
         skins/Rodent/1280x800/nothing_on.png *
         skins/Rodent/1280x800/steam_on.png *
-        skins/Rodent/1280x800/tea_on.png *    
+        skins/Rodent/1280x800/tea_on.png *
         skins/Rodent/2560x1600/espresso_on.png *
         skins/Rodent/2560x1600/icon.jpg *
         skins/Rodent/2560x1600/nothing_on.png *
         skins/Rodent/2560x1600/steam_on.png *
-        skins/Rodent/2560x1600/tea_on.png *    
+        skins/Rodent/2560x1600/tea_on.png *
 
         skins/Diner/skin.tcl *
         skins/Diner/bellerose.ttf *
@@ -454,12 +452,12 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Diner/1280x800/icon.jpg *
         skins/Diner/1280x800/nothing_on.png *
         skins/Diner/1280x800/steam_on.png *
-        skins/Diner/1280x800/tea_on.png *    
+        skins/Diner/1280x800/tea_on.png *
         skins/Diner/2560x1600/espresso_on.png *
         skins/Diner/2560x1600/icon.jpg *
         skins/Diner/2560x1600/nothing_on.png *
         skins/Diner/2560x1600/steam_on.png *
-        skins/Diner/2560x1600/tea_on.png *    
+        skins/Diner/2560x1600/tea_on.png *
 
         skins/Insight/1280x800/icon.jpg *
         skins/Insight/skin.tcl *
@@ -849,7 +847,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/DSx_Plugins/DSx_plugin_UI.dsx *
         skins/DSx/DSx_Plugins/DSx_theme.dsx *
         skins/DSx/DSx_Plugins/DSx_workflow.dsx *
-        skins/DSx/DSx_Plugins/DSx_v34.dsx *
         skins/DSx/DSx_Plugins/Pizza_dough.off *
         skins/DSx/DSx_Plugins/wake_to_pinkcup.off *
         skins/DSx/skin.tcl *
@@ -876,8 +873,8 @@ proc make_de1_dir {srcdir destdirs} {
         saver/1280x800/splotch.jpg *
         saver/1280x800/steampunk_espresso.jpg *
         saver/1280x800/steampunk_latte.jpg *
-        saver/1280x800/three_women.jpg *     
-        saver/1280x800/rainbow_dj.jpg *     
+        saver/1280x800/three_women.jpg *
+        saver/1280x800/rainbow_dj.jpg *
         saver/2560x1600/black_saver.jpg *
         saver/2560x1600/Black\ Steel.jpg *
         saver/2560x1600/Cozy-Home.jpg *
@@ -901,8 +898,8 @@ proc make_de1_dir {srcdir destdirs} {
         saver/2560x1600/splotch.jpg *
         saver/2560x1600/steampunk_espresso.jpg *
         saver/2560x1600/steampunk_latte.jpg *
-        saver/2560x1600/three_women.jpg *     
-        saver/2560x1600/rainbow_dj.jpg *     
+        saver/2560x1600/three_women.jpg *
+        saver/2560x1600/rainbow_dj.jpg *
 
         profiles/adaptive_allonge.tcl *
         profiles/flow_calibration.tcl *
@@ -924,7 +921,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/test_temperature.tcl *
         profiles/test_pressure_calibration.tcl *
         profiles/test_temperature_calibration.tcl *
-        profiles/test_pressure_release.tcl *        
+        profiles/test_pressure_release.tcl *
         profiles/Cremina.tcl *
         profiles/manual_flow.tcl *
         profiles/manual_pressure.tcl *
@@ -951,7 +948,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/rao_allonge.tcl *
         profiles/e61\ classic\ at\ 9\ bar.tcl *
         profiles/e61\ rocketing\ up\ to\ 10\ bar.tcl *
-        profiles/e61\ with\ fast\ preinfusion\ to\ 9\ bar.tcl *      
+        profiles/e61\ with\ fast\ preinfusion\ to\ 9\ bar.tcl *
         profiles/Italian\ Australian\ espresso.tcl *
         profiles/v60-15g.tcl *
         profiles/v60-20g.tcl *
@@ -990,7 +987,7 @@ proc make_de1_dir {srcdir destdirs} {
     #set destdirs [list "/d/download/sync/de1plus"]
     #set destdirs [list "/d/download/sync/de1beta"]
 
-    # load the local manifest into memory 
+    # load the local manifest into memory
     foreach {filename filesize filemtime filesha} [string trim [read_file "$srcdir/complete_manifest.txt"]] {
         #puts "$filename $filecrc"
         set lmanifest_mtime($filename) $filemtime
@@ -1008,7 +1005,7 @@ proc make_de1_dir {srcdir destdirs} {
 
         set manifest ""
         set files_copied 0
-        
+
         set filecnt 0
         foreach {file scope} $files {
             incr filecnt
@@ -1041,20 +1038,20 @@ proc make_de1_dir {srcdir destdirs} {
             if {[file exists [file dirname $dest]] != 1} {
                 file mkdir [file dirname $dest]
             }
-        
+
             if {[file exists $source] != 1} {
                 puts "File '$source' does not exist'"
                 continue
-            } 
+            }
 
             append manifest "\"$file\" [file size $source] $mtime $sha256\n"
 
             if {[file exists $dest] == 1} {
                 if {[file mtime $source] == [file mtime $dest]} {
-                    # files are identical, do not copy      
+                    # files are identical, do not copy
                     continue
                 }
-            } 
+            }
 
             puts "$file -> $destdir/"
             file copy -force $source $dest
@@ -1065,11 +1062,11 @@ proc make_de1_dir {srcdir destdirs} {
         write_file "$destdir/timestamp.txt" $timestamp
 
         #puts "Writing manifest txt to '$destdir/manifest.txt'"
-        write_file "$destdir/manifest.txt" $manifest 
+        write_file "$destdir/manifest.txt" $manifest
 
         # it might be that .txt files are modified, so try another extension name
         #puts "Writing manifest tdb to '$destdir/manifest.tdb'"
-        write_file "$destdir/manifest.tdb" $manifest 
+        write_file "$destdir/manifest.tdb" $manifest
 
         #puts "Writing manifest gz to '$destdir/manifest.gz'"
         write_binary_file "$destdir/manifest.gz" [zlib gzip $manifest]
@@ -1083,7 +1080,7 @@ proc make_de1_dir {srcdir destdirs} {
 proc write_binary_file {filename data} {
     set fn [fast_write_open $filename w]
     fconfigure $fn -translation binary
-    puts $fn $data 
+    puts $fn $data
     close $fn
     return 1
 }
