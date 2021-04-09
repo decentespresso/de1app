@@ -674,7 +674,6 @@ proc fwfile {} {
 proc start_firmware_update {} {
 
 	msg -NOTICE "start_firmware_update"
-	msg -DEBUG [stacktrace]
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 		if {$::android == 1} {
@@ -763,7 +762,7 @@ proc write_firmware_now {} {
 	set ::de1(currently_updating_firmware) 1
 	set ::de1(currently_erasing_firmware) 0
 	set ::de1(firmware_update_start_time) [clock milliseconds]
-	msg -NOTICE "Start writing firmware now [stacktrace]"
+	msg -NOTICE "Start writing firmware now"
 
 	set ::de1(firmware_update_binary) [read_binary_file [fwfile]]
 	set ::de1(firmware_bytes_uploaded) 0
@@ -889,7 +888,6 @@ proc set_tank_temperature_threshold {temp} {
 	###
 
 	msg -INFO "Setting desired water tank temperature to '$temp'"
-	msg -DEBUG [stacktrace]
 
 	catch { after cancel $::_pending_tank_temperature_change }
 	remove_matching_ble_queue_entries {^MMR set_tank_temperature_threshold}
