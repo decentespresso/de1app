@@ -176,11 +176,7 @@ namespace eval ::logging {
 			array set tmp_settings [list]
 		}
 
-		if { [info exists tmp_settings(log_enabled)] } {
-			set ::settings(log_enabled) $tmp_settings(log_enabled)
-		} else {
-			set ::settings(log_enabled) 1
-		}
+		# Starting with v1.35, logging is always enabled
 
 		if { [info exists tmp_settings(logfile)] } {
 			set ::settings(logfile) $tmp_settings(logfile)
