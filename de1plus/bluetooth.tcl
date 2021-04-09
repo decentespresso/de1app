@@ -535,7 +535,7 @@ proc decent_scale_calc_xor4 {cmdtype cmdddata1 cmdddata2} {
 }
 
 proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} } {
-	msg -DEBUG "decent_scale_make_command $cmdtype $cmdddata $cmddata2\n[stacktrace]"
+	msg -DEBUG "decent_scale_make_command $cmdtype $cmdddata $cmddata2"
 	if {$cmddata2 == ""} {
 		msg -DEBUG "1 part decent scale command"
 		set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]

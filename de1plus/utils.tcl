@@ -788,8 +788,7 @@ proc translate {english} {
                 append t [subst {$l "$english" }]
             }
             append t "\}"
-            msg -NOTICE "Appending new phrase: $english" \
-		    [stacktrace]
+            msg -NOTICE "Appending new phrase: $english"
             append_file "[homedir]/translation.tcl" $t
             set ::already_shown_trans($english) 1
         }
@@ -1150,7 +1149,6 @@ proc save_settings {} {
     }
 
     msg -INFO "saving settings"
-    msg -DEBUG [stacktrace]
     save_array_to_file ::settings [settings_filename]
 
     catch {
