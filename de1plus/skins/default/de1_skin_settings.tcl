@@ -769,7 +769,9 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 				add_de1_widget "measurements" checkbutton 1800 800  {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 			}
 
-			add_de1_widget "measurements" checkbutton 1300 740  {} -text [translate "Make a log file"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(log_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
+			set ::_placebo_true 1
+			add_de1_widget "measurements" checkbutton 1300 740  {} -text [translate "Logging is enabled"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable _placebo_true -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat  -state disabled
+
 			add_de1_widget "measurements" checkbutton 950 490  {} -text [translate "clock"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(display_time_in_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
 			if {$::android == 1} {
