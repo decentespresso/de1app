@@ -121,10 +121,15 @@ namespace eval ::logging {
 		# Conditional and log-file open from vars.tcl:proc msg
 		#
 
-		set formatted_output [format "%s.%03u %s: %s" \
-					      [clock format $secs -format "%Y-%m-%d %H:%M:%S"] $msecs \
-					      $::logging::severity_to_string($severity) \
-					      $message ]
+		set formatted_output ""
+
+		foreach line [split $message "\n"] {
+			append formatted_output [format "%s.%03u %s: %s" \
+						      [clock format $secs -format "%Y-%m-%d %H:%M:%S"] $msecs \
+						      $::logging::severity_to_string($severity) \
+							 $line ] "\n"
+		}
+		set formatted_output [string trimright $formatted_output]
 
 		if { $severity <= $::logging::severity_limit_logfile } {
 			catch {
