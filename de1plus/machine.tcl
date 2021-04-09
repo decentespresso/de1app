@@ -212,7 +212,7 @@ array set ::settings {
 	ble_debug 0
 	tank_desired_water_temperature 0
 	screen_size_height {}
-	log_enabled 0
+	log_enabled True
 	app_updates_beta_enabled 0
 	current_frame_description {}
 	mmr_enabled 0	
