@@ -29,6 +29,11 @@ set ::settings(app_updates_beta_enabled) 0
 
 set debugcnt 0
 
+set bk "/sdcard/backup_de1plus"
+set tmp "/sdcard/de1plus_new"
+set dest "/sdcard/de1plus"
+set restore "/sdcard/previous_de1plus"
+
 proc translate {x} {return $x}
 
 set tk ""
@@ -37,6 +42,7 @@ catch {
 }
 if {$tk != ""} {
 	button .hello -text "Update Decent App" -command { 
+		
 		catch { .hello configure -text "Working" }
 		catch { pack forget .frame; }
 		start_app_update; 
@@ -44,7 +50,8 @@ if {$tk != ""} {
 	} -height 10 -width 40
 	frame .frame -border 2
 	button .frame.redownloadapp -text " Redownload entire app " -command { 
-		catch { .hello configure -text "Working" }
+		
+		catch { .hello configure -text "Working" ; update}
 		catch { file delete "manifest.txt"; }
 		catch { file delete "timestamp.txt"; }
 		catch { pack forget .frame; }
@@ -53,11 +60,12 @@ if {$tk != ""} {
 	} 
 	button .frame.exitapp -text " --- Exit --- " -command { exit } 
 	button .frame.resetapp -text " Reset settings " -command { 
+		
 		catch { file delete "settings.tdb"; } ; 
 		exit 
 	} 
 	button .frame.iconcreate -text " Create icon " -command { 
-
+		
 		catch {
 			source "pkgIndex.tcl"
 			catch {
@@ -75,9 +83,33 @@ if {$tk != ""} {
 		}
 	} 
 	button .frame.resetskin -text " Reset skin " -command { 
-		catch { } ; 
+		
 		reset_skin
 		exit 
+	} 
+	
+	button .frame.restorebk -text " Restore backup " -command { 
+
+		
+		if {[file exists $bk] != 1} {
+			catch { .hello configure -text "Sorry, there is no backup to restore." }
+		} else {
+			catch { .hello configure -text "Preparing destination."; update }
+			file delete -force -- ${tmp}/
+			file delete -force -- ${restore}/
+			
+			catch { .hello configure -text "Copying backup."; update }
+			file copy $bk $tmp
+
+			catch { .hello configure -text "Renaming current directory."; update }
+			file rename $dest $restore
+
+			catch { .hello configure -text "Renaming new copy."; update }
+			file rename $tmp $dest
+
+			catch { .hello configure -text "Done."; update }
+			after 1000 exit 
+		}
 	} 
 	
 	pack .hello  -pady 10 -padx 10
@@ -86,11 +118,16 @@ if {$tk != ""} {
 	pack .frame.resetapp -side left -pady 10 -padx 10
 	pack .frame.iconcreate -side left -pady 10 -padx 10
 	pack .frame.resetskin -side left -pady 10 -padx 10
+
+	# display the 'restore backup' button if a backup is available
+	if {[file exists $bk] == 1} {
+		pack .frame.restorebk -side left -pady 10 -padx 10
+	}
 	
 	# john 13-11-19 taking away this button as many users click it and it causes huge downloads.
 	# better to ask them to redownload the entire app from our web site https://decentespresso.com/downloads
 	#pack .frame.redownloadapp -side right -pady 10 -padx 10
-	pack .frame.exitapp -side right -pady 10 -padx 10
+	pack .frame.exitapp -side right -pady 10 -padx 50
 	
 	.hello configure -text "[ifexists ::de1(app_update_button_label)] Update app"
 
