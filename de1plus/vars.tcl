@@ -2957,6 +2957,7 @@ proc format_espresso_for_history {} {
 		set espresso_data {}
 		set espresso_data "name [list $name]\n"
 		set espresso_data "clock $clock\n"
+		append espresso_data "local_time {[clock format $clock]}\n"
 		#set espresso_data "final_espresso_weight $::de1(final_espresso_weight)\n"
 
 		#set espresso_data "settings [array get ::settings]\n"
