@@ -1097,7 +1097,7 @@ proc append_to_scale_bluetooth_list {address name type} {
 	set newlist $::scale_bluetooth_list
 	lappend newlist [dict create address $address name $name type $type]
 
-	msg -INFO "Scan found Skale or Decent Scale: $address ($type)"
+	msg -INFO "Scan found recognized scale at: $address ($type)"
 	set ::scale_bluetooth_list $newlist
 	catch {
 		fill_ble_scale_listbox
