@@ -4,12 +4,9 @@
 #	- Global variables that must change to the dui namespace variables:
 #		FONTS! Make Insight font creation compatible with the more generic/general fonts mechanism proposed here.
 #		::de1(current_context) -> ::dui::page::current_page
-#		::existing_labels array (one item per page)
-#		::all_labels (list with all labels, sorted) Can't this be get from the canvas tags???)
 #		screensaver integrated in the dui or not? -> An action on the "saver" page can make it work
 #		Idle/stress test in page display_change ?? -> Add a way to add before_show/after_show/hide actions
 #		::delayed_image_load system
-#		::screen_size_width and ::screen_size_height
 #
 #	- Global utility functions that are used here
 #		ifexists
@@ -24,16 +21,26 @@ package require de1_updater 1.1
 package require de1_utils 1.1
 package require Tk
 package require snit
-catch { package require tksvg }
+# tksvg breaks all images loading in the older Androwish distributions of the first DE1 tablets.
+#catch { package require tksvg }
 catch {
 	# tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
 	package require tkblt
 	namespace import blt::*
 }
 
+# from https://developer.android.com/reference/android/view/View.html#SYSTEM_UI_FLAG_IMMERSIVE
+set SYSTEM_UI_FLAG_IMMERSIVE_STICKY 0x00001000
+set SYSTEM_UI_FLAG_FULLSCREEN 0x00000004
+set SYSTEM_UI_FLAG_HIDE_NAVIGATION 0x00000002
+set SYSTEM_UI_FLAG_IMMERSIVE 0x00000800
+set SYSTEM_UI_FLAG_LAYOUT_STABLE 0x00000100
+set SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION 0x00000200
+set SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN 0x00000400
+set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_LAYOUT_STABLE | $SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_IMMERSIVE}]
 
 namespace eval ::dui {
-	namespace export init setup_ui config cget canvas platform theme aspect symbol font page item add
+	namespace export init setup_ui config cget canvas say platform theme aspect sound symbol font page item add
 	namespace ensemble create
 
 	variable settings
@@ -49,13 +56,430 @@ namespace eval ::dui {
 		create_page_namespaces 0
 		trim_entries 0
 		use_editor_pages 1
+		
+		app_title Decent
+		language en
+		screen_size_width {}
+		screen_size_height {}
+		default_font_calibration 0.5
+		use_finger_down_for_tap 1
+		disable_long_press 0
 		timer_interval 100
+		page_change_sound 11
+		enable_spoken_prompts 1
+		speaking_pitch 1.0
+		speaking_rate 1.5
+	}
+
+	# Store in namespace variables and not in settings what are internal parameters that are not to be modified by client code.
+	variable fontm 1
+	variable fontw 1
+	
+	# Font/language-dependent multipliers to adjust sizing of character-based widgets like entries and listboxes.
+	# Take into account that with DUI these sizes can be set in pixels, using -canvas_width and -canvas-height. 
+	variable entry_length_multiplier 1
+	variable listbox_length_multiplier 1
+	variable listbox_global_width_multiplier 1
+
+	# Older proc "setup_environment" in utils.tcl
+	proc init { {screen_size_width {}} {screen_size_height {}} {orientation landscape} } {
+		global android
+		global undroid
+		msg [namespace current] init "android=$android, undroid=$undroid, some_droid=$::some_droid"
+		
+		variable settings
+		variable fontm
+		variable fontw	;# Not used anywhere??
+		variable entry_length_multiplier
+		variable listbox_length_multiplier
+		variable listbox_global_width_multiplier
+	
+		if {$android == 1 || $undroid == 1} {
+			# hide the android keyboard that pops up when you power back on
+			bind . <<DidEnterForeground>> [::dui::platform::hide_android_keyboard]
+	
+			# this causes the app to exit if the main window is closed
+			wm protocol . WM_DELETE_WINDOW exit
+	
+			# set the window title of the app. Only visible when casting the app via jsmpeg, and when running the app in a window using undroidwish
+			wm title . $settings(app_title)
+	
+			# force the screen into landscape if it isn't yet
+			msg [namespace current] "orientation: [borg screenorientation]"
+			if {[borg screenorientation] != "landscape" && [borg screenorientation] != "reverselandscape"} {
+				borg screenorientation $orientation
+			}
+	
+			sdltk screensaver off
+			
+			if { $screen_size_width eq "" || $screen_size_height eq "" } {
+				# A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" 
+				# or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in 
+				# the bound code.
+				if {$android == 1} {
+					pause 500
+				}
+	
+				set width [winfo screenwidth .]
+				set height [winfo screenheight .]
+	
+				if {$width > 2300} {
+					set screen_size_width 2560
+					if {$height > 1450} {
+						set screen_size_height 1600
+					} else {
+						set screen_size_height 1440
+					}
+				} elseif {$height > 2300} {
+					set screen_size_width 2560
+					if {$width > 1440} {
+						set screen_size_height 1600
+					} else {
+						set screen_size_height 1440
+					}
+				} elseif {$width == 2048 && $height == 1440} {
+					set screen_size_width 2048
+					set screen_size_height 1440
+					#set fontm 2
+				} elseif {$width == 2048 && $height == 1536} {
+					set screen_size_width 2048
+					set screen_size_height 1536
+					#set fontm 2
+				} elseif {$width == 1920} {
+					set screen_size_width 1920
+					set screen_size_height 1080
+					if {$width > 1080} {
+						set screen_size_height 1200
+					}
+	
+				} elseif {$width == 1280} {
+					set screen_size_width 1280
+					set screen_size_height 800
+					if {$width >= 720} {
+						set screen_size_height 800
+					} else {
+						set screen_size_height 720
+					}
+				} else {
+					# unknown resolution type, go with smallest
+					set screen_size_width 1280
+					set screen_size_height 800
+				}
+	
+				
+			}
+	
+			# Android seems to automatically resize fonts appropriately to the current resolution
+			set fontm $settings(default_font_calibration)
+			set fontw 1
+	
+			if {$::undroid == 1} {
+				# undroid does not resize fonts appropriately for the current resolution, it assumes a 1024 resolution
+				set fontm [expr {($screen_size_width / 1024.0)}]
+				set fontw 2
+			}
+	
+			# HOW TO HANDLE THIS?
+			if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
+				set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
+				set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
+			}
+	
+			global helvetica_bold_font
+			global helvetica_font
+			set global_font_size 18
+			
+			#puts "setting up fonts for language $settings(language)"
+			if {$settings(language) == "th"} {
+				set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
+				set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
+				set fontm [expr {($fontm * 1.2)}]
+				set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+				set global_font_size 16
+			} elseif {$settings(language) == "ar" || $settings(language) == "arb"} {
+				set helvetica_font [sdltk addfont "fonts/Dubai-Regular.otf"]
+				set helvetica_bold_font [sdltk addfont "fonts/Dubai-Bold.otf"]
+				set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+			} elseif {$settings(language) == "he" || $settings(language) == "heb"} {
+				set listbox_length_multiplier 1.35
+				set entry_length_multiplier 0.86
+				set helvetica_font [sdltk addfont "fonts/hebrew-regular.ttf"]
+				set helvetica_bold_font [sdltk addfont "fonts/hebrew-bold.ttf"]
+				set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+			} elseif {$settings(language) == "zh-hant" || $settings(language) == "zh-hans" || $settings(language) == "kr"} {
+				set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+				set helvetica_bold_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Bold.otf"] 0]
+				set global_font_name $helvetica_font
+	
+				set fontm [expr {($fontm * .94)}]
+			} else {
+				# we use the immense google font so that we can handle virtually all of the world's languages with consistency
+				set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
+				set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
+				set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+	
+			}
+	
+			set fontawesome_brands [lindex [sdltk addfont "fonts/Font Awesome 5 Brands-Regular-400.otf"] 0]
+			::font create Fontawesome_brands_11 -family $fontawesome_brands -size [expr {int($fontm * 20)}]
+	
+			::font create global_font -family $global_font_name -size [expr {int($fontm * $global_font_size)}] 
+	
+			::font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
+			::font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
+			::font create Helv_11_bold -family $helvetica_bold_font -size [expr {int($fontm * 20)}] 
+			::font create Helv_11 -family $helvetica_font -size [expr {int($fontm * 20)}] 
+			::font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 19)}] 
+			::font create Helv_10 -family $helvetica_font -size [expr {int($fontm * 19)}] 
+			::font create Helv_1 -family $helvetica_font -size 1
+			::font create Helv_4 -family $helvetica_font -size [expr {int($fontm * 8)}]
+			::font create Helv_5 -family $helvetica_font -size [expr {int($fontm * 10)}]
+			::font create Helv_6 -family $helvetica_font -size [expr {int($fontm * 12)}]
+			::font create Helv_6_bold -family $helvetica_bold_font -size [expr {int($fontm * 12)}]
+			::font create Helv_7 -family $helvetica_font -size [expr {int($fontm * 14)}]
+			::font create Helv_7_bold -family $helvetica_bold_font -size [expr {int($fontm * 14)}]
+			::font create Helv_8 -family $helvetica_font -size [expr {int($fontm * 16)}]
+			::font create Helv_8_bold -family $helvetica_bold_font -size [expr {int($fontm * 16)}]
+			
+			::font create Helv_9 -family $helvetica_font -size [expr {int($fontm * 18)}]
+			::font create Helv_9_bold -family $helvetica_bold_font -size [expr {int($fontm * 18)}] 
+			::font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
+			::font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
+			::font create Helv_16_bold -family $helvetica_bold_font -size [expr {int($fontm * 27)}] 
+			::font create Helv_17_bold -family $helvetica_bold_font -size [expr {int($fontm * 30)}] 
+			::font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 32)}] 
+			::font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 35)}] 
+			::font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 37)}]
+			::font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
+			::font create Helv_30 -family $helvetica_font -size [expr {int($fontm * 56)}]
+	
+			# enable swipe gesture translating, to scroll through listboxes
+			# sdltk touchtranslate 1
+			# disable touch translating as it does not feel native on tablets and is thus confusing
+			if {$settings(disable_long_press) != 1 } {
+				sdltk touchtranslate 1
+			} else {
+				sdltk touchtranslate 0
+			}
+	
+			wm maxsize . $screen_size_width $screen_size_height
+			wm minsize . $screen_size_width $screen_size_height
+			wm attributes . -fullscreen 1
+	
+			# flight mode, not yet debugged
+			#if {$::settings(flight_mode_enable) == 1 } {
+			#    if {[package require de1plus] > 1} {
+			#        borg sensor enable 0
+			#        sdltk accelerometer 1
+			#        after 200 accelerometer_check 
+			#    }
+			#}
+	
+			# preload the speaking engine 
+			# john 2/12/18 re-enable this when TTS feature is enabled
+			# borg speak { }
+	
+#			source "bluetooth.tcl"
+	
+		} else {	
+			# global font is wider on non-android
+			set listbox_global_width_multiplier .8
+			set listbox_length_multiplier 1
+	
+			expr {srand([clock milliseconds])}
+	
+			if { $screen_size_width eq "" || $screen_size_height eq "" } {
+				# if this is the first time running on Tk, then use a default 1280x800 resolution, and allow changing resolution by editing settings file
+				set screen_size_width 1280
+				set screen_size_height 800
+			}
+	
+			set fontm [expr {$screen_size_width / 1280.0}]
+			set fontw 2
+	
+			wm title . $settings(app_title)
+			wm maxsize . $screen_size_width $screen_size_height
+			wm minsize . $screen_size_width $screen_size_height
+
+			# TBD WHAT TO DO WITH THIS 
+			if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
+				set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
+				set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
+			}
+	
+			::android_specific_stubs
+			
+			# EB: Is this installed by default on PC/Mac/Linux?? No need to sdltk add it?
+			set regularfont "notosansuiregular"
+			set boldfont "notosansuibold"
+	
+			if {$settings(language) == "th"} {
+				set regularfont "sarabun"
+				set boldfont "sarabunbold"
+				#set fontm [expr {($fontm * 1.20)}]
+			} 
+#			elseif {$settings(language) == "zh-hant" || $settings(language) == "zh-hans"} {
+#				set regularfont "notosansuiregular"
+#				set boldfont "notosansuibold"
+#			}
+			set ::helvetica_font $regularfont
+			dui aspect set -theme default -type text font_family $regularfont
+			
+#			set fontawesome_brands [lindex [sdltk addfont "fonts/Font Awesome 5 Brands-Regular-400.otf"] 0]
+#			::font create Fontawesome_brands_11 -family $fontawesome_brands -size [expr {int($fontm * 20)}]
+#			::font create Fontawesome_brands_11 -family "Font Awesome 5 Brands Regular" -size [expr {int($fontm * 25)}]
+			
+			set fontawesome_brands [dui::font::add_or_get_familyname "Font Awesome 5 Brands-Regular-400.otf"]
+msg -DEBUG "fontawesome_brands=$fontawesome_brands"
+			set fontawesome_reg [dui::font::add_or_get_familyname "Font Awesome 5 Pro-Regular-400.otf"]
+msg -DEBUG "fontawesome_reg=$fontawesome_reg"
+			if { $fontawesome_reg ne "" } {
+				dui aspect set -theme default -type symbol font_family $fontawesome_reg
+			}
+						
+			# Hardcoded fonts used by default & Insight skins. These names are stored in the font management itself,
+			# so it overlaps with the new dynamic font system that uses [dui font load] and [dui font get], but are
+			# left for backwards-compatibility until all references to the old "Helv_*" are migrated.
+#			::font create Helv_1 -family $regularfont -size 1
+#			::font create Helv_4 -family $regularfont -size 10
+#			::font create Helv_5 -family $regularfont -size 12
+#			::font create Helv_6 -family $regularfont -size [expr {int($fontm * 14)}]
+#			::font create Helv_6_bold -family $boldfont -size [expr {int($fontm * 14)}]
+#			::font create Helv_7 -family $regularfont -size [expr {int($fontm * 16)}]
+#			::font create Helv_7_bold -family $boldfont -size [expr {int($fontm * 16)}]
+#			::font create Helv_8 -family $regularfont -size [expr {int($fontm * 19)}]
+#			::font create Helv_8_bold_underline -family $boldfont -size [expr {int($fontm * 19)}] -underline 1
+#			::font create Helv_8_bold -family $boldfont -size [expr {int($fontm * 19)}]
+#			::font create Helv_9 -family $regularfont -size [expr {int($fontm * 23)}]
+#			::font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 21)}]
+#			::font create Helv_10 -family $regularfont -size [expr {int($fontm * 23)}]
+#			::font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 23)}]
+#			::font create Helv_11 -family $regularfont -size [expr {int($fontm * 25)}]
+#			::font create Helv_11_bold -family $boldfont -size [expr {int($fontm * 25)}]
+#			::font create Helv_12 -family $regularfont -size [expr {int($fontm * 27)}]
+#			::font create Helv_12_bold -family $boldfont -size [expr {int($fontm * 30)}]
+#			::font create Helv_15 -family $regularfont -size [expr {int($fontm * 30)}]
+#			::font create Helv_15_bold -family $boldfont -size [expr {int($fontm * 30)}]
+#			::font create Helv_16_bold -family $boldfont -size [expr {int($fontm * 33)}]
+#			::font create Helv_17_bold -family $boldfont -size [expr {int($fontm * 37)}]
+#			::font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]
+#			::font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 45)}]
+#			::font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 48)}]
+#			::font create Helv_30_bold -family $boldfont -size [expr {int($fontm * 69)}]
+#			::font create Helv_30 -family $regularfont -size [expr {int($fontm * 72)}]
+#	
+#			::font create Fontawesome_brands_11 -family "Font Awesome 5 Brands Regular" -size [expr {int($fontm * 25)}]	
+#			::font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 
+		}
+
+		set settings(screen_size_width) $screen_size_width 
+		set settings(screen_size_height) $screen_size_height
+		
+		# define the canvas
+		set can [dui canvas]
+		. configure -bg black 
+		::canvas $can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
+		pack $can
+
+		############################################
+		# future feature: flight mode
+		#if {$::settings(flight_mode_enable) == 1} {
+			#if {$android == 1} {
+			#   .can bind . "<<SensorUpdate>>" [accelerometer_data_read]
+			#}
+			#after 250 accelerometer_check
+		#}
+	
+		############################################
+		
+		return $can 
+	}
+	
+	proc canvas {} {
+		return ".can"
+	}
+	
+	proc setup_ui {} {
+		# Launch setup methods of pages created with 'dui add page'
+		set applied_ns {}
+		foreach page [page list] {
+			set ns [page get_namespace $page]
+			if { $ns ne "" && $ns ni $applied_ns } {
+				if { [info proc ${ns}::setup] eq "" } {
+					msg [namespace current] -NOTICE "page namespace '${ns}' does not have a setup method"
+				} else {
+					#msg [namespace current] setup_ui "running ${ns}::setup"
+					${ns}::setup
+				}
+				lappend applied_ns $ns
+			}
+		}
+		
+		# Launch setup methods of pages created as sub-namespaces of ::dui::pages (which do not require 'dui add page')
+		# TBD: Disable at the moment, as this would run the setup method of pages in disabled plugins...
+#		foreach ns [namespace children ::dui::pages] {
+#			if { $ns ni $applied_ns } {
+#				if { [info proc ${ns}::setup] eq "" } {
+#					msg [namespace current] -NOTICE "page namespace '${ns}' does not have a setup method"
+#				} else {
+#					#msg [namespace current] setup_ui "running ${ns}::setup"
+#					${ns}::setup
+#				}
+#				lappend applied_ns $ns
+#			}
+#		}
+	}
+	
+	# Sets dui configuration variables. Logs a warning if the variable does not exist.
+	proc config { args } {
+		variable settings
+		array set opts $args
+		if { [llength $args] == 1 } {
+			set args [lindex $args 0]
+		}
+		
+		foreach key [array names opts] {
+			if { [info exists settings($key)] } {
+				if { $key in {debug_buttons create_page_namespaces trim_entries use_editor_pages} } {
+					set settings($key) [string is true -strict $opts($key)]
+				} else {
+					set settings($key) $opts($key)
+				}
+			} else {
+				msg -WARN [namespace current] config: "invalid settings variable '$key'"
+			}
+		}
+	}
+	
+	# Gets a dui configuration variable value. Returns an empty string if the variable is not recognized, and issues
+	#	a log notice.
+	proc cget { varname } {
+		variable settings
+		if { [info exists settings($varname)] } {
+			return $settings($varname)
+		} elseif { [info exists ::dui::$varname] } {
+			return [subst \$::dui::$varname]
+		} else {
+			msg -NOTICE [namespace current] cget: "invalid variable '$varname'"
+			return ""
+		}
+	}
+	
+	proc say { message sound_name } {
+		variable settings
+	
+		if { $settings(enable_spoken_prompts) == 1 && $message ne  "" } {
+			borg speak $message {} $settings(speaking_pitch) $settings(speaking_rate)
+		} else {
+			sound make $sound_name
+		}
 	}
 	
 	### PLATFORM SUB-ENSEMBLE ###
 	# System-related stuff
 	namespace eval platform {
-		namespace export hide_android_keyboard
+		namespace export hide_android_keyboard button_press button_long_press finger_down button_unpress \
+			xscale_factor yscale_factor rescale_x rescale_y
 		namespace ensemble create
 		
 		proc hide_android_keyboard {} {
@@ -64,7 +488,62 @@ namespace eval ::dui {
 			sdltk textinput off
 			#	# this auto-hides the bottom android controls, which can appear if a gesture was made
 			borg systemui $::android_full_screen_flags
-			focus [dui canvas]
+			catch { focus [dui canvas] }
+		}
+		
+		proc button_press {} {
+			global android 
+			global undroid
+			#return {<Motion>}
+			if {$android == 1 && [dui cget use_finger_down_for_tap] == 1} {
+				return {<<FingerDown>>}
+				#return {<ButtonPress-1>}
+			}
+			#return {<Motion>}
+			return {<ButtonPress-1>}
+		}
+		
+		proc button_long_press {} {
+			global android 
+			if {$android == 1} {
+				#return {<<FingerUp>>}
+				return {<ButtonPress-3>}
+			}
+			return {<ButtonPress-3>}
+		}
+		
+		proc finger_down {} {
+			global android 
+			if {$android == 1 && [dui cget use_finger_down_for_tap] == 1} {
+				return {<<FingerDown>>}
+			}
+			return {<ButtonPress-1>}
+		}
+		
+		proc button_unpress {} {
+			global android 
+			if {$android == 1} {
+				return {<<FingerUp>>}
+			}
+			return {<ButtonRelease-1>}
+		}
+		
+		proc xscale_factor {} {
+			#global screen_size_width
+			return [expr {2560.0/[dui cget screen_size_width]}]
+		}
+		
+		proc yscale_factor {} {
+			#global screen_size_height
+			return [expr {1600.0/[dui cget screen_size_height]}]
+		}
+		
+		proc rescale_x {in} {
+			return [expr {int($in / [xscale_factor])}]
+		}
+
+		proc rescale_y {in} {
+			return [expr {int($in / [yscale_factor])}]
 		}		
 	}
 	
@@ -118,6 +597,59 @@ namespace eval ::dui {
 		}
 	}
 	
+	### SOUND SUB-ENSEMBLE ###
+	# Sound names that are used by DUI (must be defined by client code): button_in, button_out and page_change
+	
+	namespace eval sound {
+		namespace export set get exists make list
+		namespace ensemble create
+		
+		variable sounds
+		array set sounds {}
+		
+		proc set { args } {
+			variable sounds
+			if { [llength $args] == 1 } {
+				::set args [lindex $args 0]
+			}
+			foreach {name path} $args {
+				if { [file exists $path] } {
+					::set sounds($name) $path
+				}
+			}
+		}
+		
+		proc get { sound_name } {
+			variable sounds
+			if { [info exists sounds(sound_name)] } {
+				return sounds($sound_name)
+			} else {
+				return {}
+			}
+		}
+		
+		proc exists { sound_name } {
+			variable sounds
+			return [info exists sounds(sound_name)]
+		}
+		
+		proc make { sound_name } {
+			::set path [get $sound_name]
+			if { $path ne "" } {
+				catch { borg beep $path } 
+			}
+		}
+		
+		proc list { {paths 0} } {
+			if { [string is true $paths] } {
+				# Using 'variable sounds' fails here
+				return [array get ::dui::sound::sounds]
+			} else {
+				return [array names ::dui::sound::sounds]
+			}
+		}
+	}
+	
 	### ASPECT SUB-ENSEMBLE ###
 	# Aspects are the variables that define the default options for each item/widget in a theme.
 	# They are stored with labels that use the syntax "<theme>.<widget/type>.<option>?.<style>?".
@@ -139,12 +671,13 @@ namespace eval ::dui {
 		#	it seems they never become active.
 		# $::helvetica_font
 		
+		#"Font Awesome 5 Pro-Regular-400"
 		#default.button_label.font_family notosansuiregular
 		#default.page.bg_color "#edecfa"
 #		default.listbox.highlightthickness 1
 #		default.listbox.highlightcolor orange
 #		default.listbox.foreground "#7f879a"
-#		default.symbol.font_family "Font Awesome 5 Pro-Regular-400"
+#		default.symbol.font_family "Font Awesome 5 Pro"
 		array set aspects {
 			default.page.bg_img {}
 			default.page.bg_color "#d7d9e6"
@@ -170,11 +703,15 @@ namespace eval ::dui {
 			default.text.justify.page_title center
 						
 			default.symbol.font_family "Font Awesome 5 Pro-Regular-400"
-			default.symbol.font_size 16
+			default.symbol.font_size 55
 			default.symbol.fill "#7f879a"
 			default.symbol.disabledfill "#ddd"
 			default.symbol.anchor nw
 			default.symbol.justify left
+			
+			default.symbol.font_size.small 24
+			default.symbol.font_size.medium 40
+			default.symbol.font_size.big 55
 			
 			default.entry.relief flat
 			default.entry.bg white
@@ -682,6 +1219,7 @@ namespace eval ::dui {
 		
 		# Based on Barney's load_font: 
 		#	https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
+		# filename can be either a font filename, or an added font family name. 
 		# args options are passed-through to 'font create', so they may include:
 		#	-weight "normal" (default) or "bold"
 		#	-slant "roman" (default) or "italic"
@@ -692,11 +1230,10 @@ namespace eval ::dui {
 			array set opts $args
 
 			# calculate font size 
-			# TODO: INCORPORATE STUFF FROM utils.tcl - proc setup_environment
 			if {($::android == 1 || $::undroid == 1) && $androidsize != ""} {
 				set pcsize $androidsize
 			}
-			set platform_font_size [expr {int(1.0 * $::fontm * $pcsize)}]
+			set platform_font_size [expr {int(1.0 * [dui cget fontm] * $pcsize)}]
 		
 			# Load or get the already-loaded font family name.
 			set familyname [add_or_get_familyname $filename]
@@ -1014,7 +1551,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				foreach f {family size weight slant underline overstrike} {
 					remove_options -font_$f largs
 				}
-			} elseif { $type in {text entry multiline_entry listbox scale graph} } {
+			} elseif { $type ni {ProgressBar} } {
 				set font_family [get_option -font_family [dui aspect get $type font_family -style $style] 1 largs]
 				set default_size [dui aspect get $type font_size -style $style]	
 				set font_size [get_option -font_size $default_size 1 largs]
@@ -1025,7 +1562,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				set slant [get_option -font_slant roman 1 largs]
 				set underline [get_option -font_underline false 1 largs]
 				set overstrike [get_option -font_overstrike false 1 largs]
-				set font [dui font get $font_family $font_size -weight $weight -slant $slant -underline $underline -overstrike $overstrike]
+				set font [dui font get $font_family $font_size -weight $weight -slant $slant -underline $underline \
+					-overstrike $overstrike]
 				add_option_if_not_exists -font $font largs
 			} else {
 				# Some widget, like ProgressBar, doesn't has a -font option.
@@ -1080,10 +1618,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				set xlabel_offset 0
 				set ylabel_offset 0
 				if { [llength $label_pos] > 1 } {
-					set xlabel_offset [rescale_x_skin [lindex $label_pos 1]] 
+					set xlabel_offset [dui platform rescale_x [lindex $label_pos 1]] 
 				}
 				if { [llength $label_pos] > 2 } {
-					set ylabel_offset [rescale_y_skin [lindex $label_pos 2]] 
+					set ylabel_offset [dui platform rescale_y [lindex $label_pos 2]] 
 				}				
 				foreach page $pages {
 #					set after_show_cmd "::dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
@@ -1137,12 +1675,12 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					if { $a_value eq "" } {
 						set a_value 75
 					}
-					set a_value [rescale_y_skin $a_value]
+					set a_value [dui platform rescale_y $a_value]
 				} elseif { $a in "length sliderlength" } {
 					if { $a_value eq "" } {
 						set a_value 75
 					}
-					set a_value [rescale_x_skin $a_value]
+					set a_value [dui platform rescale_x $a_value]
 				}
 				add_option_if_not_exists -$a $a_value sb_args
 			}
@@ -1169,10 +1707,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 	### PAGE SUB-ENSEMBLE ###
 	# AT THE MOMENT ONLY page_add SHOULD BE USED AS OTHERS MAY BREAK BACKWARDS COMPATIBILITY #
 	namespace eval page {
-		namespace export add current exists list get_namespace set_next show_when_off show add_action actions \
-			add_items add_variable
+		namespace export add current exists list delete get_namespace set_next show_when_off show add_action actions \
+			add_items add_variable update_onscreen_variables
 		namespace ensemble create
-
+		
 		# Metadata for every added page. Array keys have the form '<page_name>,<type>', where <type> can be:
 		#	'ns': Page namespace. Empty string if the page doesn't have a namespace.
 		#	'load': List of Tcl callbacks to run when the page is going to be shown, but before if is actually shown.
@@ -1181,6 +1719,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#	'variables': List of canvas_ids-tcl_code variable pairs to update on the page while it's visible.  
 		variable pages_data 
 		array set pages_data {}
+
+		variable current_page {}
 		
 		# A cache to only update variables whose values have actually changed. 
 		variable variables_cache
@@ -1218,27 +1758,28 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			foreach page $pages {
 				if { ![string is wordchar $page] } {
 					error "Page names can only have letters, numbers and underscores. '$page' is not valid."
+				} elseif { $page in {page pages all} } {
+					error "The following page names cannot be used: 'page', 'pages', 'all'."
 				} elseif { [info exists pages_data($page,ns)] } {
 					error "Page names must be unique. '$page' is duplicated."
 				}
 			}
 			
-			set style [dui::args::get_option -style "" 1]
-			set bg_img [dui::args::get_option -bg_img [dui aspect get page.bg_img -style $style]]
+			set style [dui::args::get_option -style "" 1]			
+			set bg_img [dui::args::get_option -bg_img [dui aspect get page bg_img -style $style]]
 			if { $bg_img ne "" } {
 				::add_de1_page $pages $bg_img [dui::args::get_option -skin ""] 
 				#add_de1_image $page 0 0 $bg_img
 			} else {
-				set bg_color [dui::args::get_option -bg_color [dui aspect get page.bg_color -style $style]]
+				set bg_color [dui::args::get_option -bg_color [dui aspect get page bg_color -style $style]]
 				if { $bg_color ne "" } {
-					foreach c $pages {
-						#set tag "${c}.background"
-						$can create rect 0 0 [rescale_x_skin 2560] [rescale_y_skin 1600] -fill $bg_color -width 0 \
-							-tags  [list pages $c] -state "hidden"
+					foreach page $pages {
+						$can create rect 0 0 [dui platform rescale_x 2560] [dui platform rescale_y 1600] -fill $bg_color \
+							-width 0 -tags "pages $page" -state "hidden"
 					}
 				}
 			}
-							
+
 			set ns [dui::args::get_option -namespace [dui cget create_page_namespaces] 0]
 			if { [string is true -strict $ns] } {
 				set ns {}
@@ -1248,7 +1789,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			} elseif { [string is false -strict $ns] } {
 				set ns ""
 			} 
-			
+
 			if { $ns eq "" } {
 				foreach page $pages {
 					set pages_data($page,ns) {}
@@ -1293,8 +1834,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		}
 		
 		proc current {} {
-			# Later on dui will keep the current page. At the moment, just use the global variable 
-			return $::de1(current_context)
+			# Later on dui will keep the current page. At the moment, just use the global variable
+			variable current_page
+			return $current_page
 		}
 		
 		proc exists { page } {
@@ -1311,6 +1853,30 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			return $pages
 		}
 		
+		proc delete { pages } {
+			variable pages_data
+			set can [dui canvas]
+			
+			foreach page $pages {
+				if { $page eq [current] } {
+					msg -WARN [namespace current] "cannot delete currently visible page '$page'"
+					continue
+				}
+				if { ![exists $page] } {
+					msg -NOTICE [namespace current] delete: "page '$page' not found"
+					continue
+				}
+				$can delete [$can find withtag p:$page]
+				$can delete [$can find withtag pages&&$page]
+				
+				foreach key [array names pages_data "$page,*"] {
+					unset pages_data($key)
+				}
+				
+				msg [namespace current] "page '$page' has been deleted"
+			}
+		}
+				
 		# If several pages are passed, only uses the first one. Checks that the namespace actually exists, if it
 		#	doesn't returns an empty string.
 		proc get_namespace { page } {
@@ -1341,8 +1907,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		}
 		
 		proc display_change { page_to_hide page_to_show args } {
+			variable current_page
 			set can [dui canvas]
-			delay_screen_saver
+			catch { delay_screen_saver }
 			
 			set hide_ns [get_namespace $page_to_hide]
 			set show_ns [get_namespace $page_to_show]
@@ -1353,54 +1920,61 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				set page_to_show $::nextpage($key)
 			}
 		
-			if {[current] eq $page_to_show} {
+			if {$current_page eq $page_to_show} {
 				#msg "page_display_change returning because ::de1(current_context) == $page_to_show"
 				return 
 			}
 		
 			msg [namespace current] display_change "$page_to_hide->$page_to_show"
 				
-			# TODO: This should be handled by the main app adding actions to the sleep/off/saver pages
-			if {$page_to_hide == "sleep" && $page_to_show == "off"} {
-				msg [namespace current] "discarding intermediate sleep/off state msg"
-				return 
-			} elseif {$page_to_show == "saver"} {
-				if {[ifexists ::exit_app_on_sleep] == 1} {
-					get_set_tablet_brightness 0
-					close_all_ble_and_exit
-				}
-			}
+#			# TODO: This should be handled by the main app adding actions to the sleep/off/saver pages
+#			if {$page_to_hide == "sleep" && $page_to_show == "off"} {
+#				msg [namespace current] "discarding intermediate sleep/off state msg"
+#				return 
+#			} elseif {$page_to_show == "saver"} {
+#				if {[ifexists ::exit_app_on_sleep] == 1} {
+#					get_set_tablet_brightness 0
+#					close_all_ble_and_exit
+#				}
+#			}
 		
 			# signal the page change with a sound
-			say "" $::settings(sound_button_out)
+			dui sound make page_change
+			
 			#msg "page_display_change $page_to_show"
 			#set start [clock milliseconds]
 		
 			# TODO: This should be added on the main app as a load action on the "saver" page
 			# set the brightness in one place
-			if {$page_to_show == "saver" } {
-				if {$::settings(screen_saver_change_interval) == 0} {
-					# black screen saver
-					display_brightness 0
-				} else {
-					display_brightness $::settings(saver_brightness)
-				}
-				borg systemui $::android_full_screen_flags  
-			} else {
-				display_brightness $::settings(app_brightness)
-			}
+#			if {$page_to_show == "saver" } {
+#				if {$::settings(screen_saver_change_interval) == 0} {
+#					# black screen saver
+#					display_brightness 0
+#				} else {
+#					display_brightness $::settings(saver_brightness)
+#				}
+#				borg systemui $::android_full_screen_flags  
+#			} else {
+#				display_brightness $::settings(app_brightness)
+#			}
 		
 			
-			if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {		
-				msg "Doing next stress test step: '$::idle_next_step '"
-				set todo $::idle_next_step 
-				unset -nocomplain ::idle_next_step 
-				eval $todo
-			}
+#			if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {		
+#				msg "Doing next stress test step: '$::idle_next_step '"
+#				set todo $::idle_next_step 
+#				unset -nocomplain ::idle_next_step 
+#				eval $todo
+#			}
 
 			# run load actions
+			foreach action [actions {} load] {
+				lappend action $page_to_hide $page_to_show
+				uplevel #0 $action
+			}			
 			foreach action [actions $page_to_show load] {
-				eval $action
+				lappend action $page_to_hide $page_to_show
+				uplevel #0 $action
+				#eval $action
 			}
 			if { $show_ns ne "" && [info procs ${show_ns}::load] ne "" } {
 				set page_loaded [${show_ns}::load $page_to_hide $page_to_show {*}$args]
@@ -1411,15 +1985,25 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 
 			# run hide actions
+			foreach action [actions {} hide] {
+				lappend action $page_to_hide $page_to_show
+				uplevel #0 $action
+				#eval $action
+			}
 			foreach action [actions $page_to_hide hide] {
-				eval $action
+				lappend action $page_to_hide $page_to_show
+				uplevel #0 $action
+				#eval $action
 			}			
 			if { $hide_ns ne "" && [info procs ${hide_ns}::hide] ne "" } {
 				${hide_ns}::hide $page_to_hide $page_to_show
 			}
 
 			# update global page
-			set ::de1(current_context) $page_to_show
+			set current_page $page_to_show
+			if { [info exists ::de1(current_context)] } {
+				set ::de1(current_context) $page_to_show
+			}
 		
 			#puts "page_display_change hide:$page_to_hide show:$page_to_show"
 			try {
@@ -1486,8 +2070,13 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 
 			# run show actions
+			foreach action [actions {} show] {
+				uplevel #0 $action
+				#eval $action
+			}			
 			foreach action [actions $page_to_show show] {
-				eval $action
+				uplevel #0 $action
+				#eval $action
 			}			
 			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
 				${show_ns}::show $page_to_hide $page_to_show
@@ -1498,24 +2087,29 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			#puts "elapsed: [expr {$end - $start}]"
 			
 			update
-			update_onscreen_variables
+			dui page update_onscreen_variables
 			dui platform hide_android_keyboard
 			#msg "Switched to page: $page_to_show [stacktrace]"
 		}
 		
 		proc add_action { pages event tclcode } {
 			variable pages_data
-			if { $event ni {load show hide} } {
+			if { $event ni {load show hide update_vars} } {
 				error "'$event' is not a valid event for 'dui page add_action'"
 			}
-			foreach page $pages {
-				lappend pages_data($page,$event) $tclcode
+			if { $pages eq "" } {
+				# Run for all pages
+				lappend pages_data(,$event) $tclcode
+			} else {
+				foreach page $pages {
+					lappend pages_data($page,$event) $tclcode
+				}
 			}
 		}
 		
 		proc actions { page event } {
 			variable pages_data
-			if { $event ni {load show hide} } {
+			if { $event ni {load show hide update_vars} } {
 				error "'$event' is not a valid event for 'dui page add_action'"
 			}
 			return [ifexists pages_data($page,$event)]
@@ -1563,6 +2157,15 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 						
 			set something_updated 0	
 			if {[info exists pages_data(${current_page},variables)] == 1} {
+				# Run actions
+				foreach action [actions {} update_vars] {
+					uplevel #0 $action
+				}
+				foreach action [actions $current_page update_vars] {
+					uplevel #0 $action
+				}
+				
+				# Update the variables				
 				set ids_to_update $pages_data(${current_page},variables) 
 				foreach {id varcode} $ids_to_update {
 					set varvalue ""
@@ -1598,7 +2201,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				after cancel $update_onscreen_variables_alarm_handle
 				unset update_onscreen_variables_alarm_handle
 			}
-			set update_onscreen_variables_alarm_handle [after [dui cget timer_interval] ::update_onscreen_variables]
+			set update_onscreen_variables_alarm_handle [after [dui cget timer_interval] ::dui::page::update_onscreen_variables]
 		}
 	}
 	
@@ -1612,10 +2215,11 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		variable sliders
 		array set sliders {}
 		
-		# A list of paths where to look for image files. Within each, it will look in the
-		#	<resolution_width>x<resolution_height> subfolder.
+		# A list of paths where to look for image and sound files. 
+		# Within each image directory, it will look in the <screen_width>x<screen_height> subfolder.
 		variable img_dirs {}
-				
+		variable sound_dirs {}
+	
 		# Just a wrapper for the add_* commands, for consistency of the API
 		proc add { type args } {
 			if { [info proc ::dui::add::$type] ne "" } {
@@ -1855,6 +2459,31 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			variable img_dirs
 			return $img_dirs
 		}
+
+		proc add_sound_dirs { args } {
+			variable sound_dirs
+			if { [llength $args] == 1 } {
+				set args [lindex $args 0]
+			}
+			
+			foreach dir $args {
+				if { [file isdirectory $dir] } {
+					if { $dir in $img_dirs } {
+						msg -NOTICE [namespace current] "sounds directory '$dir' was already in the list"
+					} else {
+						lappend img_dirs $dir
+						msg [namespace current] "adding sounds directory '$dir'"
+					}
+				} else {
+					msg -ERROR [namespace current] "sounds directory '$dir' not found"
+				}
+			}
+		}
+		
+		proc sound_dirs {} {
+			variable sound_dirs
+			return $sound_dirs
+		}
 		
 		# Moves a text canvas item with respect to another item or widget, i.e. to a position relative to another one.
 		# pos can be any of "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es".
@@ -1872,8 +2501,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set wrt [get $page [lindex $wrt 0]]
 			lassign [$can bbox $wrt] x0 y0 x1 y1 
 			lassign [$can bbox $tag] wx0 wy0 wx1 wy1
-			set xoffset [rescale_x_skin $xoffset]
-			set yoffset [rescale_y_skin $yoffset]
+			set xoffset [dui platform rescale_x $xoffset]
+			set yoffset [dui platform rescale_y $yoffset]
 			
 			if { $pos eq "center" } {
 				set newx [expr {$x0+int(($x1-$x0)/2)+$xoffset}]
@@ -1962,16 +2591,16 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set can [dui canvas]
 			foreach w $widgets {
 				lassign [$can bbox $w ] x0 y0 x1 y1
-				set width [rescale_x_skin [expr {$x1-$x0}]]
-				set height [rescale_y_skin [expr {$y1-$y0}]]
+				set width [dui platform rescale_x [expr {$x1-$x0}]]
+				set height [dui platform rescale_y [expr {$y1-$y0}]]
 				
 				set target_width 0
 				if { [info exists opts(-width)] } {
-					set target_width [rescale_x_skin $opts(-width)]
-				} elseif { [info exists opts(-max_width)] && $width > [rescale_x_skin $opts(-max_width)]} {
-					set target_width [rescale_x_skin $opts(-max_width)] 
-				} elseif { [info exists opts(-min_width)] && $width < [rescale_x_skin $opts(-min_width)]} {
-					set target_width [rescale_x_skin $opts(-min_width)]
+					set target_width [dui platform rescale_x $opts(-width)]
+				} elseif { [info exists opts(-max_width)] && $width > [dui platform rescale_x $opts(-max_width)]} {
+					set target_width [dui platform rescale_x $opts(-max_width)] 
+				} elseif { [info exists opts(-min_width)] && $width < [dui platform rescale_x $opts(-min_width)]} {
+					set target_width [dui platform rescale_x $opts(-min_width)]
 				}
 				if { $target_width > 0 } {
 					$can itemconfigure $w -width $target_width
@@ -1979,11 +2608,11 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				
 				set target_height 0
 				if { [info exists opts(-height)] } {
-					set target_height [rescale_y_skin $opts(-height)]
-				} elseif { [info exists opts(-max_height)] && $height > [rescale_y_skin $opts(-max_height)]} {
-					set target_height [rescale_y_skin $opts(-max_width)] 
-				} elseif { [info exists opts(-min_height)] && $height < [rescale_y_skin $opts(-min_height)]} {
-					set target_height [rescale_y_skin $opts(-min_height)]
+					set target_height [dui platform rescale_y $opts(-height)]
+				} elseif { [info exists opts(-max_height)] && $height > [dui platform rescale_y $opts(-max_height)]} {
+					set target_height [dui platform rescale_y $opts(-max_width)] 
+				} elseif { [info exists opts(-min_height)] && $height < [dui platform rescale_y $opts(-min_height)]} {
+					set target_height [dui platform rescale_y $opts(-min_height)]
 				}
 				if { $target_height > 0 } {
 					$can itemconfigure $w -height $target_height
@@ -2132,10 +2761,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		proc rounded_rectangle { x0 y0 x1 y1 radius colour disabled tags } {
 			set can [dui canvas]
 			set ids {}
-			set x0 [rescale_x_skin $x0] 
-			set y0 [rescale_y_skin $y0] 
-			set x1 [rescale_x_skin $x1] 
-			set y1 [rescale_y_skin $y1]
+			set x0 [dui platform rescale_x $x0] 
+			set y0 [dui platform rescale_y $y0] 
+			set x1 [dui platform rescale_x $x1] 
+			set y1 [dui platform rescale_y $y1]
 			
 			lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius] [expr $y0 + $radius] -fill $colour -disabledfill $disabled \
 				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
@@ -2157,10 +2786,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		proc rounded_rectangle_outline { x0 y0 x1 y1 arc_offset colour disabled width tags } {
 			set can [dui canvas]
 			set ids {}
-			set x0 [rescale_x_skin $x0] 
-			set y0 [rescale_y_skin $y0] 
-			set x1 [rescale_x_skin $x1] 
-			set y1 [rescale_y_skin $y1]
+			set x0 [dui platform rescale_x $x0] 
+			set y0 [dui platform rescale_y $y0] 
+			set x1 [dui platform rescale_x $x1] 
+			set y1 [dui platform rescale_y $y1]
 		
 			lappends ids [$can create arc [expr $x0] [expr $y0+$arc_offset] [expr $x0+$arc_offset] [expr $y0] -style arc -outline $colour \
 				-width [expr $width-1] -tags $tags -start 90 -disabledoutline $disabled -state "hidden"]
@@ -2541,6 +3170,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		proc image_dirs { args } {
 			dui item add_image_dirs {*}$args 
 		}
+
+		proc sound_dirs { args } {
+			dui item add_sound_dirs {*}$args 
+		}
 		
 		# Adds canvas items (arcs, ovals, lines, etc.) to pages
 		proc canvas_item { type pages args } {
@@ -2550,9 +3183,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set i 0
 			while { [llength $args] > 0 && [string is entier [lindex $args 0]] } {
 				if { $i % 2 == 0 } {
-					set coord [rescale_x_skin [lindex $args 0]]
+					set coord [dui platform rescale_x [lindex $args 0]]
 				} else {
-					set coord [rescale_y_skin [lindex $args 0]]
+					set coord [dui platform rescale_y [lindex $args 0]]
 				}
 				lappend coords $coord 
 				set args [lrange $args 1 end]
@@ -2595,27 +3228,30 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#	All others passed through to the 'canvas create text' command
 		proc text { pages x y args } {
 			global text_cnt
-			set x [rescale_x_skin $x]
-			set y [rescale_y_skin $y]
+			set can [dui canvas]
+			set x [dui platform rescale_x $x]
+			set y [dui platform rescale_y $y]
 			
 			set tags [dui::args::process_tags_and_var $pages text ""]
 			set main_tag [lindex $tags 0]
+			set cmd [dui::args::get_option -command {} 1]
 			
 			set compatibility_mode [string is true [dui::args::get_option -compatibility_mode 0 1]]
-			if { ! $compatibility_mode } {
+			if { ! $compatibility_mode } {				
 				set style [dui::args::get_option -style "" 1]
-				dui::args::process_aspects text $style "" "pos"		
+				dui::args::process_aspects text $style "" "pos"
+if { $main_tag eq "launch_dye" } { msg "BEFORE PROCESSING FONT args='$args'" }
 				dui::args::process_font text $style
-						
+if { $main_tag eq "launch_dye" } { msg "AFTER PROCESSING FONT args='$args'" }
 				set width [dui::args::get_option -width {} 1]
 				if { $width ne "" } {
-					set width [rescale_x_skin $width]
+					set width [dui platform rescale_x $width]
 					dui::args::add_option_if_not_exists -width $width
 				}
 			}
 			
 			try {
-				set id [[dui canvas] create text $x $y -state hidden {*}$args]
+				set id [$can create text $x $y -state hidden {*}$args]
 			} on error err {
 				set msg "can't add text '$main_tag' in page(s) '$pages' to canvas: $err"
 				msg -ERROR [namespace current] $msg
@@ -2627,6 +3263,18 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $id
 			}
+			
+			if { $cmd ne "" &&  ![string is false -strict $cmd] } {
+				if { [string is true -strict $cmd] && $ns ne "" && [namespace which -command ${ns}::$main_tag] ne "" } {
+					set cmd ${ns}::$main_tag
+				} elseif { [string is wordchar $cmd] && $ns ne "" && [namespace which -command ${ns}::$cmd] ne "" } {
+					set cmd ${ns}::$cmd
+				} else {
+					regsub -all {%NS} $cmd $ns cmd	
+				}
+				$can bind $id [dui platform button_press] $cmd
+			}
+			
 			#msg -INFO [namespace current] text "'$main_tag' to page(s) '$pages' with args '$args'"
 			return $id
 		}
@@ -2663,7 +3311,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			}
 			
 			set symbol [dui symbol get $symbol]
-			dui::args::add_option_if_not_exists -font_family $dui::symbol::font_filename
+			dui::args::add_option_if_not_exists -font_family $::dui::symbol::font_filename
 			
 			dui::args::add_option_if_not_exists -aspect_type symbol
 			
@@ -2696,6 +3344,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#	-label_pos a list with 2 elements between 0 and 1 that specify the x and y percentages where to position
 		#		the label inside the button
 		#	-label_* (-label_fill -label_outline etc.) are passed through to 'dui add text' or 'dui add variable'
+		#	-state
+		#	-statevariable
+		#	-state_pos, -state_*
 		#	-symbol to add a Fontawesome symbol/icon to the button, on position -symbol_pos, and using option values
 		#		given in -symbol_* that are passed through to 'dui add symbol'
 		#	-radius for rounded rectangles, and -arc_offset for rounded outline rectangles
@@ -2744,10 +3395,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				lassign [dui::item::anchor_coords $anchor $x $y [expr {$x1-$x}] [expr {$y1-$y}]] x y x1 y1
 			}
 			
-			set rx [rescale_x_skin $x]
-			set rx1 [rescale_x_skin $x1]
-			set ry [rescale_y_skin $y]
-			set ry1 [rescale_y_skin $y1]
+			set rx [dui platform rescale_x $x]
+			set rx1 [dui platform rescale_x $x1]
+			set ry [dui platform rescale_y $y]
+			set ry1 [dui platform rescale_y $y1]
 					
 			set tags [dui::args::process_tags_and_var $pages dbutton {} 1]
 			set main_tag [lindex $tags 0]
@@ -2757,22 +3408,29 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			#	label differently (inside), also we need to extract label options from the args before painting the 
 			#	background button (as $args is passed to the painting proc) but not create the label until after that
 			#	button has been painted.
-			set label [dui::args::get_option -label "" 1]
-			set labelvar [dui::args::get_option -labelvariable "" 1]
-			if { $label ne "" || $labelvar ne "" } {
-				set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]	
-				set label_args [dui::args::extract_prefixed -label_]
+			set i 0
+			set suffix "" 
+			set label [dui::args::get_option "-label$suffix" "" 1]
+			set labelvar [dui::args::get_option "-label${suffix}variable" "" 1]
+			while { [subst \$label$suffix] ne "" || [subst \$labelvar$suffix] ne "" } {
+				set "label${suffix}_tags" [list "${main_tag}-lbl$suffix" {*}[lrange $tags 1 end]]	
+				set "label${suffix}_args" [dui::args::extract_prefixed "-label${suffix}_"]
 				
-				foreach aspect [dui aspect list -type [list dbutton_label text] -style $style] {
-					dui::args::add_option_if_not_exists -$aspect [dui aspect get dbutton_label $aspect -style $style \
-						-default {} -default_type text] label_args
+				foreach aspect [dui aspect list -type [list "dbutton_label$suffix" text] -style $style] {
+					dui::args::add_option_if_not_exists -$aspect [dui aspect get "dbutton_label$suffix" $aspect -style $style \
+						-default {} -default_type text] "label${suffix}_args"
 				}
 				
-				set label_pos [dui::args::get_option -pos {0.5 0.5} 1 label_args]
-				set xlabel [expr {$x+int($x1-$x)*[lindex $label_pos 0]}]
-				set ylabel [expr {$y+int($y1-$y)*[lindex $label_pos 1]}]
+				set "label${suffix}_pos" [dui::args::get_option -pos {0.5 0.5} 1 "label${suffix}_args"]
+				set "xlabel$suffix" [expr {$x+int($x1-$x)*[lindex [subst \$label${suffix}_pos] 0]}]
+				set "ylabel$suffix" [expr {$y+int($y1-$y)*[lindex [subst \$label${suffix}_pos] 1]}]
+				
+				incr i
+				set suffix $i
+				set "label$suffix" [dui::args::get_option "-label$suffix" "" 1]
+				set "labelvar$suffix" [dui::args::get_option "-label${suffix}variable" "" 1]
 			}
-			
+
 			# Process symbol
 			set symbol [dui::args::get_option -symbol "" 1]
 			if { $symbol ne "" } {
@@ -2825,13 +3483,23 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { $ids ne "" && $ns ne "" } {
 				set ${ns}::widgets([lindex $button_tags 0]) $ids
 			}
-			
-			if { $label ne "" } {
-				dui add text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type dbutton_label \
-					-style $style {*}$label_args
-			} elseif { $labelvar ne "" } {
-				dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
-					-aspect_type dbutton_label -style $style {*}$label_args 
+
+			# Add each of the (possibly several) labels
+			set i 0
+			set suffix ""
+			while { ([info exists label$suffix] && [subst \$label$suffix] ne "") || 
+					([info exists labelvar$suffix] && [subst \$labelvar$suffix] ne "") } {
+				if { [info exists label$suffix] && [subst \$label$suffix] ne "" } {
+					dui add text $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] -text [subst \$label$suffix] \
+						-tags [subst \$label${suffix}_tags] -aspect_type "dbutton_label$suffix" \
+						-style $style {*}[subst \$label${suffix}_args]
+				} elseif { [info exists labelvar$suffix] && [subst \$labelvar$suffix] ne "" } {
+					dui add variable $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] \
+						-textvariable [subst \$labelvar$suffix] -tags [subst \$label${suffix}_tags] \
+						-aspect_type "dbutton_label$suffix" -style $style {*}[subst \$label${suffix}_args] 
+				}
+				incr i
+				set suffix $i
 			}
 			
 			if { $symbol ne "" } {
@@ -2860,7 +3528,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { $cmd eq "" } {
 				msg -WARN [namespace current] dbutton "'$main_tag' in page(s) '$pages' does not have a command"
 			} else {
-				$can bind $id [platform_button_press] $cmd
+				$can bind $id [dui platform button_press] $cmd
 			}
 			
 			if { $ns ne "" } {
@@ -2885,7 +3553,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { $filename ne "" } {
 				if { [file dirname $filename] eq "." } {
 					foreach dir [dui item image_dirs] {
-						set full_fn "$dir/${::screen_size_width}x${::screen_size_height}/$filename"
+						set full_fn "$dir/[dui cget screen_size_width]x[dui cget screen_size_height]/$filename"
 						if { [file exists $full_fn] } {
 							set filename $full_fn
 							break
@@ -2901,8 +3569,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				}
 			}
 			
-			set x [rescale_x_skin $x]
-			set y [rescale_y_skin $y]
+			set x [dui platform rescale_x $x]
+			set y [dui platform rescale_y $y]
 			set tags [dui::args::process_tags_and_var $pages image ""]
 			set main_tag [lindex $tags 0]
 			set style [dui::args::get_option -style "" 1]
@@ -2958,8 +3626,8 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		#			%NS the page namespace, if it has one, o/w an empty string
 		proc widget { type pages x y args } {
 			set can [dui canvas]
-			set rx [rescale_x_skin $x]
-			set ry [rescale_y_skin $y]
+			set rx [dui platform rescale_x $x]
+			set ry [dui platform rescale_y $y]
 			
 			set ns [dui page get_namespace $pages]
 			set tags [dui::args::process_tags_and_var $pages $type "" 0 args 0]
@@ -2984,10 +3652,10 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set canvas_args [dui::args::extract_prefixed -canvas_]
 			dui::args::add_option_if_not_exists -anchor nw canvas_args
 			if { [dui::args::has_option -width canvas_args] } {
-				dui::args::add_option_if_not_exists -width [rescale_x_skin [dui::args::get_option -width 0 1 canvas_args]] canvas_args 
+				dui::args::add_option_if_not_exists -width [dui platform rescale_x [dui::args::get_option -width 0 1 canvas_args]] canvas_args 
 			}
 			if { [dui::args::has_option -height canvas_args] } {
-				dui::args::add_option_if_not_exists -height [rescale_y_skin [dui::args::get_option -height 0 1 canvas_args]] canvas_args 
+				dui::args::add_option_if_not_exists -height [dui platform rescale_y [dui::args::get_option -height 0 1 canvas_args]] canvas_args 
 			}				
 			if { $type eq "scrollbar" } {
 				# From the original add_de1_widget, but WHY this? Also, scrollbars are no longer used, scales
@@ -3206,11 +3874,13 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 		# A text entry box with a "dropdown arrow" symbol on its right that allows to select the value from a list
 		#	that opens in a new page. 
 		# Extra named options:
-		# 	-items
-		#	-item_ids
+		# 	-values  
+		#	-values_ids
 		#	-item_type
-		#	-select_cmd
-		#	-select_callback_cmd
+		#	-command: if you want to customize the page that opens when the dropdown box is clicked or the entry
+		#		is double clicked. If not defined, page "dui_item_selector" is launched.
+		#	-callback_cmd: the code to pass to the page that opens when the dropdown box is clicked, to run when
+		#		control is returned to the combobox page.
 		
 		proc dcombobox { pages x y args } {			
 			set tags [dui::args::process_tags_and_var $pages dcombobox -textvariable 1]
@@ -3218,44 +3888,57 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set ns [dui page get_namespace $pages]
 			set style [dui::args::get_option -style "" 0]
 
-			set items [dui::args::get_option -items {} 1]
-			#set item_ids [dui::args::get_option -item_ids {} 1]
+			set values [dui::args::get_option -values {} 1]
+			#set values_ids [dui::args::get_option -values_ids {} 1]
 			#set item_type [dui::args::get_option -item_type {} 1]
 
 			set textvariable [dui::args::get_option -textvariable {} 0]
-			set callback_cmd [dui::args::get_option -select_callback_cmd {} 1]
-			if { $callback_cmd eq "" } {
-				if { $ns ne "" && [namespace which -command "${ns}::select_${main_tag}_callback"] ne "" } {
-					set callback_cmd "${ns}::select_${main_tag}_callback"
+			set callback_cmd [dui::args::get_option -callback_cmd {} 1]
+			if { $callback_cmd ne "" } {
+#				if { $ns ne "" && [namespace which -command "${ns}::select_${main_tag}_callback"] ne "" } {
+#					set callback_cmd "${ns}::select_${main_tag}_callback"
+#				}
+				if { $ns ne "" && [string is wordchar $callback_cmd] && [namespace which -command "${ns}::$callback_cmd"] ne "" } {
+					set callback_cmd "${ns}::$callback_cmd"
+				} else {
+					regsub -all {%NS} $callback_cmd $ns callback_cmd
 				}
-			} elseif { [string is wordchar $callback_cmd] && $ns ne "" && [namespace which -command "${ns}::$callback_cmd"] ne "" } {
-				set callback_cmd "${ns}::$callback_cmd"
 			}
-			
-			set select_cmd [dui::args::get_option -select_cmd {} 1]
-			if { $select_cmd eq "" } {
-				set select_cmd [list dui page show_when_off dui_item_selector $textvariable $items]
+
+			set cmd [dui::args::get_option -command {} 1]
+			set expand_cmd 0
+			if { $cmd eq "" } {
+				set cmd [list dui page show_when_off dui_item_selector]
+				set expand_cmd 1
+			} elseif { $ns ne "" && [string is wordchar $cmd] && [namespace which -command ${ns}::$cmd] ne "" } {
+				set cmd "${ns}::$cmd"
+				set expand_cmd 1
+			} else {
+				regsub -all {%NS} $cmd $ns cmd
+				
+			}
+			if { $expand_cmd } {
+				lappend cmd $textvariable $values
 				if { $callback_cmd ne "" } {
-					lappend select_cmd -callback_cmd $callback_cmd
+					lappend cmd -callback_cmd $callback_cmd
 				}
-				foreach fn {item_type item_ids page_title listbox_width} { 
+				foreach fn {values_ids item_type page_title listbox_width} { 
 					if { [dui::args::has_option -$fn] } {
-						lappend select_cmd -$fn [dui::args::get_option -$fn {} 1]
+						lappend cmd -$fn [dui::args::get_option -$fn {} 1]
 					}
 				}
-				#set select_cmd [list say "select" $::settings(sound_button_in) \; {*}$select_cmd ]
+				#set cmd [list say "select" $::settings(sound_button_in) \; {*}$cmd ]
 			}
-			
 #			dui::args::process_font dcombobox $style
 			
 			set w [dui add entry $pages $x $y -aspect_type dcombobox {*}$args]
-			bind $w <Double-Button-1> $select_cmd
+			bind $w <Double-Button-1> $cmd
 			
 			# Dropdown selection arrow
 			set arrow_tags [list ${main_tag}-dda {*}[lrange $tags 1 end]]
 			set arrow_id [dui add symbol $pages $x $y -symbol sort_down -tags $arrow_tags -anchor w -justify left \
-				-aspect_type dcombobox_ddarrow -state hidden] 
-			[dui canvas] bind $arrow_id [platform_button_press] $select_cmd
+				-aspect_type dcombobox_ddarrow -state hidden -command $cmd] 
+			#[dui canvas] bind $arrow_id [dui platform button_press] $select_cmd
 			
 			foreach page $pages {
 				set after_show_cmd [list ::dui::item::relocate_text_wrt $page ${main_tag}-dda $main_tag e 20 -10]
@@ -3397,18 +4080,18 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set plus_minus [string is true [dui::args::get_option -plus_minus 1]]
 			set pm_length 0
 			
-			set x [rescale_x_skin $x]
-			set y [rescale_y_skin $y]
+			set x [dui platform rescale_x $x]
+			set y [dui platform rescale_y $y]
 			set moveto_cmd [list dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $resolution $n_decimals]
 			if { $orient eq "v" } {
 				# VERTICAL SCALE
 				if { $plus_minus } {
-					set pm_length [rescale_y_skin 40]
+					set pm_length [dui platform rescale_y 40]
 				}
-				set length [rescale_y_skin $length]
-				set sliderlength [rescale_y_skin $sliderlength]
-				set pm_length [rescale_y_skin $pm_length]
-				set width [rescale_x_skin $width]
+				set length [dui platform rescale_y $length]
+				set sliderlength [dui platform rescale_y $sliderlength]
+				set pm_length [dui platform rescale_y $pm_length]
+				set width [dui platform rescale_x $width]
 				set x1 $x
 				set y [expr {$y+$pm_length}]
 				set y1 [expr {$y+$length-$pm_length*2}]
@@ -3425,7 +4108,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					}							
 					set id [$can create rect [expr {$x-$sliderlength}] [expr {$y-$pm_length-10}] [expr {$x+$sliderlength/2}] $y \
 						-fill {} -width 0 -tags [list ${main_tag}-tinc {*}$tags] -state hidden]					
-					$can bind ${main_tag}-tinc [platform_button_press] [list set_var_in_range $var {} \
+					$can bind ${main_tag}-tinc [dui platform button_press] [list set_var_in_range $var {} \
 						$smallinc $from $to $resolution $n_decimals]
 					$can bind ${main_tag}-tinc <Triple-ButtonPress-1> [list set_var_in_range $var {} \
 						$biginc $from $to $resolution $n_decimals]
@@ -3443,7 +4126,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					}											
 					set id [$can create rect [expr {$x-$sliderlength/2}] $y1 [expr {$x+$sliderlength/2}] [expr {$y1+$pm_length+10}] \
 						-fill {} -width 0 -tags [list ${main_tag}-tdec {*}$tags] -state hidden]
-					$can bind ${main_tag}-tdec [platform_button_press] [list set_var_in_range $var {} \
+					$can bind ${main_tag}-tdec [dui platform button_press] [list set_var_in_range $var {} \
 						-$smallinc $from $to $resolution $n_decimals ]
 					$can bind ${main_tag}-tdec <Triple-ButtonPress-1> [list set_var_in_range $var {} \
 						-$biginc $from $to $resolution $n_decimals]
@@ -3470,7 +4153,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				# Vertical "clickable" rectangle. Use the "bounding" box that contains both lines and circle. 
 				set id [$can create rect [expr {$x-$sliderlength/2}] $y [expr {$x+$sliderlength/2}] $y1 -fill {} -width 0 \
 					-tags [list ${main_tag}-tap {*}$tags] -state hidden]			
-				$can bind ${main_tag}-tap [platform_button_press] $moveto_cmd
+				$can bind ${main_tag}-tap [dui platform button_press] $moveto_cmd
 				lappend ids $id
 				if { $ns ne "" } {
 					set "${ns}::widgets(${main_tag}-tap)" $id
@@ -3488,11 +4171,11 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			} else {
 				# HORIZONTAL SCALE
 				if { $plus_minus } {
-					set pm_length [rescale_x_skin 40]
+					set pm_length [dui platform rescale_x 40]
 				}				
-				set length [rescale_x_skin $length]
-				set sliderlength [rescale_x_skin $sliderlength]
-				set width [rescale_y_skin $width]
+				set length [dui platform rescale_x $length]
+				set sliderlength [dui platform rescale_x $sliderlength]
+				set width [dui platform rescale_y $width]
 				set x [expr {$x+$pm_length}]
 				set x1 [expr {$x+$length-$pm_length*2}]
 				set x1f [expr {$x+$sliderlength/2}]
@@ -3510,7 +4193,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					}							
 					set id [$can create rect [expr {$x-$pm_length-20}] [expr {$y-$sliderlength/2}] $x [expr {$y+$sliderlength/2}] \
 						-fill {} -width 0 -tags [list ${main_tag}-tdec {*}$tags] -state hidden]					
-					$can bind ${main_tag}-tdec [platform_button_press] [list set_var_in_range $var {} \
+					$can bind ${main_tag}-tdec [dui platform button_press] [list set_var_in_range $var {} \
 						-$smallinc $from $to $resolution $n_decimals]
 					$can bind ${main_tag}-tdec <Triple-ButtonPress-1> [list set_var_in_range $var {} \
 						-$biginc $from $to $resolution $n_decimals]
@@ -3528,7 +4211,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					}											
 					set id [$can create rect $x1 [expr {$y-$sliderlength/2}] [expr {$x1+$pm_length+20}] [expr {$y+$sliderlength/2}] \
 						-fill {} -width 0 -tags [list ${main_tag}-tinc {*}$tags] -state hidden]
-					$can bind ${main_tag}-tinc [platform_button_press] [list set_var_in_range $var {} \
+					$can bind ${main_tag}-tinc [dui platform button_press] [list set_var_in_range $var {} \
 						$smallinc $from $to $resolution $n_decimals ]
 					$can bind ${main_tag}-tinc <Triple-ButtonPress-1> [list set_var_in_range $var {} \
 						$biginc $from $to $resolution $n_decimals]
@@ -3555,7 +4238,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 				# Horizontal "clickable" rectangle. Use the "bounding" box that contains both lines and circle. 
 				set id [$can create rect  $x [expr {$y-$sliderlength/2}] $x1 [expr {$y1+$sliderlength/2}] -fill {} -width 0 \
 					-tags [list ${main_tag}-tap {*}$tags] -state hidden]			
-				$can bind ${main_tag}-tap [platform_button_press] $moveto_cmd
+				$can bind ${main_tag}-tap [dui platform button_press] $moveto_cmd
 				lappend ids $id
 				if { $ns ne "" } {
 					set "${ns}::widgets(${main_tag}-tap)" $id
@@ -3588,7 +4271,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
 					-page_title $editor_page_title]
 				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
-				$can bind $label_id [platform_button_press] $editor_cmd
+				$can bind $label_id [dui platform button_press] $editor_cmd
 			}
 			
 			return $ids
@@ -3612,23 +4295,23 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set length [dui::args::get_option -length {} 1]
 			if { [string range $orient 0 0] eq "v" } {
 				if { $sliderlength ne "" } {
-					dui::args::add_option_if_not_exists -sliderlength [rescale_y_skin $sliderlength]
+					dui::args::add_option_if_not_exists -sliderlength [dui platform rescale_y $sliderlength]
 				}
 				if { $length ne "" } {
-					dui::args::add_option_if_not_exists -length [rescale_y_skin $length]
+					dui::args::add_option_if_not_exists -length [dui platform rescale_y $length]
 				}
 				if { $width ne "" } {
-					dui::args::add_option_if_not_exists -width [rescale_x_skin $width]
+					dui::args::add_option_if_not_exists -width [dui platform rescale_x $width]
 				}		
 			} else {
 				if { $sliderlength ne "" } {
-					dui::args::add_option_if_not_exists -sliderlength [rescale_x_skin $sliderlength]
+					dui::args::add_option_if_not_exists -sliderlength [dui platform rescale_x $sliderlength]
 				}
 				if { $length ne "" } {
-					dui::args::add_option_if_not_exists -length [rescale_x_skin $length]
+					dui::args::add_option_if_not_exists -length [dui platform rescale_x $length]
 				}
 				if { $width ne "" } {
-					dui::args::add_option_if_not_exists -width [rescale_y_skin $width]
+					dui::args::add_option_if_not_exists -width [dui platform rescale_y $width]
 				}
 			}
 			
@@ -3667,7 +4350,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
 					-page_title $editor_page_title]
 				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
-				$can bind $label_id [platform_button_press] $editor_cmd
+				$can bind $label_id [dui platform button_press] $editor_cmd
 			}
 
 			return $widget
@@ -3754,11 +4437,11 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			#set style [dui::args::get_option -style "" 0]
 			set width [dui::args::get_option -width "" 1]
 			if { $width ne "" } {
-				dui::args::add_option_if_not_exists -width [rescale_x_skin $width]
+				dui::args::add_option_if_not_exists -width [dui platform rescale_x $width]
 			}
 			set height [dui::args::get_option -height "" 1]
 			if { $height ne "" } {
-				dui::args::add_option_if_not_exists -height [rescale_y_skin $height]
+				dui::args::add_option_if_not_exists -height [dui platform rescale_y $height]
 			}
 #			dui::args::process_font listbox $style
 			
@@ -3768,76 +4451,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 	}
 	
 	### INITIALIZE ###
-	proc init {} {
-	}
-	
-	proc canvas {} {
-		return ".can"
-	}
-	
-	proc setup_ui {} {
-		# Launch setup methods of pages created with 'dui add page'
-		set applied_ns {}
-		foreach page [page list] {
-			set ns [page get_namespace $page]
-			if { $ns ne "" && $ns ni $applied_ns } {
-				if { [info proc ${ns}::setup] eq "" } {
-					msg [namespace current] -NOTICE "page namespace '${ns}' does not have a setup method"
-				} else {
-					#msg [namespace current] setup_ui "running ${ns}::setup"
-					${ns}::setup
-				}
-				lappend applied_ns $ns
-			}
-		}
 		
-		# Launch setup methods of pages created as sub-namespaces of ::dui::pages (which do not require 'dui add page')
-		foreach ns [namespace children ::dui::pages] {
-			if { $ns ni $applied_ns } {
-				if { [info proc ${ns}::setup] eq "" } {
-					msg [namespace current] -NOTICE "page namespace '${ns}' does not have a setup method"
-				} else {
-					#msg [namespace current] setup_ui "running ${ns}::setup"
-					${ns}::setup
-				}
-				lappend applied_ns $ns
-			}
-		}
-	}
-	
-	# Sets dui configuration variables. Logs a warning if the variable does not exist.
-	proc config { args } {
-		variable settings
-		array set opts $args
-		if { [llength $args] == 1 } {
-			set args [lindex $args 0]
-		}
-		
-		foreach key [array names opts] {
-			if { [info exists settings($key)] } {
-				if { $key in {debug_buttons create_page_namespaces trim_entries use_editor_pages} } {
-					set settings($key) [string is true -strict $opts($key)]
-				} else {
-					set settings($key) $opts($key)
-				}
-			} else {
-				msg -WARN [namespace current] config: "invalid settings variable '$key'"
-			}
-		}
-	}
-	
-	# Gets a dui configuration variable value. Returns an empty string if the variable is not recognized, and issues
-	#	a log notice.
-	proc cget { varname } {
-		variable settings
-		if { [info exists settings($varname)] } {
-			return $settings($varname)
-		} else {
-			msg -NOTICE [namespace current] cget: "invalid settings variable '$varname'"
-			return ""
-		}
-	}
-	
 	### GENERAL TOOLS ###
 	
 	# Command to invoke from the -vcmd option to validate numeric entries, with -validate key.
@@ -4334,19 +4948,19 @@ namespace eval ::dui::pages::dui_item_selector {
 	
 	# Named options:
 	#	-page_title
-	#	-item_type: an optional string to identify the type of data being edited. This is occasionally useful when
+	#	-category_name: an optional string to identify the type of data being edited. This is occasionally useful when
 	#		passed to a callback command, so that a single callback can be used for several item types.
-	#	-item_ids: use this to assign a lookup value that identifies the selected item, such as a unique ID.
+	#	-values_ids: use this to assign a lookup value that identifies the selected item, such as a unique ID.
 	#	-callback_cmd: an optional command to be executed when control is returned to the calling page (i.e. when "Ok" of "Cancel" are clicked). 
 	#		It must be a function with three arguments {item_id item_value item_type} that processes the result and moves 
 	#		to the source page (or somewhere else). 
 	#	-selected: list of items to be selected when the page is open. If some of them is not in 'items', it is appended
-	#		to the list.
+	#		to the list. If not specified, uses the curent value of -variable.
 	#	-selectmode: single, browser, multiple or extended.
 	#	-empty_items_msg: text to show if there are no items to select.
 	#	-listbox_width: the width in pixels of the filter entry and the items listbox.
 	
-	proc load { page_to_hide page_to_show variable items args } {
+	proc load { page_to_hide page_to_show variable values args } {
 		variable data
 		variable widgets
 		array set opts $args
@@ -4364,17 +4978,17 @@ namespace eval ::dui::pages::dui_item_selector {
 			set selected [subst "\$$data(variable)"]
 		}	
 		# Add the current/selected value if not included in the list of available items
-		set data(item_ids) [ifexists opts(-item_ids)]
+		set data(item_ids) [ifexists opts(-values_ids)]
 		if { $selected ne "" } {
-			if { $selected ni $items } {
+			if { $selected ni $values } {
 				if { [llength $data(item_ids)] > 0 } { 
 					lappend data(item_ids) -1 
 				}
 				lappend items $selected
 			}
 		}
-		set data(item_values) $items
-		set data(item_type) [ifexists opts(-item_type)]
+		set data(item_values) $values
+		set data(item_type) [ifexists opts(-category_name)]
 		set data(callback_cmd) [ifexists opts(-callback_cmd)]
 		set data(selectmode) [ifexists opts(-selectmode) "browser"]
 		set data(empty_items_msg) [ifexists opts(-empty_items_msg) [translate "There are no available items to show"]]
@@ -4385,10 +4999,10 @@ namespace eval ::dui::pages::dui_item_selector {
 		# We load the widget items directly instead of mapping it to a listvariable, as it may have either the full
 		# list or a filtered one.	
 		$widgets(items) delete 0 end
-		$widgets(items) insert 0 {*}$items
+		$widgets(items) insert 0 {*}$values
 		
 		if { $selected ne "" } {		
-			set idx [lsearch -exact $items $selected]
+			set idx [lsearch -exact $values $selected]
 			if { $idx >= 0 } {
 				$widgets(items) selection set $idx
 				$widgets(items) see $idx
@@ -4405,7 +5019,7 @@ namespace eval ::dui::pages::dui_item_selector {
 	
 		set lst [dui item get $page items]
 		lassign [$can bbox $lst] x0 y0 x1 y1
-		set target_width [rescale_x_skin $data(listbox_width)]
+		set target_width [dui platform rescale_x $data(listbox_width)]
 		if { [expr {abs($x1-$x0-$target_width) > 10}] } {
 			$can itemconfig $lst -width $target_width
 			$can itemconfig [dui item get $page filter_string] -width $target_width
@@ -4469,7 +5083,7 @@ namespace eval ::dui::pages::dui_item_selector {
 	proc page_cancel {} {
 		variable data
 		say [translate {cancel}] $::settings(sound_button_in)
-msg [namespace current] "PREVIOUS_PAGE=$data(previous_page), CALLBACK_CMD=$data(callback_cmd)"	
+		
 		if { $data(callback_cmd) ne "" } {
 			$data(callback_cmd) {} {} $data(item_type)
 		} else {
@@ -4501,8 +5115,7 @@ msg [namespace current] "PREVIOUS_PAGE=$data(previous_page), CALLBACK_CMD=$data(
 				set item_id [lindex $data(item_ids) $sel_idx]
 			}
 		}
-	
-		
+
 		if { $data(callback_cmd) ne "" } {
 			$data(callback_cmd) $item_id $item_value $data(item_type)
 		} else {
@@ -4518,3 +5131,4 @@ msg [namespace current] "PREVIOUS_PAGE=$data(previous_page), CALLBACK_CMD=$data(
 ### JUST FOR TESTING
 set ::settings(enabled_plugins) {}
 # dui_demo SDB github
+#dui::font::add_or_get_familyname "Font Awesome 5 Pro-Regular-400"
