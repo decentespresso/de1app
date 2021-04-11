@@ -853,6 +853,10 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >Non-DUI options are passed-through to [canvas create text](https://www.tcl-lang.org/man/tcl/TkCmd/canvas.htm#M156).
 
+>**-command**  _true_or_false_or_tcl_code_
+
+> >Runs  _tcl_code_  when the text is clicked. If 1 or true or yes, and a page namespace command exists with the same name as the main tag, it will the command invoked. If it is a plain name (letters, numbers and underscores only) and the name matches a namespace command, it will be the command invoked.
+
 
 <a name="dui_add_variable"></a>
 
@@ -868,6 +872,11 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > >You can use `%NS` anywhere in  _tcl_code_  and it will be substituted by the page namespace.
 
+>**-command**  _true_or_false_or_tcl_code_
+
+> >Runs  _tcl_code_  when the text is clicked. If 1 or true or yes, and a page namespace command exists with the same name as the main tag, it will the command invoked. If it is a plain name (letters, numbers and underscores only) and the name matches a namespace command, it will be the command invoked.
+
+> >In addition to standard substitutions, **%NS** is substituted by the page namespace.
 
 <a name="dui_add_image"></a>
 

@@ -650,15 +650,16 @@ proc install_de1plus_app_icon {} {
 }
 
 proc platform_button_press {} {
-	global android 
-	global undroid
-	#return {<Motion>}
-	if {$android == 1 && $::settings(use_finger_down_for_tap) == 1} {
-		return {<<FingerDown>>}
-		#return {<ButtonPress-1>}
-	}
-	#return {<Motion>}
-	return {<ButtonPress-1>}
+	return [dui platform button_press]
+#	global android 
+#	global undroid
+#	#return {<Motion>}
+#	if {$android == 1 && $::settings(use_finger_down_for_tap) == 1} {
+#		return {<<FingerDown>>}
+#		#return {<ButtonPress-1>}
+#	}
+#	#return {<Motion>}
+#	return {<ButtonPress-1>}
 }
 
 proc platform_button_native_press {} {
@@ -667,30 +668,31 @@ proc platform_button_native_press {} {
 
 
 proc platform_button_long_press {} {
-	global android 
-	if {$android == 1} {
-		# button 3 on Androwish is a long press
-		return {<ButtonPress-3>}
-	}
-
-	# no "long press concept" on Tcl/Tk. Button-3 is the 3rd mouse button, which is a very different concept, so just accept a normal mouse click
-	return {<ButtonPress-1>}
+	return [dui platform button_long_press]
+#	global android 
+#	if {$android == 1} {
+#		#return {<<FingerUp>>}
+#		return {<ButtonPress-3>}
+#	}
+#	return {<ButtonPress-3>}
 }
 
 proc platform_finger_down {} {
-	global android 
-	if {$android == 1 && $::settings(use_finger_down_for_tap) == 1} {
-		return {<<FingerDown>>}
-	}
-	return {<ButtonPress-1>}
+	return [dui platform finger_down]
+#	global android 
+#	if {$android == 1 && $::settings(use_finger_down_for_tap) == 1} {
+#		return {<<FingerDown>>}
+#	}
+#	return {<ButtonPress-1>}
 }
 
 proc platform_button_unpress {} {
-	global android 
-	if {$android == 1} {
-		return {<<FingerUp>>}
-	}
-	return {<ButtonRelease-1>}
+	return [dui platform button_unpress]
+#	global android 
+#	if {$android == 1} {
+#		return {<<FingerUp>>}
+#	}
+#	return {<ButtonRelease-1>}
 }
 
 
@@ -1197,109 +1199,111 @@ set _last_st 0
 
 # TODO (EB): Move the first part of this proc to a parametrized action run from 'dui page update_onscreen_variables'
 proc update_onscreen_variables { {state {}} } {
-
-	#update_chart
-
-	#save_settings
-
-	#set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
-	#if {$since_last_ping > 3} {
-		#set ::de1(last_ping) [clock seconds]
-		#if {$::android == 1} {
-			#set ::de1(found) 0
-			#ble_find_de1s
-			#ble_connect_to_de1
-		#}
-
-	#}
-
-	if {$::android == 0} {
-
-		if {[expr {int(rand() * 100)}] > 96} {
-			set ::gui::state::_state_change_chart_value \
-				[expr {$::gui::state::_state_change_chart_value * -1}]
-
-			if {[expr {rand()}] > 0.5} {
-				set ::settings(current_frame_description) [translate "pouring"]
-			} else {
-				set ::settings(current_frame_description) [translate "preinfusion"]
-			}
-		}
-
-		if {$::de1(state) == 2} {
-			# idle
-			if {$::de1(substate) == 0} {
-				if {[expr {int(rand() * 100)}] > 92} {
-					# occasionally set the de1 to heating mode
-					#set ::de1(substate) 1
-					#update_de1_state "$::de1_state(Idle)\x1"
-				}
-			} else {
-				if {[expr {int(rand() * 100)}] > 90} {
-					# occasionally set the de1 to heating mode
-					update_de1_state "$::de1_state(Idle)\x0"
-				}
-			}
-		} elseif {$::de1(state) == 4} {
-			# espresso
-			if {$::de1(substate) == 0} {
-			} elseif {$::de1(substate) < 4} {
-				if {[expr {int(rand() * 100)}] > 80} {
-					# occasionally set the de1 to heating mode
-					#set ::de1(substate) 4
-					update_de1_state "$::de1_state(Espresso)\x4"
-				}
-			} elseif {$::de1(substate) == 4} {
-				if {[expr {int(rand() * 100)}] > 80} {
-					# occasionally set the de1 to heating mode
-					#set ::de1(substate) 5
-					update_de1_state "$::de1_state(Espresso)\x5"
-				}
-			} 
-		}
-
-        #set timerkey "$::de1(state)-$::de1(substate)"
-        #set ::timers($timerkey) [clock milliseconds]
-
-		#if {$::de1(substate) > 6} {
-		#	set ::de1(substate) 0
-		#}
-
-		# JB's GUI driver needs an event_dict
-
-		# NB: This seems to be getting called at a 10 Hz rate
-		#     which is faster than the DE1's 25/(2 * line frequency)
-
-		set _now [expr {[clock milliseconds] / 1000.0}]
-		# SampleTime is a 16-bit counter of zero crossings
-		set _de1_sample_time \
-			[expr { int( ( $_now - $::gui::_arbitrary_t0 ) \
-					     / $::gui::_st_period ) % 65536 }]
-		set event_dict [dict create \
-					event_time 	$_now \
-					update_received	$_now \
-					SampleTime	$_de1_sample_time \
-					GroupPressure	$::de1(pressure) \
-					GroupFlow	$::de1(flow) \
-					MixTemp		$::de1(mix_temperature) \
-					HeadTemp	$::de1(head_temperature) \
-					SetHeadTemp	$::de1(goal_temperature) \
-					SetGroupPressure $::de1(goal_pressure) \
-					SetGroupFlow	$::de1(goal_flow) \
-					FrameNumber	$::de1(current_frame_number) \
-					SteamTemp	$::de1(steam_heater_temperature) \
-					this_state	[::de1::state::current_state] \
-					this_substate	[::de1::state::current_substate] \
-				       ]
-
-		if {$::de1(state) == 4} {
-			::de1::event::apply::on_shotvalue_available_callbacks $event_dict
-		} elseif {$::de1(state) == 5} {
-			#steaming
-			::de1::event::apply::on_shotvalue_available_callbacks $event_dict
-		}
-
-	} ;# $::android == 0
+	dui page update_onscreen_variables
+	return
+	
+#	#update_chart
+#
+#	#save_settings
+#
+#	#set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
+#	#if {$since_last_ping > 3} {
+#		#set ::de1(last_ping) [clock seconds]
+#		#if {$::android == 1} {
+#			#set ::de1(found) 0
+#			#ble_find_de1s
+#			#ble_connect_to_de1
+#		#}
+#
+#	#}
+#
+#	if {$::android == 0} {
+#
+#		if {[expr {int(rand() * 100)}] > 96} {
+#			set ::gui::state::_state_change_chart_value \
+#				[expr {$::gui::state::_state_change_chart_value * -1}]
+#
+#			if {[expr {rand()}] > 0.5} {
+#				set ::settings(current_frame_description) [translate "pouring"]
+#			} else {
+#				set ::settings(current_frame_description) [translate "preinfusion"]
+#			}
+#		}
+#
+#		if {$::de1(state) == 2} {
+#			# idle
+#			if {$::de1(substate) == 0} {
+#				if {[expr {int(rand() * 100)}] > 92} {
+#					# occasionally set the de1 to heating mode
+#					#set ::de1(substate) 1
+#					#update_de1_state "$::de1_state(Idle)\x1"
+#				}
+#			} else {
+#				if {[expr {int(rand() * 100)}] > 90} {
+#					# occasionally set the de1 to heating mode
+#					update_de1_state "$::de1_state(Idle)\x0"
+#				}
+#			}
+#		} elseif {$::de1(state) == 4} {
+#			# espresso
+#			if {$::de1(substate) == 0} {
+#			} elseif {$::de1(substate) < 4} {
+#				if {[expr {int(rand() * 100)}] > 80} {
+#					# occasionally set the de1 to heating mode
+#					#set ::de1(substate) 4
+#					update_de1_state "$::de1_state(Espresso)\x4"
+#				}
+#			} elseif {$::de1(substate) == 4} {
+#				if {[expr {int(rand() * 100)}] > 80} {
+#					# occasionally set the de1 to heating mode
+#					#set ::de1(substate) 5
+#					update_de1_state "$::de1_state(Espresso)\x5"
+#				}
+#			} 
+#		}
+#
+#        #set timerkey "$::de1(state)-$::de1(substate)"
+#        #set ::timers($timerkey) [clock milliseconds]
+#
+#		#if {$::de1(substate) > 6} {
+#		#	set ::de1(substate) 0
+#		#}
+#
+#		# JB's GUI driver needs an event_dict
+#
+#		# NB: This seems to be getting called at a 10 Hz rate
+#		#     which is faster than the DE1's 25/(2 * line frequency)
+#
+#		set _now [expr {[clock milliseconds] / 1000.0}]
+#		# SampleTime is a 16-bit counter of zero crossings
+#		set _de1_sample_time \
+#			[expr { int( ( $_now - $::gui::_arbitrary_t0 ) \
+#					     / $::gui::_st_period ) % 65536 }]
+#		set event_dict [dict create \
+#					event_time 	$_now \
+#					update_received	$_now \
+#					SampleTime	$_de1_sample_time \
+#					GroupPressure	$::de1(pressure) \
+#					GroupFlow	$::de1(flow) \
+#					MixTemp		$::de1(mix_temperature) \
+#					HeadTemp	$::de1(head_temperature) \
+#					SetHeadTemp	$::de1(goal_temperature) \
+#					SetGroupPressure $::de1(goal_pressure) \
+#					SetGroupFlow	$::de1(goal_flow) \
+#					FrameNumber	$::de1(current_frame_number) \
+#					SteamTemp	$::de1(steam_heater_temperature) \
+#					this_state	[::de1::state::current_state] \
+#					this_substate	[::de1::state::current_substate] \
+#				       ]
+#
+#		if {$::de1(state) == 4} {
+#			::de1::event::apply::on_shotvalue_available_callbacks $event_dict
+#		} elseif {$::de1(state) == 5} {
+#			#steaming
+#			::de1::event::apply::on_shotvalue_available_callbacks $event_dict
+#		}
+#
+#	} ;# $::android == 0
 
 	# update the timers
   	#set state_timerkey "$::de1(state)"
@@ -1308,7 +1312,6 @@ proc update_onscreen_variables { {state {}} } {
   	#set ::timers($state_timerkey) $now
   	#set ::substate_timers($timerkey) $now
 
-  	::dui::page::update_onscreen_variables 
 #	#set x [clock milliseconds]
 #	global variable_labels
 #	set something_updated 0
@@ -1351,6 +1354,95 @@ proc update_onscreen_variables { {state {}} } {
 #		unset ::update_onscreen_variables_alarm_handle
 #	}
 #	set ::update_onscreen_variables_alarm_handle [after $::settings(timer_interval) update_onscreen_variables]
+}
+
+# Define fake / dummy espresso variables on workstations
+proc set_dummy_espresso_vars {} {
+	if { $::android } { return }
+	
+	if {[expr {int(rand() * 100)}] > 96} {
+		set ::gui::state::_state_change_chart_value \
+			[expr {$::gui::state::_state_change_chart_value * -1}]
+
+		if {[expr {rand()}] > 0.5} {
+			set ::settings(current_frame_description) [translate "pouring"]
+		} else {
+			set ::settings(current_frame_description) [translate "preinfusion"]
+		}
+	}
+
+	if {$::de1(state) == 2} {
+		# idle
+		if {$::de1(substate) == 0} {
+			if {[expr {int(rand() * 100)}] > 92} {
+				# occasionally set the de1 to heating mode
+				#set ::de1(substate) 1
+				#update_de1_state "$::de1_state(Idle)\x1"
+			}
+		} else {
+			if {[expr {int(rand() * 100)}] > 90} {
+				# occasionally set the de1 to heating mode
+				update_de1_state "$::de1_state(Idle)\x0"
+			}
+		}
+	} elseif {$::de1(state) == 4} {
+		# espresso
+		if {$::de1(substate) == 0} {
+		} elseif {$::de1(substate) < 4} {
+			if {[expr {int(rand() * 100)}] > 80} {
+				# occasionally set the de1 to heating mode
+				#set ::de1(substate) 4
+				update_de1_state "$::de1_state(Espresso)\x4"
+			}
+		} elseif {$::de1(substate) == 4} {
+			if {[expr {int(rand() * 100)}] > 80} {
+				# occasionally set the de1 to heating mode
+				#set ::de1(substate) 5
+				update_de1_state "$::de1_state(Espresso)\x5"
+			}
+		} 
+	}
+
+	#set timerkey "$::de1(state)-$::de1(substate)"
+	#set ::timers($timerkey) [clock milliseconds]
+
+	#if {$::de1(substate) > 6} {
+	#	set ::de1(substate) 0
+	#}
+
+	# JB's GUI driver needs an event_dict
+
+	# NB: This seems to be getting called at a 10 Hz rate
+	#     which is faster than the DE1's 25/(2 * line frequency)
+
+	set _now [expr {[clock milliseconds] / 1000.0}]
+	# SampleTime is a 16-bit counter of zero crossings
+	set _de1_sample_time \
+		[expr { int( ( $_now - $::gui::_arbitrary_t0 ) \
+						/ $::gui::_st_period ) % 65536 }]
+	set event_dict [dict create \
+				event_time 	$_now \
+				update_received	$_now \
+				SampleTime	$_de1_sample_time \
+				GroupPressure	$::de1(pressure) \
+				GroupFlow	$::de1(flow) \
+				MixTemp		$::de1(mix_temperature) \
+				HeadTemp	$::de1(head_temperature) \
+				SetHeadTemp	$::de1(goal_temperature) \
+				SetGroupPressure $::de1(goal_pressure) \
+				SetGroupFlow	$::de1(goal_flow) \
+				FrameNumber	$::de1(current_frame_number) \
+				SteamTemp	$::de1(steam_heater_temperature) \
+				this_state	[::de1::state::current_state] \
+				this_substate	[::de1::state::current_substate] \
+					]
+
+	if {$::de1(state) == 4} {
+		::de1::event::apply::on_shotvalue_available_callbacks $event_dict
+	} elseif {$::de1(state) == 5} {
+		#steaming
+		::de1::event::apply::on_shotvalue_available_callbacks $event_dict
+	}	
 }
 
 proc set_next_page {machinepage guipage} {
@@ -2060,7 +2152,8 @@ proc setup_images_for_first_page {} {
 	set fn [random_splash_file]
 	image create photo splash -file $fn 
 	.can create image {0 0} -anchor nw -image splash -tag splash -state normal
-	pack .can
+#	pack .can
+	
 	update
 	return
 }
@@ -2071,10 +2164,11 @@ proc run_de1_app {} {
 package require de1_shot 2.0
 
 proc ui_startup {} {
-
+	
 	load_settings
-	::profile::sync_from_legacy
+	::profile::sync_from_legacy	
 	setup_environment
+		
 	bluetooth_connect_to_devices
 	
 	if {[ifexists ::settings(enable_shot_history_export)] == "1"} {
@@ -2107,7 +2201,6 @@ proc ui_startup {} {
 		save_settings
 	}
 
-	### EB STARTUP DUI PAGES ###
 	# auto-setup of DUI pages. dui init and setting of folders may need to be done before skin & plugins inits?
 	#dui init
 	dui font add_dirs "[homedir]/fonts"

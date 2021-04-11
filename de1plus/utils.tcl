@@ -2,330 +2,413 @@ package provide de1_utils 1.1
 
 package require de1_logging 1.0
 
-# from https://developer.android.com/reference/android/view/View.html#SYSTEM_UI_FLAG_IMMERSIVE
-set SYSTEM_UI_FLAG_IMMERSIVE_STICKY 0x00001000
-set SYSTEM_UI_FLAG_FULLSCREEN 0x00000004
-set SYSTEM_UI_FLAG_HIDE_NAVIGATION 0x00000002
-set SYSTEM_UI_FLAG_IMMERSIVE 0x00000800
-set SYSTEM_UI_FLAG_LAYOUT_STABLE 0x00000100
-set SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION 0x00000200
-set SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN 0x00000400
-set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_LAYOUT_STABLE | $SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_IMMERSIVE}]
-
 proc setup_environment {} {
-    global screen_size_width
-    global screen_size_height
-    global fontm
-    global android
-    global undroid
+	global settings
+	
+	# Set DUI settings from the app stored settings
+	foreach s {default_font_calibration use_finger_down_for_tap disable_long_press timer_interval sound_button_in
+			sound_button_out enable_spoken_prompts speaking_pitch speaking_rate sound_button_in sound_button_out } {
+		if { [info exists settings($s)] } {
+			dui config $s $settings($s)
+		}
+	}
+	dui config language [language]
+	dui font add_dirs "[homedir]/fonts/"
+	dui item add_image_dirs "[homedir]/skins/default/"
+	dui sound set button_in "[homedir]/sounds/KeypressStandard_120.ogg" \
+		button_out "[homedir]/sounds/KeypressDelete_120.ogg" \
+		page_change "[homedir]/sounds/KeypressDelete_120.ogg"
+	
+	dui init $settings(screen_size_width) $settings(screen_size_height) $settings(orientation)
+	
+	source "bluetooth.tcl"
+	
+	# Configure actions on specific pages (this was previously hardcoded on page_display_change, and should be moved 
+	# later to the part of the GUI that builds those pages).
+	dui page add_action off load ::off_page_onload
+	dui page add_action saver load ::saver_page_onload
+	dui page add_action {} load ::page_onload
+	if { $::android == 0 } {
+		dui page add_action {} update_vars ::set_dummy_espresso_vars
+	}
+	
+	# only calculate the tablet's dimensions once, then save it in settings for a faster app startup
+	set ::screen_size_width [dui cget screen_size_width]
+	set ::screen_size_height [dui cget screen_size_height]
+	if { $settings(screen_size_width) != $::screen_size_width || $settings(screen_size_height) != $::screen_size_height } {
+		set settings(screen_size_width) $::screen_size_width
+		set settings(screen_size_height)) $::screen_size_height
+		save_settings
+#	}
 
-    set ::globals(listbox_length_multiplier) 1
-    set ::globals(listbox_global_width_multiplier) 1
+	# Re-store what are now DUI namespace variables into the original global variables to ensure backwards-compatibility
+	# with existing code, until all code is migrated.
+	set ::globals(listbox_global_width_multiplier) [dui cget listbox_global_width_multiplier]
+	set ::globals(listbox_length_multiplier) [dui cget listbox_length_multiplier] 
+	set ::globals(entry_length_multiplier) [dui cget entry_length_multiplier]
+	set ::fontm [dui cget fontm]
+	set ::fontw [dui cget fontw]
+	
+	after 60000 schedule_minute_task
 
-    set ::globals(entry_length_multiplier) 1
-
-    if {$android == 1 || $undroid == 1} {
-
-        # hide the android keyboard that pops up when you power back on
-        bind . <<DidEnterForeground>> hide_android_keyboard
-
-        # this causes the app to exit if the main window is closed
-        wm protocol . WM_DELETE_WINDOW exit
-
-        # set the window title of the app. Only visible when casting the app via jsmpeg, and when running the app in a window using undroidwish
-        wm title . "Decent"
-
-        # force the screen into landscape if it isn't yet
-        msg -DEBUG "orientation: [borg screenorientation]"
-        if {[borg screenorientation] != "landscape" && [borg screenorientation] != "reverselandscape"} {
-            borg screenorientation $::settings(orientation)
-        }
-
-        sdltk screensaver off
-        
-
-        if {$::settings(screen_size_width) != "" && $::settings(screen_size_height) != ""} {
-            set screen_size_width $::settings(screen_size_width)
-            set screen_size_height $::settings(screen_size_height)
-
-        } else {
-
-
-            # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
-            if {$android == 1} {
-                pause 500
-            }
-
-            set width [winfo screenwidth .]
-            set height [winfo screenheight .]
-
-            if {$width > 2300} {
-                set screen_size_width 2560
-                if {$height > 1450} {
-                    set screen_size_height 1600
-                } else {
-                    set screen_size_height 1440
-                }
-            } elseif {$height > 2300} {
-                set screen_size_width 2560
-                if {$width > 1440} {
-                    set screen_size_height 1600
-                } else {
-                    set screen_size_height 1440
-                }
-            } elseif {$width == 2048 && $height == 1440} {
-                set screen_size_width 2048
-                set screen_size_height 1440
-                #set fontm 2
-            } elseif {$width == 2048 && $height == 1536} {
-                set screen_size_width 2048
-                set screen_size_height 1536
-                #set fontm 2
-            } elseif {$width == 1920} {
-                set screen_size_width 1920
-                set screen_size_height 1080
-                if {$width > 1080} {
-                    set screen_size_height 1200
-                }
-
-            } elseif {$width == 1280} {
-                set screen_size_width 1280
-                set screen_size_height 800
-                if {$width >= 720} {
-                    set screen_size_height 800
-                } else {
-                    set screen_size_height 720
-                }
-            } else {
-                # unknown resolution type, go with smallest
-                set screen_size_width 1280
-                set screen_size_height 800
-            }
-
-            # only calculate the tablet's dimensions once, then save it in settings for a faster app startup
-            set ::settings(screen_size_width) $screen_size_width 
-            set ::settings(screen_size_height) $screen_size_height
-            save_settings
-        }
-
-        # Android seems to automatically resize fonts appropriately to the current resolution
-        set fontm $::settings(default_font_calibration)
-        set ::fontw 1
-
-        if {$::undroid == 1} {
-            # undroid does not resize fonts appropriately for the current resolution, it assumes a 1024 resolution
-            set fontm [expr {($screen_size_width / 1024.0)}]
-            set ::fontw 2
-        }
-
-        if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
-            set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
-            set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
-        }
-
-        global helvetica_bold_font
-        global helvetica_font
-        set global_font_size 18
-        if {[language] == "th"} {
-            set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
-            set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
-            set fontm [expr {($fontm * 1.2)}]
-            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-            set global_font_size 16
-        } elseif {[language] == "ar" || [language] == "arb"} {
-            set helvetica_font [sdltk addfont "fonts/Dubai-Regular.otf"]
-            set helvetica_bold_font [sdltk addfont "fonts/Dubai-Bold.otf"]
-            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-        } elseif {[language] == "he" || [language] == "heb"} {
-            set ::globals(listbox_length_multiplier) 1.35
-            set ::globals(entry_length_multiplier) 0.86
-            set helvetica_font [sdltk addfont "fonts/hebrew-regular.ttf"]
-            set helvetica_bold_font [sdltk addfont "fonts/hebrew-bold.ttf"]
-            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-        } elseif {[language] == "zh-hant" || [language] == "zh-hans" || [language] == "kr"} {
-            set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-            set helvetica_bold_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Bold.otf"] 0]
-            set global_font_name $helvetica_font
-
-            set fontm [expr {($fontm * .94)}]
-        } else {
-            # we use the immense google font so that we can handle virtually all of the world's languages with consistency
-            set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
-            set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
-            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-
-        }            
-
-        set fontawesome_brands [lindex [sdltk addfont "fonts/Font Awesome 5 Brands-Regular-400.otf"] 0]
-        font create Fontawesome_brands_11 -family $fontawesome_brands -size [expr {int($fontm * 20)}]
-
-        font create global_font -family $global_font_name -size [expr {int($fontm * $global_font_size)}] 
-
-        font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
-        font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
-        font create Helv_11_bold -family $helvetica_bold_font -size [expr {int($fontm * 20)}] 
-        font create Helv_11 -family $helvetica_font -size [expr {int($fontm * 20)}] 
-        font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 19)}] 
-        font create Helv_10 -family $helvetica_font -size [expr {int($fontm * 19)}] 
-        font create Helv_1 -family $helvetica_font -size 1
-        font create Helv_4 -family $helvetica_font -size [expr {int($fontm * 8)}]
-        font create Helv_5 -family $helvetica_font -size [expr {int($fontm * 10)}]
-        font create Helv_6 -family $helvetica_font -size [expr {int($fontm * 12)}]
-        font create Helv_6_bold -family $helvetica_bold_font -size [expr {int($fontm * 12)}]
-        font create Helv_7 -family $helvetica_font -size [expr {int($fontm * 14)}]
-        font create Helv_7_bold -family $helvetica_bold_font -size [expr {int($fontm * 14)}]
-        font create Helv_8 -family $helvetica_font -size [expr {int($fontm * 16)}]
-        font create Helv_8_bold -family $helvetica_bold_font -size [expr {int($fontm * 16)}]
-        
-        font create Helv_9 -family $helvetica_font -size [expr {int($fontm * 18)}]
-        font create Helv_9_bold -family $helvetica_bold_font -size [expr {int($fontm * 18)}] 
-        font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
-        font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
-        font create Helv_16_bold -family $helvetica_bold_font -size [expr {int($fontm * 27)}] 
-        font create Helv_17_bold -family $helvetica_bold_font -size [expr {int($fontm * 30)}] 
-        font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 32)}] 
-        font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 35)}] 
-        font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 37)}]
-        font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
-        font create Helv_30 -family $helvetica_font -size [expr {int($fontm * 56)}]
-
-        # enable swipe gesture translating, to scroll through listboxes
-        # sdltk touchtranslate 1
-        # disable touch translating as it does not feel native on tablets and is thus confusing
-        if {$::settings(disable_long_press) != 1 } {        
-            sdltk touchtranslate 1
-        } else {
-            sdltk touchtranslate 0
-        }
-
-        wm maxsize . $screen_size_width $screen_size_height
-        wm minsize . $screen_size_width $screen_size_height
-        wm attributes . -fullscreen 1
-
-        # flight mode, not yet debugged
-        #if {$::settings(flight_mode_enable) == 1 } {
-        #    if {[package require de1plus] > 1} {
-        #        borg sensor enable 0
-        #        sdltk accelerometer 1
-        #        after 200 accelerometer_check 
-        #    }
-        #}
-
-        # preload the speaking engine 
-        # john 2/12/18 re-enable this when TTS feature is enabled
-        # borg speak { }
-
-        source "bluetooth.tcl"
-
-    } else {
-
-        # global font is wider on non-android
-        set ::globals(listbox_global_width_multiplier) .8
-        set ::globals(listbox_length_multiplier) 1
-
-
-        expr {srand([clock milliseconds])}
-
-        if {$::settings(screen_size_width) != "" && $::settings(screen_size_height) != ""} {
-            set screen_size_width $::settings(screen_size_width)
-            set screen_size_height $::settings(screen_size_height)
-        } else {
-            # if this is the first time running on Tk, then use a default 1280x800 resolution, and allow changing resolution by editing settings file
-            set screen_size_width 1280
-            set screen_size_height 800
-
-            set ::settings(screen_size_width) $screen_size_width 
-            set ::settings(screen_size_height) $screen_size_height
-            save_settings
-
-        }
-
-        set fontm [expr {$screen_size_width / 1280.0}]
-        set ::fontw 2
-
-        package require Tk
-        catch {
-            # tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
-            package require tkblt
-            namespace import blt::*
-        }
-
-        wm maxsize . $screen_size_width $screen_size_height
-        wm minsize . $screen_size_width $screen_size_height
-
-        if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
-            set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
-            set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
-        }
-
-        set regularfont "notosansuiregular"
-        set boldfont "notosansuibold"
-
-        if {[language] == "th"} {
-            set regularfont "sarabun"
-            set boldfont "sarabunbold"
-            #set fontm [expr {($fontm * 1.20)}]
-        } elseif {[language] == "zh-hant" || [language] == "zh-hans"} {
-            set regularfont "notosansuiregular"
-            set boldfont "notosansuibold"
-        }
-
-        set ::helvetica_font $regularfont
-        font create Helv_1 -family $regularfont -size 1
-        font create Helv_4 -family $regularfont -size 10
-        font create Helv_5 -family $regularfont -size 12
-        font create Helv_6 -family $regularfont -size [expr {int($fontm * 14)}]
-        font create Helv_6_bold -family $boldfont -size [expr {int($fontm * 14)}]
-        font create Helv_7 -family $regularfont -size [expr {int($fontm * 16)}]
-        font create Helv_7_bold -family $boldfont -size [expr {int($fontm * 16)}]
-        font create Helv_8 -family $regularfont -size [expr {int($fontm * 19)}]
-        font create Helv_8_bold_underline -family $boldfont -size [expr {int($fontm * 19)}] -underline 1
-        font create Helv_8_bold -family $boldfont -size [expr {int($fontm * 19)}]
-        font create Helv_9 -family $regularfont -size [expr {int($fontm * 23)}]
-        font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 21)}]
-        font create Helv_10 -family $regularfont -size [expr {int($fontm * 23)}]
-        font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 23)}]
-        font create Helv_11 -family $regularfont -size [expr {int($fontm * 25)}]
-        font create Helv_11_bold -family $boldfont -size [expr {int($fontm * 25)}]
-        font create Helv_12 -family $regularfont -size [expr {int($fontm * 27)}]
-        font create Helv_12_bold -family $boldfont -size [expr {int($fontm * 30)}]
-        font create Helv_15 -family $regularfont -size [expr {int($fontm * 30)}]
-        font create Helv_15_bold -family $boldfont -size [expr {int($fontm * 30)}]
-        font create Helv_16_bold -family $boldfont -size [expr {int($fontm * 33)}]
-        font create Helv_17_bold -family $boldfont -size [expr {int($fontm * 37)}]
-        font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]
-        font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 45)}]
-        font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 48)}]
-        font create Helv_30_bold -family $boldfont -size [expr {int($fontm * 69)}]
-        font create Helv_30 -family $regularfont -size [expr {int($fontm * 72)}]
-
-        
-        font create Fontawesome_brands_11 -family "Font Awesome 5 Brands Regular" -size [expr {int($fontm * 25)}]
-
-
-        font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 
-        android_specific_stubs
-        source "bluetooth.tcl"
-    }
-
-    # define the canvas
-    . configure -bg black 
-    canvas .can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
-
-    after 60000 schedule_minute_task
-    #after 1000 schedule_minute_task
-
-    ############################################
-    # future feature: flight mode
-    #if {$::settings(flight_mode_enable) == 1} {
-        #if {$android == 1} {
-        #   .can bind . "<<SensorUpdate>>" [accelerometer_data_read]
-        #}
-        #after 250 accelerometer_check
-    #}
-
-    ############################################
+	return
+	
+#    #puts "setup_environment"
+#    global screen_size_width
+#    global screen_size_height
+#    global fontm
+#    global android
+#    global undroid
+#
+#    set ::globals(listbox_length_multiplier) 1
+#    set ::globals(listbox_global_width_multiplier) 1
+#
+#    set ::globals(entry_length_multiplier) 1
+#
+#    if {$android == 1 || $undroid == 1} {
+#
+#        # hide the android keyboard that pops up when you power back on
+#        bind . <<DidEnterForeground>> hide_android_keyboard
+#
+#        # this causes the app to exit if the main window is closed
+#        wm protocol . WM_DELETE_WINDOW exit
+#
+#        # set the window title of the app. Only visible when casting the app via jsmpeg, and when running the app in a window using undroidwish
+#        wm title . "Decent"
+#
+#        # force the screen into landscape if it isn't yet
+#        msg "orientation: [borg screenorientation]"
+#        if {[borg screenorientation] != "landscape" && [borg screenorientation] != "reverselandscape"} {
+#            borg screenorientation $::settings(orientation)
+#        }
+#
+#        sdltk screensaver off
+#        
+#
+#        if {$::settings(screen_size_width) != "" && $::settings(screen_size_height) != ""} {
+#            set screen_size_width $::settings(screen_size_width)
+#            set screen_size_height $::settings(screen_size_height)
+#
+#        } else {
+#
+#
+#            # A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" or (when your toplevel is in fullscreen mode) to "bind . <Configure>" and to watch out for "winfo screenheight" in the bound code.
+#            if {$android == 1} {
+#                pause 500
+#            }
+#
+#            set width [winfo screenwidth .]
+#            set height [winfo screenheight .]
+#
+#            if {$width > 2300} {
+#                set screen_size_width 2560
+#                if {$height > 1450} {
+#                    set screen_size_height 1600
+#                } else {
+#                    set screen_size_height 1440
+#                }
+#            } elseif {$height > 2300} {
+#                set screen_size_width 2560
+#                if {$width > 1440} {
+#                    set screen_size_height 1600
+#                } else {
+#                    set screen_size_height 1440
+#                }
+#            } elseif {$width == 2048 && $height == 1440} {
+#                set screen_size_width 2048
+#                set screen_size_height 1440
+#                #set fontm 2
+#            } elseif {$width == 2048 && $height == 1536} {
+#                set screen_size_width 2048
+#                set screen_size_height 1536
+#                #set fontm 2
+#            } elseif {$width == 1920} {
+#                set screen_size_width 1920
+#                set screen_size_height 1080
+#                if {$width > 1080} {
+#                    set screen_size_height 1200
+#                }
+#
+#            } elseif {$width == 1280} {
+#                set screen_size_width 1280
+#                set screen_size_height 800
+#                if {$width >= 720} {
+#                    set screen_size_height 800
+#                } else {
+#                    set screen_size_height 720
+#                }
+#            } else {
+#                # unknown resolution type, go with smallest
+#                set screen_size_width 1280
+#                set screen_size_height 800
+#            }
+#
+#            # only calculate the tablet's dimensions once, then save it in settings for a faster app startup
+#            set ::settings(screen_size_width) $screen_size_width 
+#            set ::settings(screen_size_height) $screen_size_height
+#            save_settings
+#        }
+#
+#        # Android seems to automatically resize fonts appropriately to the current resolution
+#        set fontm $::settings(default_font_calibration)
+#        set ::fontw 1
+#
+#        if {$::undroid == 1} {
+#            # undroid does not resize fonts appropriately for the current resolution, it assumes a 1024 resolution
+#            set fontm [expr {($screen_size_width / 1024.0)}]
+#            set ::fontw 2
+#        }
+#
+#        if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
+#            set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
+#            set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
+#        }
+#
+#        global helvetica_bold_font
+#        global helvetica_font
+#        set global_font_size 18
+#        #puts "setting up fonts for language [language]"
+#        if {[language] == "th"} {
+#            set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
+#            set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
+#            set fontm [expr {($fontm * 1.2)}]
+#            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+#            set global_font_size 16
+#        } elseif {[language] == "ar" || [language] == "arb"} {
+#            set helvetica_font [sdltk addfont "fonts/Dubai-Regular.otf"]
+#            set helvetica_bold_font [sdltk addfont "fonts/Dubai-Bold.otf"]
+#            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+#        } elseif {[language] == "he" || [language] == "heb"} {
+#            set ::globals(listbox_length_multiplier) 1.35
+#            set ::globals(entry_length_multiplier) 0.86
+#            set helvetica_font [sdltk addfont "fonts/hebrew-regular.ttf"]
+#            set helvetica_bold_font [sdltk addfont "fonts/hebrew-bold.ttf"]
+#            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+#        } elseif {[language] == "zh-hant" || [language] == "zh-hans" || [language] == "kr"} {
+#            set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+#            set helvetica_bold_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Bold.otf"] 0]
+#            set global_font_name $helvetica_font
+#
+#            set fontm [expr {($fontm * .94)}]
+#        } else {
+#            # we use the immense google font so that we can handle virtually all of the world's languages with consistency
+#            set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
+#            set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
+#            set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+#
+#        }            
+#
+#        set fontawesome_brands [lindex [sdltk addfont "fonts/Font Awesome 5 Brands-Regular-400.otf"] 0]
+#        font create Fontawesome_brands_11 -family $fontawesome_brands -size [expr {int($fontm * 20)}]
+#
+#        font create global_font -family $global_font_name -size [expr {int($fontm * $global_font_size)}] 
+#
+#        font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
+#        font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
+#        font create Helv_11_bold -family $helvetica_bold_font -size [expr {int($fontm * 20)}] 
+#        font create Helv_11 -family $helvetica_font -size [expr {int($fontm * 20)}] 
+#        font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 19)}] 
+#        font create Helv_10 -family $helvetica_font -size [expr {int($fontm * 19)}] 
+#        font create Helv_1 -family $helvetica_font -size 1
+#        font create Helv_4 -family $helvetica_font -size [expr {int($fontm * 8)}]
+#        font create Helv_5 -family $helvetica_font -size [expr {int($fontm * 10)}]
+#        font create Helv_6 -family $helvetica_font -size [expr {int($fontm * 12)}]
+#        font create Helv_6_bold -family $helvetica_bold_font -size [expr {int($fontm * 12)}]
+#        font create Helv_7 -family $helvetica_font -size [expr {int($fontm * 14)}]
+#        font create Helv_7_bold -family $helvetica_bold_font -size [expr {int($fontm * 14)}]
+#        font create Helv_8 -family $helvetica_font -size [expr {int($fontm * 16)}]
+#        font create Helv_8_bold -family $helvetica_bold_font -size [expr {int($fontm * 16)}]
+#        
+#        font create Helv_9 -family $helvetica_font -size [expr {int($fontm * 18)}]
+#        font create Helv_9_bold -family $helvetica_bold_font -size [expr {int($fontm * 18)}] 
+#        font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
+#        font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
+#        font create Helv_16_bold -family $helvetica_bold_font -size [expr {int($fontm * 27)}] 
+#        font create Helv_17_bold -family $helvetica_bold_font -size [expr {int($fontm * 30)}] 
+#        font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 32)}] 
+#        font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 35)}] 
+#        font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 37)}]
+#        font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
+#        font create Helv_30 -family $helvetica_font -size [expr {int($fontm * 56)}]
+#
+#        # enable swipe gesture translating, to scroll through listboxes
+#        # sdltk touchtranslate 1
+#        # disable touch translating as it does not feel native on tablets and is thus confusing
+#        if {$::settings(disable_long_press) != 1 } {        
+#            sdltk touchtranslate 1
+#        } else {
+#            sdltk touchtranslate 0
+#        }
+#
+#        wm maxsize . $screen_size_width $screen_size_height
+#        wm minsize . $screen_size_width $screen_size_height
+#        wm attributes . -fullscreen 1
+#
+#        # flight mode, not yet debugged
+#        #if {$::settings(flight_mode_enable) == 1 } {
+#        #    if {[package require de1plus] > 1} {
+#        #        borg sensor enable 0
+#        #        sdltk accelerometer 1
+#        #        after 200 accelerometer_check 
+#        #    }
+#        #}
+#
+#        # preload the speaking engine 
+#        # john 2/12/18 re-enable this when TTS feature is enabled
+#        # borg speak { }
+#
+#        source "bluetooth.tcl"
+#
+#    } else {
+#
+#        # global font is wider on non-android
+#        set ::globals(listbox_global_width_multiplier) .8
+#        set ::globals(listbox_length_multiplier) 1
+#
+#
+#        expr {srand([clock milliseconds])}
+#
+#        if {$::settings(screen_size_width) != "" && $::settings(screen_size_height) != ""} {
+#            set screen_size_width $::settings(screen_size_width)
+#            set screen_size_height $::settings(screen_size_height)
+#        } else {
+#            # if this is the first time running on Tk, then use a default 1280x800 resolution, and allow changing resolution by editing settings file
+#            set screen_size_width 1280
+#            set screen_size_height 800
+#
+#            set ::settings(screen_size_width) $screen_size_width 
+#            set ::settings(screen_size_height) $screen_size_height
+#            save_settings
+#
+#        }
+#
+#        set fontm [expr {$screen_size_width / 1280.0}]
+#        set ::fontw 2
+#
+#        package require Tk
+#        catch {
+#            # tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
+#            package require tkblt
+#            namespace import blt::*
+#        }
+#
+#        wm maxsize . $screen_size_width $screen_size_height
+#        wm minsize . $screen_size_width $screen_size_height
+#
+#        if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
+#            set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
+#            set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
+#        }
+#
+#        set regularfont "notosansuiregular"
+#        set boldfont "notosansuibold"
+#
+#        if {[language] == "th"} {
+#            set regularfont "sarabun"
+#            set boldfont "sarabunbold"
+#            #set fontm [expr {($fontm * 1.20)}]
+#        } elseif {[language] == "zh-hant" || [language] == "zh-hans"} {
+#            set regularfont "notosansuiregular"
+#            set boldfont "notosansuibold"
+#        }
+#
+#        set ::helvetica_font $regularfont
+#        font create Helv_1 -family $regularfont -size 1
+#        font create Helv_4 -family $regularfont -size 10
+#        font create Helv_5 -family $regularfont -size 12
+#        font create Helv_6 -family $regularfont -size [expr {int($fontm * 14)}]
+#        font create Helv_6_bold -family $boldfont -size [expr {int($fontm * 14)}]
+#        font create Helv_7 -family $regularfont -size [expr {int($fontm * 16)}]
+#        font create Helv_7_bold -family $boldfont -size [expr {int($fontm * 16)}]
+#        font create Helv_8 -family $regularfont -size [expr {int($fontm * 19)}]
+#        font create Helv_8_bold_underline -family $boldfont -size [expr {int($fontm * 19)}] -underline 1
+#        font create Helv_8_bold -family $boldfont -size [expr {int($fontm * 19)}]
+#        font create Helv_9 -family $regularfont -size [expr {int($fontm * 23)}]
+#        font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 21)}]
+#        font create Helv_10 -family $regularfont -size [expr {int($fontm * 23)}]
+#        font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 23)}]
+#        font create Helv_11 -family $regularfont -size [expr {int($fontm * 25)}]
+#        font create Helv_11_bold -family $boldfont -size [expr {int($fontm * 25)}]
+#        font create Helv_12 -family $regularfont -size [expr {int($fontm * 27)}]
+#        font create Helv_12_bold -family $boldfont -size [expr {int($fontm * 30)}]
+#        font create Helv_15 -family $regularfont -size [expr {int($fontm * 30)}]
+#        font create Helv_15_bold -family $boldfont -size [expr {int($fontm * 30)}]
+#        font create Helv_16_bold -family $boldfont -size [expr {int($fontm * 33)}]
+#        font create Helv_17_bold -family $boldfont -size [expr {int($fontm * 37)}]
+#        font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]
+#        font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 45)}]
+#        font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 48)}]
+#        font create Helv_30_bold -family $boldfont -size [expr {int($fontm * 69)}]
+#        font create Helv_30 -family $regularfont -size [expr {int($fontm * 72)}]
+#
+#        
+#        font create Fontawesome_brands_11 -family "Font Awesome 5 Brands Regular" -size [expr {int($fontm * 25)}]
+#
+#
+#        font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 
+#        android_specific_stubs
+#        source "bluetooth.tcl"
+#    }
+#
+#    # define the canvas
+#    . configure -bg black 
+#    canvas .can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
+#
+#    after 60000 schedule_minute_task
+#    #after 1000 schedule_minute_task
+#
+#    ############################################
+#    # future feature: flight mode
+#    #if {$::settings(flight_mode_enable) == 1} {
+#        #if {$android == 1} {
+#        #   .can bind . "<<SensorUpdate>>" [accelerometer_data_read]
+#        #}
+#        #after 250 accelerometer_check
+#    #}
+#
+#    ############################################
 }
+
+
+proc off_page_onload { page_to_hide page_to_show } {
+msg "OFF_PAGE_ONLOAD"	
+	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
+		msg [namespace current] "discarding intermediate sleep/off state msg"
+		return 0 
+	}	
+}
+
+proc saver_page_onload { page_to_hide page_to_show } {
+msg "SAVER_PAGE_ONLOAD"
+	if {[ifexists ::exit_app_on_sleep] == 1} {
+		get_set_tablet_brightness 0
+		close_all_ble_and_exit
+	} else {
+		if {$::settings(screen_saver_change_interval) == 0} {
+			# black screen saver
+			display_brightness 0
+		} else {
+			display_brightness $::settings(saver_brightness)
+		}
+		borg systemui $::android_full_screen_flags 
+	}
+}
+
+
+proc page_onload { page_to_hide page_to_show } {
+msg "PAGE_ONLOAD"	
+	if {$page_to_show ne "saver" } {
+		display_brightness $::settings(app_brightness)
+	}
+	
+	if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {		
+		msg "Doing next stress test step: '$::idle_next_step '"
+		set todo $::idle_next_step 
+		unset -nocomplain ::idle_next_step 
+		eval $todo
+	}
+}
+
 
 proc check_if_battery_low_and_give_message {} {
     if {[battery_percent] < 10 && $::android == 1} {
@@ -1053,29 +1136,39 @@ proc accelerometer_check {} {
 
 
 proc say {txt sndnum} {
+	# Handle the old hardcoded numbers associated  to sound files
+	if {$sndnum == 8} {
+		set sound_name button_in
+	} elseif {$sndnum == 11} {
+		set sound_name button_out
+	} else {
+		set sound_name $sndnum
+	}
 
-    if {$::android != 1} {
-        #return
-    }
-
-    if {$::settings(enable_spoken_prompts) == 1 && $txt != ""} {
-        borg speak $txt {} $::settings(speaking_pitch) $::settings(speaking_rate)
-    } else {
-        catch {
-            # sounds from https://android.googlesource.com/platform/frameworks/base/+/android-5.0.0_r2/data/sounds/effects/ogg?autodive=0%2F%2F%2F%2F%2F%2F
-            set path ""
-            if {$sndnum == 8} {
-                #set path "/system/media/audio/ui/KeypressDelete.ogg"
-                #set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
-                set path "sounds/KeypressStandard_120.ogg"
-            } elseif {$sndnum == 11} {
-                #set path "/system/media/audio/ui/KeypressStandard.ogg"
-                set path "sounds/KeypressDelete_120.ogg"
-            }
-            borg beep $path
-            #borg beep $sounds($sndnum)
-        }
-    }
+	dui say $txt $sound_name
+	
+#    if {$::android != 1} {
+#        #return
+#    }
+#
+#    if {$::settings(enable_spoken_prompts) == 1 && $txt != ""} {
+#        borg speak $txt {} $::settings(speaking_pitch) $::settings(speaking_rate)
+#    } else {
+#        catch {
+#            # sounds from https://android.googlesource.com/platform/frameworks/base/+/android-5.0.0_r2/data/sounds/effects/ogg?autodive=0%2F%2F%2F%2F%2F%2F
+#            set path ""
+#            if {$sndnum == 8} {
+#                #set path "/system/media/audio/ui/KeypressDelete.ogg"
+#                #set path "file://mnt/sdcard/de1beta/KeypressStandard_120.ogg"
+#                set path "sounds/KeypressStandard_120.ogg"
+#            } elseif {$sndnum == 11} {
+#                #set path "/system/media/audio/ui/KeypressStandard.ogg"
+#                set path "sounds/KeypressDelete_120.ogg"
+#            }
+#            borg beep $path
+#            #borg beep $sounds($sndnum)
+#        }
+#    }
 }
 
 
@@ -1243,21 +1336,26 @@ proc load_settings {} {
 }
 
 proc skin_xscale_factor {} {
-    global screen_size_width
-    return [expr {2560.0/$screen_size_width}]
+	return [dui platform xscale_factor]	
+#    global screen_size_width
+#    return [expr {2560.0/$screen_size_width}]
 }
 
 proc skin_yscale_factor {} {
-    global screen_size_height
-    return [expr {1600.0/$screen_size_height}]
+	return [dui platform yscale_factor]
+#    global screen_size_height
+#    return [expr {1600.0/$screen_size_height}]
 }
 
 proc rescale_x_skin {in} {
-    return [expr {int($in / [skin_xscale_factor])}]
+	return [dui platform rescale_x $in]
+    #puts "rescale_x_skin $in / [skin_xscale_factor]"
+    #return [expr {int($in / [skin_xscale_factor])}]
 }
 
 proc rescale_y_skin {in} {
-    return [expr {int($in / [skin_yscale_factor])}]
+	return [dui platform rescale_y $in]
+#    return [expr {int($in / [skin_yscale_factor])}]
 }
 
 proc rescale_font {in} {
@@ -1367,48 +1465,50 @@ proc round_date_to_nearest_day {now} {
 
 # from Barney  https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
 proc load_font {name fn pcsize {androidsize {}} } {
-    # calculate font size
-    set familyname ""
-
-    if {($::android == 1 || $::undroid == 1) && $androidsize != ""} {
-        set pcsize $androidsize
-    }
-    set platform_font_size [expr {int(1.0 * $::fontm * $pcsize)}]
-
-    if {[language] == "zh-hant" || [language] == "zh-hans"} {
-        set fn ""
-        set familyname $::helvetica_font
-    } elseif {[language] == "th"} {
-        set fn "[homedir]/fonts/sarabun.ttf"
-    }
-
-    if {[info exists ::loaded_fonts] != 1} {
-        set ::loaded_fonts list
-    }
-    set fontindex [lsearch $::loaded_fonts $fn]
-    if {$fontindex != -1} {
-        set familyname [lindex $::loaded_fonts [expr $fontindex + 1]]
-    } elseif {($::android == 1 || $::undroid == 1) && $fn != ""} {
-        catch {
-            set familyname [lindex [sdltk addfont $fn] 0]
-        }
-
-        if {$familyname == ""} {
-            msg -ERROR "Unable to get familyname from 'sdltk addfont $fn'"
-        } else {
-            lappend ::loaded_fonts $fn $familyname
-        }
-    }
-
-    if {[info exists familyname] != 1 || $familyname == ""} {
-        msg -WARNING "Font familyname not available; using name '$name'."
-        set familyname $name
-    }
-
-    catch {
-        font create $name -family $familyname -size $platform_font_size
-    }
-    msg -DEBUG "added font name: \"$name\" family: \"$familyname\" size: $platform_font_size filename: \"$fn\""
+	return [dui font load $name $fn $pcsize $androidsize]
+	
+#    # calculate font size
+#    set familyname ""
+#
+#    if {($::android == 1 || $::undroid == 1) && $androidsize != ""} {
+#        set pcsize $androidsize
+#    }
+#    set platform_font_size [expr {int(1.0 * $::fontm * $pcsize)}]
+#
+#    if {[language] == "zh-hant" || [language] == "zh-hans"} {
+#        set fn ""
+#        set familyname $::helvetica_font
+#    } elseif {[language] == "th"} {
+#        set fn "[homedir]/fonts/sarabun.ttf"
+#    }
+#
+#    if {[info exists ::loaded_fonts] != 1} {
+#        set ::loaded_fonts list
+#    }
+#    set fontindex [lsearch $::loaded_fonts $fn]
+#    if {$fontindex != -1} {
+#        set familyname [lindex $::loaded_fonts [expr $fontindex + 1]]
+#    } elseif {($::android == 1 || $::undroid == 1) && $fn != ""} {
+#        catch {
+#            set familyname [lindex [sdltk addfont $fn] 0]
+#        }
+#
+#        if {$familyname == ""} {
+#            msg "Unable to get familyname from 'sdltk addfont $fn'"
+#        } else {
+#            lappend ::loaded_fonts $fn $familyname
+#        }
+#    }
+#
+#    if {[info exists familyname] != 1 || $familyname == ""} {
+#        msg "Font familyname not available; using name '$name'."
+#        set familyname $name
+#    }
+#
+#    catch {
+#        font create $name -family $familyname -size $platform_font_size
+#    }
+#    msg "added font name: \"$name\" family: \"$familyname\" size: $platform_font_size filename: \"$fn\""
 }
 
 # Barney writes: https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
@@ -1416,28 +1516,30 @@ proc load_font {name fn pcsize {androidsize {}} } {
 # Here's the syntax for using the get_font function in a call to add_de1_text:
 # add_de1_text "off" 100 100 -text "Hi!" -font [get_font "Comic Sans" 12] 
 proc get_font { font_name size } {
-    if {[info exists ::skin_fonts] != 1} {
-        set ::skin_fonts list
-    }
-
-    set font_key "$font_name $size"
-    set font_index [lsearch $::skin_fonts $font_key]
-    if {$font_index == -1} {
-        # load the font if needed. 
-
-        # support for both OTF and TTF files
-        if {[file exists "[skin_directory]/fonts/$font_name.otf"] == 1} {
-            load_font $font_key "[skin_directory]/fonts/$font_name.otf" $size
-            lappend ::skin_fonts $font_key
-        } elseif {[file exists "[skin_directory]/fonts/$font_name.ttf"] == 1} {
-            load_font $font_key "[skin_directory]/fonts/$font_name.ttf" $size
-            lappend ::skin_fonts $font_key
-        } else {
-            msg -ERROR "Unable to load font '$font_key'"
-        }
-    }
-
-    return $font_key
+	return [dui font get $font_name $size]
+    
+#	if {[info exists ::skin_fonts] != 1} {
+#        set ::skin_fonts list
+#    }
+#
+#    set font_key "$font_name $size"
+#    set font_index [lsearch $::skin_fonts $font_key]
+#    if {$font_index == -1} {
+#        # load the font if needed. 
+#
+#        # support for both OTF and TTF files
+#        if {[file exists "[skin_directory]/fonts/$font_name.otf"] == 1} {
+#            load_font $font_key "[skin_directory]/fonts/$font_name.otf" $size
+#            lappend ::skin_fonts $font_key
+#        } elseif {[file exists "[skin_directory]/fonts/$font_name.ttf"] == 1} {
+#            load_font $font_key "[skin_directory]/fonts/$font_name.ttf" $size
+#            lappend ::skin_fonts $font_key
+#        } else {
+#            msg "Unable to load font '$font_key'"
+#        }
+#    }
+#
+#    return $font_key
 }
 
 proc load_font_obsolete {name fn pcsize {androidsize {}} } {
