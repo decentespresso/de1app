@@ -1498,6 +1498,26 @@ proc page_display_change {page_to_hide page_to_show} {
 
 	}
 
+
+	#msg "these_labels: $these_labels"
+
+#	if {[info exists ::all_labels] != 1} {
+#		set ::all_labels {}
+#		foreach {page labels} [array get ::existing_labels]  {
+#			set ::all_labels [concat $::all_labels $labels]
+#		}
+#		set ::all_labels [lsort -unique $::all_labels]
+#	}
+#
+#	#msg "Hiding [llength $::all_labels] labels"
+#	foreach label $::all_labels {
+#		if {[.can itemcget $label -state] != "hidden"} {
+#			.can itemconfigure $label -state hidden
+#			#msg "hiding: '$label'"
+#		}
+#	}
+	.can itemconfigure all -state hidden
+
 	set errcode [catch {
 		.can itemconfigure $page_to_show -state normal
 	}]
@@ -1508,27 +1528,9 @@ proc page_display_change {page_to_hide page_to_show} {
 		}
 
 	} 
-
-	set these_labels [ifexists ::existing_labels($page_to_show)]
-	#msg "these_labels: $these_labels"
-
-	if {[info exists ::all_labels] != 1} {
-		set ::all_labels {}
-		foreach {page labels} [array get ::existing_labels]  {
-			set ::all_labels [concat $::all_labels $labels]
-		}
-		set ::all_labels [lsort -unique $::all_labels]
-	}
-
-	#msg "Hiding [llength $::all_labels] labels"
-	foreach label $::all_labels {
-		if {[.can itemcget $label -state] != "hidden"} {
-			.can itemconfigure $label -state hidden
-			#msg "hiding: '$label'"
-		}
-	}
-
+	
 	#msg "Showing [llength $these_labels] labels"
+	set these_labels [ifexists ::existing_labels($page_to_show)]	
 	foreach label $these_labels {
 		.can itemconfigure $label -state normal
 		#msg "showing: '$label'"
