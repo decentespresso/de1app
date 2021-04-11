@@ -13,7 +13,6 @@ package require de1_profile 2.0
 # raw data from the DE1
 
 proc clear_espresso_chart {} {
-	#msg "clear_espresso_chart"
 	espresso_elapsed length 0
 	espresso_pressure length 0
 	espresso_weight length 0
@@ -87,11 +86,9 @@ proc espresso_chart_structures {} {
 }
 
 proc backup_espresso_chart {} {
-	#puts "backup_espresso_chart"
 	unset -nocomplain ::chartbk
 	foreach s [espresso_chart_structures] {
 		if {[$s length] > 0} {
-			#puts "backing up: $s with: [$s range 0 end]"
 			set ::chartbk($s) [$s range 0 end]
 		} else {
 			set ::chartbk($s) {}
@@ -104,7 +101,6 @@ proc restore_espresso_chart {} {
 	foreach s [espresso_chart_structures] {
 		$s length 0
 		if {[info exists ::chartbk($s)] == 1} {
-			#puts "restoring chart structure: '$s' to '$::chartbk($s)'"
 			$s append $::chartbk($s)
 		}
 	}
@@ -203,13 +199,11 @@ proc set_alarms_for_de1_wake_sleep {} {
 		# set sleep_seconds [expr {[next_alarm_time $::settings(scheduler_sleep)] - [clock seconds]}]
 		# set ::alarms_for_de1_sleep [after [expr {1000 * $sleep_seconds}] scheduler_sleep]
 
-		#msg "Wake schedule set for [next_alarm_time $::settings(scheduler_wake)] in $wake_seconds seconds"
-		#msg "Sleep schedule set for [next_alarm_time $::settings(scheduler_sleep)] in $sleep_seconds seconds"
 	}
 }
 
 proc scheduler_wake {} {
-	msg "Scheduled wake occured at [clock format [clock seconds]]"
+	msg -NOTICE "Scheduled wake occured at [clock format [clock seconds]]"
 	start_idle
 
 	# after alarm has occured go ahead and set the alarm for tommorrow
@@ -218,9 +212,9 @@ proc scheduler_wake {} {
 
 proc scheduler_sleep {} {
 
-	msg "OBSOLETE: scheduled sleep is now an enforced awake time and this function should not be called"
+	msg -ERROR "OBSOLETE: scheduled sleep is now an enforced awake time and this function should not be called"
 
-	msg "Scheduled sleep occured at [clock format [clock seconds]]"
+	msg -NOTICE "Scheduled sleep occured at [clock format [clock seconds]]"
 	start_sleep
 
 	# after alarm has occured go ahead and set the alarm for tommorrow
@@ -305,17 +299,17 @@ proc stop_timer_espresso_pour {} {
 }
 
 proc stop_timer_water_pour {} {
-	msg "stop_timer_water_pour"
+	msg -DEBUG "stop_timer_water_pour"
 	set ::timers(water_pour_stop) [clock milliseconds]
 }
 
 proc stop_timer_steam_pour {} {
-	msg "stop_timer_steam_pour"
+	msg -DEBUG "stop_timer_steam_pour"
 	set ::timers(steam_pour_stop) [clock milliseconds]
 }
 
 proc stop_timer_flush_pour {} {
-	msg "stop_timer_flush_pour"
+	msg -DEBUG "stop_timer_flush_pour"
 	set ::timers(flush_pour_stop) [clock milliseconds]
 }
 
@@ -323,7 +317,6 @@ proc stop_espresso_timers {} {
 	if {$::timer_running != 1} {
 		return
 	}
-	#msg "stop_timers"
 	set ::timer_running 0
 	set ::timers(espresso_stop) [clock milliseconds]
 }
@@ -497,7 +490,6 @@ proc flush_pour_timer {} {
 		set t [expr {($::timers(flush_pour_stop) - $::timers(flush_pour_start))/1000}]
 		set c 4
 	}
-	#msg "flush_pour_timer: $t ($c)"
 	return $t
 }
 proc done_timer {} {
@@ -639,7 +631,6 @@ proc watertemp {} {
 
 	}
 
-	#puts "::de1(head_temperature) $::de1(head_temperature)"
 	return $::de1(head_temperature)
 }
 
@@ -691,7 +682,6 @@ proc accelerometer_angle {} {
 	if {$::android == 0} {
 		set ::settings(accelerometer_angle) [expr {(rand() + $::settings(accelerometer_angle)) - 0.5}]
 	}
-	#msg "::settings(accelerometer_angle) : $::settings(accelerometer_angle)"
 	return [round_to_one_digits [expr {abs($::settings(accelerometer_angle))}]]
 
 }
@@ -721,9 +711,6 @@ proc group_head_heater_temperature {} {
 	if {$::android == 0} {
 		# slowly have the water level drift
 		set ::de1(water_level) [expr {$::de1(water_level) + (.1*(rand() - 0.5))}]
-		#puts -nonewline .
-		#flush stdout
-		#update
 	}
 
 	return $::de1(head_temperature)
@@ -1105,9 +1092,8 @@ proc drink_weight_text {} {
 	return [return_weight_measurement $::settings(drink_weight)]
 }
 
-proc dump_stack {a b c} {
-	msg ---
-	msg [stacktrace]
+proc dump_stack {args} {
+	msg -DEBUG [stacktrace]
 }
 
 #trace add variable de1(final_water_weight) write dump_stack
@@ -1332,7 +1318,6 @@ proc round_and_return_temperature_setting {varname} {
 	upvar $varname in
 	set out [round_temperature_number $in]
 	if {$in != $out} {
-	#puts "$in != $out"
 		set $varname $out
 	}	
 	return_temperature_setting $in
@@ -1351,7 +1336,6 @@ proc return_temperature_setting_or_off {in} {
 }
 
 proc return_temperature_setting {in} {
-	#msg "return_temperature_setting: $in"
 	if {$::settings(enable_fahrenheit) == 1} {
 		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 	} else {
@@ -1528,7 +1512,6 @@ proc skin_directories {} {
 	}
 
 	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/skins/" *]]
-	#puts "skin_directories: $dirs"
 	set dd {}
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
@@ -1571,7 +1554,6 @@ proc fill_history_listbox {} {
 }
 
 proc fill_skin_listbox {} {
-	#puts "fill_skin_listbox $widget" 
 	set widget $::globals(tablet_styles_listbox)
 	$widget delete 0 99999
 
@@ -1586,10 +1568,8 @@ proc fill_skin_listbox {} {
 			set ::current_skin_number $cnt
 		}
 
-		#puts "d: $d"
 		if {[ifexists ::de1plus_skins($d)] == 1} {
 			# mark skins that require the DE1PLUS model with a different color to highlight them
-			#puts "de1plus skin: $d"
 			$widget itemconfigure $cnt -background #F0F0FF
 		}
 		incr cnt
@@ -1600,7 +1580,6 @@ proc fill_skin_listbox {} {
 	$widget selection set $::current_skin_number
 
 	make_current_listbox_item_blue $widget
-	#puts "current_skin_number: $::current_skin_number"
 
 	preview_tablet_skin
 	$widget yview $::current_skin_number
@@ -1617,7 +1596,6 @@ proc make_current_listbox_item_blue { widget} {
 	set found_one 0
 	for {set x 0} {$x < [$widget index end]} {incr x} {
 		if {$x == [$widget curselection]} {
-			#puts "x: $x vs [$widget index end]"
 			#if {$x < [$widget index end]} {
 				$widget itemconfigure $x -foreground #000000 -selectforeground #000000  -background #c0c4e1
 				set found_one 1
@@ -1665,7 +1643,6 @@ proc profile_directories {} {
 		set filecontents [encoding convertfrom utf-8 [read_binary_file "[homedir]/profiles/$d"]]
 	    if {[string first "settings_profile_type settings_2b" $filecontents] != -1 || [string first "settings_profile_type settings_2c" $filecontents] != -1 || [string first "settings_profile_type settings_profile_flow" $filecontents] != -1 || [string first "settings_profile_type settings_profile_advanced" $filecontents] != -1} {
 
-		    #puts "de1+ profile: $d"
 		    # keep track of which skins are DE1PLUS so we can display them differently in the listbox
 		    set ::de1plus_profile([file rootname $d]) 1
 		}
@@ -1675,12 +1652,11 @@ proc profile_directories {} {
 			array set profile $filecontents
 		}
 		if {[info exists profile(profile_title)] != 1} {
-			msg "Corrupt profile file in profile_directories: '$d'"
+			msg -WARNING "Corrupt profile file in profile_directories: '$d'"
 			#continue
 		}
 
 		if {[ifexists profile(profile_hide)] == 1} {
-			#msg "Hide profile: '$d'"
 			if {$show_hidden != 1} {
 				continue
 			}
@@ -1701,22 +1677,18 @@ proc profile_directories {} {
 proc delete_selected_profile {} {
 	set w $::globals(profiles_listbox)
 	#$w selection set $::current_profile_number
-	#puts "cc: '[$w curselection]'"
 	#set profile [lindex [profile_directories] [lindex [$w curselection] 0]]
 	set profile $::profile_number_to_directory([$w curselection]) 
 
 	set fn "[homedir]/profiles/${profile}.tcl"
-	puts "todelete: '$fn'"
+	msg -NOTICE "About to delete profile: '$fn'"
 
-	set todel $::settings(profile)
-	puts "delete profile: $todel"
 	if {$profile == "default"} {
-		msg "cannot delete default profile"
+		msg -NOTICE "cannot delete default profile"
 		return
 	}
 	#return
 
-	#puts [subst {file delete "[homedir]/profiles/${todel}.tcl"}]
 	file delete $fn
 	set ::settings(profile) "default"
 	fill_profiles_listbox 
@@ -1863,7 +1835,6 @@ proc array_keys_sorted_by_val {arrname {sort_order -increasing}} {
 	foreach k [array names arr] {
 		set k2 "$arr($k) $k"
 		#set k2 "[format {"%0.12i"} $arr($k)] $k"
-		#puts "k2: $k2"
 		set t($k2) $k
 	}
 	
@@ -1903,14 +1874,13 @@ proc fill_specific_profiles_listbox { widget selected_profile_name hide_mode} {
 	foreach d $profiles {
 
 		set fn "[homedir]/profiles/${d}.tcl"
-		#puts "fn: $fn"
 		unset -nocomplain profile
 		catch {
 			array set profile [encoding convertfrom utf-8 [read_binary_file $fn]]
 		}
 
 		if {[info exists profile(profile_title)] != 1} {
-			msg "Corrupt profile file in choices: '$d'"
+			msg -WARNING "Corrupt profile file in choices: '$d'"
 			#continue
 			set profile(profile_title) "$d \u2639 \u2639 \u2639"
 		}
@@ -1925,7 +1895,6 @@ proc fill_specific_profiles_listbox { widget selected_profile_name hide_mode} {
 		set ptitle $profile(profile_title)
 
 		set pcnt [ifexists ::profile_shot_count($d)]
-		#puts "ptitle: '$ptitle '$pcnt'"
 
 		if {[language] != "en" && [ifexists profile(profile_language)] == "en" && [ifexists profile(author)] == "Decent"} {
 			set p [translate $ptitle]
@@ -1980,14 +1949,11 @@ proc fill_specific_profiles_listbox { widget selected_profile_name hide_mode} {
 		set ::profile_number_to_directory($cnt) $d
 	
 
-		#msg "'$selected_profile_name' == '[ifexists profile(profile_title)]'"
 		if {[string tolower $selected_profile_name] == [string tolower [ifexists profile(profile_title)]]} {
 			set selected_profile_number $cnt
-			#puts "current profile of '$d' is #$cnt"
 		} elseif {[language] != "en"} {
 			if {[string tolower $selected_profile_name] == [string tolower [translate [ifexists profile(profile_title)]]]} {
 				set selected_profile_number $cnt
-			#	msg "translated current profile of '$d' is #$cnt"
 			}
 		}
 
@@ -2031,7 +1997,6 @@ proc fill_languages_listbox {} {
 	set current 0
 
 	foreach {code desc} [translation_langs_array] {
-        #puts "$code $desc"
 
 		if {$::settings(language) == $code} {
 			set current $cnt
@@ -2073,7 +2038,7 @@ proc highlight_extension {} {
 		canvas_show "$::extensions_settings $::extensions_settings_button"
 	} else {
 		canvas_hide "$::extensions_settings $::extensions_settings_button"
-		msg "Plugin" $plugin "Does not have a uientry"
+		msg -WARNING "Plugin" $plugin "Does not have a uientry"
 	}
 
 	set description ""
@@ -2165,7 +2130,6 @@ proc fill_advanced_profile_steps_listbox {} {
 		array set props $step
 
 		set name $props(name)
-		#puts "[expr {1 + $cnt}]. $name"
 		$widget insert $cnt "[expr {1 + $cnt}]. $name"
 		incr cnt
 	}
@@ -2186,7 +2150,7 @@ proc fill_advanced_profile_steps_listbox {} {
 # this is a work around that assumes that each cascading event will happen within 100ms of each others
 set time_of_last_listbox_event [clock milliseconds]
 proc check_for_multiple_listbox_events_bug {} {
-	msg "::de1(current_context) $::de1(current_context)"
+	msg -DEBUG "::de1(current_context) $::de1(current_context)"
 	return 0
 
 	set now [clock milliseconds]
@@ -2194,7 +2158,6 @@ proc check_for_multiple_listbox_events_bug {} {
 	set ::time_of_last_listbox_event $now
 
 	if {$diff < 100} {
-		#msg "duplicate listbox event detected"
 		return 1
 	}
 
@@ -2215,14 +2178,12 @@ proc load_language {} {
 
 	make_current_listbox_item_blue $::languages_widget
 
-	#puts "lang '$::settings(language)' '$stepnum'"
 }
 
 proc load_advanced_profile_step {{force 0}} {
-	#msg "load_advanced_profile_step [clock milliseconds]"
 
 	if {$::de1(current_context) != "settings_2c" && $force == 0} {
-		puts "returning load_advanced_profile_step"
+		msg -DEBUG "returning load_advanced_profile_step"
 		return 
 	}
 
@@ -2256,15 +2217,14 @@ proc current_adv_step {} {
 
 	set stepnum [$::advanced_shot_steps_widget curselection]
 	if {$stepnum == ""} {
-		puts "blank seleted"
+		msg -DEBUG "current_adv_step: blank seleted"
 		set stepnum 0
 	}
-	puts "stepnum: $stepnum"
+	msg -DEBUG "current_adv_step: stepnum: $stepnum"
 	return $stepnum
 }
 
 proc change_current_adv_shot_step_name {} {
-	#puts "change_current_adv_shot_step_name"
 	set ::current_adv_step(name) "$::profile_step_name_to_add"
 	save_current_adv_shot_step
 	fill_advanced_profile_steps_listbox
@@ -2283,13 +2243,13 @@ proc delete_current_adv_step {} {
 
 	if {[$::advanced_shot_steps_widget index end] == 1} {
 		# we don't allow deleting the only step, because that leads to weird UI issues.
-		puts "not deleting step because there is only one advanced step at the moment"
+		msg -NOTICE "not deleting step because there is only one advanced step at the moment"
 		return
 	}
 
 	set ::settings(advanced_shot) [lreplace $::settings(advanced_shot)  [current_adv_step] [current_adv_step]]
 
-	puts "deleting"
+	msg -DEBUG "delete_current_adv_step: deleting"
 	set ::current_step_number 0
 	$::advanced_shot_steps_widget selection set $::current_step_number;
 	$::advanced_shot_steps_widget activate $::current_step_number;
@@ -2352,21 +2312,20 @@ proc preview_tablet_skin {} {
 	}
 
 
-	msg "preview_tablet_skin"
+	msg -DEBUG "preview_tablet_skin (entry)"
 	set w $::globals(tablet_styles_listbox)
 	if {[$w curselection] == ""} {
-		msg "no current skin selection"
+		msg -DEBUG "preview_tablet_skin: no current skin selection"
 		#set w 
 		#set skindir [$w get $::current_skin_number]
 		#return
-		puts "::current_skin_number: $::current_skin_number"
+		msg -DEBUG "preview_tablet_skin ::current_skin_number: $::current_skin_number"
 		$w selection set $::current_skin_number
 	}
 
 
 	set skindir [lindex [skin_directories] [$w curselection]]
 	set ::settings(skin) $skindir
-	#puts "skindir: '$skindir'"
 
 	set fn "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/icon.jpg"
 	if {[file exists $fn] != 1} {
@@ -2374,7 +2333,7 @@ proc preview_tablet_skin {} {
     		file mkdir "[homedir]/skins/$skindir/${::screen_size_width}x${::screen_size_height}/"
     	}
 
-		puts "creating $fn"
+		msg -DEBUG "preview_tablet_skin: creating $fn"
         set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
         set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
@@ -2396,7 +2355,7 @@ proc preview_tablet_skin {} {
 proc preview_history {w args} {
 	catch {
 		set profile [lindex [history_directories] [$w curselection] [$w curselection]]
-		puts "history item: $profile [$w curselection]"
+		msg -DEBUG "preview_history: history item: $profile [$w curselection]"
 
 		set fn "[homedir]/history/${profile}.tcl"
 
@@ -2429,7 +2388,7 @@ proc message_page {msg buttonmsg} {
 		set_next_page off message; 
 		page_show message
 	} err] != 0} {
-		msg "message_page failed because: '$err'"
+		msg -ERROR "message_page failed because: '$err'"
 	}
 
 }
@@ -2447,7 +2406,7 @@ proc info_page {msg buttonmsg} {
 		set_next_page off infopage; 
 		page_show off
 	} err] != 0} {
-		msg "info_page failed because: '$err'"
+		msg -ERROR "info_page failed because: '$err'"
 	}
 }
 
@@ -2458,7 +2417,7 @@ proc version_page {msg buttonmsg} {
 		set_next_page off versionpage; 
 		page_show off
 	} err] != 0} {
-		msg "info_page failed because: '$err'"
+		msg -ERROR "info_page failed because: '$err'"
 	}
 }
 
@@ -2471,7 +2430,7 @@ proc change_bluetooth_device {} {
 	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
 	if {[$w curselection] == ""} {
 		# no current selection
-		puts "no BLE selection"
+		msg -DEBUG "change_bluetooth_device: no BLE selection"
 		return ""
 	}
 
@@ -2486,11 +2445,11 @@ proc change_bluetooth_device {} {
 		################################################################################################################
 		# prevent rapid changing of DE1 bluetooth setting, because that can cause multiple connections to be made to the same DE1
 		if {[ifexists ::globals(changing_bluetooth_device)] == 1} {
-			puts "already changing_bluetooth_device"
+			msg -DEBUG "change_bluetooth_device: already changing_bluetooth_device"
 			return
 		}
 
-		msg "reconnecting to DE1"
+		msg -NOTICE "change_bluetooth_device: reconnecting to DE1"
 
 	}
 
@@ -2520,7 +2479,7 @@ proc change_scale_bluetooth_device {} {
 	if {[$w curselection] == ""} {
 		# no current selection
 		#return ""
-		msg "re-connecting to scale"
+		msg -NOTICE "change_scale_bluetooth_device: re-connecting to scale"
 		ble_connect_to_scale
 		return
 	}
@@ -2537,13 +2496,12 @@ proc change_scale_bluetooth_device {} {
 	set ::settings(scale_bluetooth_name) $name
 
 	set ::settings(scale_type) [ifexists ::scale_types($addr)]
-	msg "set scale type to: '$::settings(scale_type)' $addr"
+	msg -INFO "change_scale_bluetooth_device: set scale type to: '$::settings(scale_type)' $addr"
 
 	if {$addr == $::settings(scale_bluetooth_address)} {
 		ble_connect_to_scale
 		return
 	}
-	#msg "scale types: [array get ::scale_types]"
 
 	save_settings
 	ble_connect_to_scale
@@ -2567,9 +2525,7 @@ proc select_profile { profile } {
 	load_settings_vars $fn
 
 	set ::settings(profile_filename) $profile
-	#msg "profile: $profile - $::settings(profile_notes)"
 
-	#puts "Author: '[ifexists ::settings(author)]'"
 	if {[language] != "en" && $::settings(profile_language) == "en" && [ifexists ::settings(author)] == "Decent"} {
 		# the first time this profile is loaded into another language, we should try to translate the
 		# title and notes to the local language
@@ -2588,7 +2544,6 @@ proc select_profile { profile } {
 		set ::settings(settings_profile_type) "settings_2c"
 	}
 
-	#puts "::settings(settings_profile_type)  $::settings(settings_profile_type)"
 	set ::settings(profile) $::settings(profile_title)
 
 	::profile::sync_from_legacy
@@ -2615,15 +2570,13 @@ proc preview_profile {} {
 
 	incr ::preview_profile_counter
 	set w $::globals(profiles_listbox)
-    #msg "$::preview_profile_counter : $w vs $win"
 
     #$w selection set active
 
 	#set ::settings(profile) [$::globals(profiles_listbox) get [$::globals(profiles_listbox) curselection]]
-	#puts "w: $w '[$w curselection]'"
 	if {[$w curselection] == ""} {
 		$w selection set $::current_profile_number
-		puts "setting profile to $::current_profile_number"
+		msg -DEBUG "preview_profile: setting profile to $::current_profile_number"
 		#set profile $::current_profile_number
 	}
 
@@ -2642,16 +2595,14 @@ proc preview_profile {} {
 		}
 
 		if {[info exists thisprofile(profile_title)] != 1} {
-			msg "Corrupt profile file to preview: '$d'"
+			msg -WARNING "Corrupt profile file to preview: '$d'"
 			return
 		}
 
 
 		if {[ifexists thisprofile(profile_hide)] == 1} {
-			#msg "unhiding profile: '$profile'"
 			set thisprofile(profile_hide) 0
 		} else {
-			#msg "hiding profile: '$profile'"
 			set thisprofile(profile_hide) 1
 		}
 		save_array_to_file thisprofile $fn 
@@ -2659,7 +2610,6 @@ proc preview_profile {} {
 
 		# need to save and restore the scrollbar value, because we're refilling the listbox to show hide/show state change
 		set oldscrollbarbalue [$::profiles_scrollbar get]
-		#puts "oldscrollbarbalue: $oldscrollbarbalue"
 		fill_profiles_listbox
 		unset -nocomplain ::filling_profiles 
 
@@ -2686,7 +2636,7 @@ proc send_de1_settings_soon  {} {
 		if {[info exists ::save_settings_to_de1_id] == 1} {
 			after cancel $::save_settings_to_de1_id; 
 			unset -nocomplain ::save_settings_to_de1_id
-			msg "cancelled extra de1_send"
+			msg -NOTICE "send_de1_settings_soon: cancelled extra de1_send"
 		}
 
 		set ::save_settings_to_de1_id [after 500 save_settings_to_de1]
@@ -2696,7 +2646,6 @@ proc send_de1_settings_soon  {} {
 
 
 proc profile_has_changed_set_colors {} {
-	#msg "profile_has_changed_set_colors : $::settings(profile_has_changed) [stacktrace]"
 
 	if {$::settings(profile_has_changed) == 1} {
 		update_de1_explanation_chart
@@ -2759,13 +2708,11 @@ proc profile_has_changed_set args {
 	# if one the scroll bars has been touched by a human (not by the page display code) then mark the profile as having been changed
 	if {[lsearch -exact [stackprocs] "page_show"] == -1 && [lsearch -exact [stackprocs] "update_onscreen_variables"] == -1} {
 		set ::settings(profile_has_changed) 1
-		#puts "profile_has_changed_set:\n[stacktrace]"
 	} else {
-		#puts "profile_has_changed_set:\n[stacktrace]"
+		# pass 
 	}
 
 	#profile_has_changed_set_colors
-	#puts "profile_has_changed_set:\n[stacktrace]"
 }
 
 
@@ -2775,7 +2722,7 @@ proc profile_has_not_changed_set args {
 
 proc load_settings_vars {fn} {
 
-	msg "load_settings_vars $fn"
+	msg -NOTICE "load_settings_vars $fn"
 
 	# default to no temp steps, so as to migrate older profiles that did not have this setting, and not accidentally enble this feature on them
 	unset -nocomplain ::settings(espresso_temperature_steps_enabled) 
@@ -2790,20 +2737,24 @@ proc load_settings_vars {fn} {
 
 	catch {
 		foreach {k v} [encoding convertfrom utf-8 [read_binary_file $fn]] {
-			#puts "$k $v"
 			#set ::settings($k) $v
 			set temp_settings($k) $v
 		}
 	}
 
 	if {[ifexists temp_settings(settings_profile_type)] == "settings_2c" && [ifexists temp_settings(final_desired_shot_weight)] != "" && [ifexists temp_settings(final_desired_shot_weight_advanced)] == "" } {
-		msg "Using a default for final_desired_shot_weight_advanced from final_desired_shot_weight of [ifexists temp_settings(final_desired_shot_weight)]"
+		msg -NOTICE "load_settings_vars: Using a default" \
+			"for final_desired_shot_weight_advanced" \
+			"from final_desired_shot_weight of" \
+			[ifexists temp_settings(final_desired_shot_weight)]
 		set temp_settings(final_desired_shot_weight_advanced) [ifexists temp_settings(final_desired_shot_weight)]
 	}
 
 	# pre-set the shot volume, to the shot weight, if importing an old shot definition that doesn't have a an end volume 
 	if {[ifexists temp_settings(final_desired_shot_volume)] == ""} {
-		msg "pre-set the shot volume, to the shot weight, if importing an old shot definition that doesn't have a an end volume "
+		msg -NOTICE "load_settings_vars: pre-set the shot volume,"\
+			"to the shot weight, if importing an old shot definition" \
+			"that doesn't have a an end volume"
 		set temp_settings(final_desired_shot_volume) [ifexists temp_settings(final_desired_shot_weight)]
 	}
 
@@ -2932,7 +2883,9 @@ proc format_espresso_for_history {} {
 		#set clock [clock seconds]
 		if {[info exists ::settings(espresso_clock)] != 1} {
 			# in theory, this should never occur.
-			msg "This espresso's start time was not recorded. Possibly we didn't get the bluetooth message of state change to espresso."
+			msg -ERROR "This espresso's start time was not recorded." \
+				"Possibly we didn't get the bluetooth message" \
+				"of state change to espresso."
 			set ::settings(espresso_clock) [clock seconds]
 		}
 
@@ -3006,7 +2959,9 @@ proc format_espresso_to_json {} {
 
 		if {[info exists ::settings(espresso_clock)] != 1} {
 			# in theory, this should never occur.
-			msg "This espresso's start time was not recorded. Possibly we didn't get the bluetooth message of state change to espresso."
+			msg -ERROR "This espresso's start time was not recorded." \
+				"Possibly we didn't get the bluetooth message" \
+				"of state change to espresso."
 			set ::settings(espresso_clock) [clock seconds]
 		}
 		
@@ -3078,7 +3033,7 @@ proc format_espresso_to_json {} {
 
 
 proc save_this_espresso_to_history {unused_old_state unused_new_state} {
-	puts "save_this_espresso_to_history "
+	msg -DEBUG "save_this_espresso_to_history (entry)"
 	# only save shots that have at least 5 data points
 	if {!$::settings(history_saved) && [espresso_elapsed length] > 5 && [espresso_pressure length] > 5 && $::settings(should_save_history) == 1} {
 
@@ -3089,11 +3044,15 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 		set espresso_data [format_espresso_to_json]
 		set fn "[homedir]/history_v2/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].json"
 		#write_file $fn $espresso_data
-		msg "Save this espresso to history"
+		msg -NOTICE "Saved this espresso to history"
 
 		set ::settings(history_saved) 1
 	} else {
-		msg "Not saved to history $::settings(history_saved) - [espresso_elapsed length] - [espresso_pressure length] - $::settings(should_save_history) "
+		msg -NOTICE "Not saved to history:" \
+			"history_saved: $::settings(history_saved)" \
+			"Time samples: [espresso_elapsed length]" \
+			"Pres samples: [espresso_pressure length]" \
+			"should_save_history: $::settings(should_save_history)"
 	}
 }
 
@@ -3264,7 +3223,6 @@ proc scentone_category {english_category} {
 }
 
 proc scentone_selected { {category {}} } {
-	#puts "scent one: '$::settings(scentone)'"
 
 	set returnlist {}
 	foreach selected $::settings(scentone) {
@@ -3297,7 +3255,6 @@ proc scentone_selected { {category {}} } {
 
 
 proc scentone_translated_selection { } {
-	#puts "scent one: '$::settings(scentone)'"
 
 	set returnlist {}
 	foreach selected $::settings(scentone) {
@@ -3322,17 +3279,14 @@ proc round_to_half_integer {in} {
 
 
 proc check_firmware_update_is_available {} {
-	#msg "check_firmware_update_is_available"
 
 	#if {$::settings(ghc_is_installed) != 0} {
 		# ok to do v1.3 fw update
-		#msg "v1.3 can do fw updates at the moment"
 		#if {$::settings(force_fw_update) != 1} {
 			#set ::de1(firmware_update_button_label) "Up to date"
 			#return ""
 		#}
 	#} else {
-		#msg "No firmware updates at the moment for machines earlier than v1.3 unless forced to do so"
 		#if {$::settings(force_fw_update) != 1} {
 		#	set ::de1(firmware_update_button_label) "Up to date"
 		#	return ""
@@ -3341,15 +3295,13 @@ proc check_firmware_update_is_available {} {
 
 	if {[ifexists ::de1(firmware_crc)] == ""} {
 		set ::de1(firmware_crc) [crc::crc32 -filename [fwfile]]
-		msg "Firmware [fwfile] CRC is $::de1(firmware_crc)"
 	}
 
 	# obsolete method, comparing settings-saved CRC of last fw upload, to what DE1 reports as CRC
 	if {($::de1(firmware_crc) != [ifexists ::settings(firmware_crc)]) && $::de1(currently_updating_firmware) == ""} {
-		#msg "firmware CRCs are not the same"
 		##obsolete - set ::de1(firmware_update_button_label) "Firmware update available"
 	} else {
-		#msg "firmware CRCs are the same $::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]"
+		# pass
 	}
 
 	set ::de1(firmware_update_button_label) "Up to date"
@@ -3372,7 +3324,6 @@ proc check_firmware_update_is_available {} {
 proc firmware_update_eta_label {} {
 
 	if {[info exists ::de1(firmware_update_start_time)] != 1} {
-		#msg "firmware_update_eta_label - no ::de1(firmware_update_start_time)"
 		return
 	}
 
@@ -3400,9 +3351,7 @@ proc firmware_update_eta_label {} {
 
 
 proc firmware_uploaded_label {} {
-	#puts "firmware_uploaded_label firmware_uploaded_label"
 
-	#msg "currently_updating_firmware:  $::de1(currently_updating_firmware)/ $::de1(currently_erasing_firmware)"
 
 	if {($::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0) && $::de1(currently_updating_firmware) != "1" && $::de1(currently_erasing_firmware) != "1"} {
 		if {$::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]} {
@@ -3417,7 +3366,6 @@ proc firmware_uploaded_label {} {
 	}
 
 	set percentage [expr {(100.0 * $::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
-	#puts "percentage $percentage"
 	if {$percentage >= 100 && $::de1(currently_updating_firmware) == 0} {
 		#return "[translate {Turn your machine off and on again}]"
 		return [translate "Done"]
@@ -3703,14 +3651,14 @@ foreach p [info procs] { set kpv(p,$p) 1 }
 
  	} 		
 
-	msg "Clearing default step temps"
+	msg -DEBUG "Clearing default step temps"
 	set ::settings(espresso_temperature_0) $::settings(espresso_temperature)
 	set ::settings(espresso_temperature_1) $::settings(espresso_temperature)
 	set ::settings(espresso_temperature_2) $::settings(espresso_temperature)
 	set ::settings(espresso_temperature_3) $::settings(espresso_temperature)
  	
 
- 	msg "toggle_espresso_steps_option $::settings(espresso_temperature_steps_enabled)"
+ 	msg -DEBUG "toggle_espresso_steps_option $::settings(espresso_temperature_steps_enabled)"
 
 }
 
@@ -3722,7 +3670,7 @@ proc round_and_return_step_temperature_setting {varname} {
 
 	set v [ifexists $varname]
 	if {$v == ""} {
-		msg "can't find variable $varname in round_and_return_step_temperature_setting"
+		msg -ERROR "can't find variable $varname in round_and_return_step_temperature_setting"
 		return ""
 	}
 
@@ -3730,15 +3678,14 @@ proc round_and_return_step_temperature_setting {varname} {
 }
 
 proc range_check_variable {varname low high} {
-	
-	#msg "range_check_variable $varname"
+
 	upvar $varname var
 	if {$var < $low} {
-		msg "variable $varname was under $low"
+		msg -DEBUG "range_check_variable: variable $varname was under $low"
 		set var $low
 	}
 	if {$var > $high} {
-		msg "variable $varname was over $high"
+		msg -DEBUG "range_check_variable: variable $varname was over $high"
 		set var $high
 	}
 }

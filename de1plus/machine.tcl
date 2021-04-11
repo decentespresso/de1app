@@ -455,7 +455,6 @@ if { $settings(bluetooth_address) != ""} {
 	append_to_de1_list $settings(bluetooth_address) "DE1" "ble"
 }
 
-#msg "init was run '$::settings(scale_type)'"
 
 	#error "atomaxscale"
 # initial filling of BLE scale list
@@ -553,13 +552,13 @@ proc de1_substate_text {} {
 
 
 proc next_espresso_step {} {
-	msg "Tell DE1 to move to the next step in espresso making"
+	msg -NOTICE "Tell DE1 to move to the next step in espresso making"
 
 }
 
 
 proc start_refill_kit {} {
-	msg "Tell DE1 to start REFILL"
+	msg -NOTICE "Tell DE1 to start REFILL"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 
@@ -580,7 +579,7 @@ proc start_refill_kit {} {
 
 proc start_decaling {} {
 
-	msg "Tell DE1 to start DESCALING"
+	msg -NOTICE "Tell DE1 to start DESCALING"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	de1_send_state "descale" $::de1_state(Descale)
@@ -595,7 +594,7 @@ proc start_decaling {} {
 
 proc start_air_purge {} {
 
-	msg "Tell DE1 to start TRAVEL DO"
+	msg -NOTICE "Tell DE1 to start TRAVEL DO"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	de1_send_state "air purge" $::de1_state(AirPurge)
@@ -611,7 +610,7 @@ proc start_air_purge {} {
 
 proc start_cleaning {} {
 
-	msg "Tell DE1 to start CLEANING"
+	msg -NOTICE "Tell DE1 to start CLEANING"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	de1_send_state "descale" $::de1_state(Clean)
@@ -625,7 +624,6 @@ proc start_cleaning {} {
 
 
 proc reset_gui_starting_hot_water_rinse {} {
-	#msg "Tell DE1 to start HOT WATER RINSE"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 }
@@ -638,11 +636,11 @@ proc start_hot_water_rinse {} {
 proc start_flush {} {
 
 	if {$::settings(go_idle_before_all_operations) == 1} {
-		msg "Tell DE1 to go idel before HOT WATER RINSE (flush)"
+		msg -NOTICE "Tell DE1 to go idel before HOT WATER RINSE (flush)"
 		de1_send_state "go idle" $::de1_state(Idle)
 	}
-	
-	msg "Tell DE1 to start flush"
+
+	msg -NOTICE "Tell DE1 to start flush"
 	de1_send_state "flush" $::de1_state(HotWaterRinse)
 
 
@@ -666,11 +664,11 @@ proc start_steam_rinse {} {
 	set ::de1(volume) 0
 
 	if {$::settings(go_idle_before_all_operations) == 1} {
-		msg "Tell DE1 to go idle before steam rinse"
+		msg -NOTICE "Tell DE1 to go idle before steam rinse"
 		de1_send_state "go idle" $::de1_state(Idle)
 	}
-	
-	msg "Tell DE1 to start STEAM RINSE"
+
+	msg -NOTICE "Tell DE1 to start STEAM RINSE"
 	de1_send_state "steam rinse" $::de1_state(SteamRinse)
 
 	#after 1000 read_de1_state
@@ -684,7 +682,7 @@ proc start_steam_rinse {} {
 
 proc reset_gui_starting_steam {} {
 
-	msg "reset_gui_starting_steam"
+	msg -INFO "reset_gui_starting_steam"
 
 	set ::de1(timer) 0
 	set ::de1(volume) 0
@@ -703,11 +701,11 @@ proc reset_gui_starting_steam {} {
 proc start_steam {} {
 
 	if {$::settings(go_idle_before_all_operations) == 1} {
-		msg "Tell DE1 to go idle before steam"
+		msg -NOTICE "Tell DE1 to go idle before steam"
 		de1_send_state "go idle" $::de1_state(Idle)
 	}
-	
-	msg "Tell DE1 to start making STEAM"
+
+	msg -NOTICE "Tell DE1 to start making STEAM"
 	de1_send_state "make steam" $::de1_state(Steam)
 
 	#after 1000 read_de1_state
@@ -787,17 +785,17 @@ proc ghc_message {type} {
 proc start_espresso {} {
 
 	if {$::settings(start_espresso_only_if_scale_connected) == 1 && $::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
-		msg "Refusing to START espresso without the scale being connected"
+		msg -WARNING "Refusing to START espresso without the scale being connected"
 		info_page [translate "Please connect your scale"] [translate "Ok"]
 		return
 	}
 
 	if {$::settings(go_idle_before_all_operations) == 1} {
-		msg "Tell DE1 to go idle before espresso"
+		msg -NOTICE "Tell DE1 to go idle before espresso"
 		de1_send_state "go idle" $::de1_state(Idle)
 	}
-	
-	msg "Tell DE1 to start making ESPRESSO"
+
+	msg -NOTICE "Tell DE1 to start making ESPRESSO"
 	de1_send_state "make espresso" $::de1_state(Espresso)
 
 	#after 1000 read_de1_state
@@ -834,11 +832,11 @@ proc reset_gui_starting_hotwater {} {
 proc start_water {} {
 
 	if {$::settings(go_idle_before_all_operations) == 1} {
-		msg "Tell DE1 to go idle before hot water"
+		msg -NOTICE "Tell DE1 to go idle before hot water"
 		de1_send_state "go idle" $::de1_state(Idle)
 	}
-	
-	msg "Tell DE1 to start making HOT WATER"
+
+	msg -NOTICE "Tell DE1 to start making HOT WATER"
 	de1_send_state "make hot water" $::de1_state(HotWater)
 
 	#after 1000 read_de1_state
@@ -864,7 +862,7 @@ proc start_water {} {
 }
 
 proc start_idle {} {
-	msg "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
+	msg -NOTICE "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
 	# Ensure we are not locking the screen during use.
 	# This is only relevant when waking up the machine
@@ -914,8 +912,6 @@ proc start_idle {} {
 	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != "" && [ifexists ::currently_connecting_de1_handle] == 0} {
 		#ble_connect_to_scale
 	}
-
-	#msg "sensors: [borg sensor list]"
 }
 
 
@@ -923,7 +919,6 @@ proc start_sleep {} {
 
 	# obsolete, now done in fw
 	#if {$::settings(refill_check_at_sleep) == 1} {
-	#	msg "check refill first before sleep"
 	#	set ::sleep_after_refill 1
 	#	start_refill_kit
 	#	return
@@ -937,13 +932,13 @@ proc start_sleep {} {
 
 
     if {[ifexists ::app_updating] == 1} {
-		msg "delaying screen saver because tablet app is updating"
+		msg -DEBUG "delaying screen saver because tablet app is updating"
 		delay_screen_saver
 		return
 	}
 
     if {$::de1(currently_updating_firmware) == 1 || [ifexists ::de1(in_fw_update_mode)] == 1} {
-		msg "delaying screen saver because firmware is updating"
+		msg -DEBUG "delaying screen saver because firmware is updating"
 		delay_screen_saver
 		return
 	}
@@ -953,7 +948,7 @@ proc start_sleep {} {
 
 	#de1_cause_refill_now_if_level_low
 
-	msg "Tell DE1 to start to go to SLEEP (only send when idle)"
+	msg -NOTICE "Tell DE1 to start to go to SLEEP (only send when idle)"
 	de1_send_state "go to sleep" $::de1_state(Sleep)
 
 	if {$::de1(scale_device_handle) != 0} {
@@ -974,11 +969,9 @@ proc start_sleep {} {
 
 proc check_if_steam_clogged {} {
 
-	#msg "check_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_cloggedcheck_if_steam_clogged"
-
 	if {[steam_pressure length] < 30} {
 		# if steaming was for less than 3 seconds, then don't run this test, as that was just a short purge
-		msg "Not checking steam for clogging because steam_pressure length : [steam_pressure length] < 30"
+		msg -DEBUG "Not checking steam for clogging because steam_pressure length : [steam_pressure length] < 30"
 		return 
 	}
 
@@ -1008,7 +1001,7 @@ proc check_if_steam_clogged {} {
 			set bad_pressure 1
 		}
 
-		msg "over_pressure: [llength $over_pressure] vs $::settings(steam_over_pressure_count_trigger) - over_pressure: $over_pressure - bad_pressure: $bad_pressure ($::settings(steam_over_pressure_threshold) bar)"
+		msg -WARNING "check_if_steam_clogged: over_pressure: [llength $over_pressure] vs $::settings(steam_over_pressure_count_trigger) - over_pressure: $over_pressure - bad_pressure: $bad_pressure ($::settings(steam_over_pressure_threshold) bar)"
 
 	}
 
@@ -1019,7 +1012,7 @@ proc check_if_steam_clogged {} {
 			set bad_temp 1
 		}
 
-		msg "over_temp: $over_temp -  $bad_temp (> $::settings(steam_over_temp_threshold)º)"
+		msg -WARNING "check_if_steam_clogged: over_temp: $over_temp -  $bad_temp (> $::settings(steam_over_temp_threshold)º)"
 
 	}
 

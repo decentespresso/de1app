@@ -72,7 +72,7 @@ namespace eval ::plugins {
 
     proc read {plugin} {
         if {[file exists "[homedir]/[plugin_directory]/$plugin/plugin.tcl"] != 1} {
-            msg [namespace current] "Plugin $plugin does not exist"
+            msg -ERROR [namespace current] "Plugin $plugin does not exist"
             return 0
         }
 
@@ -87,7 +87,7 @@ namespace eval ::plugins {
     }
 
     proc peek {plugin} {
-        msg [namespace current] "peeking $plugin"
+        msg -INFO [namespace current] "peeking $plugin"
         if { [peeked $plugin] } {
             return
         }
@@ -108,7 +108,7 @@ namespace eval ::plugins {
         plugins load_settings $plugin
 
         if {[catch {
-                msg [namespace current] "sourcing $plugin" 
+                msg -INFO [namespace current] "sourcing $plugin"
                 if {[::plugins::read $plugin] != 1} {
                     error "sourcing failed"
                 }
@@ -140,7 +140,7 @@ namespace eval ::plugins {
                 borg toast "loaded empty plugin $plugin"
             }
             set ${plugin}::plugin_loaded 1
-            msg "loaded plugin" $plugin 
+            msg -NOTICE "loaded plugin" $plugin 
         } err opts_dict] != 0} {
             ::logging::log_error_result_opts_dict $err $opts_dict
             catch {
@@ -202,7 +202,7 @@ namespace eval ::plugins {
 
 
     proc load_settings {plugin} {
-        msg [namespace current] "loading settings for $plugin"
+        msg -NOTICE [namespace current] "loading settings for $plugin"
         set fn [plugin_settings_file $plugin]
         if { [file exists $fn] } {
             set settings_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]
@@ -211,7 +211,7 @@ namespace eval ::plugins {
                 return 1
             }
         }
-        msg [namespace current] "Settings file $fn not found"
+        msg -INFO [namespace current] "Settings file $fn not found"
         return 0
     }
 

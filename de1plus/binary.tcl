@@ -30,12 +30,9 @@ proc fields::2form {spec array {endian ""}} {
    set form ""
    set vars {}
    foreach {name qual} $spec {
-   		#puts "name '$name' qual: '$qual'" 
 	   foreach {type count fendian signed extra} $qual break
-	   #puts "type:'$type' count:'$count' fendian:'$fendian' signed:'$signed' extra:'$extra'"
 	   set t [string index $type 0]
 	   set s [string index $signed 0]
-	   #puts "s: $s t: $t"
 	   
 	   if {$fendian == ""} {
 		   set fendian [string tolower [string index $endian 0]]
@@ -129,17 +126,12 @@ proc fields::2form {spec array {endian ""}} {
 		   append invars "\$$array\($name\) "
 	   }
 	   
-	   catch {
-	   	#msg "type: 'name=$name qual =$qual == $ty$s$count'"
-	   }
-
 	   if {$ty == "I" && $s ==  "s"} {
 	   	# signed integers are by default, and need no modifier
 	   	#set ty "s1"
 	   	set s ""
 	   }
 
-	   #puts "append '$ty$s$count'"
 	   append form $ty$s$count
    }
 
@@ -151,7 +143,6 @@ proc fields::2form {spec array {endian ""}} {
 proc ::fields::pack {spec array {endian ""}} {
    upvar $array Record
    foreach {form out in} [::fields::2form $spec Record $endian] break
-   #puts stderr "pack: binary format $form $in"
    return [eval binary format [list $form] {*}$in]
 }
 
@@ -159,7 +150,6 @@ proc ::fields::pack {spec array {endian ""}} {
 proc ::fields::unpack {packed spec array {endian ""}} {
    upvar $array Record
    foreach {form out in} [::fields::2form $spec Record $endian] break
-   #puts stderr "unpack: binary scan $form $out"
    return [binary scan $packed [list $form] {*}$out]
 }
 
@@ -187,7 +177,6 @@ proc ::fields::format {spec endian args} {
 
 proc return_de1_packed_steam_hotwater_settings {} {
 
-	#puts "xx $::settings(water_volume)"
 	set arr(SteamSettings) [expr {0 & 0x80 & 0x40}]
 
 	# turn the steam heater off completely, if the heater is set to below 130ºC
@@ -445,7 +434,7 @@ proc bintest {} {
 
 
 	foreach {field val} [array get ShotSample] {
-		puts "$field : $val "
+		msg -DEBUG "$field : $val "
 	}
 
 }
@@ -511,7 +500,7 @@ proc convert_float_to_F8_1_7 {in} {
 
 	if {$in >= 12.75} {
 		if {$in > 127} {
-			puts "Numbers over 127 are not allowed this F8_1_7"
+			msg -ERROR "Numbers over 127 are not allowed this F8_1_7; limiting at 127"
 			set in 127
 		}
 		return [expr {round($in) | 128}]
@@ -795,7 +784,6 @@ proc make_chunked_packed_shot_sample {hdrarrname framenames extension_framenames
 	set packed_frames {}
 
 	foreach framearrname $framenames {
-		#puts "framearrname: $framearrname"
 		upvar $framearrname $hdrarrname
 		lappend packed_frames [::fields::pack [spec_shotframe] $hdrarrname]
 	}
@@ -815,7 +803,7 @@ proc make_chunked_packed_shot_sample {hdrarrname framenames extension_framenames
 
 proc de1_packed_shot {shot_list} {
 
-	msg "de1_packed_shot" $shot_list
+	msg -DEBUG "de1_packed_shot" $shot_list
 
 	set hdr(HeaderV) 1
 	set hdr(MinimumPressure) 0
@@ -905,7 +893,7 @@ proc de1_packed_shot {shot_list} {
 			array set $extension_frame [list Pad5 0]
 
 			lappend extension_frames $extension_frame
-			msg "Settings extension frame for " $cnt [array get $extension_frame]
+			msg -DEBUG "Settings extension frame for " $cnt [array get $extension_frame]
 		}
 		incr cnt
 	}
@@ -1247,7 +1235,7 @@ proc bintest2 {} {
 
 	foreach field [lsort [array names ShotSample]] {
 		set val $ShotSample($field)
-		puts "$field : $val "
+		msg -DEBUG "$field : $val "
 	}
 
 }
@@ -1299,22 +1287,20 @@ proc parse_decent_scale_recv {packed destarrname} {
 
    	if {$recv(command) == 0xCE || $recv(command) == 0xCA} {
    		# weight comes as a short, so use a different parsing format in this case, otherwise just return bytes
-	   	#msg "Raw scale data: [array get recv]"
 
    		#unset -nocomplain recv
 	   	#::fields::unpack $packed [decent_scale_weight_read_spec] recv bigeendian
-	   	#msg "Parse1: [array get recv]"
 
 
    		unset -nocomplain recv
 	   	::fields::unpack $packed [decent_scale_weight_read_spec2] recv bigeendian
 	   	#::fields::unpack $packed [decent_scale_generic_read_spec] recv bigeendian
    	} elseif {$recv(command) == 0xAA} {
-   		msg "Decentscale BUTTON pressed: [array get recv]"
+   		msg -DEBUG "Decentscale BUTTON pressed: [array get recv]"
    	} elseif {$recv(command) == 0x0C} {
    		unset -nocomplain recv
 	   	::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian
-   		msg "Decentscale time received: [array get recv]"
+   		msg -DEBUG "Decentscale time received: [array get recv]"
    	}
 
 }
@@ -1489,7 +1475,7 @@ proc update_de1_state {statechar} {
 					     && $::de1(scale_device_handle) == 0 \
 					     && $::settings(scale_bluetooth_address) != ""} {
 
-					msg "try to connect to scale automatically (if it is currently disconnected)"
+					msg -INFO "try to connect to scale automatically (if it is currently disconnected)"
 					ble_connect_to_scale
 				}
 			}
