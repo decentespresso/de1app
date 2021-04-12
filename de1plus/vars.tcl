@@ -2076,7 +2076,6 @@ proc highlight_extension {} {
 			fill_extensions_listbox
 			$::extensions_widget selection set $stepnum
 			make_current_listbox_item_blue $::extensions_widget
-			return
 		} else {
 			set ::extension_highlighted $stepnum
 		}
@@ -2086,13 +2085,15 @@ proc highlight_extension {} {
 
 	set plugin [lindex [available_plugins] $stepnum ]
 
-	set description ""
-
-	if {[info proc ::plugins::${plugin}::preload] != "" && [info exists ::plugins::${plugin}::ui_entry] && [set ::plugins::${plugin}::ui_entry] != ""} {
+	if {[info exists ::plugins::${plugin}::ui_entry] && [set ::plugins::${plugin}::ui_entry] != ""} {
 		canvas_show "$::extensions_settings $::extensions_settings_button"
 	} else {
 		canvas_hide "$::extensions_settings $::extensions_settings_button"
+		msg "Plugin" $plugin "Does not have a uientry"
 	}
+
+	set description ""
+
 
 	foreach {name value} { "Version: " version "Author: " author "Contact: " contact "\n" description} {
 		set conf [set ::plugins::${plugin}::${value}]
@@ -2116,7 +2117,7 @@ proc fill_plugin_settings {} {
 
 	set plugin [lindex [available_plugins] $stepnum]
 
-	if {[info proc ::plugins::${plugin}::preload] != ""} {
+	if {[info exists ::plugins::${plugin}::ui_entry] && [set ::plugins::${plugin}::ui_entry] != ""} {
 		set next_page [set ::plugins::${plugin}::ui_entry]
 		page_to_show_when_off $next_page
 	}

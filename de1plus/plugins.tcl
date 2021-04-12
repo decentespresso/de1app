@@ -39,7 +39,7 @@ proc plugin_available {plugin} {
 }
 
 proc plugin_preloaded {plugin} {
-	plugins preloaded $plugin
+	plugins loaded $plugin
 }
 
 proc plugin_loaded {plugin} {
@@ -67,7 +67,7 @@ proc disable_plugin {plugin} {
 }
 
 namespace eval ::plugins {
-    namespace export load_settings save_settings preload load list toggle disable enable init available enabled loaded preloaded read
+    namespace export load_settings save_settings peek load list toggle disable enable init available enabled loaded peeked read gui preload
     namespace ensemble create
 
     proc read {plugin} {
@@ -81,9 +81,14 @@ namespace eval ::plugins {
         return 1
     }
 
+    # Keeping compatibilty to early 1.34 beta version
     proc preload {plugin} {
-        msg [namespace current] "preloading $plugin"
-        if { [preloaded $plugin] } {
+        load $plugin
+    }
+
+    proc peek {plugin} {
+        msg [namespace current] "peeking $plugin"
+        if { [peeked $plugin] } {
             return
         }
 
@@ -94,29 +99,30 @@ namespace eval ::plugins {
             variable version {}
             variable name {}
             variable description {}
-            variable plugin_preloaded 0
+            variable plugin_peeked 0
             variable plugin_loaded 0
         }
 
         array set ::plugins::${plugin}::settings {}
 
         plugins load_settings $plugin
-        
+
         if {[catch {
                 msg [namespace current] "sourcing $plugin" 
                 if {[::plugins::read $plugin] != 1} {
                     error "sourcing failed"
                 }
-                if {[info proc ${plugin}::preload] != ""} {
-                    set ${plugin}::ui_entry [${plugin}::preload]
-                }
-                set ${plugin}::plugin_preloaded 1
+                set ${plugin}::plugin_peeked 1
         } err opts_dict] != 0} {
-	    ::logging::log_error_result_opts_dict $err $opts_dict
+            ::logging::log_error_result_opts_dict $err $opts_dict
             catch {
                 info_page [subst {${plugin}:[translate "The plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
             }
         }
+    }
+
+    proc gui {plugin context} {
+        set ${plugin}::ui_entry $context
     }
 
     proc load {plugin} {
@@ -125,14 +131,18 @@ namespace eval ::plugins {
         }
         
         if {[catch {
+            if {[info proc ${plugin}::preload] != ""} {
+                set ${plugin}::ui_entry [${plugin}::preload]
+            }
             if {[info proc ${plugin}::main] != ""} {
                 ${plugin}::main
             } else {
                 borg toast "loaded empty plugin $plugin"
             }
             set ${plugin}::plugin_loaded 1
+            msg "loaded plugin" $plugin 
         } err opts_dict] != 0} {
-	    ::logging::log_error_result_opts_dict $err $opts_dict
+            ::logging::log_error_result_opts_dict $err $opts_dict
             catch {
                 # remove from enabled plugins
                 disable_plugin $plugin
@@ -182,6 +192,7 @@ namespace eval ::plugins {
         }
         lappend ::settings(enabled_plugins) $plugin
         ::save_settings
+        plugins load $plugin
         return 1;
     }
 
@@ -205,9 +216,9 @@ namespace eval ::plugins {
     }
 
     proc init {} {
-        # Preload all plugins
+        # Source all plugins
         foreach plugin [plugins list] {
-            plugins preload $plugin
+            plugins peek $plugin
         }
 
         # start enabled plugins
@@ -223,8 +234,8 @@ namespace eval ::plugins {
         return [expr {[lsearch [plugins list] $plugin] >= 0}]
     }
 
-    proc preloaded {plugin} {
-        return [expr {[info exists ::plugins::${plugin}::plugin_preloaded] && [subst \$::plugins::${plugin}::plugin_preloaded] == 1}]
+    proc peeked {plugin} {
+        return [expr {[info exists ::plugins::${plugin}::plugin_peeked] && [subst \$::plugins::${plugin}::plugin_peeked] == 1}]
     }
 
     proc loaded {plugin} {
