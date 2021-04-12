@@ -2953,15 +2953,12 @@ proc format_espresso_for_history {} {
 		}
 
 		set clock $::settings(espresso_clock)
-		set name [clock format $clock]
+		set filename [clock format $clock]
 
 		set espresso_data {}
-		set espresso_data "name [list $name]\n"
-		set espresso_data "clock $clock\n"
+		append espresso_data "filename {$filename}\n"
+		append espresso_data "clock {$clock]}\n"
 		append espresso_data "local_time {[clock format $clock]}\n"
-		#set espresso_data "final_espresso_weight $::de1(final_espresso_weight)\n"
-
-		#set espresso_data "settings [array get ::settings]\n"
 
 		append espresso_data "espresso_elapsed {[espresso_elapsed range 0 end]}\n"
 		append espresso_data "espresso_pressure {[espresso_pressure range 0 end]}\n"
@@ -3013,7 +3010,6 @@ proc format_espresso_for_history {} {
 		append espresso_data "profile [huddle jsondump $::profile::current]"
 
 		return $espresso_data
-
 }
 
 proc format_timers_for_history {espresso_data_name} {
