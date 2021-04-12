@@ -47,7 +47,7 @@ namespace eval ::plugins::${plugin_name} {
     }
 
     # Paint settings screen
-    proc preload {} {
+    proc create_ui {} {
 
         # Create settings if non-existant
         if {[array size ::plugins::log_upload::settings] == 0} {
@@ -189,6 +189,7 @@ namespace eval ::plugins::${plugin_name} {
     }
     
     proc main {} {
+        plugins gui log_upload [create_ui]
     }
 
 }

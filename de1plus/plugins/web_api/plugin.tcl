@@ -1,8 +1,8 @@
-package require wibble
 package require de1_machine
 
 set plugin_name "web_api"
 
+namespace eval ::wibble {}
 namespace eval ::plugins::${plugin_name} {
 
     variable author "Johanna Schander"
@@ -12,6 +12,8 @@ namespace eval ::plugins::${plugin_name} {
     variable name "Web API"
 
     proc main {} {
+        package require wibble
+
         # Create settings if non-existant
         if {[array size ::plugins::web_api::settings] == 0} {
             array set ::plugins::web_api::settings {

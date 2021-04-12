@@ -11,11 +11,6 @@ namespace eval ::plugins::${plugin_name} {
     variable description "Minimal plugin to showcase the interface of the plugin / extensions system."
     variable name "Example Plugin"
 
-    # Always on entry point
-    proc preload {} {
-        return [build_ui]
-    }
-
     proc build_ui {}  {
         variable settings
 
@@ -70,5 +65,8 @@ namespace eval ::plugins::${plugin_name} {
 
         msg [namespace current] "Tracing function call"
         trace add execution start_sleep leave ::plugins::example::on_function_called
+
+        # register gui
+        plugins gui example [build_ui]
     }
 }

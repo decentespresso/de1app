@@ -12,7 +12,7 @@ namespace eval ::plugins::${plugin_name} {
     variable name "Upload to visualizer"
 
     # Paint settings screen
-    proc preload {} {
+    proc create_ui {} {
         set needs_save_settings 0
 
         # Create settings if non-existant
@@ -235,6 +235,7 @@ namespace eval ::plugins::${plugin_name} {
     }
     
     proc main {} {
+        plugins gui visualizer_upload [create_ui]
         ::de1::event::listener::after_flow_complete_add \
             [lambda {event_dict} {
             ::plugins::visualizer_upload::async_dispatch \
