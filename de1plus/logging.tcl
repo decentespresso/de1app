@@ -55,6 +55,12 @@ namespace eval ::logging {
 
 	variable _log_fh ""
 
+	# To disable logging, set to Boolean True externally,
+	# prior to any `package require` of de1app code
+	#   namespace eval ::logging { variable disable_logging_for_build True }
+
+	variable disable_logging_for_build
+
 	proc safe_get {var_name} {
 
 		upvar $var_name var
@@ -203,6 +209,22 @@ namespace eval ::logging {
 		}
 	}
 
+
+
+
+	if { [info exists ::logging::disable_logging_for_build] \
+		     && $::logging::disable_logging_for_build } {
+
+		proc default_logger {args} {
+			# pass
+		}
+
+		proc init {args} {
+			# pass
+		}
+	}
+
+
 	::logging::init
 
 
@@ -255,7 +277,6 @@ namespace eval ::logging {
 	}
 
 
-	# should not display a debug message on package load, only as procs run
 	msg -INFO "Overriding existing bgerror handler ${_previous_bgerror}"
 
 	interp bgerror {} ::logging::_logging_bgerror
