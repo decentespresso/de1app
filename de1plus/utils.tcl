@@ -3,11 +3,14 @@ package provide de1_utils 1.1
 package require de1_logging 1.0
 
 proc setup_environment {} {
+	global android
+	global undroid
 	global settings
-	
+	global fontm
+
 	# Set DUI settings from the app stored settings
-	foreach s {default_font_calibration use_finger_down_for_tap disable_long_press timer_interval sound_button_in
-			sound_button_out enable_spoken_prompts speaking_pitch speaking_rate sound_button_in sound_button_out } {
+	foreach s {default_font_calibration use_finger_down_for_tap disable_long_press timer_interval enable_spoken_prompts 
+			speaking_pitch speaking_rate } {
 		if { [info exists settings($s)] } {
 			dui config $s $settings($s)
 		}
@@ -46,8 +49,82 @@ proc setup_environment {} {
 	set ::globals(listbox_global_width_multiplier) [dui cget listbox_global_width_multiplier]
 	set ::globals(listbox_length_multiplier) [dui cget listbox_length_multiplier] 
 	set ::globals(entry_length_multiplier) [dui cget entry_length_multiplier]
-	set ::fontm [dui cget fontm]
-	set ::fontw [dui cget fontw]
+	set fontm [dui cget fontm]
+	#set ::fontw [dui cget fontw]
+	
+	# Create hardcoded fonts used in default and Insight skins. These should be replaced by DUI aspects in the future,
+	# but are left at the moment to guarantee backwards-compatibility.
+	set helvetica_font [dui aspect get text font_family -theme default]
+	set helvetica_bold_font [dui aspect get text font_family -theme default -style bold]
+	set global_font_name [dui aspect get text font_family -theme default -style global]
+	set global_font_size [dui aspect get text font_size -theme default -style global]
+	set fontawesome_brands [dui aspect get symbol font_family -theme default -style brands]
+		
+	if {$android == 1 || $undroid == 1} {
+        font create Fontawesome_brands_11 -family $fontawesome_brands -size [expr {int($fontm * 20)}]
+
+        font create global_font -family $global_font_name -size [expr {int($fontm * $global_font_size)}] 
+
+        font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
+        font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
+        font create Helv_11_bold -family $helvetica_bold_font -size [expr {int($fontm * 20)}] 
+        font create Helv_11 -family $helvetica_font -size [expr {int($fontm * 20)}] 
+        font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 19)}] 
+        font create Helv_10 -family $helvetica_font -size [expr {int($fontm * 19)}] 
+        font create Helv_1 -family $helvetica_font -size 1
+        font create Helv_4 -family $helvetica_font -size [expr {int($fontm * 8)}]
+        font create Helv_5 -family $helvetica_font -size [expr {int($fontm * 10)}]
+        font create Helv_6 -family $helvetica_font -size [expr {int($fontm * 12)}]
+        font create Helv_6_bold -family $helvetica_bold_font -size [expr {int($fontm * 12)}]
+        font create Helv_7 -family $helvetica_font -size [expr {int($fontm * 14)}]
+        font create Helv_7_bold -family $helvetica_bold_font -size [expr {int($fontm * 14)}]
+        font create Helv_8 -family $helvetica_font -size [expr {int($fontm * 16)}]
+        font create Helv_8_bold -family $helvetica_bold_font -size [expr {int($fontm * 16)}]
+        
+        font create Helv_9 -family $helvetica_font -size [expr {int($fontm * 18)}]
+        font create Helv_9_bold -family $helvetica_bold_font -size [expr {int($fontm * 18)}] 
+        font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
+        font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
+        font create Helv_16_bold -family $helvetica_bold_font -size [expr {int($fontm * 27)}] 
+        font create Helv_17_bold -family $helvetica_bold_font -size [expr {int($fontm * 30)}] 
+        font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 32)}] 
+        font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 35)}] 
+        font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 37)}]
+        font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
+        font create Helv_30 -family $helvetica_font -size [expr {int($fontm * 56)}]				
+	} else {
+		font create Fontawesome_brands_11 -family $fontawesome_brands -size [expr {int($fontm * 25)}]
+		
+		font create global_font -family $global_font_name  -size [expr {int($fontm * 23)}] 
+				
+        font create Helv_1 -family $regularfont -size 1
+        font create Helv_4 -family $regularfont -size 10
+        font create Helv_5 -family $regularfont -size 12
+        font create Helv_6 -family $regularfont -size [expr {int($fontm * 14)}]
+        font create Helv_6_bold -family $boldfont -size [expr {int($fontm * 14)}]
+        font create Helv_7 -family $regularfont -size [expr {int($fontm * 16)}]
+        font create Helv_7_bold -family $boldfont -size [expr {int($fontm * 16)}]
+        font create Helv_8 -family $regularfont -size [expr {int($fontm * 19)}]
+        font create Helv_8_bold_underline -family $boldfont -size [expr {int($fontm * 19)}] -underline 1
+        font create Helv_8_bold -family $boldfont -size [expr {int($fontm * 19)}]
+        font create Helv_9 -family $regularfont -size [expr {int($fontm * 23)}]
+        font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 21)}]
+        font create Helv_10 -family $regularfont -size [expr {int($fontm * 23)}]
+        font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 23)}]
+        font create Helv_11 -family $regularfont -size [expr {int($fontm * 25)}]
+        font create Helv_11_bold -family $boldfont -size [expr {int($fontm * 25)}]
+        font create Helv_12 -family $regularfont -size [expr {int($fontm * 27)}]
+        font create Helv_12_bold -family $boldfont -size [expr {int($fontm * 30)}]
+        font create Helv_15 -family $regularfont -size [expr {int($fontm * 30)}]
+        font create Helv_15_bold -family $boldfont -size [expr {int($fontm * 30)}]
+        font create Helv_16_bold -family $boldfont -size [expr {int($fontm * 33)}]
+        font create Helv_17_bold -family $boldfont -size [expr {int($fontm * 37)}]
+        font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]
+        font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 45)}]
+        font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 48)}]
+        font create Helv_30_bold -family $boldfont -size [expr {int($fontm * 69)}]
+        font create Helv_30 -family $regularfont -size [expr {int($fontm * 72)}]
+	}
 	
 	after 60000 schedule_minute_task
 
@@ -371,7 +448,6 @@ proc setup_environment {} {
 
 
 proc off_page_onload { page_to_hide page_to_show } {
-msg "OFF_PAGE_ONLOAD"	
 	if {$page_to_hide == "sleep" && $page_to_show == "off"} {
 		msg [namespace current] "discarding intermediate sleep/off state msg"
 		return 0 
@@ -379,7 +455,6 @@ msg "OFF_PAGE_ONLOAD"
 }
 
 proc saver_page_onload { page_to_hide page_to_show } {
-msg "SAVER_PAGE_ONLOAD"
 	if {[ifexists ::exit_app_on_sleep] == 1} {
 		get_set_tablet_brightness 0
 		close_all_ble_and_exit
@@ -396,7 +471,6 @@ msg "SAVER_PAGE_ONLOAD"
 
 
 proc page_onload { page_to_hide page_to_show } {
-msg "PAGE_ONLOAD"	
 	if {$page_to_show ne "saver" } {
 		display_brightness $::settings(app_brightness)
 	}

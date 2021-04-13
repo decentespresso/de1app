@@ -65,39 +65,53 @@ namespace eval ::dui {
 		use_finger_down_for_tap 1
 		disable_long_press 0
 		timer_interval 100
-		page_change_sound 11
 		enable_spoken_prompts 1
 		speaking_pitch 1.0
 		speaking_rate 1.5
 	}
 
 	# Store in namespace variables and not in settings what are internal parameters that are not to be modified by client code.
-	variable fontm 1
-	variable fontw 1
 	
-	# Font/language-dependent multipliers to adjust sizing of character-based widgets like entries and listboxes.
+	# fontm is a multiplier that is computed only once at startup on 'dui init' combining the user-settable 
+	# default_font_calibration setting, the used language, and the platform; with the objective of having a 
+	# session-specific multiplier that makes the fixed sizes used in client code (dui add ... -font_size X) map to
+	# fonts of similar sizes throughout platforms and languages. 
+	variable fontm 1
+	# variable fontw not used anywhere in my source code searches
+	#variable fontw 1
+	
+	# Font/language-dependent multipliers to adjust the sizing of character-based widgets like entries and listboxes.
 	# Take into account that with DUI these sizes can be set in pixels, using -canvas_width and -canvas-height. 
 	variable entry_length_multiplier 1
 	variable listbox_length_multiplier 1
 	variable listbox_global_width_multiplier 1
 
-	# Older proc "setup_environment" in utils.tcl
+	# Most coming from old proc "setup_environment" in utils.tcl
 	proc init { {screen_size_width {}} {screen_size_height {}} {orientation landscape} } {
 		global android
 		global undroid
+#		global helvetica_font		
+#		global helvetica_bold_font
+		
 		msg [namespace current] init "android=$android, undroid=$undroid, some_droid=$::some_droid"
 		
 		variable settings
 		variable fontm
-		variable fontw	;# Not used anywhere??
+		#variable fontw
 		variable entry_length_multiplier
 		variable listbox_length_multiplier
 		variable listbox_global_width_multiplier
-	
-		if {$android == 1 || $undroid == 1} {
+
+		if {$android == 0 || $undroid == 1} {
+			# no 'borg' or 'ble' commands, so emulate
+			android_specific_stubs
+		}
+		if {$android == 1} {
 			# hide the android keyboard that pops up when you power back on
 			bind . <<DidEnterForeground>> [::dui::platform::hide_android_keyboard]
-	
+		}
+		
+		if {$android == 1 || $undroid == 1} {
 			# this causes the app to exit if the main window is closed
 			wm protocol . WM_DELETE_WINDOW exit
 	
@@ -165,18 +179,16 @@ namespace eval ::dui {
 					set screen_size_width 1280
 					set screen_size_height 800
 				}
-	
-				
 			}
 	
 			# Android seems to automatically resize fonts appropriately to the current resolution
 			set fontm $settings(default_font_calibration)
-			set fontw 1
+			#set fontw 1
 	
 			if {$::undroid == 1} {
 				# undroid does not resize fonts appropriately for the current resolution, it assumes a 1024 resolution
 				set fontm [expr {($screen_size_width / 1024.0)}]
-				set fontw 2
+				#set fontw 2
 			}
 	
 			# HOW TO HANDLE THIS?
@@ -185,74 +197,37 @@ namespace eval ::dui {
 				set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
 			}
 	
-			global helvetica_bold_font
-			global helvetica_font
 			set global_font_size 18
 			
 			#puts "setting up fonts for language $settings(language)"
 			if {$settings(language) == "th"} {
-				set helvetica_font [sdltk addfont "fonts/sarabun.ttf"]
-				set helvetica_bold_font [sdltk addfont "fonts/sarabunbold.ttf"]
-				set fontm [expr {($fontm * 1.2)}]
-				set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+				set helvetica_font [dui::font::add_or_get_familyname "sarabun.ttf"]
+				set helvetica_bold_font [dui::font::add_or_get_familyname "sarabunbold.ttf"]
+				set global_font_name [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
+				set fontm [expr {($fontm * 1.2)}]								
 				set global_font_size 16
 			} elseif {$settings(language) == "ar" || $settings(language) == "arb"} {
-				set helvetica_font [sdltk addfont "fonts/Dubai-Regular.otf"]
-				set helvetica_bold_font [sdltk addfont "fonts/Dubai-Bold.otf"]
-				set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+				set helvetica_font [dui::font::add_or_get_familyname "Dubai-Regular.otf"]
+				set helvetica_bold_font [dui::font::add_or_get_familyname "Dubai-Bold.otf"]
+				set global_font_name [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
 			} elseif {$settings(language) == "he" || $settings(language) == "heb"} {
+				set helvetica_font [dui::font::add_or_get_familyname "hebrew-regular.ttf"]
+				set helvetica_bold_font [dui::font::add_or_get_familyname "hebrew-bold.tt"]
+				set global_font_name [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
 				set listbox_length_multiplier 1.35
-				set entry_length_multiplier 0.86
-				set helvetica_font [sdltk addfont "fonts/hebrew-regular.ttf"]
-				set helvetica_bold_font [sdltk addfont "fonts/hebrew-bold.ttf"]
-				set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
+				set entry_length_multiplier 0.86				
 			} elseif {$settings(language) == "zh-hant" || $settings(language) == "zh-hans" || $settings(language) == "kr"} {
-				set helvetica_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-				set helvetica_bold_font [lindex [sdltk addfont "fonts/NotoSansCJKjp-Bold.otf"] 0]
-				set global_font_name $helvetica_font
-	
+				set helvetica_font [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
+				set helvetica_bold_font [dui::font::add_or_get_familyname "NotoSansCJKjp-Bold.otf"]
+				set global_font_name $helvetica_font	
 				set fontm [expr {($fontm * .94)}]
 			} else {
 				# we use the immense google font so that we can handle virtually all of the world's languages with consistency
-				set helvetica_font [sdltk addfont "fonts/notosansuiregular.ttf"]
-				set helvetica_bold_font [sdltk addfont "fonts/notosansuibold.ttf"]
-				set global_font_name [lindex [sdltk addfont "fonts/NotoSansCJKjp-Regular.otf"] 0]
-	
+				set helvetica_font [dui::font::add_or_get_familyname "notosansuiregular.ttf"]
+				set helvetica_bold_font [dui::font::add_or_get_familyname "notosansuibold.ttf"]
+				set global_font_name [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
 			}
-	
-			set fontawesome_brands [lindex [sdltk addfont "fonts/Font Awesome 5 Brands-Regular-400.otf"] 0]
-			::font create Fontawesome_brands_11 -family $fontawesome_brands -size [expr {int($fontm * 20)}]
-	
-			::font create global_font -family $global_font_name -size [expr {int($fontm * $global_font_size)}] 
-	
-			::font create Helv_12_bold -family $helvetica_bold_font -size [expr {int($fontm * 22)}] 
-			::font create Helv_12 -family $helvetica_font -size [expr {int($fontm * 22)}] 
-			::font create Helv_11_bold -family $helvetica_bold_font -size [expr {int($fontm * 20)}] 
-			::font create Helv_11 -family $helvetica_font -size [expr {int($fontm * 20)}] 
-			::font create Helv_10_bold -family $helvetica_bold_font -size [expr {int($fontm * 19)}] 
-			::font create Helv_10 -family $helvetica_font -size [expr {int($fontm * 19)}] 
-			::font create Helv_1 -family $helvetica_font -size 1
-			::font create Helv_4 -family $helvetica_font -size [expr {int($fontm * 8)}]
-			::font create Helv_5 -family $helvetica_font -size [expr {int($fontm * 10)}]
-			::font create Helv_6 -family $helvetica_font -size [expr {int($fontm * 12)}]
-			::font create Helv_6_bold -family $helvetica_bold_font -size [expr {int($fontm * 12)}]
-			::font create Helv_7 -family $helvetica_font -size [expr {int($fontm * 14)}]
-			::font create Helv_7_bold -family $helvetica_bold_font -size [expr {int($fontm * 14)}]
-			::font create Helv_8 -family $helvetica_font -size [expr {int($fontm * 16)}]
-			::font create Helv_8_bold -family $helvetica_bold_font -size [expr {int($fontm * 16)}]
-			
-			::font create Helv_9 -family $helvetica_font -size [expr {int($fontm * 18)}]
-			::font create Helv_9_bold -family $helvetica_bold_font -size [expr {int($fontm * 18)}] 
-			::font create Helv_15 -family $helvetica_font -size [expr {int($fontm * 24)}] 
-			::font create Helv_15_bold -family $helvetica_bold_font -size [expr {int($fontm * 24)}] 
-			::font create Helv_16_bold -family $helvetica_bold_font -size [expr {int($fontm * 27)}] 
-			::font create Helv_17_bold -family $helvetica_bold_font -size [expr {int($fontm * 30)}] 
-			::font create Helv_18_bold -family $helvetica_bold_font -size [expr {int($fontm * 32)}] 
-			::font create Helv_19_bold -family $helvetica_bold_font -size [expr {int($fontm * 35)}] 
-			::font create Helv_20_bold -family $helvetica_bold_font -size [expr {int($fontm * 37)}]
-			::font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
-			::font create Helv_30 -family $helvetica_font -size [expr {int($fontm * 56)}]
-	
+
 			# enable swipe gesture translating, to scroll through listboxes
 			# sdltk touchtranslate 1
 			# disable touch translating as it does not feel native on tablets and is thus confusing
@@ -278,9 +253,6 @@ namespace eval ::dui {
 			# preload the speaking engine 
 			# john 2/12/18 re-enable this when TTS feature is enabled
 			# borg speak { }
-	
-#			source "bluetooth.tcl"
-	
 		} else {	
 			# global font is wider on non-android
 			set listbox_global_width_multiplier .8
@@ -295,7 +267,8 @@ namespace eval ::dui {
 			}
 	
 			set fontm [expr {$screen_size_width / 1280.0}]
-			set fontw 2
+			set global_font_size 23
+			#set fontw 2
 	
 			wm title . $settings(app_title)
 			wm maxsize . $screen_size_width $screen_size_height
@@ -307,71 +280,28 @@ namespace eval ::dui {
 				set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
 			}
 	
-			::android_specific_stubs
-			
 			# EB: Is this installed by default on PC/Mac/Linux?? No need to sdltk add it?
-			set regularfont "notosansuiregular"
-			set boldfont "notosansuibold"
+			set helvetica_font "notosansuiregular"
+			set helvetica_bold_font "notosansuibold"
 	
 			if {$settings(language) == "th"} {
-				set regularfont "sarabun"
-				set boldfont "sarabunbold"
+				set helvetica_font "sarabun"
+				set helvetica_bold_font "sarabunbold"
 				#set fontm [expr {($fontm * 1.20)}]
 			} 
-#			elseif {$settings(language) == "zh-hant" || $settings(language) == "zh-hans"} {
-#				set regularfont "notosansuiregular"
-#				set boldfont "notosansuibold"
-#			}
-			set ::helvetica_font $regularfont
-			dui aspect set -theme default -type text font_family $regularfont
-			
-#			set fontawesome_brands [lindex [sdltk addfont "fonts/Font Awesome 5 Brands-Regular-400.otf"] 0]
-#			::font create Fontawesome_brands_11 -family $fontawesome_brands -size [expr {int($fontm * 20)}]
-#			::font create Fontawesome_brands_11 -family "Font Awesome 5 Brands Regular" -size [expr {int($fontm * 25)}]
-			
-			set fontawesome_brands [dui::font::add_or_get_familyname "Font Awesome 5 Brands-Regular-400.otf"]
-msg -DEBUG "fontawesome_brands=$fontawesome_brands"
-			set fontawesome_reg [dui::font::add_or_get_familyname "Font Awesome 5 Pro-Regular-400.otf"]
-msg -DEBUG "fontawesome_reg=$fontawesome_reg"
-			if { $fontawesome_reg ne "" } {
-				dui aspect set -theme default -type symbol font_family $fontawesome_reg
-			}
-						
-			# Hardcoded fonts used by default & Insight skins. These names are stored in the font management itself,
-			# so it overlaps with the new dynamic font system that uses [dui font load] and [dui font get], but are
-			# left for backwards-compatibility until all references to the old "Helv_*" are migrated.
-#			::font create Helv_1 -family $regularfont -size 1
-#			::font create Helv_4 -family $regularfont -size 10
-#			::font create Helv_5 -family $regularfont -size 12
-#			::font create Helv_6 -family $regularfont -size [expr {int($fontm * 14)}]
-#			::font create Helv_6_bold -family $boldfont -size [expr {int($fontm * 14)}]
-#			::font create Helv_7 -family $regularfont -size [expr {int($fontm * 16)}]
-#			::font create Helv_7_bold -family $boldfont -size [expr {int($fontm * 16)}]
-#			::font create Helv_8 -family $regularfont -size [expr {int($fontm * 19)}]
-#			::font create Helv_8_bold_underline -family $boldfont -size [expr {int($fontm * 19)}] -underline 1
-#			::font create Helv_8_bold -family $boldfont -size [expr {int($fontm * 19)}]
-#			::font create Helv_9 -family $regularfont -size [expr {int($fontm * 23)}]
-#			::font create Helv_9_bold -family $boldfont -size [expr {int($fontm * 21)}]
-#			::font create Helv_10 -family $regularfont -size [expr {int($fontm * 23)}]
-#			::font create Helv_10_bold -family $boldfont -size [expr {int($fontm * 23)}]
-#			::font create Helv_11 -family $regularfont -size [expr {int($fontm * 25)}]
-#			::font create Helv_11_bold -family $boldfont -size [expr {int($fontm * 25)}]
-#			::font create Helv_12 -family $regularfont -size [expr {int($fontm * 27)}]
-#			::font create Helv_12_bold -family $boldfont -size [expr {int($fontm * 30)}]
-#			::font create Helv_15 -family $regularfont -size [expr {int($fontm * 30)}]
-#			::font create Helv_15_bold -family $boldfont -size [expr {int($fontm * 30)}]
-#			::font create Helv_16_bold -family $boldfont -size [expr {int($fontm * 33)}]
-#			::font create Helv_17_bold -family $boldfont -size [expr {int($fontm * 37)}]
-#			::font create Helv_18_bold -family $boldfont -size [expr {int($fontm * 40)}]
-#			::font create Helv_19_bold -family $boldfont -size [expr {int($fontm * 45)}]
-#			::font create Helv_20_bold -family $boldfont -size [expr {int($fontm * 48)}]
-#			::font create Helv_30_bold -family $boldfont -size [expr {int($fontm * 69)}]
-#			::font create Helv_30 -family $regularfont -size [expr {int($fontm * 72)}]
-#	
-#			::font create Fontawesome_brands_11 -family "Font Awesome 5 Brands Regular" -size [expr {int($fontm * 25)}]	
-#			::font create global_font -family "Noto Sans CJK JP" -size [expr {int($fontm * 23)}] 
 		}
 
+		set fontawesome_brands [dui::font::add_or_get_familyname "Font Awesome 5 Brands-Regular-400.otf"]
+		set fontawesome_pro [dui::font::add_or_get_familyname "Font Awesome 5 Pro-Regular-400.otf"]
+
+		msg -DEBUG [namespace current] "Font multiplier: $fontm"
+		dui aspect set -theme default -type text font_family $helvetica_font font_size $global_font_size
+		dui aspect set -theme default -type text -style bold font_family $helvetica_bold_font font_size $global_font_size
+		dui aspect set -theme default -type text -style global font_family $global_font_name font_size $global_font_size
+msg -DEBUG [namespace current] "Adding global font with family=$global_font_name and size=$global_font_size"		
+		dui aspect set -theme default -type symbol font_family $fontawesome_pro
+		dui aspect set -theme default -type symbol -style brands font_family $fontawesome_brands
+		
 		set settings(screen_size_width) $screen_size_width 
 		set settings(screen_size_height) $screen_size_height
 		
@@ -389,7 +319,7 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 			#}
 			#after 250 accelerometer_check
 		#}
-	
+
 		############################################
 		
 		return $can 
@@ -440,9 +370,13 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 		
 		foreach key [array names opts] {
 			if { [info exists settings($key)] } {
-				if { $key in {debug_buttons create_page_namespaces trim_entries use_editor_pages} } {
+				if { $key in {debug_buttons create_page_namespaces trim_entries use_editor_pages use_finger_down_for_tap
+						disable_long_press enable_spoken_prompts} } {
 					set settings($key) [string is true -strict $opts($key)]
-				} else {
+				} elseif { $settings($key) ne $opts($key) }  {
+					if { $key eq "app_title" } {
+						wm title . $opts(app_title)
+					}
 					set settings($key) $opts($key)
 				}
 			} else {
@@ -725,25 +659,26 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 			default.dbutton.width 0
 			
 			default.dbutton_label.pos {0.5 0.5}
-			default.dbutton_label.anchor center
 			default.dbutton_label.font_size 18
+			default.dbutton_label.anchor center	
 			default.dbutton_label.justify center
 			default.dbutton_label.fill white
 			default.dbutton_label.disabledfill "#ccc"
 
+			default.dbutton_label1.pos {0.5 0.8}
+			default.dbutton_label1.font_size 16
+			default.dbutton_label1.anchor center
+			default.dbutton_label1.justify center
+			default.dbutton_label1.fill "#7f879a"
+			default.dbutton_label1.activefill "#7f879a"
+			default.dbutton_label1.disabledfill black
+			
 			default.dbutton_symbol.pos {0.2 0.5}
-			default.dbutton_symbol.font_size 24
+			default.dbutton_symbol.font_size 28
 			default.dbutton_symbol.anchor center
 			default.dbutton_symbol.justify center
 			default.dbutton_symbol.fill white
 			default.dbutton_symbol.disabledfill "#ccc"
-
-			default.dbutton_state.pos {0.5 0.5}
-			default.dbutton_state.anchor center
-			default.dbutton_state.justify center
-			default.dbutton_state.fill "#ffffff"
-			default.dbutton_state.activefill "#ffffff"
-			default.dbutton_state.disabledfill black
 			
 			default.dbutton.shape.insight_ok round
 			default.dbutton.radius.insight_ok 30
@@ -778,7 +713,7 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 			
 			default.dcombobox_ddarrow.font_size 24
 			
-			default.dcheckbox.font_family "Font Awesome 5 Pro-Regular-400"
+			default.dcheckbox.font_family "Font Awesome 5 Pro"
 			default.dcheckbox.font_size 18
 			default.dcheckbox.fill black
 			default.dcheckbox.anchor nw
@@ -891,7 +826,7 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 				::set value [lindex $args [expr {$i+1}]]
 				if { [info exists aspects($var)] } {
 					if { $aspects($var) eq $value } {
-						msg -NOTICE [namespace current] "aspect '$var' already exists, new value is equal to old"
+						#msg -INFO [namespace current] "aspect '$var' already exists, new value is equal to old"
 					} else {
 						msg -NOTICE [namespace current] "aspect '$var' already exists, old value='$aspects($var)', new value='$value'"
 					}
@@ -1006,7 +941,7 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 		namespace export set get exists list
 		namespace ensemble create
 				
-		variable font_filename "Font Awesome 5 Pro-Regular-400"
+		variable font_filename "Font Awesome 5 Pro-Regular-400.otf"
 		
 		variable symbols
 		array set symbols {
@@ -1044,7 +979,7 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 				::set sv [lindex $args [expr {$i+1}]]
 				::set idx [lsearch [array names symbols] $sn]
 				if { $idx == -1 } {
-					msg -INFO [namespace current] "add symbol $sn='$sv'"
+					#msg -INFO [namespace current] "add symbol $sn='$sv'"
 					::set symbols($sn) $sv
 				} elseif { $symbols($sn) ne $sv } {
 					msg -WARN [namespace current ] "symbol '$sn' already defined with a different value"
@@ -1055,10 +990,13 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 		# If undefined, warns in the log and returns the provided symbol name.
 		proc get { symbol } {
 			variable symbols
-			if { [info exists symbols($symbol)] } {
+			if { [info exists ::dui::symbol::symbols($symbol)] } {
 				return $symbols($symbol)
 			} else {
-				msg -WARN [namespace current] "symbol '$symbol' not recognized"
+				# Don't warn on unicode values
+				if { [string length $symbol] > 1 } {
+					msg -WARN [namespace current] "symbol '$symbol' not recognized"
+				}
 				return $symbol
 			}
 		}
@@ -1136,14 +1074,15 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 					set ndirs [llength $font_dirs]
 					for { set i 0 } { $i < $ndirs && !$file_found } { incr i } {
 						set dir [lindex $font_dirs $i]
-						if { [file extension $filename] ne "" && [file exists "$dir/$filename"] } {
-							set filename "$dir/$filename"
+						set test_path [file join $dir $filename]
+						if { [file extension $filename] ne "" && [file exists $test_path] } {
+							set filename $test_path
 							set file_found 1
-						} elseif { [file exists "$dir/$filename.otf"] } {
-							set filename  "$dir/$filename.otf"
+						} elseif { [file exists "$testpath.otf"] } {
+							set filename "$testpath.otf"
 							set file_found 1
-						} elseif { [file exists "$dir/$filename.ttf"] } {
-							set filename  "$dir/$filename.ttf"
+						} elseif { [file exists "$testpath.ttf"] } {
+							set filename "$testpath.ttf"
 							set file_found 1
 						}
 					}
@@ -1166,6 +1105,7 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 					} else {
 						try {
 							foreach familyname [sdltk addfont $filename] {
+								msg -DEBUG [namespace current] add_or_get_familyname "added file '$filename', familyname '$familyname'"
 								lappend loaded_fonts $filename $familyname
 							}
 						} on error err {
@@ -1182,7 +1122,8 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 		proc key { family_name size args } {
 			array set opts $args
 			
-			set font_key "\"$family_name\" $size"
+			#set font_key "\"$family_name\" $size"
+			set font_key "$family_name $size"
 			if { [array size opts] > 0 } {
 				set suffix ""
 				if { [info exists opts(-weight)] && $opts(-weight) eq "bold" } {
@@ -1225,15 +1166,12 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 		#	-slant "roman" (default) or "italic"
 		#	-underline false (default) or true
 		#	-overstrike false (default) or true
-		proc load { filename pcsize {androidsize {}} args } {
+		proc load { filename size args } {
 			#variable skin_fonts
 			array set opts $args
 
 			# calculate font size 
-			if {($::android == 1 || $::undroid == 1) && $androidsize != ""} {
-				set pcsize $androidsize
-			}
-			set platform_font_size [expr {int(1.0 * [dui cget fontm] * $pcsize)}]
+			set platform_size [expr {int([dui cget fontm] * $size)}]
 		
 			# Load or get the already-loaded font family name.
 			set familyname [add_or_get_familyname $filename]
@@ -1242,15 +1180,12 @@ msg -DEBUG "fontawesome_reg=$fontawesome_reg"
 				set familyname $filename
 			}
 			
-			set key [key $familyname $platform_font_size {*}$args]
-			if { $key in [::font names] } {
-				msg -NOTICE [namespace current] "font with key '$key' is already loaded"
-			} else {
+			set key [key $familyname $size {*}$args]
+			if { $key ni [::font names] } {
 				# Create the named font instance
 				try {
-					font create $key -family $familyname -size $platform_font_size {*}$args
-					msg -INFO [namespace current] "load font key: \"$key\", family: \"$familyname\",\
-size: $platform_font_size, filename: \"$filename\", options: $args"
+					::font create $key -family $familyname -size $platform_size {*}$args
+					msg -DEBUG [namespace current] "load font with key: \"$key\", family: \"$familyname\", requested size: $size, platform size: $platform_size, filename: \"$filename\", options: $args"
 				} on error err {
 					msg -ERROR [namespace current] "unable to create font with key '$key': $err"
 				}
@@ -1271,7 +1206,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			set family_name [add_or_get_familyname $family_name]
 			set font_key [key $family_name $size {*}$args]
 			if { $font_key ni [::font names] } {
-				set font_key [load $family_name $size "" {*}$args]
+				set font_key [load $family_name $size {*}$args]
 			}
 		
 			return $font_key
@@ -2129,7 +2064,7 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 						lappend item_tags "p:$page"
 					}
 				}
-				msg [namespace current] new_add_to_pages "new_tags=$item_tags"
+				msg [namespace current] add_items "new_tags=$item_tags"
 				$can itemconfigure $tags -tags $item_tags
 			}
 		}
@@ -3240,9 +3175,9 @@ size: $platform_font_size, filename: \"$filename\", options: $args"
 			if { ! $compatibility_mode } {				
 				set style [dui::args::get_option -style "" 1]
 				dui::args::process_aspects text $style "" "pos"
-if { $main_tag eq "launch_dye" } { msg "BEFORE PROCESSING FONT args='$args'" }
+#if { $main_tag eq "launch_dye" } { msg "BEFORE PROCESSING FONT args='$args'" }
 				dui::args::process_font text $style
-if { $main_tag eq "launch_dye" } { msg "AFTER PROCESSING FONT args='$args'" }
+#if { $main_tag eq "launch_dye" } { msg "AFTER PROCESSING FONT args='$args'" }
 				set width [dui::args::get_option -width {} 1]
 				if { $width ne "" } {
 					set width [dui platform rescale_x $width]
@@ -3941,7 +3876,7 @@ if { $main_tag eq "launch_dye" } { msg "AFTER PROCESSING FONT args='$args'" }
 			#[dui canvas] bind $arrow_id [dui platform button_press] $select_cmd
 			
 			foreach page $pages {
-				set after_show_cmd [list ::dui::item::relocate_text_wrt $page ${main_tag}-dda $main_tag e 20 -10]
+				set after_show_cmd [list ::dui::item::relocate_text_wrt $page ${main_tag}-dda $main_tag e 20 -12 w]
 				dui page add_action $page show $after_show_cmd
 			}
 			
@@ -5131,4 +5066,3 @@ namespace eval ::dui::pages::dui_item_selector {
 ### JUST FOR TESTING
 set ::settings(enabled_plugins) {}
 # dui_demo SDB github
-#dui::font::add_or_get_familyname "Font Awesome 5 Pro-Regular-400"
