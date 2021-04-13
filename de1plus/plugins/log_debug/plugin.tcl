@@ -9,11 +9,6 @@ namespace eval ::plugins::${plugin_name} {
     variable description "Enable DEBUG-level logging for Stable builds."
     variable name "Log DEBUG"
 
-    # Always on entry point
-    proc preload {} {
-	    #
-    }
-
     proc main {} {
 	    set ::logging::severity_limit_logfile 7
 	    msg -NOTICE "Log level set to DEBUG"
