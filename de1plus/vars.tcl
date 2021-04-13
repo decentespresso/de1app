@@ -2146,24 +2146,6 @@ proc fill_advanced_profile_steps_listbox {} {
 	update idletasks
 }
 
-# on androwish some listbox selctions are causing multiple cascading events, and we don't know why
-# this is a work around that assumes that each cascading event will happen within 100ms of each others
-set time_of_last_listbox_event [clock milliseconds]
-proc check_for_multiple_listbox_events_bug {} {
-	msg -DEBUG "::de1(current_context) $::de1(current_context)"
-	return 0
-
-	set now [clock milliseconds]
-	set diff [expr {$now - $::time_of_last_listbox_event}]
-	set ::time_of_last_listbox_event $now
-
-	if {$diff < 100} {
-		return 1
-	}
-
-	return 0
-}
-
 proc load_language {} {
 	set stepnum [$::languages_widget curselection]
 	if {$stepnum == ""} {
@@ -2186,10 +2168,6 @@ proc load_advanced_profile_step {{force 0}} {
 		msg -DEBUG "returning load_advanced_profile_step"
 		return 
 	}
-
-	#if {[check_for_multiple_listbox_events_bug] == 1} {
-	#	return
-	#}
 
 	set stepnum [$::advanced_shot_steps_widget curselection]
 	if {$stepnum == ""} {
