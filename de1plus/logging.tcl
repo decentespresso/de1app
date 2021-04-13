@@ -8,12 +8,6 @@ proc msg {args} {
 	::logging::default_logger {*}$args
 }
 
-# Originally in updater.tcl
-proc log_to_debug_file {args} {
-	::logging::default_logger {*}$args
-}
-
-
 # TODO: Persist and restore the "settings"
 
 namespace eval ::logging {
