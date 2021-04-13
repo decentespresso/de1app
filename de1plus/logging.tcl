@@ -216,6 +216,12 @@ namespace eval ::logging {
 	}
 
 
+	proc close_logfiles {} {
+
+		msg -NOTICE "::logging::close_logfiles"
+		catch { close $::logging::_log_fh }
+	}
+
 	# flush_log should only be called when required
 	# such as just prior to an upload of the logs
 	#
