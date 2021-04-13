@@ -291,16 +291,6 @@ proc verify_decent_tls_certificate {} {
     return $status
 }
 
-proc close_log_file {} {
-    if {[ifexists ::logfile_handle] != ""} {
-        catch {
-            msg -INFO "closing ::logfile_handle file"
-            close $::logfile_handle
-            undef -nocomplain ::logfile_handle
-        }
-    }
-}
-
 # every day, check to see if an app update is available
 proc scheduled_app_update_check {} {
     check_timestamp_for_app_update_available
