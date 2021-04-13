@@ -2955,7 +2955,7 @@ proc format_espresso_for_history {} {
 		set clock $::settings(espresso_clock)
 
 		set espresso_data {}
-		append espresso_data "clock {$clock}\n"
+		append espresso_data "clock $clock\n"
 		append espresso_data "local_time {[clock format $clock]}\n"
 
 		append espresso_data "espresso_elapsed {[espresso_elapsed range 0 end]}\n"
