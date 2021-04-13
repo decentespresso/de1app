@@ -723,13 +723,15 @@ proc close_all_ble_and_exit {} {
 	foreach h [ble info] {
 		msg -WARNING "Open BLE handle: [ble info $h]"
 	}
+
+	::logging::close_logfiles
+
 	exit 0
 }
 
 proc app_exit {} {
 
 	tcl_introspection
-	close_log_file
 
 	if {$::android != 1} {
 		close_all_ble_and_exit
@@ -755,7 +757,7 @@ proc app_exit {} {
 	after 5000 { .can itemconfigure $::message_button_label -text [translate "Quit"] }
 
 
-	after 10000 "exit 0"
+	after 10000 { ::logging::close_logfiles ; exit 0 }
 }
 
 
