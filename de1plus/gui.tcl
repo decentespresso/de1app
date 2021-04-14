@@ -1471,14 +1471,16 @@ proc show_settings { {tab_to_show ""} } {
 	#preview_profile 
 }
 
-proc page_to_show_when_off {page_to_show} {
+proc page_to_show_when_off {page_to_show args} {
 	set_next_page off $page_to_show
-	page_show $page_to_show
+	dui page load $page_to_show {*}$args
+#	page_show $page_to_show
 }
 
-proc page_show {page_to_show} {
-	set page_to_hide $::de1(current_context)
-	return [page_display_change $page_to_hide $page_to_show] 
+proc page_show {page_to_show args} {
+	dui page load $page_to_show {*}$args
+#	set page_to_hide $::de1(current_context)
+#	return [page_display_change $page_to_hide $page_to_show] 
 }
 
 proc display_brightness {percentage} {
@@ -1487,8 +1489,9 @@ proc display_brightness {percentage} {
 }
 
 
-proc page_display_change {page_to_hide page_to_show} {
-	::dui::page::display_change $page_to_hide $page_to_show
+proc page_display_change {page_to_hide page_to_show args} {
+	dui page load $page_to_show {*}$args
+#	::dui::page::display_change $page_to_hide $page_to_show
 	
 #	#msg [stacktrace]
 #
@@ -1655,6 +1658,15 @@ proc page_display_change {page_to_hide page_to_show} {
 #
 #	hide_android_keyboard
 
+}
+
+proc adjust_machine_nextpage { page_to_hide page_to_show } { 
+	set key "machine:$page_to_show"
+	if {[ifexists ::nextpage($key)] != ""} {
+		# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
+		return $::nextpage($key)
+	}
+	return 1
 }
 
 proc hide_android_keyboard {} {

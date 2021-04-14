@@ -77,8 +77,6 @@ namespace eval ::dui {
 	# session-specific multiplier that makes the fixed sizes used in client code (dui add ... -font_size X) map to
 	# fonts of similar sizes throughout platforms and languages. 
 	variable fontm 1
-	# variable fontw not used anywhere in my source code searches
-	#variable fontw 1
 	
 	# Font/language-dependent multipliers to adjust the sizing of character-based widgets like entries and listboxes.
 	# Take into account that with DUI these sizes can be set in pixels, using -canvas_width and -canvas-height. 
@@ -90,14 +88,10 @@ namespace eval ::dui {
 	proc init { {screen_size_width {}} {screen_size_height {}} {orientation landscape} } {
 		global android
 		global undroid
-#		global helvetica_font		
-#		global helvetica_bold_font
-		
 		msg [namespace current] init "android=$android, undroid=$undroid, some_droid=$::some_droid"
 		
 		variable settings
 		variable fontm
-		#variable fontw
 		variable entry_length_multiplier
 		variable listbox_length_multiplier
 		variable listbox_global_width_multiplier
@@ -295,10 +289,10 @@ namespace eval ::dui {
 		set fontawesome_pro [dui::font::add_or_get_familyname "Font Awesome 5 Pro-Regular-400.otf"]
 
 		msg -DEBUG [namespace current] "Font multiplier: $fontm"
-		dui aspect set -theme default -type text font_family $helvetica_font font_size $global_font_size
-		dui aspect set -theme default -type text -style bold font_family $helvetica_bold_font font_size $global_font_size
+		dui aspect set -theme default -type text font_family $helvetica_font 
+		dui aspect set -theme default -type text -style bold font_family $helvetica_bold_font
 		dui aspect set -theme default -type text -style global font_family $global_font_name font_size $global_font_size
-msg -DEBUG [namespace current] "Adding global font with family=$global_font_name and size=$global_font_size"		
+		#msg -DEBUG [namespace current] "Adding global font with family=$global_font_name and size=$global_font_size"		
 		dui aspect set -theme default -type symbol font_family $fontawesome_pro
 		dui aspect set -theme default -type symbol -style brands font_family $fontawesome_brands
 		
@@ -311,6 +305,11 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 		::canvas $can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
 		pack $can
 
+		# Create an invisible full-page rectangle to "absorb" taps when changing pages, to prevent the bug of taps
+		# persisting through pages. Suggested by Ray.
+		$can create rect 0 0 $screen_size_width $screen_size_height -fill {} -width 0 -tags _tapabsorber_ -state "hidden"
+		$can bind _tapabsorber_ [dui platform button_press] {}
+		
 		############################################
 		# future feature: flight mode
 		#if {$::settings(flight_mode_enable) == 1} {
@@ -331,6 +330,9 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 	
 	proc setup_ui {} {
 		# Launch setup methods of pages created with 'dui add page'
+		dui page add dui_number_editor -namespace true
+		dui page add dui_item_selector -namespace true
+		
 		set applied_ns {}
 		foreach page [page list] {
 			set ns [page get_namespace $page]
@@ -612,6 +614,9 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 #		default.listbox.highlightcolor orange
 #		default.listbox.foreground "#7f879a"
 #		default.symbol.font_family "Font Awesome 5 Pro"
+#		default.entry.font_family notosansuiregular
+#		default.entry.font_size 16
+		
 		array set aspects {
 			default.page.bg_img {}
 			default.page.bg_color "#d7d9e6"
@@ -646,9 +651,6 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 			default.symbol.font_size.small 24
 			default.symbol.font_size.medium 40
 			default.symbol.font_size.big 55
-			
-			default.entry.relief flat
-			default.entry.bg white
 			
 			default.dbutton.debug_outline black
 			default.dbutton.fill "#c0c5e3"
@@ -690,8 +692,6 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 			default.entry.relief flat
 			default.entry.bg white
 			default.entry.width 2
-			default.entry.font_family notosansuiregular
-			default.entry.font_size 16
 			
 			default.entry.relief.special flat
 			default.entry.bg.special yellow
@@ -703,7 +703,7 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 			default.multiline_entry.font_family notosansuiregular
 			default.multiline_entry.font_size 16
 			default.multiline_entry.width 15
-			default.multiline_entry.height 5			
+			default.multiline_entry.height 5
 
 			default.dcombobox.relief flat
 			default.dcombobox.bg white
@@ -829,6 +829,7 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 						#msg -INFO [namespace current] "aspect '$var' already exists, new value is equal to old"
 					} else {
 						msg -NOTICE [namespace current] "aspect '$var' already exists, old value='$aspects($var)', new value='$value'"
+						if { [ifexists ::debugging 0]} { msg -DEBUG [stacktrace] }
 					}
 				}
 				::set aspects($var) $value
@@ -1642,14 +1643,15 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 	### PAGE SUB-ENSEMBLE ###
 	# AT THE MOMENT ONLY page_add SHOULD BE USED AS OTHERS MAY BREAK BACKWARDS COMPATIBILITY #
 	namespace eval page {
-		namespace export add current exists list delete get_namespace set_next show_when_off show add_action actions \
+		namespace export add current exists list delete get_namespace load show add_action actions \
 			add_items add_variable update_onscreen_variables
+			#set_next show_when_off 
 		namespace ensemble create
 		
 		# Metadata for every added page. Array keys have the form '<page_name>,<type>', where <type> can be:
 		#	'ns': Page namespace. Empty string if the page doesn't have a namespace.
-		#	'load': List of Tcl callbacks to run when the page is going to be shown, but before if is actually shown.
-		#	'show': List of Tcl callbacks to run just after the page is shown. 
+		#	'load': List of Tcl callbacks to run when the page is going to be shown, but before it is actually shown.
+		#	'show': List of Tcl callbacks to run just after the page is shown.
 		#	'hide': List of Tcl callbacks to run just after the page is hidden.
 		#	'variables': List of canvas_ids-tcl_code variable pairs to update on the page while it's visible.  
 		variable pages_data 
@@ -1693,8 +1695,10 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 			foreach page $pages {
 				if { ![string is wordchar $page] } {
 					error "Page names can only have letters, numbers and underscores. '$page' is not valid."
-				} elseif { $page in {page pages all} } {
-					error "The following page names cannot be used: 'page', 'pages', 'all'."
+				} elseif { [string is integer $page] } { 
+					error "Page names can not be numeric only."
+				} elseif { $page in {page pages all true false yes no 1 0} } {
+					error "The following page names cannot be used: page, pages, all, true, false, yes, no, 1 or 0."
 				} elseif { [info exists pages_data($page,ns)] } {
 					error "Page names must be unique. '$page' is duplicated."
 				}
@@ -1824,129 +1828,84 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 			} 
 			return $ns
 		}
-			
-		proc set_next { machinepage guipage } {
-			#variable nextpage
-			#msg "set_next_page $machinepage $guipage"
-			set key "machine:$machinepage"
-			set ::nextpage($key) $guipage
-		}
 
-		proc show_when_off { page_to_show args } {
-			set_next off $page_to_show
-			show $page_to_show {*}$args
-		}
-				
-		proc show { page_to_show args } {
-			display_change [current] $page_to_show {*}$args
-		}
-		
-		proc display_change { page_to_hide page_to_show args } {
+		# Loads and shows a page, hiding the currently visible one. If -_run_load_actions=0/no/false, doesn't run
+		# 	the page-specific load actions (this is used when a page needs to be "shown" but not "(re)-loaded").
+		# The load process can be customized by apps adding page actions, either generic ones that run for all pages,
+		#	or page-specific ones.
+		proc load { page_to_show args } {
 			variable current_page
 			set can [dui canvas]
 			catch { delay_screen_saver }
 			
-			set hide_ns [get_namespace $page_to_hide]
-			set show_ns [get_namespace $page_to_show]
+			set page_to_hide [current]
 			
-			set key "machine:$page_to_show"
-			if {[ifexists ::nextpage($key)] != ""} {
-				# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
-				set page_to_show $::nextpage($key)
+			# run general load actions (same for all pages) in the global context. 
+			# If 1 or a string is returned, the loading process continues. 
+			# If it's a string that matches a page name, the page to show is changed to that one. 
+			# If 0 is returned, the loading process is interrupted.
+			# Note that this time we don't use [string is true] as "off" is evaluated as boolean...
+			foreach action [actions {} load] {
+				lappend action $page_to_hide $page_to_show
+				set action_result [uplevel #0 $action]
+				if { $action_result ne "" && $action_result != 1 } {
+					if { $action_result == 0 } {
+						msg -NOTICE [namespace current] "loading of page '$page_to_show' interrupted"
+						return
+					} else {
+						msg -NOTICE [namespace current] "CHANGING page_to_show from '$page_to_show' to '$action_result'"
+						set page_to_show $action_result	
+					} 
+				}
 			}
-		
+
 			if {$current_page eq $page_to_show} {
-				#msg "page_display_change returning because ::de1(current_context) == $page_to_show"
+				#msg -NOTICE [namespace current] load "returning because current_page == $page_to_show"
 				return 
 			}
-		
-			msg [namespace current] display_change "$page_to_hide->$page_to_show"
-				
-#			# TODO: This should be handled by the main app adding actions to the sleep/off/saver pages
-#			if {$page_to_hide == "sleep" && $page_to_show == "off"} {
-#				msg [namespace current] "discarding intermediate sleep/off state msg"
-#				return 
-#			} elseif {$page_to_show == "saver"} {
-#				if {[ifexists ::exit_app_on_sleep] == 1} {
-#					get_set_tablet_brightness 0
-#					close_all_ble_and_exit
-#				}
-#			}
-		
-			# signal the page change with a sound
+			
+			set hide_ns [get_namespace $page_to_hide]
+			set show_ns [get_namespace $page_to_show]
+					
+			msg [namespace current] load "$page_to_hide -> $page_to_show"
 			dui sound make page_change
 			
 			#msg "page_display_change $page_to_show"
 			#set start [clock milliseconds]
 		
-			# TODO: This should be added on the main app as a load action on the "saver" page
-			# set the brightness in one place
-#			if {$page_to_show == "saver" } {
-#				if {$::settings(screen_saver_change_interval) == 0} {
-#					# black screen saver
-#					display_brightness 0
-#				} else {
-#					display_brightness $::settings(saver_brightness)
-#				}
-#				borg systemui $::android_full_screen_flags  
-#			} else {
-#				display_brightness $::settings(app_brightness)
-#			}
-		
-			
-#			if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {		
-#				msg "Doing next stress test step: '$::idle_next_step '"
-#				set todo $::idle_next_step 
-#				unset -nocomplain ::idle_next_step 
-#				eval $todo
-#			}
-
-			# run load actions
-			foreach action [actions {} load] {
-				lappend action $page_to_hide $page_to_show
-				uplevel #0 $action
-			}			
-			foreach action [actions $page_to_show load] {
-				lappend action $page_to_hide $page_to_show
-				uplevel #0 $action
-				#eval $action
+			# run page-specific load actions
+			set run_load_actions 1
+			if { [::dui::args::has_option -_run_load_actions] } {
+				set run_load_actions [string is true [::dui::args::get_option -_run_load_actions 1 1]]
 			}
-			if { $show_ns ne "" && [info procs ${show_ns}::load] ne "" } {
-				set page_loaded [${show_ns}::load $page_to_hide $page_to_show {*}$args]
-				if { ![string is true $page_loaded] } {
-					# Interrupt the loading: don't show the new page
-					return
+			
+			if { $run_load_actions } {
+				# TBD: Pass $args to load actions???
+				foreach action [actions $page_to_show load] {
+					lappend action $page_to_hide $page_to_show
+					uplevel #0 $action
+					#eval $action
+				}
+				if { $show_ns ne "" && [info procs ${show_ns}::load] ne "" } {
+					set page_loaded [${show_ns}::load $page_to_hide $page_to_show {*}$args]
+					if { ![string is true $page_loaded] } {
+						# Interrupt the loading: don't show the new page
+						return
+					}
 				}
 			}
 
-			# run hide actions
-			foreach action [actions {} hide] {
-				lappend action $page_to_hide $page_to_show
-				uplevel #0 $action
-				#eval $action
-			}
-			foreach action [actions $page_to_hide hide] {
-				lappend action $page_to_hide $page_to_show
-				uplevel #0 $action
-				#eval $action
-			}			
-			if { $hide_ns ne "" && [info procs ${hide_ns}::hide] ne "" } {
-				${hide_ns}::hide $page_to_hide $page_to_show
-			}
-
-			# update global page
+			# update current page
 			set current_page $page_to_show
 			if { [info exists ::de1(current_context)] } {
 				set ::de1(current_context) $page_to_show
 			}
 		
-			#puts "page_display_change hide:$page_to_hide show:$page_to_show"
-			try {
-				$can itemconfigure $page_to_hide -state hidden
-			} on error err {
-				msg -ERROR [namespace current] display_change "error hiding $page_to_hide: $err"
-			}
-			#$can itemconfigure [list "pages" "splash" "saver"] -state hidden
+#			try {
+#				$can itemconfigure $page_to_hide -state hidden
+#			} on error err {
+#				msg -ERROR [namespace current] display_change "error hiding $page_to_hide: $err"
+#			}
 		
 			if {[info exists ::delayed_image_load($page_to_show)] == 1} {
 				set pngfilename	$::delayed_image_load($page_to_show)
@@ -1988,34 +1947,56 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 				}
 		
 			}
-		
+
+			# run hide actions
+			if { $page_to_hide ne "" } {
+				foreach action [actions {} hide] {
+					lappend action $page_to_hide $page_to_show
+					uplevel #0 $action
+				}
+				foreach action [actions $page_to_hide hide] {
+					lappend action $page_to_hide $page_to_show
+					uplevel #0 $action
+				}			
+				if { $hide_ns ne "" && [info procs ${hide_ns}::hide] ne "" } {
+					${hide_ns}::hide $page_to_hide $page_to_show
+				}
+			}
+			
 			# hide all canvas items at once!
 			$can itemconfigure all -state hidden
 
-			# show background, then all page items
+			# show page background item first
 			try {
+				# If we restrict to items that have tag 'pages', the screensaver images are not shown.
+				# TODO: Check how the saver is created, maybe that can be taken care off there, as without restricting
+				#	to have the 'pages' tag some unexpected items could eventually appear if user extra tags are 
+				#	used.
+				#$can itemconfigure pages&&$page_to_show -state normal
 				$can itemconfigure $page_to_show -state normal
+				$can itemconfigure _tapabsorber_ -state normal
 			} on error err {
-				msg -ERROR [namespace current ] display_change "showing page $page_to_show: $err"
+				msg -ERROR [namespace current] display_change "showing page $page_to_show: $err"
 			}
+			after 50 {[dui canvas] itemconfigure _tapabsorber_ -state hidden}
 						
-			# new dui system, show page items using the "p:<page_name>" tags 
+			# show page items using the "p:<page_name>" tags 
 			foreach item [$can find withtag p:$page_to_show] {
 				$can itemconfigure $item -state normal
 			}
-
+			
 			# run show actions
 			foreach action [actions {} show] {
+				lappend action $page_to_hide $page_to_show
 				uplevel #0 $action
-				#eval $action
 			}			
 			foreach action [actions $page_to_show show] {
+				# Don't append until old-system actions like ::after_show_extensions are migrated 
+				#lappend action $page_to_hide $page_to_show
 				uplevel #0 $action
-				#eval $action
 			}			
 			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
 				${show_ns}::show $page_to_hide $page_to_show
-				#set ::dui::pages::${page_to_show}::page_drawn 1
 			}
 			
 			#set end [clock milliseconds]
@@ -2024,8 +2005,214 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 			update
 			dui page update_onscreen_variables
 			dui platform hide_android_keyboard
-			#msg "Switched to page: $page_to_show [stacktrace]"
+			#msg [namespace current] "Switched to page: $page_to_show [stacktrace]"
 		}
+		
+		proc show { page_to_show } {
+			load $page_to_show -_run_load_actions no
+		}
+		
+#		proc set_next { machinepage guipage } {
+#			#variable nextpage
+#			#msg "set_next_page $machinepage $guipage"
+#			set key "machine:$machinepage"
+#			set ::nextpage($key) $guipage
+#		}
+#
+#		proc show_when_off { page_to_show args } {
+#			set_next off $page_to_show
+#			show $page_to_show {*}$args
+#		}
+#				
+#		proc show { page_to_show args } {
+#			display_change [current] $page_to_show {*}$args
+#		}
+#		
+#		proc display_change { page_to_hide page_to_show args } {
+#			variable current_page
+#			set can [dui canvas]
+#			catch { delay_screen_saver }
+#			
+#			set hide_ns [get_namespace $page_to_hide]
+#			set show_ns [get_namespace $page_to_show]
+#			
+#			set key "machine:$page_to_show"
+#			if {[ifexists ::nextpage($key)] != ""} {
+#				# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
+#				set page_to_show $::nextpage($key)
+#			}
+#		
+#			if {$current_page eq $page_to_show} {
+#				#msg "page_display_change returning because ::de1(current_context) == $page_to_show"
+#				return 
+#			}
+#		
+#			msg [namespace current] display_change "$page_to_hide->$page_to_show"
+#				
+##			# TODO: This should be handled by the main app adding actions to the sleep/off/saver pages
+##			if {$page_to_hide == "sleep" && $page_to_show == "off"} {
+##				msg [namespace current] "discarding intermediate sleep/off state msg"
+##				return 
+##			} elseif {$page_to_show == "saver"} {
+##				if {[ifexists ::exit_app_on_sleep] == 1} {
+##					get_set_tablet_brightness 0
+##					close_all_ble_and_exit
+##				}
+##			}
+#		
+#			# signal the page change with a sound
+#			dui sound make page_change
+#			
+#			#msg "page_display_change $page_to_show"
+#			#set start [clock milliseconds]
+#		
+#			# TODO: This should be added on the main app as a load action on the "saver" page
+#			# set the brightness in one place
+##			if {$page_to_show == "saver" } {
+##				if {$::settings(screen_saver_change_interval) == 0} {
+##					# black screen saver
+##					display_brightness 0
+##				} else {
+##					display_brightness $::settings(saver_brightness)
+##				}
+##				borg systemui $::android_full_screen_flags  
+##			} else {
+##				display_brightness $::settings(app_brightness)
+##			}
+#		
+#			
+##			if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {		
+##				msg "Doing next stress test step: '$::idle_next_step '"
+##				set todo $::idle_next_step 
+##				unset -nocomplain ::idle_next_step 
+##				eval $todo
+##			}
+#
+#			# run load actions
+#			foreach action [actions {} load] {
+#				lappend action $page_to_hide $page_to_show
+#				uplevel #0 $action
+#			}			
+#			foreach action [actions $page_to_show load] {
+#				lappend action $page_to_hide $page_to_show
+#				uplevel #0 $action
+#				#eval $action
+#			}
+#			if { $show_ns ne "" && [info procs ${show_ns}::load] ne "" } {
+#				set page_loaded [${show_ns}::load $page_to_hide $page_to_show {*}$args]
+#				if { ![string is true $page_loaded] } {
+#					# Interrupt the loading: don't show the new page
+#					return
+#				}
+#			}
+#
+#			# run hide actions
+#			foreach action [actions {} hide] {
+#				lappend action $page_to_hide $page_to_show
+#				uplevel #0 $action
+#				#eval $action
+#			}
+#			foreach action [actions $page_to_hide hide] {
+#				lappend action $page_to_hide $page_to_show
+#				uplevel #0 $action
+#				#eval $action
+#			}			
+#			if { $hide_ns ne "" && [info procs ${hide_ns}::hide] ne "" } {
+#				${hide_ns}::hide $page_to_hide $page_to_show
+#			}
+#
+#			# update global page
+#			set current_page $page_to_show
+#			if { [info exists ::de1(current_context)] } {
+#				set ::de1(current_context) $page_to_show
+#			}
+#		
+#			#puts "page_display_change hide:$page_to_hide show:$page_to_show"
+#			try {
+#				$can itemconfigure $page_to_hide -state hidden
+#			} on error err {
+#				msg -ERROR [namespace current] display_change "error hiding $page_to_hide: $err"
+#			}
+#			#$can itemconfigure [list "pages" "splash" "saver"] -state hidden
+#		
+#			if {[info exists ::delayed_image_load($page_to_show)] == 1} {
+#				set pngfilename	$::delayed_image_load($page_to_show)
+#				msg "Loading skin image from disk: $pngfilename"
+#				
+#				set errcode [catch {
+#					# this can happen if the image file has been moved/deleted underneath the app
+#					#fallback is to at least not crash
+#					msg "page_display_change image create photo $page_to_show -file $pngfilename" 
+#					image create photo $page_to_show -file $pngfilename
+#					#msg "image create photo $page_to_show -file $pngfilename"
+#				}]
+#		
+#				if {$errcode != 0} {
+#					catch {
+#						msg "image create photo error: $::errorInfo"
+#					}
+#				}
+#		
+#				foreach {page img} [array get ::delayed_image_load] {
+#					if {$img == $pngfilename} {
+#						
+#						# Matching delayed image load to every page that references it
+#						# this avoids loading the same iamge over and over, for each page referencing it
+#		
+#						set errcode [catch {
+#							# this error can happen if the image file has been moved/deleted underneath the app, fallback is to at least not crash
+#							$can itemconfigure $page -image $page_to_show -state hidden					
+#						}]
+#		
+#						if {$errcode != 0} {
+#							catch {
+#								msg "$can itemconfigure page_to_show ($page/$page_to_show) error: $::errorInfo"
+#							}
+#						}
+#		
+#						unset -nocomplain ::delayed_image_load($page)
+#					}
+#				}
+#		
+#			}
+#		
+#			# hide all canvas items at once!
+#			$can itemconfigure all -state hidden
+#
+#			# show background, then all page items
+#			try {
+#				$can itemconfigure $page_to_show -state normal
+#			} on error err {
+#				msg -ERROR [namespace current ] display_change "showing page $page_to_show: $err"
+#			}
+#						
+#			# new dui system, show page items using the "p:<page_name>" tags 
+#			foreach item [$can find withtag p:$page_to_show] {
+#				$can itemconfigure $item -state normal
+#			}
+#
+#			# run show actions
+#			foreach action [actions {} show] {
+#				uplevel #0 $action
+#				#eval $action
+#			}			
+#			foreach action [actions $page_to_show show] {
+#				uplevel #0 $action
+#				#eval $action
+#			}			
+#			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
+#				${show_ns}::show $page_to_hide $page_to_show
+#				#set ::dui::pages::${page_to_show}::page_drawn 1
+#			}
+#			
+#			#set end [clock milliseconds]
+#			#puts "elapsed: [expr {$end - $start}]"
+#			
+#			update
+#			dui page update_onscreen_variables
+#			dui platform hide_android_keyboard
+#			#msg "Switched to page: $page_to_show [stacktrace]"
+#		}
 		
 		proc add_action { pages event tclcode } {
 			variable pages_data
@@ -3736,7 +3923,7 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 					set editor_page "dui_number_editor" 
 				} 
 	
-				set editor_cmd [list dui page show_when_off $editor_page $textvariable -n_decimals $n_decimals -min $min \
+				set editor_cmd [list dui page load $editor_page $textvariable -n_decimals $n_decimals -min $min \
 					-max $max -default $default -smallincrement $smallincrement -bigincrement $bigincrement \
 					-page_title $editor_page_title]
 				set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
@@ -3795,7 +3982,7 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 	#				set editor_page "dui_number_editor" 
 	#			} 
 	#
-	#			set editor_cmd [list dui page show_when_off $editor_page $textvariable -n_decimals $n_decimals -min $min \
+	#			set editor_cmd [list dui page load $editor_page $textvariable -n_decimals $n_decimals -min $min \
 	#				-max $max -default $default -smallincrement $smallincrement -bigincrement $bigincrement \
 	#				-page_title $editor_page_title]
 	#			set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
@@ -3843,7 +4030,7 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 			set cmd [dui::args::get_option -command {} 1]
 			set expand_cmd 0
 			if { $cmd eq "" } {
-				set cmd [list dui page show_when_off dui_item_selector]
+				set cmd [list dui page load dui_item_selector]
 				set expand_cmd 1
 			} elseif { $ns ne "" && [string is wordchar $cmd] && [namespace which -command ${ns}::$cmd] ne "" } {
 				set cmd "${ns}::$cmd"
@@ -4202,7 +4389,7 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 					set editor_page "dui_number_editor" 
 				}
 				set editor_page_title [dui::args::get_option -editor_page_title]
-				set editor_cmd [list dui page show_when_off $editor_page $var -n_decimals $n_decimals -min $from \
+				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $from \
 					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
 					-page_title $editor_page_title]
 				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
@@ -4281,7 +4468,7 @@ msg -DEBUG [namespace current] "Adding global font with family=$global_font_name
 					set biginc $smallinc
 				}			
 					
-				set editor_cmd [list dui page show_when_off $editor_page $var -n_decimals $n_decimals -min $from \
+				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $from \
 					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
 					-page_title $editor_page_title]
 				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
@@ -4526,7 +4713,7 @@ namespace eval ::dui::pages::dui_number_editor {
 		set page [namespace tail [namespace current]]
 		
 		# Page and title
-		dui page add $page -namespace 1
+		#dui page add $page -namespace 1
 		dui add variable $page 1280 100 -tags page_title -style page_title
 		
 		# Insight-style background shapes
@@ -4791,7 +4978,7 @@ namespace eval ::dui::pages::dui_number_editor {
 		if { $data(callback_cmd) ne "" } {
 			$data(callback_cmd) {}
 		} else {
-			dui page show_when_off $data(previous_page)
+			dui page show $data(previous_page)
 		}
 	}
 	
@@ -4814,7 +5001,7 @@ namespace eval ::dui::pages::dui_number_editor {
 			$data(callback_cmd) $data(value)
 		} else {		
 			set $data(num_variable) $data(value)
-			dui page show_when_off $data(previous_page)
+			dui page show $data(previous_page)
 		}
 	}
 }
@@ -4849,7 +5036,7 @@ namespace eval ::dui::pages::dui_item_selector {
 		set font_size +1
 		
 		# Page and title
-		dui page add $page -namespace 1
+		#dui page add $page -namespace 1
 		dui add variable $page 1280 100 -tags page_title -style page_title
 		
 		# Insight-style background shapes
@@ -4905,7 +5092,7 @@ namespace eval ::dui::pages::dui_item_selector {
 		}
 		set data(previous_page) $page_to_hide
 		set data(page_title) [ifexists opts(-page_title) [translate "Select an item"]]
-		
+				
 		# If no selected is given, but variable is given and it has a current value, use it as selected.
 		set data(variable) $variable
 		set selected [ifexists opts(-selected) ""]
@@ -4913,16 +5100,17 @@ namespace eval ::dui::pages::dui_item_selector {
 			set selected [subst "\$$data(variable)"]
 		}	
 		# Add the current/selected value if not included in the list of available items
+		set values [subst $values]
 		set data(item_ids) [ifexists opts(-values_ids)]
 		if { $selected ne "" } {
 			if { $selected ni $values } {
 				if { [llength $data(item_ids)] > 0 } { 
 					lappend data(item_ids) -1 
 				}
-				lappend items $selected
+				lappend values $selected
 			}
 		}
-		set data(item_values) $values
+		set data(item_values) $values		
 		set data(item_type) [ifexists opts(-category_name)]
 		set data(callback_cmd) [ifexists opts(-callback_cmd)]
 		set data(selectmode) [ifexists opts(-selectmode) "browser"]
@@ -5022,7 +5210,7 @@ namespace eval ::dui::pages::dui_item_selector {
 		if { $data(callback_cmd) ne "" } {
 			$data(callback_cmd) {} {} $data(item_type)
 		} else {
-			dui page show_when_off $data(previous_page)
+			dui page show $data(previous_page)
 		}
 	}
 		
@@ -5057,7 +5245,7 @@ namespace eval ::dui::pages::dui_item_selector {
 			if { $data(variable) ne "" } {
 				set $data(variable) $item_value
 			}
-			dui page show_when_off $data(previous_page)
+			dui page show $data(previous_page)
 		}
 	}
 
