@@ -467,12 +467,6 @@ if { $settings(bluetooth_address) != ""} {
 	append_to_de1_list $settings(bluetooth_address) "DE1" "ble"
 }
 
-
-	#error "atomaxscale"
-# initial filling of BLE scale list
-#set ::scale_bluetooth_list $::settings(scale_bluetooth_address)
-
-
 array set ::de1_state {
 	Sleep \x00
 	GoingToSleep \x01
@@ -526,7 +520,7 @@ array set ::de1_num_state {
 
 
 
-set ::scale_bluetooth_list ""
+set ::peripheral_device_list ""
 array set ::de1_num_state_reversed [reverse_array ::de1_num_state]
 
 

@@ -1162,28 +1162,26 @@ proc ble_connect_to_scale {} {
 
 }
 
-proc append_to_scale_bluetooth_list {address name type} {
-	::bt::msg -NOTICE append_to_scale_bluetooth_list
+proc append_to_peripheral_list {address name connectiontype devicetype devicefamily} {
+	::bt::msg -NOTICE append_to_peripheral_list
 
-	set ::scale_types($address) $type
-
-	foreach { entry } $::scale_bluetooth_list {
+	foreach { entry } $::peripheral_device_list {
 		if { [dict get $entry address] eq $address} {
 			return
 		}
 	}
 
 	if { $name == "" } {
-		set name $type
+		set name $devicefamily
 	}
 
-	set newlist $::scale_bluetooth_list
-	lappend newlist [dict create address $address name $name type $type]
+	set newlist $::peripheral_device_list
+	lappend newlist [dict create address $address name $name connectiontype $connectiontype devicetype $devicetype devicefamily $devicefamily]
 
-	::bt::msg -INFO "Scan found recognized scale at: $address ($type)"
-	set ::scale_bluetooth_list $newlist
+	::bt::msg -INFO "Scan found $connectiontype peripheral: $address ($devicetype:$devicefamily)"
+	set ::peripheral_device_list $newlist
 	catch {
-		fill_ble_scale_listbox
+		fill_peripheral_listbox
 	}
 }
 
@@ -1307,7 +1305,7 @@ proc de1_ble_handler { event data } {
 						}
 					}
 				} elseif {[string first Skale $name] == 0} {
-					append_to_scale_bluetooth_list $address $name "atomaxskale"
+					append_to_peripheral_list $address $name "ble" "scale" "atomaxskale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1317,7 +1315,7 @@ proc de1_ble_handler { event data } {
 					}
 
 				} elseif {[string first "Decent Scale" $name] == 0} {
-					append_to_scale_bluetooth_list $address $name "decentscale"
+					append_to_peripheral_list $address $name "ble" "scale" "decentscale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1326,7 +1324,7 @@ proc de1_ble_handler { event data } {
 						}
 					}
 				} elseif {[string first "FELICITA" $name] == 0} {
-					append_to_scale_bluetooth_list $address $name "felicita"
+					append_to_peripheral_list $address $name "ble" "scale" "felicita"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1335,7 +1333,7 @@ proc de1_ble_handler { event data } {
 						}
 					}
  				} elseif {[string first "HIROIA JIMMY" $name] == 0} {
-					append_to_scale_bluetooth_list $address $name "hiroiajimmy"
+					append_to_peripheral_list $address $name "ble" "scale" "hiroiajimmy"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1350,7 +1348,7 @@ proc de1_ble_handler { event data } {
 					if { [string first "PROCH" $name] != -1 } {
 						set ::settings(force_acaia_heartbeat) 1
 					}
- 					append_to_scale_bluetooth_list $address $name "acaiascale"
+					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1401,7 +1399,6 @@ proc de1_ble_handler { event data } {
 
 						::device::scale::event::apply::on_disconnect_callbacks $event_dict
 
-
 						# john 1-11-19 automatic reconnection attempts eventually kill the bluetooth stack on android 5.1
 						# john might want to make this happen automatically on Android 8, though. For now, it's a setting, which might
 						# eventually get auto-set as per the current Android version, if we can trust that to give us a reliable BLE stack.
@@ -1431,10 +1428,6 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_de1
 						}
 
-						#if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != "" && $::currently_connecting_scale_handle == 0} {
-							#userdata_append "connect to scale" ble_connect_to_scale
-							#ble_connect_to_scale
-						#}
 					}
 					set ::scanning 0
 				} elseif {$state eq "discovery"} {
@@ -1469,12 +1462,7 @@ proc de1_ble_handler { event data } {
 							stop_scanner
 						}
 
-
 					} elseif {$::de1(scale_device_handle) == 0 && $address == $::settings(scale_bluetooth_address)} {
-
-
-						#append_to_scale_bluetooth_list $address [ifexists ::scale_types($address)]
-						#append_to_scale_bluetooth_list $address $::settings(scale_type)
 
 						set ::de1(wrote) 0
 						set ::de1(scale_device_handle) $handle
@@ -1490,9 +1478,8 @@ proc de1_ble_handler { event data } {
 							set ::settings(scale_type) "atomaxskale"
 						}
 
-						#set ::de1(scale_type) [ifexists ::scale_types($address)]
 						if {$::settings(scale_type) == "decentscale"} {
-							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "decentscale"
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "decentscale"
 							decentscale_enable_lcd
 							after 100 decentscale_enable_lcd
 							after 200 decentscale_enable_notifications
@@ -1502,20 +1489,20 @@ proc de1_ble_handler { event data } {
 							after 400 decentscale_enable_lcd
 
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
-							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "atomaxskale"
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "atomaxskale"
 							#set ::de1(scale_type) "atomaxskale"
 							skale_enable_lcd
 							after 1000 skale_enable_weight_notifications
 							after 2000 skale_enable_button_notifications
 							after 3000 skale_enable_lcd
 						} elseif {$::settings(scale_type) == "felicita"} {
-							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "felicita"
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "felicita"
 							after 2000 felicita_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "hiroiajimmy"} {
-							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "hiroiajimmy"
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "hiroiajimmy"
 							after 200 hiroia_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
-							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "acaiascale"
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
 							acaia_send_ident
 							after 500 acaia_send_config
 							after 1000 acaia_enable_weight_notifications
@@ -2015,12 +2002,6 @@ proc de1_ble_handler { event data } {
 			}
 			service {
 
-				#if {$suuid == "0000180A-0000-1000-8000-00805F9B34FB"} {
-				#	set ::scale_types($address) "atomaxskale"
-				#} elseif {$suuid == "83CDC3D4-3BA2-13FC-CC5E-106C351A9352"} {
-				#	set ::scale_types($address) "decentscale"
-				#}
-
 			}
 			descriptor {
 
@@ -2176,7 +2157,7 @@ proc scanning_state_text {} {
 	}
 
 	#return [translate "Tap to select"]
-	if {[ifexists ::de1_needs_to_be_selected] == 1 || [ifexists ::scale_needs_to_be_selected] == 1} {
+	if {[ifexists ::de1_needs_to_be_selected] == 1 || [ifexists ::peripheral_needs_to_be_selected] == 1} {
 		return [translate "Tap to select"]
 	}
 
@@ -2192,13 +2173,9 @@ proc scanning_restart {} {
 
 		# insert enough dummy devices to overfill the list, to test whether scroll bars are working
 		set ::de1_device_list [list [dict create address "12:32:16:18:90" name "ble3" type "ble"] [dict create address "10.1.1.20" name "wifi1" type "wifi"] [dict create address "12:32:56:78:91" name "dummy_ble2" type "ble"] [dict create address "12:32:56:78:92" name "dummy_ble3" type "ble"] [dict create address "ttyS0" name "dummy_usb" type "usb"] [dict create address "192.168.0.1" name "dummy_wifi2" type "wifi"]]
-		set ::scale_bluetooth_list [list [dict create address "51:32:56:78:90" name "ACAIAxxx" type "ble"] [dict create address "92:32:56:78:90" name "Skale2" type "ble"] [dict create address "12:32:56:78:92" name "ACAIA2xxx" type "ble"] [dict create address "12:32:56:78:93" name "Skale2b" type "ble"] ]
+		set ::peripheral_device_list [list [dict create address "51:32:56:78:90" name "ACAIAxxx" connectiontype "ble" devicetype "scale" devicefamily "acaiascale"] [dict create address "12:32:56:78:93" name "Dummy123" connectiontype "ble" devicetype "scale" devicefamily "unknown"] ]
 
-		set ::scale_types(12:32:56:78:90) "decentscale"
-		set ::scale_types(32:56:78:90:12) "decentscale"
-		set ::scale_types(56:78:90:12:32) "atomaxskale"
-
-		after 200 fill_ble_scale_listbox
+		after 200 fill_peripheral_listbox
 		after 400 fill_ble_listbox
 
 		set ::scanning 1

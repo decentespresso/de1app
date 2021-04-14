@@ -1747,6 +1747,22 @@ proc bluetooth_character {} {
 	return "\uE018"
 }
 
+proc thermometer_character {} {
+	if {[language] == "ar" || [language] == "he"} {
+		return "T:"
+	}
+
+	return "\uF2C9"
+}
+
+proc scale_character {} {
+	if {[language] == "ar" || [language] == "he"} {
+		return "SCALE:"
+	}
+
+	return "\uF515"
+}
+
 proc usb_character {} {
 	if {[language] == "ar" || [language] == "he"} {
 		return "USB:"
@@ -1812,7 +1828,10 @@ proc fill_ble_listbox {} {
 }
 
 proc fill_ble_scale_listbox {} {
-	
+	fill_peripheral_listbox
+}
+
+proc fill_peripheral_listbox {} {
 
 	set widget $::ble_scale_listbox_widget
 	$widget delete 0 99999
@@ -1820,33 +1839,44 @@ proc fill_ble_scale_listbox {} {
 	set current_ble_number 0
 
 	set one_selected 0
-	foreach d [lsort -dictionary -increasing $::scale_bluetooth_list] {
+	foreach d $::peripheral_device_list {
 		set addr [dict get $d address]
 		set name [dict get $d name]
-		set type [dict get $d type]
-		set icon [bluetooth_character]
+		set connectiontype [dict get $d connectiontype]
+		set devicetype [dict get $d devicetype]
+		set family [dict get $d devicefamily]
+		set icon "UNKN:"
 
-		if { $name eq "" } { set name $type }
+		if {$devicetype eq "thermometer"} {
+			set icon [thermometer_character]
+		} elseif {$devicetype eq "scale"} {
+			set icon [scale_character]
+		} elseif {$connectiontype eq "ble"} {
+			set icon [bluetooth_character]
+		}
+
+		if { $name eq "" } { set name $family }
 		if {$addr == [ifexists ::settings(scale_bluetooth_address)]} {
 			$widget insert $cnt " \[[checkboxchar]\] $icon $name"
 			set one_selected 1
 		} else {
 			$widget insert $cnt " \[   \] $icon $name"
 		}
-			#$widget insert $cnt $addr
+
 		if {[ifexists ::settings(scale_bluetooth_address)] == $addr} {
 			set current_ble_number $cnt
 		}
+
 		incr cnt
 	}
-	
-	$widget selection set $current_ble_number;
 
-	set ::scale_needs_to_be_selected 0
-	if {[llength $::de1_device_list] > 0 && $one_selected == 0} {
-		set ::scale_needs_to_be_selected 1
-	}
+	$widget selection set $current_ble_number;
 	
+	set ::peripheral_needs_to_be_selected 0
+	if {[llength $::de1_device_list] > 0 && $one_selected == 0} {
+		set ::peripheral_needs_to_be_selected 1
+	}
+
 	make_current_listbox_item_blue $widget
 }
 
@@ -2500,41 +2530,53 @@ proc change_bluetooth_device {} {
 proc change_scale_bluetooth_device {} {
 	set w $::ble_scale_listbox_widget
 
-
 	if {$w == ""} {
 		return
 	}
 	if {[$w curselection] == ""} {
-		# no current selection
-		#return ""
 		msg -NOTICE "change_scale_bluetooth_device: re-connecting to scale"
 		ble_connect_to_scale
 		return
 	}
 	set selection_index [$w curselection]
-	set dic [lindex $::scale_bluetooth_list $selection_index]
+
+	msg "selected item" $selection_index
+	set dic [lindex $::peripheral_device_list $selection_index]
 	set addr [dict get $dic address]
 	set name [dict get $dic name]
+	set connectiontyte [dict get $dic connectiontype]
+	set devicetype [dict get $dic devicetype]
+	set devicefamily [dict get $dic devicefamily]
 
 	if { $name == "" } {
-		set name [dict get $dic type]
+		set name $devicefamily
 	}
 
-	set ::settings(scale_bluetooth_address) $addr
-	set ::settings(scale_bluetooth_name) $name
-
-	set ::settings(scale_type) [ifexists ::scale_types($addr)]
-	msg -INFO "change_scale_bluetooth_device: set scale type to: '$::settings(scale_type)' $addr"
-
-	if {$addr == $::settings(scale_bluetooth_address)} {
-		ble_connect_to_scale
+	if {$connectiontyte ne "ble"} {
+		msg -WARNING "Non BLE peripheral requested for connect. Damn!"
 		return
+	}
+
+	msg -INFO  "selected $devicetype $name @ $addr"
+
+	if {$devicetype eq "scale"} {
+		set ::settings(scale_bluetooth_address) $addr
+		set ::settings(scale_bluetooth_name) $name
+		set ::settings(scale_type) $devicefamily
+		msg "set scale type to: '$::settings(scale_type)' $addr"
+
+		if {$addr == $::settings(scale_bluetooth_address)} {
+			ble_connect_to_scale
+			return
+		}
+	} else {
+		msg -WARNING "Non scale peripheral requested for connect. Damn!"
 	}
 
 	save_settings
 	ble_connect_to_scale
 
-	fill_ble_scale_listbox
+	fill_peripheral_listbox
 }
 
 
