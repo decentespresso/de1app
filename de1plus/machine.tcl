@@ -44,6 +44,7 @@ array set ::de1 {
     scale_usb_powered 0
     language_rtl 0
     scale_device_handle 0
+	thermometer_device_handle 0
     decentscale_device_handle 0
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"
 	sinstance 12
@@ -77,6 +78,8 @@ array set ::de1 {
 	suuid_hiroiajimmy "06C31822-8682-4744-9211-FEBC93E3BECE"
 	cuuid_hiroiajimmy_cmd "06C31823-8682-4744-9211-FEBC93E3BECE"
 	cuuid_hiroiajimmy_status "06C31824-8682-4744-9211-FEBC93E3BECE"
+	suuid_meater "A75CC7FC-C956-488F-AC2A-2DBC08B63A04"
+	cuuid_meater "7EDDA774-045E-4BBF-909B-45D1991A2876"
 	cinstance 0
 	fan_threshold 0
 	tank_temperature_threshold 0
@@ -352,6 +355,9 @@ array set ::settings {
 	scale_bluetooth_name {}
 	skale_bluetooth_address {}
 	bluetooth_address {}
+	thermometer_bluetooth_name {}
+	thermometer_bluetooth_address {}
+	thermometer_bluetooth_type {}
 	water_max_vol 500
 	water_temperature 85
 	final_desired_shot_weight 36
@@ -452,6 +458,7 @@ array set ::settings {
 	create_legacy_shotfiles 0
 
 	show_scale_notifications 1
+	target_milk_temperature 65
 }
 
 # default de1plus skin
