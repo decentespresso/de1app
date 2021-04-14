@@ -126,7 +126,7 @@ namespace eval ::plugins::${plugin_name} {
         # Start a server and enter the event loop if not already there.
 
         catch {
-            ::wibble::listen 8080
+		::wibble::listen $::plugins::web_api::settings(webserver_port)
         }
 
 	}  ;# main
