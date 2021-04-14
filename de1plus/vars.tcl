@@ -1874,7 +1874,7 @@ proc fill_peripheral_listbox {} {
 			set name "[string range $addr end-1 end]-$name"
 		}
 
-		if {$addr == [ifexists ::settings(scale_bluetooth_address)]} {
+		if {$addr in {$::settings(scale_bluetooth_address) $::settings(thermometer_bluetooth_address)}} {
 			$widget insert $cnt " \[[checkboxchar]\] $icon $name"
 			set one_selected 1
 		} else {
@@ -2586,18 +2586,21 @@ proc change_scale_bluetooth_device {} {
 		set handle $::de1(scale_device_handle)
 		if {$handle != "" && $handle != 0} {
 			set ::de1(scale_device_handle) 0
-			#set ::de1(cmdstack) {};
-			#set ::currently_connecting_scale_handle 0
 			ble close $handle
-			ble_connect_to_scale
-		}  else {
-			ble_connect_to_scale
 		}
-
-		#after 500 
-
+		ble_connect_to_scale
+	} elseif {$devicetype eq "thermometer"} {
+		set ::settings(thermometer_bluetooth_address) $addr
+		set ::settings(thermometer_bluetooth_name) $name
+		set ::settings(thermometer_bluetooth_type) $devicefamily
+		set handle $::de1(thermometer_device_handle)
+		if {$handle != "" && $handle != 0} {
+			set ::de1(thermometer_device_handle) 0
+			ble close $handle
+		}
+		ble_connect_to_thermometer
 	} else {
-		msg -WARNING "Non scale peripheral requested for connect. Damn!"
+		msg -WARNING "Non supported peripheral requested for connect. Damn!"
 	}
 
 	save_settings
