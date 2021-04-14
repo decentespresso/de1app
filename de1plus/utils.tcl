@@ -30,6 +30,7 @@ proc setup_environment {} {
 	# later to the part of the GUI that builds those pages).
 	dui page add_action off load ::off_page_onload
 	dui page add_action saver load ::saver_page_onload
+	dui page add_action {} load ::adjust_machine_nextpage
 	dui page add_action {} load ::page_onload
 	if { $::android == 0 } {
 		dui page add_action {} update_vars ::set_dummy_espresso_vars
