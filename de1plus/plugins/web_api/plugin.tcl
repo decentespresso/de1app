@@ -99,6 +99,16 @@ namespace eval ::plugins::${plugin_name} {
 		::wibble::return_200_json
 	}
 
+	proc ::wibble::flushLog {state} {
+		if { ![check_auth $state] } {
+			return;
+		}
+
+		::logging::flush_log
+
+		::wibble::return_200_json
+	}
+
 	proc ::wibble::checkStatus {state} {
 		if { ![check_auth $state] } {
 			return;
@@ -120,7 +130,8 @@ namespace eval ::plugins::${plugin_name} {
 
         ::wibble::handle /on togglePowerOn
         ::wibble::handle /off togglePowerOff
-        ::wibble::handle /status checkStatus
+	::wibble::handle /status checkStatus
+	::wibble::handle /flush flushLog
         ::wibble::handle / notfound
 
         # Start a server and enter the event loop if not already there.
