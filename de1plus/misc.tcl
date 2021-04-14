@@ -613,6 +613,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1280x800/icons/button8.png *
         skins/DSx/1280x800/icons/click.png *
         skins/DSx/1280x800/icons/click1.png *
+        skins/DSx/1280x800/icons/click_no_box.png *
         skins/DSx/1280x800/icons/DEespresso.png *
         skins/DSx/1280x800/icons/DEflush.png *
         skins/DSx/1280x800/icons/DEsteam.png *
@@ -624,7 +625,10 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1280x800/icons/home.png *
         skins/DSx/1280x800/icons/jug.png *
         skins/DSx/1280x800/icons/jug_full.png *
+        skins/DSx/1280x800/icons/niche.png *
+        skins/DSx/1280x800/icons/niche1280.png *
         skins/DSx/1280x800/icons/orangecup.png *
+        skins/DSx/1280x800/icons/people.png *
         skins/DSx/1280x800/icons/pinkcup.png *
         skins/DSx/1280x800/icons/power.png *
         skins/DSx/1280x800/icons/settings.png *
@@ -634,6 +638,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1280x800/icons/steam_timer.png *
         skins/DSx/1280x800/icons/stop.png *
         skins/DSx/1280x800/icons/store.png *
+        skins/DSx/1280x800/icons/store_button.png *
         skins/DSx/1280x800/icons/water.png *
         skins/DSx/1280x800/icons/zoomminus.png *
         skins/DSx/1280x800/icons/zoomplus.png *
@@ -696,6 +701,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1920x1200/icons/button8.png *
         skins/DSx/1920x1200/icons/click.png *
         skins/DSx/1920x1200/icons/click1.png *
+        skins/DSx/1920x1200/icons/click_no_box.png *
         skins/DSx/1920x1200/icons/DEespresso.png *
         skins/DSx/1920x1200/icons/DEflush.png *
         skins/DSx/1920x1200/icons/DEsteam.png *
@@ -707,7 +713,9 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1920x1200/icons/home.png *
         skins/DSx/1920x1200/icons/jug.png *
         skins/DSx/1920x1200/icons/jug_full.png *
+        skins/DSx/1920x1200/icons/niche.png *
         skins/DSx/1920x1200/icons/orangecup.png *
+        skins/DSx/1920x1200/icons/people.png *
         skins/DSx/1920x1200/icons/pinkcup.png *
         skins/DSx/1920x1200/icons/power.png *
         skins/DSx/1920x1200/icons/settings.png *
@@ -717,6 +725,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1920x1200/icons/steam_timer.png *
         skins/DSx/1920x1200/icons/stop.png *
         skins/DSx/1920x1200/icons/store.png *
+        skins/DSx/1920x1200/icons/store_button.png *
         skins/DSx/1920x1200/icons/water.png *
         skins/DSx/1920x1200/icons/zoomminus.png *
         skins/DSx/1920x1200/icons/zoomplus.png *
@@ -779,6 +788,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/2560x1600/icons/button8.png *
         skins/DSx/2560x1600/icons/click.png *
         skins/DSx/2560x1600/icons/click1.png *
+        skins/DSx/2560x1600/icons/click_no_box.png *
         skins/DSx/2560x1600/icons/DEespresso.png *
         skins/DSx/2560x1600/icons/DEflush.png *
         skins/DSx/2560x1600/icons/DEsteam.png *
@@ -790,7 +800,9 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/2560x1600/icons/home.png *
         skins/DSx/2560x1600/icons/jug.png *
         skins/DSx/2560x1600/icons/jug_full.png *
+        skins/DSx/2560x1600/icons/niche.png *
         skins/DSx/2560x1600/icons/orangecup.png *
+        skins/DSx/2560x1600/icons/people.png *
         skins/DSx/2560x1600/icons/pinkcup.png *
         skins/DSx/2560x1600/icons/power.png *
         skins/DSx/2560x1600/icons/settings.png *
@@ -800,6 +812,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/2560x1600/icons/steam_timer.png *
         skins/DSx/2560x1600/icons/stop.png *
         skins/DSx/2560x1600/icons/store.png *
+        skins/DSx/2560x1600/icons/store_button.png *
         skins/DSx/2560x1600/icons/water.png *
         skins/DSx/2560x1600/icons/zoomminus.png *
         skins/DSx/2560x1600/icons/zoomplus.png *
@@ -812,19 +825,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/2560x1600/SbuttonW.png *
         skins/DSx/DSx_Code_Files/DSx_functions.tcl *
         skins/DSx/DSx_Code_Files/DSx_skin.tcl *
-        skins/DSx/DSx_Code_Files/png/click_no_box1280.png *
-        skins/DSx/DSx_Code_Files/png/click_no_box1920.png *
-        skins/DSx/DSx_Code_Files/png/click_no_box2560.png *
-        skins/DSx/DSx_Code_Files/png/cloud2560.png *
-        skins/DSx/DSx_Code_Files/png/niche1280.png *
-        skins/DSx/DSx_Code_Files/png/niche1920.png *
-        skins/DSx/DSx_Code_Files/png/niche2560.png *
-        skins/DSx/DSx_Code_Files/png/people1280.png *
-        skins/DSx/DSx_Code_Files/png/people1920.png *
-        skins/DSx/DSx_Code_Files/png/people2560.png *
-        skins/DSx/DSx_Code_Files/png/store_button1280.png *
-        skins/DSx/DSx_Code_Files/png/store_button1920.png *
-        skins/DSx/DSx_Code_Files/png/store_button2560.png *
         skins/DSx/DSx_Font_Files/alarm\ clock.ttf *
         skins/DSx/DSx_Font_Files/Bradley\ Hand\ Bold.ttf *
         skins/DSx/DSx_Font_Files/Comic\ Sans\ MS.ttf *
@@ -849,6 +849,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/DSx_Plugins/DSx_workflow.dsx *
         skins/DSx/DSx_Plugins/Pizza_dough.off *
         skins/DSx/DSx_Plugins/wake_to_pinkcup.off *
+        skins/DSx/DSx_User_Set/.keep *
         skins/DSx/skin.tcl *
 
         saver/1280x800/black_saver.jpg *
