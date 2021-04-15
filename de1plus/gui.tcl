@@ -3057,10 +3057,9 @@ namespace eval ::gui::notify {
 			}
 
 			record_complete {
-				# don't need to give an ENJOY message when the app already gives "stopped on volume, stopped on weight" messages just a few seconds earlier.
-				#set what [translate {Enjoy!}]
-				#borg toast $what
-				#say $what $::settings(sound_button_in)
+				set what [translate {Shot complete}]
+				borg toast $what
+				say $what $::settings(sound_button_in)
 			}
 
 			saw_stop {
