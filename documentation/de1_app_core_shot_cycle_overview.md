@@ -12,6 +12,7 @@ Suggestions, improvements, and contributions are welcome.
 
 # Revision History
 
+* 2021-04-14 – Wording change on `after_shot_complete` default message
 * 2021-03-22 – Reflect code changes that removed previous scheduled tare
 * 2021-03-14 – Autotare threshold updated. Minor corrections and clarfications.
 * 2021-03-10 – Initial release
@@ -280,7 +281,7 @@ It also changes the state utilities:
 
 ### After Flow Complete Countdown Begins
 
-At this point, a timer is set for the `::de1::event::apply::after_flow_complete_callbacks` based on `$$::settings(after_flow_complete_delay)`
+At this point, a timer is set for the `::de1::event::apply::after_flow_complete_callbacks` based on `$::settings(after_flow_complete_delay)`
 
 The purpose of this callback is primarily to delay events related to "shot done" (such as determination final drink weight or saving the completed shot record) long enough for everything to settle down. Although the ending phase *may* be long enough for this, it can be very short. This event will be fired a minimum of time later, but not before exiting the Espresso state.
 
@@ -342,6 +343,6 @@ The GUI is notified that the shot is complete directly so that it can message th
 ::gui::notify::scale_event record_complete
 ```
 
-*The default implementation is to raise a toast and speak "Enjoy!"*
+*The default implementation is to raise a toast and speak "Shot complete"*
 
 For reference, detection of the scale data being recorded can be done with `::device::scale::history::is_recording`
