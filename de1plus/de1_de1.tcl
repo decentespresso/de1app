@@ -230,7 +230,11 @@ namespace eval ::de1 {
 
 	proc line_voltage_nom {} {
 
-		if {[info exists ::settings(heater_voltage)]} {
+		# string is double "" returns 1, expr {double("")} is an error
+
+		if {[info exists ::settings(heater_voltage)] \
+			    && [string is double $::settings(heater_voltage)] \
+			    && $::settings(heater_voltage) != "" } {
 			return [expr { double($::settings(heater_voltage)) }]
 		} else {
 			return False
