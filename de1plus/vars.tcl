@@ -561,18 +561,6 @@ proc flush_done_timer {} {
 	}
 }
 
-proc steam_timer {} {
-zz1
-	return [pour_timer]
-	#return [event_timer_calculate "Steam" "pouring" {"stabilising" "final heating"} ]
-}
-
-proc water_timer {} {
-zz2
-	return [pour_timer]
-	#return [event_timer_calculate "HotWater" "pouring" {"stabilising" "final heating"} ]
-}
-
 proc waterflow {} {
 	if {$::de1(substate) != $::de1_substate_types_reversed(pouring) && $::de1(substate) != $::de1_substate_types_reversed(preinfusion)} {	
 		return 0
