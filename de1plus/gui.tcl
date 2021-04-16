@@ -484,7 +484,6 @@ proc up_down_button_create {actionscript btn_images img_loc key_loc buttontype {
 		.can bind $tobind <Leave> [list generic_push_button_settings $up_png $down_png $actionscript leave $buttontype]
 		lappend image_tags_created $up_png $down_png
 	}
-
 	return 
 } 
 
@@ -661,13 +660,20 @@ proc platform_button_press {} {
 	return {<ButtonPress-1>}
 }
 
+proc platform_button_native_press {} {
+	return {<ButtonPress-1>}
+}
+
+
 proc platform_button_long_press {} {
 	global android 
 	if {$android == 1} {
-		#return {<<FingerUp>>}
+		# button 3 on Androwish is a long press
 		return {<ButtonPress-3>}
 	}
-	return {<ButtonPress-3>}
+
+	# no "long press concept" on Tcl/Tk. Button-3 is the 3rd mouse button, which is a very different concept, so just accept a normal mouse click
+	return {<ButtonPress-1>}
 }
 
 proc platform_finger_down {} {
@@ -747,7 +753,13 @@ proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
 	regsub {%y0} $tclcode $ry0 tclcode
 	regsub {%y1} $tclcode $ry1 tclcode
 
-	.can bind $btn_name [platform_button_press] $tclcode
+	if {[string first buttonlongpress $options] != -1} {
+		.can bind $btn_name [platform_button_long_press] $tclcode
+	} elseif {[string first buttonnativepress $options] != -1} {
+		.can bind $btn_name [platform_button_native_press] $tclcode
+	} else {
+		.can bind $btn_name [platform_button_press] $tclcode
+	}
 	
 #	if {$::settings(disable_long_press) != 1 } {
 #		.can bind $btn_name [platform_button_long_press] $tclcode

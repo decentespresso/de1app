@@ -14,7 +14,9 @@ add_de1_button "espresso" {say [translate {stop}] $::settings(sound_button_in); 
 
 ##############################################################################################################################################################################################################################################################################
 # when the SCREEN SAVER is on or about to come on
-add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(sound_button_in);start_idle; de1_send_waterlevel_settings} 0 0 2560 1600
+#
+# using a buttonnativepress so that if running on Android, we can use the OS based filtering on spurious taps
+add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(sound_button_in);start_idle; de1_send_waterlevel_settings} 0 0 2560 1600 "buttonnativepress"
 
 add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 0 0 2560 1400 
 	add_de1_text "tankempty refill" 1280 750 -text [translate "Please add water"] -font Helv_20_bold -fill "#CCCCCC" -justify "center" -anchor "center" -width 900
