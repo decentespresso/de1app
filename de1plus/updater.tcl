@@ -169,6 +169,34 @@ proc sleep {time} {
     vwait end
 }
 
+proc httpHandlerCallback {token} {
+
+    upvar #0 $token state
+
+	set cmd [ifexists ::asyc_handlers($token)]
+	unset -nocomplain ::asyc_handlers($token)
+
+    set body [::http::data $token]
+
+    if {[::http::error $token] != ""} {
+		msg -ERROR "http_get error: [::http::error $token]"
+    }
+    if {$token != ""} {
+        ::http::cleanup $token
+    }
+
+    # run the handler that was defined for this async http request
+    $cmd $body
+}
+
+proc decent_async_http_get {url cmd {timeout 30000}} {
+    set body {}
+    set token {}    
+    ::http::config -useragent "mer454"
+    set token [::http::geturl $url -binary 1 -timeout $timeout -command httpHandlerCallback]
+    set ::asyc_handlers($token) $cmd
+    return $token
+}
 
 proc decent_http_get {url {timeout 30000}} {
 
@@ -293,9 +321,82 @@ proc verify_decent_tls_certificate {} {
 
 # every day, check to see if an app update is available
 proc scheduled_app_update_check {} {
-    check_timestamp_for_app_update_available
+	if {$::settings(do_async_update_check) == 1} {
+		check_timestamp_for_app_update_available_async
+	} else {
+    	check_timestamp_for_app_update_available
+	}
     after 8640000 scheduled_app_update_check 
 }
+
+proc check_timestamp_for_app_update_available_async { {check_only 0} } {
+
+    set host "http://decentespresso.com"
+    set progname "de1plus"
+    if {[ifexists ::settings(app_updates_beta_enabled)] == 1} {
+        set progname "de1beta"
+    } elseif {[ifexists ::settings(app_updates_beta_enabled)] == 2} {
+        set progname "de1nightly"
+    }
+    msg -NOTICE "checking for updates"
+    msg -INFO "update timestanp endpoint: '$progname'"
+
+    set url_timestamp "$host/download/sync/$progname/timestamp.txt"    
+
+    set remote_timestamp {}
+
+    set ::app_update_available 0
+    
+
+    catch {
+        msg -DEBUG "Fetching remote update timestamp: '$url_timestamp'"
+    }
+
+	decent_async_http_get $url_timestamp "check_timestamp_for_app_update_available_async_part2"
+
+}
+
+proc check_timestamp_for_app_update_available_async_part2 { remote_timestamp_in {check_only 0} } {
+
+	set remote_timestamp [string trim $remote_timestamp_in]
+    msg -INFO "Remote timestamp: '$remote_timestamp'"
+
+    set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
+    msg -INFO "Local timestamp: '$local_timestamp'"
+
+    if {$remote_timestamp == ""} {
+        msg -WARNING "unable to fetch remote timestamp"
+
+        if {$check_only != 1} {
+            set ::de1(app_update_button_label) [translate "Update"];             
+        }
+
+        return -1
+    } elseif {$local_timestamp == $remote_timestamp} {
+
+        if {$check_only != 1} {
+            set ::de1(app_update_button_label) [translate "Up to date"];             
+        }
+
+        msg -DEBUG "Local timestamp is the same as remote timestamp, so no need to update"
+        return $local_timestamp
+    }
+
+    catch {
+        msg -NOTICE "app update available"
+    }
+
+    set ::app_update_available 1
+
+    if {$check_only != 1} {
+        set ::de1(app_update_button_label) [translate "Update available"];     
+    }
+    # time stamps don't match, so update is useful
+    return $remote_timestamp
+
+
+}
+
 
 proc check_timestamp_for_app_update_available { {check_only 0} } {
 
