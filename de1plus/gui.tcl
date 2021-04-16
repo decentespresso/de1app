@@ -2065,7 +2065,13 @@ proc ui_startup {} {
 	check_if_battery_low_and_give_message
 
 	# check for app updates, some time after startup, and then every 24h thereafter
-	after 3000 scheduled_app_update_check
+	if {$::settings(do_async_update_check) == 1} {
+		# no need to delay doing a remove update check, if we're doing it async
+		after 500 scheduled_app_update_check
+	} else {
+		after 3000 scheduled_app_update_check
+	}
+
 	tcl_introspection
 
 	run_de1_app

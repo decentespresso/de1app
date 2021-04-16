@@ -228,6 +228,7 @@ array set ::settings {
 	automatically_ble_reconnect_forever_to_scale 0
 	chart_total_shot_flow 1
 	steam_over_pressure_count_trigger 10
+	do_async_update_check 0
 	heater_voltage ""
 	steam_over_temp_count_trigger 10
 	go_idle_before_all_operations 0
