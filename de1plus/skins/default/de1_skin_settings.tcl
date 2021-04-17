@@ -423,14 +423,14 @@ proc settings2c_flow_button {direction} {
 }
 
 proc settings2c_pressure_label {} {
-	if {$::current_adv_step(max_flow_or_pressure) > 0} {
+	if {[ifexists ::current_adv_step(max_flow_or_pressure)] > 0} {
 		return "$::current_adv_step(max_flow_or_pressure) bar"
 	}
 	return [translate "off"]
 }
 
 proc settings2c_flow_label {} {
-	if {$::current_adv_step(max_flow_or_pressure) > 0} {
+	if {[ifexists ::current_adv_step(max_flow_or_pressure)] > 0} {
 		return "$::current_adv_step(max_flow_or_pressure) [translate ml/s]"
 	}
 	return [translate "off"]
