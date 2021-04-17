@@ -665,7 +665,7 @@ namespace eval ::dui {
 			default.dbutton_label.anchor center	
 			default.dbutton_label.justify center
 			default.dbutton_label.fill white
-			default.dbutton_label.disabledfill "#ccc"
+			default.dbutton_label.disabledfill "#ddd"
 
 			default.dbutton_label1.pos {0.5 0.8}
 			default.dbutton_label1.font_size 16
@@ -689,9 +689,17 @@ namespace eval ::dui {
 			default.dbutton_label.font_family.insight_ok notosansuibold
 			default.dbutton_label.font_size.insight_ok 19
 			
+			default.dclicker.fill {}
+			default.dclicker_label.pos {0.5 0.5}
+			default.dclicker_label.font_size 18
+			default.dclicker_label.fill black
+			default.dclicker_label.anchor center
+			default.dclicker_label.justify center
+			
 			default.entry.relief flat
 			default.entry.bg white
 			default.entry.width 2
+			default.entry.foreground black
 			
 			default.entry.relief.special flat
 			default.entry.bg.special yellow
@@ -712,6 +720,7 @@ namespace eval ::dui {
 			default.dcombobox.font_size 16
 			
 			default.dcombobox_ddarrow.font_size 24
+			default.dcombobox_ddarrow.disabledfill "#ccc"
 			
 			default.dcheckbox.font_family "Font Awesome 5 Pro"
 			default.dcheckbox.font_size 18
@@ -732,7 +741,7 @@ namespace eval ::dui {
 			default.listbox.selectborderwidth 0
 			default.listbox.disabledforeground "#cccccc"
 			default.listbox.selectbackground "#cccccc"
-			default.listbox.selectmode browser
+			default.listbox.selectmode browse
 			default.listbox.justify left
 
 			default.listbox_label.pos "wn -10 0"
@@ -775,8 +784,8 @@ namespace eval ::dui {
 			default.scale.width 150
 			
 			default.drater.fill "#7f879a" 
-			default.drater.disabledfill pink
-			default.drater.font_size 20
+			default.drater.disabledfill "#ccc"
+			default.drater.font_size 24
 			
 			default.rect.fill.insight_back_box "#ededfa"
 			default.rect.width.insight_back_box 0
@@ -957,6 +966,10 @@ namespace eval ::dui {
 			chevron_right "\uf054"
 			chevron_double_right "\uf324"
 			arrow_to_right "\uf340"
+			chevron_up "\uf077"
+			chevron_double_up "\uf325"
+			chevron_down "\uf078"
+			chevron_double_down "\uf322"
 			eraser "\uf12d"
 			eye "\uf06e"
 		}
@@ -2297,7 +2310,7 @@ namespace eval ::dui {
 						# The log can fill with thousands of identical entries if this is hit, so we save those already
 						#	warned about, to warn just once per ID.
 						if { $id ni $warned_variables } {  
-							msg -ERROR [namespace current] update_onscreen_variables: $err
+							msg -ERROR [namespace current] update_onscreen_variables: "Can't update '$id' with code '$varcode': $err"
 							lappend warned_variables $id
 						}
 					}
@@ -3087,7 +3100,7 @@ namespace eval ::dui {
 			if { $use_halfs == 1 } { set halfs_mult 2 } else { set halfs_mult 1 }
 			
 			set interval [expr {int($xrange / $n_ratings)}] 
-			set clicked_val [expr {(int($xoffset / $interval) + 1) * $halfs_mult}]			
+			set clicked_val [expr {(int($xoffset / $interval) + 1) * $halfs_mult}]
 			set current_val [number_in_range [subst \$$variable] "" $min $max "" 0]
 			set current_val [expr {int(($current_val - 1) / (($max-$min) / ($n_ratings*$halfs_mult))) + 1}]	
 			
@@ -3101,49 +3114,192 @@ namespace eval ::dui {
 			#msg [namespace current] "$variable=[subst \$$variable]\rcurrent_value=$current_val, clicked_val=$$clicked_val\rnew_val=[subst \$$variable]"	
 		}
 		
-		# Taken verbatim from Damian's DSx.
-		proc horizontal_clicker {bigincrement smallincrement variable min max x y x0 y0 x1 y1} {
+		proc horizontal_clicker { variable bigincrement smallincrement min max default n_decimals use_biginc x y x0 y0 x1 y1 \
+				{editor_cmd {}} {callback_cmd {}} } {
+			if { [dui sound exists button_in] } {
+				dui sound make button_in
+			}
 			set x [translate_coordinates_finger_down_x $x]
 			set y [translate_coordinates_finger_down_y $y]
 			set xrange [expr {$x1 - $x0}]
-			set xoffset [expr {$x - $x0}]
 			set midpoint [expr {$x0 + ($xrange / 2)}]
-			set onequarterpoint [expr {$x0 + ($xrange / 5)}]
-			set threequarterpoint [expr {$x1 - ($xrange / 5)}]
-			if {[info exists $variable] != 1} {
-				# if the variable doesn't yet exist, initiialize it with a zero value
-				set $variable 0
+					
+			if { $use_biginc } {
+				set onequarterpoint [expr {$x0 + ($xrange / 5)}]
+				set twoquarterpoint [expr {$x0 + 2 * ($xrange / 5)}]
+				set threequarterpoint [expr {$x1 - 2 * ($xrange / 5)}]
+				set fourquarterpoint [expr {$x1 - ($xrange / 5)}]
+			} else {
+				set onethirdpoint [expr {$x0 + ($xrange / 3)}]
+				set twothirdpoint [expr {$x0 + 2 * ($xrange / 3)}]
+				set threethirdpoint [expr {$x1 - ($xrange / 3)}]
 			}
+					
+			if {[info exists $variable] != 1 || [subst \$$variable] eq "" || ![string is double [subst \$$variable]] } {
+				if { $default ne "" } {
+					set $variable $default
+				} elseif { $min ne "" && $max ne "" } {
+					set $variable [expr {1.0*($max-$min)/2}]
+				} elseif { $min ne "" } {
+					set $variable $min
+				} elseif { $max ne "" && $max > 0 } {
+					set $variable $max
+				} else {
+					set $variable 0
+				}
+			}
+			set_var_in_range $variable "" 0 $min $max 0 $n_decimals 
+
 			set currentval [subst \$$variable]
 			set newval $currentval
-			if {$x < $onequarterpoint} {
-				set newval [expr "1.0 * \$$variable - $bigincrement"]
-			} elseif {$x < $midpoint} {
-				set newval [expr "1.0 * \$$variable - $smallincrement"]
-			} elseif {$x < $threequarterpoint} {
-				set newval [expr "1.0 * \$$variable + $smallincrement"]
+			set change 0
+			if { $use_biginc } {
+				if {$x < $onequarterpoint} {
+					set change -$bigincrement 
+				} elseif {$x < $twoquarterpoint} {
+					set change -$smallincrement
+				} elseif {$x < $midpoint} {
+					if {$editor_cmd eq "" } {
+						set change -$smallincrement
+					} else {
+						uplevel #0 $editor_cmd
+					}
+				} elseif {$x < $threequarterpoint} {
+					if {$editor_cmd eq "" } {
+						set change $smallincrement
+					} else {
+						uplevel #0 $editor_cmd
+					}
+				} elseif {$x < $fourquarterpoint} {
+					set change $smallincrement
+				} else {
+					set change $bigincrement
+				}
 			} else {
-				set newval [expr "1.0 * \$$variable + $bigincrement"]
+				if {$x < $onethirdpoint} {
+					set change -$smallincrement 
+				} elseif {$x < $midpoint} {
+					if {$editor_cmd eq "" } {
+						set change -$smallincrement
+					} else {
+						uplevel #0 $editor_cmd
+					}
+				} elseif {$x < $twothirdpoint} {
+					if {$editor_cmd eq "" } {
+						set change $smallincrement
+					} else {
+						uplevel #0 $editor_cmd
+					}
+				} else {
+					set change $smallincrement
+				}
 			}
-			set newval [round_to_two_digits $newval]
-		
-			if {$newval > $max} {
-				set $variable $max
-			} elseif {$newval < $min} {
-				set $variable $min
-			} else {
-				set $variable [round_to_two_digits $newval]
+			set_var_in_range $variable "" $change $min $max 0 $n_decimals
+
+			if { $callback_cmd ne "" } {
+				uplevel #0 $callback_cmd
 			}
-			update_onscreen_variables
+			
+			dui page update_onscreen_variables
 			return
 		}
-				
+
+		proc vertical_clicker { variable bigincrement smallincrement min max default n_decimals use_biginc x y x0 y0 x1 y1 \
+				{editor_cmd {}} {callback_cmd {}} } {
+			if { [dui sound exists button_in] } {
+				dui sound make button_in
+			}
+			set x [translate_coordinates_finger_down_x $x]
+			set y [translate_coordinates_finger_down_y $y]
+			set yrange [expr {$y1 - $y0}]
+			set midpoint [expr {$y0 + ($yrange / 2)}]
+					
+			if { $use_biginc } {
+				set onequarterpoint [expr {$y0 + ($yrange / 5)}]
+				set twoquarterpoint [expr {$y0 + 2 * ($yrange / 5)}]
+				set threequarterpoint [expr {$y1 - 2 * ($yrange / 5)}]
+				set fourquarterpoint [expr {$y1 - ($yrange / 5)}]
+			} else {
+				set onethirdpoint [expr {$y0 + ($yrange / 3)}]
+				set twothirdpoint [expr {$y0 + 2 * ($yrange / 3)}]
+				set threethirdpoint [expr {$y1 - ($yrange / 3)}]
+			}
+					
+			if {[info exists $variable] != 1 || [subst \$$variable] eq "" || ![string is double [subst \$$variable]] } {
+				if { $default ne "" } {
+					set $variable $default
+				} elseif { $min ne "" && $max ne "" } {
+					set $variable [expr {1.0*($max-$min)/2}]
+				} elseif { $min ne "" } {
+					set $variable $min
+				} elseif { $max ne "" && $max > 0 } {
+					set $variable $max
+				} else {
+					set $variable 0
+				}
+			}
+			set_var_in_range $variable "" 0 $min $max 0 $n_decimals 
+
+			set currentval [subst \$$variable]
+			set newval $currentval
+			set change 0
+			if { $use_biginc } {
+				if {$y < $onequarterpoint} {
+					set change -$bigincrement 
+				} elseif {$y < $twoquarterpoint} {
+					set change -$smallincrement
+				} elseif {$y < $midpoint} {
+					if {$editor_cmd eq "" } {
+						set change -$smallincrement
+					} else {
+						uplevel #0 $editor_cmd
+					}
+				} elseif {$y < $threequarterpoint} {
+					if {$editor_cmd eq "" } {
+						set change $smallincrement
+					} else {
+						uplevel #0 $editor_cmd
+					}
+				} elseif {$y < $fourquarterpoint} {
+					set change $smallincrement
+				} else {
+					set change $bigincrement
+				}
+			} else {
+				if {$y < $onethirdpoint} {
+					set change -$smallincrement 
+				} elseif {$y < $midpoint} {
+					if {$editor_cmd eq "" } {
+						set change -$smallincrement
+					} else {
+						uplevel #0 $editor_cmd
+					}
+				} elseif {$y < $twothirdpoint} {
+					if {$editor_cmd eq "" } {
+						set change $smallincrement
+					} else {
+						uplevel #0 $editor_cmd
+					}
+				} else {
+					set change $smallincrement
+				}
+			}
+			set_var_in_range $variable "" $change $min $max 0 $n_decimals
+
+			if { $callback_cmd ne "" } {
+				uplevel #0 $callback_cmd
+			}
+			
+			dui page update_onscreen_variables
+			return
+		}
+						
 		# Computes the anchor point coordinates with respect to the provided bounding box coordinates, returns a list 
 		#	with 2 elements. 
 		# Has more valid values than usual anchor: n, ne, nw, e, en, ew, s, sw, se, w, wn, ws.
 		proc anchor_inside_box { anchor x0 y0 x1 y1 {xoffset 0} {yoffset 0} } {
 			if { $anchor eq "center" } {
-				set x [expr {$x0+int(($x1-$x0)/2)+$xoffset}]
+				set x [expr {$x0+int(($y1-$x0)/2)+$xoffset}]
 				set y [expr {$y0+int(($y1-$y0)/2)+$yoffset}]
 				return [list $x $y]
 			}
@@ -3461,14 +3617,11 @@ namespace eval ::dui {
 		#	-shape any of 'rect', 'rounded' (Barney/MimojaCafe style) or 'outline' (DSx style)
 		#	-style to apply the default aspects of the provided style
 		#	-command tcl code to be run when the button is clicked
-		#	-label label text, in case a label is to be shown inside the button
-		#	-labelvariable, to use a variable as label text
-		#	-label_pos a list with 2 elements between 0 and 1 that specify the x and y percentages where to position
+		#	-label, -label1, -label2... label text, in case a label is to be shown inside the button
+		#	-labelvariable, -label1variable... to use a variable as label text
+		#	-label_pos, -label1_pos... a list with 2 elements between 0 and 1 that specify the x and y percentages where to position
 		#		the label inside the button
 		#	-label_* (-label_fill -label_outline etc.) are passed through to 'dui add text' or 'dui add variable'
-		#	-state
-		#	-statevariable
-		#	-state_pos, -state_*
 		#	-symbol to add a Fontawesome symbol/icon to the button, on position -symbol_pos, and using option values
 		#		given in -symbol_* that are passed through to 'dui add symbol'
 		#	-radius for rounded rectangles, and -arc_offset for rounded outline rectangles
@@ -3480,8 +3633,9 @@ namespace eval ::dui {
 			
 			set cmd [dui::args::get_option -command {} 1]
 			set style [dui::args::get_option -style "" 1]
-			dui::args::process_aspects dbutton $style
-	
+			set aspect_type [dui::args::get_option -aspect_type dbutton]
+			dui::args::process_aspects dbutton $style {} {use_biginc orient}
+			
 			set x1 0
 			set y1 0
 			set bwidth [dui::args::get_option -bwidth "" 1]
@@ -3532,38 +3686,68 @@ namespace eval ::dui {
 			#	button has been painted.
 			set i 0
 			set suffix "" 
-			set label [dui::args::get_option "-label$suffix" "" 1]
-			set labelvar [dui::args::get_option "-label${suffix}variable" "" 1]
+			set label [dui::args::get_option -label "" 1]
+			set labelvar [dui::args::get_option -labelvariable "" 1]
 			while { [subst \$label$suffix] ne "" || [subst \$labelvar$suffix] ne "" } {
 				set "label${suffix}_tags" [list "${main_tag}-lbl$suffix" {*}[lrange $tags 1 end]]	
 				set "label${suffix}_args" [dui::args::extract_prefixed "-label${suffix}_"]
 				
-				foreach aspect [dui aspect list -type [list "dbutton_label$suffix" text] -style $style] {
-					dui::args::add_option_if_not_exists -$aspect [dui aspect get "dbutton_label$suffix" $aspect -style $style \
-						-default {} -default_type text] "label${suffix}_args"
+				foreach aspect [dui aspect list -type [list "${aspect_type}_label$suffix" text] -style $style] {
+					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_label$suffix" $aspect \
+						-style $style -default {} -default_type text] "label${suffix}_args"
 				}
 				
 				set "label${suffix}_pos" [dui::args::get_option -pos {0.5 0.5} 1 "label${suffix}_args"]
 				set "xlabel$suffix" [expr {$x+int($x1-$x)*[lindex [subst \$label${suffix}_pos] 0]}]
 				set "ylabel$suffix" [expr {$y+int($y1-$y)*[lindex [subst \$label${suffix}_pos] 1]}]
 				
-				incr i
-				set suffix $i
+				set suffix [incr i]
 				set "label$suffix" [dui::args::get_option "-label$suffix" "" 1]
 				set "labelvar$suffix" [dui::args::get_option "-label${suffix}variable" "" 1]
 			}
 
-			# Process symbol
+			# Process symbols
+			set i 0
+			set suffix ""
 			set symbol [dui::args::get_option -symbol "" 1]
-			if { $symbol ne "" } {
-				set symbol_tags [list ${main_tag}-sym {*}[lrange $tags 1 end]]	
-				set symbol_args [dui::args::extract_prefixed -symbol_]
-				set symbol_pos [dui::args::get_option -pos [dui aspect get dbutton_symbol pos -style $style -default {0.5 0.5} \
-					-default_type symbol] 1 symbol_args]
-				set xsymbol [expr {$x+int($x1-$x)*[lindex $symbol_pos 0]}]
-				set ysymbol [expr {$y+int($y1-$y)*[lindex $symbol_pos 1]}]
+			while { [subst \$symbol$suffix] ne "" } {
+				set "symbol${suffix}_tags" [list "${main_tag}-sym$suffix" {*}[lrange $tags 1 end]]	
+				set "symbol${suffix}_args" [dui::args::extract_prefixed "-symbol${suffix}_"]
+				
+				foreach aspect [dui aspect list -type [list "${aspect_type}_symbol$suffix" symbol] -style $style] {
+					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_symbol$suffix" $aspect -style $style \
+						-default {} -default_type symbol] "symbol${suffix}_args"
+				}
+				
+				set "symbol${suffix}_pos" [dui::args::get_option -pos {0.5 0.5} 1 "symbol${suffix}_args"]
+				set "xsymbol$suffix" [expr {$x+int($x1-$x)*[lindex [subst \$symbol${suffix}_pos] 0]}]
+				set "ysymbol$suffix" [expr {$y+int($y1-$y)*[lindex [subst \$symbol${suffix}_pos] 1]}]
+				
+				set suffix [incr i]
+				set "symbol$suffix" [dui::args::get_option "-symbol$suffix" "" 1]
 			}
-					
+
+			# Process images
+			set i 0
+			set suffix ""
+			set image [dui::args::get_option -image "" 1]
+			while { [subst \$image$suffix] ne "" } {
+				set "image${suffix}_tags" [list "${main_tag}-img$suffix" {*}[lrange $tags 1 end]]	
+				set "image${suffix}_args" [dui::args::extract_prefixed "-image${suffix}_"]
+				
+				foreach aspect [dui aspect list -type [list "${aspect_type}_image$suffix" image] -style $style] {
+					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_image$suffix" $aspect -style $style \
+						-default {} -default_type image] "image{suffix}_args"
+				}
+				
+				set "image${suffix}_pos" [dui::args::get_option -pos {0.5 0.5} 1 "image${suffix}_args"]
+				set "ximage$suffix" [expr {$x+int($x1-$x)*[lindex [subst \$image${suffix}_pos] 0]}]
+				set "yimage$suffix" [expr {$y+int($y1-$y)*[lindex [subst \$image${suffix}_pos] 1]}]
+				
+				set suffix [incr i]
+				set "image$suffix" [dui::args::get_option "-image$suffix" "" 1]
+			}
+			
 			# As soon as the rect has a non-zero width (or maybe an outline or fill?), its "clickable" area becomes only
 			#	the border, so if a visible rectangular button is needed, we have to add an invisible clickable rect on 
 			#	top of it.
@@ -3580,7 +3764,7 @@ namespace eval ::dui {
 					set ids [$can create rect $rx $ry $rx1 $ry1 -outline $outline -width $width -tags $button_tags \
 						-state hidden]
 				}
-			} else {		
+			} else {
 				dui::args::remove_options -debug_outline
 				set shape [dui::args::get_option -shape [dui aspect get dbutton shape -style $style -default rect] 1]
 				
@@ -3606,6 +3790,27 @@ namespace eval ::dui {
 				set ${ns}::widgets([lindex $button_tags 0]) $ids
 			}
 
+			# Add each of the (possibly several) images
+			set i 0
+			set suffix ""
+			while { [info exists image$suffix] && [subst \$image$suffix] ne "" } {
+				dui add image $pages [subst \$xsymbol$suffix] [subst \$ysymbol$suffix] -text [subst \$image$suffix] \
+					-tags [subst \$image${suffix}_tags] -aspect_type "dbutton_image$suffix" \
+					-style $style {*}[subst \$image${suffix}_args]
+				set suffix [incr i]
+			}
+
+			# Add each of the (possibly several) symbols
+			set i 0
+			set suffix ""
+			while { [info exists symbol$suffix] && [subst \$symbol$suffix] ne "" } {
+				dui add symbol $pages [subst \$xsymbol$suffix] [subst \$ysymbol$suffix] -text [subst \$symbol$suffix] \
+					-tags [subst \$symbol${suffix}_tags] -aspect_type "dbutton_symbol$suffix" \
+					-style $style {*}[subst \$symbol${suffix}_args]
+				set suffix [incr i]
+			}
+			
+			
 			# Add each of the (possibly several) labels
 			set i 0
 			set suffix ""
@@ -3620,13 +3825,7 @@ namespace eval ::dui {
 						-textvariable [subst \$labelvar$suffix] -tags [subst \$label${suffix}_tags] \
 						-aspect_type "dbutton_label$suffix" -style $style {*}[subst \$label${suffix}_args] 
 				}
-				incr i
-				set suffix $i
-			}
-			
-			if { $symbol ne "" } {
-				dui add symbol $pages $xsymbol $ysymbol -text $symbol -tags $symbol_tags -aspect_type dbutton_symbol \
-					-style $style {*}$symbol_args
+				set suffix [incr i]
 			}
 			
 			# Clickable rect
@@ -3660,6 +3859,66 @@ namespace eval ::dui {
 			return $id
 		}
 
+		# A dbutton with clickable "sub-areas" for increasing and decreasing a numeric value.
+		# Extra named options:
+		#	-variable
+		#	-smallincrement
+		#	-bigincrement
+		#	-use_biginc
+		#	-min
+		#	-max
+		#	-default
+		#	-n_decimals
+		#	-editor_page
+		#	-editor_*, passed through to the number editor page, e.g. -editor_page_title, -editor_callback_cmd, etc.
+		
+		proc dclicker { pages x y args } {
+			set tags [dui::args::process_tags_and_var $pages dclicker -variable 1]
+			set main_tag [lindex $tags 0]
+			set ns [dui page get_namespace $pages]
+				
+			set style [dui::args::get_option -style "" 0]
+			set var [dui::args::get_option -variable "" 1]
+			dui::args::process_aspects dclicker $style
+			
+			set orient [string range [dui::args::get_option -orient h 1] 0 0]
+			set use_biginc [dui::args::get_option -use_biginc 1 1]
+			set n_decimals [dui::args::get_option -n_decimals 0 1]
+			foreach fn {min max default smallincrement bigincrement} {
+				set $fn [dui::args::get_option -$fn "" 1]
+			}
+
+			set editor_cmd {}
+			set editor_page [dui::args::get_option -editor_page [dui cget use_editor_pages] 1]
+			set callback_cmd [dui::args::get_option -callback_cmd "" 1]
+			if { $callback_cmd ne "" } {
+				regsub -all {%NS} $callback_cmd $ns callback_cmd
+			}
+			
+			if { $editor_page ne "" && ![string is false $editor_page] && $var ne ""} {
+				if { [string is true $editor_page] } {
+					set editor_page "dui_number_editor" 
+				} 
+				set editor_args [dui::args::extract_prefixed -editor_ ]
+				
+				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $min \
+					-max $max -default $default -smallincrement $smallincrement -bigincrement $bigincrement \
+					{*}$editor_args ]
+				#set editor_cmd "if \{ \[dui item cget [lindex $pages 0] $main_tag -state\] eq \"normal\" \} \{ $editor_cmd \};"
+#				bind $widget <Double-Button-1> $editor_cmd
+			}
+			
+			if { $orient eq "v" } {
+				set cmd [list ::dui::item::vertical_clicker $var $bigincrement $smallincrement $min $max $default \
+					$n_decimals $use_biginc %x %y %%x0 %%y0 %%x1 %%y1 $editor_cmd $callback_cmd]
+			} else {
+				set cmd [list ::dui::item::horizontal_clicker $var $bigincrement $smallincrement $min $max $default \
+					$n_decimals $use_biginc %x %y %%x0 %%y0 %%x1 %%y1 $editor_cmd $callback_cmd]
+			}
+
+			return [dui add dbutton $pages $x $y -command $cmd -aspect_type dclicker {*}$args]
+		}
+		
 		# Extra named options:
 		#	-type The type of image, defaults to 'photo'
 		#	-canvas_* Options to be passed through to the canvas create command
@@ -4997,10 +5256,13 @@ namespace eval ::dui::pages::dui_number_editor {
 			}
 		}
 		
+		if { $data(num_variable) ne "" } {
+			set $data(num_variable) $data(value)
+		}
+		
 		if { $data(callback_cmd) ne "" } {
 			$data(callback_cmd) $data(value)
-		} else {		
-			set $data(num_variable) $data(value)
+		} else {
 			dui page show $data(previous_page)
 		}
 	}
@@ -5020,7 +5282,7 @@ namespace eval ::dui::pages::dui_item_selector {
 		page_title {}
 		variable {} 
 		item_type {}
-		selectmode {browser}
+		selectmode browse
 		filter_string {}
 		filter_indexes {}
 		item_ids {}
@@ -5078,7 +5340,7 @@ namespace eval ::dui::pages::dui_item_selector {
 	#		to the source page (or somewhere else). 
 	#	-selected: list of items to be selected when the page is open. If some of them is not in 'items', it is appended
 	#		to the list. If not specified, uses the curent value of -variable.
-	#	-selectmode: single, browser, multiple or extended.
+	#	-selectmode: single, browse, multiple or extended.
 	#	-empty_items_msg: text to show if there are no items to select.
 	#	-listbox_width: the width in pixels of the filter entry and the items listbox.
 	
@@ -5113,7 +5375,7 @@ namespace eval ::dui::pages::dui_item_selector {
 		set data(item_values) $values		
 		set data(item_type) [ifexists opts(-category_name)]
 		set data(callback_cmd) [ifexists opts(-callback_cmd)]
-		set data(selectmode) [ifexists opts(-selectmode) "browser"]
+		set data(selectmode) [ifexists opts(-selectmode) "browse"]
 		set data(empty_items_msg) [ifexists opts(-empty_items_msg) [translate "There are no available items to show"]]
 		set data(listbox_width) [number_in_range [ifexists opts(-listbox_width) 1775] {} 200 2100 {} 0]
 		set data(filter_string) {}
@@ -5220,30 +5482,44 @@ namespace eval ::dui::pages::dui_item_selector {
 		say [translate {done}] $::settings(sound_button_in)
 
 		set items_widget $widgets(items)
-		set item_value {}
-		set item_id {}
+		set item_values {}
+		set item_ids {}
 		
-		# TODO: Return a list if selectmode=multiple/extended
 		if {[$items_widget curselection] ne ""} {
 			set sel_idx [$items_widget curselection]
-			set item_value [$items_widget get $sel_idx]
+			
+			foreach i $sel_idx {
+				lappend item_values [$items_widget get $i]
+			}
 						
 			if { [llength $data(item_ids)] == 0 } {
-				set item_id $item_value
+				set item_ids $item_values
 			} else {
 				if { [llength $data(filter_indexes)] > 0 } {
-					set new_sel_idx [lindex $data(filter_indexes) $sel_idx]
+					set new_sel_idx {}
+					foreach i $sel_idx { 
+						lappend new_sel_idx [lindex $data(filter_indexes) $i]
+					}
 					set sel_idx $new_sel_idx
 				}
-				set item_id [lindex $data(item_ids) $sel_idx]
+				foreach i $sel_idx {
+					lappend item_ids [lindex $data(item_ids) $i]
+				}
 			}
 		}
 
+		set selectmode [$items_widget cget -selectmode]
+		if { $selectmode in {single browse} } {
+msg -DEBUG "dui_item_selector::page_done SINGLE ITEM SELECTION"			
+			set item_values [lindex $item_values 0]
+			set item_ids [lindex $item_ids 0]
+		}
+		
 		if { $data(callback_cmd) ne "" } {
-			$data(callback_cmd) $item_id $item_value $data(item_type)
+			$data(callback_cmd) $item_values $item_ids $data(item_type)
 		} else {
 			if { $data(variable) ne "" } {
-				set $data(variable) $item_value
+				set $data(variable) $item_values
 			}
 			dui page show $data(previous_page)
 		}

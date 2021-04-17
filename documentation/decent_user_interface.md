@@ -903,9 +903,11 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > >&lt;main_tag&gt;-btn: the background button shape, which may itself be composed of several canvas items such as lines, rectangles and ovals;
 
-> >&lt;main_tag&gt;-lbl: (optional) label text;
+> >&lt;main_tag&gt;-lbl, &lt;main_tag&gt;-lbl1, etc.: (optional) label text;
 
-> >&lt;main_tag&gt;-sym (optional) symbol text.
+> >&lt;main_tag&gt;-sym, &lt;main_tag&gt;-sym1, etc.: (optional) symbol text.
+
+> >&lt;main_tag&gt;-img, &lt;main_tag&gt;-img1, etc.: (optional) image.
 
 >During development, especially with invisible background buttons, you may want to set the global DUI configuration variable **debug_buttons** to 1 using `dui config debug_buttons 1`, as this will make the clickable area visible by drawing the button border. If the default black color of this border is not visible against the theme background, you can change it by modifying the **debug_outline** dbutton aspect (i.e. `dui aspect set -type dbutton debug_outline yellow`).
 
@@ -941,27 +943,110 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >**-labelvariable**  _tcl_code_
 
+>**-label&lt;i&gt;**  _text_
+
+>**-label&lt;i&gt;variable**  _tcl_code_
+
 > >If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, inside the button. 
 
+> >As many labels as desired can be added, by using **-label1**, **-label1variable**, **-label2**, etc.
+
 >**-label_pos**  _{horizontal_percentage vertical_percentage}_
+
+>**-label&lt;i&gt;_pos**  _{horizontal_percentage vertical_percentage}_
 
 > >Determines the location of the label inside the button rectangle, given by horizontal and vertical percentages. For example, for placing a label in the center of the button, use `-label_pos {0.5 0.5}` (and, probably, also `-label_anchor center`).
 
 >**-label_***option*** **  _value_
 
+>**-label&lt;i&gt;_***option*** **  _value_
+
 > >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
 
 >**-symbol**  _symbol_name_
 
-> >Place a Fontawesome symbol inside the button. 
+>**-symbol&lt;i&gt;**  _symbol_name_
+
+> >Place a Fontawesome symbol inside the button. As many symbols as desired can be added, by using **-symbol1**, **-symbol2**, etc.
 
 >**-symbol_pos**  _{horizontal_percentage vertical_percentage}_
+
+>**-symbol&lt;i&gt;_pos**  _{horizontal_percentage vertical_percentage}_
 
 > >Determines the location of the symbol inside the button rectangle, given by horizontal and vertical percentages. For example, for placing a symbol on the left side of the button, use `-symbol_pos {0.15 0.5}` (and, probably, also `-symbol_anchor center`).
 
 >**-symbol_***option*** **  _value_
 
+>**-symbol&lt;i&gt;_***option*** **  _value_
+
 > >Use this syntax to pass additional options to the symbol creation command **dui add symbol**.
+
+>**-image**  _filename_
+
+>**-image&lt;i&gt;**  _filename_
+
+> >Place an image inside the button. As many images as desired can be added, by using **-image1**, **-image2**, etc.
+
+>**-image_pos**  _{horizontal_percentage vertical_percentage}_
+
+>**-image&lt;i&gt;_pos**  _{horizontal_percentage vertical_percentage}_
+
+> >Determines the location of the image inside the button rectangle, given by horizontal and vertical percentages.
+
+>**-image_***option*** **  _value_
+
+>**-image&lt;i&gt;_***option*** **  _value_
+
+> >Use this syntax to pass additional options to the image creation command **dui add image**.
+
+
+**dui add dclicker**  _pages x y ?x1 y1? ?-option value ...?_
+
+>Create a special "dui button" that allows to increase and decrease a numeric variable by clicking on the extremes of the button. It can have horizontal (default) or vertical orientation, it can use one (small) or two (small and big) types of increments, and it can use any type of text, symbol or image for the increment and decrement actions.
+
+>Return the list of all canvas IDs that form the button compound. Accepts the same named options as **dui add dbutton** plus the following ones:
+
+>**-orient**  _horizontal_or_vertical_
+
+> >Whether to divide the button in vertical "clickable" areas/slides (if **-orient** is  _horizontal_ , the default), or in horizontal ones (if **-orient** is  _vertical_ ).
+
+>**-n_decimals**  _number_
+
+> >The number of decimal places to use when formatting the number.
+
+>**-min**  _number_
+
+> >The minimum value of the variable.
+
+>**-max**  _number_
+
+> >The maximum value of the variable.
+
+>**-use_biginc**  _true_or_false_
+
+> >Boolean (1/0, true/false, yes/no, on/off) that determines whether "big increment" will be used in the button. Note that, even if **-use_biginc** is  _true_ , you should provide **-bigincrement** if a page editor is going to be used.
+
+>**-smallincrement**  _number_
+
+> >Small increment value.
+
+>**-bigincrement**  _number_
+
+> >Big increment value.
+
+>**-default**  _number_
+
+> >Default value to assign the first time the button is clicked if the variable value is empty. 
+
+>**-editor_page**  _true_or_false_or_page_
+
+> >If  _true_  or the name of a page, a full page number editor will be launched when the entry receives a double-click. If  _true_  (or any equivalent value such as 1, yes, etc.) is given, the default number editor page that comes with DUI (`dui_number_editor`) will be used. If  _false_ , no page editor will be used. If this is not specified in the call, the default value is taken from the DUI configuration variable **use_editors_pages**.
+
+> >The editor page will receive all necessary parameters (-variable, -n_decimals, -min, -max, -smallincrement, -bigincrement, -default and -page_title). If a custom number editor page is used, it needs to have the same argument signature as ``::dui::pages::dui_number_editor::load``.
+
+>**-editor_page_title**  _title_
+
+> >The page title to show on the editor page.
 
 
 <a name="dui_add_entry"></a>
