@@ -1,4 +1,4 @@
-package provide de1_gui 1.2
+package provide de1_gui 1.3
 
 package require de1_de1 1.1
 package require de1_event 1.0
@@ -2980,6 +2980,10 @@ namespace eval ::gui::callbacks {
 
 namespace eval ::gui::notify {
 
+    	# Show "normal" messages around waiting for updates in the GUI?
+
+	variable show_scale_update_watchdog_notifications False
+
 	proc scale_event {event_id args} {
 
 		switch -exact -- $event_id {
@@ -2991,12 +2995,14 @@ namespace eval ::gui::notify {
 
 			retrying_updates {
 
+			    if { $::gui::notify::show_scale_update_watchdog_notifications } {
 				borg toast "[translate {Retrying scale updates}] [join $args]"
+			    }
 			}
 
 			timeout_updates {
 
-				borg toast "[translate {TIMEOUT scale updates}] [join $args]"
+				borg toast "[translate {Check scale}]"
 			}
 
 			not_connected {
