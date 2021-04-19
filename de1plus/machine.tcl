@@ -244,8 +244,8 @@ array set ::settings {
 	steam_flow 700
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
-	hot_water_idle_temp "850"
-	espresso_warmup_timeout "20"
+	hot_water_idle_temp "990"
+	espresso_warmup_timeout "10"
 	color_stage_3 "#edceca"
 	start_espresso_only_if_scale_connected 0
 	logfile "log.txt"
