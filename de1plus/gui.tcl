@@ -2051,8 +2051,16 @@ proc ui_startup {} {
 
 	set app_version [package version de1app]
 
-	if {$::settings(last_version) != $app_version && [ifexists ::changelog_link] != "" && [ifexists ::settings(app_updates_beta_enabled)] < 2} {
-		version_page "Version updated from $::settings(last_version) to $app_version.\n Tap here to open the changelog" [translate "Ok"]
+	if {$::settings(last_version) != $app_version  && [ifexists ::settings(app_updates_beta_enabled)] < 2} {
+		if {$::settings(espresso_count) == 0} {
+			set message "You are running Version $app_version."
+		} else {
+			set message "Version updated from $::settings(last_version) to $app_version."
+		}
+		if {[ifexists ::changelog_link] != ""} {
+			set message "$message\n Tap here to open the latest changelog"
+		}
+		version_page $message [translate "Ok"]
 		set ::settings(last_version) $app_version
 		save_settings
 	}

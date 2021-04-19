@@ -64,7 +64,7 @@ set ::infopage_button [add_de1_button "infopage" {say [translate {Ok}] $::settin
 
 set ::versionpage_label [add_de1_text "versionpage" 1280 800 -text "" -font Helv_10_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
 set ::versionpage_button_label [add_de1_text "versionpage" 1280 1310 -text "" -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
-set ::versionpage_link [add_de1_button "versionpage" {web_browser $::changelog_link} 80 60 2480 1160  ""]
+set ::versionpage_link [add_de1_button "versionpage" {if {[ifexists ::changelog_link] != ""} {web_browser $::changelog_link}} 80 60 2480 1160  ""]
 set ::versionpage_button [add_de1_button "versionpage" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off off; page_show off} 980 1210 1580 1410 ""]
 
 set slider_trough_color #EAEAEA
