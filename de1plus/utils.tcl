@@ -786,8 +786,9 @@ proc translate {english} {
                 append t [subst {$l "$english" }]
             }
             append t "\}"
-            msg -NOTICE "Appending new phrase: $english"
+            msg -NOTICE "Appending new phrase: '$english' to [homedir]/translation.tcl"
             append_file "[homedir]/translation.tcl" $t
+
             set ::already_shown_trans($english) 1
         }
     }
@@ -1082,10 +1083,7 @@ proc append_file {filename data} {
     set success 0
     set errcode [catch {
         set fn [open $filename a]
-	#
-	# DISABLING this as it can print arbitrary binary to the logs
-	#
-	# puts $fn $data
+	    puts $fn $data
         close $fn
         set success 1
     }]
