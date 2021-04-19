@@ -42,7 +42,7 @@ proc swdark2_filename {} {
     return $fn
 }
 
-proc append_file {swdark2_filename data} {
+proc append_file_obsolete {swdark2_filename data} {
     set success 0
     set errcode [catch {
         set fn [open $swdark2_filename a]
