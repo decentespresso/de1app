@@ -11,6 +11,21 @@ package require de1_plugins 1.0
 
 proc load_skin {} {
 
+	translate "reset"
+	translate "switch"
+	translate "Bluetooth is not on"
+	translate "Espresso weight reached"
+	translate "Resizing image"
+	translate "Total volume reached"
+	translate "Touch screen to retry"
+	translate "Turn your machine off and on again"
+	translate "Warmer preinfusion:"
+	translate "flow is over"
+	translate "flow is under"
+	translate "pressure is over"
+	set x [translate "pressure is under"]
+	translate "reset"
+
 	# optional callback for skins, which is reset to normal always, before loading the skin
 	eval {
 		proc skins_page_change_due_to_de1_state_change { textstate } {

@@ -84,7 +84,7 @@ proc set_scrollbar_dimensions { scrollbar_widget listbox_widget } {
 
 proc settings_flow_label {} {
 	if {$::settings(maximum_flow) > 0} {
-		return "$::settings(maximum_flow) [translate "ml/s"]"
+		return "$::settings(maximum_flow) [translate "mL/s"]"
 	}
 	return [translate "off"]
 }
@@ -251,7 +251,7 @@ proc apply_range_to_all_steps {ignored} {
 # limits
 add_de1_text "settings_2c2" 70 830 -text [translate "Limiter ranges of action"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 add_de1_widget "settings_2c2" scale 70 900  {} -from 0 -to 8  -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_y_skin 150] -variable ::settings(maximum_flow_range_advanced)     -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-add_de1_variable "settings_2c2" 70 1050 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_flow_range_advanced) ml/s}
+add_de1_variable "settings_2c2" 70 1050 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_flow_range_advanced) mL/s}
 
 add_de1_widget "settings_2c2" scale 800 900 {} -from 0 -to 8 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_y_skin 150] -variable ::settings(maximum_pressure_range_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 add_de1_variable "settings_2c2" 800 1050 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_pressure_range_advanced) bar}
@@ -431,7 +431,7 @@ proc settings2c_pressure_label {} {
 
 proc settings2c_flow_label {} {
 	if {[ifexists ::current_adv_step(max_flow_or_pressure)] > 0} {
-		return "$::current_adv_step(max_flow_or_pressure) [translate ml/s]"
+		return "$::current_adv_step(max_flow_or_pressure) [translate mL/s]"
 	}
 	return [translate "off"]
 }
