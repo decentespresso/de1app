@@ -1,9 +1,9 @@
-package provide de1_device_scale 1.4
+package provide de1_device_scale 1.5
 
 package require de1_de1 1.1
 package require de1_event 1.0
 package require de1_logging 1.0
-package require de1_gui 1.2
+package require de1_gui 1.3
 
 
 ###
@@ -95,12 +95,11 @@ namespace eval ::device::scale {
 
 	# Watchdogs for seeing scale updates
 
-	variable _watchdog_timeout  1000
-	variable _watchdog_entry_id ""
-	variable _watchdog_leave_id ""
-
-	variable _watchdog_updates_seen False
+	variable _watchdog_timeout 1000
 	variable _watchdog_update_tries 10
+
+	variable _watchdog_id ""
+	variable _watchdog_updates_seen False
 
 	variable _tare_last_requested 0
 
@@ -115,9 +114,6 @@ namespace eval ::device::scale {
 
 	variable _delayed_tare_id ""
 
-	# Show "normal" messages around waiting for updates in the GUI?
-
-	variable show_update_watchdog_notifications False
 
 
 
@@ -194,7 +190,7 @@ namespace eval ::device::scale {
 
 		if { $event_time == 0 } {set event_time [expr { [clock milliseconds] / 1000.0 }]}
 
-		::device::scale::watchdog_tickle ::device::scale::_watchdog_entry_id entry
+		::device::scale::watchdog_tickle
 
 		if { [expr { abs($reported_weight) < $::device::scale::tare_threshold }] \
 			     && $::device::scale::_tare_awaiting_zero  \
@@ -316,8 +312,6 @@ namespace eval ::device::scale {
 			]
 
 		::device::scale::event::apply::on_update_available_callbacks $event_dict
-
-		::device::scale::watchdog_tickle ::device::scale::_watchdog_leave_id leave
 	}
 
 
@@ -381,16 +375,16 @@ namespace eval ::device::scale {
 	proc watchdog_first {args} {
 
 		if { ! [::device::scale::is_connected] } {
-			msg -DEBUG "Scale watchdog first skipping start, scale not connected"
+			msg -WARNING "Scale watchdog first skipping start, scale not connected"
 			return
 		}
 
-		if { $::device::scale::_watchdog_entry_id  == "" } {
-			msg -DEBUG "Scale watchdog first starting with handle $::de1(scale_device_handle)"
+		if { $::device::scale::_watchdog_id == "" } {
+			msg -DEBUG "Scale watchdog for first updates starting with handle $::de1(scale_device_handle)"
 		} else {
-			after cancel $::device::scale::_watchdog_entry_id
+			after cancel $::device::scale::_watchdog_id
 		}
-		set ::device::scale::_watchdog_entry_id \
+		set ::device::scale::_watchdog_id \
 			[ after $::device::scale::_watchdog_timeout \
 				  [list ::device::scale::_watchdog_first_fire 1] ]
 
@@ -398,49 +392,61 @@ namespace eval ::device::scale {
 
 	proc _watchdog_first_fire {tries} {
 
-		if { $tries >=  ${::device::scale::_watchdog_update_tries} } {
-			msg -ERROR "Scale updates not seen, $tries of ${::device::scale::_watchdog_update_tries}, ABANDONING"
+		if { $tries >=	${::device::scale::_watchdog_update_tries} } {
+		    msg -ERROR "Scale updates not seen, $tries of" \
+			    "${::device::scale::_watchdog_update_tries}, ABANDONING"
+
 			::gui::notify::scale_event abandoning_updates
-			return
+
 		} else {
-			msg -WARNING "Scale updates not seen, $tries of ${::device::scale::_watchdog_update_tries}"
-			if { $::device::scale::show_update_watchdog_notifications } {
-				::gui::notify::scale_event retrying_updates $tries
-			}
+		    msg -WARNING "Scale updates not seen, $tries of" \
+			    "${::device::scale::_watchdog_update_tries}"
+
+			::gui::notify::scale_event retrying_updates $tries
+
 			scale_enable_weight_notifications
-			set ::device::scale::_watchdog_entry_id \
+
+			set ::device::scale::_watchdog_id \
 				[ after $::device::scale::_watchdog_timeout \
 					  [list ::device::scale::_watchdog_first_fire [incr tries]] ]
 		}
 	}
 
-	proc watchdog_tickle {id name} {
+	proc watchdog_tickle {} {
 
-		if { [set $id]  == "" } {
-			msg -DEBUG "Scale watchdog $name starting with handle $::de1(scale_device_handle)"
-		} else {
-			after cancel [set $id]
+		if { ! $::device::scale::_watchdog_updates_seen } {
+
+		    msg -DEBUG "Scale watchdog starting with handle $::de1(scale_device_handle)"
+		    ::gui::notify::scale_event scale_reporting
+
+		    set ::device::scale::_watchdog_updates_seen True
+
 		}
-		set $id [ after $::device::scale::_watchdog_timeout \
-				  [list ::device::scale::_watchdog_fire $id $name] ]
-		set ::device::scale::_watchdog_updates_seen true
 
+		after cancel $::device::scale::_watchdog_id
+
+		set ::device::scale::_watchdog_id [ after $::device::scale::_watchdog_timeout \
+				  [list ::device::scale::_watchdog_fire] ]
 	}
 
-	proc _watchdog_fire {id name} {
+	proc _watchdog_fire {} {
 
-		msg -WARNING "Scale watchdog $name TIMEOUT"
-		::gui::notify::scale_event timeout_updates $name
-		set $id ""
+		msg -WARNING "Scale watchdog TIMEOUT"
+		::gui::notify::scale_event timeout_updates
+
+		set ::device::scale::_watchdog_id ""
+		set ::device::scale::_watchdog_updates_seen False
 	}
 
-	proc _watchdog_cancel {id name} {
+	proc _watchdog_cancel {} {
 
-		if {[info exists id]} {
-			after cancel [set $id]
-			msg -INFO "Scale watchdog $name cancelled"
+		if { $::device::scale::_watchdog_id != "" } {
+
+			after cancel $::device::scale::_watchdog_id
+			msg -INFO "Scale watchdog cancelled"
+
 		} else {
-			msg -INFO "Scale watchdog $name - no ID to cancel"
+			msg -DEBUG "Scale watchdog cancel - no ID to cancel"
 		}
 	}
 
@@ -1360,6 +1366,9 @@ namespace eval ::device::scale::callbacks {
 	proc on_connect {event_dict} {
 
 		::device::scale::init
+
+		set ::device::scale::_watchdog_updates_seen False
+		set ::device::scale::_watchdog_id ""
 		::device::scale::watchdog_first
 
 		set ::device::scale::run_timer	    False
@@ -1402,10 +1411,11 @@ namespace eval ::device::scale::callbacks {
 
 	proc on_disconnect {event_dict} {
 
-		::device::scale::_watchdog_cancel ::device::scale::_watchdog_entry_id entry
-		::device::scale::_watchdog_cancel ::device::scale::_watchdog_leave_id leave
+	    ::device::scale::_watchdog_cancel
 
-		::gui::notify::scale_event not_connected
+	    set ::device::scale::_watchdog_updates_seen False
+
+	    ::gui::notify::scale_event not_connected
 	}
 
 	proc on_flow_change_manage_timer {event_dict} {
