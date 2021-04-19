@@ -1083,7 +1083,8 @@ proc append_file {filename data} {
     set success 0
     set errcode [catch {
         set fn [open $filename a]
-	    puts $fn $data
+        fconfigure $fn -translation binary
+        puts $fn $data
         close $fn
         set success 1
     }]
