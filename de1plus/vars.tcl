@@ -238,16 +238,25 @@ proc next_alarm_time { in } {
 	return $alarm
 }
 
-proc time_format {seconds {crlf 0}} {
+proc time_format {seconds {crlf 0} {include_day 0} } {
 	set crlftxt " "
 	if {$crlf == 1} {
 		set crlftxt \n
 	}
 
-	if {$::settings(enable_ampm) == 1} {
-		return [subst {[translate [clock format $seconds -format {%A}]]$crlftxt[string trim [clock format $seconds -format {%l:%M %p}]]}]
+	if {$include_day == 0} {
+		# john decided to no longer include the day on the alarm, as it's more info that is needed for an alarm clock
+		if {$::settings(enable_ampm) == 1} {
+			return [subst {[string trim [clock format $seconds -format {%l:%M %p}]]}]
+		} else {
+			return [subst {[string trim [clock format $seconds -format {%H:%M}]]}]
+		}
 	} else {
-		return [subst {[translate [clock format $seconds -format {%A}]]$crlftxt[string trim [clock format $seconds -format {%H:%M}]]}]
+		if {$::settings(enable_ampm) == 1} {
+			return [subst {[translate [clock format $seconds -format {%A}]]$crlftxt[string trim [clock format $seconds -format {%l:%M %p}]]}]
+		} else {
+			return [subst {[translate [clock format $seconds -format {%A}]]$crlftxt[string trim [clock format $seconds -format {%H:%M}]]}]
+		}
 	}
 }
 
