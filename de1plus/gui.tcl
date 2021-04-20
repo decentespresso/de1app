@@ -3005,6 +3005,11 @@ namespace eval ::gui::notify {
 				borg toast "[translate {Check scale}]"
 			}
 
+			scale_reporting {
+
+				borg toast "[translate {Scale reporting}]"
+			}
+
 			not_connected {
 
 				set what [translate {WARNING: Scale not connected}]
