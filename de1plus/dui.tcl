@@ -728,8 +728,8 @@ namespace eval ::dui {
 			default.dcheckbox.anchor nw
 			default.dcheckbox.justify left
 			
-			default.dcheckbox_label.pos "e 80 0"
-			default.dcheckbox_label.anchor w
+			default.dcheckbox_label.pos "en 30 -10"
+			default.dcheckbox_label.anchor nw
 			default.dcheckbox_label.justify left
 			
 			default.listbox.relief flat
@@ -751,9 +751,9 @@ namespace eval ::dui {
 			default.listbox_label.font_family.section_title notosansuibold
 			
 			default.scrollbar.orient vertical
-			default.scrollbar.width 50
-			default.scrollbar.length 75
-			default.scrollbar.sliderlength 75
+			default.scrollbar.width 120
+			default.scrollbar.length 300
+			default.scrollbar.sliderlength 120
 			default.scrollbar.from 0.0
 			default.scrollbar.to 1.0
 			default.scrollbar.bigincrement 0.2
@@ -853,27 +853,70 @@ namespace eval ::dui {
 		#	-default_type to search the same aspect in this type, in case it's not defined for the requested type
 		proc get { type aspect args } {
 			variable aspects
-			::set theme [dui::args::get_option -theme [dui theme get]]
-			::set style [dui::args::get_option -style ""]			
-			::set default [dui::args::get_option -default ""]
-			::set default_type [dui::args::get_option -default_type ""]
+			::set theme [dui::args::get_option -theme [dui theme get] 1]
+			::set style [dui::args::get_option -style "" 0]			
+			::set default [dui::args::get_option -default "" 1]
+			# Inherited argument from first implementation of DUI. Now just append to the $type list.
+			lappend type [dui::args::get_option -default_type {} 0]
 			
-			if { $style ne "" && [info exists aspects($theme.$type.$aspect.$style)] } {
-				return $aspects($theme.$type.$aspect.$style)
-			} elseif { [info exists aspects($theme.$type.$aspect)] } {
-				return $aspects($theme.$type.$aspect)
-			} elseif { $default ne "" } {
-				return $default
-			} elseif { $default_type ne "" && $default_type ne $type } {
-				return [get $default_type $aspect -theme $theme -style $style]
-			} elseif { [string range $aspect 0 4] eq "font_" && [info exists aspects($theme.font.$aspect)] } {
-				return $aspects($theme.font.$aspect)
-			} elseif { $theme ne "default" } {
-				return [get $default_type $aspect -theme default -style $style]
-			} else {
-				msg -NOTICE [namespace current] "aspect '$theme.$aspect' not found and no alternative available"
-				return ""
+			::set type [list_remove_element [lunique $type] ""]
+			::set avalue ""
+			if { $style ne "" } {
+				::set i 0				
+				while { $avalue eq "" && $i < [llength $type] } {
+					::set t [lindex $type $i]
+					if { [info exists aspects($theme.$t.$aspect.$style)] } {
+						::set avalue $aspects($theme.$t.$aspect.$style)
+					}
+					incr i
+				}
 			}
+			
+			if { $avalue eq "" } {
+				::set i 0				
+				while { $avalue eq "" && $i < [llength $type] } {
+					::set t [lindex $type $i]
+					if { [info exists aspects($theme.$t.$aspect)] } {
+						::set avalue $aspects($theme.$t.$aspect)
+					}
+					incr i
+				}
+			}
+			
+			if { $avalue eq "" } {
+				if { $default ne "" } {
+					::set avalue $default
+				} elseif { [string range $aspect 0 4] eq "font_" && [info exists aspects($theme.font.$aspect)] } {
+					::set avalue $aspects($theme.font.$aspect)
+				}
+			}
+			
+			if { $avalue eq "" && $theme ne "default" } {
+				::set avalue [get $type $aspect -theme default {*}$args] 
+			}
+			
+			if { $avalue eq "" } {
+				msg -NOTICE [namespace current] "aspect '$theme.[join $type /].$aspect' not found and no alternative available"
+			}
+			
+			return $avalue
+			
+#			if { $style ne "" && [info exists aspects($theme.$type.$aspect.$style)] } {
+#				return $aspects($theme.$type.$aspect.$style)
+#			} elseif { [info exists aspects($theme.$type.$aspect)] } {
+#				return $aspects($theme.$type.$aspect)
+#			} elseif { $default ne "" } {
+#				return $default
+#			} elseif { $default_type ne "" && $default_type ne $type } {
+#				return [get $default_type $aspect -theme $theme -style $style]
+#			} elseif { [string range $aspect 0 4] eq "font_" && [info exists aspects($theme.font.$aspect)] } {
+#				return $aspects($theme.font.$aspect)
+#			} elseif { $theme ne "default" } {
+#				return [get $default_type $aspect -theme default -style $style]
+#			} else {
+#				msg -NOTICE [namespace current] "aspect '$theme.$aspect' not found and no alternative available"
+#				return ""
+#			}
 		}
 		
 		# Named options:
@@ -902,7 +945,11 @@ namespace eval ::dui {
 		proc list { args } {
 			variable aspects
 			::set theme [dui::args::get_option -theme [dui theme get]]
-			::set pattern "^${theme}\\."
+			if { $theme eq "default" } {
+				::set pattern "^default\\."
+			} else {
+				::set pattern "^(?:${theme}|default)\\."
+			}
 			
 			::set type [dui::args::get_option -type ""]
 			if { $type eq "" } {
@@ -1445,7 +1492,7 @@ namespace eval ::dui {
 		# A fixed set of aspects can be provided on 'aspects', but most frequently this is left empty so that
 		#	all options available for the type in the theme aspects are applied.
 		# Note that -aspect_type, if provided in the args, has precedence over 'type'.
-		# TBD: Allow 'type' to be a list from higher to lower precedence. 
+		# TBD: Allow 'type' to be a list from higher to lower precedence in the aspect searching. 
 		proc process_aspects { type {style {}} {aspects {}} {exclude {}} {args_name args} } {
 			upvar $args_name largs
 			set theme [dui::args::get_option -theme [dui theme get] 1 largs]
@@ -1459,7 +1506,7 @@ namespace eval ::dui {
 			if { [dui::args::has_option -aspect_type largs] } {
 				set default_type $type
 				set type [dui::args::get_option -aspect_type "" 1 largs]
-				set types [lunique [list $type $default_type]]
+				set types [lunique [concat $type $default_type]]
 			} else {
 				set types $type
 			}
@@ -1573,9 +1620,9 @@ namespace eval ::dui {
 					set ylabel_offset [dui platform rescale_y [lindex $label_pos 2]] 
 				}				
 				foreach page $pages {
-#					set after_show_cmd "::dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
+#					set after_show_cmd "dui item relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
 #						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]"
-					set after_show_cmd [list ::dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
+					set after_show_cmd [list dui item relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
 						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]]						
 					dui page add_action $page show $after_show_cmd
 				}
@@ -1595,62 +1642,67 @@ namespace eval ::dui {
 		#	the provided options.
 		# All the -yscrollbar* options are removed from 'args'.
 		# Returns 0 if the scrollbar is not created, or the widget name if it is. 
-		proc process_yscrollbar { pages x y type {style {}} {args_name args} } {
-			upvar $args_name largs			
-			set ysb [get_option -yscrollbar "" 1 largs]
-			
-			if { $ysb eq "" } {
-				set sb_args [extract_prefixed -yscrollbar_ largs]
-				if { [llength $sb_args] == 0 } {
-					return 0
-				}
-			} elseif { [string is false $ysb] } {
-				return 0
-			} else {
-				set sb_args [extract_prefixed -yscrollbar_ largs]
-			}
-		
-			if { $style eq "" } {
-				set style [get_option -style "" 0 largs]
-			}
-						
-			set tags [get_option -tags "" 0 largs]
-			set main_tag [lindex $tags 0]			
-			set sb_tags [list ${main_tag}-ysb {*}[lrange $tags 1 end]]
-
-			foreach a [dui aspect list -type scrollbar -style $style] {
-				set a_value [dui aspect get ${type}_yscrollbar $a -style $style -default {} -default_type scrollbar]
-				if { $a eq "height" } {
-					if { $a_value eq "" } {
-						set a_value 75
-					}
-					set a_value [dui platform rescale_y $a_value]
-				} elseif { $a in "length sliderlength" } {
-					if { $a_value eq "" } {
-						set a_value 75
-					}
-					set a_value [dui platform rescale_x $a_value]
-				}
-				add_option_if_not_exists -$a $a_value sb_args
-			}
-			
-			set var [get_option -variable "" 1 sb_args]
-			set first_page [lindex $pages 0]
-			if { $var eq "" } {
-				set var "::dui::item::sliders($first_page,$main_tag)"
-				set $var 0
-			}
-			set cmd [get_option -command "" 1 sb_args]
-			if { $cmd eq "" } {
-				set cmd "::dui::item::scrolled_widget_moveto $first_page $main_tag \$$var"
-			}
-			
-			foreach page $pages {
-				dui page add_action $page show "::dui::item::set_yscrollbar_dim $page $main_tag ${main_tag}-ysb"
-			}
-			
-			return [dui add widget scale $pages 10000 $y -tags $sb_tags -variable $var -command $cmd {*}$sb_args]
-		}		
+#		proc process_yscrollbar { pages x y type {style {}} {args_name args} } {
+#			upvar $args_name largs			
+#			set ysb [get_option -yscrollbar "" 1 largs]
+#			
+#			if { $ysb eq "" } {
+#				set sb_args [extract_prefixed -yscrollbar_ largs]
+#				if { [llength $sb_args] == 0 } {
+#					return 0
+#				}
+#			} elseif { [string is false $ysb] } {
+#				return 0
+#			} else {
+#				set sb_args [extract_prefixed -yscrollbar_ largs]
+#			}
+#		
+#			if { $style eq "" } {
+#				set style [get_option -style "" 0 largs]
+#			}
+#						
+#			set tags [get_option -tags "" 0 largs]
+#			set main_tag [lindex $tags 0]			
+#			set sb_tags [list ${main_tag}-ysb {*}[lrange $tags 1 end]]
+#
+#			foreach a [dui aspect list -type scrollbar -style $style] {
+#				set a_value [dui aspect get ${type}_yscrollbar $a -style $style -default {} -default_type scrollbar]
+#				if { $a eq "height" } {
+#					if { $a_value eq "" } {
+#						set a_value 75
+#					}
+#					set a_value [dui platform rescale_x $a_value]
+#				} elseif { $a in "length sliderlength" } {
+#					if { $a_value eq "" } {
+#						set a_value 75
+#					}
+#					set a_value [dui platform rescale_y $a_value]
+#				}
+#				add_option_if_not_exists -$a $a_value sb_args
+#			}
+#			
+#			set var [get_option -variable "" 1 sb_args]
+#			set first_page [lindex $pages 0]
+#			if { $var eq "" } {
+#				set var "::dui::item::sliders($first_page,$main_tag)"
+#				set $var 0
+#			}
+#			set cmd [get_option -command "" 1 sb_args]
+#			if { $cmd eq "" } {
+#				set cmd "::dui::item::scrolled_widget_moveto $first_page $main_tag \$$var"
+#			}
+#			
+#			foreach page $pages {
+#				dui page add_action $page show "::dui::item::set_yscrollbar_dim $page $main_tag ${main_tag}-ysb"
+#			}
+#			
+#			set w [dui add widget scale $pages 10000 $y -tags $sb_tags -variable $var -command $cmd {*}$sb_args]
+##			set scrollable_widget [dui item get_widget $pages $main_tag]
+##msg -DEBUG "BINDING $scrollable_widget to set_yscrollbar_dim"			
+##			bind [dui item get_widget $pages $main_tag] <Configure> [list ::dui::item::set_yscrollbar_dim [lindex $pages 0] $main_tag ${main_tag}-ysb]
+#			
+#			return $w
+#		}		
 	}
 
 	### PAGE SUB-ENSEMBLE ###
@@ -1946,7 +1998,7 @@ namespace eval ::dui {
 		
 						set errcode [catch {
 							# this error can happen if the image file has been moved/deleted underneath the app, fallback is to at least not crash
-							$can itemconfigure $page -image $page_to_show -state hidden					
+							$can itemconfigure $page -image $page_to_show -state hidden	
 						}]
 		
 						if {$errcode != 0} {
@@ -1964,15 +2016,17 @@ namespace eval ::dui {
 			# run hide actions
 			if { $page_to_hide ne "" } {
 				foreach action [actions {} hide] {
-					lappend action $page_to_hide $page_to_show
-					uplevel #0 $action
+#					lappend action $page_to_hide $page_to_show
+#					uplevel #0 $action
+					after idle $action $page_to_hide $page_to_show
 				}
 				foreach action [actions $page_to_hide hide] {
-					lappend action $page_to_hide $page_to_show
-					uplevel #0 $action
+#					lappend action $page_to_hide $page_to_show
+#					uplevel #0 $action
+					after idle $action $page_to_hide $page_to_show
 				}			
 				if { $hide_ns ne "" && [info procs ${hide_ns}::hide] ne "" } {
-					${hide_ns}::hide $page_to_hide $page_to_show
+					after idle ${hide_ns}::hide $page_to_hide $page_to_show
 				}
 			}
 			
@@ -1997,25 +2051,29 @@ namespace eval ::dui {
 			foreach item [$can find withtag p:$page_to_show] {
 				$can itemconfigure $item -state normal
 			}
+			# It's critical to call 'update' here and give it a bit of time, otherwise the 'show' actions afterwards 
+			# may not get the right dimensions of widgets that have never been painted during the session.
+			# That's also why the show actions are triggered "after iddle".
+			# TBD: update is considered harmful (see https://wiki.tcl-lang.org/page/Update+considered+harmful), once 
+			#	all hide/show actions are triggered "after idle" and controls dynamic relocation/redimensioning is done
+			#	on Configure event bindings, it should not be necessary any more.
+			#update
 			
 			# run show actions
 			foreach action [actions {} show] {
-				lappend action $page_to_hide $page_to_show
-				uplevel #0 $action
+				after idle $action $page_to_hide $page_to_show
 			}			
 			foreach action [actions $page_to_show show] {
-				# Don't append until old-system actions like ::after_show_extensions are migrated 
-				#lappend action $page_to_hide $page_to_show
-				uplevel #0 $action
+				# TODO: Append args once old-system actions like ::after_show_extensions are migrated 
+				after idle $action
 			}			
 			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
-				${show_ns}::show $page_to_hide $page_to_show
+				after idle ${show_ns}::show $page_to_hide $page_to_show
 			}
 			
 			#set end [clock milliseconds]
 			#puts "elapsed: [expr {$end - $start}]"
 			
-			update
 			dui page update_onscreen_variables
 			dui platform hide_android_keyboard
 			#msg [namespace current] "Switched to page: $page_to_show [stacktrace]"
@@ -2344,7 +2402,8 @@ namespace eval ::dui {
 	# Items are visual items added to the canvas, either canvas items (text, arcs, lines...) or Tk widgets.
 	namespace eval item {
 		namespace export add get get_widget config cget enable_or_disable enable disable \
-			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection
+			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection \
+			relocate_text_wrt
 		namespace ensemble create
 	
 		variable sliders
@@ -2636,6 +2695,7 @@ namespace eval ::dui {
 			set wrt [get $page [lindex $wrt 0]]
 			lassign [$can bbox $wrt] x0 y0 x1 y1 
 			lassign [$can bbox $tag] wx0 wy0 wx1 wy1
+			
 			set xoffset [dui platform rescale_x $xoffset]
 			set yoffset [dui platform rescale_y $yoffset]
 			
@@ -3245,43 +3305,43 @@ namespace eval ::dui {
 			set change 0
 			if { $use_biginc } {
 				if {$y < $onequarterpoint} {
-					set change -$bigincrement 
+					set change $bigincrement 
 				} elseif {$y < $twoquarterpoint} {
-					set change -$smallincrement
+					set change $smallincrement
 				} elseif {$y < $midpoint} {
 					if {$editor_cmd eq "" } {
-						set change -$smallincrement
+						set change $smallincrement
 					} else {
 						uplevel #0 $editor_cmd
 					}
 				} elseif {$y < $threequarterpoint} {
 					if {$editor_cmd eq "" } {
-						set change $smallincrement
+						set change -$smallincrement
 					} else {
 						uplevel #0 $editor_cmd
 					}
 				} elseif {$y < $fourquarterpoint} {
-					set change $smallincrement
+					set change -$smallincrement
 				} else {
-					set change $bigincrement
+					set change -$bigincrement
 				}
 			} else {
 				if {$y < $onethirdpoint} {
-					set change -$smallincrement 
+					set change $smallincrement 
 				} elseif {$y < $midpoint} {
 					if {$editor_cmd eq "" } {
-						set change -$smallincrement
+						set change $smallincrement
 					} else {
 						uplevel #0 $editor_cmd
 					}
 				} elseif {$y < $twothirdpoint} {
 					if {$editor_cmd eq "" } {
-						set change $smallincrement
+						set change -$smallincrement
 					} else {
 						uplevel #0 $editor_cmd
 					}
 				} else {
-					set change $smallincrement
+					set change -$smallincrement
 				}
 			}
 			set_var_in_range $variable "" $change $min $max 0 $n_decimals
@@ -4181,13 +4241,15 @@ namespace eval ::dui {
 				if { [string is true $editor_page] && $data_type eq "numeric" } {
 					set editor_page "dui_number_editor" 
 				} 
-	
-				set editor_cmd [list dui page load $editor_page $textvariable -n_decimals $n_decimals -min $min \
-					-max $max -default $default -smallincrement $smallincrement -bigincrement $bigincrement \
-					-page_title $editor_page_title]
-				set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
 				
-				bind $widget <Double-Button-1> $editor_cmd
+				if { ![string is true $editor_page] } {
+					set editor_cmd [list dui page load $editor_page $textvariable -n_decimals $n_decimals -min $min \
+						-max $max -default $default -smallincrement $smallincrement -bigincrement $bigincrement \
+						-page_title $editor_page_title]
+					set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
+
+					bind $widget <Double-Button-1> $editor_cmd
+				}
 			}
 				
 			return $widget
@@ -4212,13 +4274,16 @@ namespace eval ::dui {
 			if { $height ne "" } {
 				dui::args::add_option_if_not_exists -height [expr {int($height * $::globals(listbox_length_multiplier))}]
 			}
-	
-			set ysb [dui::args::process_yscrollbar $pages $x $y multiline_entry $style]
-			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
-				set first_page [lindex $pages 0]
-				dui::args::add_option_if_not_exists -yscrollcommand \
-					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
-			}
+
+			set ysb [dui::args::get_option -yscrollbar 0 1]
+			set sb_args [dui::args::extract_prefixed -yscrollbar_]
+			
+#			set ysb [dui::args::process_yscrollbar $pages $x $y multiline_entry $style]
+#			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
+#				set first_page [lindex $pages 0]
+#				dui::args::add_option_if_not_exists -yscrollcommand \
+#					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
+#			}
 							
 			set widget [dui add widget multiline_entry $pages $x $y {*}$args]
 		
@@ -4233,6 +4298,10 @@ namespace eval ::dui {
 				} 
 				append leave_cmd "dui platform hide_android_keyboard;"
 				bind $widget <Leave> $leave_cmd
+			}
+			
+			if { [string is true $ysb] || [llength $sb_args] > 0 } {
+				dui add yscrollbar $pages $x $y -tags $tags -aspect_type multiline_entry_yscrollbar {*}$sb_args 
 			}
 			
 			# Double-tapping doesn't work on multiline entries. Think of an alternative way, e.g. show a "dropdown arrow"
@@ -4263,7 +4332,7 @@ namespace eval ::dui {
 		#	-callback_cmd: the code to pass to the page that opens when the dropdown box is clicked, to run when
 		#		control is returned to the combobox page.
 		
-		proc dcombobox { pages x y args } {			
+		proc dcombobox { pages x y args } {
 			set tags [dui::args::process_tags_and_var $pages dcombobox -textvariable 1]
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
@@ -4321,10 +4390,11 @@ namespace eval ::dui {
 				-aspect_type dcombobox_ddarrow -state hidden -command $cmd] 
 			#[dui canvas] bind $arrow_id [dui platform button_press] $select_cmd
 			
-			foreach page $pages {
-				set after_show_cmd [list ::dui::item::relocate_text_wrt $page ${main_tag}-dda $main_tag e 20 -12 w]
-				dui page add_action $page show $after_show_cmd
-			}
+			bind $w <Configure> [list dui::item::relocate_text_wrt [lindex $pages 0] ${main_tag}-dda $main_tag e 20 -12 w]
+#			foreach page $pages {
+#				set after_show_cmd [list dui item relocate_text_wrt $page ${main_tag}-dda $main_tag e 20 -12 w]
+#				dui page add_action $page show $after_show_cmd
+#			}
 			
 #			dui add dbutton $pages [expr {$x-5}] [expr {$y+}]  -command $select_cmd  \
 #				[expr {$x_widget+360}] [expr {$y_widget+68}] ]
@@ -4359,11 +4429,12 @@ namespace eval ::dui {
 				set cmd "if { \[string is true \$$checkvar\] } { set $checkvar 0 } else { set $checkvar 1 }; $cmd"
 			}
 			
-			dui add variable $pages $x $y -textvariable \
-				"\[lindex \$::dui::symbol::dcheckbox_symbols_map \[string is true \$$checkvar\]\]" -aspect_type dcheckbox {*}$args
+			dui add variable $pages $x $y -aspect_type dcheckbox -textvariable \
+				"\[lindex \$::dui::symbol::dcheckbox_symbols_map \[string is true \$$checkvar\]\]" {*}$args
 	
 			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]		
-			dui add dbutton $pages [expr {$x-5}] [expr {$y-5}] [expr {$x+60}] [expr {$y+60}] ] -tags $button_tags -command $cmd
+			dui add dbutton $pages [expr {$x-5}] [expr {$y-5}] [expr {$x+60}] [expr {$y+60}] ] -tags $button_tags \
+				-command $cmd
 			
 			return $main_tag
 		}
@@ -4383,18 +4454,143 @@ namespace eval ::dui {
 			}
 #			dui::args::process_font listbox $style
 			
-			set ysb [dui::args::process_yscrollbar $pages $x $y listbox $style]
-			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
-				set first_page [lindex $pages 0]
-				dui::args::add_option_if_not_exists -yscrollcommand \
-					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
+			set ysb [dui::args::get_option -yscrollbar 0 1]
+			set sb_args [dui::args::extract_prefixed -yscrollbar_]
+
+#			set ysb [dui::args::process_yscrollbar $pages $x $y listbox $style]
+#			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
+#				set first_page [lindex $pages 0]
 #				dui::args::add_option_if_not_exists -yscrollcommand \
-#					"::dui::item::scale_scroll $main_tag ::dui::item::sliders($main_tag)"
+#					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
+#			}
+			
+			set w [dui add widget listbox $pages $x $y {*}$args]
+					
+			if { [string is true $ysb] || [llength $sb_args] > 0 } {
+				dui add yscrollbar $pages $x $y -tags $tags -aspect_type listbox_yscrollbar {*}$sb_args 
 			}
 			
-			return [dui add widget listbox $pages $x $y {*}$args]
+			return $w
 		}
 		
+		# Adds a vertical Tk scale widget that works as a scrollbar for another widget (the one identified by the first
+		#	tag in -tags) and all the code necessary to link the scrollbar to the scrolled widget.
+		# This is not normally invoked directly by client code, but from other 'add' commands like 'dui add listbox'.
+		# Tags should be those of the original scrolled widget.
+		proc yscrollbar { pages x y args } {
+			#set tags [dui::args::process_tags_and_var $pages yscrollbar -variable 0]
+			set tags [dui::args::get_option -tags {} 1]
+			set main_tag [lindex $tags 0]
+			if { $main_tag eq "" } return
+			
+			set sb_tags [list ${main_tag}-ysb {*}[lrange $tags 1 end]]
+			
+			set var [dui::args::get_option -variable "" 1]
+			set first_page [lindex $pages 0]
+			if { $var eq "" } {
+				set var "::dui::item::sliders($first_page,$main_tag)"
+				set $var 0
+			}
+			set cmd [dui::args::get_option -command "" 1]
+			if { $cmd eq "" } {
+				set cmd "::dui::item::scrolled_widget_moveto $first_page $main_tag \$$var"
+			}
+			
+			set aspect_type [dui::args::get_option -aspect_type {} 1]
+			if { "scrollbar" ni $aspect_type } {
+				lappend aspect_type scrollbar
+			}
+			
+			set w [dui add scale $pages 10000 $y -tags $sb_tags -variable $var -aspect_type $aspect_type \
+				-orient vertical -command $cmd {*}$args]
+#			
+			bind [dui item get_widget $pages $main_tag] <Configure> [list ::dui::item::set_yscrollbar_dim \
+				[lindex $pages 0] $main_tag ${main_tag}-ysb]
+			
+			return $w
+		}		
+		
+		proc scale { pages x y args } {
+			set can [dui canvas]			
+			set tags [dui::args::process_tags_and_var $pages scale -variable 1]
+			set main_tag [lindex $tags 0]
+			#set ns [dui page get_namespace $pages]
+
+			set style [dui::args::get_option -style "" 0]
+			
+			dui::args::process_aspects scale $style
+#			foreach a [dui aspect list -type scale -style $style] {
+#				dui::args::add_option_if_not_exists -$a [dui aspect get scale $a -style $style]
+#			}
+#			dui::args::process_font scale $style
+			
+			set orient [dui::args::get_option -orient h]
+			set sliderlength [dui::args::get_option -sliderlength {} 1]
+			set width [dui::args::get_option -width {} 1]
+			set length [dui::args::get_option -length {} 1]
+			if { [string range $orient 0 0] eq "v" } {
+				if { $sliderlength ne "" } {
+					dui::args::add_option_if_not_exists -sliderlength [dui platform rescale_y $sliderlength]
+				}
+				if { $length ne "" } {
+					dui::args::add_option_if_not_exists -length [dui platform rescale_y $length]
+				}
+				if { $width ne "" } {
+					dui::args::add_option_if_not_exists -width [dui platform rescale_x $width]
+				}		
+			} else {
+				if { $sliderlength ne "" } {
+					dui::args::add_option_if_not_exists -sliderlength [dui platform rescale_x $sliderlength]
+				}
+				if { $length ne "" } {
+					dui::args::add_option_if_not_exists -length [dui platform rescale_x $length]
+				}
+				if { $width ne "" } {
+					dui::args::add_option_if_not_exists -width [dui platform rescale_y $width]
+				}
+			}
+			
+			set editor_page [dui::args::get_option -editor_page [dui cget use_editor_pages] 1]
+			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
+			set n_decimals [dui::args::get_option -n_decimals "" 1]
+			
+			set widget [dui add widget scale $pages $x $y {*}$args]
+			
+			# Invoke number editor page when the label is clicked
+			set label_id [$can find withtag ${main_tag}-lbl]
+			set var [dui::args::get_option -variable "" 0]
+			if { $editor_page ne "" && ![string is false $editor_page] && $var ne "" && $label_id ne "" } {
+				if { [string is true $editor_page] } {
+					set editor_page "dui_number_editor" 
+				}
+				
+				# This code copied verbatim from 'dui add dscale'. Maybe encapsulate it somehow?
+				set resolution [dui::args::get_option -resolution 1]
+				if { $n_decimals eq "" } {
+					set n_decimals [string length [lindex [split $resolution .] 1]]
+				}
+				set from [number_in_range [dui::args::get_option -from 0] 0 {} {} $resolution $n_decimals]
+				set to [number_in_range [dui::args::get_option -to [expr {$from+100}]] 0 {} {} $resolution $n_decimals]
+				set default [dui::args::get_option -default [expr {($from-$to)/2}]]
+				set smallinc [dui::args::get_option -smallincrement $resolution]
+				if { $smallinc < $resolution } {
+					set smallinc $resolution
+				}
+				set biginc [dui::args::get_option -bigincrement [expr {($from-$to)/10}]]
+				if { $biginc < $smallinc } {
+					set biginc $smallinc
+				}			
+					
+				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $from \
+					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
+					-page_title $editor_page_title]
+				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
+				$can bind $label_id [dui platform button_press] $editor_cmd
+			}
+
+			return $widget
+		}
+
 		# Creates a "new style" scale built from canvas items. Returns a list with the canvas IDs of all pieces.
 		# The {x,y} coordinates give the starting position of the back line (NOT the "bounding" rectangle).
 		#
@@ -4657,86 +4853,7 @@ namespace eval ::dui {
 			
 			return $ids
 		}
-		
-		proc scale { pages x y args } {
-			set can [dui canvas]			
-			set tags [dui::args::process_tags_and_var $pages scale -variable 1]
-			set main_tag [lindex $tags 0]
-			#set ns [dui page get_namespace $pages]
-
-			set style [dui::args::get_option -style "" 0]
-			foreach a [dui aspect list -type scale -style $style] {
-				dui::args::add_option_if_not_exists -$a [dui aspect get scale $a -style $style]
-			}
-#			dui::args::process_font scale $style
-			
-			set orient [dui::args::get_option -orient h]
-			set sliderlength [dui::args::get_option -sliderlength {} 1]
-			set width [dui::args::get_option -width {} 1]
-			set length [dui::args::get_option -length {} 1]
-			if { [string range $orient 0 0] eq "v" } {
-				if { $sliderlength ne "" } {
-					dui::args::add_option_if_not_exists -sliderlength [dui platform rescale_y $sliderlength]
-				}
-				if { $length ne "" } {
-					dui::args::add_option_if_not_exists -length [dui platform rescale_y $length]
-				}
-				if { $width ne "" } {
-					dui::args::add_option_if_not_exists -width [dui platform rescale_x $width]
-				}		
-			} else {
-				if { $sliderlength ne "" } {
-					dui::args::add_option_if_not_exists -sliderlength [dui platform rescale_x $sliderlength]
-				}
-				if { $length ne "" } {
-					dui::args::add_option_if_not_exists -length [dui platform rescale_x $length]
-				}
-				if { $width ne "" } {
-					dui::args::add_option_if_not_exists -width [dui platform rescale_y $width]
-				}
-			}
-			
-			set editor_page [dui::args::get_option -editor_page [dui cget use_editor_pages] 1]
-			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
-			set n_decimals [dui::args::get_option -n_decimals "" 1]
-			
-			set widget [dui add widget scale $pages $x $y {*}$args]
-			
-			# Invoke number editor page when the label is clicked
-			set label_id [$can find withtag ${main_tag}-lbl]
-			set var [dui::args::get_option -variable "" 0]
-			if { $editor_page ne "" && ![string is false $editor_page] && $var ne "" && $label_id ne "" } {
-				if { [string is true $editor_page] } {
-					set editor_page "dui_number_editor" 
-				}
 				
-				# This code copied verbatim from 'dui add dscale'. Maybe encapsulate it somehow?
-				set resolution [dui::args::get_option -resolution 1]
-				if { $n_decimals eq "" } {
-					set n_decimals [string length [lindex [split $resolution .] 1]]
-				}
-				set from [number_in_range [dui::args::get_option -from 0] 0 {} {} $resolution $n_decimals]
-				set to [number_in_range [dui::args::get_option -to [expr {$from+100}]] 0 {} {} $resolution $n_decimals]
-				set default [dui::args::get_option -default [expr {($from-$to)/2}]]
-				set smallinc [dui::args::get_option -smallincrement $resolution]
-				if { $smallinc < $resolution } {
-					set smallinc $resolution
-				}
-				set biginc [dui::args::get_option -bigincrement [expr {($from-$to)/10}]]
-				if { $biginc < $smallinc } {
-					set biginc $smallinc
-				}			
-					
-				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $from \
-					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
-					-page_title $editor_page_title]
-				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
-				$can bind $label_id [dui platform button_press] $editor_cmd
-			}
-
-			return $widget
-		}
-		
 		# Adds a "rater" made of clickable stars (or other symbol). Maps to any existing INTEGER variable.
 		# Named options:
 		#	-variable, the name of the global variable with the rating. 
@@ -4747,7 +4864,7 @@ namespace eval ::dui {
 		#	-max, default 10
 		proc drater { pages x y args } {
 			set ids {}
-			set tags [dui::args::process_tags_and_var $pages drater -variable {} args 1]
+			set tags [dui::args::process_tags_and_var $pages drater -variable 1 args 1]
 			set main_tag [lindex $tags 0]
 
 			set ratingvar [dui::args::get_option -variable "" 1]
@@ -4936,6 +5053,17 @@ proc set_var_in_range { variable {value {}} args } {
 	set $variable [number_in_range $value {*}$args]
 }
 
+# A one-liner to return a default if a variable is undefined.
+# Similar to ifexists in updater.tcl but does not set var (only returns the new value), and assigns empty values.
+proc value_or_default { var {default {}} } {
+	upvar $var thevar
+	
+	if { [info exists thevar] } {
+		return [subst "\$thevar"]
+	} else {
+		return $default
+	}
+}
 
 ### FULL-PAGE EDITORS ################################################################################################
 
@@ -5510,7 +5638,6 @@ namespace eval ::dui::pages::dui_item_selector {
 
 		set selectmode [$items_widget cget -selectmode]
 		if { $selectmode in {single browse} } {
-msg -DEBUG "dui_item_selector::page_done SINGLE ITEM SELECTION"			
 			set item_values [lindex $item_values 0]
 			set item_ids [lindex $item_ids 0]
 		}
