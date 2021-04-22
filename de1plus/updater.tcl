@@ -193,8 +193,20 @@ proc decent_async_http_get {url cmd {timeout 30000}} {
     set body {}
     set token {}    
     ::http::config -useragent "mer454"
-    set token [::http::geturl $url -binary 1 -timeout $timeout -command httpHandlerCallback]
-    set ::asyc_handlers($token) $cmd
+    set errcode [catch {
+        set token [::http::geturl $url -binary 1 -timeout $timeout -command httpHandlerCallback]
+    }]
+
+    if {$errcode != 0} {
+        catch {
+            msg -ERROR "decent_async_http_get $::errorInfo"
+        }
+    } else {
+
+        if {$token != ""} {
+            set ::asyc_handlers($token) $cmd
+        }
+    }
     return $token
 }
 
