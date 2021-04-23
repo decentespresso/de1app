@@ -440,6 +440,8 @@ array set ::settings {
 	maximum_pressure_range_advanced 0.6
 	high_vibration_scale_filtering False
 	last_version "1.34"
+
+	create_legacy_shotfiles 0
 }
 
 # default de1plus skin

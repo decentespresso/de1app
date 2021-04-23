@@ -216,7 +216,7 @@ namespace eval ::plugins::${plugin_name} {
             return
         }
         
-        set espresso_data [format_espresso_for_history]
+        set espresso_data [::shot::create]
         ::plugins::visualizer_upload::upload $espresso_data
     }
 

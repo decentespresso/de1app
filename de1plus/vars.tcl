@@ -7,6 +7,7 @@ package require de1_device_scale 1.0
 package require de1_event 1.0
 package require de1_logging 1.0
 package require de1_profile 2.0
+package require de1_shot 2.0
 
 
 #############################
@@ -2870,172 +2871,22 @@ proc save_espresso_rating_to_history {} {
 		} ]
 
 
-proc format_espresso_for_history {} {
-
-		#set clock [clock seconds]
-		if {[info exists ::settings(espresso_clock)] != 1} {
-			# in theory, this should never occur.
-			msg -ERROR "This espresso's start time was not recorded." \
-				"Possibly we didn't get the bluetooth message" \
-				"of state change to espresso."
-			set ::settings(espresso_clock) [clock seconds]
-		}
-
-		set clock $::settings(espresso_clock)
-
-		set espresso_data {}
-		append espresso_data "clock $clock\n"
-		append espresso_data "local_time {[clock format $clock]}\n"
-
-		append espresso_data "espresso_elapsed {[espresso_elapsed range 0 end]}\n"
-		append espresso_data "espresso_pressure {[espresso_pressure range 0 end]}\n"
-		append espresso_data "espresso_weight {[espresso_weight range 0 end]}\n"
-		append espresso_data "espresso_flow {[espresso_flow range 0 end]}\n"
-		append espresso_data "espresso_flow_weight {[espresso_flow_weight range 0 end]}\n"
-		append espresso_data "espresso_flow_weight_raw {[espresso_flow_weight_raw range 0 end]}\n"
-		append espresso_data "espresso_temperature_basket {[espresso_temperature_basket range 0 end]}\n"
-		append espresso_data "espresso_temperature_mix {[espresso_temperature_mix range 0 end]}\n"
-		append espresso_data "espresso_water_dispensed {[espresso_water_dispensed range 0 end]}\n"
-
-		append espresso_data "espresso_pressure_delta {[espresso_pressure_delta range 0 end]}\n"	
-		append espresso_data "espresso_flow_delta_negative {[espresso_flow_delta_negative range 0 end]}\n"	
-		append espresso_data "espresso_flow_delta_negative_2x {[espresso_flow_delta_negative_2x range 0 end]}\n"	
-
-		append espresso_data "espresso_resistance {[espresso_resistance range 0 end]}\n"	
-		append espresso_data "espresso_resistance_weight {[espresso_resistance_weight range 0 end]}\n"	
-
-		append espresso_data "espresso_state_change {[espresso_state_change range 0 end]}\n"
-
-		catch { ::device::scale::format_for_history espresso_data }
-
-		append espresso_data "espresso_pressure_goal {[espresso_pressure_goal range 0 end]}\n"
-		append espresso_data "espresso_flow_goal {[espresso_flow_goal range 0 end]}\n"
-		append espresso_data "espresso_temperature_goal {[espresso_temperature_goal range 0 end]}\n"
-
-		catch { format_timers_for_history espresso_data }
-
-		# format settings nicely so that it is easier to read and parse
-		append espresso_data "settings {\n"
-	    foreach k [lsort -dictionary [array names ::settings]] {
-	        set v $::settings($k)
-	        append espresso_data [subst {\t[list $k] [list $v]\n}]
-	    }
-	    append espresso_data "}\n"
-
-	    # things associated with the machine itself
-		append espresso_data "machine {\n"
-	    foreach k [lsort -dictionary [array names ::de1]] {
-	        set v $::de1($k)
-	        append espresso_data [subst {\t[list $k] [list $v]\n}]
-	    }
-	    append espresso_data "}\n"
-
-		set app_version [package version de1app]
-		append espresso_data "app_version {$app_version}\n"
-		
-		::profile::sync_from_legacy
-		append espresso_data "profile [huddle jsondump $::profile::current]"
-
-		return $espresso_data
-}
-
-proc format_timers_for_history {espresso_data_name} {
-
-	upvar $espresso_data_name espresso_data
-	foreach {name reftime} [array get ::timers] {
-		append espresso_data "timers(${name}) ${reftime}\n"
-	}
-}
-
-proc format_espresso_to_json {} {
-
-		if {[info exists ::settings(espresso_clock)] != 1} {
-			# in theory, this should never occur.
-			msg -ERROR "This espresso's start time was not recorded." \
-				"Possibly we didn't get the bluetooth message" \
-				"of state change to espresso."
-			set ::settings(espresso_clock) [clock seconds]
-		}
-		
-		set clock $::settings(espresso_clock)
-		set date [clock format $clock]
-		set app_version [package version de1app]
-
-		set pressure [huddle create \
-			pressure [huddle list {*}[espresso_elapsed range 0 end]] \
-			goal [huddle list {*}[espresso_pressure_goal range 0 end]] \
-			delta [huddle list {*}[espresso_pressure_delta range 0 end]] \
-			delta_negative [huddle list {*}[espresso_flow_delta_negative range 0 end]] \
-		]
-
-		set flow [huddle create \
-			flow [huddle list {*}[espresso_flow range 0 end]] \
-			by_weight [huddle list {*}[espresso_flow_weight range 0 end]] \
-			by_weight_raw [huddle list {*}[espresso_flow_weight_raw range 0 end]] \
-			goal [huddle list {*}[espresso_flow_goal range 0 end]] \
-		]
-
-		set temperature [huddle create \
-			basket [huddle list {*}[espresso_temperature_basket range 0 end]] \
-			mix [huddle list {*}[espresso_temperature_mix range 0 end]] \
-			goal [huddle list {*}[espresso_temperature_goal range 0 end]] \
-		]
-
-		set totals [huddle create \
-			weight [huddle list {*}[espresso_weight range 0 end]] \
-			water_dispensed [huddle list {*}[espresso_water_dispensed range 0 end]] \
-		]
-
-		set resistance [huddle create \
-			resistance [huddle list {*}[espresso_resistance range 0 end]] \
-			by_weight [huddle list {*}[espresso_resistance_weight range 0 end]] \
-		]
-
-		set app_data [huddle create \
-			settings [huddle create {*}[array get ::settings]] \
-			machine_state [huddle create {*}[array get ::DE1]] \
-		]
-
-		set app_specifics [huddle create \
-			app_name "DE1App" \
-			app_version $app_version \
-			data $app_data \
-		]
-
-		::profile::sync_from_legacy
-
-		set espresso_data [huddle create \
-			version 2 \
-			date $date \
-			timestamp $clock \
-			elapsed [huddle list {*}[espresso_elapsed range 0 end]] \
-			pressure $pressure \
-			flow $flow \
-			temperature $temperature \
-			totals $totals \
-			resistance $resistance \
-			state_change [huddle list {*}[espresso_state_change range 0 end]] \
-			profile $::profile::current \
-			app $app_specifics \
-		]
-
-
-		return [huddle jsondump $espresso_data]
-}
-
 
 proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 	msg -DEBUG "save_this_espresso_to_history (entry)"
 	# only save shots that have at least 5 data points
 	if {!$::settings(history_saved) && [espresso_elapsed length] > 5 && [espresso_pressure length] > 5 && $::settings(should_save_history) == 1} {
 
-		set espresso_data [format_espresso_for_history]
-		set fn "[homedir]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
-		write_file $fn $espresso_data
+		#TODO disable once v2 shotfiles are stable
+		#if {$::settings(create_legacy_shotfiles) == 1} {
+			set espresso_data [::shot::create_legacy]
+			set fn "[homedir]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
+			write_file $fn $espresso_data
+		#}
 
-		set espresso_data [format_espresso_to_json]
+		set espresso_data [::shot::create]
 		set fn "[homedir]/history_v2/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].json"
-		#write_file $fn $espresso_data
+		write_file $fn $espresso_data
 		msg -NOTICE "Saved this espresso to history"
 
 		set ::settings(history_saved) 1
