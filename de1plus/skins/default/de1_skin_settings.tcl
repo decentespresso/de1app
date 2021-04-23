@@ -628,7 +628,10 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 	set ::de1(app_update_button_label) [translate "Update"]
 	add_de1_text "settings_4" 1240 226 -text "[app_updates_policy_as_text] v[package version de1app]" -width [rescale_y_skin 1000] -font Helv_8 -fill "#7f879a"  -justify "center" -anchor "ne"
 	add_de1_variable "settings_4" 700 416 -text $::de1(app_update_button_label) -width [rescale_y_skin 1000] -font Helv_10_bold -fill "#FFFFFF"  -justify "center" -anchor "center" -textvariable {$::de1(app_update_button_label)} 
-	add_de1_button "settings_4" {set ::de1(app_update_button_label) [translate "Updating"]; update; start_app_update} 20 306 1250 526
+	add_de1_button "settings_4" {set ::de1(app_update_button_label) [translate "Updating"]; update; start_app_update} 20 320 1250 526
+	
+	# tap on version number on "app settings" tab, to visit a web page of this version's changelog
+	add_de1_button "settings_4" {if {[ifexists ::changelog_link] != ""} {web_browser $::changelog_link}} 750 220 1250 290   ""
 
 ##############################################################################
 # buttons to other settings pages
