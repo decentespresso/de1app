@@ -2027,6 +2027,7 @@ proc setup_images_for_first_page {} {
 proc run_de1_app {} {
 	page_display_change "splash" "off"
 }
+package require de1_shot 2.0
 
 proc ui_startup {} {
 
