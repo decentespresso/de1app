@@ -1,1 +1,0 @@
-This folder contains the new v2 history files in JSON format
