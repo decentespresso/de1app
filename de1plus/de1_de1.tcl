@@ -421,12 +421,20 @@ namespace eval ::de1::state {
 
 	proc current_state {} {
 
-		expr { $::de1_num_state($::de1(state)) }
+	    try { set state_text [expr { $::de1_num_state($::de1(state)) }] } on error result {
+		set state_text [format "unknown_0x%02x" $::de1(state)]
+		msg -ERROR [format "Unrecognized API_MachineStates 0x%02x" $::de1(state)]
+	    }
+	    return $state_text
 	}
 
 	proc current_substate {} {
 
-		expr { $::de1_substate_types($::de1(substate)) }
+	    try { set substate_text [expr { $::de1_substate_types($::de1(substate)) }] } on error result {
+		set substate_text [format "unknown_0x%02x" $::de1(substate)]
+		msg -ERROR [format "Unrecognized API_Substates 0x%02x" $::de1(substate)]
+	    }
+	    return $substate_text
 	}
 
 	proc is_flow_state {{state_text "None"} {substate_text "None"}} {
