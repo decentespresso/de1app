@@ -1408,6 +1408,7 @@ namespace eval ::dui {
 			set can [dui canvas]
 			
 			set tags [get_option -tags {} 1 largs]
+			set state [get_option -state normal 1 largs]
 			set auto_assign_tag 0
 			if { [llength $tags] == 0 } {
 				set main_tag "${type}_[incr item_cnt]"
@@ -1435,7 +1436,10 @@ namespace eval ::dui {
 			if { $add_multi == 1 && "$main_tag*" ni $tags } {
 				lappend tags "$main_tag*"
 			}
-			
+			if { $state in {hidden disabled} } {
+				lappend tags st:$state
+			}
+
 			foreach p $pages {
 				if { "p:$p" ni $tags } { 
 					lappend tags "p:$p"
@@ -1587,9 +1591,11 @@ namespace eval ::dui {
 			set main_tag [lindex $tags 0]
 			if { $wrt_tag eq "" } {
 				set wrt_tag $main_tag
+			} elseif { $main_tag eq "" } {
+				set main_tag $wrt_tag
 			}
 			
-			set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]	
+			set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]
 			set label_args [extract_prefixed -label_ largs]
 			foreach aspect [dui aspect list -type [list ${type}_label text] -style $style] {
 				add_option_if_not_exists -$aspect [dui aspect get ${type}_label $aspect -style $style \
@@ -1623,7 +1629,7 @@ namespace eval ::dui {
 #					set after_show_cmd "dui item relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
 #						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]"
 					set after_show_cmd [list dui item relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
-						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]]						
+						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]]	
 					dui page add_action $page show $after_show_cmd
 				}
 			}
@@ -1924,7 +1930,8 @@ namespace eval ::dui {
 				}
 			}
 
-			if {$current_page eq $page_to_show} {
+			set reload [dui::args::get_option -reload 0 1]
+			if { $current_page eq $page_to_show && ![string is true $reload] } {
 				#msg -NOTICE [namespace current] load "returning because current_page == $page_to_show"
 				return 
 			}
@@ -2047,10 +2054,20 @@ namespace eval ::dui {
 			}
 			after 50 {[dui canvas] itemconfigure _tapabsorber_ -state hidden}
 						
-			# show page items using the "p:<page_name>" tags 
+			# show page items using the "p:<page_name>" tags, unless the have a "st:hidden" tag. 
 			foreach item [$can find withtag p:$page_to_show] {
-				$can itemconfigure $item -state normal
+				set state [lsearch -glob -inline [$can gettags $item] {st:*}]
+				if { $state eq "" } {
+					set state normal
+				} else {
+					set state [string range $state 3 end]
+					if { $state ni {hidden disabled} } {
+						set state normal
+					}
+				}
+				$can itemconfigure $item -state $state
 			}
+			
 			# It's critical to call 'update' here and give it a bit of time, otherwise the 'show' actions afterwards 
 			# may not get the right dimensions of widgets that have never been painted during the session.
 			# That's also why the show actions are triggered "after iddle".
@@ -2061,14 +2078,14 @@ namespace eval ::dui {
 			
 			# run show actions
 			foreach action [actions {} show] {
-				after idle $action $page_to_hide $page_to_show
+				after 0 $action $page_to_hide $page_to_show
 			}			
 			foreach action [actions $page_to_show show] {
 				# TODO: Append args once old-system actions like ::after_show_extensions are migrated 
-				after idle $action
+				after 0 $action
 			}			
 			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
-				after idle ${show_ns}::show $page_to_hide $page_to_show
+				after 0 ${show_ns}::show $page_to_hide $page_to_show
 			}
 			
 			#set end [clock milliseconds]
@@ -2618,7 +2635,11 @@ namespace eval ::dui {
 				set state hidden
 			}
 			
-			config $page_or_ids_or_widgets $tags -state $state
+			#set ids [get $page_or_ids_or_widgets $tags]
+			foreach id [get $page_or_ids_or_widgets $tags] {
+				[dui canvas] itemconfigure $id -state $state
+			}
+			#config $page_or_ids_or_widgets $tags -state $state
 		}
 		
 		proc show { page tags { check_context 1} } {
@@ -4098,11 +4119,11 @@ namespace eval ::dui {
 			if { [dui::args::has_option -height canvas_args] } {
 				dui::args::add_option_if_not_exists -height [dui platform rescale_y [dui::args::get_option -height 0 1 canvas_args]] canvas_args 
 			}				
-			if { $type eq "scrollbar" } {
-				# From the original add_de1_widget, but WHY this? Also, scrollbars are no longer used, scales
-				#	are used instead...
-				dui::args::add_option_if_not_exists -height 245 canvas_args
-			}
+#			if { $type eq "scrollbar" } {
+#				# From the original add_de1_widget, but WHY this? Also, scrollbars are no longer used, scales
+#				#	are used instead...
+#				dui::args::add_option_if_not_exists -height 245 canvas_args
+#			}
 			
 			dui::args::process_label $pages $x $y $type $style
 			
@@ -4118,7 +4139,7 @@ namespace eval ::dui {
 			}			
 			
 			# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
-			# Kept temporarily for backwards-compatibility when using 'add_de1_widget graph' or 'dui add widget graph'. 
+			# TBD: Kept temporarily for backwards-compatibility when using 'add_de1_widget graph' or 'dui add widget graph'. 
 			# Recommended current use is 'dui add graph'
 			if { $type eq "graph" && ($::android == 1 || $::undroid == 1) } {
 				$widget grid configure -dashes "" -color "#DDDDDD" -hide 0 -minor 1 
@@ -4386,8 +4407,8 @@ namespace eval ::dui {
 			
 			# Dropdown selection arrow
 			set arrow_tags [list ${main_tag}-dda {*}[lrange $tags 1 end]]
-			set arrow_id [dui add symbol $pages $x $y -symbol sort_down -tags $arrow_tags -anchor w -justify left \
-				-aspect_type dcombobox_ddarrow -state hidden -command $cmd] 
+			set arrow_id [dui add symbol $pages 10000 $y -symbol sort_down -tags $arrow_tags -anchor w -justify left \
+				-aspect_type dcombobox_ddarrow -command $cmd] 
 			#[dui canvas] bind $arrow_id [dui platform button_press] $select_cmd
 			
 			bind $w <Configure> [list dui::item::relocate_text_wrt [lindex $pages 0] ${main_tag}-dda $main_tag e 20 -12 w]
@@ -4413,8 +4434,7 @@ namespace eval ::dui {
 			
 			set style [dui::args::get_option -style "" 0]
 #			dui::args::process_font dcheckbox $style
-			set checkvar [dui::args::get_option -textvariable "" 1]
-			dui::args::process_label $pages $x $y dcheckbox $style
+			set checkvar [dui::args::get_option -textvariable "" 1]			
 			set cmd [dui::args::get_option -command "" 1]
 			
 			#set first_page [lindex $pages 0]
@@ -4428,13 +4448,15 @@ namespace eval ::dui {
 			if { $checkvar ne "" } {
 				set cmd "if { \[string is true \$$checkvar\] } { set $checkvar 0 } else { set $checkvar 1 }; $cmd"
 			}
-			
-			dui add variable $pages $x $y -aspect_type dcheckbox -textvariable \
+			dui::args::add_option_if_not_exists -label_command $cmd
+			dui::args::process_label $pages $x $y dcheckbox $style
+						
+			dui add variable $pages $x $y -aspect_type dcheckbox -command $cmd -textvariable \
 				"\[lindex \$::dui::symbol::dcheckbox_symbols_map \[string is true \$$checkvar\]\]" {*}$args
 	
-			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]		
-			dui add dbutton $pages [expr {$x-5}] [expr {$y-5}] [expr {$x+60}] [expr {$y+60}] ] -tags $button_tags \
-				-command $cmd
+#			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]		
+#			dui add dbutton $pages [expr {$x-5}] [expr {$y-5}] [expr {$x+60}] [expr {$y+60}] ] -tags $button_tags \
+#				-command $cmd
 			
 			return $main_tag
 		}
@@ -4864,15 +4886,16 @@ namespace eval ::dui {
 		#	-max, default 10
 		proc drater { pages x y args } {
 			set ids {}
-			set tags [dui::args::process_tags_and_var $pages drater -variable 1 args 1]
+			set tags [dui::args::process_tags_and_var $pages drater -variable 1 args 0]
 			set main_tag [lindex $tags 0]
-
+			set ns [dui page get_namespace $pages]
+			
 			set ratingvar [dui::args::get_option -variable "" 1]
 			if { ![info exists $ratingvar] } { set $ratingvar {} }
 			
 			set style [dui::args::get_option -style "" 0]
 			dui::args::process_aspects drater $style ""
-			set label_id [dui::args::process_label $pages $x $y drater $style ${main_tag}]
+			set label_id [dui::args::process_label $pages $x $y drater $style ${main_tag}-btn]
 			
 			set use_halfs [string is true [dui::args::get_option -use_halfs 1 1]]
 			set symbol [dui::args::get_option -symbol "star" 1]
@@ -4893,12 +4916,12 @@ namespace eval ::dui {
 			set min [dui::args::get_option -min 0 1]
 			set max [dui::args::get_option -max 10 1]
 			set width [dui::args::get_option -width 500 1]
-			dui::args::remove_options {-anchor -justify}
+			dui::args::remove_options {-anchor -justify -tags}
 			
 			set space [expr {$width / $n_ratings}]	
 			for { set i 1 } { $i <= $n_ratings } { incr i } {
-				set star_tags [list ${main_tag}-$i $main_tag [lrange $tags 1 end]]
-				set half_star_tags [list ${main_tag}-h$i $main_tag [lrange $tags 1 end]]
+				set star_tags [list ${main_tag}-$i $main_tag {*}[lrange $tags 1 end]]
+				set half_star_tags [list ${main_tag}-h$i $main_tag {*}[lrange $tags 1 end]]
 				
 				set id [dui add symbol $pages [expr {$x+$space/2+$space*($i-1)}] [expr {$y+25}] -symbol $symbol \
 						-anchor center -justify center -tags $star_tags -aspect_type drater {*}$args]
@@ -4907,12 +4930,12 @@ namespace eval ::dui {
 					set id [dui add symbol $pages [expr {$x+$space/2+$space*($i-1)}] [expr {$y+25}] -symbol $half_symbol \
 						-anchor center -justify center -tags $half_star_tags -aspect_type drater {*}$args]
 					lappend ids $id
-				}		
+				}
 			}
 		
 			set rating_cmd [list ::dui::item::drater_clicker $ratingvar %x %y %%x0 %%y0 %%x1 %%y1 \
 				$n_ratings $use_halfs $min $max]				
-			set button_tags [list ${main_tag}-btn [lrange $tags 1 end]]
+			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
 			set id [dui add dbutton $pages $x [expr {$y-15}] [expr {$x+$width}] [expr {$y+70}] -command $rating_cmd \
 				-tags $button_tags]
 			lappend ids $id
@@ -4923,6 +4946,9 @@ namespace eval ::dui {
 			#	when the page is shown).
 			foreach page $pages {
 				dui page add_action $page show $draw_cmd
+			}
+			if { $ns ne "" } {
+				set ${ns}::widgets($main_tag) $ids
 			}
 			
 			return $ids

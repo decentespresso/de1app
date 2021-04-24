@@ -487,18 +487,23 @@ variable **create_page_namespaces**.
 >Returns the page namespace of  _page_name_ , or an empty string if the page has no associated namespace.
 
 
-<a name="dui_page_show"></a>
+<a name="dui_page_load"></a>
 
-**dui page show**  _page_name ?args?_
+**dui page load**  _page_name ?args?_
 
-**dui page show_when_off**  _page_name ?args?_
+**dui page show**  _page_name_
 
->Hides the currently visible page and shows the requested page. During this process, the page commands **load**,
-**show**, and **hide** are invoked if they exist in the page namespace; if there exists page actions matching
-the same events, they are invoked too. Each of these 3 callbacks is invoked using as 2 first arguments the name
-of the page to hide and the name of the page to show. All additional arguments in  _args_  are passed through to the
-page *load* command and/or to the page load action. This allows passing values to pages instead of relying on
-global variables.
+>Hides the currently visible page and shows the requested page. During this process, the page actions **load**, **show**, and **hide** are invoked if they exist in the page namespace; if there exists page actions matching the same events, they are invoked too. Each of these 3 callbacks is invoked using as 2 first arguments the name of the page to hide and the name of the page to show. All additional arguments in  _args_  are passed through to the page **load** command and/or to the page load actions. Use this to initialize pages with specific data, instead of relying on global variables.
+
+>**dui page show** does the same as **dui page load** except that the **load** actions are not invoked. For example, this can be used when returning from a dialog page, you just want to show the page that invoked the dialog without re-loading its data.
+
+>If the page to be shown is the same page to be hidden, nothing is done, except if the option **-reload yes** is passed to **dui page load**. This is useful when a page needs to be reloaded from the same page (for example, to show different data).
+
+>The actual sequence of events performed when changing pages is the following:
+
+>1. 
+
+>2. 
 
 
 <a name="dui_page_add_action"></a>
@@ -789,7 +794,9 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > _DESIGN NOTE_ : This is maintained at the moment for backwards compatibility, but evaluating this code in the creation proc context seems pretty unsafe, as it can modify any local variable. Given that DUI provides the mechanisms to easily access the created widgets once they're created, maintaining this doesn't seem really necessary.
 
+**-state**  _state_
 
+>This is used to define what should be the  _initial_  state of the item  _whenever the page is shown_ . Normally not needed, as it defaults to  _normal_  and most page elements are shown when showing the page. Useful when some items may be hidden or disabled depending of the situation, because it is better to hide or disable them initially and then conditionally show or enable them than doing the reverse (which was the only option before DUI) to avoid the flickering effect of something appearing and rapidly disappearing from the page.
 
 **-label_** _option_   _value_
 
