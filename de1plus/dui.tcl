@@ -1,20 +1,6 @@
-# ##### TEMPORAL DEV COMMENTS ####
-#
-# TODOs: SOME CHANGES TO DECOUPLE THIS LAYER AS A TOTALLY INDEPENDENT COMPONENT
-#	- Global variables that must change to the dui namespace variables:
-#		FONTS! Make Insight font creation compatible with the more generic/general fonts mechanism proposed here.
-#		::de1(current_context) -> ::dui::page::current_page
-#		screensaver integrated in the dui or not? -> An action on the "saver" page can make it work
-#		Idle/stress test in page display_change ?? -> Add a way to add before_show/after_show/hide actions
-#		::delayed_image_load system
-#
-#	- Global utility functions that are used here
-#		ifexists
-#		$::fontm, $::globals(entry_length_multiplier)
-#		$::android, $::undroid
-#		$::android_full_screen_flags
-#################################
 package provide de1_dui 1.0
+
+set ::settings(enabled_plugins) {SDB DYE}
 
 package require de1_logging 1.0
 package require de1_updater 1.1
@@ -88,7 +74,9 @@ namespace eval ::dui {
 	proc init { {screen_size_width {}} {screen_size_height {}} {orientation landscape} } {
 		global android
 		global undroid
-		msg [namespace current] init "android=$android, undroid=$undroid, some_droid=$::some_droid"
+		# Because font files can only be loaded ONCE with 'sdltk addfont', we need to keep the mapping of file names
+		# to family names in a global variable, to be compatible with how skins are doing it.
+		global loaded_fonts
 		
 		variable settings
 		variable fontm
@@ -96,6 +84,10 @@ namespace eval ::dui {
 		variable listbox_length_multiplier
 		variable listbox_global_width_multiplier
 
+		if { ![info exists ::loaded_fonts] } {
+			set loaded_fonts {}
+		}
+		
 		if {$android == 0 || $undroid == 1} {
 			# no 'borg' or 'ble' commands, so emulate
 			android_specific_stubs
@@ -305,10 +297,15 @@ namespace eval ::dui {
 		::canvas $can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
 		pack $can
 
-		# Create an invisible full-page rectangle to "absorb" taps when changing pages, to prevent the bug of taps
-		# persisting through pages. Suggested by Ray.
-		$can create rect 0 0 $screen_size_width $screen_size_height -fill {} -width 0 -tags _tapabsorber_ -state "hidden"
-		$can bind _tapabsorber_ [dui platform button_press] {}
+		# Create a full-page-size entry widget to "absorb" taps when changing pages, to prevent the bug of taps
+		# persisting through pages. Canvas items like rectangles don't work as windows always appear on top of canvas
+		# items. Suggested by Ray. But widget items are not invisible and produce a flickering effect on page change,
+		# plus may trigger the keyboard appearing.
+#		::entry .can._tapabsorber_ -relief flat
+#		$can create window  0 0 -window .can._tapabsorber_ -tags _tapabsorber_ -width 2560 -height 1600 -state "hidden"
+#		bind .can._tapabsorber_ [dui platform button_press] {
+#			msg -NOTICE [namespace current] " ABSORBING TAP WHEN ENTERING PAGE [dui page current]"
+#		}
 		
 		############################################
 		# future feature: flight mode
@@ -698,14 +695,12 @@ namespace eval ::dui {
 			
 			default.entry.relief flat
 			default.entry.bg white
+			entry.disabledbackground "#ccc"
 			default.entry.width 2
 			default.entry.foreground black
 			
-			default.entry.relief.special flat
-			default.entry.bg.special yellow
-			default.entry.width.special 1
-
 			default.multiline_entry.relief flat
+			default.multiline_entry.foreground black
 			default.multiline_entry.bg white
 			default.multiline_entry.width 2
 			default.multiline_entry.font_family notosansuiregular
@@ -740,7 +735,6 @@ namespace eval ::dui {
 			default.listbox.selectbackground black
 			default.listbox.selectborderwidth 0
 			default.listbox.disabledforeground "#cccccc"
-			default.listbox.selectbackground "#cccccc"
 			default.listbox.selectmode browse
 			default.listbox.justify left
 
@@ -940,6 +934,7 @@ namespace eval ::dui {
 		#	-type to return only the aspects for that type (e.g. "entry", "text", etc.)
 		# 	-style to return only the aspects for that style 
 		#	-values if 1, returns {<aspect name> <aspect value>} pairs. Defaults to 0 for returning only the aspect names.
+		#	-full_aspect 1 to return the full aspect name
 		# If the returned values are for a single theme, the theme name prefix is not included, but if -all_themes is 1,
 		#	returns the full aspect name including the theme prefix.
 		proc list { args } {
@@ -967,23 +962,24 @@ namespace eval ::dui {
 				# Return aspects with the requested style AND with no style
 				append pattern "\[0-9a-zA-Z_\]+(\\.${style})?\$"
 			}
+			#msg -DEBUG [namespace current] list "pattern='$pattern'"
 			
-			#msg [namespace current] list "pattern='$pattern'"
-			::set values [string is true [dui::args::get_option -values 0]]
+			::set use_full_aspect [string is true [dui::args::get_option -full_aspect 0]]
+			::set inc_values [string is true [dui::args::get_option -values 0]]
 			
 			::set result {}			
 			foreach full_aspect [array names aspects -regexp $pattern] {
-				::set aspect_parts [split $full_aspect .]
-				::set aspect [lindex $aspect_parts 2]
-				if { $aspect ne "" } {
-					lappend result $aspect
+				if { $use_full_aspect } {
+					lappend result $full_aspect
+				} else {
+					lappend result [lindex [split $full_aspect .] 2]
 				}
-				if { $values == 1 } {
+				if { $inc_values } {
 					lappend result $aspects($full_aspect)
 				}
 			}
 			
-			if { $values != 1 && ([llength $type] > 1 || $style ne "") } {
+			if { $inc_values != 1 && ([llength $type] > 1 || $style ne "") } {
 				return [lunique $result]
 			} else {
 				return $result
@@ -1080,11 +1076,14 @@ namespace eval ::dui {
 
 		# A list of paths where to look for font files
 		variable font_dirs {}
-		# A list with loaded family_name-font_filename pairs. Remembers which fonts have been added with 'sdltk addfont' 
-		variable loaded_fonts {}
+		# A list with loaded family_name-font_filename pairs. Remembers which fonts have been added with 'sdltk addfont'
+		# Because font files can only be loaded ONCE with 'sdltk addfont', we need to keep the mapping of file names
+		# to family names in a global variable, to be compatible with how skins are doing it.
+		#variable loaded_fonts {}
+		
 		# A list with each loaded & created font (each font identified by family+size+options)
 		# TBD Why this needed? Just use 'font names'
-		variable skin_fonts {}
+		#variable skin_fonts {}
 		
 		proc add_dirs { args } {
 			variable font_dirs
@@ -1118,7 +1117,7 @@ namespace eval ::dui {
 		#		match is found, trying both .otf and .ttf extensions if the basename has no extension.
 		#	- A font family name. In this case, the same family name is returned if the family name is loaded. 
 		proc add_or_get_familyname { filename {add_if_needed 1} } {
-			variable loaded_fonts
+			global loaded_fonts
 			variable font_dirs
 			set familyname ""
 			
@@ -1139,11 +1138,11 @@ namespace eval ::dui {
 						if { [file extension $filename] ne "" && [file exists $test_path] } {
 							set filename $test_path
 							set file_found 1
-						} elseif { [file exists "$testpath.otf"] } {
-							set filename "$testpath.otf"
+						} elseif { [file exists "$test_path.otf"] } {
+							set filename "$test_path.otf"
 							set file_found 1
-						} elseif { [file exists "$testpath.ttf"] } {
-							set filename "$testpath.ttf"
+						} elseif { [file exists "$test_path.ttf"] } {
+							set filename "$test_path.ttf"
 							set file_found 1
 						}
 					}
@@ -2048,11 +2047,14 @@ namespace eval ::dui {
 				#	used.
 				#$can itemconfigure pages&&$page_to_show -state normal
 				$can itemconfigure $page_to_show -state normal
-				$can itemconfigure _tapabsorber_ -state normal
+#				$can itemconfigure _tapabsorber_ -state normal
+#				raise .can._tapabsorber_ 
 			} on error err {
 				msg -ERROR [namespace current] display_change "showing page $page_to_show: $err"
 			}
-			after 50 {[dui canvas] itemconfigure _tapabsorber_ -state hidden}
+#			after 0 after idle {[dui canvas] itemconfigure _tapabsorber_ -state hidden;
+#				dui platform hide_android_keyboard
+#			}
 						
 			# show page items using the "p:<page_name>" tags, unless the have a "st:hidden" tag. 
 			foreach item [$can find withtag p:$page_to_show] {
@@ -2588,18 +2590,19 @@ namespace eval ::dui {
 		# For other widgets like rectangle "clickable" button areas, enables or disables them.
 		# Does nothing if the widget is hidden.
 		proc enable_or_disable { enabled page_or_ids_or_widgets {tags {}} } {
-			#set can [dui canvas]
-#			if { $page eq "" } {
-#				set page [dui page current]
-#			}
+			set can [dui canvas]
 			
 			if { [string is true $enabled] || $enabled eq "enable" } {
 				set state normal
 			} else {
 				set state disabled
 			}
-			
-			config $page_or_ids_or_widgets $tags -state $state
+						
+			foreach item [get $page_or_ids_or_widgets $tags] {
+				if { [$can itemcget $item -state] ne "hidden" } {
+					$can itemconfigure $item -state $state
+				}
+			}
 		} 
 		
 		# "Smart" widgets disabler. 
@@ -3007,7 +3010,7 @@ namespace eval ::dui {
 			set x1 [dui platform rescale_x $x1] 
 			set y1 [dui platform rescale_y $y1]
 		
-			lappends ids [$can create arc [expr $x0] [expr $y0+$arc_offset] [expr $x0+$arc_offset] [expr $y0] -style arc -outline $colour \
+			lappend ids [$can create arc [expr $x0] [expr $y0+$arc_offset] [expr $x0+$arc_offset] [expr $y0] -style arc -outline $colour \
 				-width [expr $width-1] -tags $tags -start 90 -disabledoutline $disabled -state "hidden"]
 			lappend ids [$can create arc [expr $x0] [expr $y1-$arc_offset] [expr $x0+$arc_offset] [expr $y1] -style arc -outline $colour \
 				-width [expr $width-1] -tags $tags -start 180 -disabledoutline $disabled -state "hidden"]
@@ -3731,14 +3734,14 @@ namespace eval ::dui {
 			if { [llength $args] > 0 && [string is entier [lindex $args 0]] } {
 				if { $x1 <= 0 } {
 					set x1 [lindex $args 0]
-				}
-				set args [lrange $args 1 end]
+					set args [lrange $args 1 end]
+				}				
 			}
 			if { [llength $args] > 0 && [string is entier [lindex $args 0]] } {
 				if { $y1 <= 0 } {
 					set y1 [lindex $args 0]
-				}
-				set args [lrange $args 1 end]
+					set args [lrange $args 1 end]
+				}				
 			}
 			if { $x1 <= 0 } {
 				set x1 [expr {$x+100}]
@@ -5680,6 +5683,3 @@ namespace eval ::dui::pages::dui_item_selector {
 
 }
 
-### JUST FOR TESTING
-set ::settings(enabled_plugins) {}
-# dui_demo SDB github
