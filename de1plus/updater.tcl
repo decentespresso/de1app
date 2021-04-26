@@ -250,7 +250,7 @@ proc decent_http_get_to_file {url fn {timeout 30000}} {
 
     ::http::config -useragent "mer454"
     #set token [::http::geturl $url -binary 1 -timeout $timeout]
-    set token [::http::geturl $url -channel $out  -blocksize 4096]
+    set token [::http::geturl $url -channel $out  -blocksize 4096 -binary 1 -keepalive 0]
     close $out
 
     #set body [::http::data $token]
@@ -635,7 +635,8 @@ proc start_app_update {} {
 
     set tmpdir "[homedir]/tmp"
     catch {
-        file delete -force $tmpdir
+        # john experimenting with not deleting the tmp dir so we can recover from a failed or aborted app update
+        # file delete -force $tmpdir
     }
     catch {
         file mkdir $tmpdir
@@ -660,25 +661,60 @@ proc start_app_update {} {
         array set arr $v
         set fn "$tmpdir/$arr(filesha)"
         set url "$host/download/sync/$progname/[percent20encode $k]"
-        
-        catch {
-            decent_http_get_to_file $url $fn
+
+        # check to see if this file already exists from an aborted or partially failed app update
+        set skip_this_file 0        
+        if {[file exists $fn] == 1} {
+            set newsha [calc_sha $fn]
+            if {$arr(filesha) == $newsha} {
+                msg -INFO "existing file $fn matches expected sha, so no need to redownload"
+                set skip_this_file 1
+            } else {
+                # existing file does not match expected sha, so delete and refetch
+                msg -INFO "existing file $fn does not match expected sha, so delete and refetch"
+                file delete $fn
+            }
         }
 
-        # call 'update' to keep the gui responsive
-        update
+        if {$skip_this_file != 1} {
+            set newsha ""
+            set max_attempts 3
+            for {set attempt 0} {$attempt < $max_attempts} {incr attempt} {
+                catch {
+                    file delete $fn
+                    msg -INFO "HTTP GET $url saving to $fn"
+                    decent_http_get_to_file $url $fn
+                }
 
-        set newsha [calc_sha $fn]
-        if {$arr(filesha) != $newsha} {
-            msg -ERROR "Failed to accurately download $k"
-            set ::app_updating 0
-            return -1
+                # call 'update' to keep the gui responsive
+                update
+
+                set newsha [calc_sha $fn]
+                if {$arr(filesha) != $newsha} {
+                    msg -ERROR "Failed to accurately download $k, retrying"
+                    file delete $fn
+                } else {
+                    # successful fetch 
+                    break
+                }
+            }
+
+            # call 'update' to keep the gui responsive
+            update
+
+            if {$newsha == ""} {
+                set newsha [calc_sha $fn]
+            }
+            if {$arr(filesha) != $newsha} {
+                msg -ERROR "Failed to accurately download $k"
+                set ::app_updating 0
+                return -1
+            }
+
+            update
+
+            msg -INFO "Successfully fetched $k -> $fn ($url)"
         }
-
-        update
-
-        msg -INFO "Successfully fetched $k -> $fn ($url)"
-        #break
     }
 
     #set ::de1(app_update_button_label) [translate WAIT]
