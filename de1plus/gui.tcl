@@ -1458,13 +1458,13 @@ proc show_settings { {tab_to_show ""} } {
 	if {$tab_to_show == ""} {
 		page_to_show_when_off $::settings(active_settings_tab)
 		scheduler_feature_hide_show_refresh
-#		set_profiles_scrollbar_dimensions
-#		set_advsteps_scrollbar_dimensions
 	} else {
 		page_to_show_when_off $tab_to_show
 	}
-	set_profiles_scrollbar_dimensions
-	set_advsteps_scrollbar_dimensions
+	after idle {
+		set_profiles_scrollbar_dimensions
+		set_advsteps_scrollbar_dimensions
+	}
 
 	update_de1_explanation_chart
 

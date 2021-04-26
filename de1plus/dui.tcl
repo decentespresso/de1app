@@ -297,16 +297,6 @@ namespace eval ::dui {
 		::canvas $can -width $screen_size_width -height $screen_size_height -borderwidth 0 -highlightthickness 0
 		pack $can
 
-		# Create a full-page-size entry widget to "absorb" taps when changing pages, to prevent the bug of taps
-		# persisting through pages. Canvas items like rectangles don't work as windows always appear on top of canvas
-		# items. Suggested by Ray. But widget items are not invisible and produce a flickering effect on page change,
-		# plus may trigger the keyboard appearing.
-#		::entry .can._tapabsorber_ -relief flat
-#		$can create window  0 0 -window .can._tapabsorber_ -tags _tapabsorber_ -width 2560 -height 1600 -state "hidden"
-#		bind .can._tapabsorber_ [dui platform button_press] {
-#			msg -NOTICE [namespace current] " ABSORBING TAP WHEN ENTERING PAGE [dui page current]"
-#		}
-		
 		############################################
 		# future feature: flight mode
 		#if {$::settings(flight_mode_enable) == 1} {
@@ -2047,16 +2037,12 @@ namespace eval ::dui {
 				#	used.
 				#$can itemconfigure pages&&$page_to_show -state normal
 				$can itemconfigure $page_to_show -state normal
-#				$can itemconfigure _tapabsorber_ -state normal
-#				raise .can._tapabsorber_ 
 			} on error err {
 				msg -ERROR [namespace current] display_change "showing page $page_to_show: $err"
 			}
-#			after 0 after idle {[dui canvas] itemconfigure _tapabsorber_ -state hidden;
-#				dui platform hide_android_keyboard
-#			}
 						
-			# show page items using the "p:<page_name>" tags, unless the have a "st:hidden" tag. 
+			# show page items using the "p:<page_name>" tags, unless the have a "st:hidden" tag.
+			# show Tk widgets initially disabled so then don't take the "phantom tap" from the previous page. 
 			foreach item [$can find withtag p:$page_to_show] {
 				set state [lsearch -glob -inline [$can gettags $item] {st:*}]
 				if { $state eq "" } {
@@ -2067,7 +2053,19 @@ namespace eval ::dui {
 						set state normal
 					}
 				}
-				$can itemconfigure $item -state $state
+				
+				if { $state in {normal disabled} } {
+					if { [dui cget use_finger_down_for_tap] } {
+						if { [$can type $item] eq "window" } {
+							$can itemconfigure $item -state disabled
+							after 400 $can itemconfigure -state normal
+						} else {
+							$can itemconfigure $item -state $state
+						}
+					} else {
+						$can itemconfigure $item -state $state
+					}
+				}
 			}
 			
 			# It's critical to call 'update' here and give it a bit of time, otherwise the 'show' actions afterwards 
@@ -2080,14 +2078,14 @@ namespace eval ::dui {
 			
 			# run show actions
 			foreach action [actions {} show] {
-				after 0 $action $page_to_hide $page_to_show
+				after 0 after idle $action $page_to_hide $page_to_show
 			}			
 			foreach action [actions $page_to_show show] {
 				# TODO: Append args once old-system actions like ::after_show_extensions are migrated 
-				after 0 $action
+				after 0 after idle $action
 			}			
 			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
-				after 0 ${show_ns}::show $page_to_hide $page_to_show
+				after 0 after idle ${show_ns}::show $page_to_hide $page_to_show
 			}
 			
 			#set end [clock milliseconds]
@@ -2382,7 +2380,9 @@ namespace eval ::dui {
 				foreach {id varcode} $ids_to_update {
 					set varvalue ""
 					try {
-						set varvalue [subst $varcode]
+						# Originally just [subst $varcode], but if 'list' was used within $varcode, it would use
+						# 'dui page list' instead of '::list'
+						set varvalue [uplevel #0 [::list subst $varcode]]
 					} on error err {
 						# The log can fill with thousands of identical entries if this is hit, so we save those already
 						#	warned about, to warn just once per ID.
@@ -4122,11 +4122,11 @@ namespace eval ::dui {
 			if { [dui::args::has_option -height canvas_args] } {
 				dui::args::add_option_if_not_exists -height [dui platform rescale_y [dui::args::get_option -height 0 1 canvas_args]] canvas_args 
 			}				
-#			if { $type eq "scrollbar" } {
-#				# From the original add_de1_widget, but WHY this? Also, scrollbars are no longer used, scales
-#				#	are used instead...
-#				dui::args::add_option_if_not_exists -height 245 canvas_args
-#			}
+			if { $type eq "scrollbar" } {
+				# From the original add_de1_widget, but WHY this? Also, scrollbars are no longer used, scales
+				#	are used instead...
+				dui::args::add_option_if_not_exists -height 245 canvas_args
+			}
 			
 			dui::args::process_label $pages $x $y $type $style
 			
@@ -4270,7 +4270,7 @@ namespace eval ::dui {
 					set editor_cmd [list dui page load $editor_page $textvariable -n_decimals $n_decimals -min $min \
 						-max $max -default $default -smallincrement $smallincrement -bigincrement $bigincrement \
 						-page_title $editor_page_title]
-					set editor_cmd "if \{ \[$widget cget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
+					set editor_cmd "if \{ \[\[dui canvas\] itemcget $widget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
 
 					bind $widget <Double-Button-1> $editor_cmd
 				}
