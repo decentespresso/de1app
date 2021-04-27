@@ -1540,7 +1540,10 @@ proc round_date_to_nearest_day {now} {
 
 # from Barney  https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
 proc load_font {name fn pcsize {androidsize {}} } {
-	return [dui font load $name $fn $pcsize $androidsize]
+#	if { $androidsize ne "" } {
+#		msg -WARNING "BEWARE load_font with non-empty androidsize"
+#	}
+	return [dui font load $fn $pcsize -name $name]
 	
 #    # calculate font size
 #    set familyname ""
