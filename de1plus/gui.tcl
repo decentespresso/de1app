@@ -3013,9 +3013,16 @@ namespace eval ::gui::notify {
 
 			not_connected {
 
-				set what [translate {WARNING: Scale not connected}]
-				borg toast $what
-				say $what $::settings(sound_button_in)
+			    # With automatically_ble_reconnect_forever_to_scale 1
+			    # `ble` will report a connection event when attempting to connect.
+			    # When the connection fails, the disconnect logic fires.
+			    # This has been reported to cause "ticking" sounds every 30 seconds.
+
+			    if { [::de1::state::current_state] == "Sleep" } { return }
+
+			    set what [translate {WARNING: Scale not connected}]
+			    borg toast $what
+			    say $what $::settings(sound_button_in)
 			}
 
 			no_updates {
