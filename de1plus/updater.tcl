@@ -767,6 +767,12 @@ proc start_app_update {} {
 
     if {$success == 1} {
 
+        catch {
+            # once a successful update has occured, delete all files that have been sitting in the temp directory
+            msg -INFO "app update successful, so deleting temp directory"
+            file delete -force $tmpdir
+        }        
+
         # if everything went well, go ahead and update the local timestamp and manifest to be the same as the remote one
         if {$graphics_were_updated == 1} {
 
