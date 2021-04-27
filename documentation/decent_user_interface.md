@@ -794,9 +794,9 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > _DESIGN NOTE_ : This is maintained at the moment for backwards compatibility, but evaluating this code in the creation proc context seems pretty unsafe, as it can modify any local variable. Given that DUI provides the mechanisms to easily access the created widgets once they're created, maintaining this doesn't seem really necessary.
 
-**-state**  _state_
+**-initial_state**  _state_
 
->This is used to define what should be the  _initial_  state of the item  _whenever the page is shown_ . Normally not needed, as it defaults to  _normal_  and most page elements are shown when showing the page. Useful when some items may be hidden or disabled depending of the situation, because it is better to hide or disable them initially and then conditionally show or enable them than doing the reverse (which was the only option before DUI) to avoid the flickering effect of something appearing and rapidly disappearing from the page.
+>This is used to define what should be the initial state of the item  _whenever the page is shown_ . Normally not needed, as it defaults to  _normal_  and most page elements are shown when showing the page. Useful when some items may be hidden or disabled depending of the situation, because it is better to hide or disable them initially and then conditionally show or enable them than doing the reverse (which was the only option before DUI) to avoid the flickering effect of something appearing and rapidly disappearing from the page.
 
 **-label_** _option_   _value_
 

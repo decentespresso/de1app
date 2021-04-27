@@ -88,6 +88,21 @@ namespace eval ::dui {
 			set loaded_fonts {}
 		}
 		
+		# Try to locate fonts folders automatically, in case they're not declared explicitly by the skin
+		set skin_dir [skin_directory]		
+		set skin_font_dir [file normalize "$skin_dir/fonts/"]
+		if { [file exists $skin_font_dir] } {
+			if { $skin_font_dir ni [dui font dirs] } {
+				dui font add_dirs $skin_font_dir
+			}
+		} else {
+			set font_files {}
+			set font_files [glob -tails -nocomplain -directory $skin_dir *.{otf,ttf}]
+			if { [llength $font_files] > 0 && [file normalize $skin_dir] ni [dui font dirs] } {
+				dui font add_dirs $skin_dir
+			}
+		}
+		
 		if {$android == 0 || $undroid == 1} {
 			# no 'borg' or 'ble' commands, so emulate
 			android_specific_stubs
@@ -290,6 +305,12 @@ namespace eval ::dui {
 		
 		set settings(screen_size_width) $screen_size_width 
 		set settings(screen_size_height) $screen_size_height
+
+		# Try to locate image folders automatically, in case they're not declared explicitly by the skin
+		set skin_img_dir [file normalize "${skin_dir}/${screen_size_width}x${screen_size_height}/"]
+		if { [file exists $skin_img_dir] && $skin_dir ni [dui item image_dirs] } {
+			dui item add_image_dirs $skin_dir
+		}
 		
 		# define the canvas
 		set can [dui canvas]
@@ -685,7 +706,8 @@ namespace eval ::dui {
 			
 			default.entry.relief flat
 			default.entry.bg white
-			entry.disabledbackground "#ccc"
+			default.entry.font_size 16
+			default.entry.disabledbackground "#ccc"
 			default.entry.width 2
 			default.entry.foreground black
 			
@@ -1066,14 +1088,17 @@ namespace eval ::dui {
 
 		# A list of paths where to look for font files
 		variable font_dirs {}
-		# A list with loaded family_name-font_filename pairs. Remembers which fonts have been added with 'sdltk addfont'
-		# Because font files can only be loaded ONCE with 'sdltk addfont', we need to keep the mapping of file names
-		# to family names in a global variable, to be compatible with how skins are doing it.
+		
+		# A list with loaded family_name-font_filename pairs. Remembers which fonts have been added with 'sdltk addfont',
+		#	which is required because trying to 'sdltk addfont' an already added font file raises an error.
+		# NOTE: AT THE MOMENT this is kept in a global variable to be compatible with how skins were doing it before
+		#	releasing DUI, but in the future using a namespace variable would be preferred.
 		#variable loaded_fonts {}
 		
-		# A list with each loaded & created font (each font identified by family+size+options)
-		# TBD Why this needed? Just use 'font names'
-		#variable skin_fonts {}
+		# An array that maps skin/user-defined font names to dui font keys. So skins & plugins can use fonts
+		# using their own names.
+		variable skin_fonts
+		array set skin_fonts {}
 		
 		proc add_dirs { args } {
 			variable font_dirs
@@ -1082,6 +1107,7 @@ namespace eval ::dui {
 			}
 			
 			foreach dir $args {
+				set dir [file normalize $dir]
 				if { [file isdirectory $dir] } {
 					if { $dir in $font_dirs } {
 						msg -NOTICE [namespace current] "font directory '$dir' was already in the list"
@@ -1118,7 +1144,7 @@ namespace eval ::dui {
 				} else {
 					set familyname [lindex $loaded_fonts [expr $fontindex + 1]]
 				}
-			} elseif {($::android == 1 || $::undroid == 1) && $filename != "" && [string is true $add_if_needed] } {
+			} elseif {($::android == 1 || $::undroid == 1) && $filename ne "" && [string is true $add_if_needed] } {
 				set file_found 0
 				if { [file dirname $filename] eq "." } {
 					set ndirs [llength $font_dirs]
@@ -1149,6 +1175,8 @@ namespace eval ::dui {
 				}
 				
 				if { $file_found } {
+					set $filename [file normalize $filename]
+					
 					set fontindex [lsearch $loaded_fonts $filename]
 					if { $fontindex != -1 } {
 						set familyname [lindex $loaded_fonts [expr $fontindex + 1]]
@@ -1212,14 +1240,17 @@ namespace eval ::dui {
 		#	https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
 		# filename can be either a font filename, or an added font family name. 
 		# args options are passed-through to 'font create', so they may include:
+		#	-name to assign a user-defined font name that can later be used to retrieve the font with 'dui font get'
 		#	-weight "normal" (default) or "bold"
 		#	-slant "roman" (default) or "italic"
 		#	-underline false (default) or true
 		#	-overstrike false (default) or true
 		proc load { filename size args } {
-			#variable skin_fonts
+			variable skin_fonts
+			
+			set key [dui::args::get_option -name "" 1]
 			array set opts $args
-
+			
 			# calculate font size 
 			set platform_size [expr {int([dui cget fontm] * $size)}]
 		
@@ -1230,7 +1261,10 @@ namespace eval ::dui {
 				set familyname $filename
 			}
 			
-			set key [key $familyname $size {*}$args]
+			if { $key eq "" } {	
+				set key [key $familyname $size {*}$args]
+			}
+			
 			if { $key ni [::font names] } {
 				# Create the named font instance
 				try {
@@ -1240,6 +1274,10 @@ namespace eval ::dui {
 					msg -ERROR [namespace current] "unable to create font with key '$key': $err"
 				}
 			}
+			
+#			if { $fontname ne "" } {
+#				set skin_fonts($fontname) $key
+#			}			
 			return $key
 		}
 		
@@ -1248,15 +1286,21 @@ namespace eval ::dui {
 		#	https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
 		# "I created a wrapper function that you might be interested in adopting. It makes working with fonts even simpler 
 		#	by removing the need to pre-load fonts before using them."
-		# family_name can also be a font filename (with or without path and/or extension), then it will be auto-loaded
-		#	first.
-		proc get { family_name size args } {
-			#variable skin_fonts
-			#variable font_dirs			
-			set family_name [add_or_get_familyname $family_name]
-			set font_key [key $family_name $size {*}$args]
+		# 'name' can be either a user-defined font name (with 'dui load font ... -name <name>')), a font family name,
+		#	or a font file name (with or without path and/or extension). If it is a font filename, it will be 
+		#	auto-loaded if it had not been loaded yet.
+		proc get { name size args } {
+			variable skin_fonts
+			
+			if { [info exists skin_fonts($name)] } {
+				set font_key $skin_fonts($name)
+			} else {
+				set name [add_or_get_familyname $name]
+				set font_key [key $name $size {*}$args]
+			}
+			
 			if { $font_key ni [::font names] } {
-				set font_key [load $family_name $size {*}$args]
+				set font_key [load $name $size {*}$args]
 			}
 		
 			return $font_key
@@ -1397,7 +1441,7 @@ namespace eval ::dui {
 			set can [dui canvas]
 			
 			set tags [get_option -tags {} 1 largs]
-			set state [get_option -state normal 1 largs]
+			set initial_state [get_option -initial_state normal 1 largs]
 			set auto_assign_tag 0
 			if { [llength $tags] == 0 } {
 				set main_tag "${type}_[incr item_cnt]"
@@ -1425,8 +1469,8 @@ namespace eval ::dui {
 			if { $add_multi == 1 && "$main_tag*" ni $tags } {
 				lappend tags "$main_tag*"
 			}
-			if { $state in {hidden disabled} } {
-				lappend tags st:$state
+			if { $initial_state in {hidden disabled} } {
+				lappend tags st:$initial_state
 			}
 
 			foreach p $pages {
@@ -1534,9 +1578,14 @@ namespace eval ::dui {
 			if { $style eq "" } {
 				set style [get_option -style "" 0 largs]
 			}
-						
-			if { [has_option -font largs] } {
-				set font [get_option -font "" 0 largs]
+				
+			set font [get_option -font "" 1 largs]
+			if { $font ne "" } {
+				if { [info exists ::dui::font::skin_fonts($font)] } {
+					set font $::dui::font::skin_fonts($font)
+				}					
+				add_option_if_not_exists -font $font largs
+				
 				foreach f {family size weight slant underline overstrike} {
 					remove_options -font_$f largs
 				}
@@ -2055,7 +2104,7 @@ namespace eval ::dui {
 				}
 				
 				if { $state in {normal disabled} } {
-					if { [dui cget use_finger_down_for_tap] } {
+					if { $::android == 1 && [dui cget use_finger_down_for_tap] } {
 						if { [$can type $item] eq "window" } {
 							$can itemconfigure $item -state disabled
 							after 400 $can itemconfigure -state normal
@@ -2078,14 +2127,14 @@ namespace eval ::dui {
 			
 			# run show actions
 			foreach action [actions {} show] {
-				after 0 after idle $action $page_to_hide $page_to_show
+				after idle $action $page_to_hide $page_to_show
 			}			
 			foreach action [actions $page_to_show show] {
 				# TODO: Append args once old-system actions like ::after_show_extensions are migrated 
-				after 0 after idle $action
+				after idle $action
 			}			
 			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
-				after 0 after idle ${show_ns}::show $page_to_hide $page_to_show
+				after idle ${show_ns}::show $page_to_hide $page_to_show
 			}
 			
 			#set end [clock milliseconds]
@@ -2326,21 +2375,32 @@ namespace eval ::dui {
 		}
 		
 		# Keep track of what labels are displayed in what pages. This is done through the "p:<page_name>" canvas tags 
-		#	associated to each item.
+		#	associated to each item. 
+		# 'tags' can actually be canvas tags or ids (in code before DUI). 
 		# This is provided for backwards-compatibility and as a helper for client code that creates its own GUI 
-		#	elements, but is NOT USED by DUI. The construction of the tags in dui::args::process_tags_and_var does
+		#	elements, but is NOT USED BY DUI. The construction of the tags in dui::args::process_tags_and_var does
 		#	the job.
 		proc add_items { pages tags } {
 			set can [dui canvas]
+			
 			foreach tag $tags {
-				set item_tags [$can gettags $tag]
-				foreach page $pages {
-					if { "p:$page" ni $item_tags } {
-						lappend item_tags "p:$page"
-					}
+				if { [string is integer $tag] } {
+					set ids $tag
+				} else {
+					set ids [$can find withtag $tag]
 				}
-				msg [namespace current] add_items "new_tags=$item_tags"
-				$can itemconfigure $tags -tags $item_tags
+				
+				foreach id $ids {
+					set item_tags [$can gettags $id]
+					foreach page $pages {
+						if { "p:$page" ni $item_tags } {
+							lappend item_tags "p:$page"
+						}
+					}
+					
+					#msg -DEBUG [namespace current] add_items "new_tags=$item_tags"
+					$can itemconfigure $tag -tags $item_tags
+				}
 			}
 		}
 		
@@ -2660,6 +2720,7 @@ namespace eval ::dui {
 			}
 			
 			foreach dir $args {
+				set dir [file normalize $dir]
 				if { [file isdirectory $dir] } {
 					if { $dir in $img_dirs } {
 						msg -NOTICE [namespace current] "images directory '$dir' was already in the list"
@@ -2849,8 +2910,12 @@ namespace eval ::dui {
 			set widget [get $page $widget_tag]
 			set yscb [get $page $scrollbar_tag]
 			
-			lassign [$can bbox $widget] x0 y0 x1 y1
+			lassign [$can bbox $widget] x0 y0 x1 y1						
 			[$can itemcget $yscb -window] configure -length [expr {$y1-$y0}]
+if { $widget_tag eq "items" } {
+	msg -DEBUG [namespace current] "ITEMS BBOX=$x0 $y0 $x1 $y1, COORDS=[$can coords $widget]"
+	msg -DEBUG [namespace current] "SCROLLBAR COORDS=[$can coords $yscb], NEW COORDS=[list $x1 $y0]"
+}				
 			$can coords $yscb [list $x1 $y0]
 		}
 		
@@ -4529,7 +4594,7 @@ namespace eval ::dui {
 			set w [dui add scale $pages 10000 $y -tags $sb_tags -variable $var -aspect_type $aspect_type \
 				-orient vertical -command $cmd {*}$args]
 #			
-			bind [dui item get_widget $pages $main_tag] <Configure> [list ::dui::item::set_yscrollbar_dim \
+			bind [dui item get_widget $pages $main_tag] <Configure> [list after idle ::dui::item::set_yscrollbar_dim \
 				[lindex $pages 0] $main_tag ${main_tag}-ysb]
 			
 			return $w
@@ -5472,7 +5537,7 @@ namespace eval ::dui::pages::dui_item_selector {
 		
 		# Empty category message
 		dui add variable $page 1280 750 -tags empty_items_msg -style remark -font_size +2 -anchor center \
-			-justify "center" -state hidden
+			-justify "center" -initial_state hidden
 	
 		# Items listbox: Don't use $data(items) as listvariable, as the list changes dynamically with the filter string!
 		dui add listbox $page 1280 350 -tags items -listvariable {} -canvas_width $data(listbox_width) -canvas_height 1000 \
@@ -5562,9 +5627,10 @@ namespace eval ::dui::pages::dui_item_selector {
 		set lst [dui item get $page items]
 		lassign [$can bbox $lst] x0 y0 x1 y1
 		set target_width [dui platform rescale_x $data(listbox_width)]
-		if { [expr {abs($x1-$x0-$target_width) > 10}] } {
+		if { [expr {abs($x1-$x0-$target_width) > 0}] } {
 			$can itemconfig $lst -width $target_width
 			$can itemconfig [dui item get $page filter_string] -width $target_width
+			
 			# Reposition the labels and scrollbars
 			foreach action [dui page actions $page show] {
 				eval $action
