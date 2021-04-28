@@ -2107,7 +2107,7 @@ namespace eval ::dui {
 					if { $::android == 1 && [dui cget use_finger_down_for_tap] } {
 						if { [$can type $item] eq "window" } {
 							$can itemconfigure $item -state disabled
-							after 400 $can itemconfigure -state normal
+							after 400 $can itemconfigure $item -state normal
 						} else {
 							$can itemconfigure $item -state $state
 						}
@@ -2441,7 +2441,7 @@ namespace eval ::dui {
 					set varvalue ""
 					try {
 						# Originally just [subst $varcode], but if 'list' was used within $varcode, it would use
-						# 'dui page list' instead of '::list'
+						# 'dui page list' instead of '::list'						
 						set varvalue [uplevel #0 [::list subst $varcode]]
 					} on error err {
 						# The log can fill with thousands of identical entries if this is hit, so we save those already
@@ -2451,7 +2451,7 @@ namespace eval ::dui {
 							lappend warned_variables $id
 						}
 					}
-		
+
 					if { [ifexists variables_cache($id)] ne $varvalue } {
 						$can itemconfig $id -text $varvalue
 						set variables_cache($id) $varvalue
@@ -2468,12 +2468,13 @@ namespace eval ::dui {
 		
 			#set y [clock milliseconds]
 			#puts "elapsed: [expr {$y - $x}] $something_updated"
-		
-			if {[info exists update_onscreen_variables_alarm_handle] == 1} {
+
+			if {[info exists ::dui::page::update_onscreen_variables_alarm_handle] == 1} {
 				after cancel $update_onscreen_variables_alarm_handle
-				unset update_onscreen_variables_alarm_handle
+				unset -nocomplain update_onscreen_variables_alarm_handle
 			}
-			set update_onscreen_variables_alarm_handle [after [dui cget timer_interval] ::dui::page::update_onscreen_variables]
+			set update_onscreen_variables_alarm_handle [after $::settings(timer_interval) ::dui::page::update_onscreen_variables]
+						
 		}
 	}
 	
@@ -4593,7 +4594,7 @@ if { $widget_tag eq "items" } {
 			
 			set w [dui add scale $pages 10000 $y -tags $sb_tags -variable $var -aspect_type $aspect_type \
 				-orient vertical -command $cmd {*}$args]
-#			
+			
 			bind [dui item get_widget $pages $main_tag] <Configure> [list after idle ::dui::item::set_yscrollbar_dim \
 				[lindex $pages 0] $main_tag ${main_tag}-ysb]
 			
