@@ -2837,7 +2837,14 @@ proc save_profile {} {
 		set profile_filename $::settings(profile_filename) 
 	} else {
 		# if they change the description of the profile, then save it to a new name
-		set profile_filename [clock seconds]
+		# replace prior usage of unformatted seconds with sanitized profile name and append with formatted time if file exists
+		set profile_filename $::settings(profile_title)
+		regsub -all {\s+} $profile_filename _ profile_filename 
+		regsub -all {\/+} $profile_filename __ profile_filename 
+		regsub -all {[\u0000-\u001f;:?<>(){}\[\]\|!@#$%^&*-\+=~`,.'"]+} $profile_filename "" profile_filename
+		if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] == 1} {
+			append profile_filename "_" [clock format [clock seconds] -format %Y%m%d_%H%M%S] 
+			}
 	}
 	
 	set fn "[homedir]/profiles/${profile_filename}.tcl"
