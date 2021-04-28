@@ -847,13 +847,13 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 	set ble_scan_started 0
 	if {$::de1(device_handle) == 0 } {
 		catch {
-			ble close $::currently_connecting_de1_handle
+		    ble close $::currently_connecting_de1_handle
 
-			# TODO: Evaluate: Probably not appropriate to call here
-			# as though possibly connected, on_connect hasn't been called
-
+		    if { [::de1::is_connected] } {
+			set ::de1::_is_connected False
 			::de1::event::apply::on_disconnect_callbacks \
 				[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
+		    }
 		}
 		catch {
 			set ::currently_connecting_de1_handle 0
@@ -866,14 +866,13 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 	if {$::settings(scale_bluetooth_address) != "" && $::de1(scale_device_handle) == 0} {
 		::bt::msg -NOTICE "on initial startup, if a direct connection to scale doesn't work quickly, start a scan instead"
 		catch {
-			ble close $::currently_connecting_scale_handle
+		    ble close $::currently_connecting_scale_handle
 
-			# TODO: Evaluate: Probably not appropriate to call here
-			# as though possibly connected, on_connect hasn't been called
-
+		    if { [::device::scale::is_connected] } {
+			set ::device::scale::_is_connected False
 			::device::scale::event::apply::on_disconnect_callbacks \
 				[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
-
+		    }
 		}
 		catch {
 			set ::currently_connecting_scale_handle 0
@@ -1007,12 +1006,16 @@ proc ble_connect_to_de1 {} {
 
 	if {$::de1(device_handle) != "0"} {
 		catch {
-			::bt::msg -NOTICE "disconnecting from DE1"
-			ble close $::de1(device_handle)
-			set ::de1(device_handle) "0"
+		    ::bt::msg -NOTICE "disconnecting from DE1"
+		    ble close $::de1(device_handle)
+		    set ::de1(device_handle) "0"
+		    if { [::de1::is_connected] } {
+			set ::de1::_is_connected False
 			::de1::event::apply::on_disconnect_callbacks \
 				[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
-			after 1000 ble_connect_to_de1
+		    }
+
+		    after 1000 ble_connect_to_de1
 		}
 		catch {
 			#ble unpair $::settings(bluetooth_address)
@@ -1338,12 +1341,14 @@ proc de1_ble_handler { event data } {
 
 						set ::currently_connecting_scale_handle 0
 
-						set event_dict [dict create \
-									event_time $event_time \
-									address $address \
-								       ]
-
-						::device::scale::event::apply::on_disconnect_callbacks $event_dict
+						if { [::device::scale::is_connected] } {
+						    set event_dict [dict create \
+									    event_time $event_time \
+									    address $address \
+									   ]
+						    set ::device::scale::_is_connected False
+						    ::device::scale::event::apply::on_disconnect_callbacks $event_dict
+						}
 
 
 						# john 1-11-19 automatic reconnection attempts eventually kill the bluetooth stack on android 5.1
@@ -1378,6 +1383,7 @@ proc de1_ble_handler { event data } {
 					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
 						::bt::msg -NOTICE "de1 connected $event $data_for_log"
 
+						set ::de1::_is_connected True
 						::de1::event::apply::on_connect_callbacks \
 							[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
 
@@ -1454,6 +1460,7 @@ proc de1_ble_handler { event data } {
 									address $address \
 								       ]
 
+						set ::device::scale::_is_connected True
 						::device::scale::event::apply::on_connect_callbacks $event_dict
 
 					} else {

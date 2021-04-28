@@ -115,8 +115,6 @@ namespace eval ::device::scale {
 	variable _delayed_tare_id ""
 
 
-
-
 	# See also on_connect callbacks for initialization
 
 	proc init {} {
@@ -126,8 +124,10 @@ namespace eval ::device::scale {
 	}
 
 
+	variable _is_connected False
+
 	proc is_connected {} {
-		expr { [info exists ::de1(scale_device_handle)] == 1  &&  $::de1(scale_device_handle) != 0 }
+	    return $::device::scale::_is_connected
 	}
 
 	proc bluetooth_address {}  {

@@ -228,6 +228,14 @@ namespace eval ::de1 {
 
 	::de1::event::listener::on_connect_add [lambda {args} ::de1::init]
 
+
+	variable _is_connected False
+
+	proc is_connected {} {
+	    return $::de1::_is_connected
+	}
+
+
 	proc line_voltage_nom {} {
 
 		# string is double "" returns 1, expr {double("")} is an error
