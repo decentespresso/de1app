@@ -65,7 +65,7 @@ namespace eval ::plugins::${plugin_name} {
         http::register https 443 [list ::tls::socket -servername $settings(webhook_domain)]
 
         # Craft HTTP Body
-        set espresso_data [format_espresso_for_history]
+        set espresso_data [::shot::create]
         set clock [clock seconds]
         set boundary "--------$clock"
         set type "multipart/form-data, charset=utf-8, boundary=$boundary"
