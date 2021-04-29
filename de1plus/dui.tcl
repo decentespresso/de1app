@@ -3,13 +3,14 @@ package provide de1_dui 1.0
 package require de1_logging 1.0
 package require de1_updater 1.1
 package require de1_utils 1.1
-package require Tk
-package require snit
+
 # tksvg breaks all images loading in the older Androwish distributions of the first DE1 tablets.
 #catch { package require tksvg }
 catch {
 	# tkblt has replaced BLT in current TK distributions, not on Androwish, they still use BLT and it is preloaded
 	package require tkblt
+	package require Tk
+	package require snit
 	namespace import blt::*
 }
 
