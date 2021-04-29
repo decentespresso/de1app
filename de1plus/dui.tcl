@@ -1,7 +1,5 @@
 package provide de1_dui 1.0
 
-set ::settings(enabled_plugins) {SDB DYE}
-
 package require de1_logging 1.0
 package require de1_updater 1.1
 package require de1_utils 1.1
@@ -624,6 +622,9 @@ namespace eval ::dui {
 #		default.symbol.font_family "Font Awesome 5 Pro"
 #		default.entry.font_family notosansuiregular
 #		default.entry.font_size 16
+		#default.button.disabledfill "#ddd"
+		#default.button.radius 40 -- only include if the button style has shape=round
+		#default.button.arc_offset 50 -- only include if the button style has shape=outline
 		
 		array set aspects {
 			default.page.bg_img {}
@@ -807,9 +808,6 @@ namespace eval ::dui {
 			default.graph.plotpady 0 
 			default.graph.plotpadx 10
 		}
-		#default.button.disabledfill "#ddd"
-		#default.button.radius 40 -- only include if the button style has shape=round
-		#default.button.arc_offset 50 -- only include if the button style has shape=outline
 				
 		# Named options:
 		# 	-theme theme_name: to add to a theme different than the current one.
@@ -1685,7 +1683,8 @@ namespace eval ::dui {
 		# Processes the -yscrollbar* named options in 'args' and produces the scrollbar slider widget according to 
 		#	the provided options.
 		# All the -yscrollbar* options are removed from 'args'.
-		# Returns 0 if the scrollbar is not created, or the widget name if it is. 
+		# Returns 0 if the scrollbar is not created, or the widget name if it is.
+		# OBSOLETE, now other commands use 'dui add yscrollbar'
 #		proc process_yscrollbar { pages x y type {style {}} {args_name args} } {
 #			upvar $args_name largs			
 #			set ysb [get_option -yscrollbar "" 1 largs]
@@ -2147,209 +2146,7 @@ namespace eval ::dui {
 		
 		proc show { page_to_show } {
 			load $page_to_show -_run_load_actions no
-		}
-		
-#		proc set_next { machinepage guipage } {
-#			#variable nextpage
-#			#msg "set_next_page $machinepage $guipage"
-#			set key "machine:$machinepage"
-#			set ::nextpage($key) $guipage
-#		}
-#
-#		proc show_when_off { page_to_show args } {
-#			set_next off $page_to_show
-#			show $page_to_show {*}$args
-#		}
-#				
-#		proc show { page_to_show args } {
-#			display_change [current] $page_to_show {*}$args
-#		}
-#		
-#		proc display_change { page_to_hide page_to_show args } {
-#			variable current_page
-#			set can [dui canvas]
-#			catch { delay_screen_saver }
-#			
-#			set hide_ns [get_namespace $page_to_hide]
-#			set show_ns [get_namespace $page_to_show]
-#			
-#			set key "machine:$page_to_show"
-#			if {[ifexists ::nextpage($key)] != ""} {
-#				# there are different possible tabs to display for different states (such as preheat-cup vs hot water)
-#				set page_to_show $::nextpage($key)
-#			}
-#		
-#			if {$current_page eq $page_to_show} {
-#				#msg "page_display_change returning because ::de1(current_context) == $page_to_show"
-#				return 
-#			}
-#		
-#			msg [namespace current] display_change "$page_to_hide->$page_to_show"
-#				
-##			# TODO: This should be handled by the main app adding actions to the sleep/off/saver pages
-##			if {$page_to_hide == "sleep" && $page_to_show == "off"} {
-##				msg [namespace current] "discarding intermediate sleep/off state msg"
-##				return 
-##			} elseif {$page_to_show == "saver"} {
-##				if {[ifexists ::exit_app_on_sleep] == 1} {
-##					get_set_tablet_brightness 0
-##					close_all_ble_and_exit
-##				}
-##			}
-#		
-#			# signal the page change with a sound
-#			dui sound make page_change
-#			
-#			#msg "page_display_change $page_to_show"
-#			#set start [clock milliseconds]
-#		
-#			# TODO: This should be added on the main app as a load action on the "saver" page
-#			# set the brightness in one place
-##			if {$page_to_show == "saver" } {
-##				if {$::settings(screen_saver_change_interval) == 0} {
-##					# black screen saver
-##					display_brightness 0
-##				} else {
-##					display_brightness $::settings(saver_brightness)
-##				}
-##				borg systemui $::android_full_screen_flags  
-##			} else {
-##				display_brightness $::settings(app_brightness)
-##			}
-#		
-#			
-##			if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {		
-##				msg "Doing next stress test step: '$::idle_next_step '"
-##				set todo $::idle_next_step 
-##				unset -nocomplain ::idle_next_step 
-##				eval $todo
-##			}
-#
-#			# run load actions
-#			foreach action [actions {} load] {
-#				lappend action $page_to_hide $page_to_show
-#				uplevel #0 $action
-#			}			
-#			foreach action [actions $page_to_show load] {
-#				lappend action $page_to_hide $page_to_show
-#				uplevel #0 $action
-#				#eval $action
-#			}
-#			if { $show_ns ne "" && [info procs ${show_ns}::load] ne "" } {
-#				set page_loaded [${show_ns}::load $page_to_hide $page_to_show {*}$args]
-#				if { ![string is true $page_loaded] } {
-#					# Interrupt the loading: don't show the new page
-#					return
-#				}
-#			}
-#
-#			# run hide actions
-#			foreach action [actions {} hide] {
-#				lappend action $page_to_hide $page_to_show
-#				uplevel #0 $action
-#				#eval $action
-#			}
-#			foreach action [actions $page_to_hide hide] {
-#				lappend action $page_to_hide $page_to_show
-#				uplevel #0 $action
-#				#eval $action
-#			}			
-#			if { $hide_ns ne "" && [info procs ${hide_ns}::hide] ne "" } {
-#				${hide_ns}::hide $page_to_hide $page_to_show
-#			}
-#
-#			# update global page
-#			set current_page $page_to_show
-#			if { [info exists ::de1(current_context)] } {
-#				set ::de1(current_context) $page_to_show
-#			}
-#		
-#			#puts "page_display_change hide:$page_to_hide show:$page_to_show"
-#			try {
-#				$can itemconfigure $page_to_hide -state hidden
-#			} on error err {
-#				msg -ERROR [namespace current] display_change "error hiding $page_to_hide: $err"
-#			}
-#			#$can itemconfigure [list "pages" "splash" "saver"] -state hidden
-#		
-#			if {[info exists ::delayed_image_load($page_to_show)] == 1} {
-#				set pngfilename	$::delayed_image_load($page_to_show)
-#				msg "Loading skin image from disk: $pngfilename"
-#				
-#				set errcode [catch {
-#					# this can happen if the image file has been moved/deleted underneath the app
-#					#fallback is to at least not crash
-#					msg "page_display_change image create photo $page_to_show -file $pngfilename" 
-#					image create photo $page_to_show -file $pngfilename
-#					#msg "image create photo $page_to_show -file $pngfilename"
-#				}]
-#		
-#				if {$errcode != 0} {
-#					catch {
-#						msg "image create photo error: $::errorInfo"
-#					}
-#				}
-#		
-#				foreach {page img} [array get ::delayed_image_load] {
-#					if {$img == $pngfilename} {
-#						
-#						# Matching delayed image load to every page that references it
-#						# this avoids loading the same iamge over and over, for each page referencing it
-#		
-#						set errcode [catch {
-#							# this error can happen if the image file has been moved/deleted underneath the app, fallback is to at least not crash
-#							$can itemconfigure $page -image $page_to_show -state hidden					
-#						}]
-#		
-#						if {$errcode != 0} {
-#							catch {
-#								msg "$can itemconfigure page_to_show ($page/$page_to_show) error: $::errorInfo"
-#							}
-#						}
-#		
-#						unset -nocomplain ::delayed_image_load($page)
-#					}
-#				}
-#		
-#			}
-#		
-#			# hide all canvas items at once!
-#			$can itemconfigure all -state hidden
-#
-#			# show background, then all page items
-#			try {
-#				$can itemconfigure $page_to_show -state normal
-#			} on error err {
-#				msg -ERROR [namespace current ] display_change "showing page $page_to_show: $err"
-#			}
-#						
-#			# new dui system, show page items using the "p:<page_name>" tags 
-#			foreach item [$can find withtag p:$page_to_show] {
-#				$can itemconfigure $item -state normal
-#			}
-#
-#			# run show actions
-#			foreach action [actions {} show] {
-#				uplevel #0 $action
-#				#eval $action
-#			}			
-#			foreach action [actions $page_to_show show] {
-#				uplevel #0 $action
-#				#eval $action
-#			}			
-#			if { $show_ns ne "" && [info procs ${show_ns}::show] ne "" } {
-#				${show_ns}::show $page_to_hide $page_to_show
-#				#set ::dui::pages::${page_to_show}::page_drawn 1
-#			}
-#			
-#			#set end [clock milliseconds]
-#			#puts "elapsed: [expr {$end - $start}]"
-#			
-#			update
-#			dui page update_onscreen_variables
-#			dui platform hide_android_keyboard
-#			#msg "Switched to page: $page_to_show [stacktrace]"
-#		}
+		}		
 		
 		proc add_action { pages event tclcode } {
 			variable pages_data
@@ -2913,10 +2710,6 @@ namespace eval ::dui {
 			
 			lassign [$can bbox $widget] x0 y0 x1 y1						
 			[$can itemcget $yscb -window] configure -length [expr {$y1-$y0}]
-if { $widget_tag eq "items" } {
-	msg -DEBUG [namespace current] "ITEMS BBOX=$x0 $y0 $x1 $y1, COORDS=[$can coords $widget]"
-	msg -DEBUG [namespace current] "SCROLLBAR COORDS=[$can coords $yscb], NEW COORDS=[list $x1 $y0]"
-}				
 			$can coords $yscb [list $x1 $y0]
 		}
 		
@@ -3668,9 +3461,7 @@ if { $widget_tag eq "items" } {
 			if { ! $compatibility_mode } {				
 				set style [dui::args::get_option -style "" 1]
 				dui::args::process_aspects text $style "" "pos"
-#if { $main_tag eq "launch_dye" } { msg "BEFORE PROCESSING FONT args='$args'" }
 				dui::args::process_font text $style
-#if { $main_tag eq "launch_dye" } { msg "AFTER PROCESSING FONT args='$args'" }
 				set width [dui::args::get_option -width {} 1]
 				if { $width ne "" } {
 					set width [dui platform rescale_x $width]
@@ -5043,8 +4834,6 @@ if { $widget_tag eq "items" } {
 		}
 	}
 	
-	### INITIALIZE ###
-		
 	### GENERAL TOOLS ###
 	
 	# Command to invoke from the -vcmd option to validate numeric entries, with -validate key.
