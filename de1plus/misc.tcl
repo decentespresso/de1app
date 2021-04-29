@@ -113,6 +113,8 @@ proc make_de1_dir {srcdir destdirs} {
         de1app.tcl *
         de1_comms.tcl *
         gui.tcl *
+        history_viewer.tcl *
+        dui.tcl *
         machine.tcl *
         utils.tcl *
         main.tcl *
@@ -533,7 +535,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/MimojaCafe/fonts/Mazzard\ Regular.otf *
         skins/MimojaCafe/fonts/Mazzard\ SemiBold.otf *
         skins/MimojaCafe/framework.tcl *
-        skins/MimojaCafe/history_viewer.tcl *
         skins/MimojaCafe/interfaces/default_settings_screen.tcl *
         skins/MimojaCafe/interfaces/default_ui.tcl *
         skins/MimojaCafe/interfaces/magadan_ui.tcl *
@@ -976,6 +977,37 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/keyboard_control/settings.tdb *
 
         plugins/log_debug/plugin.tcl *
+
+        plugins/DYE/1280x800/bean_DSx.png *
+        plugins/DYE/1280x800/bean_Insight.png *
+        plugins/DYE/1280x800/bean_MimojaCafe.png *
+        plugins/DYE/1280x800/espresso_DSx.png *
+        plugins/DYE/1280x800/espresso_Insight.png *
+        plugins/DYE/1280x800/espresso_MimojaCafe.png *
+        plugins/DYE/1280x800/niche_DSx.png *
+        plugins/DYE/1280x800/niche_Insight.png *
+        plugins/DYE/1280x800/niche_MimojaCafe.png *
+        plugins/DYE/1280x800/people_DSx.png *
+        plugins/DYE/1280x800/people_Insight.png *
+        plugins/DYE/1280x800/people_MimojaCafe.png *
+        plugins/DYE/2560x1600/bean_DSx.png *
+        plugins/DYE/2560x1600/bean_Insight.png *
+        plugins/DYE/2560x1600/bean_MimojaCafe.png *
+        plugins/DYE/2560x1600/espresso_DSx.png *
+        plugins/DYE/2560x1600/espresso_Insight.png *
+        plugins/DYE/2560x1600/espresso_MimojaCafe.png *
+        plugins/DYE/2560x1600/niche_DSx.png *
+        plugins/DYE/2560x1600/niche_Insight.png *
+        plugins/DYE/2560x1600/niche_MimojaCafe.png *
+        plugins/DYE/2560x1600/people_DSx.png *
+        plugins/DYE/2560x1600/people_Insight.png *
+        plugins/DYE/2560x1600/people_MimojaCafe.png *
+        plugins/DYE/changelog.md *
+        plugins/DYE/DYE.tcl *
+        plugins/DYE/plugin.tcl *
+        plugins/DYE/setup_DSx.tcl *
+        plugins/DYE/setup_Insight.tcl *
+        plugins/DYE/setup_MimojaCafe.tcl *
     }
 #        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
