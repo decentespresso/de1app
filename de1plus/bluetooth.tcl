@@ -2,7 +2,7 @@ package provide de1_bluetooth 1.1
 
 package require de1_comms
 package require de1_device_scale 1.0
-package require de1_logging 1.0
+package require de1_logging 1.2
 
 namespace eval ::bt {
 

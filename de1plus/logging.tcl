@@ -1,4 +1,4 @@
-package provide de1_logging 1.1
+package provide de1_logging 1.2
 
 package require lambda
 
