@@ -1,7 +1,7 @@
 package provide de1_comms 1.1
 
 package require de1_bluetooth
-package require de1_logging 1.0
+package require de1_logging 1.2
 
 ### Globals
 set ::failed_attempt_count_connecting_to_de1 0
