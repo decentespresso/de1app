@@ -2178,7 +2178,9 @@ package require de1_shot 2.0
 
 proc ui_startup {} {
 	
+	::shot::convert_all_legacy_to_v2
 	load_settings
+
 	::profile::sync_from_legacy	
 	setup_environment
 		
