@@ -5,6 +5,7 @@ package require de1_event 1.0
 package require de1_logging 1.1
 package require de1_plugins 1.0
 package require de1_dui 1.0
+package require de1_history_viewer 1.1
 
 ###
 ### ::gui namespace defined after globals
@@ -2194,7 +2195,8 @@ proc ui_startup {} {
 	
 	setup_images_for_first_page
 	setup_images_for_other_pages
-	
+	history_viewer init
+
 	plugins init
 
 	set app_version [package version de1app]
@@ -2218,7 +2220,8 @@ proc ui_startup {} {
 	dui font add_dirs "[homedir]/fonts"
 	dui item add_image_dirs "[homedir]/skins/$::settings(skin)" "[homedir]/skins/default"
 	dui setup_ui
-		
+	
+
 	.can itemconfigure splash -state hidden
 	
 	#after $::settings(timer_interval) 

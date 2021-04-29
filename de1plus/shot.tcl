@@ -167,6 +167,10 @@ namespace eval ::shot {
             }
         }
 
+        set out [ifexists ::settings(drink_weight)]
+        if {$out eq {} || $out == 0} {
+            set out [ifexists ::de1(pour_volume)]
+        }
         set meta [huddle create \
             bean [huddle create \
                 brand [ifexists ::settings(bean_brand)] \
@@ -187,11 +191,13 @@ namespace eval ::shot {
             ] \
             in $beanweight \
             out [ifexists ::settings(drink_weight)] \
+            time [round_to_one_digits [expr ([espresso_elapsed range end end]+0.05)]] \
         ]
 
         ::profile::sync_from_legacy
         set espresso_data [huddle create \
             version 2 \
+            clock $clock \
             date $date \
             timestamp $clock \
             elapsed [huddle list {*}[espresso_elapsed range 0 end]] \

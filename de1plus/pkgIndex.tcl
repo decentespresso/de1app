@@ -16,3 +16,5 @@ package ifneeded de1_profile 2.0 [list source [file join "./" profile.tcl]]
 package ifneeded de1_shot 2.0 [list source [file join "./" shot.tcl]]
 package ifneeded de1_de1 1.3 [list source [file join "./" de1_de1.tcl]]
 package ifneeded de1_device_scale 1.5 [list source [file join "./" device_scale.tcl]]
+
+package ifneeded de1_history_viewer 1.1 [list source [file join "./" history_viewer.tcl]]
