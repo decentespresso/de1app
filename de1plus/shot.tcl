@@ -82,6 +82,14 @@ namespace eval ::shot {
 
         return $espresso_data
     }
+    
+    proc get_vector {vectorname} {
+        if {[$vectorname length] == 0} {
+            return {}
+        } else {
+            return [$vectorname range 0 end]
+        }
+    }
 
     # We are creating a huddle instead of a dict as we can easily JSON dump it!
     proc create {} {
@@ -100,31 +108,31 @@ namespace eval ::shot {
         set app_version [package version de1app]
 
         set pressure [huddle create \
-            pressure [huddle list {*}[espresso_pressure range 0 end]] \
-            goal [huddle list {*}[espresso_pressure_goal range 0 end]] \
+            pressure [huddle list {*}[get_vector espresso_pressure]] \
+            goal [huddle list {*}[get_vector espresso_pressure_goal]] \
         ]
 
         set flow [huddle create \
-            flow [huddle list {*}[espresso_flow range 0 end]] \
-            by_weight [huddle list {*}[espresso_flow_weight range 0 end]] \
-            by_weight_raw [huddle list {*}[espresso_flow_weight_raw range 0 end]] \
-            goal [huddle list {*}[espresso_flow_goal range 0 end]] \
+            flow [huddle list {*}[get_vector espresso_flow]] \
+            by_weight [huddle list {*}[get_vector espresso_flow_weight]] \
+            by_weight_raw [huddle list {*}[get_vector espresso_flow_weight_raw]] \
+            goal [huddle list {*}[get_vector espresso_flow_goal]] \
         ]
 
         set temperature [huddle create \
-            basket [huddle list {*}[espresso_temperature_basket range 0 end]] \
-            mix [huddle list {*}[espresso_temperature_mix range 0 end]] \
-            goal [huddle list {*}[espresso_temperature_goal range 0 end]] \
+            basket [huddle list {*}[get_vector espresso_temperature_basket]] \
+            mix [huddle list {*}[get_vector espresso_temperature_mix]] \
+            goal [huddle list {*}[get_vector espresso_temperature_goal]] \
         ]
 
         set totals [huddle create \
-            weight [huddle list {*}[espresso_weight range 0 end]] \
-            water_dispensed [huddle list {*}[espresso_water_dispensed range 0 end]] \
+            weight [huddle list {*}[get_vector espresso_weight]] \
+            water_dispensed [huddle list {*}[get_vector espresso_water_dispensed]] \
         ]
 
         set resistance [huddle create \
-            resistance [huddle list {*}[espresso_resistance range 0 end]] \
-            by_weight [huddle list {*}[espresso_resistance_weight range 0 end]] \
+            resistance [huddle list {*}[get_vector espresso_resistance]] \
+            by_weight [huddle list {*}[get_vector espresso_resistance_weight]] \
         ]
 
         set app_data [huddle create \
@@ -171,6 +179,11 @@ namespace eval ::shot {
         if {$out eq {} || $out == 0} {
             set out [ifexists ::de1(pour_volume)]
         }
+
+        set time 0
+        if {[espresso_elapsed length] > 0} {
+            set time  [round_to_one_digits [espresso_elapsed range end end]]
+        }
         set meta [huddle create \
             bean [huddle create \
                 brand [ifexists ::settings(bean_brand)] \
@@ -191,7 +204,7 @@ namespace eval ::shot {
             ] \
             in $beanweight \
             out [ifexists ::settings(drink_weight)] \
-            time [round_to_one_digits [expr ([espresso_elapsed range end end]+0.05)]] \
+            time $time \
         ]
 
         ::profile::sync_from_legacy
@@ -200,7 +213,7 @@ namespace eval ::shot {
             clock $clock \
             date $date \
             timestamp $clock \
-            elapsed [huddle list {*}[espresso_elapsed range 0 end]] \
+            elapsed [huddle list {*}[get_vector espresso_elapsed]] \
             timers $timers \
             pressure $pressure \
             flow $flow \
@@ -208,7 +221,7 @@ namespace eval ::shot {
             scale $scale \
             totals $totals \
             resistance $resistance \
-            state_change [huddle list {*}[espresso_state_change range 0 end]] \
+            state_change [huddle list {*}[get_vector espresso_state_change]] \
             profile $::profile::current \
             meta $meta \
             app $app_specifics \
@@ -252,4 +265,84 @@ namespace eval ::shot {
         }
         return $result
     }
+
+    proc load_history_field {target field} {
+        if {[info exists ::past_shot($field)] == 1} {
+            set value [set ::past_shot($field)]
+            $target set $value
+        } else {
+            $target clear
+            msg "Variable $field does not exist"
+        }
+    }
+
+    proc read_past_legacy_shot {} {
+        load_history_field espresso_elapsed            espresso_elapsed
+        load_history_field espresso_pressure_goal      espresso_pressure_goal
+        load_history_field espresso_pressure           espresso_pressure
+        load_history_field espresso_flow_goal          espresso_flow_goal
+        load_history_field espresso_flow               espresso_flow
+        load_history_field espresso_flow_weight        espresso_flow_weight
+        load_history_field espresso_weight             espresso_weight
+        load_history_field espresso_temperature_basket espresso_temperature_basket
+        load_history_field espresso_temperature_mix    espresso_temperature_mix
+        load_history_field espresso_temperature_goal   espresso_temperature_goal
+        # New 1.34.5 shot fields
+        load_history_field espresso_temperature_goal       espresso_temperature_goal
+        load_history_field espresso_state_change           espresso_state_change
+        load_history_field espresso_resistance_weight      espresso_resistance_weight
+        load_history_field espresso_resistance             espresso_resistance
+        load_history_field espresso_flow_delta_negative_2x espresso_flow_delta_negative_2x
+        load_history_field espresso_flow_delta_negative    espresso_flow_delta_negative
+        load_history_field espresso_pressure_delta         espresso_pressure_delta
+    }
+
+    proc convert_all_legacy_to_v2 {} {
+        set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+
+        boarg toast [tranlate "Converting old shot files"]
+
+        blt::vector create espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance
+        blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow espresso_water_dispensed espresso_flow_weight_raw espresso_de1_explanation_chart_temperature  espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_selected_step
+        blt::vector create espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
+        blt::vector create espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3
+        blt::vector create espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x
+        blt::vector create espresso_flow_delta_negative espresso_flow_delta_negative_2x
+
+
+        foreach d $dirs {
+            set fn "[homedir]/history/${d}"
+
+            set fbasename [file rootname [file tail $d]]
+            set target_file "[homedir]/history_v2/${fbasename}.json"
+
+            if {[file exists $target_file]} {
+                #continue
+            }
+            msg -INFO [namespace current] "Converting shot" $d "to version 2"
+
+            if {[catch {
+                set shot_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]
+                array set ::past_shot $shot_file_contents
+
+                array set ::settings $::past_shot(settings)
+                read_past_legacy_shot
+                ::profile::sync_from_legacy
+                set data [create]
+                write_file $target_file $data
+            } err] != 0} { 
+                msg -ERROR "Error while converting $d :" $err
+                borg toast [translate "Failure while converting. Please check logs"]
+            }
+        }
+
+        blt::vector destroy espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance
+        blt::vector destroy espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow espresso_water_dispensed espresso_flow_weight_raw espresso_de1_explanation_chart_temperature  espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_selected_step
+        blt::vector destroy espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
+        blt::vector destroy espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3
+        blt::vector destroy espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x
+        blt::vector destroy espresso_flow_delta_negative espresso_flow_delta_negative_2x
+
+    }
+
 }
