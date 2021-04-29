@@ -1008,6 +1008,9 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/DYE/setup_DSx.tcl *
         plugins/DYE/setup_Insight.tcl *
         plugins/DYE/setup_MimojaCafe.tcl *
+
+        SDB/SDB.tcl *
+        SDB/plugin.tcl *
     }
 #        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
