@@ -4,10 +4,19 @@ package require de1_comms
 package require de1_device_scale 1.0
 package require de1_logging 1.0
 
+namespace eval ::bt {
+
+	proc ::bt::msg {first args} {
+
+		::logging::default_logger $first "bluetooth:" {*}$args
+	}
+}
+
 ## Scales
 ### Generics
 
 proc scale_enable_lcd {} {
+	::bt::msg -NOTICE scale_enable_lcd
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_enable_lcd
 	} elseif {$::settings(scale_type) == "decentscale"} {
@@ -18,6 +27,7 @@ proc scale_enable_lcd {} {
 }
 
 proc scale_disable_lcd {} {
+	::bt::msg -NOTICE scale_disable_lcd
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_disable_lcd
 	} elseif {$::settings(scale_type) == "decentscale"} {
@@ -28,6 +38,7 @@ proc scale_disable_lcd {} {
 }
 
 proc scale_timer_start {} {
+	::bt::msg -NOTICE scale_timer_start
 
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_timer_start
@@ -41,6 +52,7 @@ proc scale_timer_start {} {
 }
 
 proc scale_timer_stop {} {
+	::bt::msg -NOTICE scale_timer_stop
 
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_timer_stop
@@ -56,6 +68,7 @@ proc scale_timer_stop {} {
 
 # timer off is badly named, it actually is "timer set to zero"
 proc scale_timer_reset {} {
+	::bt::msg -NOTICE scale_timer_reset
 
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_timer_reset
@@ -69,12 +82,14 @@ proc scale_timer_reset {} {
 }
 
 proc scale_tare {} {
+	::bt::msg -NOTICE scale_tare
 
-	msg -WARNING "DEPRECATED: scale_tare is deprecated in favor of ::device::scale::tare"
+	::bt::msg -WARNING "DEPRECATED: scale_tare is deprecated in favor of ::device::scale::tare"
 	::device::scale::tare
 }
 
 proc scale_enable_weight_notifications {} {
+	::bt::msg -NOTICE scale_enable_weight_notifications
 
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_enable_weight_notifications
@@ -90,6 +105,7 @@ proc scale_enable_weight_notifications {} {
 }
 
 proc scale_enable_button_notifications {} {
+	::bt::msg -NOTICE scale_enable_button_notifications
 
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_enable_button_notifications
@@ -99,6 +115,7 @@ proc scale_enable_button_notifications {} {
 }
 
 proc scale_enable_grams {} {
+	::bt::msg -NOTICE scale_enable_grams
 
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_enable_grams
@@ -115,7 +132,7 @@ proc skale_timer_start {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg -DEBUG "Skale not connected, cannot start timer"
+		::bt::msg -DEBUG "Skale not connected, cannot start timer"
 		return
 	}
 
@@ -130,7 +147,7 @@ proc skale_enable_button_notifications {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg -DEBUG "Skale not connected, cannot enable button notifications"
+		::bt::msg -DEBUG "Skale not connected, cannot enable button notifications"
 		return
 	}
 
@@ -146,7 +163,7 @@ proc skale_enable_grams {} {
 	set grams [binary decode hex "03"]
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg -DEBUG "Skale not connected, cannot enable grams"
+		::bt::msg -DEBUG "Skale not connected, cannot enable grams"
 		return
 	}
 
@@ -161,7 +178,7 @@ proc skale_enable_lcd {} {
 	set displayweight [binary decode hex "EC"]
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg -DEBUG "Skale not connected, cannot enable LCD"
+		::bt::msg -DEBUG "Skale not connected, cannot enable LCD"
 		return
 	}
 
@@ -177,7 +194,7 @@ proc skale_disable_lcd {} {
 	set screenoff [binary decode hex "EE"]
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg -DEBUG "Skale not connected, cannot disable LCD"
+		::bt::msg -DEBUG "Skale not connected, cannot disable LCD"
 		return
 	}
 
@@ -192,7 +209,7 @@ proc skale_timer_stop {} {
 	set tare [binary decode hex "D1"]
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg -DEBUG "Skale not connected, cannot stop timer"
+		::bt::msg -DEBUG "Skale not connected, cannot stop timer"
 		return
 	}
 
@@ -207,7 +224,7 @@ proc skale_timer_reset {} {
 	set tare [binary decode hex "D0"]
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg -DEBUG "Skale not connected, cannot reset timer"
+		::bt::msg -DEBUG "Skale not connected, cannot reset timer"
 		return
 	}
 
@@ -226,7 +243,7 @@ proc skale_tare {} {
 	#set ::de1(final_espresso_weight) 0
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg -DEBUG "Skale not connected, cannot tare"
+		::bt::msg -DEBUG "Skale not connected, cannot tare"
 		return
 	}
 
@@ -239,7 +256,7 @@ proc skale_enable_weight_notifications {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_skale))] == ""} {
-		msg -DEBUG "Skale not connected, cannot enable weight notifications"
+		::bt::msg -DEBUG "Skale not connected, cannot enable weight notifications"
 		return
 	}
 
@@ -524,27 +541,27 @@ proc acaia_parse_response { value } {
 # cmdtype is either 0x0A for LED (cmddata 00=off, 01=on), or 0x0F for tare (cmdata = incremented char counter for each TARE use)
 proc decent_scale_calc_xor {cmdtype cmdddata} {
 	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata ^ 0x00 ^ 0x00 ^ 0x00}]]
-	msg -DEBUG "decent_scale_calc_xor for '$cmdtype' '$cmdddata' is '$xor'"
+	::bt::msg -DEBUG "decent_scale_calc_xor for '$cmdtype' '$cmdddata' is '$xor'"
 	return $xor
 }
 
 proc decent_scale_calc_xor4 {cmdtype cmdddata1 cmdddata2} {
 	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata1 ^ $cmdddata2 ^ 0x00 ^ 0x00}]]
-	msg -DEBUG "decent_scale_calc_xor4 for '$cmdtype' '$cmdddata1' '$cmdddata2' is '$xor'"
+	::bt::msg -DEBUG "decent_scale_calc_xor4 for '$cmdtype' '$cmdddata1' '$cmdddata2' is '$xor'"
 	return $xor
 }
 
 proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} } {
-	msg -DEBUG "decent_scale_make_command $cmdtype $cmdddata $cmddata2"
+	::bt::msg -DEBUG "decent_scale_make_command $cmdtype $cmdddata $cmddata2\n[stacktrace]"
 	if {$cmddata2 == ""} {
-		msg -DEBUG "1 part decent scale command"
+		::bt::msg -DEBUG "1 part decent scale command"
 		set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]
 		#set hex2 [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x00"]}]
 	} else {
-		msg -DEBUG "2 part decent scale command"
+		::bt::msg -DEBUG "2 part decent scale command"
 		set hex [subst {03${cmdtype}${cmdddata}${cmddata2}0000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x$cmddata2"]}]
 	}
-	msg -DEBUG "hex is '$hex' for '$cmdtype' '$cmdddata' '$cmddata2'"
+	::bt::msg -DEBUG "hex is '$hex' for '$cmdtype' '$cmdddata' '$cmddata2'"
 	return [binary decode hex $hex]
 }
 
@@ -570,7 +587,7 @@ proc decentscale_enable_notifications {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg -DEBUG "decent scale not connected, cannot enable weight notifications"
+		::bt::msg -DEBUG "decent scale not connected, cannot enable weight notifications"
 		return
 	}
 
@@ -583,7 +600,7 @@ proc decentscale_enable_lcd {} {
 		return
 	}
 	set screenon [decent_scale_make_command 0A 01 01]
-	msg -DEBUG "decent scale screen on: '[convert_string_to_hex $screenon]' '$screenon'"
+	::bt::msg -DEBUG "decent scale screen on: '[::logging::format_asc_bin $screenon]'"
 	userdata_append "decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon] 0
 }
 
@@ -594,7 +611,7 @@ proc decentscale_disable_lcd {} {
 	set screenoff [decent_scale_make_command 0A 00 00]
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg -DEBUG "decentscale not connected, cannot disable LCD"
+		::bt::msg -DEBUG "decentscale not connected, cannot disable LCD"
 		return
 	}
 
@@ -603,21 +620,21 @@ proc decentscale_disable_lcd {} {
 
 proc decentscale_timer_start {} {
 	if {$::de1(scale_device_handle) == 0} {
-		msg -DEBUG "decentscale_timer_start - no scale_device_handle"
+		::bt::msg -DEBUG "decentscale_timer_start - no scale_device_handle"
 		return
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg -DEBUG "decentscale not connected, cannot start timer"
+		::bt::msg -DEBUG "decentscale not connected, cannot start timer"
 		return
 	}
 
 	#set timerreset [decent_scale_make_command 0B 02 00]
 	#userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timerreset]
 
-	msg -DEBUG "decentscale_timer_start"
+	::bt::msg -DEBUG "decentscale_timer_start"
 	set timeron [decent_scale_make_command 0B 03 00]
-	msg -DEBUG "decent scale timer on: [convert_string_to_hex $timeron] '$timeron'"
+	::bt::msg -DEBUG "decent scale timer on: '[::logging::format_asc_bin $timeron]'"
 	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron] 0
 
 }
@@ -629,14 +646,14 @@ proc decentscale_timer_stop {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg -DEBUG "decentscale not connected, cannot stop timer"
+		::bt::msg -DEBUG "decentscale not connected, cannot stop timer"
 		return
 	}
 
-	msg -DEBUG "decentscale_timer_stop"
+	::bt::msg -DEBUG "decentscale_timer_stop"
 
 	set timeroff [decent_scale_make_command 0B 00 00]
-	msg -DEBUG "decent scale timer stop: '$timeroff'"
+	::bt::msg -DEBUG "decent scale timer stop: '[::logging::format_asc_bin $timeroff]'"
 	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 
 }
@@ -648,14 +665,14 @@ proc decentscale_timer_reset {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg -DEBUG "decentscale not connected, cannot RESET timer"
+		::bt::msg -DEBUG "decentscale not connected, cannot RESET timer"
 		return
 	}
 
 
 	set timeroff [decent_scale_make_command 0B 02 00]
 
-	msg -DEBUG "decent scale timer reset: '$timeroff'"
+	::bt::msg -DEBUG "decent scale timer reset: '[::logging::format_asc_bin $timeroff]'"
 	userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 }
 
@@ -669,7 +686,7 @@ proc decentscale_tare {} {
 	unset -nocomplain ::scheduled_scale_tare_id
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg -DEBUG "decent scale not connected, cannot tare"
+		::bt::msg -DEBUG "decent scale not connected, cannot tare"
 		return
 	}
 
@@ -679,26 +696,27 @@ proc decentscale_tare {} {
 }
 
 proc close_all_ble_and_exit {} {
+	::bt::msg -NOTICE close_all_ble_and_exit
 
 	###
 	### NB: Disconnect events are intentionally not called here
 	###
 
-	msg -DEBUG "close_all_ble_and_exit, at entrance: [ble info]"
+	::bt::msg -DEBUG "close_all_ble_and_exit, at entrance: [ble info]"
 	if {$::scanning  == 1} {
 		catch {
 			ble stop $::ble_scanner
 		}
 	}
 
-	msg -DEBUG "Closing de1"
+	::bt::msg -DEBUG "Closing de1"
 	if {$::de1(device_handle) != 0} {
 		catch {
 			ble close $::de1(device_handle)
 		}
 	}
 
-	msg -DEBUG "Closing scale"
+	::bt::msg -DEBUG "Closing scale"
 	if {$::de1(scale_device_handle) != 0} {
 		catch {
 			ble close $::de1(scale_device_handle)
@@ -714,14 +732,14 @@ proc close_all_ble_and_exit {} {
 	}
 
 	#after 2000 exit
-	msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
+	::bt::msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
 	foreach h [ble info] {
-		msg -NOTICE "Open BLE handle: [ble info $h]"
+		::bt::msg -INFO "Open BLE handle: [ble info $h]"
 		ble close $h
 	}
-	msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
+	::bt::msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
 	foreach h [ble info] {
-		msg -WARNING "Open BLE handle: [ble info $h]"
+		::bt::msg -WARNING "Open BLE handle: [ble info $h]"
 	}
 
 	::logging::close_logfiles
@@ -730,6 +748,7 @@ proc close_all_ble_and_exit {} {
 }
 
 proc app_exit {} {
+	::bt::msg -NOTICE app_exit
 
 	tcl_introspection
 
@@ -765,15 +784,19 @@ proc app_exit {} {
 
 
 proc de1_read_hotwater {} {
+	::bt::msg -NOTICE de1_read_hotwater
 
 	userdata_append "read de1 hot water/steam" [list de1_ble read "ShotSettings"] 1
 }
 
 proc de1_read_shot_header {} {
+	::bt::msg -NOTICE de1_read_shot_header
 
 	userdata_append "read shot header" [list de1_ble read "HeaderWrite"] 1
 }
+
 proc de1_read_shot_frame {} {
+	::bt::msg -NOTICE de1_read_shot_frame
 
 	userdata_append "read shot frame" [list de1_ble read "FrameWrite"] 1
 }
@@ -791,15 +814,15 @@ proc remove_null_terminator {instr} {
 proc android_8_or_newer {} {
 
 	if {$::android != 1} {
-		msg -INFO "android_8_or_newer reports: not android (0)"
+		::bt::msg -INFO "android_8_or_newer reports: not android (0)"
 		return 0
 	}
 
 	catch {
 		set x [borg osbuildinfo]
 		array set androidprops $x
-		msg -NOTICE [array get androidprops]
-		msg -NOTICE "Android release reported: '$androidprops(version.release)'"
+		::bt::msg -NOTICE [array get androidprops]
+		::bt::msg -NOTICE "Android release reported: '$androidprops(version.release)'"
 	}
 	set test 0
 	catch {
@@ -819,7 +842,7 @@ catch  {
 set ::scanning -1
 
 proc check_if_initial_connect_didnt_happen_quickly {} {
-	msg -DEBUG "check_if_initial_connect_didnt_happen_quickly"
+	::bt::msg -NOTICE "check_if_initial_connect_didnt_happen_quickly"
 	# on initial startup, if a direct connection to DE1 doesn't work quickly, start a scan instead
 	set ble_scan_started 0
 	if {$::de1(device_handle) == 0 } {
@@ -837,11 +860,11 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 		}
 		set ble_scan_started 1
 	} else {
-		msg -NOTICE "DE1 device handle is $::de1(device_handle)"
+		::bt::msg -NOTICE "DE1 device handle is $::de1(device_handle)"
 	}
 
 	if {$::settings(scale_bluetooth_address) != "" && $::de1(scale_device_handle) == 0} {
-		msg -NOTICE "on initial startup, if a direct connection to scale doesn't work quickly, start a scan instead"
+		::bt::msg -NOTICE "on initial startup, if a direct connection to scale doesn't work quickly, start a scan instead"
 		catch {
 			ble close $::currently_connecting_scale_handle
 
@@ -875,7 +898,7 @@ proc ble_find_de1s {} {
 	}
 
 	after 30000 stop_scanner
-	msg -NOTICE "Starting ble_scanner from ::ble_find_de1s"
+	::bt::msg -NOTICE "Starting ble_scanner from ::ble_find_de1s"
 	ble start $::ble_scanner
 }
 
@@ -892,7 +915,7 @@ proc stop_scanner {} {
 	}
 
 	set ::scanning 0
-	msg -NOTICE "Stopping ble_scanner from ::stop_scanner"
+	::bt::msg -NOTICE "Stopping ble_scanner from ::stop_scanner"
 	ble stop $::ble_scanner
 	#userdata_append "stop scanning" [list ble stop $::ble_scanner]
 }
@@ -900,7 +923,7 @@ proc stop_scanner {} {
 proc bluetooth_connect_to_devices {} {
 
 	#@return
-	msg -INFO "bluetooth_connect_to_devices"
+	::bt::msg -NOTICE "bluetooth_connect_to_devices"
 
 	if {$::android != 1} {
 		ble_connect_to_de1
@@ -915,7 +938,7 @@ proc bluetooth_connect_to_devices {} {
 			ble_connect_to_de1
 			after 4000 check_if_initial_connect_didnt_happen_quickly
 
-			msg -INFO "will launch check_if_initial_connect_didnt_happen_quickly in 4000ms"
+			::bt::msg -INFO "will launch check_if_initial_connect_didnt_happen_quickly in 4000ms"
 		} else {
 			# earlier android revisions can connect directly, and it's fast
 			ble_connect_to_de1
@@ -937,15 +960,15 @@ proc bluetooth_connect_to_devices {} {
 
 set ::currently_connecting_de1_handle 0
 proc ble_connect_to_de1 {} {
-	msg -INFO "ble_connect_to_de1"
+	::bt::msg -NOTICE "ble_connect_to_de1"
 	#return
 
 	if {$::android != 1} {
-		msg -DEBUG "simulated DE1 connection"
+		::bt::msg -DEBUG "simulated DE1 connection"
 		set ::de1(connect_time) [clock seconds]
 		set ::de1(last_ping) [clock seconds]
 
-		msg -DEBUG "Connected to fake DE1"
+		::bt::msg -DEBUG "Connected to fake DE1"
 		set ::de1(device_handle) 1
 
 		set do_mmr_binary_test 0
@@ -956,15 +979,15 @@ proc ble_connect_to_de1 {} {
 			set v [de1_version_string]
 
 			set mmr_test "\x0C\x80\x00\x08\x14\x05\x00\x00\x03\x00\x00\x00\x71\x04\x00\x00\x00\x00\x00\x00"
-			msg -DEBUG [array get arr3]
+			::bt::msg -DEBUG [array get arr3]
 
 			#set mmr_test "\x0C\x80\x00\x08\x14\x05\x00\x00\x03\x00\x00\x00\x71\x04\x00\x00\x00\x00\x00\x00"
 			parse_binary_mmr_read_int $mmr_test arr4
-			msg -DEBUG [array get arr4]
+			::bt::msg -DEBUG [array get arr4]
 
-			msg -DEBUG "MMRead: CPU board model: '[ifexists arr4(Data0)]'"
-			msg -DEBUG "MMRead: machine model:  '[ifexists arr4(Data1)]'"
-			msg -DEBUG "MMRead: firmware version number: '[ifexists arr4(Data2)]'"
+			::bt::msg -DEBUG "MMR read: CPU board model: '[ifexists arr4(Data0)]'"
+			::bt::msg -DEBUG "MMR read: machine model:  '[ifexists arr4(Data1)]'"
+			::bt::msg -DEBUG "MMR read: firmware version number: '[ifexists arr4(Data2)]'"
 
 			set ::settings(cpu_board_model) [ifexists arr4(Data0)]
 			set ::settings(machine_model) [ifexists arr4(Data1)]
@@ -984,7 +1007,7 @@ proc ble_connect_to_de1 {} {
 
 	if {$::de1(device_handle) != "0"} {
 		catch {
-			msg -NOTICE "disconnecting from DE1"
+			::bt::msg -NOTICE "disconnecting from DE1"
 			ble close $::de1(device_handle)
 			set ::de1(device_handle) "0"
 			::de1::event::apply::on_disconnect_callbacks \
@@ -1000,13 +1023,13 @@ proc ble_connect_to_de1 {} {
 	set ::de1_name "DE1"
 	if {[catch {
 		set ::currently_connecting_de1_handle [ble connect [string toupper $::settings(bluetooth_address)] de1_ble_handler false]
-		msg -NOTICE "Connecting to DE1 on $::settings(bluetooth_address)"
+		::bt::msg -NOTICE "Connecting to DE1 on $::settings(bluetooth_address)"
 		set retcode 1
 	} err] != 0} {
 		if {$err == "unsupported"} {
 			after 5000 [list info_page [translate "Bluetooth is not on"] [translate "Ok"]]
 		}
-		msg -ERROR "Failed to start to BLE connect to DE1 because: '$err'"
+		::bt::msg -ERROR "Failed to start to BLE connect to DE1 because: '$err'"
 		set retcode 0
 	}
 	return $retcode
@@ -1015,9 +1038,10 @@ proc ble_connect_to_de1 {} {
 
 set ::currently_connecting_scale_handle 0
 proc ble_connect_to_scale {} {
+	::bt::msg -NOTICE ble_connect_to_scale
 
 	if {$::de1(scale_device_handle) != 0} {
-		msg -NOTICE "Already connected to scale, don't try again"
+		::bt::msg -NOTICE "Already connected to scale, don't try again"
 		return
 	}
 
@@ -1027,25 +1051,25 @@ proc ble_connect_to_scale {} {
 
 
 	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
-		msg -NOTICE "in_fw_update_mode : ble_connect_to_scale"
+		::bt::msg -NOTICE "in_fw_update_mode : ble_connect_to_scale"
 		return
 	}
 
 
 	if {$::settings(scale_bluetooth_address) == ""} {
-		msg -INFO "No Scale BLE address in settings, so not connecting to it"
+		::bt::msg -INFO "No Scale BLE address in settings, so not connecting to it"
 		return
 	}
 
 	if {$::currently_connecting_scale_handle != 0} {
-		msg -INFO "Already trying to connect to Scale, so don't try again"
+		::bt::msg -INFO "Already trying to connect to Scale, so don't try again"
 		return
 	}
 
 	set do_this 0
 	if {$do_this == 1} {
 		if {$::de1(scale_device_handle) != "0"} {
-			msg -NOTICE "Scale already connected, so disconnecting before reconnecting to it"
+			::bt::msg -NOTICE "Scale already connected, so disconnecting before reconnecting to it"
 			#return
 			catch {
 				#ble close $::de1(scale_device_handle)
@@ -1064,25 +1088,26 @@ proc ble_connect_to_scale {} {
 	}
 
 	if {[llength $::de1(cmdstack)] > 2} {
-		msg -INFO "Too much backpressure, waiting with the connect"
+		::bt::msg -INFO "Too much backpressure, waiting with the connect"
 		after 300 ble_connect_to_scale
 		return
 	}
 
 	if {[catch {
 		set ::currently_connecting_scale_handle [ble connect [string toupper $::settings(scale_bluetooth_address)] de1_ble_handler false]
-		msg -NOTICE "Connecting to scale on $::settings(scale_bluetooth_address)"
+		::bt::msg -NOTICE "Connecting to scale on $::settings(scale_bluetooth_address)"
 		set retcode 0
 	} err] != 0} {
 		set ::currently_connecting_scale_handle 0
 		set retcode 1
-		msg -ERROR "Failed to start to BLE connect to scale because: '$err'"
+		::bt::msg -ERROR "Failed to start to BLE connect to scale because: '$err'"
 	}
 	return $retcode
 
 }
 
 proc append_to_scale_bluetooth_list {address name type} {
+	::bt::msg -NOTICE append_to_scale_bluetooth_list
 
 	set ::scale_types($address) $type
 
@@ -1099,7 +1124,7 @@ proc append_to_scale_bluetooth_list {address name type} {
 	set newlist $::scale_bluetooth_list
 	lappend newlist [dict create address $address name $name type $type]
 
-	msg -INFO "Scan found recognized scale at: $address ($type)"
+	::bt::msg -INFO "Scan found recognized scale at: $address ($type)"
 	set ::scale_bluetooth_list $newlist
 	catch {
 		fill_ble_scale_listbox
@@ -1108,15 +1133,16 @@ proc append_to_scale_bluetooth_list {address name type} {
 
 # mmr_read used
 proc later_new_de1_connection_setup {} {
+	::bt::msg -NOTICE later_new_de1_connection_setup
 	# less important stuff, also some of it is dependent on BLE version
 
 	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
-		msg -NOTICE "in_fw_update_mode : later_new_de1_connection_setup skipped"
+		::bt::msg -NOTICE "in_fw_update_mode : later_new_de1_connection_setup skipped"
 		return
 	}
 
 
-	msg -NOTICE "later_new_de1_connection_setup"
+	::bt::msg -NOTICE "later_new_de1_connection_setup"
 	de1_enable_mmr_notifications
 
 
@@ -1152,7 +1178,7 @@ proc later_new_de1_connection_setup {} {
 proc de1_ble {action command_name {data ""}} {
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-			msg -DEBUG "DE1 not connected, cannot send BLE command $command_name"
+			::bt::msg -DEBUG "DE1 not connected, cannot send BLE command $command_name"
 			return
 	}
 
@@ -1171,9 +1197,25 @@ proc de1_ble_handler { event data } {
 
 	set event_time [expr { [clock milliseconds] / 1000.0 }]
 
+	set full_data_for_log [::logging::format_ble_event $data]
+
+	#
+	# For logging, only need some of:
+	#   handle ble3
+	#   address D9:B2:48:00:49:EF rssi -150 state connected
+	#   suuid 0000A000-0000-1000-8000-00805F9B34FB sinstance 12
+	#   cuuid 0000A011-0000-1000-8000-00805F9B34FB cinstance 62
+	#   duuid 00002902-0000-1000-8000-00805F9B34FB
+	#   permissions 0 access w
+	#   value {'hex: 01 00'}
+	#
+	set data_for_log [::logging::format_ble_event_short $data]
+
+	set value_for_log [::logging::format_ble_event_payload $data]
+
 	set ::settings(ble_debug) 0
 	if {$::settings(ble_debug) == 1} {
-		msg -DEBUG "ble event: $event $data"
+		::bt::msg -DEBUG "ble event: $event $data_for_log"
 	}
 
 	set previous_wrote 0
@@ -1187,7 +1229,7 @@ proc de1_ble_handler { event data } {
 		switch -- $event {
 
 			scan {
-				msg -DEBUG "de1_ble_handler: Device $name found at address $address ($data)"
+				::bt::msg -DEBUG "de1_ble_handler: Device $name found at address $address ($data_for_log)"
 
 				if {[string first DE1 $name] == 0} {
 					append_to_de1_list $address $name "ble"
@@ -1198,7 +1240,7 @@ proc de1_ble_handler { event data } {
 					#}
 					if {$address == $::settings(bluetooth_address)} {
 						if {$::currently_connecting_de1_handle == 0} {
-							msg -INFO "Not currently connecting to DE1, so trying now"
+							::bt::msg -INFO "Not currently connecting to DE1, so trying now"
 							ble_connect_to_de1
 						} else {
 							#catch {
@@ -1212,7 +1254,7 @@ proc de1_ble_handler { event data } {
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
-							msg -INFO "Not currently connecting to scale, so trying now"
+							::bt::msg -INFO "Not currently connecting to scale, so trying now"
 							ble_connect_to_scale
 						}
 					}
@@ -1222,7 +1264,7 @@ proc de1_ble_handler { event data } {
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
-							msg -INFO "Not currently connecting to scale, so trying now"
+							::bt::msg -INFO "Not currently connecting to scale, so trying now"
 							ble_connect_to_scale
 						}
 					}
@@ -1231,7 +1273,7 @@ proc de1_ble_handler { event data } {
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
-							msg -INFO "Not currently connecting to scale, so trying now"
+							::bt::msg -INFO "Not currently connecting to scale, so trying now"
 							ble_connect_to_scale
 						}
 					}
@@ -1240,7 +1282,7 @@ proc de1_ble_handler { event data } {
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
-							msg -INFO "Not currently connecting to scale, so trying now"
+							::bt::msg -INFO "Not currently connecting to scale, so trying now"
 							ble_connect_to_scale
 						}
 					}
@@ -1255,7 +1297,7 @@ proc de1_ble_handler { event data } {
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
-							msg -INFO "Not currently connecting to scale, so trying now"
+							::bt::msg -INFO "Not currently connecting to scale, so trying now"
 							ble_connect_to_scale
 						}
 					}
@@ -1275,7 +1317,7 @@ proc de1_ble_handler { event data } {
 					#set ::de1(scale_type) ""
 
 						set ::de1(wrote) 0
-						msg -NOTICE "$::settings(scale_type) disconnected $data"
+						::bt::msg -NOTICE "$::settings(scale_type) disconnected $data_for_log"
 						#catch {
 							ble close $handle
 						#}
@@ -1313,7 +1355,7 @@ proc de1_ble_handler { event data } {
 					}
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1
-					msg -DEBUG "de1_ble_handler is scanning"
+					::bt::msg -DEBUG "de1_ble_handler is scanning"
 				} elseif {$state eq "idle"} {
 					#ble stop $::ble_scanner
 					if {$::scanning > 0} {
@@ -1333,7 +1375,7 @@ proc de1_ble_handler { event data } {
 				} elseif {$state eq "connected"} {
 
 					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
-						msg -NOTICE "de1 connected $event $data"
+						::bt::msg -NOTICE "de1 connected $event $data_for_log"
 
 						::de1::event::apply::on_connect_callbacks \
 							[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
@@ -1358,9 +1400,10 @@ proc de1_ble_handler { event data } {
 						# resend the hotwater settings, because now we can stop on weight
 						after 7000 de1_send_steam_hotwater_settings
 
-						msg -NOTICE "scale '$::settings(scale_type)' connected $::de1(scale_device_handle) $handle - $event $data"
+						::bt::msg -NOTICE "scale '$::settings(scale_type)' connected $::de1(scale_device_handle)" \
+							"$handle - $event $data_for_log"
 						if {$::settings(scale_type) == ""} {
-							msg -ERROR "blank scale type found, reset to atomaxskale"
+							::bt::msg -ERROR "blank scale type found, reset to atomaxskale"
 							set ::settings(scale_type) "atomaxskale"
 						}
 
@@ -1369,7 +1412,7 @@ proc de1_ble_handler { event data } {
 							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "decentscale"
 							#after 500 decentscale_enable_lcd
 							decentscale_tare
-							
+
 							after 2000 decentscale_enable_lcd
 							#after 2000 decentscale_timer_start
 							after 4000 decentscale_enable_notifications
@@ -1413,17 +1456,17 @@ proc de1_ble_handler { event data } {
 						::device::scale::event::apply::on_connect_callbacks $event_dict
 
 					} else {
-						msg -ERROR "doubled connection notification from $address, already connected with $address"
+						::bt::msg -ERROR "doubled connection notification from $address, already connected with $address"
 						#ble close $handle
 					}
 
 
 				} else {
-					msg -ERROR "unknown connection msg: $data"
+					::bt::msg -ERROR "unknown connection msg: $data_for_log"
 				}
 			}
 			transaction {
-				msg -INFO "ble transaction result $event $data"
+				::bt::msg -INFO "ble transaction result $event $data_for_log"
 			}
 
 			characteristic {
@@ -1478,7 +1521,7 @@ proc de1_ble_handler { event data } {
 								# this tries to handle bad write situations, but it might have side effects if it is not working correctly.
 								# probably this should be adding a command to the top of the write queue
 								if {$previous_wrote == 1} {
-									msg -ERROR "bad write reported"
+									::bt::msg -ERROR "bad write reported"
 									{*}$::de1(previouscmd)
 									set ::de1(wrote) 1
 									return
@@ -1486,7 +1529,7 @@ proc de1_ble_handler { event data } {
 							}
 					} elseif {$cuuid eq $::de1(cuuid_05)} {
 							# MMR read
-							msg -INFO "MMR recv read: '[convert_string_to_hex $value]'"
+					    ::bt::msg -INFO "MMR read: [::logging::format_mmr $value]"
 
 							parse_binary_mmr_read $value arr
 							set mmr_id $arr(Address)
@@ -1494,11 +1537,8 @@ proc de1_ble_handler { event data } {
 
 							parse_binary_mmr_read_int $value arr2
 
-
-							msg -INFO "MMR recv read from $mmr_id ($mmr_val): '[convert_string_to_hex $value]' : [array get arr] : [array get arr2]"
-
 							if {$mmr_id == "80381C"} {
-								msg -INFO "Read: GHC is installed: '$mmr_val'"
+								::bt::msg -INFO "Read: GHC is installed: '$mmr_val'"
 								set ::settings(ghc_is_installed) $mmr_val
 
 								if {$::settings(ghc_is_installed) == 1 || $::settings(ghc_is_installed) == 2} {
@@ -1512,51 +1552,51 @@ proc de1_ble_handler { event data } {
 							} elseif {$mmr_id == "803808"} {
 								set ::de1(fan_threshold) $mmr_val
 								set ::settings(fan_threshold) $mmr_val
-								msg -INFO "MMRead: Fan threshold: '$mmr_val'"
+								::bt::msg -INFO "MMR read: Fan threshold: '$mmr_val'"
 							} elseif {$mmr_id == "80380C"} {
-								msg -INFO "MMRead: tank temperature threshold: '$mmr_val'"
+								::bt::msg -INFO "MMR read: tank temperature threshold: '$mmr_val'"
 								set ::de1(tank_temperature_threshold) $mmr_val
 							} elseif {$mmr_id == "803820"} {
-								msg -INFO "MMRead: group head control mode: '$mmr_val'"
+								::bt::msg -INFO "MMR read: group head control mode: '$mmr_val'"
 								set ::settings(ghc_mode) $mmr_val
 							} elseif {$mmr_id == "803828"} {
-								msg -INFO "MMRead: steam flow: '$mmr_val'"
+								::bt::msg -INFO "MMR read: steam flow: '$mmr_val'"
 								set ::settings(steam_flow) $mmr_val
 							} elseif {$mmr_id == "803818"} {
-								msg -INFO "MMRead: hot_water_idle_temp: '[ifexists arr2(Data0)]'"
+								::bt::msg -INFO "MMR read: hot_water_idle_temp: '[ifexists arr2(Data0)]'"
 								set ::settings(hot_water_idle_temp) [ifexists arr2(Data0)]
 
 								#mmr_read "espresso_warmup_timeout" "803838" "00"
 							} elseif {$mmr_id == "803838"} {
-								msg -INFO "MMRead: espresso_warmup_timeout: '[ifexists arr2(Data0)]'"
+								::bt::msg -INFO "MMR read: espresso_warmup_timeout: '[ifexists arr2(Data0)]'"
 								set ::settings(espresso_warmup_timeout) [ifexists arr2(Data0)]
 							} elseif {$mmr_id == "80383C"} {
-								msg -INFO "MMRead: flow estimate multiplier: '[ifexists arr2(Data0)]' = [round_to_two_digits [expr {[ifexists arr2(Data0)] / 1000.0}]]"
+								::bt::msg -INFO "MMR read: flow estimate multiplier: '[ifexists arr2(Data0)]' = [round_to_two_digits [expr {[ifexists arr2(Data0)] / 1000.0}]]"
 								set ::settings(calibration_flow_multiplier) [round_to_two_digits [expr {[ifexists arr2(Data0)] / 1000.0}]]
 							} elseif {$mmr_id == "803810"} {
-								msg -INFO "MMRead: phase_1_flow_rate: '[ifexists arr2(Data0)]'"
+								::bt::msg -INFO "MMR read: phase_1_flow_rate: '[ifexists arr2(Data0)]'"
 								set ::settings(phase_1_flow_rate) [ifexists arr2(Data0)]
 
 								if {[ifexists arr(Len)] >= 4} {
-								msg -INFO "MMRead: phase_2_flow_rate: '[ifexists arr2(Data1)]'"
+								::bt::msg -INFO "MMR read: phase_2_flow_rate: '[ifexists arr2(Data1)]'"
 									set ::settings(phase_2_flow_rate) [ifexists arr2(Data1)]
 								}
 								if {[ifexists arr(Len)] >= 8} {
-									msg -INFO "MMRead: hot_water_idle_temp: '[ifexists arr2(Data2)]'"
+									::bt::msg -INFO "MMR read: hot_water_idle_temp: '[ifexists arr2(Data2)]'"
 									set ::settings(hot_water_idle_temp) [ifexists arr2(Data2)]
 								}
 
 							} elseif {$mmr_id == "803834"} {
 								#parse_binary_mmr_read_int $value arr2
 
-								msg -INFO "MMRead: heater voltage: '[ifexists arr2(Data0)]' len=[ifexists arr(Len)]"
+								::bt::msg -INFO "MMR read: heater voltage: '[ifexists arr2(Data0)]' len=[ifexists arr(Len)]"
 								set ::settings(heater_voltage) [ifexists arr2(Data0)]
 
 								catch {
 									if {[ifexists ::settings(firmware_version_number)] != ""} {
 										if {$::settings(firmware_version_number) >= 1142} {
 											if {$::settings(heater_voltage) == 0} {
-												msg -WARNING "Heater voltage is unknown, please set it"
+												::bt::msg -WARNING "Heater voltage is unknown, please set it"
 												show_settings calibrate2
 											}
 										}
@@ -1564,7 +1604,7 @@ proc de1_ble_handler { event data } {
 								}
 
 								if {[ifexists arr(Len)] >= 8} {
-									msg -INFO "MMRead: espresso_warmup_timeout2: '[ifexists arr2(Data1)]'"
+									::bt::msg -INFO "MMR read: espresso_warmup_timeout2: '[ifexists arr2(Data1)]'"
 									set ::settings(espresso_warmup_timeout) [ifexists arr2(Data1)]
 
 									#mmr_read "hot_water_idle_temp" "803818" "00"
@@ -1579,20 +1619,20 @@ proc de1_ble_handler { event data } {
 									# it's possibly to read all 3 MMR characteristics at once
 
 									# CPU Board Model * 1000. eg: 1100 = 1.1
-									msg -INFO "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
+									::bt::msg -INFO "MMR read: CPU board model: '[ifexists arr2(Data0)]'"
 									set ::settings(cpu_board_model) [ifexists arr2(Data0)]
 
 									# v1.3+ Firmware Model (Unset = 0, DE1 = 1, DE1Plus = 2, DE1Pro = 3, DE1XL = 4, DE1Cafe = 5)
-									msg -INFO "MMRead: machine model:  '[ifexists arr2(Data1)]'"
+									::bt::msg -INFO "MMR read: machine model:  '[ifexists arr2(Data1)]'"
 									set ::settings(machine_model) [ifexists arr2(Data1)]
 
 									# CPU Board Firmware build number. (Starts at 1000 for 1.3, increments by 1 for every build)
-									msg -INFO "MMRead: firmware version number: '[ifexists arr2(Data2)]'"
+									::bt::msg -INFO "MMR read: firmware version number: '[ifexists arr2(Data2)]'"
 									set ::settings(firmware_version_number) [ifexists arr2(Data2)]
 
 								} else {
 									# CPU Board Model * 1000. eg: 1100 = 1.1
-									msg -INFO "MMRead: CPU board model: '[ifexists arr2(Data0)]'"
+									::bt::msg -INFO "MMR read: CPU board model: '[ifexists arr2(Data0)]'"
 									set ::settings(cpu_board_model) [ifexists arr2(Data0)]
 								}
 
@@ -1600,27 +1640,28 @@ proc de1_ble_handler { event data } {
 								parse_binary_mmr_read_int $value arr2
 
 								# v1.3+ Firmware Model (Unset = 0, DE1 = 1, DE1Plus = 2, DE1Pro = 3, DE1XL = 4, DE1Cafe = 5)
-								msg -INFO "MMRead: machine model:  '[ifexists arr2(Data0)]'"
+								::bt::msg -INFO "MMR read: machine model:  '[ifexists arr2(Data0)]'"
 								set ::settings(machine_model) [ifexists arr2(Data0)]
 
 							} elseif {$mmr_id == "800010"} {
 								parse_binary_mmr_read_int $value arr2
 
 								# CPU Board Firmware build number. (Starts at 1000 for 1.3, increments by 1 for every build)
-								msg -INFO "MMRead: firmware version number: '[ifexists arr2(Data0)]'"
+								::bt::msg -INFO "MMR read: firmware version number: '[ifexists arr2(Data0)]'"
 								set ::settings(firmware_version_number) [ifexists arr2(Data0)]
 
 							} elseif {$mmr_id == "80382C"} {
-								msg -INFO "MMRead: steam_highflow_start: '$mmr_val'"
+								::bt::msg -INFO "MMR read: steam_highflow_start: '$mmr_val'"
 								set ::settings(steam_highflow_start) $mmr_val
 							} else {
-								msg -ERROR "Uknown type of direct MMR read $mmr_id on '[convert_string_to_hex $mmr_id]': $data"
+							    ::bt::msg -ERROR "Uknown type of direct MMR read" \
+								    [::logging::format_mmr $value]
 							}
 
 						} elseif {$cuuid eq $::de1(cuuid_01)} {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_version_desc $value arr2
-							msg -INFO "version data received [string length $value] bytes: '$value' \"[convert_string_to_hex $value]\"  : '[array get arr2]'/ $event $data"
+							::bt::msg -INFO "version data received: '$data_for_log'"
 							set ::de1(version) [array get arr2]
 
 							set v [de1_version_string]
@@ -1645,16 +1686,19 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_09)} {
 							#set ::de1(last_ping) [clock seconds]
 							parse_map_request $value arr2
-							msg -INFO "a009: [array get arr2]"
+							#
+							# TODO: These messages need clarification
+							#
+							::bt::msg -INFO "a009: [array get arr2]"
 							if {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 0} {
-								msg -NOTICE "BLE recv: finished erasing fw '[ifexists arr2(FWToMap)]'"
+								::bt::msg -NOTICE "BLE recv: finished erasing fw '[ifexists arr2(FWToMap)]'"
 								set ::de1(currently_erasing_firmware) 0
 								#write_firmware_now
 							} elseif {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 1} {
-								msg -NOTICE "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
+								::bt::msg -NOTICE "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
 								#after 1000 read_fw_erase_progress
 							} elseif {$::de1(currently_erasing_firmware) == 0 && [ifexists arr2(FWToErase)] == 0} {
-								msg -ERROR "BLE firmware find error BLE recv: '$value' [array get arr2]'"
+								::bt::msg -ERROR "BLE firmware find error BLE recv: [array get arr2] '$value_for_log'"
 
 								if {[ifexists arr2(FirstError1)] == [expr 0xFF] && [ifexists arr2(FirstError2)] == [expr 0xFF] && [ifexists arr2(FirstError3)] == [expr 0xFD]} {
 									set ::de1(firmware_update_button_label) "Updated"
@@ -1664,27 +1708,27 @@ proc de1_ble_handler { event data } {
 								set ::de1(currently_updating_firmware) 0
 
 							} else {
-								msg -ERROR "unknown firmware cmd ack recved: [string length $value] bytes: $value : [array get arr2]"
+								::bt::msg -ERROR "unknown firmware cmd ack recvied: '$data_for_log'"
 							}
 						} elseif {$cuuid eq $::de1(cuuid_0B)} {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_hotwater_desc $value arr2
-							msg -INFO "hotwater data received [string length $value] bytes: $value  : [array get arr2]"
+							::bt::msg -INFO "hotwater data received: [array get arr2] ($data_for_log)"
 
 							#update_de1_substate $value
 
 						} elseif {$cuuid eq $::de1(cuuid_0C)} {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_shot_desc $value arr2
-							msg -INFO "shot data received [string length $value] bytes: $value  : [array get arr2]"
+							::bt::msg -INFO "shot data received: [array get arr2] ($data_for_log)"
 						} elseif {$cuuid eq $::de1(cuuid_0F)} {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_shotdescheader $value arr2
-							msg -INFO "READ shot header success: [string length $value] bytes: $value  : [array get arr2]"
+							::bt::msg -INFO "READ shot header success:: [array get arr2] ($data_for_log)"
 						} elseif {$cuuid eq $::de1(cuuid_10)} {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_shotframe $value arr2
-							msg -INFO "shot frame received [string length $value] bytes: $value  : [array get arr2]"
+							::bt::msg -INFO "shot frame received: [array get arr2] ($data_for_log)"
 						} elseif {$cuuid eq $::de1(cuuid_0E)} {
 							set ::de1(last_ping) [clock seconds]
 							update_de1_state $value
@@ -1719,11 +1763,11 @@ proc de1_ble_handler { event data } {
 
 							if {[ifexists weightarray(command)] == [expr 0x0F] && [ifexists weightarray(data6)] == [expr 0xFE]} {
 								# tare cmd success is a msg back to us with the tare in 'command', and a byte6 of 0xFE
-								msg -INFO "decent scale: tare confirmed"
+								::bt::msg -INFO "ACK decent scale: tare"
 
 								return
 							} elseif {[ifexists weightarray(command)] == 0xAA} {
-								msg -INFO "Decentscale BUTTON $weightarray(data3) pressed"
+								::bt::msg -INFO "Decentscale BUTTON $weightarray(data3) pressed"
 								if {[ifexists $weightarray(data3)] == 1} {
 									# button 1 "O" pressed
 									decentscale_tare
@@ -1731,7 +1775,7 @@ proc de1_ble_handler { event data } {
 									# button 2 "[]" pressed
 								}
 							} elseif {[ifexists weightarray(command)] != ""} {
-								msg -INFO "scale command received: [array get weightarray]"
+								::bt::msg -INFO "scale command received: [array get weightarray]"
 
 							}
 
@@ -1739,7 +1783,7 @@ proc de1_ble_handler { event data } {
 								set sensorweight [expr {$weightarray(weight) / 10.0}]
 								::device::scale::process_weight_update $sensorweight $event_time
 							} else {
-								msg -INFO "decent scale recv: [array get weightarray]"
+								::bt::msg -INFO "decent scale recv: [array get weightarray]"
 							}
 						} elseif {$cuuid eq $::de1(cuuid_acaia_ips_age)} {
 							# acaia scale
@@ -1754,7 +1798,7 @@ proc de1_ble_handler { event data } {
 							set t0 {}
 							#set t1 {}
 							binary scan $value cucucucucucu t0 t1
-							msg -INFO "Skale button pressed: $t0 : DE1 state: $::de1(state) = $::de1_num_state($::de1(state)) "
+							::bt::msg -INFO "Skale button pressed: $t0 : DE1 state: $::de1(state) = $::de1_num_state($::de1(state)) "
 
 							if {$t0 == 1} {
 								scale_tare
@@ -1771,7 +1815,8 @@ proc de1_ble_handler { event data } {
 							}
 
 						} else {
-							msg -ERROR "Confirmed unknown read from DE1 $cuuid: '$value'"
+						    ::bt::msg -ERROR "ACK unknown read from DE1" \
+							    "[::logging::short_ble_uuid $cuuid]: $value_for_log"
 						}
 
 						#set ::de1(wrote) 0
@@ -1782,62 +1827,78 @@ proc de1_ble_handler { event data } {
 
 						if {$cuuid eq $::de1(cuuid_05)} {
 
-							msg -INFO "MMR recv write-back: '[convert_string_to_hex $value]'"
+						    ::bt::msg -INFO "ACK MMR read request" \
+							    [::logging::format_mmr $value]
 
 						} elseif {$cuuid eq $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3
-							msg -INFO "Confirmed shot frame written to DE1: '$value' : [array get arr3]"
+							::bt::msg -INFO "ACK shot frame written to DE1: [array get arr3] ($data_for_log)"
 						} elseif {$cuuid eq $::de1(cuuid_11)} {
 							parse_binary_water_level $value arr2
-							msg -INFO "water level write confirmed [string length $value] bytes: $value  : [array get arr2]"
+							::bt::msg -INFO "ACK water level write: [array get arr2] ($data_for_log)"
 						} elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
 							#parse_binary_water_level $value arr2
-							msg -INFO "scale write confirmed [string length $value] bytes: $value"
+							::bt::msg -INFO "ACK scale write: '$value_for_log'"
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF80)} {
 							set tare [binary decode hex "10"]
 							set grams [binary decode hex "03"]
 							set screenon [binary decode hex "ED"]
 							set displayweight [binary decode hex "EC"]
 							if {$value == $tare } {
-								msg -INFO "Skale: tare confirmed"
+							    ::bt::msg -INFO "ACK Skale: tare"
 
 							} elseif {$value == $grams } {
-								msg -INFO "Skale: grams confirmed"
+								::bt::msg -INFO "ACK Skale: grams"
 							} elseif {$value == $screenon } {
-								msg -INFO "Skale: screen on confirmed"
+								::bt::msg -INFO "ACK Skale: screen on"
 							} elseif {$value == $displayweight } {
-								msg -INFO "Skale: display weight confirmed"
+								::bt::msg -INFO "ACK Skale: display weight"
+							} elseif {$value == [binary decode hex "d0"] } {
+								::bt::msg -INFO "ACK Skale: timer reset"
+							} elseif {$value == [binary decode hex "d1"] } {
+								::bt::msg -INFO "ACK Skale: timer stop"
+							} elseif {$value == [binary decode hex "dd"] } {
+								::bt::msg -INFO "ACK Skale: timer start"
+							} elseif {$value == [binary decode hex "ee"] } {
+								::bt::msg -INFO "ACK Skale: screen off"
 							} else {
-								msg -ERROR [format "Skale write received: %s (unrecognized)" \
+								::bt::msg -ERROR [format "Skale: write received: %s (unrecognized)" \
 										      [binary encode hex $value]]
 							}
 						} else {
 							if {$address == $::settings(bluetooth_address)} {
 								if {$cuuid eq $::de1(cuuid_02)} {
 									parse_state_change $value arr
-									msg -INFO "Confirmed state change written to DE1: '[array get arr]'"
+									::bt::msg -INFO "ACK state change written to DE1: '[array get arr]'"
 								} elseif {$cuuid eq $::de1(cuuid_06)} {
 									if {$::de1(currently_erasing_firmware) == 1 && $::de1(currently_updating_firmware) == 0} {
 										# erase ack received
 										#set ::de1(currently_erasing_firmware) 0
-										msg -INFO "firmware erase write ack recved: [string length $value] bytes: $value : [array get arr2]"
+										::bt::msg -INFO "firmware erase write ack recved: [string length $value] bytes: $value : [array get arr2]"
 									} elseif {$::de1(currently_erasing_firmware) == 0 && $::de1(currently_updating_firmware) == 1} {
 
-										msg -INFO "firmware write ack recved: [string length $value] bytes: $value : [array get arr2]"
+										::bt::msg -INFO "ACK firmware write:" \
+											[::logging::format_mmr_short $value]
 										firmware_upload_next
 									} else {
-										msg -INFO "MMR write ack: [string length $value] bytes: [convert_string_to_hex $value ] : $value : [array get arr2]"
+										::bt::msg -INFO "ACK MMR write [::logging::format_mmr $value]"
 									}
 								} elseif {$cuuid eq $::de1(cuuid_09) && $::de1(currently_erasing_firmware) == 1} {
-									msg -INFO "fw request to erase sent"
+									::bt::msg -INFO "fw request to erase sent"
 									#write_firmware_now
 								} else {
-									msg -INFO "Confirmed wrote to $cuuid of DE1: '$value'"
+								    ::bt::msg -INFO "ACK wrote to" \
+									    [::logging::short_ble_uuid $cuuid] \
+									    "of DE1: '$value_for_log'"
 								}
 							} elseif {$address == $::settings(scale_bluetooth_address)} {
-								msg -INFO "Confirmed wrote to $cuuid of $::settings(scale_type): '$value'"
+							    ::bt::msg -INFO "ACK wrote to"
+							    [::logging::short_ble_uuid $cuuid] \
+								    "of $::settings(scale_type): '$value_for_log'"
 							} else {
-								msg -ERROR "Confirmed wrote to $cuuid of unknown device: '$value'"
+								::bt::msg -ERROR "ACK for write to" \
+									[::logging::short_ble_uuid $cuuid] \
+									"of unknown device: '$event_for_log'"
 							}
 						}
 
@@ -1847,7 +1908,7 @@ proc de1_ble_handler { event data } {
 						#de1_ble_new_value $cuuid $value
 
 					} else {
-						msg -ERROR "weird characteristic received: $data"
+						::bt::msg -ERROR "weird characteristic received: $data_for_log"
 					}
 
 					#run_next_userdata_cmd
@@ -1868,24 +1929,37 @@ proc de1_ble_handler { event data } {
 				if {$state eq "connected"} {
 
 					if {$access eq "w"} {
-						if {$cuuid eq $::de1(cuuid_0D)} {
-							msg -INFO "Confirmed: BLE temperature notifications: $data"
-						} elseif {$cuuid eq $::de1(cuuid_0E)} {
-							msg -INFO "Confirmed: BLE state change notifications"
-						} elseif {$cuuid eq $::de1(cuuid_12)} {
-							msg -INFO "Confirmed: BLE calibration notifications"
-						} elseif {$cuuid eq $::de1(cuuid_05)} {
-							msg -INFO "Confirmed: BLE MMR write: [convert_string_to_hex $data]"
-						} elseif {$cuuid eq $::de1(cuuid_11)} {
-							msg -INFO "Confirmed: water level write: $data"
-						} else {
-							msg -ERROR "DESCRIPTOR UNKNOWN WRITE confirmed: $data"
-						}
 
-						set ::de1(wrote) 0
-						run_next_userdata_cmd
+					    if {$cuuid eq $::de1(cuuid_0D)} {
+						::bt::msg -INFO "ACK DE1 temperature notifications: $data_for_log"
+
+					    } elseif {$cuuid eq $::de1(cuuid_0E)} {
+						::bt::msg -INFO "ACK DE1 state change notifications: $data_for_log"
+
+					    } elseif {$cuuid eq $::de1(cuuid_12)} {
+						::bt::msg -INFO "ACK DE1 calibration notifications: $data_for_log"
+
+					    } elseif {$cuuid eq $::de1(cuuid_05)} {
+						::bt::msg -INFO "ACK MMR write notifications: $data_for_log"
+
+					    } elseif {$cuuid eq $::de1(cuuid_11)} {
+						::bt::msg -INFO "ACK water level write: $data_for_log"
+
+					    } elseif {$cuuid eq $::de1(cuuid_skale_EF81)} {
+						::bt::msg -INFO "ACK Skale weight notifications: $data_for_log"
+
+					    } elseif {$cuuid eq $::de1(cuuid_skale_EF82)} {
+						::bt::msg -INFO "ACK Skale button notifications: $data_for_log"
+
+					    } else {
+						::bt::msg -ERROR "ACK Descriptor unknown write: $data_for_log"
+					    }
+
+					    set ::de1(wrote) 0
+					    run_next_userdata_cmd
+
 					} else {
-						msg -ERROR "de1 unknown descriptor $state: ${event}: ${data}"
+					    ::bt::msg -ERROR "BLE unknown descriptor action; $state: ${event}: ${data_for_log}"
 					}
 
 					set run_this 0
@@ -1895,7 +1969,7 @@ proc de1_ble_handler { event data } {
 						set lst [ble userdata $handle]
 						set cmds [unshift lst]
 						ble userdata $handle $lst
-						msg -DEBUG "$cmds"
+						::bt::msg -DEBUG "$cmds"
 						if {$cmds ne {}} {
 							set cmd [lindex $cmds 0]
 							set cmds [lrange $cmds 1 end]
@@ -1910,12 +1984,13 @@ proc de1_ble_handler { event data } {
 			}
 
 			default {
-				msg -ERROR "ble unknown callback $event $data"
+				::bt::msg -ERROR "ble unknown callback $event $data_for_log"
 			}
 		}
 	}
 
 	#run_next_userdata_cmd
+
 }
 
 # john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
@@ -1961,28 +2036,31 @@ proc calibration_ble_received {value} {
 		}
 	}
 
+	set _readable [::logging::ellipsis_zeros \
+			       [::logging::format_asc_bin $value]]
+
 	if {$varname != ""} {
 		# this BLE characteristic receives packets both for notifications of reads and writes, but also the real current value of the calibration setting
 		if {[ifexists arr2(WriteKey)] == 0} {
-			msg -INFO "$varname value received [string length $value] bytes: [convert_string_to_hex $value] $value : [array get arr2]"
+			::bt::msg -INFO "ACK calibration: $varname value received: [array get arr2] ($_readable)"
 			set ::de1($varname) $arr2(MeasuredVal)
 		} else {
-			msg -ERROR "$varname NACK received [string length $value] bytes: [convert_string_to_hex $value] $value : [array get arr2] "
+			::bt::msg -ERROR "ACK, no data, calibration:for $varname: [array get arr2] ($_readable) "
 		}
 	} else {
-		msg -ERROR "unknown calibration data received [string length $value] bytes: $value  : [array get arr2]"
+		::bt::msg -ERROR "unknown calibration data received: [array get arr2] ($_readable)"
 	}
 
 }
 
 proc enable_de1_reconnect {} {
-	msg -NOTICE "enable_de1_reconnect"
+	::bt::msg -NOTICE "enable_de1_reconnect"
 	set ::de1(disable_de1_reconnect) 1
 	ble_connect_to_de1
 }
 
 proc disable_de1_reconnect {} {
-	msg -NOTICE "disable_de1_reconnect"
+	::bt::msg -NOTICE "disable_de1_reconnect"
 	set ::de1(disable_de1_reconnect) 1
 }
 
@@ -2008,6 +2086,7 @@ proc scanning_state_text {} {
 }
 
 proc scanning_restart {} {
+	::bt::msg -NOTICE scanning_restart
 	if {$::scanning == 1} {
 		return
 	}
@@ -2033,6 +2112,6 @@ proc scanning_restart {} {
 	}
 
 	set ::scanning 1
-	msg -NOTICE "Starting ble_scanner from ::scanning_restart"
+	::bt::msg -NOTICE "Starting ble_scanner from ::scanning_restart"
 	ble start $::ble_scanner
 }
