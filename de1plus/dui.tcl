@@ -558,14 +558,16 @@ namespace eval ::dui {
 			foreach {name path} $args {
 				if { [file exists $path] } {
 					::set sounds($name) $path
+				} else {
+					msg -WARNING [namespace current] "file '$path' for sound '$name' not found"
 				}
 			}
 		}
 		
 		proc get { sound_name } {
 			variable sounds
-			if { [info exists sounds(sound_name)] } {
-				return sounds($sound_name)
+			if { [info exists sounds($sound_name)] } {
+				return $sounds($sound_name)
 			} else {
 				return {}
 			}
@@ -573,12 +575,14 @@ namespace eval ::dui {
 		
 		proc exists { sound_name } {
 			variable sounds
-			return [info exists sounds(sound_name)]
+			return [info exists sounds($sound_name)]
 		}
 		
 		proc make { sound_name } {
 			::set path [get $sound_name]
-			if { $path ne "" } {
+			if { $path eq "" } {
+				msg -WARNING [namespace current] "sound '$sound_name' not defined"
+			} else {
 				catch { borg beep $path } 
 			}
 		}
