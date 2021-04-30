@@ -1,4 +1,4 @@
-package provide de1_logging 1.1
+package provide de1_logging 1.2
 
 package require lambda
 
@@ -307,4 +307,181 @@ namespace eval ::logging {
 
 	interp bgerror {} ::logging::_logging_bgerror
 
-}
+
+#
+# Utilities for sanatizing date for logging
+#
+
+	###  generics
+
+	# Render as printable if all "standard", printable ASCII (0x20 - 0x7e),
+	# as hex otherwise.
+
+	proc format_asc_bin {maybe_printable_maybe_binary} {
+	    if { [regexp {^[\x20-\x7e]*$} $maybe_printable_maybe_binary] } {
+		return "$maybe_printable_maybe_binary"
+	    } else {
+		set hexval [binary encode hex $maybe_printable_maybe_binary]
+		return "hex: [regexp -inline -all .. $hexval]"
+	    }
+	}
+
+	proc format_map_asc_bin {mixed_string} {
+
+	    return [join [lmap s [split $mixed_string] \
+				  { ::logging::format_asc_bin $s } ]]
+	}
+
+	proc ellipsis_zeros {hex_str} {
+
+	    if { [regsub {00 (00 ){3,}00$} $hex_str "00 ... 00" retval] } {
+		set bytes [expr { ([string length $hex_str] + 1 ) / 3 }]
+		append retval " ($bytes bytes)"
+	    }
+	    return $retval
+	}
+
+
+
+	### MMR data
+
+	proc format_mmr {mmr_binary} {
+
+	    set mmr_hexstr [binary encode hex $mmr_binary]
+	    set mmr_bytes [string range $mmr_hexstr 0 1]
+	    set mmr_high_addr [string range $mmr_hexstr 2 3]
+	    set mmr_low_addr [string range $mmr_hexstr 4 7]
+	    set mmr_payload [string range $mmr_hexstr 8 end]
+	    return [format "0x%s 0x%s %s payload: %s" \
+			    $mmr_bytes $mmr_high_addr $mmr_low_addr \
+			    [::logging::ellipsis_zeros \
+				     [regexp -inline -all .. $mmr_payload]]]
+	}
+
+	proc format_mmr_short {mmr_binary} {
+
+	    set mmr_hexstr [binary encode hex $mmr_binary]
+	    set mmr_bytes [string range $mmr_hexstr 0 1]
+	    set mmr_high_addr [string range $mmr_hexstr 2 3]
+	    set mmr_low_addr [string range $mmr_hexstr 4 7]
+	    return [format "0x%s 0x%s %s (payload omitted)" \
+			    $mmr_bytes $mmr_high_addr $mmr_low_addr]
+	}
+
+
+
+	### ble event data
+
+	proc format_ble_event {ble_event} {
+	    # Everything should be printable, except for the "value"
+	    if { [dict keys $ble_event value] == "value" } {
+		dict set ble_event value \
+			[format '%s' \
+				 [::logging::format_asc_bin \
+					  [dict get $ble_event value]]]
+	    }
+	    return $ble_event
+	}
+
+	#
+	# For logging, only need some of:
+	#   handle ble3
+	#   address D9:B2:48:aa:bb:cc rssi -150 state connected
+	#   suuid 0000A000-0000-1000-8000-00805F9B34FB sinstance 12
+	#   cuuid 0000A011-0000-1000-8000-00805F9B34FB cinstance 62
+	#   duuid 00002902-0000-1000-8000-00805F9B34FB
+	#   permissions 0 access w
+	#   value {'hex: 01 00'}
+	#
+
+	proc short_ble_uuid {long_uuid} {
+	    return [string tolower [regsub {^0000([0-9a-fA-F]{4}).*$} \
+					    $long_uuid \
+					    {\1} ] ]
+	}
+
+	proc format_ble_event_short {ble_event} {
+
+	    set formatted [::logging::format_ble_event $ble_event]
+	    set short [dict filter $formatted script {k v} {
+		expr { $k in {"cuuid" "access" "writetype" "value"} }
+	    }]
+	    if { [dict exists $short cuuid] } {
+		dict set short cuuid [::logging::short_ble_uuid \
+				 [dict get $short cuuid]]
+	    }
+	    return $short
+	}
+
+	proc format_ble_event_payload {ble_event} {
+
+	    set value [expr { [dict keys $ble_event value] == "value" \
+				      ? [dict get $ble_event value] \
+				      : "(no value)" }]
+	    return [::logging::format_asc_bin $value]
+	}
+
+	proc format_ble_command {ble_command} {
+
+	    if { [lindex $ble_command 0] != "ble" } {
+		msg -ERROR "Unrecognized as ble command: '$ble_command'"
+		set retval $ble_command
+	    }
+
+	    set _action [lindex $ble_command 1]
+	    set _handle [lindex $ble_command 2]
+
+	    if { $_handle == $::de1(device_handle) } {
+
+		set _handle "DE1 ($_handle)"
+
+	    } elseif { $_handle == $::de1(scale_device_handle) } {
+
+		set _handle "Scale ($_handle)"
+
+	    } else {
+
+		set _handle "Unknown ($_handle)"
+	    }
+
+	    set _cuuid [::logging::short_ble_uuid [lindex $ble_command 5]]
+
+	    switch --  $_action {
+
+		dread {
+
+		    set _duuid [::logging::short_ble_uuid [lindex $ble_command 7]]
+		    set retval "$_handle: $_action $_cuuid $_duuid"
+		}
+
+		dwrite {
+
+		    set _duuid [::logging::short_ble_uuid [lindex $ble_command 7]]
+		    set _dvalue [::logging::format_asc_bin [lindex $ble_command 8]]
+		    set retval "$_handle: $_action $_cuuid $_duuid $_dvalue"
+		}
+
+		enable -
+		disable -
+		read {
+
+		    set retval "$_handle: $_action $_cuuid"
+		}
+
+		write {
+
+		    set _value [::logging::format_asc_bin [lindex $ble_command 7]]
+		    return "$_handle: $_action $_cuuid $_value"
+		}
+
+		default {
+
+		    msg -NOTICE "Undecoded ble command action: '$_action'"
+		    set retval "$_handle: [::logging::format_map_asc_bin $ble_command]"
+		}
+	    }
+
+	    return $retval
+	}
+
+}  ;# ::logging

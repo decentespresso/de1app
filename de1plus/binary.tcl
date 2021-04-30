@@ -803,8 +803,6 @@ proc make_chunked_packed_shot_sample {hdrarrname framenames extension_framenames
 
 proc de1_packed_shot {shot_list} {
 
-	msg -DEBUG "de1_packed_shot" $shot_list
-
 	set hdr(HeaderV) 1
 	set hdr(MinimumPressure) 0
 	set hdr(MaximumFlow) [convert_float_to_U8P4 6]
