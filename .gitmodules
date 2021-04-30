@@ -24,6 +24,3 @@
 [submodule "de1plus/skins/DSx"]
 	path = de1plus/skins/DSx
 	url = https://github.com/Damian-AU/DSx
-[submodule "de1plus/plugins/DGUI"]
-	path = de1plus/plugins/DGUI
-	url = https://github.com/ebengoechea/de1app_plugin_DGUI
