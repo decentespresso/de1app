@@ -72,9 +72,6 @@ namespace eval ::history_viewer {
 				variable widgets
 				set page [namespace tail [namespace current]]
 
-				set current_theme [dui theme get]
-				dui theme set default
-
 				dui add listbox $page 40   1000 -tags history_left  -canvas_width 450 -canvas_height 550 -yscrollbar yes -font_size -1 -listvariable history_entries
 				dui add listbox $page 1940 1000 -tags history_right -canvas_width 450 -canvas_height 550 -yscrollbar yes -font_size -1 -listvariable history_entries
 
