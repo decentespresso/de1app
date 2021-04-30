@@ -317,7 +317,7 @@ namespace eval ::shot {
             set target_file "[homedir]/history_v2/${fbasename}.json"
 
             if {[file exists $target_file]} {
-                #continue
+                continue
             }
             msg -INFO [namespace current] "Converting shot" $d "to version 2"
 
