@@ -108,7 +108,7 @@ namespace eval ::dui {
 		}
 		if {$android == 1} {
 			# hide the android keyboard that pops up when you power back on
-			bind . <<DidEnterForeground>> [::dui::platform::hide_android_keyboard]
+			bind . <<DidEnterForeground>> {::dui::platform::hide_android_keyboard}
 		}
 		
 		if {$android == 1 || $undroid == 1} {
