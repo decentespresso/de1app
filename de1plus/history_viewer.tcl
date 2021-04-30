@@ -57,6 +57,7 @@ namespace eval ::history_viewer {
 				right_shot {}
 				history_files {}
 				history_entries {}
+				history_shots {}
 				history_match_profile no
 
 				show_temperature no
@@ -137,6 +138,7 @@ namespace eval ::history_viewer {
 
 			proc show {args} {
 				redraw_graph
+
 			}
 
 			proc get_past_elem {target args} {
@@ -237,15 +239,55 @@ namespace eval ::history_viewer {
 			proc update_data {} {
 				variable data
 
+				set data(history_files) [::shot::list_last $::iconik_settings(max_history_items)]
+				set data(history_entries) {}
+				set data(history_shots) {}
+
+				::history_viewer::pages::history_viewer::parse_next_shotfile
+			}
+
+			proc first {ls} {
+				upvar 1 $ls LIST
+				if {[llength $LIST]} {
+					set ret [lindex $LIST 0]
+					set LIST [lreplace $LIST 0 0]
+					return $ret
+				} else {
+					error "Ran out of list elements."
+				}
+			}
+
+			proc parse_next_shotfile {} {
+				variable data
+
 				set matching_profile ""
 				if {$data(history_match_profile)} {
 					set matching_profile $::settings(profile_title)
 				}
-				set data(history_files) [::shot::list_last $::iconik_settings(max_history_items) $matching_profile]
-				set data(history_entries) {}
-				foreach shot $data(history_files) {
-					set date [string range [dict get $shot date] 0 18]
-					lappend data(history_entries) $date
+
+				if {[llength $data(history_files)]} {
+					set shot_file [first data(history_files)]
+					msg "Parsing $shot_file"
+					after idle ::history_viewer::pages::history_viewer::parse_next_shotfile
+
+					set shot [shot::parse_file $shot_file]
+					if {$shot != {}} {
+
+						set profile_title [dict get $shot profile title]
+						if {$matching_profile ne "" && $profile_title eq $matching_profile} {
+							msg -DEBUG [namespace current] "Profile not matching, skipping"
+							return
+						}
+						msg -DEBUG [namespace current] "Adding $profile_title to the history list"
+
+						set date [string range [dict get $shot date] 0 18]
+						lappend data(history_entries) $date
+						lappend data(history_shots) $shot
+						return
+					} else {
+						msg -INFO "Parsing failed: $shot_file"
+						return
+					}
 				}
 			}
 
@@ -284,7 +326,7 @@ namespace eval ::history_viewer {
 			return
 		}
 
-		set past_shot [lindex $data(history_files) $stepnum]
+		set past_shot [lindex $data(history_shots) $stepnum]
 		load_shot $target $widget $past_shot
 	}
 

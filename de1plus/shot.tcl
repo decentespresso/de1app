@@ -232,36 +232,33 @@ namespace eval ::shot {
         return $json
     }
 
-    proc list_last {{limit 100} {match_profile ""}} {
+    proc parse_file {shot_file} {
+        set shot {}
+        catch {
+            set shot_file_contents [read_file "[homedir]/history_v2/$shot_file"]
+            set shot [json::json2dict $shot_file_contents]
+
+            dict set shot filename $shot_file
+        }
+        return $shot
+    }
+
+    proc list_last {{limit 100}} {
         set result {}
         set files [lsort -dictionary -decreasing [glob -nocomplain -tails -directory "[homedir]/history_v2/" *.json]]
         set cnt 0
 
-        msg -INFO [namespace current] "Requesting $limit history items with match_profile=$match_profile"
+        msg -INFO [namespace current] "Requesting $limit history items"
 
+        # TODO this could be an array slice?
         foreach shot_file $files {
             set tailname [file tail $shot_file]
-            msg -DEBUG [namespace current] "Loading $tailname"
-
             if {$cnt == $limit} {
                 break;
             }
 
-            array unset -nocomplain shot
-            catch {
-                set shot_file_contents [read_file "[homedir]/history_v2/$shot_file"]
-                set shot [json::json2dict $shot_file_contents]
-
-                dict set shot filename $tailname
-                set profile_title [dict get $shot profile title]
-                if {$match_profile ne "" && $profile_title eq $match_profile} {
-                    continue
-                } else {
-                    msg -DEBUG [namespace current] "Adding $profile_title to the history list"
-                    lappend result $shot
-                    incr cnt
-                }
-            }
+            lappend result $tailname
+            incr cnt
         }
         return $result
     }
