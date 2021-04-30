@@ -108,7 +108,7 @@ namespace eval ::dui {
 		}
 		if {$android == 1} {
 			# hide the android keyboard that pops up when you power back on
-			bind . <<DidEnterForeground>> [::dui::platform::hide_android_keyboard]
+			bind . <<DidEnterForeground>> {::dui::platform::hide_android_keyboard}
 		}
 		
 		if {$android == 1 || $undroid == 1} {
@@ -253,7 +253,7 @@ namespace eval ::dui {
 			# preload the speaking engine 
 			# john 2/12/18 re-enable this when TTS feature is enabled
 			# borg speak { }
-		} else {	
+		} else {				
 			# global font is wider on non-android
 			set listbox_global_width_multiplier .8
 			set listbox_length_multiplier 1
@@ -283,7 +283,8 @@ namespace eval ::dui {
 			# EB: Is this installed by default on PC/Mac/Linux?? No need to sdltk add it?
 			set helvetica_font "notosansuiregular"
 			set helvetica_bold_font "notosansuibold"
-	
+			set global_font_name $helvetica_font
+			
 			if {$settings(language) == "th"} {
 				set helvetica_font "sarabun"
 				set helvetica_bold_font "sarabunbold"
