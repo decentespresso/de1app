@@ -100,6 +100,8 @@ proc setup_environment {} {
 		
 		font create global_font -family $global_font_name  -size [expr {int($fontm * 23)}] 
 				
+		set regularfont $helvetica_font
+		set boldfont $helvetica_bold_font
         font create Helv_1 -family $regularfont -size 1
         font create Helv_4 -family $regularfont -size 10
         font create Helv_5 -family $regularfont -size 12

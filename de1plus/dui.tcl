@@ -253,7 +253,7 @@ namespace eval ::dui {
 			# preload the speaking engine 
 			# john 2/12/18 re-enable this when TTS feature is enabled
 			# borg speak { }
-		} else {	
+		} else {				
 			# global font is wider on non-android
 			set listbox_global_width_multiplier .8
 			set listbox_length_multiplier 1
