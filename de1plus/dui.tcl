@@ -71,11 +71,11 @@ namespace eval ::dui {
 
 	# Most coming from old proc "setup_environment" in utils.tcl
 	proc init { {screen_size_width {}} {screen_size_height {}} {orientation landscape} } {
+		global android
+		global undroid
 		# Because font files can only be loaded ONCE with 'sdltk addfont', we need to keep the mapping of file names
 		# to family names in a global variable, to be compatible with how skins are doing it.
 		global loaded_fonts
-		global android
-		global undroid
 		
 		variable settings
 		variable fontm
@@ -413,10 +413,8 @@ namespace eval ::dui {
 		variable settings
 	
 		if { $settings(enable_spoken_prompts) == 1 && $message ne  "" } {
-msg -DEBUG "DUI SAY borg speak"			
 			borg speak $message {} $settings(speaking_pitch) $settings(speaking_rate)
 		} else {
-msg -DEBUG "DUI SAY sound make"			
 			sound make $sound_name
 		}
 	}
@@ -5631,7 +5629,6 @@ msg -DEBUG "DUI SAY sound make"
 			if { $cmd eq "" } {
 				msg -WARN [namespace current] dbutton "'$main_tag' in page(s) '$pages' does not have a command"
 			} else {
-set cmd "msg -DEBUG \"Running button command [lindex $pages 0]:$main_tag\"; $cmd;" 
 				$can bind $id [dui platform button_press] $cmd
 			}
 			
