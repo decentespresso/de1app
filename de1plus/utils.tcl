@@ -94,6 +94,8 @@ proc setup_environment {} {
         font create Helv_30_bold -family $helvetica_bold_font -size [expr {int($fontm * 54)}]
         font create Helv_30 -family $helvetica_font -size [expr {int($fontm * 56)}]				
 	} else {
+		set regularfont $helvetica_font
+		set boldfont $helvetica_bold_font
 		font create Fontawesome_brands_11 -family $fontawesome_brands -size [expr {int($fontm * 25)}]
 		
 		font create global_font -family $global_font_name  -size [expr {int($fontm * 23)}] 

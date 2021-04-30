@@ -283,7 +283,8 @@ namespace eval ::dui {
 			# EB: Is this installed by default on PC/Mac/Linux?? No need to sdltk add it?
 			set helvetica_font "notosansuiregular"
 			set helvetica_bold_font "notosansuibold"
-	
+			set global_font_name $helvetica_font
+			
 			if {$settings(language) == "th"} {
 				set helvetica_font "sarabun"
 				set helvetica_bold_font "sarabunbold"
