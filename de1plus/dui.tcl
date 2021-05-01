@@ -6731,7 +6731,7 @@ namespace eval ::dui {
 				if { [dui symbol exists "half_$symbol"] } {
 					set half_symbol [dui symbol get "half_$symbol"]
 				} else {
-					set half_symbol [dui symbol get half-star]
+					set half_symbol [dui symbol get star-half]
 				}
 			}		
 			if { [dui symbol exists $symbol] } {
