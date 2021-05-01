@@ -1892,7 +1892,7 @@ proc de1_ble_handler { event data } {
 									    "of DE1: '$value_for_log'"
 								}
 							} elseif {$address == $::settings(scale_bluetooth_address)} {
-							    ::bt::msg -INFO "ACK wrote to"
+							    ::bt::msg -INFO "ACK wrote to" \
 							    [::logging::short_ble_uuid $cuuid] \
 								    "of $::settings(scale_type): '$value_for_log'"
 							} else {
