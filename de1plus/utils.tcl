@@ -17,7 +17,7 @@ proc setup_environment {} {
 	}
 	dui config language [language]
 	dui font add_dirs "[homedir]/fonts/"
-	dui item add_image_dirs "[homedir]/skins/default/"
+	dui image add_dirs "[homedir]/skins/default/"
 	dui sound set button_in "[homedir]/sounds/KeypressStandard_120.ogg" \
 		button_out "[homedir]/sounds/KeypressDelete_120.ogg" \
 		page_change "[homedir]/sounds/KeypressDelete_120.ogg"
@@ -41,7 +41,7 @@ proc setup_environment {} {
 	set ::screen_size_height [dui cget screen_size_height]
 	if { $settings(screen_size_width) != $::screen_size_width || $settings(screen_size_height) != $::screen_size_height } {
 		set settings(screen_size_width) $::screen_size_width
-		set settings(screen_size_height)) $::screen_size_height
+		set settings(screen_size_height) $::screen_size_height
 		save_settings
 #	}
 

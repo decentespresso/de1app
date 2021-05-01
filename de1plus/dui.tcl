@@ -25,7 +25,7 @@ set SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN 0x00000400
 set ::android_full_screen_flags [expr {$SYSTEM_UI_FLAG_LAYOUT_STABLE | $SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | $SYSTEM_UI_FLAG_HIDE_NAVIGATION | $SYSTEM_UI_FLAG_FULLSCREEN | $SYSTEM_UI_FLAG_IMMERSIVE}]
 
 namespace eval ::dui {
-	namespace export init setup_ui config cget canvas say platform theme aspect sound symbol font page item add
+	namespace export init setup_ui config cget canvas say platform theme aspect sound symbol font image page item add
 	namespace ensemble create
 
 	variable settings
@@ -69,6 +69,9 @@ namespace eval ::dui {
 	variable listbox_length_multiplier 1
 	variable listbox_global_width_multiplier 1
 
+	variable _base_screen_width 2560.0
+	variable _base_screen_height 1600.0
+	
 	# Most coming from old proc "setup_environment" in utils.tcl
 	proc init { {screen_size_width {}} {screen_size_height {}} {orientation landscape} } {
 		global android
@@ -193,8 +196,8 @@ namespace eval ::dui {
 	
 			# HOW TO HANDLE THIS?
 			if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
-				set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
-				set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
+				set ::rescale_images_x_ratio [expr {$screen_size_height / $::dui::_base_screen_height}]
+				set ::rescale_images_y_ratio [expr {$screen_size_width / $::dui::_base_screen_width}]
 			}
 	
 			set global_font_size 18
@@ -276,8 +279,8 @@ namespace eval ::dui {
 
 			# TBD WHAT TO DO WITH THIS 
 			if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
-				set ::rescale_images_x_ratio [expr {$screen_size_height / 1600.0}]
-				set ::rescale_images_y_ratio [expr {$screen_size_width / 2560.0}]
+				set ::rescale_images_x_ratio [expr {$screen_size_height / $::dui::_base_screen_height}]
+				set ::rescale_images_y_ratio [expr {$screen_size_width / $::dui::_base_screen_width}]
 			}
 	
 			# EB: Is this installed by default on PC/Mac/Linux?? No need to sdltk add it?
@@ -303,14 +306,20 @@ namespace eval ::dui {
 		dui aspect set -theme default -type symbol font_family $fontawesome_pro
 		dui aspect set -theme default -type symbol -style brands font_family $fontawesome_brands
 		
+		
 		set settings(screen_size_width) $screen_size_width 
 		set settings(screen_size_height) $screen_size_height
 
 		# Try to locate image folders automatically, in case they're not declared explicitly by the skin
 		set skin_img_dir [file normalize "${skin_dir}/${screen_size_width}x${screen_size_height}/"]
 		if { [file exists $skin_img_dir] && $skin_dir ni [dui item image_dirs] } {
-			dui item add_image_dirs $skin_dir
+			dui image add_dirs $skin_dir
 		}
+	
+		# log dui settings for eventual debugging
+		msg -INFO "Platform data: tcl_platform=$::tcl_platform(platform), android=$android, undroid=$undroid, some_droid=$::some_droid"
+		msg -INFO "Screen data: width=$screen_size_width, height=$screen_size_height"
+		msg -INFO "Font data: default font=$helvetica_font, multiplier=$fontm, language=$settings(language)"
 		
 		# define the canvas
 		set can [dui canvas]
@@ -409,12 +418,12 @@ namespace eval ::dui {
 		}
 	}
 	
-	proc say { message sound_name } {
+	proc say { message {sound_name {}} } {
 		variable settings
 	
 		if { $settings(enable_spoken_prompts) == 1 && $message ne  "" } {
 			borg speak $message {} $settings(speaking_pitch) $settings(speaking_rate)
-		} else {
+		} elseif { $sound_name ne "" } {
 			sound make $sound_name
 		}
 	}
@@ -474,12 +483,12 @@ namespace eval ::dui {
 		
 		proc xscale_factor {} {
 			#global screen_size_width
-			return [expr {2560.0/[dui cget screen_size_width]}]
+			return [expr {$::dui::_base_screen_width / [dui cget screen_size_width]}]
 		}
 		
 		proc yscale_factor {} {
 			#global screen_size_height
-			return [expr {1600.0/[dui cget screen_size_height]}]
+			return [expr {$::dui::_base_screen_height /[dui cget screen_size_height]}]
 		}
 		
 		proc rescale_x {in} {
@@ -2950,6 +2959,7 @@ namespace eval ::dui {
 						msg -NOTICE [namespace current] "font directory '$dir' was already in the list"
 					} else {
 						lappend font_dirs $dir
+						msg -INFO [namespace current] "adding font directory '$dir'"
 					}
 				} else {
 					msg -ERROR [namespace current] "font directory '$dir' not found"
@@ -3162,6 +3172,161 @@ namespace eval ::dui {
 #				return $skin_fonts
 				return [::font names]
 			}
+		}
+	}
+	
+	### IMAGES SUB-ENSEMBLE ###
+	namespace eval image {
+		namespace export add_dirs dirs photoscale add find
+		namespace ensemble create
+		
+		# A list of paths where to look for image files
+		variable img_dirs {}
+				
+		proc add_dirs { args } {
+			variable img_dirs
+			if { [llength $args] == 1 } {
+				set args [lindex $args 0]
+			}
+			
+			foreach dir $args {
+				set dir [file normalize $dir]
+				if { [file isdirectory $dir] } {
+					if { $dir in $img_dirs } {
+						msg -NOTICE [namespace current] "images directory '$dir' was already in the list"
+					} else {
+						lappend img_dirs $dir
+						msg [namespace current] "adding image directory '$dir'"
+					}
+				} else {
+					msg -ERROR [namespace current] "images directory '$dir' not found"
+				}
+			}
+		}
+		
+		proc dirs {} {
+			variable img_dirs
+			return $img_dirs
+		}
+		
+		proc photoscale { img sx {sy ""}  } {
+			msg -DEBUG "photoscale $img $sx $sy"
+			if { $sx == 1 && ($sy eq "" || $sy == 1) } {
+				return;   # Nothing to do!
+			}
+					
+			if { $::android == 1 || $::undroid == 1 } {
+				# create a new tmp image
+				set tmp [image create photo]
+			
+				# resize to the tmp image
+				$tmp copy $img -scale $sx $sy
+			
+				# recreate the original image and copy the tmp over it
+				image delete $img
+				image create photo $img
+				$img copy $tmp
+			
+				# clean up
+				image delete $tmp
+			} else {
+				foreach {sx_m sx_f} [Double2Fraction $sx] break
+				if { $sy eq "" } {
+					foreach {sy sy_x sy_f} [list $sx $sx_m $sx_f] break;  # Multi-set!
+				} else {
+					foreach {sy_m sy_f} [Double2Fraction $sy] break
+				}
+				set tmp [image create photo]
+				$tmp copy $img -zoom $sx_m $sy_m -compositingrule set
+				$img blank
+				$img copy $tmp -shrink -subsample $sx_f $sy_f -compositingrule set
+				image delete $tmp
+			}
+		}
+		
+		proc add { args } {
+			return [dui add image {*}$args]
+		}
+		
+		# Locates an image file. Returns the normalized path if found, or an empty string otherwise.
+		# If a full path is not specified, it will search on the list of available image dirs added with 
+		#	[dui image add_dirs]. 
+		# Images are always searched in a subfolder of each of those dirs with name 
+		#	<current_screen_width>x<current_screen_height>.
+		# If the file is not found and -rescale is a boolean true value, it will run the same search but using
+		#	the default base resolution subfolder 2560x1600. If found, the file will be rescaled automatically and
+		#	saved to disk in the <current_screen_width>x<current_screen_height> subfolder. The subfolder is created
+		#	if it doesn't exist.		
+		proc find { filename {rescale 1} } {
+			if { [file pathtype $filename] in {absolute volumerelative} } {
+				if { [file exists $filename] } {
+					return [file normalize $filename]
+				} else {
+					msg -WARNING [namespace current] "image file '$filename' not found"
+					return ""
+				}
+			}
+			
+			if { [file exists $filename] } {
+				return [file normalize $filename]
+			}
+			
+			set screen_size_width [dui cget screen_size_width]
+			set screen_size_height [dui cget screen_size_height]
+			
+			foreach dir [dui image dirs] {
+				set full_fn [file join $dir "${screen_size_width}x${screen_size_height}" $filename]
+				if { [file exists $full_fn] } {
+					return [file normalize $full_fn]
+				}
+			}
+			
+			if { [string is true $rescale] } {
+				set src_filename ""
+				foreach dir [dui image dirs] {
+					set full_fn [file join $dir "[expr {int($::dui::_base_screen_width)}]x[expr {int($::dui::_base_screen_height)}]" $filename]
+					if { [file exists $full_fn] } {
+						set src_filename $full_fn
+						break
+					}
+				}
+				
+				if { $src_filename eq "" } {
+					msg -WARNING [namespace current] "image file '$filename' not found"
+					return ""
+				} else {
+					catch {
+						file mkdir [file join $dir "${screen_size_width}x${screen_size_height}"]
+					}
+					
+					set filename  [file join $dir "${screen_size_width}x${screen_size_height}" [file tail $filename]]
+					msg -DEBUG [namespace current] "resizing image $src_filename to $filename"
+					dui say [translate "Resizing image"]
+					
+					set rescale_images_x_ratio [expr {$screen_size_height / $::dui::_base_screen_height}]
+					set rescale_images_y_ratio [expr {$screen_size_width / $::dui::_base_screen_width}]
+					set imgname "_resize_[expr {int(rand()*1000)}]"
+												
+					::image create photo $imgname -file $src_filename
+					photoscale $imgname $rescale_images_x_ratio $rescale_images_y_ratio
+					
+					switch [string tolower [file extension $filename]] {
+						.png {
+							set format {png -alpha 1.0}
+						}
+						default {
+							set format {jpeg -quality 90}
+						}
+					}						
+					
+					$imgname write $filename -format $format
+					::image delete $imgname
+					
+					return [file normalize $filename]
+				}
+			}
+			
+			return ""
 		}
 	}
 	
@@ -3660,7 +3825,8 @@ namespace eval ::dui {
 				set bg_color [dui::args::get_option -bg_color [dui aspect get page bg_color -style $style]]
 				if { $bg_color ne "" } {
 					foreach page $pages {
-						$can create rect 0 0 [dui platform rescale_x 2560] [dui platform rescale_y 1600] -fill $bg_color \
+						$can create rect 0 0 [dui platform rescale_x $::dui::_base_screen_width] \
+							[dui platform rescale_y $::dui::_base_screen_height] -fill $bg_color \
 							-width 0 -tags "pages $page" -state "hidden"
 					}
 				}
@@ -4351,29 +4517,11 @@ namespace eval ::dui {
 		}
 
 		proc add_image_dirs { args } {
-			variable img_dirs
-			if { [llength $args] == 1 } {
-				set args [lindex $args 0]
-			}
-			
-			foreach dir $args {
-				set dir [file normalize $dir]
-				if { [file isdirectory $dir] } {
-					if { $dir in $img_dirs } {
-						msg -NOTICE [namespace current] "images directory '$dir' was already in the list"
-					} else {
-						lappend img_dirs $dir
-						msg [namespace current] "adding image directory '$dir'"
-					}
-				} else {
-					msg -ERROR [namespace current] "images directory '$dir' not found"
-				}
-			}
+			return [dui image add_dirs {*}$args] 
 		}
 		
 		proc image_dirs {} {
-			variable img_dirs
-			return $img_dirs
+			return [dui image dirs]
 		}
 
 		proc add_sound_dirs { args } {
@@ -5704,29 +5852,11 @@ namespace eval ::dui {
 		#	-canvas_* Options to be passed through to the canvas create command
 		proc image { pages x y filename args } {
 			set can [dui canvas]
-			# No-file images are used in the default skin to generate "dummy" pages or something like that...
-#			if { $filename eq "" } {
-#				set msg "An image filename is required"
-#				msg -ERROR [namespace current] image $msg
-#				error $msg
-#				return
-#			}
+
 			if { $filename ne "" } {
-				if { [file dirname $filename] eq "." } {
-					foreach dir [dui item image_dirs] {
-						set full_fn "$dir/[dui cget screen_size_width]x[dui cget screen_size_height]/$filename"
-						if { [file exists $full_fn] } {
-							set filename $full_fn
-							break
-						}
-					}
-				}
-				if { ![file exists $filename] } {
-					# TBD: Do resizing if the 2560x1600 image file exists, as in background images?
-					set msg "Image filename '$filename' not found"
-					msg -ERROR [namespace current] image $msg
-					error $msg
-					return	
+				set filename [dui image find $filename yes]
+				if { $filename eq "" } {
+					return
 				}
 			}
 			
@@ -5762,7 +5892,6 @@ namespace eval ::dui {
 				return
 			}
 	
-			 
 			set ns [dui page get_namespace $pages]
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $w
