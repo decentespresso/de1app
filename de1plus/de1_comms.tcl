@@ -1209,9 +1209,6 @@ proc remove_matching_ble_queue_entries {comment_regexp} {
 				   $comment_regexp \
 				   $old_length $new_length \
 				   [expr {$old_length - $new_length}]]
-	} else {
-		::comms::msg -DEBUG [format "ble_queue: No stale '%s' on queue; %d" \
-				     $comment_regexp $new_length]
 	}
 
 	set ::de1(cmdstack) $new_stack
