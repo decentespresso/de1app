@@ -56,6 +56,8 @@ namespace eval ::history_viewer {
 
 			variable data
 			array set data {
+				previous_page {}
+				callback_cmd {}
 				left_shot {}
 				right_shot {}
 				history_files {}
@@ -82,7 +84,7 @@ namespace eval ::history_viewer {
 				dui add listbox $page [expr {2500-$yscrollbar_width}] 1000 -tags history_right -style hv_listbox -listvariable history_entries -canvas_anchor ne -select_cmd {::history_viewer::load_selected_shot right %W}
 								
 				dui add dbutton $page 1101 1425 -tags done_btn -style hv_done_button -label [translate "Done"] \
-					-command { dui page load off current }
+					-command page_done
 
 				dui add dbutton $page 696 1010  -tags match_current_btn -style hv_button -label [translate "Match current profile"] \
 					-label1variable history_match_profile -command { %NS::flip_setting history_match_profile; %NS::update_data} \
@@ -127,15 +129,44 @@ namespace eval ::history_viewer {
 
 			}
 
+			# Named options:
+			# -callback_cmd: Tcl code to run when the "Done" button is clicked and control is returned to the invoking page.  
 			proc load {page_to_hide page_to_show args} {
+				variable data
+				array set opts $args 
+				
+				set data(previous_page) $page_to_hide
+				set data(callback_cmd) [value_or_default opts(-callback_cmd) ""]
+				
 				update_data
 			}
 
 			proc show {args} {
 				redraw_graph
-
 			}
 
+			proc page_done {} {
+				variable data
+				
+				if { $data(callback_cmd) ne "" } {
+					# CallbackS from the history viewer that return control to the invoking page have to take as arguments the left and right clock values.
+					set left_clock ""
+					set right_clock ""
+					if {[dict exists [set data(left_shot)] clock]} {
+						set left_clock [dict get [set data(left_shot)] clock]
+					}
+					if {[dict exists [set data(right_shot)] clock]} {
+						set right_clock [dict get [set data(right_shot)] clock]
+					}
+
+					uplevel #0 [list $data(callback_cmd) $left_clock $right_clock]
+				} elseif { $data(previous_page) ne "" }  {
+					dui page load $data(previous_page)
+				} else {
+					dui page load off
+				}
+			}
+			
 			proc get_past_elem {target args} {
 				if {[dict exists $target {*}$args]} {
 					return [dict get $target {*}$args]
@@ -224,7 +255,7 @@ namespace eval ::history_viewer {
 			proc update_data {} {
 				variable data
 
-				set data(history_files) [::shot::list_last $::iconik_settings(max_history_items)]
+				set data(history_files) [::shot::list_last 100]
 				set data(history_entries) {}
 				set data(history_shots) {}
 
@@ -399,8 +430,8 @@ namespace eval ::history_viewer {
 		}
 	}
 
-	proc open {} {
-		dui page load history_viewer
+	proc open { args } {
+		dui page load history_viewer {*}$args
 	}
 
 	proc load_history_field {target data args} {
