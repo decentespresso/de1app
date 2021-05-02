@@ -37,9 +37,12 @@ namespace eval ::history_viewer {
 		}
 	}
 
+	
 	proc init {} {
+		pages::setup_default_styles
+		
 		dui page add history_viewer -namespace ::history_viewer::pages::history_viewer
-
+	
 		vectors::init
 	}
 
@@ -71,65 +74,60 @@ namespace eval ::history_viewer {
 			proc setup {} {
 				variable widgets
 				set page [namespace tail [namespace current]]
-
-				dui add listbox $page 40   1000 -tags history_left  -canvas_width 450 -canvas_height 550 -yscrollbar yes -font_size -1 -listvariable history_entries
-				dui add listbox $page 1940 1000 -tags history_right -canvas_width 450 -canvas_height 550 -yscrollbar yes -font_size -1 -listvariable history_entries
-
-				bind [dui item get_widget $page history_left]  <<ListboxSelect>> {::history_viewer::load_selected_shot left [dui item get_widget history_viewer history_left]}
-				bind [dui item get_widget $page history_right] <<ListboxSelect>> {::history_viewer::load_selected_shot right [dui item get_widget history_viewer history_right]}
-
-				dui add dbutton $page 1101 1440 -tags done_btn \
-					-symbol chevron_left -label [translate "Done"] \
-					-command { dui page load off current } -bwidth 350
-
-				dui add dbutton $page 696 1010  -tags done_btn2  -bwidth 364 -bheight 170 -label [translate "Match current profile"] \
-					-label_pos {0.5 0.38} -label1variable history_match_profile -label1_pos {0.5 0.7}        \
-					-command { %NS::flip_setting history_match_profile; %NS::update_data}
-	
-				dui add dbutton $page 696 1210  -tags done_btn3  -bwidth 364 -bheight 170 -label [translate "Goals"]                 \
-					-label_pos {0.5 0.38} -label1variable show_goals -label1_pos {0.5 0.7}        \
-				    -command {%NS::flip_setting show_goals}
 				
-				dui add dbutton $page 1101 1010 -tags done_btn4  -bwidth 364 -bheight 170 -label [translate "Steps"]                 \
-					-label_pos {0.5 0.38} -label1variable show_steps -label1_pos {0.5 0.7}        \
-					-command {%NS::flip_setting show_steps}
+				dui add listbox $page 60 1000 -tags history_left -style hv_listbox -listvariable history_entries -select_cmd {::history_viewer::load_selected_shot left %W}
 
-				dui add dbutton $page 1101 1210 -tags done_btn1  -bwidth 364 -bheight 170 -label [translate "Resitance"]                 \
-					-label_pos {0.5 0.38} -label1variable show_resistance -label1_pos {0.5 0.7}        \
-					-command {%NS::flip_setting show_resistance}
+				# Align the right listbox so its right side matches the right side of the right graph 
+				set yscrollbar_width [dui aspect get scrollbar width]
+				dui add listbox $page [expr {2500-$yscrollbar_width}] 1000 -tags history_right -style hv_listbox -listvariable history_entries -canvas_anchor ne -select_cmd {::history_viewer::load_selected_shot right %W}
+								
+				dui add dbutton $page 1101 1425 -tags done_btn -style hv_done_button -label [translate "Done"] \
+					-command { dui page load off current }
 
-				dui add dbutton $page 1501 1010 -tags done_btn5  -bwidth 364 -bheight 170 -label [translate "Overlay"] \
-					-label_pos {0.5 0.38} -label1variable show_overlay -label1_pos {0.5 0.7}        \
-					-command {%NS::flip_setting show_overlay}
+				dui add dbutton $page 696 1010  -tags match_current_btn -style hv_button -label [translate "Match current profile"] \
+					-label1variable history_match_profile -command { %NS::flip_setting history_match_profile; %NS::update_data} \
+					-label_pos {0.5 0.35} -label1_pos {0.5 0.8}
 	
-				dui add dbutton $page 1501 1210 -tags btn1       -bwidth 364 -bheight 170 -label [translate "Temperature"]                 \
-					-label_pos {0.5 0.38} -label1variable show_temperature -label1_pos {0.5 0.7}        \
-					-command {%NS::flip_setting show_temperature}
+				dui add dbutton $page 696 1210  -tags show_goals_btn -style hv_button -label [translate "Goals"] \
+					-label1variable show_goals -command {%NS::flip_setting show_goals}
+				
+				dui add dbutton $page 1101 1010 -tags show_steps_btn -style hv_button -label [translate "Steps"] \
+					-label1variable show_steps -command {%NS::flip_setting show_steps}
+
+				dui add dbutton $page 1101 1210 -tags show_resistance_btn -style hv_button -label [translate "Resistance"] \
+					-label1variable show_resistance -command {%NS::flip_setting show_resistance}
+
+				dui add dbutton $page 1501 1010 -tags show_overlay_btn -style hv_button -label [translate "Overlay"] \
+					-label1variable show_overlay -command {%NS::flip_setting show_overlay}
+	
+				dui add dbutton $page 1501 1210 -tags show_temperature_btn -style hv_button -label [translate "Temperature"] \
+					-label1variable show_temperature -command {%NS::flip_setting show_temperature}
 
 
-				dui add graph $page   40 80 -tags graph_left  -plotbackground #DDD -width 1220 -height 820 -borderwidth 1 -background #DDD -plotrelief flat
+				dui add graph $page 40 80 -tags graph_left -style hv_graph 
 				create_graph_entries $widgets(graph_left) left true
-				dui add graph $page 1300 80 -tags graph_right -plotbackground #DDD -width 1220 -height 820 -borderwidth 1 -background #DDD -plotrelief flat
+				
+				dui add graph $page 1300 80 -tags graph_right -style hv_graph
 				create_graph_entries $widgets(graph_right) right true
 
-				dui add graph $page 40 80 -tags graph_overlay -plotbackground #DDD -width 2480 -height 820 -borderwidth 1 -background #DDD -plotrelief flat
+				dui add graph $page 40 80 -tags graph_overlay -style hv_graph -width 2480 -initial_state hidden
 				create_graph_entries $widgets(graph_overlay) left true
 				create_graph_entries $widgets(graph_overlay) right false
 
-				dui add variable $page 640 0 -textvariable {[%NS::get_past_elem ${%NS::data(left_shot)} profile title]} -tags left_title
-				dui add variable $page 1900 0 -textvariable {[%NS::get_past_elem ${%NS::data(right_shot)} profile title]} -tags right_title
+				dui add variable $page 640 40 -textvariable {[%NS::get_past_elem ${%NS::data(left_shot)} profile title]} -tags left_title -style hv_graph_title
+				dui add variable $page 1900 40 -textvariable {[%NS::get_past_elem ${%NS::data(right_shot)} profile title]} -tags right_title -style hv_graph_title
 
-				dui add variable $page 40 900 -textvariable {[%NS::get_past_elem ${%NS::data(left_shot)} meta in]} -tags left_in
-				dui add variable $page 240 900 -textvariable {[%NS::get_past_elem ${%NS::data(left_shot)} meta out]g out} -tags left_out
-				dui add variable $page 440 900 -textvariable {[%NS::get_past_elem ${%NS::data(left_shot)} meta time]s} -tags left_time
+				dui add variable $page 60 780 -textvariable {[%NS::get_past_elem ${%NS::data(left_shot)} meta in]} -tags left_in -style hv_shot_params
+				dui add variable $page 260 780 -textvariable {[%NS::get_past_elem ${%NS::data(left_shot)} meta out]g out} -tags left_out -style hv_shot_params
+				dui add variable $page 440 780 -textvariable {[%NS::get_past_elem ${%NS::data(left_shot)} meta time]s} -tags left_time -style hv_shot_params
 
-				dui add variable $page 1300 900 -textvariable {[%NS::get_past_elem ${%NS::data(right_shot)} meta in]} -tags right_in
-				dui add variable $page 1500 900 -textvariable {[%NS::get_past_elem ${%NS::data(right_shot)} meta out]g out} -tags right_out
-				dui add variable $page 1700 900 -textvariable {[%NS::get_past_elem ${%NS::data(right_shot)} meta time]s} -tags right_time
+				dui add variable $page 1340 780 -textvariable {[%NS::get_past_elem ${%NS::data(right_shot)} meta in]} -tags right_in -style hv_shot_params
+				dui add variable $page 1540 780 -textvariable {[%NS::get_past_elem ${%NS::data(right_shot)} meta out]g out} -tags right_out -style hv_shot_params
+				dui add variable $page 1740 780 -textvariable {[%NS::get_past_elem ${%NS::data(right_shot)} meta time]s} -tags right_time -style hv_shot_params
 
 			}
 
-			proc load {args} {
+			proc load {page_to_hide page_to_show args} {
 				update_data
 			}
 
@@ -148,25 +146,22 @@ namespace eval ::history_viewer {
 			proc create_graph_entries {widget target create_axis} {
 				if {$create_axis} {
 					$widget axis create temp
-					$widget axis configure temp -color #333 -min 0.0 -max [expr 12 * 10]
-					$widget axis configure x -color #333 -tickfont Helv_7 -min 0.0;
-					$widget axis configure y -color #333 -tickfont Helv_7 -min 0.0 -max 12 -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12}  -hide 0;
+					$widget axis configure temp {*}[dui aspect list -type graph_axis -style hv_graph_axis -as_options yes]
+					$widget axis configure x {*}[dui aspect list -type graph_xaxis -style hv_graph_axis -as_options yes]
+					$widget axis configure y {*}[dui aspect list -type graph_yaxis -style hv_graph_axis -as_options yes]
 				}
 
-				$widget element create line_history_${target}_espresso_temperature_goal -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_temperature_goal -mapy temp  -symbol none -label ""  -linewidth [rescale_x_skin 8] -color #ffa5a6 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
-				$widget element create line_history_${target}_espresso_temperature_basket -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_temperature_basket -mapy temp -symbol none -label ""  -linewidth [rescale_x_skin 12] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
-				$widget element create line_history_${target}_espresso_temperature_mix -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_temperature_mix -mapy temp -label "" -linewidth [rescale_x_skin 15] -color #ff888c  -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
-	
-				$widget element create line_history_${target}_espresso_pressure_goal -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #3D5682  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
-				$widget element create line_history_${target}_espresso_flow_goal -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #F27405  -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5};
-				$widget element create line_history_${target}_espresso_pressure -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_pressure  -symbol none -label "" -linewidth [rescale_x_skin 12] -color #417491 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure);
-				$widget element create line_history_${target}_espresso_flow -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_flow -symbol none -label "" -linewidth [rescale_x_skin 12] -color  #F27405 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes $::settings(chart_dashes_flow);
-				$widget element create line_history_${target}_espresso_flow_weight -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 12] -color  #F28705 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes $::settings(chart_dashes_flow);
-				$widget element create line_history_${target}_espresso_weight -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_weight -symbol none -label "" -linewidth [rescale_x_skin 6] -color #f8b888 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);
-				$widget element create line_history_${target}_state_change -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ;
-				$widget element create line_history_${target}_resistance  -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_resistance -symbol none -label "" -linewidth [rescale_x_skin 4] -color #e5e500 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {6 2};
-
-
+				foreach lt {temperature_goal temperature_basket temperature_mix} {
+					$widget element create line_history_${target}_espresso_${lt} -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_${lt} -mapy temp {*}[dui aspect list -type graph_line -style hv_${lt} -as_options yes]
+				}
+				
+				foreach lt {pressure_goal flow_goal pressure flow flow_weight weight} {
+					$widget element create line_history_${target}_espresso_${lt} -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_${lt} {*}[dui aspect list -type graph_line -style hv_${lt} -as_options yes]
+				}
+				
+				foreach lt {state_change resistance} {
+					$widget element create line_history_${target}_${lt} -xdata ::history_viewer::vectors::${target}::history_elapsed -ydata ::history_viewer::vectors::${target}::history_${lt} {*}[dui aspect list -type graph_line -style hv_${lt} -as_options yes]
+				}
 			}
 
 			proc get_settings {name} {
@@ -203,16 +198,9 @@ namespace eval ::history_viewer {
 
 				set overlay $widgets(graph_overlay)
 
-				if {$data(show_overlay) == yes} {
-					dui item hide $page $left
-					dui item hide $page $right
-					dui item show $page $overlay
-				} else {
-					dui item show $page $left
-					dui item show $page $right
-					dui item hide $page $overlay
-				}
-
+				dui item show_or_hide [string is false $data(show_overlay)] $page [list $left $right]
+				dui item show_or_hide [string is true $data(show_overlay)] $page $overlay
+				
 				configure_graph left $left 
 				configure_graph right $right 
 				configure_graph left  $overlay 
@@ -296,6 +284,118 @@ namespace eval ::history_viewer {
 				return ""
 			}
 
+		}
+		
+		proc setup_default_styles {} {
+			set bg_color [dui aspect get page bg_color -theme default -default "#DDD"]
+			set smooth $::settings(live_graph_smoothing_technique)
+			
+			dui aspect set -theme default [subst {
+				listbox.width.hv_listbox 18
+				listbox.canvas_height.hv_listbox 550 
+				listbox.yscrollbar.hv_listbox yes 
+				listbox.font_size.hv_listox -1
+				
+				dbutton.shape.hv_button round 
+				dbutton.bwidth.hv_button 364 
+				dbutton.bheight.hv_button 170 
+				dbutton_label.pos.hv_button {0.5 0.38} 
+				dbutton_label.width.hv_button 360 
+				dbutton_label1.pos.hv_button {0.5 0.7}
+
+				dbutton.shape.hv_done_button round 
+				dbutton.bwidth.hv_done_button 364 
+				dbutton.bheight.hv_done_button 140 
+				dbutton.symbol.hv_done_button chevron-left
+				dbutton_label.pos.hv_done_button {0.6 0.5} 
+				dbutton_label.width.hv_done_button 360
+				
+				text.font_size.hv_shot_params -1
+				
+				text.anchor.hv_graph_title center 
+				text.justify.hv_graph_title center 
+				
+				graph.background.hv_graph $bg_color 
+				graph.plotbackground.hv_graph $bg_color 
+				graph.width.hv_graph 1220 
+				graph.height.hv_graph 700 
+				graph.borderwidth.hv_graph 1 
+				graph.plotrelief.hv_graph flat
+				
+				graph_axis.color.hv_graph_axis #333 
+				graph_axis.min.hv_graph_axis 0.0
+				graph_axis.max.hv_graph_axis [expr 12 * 10]
+				
+				graph_xaxis.color.hv_graph_axis #333 
+				graph_xaxis.tickfont.hv_graph_axis Helv_7 
+				graph_xaxis.min.hv_graph_axis 0.0
+				 
+				graph_yaxis.color.hv_graph_axis #333 
+				graph_yaxis.tickfont.hv_graph_axis Helv_7 
+				graph_yaxis.min.hv_graph_axis 0.0 
+				graph_yaxis.max.hv_graph_axis 12
+				graph_yaxis.subdivisions.hv_graph_axis 5 
+				graph_yaxis.majorticks.hv_graph_axis {0 1 2 3 4 5 6 7 8 9 10 11 12} 
+				graph_yaxis.hide.hv_graph_axis 0
+				
+				graph_line.linewidth.hv_temperature_goal [dui platform rescale_x 8] 
+				graph_line.color.hv_temperature_goal #ffa5a6 
+				graph_line.smooth.hv_temperature_goal $smooth 
+				graph_line.dashes.hv_temperature_goal {5 5}
+				
+				graph_line.linewidth.hv_temperature_basket [dui platform rescale_x 12] 
+				graph_line.color.hv_temperature_basket #e73249
+				graph_line.smooth.hv_temperature_basket $smooth 
+				graph_line.dashes.hv_temperature_basket [list $::settings(chart_dashes_temperature)]
+
+				graph_line.linewidth.hv_temperature_mix [dui platform rescale_x 15] 
+				graph_line.color.hv_temperature_mix #ff888c
+				graph_line.smooth.hv_temperature_mix $smooth 
+
+				graph_line.linewidth.hv_temperature_goal [dui platform rescale_x 8] 
+				graph_line.color.hv_temperature_goal #ffa5a6 
+				graph_line.smooth.hv_temperature_goal $smooth 
+				graph_line.dashes.hv_temperature_goal {5 5}
+
+				graph_line.linewidth.hv_pressure_goal [dui platform rescale_x 8] 
+				graph_line.color.hv_pressure_goal #3D5682
+				graph_line.smooth.hv_pressure_goal $smooth 
+				graph_line.dashes.hv_pressure_goal {5 5}
+
+				graph_line.linewidth.hv_flow_goal [dui platform rescale_x 8] 
+				graph_line.color.hv_flow_goal #F27405
+				graph_line.smooth.hv_flow_goal $smooth 
+				graph_line.dashes.hv_flow_goal {5 5}
+					
+				graph_line.linewidth.hv_pressure [dui platform rescale_x 12] 
+				graph_line.color.hv_pressure #417491
+				graph_line.smooth.hv_pressure $smooth 
+				graph_line.dashes.hv_pressure [list $::settings(chart_dashes_pressure)]
+					
+				graph_line.linewidth.hv_flow [dui platform rescale_x 12] 
+				graph_line.color.hv_flow #F27405
+				graph_line.smooth.hv_flow $smooth 
+				graph_line.dashes.hv_flow [list $::settings(chart_dashes_flow)]
+
+				graph_line.linewidth.hv_flow_weight [dui platform rescale_x 12] 
+				graph_line.color.hv_flow_weight #F28705
+				graph_line.smooth.hv_flow_weight $smooth 
+				graph_line.dashes.hv_flow_weight [list $::settings(chart_dashes_flow)]
+
+				graph_line.linewidth.hv_weight [dui platform rescale_x 6] 
+				graph_line.color.hv_weight #f8b888
+				graph_line.smooth.hv_weight $smooth 
+				graph_line.dashes.hv_weight [list $::settings(chart_dashes_espresso_weight)]
+
+				graph_line.linewidth.hv_state_change [dui platform rescale_x 6] 
+				graph_line.color.hv_state_change #AAAAAA
+
+				graph_line.linewidth.hv_resistance [dui platform rescale_x 4] 
+				graph_line.color.hv_resistance #e5e500
+				graph_line.smooth.hv_resistance $smooth 
+				graph_line.dashes.hv_resistance {6 2}
+				
+			}]
 		}
 	}
 

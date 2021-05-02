@@ -678,7 +678,7 @@ namespace eval ::dui {
 			default.dbutton.fill "#c0c5e3"
 			default.dbutton.disabledfill "#ddd"
 			default.dbutton.outline white
-			default.dbutton.disabledoutline "pink"
+			default.dbutton.disabledoutline "#ddd"
 			default.dbutton.activeoutline "orange"
 			default.dbutton.width 0
 			
@@ -820,8 +820,14 @@ namespace eval ::dui {
 			default.graph.plotrelief raised
 			default.graph.plotpady 0 
 			default.graph.plotpadx 10
+
+			default.graph_line.symbol none
+			default.graph_line.label ""
+			default.graph_line.linewidth 6
+			default.graph_line.pixels 0 
+			default.graph_line.smooth linear
 		}
-				
+		
 		# Named options:
 		# 	-theme theme_name: to add to a theme different than the current one.
 		#	-type type_name: adds this type for all added aspects.
@@ -877,65 +883,46 @@ namespace eval ::dui {
 			lappend type [dui::args::get_option -default_type {} 0]
 			
 			::set type [list_remove_element [lunique $type] ""]
-			::set avalue ""
 			if { $style ne "" } {
 				::set i 0				
-				while { $avalue eq "" && $i < [llength $type] } {
+				while { $i < [llength $type] } {
 					::set t [lindex $type $i]
 					if { [info exists aspects($theme.$t.$aspect.$style)] } {
-						::set avalue $aspects($theme.$t.$aspect.$style)
+						return $aspects($theme.$t.$aspect.$style)
 					}
 					incr i
 				}
 			}
 			
-			if { $avalue eq "" } {
-				::set i 0				
-				while { $avalue eq "" && $i < [llength $type] } {
-					::set t [lindex $type $i]
-					if { [info exists aspects($theme.$t.$aspect)] } {
-						::set avalue $aspects($theme.$t.$aspect)
-					}
-					incr i
+			::set i 0				
+			while { $i < [llength $type] } {
+				::set t [lindex $type $i]
+				if { [info exists aspects($theme.$t.$aspect)] } {
+					return $aspects($theme.$t.$aspect)
 				}
+				incr i
 			}
 			
-			if { $avalue eq "" } {
-				if { $default ne "" } {
-					::set avalue $default
-				} elseif { [string range $aspect 0 4] eq "font_" && [info exists aspects($theme.font.$aspect)] } {
-					::set avalue $aspects($theme.font.$aspect)
+			if { $default ne "" } {
+				return $default
+			} elseif { [string range $aspect 0 4] eq "font_" && [info exists aspects($theme.font.$aspect)] } {
+				return $aspects($theme.font.$aspect)
+			}
+			
+			if { $theme ne "default" } {
+				::set avalue [get $type $aspect -theme default {*}$args]
+				if { $avalue eq "" } {
+					msg -NOTICE [namespace current] "aspect '$theme.[join $type /].$aspect' not found and no alternative available"
 				}
+				return $avalue
 			}
 			
-			if { $avalue eq "" && $theme ne "default" } {
-				::set avalue [get $type $aspect -theme default {*}$args] 
-			}
-			
-			if { $avalue eq "" } {
-				msg -NOTICE [namespace current] "aspect '$theme.[join $type /].$aspect' not found and no alternative available"
-			}
-			
-			return $avalue
-			
-#			if { $style ne "" && [info exists aspects($theme.$type.$aspect.$style)] } {
-#				return $aspects($theme.$type.$aspect.$style)
-#			} elseif { [info exists aspects($theme.$type.$aspect)] } {
-#				return $aspects($theme.$type.$aspect)
-#			} elseif { $default ne "" } {
-#				return $default
-#			} elseif { $default_type ne "" && $default_type ne $type } {
-#				return [get $default_type $aspect -theme $theme -style $style]
-#			} elseif { [string range $aspect 0 4] eq "font_" && [info exists aspects($theme.font.$aspect)] } {
-#				return $aspects($theme.font.$aspect)
-#			} elseif { $theme ne "default" } {
-#				return [get $default_type $aspect -theme default -style $style]
-#			} else {
-#				msg -NOTICE [namespace current] "aspect '$theme.$aspect' not found and no alternative available"
-#				return ""
-#			}
+			return ""
 		}
 		
+		# Check that an aspect exists EXACTLY as requested. That is, this doesn't search for non-style nor default theme,
+		#	like 'dui aspect get' does.
+		# TBD: Add an option to mimic the search that dui::aspect::get does?
 		# Named options:
 		#	-theme theme_name to check for a theme different than the current one
 		#	-style style_name to query only that style
@@ -957,7 +944,9 @@ namespace eval ::dui {
 		#	-type to return only the aspects for that type (e.g. "entry", "text", etc.)
 		# 	-style to return only the aspects for that style 
 		#	-values if 1, returns {<aspect name> <aspect value>} pairs. Defaults to 0 for returning only the aspect names.
-		#	-full_aspect 1 to return the full aspect name
+		#	-full_aspect 0 to return the full aspect name
+		#	-as_options 1 to return a list that can be directly used as argument options (e.g. {-fill black}).
+		#		Setting this to 1 automatically implies -values 1 and -full_aspect 0
 		# If the returned values are for a single theme, the theme name prefix is not included, but if -all_themes is 1,
 		#	returns the full aspect name including the theme prefix.
 		proc list { args } {
@@ -989,11 +978,18 @@ namespace eval ::dui {
 			
 			::set use_full_aspect [string is true [dui::args::get_option -full_aspect 0]]
 			::set inc_values [string is true [dui::args::get_option -values 0]]
+			::set as_options [string is true [dui::args::get_option -as_options 0]]
+			if { $as_options } {
+				::set inc_values 1
+				::set use_full_aspect 0
+			}
 			
 			::set result {}			
 			foreach full_aspect [array names aspects -regexp $pattern] {
 				if { $use_full_aspect } {
 					lappend result $full_aspect
+				} elseif { $as_options } {
+					lappend result -[lindex [split $full_aspect .] 2]
 				} else {
 					lappend result [lindex [split $full_aspect .] 2]
 				}
@@ -3592,16 +3588,28 @@ namespace eval ::dui {
 					remove_options -font_$f largs
 				}
 			} elseif { $type ni {ProgressBar} } {
-				set font_family [get_option -font_family [dui aspect get $type font_family -style $style] 1 largs]
-				set default_size [dui aspect get $type font_size -style $style]	
-				set font_size [get_option -font_size $default_size 1 largs]
+				set font_family [get_option -font_family [dui aspect get [list $type text font] font_family -style $style] 1 largs]
+				
+				set default_size [dui aspect get [list $type text font] font_size]
+				if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
+					set default_size [dui aspect get [list text font] font_size]
+					if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
+						set default_size [dui aspect get font font_size]
+						if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
+							set default_size 16
+						}
+					}
+				}				
+				set font_size [get_option -font_size $default_size 1 largs]	
 				if { [string range $font_size 0 0] in "- +" } {
-					set font_size [expr $default_size$font_size]
+					set font_size [expr int($default_size$font_size)]
 				}
+				
 				set weight [get_option -font_weight normal 1 largs]
 				set slant [get_option -font_slant roman 1 largs]
 				set underline [get_option -font_underline false 1 largs]
 				set overstrike [get_option -font_overstrike false 1 largs]
+
 				set font [dui font get $font_family $font_size -weight $weight -slant $slant -underline $underline \
 					-overstrike $overstrike]
 				add_option_if_not_exists -font $font largs
@@ -5711,6 +5719,7 @@ namespace eval ::dui {
 					set ids [dui::item::rounded_rectangle_outline $x $y $x1 $y1 $arc_offset $outline $disabledoutline \
 						$width $button_tags]
 				} else {
+if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}					
 					set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
 				}
 			}
@@ -5914,6 +5923,8 @@ namespace eval ::dui {
 		#		in a global context, and performs the following substitutions:
 		#			%W the widget pathname
 		#			%NS the page namespace, if it has one, o/w an empty string
+		#	-process_aspects <boolean>, to query and apply all the aspects of the type. Usually set to "no" when
+		#		this is invoked from another 'dui add' command that has already processed the aspects.
 		proc widget { type pages x y args } {
 			set can [dui canvas]
 			set rx [dui platform rescale_x $x]
@@ -5933,7 +5944,7 @@ namespace eval ::dui {
 			}
 			
 			set style [dui::args::get_option -style "" 1]
-			dui::args::process_aspects $type $style	
+			dui::args::process_aspects $type $style
 			dui::args::process_font $type $style
 	
 			# Options that are to be passed to the 'canvas create' command instead of the widget creation command.
@@ -5958,6 +5969,7 @@ namespace eval ::dui {
 			dui::args::remove_options -tags
 			set tclcode [dui::args::get_option -tclcode "" 1]
 			try {
+if { $main_tag eq "history_left" } { msg -DEBUG "CREATING history_left listbox with args=$args"	}
 				::$type $widget {*}$args
 			} on error err {
 				set msg "can't create $type widget '$widget' on page(s) '$pages': $err"
@@ -6292,8 +6304,11 @@ namespace eval ::dui {
 		proc listbox { pages x y args } {
 			set tags [dui::args::process_tags_and_var $pages listbox -listvariable 1]
 			set main_tag [lindex $tags 0]
+			set ns [dui page get_namespace $pages]
 			
-			set style [dui::args::get_option -style "" 0]
+			#set style [dui::args::get_option -style "" 0]
+			dui::args::process_aspects listbox
+			
 			set width [dui::args::get_option -width "" 1]
 			if { $width ne "" } {
 				dui::args::add_option_if_not_exists -width [expr {int($width * $::globals(entry_length_multiplier))}]
@@ -6303,10 +6318,9 @@ namespace eval ::dui {
 				dui::args::add_option_if_not_exists -height [expr {int($height * $::globals(listbox_length_multiplier))}]
 			}
 #			dui::args::process_font listbox $style
-			
+
 			set ysb [dui::args::get_option -yscrollbar 0 1]
 			set sb_args [dui::args::extract_prefixed -yscrollbar_]
-
 #			set ysb [dui::args::process_yscrollbar $pages $x $y listbox $style]
 #			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
 #				set first_page [lindex $pages 0]
@@ -6314,13 +6328,25 @@ namespace eval ::dui {
 #					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
 #			}
 			
-			set w [dui add widget listbox $pages $x $y {*}$args]
-					
+			set cmd [dui::args::get_option -select_cmd {} 1]
+			
+			set widget [dui add widget listbox $pages $x $y -theme none {*}$args]
+
+			if { $cmd ne "" } {
+				if { $ns ne "" && [string is wordchar $cmd] && [namespace which -command ${ns}::$cmd] ne "" } {
+					set cmd "${ns}::$cmd"
+				} else {
+					regsub -all {%W} $cmd $widget cmd
+					regsub -all {%NS} $cmd $ns cmd
+				}
+				bind $widget <<ListboxSelect>> $cmd
+			}
+			
 			if { [string is true $ysb] || [llength $sb_args] > 0 } {
 				dui add yscrollbar $pages $x $y -tags $tags -aspect_type listbox_yscrollbar {*}$sb_args 
 			}
 			
-			return $w
+			return $widget
 		}
 		
 		# Adds a vertical Tk scale widget that works as a scrollbar for another widget (the one identified by the first
@@ -6787,6 +6813,8 @@ namespace eval ::dui {
 #			set main_tag [lindex $tags 0]
 			
 			#set style [dui::args::get_option -style "" 0]
+			dui::args::process_aspects graph
+			
 			set width [dui::args::get_option -width "" 1]
 			if { $width ne "" } {
 				dui::args::add_option_if_not_exists -width [dui platform rescale_x $width]

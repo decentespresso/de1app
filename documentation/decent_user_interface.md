@@ -320,7 +320,7 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 
 **dui aspect get**  _type aspect ?-option value ...?_
 
->Return the value of the requested aspect, under the currently active theme unless the aspect name defines other theme or the **-theme** option is specified. Supports the same type values as **dui aspect set**.
+>Return the value of the requested aspect, under the currently active theme unless the aspect name defines other theme or the **-theme** option is specified.  _type_  can be a list of types, in that case each type will be searched (from first to last in the list) until a matching aspect is found.
 
 >Named options:
 
@@ -334,8 +334,7 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 
 >**-default_type**  _type_
 
-> >If the aspect is not defined for the requested type, try the same option for this type as default. 
-Normally used internally and not so much for final user code.
+> >If the aspect is not defined for the requested type, try the same option for this type as default. Normally used internally and not so much for final user code. Now that  _type_  accepts a list of types this is no longer needed, but still kept for backwards-compatibility.
 
 
 <a name="dui_aspect_exists"></a>
@@ -349,7 +348,30 @@ Normally used internally and not so much for final user code.
 
 **dui aspect list**  ?-option option_value ...?_
 
->Return a list of all defined aspects. Restricts to the requested **-theme**, **-type** or **-style** if they are specified.
+>Return a list of all requested aspects. 
+
+>Named options:
+
+>**-theme**  _theme_name_ 
+
+>**-type**  _type_name_
+
+>**-style**  _style_value_
+
+> >Restricts to the requested  _theme_ ,  _type_ , or  _style_  names.
+
+>**-values**  _boolean_
+
+> >If  _true_ , returns a list of aspect_name-value pairs. If  _false_ , only returns the aspect names. Default is  _false_ .
+
+>**-full_aspect**  _boolean_
+
+> >If  _true_ , the aspect names returned are full names `<theme_name>.<type_name>.<option_name>.<style_name>`. If  _false_ , only the option name is returned. Default is  _false_ .
+
+>**-as_options**  _boolean_
+
+> >If  _true_ , returns a list of option_names-value pairs. The option names are prefixed by a "-" character, so that using `-as_options yes` allows to use the result directly as options in a widget creation command. Default is  _false_ . When set to  _true_ , automatically **-values** is  _true_  and **-full_aspect* is  _false_ .
+
 
 <a name="fonts"></a>
 
@@ -448,7 +470,7 @@ precedence over **-bg_color**.
 
 >**-bg_color**  _color_spec_
 
-> >Uses a solid color rectangle as background, in case no background image is defined.
+> >Uses a full-page solid color rectangle as background, in case no background image is defined.
 
 >**-namespace**  _true_false_or_namespace_
 
@@ -1228,6 +1250,9 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > >Use this syntax to pass additional options to the yscrollbar scale creation command.
 
+>**-select_cmd**  _tcl_code_
+
+> >Code to run when a row in the listbox is selected. If it is a plain name (letters, numbers and underscores only) and the name matches a namespace command, it will be the command invoked. Substitutions **%W** and **%NS** are done on the code.
 
 <a name="dui_add_dcheckbox"></a>
 
