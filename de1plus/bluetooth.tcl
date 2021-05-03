@@ -1158,6 +1158,7 @@ proc later_new_de1_connection_setup {} {
 	de1_enable_temp_notifications
 
 	set_heater_tweaks
+	get_calibration_flow_multiplier
 		#
 
 	#get_heater_tweaks
