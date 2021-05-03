@@ -430,12 +430,6 @@ update_temperature_charts_y_axis
 #trace add variable ::settings(espresso_temperature) write update_temperature_charts_y_axis
 #trace add variable ::current_adv_step write update_temperature_charts_y_axis
 
-dui aspect set [subst {
-	page.bg_img {}
-	page.bg_color #FFF
-}]
-dui add symbol {off espresso_3} 2040 1310 -tags launch_history_viewer -symbol history -style small \
-		-command ::history_viewer::open
 
 #######################
 
