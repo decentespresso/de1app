@@ -278,6 +278,10 @@ dui add text test_page 200 200 -text [translate "Some text"] -fill black
 
 >Sets the current active theme. This theme will be used on all `dui add <item_type>` commands from this point in the code until a new theme is set. The theme name is added to the list of valid themes if it's not already in the list.
 
+>If you want an individual page to use a theme different from the current one when the page items are setup, use the **-theme** argument of <a href="#dui_add_page">dui add page</a>. This only applies to pages that have a namespace.
+
+>You can also make pages with namespaces be recreated using a different theme, using <a href="#dui_page_retheme">dui page retheme</a>.
+
 
 <a name="dui_theme_get"></a>
 
@@ -377,7 +381,138 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 
 ### Fonts and symbols
 
-(PENDING)
+(PENDING DETAILS)
+
+<a name="dui_font_add_dirs"></a>
+
+**dui font add_dirs**  _dirname ?dirname ...?_
+
+>Append new folders to the list of directories that will be searched when an font filename is searched for.
+
+<a name="dui_font_dirs"></a>
+
+**dui font dirs** 
+
+>Returns the list of font directories used when searching for font.
+
+<a name="dui_font_load"></a>
+
+**dui font load**  _filename size ?-name font_name? ?-weight normal_or_bold? ?-slant roman_or_italic? ?-underline boolean? ?-overstrike boolean?_
+
+>Loads fonts with the specified parameters.
+
+<a name="dui_font_get"></a>
+
+**dui font get**  _fontname_or_filename size ?-name font_name? ?-weight normal_or_bold? ?-slant roman_or_italic? ?-underline boolean? ?-overstrike boolean?_
+
+>Gets the font matching the provided specification. If it's not loaded yet, it's automatically loaded.
+
+<a name="dui_font_list"></a>
+
+**dui font list**  _?loaded?_ 
+
+>Returns a list of either all fonts loaded with <a href="#dui_font_load">dui font load</a> (if  _loaded_  is  _false_ , the default), or of all Androwish loaded fonts (if  _loaded_  is  _true_ ).
+
+
+<a name="dui_symbol_set"></a>
+
+**dui symbol set**  _symbol_name unicode_value ?symbol_name unicode_value ...?_ 
+
+>Defines Fontawesome 5 regular symbols by name. Not that this is **not needed** anymore except for defining alternative names, as since 1.35.2 the whole set of Fontawesome symbols names is preloaded.
+
+<a name="dui_symbol_get"></a>
+
+**dui symbol get**  _symbol_name_ 
+
+>Returns the unicode value corresponding to  _symbol_name_ .
+
+<a name="dui_symbol_exists"></a>
+
+**dui symbol exists**  _symbol_name_ 
+
+>Returns whether  _symbol_name_  is a defined symbol.
+
+<a name="dui_symbol_list"></a>
+
+**dui symbol list**
+
+>Returns the list of all defined symbol names.
+
+
+<a name="images_and_sounds"></a>
+
+### Images and sounds
+
+(PENDING DETAILS) 
+
+<a name="dui_image_add_dirs"></a>
+
+**dui image add_dirs**  _dirname ?dirname ...?_
+
+>Append new folders to the list of directories that will be searched when an image filename with a relative path is provided to **dui add image**.
+
+<a name="dui_image_dirs"></a>
+
+**dui image dirs** 
+
+>Returns the list of image directories used when searching for images.
+
+<a name="dui_image_find"></a>
+
+**dui image find**  _filename ?rescale?_
+
+>Locates an image filename in the file system, and optionally rescales it if it's available in the base resolution but not in the current screen resolution.
+
+<a name="dui_image_photoscale"></a>
+
+**dui image photoscale**  _image_name sx ?sy?_
+
+>Rescales the size of an image to the current screen resolution.
+
+
+<a name="dui_sound_set"></a>
+
+**dui sound set**  _sound_name filename ?sound_name filename ...?_
+
+>Defines sounds by name.
+
+<a name="dui_sound_get"></a>
+
+**dui sound get**  _sound_name_
+
+>Gets the filename associated to a sound name.
+
+<a name="dui_sound_exists"></a>
+
+**dui sound exists**  _sound_name_
+
+>Returns whether the  _sound_name_  is a defined sound.
+
+<a name="dui_sound_make"></a>
+
+**dui sound make**  _sound_name_
+
+>Makes the sound.
+
+<a name="dui_sound_list"></a>
+
+**dui sound list**  _?paths?_
+
+>Returns the list of defined sounds. If  _paths_  is  _true_ , return sound_name-filename pairs, if  _false_  (the default), returns only the sound names.
+
+<a name="dui_say"></a>
+
+**dui say**  _message ?sound_name?_
+
+>Shows a message toast or makes a sound.
+
+
+<a name="dui_image_dirs"></a>
+
+**dui item image_dirs**
+
+>Return the current list of directories that will be searched when an image filename with a relative path is provided to **dui add image**.
+
 
 <a name="pages"></a>
 
@@ -416,25 +551,55 @@ Although this code style is still supported, it is highly recommended that UI co
 1. Each page namespace contains by default 2 arrays:
 	- The **widgets** array contains handles to all the page visual items, indexed by the first tag name provided in the **-tags** option of each **dui add &lt;type&gt;** command.
 	- The **data** array contains page data. Non-qualified variable names in calls to **dui add &lt;type&gt;** commands 	automatically use data from this array (and auto-set it as necessary), simplifying the **dui add** syntax and promoting usage of namespace variables instead of global variables.
-2. If the page namespace includes the following commands, they are automatically called by DUI at specific events:	
-	- **setup**: defines the page user interface. This is automatically called during app
-	initialization if the page is a child namespace of ::dui::pages, or if the page has been
-	added using `dui page add <page_name> -namespace <namespace_name>`.
-	- **load**: code to run whenever a `dui page show*` command is executed, but _before_ the
-	page is actually shown. The **load** proc must have `page_to_hide` and `page_to_show`
-	as their 2 first arguments, plus any custom arguments that are passed from the call to
-	`dui page show <page_name> <args>`. If this procedure returns 0, the loading of the page
-	is interrupted. This proc is normally used to initialize the page data, such as
-	loading listbox contents.
-	- **show**: code to run whenever a `dui page show*` command is executed, _after_ the
-	page is shown. It must have `page_to_hide` and `page_to_show` as their 2 arguments.
-	This proc is normally used to initialize the page GUI elements (e.g. show/hide or 
-	enable/disable some items depending on the state).
-	- **hide**: code to run whenever the page is hidden, because a `dui page show*` command
-	is executed to move to another page. It must have `page_to_hide` and `page_to_show` as 
-	their 2 arguments.Page cleanup is usually carried out here.
+2. If the page namespace includes commands whose names match the <a href="#page_actions">page events</a> **setup**, **load**, **show**, **hide** and **update_vars**, they are automatically called by DUI at the specific event.
 
-DUI offers the base namespace **::dui::pages** where page namespaces can be created as children, and uses it as default, but doesn't require you to use it. Any namespace can be used, by declaring it with the **-namespace** option of the **dui page add** command. The advantage of using **::dui::pages::&lt;page_name&gt;** is that pages are auto-detected and their **setup** commans auto-invoked, and you can include the `dui add page` commands directly in the **setup** proc. When using a different parent namespace you will have to explicitly declare the pages and their namespaces, usually putting the `dui add page` commands in the outermost script code of your skin or plugin, or in some proc called from it.
+DUI offers the base namespace **::dui::pages** where page namespaces can be created as children, and uses it as default, but doesn't require you to use it. Any namespace can be used, by declaring it with the **-namespace** option of the <a href="#dui_page_add">dui page add</a> command.
+
+Another advantage of using page namespaces is that pages can be completely rebuilt on the fly, for example to change their aspect to anooher skin. See command <a href="#dui_page_retheme">dui page retheme</a>.
+
+
+<a name="page_actions"></a>
+
+#### Page actions / events
+
+Page actions are Tcl code callbacks that are executed at different points in the page lifecycle. They are similar to Tk widgets bindings. They serve to customize the application workflow in general or in specific pages.
+
+Page actions can be defined implicitly when using namespaces by defining the namespace commands **setup**, **load**, **show**, **hide** and **update_vars**, or explicitly for any type of page by calls to <a href="#dui_page_add_action">dui page add_action</a>. Note that event actions (either implicit or explicit) **need not be invoked directly**. They are all automatically executed by the DUI framework.
+
+Page actions can apply to individual pages or to all pages (setting the  _page_  argument of **dui page add_action**  to an empty string). The latter serve to modify an application workflow.
+
+Actions are executed in the following order when the event takes place:
+
+1. First, explicit global actions (those that apply to  _all_ pages), in the order in which they were added in the code.
+2. Second, the page-specific implicit action (for pages with namespaces, the proc whose name matches the event name).
+3. Third, the page-specific explicit actions, in the order in which they were added in the code.
+
+The following action types (or  _events_ ) are available:
+
+##### setup
+Takes place when the page user interface is defined, that is, when its widgets and canvas items are created. Setup actions are automatically called during app initialization if the page has been created using <a href="#dui_page_add">dui page add</a>. If a page is added after initialization, its setup events are triggered automatically the first time the page is loaded. They are also invoked whenever the page is deleted and re-created by command <a href="#dui_page_retheme">dui page retheme</a>.
+
+##### load
+Takes place whenever a <a href="#dui_page_load">dui page load</a> command is run,  _before_  the
+page is actually shown. This proc is normally used to initialize page data, such as loading listboxes contents.With page namespaces, the **load** command can be used to pass opening arguments to the page. The first two arguments of the **load** proc must be the names of the pages to hide and show, plus any extra optional arguments that will be passed through from the <a href="#dui_page_load">dui page load</a> call. 
+
+Though receiving the page to be shown as an argument on the **load** and **show** namespace commands may seem unnecessary, it is required when a single namespace is used for several related pages. Same argument for passing the name of the page to be hidden to the **hide** namespace command.
+
+A page namespace **load** command must return a boolean value. This is used to optionally interrupt the loading of the page (if the return value casts to  _false_ ).
+
+##### show 
+Takes place whenever the <a href="#dui_page_load">dui page load</a> or <a href="#dui_page_show">dui page show</a> commands are run,  _after_  the page is actually shown. This event is normally used to initialize the page GUI elements (e.g. show/hide or enable/disable some items depending on the state).
+
+With page namespaces, the **show** command first two arguments must be the names of the pages to hide and show.
+	
+##### hide
+Takes place just after the currently visible page is going to be hidden, due to <a href="#dui_page_load">dui page load</a> or <a href="#dui_page_show">dui page show</a> commands that will show another page. Page cleanup is usually carried out on this event.
+
+With page namespaces, the **hide** command first two arguments must be the names of the pages to hide and show.
+
+##### update_vars
+Takes place whenever the <a href="#dui_add_variable">page variables</a> values are updated. Beware this is a background task that is run very often while the page is visible (around every 100 milliseconds), so write efficient code for this event.
+
 
 <a name="pages_api"></a>
 
@@ -446,17 +611,15 @@ DUI offers the base namespace **::dui::pages** where page namespaces can be crea
 
 **dui page add**  _page_name ?-option option_value ...?_
 
->Declares a new GUI page.  _page_name_  can only have letters, numbers and underscores, and page names cannot be
-duplicated.
+>Declares a new GUI page and creates its background canvas element (either an image or a solid color rectange).  _page_name_  can only have letters, numbers and underscores, and page names cannot be duplicated.
 
 >Named options: 
 
 >**-theme**  _theme_name_
 
-> >Uses the aspects of the **page** type from theme  _theme_name_  instead of the aspects from the currently active
-theme. Used rarely, as the usual choice is to apply the default options from the current theme.
+> >Defines the theme to use for creating all the visual items of the page (during the **setup** actions). Used rarely, as the usual choice is to apply the default options from the current theme. The theme used when creating a page can be queried at any moment with <a href="#dui_page_theme">dui page theme</a>.
 
-> >Use the special value "**none**" as  _theme_name_  to not apply any aspects to the visual item.
+> >DUI will change temporarily the theme to  _theme_name_  while running the page *setup* actions if it differs from the active theme at that moment, and set it back after the page is setup. This means that the theme never needs to be set of modified in the setup actions themselves.
 
 >**-style**  _style_name*
 
@@ -481,11 +644,11 @@ variables, they are created. If this option is not specified, it takes its defau
 variable **create_page_namespaces**.
 
 
-<a name="dui_page_current"></a>
+<a name="dui_page_theme"></a>
 
-**dui page current**
+**dui page theme**
 
->Returns the name of the currently visible page.
+>Returns the name of the theme used when creating the page.
 
 
 <a name="dui_page_exists"></a>
@@ -494,12 +657,35 @@ variable **create_page_namespaces**.
 
 >Returns whether the page  _page_name_  exists (=has been added).
 
+<a name="dui_page_is_setup"></a>
+
+**dui page is_setup**  _page_name_
+
+>Returns whether the page has already been setup (i.e. its visual items have been created). This always return 0 for pages that haven't an associated namespace.
+
+<a name="dui_page_is_drawn"></a>
+
+**dui page is_drawn**  _page_name_
+
+>Returns whether the page has already been drawn (shown) at least once. This is useful to be sure that page widgets have initialized their dimensions (though take into account that some page widgets may be have never been painted if they were created with option **-initial_state hidden**).
+
+<a name="dui_page_is_visible"></a>
+
+**dui page is_visible**  _page_name_
+
+
+<a name="dui_page_current"></a>
+
+**dui page current**
+
+>Returns the name of the currently visible page.
+
 
 <a name="dui_page_list"></a>
 
 **dui page list**
 
->Returns a list of all added pages.
+>Returns the list of all added pages.
 
 
 <a name="dui_page_get_namespace"></a>
@@ -515,32 +701,52 @@ variable **create_page_namespaces**.
 
 **dui page show**  _page_name_
 
->Hides the currently visible page and shows the requested page. During this process, the page actions **load**, **show**, and **hide** are invoked if they exist in the page namespace; if there exists page actions matching the same events, they are invoked too. Each of these 3 callbacks is invoked using as 2 first arguments the name of the page to hide and the name of the page to show. All additional arguments in  _args_  are passed through to the page **load** command and/or to the page load actions. Use this to initialize pages with specific data, instead of relying on global variables.
+>Hides the currently visible page and shows the requested page. During this process, the <a href="#page_actions">page actions</a> **load**, **show**, and **hide** are invoked if they exist in the page namespace; if there are explicit page actions matching the same events, they are invoked too. Each of these 3 callbacks is invoked using as 2 first arguments the name of the page to hide and the name of the page to show. All additional arguments in  _args_  are passed through to the page **load** command and/or to the page load actions. Use this to initialize pages with specific data, or for communication between pages, instead of relying on global variables.
 
->**dui page show** does the same as **dui page load** except that the **load** actions are not invoked. For example, this can be used when returning from a dialog page, you just want to show the page that invoked the dialog without re-loading its data.
+>**dui page show** does the same as **dui page load** except that the **load** actions are not invoked. For example, this can be used when returning from a dialog page, when you want to re-show the page that invoked the dialog without re-loading its data.
 
->If the page to be shown is the same page to be hidden, nothing is done, except if the option **-reload yes** is passed to **dui page load**. This is useful when a page needs to be reloaded from the same page (for example, to show different data).
-
->The actual sequence of events performed when changing pages is the following:
-
->1. 
-
->2. 
+>If the page to be shown is the same page to be hidden, nothing is done, except if the option **-reload yes** is passed to **dui page load**. This option is useful when a page needs to be reloaded from the same page (for example, to show different data).
 
 
 <a name="dui_page_add_action"></a>
 
 **dui page add_action**  _page_name event tcl_code_
 
->Adds the callback action in  _tcl_code_  to the specified  _event_  of  _page_ . Possible events are **load**, 
-**show** and **hide**. All added callback actions are run in the order in which they were added.
+>Adds the callback <a href="#page_actions">action</a> in  _tcl_code_  to the specified  _event_  of  _page_ . Possible events are **setup**, **load**, **show**, **hide** and **update_vars**. All added callback actions are run in the order in which they were added.
 
+>If  _page_name_  is the empty string, the code will be run for  _all_  pages.
 
 <a name="dui_page_actions"></a>
 
 **dui page actions**  _page_name event_
 
->Returns a list with the tcl code of each action of the specified  _event_  of the given  _page_ .
+>Returns a list with the tcl code of each action of the specified  _event_  of the given  _page_ . If  _page_name_  is the empty string, returns the actions that are to be run for  _all__ pages.
+
+<a name="dui_page_delete"></a>
+
+**dui page delete**  _page_name ?keep_data?_
+
+>Deletes page  _page_name_ . All of its canvas items are removed, and its widgets destroyed. 
+
+>set  _keep_data_ to 1 (default is 0) if the page is going to be recreated. This still destroys the canvas items and widgets, but retains the page actions and other data so it's available again when re-creating the page.
+
+<a name="dui_page_delete"></a>
+
+**dui page retheme**  _page_name new_theme_
+
+>Deletes page  _page_name_  and recreates it using a different theme. This only works with pages that have an associated namespace, as it requires a page **setup** command.
+
+<a name="dui_page_items"></a>
+
+**dui page items**  _page_name_
+
+>Returns the list of canvas IDs of all visual items in page  _page_name_ .
+
+<a name="dui_page_has_item"></a>
+
+**dui page has_item**  _page_name tag_
+
+>Returns whether  _tag_  corresponds to an item tag in page  _page_name_ .
 
 
 <a name="items"></a>
@@ -708,20 +914,6 @@ Items are selected in the same way as in **dui item get**. Add a "*" suffix to a
 _show_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
 
 
-<a name="dui_item_add_image_dirs"></a>
-
-**dui item add_image_dirs**  _dirname ?dirname ...?_
-
->Append new folders to the list of directories that will be searched when an image filename without a full path is provided to **dui add image**.
-
-
-<a name="dui_item_image_dirs"></a>
-
-**dui item image_dirs**
-
->Return the current list of directories that will be searched when an image filename without a full path is provided to **dui add image**.
-
-
 <a name="dui_item_listbox_get_selection"></a>
 
 **dui item listbox_get_selection**  _page_or_id_or_widget ?tag values?_
@@ -779,6 +971,9 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 **-theme**  _theme_
 
 >The [theme](#aspects) used to get the default values for the creation options ("aspects") that are not directly specified in the call. This is normally not used, as by default the currently active theme is used, but may be used exceptionally to format some pages using a theme different from the one in use.
+
+>Use the special value "**none**" as  _theme_  to not apply any aspects to the visual item.
+
 
 **-style**  _style_
 
@@ -856,7 +1051,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add image_dirs**  _directory ?directory ...?_
 
->A synonym of **dui item add_image_dirs**, included for convenience.
+>A synonym of **dui image add_dirs**, included for convenience.
 
 ##### Commands to add GUI elements
 
@@ -1461,3 +1656,10 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 >**-disabledfill**  _color_
 
 > >The fill color of the stars when they are inactive (to show that the rating is not achieved).
+
+
+<a name="dui_add_graph"></a>
+
+**dui add graph**  _pages x y ?-option value ...?_
+
+>Create a BLT graph widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 

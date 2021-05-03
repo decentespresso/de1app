@@ -347,19 +347,20 @@ namespace eval ::dui {
 	
 	proc setup_ui {} {
 		# Launch setup methods of pages created with 'dui add page'
-		dui page add dui_number_editor -namespace true
-		dui page add dui_item_selector -namespace true
+		dui page add dui_number_editor -namespace true -theme default
+		dui page add dui_item_selector -namespace true -theme default
 		
 		set applied_ns {}
 		foreach page [page list] {
 			set ns [page get_namespace $page]
 			if { $ns ne "" && $ns ni $applied_ns } {
-				if { [info proc ${ns}::setup] eq "" } {
-					msg [namespace current] -NOTICE "page namespace '${ns}' does not have a setup method"
-				} else {
-					#msg [namespace current] setup_ui "running ${ns}::setup"
-					${ns}::setup
-				}
+				dui::page::setup $page
+#				if { [info proc ${ns}::setup] eq "" } {
+#					msg [namespace current] -NOTICE "page namespace '${ns}' does not have a setup method"
+#				} else {
+#					#msg [namespace current] setup_ui "running ${ns}::setup"
+#					${ns}::setup
+#				}
 				lappend applied_ns $ns
 			}
 		}
@@ -3448,19 +3449,19 @@ namespace eval ::dui {
 			} else {				
 				set main_tag [lindex $tags 0]
 				if { [string is integer $main_tag] || ![regexp {^([A-Za-z0-9_\-])+$} $main_tag] } {
-					set msg "Main tag '$main_tag' can only have letters, numbers, underscores and hyphens, and cannot be a number"
-					msg [namespace current] process_tags_and_var: $msg
-					error $msg
-					return
+					set msg "process_tags_and_var: main tag '$main_tag' can only have letters, numbers, underscores and hyphens, and cannot be a number" 
+					msg -ERROR [namespace current] $msg
+					info_page $msg
+					return 0
 				}
 			}
 			# Main tags must be unique per-page.
 			foreach page $pages {
-				if { [$can find withtag $main_tag&&p:$page] ne "" } {
-					set msg "Main tag '$main_tag' already exists in page '$page', duplicates are not allowed"
-					msg [namespace current] process_tags_and_var: $msg
-					error $msg
-					return
+				if { [dui page has_item $page $main_tag] ne "" } {
+					set msg "process_tags_and_var: main tag '$main_tag' already exists in page '$page', duplicates are not allowed"
+					msg -ERROR [namespace current] $msg
+					info_page $msg
+					return 0
 				}
 			}			
 			
@@ -3763,17 +3764,20 @@ namespace eval ::dui {
 	### PAGE SUB-ENSEMBLE ###
 	# AT THE MOMENT ONLY page_add SHOULD BE USED AS OTHERS MAY BREAK BACKWARDS COMPATIBILITY #
 	namespace eval page {
-		namespace export add current exists list delete get_namespace load show add_action actions \
-			add_items add_variable update_onscreen_variables
-			#set_next show_when_off 
+		namespace export add current exists is_setup is_drawn is_visible list theme retheme delete get_namespace \
+			load show add_action actions items has_item add_items add_variable update_onscreen_variables	
 		namespace ensemble create
 		
 		# Metadata for every added page. Array keys have the form '<page_name>,<type>', where <type> can be:
+		#	'args': The list or arguments after 'dui page add <page>'. Serves to recreate the page if needed. 
 		#	'ns': Page namespace. Empty string if the page doesn't have a namespace.
+		#	'theme': the theme in use when the page is setup		
 		#	'load': List of Tcl callbacks to run when the page is going to be shown, but before it is actually shown.
 		#	'show': List of Tcl callbacks to run just after the page is shown.
 		#	'hide': List of Tcl callbacks to run just after the page is hidden.
-		#	'variables': List of canvas_ids-tcl_code variable pairs to update on the page while it's visible.  
+		#	'setup': List of Tcl callbacks to run just after the page is setup
+		#	'variables': List of canvas_ids-tcl_code variable pairs to update on the page while it's visible.
+		#  	'state': a list of booleans that contains {<is_setup> <is_drawn>}
 		variable pages_data 
 		array set pages_data {}
 
@@ -3807,6 +3811,7 @@ namespace eval ::dui {
 		#		Otherwise, uses the passed namespaces for each page. A namespace can be provided for each page, or
 		#			a common namespace can be used for all of them. If the namespace does not exist yet, it is created,
 		#			and the data array variable is defined. 
+		#  -theme: the theme to use on page setup. If undefined, uses the current theme
 		proc add { pages args } {
 			variable pages_data
 			array set opts $args
@@ -3816,21 +3821,28 @@ namespace eval ::dui {
 				if { ![string is wordchar $page] } {
 					error "Page names can only have letters, numbers and underscores. '$page' is not valid."
 				} elseif { [string is integer $page] } { 
-					error "Page names can not be numeric only."
+					error "Page names can not be numeric only, please change '$page'."
 				} elseif { $page in {page pages all true false yes no 1 0} } {
 					error "The following page names cannot be used: page, pages, all, true, false, yes, no, 1 or 0."
-				} elseif { [info exists pages_data($page,ns)] } {
+				} elseif { [exists $page] } {
 					error "Page names must be unique. '$page' is duplicated."
 				}
 			}
+
+			set pages_data(${page},args) $args
+			set style [dui::args::get_option -style "" 1]
+			set theme [dui::args::get_option -theme [dui theme get] 1]
+			if { ![dui theme exists $theme] } {
+				msg -WARNING [namespace current] "theme '$theme' for pages '$pages' unknown, resorting to 'default'"
+				set theme default
+			}
 			
-			set style [dui::args::get_option -style "" 1]			
 			set bg_img [dui::args::get_option -bg_img [dui aspect get page bg_img -style $style]]
 			if { $bg_img ne "" } {
-				::add_de1_page $pages $bg_img [dui::args::get_option -skin ""] 
+				::add_de1_page $pages $bg_img [dui::args::get_option -skin ""]
 				#add_de1_image $page 0 0 $bg_img
 			} else {
-				set bg_color [dui::args::get_option -bg_color [dui aspect get page bg_color -style $style]]
+				set bg_color [dui::args::get_option -bg_color [dui aspect get page bg_color -theme $theme -style $style]]
 				if { $bg_color ne "" } {
 					foreach page $pages {
 						$can create rect 0 0 [dui platform rescale_x $::dui::_base_screen_width] \
@@ -3891,6 +3903,11 @@ namespace eval ::dui {
 					}
 				}
 			}
+			
+			foreach page $pages {
+				set pages_data($page,theme) $theme
+				set pages_data($page,state) {0 0}
+			}
 		}
 		
 		proc current {} {
@@ -3900,43 +3917,185 @@ namespace eval ::dui {
 		}
 		
 		proc exists { page } {
+			return [expr { [[dui canvas] find withtag pages&&$page] ne "" }]
+		}
+
+		# Returns whether the page has been setup. This is equivalent to their namespace 'setup' command being invoked,
+		# so always return 0 for pages without a namespace.
+		proc is_setup { page } {
 			variable pages_data
-			return [info exists pages_data($page,ns)]
+			if { ![exists $page] } {
+				msg -WARNING [namespace current] "is_setup: page '$page' does not exist"
+				return 0
+			}
+			ifexists pages_data($page,state) {0 0}
+			return [lindex $pages_data($page,state) 0]
+		}
+		
+		# Returns whether the page has been drawn at least one
+		proc is_drawn { page } {
+			variable pages_data
+			if { ![exists $page] } {
+				msg -WARNING [namespace current] "is_drawn: page '$page' does not exist"
+				return 0
+			}			
+			ifexists pages_data($page,state) {0 0}
+			return [lindex $pages_data($page,state) 1]
+		}
+		
+		proc is_visible { page } {
+			variable current_page
+			if { ![exists $page] } {
+				msg -WARNING [namespace current] "is_visible: page '$page' does not exist"
+				return 0
+			}			
+			return [expr {$page eq $current_page}]
 		}
 		
 		proc list {} {
 			variable pages_data
 			set pages {}
-			foreach arrname [array names pages_data "*,ns"] {
-				lappend pages [string range $arrname 0 end-3]
+			foreach arrname [array names pages_data "*,args"] {
+				lappend pages [string range $arrname 0 end-5]
 			}
 			return $pages
 		}
-		
-		proc delete { pages } {
+				
+		# Returns a boolean list telling which of the pages could be deleted
+		proc delete { pages {keep_data 0} } {
 			variable pages_data
 			set can [dui canvas]
+			set keep_data [string is true $keep_data]
+			set is_deleted [lrepeat [llength $pages] 0]
 			
+			set i 0
 			foreach page $pages {
 				if { $page eq [current] } {
-					msg -WARN [namespace current] "cannot delete currently visible page '$page'"
+					msg -WARNING [namespace current] "cannot delete currently visible page '$page'"
 					continue
 				}
 				if { ![exists $page] } {
 					msg -NOTICE [namespace current] delete: "page '$page' not found"
 					continue
 				}
-				$can delete [$can find withtag p:$page]
-				$can delete [$can find withtag pages&&$page]
-				
-				foreach key [array names pages_data "$page,*"] {
-					unset pages_data($key)
+
+				set items_to_delete [items $page]
+				foreach item $items_to_delete {
+					if { [$can type $item] eq "window" } {
+						destroy [$can itemcget $item -window]
+					}
+				}
+				$can delete {*}$items_to_delete
+				$can delete {*}[$can find withtag pages&&$page]
+			
+				if { $keep_data } {
+					set pages_data(${page},state) {0 0}
+					set pages_data(${page},variables) {}
+				} else {
+					foreach key [array names pages_data "$page,*"] {
+						unset pages_data($key)
+					}
 				}
 				
-				msg [namespace current] "page '$page' has been deleted"
+				set msg "page '$page' has been deleted"
+				if { $keep_data } {
+					append msg " (keeping its data)"
+				}
+				msg -INFO [namespace current] $msg 
+				lset is_deleted $i 1
+				incr i
 			}
+			
+			return $is_deleted
 		}
+		
+		proc theme { page } {
+			variable pages_data
+			return [value_or_default pages_data(${page},theme) ""]
+		}
+
+		# Returns a boolean list telling which of the pages could be rethemed
+		proc retheme { pages new_theme } {
+			variable pages_data
+			set is_rethemed [lrepeat [llength $pages] 0]
+			
+			set i 0
+			foreach page $pages {
+				if { ![exists $page] } {
+					msg -WARNING [namespace current] "retheme: page '$page' does not exist"
+					continue
+				}
+				if { [theme $page] eq $new_theme } {
+					continue
+				}
 				
+				if { [lindex [delete $page 1] 0] == 1 } {
+					set add_page_args $pages_data(${page},args)
+					dui::args::remove_options -theme add_page_args
+					dui::args::add_option_if_not_exists -theme $new_theme add_page_args
+					dui page add $page {*}$add_page_args
+					lset is_rethemed $i [setup $page]
+				}
+				
+				incr i
+			}
+			
+			return $is_rethemed
+		}
+		
+		# Not exported as should only be called by other DUI commands
+		proc setup { page } {
+			variable pages_data
+			set $page [lindex $page 0]
+			
+			if { ![exists $page] } {
+				msg -WARNING [namespace current] "setup: page '$page' does not exist"
+				return 0
+			}
+			set ns [get_namespace $page]
+			if { $ns eq "" } {
+				msg -WARNING [namespace current] "setup: page '$page' does not have a namespace, cannot be setup"
+				return 0
+			}			
+			if { [info proc ${ns}::setup] eq "" } {
+				msg -NOTICE [namespace current] "setup: page namespace '$ns' does not have a setup method"
+				return 0
+			} 
+			if { [is_setup $page] } {
+				msg -WARNING [namespace current] "setup: page '$page' is already setup. Delete it first for re-setup, or retheme it"
+				return 0
+			}
+			
+			#msg -DEBUG [namespace current] "running ${ns}::setup for page '$page'"
+			set current_theme [dui theme get]
+			set page_theme [theme $page]
+			if { $current_theme ne $page_theme } {
+				dui theme set $page_theme
+			}
+			
+			try {
+				${ns}::setup
+			} on error err {
+				msg -ERROR [namespace current] "setup for page '$page' with theme '$page_theme' failed: $err"
+				dui theme set $current_theme
+				return 0
+			}
+			
+			# Run generic and page-specific setup actions
+			foreach action [actions {} setup] {
+				lappend action $page
+				uplevel #0 $action
+			}
+			foreach action [actions $page setup] {
+				lappend action $page
+				uplevel #0 $action
+			}
+			
+			dui theme set $current_theme
+			set pages_data(${page},state) {1 0}
+			return 1
+		}
+		
 		# If several pages are passed, only uses the first one. Checks that the namespace actually exists, if it
 		#	doesn't returns an empty string.
 		proc get_namespace { page } {
@@ -3956,7 +4115,9 @@ namespace eval ::dui {
 		#	or page-specific ones.
 		proc load { page_to_show args } {
 			variable current_page
+			variable pages_data
 			set can [dui canvas]
+			
 			catch { delay_screen_saver }
 			
 			set page_to_hide [current]
@@ -4103,8 +4264,25 @@ namespace eval ::dui {
 			}
 						
 			# show page items using the "p:<page_name>" tags, unless the have a "st:hidden" tag.
-			# show Tk widgets initially disabled so then don't take the "phantom tap" from the previous page. 
-			foreach item [$can find withtag p:$page_to_show] {
+			# show Tk widgets initially disabled so then don't take the "phantom tap" from the previous page.
+			set items_to_show [items $page_to_show]
+			if { [llength $items_to_show] == 0 } {
+				# If no items to show, very likely the page has not been setup yet (e.g. a dui page in a plugin enabled late in the session)
+				# Try to auto-launch its setup if possible.
+				if { $show_ns ne "" && ![is_setup $page_to_show] } {
+					setup $page_to_show
+					
+					set items_to_show [items $page_to_show]
+					if { [llength $items_to_show] == 0 } {
+						msg -WARNING [namespace current] "page '$page_to_show' has no visual items to show"
+					}
+				} 
+			}
+			if { [llength $items_to_show] == 0 } {
+				msg -WARNING [namespace current] "page '$page_to_show' has no visual items to show"
+			}
+			
+			foreach item $items_to_show {
 				set state [lsearch -glob -inline [$can gettags $item] {st:*}]
 				if { $state eq "" } {
 					set state normal
@@ -4127,6 +4305,13 @@ namespace eval ::dui {
 						$can itemconfigure $item -state $state
 					}
 				}
+			}
+			
+			# Flag is_drawn
+			if { [info exists pages_data(${page_to_show},state)] } {
+				lset pages_data(${page_to_show},state) 1 1
+			} else {
+				set pages_data(${page_to_show},state) {0 1}
 			}
 			
 			# It's critical to call 'update' here and give it a bit of time, otherwise the 'show' actions afterwards 
@@ -4163,7 +4348,7 @@ namespace eval ::dui {
 		
 		proc add_action { pages event tclcode } {
 			variable pages_data
-			if { $event ni {load show hide update_vars} } {
+			if { $event ni {setup load show hide update_vars} } {
 				error "'$event' is not a valid event for 'dui page add_action'"
 			}
 			if { $pages eq "" } {
@@ -4171,17 +4356,34 @@ namespace eval ::dui {
 				lappend pages_data(,$event) $tclcode
 			} else {
 				foreach page $pages {
+					# Add action even if the page does not exist, it may be created later. In fact some DUI add commands
+					# rely on this and create actions before the page is actually created, so we don't even warn.
 					lappend pages_data($page,$event) $tclcode
+					#msg -DEBUG [namespace current] "added $event action to page '$page': $tclcode"
 				}
 			}
 		}
 		
 		proc actions { page event } {
 			variable pages_data
-			if { $event ni {load show hide update_vars} } {
+			if { $event ni {setup load show hide update_vars} } {
 				error "'$event' is not a valid event for 'dui page add_action'"
 			}
 			return [ifexists pages_data($page,$event)]
+		}
+				
+		proc items { page } {
+			if { [llength $page] > 1 } {
+				set page [lindex $page 0]
+			}
+			return [[dui canvas] find withtag p:$page]
+		}
+		
+		proc has_item { page tag } {
+			if { [llength $page] > 1 } {
+				set page [lindex $page 0]
+			}			
+			return [[dui canvas] find withtag $tag&&p:$page]
 		}
 		
 		# Keep track of what labels are displayed in what pages. This is done through the "p:<page_name>" canvas tags 
@@ -4241,6 +4443,10 @@ namespace eval ::dui {
 				foreach action [actions {} update_vars] {
 					uplevel #0 $action
 				}
+				set ns [dui::page::get_namespace $current_page]
+				if { $ns ne "" && [info procs ${ns}::update_vars] ne "" } {
+					uplevel #0 ${ns}::update_vars
+				}				
 				foreach action [actions $current_page update_vars] {
 					uplevel #0 $action
 				}
@@ -5969,7 +6175,6 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			dui::args::remove_options -tags
 			set tclcode [dui::args::get_option -tclcode "" 1]
 			try {
-if { $main_tag eq "history_left" } { msg -DEBUG "CREATING history_left listbox with args=$args"	}
 				::$type $widget {*}$args
 			} on error err {
 				set msg "can't create $type widget '$widget' on page(s) '$pages': $err"
