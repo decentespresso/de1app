@@ -3265,6 +3265,14 @@ proc de1_version_string {} {
 		append version ", [translate available]=[ifexists ::de1(Firmware_file_Version)]"
 	}
 
+	if { [package version de1app] ne ""  } {
+		append version ", [translate app]=v[package version de1app]"
+	}
+
+	if { [app_updates_policy_as_text] ne ""  } {
+		append version ", [translate {branch}]=[app_updates_policy_as_text]"
+	}
+	
 	if {[ifexists v(BLE_Sha)] != "" && $::settings(firmware_sha) != [ifexists v(BLE_Sha)] } {
 		set ::settings(firmware_sha) $v(BLE_Sha)
 		save_settings
