@@ -4698,19 +4698,14 @@ namespace eval ::dui {
 		}
 		
 		# "Smart" widgets shower or hider. 'show' can take any value equivalent to boolean (1, true, yes, etc.)
-		# If check_context=1, only hides or shows if the items page is the currently active page. This is useful,
+		# If check_page=1, only hides or shows if the items page is the currently active page. This is useful,
 		#	for example, if you're showing after a delay, as the page/page may have been changed in between.
-		proc show_or_hide { show page_or_ids_or_widgets {tags {}} { check_context 1 } } {
-			if { $tags eq "" && [llength $page_or_ids_or_widgets] == 1 && [dui page exists $page_or_ids_or_widgets] && $check_context } {
+		proc show_or_hide { show page_or_ids_or_widgets {tags {}} { check_page 1 } } {
+			if { $tags eq "" && [llength $page_or_ids_or_widgets] == 1 && [dui page exists $page_or_ids_or_widgets] && $check_page } {
 				if { $page_or_ids_or_widgets ne [dui page current] } {
 					return
 				}
 			}
-#			if { $page eq "" } {
-#				set page [dui page current]
-#			} elseif { $check_context && $page ne [dui page current] } {
-#				return
-#			}
 			
 			if { [string is true $show] || $show eq "show" } {
 				set state normal
@@ -4718,19 +4713,17 @@ namespace eval ::dui {
 				set state hidden
 			}
 			
-			#set ids [get $page_or_ids_or_widgets $tags]
 			foreach id [get $page_or_ids_or_widgets $tags] {
 				[dui canvas] itemconfigure $id -state $state
 			}
-			#config $page_or_ids_or_widgets $tags -state $state
 		}
 		
-		proc show { page tags { check_context 1} } {
-			show_or_hide 1 $page $tags $check_context
+		proc show { page tags { check_page 1} } {
+			show_or_hide 1 $page $tags $check_page
 		}
 		
-		proc hide { page tags { check_context 1} } {
-			show_or_hide 0 $page $tags $check_context
+		proc hide { page tags { check_page 1} } {
+			show_or_hide 0 $page $tags $check_page
 		}
 
 		proc add_image_dirs { args } {
