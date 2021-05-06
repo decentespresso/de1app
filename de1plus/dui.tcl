@@ -4297,7 +4297,10 @@ namespace eval ::dui {
 					if { $::android == 1 && [dui cget use_finger_down_for_tap] } {
 						if { [$can type $item] eq "window" } {
 							$can itemconfigure $item -state disabled
-							after 400 $can itemconfigure $item -state normal
+							if { $state eq "normal" } {
+								# Do NOT just show the items. We need to check we're still in the same page after the 400 ms
+								after 400 dui::item::show $page_to_show $item 1
+							}
 						} else {
 							$can itemconfigure $item -state $state
 						}
