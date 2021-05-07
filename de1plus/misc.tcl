@@ -1062,9 +1062,14 @@ proc make_de1_dir {srcdir destdirs} {
             } else {
                 puts -nonewline "Calculating SHA256 for $source : "
                 set sha256 [calc_sha $source]
+
                 puts $sha256
-                set lmanifest_sha($file) $sha256
-                set lmanifest_mtime($file) $mtime
+                if {[ifexists lmanifest_mtime($file)] == $sha256} {
+                    puts -nonewline "Timestamp changed, file identical, skipping"
+                } else {
+                    set lmanifest_sha($file) $sha256
+                    set lmanifest_mtime($file) $mtime
+                }
             }
 
             lappend complete_manifest "\"$file\" [file size $source] [file mtime $source] $sha256"
