@@ -25,14 +25,13 @@ package require de1_machine
 package require math::statistics
 package require http 2.5
 
-
 ##############################
 
 proc de1_ui_startup {} {
 
     cd [homedir]
 
-	http::register https 443 [list ::tls::socket -require true -cadir [homedir]/certs]
+	http::register https 443 [list ::tls::socket -require true -cafile [homedir]/allcerts.pem]
 
     msg -INFO "Tcl version $::tcl_patchLevel"
     # There are multiple reports of AndroWish 2020-11-05 causing crashes in early 2021
