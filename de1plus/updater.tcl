@@ -345,6 +345,9 @@ proc verify_decent_tls_certificate {} {
 
 # every day, check to see if an app update is available
 proc scheduled_app_update_check {} {
+
+    # async update check is enabled by default now, for testing in nightly build
+    set ::settings(do_async_update_check) 1
 	if {$::settings(do_async_update_check) == 1} {
 		check_timestamp_for_app_update_available_async
 	} else {
