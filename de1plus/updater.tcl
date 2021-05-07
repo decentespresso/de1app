@@ -310,22 +310,34 @@ proc pause {time} {
 
 
 proc verify_decent_tls_certificate {} {
-    
-    # disabled for now until release, but does currently work
+
+    catch {    
+        package require tls
+        msg -INFO "Using TLS version [tls::version]"
+
+        set channel [tls::socket decentespresso.com 443]
+        tls::handshake $channel
+
+        set status [tls::status $channel]
+        close $channel
+        
+        array set status_array $status
+        msg -INFO "TLS status: [array get status_array]"
+
+        set sha1 [ifexists status_array(sha1_hash)]
+        if {$sha1 == "BF735474BA9AA423EC03AB9F980BE68BCAA35E57"} {
+            msg -INFO "https cert matches what we expect, good"
+        } else {
+            msg -ERROR "https matches what we expect. Decent might have changed to a new SSL cert, or something bad is happening. SHA1 received='$sha1'"
+        }
+    }
+
+    # disabled for now, but does currently work, so we always return true, and put the failure in the the log
+    # However: if we pinned updates to this SHA1 then people who did not update in a while, 
+    # and Decentespresso.com now had a new SSL cert, would get an error during updates.
+
     return 1
 
-    package require tls
-    set channel [tls::socket decentespresso.com 443]
-    tls::handshake $channel
-
-    set status [tls::status $channel]
-    close $channel
-    
-    array set status_array $status
-    set sha1 [ifexists status_array(sha1_hash)]
-    if {$sha1 == "CBA22B05D7D874275105AB3284E5F2CBE970603E"} {
-        return 1
-    }
 
     # if the sha_1 hash on the certificate doesn't match what we expect, return the entire array of what we received from the https connection, optionally to display it to the user
     return $status
