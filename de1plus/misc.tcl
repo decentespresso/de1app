@@ -1168,7 +1168,7 @@ proc make_de1_dir {srcdir destdirs} {
         certs/Izenpe.com.pem *
         certs/LuxTrust_Global_Root_2.pem *
         certs/Microsec_e-Szigno_Root_CA_2009.pem *
-        certs/NetLock_Arany_=Class_Gold=_Főtanúsítvány.pem *
+        certs/NetLock_Arany.pem *
         certs/Network_Solutions_Certificate_Authority.pem *
         certs/OISTE_WISeKey_Global_Root_GA_CA.pem *
         certs/OISTE_WISeKey_Global_Root_GB_CA.pem *
