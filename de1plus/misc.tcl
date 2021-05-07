@@ -1064,7 +1064,7 @@ proc make_de1_dir {srcdir destdirs} {
                 set sha256 [calc_sha $source]
 
                 puts $sha256
-                if {[ifexists lmanifest_mtime($file)] == $sha256} {
+                if {[ifexists lmanifest_sha($file)] == $sha256} {
                     puts -nonewline "Timestamp changed, file identical, skipping"
                 } else {
                     set lmanifest_sha($file) $sha256
