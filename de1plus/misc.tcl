@@ -143,7 +143,7 @@ proc make_de1_dir {srcdir destdirs} {
         device_scale.tcl *
         event.tcl *
 
-	build-info *
+        build-info.txt *
 
         profiles_v2/readme.txt *
 

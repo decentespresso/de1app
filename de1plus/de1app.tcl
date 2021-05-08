@@ -24,7 +24,7 @@ try {
 
 namespace eval ::app {
 
-	variable build_info_filename "build-info"
+	variable build_info_filename "build-info.txt"
 	variable build_info
 	set build_info [dict create]
 
