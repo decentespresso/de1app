@@ -2831,16 +2831,23 @@ proc save_profile {} {
 	} else {
 		# if they change the description of the profile, then save it to a new name
 		# replace prior usage of unformatted seconds with sanitized profile name and append with formatted time if file exists
+		
 		set profile_filename $::settings(profile_title)
+		set profile_timestamp [clock format [clock seconds] -format %Y%m%d_%H%M%S] 
 		regsub -all {\s+} $profile_filename _ profile_filename 
 		regsub -all {\/+} $profile_filename __ profile_filename 
 		regsub -all {[\u0000-\u001f;:?<>(){}\[\]\|!@#$%^&*-\+=~`,.'"]+} $profile_filename "" profile_filename
+		set profile_filename [string range $profile_filename 0 59]
 		if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] == 1} {
-			append profile_filename "_" [clock format [clock seconds] -format %Y%m%d_%H%M%S] 
+			append profile_filename "_" $profile_timestamp
 			}
 	}
 	
 	set fn "[homedir]/profiles/${profile_filename}.tcl"
+	
+	if {[write_file $fn ""] == 0} {
+		set fn "[homedir]/profiles/${profile_timestamp}.tcl"
+		}
 
 	# set the title back to its title, after we display SAVED for a second
 	# moves the cursor to the end of the seletion after showing the "saved" message.
