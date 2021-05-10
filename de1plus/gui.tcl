@@ -2235,10 +2235,12 @@ proc ui_startup {} {
 	# check for app updates, some time after startup, and then every 24h thereafter
 	if {$::settings(do_async_update_check) == 1} {
 		# no need to delay doing a remove update check, if we're doing it async
-		after 500 scheduled_app_update_check
+		#after 500 scheduled_app_update_check
 	} else {
-		after 3000 scheduled_app_update_check
+		#after 3000 scheduled_app_update_check
 	}
+
+	schedule_app_update_check
 
 	tcl_introspection
 

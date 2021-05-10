@@ -343,6 +343,13 @@ proc verify_decent_tls_certificate {} {
     return $status
 }
 
+proc schedule_app_update_check {} {
+    # 3am is when we check for an app update
+    set aftertime [next_alarm_time [expr {3 * 60 * 60}]]
+    msg -INFO "Scheduling next app update check for [clock format $aftertime]"
+    after $aftertime scheduled_app_update_check
+}
+
 # every day, check to see if an app update is available
 proc scheduled_app_update_check {} {
 
@@ -353,8 +360,10 @@ proc scheduled_app_update_check {} {
 	} else {
     	check_timestamp_for_app_update_available
 	}
-    after 8640000 scheduled_app_update_check 
+    
+    schedule_app_update_check
 }
+
 
 proc check_timestamp_for_app_update_available_async { {check_only 0} } {
 
