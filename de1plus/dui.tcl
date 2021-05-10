@@ -4915,7 +4915,7 @@ namespace eval ::dui {
 		proc scale_scroll { page widget_tag slider_varname dest1 dest2 } {
 			set widget [get_widget $page $widget_tag]
 			set class [winfo class $widget]
-			
+						
 			if { $class eq "Listbox" } {
 				# get number of items visible in list box
 				set visible_items [lindex [split [$widget configure -height] " "] 4]
@@ -4930,8 +4930,11 @@ namespace eval ::dui {
 				set last_top_item [expr $total_items - $visible_items]
 				# determine what percentage of the way down the current top item is
 				set rescaled_value [expr $dest1 * $total_items / $last_top_item]
-			} elseif { $class eq "Multiline_entry" } {
-				set rescaled_value $dest1
+			} elseif { $class in {Multiline_entry Text} } {
+				if { $dest1 <= 0.0 && $dest2 >= 1.0 } {
+					return
+				}
+				set rescaled_value [expr {$dest1/(1-($dest2-$dest1))}]
 			} else {
 				msg -WARNING [namespace current] scale_scroll "cannot scroll a widget of class '$class'"
 				return
@@ -4946,7 +4949,6 @@ namespace eval ::dui {
 		proc scrolled_widget_moveto { page widget_tag dest1 dest2 } {
 			set widget [get_widget $page $widget_tag]
 			set class [winfo class $widget]
-
 			if { $class eq "Listbox" } {
 				# get number of items visible in list box
 				set visible_items [lindex [split [$widget configure -height] " "] 4]
@@ -4962,8 +4964,12 @@ namespace eval ::dui {
 				set top_item [expr int(round($last_top_item * $dest2))]
 				
 				$widget yview $top_item
-			} elseif { $class eq "Multiline_entry" } {
-				$widget yview moveto $dest2
+			} elseif { $class in {Multiline_entry Text} } {
+				lassign [$widget yview] visible_start visible_end
+				if { $visible_start <= 0.0 && $visible_end >= 1.0 } {
+					return
+				}
+				$widget yview moveto [expr {$dest1*(1-($visible_end-$visible_start))}]
 			} else {
 				msg -WARNING [namespace current] scrolled_widget_moveto "cannot 'move to' a widget of class '$class'"
 			}
@@ -6026,7 +6032,7 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			foreach fn {min max default smallincrement bigincrement} {
 				set $fn [dui::args::get_option -$fn "" 1]
 			}
-
+			
 			set editor_cmd {}
 			set editor_page [dui::args::get_option -editor_page [dui cget use_editor_pages] 1]
 			set callback_cmd [dui::args::get_option -callback_cmd "" 1]
@@ -6523,11 +6529,11 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			set ysb [dui::args::get_option -yscrollbar 0 1]
 			set sb_args [dui::args::extract_prefixed -yscrollbar_]
 #			set ysb [dui::args::process_yscrollbar $pages $x $y listbox $style]
-#			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
-#				set first_page [lindex $pages 0]
-#				dui::args::add_option_if_not_exists -yscrollcommand \
-#					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
-#			}
+			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
+				set first_page [lindex $pages 0]
+				dui::args::add_option_if_not_exists -yscrollcommand \
+					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
+			}
 			
 			set cmd [dui::args::get_option -select_cmd {} 1]
 			
@@ -6939,6 +6945,7 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 		#	-use_halfs, default 1
 		#	-min, default 0
 		#	-max, default 10
+		#	-width, total width in pixels
 		proc drater { pages x y args } {
 			set ids {}
 			set tags [dui::args::process_tags_and_var $pages drater -variable 1 args 0]
@@ -7029,6 +7036,41 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			return [dui add widget graph $pages $x $y {*}$args]
 			
 		}
+		
+		proc tk_text { pages x y args } {
+			set tags [dui::args::process_tags_and_var $pages tk_text {} 1]
+			set main_tag [lindex $tags 0]
+			
+			#set style [dui::args::get_option -style "" 0]
+			dui::args::process_aspects tk_text
+			
+			set width [dui::args::get_option -width "" 1]
+			if { $width ne "" } {
+				dui::args::add_option_if_not_exists -width [expr {int($width * $::globals(entry_length_multiplier))}]
+			}
+			set height [dui::args::get_option -height "" 1]
+			if { $height ne "" } {
+				dui::args::add_option_if_not_exists -height [expr {int($height * $::globals(listbox_length_multiplier))}]
+			}
+			
+			set ysb [dui::args::get_option -yscrollbar 0 1]
+			set sb_args [dui::args::extract_prefixed -yscrollbar_]
+#			set ysb [dui::args::process_yscrollbar $pages $x $y listbox $style]
+			if { $ysb != 0 && ![dui::args::has_option -yscrollcommand] } {
+				set first_page [lindex $pages 0]
+				dui::args::add_option_if_not_exists -yscrollcommand \
+					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
+			}
+						
+			set widget [dui add widget tk::text $pages $x $y -theme none {*}$args]
+
+			if { [string is true $ysb] || [llength $sb_args] > 0 } {
+				dui add yscrollbar $pages $x $y -tags $tags -aspect_type tk_text_yscrollbar {*}$sb_args 
+			}
+			
+			return $widget
+		}
+		
 	}
 	
 	### GENERAL TOOLS ###
