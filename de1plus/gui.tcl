@@ -3217,12 +3217,71 @@ namespace eval ::gui::notify {
 
 			sav_stop {
 
-				borg toast [translate {Stopping for volume}]
+			    borg toast [translate {Stopping for volume}]
+			}
+
+			fatal_error {
+
+			    # DE1 state was "FatalError"
+
+			    set _this_state [lindex $args 0]
+			    set _this_substate [lindex $args 1]
+
+			    set _message1 \
+				    [format "%s: %s,%s" \
+					     [translate {CRITICAL: DE1 Reported Error State}] \
+					     $_this_state $_this_substate]
+			    set _message2 \
+				    [translate {A common reason is that the water tray needs manual filling.}]
+			    set _message3 \
+				    [join [list \
+					[translate {Please send a photo or your log to support.}] \
+					[translate {If this is not the reason, please try rebooting your DE1.}] \
+					[translate {If the problem persists. Please contact support.}] \
+				    ]]
+
+			    if { [ catch {
+				info_page "$_message1\n\n$_message2\n\n$_message3" \
+					[translate "Ok"] } result opts_dict ] } {
+
+					    msg -ERROR "$result\n$opts_dict"
+					    borg toast $_message1
+			    }
+			}
+
+			state_decode_error {
+
+			    # DE1 state or substate not found in binary ==> word array
+
+			    set _this_state [lindex $args 0]
+			    set _this_substate [lindex $args 1]
+
+			    set _message1 \
+				    [format "%s: %s,%s" \
+					     [translate {CRITICAL: Unexpected DE1 State}] \
+					     $_this_state $_this_substate]
+			    set _message2 \
+				    [translate {A common reason is that the water tray needs manual filling.}]
+			    set _message3 \
+				    [join [list \
+					[translate {Please send a photo or your log to support.}]
+					[translate {If this is not the reason, please try rebooting your DE1.}]
+					[translate {If the problem persists. Please contact support.}] \
+				    ]]
+
+			    if { [ catch {
+				info_page "$_message1\n\n$_message2\n\n$_message3" \
+					[translate "Ok"] } result opts_dict ] } {
+
+					    msg -ERROR "$result\n$opts_dict"
+					    borg toast $_message1
+			    }
 			}
 
 			default {
 
-				msg -ERROR "::gui::notify::de1_event called without matching event_id: $event_id $args"
+			    msg -ERROR "::gui::notify::de1_event called" \
+				    "without matching event_id: $event_id $args"
 			}
 		}
 	}

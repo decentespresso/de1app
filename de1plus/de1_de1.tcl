@@ -411,7 +411,13 @@ namespace eval ::de1 {
 
 namespace eval ::de1::state {
 
+	variable _state_text "unknown"
+	variable _substate_text "unknown"
+
 	proc init {} {
+
+		set ::de1::state::_state_text "unknown"
+		set ::de1::state::_substate_text "unknown"
 
 		::de1::state::reset_framenumbers
 		unset -nocomplain ::de1::state::_previous_shotsample_update_time
@@ -421,12 +427,12 @@ namespace eval ::de1::state {
 
 	proc current_state {} {
 
-		expr { $::de1_num_state($::de1(state)) }
+		return $::de1::state::_state_text
 	}
 
 	proc current_substate {} {
 
-		expr { $::de1_substate_types($::de1(substate)) }
+		return $::de1::state::_substate_text
 	}
 
 	proc is_flow_state {{state_text "None"} {substate_text "None"}} {

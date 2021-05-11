@@ -1869,8 +1869,7 @@ proc de1_ble_handler { event data } {
 						} else {
 							if {$address == $::settings(bluetooth_address)} {
 								if {$cuuid eq $::de1(cuuid_02)} {
-									parse_state_change $value arr
-									::bt::msg -INFO "ACK state change written to DE1: '[array get arr]'"
+									::bt::msg -INFO "ACK state change written to DE1: $value_for_log"
 								} elseif {$cuuid eq $::de1(cuuid_06)} {
 									if {$::de1(currently_erasing_firmware) == 1 && $::de1(currently_updating_firmware) == 0} {
 										# erase ack received

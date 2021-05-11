@@ -1304,52 +1304,84 @@ proc parse_decent_scale_recv {packed destarrname} {
 }
 
 
-# TODO: parse_state_change and update_de1_state should be moved to ::de1
+# TODO: update_de1_state should be moved to ::de1
 #	The large number of unqualified references to globals
 #	and contexts in which they are called makes it a lower priority
 
-proc parse_state_change {packed destarrname} {
-	upvar $destarrname ShotSample
-	unset -nocomplain ShotSample
-
-	set spec {
-		state char
-		substate char
-	}
-	array set specarr $spec
-
-   	::fields::unpack $packed $spec ShotSample bigeendian
-	foreach {field val} [array get ShotSample] {
-		set specparts $specarr($field)
-		set extra [lindex $specparts 4]
-		if {$extra != ""} {
-			set ShotSample($field) [expr $extra]
-		}
-	}
-}
-
-
-proc update_de1_state {statechar} {
+proc update_de1_state {state_info_bin} {
 
 	# TODO: Get event_time from earlier in the processing chain
 
 	set event_time [expr { [clock milliseconds] / 1000.0 }]
 
-	parse_state_change $statechar msg
-
+	# Do these really exist?
 	# Ignore "empty" state messages
 	# https://3.basecamp.com/3671212/buckets/7351439/messages/3239055806#__recording_3248555671
 
-	if {[info exists msg(state)] != 1} {
-		msg -NOTICE "update_de1_state: Empty state message received"
+	if { [string length $state_info_bin] != 2 } {
+	    msg -NOTICE "update_de1_state: Expected two-byte argument,"\
+		    "not '[::logging::format_asc_bin $state_info_bin]'"
 		return
 	}
 
-	set this_state [ifexists ::de1_num_state([ifexists msg(state)])]
-	set this_substate [ifexists ::de1_substate_types([ifexists msg(substate)])]
+	# ::fields is *not* a formal library
 
-	set previous_state [ifexists ::de1_num_state($::de1(state))]
-	set previous_substate [ifexists ::de1_substate_types($::de1(substate))]
+	binary scan $state_info_bin "cucu" _state _substate
+
+	set _decoded True
+
+	try { set this_state $::de1_num_state($_state) } on error result {
+	    set _decoded False
+	    set this_state [format "unknown_0x%2x" $_state]
+	    msg -CRITICAL [format "Unable to decode state from %s: %s" \
+				   [::logging::format_asc_bin $state_info_bin] \
+				   $result]
+	}
+
+	try { set this_substate $::de1_substate_types($_substate) } on error result {
+	    set _decoded False
+	    set this_substate [format "unknown_0x%2x" $_substate]
+	    msg -CRITICAL [format "Unable to decode substate from %s: %s" \
+				   [::logging::format_asc_bin $state_info_bin] \
+				   $result]
+	}
+
+	#
+	# There are likely big problems if the state and substate did not decode
+	# There have been reports of "20" and "-40" in screen shots.
+	# These are _probably_ due to the DE1 enountering an error condition
+	# "20" is not an expected value, and may be due to prior use of ::fields
+	# "-40" is probably 216, which is believed to be a pump-prime failure
+	# often due to a user's failure to fill the water reservoir.
+	#
+	# In any event, catch both the FatalError state and any failures to decode
+	# and call ::gui::notify::de1_event
+	#
+	# TODO: Decide if a "hard stop" is appropriate on DE1 error in core
+	#
+
+	if { $this_state == "FatalError" } {
+
+	    msg -CRITICAL [format "DE1 FatalError reported as state %s,%s" \
+				   $this_state $this_substate]
+
+	    ::gui::notify::de1_event fatal_error \
+		    $this_state $this_substate
+
+	} elseif { ! $_decoded } {
+
+	    # already logged above
+
+	    ::gui::notify::de1_event state_decode_error \
+		    $this_state $this_substate
+
+	}
+
+	set previous_state $::de1::state::_state_text
+	set previous_substate $::de1::state::_substate_text
+
+	set ::de1::state::_state_text $this_state
+	set ::de1::state::_substate_text $this_substate
 
 	set event_dict [dict create \
 				event_time $event_time \
@@ -1362,8 +1394,8 @@ proc update_de1_state {statechar} {
 	# Update the global state for any consumers and timers, such as in callbacks
 	# Using `trace` on these is bad form as the app may not have caught up yet
 
-	set ::de1(state) $msg(state)
-	set ::de1(substate) $msg(substate)
+	set ::de1(state) $_state
+	set ::de1(substate) $_substate
 
 	set this_flow_phase [::de1::state::flow_phase $this_state $this_substate]
 	set previous_flow_phase [::de1::state::flow_phase $previous_state $previous_substate]
