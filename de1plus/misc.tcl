@@ -1115,7 +1115,7 @@ proc make_de1_dir {srcdir destdirs} {
         
         if {$files_copied == 0} {
             puts "Not generating a new timestamp as no files are new"
-            set timestamp $old_timestamp
+            set timestamp [expr $old_timestamp + 1]
         }
 
         #puts "Writing timestamp to '$destdir/timestamp.txt'"
