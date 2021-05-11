@@ -1104,7 +1104,7 @@ proc make_de1_dir {srcdir destdirs} {
         }
 
         foreach k [array names lmanifest_sha] {
-            if {[ifexists original_manifest_sha(k)] != $lmanifest_sha(k)} {
+            if {[ifexists original_manifest_sha($k)] != [set lmanifest_sha($k)]} {
                 set files_copied 1
             }
         }
