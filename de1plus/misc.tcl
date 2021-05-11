@@ -1034,6 +1034,7 @@ proc make_de1_dir {srcdir destdirs} {
         set lmanifest_sha($filename) $filesha
     }
 
+    array set original_manifest_sha [array get lmanifest_sha] 
 
     set timestamp [clock seconds]
     set dircount  0
@@ -1041,7 +1042,6 @@ proc make_de1_dir {srcdir destdirs} {
         if {[file exists $destdir] != 1} {
             file mkdir $destdir
         }
-
 
         set manifest ""
         set files_copied 0
@@ -1092,8 +1092,12 @@ proc make_de1_dir {srcdir destdirs} {
             append manifest "\"$file\" [file size $source] $mtime $sha256\n"
 
             if {[file exists $dest] == 1} {
-                if {[file mtime $source] == [file mtime $dest]} {
+                if {[ifexists lmanifest_sha($file)] == $sha256} {
                     # files are identical, do not copy
+                    continue
+                }
+                if {[file mtime $source] == [file mtime $dest]} {
+                    # file already exists
                     continue
                 }
             }
@@ -1101,6 +1105,10 @@ proc make_de1_dir {srcdir destdirs} {
             puts "$file -> $destdir/"
             file copy -force $source $dest
             set files_copied 1
+        }
+
+        if {!$files_copied} {
+            continue
         }
 
         #puts "Writing timestamp to '$destdir/timestamp.txt'"
