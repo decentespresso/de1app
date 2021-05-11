@@ -981,14 +981,14 @@ proc show_going_to_sleep_page  {} {
 		}
 	}
 
-	if {$::de1_num_state($::de1(state)) != "Idle"} {
+	if {[::de1::state::current_state] != "Idle"} {
 		# never go to sleep if the DE1 is not idle
-		msg -INFO "delaying screen saver because de1 is not idle: '$::de1_num_state($::de1(state))'"
+		msg -INFO "delaying screen saver because de1 is not idle: '[::de1::state::current_state]'"
 		delay_screen_saver
 		return
 	}
 
-    if {[ifexists ::app_updating] == 1} {
+	if {[ifexists ::app_updating] == 1} {
 		msg -INFO "delaying screen saver because tablet app is updating"
 		delay_screen_saver
 		return
@@ -998,7 +998,7 @@ proc show_going_to_sleep_page  {} {
 		msg -INFO "delaying screen saver because firmware is updating"
 		delay_screen_saver
 		return
-	}	
+	}
 
 
 
@@ -1082,7 +1082,7 @@ proc de1_connected_state { {hide_delay 0} } {
 	if {$::android == 0} {
 
 		if {$elapsed > $hide_delay && $hide_delay != 0} {
-			if {$::de1(substate) != 0} {
+		    if {[::de1::state::current_substate] != "ready"} {
 				return [translate Wait]
 			}
 			return ""
@@ -1094,8 +1094,9 @@ proc de1_connected_state { {hide_delay 0} } {
 	if {$since_last_ping < 5} {
 		#borg spinner off
 
-		if {$::de1(substate) != 0} {
-			if {$::de1(substate) == 4 || $::de1(substate) == 5} {
+		if {[::de1::state::current_substate] != "ready"} {
+		    if { [::de1::state::current_substate] \
+				 in {"preinfusion" "pouring"} } {
 				# currently making espresso.
 				return ""
 			}
@@ -1545,7 +1546,7 @@ proc page_display_change {page_to_hide page_to_show args} {
 #	}
 #
 #
-#	if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {
+#	if {$::settings(stress_test) == 1 && [::de1::state::current_state] == "Idle" && [info exists ::idle_next_step] == 1} {
 #
 #		msg "Doing next stress test step: '$::idle_next_step '"
 #		set todo $::idle_next_step 
