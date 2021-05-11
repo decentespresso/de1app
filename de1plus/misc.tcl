@@ -1034,6 +1034,7 @@ proc make_de1_dir {srcdir destdirs} {
         set lmanifest_sha($filename) $filesha
     }
 
+    array set original_manifest_sha [array get lmanifest_sha]
 
     set timestamp [clock seconds]
     set dircount  0
@@ -1100,7 +1101,17 @@ proc make_de1_dir {srcdir destdirs} {
 
             puts "$file -> $destdir/"
             file copy -force $source $dest
-            set files_copied 1
+        }
+
+        foreach k [array names lmanifest_sha] {
+            if {[ifexists original_manifest_sha(k)] != $lmanifest_sha(k)} {
+                set files_copied 1
+            }
+        }
+        
+        if {$files_copied == 0} {
+            puts "Not generating a new timestamp as no files are new"
+            continue
         }
 
         #puts "Writing timestamp to '$destdir/timestamp.txt'"
