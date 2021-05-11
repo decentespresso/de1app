@@ -1027,11 +1027,15 @@ proc make_de1_dir {srcdir destdirs} {
     #set destdirs [list "/d/download/sync/de1plus"]
     #set destdirs [list "/d/download/sync/de1beta"]
 
+    set old_timestamp 0
     # load the local manifest into memory
     foreach {filename filesize filemtime filesha} [string trim [read_file "$srcdir/complete_manifest.txt"]] {
         #puts "$filename $filecrc"
         set lmanifest_mtime($filename) $filemtime
         set lmanifest_sha($filename) $filesha
+        if {$filemtime > $old_timestamp} {
+            set old_timestamp $filemtime
+        }
     }
 
     array set original_manifest_sha [array get lmanifest_sha]
@@ -1111,7 +1115,7 @@ proc make_de1_dir {srcdir destdirs} {
         
         if {$files_copied == 0} {
             puts "Not generating a new timestamp as no files are new"
-            continue
+            set timestamp $old_timestamp
         }
 
         #puts "Writing timestamp to '$destdir/timestamp.txt'"
