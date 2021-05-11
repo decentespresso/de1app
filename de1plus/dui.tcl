@@ -433,8 +433,12 @@ namespace eval ::dui {
 	# System-related stuff
 	namespace eval platform {
 		namespace export hide_android_keyboard button_press button_long_press finger_down button_unpress \
-			xscale_factor yscale_factor rescale_x rescale_y
+			xscale_factor yscale_factor rescale_x rescale_y translate_coordinates_finger_down_x translate_coordinates_finger_down_y \
+			is_fast_double_tap
 		namespace ensemble create
+		
+		variable last_click_time
+		array set last_click_time {}
 		
 		proc hide_android_keyboard {} {
 			# make sure on-screen keyboard doesn't auto-pop up, and if
@@ -498,7 +502,44 @@ namespace eval ::dui {
 
 		proc rescale_y {in} {
 			return [expr {int($in / [yscale_factor])}]
-		}		
+		}
+		
+		# on android we track finger-down, instead of button-press, as it gives us lower latency by avoding having to distinguish a potential gesture from a tap
+		# finger down gives a http://blog.tcl.tk/39474
+		proc translate_coordinates_finger_down_x { x } {
+ 
+			if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
+					return [expr {$x * [winfo screenwidth .] / 10000}]
+				}
+				return $x
+		}
+		
+		proc translate_coordinates_finger_down_y { y } {
+
+			if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
+					return [expr {$y * [winfo screenheight .] / 10000}]
+				}
+				return $y
+		}
+		
+		proc is_fast_double_tap { key } {
+			variable last_click_time
+			# if this is a fast double-tap, then treat it like a long tap (button-3) 
+		
+			set b 0
+			set millinow [clock milliseconds]
+			set prevtime [ifexists last_click_time($key)]
+			if {$prevtime != ""} {
+				# check for a fast double-varName
+				if {[expr {$millinow - $prevtime}] < 150} {
+					msg -INFO "Fast button double-tap on $key"
+					set b 1
+				}
+			}
+			set last_click_time($key) $millinow
+		
+			return $b
+		}
 	}
 	
 	### THEME SUB-ENSEMBLE ###

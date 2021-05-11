@@ -311,36 +311,37 @@ proc vertical_slider {varname minval maxval x y x0 y0 x1 y1} {
 # on android we track finger-down, instead of button-press, as it gives us lower latency by avoding having to distinguish a potential gesture from a tap
 # finger down gives a http://blog.tcl.tk/39474
 proc translate_coordinates_finger_down_x { x } {
-
-	if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
-	 	return [expr {$x * [winfo screenwidth .] / 10000}]
-	 }
-	 return $x
+	return [dui::platform::translate_coordinates_finger_down_x $x]
+#	if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
+#	 	return [expr {$x * [winfo screenwidth .] / 10000}]
+#	 }
+#	 return $x
 }
 proc translate_coordinates_finger_down_y { y } {
-
-	if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
-	 	return [expr {$y * [winfo screenheight .] / 10000}]
-	 }
-	 return $y
+	return [dui platform translate_coordinates_finger_down_y $y ]	
+#	if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
+#	 	return [expr {$y * [winfo screenheight .] / 10000}]
+#	 }
+#	 return $y
 }
 
 proc is_fast_double_tap { key } {
-	# if this is a fast double-tap, then treat it like a long tap (button-3) 
-
-	set b 0
-	set millinow [clock milliseconds]
-	set prevtime [ifexists ::last_click_time($key)]
-	if {$prevtime != ""} {
-		# check for a fast double-varName
-		if {[expr {$millinow - $prevtime}] < 150} {
-			msg -INFO "Fast button double-tap on $key"
-			set b 1
-		}
-	}
-	set ::last_click_time($key) $millinow
-
-	return $b
+	return [dui platform is_fast_double_tap $key]
+#	# if this is a fast double-tap, then treat it like a long tap (button-3) 
+#
+#	set b 0
+#	set millinow [clock milliseconds]
+#	set prevtime [ifexists ::last_click_time($key)]
+#	if {$prevtime != ""} {
+#		# check for a fast double-varName
+#		if {[expr {$millinow - $prevtime}] < 150} {
+#			msg -INFO "Fast button double-tap on $key"
+#			set b 1
+#		}
+#	}
+#	set ::last_click_time($key) $millinow
+#
+#	return $b
 }
 
 proc vertical_clicker {bigincrement smallincrement varname minval maxval x y x0 y0 x1 y1 {b 0} } {
