@@ -6,7 +6,7 @@
 # These are not in machine.tcl due to apparent assumptions on inclusion order
 #
 
-package provide de1_de1 1.3
+package provide de1_de1 1.4
 
 package require lambda
 
@@ -627,6 +627,9 @@ namespace eval ::de1::state::update {
 					event_time [expr {[clock milliseconds] / 1000.0}] \
 					update_received $update_received \
 					{*}[array get ShotSample] \
+					volume_dispensed \
+					    [expr { $::de1(preinfusion_volume) \
+							+ $::de1(pour_volume) }] \
 					this_state $this_state \
 					this_substate $this_substate \
 				       ]
