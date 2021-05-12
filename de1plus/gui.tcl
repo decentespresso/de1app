@@ -3228,26 +3228,64 @@ namespace eval ::gui::notify {
 			    set _this_state [lindex $args 0]
 			    set _this_substate [lindex $args 1]
 
-			    set _message1 \
-				    [format "%s: %s,%s" \
+			    switch -exact -- $_this_substate {
+
+				Error_TSensor -
+				Error_Psensor -
+				Error_Wlevel {
+
+				    set _why [translate "A sensor is not reporting as expected."]
+				    set _reboot_ok True
+				}
+
+				Error_HiCurrent -
+				Error_LoCurrent {
+
+				    set _why [translate "An electrical problem was detected."]
+				    set _reboot_ok False
+				}
+
+				Error_BootFill {
+
+				    set _why [translate \
+					[string cat "Pumps were unable to draw water.\n\n" \
+						 "Check that there is water in the tank " \
+						 "and that the filter thimble is not clogged. "\
+						 "Water is needed in the tank even with " \
+						 "a catering or plumbing kit." ]]
+				    set _reboot_ok True
+				}
+
+				default {
+
+				    set _why [translate "A run-time error occurred."]
+				    set _reboot_ok True
+				}
+			    }
+
+			    set _what \
+				    [format "%s: %s, %s" \
 					     [translate {CRITICAL: DE1 Reported Error State}] \
 					     $_this_state $_this_substate]
-			    set _message2 \
-				    [translate {A common reason is that the water tray needs manual filling.}]
-			    set _message3 \
-				    [join [list \
-					[translate {Please send a photo or your log to support.}] \
-					[translate {If this is not the reason, please try rebooting your DE1.}] \
-					[translate {If the problem persists. Please contact support.}] \
-				    ]]
 
-			    if { [ catch {
-				info_page "$_message1\n\n$_message2\n\n$_message3" \
-					[translate "Ok"] } result opts_dict ] } {
+			    set _how "[translate {Please send your log or a photo to support.}]\n\n"
 
-					    msg -ERROR "$result\n$opts_dict"
-					    borg toast $_message1
+			    if { $_reboot_ok } {
+
+				set _how [string cat $_how \
+					[translate {Please try rebooting your DE1 and restarting the app.}] \
+					"\n\n" \
+					[translate {If the problem persists, please contact support.}] ]
+			    } else {
+
+				set _how [string cat $_how \
+					[translate {Please switch off your DE1 and contact support.}] ]
+
 			    }
+
+			    # Intentionally _not_ catch here to show in bgError handler
+
+			    info_page "$_what\n\n$_why\n\n$_how" [translate "Ok"]
 			}
 
 			state_decode_error {
@@ -3257,26 +3295,20 @@ namespace eval ::gui::notify {
 			    set _this_state [lindex $args 0]
 			    set _this_substate [lindex $args 1]
 
-			    set _message1 \
-				    [format "%s: %s,%s" \
-					     [translate {CRITICAL: Unexpected DE1 State}] \
-					     $_this_state $_this_substate]
-			    set _message2 \
-				    [translate {A common reason is that the water tray needs manual filling.}]
-			    set _message3 \
-				    [join [list \
-					[translate {Please send a photo or your log to support.}]
-					[translate {If this is not the reason, please try rebooting your DE1.}]
-					[translate {If the problem persists. Please contact support.}] \
-				    ]]
+			    set _what [format "%s: %s, %s" \
+					       [translate {CRITICAL: Unexpected DE1 State}] \
+					       $_this_state $_this_substate]
+			    set _why [translate {The data received was not understood. This may be a Bluetooth "glitch".}]
 
-			    if { [ catch {
-				info_page "$_message1\n\n$_message2\n\n$_message3" \
-					[translate "Ok"] } result opts_dict ] } {
+			    set _how "[translate {Please send your log or a photo to support.}]\n\n"
+			    set _how [string cat $_how \
+					[translate {Please try rebooting your DE1 and restarting the app.}] \
+					"\n\n" \
+					[translate {If the problem persists, please contact support.}] ]
 
-					    msg -ERROR "$result\n$opts_dict"
-					    borg toast $_message1
-			    }
+			    # Intentionally _not_ catch here to show in bgError handler
+
+			    info_page "$_what\n\n$_why\n\n$_how" [translate "Ok"]
 			}
 
 			default {
