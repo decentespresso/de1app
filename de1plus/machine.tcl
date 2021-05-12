@@ -522,7 +522,7 @@ array set ::de1_num_state_reversed [reverse_array ::de1_num_state]
 
 
 array set ::de1_substate_types {
-	-   "starting"
+	-	"starting"
 	0	"ready"
 	1	"heating"
 	2	"final heating"
@@ -540,8 +540,26 @@ array set ::de1_substate_types {
 	14	"CleanFillGroup"
 	15	"CleanSoak"
 	16	"CleanGroup"
-	17  "refill"
+	17	"refill"
 	18	"PausedSteam"
+
+	200	"Error_NaN"
+	201	"Error_Inf"
+	202	"Error_Generic"
+	203	"Error_ACC"
+	204	"Error_TSensor"
+	205	"Error_PSensor"
+	206	"Error_WLevel"
+	207	"Error_DIP"
+	208	"Error_Assertion"
+	209	"Error_Unsafe"
+	210	"Error_InvalidParm"
+	211	"Error_Flash"
+	212	"Error_OOM"
+	213	"Error_Deadline"
+	214	"Error_HiCurrent"
+	215	"Error_LoCurrent"
+	216	"Error_BootFill"
 }
 array set ::de1_substate_types_reversed [reverse_array ::de1_substate_types]
 
