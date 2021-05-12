@@ -220,6 +220,8 @@ namespace eval ::de1::event::apply {
 
 namespace eval ::de1 {
 
+	variable _emergency_shutdown False
+
 	proc init {} {
 
 		::de1::state::init
@@ -227,6 +229,51 @@ namespace eval ::de1 {
 	}
 
 	::de1::event::listener::on_connect_add [lambda {args} ::de1::init]
+
+	proc direct_send_idle {} {
+
+	    set _handle $::de1(device_handle)
+
+	    if { ! [string is false $_handle] } {
+
+		if { [dict get [ble info $_handle] state] == "connected" } {
+
+		    if { [catch { ble write $_handle \
+					  $::de1(suuid) $::sinstance($::de1(suuid)) \
+					  $::de1(cuuid_0E) $::cinstance($::de1(cuuid_0E)) \
+					  [binary decode hex "0200"] } result ] } {
+			msg -ERROR "Unable to directly send Idle to DE1: $result"
+
+		    } else {
+			msg -NOTICE "Directly sent Idle to DE1"
+		    }
+		} else {
+		    msg -NOTICE "Unable to directly send Idle to DE1: not connected"
+		}
+	    } else {
+		    msg -NOTICE "Unable to directly send Idle to DE1: not connected"
+	    }
+	}
+
+
+	proc emergency_shutdown {} {
+
+	    set ::de1::_emergency_shutdown True
+
+	    # BLE queue now stopped, send an Idle directly
+	    # and another one in 500 ms in case Android BLE is busy
+
+	    ::de1::direct_send_idle
+	    after 500 ::de1::direct_send_idle
+
+	    msg -CRITICAL "DE1 EMERGENCY SHUTDOWN [stacktrace]"
+
+	    # Not worth trying to preserve pending scale commands
+
+	    set ::de1(cmdstack) {}
+	}
+
+
 
 	proc line_voltage_nom {} {
 

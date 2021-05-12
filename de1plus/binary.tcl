@@ -1328,6 +1328,19 @@ proc update_de1_state {state_info_bin} {
 
 	binary scan $state_info_bin "cucu" _state _substate
 
+	#
+	# Shutdown DE1 communication on error
+	# It is unlikely responding at all and in "protection mode"
+	#
+
+	if { $_state == 11 || $_substate >= 200 } {
+
+	    ::de1::emergency_shutdown
+	    msg -CRITICAL "DE1 EMERGENCY SHUTDOWN triggered by StateInfo:" \
+		    [::logging::format_asc_bin $state_info_bin]
+
+	}
+
 	set _decoded True
 
 	try { set this_state $::de1_num_state($_state) } on error result {
@@ -1357,12 +1370,10 @@ proc update_de1_state {state_info_bin} {
 	# In any event, catch both the FatalError state and any failures to decode
 	# and call ::gui::notify::de1_event
 	#
-	# TODO: Decide if a "hard stop" is appropriate on DE1 error in core
-	#
 
 	if { $this_state == "FatalError" } {
 
-	    msg -CRITICAL [format "DE1 FatalError reported as state %s,%s" \
+	    msg -CRITICAL [format "DE1 FatalError reported as state %s, %s" \
 				   $this_state $this_substate]
 
 	    ::gui::notify::de1_event fatal_error \

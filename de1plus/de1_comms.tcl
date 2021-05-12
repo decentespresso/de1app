@@ -36,6 +36,12 @@ proc comms_msg {args} {
 }
 
 proc userdata_append {comment cmd {vital 0} } {
+
+	if { $::de1::_emergency_shutdown && [lindex $cmd 0] == "de1_comm" } {
+	    return
+	}
+
+
 	#set cmds [ble userdata $::de1(device_handle)]
 	#lappend cmds $cmd
 	#ble userdata $::de1(device_handle) $cmds
@@ -158,6 +164,9 @@ proc run_next_userdata_cmd {} {
 
 ### Generics
 proc de1_comm {action command_name {data 0}} {
+
+	if { $::de1::_emergency_shutdown } { return }
+
 	comms_msg -DEBUG "de1_comm sending action $action command $command_name data \"$data\""
 	if {$::de1(connectivity) == "ble"} {
 		return [de1_ble $action $command_name $data]

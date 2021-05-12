@@ -1178,6 +1178,8 @@ proc later_new_de1_connection_setup {} {
 
 proc de1_ble {action command_name {data ""}} {
 
+	if { $::de1::_emergency_shutdown } { return }
+
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 			::bt::msg -DEBUG "DE1 not connected, cannot send BLE command $command_name"
 			return
