@@ -1,6 +1,7 @@
 package provide de1_utils 1.1
 
 package require de1_logging 1.0
+package require de1_metadata 1.0
 
 proc setup_environment {} {
 	global android
@@ -131,6 +132,10 @@ proc setup_environment {} {
         font create Helv_30 -family $regularfont -size [expr {int($fontm * 72)}]
 	}
 	
+	metadata init
+	source "app_metadata.tcl"
+	init_app_metadata
+			
 	after 60000 schedule_minute_task
 
 	return
