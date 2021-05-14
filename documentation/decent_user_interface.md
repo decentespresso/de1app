@@ -44,6 +44,7 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 ## Revision History
 
 * 2021-04-10 – Initial writing by [Enrique Bengoechea](https://github.com/ebengoechea)
+* 2021-04-10 - 2021-05-14 - Rewrite while the API evolves through nightly & beta, by [Enrique Bengoechea](https://github.com/ebengoechea)
 
 <a name="history"></a>
 
@@ -253,10 +254,10 @@ dui theme current dark
 dui page add test_page
 
 # Will use a bigger font, otherwise will use the theme text.* aspects
-dui add text test_page 1280 100 -text [translate "Tab title"] -style tab_header
+dui add dtext test_page 1280 100 -text [translate "Tab title"] -style tab_header
 
 # Will use all text.* aspects from the dark theme, except -fill
-dui add text test_page 200 200 -text [translate "Some text"] -fill black
+dui add dtext test_page 200 200 -text [translate "Some text"] -fill black
 ```
 
 <a name="aspects_api"></a>
@@ -1069,9 +1070,9 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 >Generic command to create Tk widgets of type  _type_  and add them to DUI pages. Many widgets like **entry** or **listbox** have their own **dui add** command with extra features, but this is offered for extensions and other non directly supported widgets.
 
 
-<a name="dui_add_text"></a>
+<a name="dui_add_dtext"></a>
 
-**dui add text**  _pages x y ?-option value ...?_
+**dui add dtext**  _pages x y ?-option value ...?_
 
 >Create a text label and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
 
@@ -1185,7 +1186,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >**-label&lt;i&gt;_***option*** **  _value_
 
-> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add dtext** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
 
 >**-symbol**  _symbol_name_
 
@@ -1347,7 +1348,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >**-label_***option*** **  _value_
 
-> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add dtext** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
 
 
 <a name="dui_add_multiline_entry"></a>
@@ -1390,7 +1391,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >**-label_***option*** **  _value_
 
-> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add dtext** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
 
 >**-yscrollbar**  _true_or_false_
 
@@ -1435,7 +1436,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >**-label_***option*** **  _value_
 
-> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add text** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add dtext** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
 
 >**-yscrollbar**  _true_or_false_
 
@@ -1663,3 +1664,48 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 **dui add graph**  _pages x y ?-option value ...?_
 
 >Create a BLT graph widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+
+
+<a name="dui_add_text"></a>
+
+**dui add text**  _pages x y ?-option value ...?_
+
+>Create a Tk text widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+
+>Return the pathname of the Text widget. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
+
+> >&lt;main_tag&gt;: the Text widget.
+
+> >&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
+
+> >&lt;main_tag&gt;-ysb: (optional) the Tk scale widget used as vertical scrollbar.
+
+>Non-DUI options are passed-through to the Tk [text](https://www.tcl.tk/man/tcl8.6/TkCmd/text.htm) command.
+
+>**-label**  _text_
+
+>**-labelvariable**  _tcl_code_
+
+> >If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, associated to the text widget.
+
+>**-label_pos**  _{x y}_
+
+>**-label_pos**  _{anchor ?x_offset? ?y_offset?}_
+
+> >A list that determines the location of the label. If a pair of numeric coordinates are provided, they are interpreted as direct coordinates in the screen. If the first list item is not a number, it is interpreted as an anchor point relative to the edges of the listbox widget, and the label will be moved to the target position when the page is shown. 
+
+> >Valid anchor values are "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es". To get the label placed exactly as you want you normally also have to play with **-label_anchor** and **-label_justify**.
+
+> >The anchor value can optionally be followed by an  _x_offset_  and a  _y_offset_ , which will move the position by those fixed offsets after the anchor point is determined.
+
+>**-label_***option*** **  _value_
+
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add dtext** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+
+>**-yscrollbar**  _true_or_false_
+
+> >If  _true_ , a vertical scrollbar is added to the right side of the text widget. The scrollbar is actually a Tk scale widget, not a Tk scrollbar widget. 
+
+>**-yscrollbar_***option*** **  _value_
+
+> >Use this syntax to pass additional options to the yscrollbar scale creation command.

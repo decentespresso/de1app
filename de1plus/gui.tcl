@@ -802,7 +802,7 @@ proc maxstring {in maxlength {optmsg {}} } {
 
 #set text_cnt 0
 proc add_de1_text {args} {
-	return [dui add text [lindex $args 0] [lindex $args 1] [lindex $args 2] -compatibility_mode 1 {*}[lrange $args 3 end]]
+	return [dui add dtext [lindex $args 0] [lindex $args 1] [lindex $args 2] -compatibility_mode 1 {*}[lrange $args 3 end]]
 	
 #	global text_cnt
 #	incr text_cnt
