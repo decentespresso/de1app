@@ -3725,7 +3725,7 @@ namespace eval ::dui {
 			}
 
 			if { $label ne "" } {
-				set id [dui add text $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label \
+				set id [dui add dtext $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label \
 					{*}$label_args]
 			} elseif { $labelvar ne "" } {
 				set id [dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
@@ -5691,7 +5691,7 @@ namespace eval ::dui {
 		#	-compatibility_mode: set to 0 to be backwards-compatible with add_de1_text calls (don't apply aspects,
 		#		font suboptions and don't rescale width)
 		#	All others passed through to the 'canvas create text' command
-		proc text { pages x y args } {
+		proc dtext { pages x y args } {
 			global text_cnt
 			set can [dui canvas]
 			set x [dui platform rescale_x $x]
@@ -5750,7 +5750,7 @@ namespace eval ::dui {
 		# 		If -textvariable gives a plain name instead of code to be evaluted (no brackets, parenthesis, ::, etc.) 
 		#		and the first page in 'pages' is a namespace, uses {$::dui::pages::<page>::data(<textvariable>)}. 
 		#		Also in this case, if -tags is not specified, uses the textvariable name as tag.
-		# All others passed through to the 'dui add text' command
+		# All others passed through to the 'dui add dtext' command
 		proc variable { pages x y args } {
 			global variable_labels
 			
@@ -5758,7 +5758,7 @@ namespace eval ::dui {
 			set main_tag [lindex $tags 0]
 			set varcode [dui::args::get_option -textvariable "" 1]
 	
-			set id [dui add text $pages $x $y {*}$args]
+			set id [dui add dtext $pages $x $y {*}$args]
 			dui page add_variable $pages $id $varcode
 			return $id
 		}
@@ -5778,7 +5778,7 @@ namespace eval ::dui {
 			
 			dui::args::add_option_if_not_exists -aspect_type symbol
 			
-			return [dui add text $pages $x $y -text $symbol {*}$args]
+			return [dui add dtext $pages $x $y -text $symbol {*}$args]
 		}
 		
 		# Add dbutton items to the canvas. Returns the list of all added tags (one per page).
@@ -5806,7 +5806,7 @@ namespace eval ::dui {
 		#	-labelvariable, -label1variable... to use a variable as label text
 		#	-label_pos, -label1_pos... a list with 2 elements between 0 and 1 that specify the x and y percentages where to position
 		#		the label inside the button
-		#	-label_* (-label_fill -label_outline etc.) are passed through to 'dui add text' or 'dui add variable'
+		#	-label_* (-label_fill -label_outline etc.) are passed through to 'dui add dtext' or 'dui add variable'
 		#	-symbol to add a Fontawesome symbol/icon to the button, on position -symbol_pos, and using option values
 		#		given in -symbol_* that are passed through to 'dui add symbol'
 		#	-radius for rounded rectangles, and -arc_offset for rounded outline rectangles
@@ -6003,7 +6003,7 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			while { ([info exists label$suffix] && [subst \$label$suffix] ne "") || 
 					([info exists labelvar$suffix] && [subst \$labelvar$suffix] ne "") } {
 				if { [info exists label$suffix] && [subst \$label$suffix] ne "" } {
-					dui add text $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] -text [subst \$label$suffix] \
+					dui add dtext $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] -text [subst \$label$suffix] \
 						-tags [subst \$label${suffix}_tags] -aspect_type "dbutton_label$suffix" \
 						-style $style {*}[subst \$label${suffix}_args]
 				} elseif { [info exists labelvar$suffix] && [subst \$labelvar$suffix] ne "" } {
@@ -7078,7 +7078,7 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			
 		}
 		
-		proc tk_text { pages x y args } {
+		proc text { pages x y args } {
 			set tags [dui::args::process_tags_and_var $pages tk_text {} 1]
 			set main_tag [lindex $tags 0]
 			
