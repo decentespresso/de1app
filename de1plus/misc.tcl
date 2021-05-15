@@ -914,6 +914,7 @@ proc make_de1_dir {srcdir destdirs} {
 
         profiles/adaptive_allonge.tcl *
         profiles/best_practice.tcl *
+        profiles/best_practice_light.tcl *
         profiles/flow_calibration.tcl *
         profiles/7g\ basket.tcl *
         profiles/cleaning_forward_flush.tcl *
