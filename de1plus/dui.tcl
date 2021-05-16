@@ -3029,9 +3029,6 @@ namespace eval ::dui {
 		
 		proc add_dirs { args } {
 			variable font_dirs
-			if { [llength $args] == 1 } {
-				set args [lindex $args 0]
-			}
 			
 			foreach dir $args {
 				set dir [file normalize $dir]
@@ -3266,9 +3263,6 @@ namespace eval ::dui {
 				
 		proc add_dirs { args } {
 			variable img_dirs
-			if { [llength $args] == 1 } {
-				set args [lindex $args 0]
-			}
 			
 			foreach dir $args {
 				set dir [file normalize $dir]
