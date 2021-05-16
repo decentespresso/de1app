@@ -341,10 +341,10 @@ namespace eval ::history_viewer {
 				dbutton_label.pos.hv_done_button {0.6 0.5} 
 				dbutton_label.width.hv_done_button 360
 				
-				text.font_size.hv_shot_params -1
+				dtext.font_size.hv_shot_params -1
 				
-				text.anchor.hv_graph_title center 
-				text.justify.hv_graph_title center 
+				dtext.anchor.hv_graph_title center 
+				dtext.justify.hv_graph_title center 
 				
 				graph.background.hv_graph $bg_color 
 				graph.plotbackground.hv_graph $bg_color 
