@@ -1,4 +1,4 @@
-advanced_shot {{exit_if 1 flow 6.800000000000004 volume 100 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 95.00 name {Preinfusion fill} pressure 3.000000000000001 sensor coffee pump pressure exit_type pressure_over exit_flow_over 1.00 exit_pressure_over 3.00 max_flow_or_pressure 0 exit_pressure_under 0 seconds 40.00} {exit_if 1 flow 6.800000000000004 volume 100 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 92.00 name {Preinfusion hold} pressure 3.000000000000001 sensor coffee pump pressure exit_type flow_over exit_flow_over 1.00 exit_pressure_over 1.5 max_flow_or_pressure 0 seconds 40.00 exit_pressure_under 0} {exit_if 1 volume 100 max_flow_or_pressure_range 0.6 transition smooth exit_flow_under 0 temperature 92.00 name Pressurize pressure 10.999999999999993 sensor coffee pump pressure exit_type pressure_over exit_flow_over 6 exit_pressure_over 9.00 max_flow_or_pressure 0 seconds 6.00 exit_pressure_under 0} {exit_if 0 flow 3.000000000000001 volume 100 max_flow_or_pressure_range 0.6 transition smooth exit_flow_under 0 temperature 92.00 name Extraction pressure 3.0 sensor coffee pump flow exit_flow_over 6 exit_pressure_over 11 max_flow_or_pressure 10.0 exit_pressure_under 0 seconds 30.00}}
+advanced_shot {{exit_if 1 flow 6.800000000000004 volume 100 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 96.00 name {Preinfusion fill} pressure 3.000000000000001 sensor coffee pump pressure exit_type pressure_over exit_flow_over 1.00 exit_pressure_over 3.00 max_flow_or_pressure 0 exit_pressure_under 0 seconds 12.00} {exit_if 1 flow 6.800000000000004 volume 100 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 1.00 temperature 96.00 name {Preinfusion fill end} pressure 3.000000000000001 sensor coffee pump pressure exit_type flow_under exit_flow_over 1.00 exit_pressure_over 3.00 max_flow_or_pressure 0 seconds 12.00 exit_pressure_under 0} {exit_if 0 flow 6.800000000000004 volume 100 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 88.50 name {Preinfusion hold} pressure 3.000000000000001 sensor coffee pump pressure exit_type flow_over exit_flow_over 1.00 exit_pressure_over 1.5 max_flow_or_pressure 0 exit_pressure_under 0 seconds 25.00} {exit_if 1 volume 100 max_flow_or_pressure_range 0.6 transition smooth exit_flow_under 0 temperature 88.50 name Pressurize pressure 10.999999999999993 sensor coffee pump pressure exit_type pressure_over exit_flow_over 6 exit_pressure_over 8.50 max_flow_or_pressure 0 exit_pressure_under 0 seconds 6.00} {exit_if 1 volume 100 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 88.50 name Pressurize pressure 9.999999999999996 sensor coffee pump pressure exit_type pressure_over exit_flow_over 6 exit_pressure_over 9.00 max_flow_or_pressure 0 exit_pressure_under 0 seconds 2.00} {exit_if 0 flow 3.000000000000001 volume 100 max_flow_or_pressure_range 0.6 transition smooth exit_flow_under 0 temperature 88.0 name Extraction pressure 3.0 sensor coffee pump flow exit_flow_over 6 exit_pressure_over 11 max_flow_or_pressure 10.0 exit_pressure_under 0 seconds 30.00}}
 espresso_temperature_steps_enabled 1
 author Decent
 espresso_hold_time 15
@@ -6,7 +6,7 @@ preinfusion_time 20
 espresso_pressure 6.0
 espresso_decline_time 30
 pressure_end 4.0
-espresso_temperature 95.00
+espresso_temperature 96.00
 espresso_temperature_0 89.00
 espresso_temperature_1 89.00
 espresso_temperature_2 89.00
@@ -20,7 +20,7 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes {This profile aims to unite the best practices in espresso extraction that we have learned so far with the Decent. It unites Brakel's Londonium, Rao's Blooming and Gagné's Adaptive profiles. Your grind should be coarser for light roasts, aiming for a flow rate around 1.5 ml/s at peak pressure.}
+profile_notes {This profile aims to unite the best practices in espresso extraction that we have learned so far with the Decent. It unites Brakel's Londonium, Rao's Blooming and Gagné's Adaptive profiles. Your grind should be coarser for light roasts, aiming for a flow rate around 1.5 ml/s at peak pressure. 18g in, 50g out, in 32 seconds is a typical recipe.}
 water_temperature 70.00
 final_desired_shot_volume 32
 final_desired_shot_weight 32
