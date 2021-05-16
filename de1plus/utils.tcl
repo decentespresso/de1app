@@ -56,10 +56,10 @@ proc setup_environment {} {
 	
 	# Create hardcoded fonts used in default and Insight skins. These should be replaced by DUI aspects in the future,
 	# but are left at the moment to guarantee backwards-compatibility.
-	set helvetica_font [dui aspect get text font_family -theme default]
-	set helvetica_bold_font [dui aspect get text font_family -theme default -style bold]
-	set global_font_name [dui aspect get text font_family -theme default -style global]
-	set global_font_size [dui aspect get text font_size -theme default -style global]
+	set helvetica_font [dui aspect get dtext font_family -theme default]
+	set helvetica_bold_font [dui aspect get dtext font_family -theme default -style bold]
+	set global_font_name [dui aspect get dtext font_family -theme default -style global]
+	set global_font_size [dui aspect get dtext font_size -theme default -style global]
 	set fontawesome_brands [dui aspect get symbol font_family -theme default -style brands]
 		
 	if {$android == 1 || $undroid == 1} {

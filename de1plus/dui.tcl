@@ -299,9 +299,9 @@ namespace eval ::dui {
 		set fontawesome_pro [dui::font::add_or_get_familyname "Font Awesome 5 Pro-Regular-400.otf"]
 
 		msg -DEBUG [namespace current] "Font multiplier: $fontm"
-		dui aspect set -theme default -type text font_family $helvetica_font 
-		dui aspect set -theme default -type text -style bold font_family $helvetica_bold_font
-		dui aspect set -theme default -type text -style global font_family $global_font_name font_size $global_font_size
+		dui aspect set -theme default -type dtext font_family $helvetica_font 
+		dui aspect set -theme default -type dtext -style bold font_family $helvetica_bold_font
+		dui aspect set -theme default -type dtext -style global font_family $global_font_name font_size $global_font_size
 		#msg -DEBUG [namespace current] "Adding global font with family=$global_font_name and size=$global_font_size"		
 		dui aspect set -theme default -type symbol font_family $fontawesome_pro
 		dui aspect set -theme default -type symbol -style brands font_family $fontawesome_brands
@@ -688,22 +688,22 @@ namespace eval ::dui {
 			default.font.font_family notosansuiregular
 			default.font.font_size 16
 			
-			default.text.font_family notosansuiregular
-			default.text.font_size 16
-			default.text.fill "#7f879a"
-			default.text.disabledfill "#ddd"
-			default.text.anchor nw
-			default.text.justify left
+			default.dtext.font_family notosansuiregular
+			default.dtext.font_size 16
+			default.dtext.fill "#7f879a"
+			default.dtext.disabledfill "#ddd"
+			default.dtext.anchor nw
+			default.dtext.justify left
 			
-			default.text.fill.remark "#4e85f4"
-			default.text.fill.error red
-			default.text.font_family.section_title notosansuibold
+			default.dtext.fill.remark "#4e85f4"
+			default.dtext.fill.error red
+			default.dtext.font_family.section_title notosansuibold
 			
-			default.text.font_family.page_title notosansuibold
-			default.text.font_size.page_title 26
-			default.text.fill.page_title "#35363d"
-			default.text.anchor.page_title center
-			default.text.justify.page_title center
+			default.dtext.font_family.page_title notosansuibold
+			default.dtext.font_size.page_title 26
+			default.dtext.fill.page_title "#35363d"
+			default.dtext.anchor.page_title center
+			default.dtext.justify.page_title center
 						
 			default.symbol.font_family "Font Awesome 5 Pro-Regular-400"
 			default.symbol.font_size 55
@@ -868,6 +868,11 @@ namespace eval ::dui {
 			default.graph_line.linewidth 6
 			default.graph_line.pixels 0 
 			default.graph_line.smooth linear
+			
+			default.text.bg white
+			default.text.font_size 16
+			default.text.relief flat
+			default.text.highlightthickness 1
 		}
 		
 		# Named options:
@@ -3630,11 +3635,11 @@ namespace eval ::dui {
 					remove_options -font_$f largs
 				}
 			} elseif { $type ni {ProgressBar} } {
-				set font_family [get_option -font_family [dui aspect get [list $type text font] font_family -style $style] 1 largs]
+				set font_family [get_option -font_family [dui aspect get [list $type dtext font] font_family -style $style] 1 largs]
 				
-				set default_size [dui aspect get [list $type text font] font_size]
+				set default_size [dui aspect get [list $type dtext font] font_size]
 				if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
-					set default_size [dui aspect get [list text font] font_size]
+					set default_size [dui aspect get [list dtext font] font_size]
 					if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
 						set default_size [dui aspect get font font_size]
 						if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
@@ -3687,9 +3692,9 @@ namespace eval ::dui {
 			
 			set label_tags [list ${main_tag}-lbl {*}[lrange $tags 1 end]]
 			set label_args [extract_prefixed -label_ largs]
-			foreach aspect [dui aspect list -type [list ${type}_label text] -style $style] {
+			foreach aspect [dui aspect list -type [list ${type}_label dtext] -style $style] {
 				add_option_if_not_exists -$aspect [dui aspect get ${type}_label $aspect -style $style \
-					-default {} -default_type text] label_args
+					-default {} -default_type dtext] label_args
 			}
 						
 			set label_pos [get_option -pos "w -20 0" 1 label_args]
@@ -5697,15 +5702,15 @@ namespace eval ::dui {
 			set x [dui platform rescale_x $x]
 			set y [dui platform rescale_y $y]
 			
-			set tags [dui::args::process_tags_and_var $pages text ""]
+			set tags [dui::args::process_tags_and_var $pages dtext ""]
 			set main_tag [lindex $tags 0]
 			set cmd [dui::args::get_option -command {} 1]
 			
 			set compatibility_mode [string is true [dui::args::get_option -compatibility_mode 0 1]]
 			if { ! $compatibility_mode } {				
 				set style [dui::args::get_option -style "" 1]
-				dui::args::process_aspects text $style "" "pos"
-				dui::args::process_font text $style
+				dui::args::process_aspects dtext $style "" "pos"
+				dui::args::process_font dtext $style
 				set width [dui::args::get_option -width {} 1]
 				if { $width ne "" } {
 					set width [dui platform rescale_x $width]
@@ -5716,7 +5721,7 @@ namespace eval ::dui {
 			try {
 				set id [$can create text $x $y -state hidden {*}$args]
 			} on error err {
-				set msg "can't add text '$main_tag' in page(s) '$pages' to canvas: $err"
+				set msg "can't add dtext '$main_tag' in page(s) '$pages' to canvas: $err"
 				msg -ERROR [namespace current] $msg
 				error $msg
 				return
@@ -5738,7 +5743,7 @@ namespace eval ::dui {
 				$can bind $id [dui platform button_press] $cmd
 			}
 			
-			#msg -INFO [namespace current] text "'$main_tag' to page(s) '$pages' with args '$args'"
+			#msg -INFO [namespace current] dtext "'$main_tag' to page(s) '$pages' with args '$args'"
 			return $id
 		}
 		
@@ -5877,9 +5882,9 @@ namespace eval ::dui {
 				set "label${suffix}_tags" [list "${main_tag}-lbl$suffix" {*}[lrange $tags 1 end]]	
 				set "label${suffix}_args" [dui::args::extract_prefixed "-label${suffix}_"]
 				
-				foreach aspect [dui aspect list -type [list "${aspect_type}_label$suffix" text] -style $style] {
+				foreach aspect [dui aspect list -type [list "${aspect_type}_label$suffix" dtext] -style $style] {
 					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_label$suffix" $aspect \
-						-style $style -default {} -default_type text] "label${suffix}_args"
+						-style $style -default {} -default_type dtext] "label${suffix}_args"
 				}
 				
 				set "label${suffix}_pos" [dui::args::get_option -pos {0.5 0.5} 1 "label${suffix}_args"]
@@ -6167,7 +6172,7 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 		#		negative x and y offsets. The marker and offsets are used in a relocate_text_wrt call on the page show 
 		#		event, so that it is repositioned dynamically for widgets whose size is defined in characters instead
 		#		of pixels.
-		#	-label_* passed through to 'add text'
+		#	-label_* passed through to 'add dtext'
 		#	-tclcode code to be evaluated after the widget is created, to allow configuring the widget. It is evaluated
 		#		in a global context, and performs the following substitutions:
 		#			%W the widget pathname
@@ -7083,7 +7088,7 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			set main_tag [lindex $tags 0]
 			
 			#set style [dui::args::get_option -style "" 0]
-			dui::args::process_aspects tk_text
+			dui::args::process_aspects text
 			
 			set width [dui::args::get_option -width "" 1]
 			if { $width ne "" } {
@@ -7441,11 +7446,11 @@ namespace eval ::dui::pages::dui_number_editor {
 		
 		if { $data(value) ne "" } {
 			if { $data(min) ne "" && $data(value) < $data(min) } {
-				$widget configure -foreground [dui aspect get text fill -style error]
+				$widget configure -foreground [dui aspect get dtext fill -style error]
 			} elseif { $data(max) ne "" && $data(value) > $data(max) } {
-				$widget configure -foreground [dui aspect get text fill -style error]
+				$widget configure -foreground [dui aspect get dtext fill -style error]
 			} else {
-				$widget configure -foreground [dui aspect get text fill]
+				$widget configure -foreground [dui aspect get dtext fill]
 			}
 		}
 	}
