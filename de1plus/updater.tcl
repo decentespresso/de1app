@@ -560,6 +560,11 @@ proc start_app_update {} {
     
     set remote_timestamp [check_timestamp_for_app_update_available 1]
     if {$remote_timestamp < 0} {
+        set ::de1(app_update_button_label) [translate "Update failed"]; 
+        catch {
+            .hello configure -text $::de1(app_update_button_label)
+        }
+
         msg -ERROR "Could not fetch remote timestamp. Aborting update"
         set ::app_updating 0
         return -1
