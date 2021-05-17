@@ -266,7 +266,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget drater
 	}
-	metadata add espresso_note {
+	metadata add espresso_notes {
 		domain shot
 		category description
 		section extraction
