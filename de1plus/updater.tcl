@@ -54,7 +54,7 @@ proc calc_sha {source} {
 
         if {$use_unix_sha == 1} {
             #puts "Using fast Unix SHA256"
-            set sha [exec $shasum -a 256 $source]
+            set sha [lindex [exec $shasum -a 256 $source] 0]
         } else {
             catch {
                 #puts "Using slow Tcl SHA256"
