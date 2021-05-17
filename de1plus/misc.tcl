@@ -1138,6 +1138,7 @@ proc make_de1_dir {srcdir destdirs} {
     }
 
     write_file "$srcdir/complete_manifest.txt" [join [lsort -unique $complete_manifest] \n]
+    return $files_copied
 }
 
 proc write_binary_file {filename data} {
