@@ -1069,10 +1069,10 @@ proc make_de1_dir {srcdir destdirs} {
             if {([info exists lmanifest_sha($file)] == 1) && ($mtime ==  $mtime_saved)} {
                 set sha256 $lmanifest_sha($file)
             } else {
-                puts -nonewline "Calculating SHA256 for $source : "
+                puts -nonewline "Calculating SHA256 for $source"
                 set sha256 [calc_sha $source]
 
-                puts $sha256
+                #puts $sha256
                 if {[ifexists lmanifest_sha($file)] == $sha256} {
                     puts "Timestamp changed, file identical, skipping"
                 } else {
@@ -1105,8 +1105,9 @@ proc make_de1_dir {srcdir destdirs} {
                 }
             }
 
-            puts "$file -> $destdir/"
+            puts "Copying $file -> $destdir/"
             file copy -force $source $dest
+            puts "- done copying $file -> $destdir/"
         }
 
         foreach k [array names lmanifest_sha] {
