@@ -18,3 +18,4 @@ package ifneeded de1_de1 1.4 [list source [file join "./" de1_de1.tcl]]
 package ifneeded de1_device_scale 1.5 [list source [file join "./" device_scale.tcl]]
 
 package ifneeded de1_history_viewer 1.1 [list source [file join "./" history_viewer.tcl]]
+package ifneeded de1_metadata 1.0 [list source [file join "./" metadata.tcl]]

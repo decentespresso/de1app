@@ -115,6 +115,8 @@ proc make_de1_dir {srcdir destdirs} {
         gui.tcl *
         history_viewer.tcl *
         dui.tcl *
+		metadata.tcl *
+		app_metadata.tcl *
         machine.tcl *
         utils.tcl *
         main.tcl *
