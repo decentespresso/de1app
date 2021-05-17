@@ -729,7 +729,7 @@ namespace eval ::dui {
 			default.dbutton_label.anchor center	
 			default.dbutton_label.justify center
 			default.dbutton_label.fill white
-			default.dbutton_label.disabledfill "#ddd"
+			default.dbutton_label.disabledfill "#ccc"
 
 			default.dbutton_label1.pos {0.5 0.8}
 			default.dbutton_label1.font_size 16
@@ -5866,7 +5866,7 @@ namespace eval ::dui {
 			set ry [dui platform rescale_y $y]
 			set ry1 [dui platform rescale_y $y1]
 					
-			set tags [dui::args::process_tags_and_var $pages dbutton {} 1]
+			set tags [dui::args::process_tags_and_var $pages dbutton {} 1 args 1]
 			set main_tag [lindex $tags 0]
 			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
 			
