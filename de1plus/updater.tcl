@@ -42,9 +42,24 @@ proc calc_sha {source} {
     set sha 0
     set tries 0
 
+    set use_unix_sha 0
+    set shasum "/usr/bin/shasum"
+    if {$::android != 1} {
+        if {[file exists $shasum] == 1} {
+            set use_unix_sha 1
+        } 
+    }
+
     while {$sha == 0 && $tries < 10} {
-        catch {
-            set sha [::sha2::sha256 -hex -filename $source]
+
+        if {$use_unix_sha == 1} {
+            #puts "Using fast Unix SHA256"
+            set sha [exec $shasum -a 256 $source]
+        } else {
+            catch {
+                #puts "Using slow Tcl SHA256"
+                set sha [::sha2::sha256 -hex -filename $source]
+            }
         }
         
         # use this to test SHA failure once
