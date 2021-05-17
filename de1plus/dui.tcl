@@ -1031,8 +1031,46 @@ namespace eval ::dui {
 				::set use_full_aspect 0
 			}
 			
-			::set result {}			
+			# First iterate to find all unique aspects (which may come from either requested theme or default,
+			#	or from requested style or unstyled)
+			::set all_aspects {}
 			foreach full_aspect [array names aspects -regexp $pattern] {
+				::set type_and_aspect [join [lrange [split $full_aspect .] 1 2] .]
+				if { $type_and_aspect ni $all_aspects } {
+					lappend all_aspects $type_and_aspect
+				}
+			}
+			
+			::set full_aspect_names {}
+			foreach aspect $all_aspects {
+				::set full_aspect ""
+				if { $theme ne "default" } {
+					if { $style ne "" && [info exists aspects(${theme}.${aspect}.${style})] } {
+						::set full_aspect ${theme}.${aspect}.${style}
+					} elseif { [info exists aspects(${theme}.${aspect})] } {
+						::set full_aspect ${theme}.${aspect}
+					}
+				}
+				if { $full_aspect eq "" } {
+					if { $style ne "" && [info exists aspects(default.${aspect}.${style})] } {
+							::set full_aspect default.${aspect}.${style}
+					} elseif { [info exists aspects(default.${aspect})] } {
+						::set full_aspect default.${aspect}
+					}
+				}				
+				if { $full_aspect eq "" } {
+					# By construction, this should never happen
+					msg -ERROR [namespace current] list: "aspect '$aspect' not found for theme '$theme' and style '$style'"
+				} else {
+					lappend full_aspect_names $full_aspect
+				}
+			}
+
+			::set result {}
+			foreach full_aspect $full_aspect_names {
+				::set aspect_parts [split $full_aspect .]
+				::set aspect_theme [lindex $aspect_parts 0]
+				
 				if { $use_full_aspect } {
 					lappend result $full_aspect
 				} elseif { $as_options } {
