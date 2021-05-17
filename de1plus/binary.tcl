@@ -1313,8 +1313,8 @@ proc parse_state_change {packed destarrname} {
 	unset -nocomplain ShotSample
 
 	set spec {
-		state char
-		substate char
+		state {char {} {} {unsigned} {}}
+		substate {char {} {} {unsigned} {}}
 	}
 	array set specarr $spec
 
