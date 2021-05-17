@@ -1149,7 +1149,7 @@ proc write_binary_file {filename data} {
 
 
 
-proc calc_sha {source} {
+proc calc_sha_obsolete {source} {
 
     #return [::crc::crc32 -filename $source]
     return [::sha2::sha256 -hex -filename $source]
