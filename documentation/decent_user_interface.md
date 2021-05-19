@@ -586,7 +586,7 @@ page is actually shown. This proc is normally used to initialize page data, such
 
 Though receiving the page to be shown as an argument on the **load** and **show** namespace commands may seem unnecessary, it is required when a single namespace is used for several related pages. Same argument for passing the name of the page to be hidden to the **hide** namespace command.
 
-A page namespace **load** command must return a boolean value. This is used to optionally interrupt the loading of the page (if the return value casts to  _false_ ).
+A page namespace **load** command must return either 0, 1, or a page name. This is used to optionally interrupt the loading of the page (if the return value is 0), or to diverge the flow to another page (if the return value is a new page name).
 
 ##### show 
 Takes place whenever the <a href="#dui_page_load">dui page load</a> or <a href="#dui_page_show">dui page show</a> commands are run,  _after_  the page is actually shown. This event is normally used to initialize the page GUI elements (e.g. show/hide or enable/disable some items depending on the state).

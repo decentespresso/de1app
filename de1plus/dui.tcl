@@ -4244,14 +4244,32 @@ namespace eval ::dui {
 				# TBD: Pass $args to load actions???
 				foreach action [actions $page_to_show load] {
 					lappend action $page_to_hide $page_to_show
-					uplevel #0 $action
 					#eval $action
+					set action_result [uplevel #0 $action]
+					if { $action_result ne "" && $action_result != 1 } {
+						if { $action_result == 0 } {
+							msg -NOTICE [namespace current] "loading of page '$page_to_show' interrupted"
+							return
+						} else {
+							msg -NOTICE [namespace current] "CHANGING page_to_show from '$page_to_show' to '$action_result'"
+							set page_to_show $action_result	
+						} 
+					}
 				}
 				if { $show_ns ne "" && [info procs ${show_ns}::load] ne "" } {
-					set page_loaded [${show_ns}::load $page_to_hide $page_to_show {*}$args]
-					if { ![string is true $page_loaded] } {
-						# Interrupt the loading: don't show the new page
-						return
+					set action_result [${show_ns}::load $page_to_hide $page_to_show {*}$args]
+#					if { ![string is true $page_loaded] } {
+#						# Interrupt the loading: don't show the new page
+#						return
+#					}
+					if { $action_result ne "" && $action_result != 1 } {
+						if { $action_result == 0 } {
+							msg -NOTICE [namespace current] "loading of page '$page_to_show' interrupted"
+							return
+						} else {
+							msg -NOTICE [namespace current] "CHANGING page_to_show from '$page_to_show' to '$action_result'"
+							set page_to_show $action_result	
+						} 
 					}
 				}
 			}
