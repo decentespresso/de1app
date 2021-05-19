@@ -1207,7 +1207,7 @@ proc append_to_peripheral_list {address name connectiontype devicetype devicefam
 	set newlist $::peripheral_device_list
 	lappend newlist [dict create address $address name $name type $connectiontype devicetype $devicetype devicefamily $devicefamily]
 
-	::bt::msg -INFO "Scan found $connectiontype peripheral: $address ($devicetype:$devicefamily)"
+	::bt::msg -INFO "Scan found $connectiontype peripheral: $address ($type:$devicefamily)"
 	set ::peripheral_device_list $newlist
 	catch {
 		fill_peripheral_listbox
