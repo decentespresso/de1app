@@ -1729,22 +1729,6 @@ proc bluetooth_character {} {
 	return "\uE018"
 }
 
-proc thermometer_character {} {
-	if {[language] == "ar" || [language] == "he"} {
-		return "T:"
-	}
-
-	return "\uF2C9"
-}
-
-proc scale_character {} {
-	if {[language] == "ar" || [language] == "he"} {
-		return "SCALE:"
-	}
-
-	return "\uF515"
-}
-
 proc usb_character {} {
 	if {[language] == "ar" || [language] == "he"} {
 		return "USB:"
@@ -1809,43 +1793,43 @@ proc fill_ble_listbox {} {
 	make_current_listbox_item_blue $widget
 }
 
-proc fill_peripheral_listbox {} {
+proc fill_ble_scale_listbox {} {
+	
 
 	set widget $::ble_scale_listbox_widget
 	$widget delete 0 99999
 	set cnt 0
+	set current_ble_number 0
 
 	set one_selected 0
-	foreach d $::peripheral_device_list {
+	foreach d [lsort -dictionary -increasing $::scale_bluetooth_list] {
 		set addr [dict get $d address]
 		set name [dict get $d name]
 		set type [dict get $d type]
-		set devicetype [dict get $d devicetype]
-		set icon "UNKN:"
-
-		if {$devicetype eq "thermometer"} {
-			set icon [thermometer_character]
-		} elseif {$devicetype eq "scale"} {
-			set icon [scale_character]
-		} elseif {$type eq "ble"} {
-			set icon [bluetooth_character]
-		}
+		set icon [bluetooth_character]
 
 		if { $name eq "" } { set name $type }
-		if {$addr in {$::settings(scale_bluetooth_address) $::settings(thermometer_bluetooth_address)}} {
+		if {$addr == [ifexists ::settings(scale_bluetooth_address)]} {
 			$widget insert $cnt " \[[checkboxchar]\] $icon $name"
 			set one_selected 1
 		} else {
 			$widget insert $cnt " \[   \] $icon $name"
 		}
-
+			#$widget insert $cnt $addr
+		if {[ifexists ::settings(scale_bluetooth_address)] == $addr} {
+			set current_ble_number $cnt
+		}
 		incr cnt
 	}
 	
-	set ::peripheral_needs_to_be_selected 0
-	if {[llength $::peripheral_device_list] > 0 && $one_selected == 0} {
-		set ::peripheral_needs_to_be_selected 1
+	$widget selection set $current_ble_number;
+
+	set ::scale_needs_to_be_selected 0
+	if {[llength $::de1_device_list] > 0 && $one_selected == 0} {
+		set ::scale_needs_to_be_selected 1
 	}
+	
+	make_current_listbox_item_blue $widget
 }
 
 proc profile_type_text {} {
@@ -2481,6 +2465,7 @@ proc change_bluetooth_device {} {
 proc change_scale_bluetooth_device {} {
 	set w $::ble_scale_listbox_widget
 
+
 	if {$w == ""} {
 		return
 	}
@@ -2492,46 +2477,29 @@ proc change_scale_bluetooth_device {} {
 		return
 	}
 	set selection_index [$w curselection]
-
-	msg "selected item" $selection_index
-	set dic [lindex $::peripheral_device_list $selection_index]
+	set dic [lindex $::scale_bluetooth_list $selection_index]
 	set addr [dict get $dic address]
 	set name [dict get $dic name]
-	set type [dict get $dic type]
-	set devicetype [dict get $dic devicetype]
-	set devicefamily [dict get $dic devicefamily]
 
 	if { $name == "" } {
-		set name $devicefamily
+		set name [dict get $dic type]
 	}
 
-	if {$type ne "ble"} {
-		msg -WARNING "Non BLE peripheral requested for connect. Damn!"
+	set ::settings(scale_bluetooth_address) $addr
+	set ::settings(scale_bluetooth_name) $name
+
+	set ::settings(scale_type) [ifexists ::scale_types($addr)]
+	msg -INFO "change_scale_bluetooth_device: set scale type to: '$::settings(scale_type)' $addr"
+
+	if {$addr == $::settings(scale_bluetooth_address)} {
+		ble_connect_to_scale
 		return
 	}
 
-	msg -INFO  "selected $devicetype $name @ $addr"
-
-	if {$devicetype eq "scale"} {
-		set ::settings(scale_bluetooth_address) $addr
-		set ::settings(scale_bluetooth_name) $name
-		set ::settings(scale_type) $devicefamily
-		msg "set scale type to: '$::settings(scale_type)' $addr"
-
-		ble_connect_to_scale
-	} elseif {$devicetype eq "thermometer"} {
-		set ::settings(thermometer_bluetooth_address) $addr
-		set ::settings(thermometer_bluetooth_name) $name
-		set ::settings(thermometer_bluetooth_type) $devicefamily
-
-		ble_connect_to_thermometer
-	}
-
 	save_settings
-	$::ble_scale_listbox_widget selection set $selection_index;
-	make_current_listbox_item_blue $::ble_scale_listbox_widget
+	ble_connect_to_scale
 
-	fill_peripheral_listbox
+	fill_ble_scale_listbox
 }
 
 

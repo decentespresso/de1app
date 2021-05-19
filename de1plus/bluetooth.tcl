@@ -695,41 +695,6 @@ proc decentscale_tare {} {
 	userdata_append "decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare] 0
 }
 
-### Meater
-
-proc meater_enable_notifications {} {
-	if {$::de1(thermometer_device_handle) == 0 || $::settings(thermometer_bluetooth_type) != "apptionmeater"} {
-		return
-	}
-
-	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-		msg "meater not connected, cannot enable weight notifications"
-		return
-	}
-
-	userdata_append "enable meater notifications" [list ble enable $::de1(thermometer_device_handle) $::de1(suuid_meater) $::sinstance($::de1(suuid_meater)) $::de1(cuuid_meater) $::cinstance($::de1(cuuid_meater))] 1
-}
-
-proc meater_parse_response { value } {
-	binary scan $value a2 raw
-	set temp [expr $raw / 16]
-
-	msg "Meater temperature is $temp"
-	process_temperature_value $temp
-}
-
-
-### MISC 
-
-proc process_temperature_value {value} {
-	if {[::de1::state::current_substate] == "Steaming")} {
-		if {$value >= $::settings(target_milk_temperature)} {
-			msg -NOTICE [format "Steaming stopped for temperature at %.1f for target %.1f" $value $::settings(target_milk_temperature)
-			start_idle
-		}
-	}
-}
-
 proc close_all_ble_and_exit {} {
 	::bt::msg -NOTICE close_all_ble_and_exit
 
@@ -758,12 +723,6 @@ proc close_all_ble_and_exit {} {
 		}
 	}
 
-	msg "Closing thermometer"
-	if {$::de1(scale_device_handle) != 0} {
-		catch {
-			ble close $::de1(thermometer_device_handle)
-		}
-	}
 
 	catch {
 		if {$::settings(ble_unpair_at_exit) == 1} {
@@ -1147,70 +1106,28 @@ proc ble_connect_to_scale {} {
 
 }
 
+proc append_to_scale_bluetooth_list {address name type} {
+	::bt::msg -NOTICE append_to_scale_bluetooth_list
 
-set ::currently_connecting_thermometer_handle 0
-proc ble_connect_to_thermometer {} {
+	set ::scale_types($address) $type
 
-	if {$::de1(thermometer_device_handle) != 0} {
-		msg "Already connected to a thermometer, don't try again"
-		return
-	}
-
-	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
-		msg "in_fw_update_mode : ble_connect_to_thermometer"
-		return
-	}
-
-
-	if {$::settings(thermometer_bluetooth_address) == ""} {
-		msg "No Thermometer BLE address in settings, so not connecting to it"
-		return
-	}
-
-	if {$::currently_connecting_thermometer_handle != 0} {
-		msg "Already trying to connect to Thermometer, so don't try again"
-		return
-	}
-
-	if {[llength $::de1(cmdstack)] > 2} {
-		msg -INFO "Too much backpressure, waiting with the connect"
-		after 300 ble_connect_to_thermometer
-		return
-	}
-
-	if {[catch {
-		set ::currently_connecting_thermometer_handle [ble connect [string toupper $::settings(thermometer_bluetooth_address)] de1_ble_handler false]
-		msg "Connecting to thermometer on $::settings(thermometer_bluetooth_address)"
-		set retcode 0
-	} err] != 0} {
-		set ::currently_connecting_thermometer_handle 0
-		set retcode 1
-		msg "Failed to start to BLE connect to scale because: '$err'"
-	}
-	return $retcode
-}
-
-
-proc append_to_peripheral_list {address name connectiontype devicetype devicefamily} {
-
-	::bt::msg -NOTICE append_to_peripheral_list
-	foreach { entry } $::peripheral_device_list {
+	foreach { entry } $::scale_bluetooth_list {
 		if { [dict get $entry address] eq $address} {
 			return
 		}
 	}
 
 	if { $name == "" } {
-		set name $devicefamily
+		set name $type
 	}
 
-	set newlist $::peripheral_device_list
-	lappend newlist [dict create address $address name $name type $connectiontype devicetype $devicetype devicefamily $devicefamily]
+	set newlist $::scale_bluetooth_list
+	lappend newlist [dict create address $address name $name type $type]
 
-	::bt::msg -INFO "Scan found $connectiontype peripheral: $address ($type:$devicefamily)"
-	set ::peripheral_device_list $newlist
+	::bt::msg -INFO "Scan found recognized scale at: $address ($type)"
+	set ::scale_bluetooth_list $newlist
 	catch {
-		fill_peripheral_listbox
+		fill_ble_scale_listbox
 	}
 }
 
@@ -1334,7 +1251,7 @@ proc de1_ble_handler { event data } {
 						}
 					}
 				} elseif {[string first Skale $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "atomaxskale"
+					append_to_scale_bluetooth_list $address $name "atomaxskale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1344,7 +1261,7 @@ proc de1_ble_handler { event data } {
 					}
 
 				} elseif {[string first "Decent Scale" $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "decentscale"
+					append_to_scale_bluetooth_list $address $name "decentscale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1353,7 +1270,7 @@ proc de1_ble_handler { event data } {
 						}
 					}
 				} elseif {[string first "FELICITA" $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "felicita"
+					append_to_scale_bluetooth_list $address $name "felicita"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1362,7 +1279,7 @@ proc de1_ble_handler { event data } {
 						}
 					}
  				} elseif {[string first "HIROIA JIMMY" $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "hiroiajimmy"
+					append_to_scale_bluetooth_list $address $name "hiroiajimmy"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1377,19 +1294,12 @@ proc de1_ble_handler { event data } {
 					if { [string first "PROCH" $name] != -1 } {
 						set ::settings(force_acaia_heartbeat) 1
 					}
- 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
+ 					append_to_scale_bluetooth_list $address $name "acaiascale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
 							::bt::msg -INFO "Not currently connecting to scale, so trying now"
 							ble_connect_to_scale
-						}
-					}
-				} elseif {[string first "MEATER" $name] == 0} {
-					if {$address == $::settings(thermometer_bluetooth_address)} {
-						if {$::currently_connecting_thermometer_handle == 0} {
-							msg "Not currently connecting to scale, so trying now"
-							ble_connect_to_thermometer
 						}
 					}
 				} else {
@@ -1403,14 +1313,6 @@ proc de1_ble_handler { event data } {
 
 						de1_disconnect_handler $handle
 
-					} elseif {$address == $::settings(scale_bluetooth_address)} {
-						catch {
-							ble close $::currently_connecting_thermometer_handle
-						}
-						set ::currently_connecting_thermometer_handle 0
-						if {$handle == $::de1(thermometer_device_handle)} {
-							set ::de1(thermometer_device_handle) 0
-						}
 					} elseif {$address == $::settings(scale_bluetooth_address)} {
 
 					#set ::de1(scale_type) ""
@@ -1443,6 +1345,7 @@ proc de1_ble_handler { event data } {
 
 						::device::scale::event::apply::on_disconnect_callbacks $event_dict
 
+
 						# john 1-11-19 automatic reconnection attempts eventually kill the bluetooth stack on android 5.1
 						# john might want to make this happen automatically on Android 8, though. For now, it's a setting, which might
 						# eventually get auto-set as per the current Android version, if we can trust that to give us a reliable BLE stack.
@@ -1462,6 +1365,10 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_de1
 						}
 
+						#if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != "" && $::currently_connecting_scale_handle == 0} {
+							#userdata_append "connect to scale" ble_connect_to_scale
+							#ble_connect_to_scale
+						#}
 					}
 					set ::scanning 0
 				} elseif {$state eq "discovery"} {
@@ -1476,29 +1383,17 @@ proc de1_ble_handler { event data } {
 
 						de1_connect_handler $handle $address "DE1"
 
-						if {$::de1(scale_device_handle) != 0 && $::de1(thermometer_device_handle) != 0 } {
+						if {$::de1(scale_device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning (or if there is not scale to connect to and we're connected to the de1)
 							stop_scanner
 						}
 
-					} elseif {$::de1(thermometer_device_handle) == 0 && $address == $::settings(thermometer_bluetooth_address)} {
-						set ::de1(thermometer_device_handle) $handle
-
-						if {$::de1(device_handle) != 0 && $::de1(scale_device_handle) != 0} {
-							# if we're connected to both the scale and the DE1, stop scanning
-							stop_scanner
-						}
-
-						msg "thermometer '$::settings(thermometer_bluetooth_name)' connected $::settings(thermometer_bluetooth_address) $handle - $event $data"
-
-						if {$::settings(thermometer_bluetooth_type) == "apptionmeater"} {
-							append_to_peripheral_list $address $::settings(thermometer_bluetooth_name) "ble" "thermometer" "apptionmeater"
-							meater_enable_notifications
-						}
-
-						set ::currently_connecting_thermometer_handle 0
 
 					} elseif {$::de1(scale_device_handle) == 0 && $address == $::settings(scale_bluetooth_address)} {
+
+
+						#append_to_scale_bluetooth_list $address [ifexists ::scale_types($address)]
+						#append_to_scale_bluetooth_list $address $::settings(scale_type)
 
 						set ::de1(wrote) 0
 						set ::de1(scale_device_handle) $handle
@@ -1513,8 +1408,9 @@ proc de1_ble_handler { event data } {
 							set ::settings(scale_type) "atomaxskale"
 						}
 
+						#set ::de1(scale_type) [ifexists ::scale_types($address)]
 						if {$::settings(scale_type) == "decentscale"} {
-							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale"  "decentscale"
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "decentscale"
 							#after 500 decentscale_enable_lcd
 							decentscale_tare
 
@@ -1525,20 +1421,20 @@ proc de1_ble_handler { event data } {
 							#after 5000 decentscale_timer_off
 
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
-							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "atomaxskale"
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "atomaxskale"
 							#set ::de1(scale_type) "atomaxskale"
 							skale_enable_lcd
 							after 1000 skale_enable_weight_notifications
 							after 2000 skale_enable_button_notifications
 							after 3000 skale_enable_lcd
 						} elseif {$::settings(scale_type) == "felicita"} {
-							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "felicita"
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "felicita"
 							after 2000 felicita_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "hiroiajimmy"} {
-							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "hiroiajimmy"
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "hiroiajimmy"
 							after 200 hiroia_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
-							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
+							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "acaiascale"
 							acaia_send_ident
 							after 500 acaia_send_config
 							after 1000 acaia_enable_weight_notifications
@@ -1548,7 +1444,7 @@ proc de1_ble_handler { event data } {
 						}
 						set ::currently_connecting_scale_handle 0
 
-						if {$::de1(device_handle) != 0 && $::de1(thermometer_device_handle) != 0} {
+						if {$::de1(device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning
 							stop_scanner
 						}
@@ -1899,9 +1795,6 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_hiroiajimmy_status)} {
 							# hiroia jimmy scale
 							hiroia_parse_response $value
-						} elseif {$cuuid eq $::de1(cuuid_meater)} {
-							# meater thermometer
-							meater_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF82)} {
 							set t0 {}
 							#set t1 {}
@@ -2186,7 +2079,7 @@ proc scanning_state_text {} {
 	}
 
 	#return [translate "Tap to select"]
-	if {[ifexists ::de1_needs_to_be_selected] == 1 || [ifexists ::peripheral_needs_to_be_selected] == 1} {
+	if {[ifexists ::de1_needs_to_be_selected] == 1 || [ifexists ::scale_needs_to_be_selected] == 1} {
 		return [translate "Tap to select"]
 	}
 
@@ -2202,9 +2095,13 @@ proc scanning_restart {} {
 
 		# insert enough dummy devices to overfill the list, to test whether scroll bars are working
 		set ::de1_device_list [list [dict create address "12:32:16:18:90" name "ble3" type "ble"] [dict create address "10.1.1.20" name "wifi1" type "wifi"] [dict create address "12:32:56:78:91" name "dummy_ble2" type "ble"] [dict create address "12:32:56:78:92" name "dummy_ble3" type "ble"] [dict create address "ttyS0" name "dummy_usb" type "usb"] [dict create address "192.168.0.1" name "dummy_wifi2" type "wifi"]]
-		set ::peripheral_device_list [list [dict create address "51:32:56:78:90" name "ACAIAxxx" type "ble" devicetype "scale" devicefamily "acaiascale"] [dict create address "12:32:56:78:93" name "MEATER" type "ble" devicetype "thermometer" devicefamily "apptionmeater"] ]
+		set ::scale_bluetooth_list [list [dict create address "51:32:56:78:90" name "ACAIAxxx" type "ble"] [dict create address "92:32:56:78:90" name "Skale2" type "ble"] [dict create address "12:32:56:78:92" name "ACAIA2xxx" type "ble"] [dict create address "12:32:56:78:93" name "Skale2b" type "ble"] ]
 
-		after 200 fill_peripheral_listbox
+		set ::scale_types(12:32:56:78:90) "decentscale"
+		set ::scale_types(32:56:78:90:12) "decentscale"
+		set ::scale_types(56:78:90:12:32) "atomaxskale"
+
+		after 200 fill_ble_scale_listbox
 		after 400 fill_ble_listbox
 
 		set ::scanning 1
