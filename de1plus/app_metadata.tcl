@@ -211,7 +211,7 @@ proc init_app_metadata {} {
 		propagate 0
 		data_type number
 		min 0.0
-		max 15.0
+		max 25.0
 		default 8.0
 		smallincrement 0.01
 		bigincrement 0.1
