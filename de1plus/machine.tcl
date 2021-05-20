@@ -556,8 +556,53 @@ array set ::de1_substate_types {
 	211 "Error_Flash"
 	212 "Error_OOM"
 	213 "Error_Deadline"
-	216 "Error_Pump"
+	214 "Error_HiCurrent"
+	215 "Error_LoCurrent"
+	216 "Error_BootFill"
 }
+
+
+
+array set ::de1_substate_type_description {
+	-   "starting"
+	0	"State is not relevant"
+	1	"Cold water is not hot enough. Heating hot water tank."
+	2	"Warm up hot water heater for shot."
+	3	"Stabilize mix temp and get entire water path up to temperature."
+	4	"Espresso only. Hot Water and Steam will skip this state."
+	5	"Not used in Steam"
+	6	"Espresso only, atm"
+	7	"Steam only"
+	8	"Starting descale"
+	9	"get some descaling solution into the group and let it sit"
+	10	"descaling internals"
+	11	"descaling group"
+	12	"descaling steam"
+	13	"Starting clean"
+	14	"Fill the group"
+	15	"Wait for 60 seconds so we soak the group head"
+	16	"Flush through group"
+	17  "Have we given up on a refill"
+	18	"Are we paused in steam?"
+	200 "Something died with a NaN"
+	201 "Something died with an Inf"
+	202 "An error for which we have no more specific description"
+	203 "ACC not responding, unlocked, or incorrectly programmed"
+	204 "We are getting an error that is probably a broken temperature sensor"
+	205 "Pressure sensor error"
+	206 "Water level sensor error"
+	207 "DIP switches told us to wait in the error state."
+	208 "Assertion failed"
+	209 "Unsafe value assigned to variable"
+	210 "Invalid parameter passed to function"
+	211 "Error accessing external flash"
+	212 "Could not allocate memory"
+	213 "Realtime deadline missed"
+	214 "Measured a current that is out of bounds."
+	215 "Not enough current flowing, despite something being turned on."
+	216 "Could not get up to pressure during boot pressure test, possibly because no water"
+}
+
 
 array set ::de1_substate_types_reversed [reverse_array ::de1_substate_types]
 
