@@ -3535,7 +3535,7 @@ namespace eval ::dui {
 			}
 			# Main tags must be unique per-page.
 			foreach page $pages {
-				if { [dui page has_item $page $main_tag] ne "" } {
+				if { [dui page has_item $page $main_tag] } {
 					set msg "process_tags_and_var: main tag '$main_tag' already exists in page '$page', duplicates are not allowed"
 					msg -ERROR [namespace current] $msg
 					info_page $msg
@@ -4463,8 +4463,9 @@ namespace eval ::dui {
 		proc has_item { page tag } {
 			if { [llength $page] > 1 } {
 				set page [lindex $page 0]
-			}			
-			return [[dui canvas] find withtag $tag&&p:$page]
+			}
+			set items [[dui canvas] find withtag $tag&&p:$page]
+			return [expr {$items ne ""}]
 		}
 		
 		# Keep track of what labels are displayed in what pages. This is done through the "p:<page_name>" canvas tags 
