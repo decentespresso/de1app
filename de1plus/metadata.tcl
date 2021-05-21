@@ -81,7 +81,7 @@ namespace eval ::metadata {
 		variable dd		
 		if { [dict exists $dd $field] } {
 			msg -WARNING [namespace current] "add: field name '$field' already exists in the data dictionary, duplicates not allowed"
-			return
+			return 0
 		}		
 		if { [llength $args] == 1 } {
 			set args [lindex $args 0]
@@ -98,6 +98,7 @@ namespace eval ::metadata {
 		}
 		
 		dict set dd $field [dict create {*}$props]
+		return 1
 	}
 
 	# If no properties are specified in 'args', return a Tcl dict with all the properties.
@@ -143,10 +144,10 @@ namespace eval ::metadata {
 			if { [metadata dictionary exists $filter_field] } {
 				set filtered_fields {}
 				foreach fn $fields {
-					if { [metadata get $fn $filter_field] in $filter_values } {
+					if { [any_in_list {*}[metadata get $fn $filter_field] $filter_values] } {
 						lappend filtered_fields $fn
 					}
-				}				
+				}
 				set fields $filtered_fields
 			} else {
 				msg -WARNING [namespace current] "fields: metadata dictionary filter field '$filter_field' not found"
