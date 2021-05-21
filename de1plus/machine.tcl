@@ -808,17 +808,25 @@ proc reset_gui_starting_espresso {} {
 	set ::de1(final_espresso_weight) 0
 
 	############
-	# clear any description of the previous espresso
-	set ::settings(scentone) ""
-	set ::settings(espresso_enjoyment) 0
-
 	# this sets the time the espresso starts, used for recording this espresso to a history file
 	set ::settings(espresso_clock) [clock seconds]
 
-	set ::settings(espresso_notes) ""
-	set ::settings(drink_tds) 0
-	set ::settings(drink_weight) 0
-	set ::settings(drink_ey) 0
+	# clear any description of the previous espresso
+#	set ::settings(scentone) ""
+#	set ::settings(espresso_enjoyment) 0	
+#	set ::settings(espresso_notes) ""
+#	set ::settings(drink_tds) 0
+#	set ::settings(drink_weight) 0
+#	set ::settings(drink_ey) 0
+	foreach field [metadata fields -domain shot -category description -propagate 0] {
+		set data_type [metadata get $field data_type]
+		if { $data_type eq "number" } {
+			set ::settings($field) 0
+		} else {
+			set ::settings($field) {}
+		}
+	}
+	
 	############
 
 
