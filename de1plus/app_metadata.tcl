@@ -266,6 +266,22 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget drater
 	}
+	metadata add scentone {
+		domain shot
+		category description
+		section extraction
+		subsection tasting
+		owner_type base
+		name "Scentone flavours"
+		name_plural "Scentone flavours"
+		short_name "Scentone" 
+		short_name_plural "Scentone"
+		propagate 0
+		data_type complex
+		required 0
+		length list
+		default_dui_widget {}
+	}	
 	metadata add espresso_notes {
 		domain shot
 		category description
