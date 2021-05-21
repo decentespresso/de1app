@@ -1687,6 +1687,32 @@ proc list_remove_element {list toremove} {
     return $newlist
 }
 
+proc any_in_list { x list } {
+	if { $x eq "" } {
+		return 0
+	}	
+	set match 0
+	set i 0
+	while { !$match && $i < [llength $x] } {
+		set match [expr {[lindex $x $i] in $list}]
+		incr i
+	}
+	return $match
+}
+
+proc all_in_list { x list } {
+	if { $x eq "" } {
+		return 0
+	}
+	set match 1
+	set i 0
+	while { $match && $i < [llength $x] } {
+		set match [expr {[lindex $x $i] in $list}]
+		incr i
+	}
+	return $match
+}
+
 proc web_browser {url} {
     msg -INFO "Browser '$url'"
 	if { $::android == 1 } {
