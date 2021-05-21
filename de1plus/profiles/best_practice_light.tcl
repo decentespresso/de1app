@@ -22,9 +22,9 @@ flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
 profile_notes {This profile aims to unite the best practices in espresso extraction that we have learned so far with the Decent. It unites Brakel's Londonium, Rao's Blooming and Gagné's Adaptive profiles. Your grind should be coarser for light roasts, aiming for a flow rate around 2.5 ml/s at peak pressure. 18g in, 50g out, in 60 seconds is a typical recipe.   Grind fine enough to keep dripping during preinfusion to around 8g.}
 water_temperature 70.00
-final_desired_shot_volume 32
-final_desired_shot_weight 32
-final_desired_shot_weight_advanced 32
+final_desired_shot_volume 50
+final_desired_shot_weight 50
+final_desired_shot_weight_advanced 50
 tank_desired_water_temperature 0
 final_desired_shot_volume_advanced 50
 profile_title {Best practice (light roast)}
