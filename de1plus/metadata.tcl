@@ -87,7 +87,7 @@ namespace eval ::metadata {
 		
 	}
 		
-	proc add { field args } {
+	proc add { field after args } {
 		variable dd		
 		if { [dict exists $dd $field] } {
 			msg -WARNING [namespace current] "add: field name '$field' already exists in the data dictionary, duplicates not allowed"
@@ -107,7 +107,28 @@ namespace eval ::metadata {
 			}
 		}
 		
-		dict set dd $field [dict create {*}$props]
+		if { $after eq "" || [string tolower $after] eq "end" } {
+			::set after "end"
+		} elseif { $after ne "start" && ![dict exists $dd $after] } {
+			msg -WARNING [namespace current] "add: after field '$field' not found in the data dictionary, adding after end"
+			set after "end"
+		}
+		
+		if { $after eq "end" } {
+			dict set dd $field [dict create {*}$props]
+		} else {
+			::set new_dd [dict create]
+			if { [string tolower $after] eq "start" } {
+				dict set new_dd $field [dict create {*}$props]
+			}
+			foreach key [dict keys $dd] {
+				dict set new_dd $key [dict get $dd $key]
+				if { $key eq $after } {
+					dict set new_dd $field [dict create {*}$props]
+				}
+			}
+			::set dd $new_dd
+		}
 		return 1
 	}
 

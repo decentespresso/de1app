@@ -27,7 +27,7 @@ proc init_app_metadata {} {
 	metadata dictionary add default_dui_widget [list validate_category {entry text listbox dcombobox dcheckbox drater dclicker}]	
 	
 	# Define the actual fields
-	metadata add profile_title {
+	metadata add profile_title end {
 		domain {profile shot}
 		owner_type base
 		name "Profile title"
@@ -40,7 +40,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dcombobox
 	}
-	metadata add bean_brand {
+	metadata add bean_brand end {
 		domain shot
 		category description
 		section beans
@@ -56,7 +56,7 @@ proc init_app_metadata {} {
 		length list
 		default_dui_widget dcombobox
 	}
-	metadata add bean_type {
+	metadata add bean_type end {
 		domain shot
 		category description
 		section beans
@@ -72,7 +72,7 @@ proc init_app_metadata {} {
 		length list
 		default_dui_widget dcombobox
 	}
-	metadata add roast_date {
+	metadata add roast_date end {
 		domain shot
 		category description
 		section beans
@@ -88,7 +88,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget entry
 	}
-	metadata add roast_level {
+	metadata add roast_level end {
 		domain shot
 		category description
 		section beans
@@ -104,7 +104,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dcombobox
 	}
-	metadata add bean_notes {
+	metadata add bean_notes end {
 		domain shot
 		category description
 		section beans
@@ -120,7 +120,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget text
 	}		
-	metadata add grinder_model {
+	metadata add grinder_model end {
 		domain shot
 		category description
 		section equipment
@@ -136,7 +136,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dcombobox
 	}
-	metadata add grinder_setting {
+	metadata add grinder_setting end {
 		domain shot
 		category description
 		section equipment
@@ -152,7 +152,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dcombobox
 	}
-	metadata add grinder_dose_weight {
+	metadata add grinder_dose_weight end {
 		domain shot
 		category description
 		section extraction
@@ -175,7 +175,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dclicker
 	}
-	metadata add drink_weight {
+	metadata add drink_weight end {
 		domain shot
 		category description
 		section extraction
@@ -198,7 +198,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dclicker
 	}
-	metadata add drink_tds {
+	metadata add drink_tds end {
 		domain shot
 		category description
 		section extraction
@@ -221,7 +221,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dclicker
 	}
-	metadata add drink_ey {
+	metadata add drink_ey end {
 		domain shot
 		category description
 		section extraction
@@ -244,7 +244,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dclicker
 	}
-	metadata add espresso_notes {
+	metadata add espresso_notes end {
 		domain shot
 		category description
 		section extraction
@@ -260,7 +260,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget text
 	}	
-	metadata add espresso_enjoyment {
+	metadata add espresso_enjoyment end {
 		domain shot
 		category description
 		section tasting
@@ -282,7 +282,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget drater
 	}
-	metadata add scentone {
+	metadata add scentone end {
 		domain shot
 		category description
 		section tasting
@@ -298,7 +298,7 @@ proc init_app_metadata {} {
 		length list
 		default_dui_widget {}
 	}	
-	metadata add my_name {
+	metadata add my_name end {
 		domain shot
 		category description
 		section people
@@ -314,7 +314,7 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dcombobox
 	}
-	metadata add beverage_type {
+	metadata add beverage_type end {
 		domain profile
 		category machine?
 		section drink
