@@ -234,8 +234,8 @@ proc init_app_metadata {} {
 		propagate 0
 		data_type number
 		min 0.0
-		max 15.0
-		default 8.0
+		max 30.0
+		default 18.0
 		smallincrement 0.01
 		bigincrement 0.1
 		n_decimals 2
@@ -244,11 +244,27 @@ proc init_app_metadata {} {
 		length 1
 		default_dui_widget dclicker
 	}
-	metadata add espresso_enjoyment {
+	metadata add espresso_notes {
 		domain shot
 		category description
 		section extraction
 		subsection tasting
+		owner_type base
+		name "Espresso note"
+		name_plural "Espresso notes"
+		short_name "Note" 
+		short_name_plural "Notes"
+		propagate 0
+		data_type long_text
+		required 0
+		length 1
+		default_dui_widget text
+	}	
+	metadata add espresso_enjoyment {
+		domain shot
+		category description
+		section tasting
+		subsection ""
 		owner_type base
 		name "Enjoyment (0-100)"
 		name_plural "Enjoyment"
@@ -269,8 +285,8 @@ proc init_app_metadata {} {
 	metadata add scentone {
 		domain shot
 		category description
-		section extraction
-		subsection tasting
+		section tasting
+		subsection ""
 		owner_type base
 		name "Scentone flavours"
 		name_plural "Scentone flavours"
@@ -282,22 +298,6 @@ proc init_app_metadata {} {
 		length list
 		default_dui_widget {}
 	}	
-	metadata add espresso_notes {
-		domain shot
-		category description
-		section extraction
-		subsection tasting
-		owner_type base
-		name "Espresso note"
-		name_plural "Espresso notes"
-		short_name "Note" 
-		short_name_plural "Notes"
-		propagate 0
-		data_type long_text
-		required 0
-		length 1
-		default_dui_widget text
-	}
 	metadata add my_name {
 		domain shot
 		category description
