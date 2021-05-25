@@ -53,6 +53,7 @@ namespace eval ::dui {
 		enable_spoken_prompts 1
 		speaking_pitch 1.0
 		speaking_rate 1.5
+		date_input_format "%d/%m/%Y"
 	}
 
 	# Store in namespace variables and not in settings what are internal parameters that are not to be modified by client code.
@@ -6352,6 +6353,9 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			set tags [dui::args::process_tags_and_var $pages entry -textvariable 1]
 			set main_tag [lindex $tags 0]
 			
+			set style [dui::args::get_option -style "" 0]
+			dui::args::process_aspects entry $style
+			
 			# Data type and validation
 			set data_type [dui::args::get_option -data_type "text" 1]
 			set n_decimals [dui::args::get_option -n_decimals 0 1]
@@ -6372,11 +6376,19 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 				set vcmd ""
 				if { $data_type eq "numeric" } {
 					set vcmd [list ::dui::validate_numeric %P $n_decimals $min $max]
+					set validate [dui::args::get_option -validate key 1]
+				} elseif { $data_type eq "date" } {
+					set dateformat [dui cget date_input_format]
+					regsub -all "%" $dateformat "%%" dateformat
+					set fg [dui::args::get_option -foreground [dui aspect get entry foreground -style $style -default black] 0]
+					set error_fg [dui aspect get dtext fill -style error -default red] 
+					set vcmd [list ::dui::validate_date %P %W $dateformat $fg $error_fg]
+					set validate [dui::args::get_option -validate focus 1]
 				}
 				
 				if { $vcmd ne "" } {
 					dui::args::add_option_if_not_exists -vcmd $vcmd
-					dui::args::add_option_if_not_exists -validate key
+					dui::args::add_option_if_not_exists -validate $validate
 				}
 			}
 					
@@ -7213,6 +7225,29 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 		return 1
 	}
 	
+	proc validate_date { value widget {format {}} {fg black} {fg_error red} } {	
+		if { $format eq "" } {
+			set format [dui cget date_input_format]
+			if { $format eq "" } {
+				set format "%d/%m/%Y"
+			}
+		}
+
+		set result 1
+		if { $value ne "" } {
+			try { 
+				set check [clock scan $value -format $format]
+			} on error err {
+				set result 0
+			}
+		}
+		if { $result } {
+			$widget configure -foreground $fg
+		} else {
+			$widget configure -foreground $fg_error
+		}
+		return $result
+	}
 
 }
 
