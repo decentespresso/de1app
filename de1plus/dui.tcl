@@ -4600,7 +4600,7 @@ namespace eval ::dui {
 	namespace eval item {
 		namespace export add get get_widget config cget enable_or_disable enable disable \
 			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection \
-			relocate_text_wrt
+			relocate_text_wrt moveto
 		namespace ensemble create
 	
 		variable sliders
@@ -4855,6 +4855,37 @@ namespace eval ::dui {
 		proc sound_dirs {} {
 			variable sound_dirs
 			return $sound_dirs
+		}
+		
+		# Moves canvas items or compounds to a new screen location
+		proc moveto { page_or_id_or_widget tag x y } {
+			set can [dui canvas]
+			set tag [lindex $tag 0]
+			set items [dui item get $page_or_id_or_widget $tag]
+			
+			if { [string range $tag end-1 end] eq "*" } {
+				set refitem [dui item get $page_or_id_or_widget [string range $tag 0 end-1]]
+			} else {
+				set refitem [lindex $items end]
+			}
+			if { $refitem eq "" } {
+				msg -WARNING [namespace current] "moveto: cannot locate reference item ${page_or_id_or_widget}::${tag}"
+				return
+			}
+			
+			lassign [$can coords $refitem] rx0 ry0 rx1 ry1
+			foreach id $items {
+				lassign [$can coords $id] x0 y0 x1 y1
+				set nx0 [expr {$x+$x0-$rx0}]
+				set ny0 [expr {$y+$y0-$ry0}]
+				if { $x1 eq "" || $y1 eq "" } {
+					$can coords $id $nx0 $ny0
+				} else {
+					set nx1 [expr {$nx0+($x1-$x0)}]
+					set ny1 [expr {$ny0+($y1-$y0)}]
+					$can coords $id $nx0 $ny0 $nx1 $ny1 
+				}
+			}
 		}
 		
 		# Moves a text canvas item with respect to another item or widget, i.e. to a position relative to another one.

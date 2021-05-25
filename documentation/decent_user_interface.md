@@ -929,6 +929,13 @@ _show_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
 >Selects the items matching the  _selected_  string in the specified listbox widget. If a  _values_  list is provided,  _selected_  is matched against  _values_  instead of the list values. If  _reset_current_  is 1 (or any other value that is coerced to a boolean  _true_ ), the current selection is reset first (this is only relevant with listboxes that accept multiple selections).
 
 
+<a name="dui_item_moveto"></a>
+
+**dui item moveto**  _page_or_id_or_widget tag x y_
+
+>Moves items to a new screen location.  _x_  and  _y_  give the new top-left coordinates. If  _tag_  selects all items in a compound (ends with a "*" character), all individual items of the compound will be moved, preserving their relative positions (use this to move, for example, dbuttons).
+
+
 <a name="dui_add"></a>
 
 #### `dui add`
