@@ -53,6 +53,7 @@ namespace eval ::dui {
 		enable_spoken_prompts 1
 		speaking_pitch 1.0
 		speaking_rate 1.5
+		date_input_format "%d/%m/%Y"
 	}
 
 	# Store in namespace variables and not in settings what are internal parameters that are not to be modified by client code.
@@ -3535,7 +3536,7 @@ namespace eval ::dui {
 			}
 			# Main tags must be unique per-page.
 			foreach page $pages {
-				if { [dui page has_item $page $main_tag] ne "" } {
+				if { [dui page has_item $page $main_tag] } {
 					set msg "process_tags_and_var: main tag '$main_tag' already exists in page '$page', duplicates are not allowed"
 					msg -ERROR [namespace current] $msg
 					info_page $msg
@@ -4244,14 +4245,32 @@ namespace eval ::dui {
 				# TBD: Pass $args to load actions???
 				foreach action [actions $page_to_show load] {
 					lappend action $page_to_hide $page_to_show
-					uplevel #0 $action
 					#eval $action
+					set action_result [uplevel #0 $action]
+					if { $action_result ne "" && $action_result != 1 } {
+						if { $action_result == 0 } {
+							msg -NOTICE [namespace current] "loading of page '$page_to_show' interrupted"
+							return
+						} else {
+							msg -NOTICE [namespace current] "CHANGING page_to_show from '$page_to_show' to '$action_result'"
+							set page_to_show $action_result	
+						} 
+					}
 				}
 				if { $show_ns ne "" && [info procs ${show_ns}::load] ne "" } {
-					set page_loaded [${show_ns}::load $page_to_hide $page_to_show {*}$args]
-					if { ![string is true $page_loaded] } {
-						# Interrupt the loading: don't show the new page
-						return
+					set action_result [${show_ns}::load $page_to_hide $page_to_show {*}$args]
+#					if { ![string is true $page_loaded] } {
+#						# Interrupt the loading: don't show the new page
+#						return
+#					}
+					if { $action_result ne "" && $action_result != 1 } {
+						if { $action_result == 0 } {
+							msg -NOTICE [namespace current] "loading of page '$page_to_show' interrupted"
+							return
+						} else {
+							msg -NOTICE [namespace current] "CHANGING page_to_show from '$page_to_show' to '$action_result'"
+							set page_to_show $action_result	
+						} 
 					}
 				}
 			}
@@ -4463,8 +4482,9 @@ namespace eval ::dui {
 		proc has_item { page tag } {
 			if { [llength $page] > 1 } {
 				set page [lindex $page 0]
-			}			
-			return [[dui canvas] find withtag $tag&&p:$page]
+			}
+			set items [[dui canvas] find withtag $tag&&p:$page]
+			return [expr {$items ne ""}]
 		}
 		
 		# Keep track of what labels are displayed in what pages. This is done through the "p:<page_name>" canvas tags 
@@ -4580,7 +4600,7 @@ namespace eval ::dui {
 	namespace eval item {
 		namespace export add get get_widget config cget enable_or_disable enable disable \
 			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection \
-			relocate_text_wrt
+			relocate_text_wrt moveto
 		namespace ensemble create
 	
 		variable sliders
@@ -4835,6 +4855,37 @@ namespace eval ::dui {
 		proc sound_dirs {} {
 			variable sound_dirs
 			return $sound_dirs
+		}
+		
+		# Moves canvas items or compounds to a new screen location
+		proc moveto { page_or_id_or_widget tag x y } {
+			set can [dui canvas]
+			set tag [lindex $tag 0]
+			set items [dui item get $page_or_id_or_widget $tag]
+			
+			if { [string range $tag end-1 end] eq "*" } {
+				set refitem [dui item get $page_or_id_or_widget [string range $tag 0 end-1]]
+			} else {
+				set refitem [lindex $items end]
+			}
+			if { $refitem eq "" } {
+				msg -WARNING [namespace current] "moveto: cannot locate reference item ${page_or_id_or_widget}::${tag}"
+				return
+			}
+			
+			lassign [$can coords $refitem] rx0 ry0 rx1 ry1
+			foreach id $items {
+				lassign [$can coords $id] x0 y0 x1 y1
+				set nx0 [expr {$x+$x0-$rx0}]
+				set ny0 [expr {$y+$y0-$ry0}]
+				if { $x1 eq "" || $y1 eq "" } {
+					$can coords $id $nx0 $ny0
+				} else {
+					set nx1 [expr {$nx0+($x1-$x0)}]
+					set ny1 [expr {$ny0+($y1-$y0)}]
+					$can coords $id $nx0 $ny0 $nx1 $ny1 
+				}
+			}
 		}
 		
 		# Moves a text canvas item with respect to another item or widget, i.e. to a position relative to another one.
@@ -6333,6 +6384,9 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			set tags [dui::args::process_tags_and_var $pages entry -textvariable 1]
 			set main_tag [lindex $tags 0]
 			
+			set style [dui::args::get_option -style "" 0]
+			dui::args::process_aspects entry $style
+			
 			# Data type and validation
 			set data_type [dui::args::get_option -data_type "text" 1]
 			set n_decimals [dui::args::get_option -n_decimals 0 1]
@@ -6353,11 +6407,19 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 				set vcmd ""
 				if { $data_type eq "numeric" } {
 					set vcmd [list ::dui::validate_numeric %P $n_decimals $min $max]
+					set validate [dui::args::get_option -validate key 1]
+				} elseif { $data_type eq "date" } {
+					set dateformat [dui cget date_input_format]
+					regsub -all "%" $dateformat "%%" dateformat
+					set fg [dui::args::get_option -foreground [dui aspect get entry foreground -style $style -default black] 0]
+					set error_fg [dui aspect get dtext fill -style error -default red] 
+					set vcmd [list ::dui::validate_date %P %W $dateformat $fg $error_fg]
+					set validate [dui::args::get_option -validate focus 1]
 				}
 				
 				if { $vcmd ne "" } {
 					dui::args::add_option_if_not_exists -vcmd $vcmd
-					dui::args::add_option_if_not_exists -validate key
+					dui::args::add_option_if_not_exists -validate $validate
 				}
 			}
 					
@@ -7194,6 +7256,29 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 		return 1
 	}
 	
+	proc validate_date { value widget {format {}} {fg black} {fg_error red} } {	
+		if { $format eq "" } {
+			set format [dui cget date_input_format]
+			if { $format eq "" } {
+				set format "%d/%m/%Y"
+			}
+		}
+
+		set result 1
+		if { $value ne "" } {
+			try { 
+				set check [clock scan $value -format $format]
+			} on error err {
+				set result 0
+			}
+		}
+		if { $result } {
+			$widget configure -foreground $fg
+		} else {
+			$widget configure -foreground $fg_error
+		}
+		return $result
+	}
 
 }
 

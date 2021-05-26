@@ -586,7 +586,7 @@ page is actually shown. This proc is normally used to initialize page data, such
 
 Though receiving the page to be shown as an argument on the **load** and **show** namespace commands may seem unnecessary, it is required when a single namespace is used for several related pages. Same argument for passing the name of the page to be hidden to the **hide** namespace command.
 
-A page namespace **load** command must return a boolean value. This is used to optionally interrupt the loading of the page (if the return value casts to  _false_ ).
+A page namespace **load** command must return either 0, 1, or a page name. This is used to optionally interrupt the loading of the page (if the return value is 0), or to diverge the flow to another page (if the return value is a new page name).
 
 ##### show 
 Takes place whenever the <a href="#dui_page_load">dui page load</a> or <a href="#dui_page_show">dui page show</a> commands are run,  _after_  the page is actually shown. This event is normally used to initialize the page GUI elements (e.g. show/hide or enable/disable some items depending on the state).
@@ -927,6 +927,13 @@ _show_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
 **dui item listbox_set_selection**  _page_or_id_or_widget tag selected ?values reset_current?_
 
 >Selects the items matching the  _selected_  string in the specified listbox widget. If a  _values_  list is provided,  _selected_  is matched against  _values_  instead of the list values. If  _reset_current_  is 1 (or any other value that is coerced to a boolean  _true_ ), the current selection is reset first (this is only relevant with listboxes that accept multiple selections).
+
+
+<a name="dui_item_moveto"></a>
+
+**dui item moveto**  _page_or_id_or_widget tag x y_
+
+>Moves items to a new screen location.  _x_  and  _y_  give the new top-left coordinates. If  _tag_  selects all items in a compound (ends with a "*" character), all individual items of the compound will be moved, preserving their relative positions (use this to move, for example, dbuttons).
 
 
 <a name="dui_add"></a>
