@@ -5,6 +5,7 @@ proc init_app_metadata {} {
 	metadata dictionary add category validate_nonempty_string
 	metadata dictionary add section validate_nonempty_string
 	metadata dictionary add subsection validate_nonempty_string
+	metadata dictionary add source [list validate_category {app user calc}]
 	metadata dictionary add owner_type [list validate_category {base skin plugin}]
 	metadata dictionary add owner
 	metadata dictionary add name validate_nonempty_string
@@ -29,6 +30,7 @@ proc init_app_metadata {} {
 	# Define the actual fields
 	metadata add profile_title end {
 		domain {profile shot}
+		source app
 		owner_type base
 		name "Profile title"
 		name_plural "Profile titles"
@@ -45,6 +47,7 @@ proc init_app_metadata {} {
 		category description
 		section beans
 		subsection beans_desc
+		source user
 		owner_type base
 		name "Beans roaster"
 		name_plural "Beans roaster"
@@ -61,6 +64,7 @@ proc init_app_metadata {} {
 		category description
 		section beans
 		subsection beans_desc
+		source user
 		owner_type base
 		name "Beans type"
 		name_plural "Beans type"
@@ -77,6 +81,7 @@ proc init_app_metadata {} {
 		category description
 		section beans
 		subsection beans_batch
+		source user
 		owner_type base
 		name "Roast date"
 		name_plural "Roast dates"
@@ -93,6 +98,7 @@ proc init_app_metadata {} {
 		category description
 		section beans
 		subsection beans_batch
+		source user
 		owner_type base
 		name "Roast level"
 		name_plural "Roast levels"
@@ -109,6 +115,7 @@ proc init_app_metadata {} {
 		category description
 		section beans
 		subsection beans_batch
+		source user
 		owner_type base
 		name "Beans notes"
 		name_plural "Beans notes"
@@ -125,6 +132,7 @@ proc init_app_metadata {} {
 		category description
 		section equipment
 		subsection grinder
+		source user
 		owner_type base
 		name "Grinder model"
 		name_plural "Grinder models"
@@ -142,6 +150,7 @@ proc init_app_metadata {} {
 		section equipment
 		subsection grinder
 		owner_type base
+		source user
 		name "Grinder setting"
 		name_plural "Grinder settings"
 		short_name "Grinder set" 
@@ -157,6 +166,7 @@ proc init_app_metadata {} {
 		category description
 		section extraction
 		subsection ""
+		source user
 		owner_type base
 		name "Dose weight"
 		name_plural "Dose weights"
@@ -180,6 +190,7 @@ proc init_app_metadata {} {
 		category description
 		section extraction
 		subsection drink
+		source user
 		owner_type base
 		name "Drink weight"
 		name_plural "Drink weights"
@@ -203,6 +214,7 @@ proc init_app_metadata {} {
 		category description
 		section extraction
 		subsection drink
+		source user
 		owner_type base
 		name "Total Dissolved Solids"
 		name_plural "Total Dissolved Solids"
@@ -226,6 +238,7 @@ proc init_app_metadata {} {
 		category description
 		section extraction
 		subsection drink
+		source user
 		owner_type base
 		name "Extraction Yield"
 		name_plural "Extraction Yields"
@@ -249,6 +262,7 @@ proc init_app_metadata {} {
 		category description
 		section extraction
 		subsection tasting
+		source user
 		owner_type base
 		name "Espresso note"
 		name_plural "Espresso notes"
@@ -265,6 +279,7 @@ proc init_app_metadata {} {
 		category description
 		section tasting
 		subsection ""
+		source user
 		owner_type base
 		name "Enjoyment (0-100)"
 		name_plural "Enjoyment"
@@ -287,6 +302,7 @@ proc init_app_metadata {} {
 		category description
 		section tasting
 		subsection ""
+		source user
 		owner_type base
 		name "Scentone flavours"
 		name_plural "Scentone flavours"
@@ -303,6 +319,7 @@ proc init_app_metadata {} {
 		category description
 		section people
 		subsection ""
+		source user
 		owner_type base
 		name "Barista"
 		name_plural "Baristas"
@@ -319,6 +336,7 @@ proc init_app_metadata {} {
 		category machine?
 		section drink
 		subsection ""
+		source user
 		owner_type base
 		name "Beverage type"
 		name_plural "Beverage types"
