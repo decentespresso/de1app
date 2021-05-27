@@ -4862,6 +4862,8 @@ namespace eval ::dui {
 			set can [dui canvas]
 			set tag [lindex $tag 0]
 			set items [dui item get $page_or_id_or_widget $tag]
+			set x [dui platform rescale_x $x]
+			set y [dui platform rescale_y $y]
 			
 			if { [string range $tag end-1 end] eq "*" } {
 				set refitem [dui item get $page_or_id_or_widget [string range $tag 0 end-1]]
