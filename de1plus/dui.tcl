@@ -4724,17 +4724,44 @@ namespace eval ::dui {
 				set args [lrange $args 1 end]
 			}
 				
+			set istate [dui::args::get_option -initial_state "" 1]
+			
 			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, iterating
 			#	is often needed.
 			foreach item $items {
 				#msg [namespace current] "config:" "item '$item' of type '[$can type $tag]' with '$args'"
-				if { [winfo exists $item] } {
-					$item configure {*}$args
-				} elseif { [$can type $item] eq "window" } {
-					[$can itemcget $item -window] configure {*}$args
-				} else {
-					$can itemconfigure $item {*}$args
+				if { $istate ne "" } {
+					_config_initial_state $item $istate
 				}
+				
+				if { [llength $args] > 0 } {
+					if { [winfo exists $item] } {
+						$item configure {*}$args
+					} elseif { [$can type $item] eq "window" } {
+						[$can itemcget $item -window] configure {*}$args
+					} else {
+						$can itemconfigure $item {*}$args
+					}
+				}
+			}
+		}
+		
+		proc _config_initial_state { item state } {
+			set can [dui canvas]
+			if { $state ni {hidden disabled normal} } {
+				msg -WARNING [namespace current] "_config_initial_state: state '$state' not supported, assuming 'normal'"
+				set state normal
+			}
+			set current_istate [_cget_initial_state $item]
+			if { $current_istate eq $state } {
+				return
+			}
+
+			if { $current_istate ne "normal" } {
+				$can dtag $item st:$current_istate
+			}
+			if { $state ne "normal" } {
+				$can addtag st:$state withtag $item
 			}
 		}
 		
@@ -4751,16 +4778,35 @@ namespace eval ::dui {
 			#	is often needed.
 			set result {}
 			foreach item $items {
-				#msg [namespace current] "config:" "item '$item' of type '[$can type $tag]' with '$args'"
-				if { [winfo exists $item] } {
-					lappend result [$item cget {*}$args]
-				} elseif { [$can type $item] eq "window" } {
-					lappend result [[$can itemcget $item -window] cget {*}$args]
-				} else {
-					lappend result [$can itemcget $item {*}$args]
+				if { "-initial_state" in $args } {
+					set args [list_remove_element $args -initial_state]
+					lappend result [_cget_initial_state $item]
+				}
+				
+				if { [llength $args] > 0 } {
+					#msg [namespace current] "config:" "item '$item' of type '[$can type $tag]' with '$args'"
+					if { [winfo exists $item] } {
+						lappend result [$item cget {*}$args]
+					} elseif { [$can type $item] eq "window" } {
+						lappend result [[$can itemcget $item -window] cget {*}$args]
+					} else {
+						lappend result [$can itemcget $item {*}$args]
+					}
 				}
 			}
 			return $result
+		}
+				
+		proc _cget_initial_state { item } {
+			set can [dui canvas]
+			set tags [$can gettags $item]
+			if { "st:hidden" in $tags } {
+				return "hidden"
+			} elseif { "st:disabled" in $tags } {
+				return "disabled"
+			} else {
+				return "normal"
+			}
 		}
 		
 		# "Smart" widgets enabler or disabler. 'enabled' can take any value equivalent to boolean (1, true, yes, etc.) 
