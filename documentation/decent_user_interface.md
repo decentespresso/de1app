@@ -876,7 +876,8 @@ The following commands form the exported API of `dui item`, but the ensemble inc
 
 >Modify the configuration options of the canvas item or widget. 
 Items are selected in the same way as in **dui item get**.
-If it is a widget, the options are passed to the widget configure command, if it is a canvas item the options are passed to the canvas itemconfig command.
+If it is a widget, the options are passed to the widget configure command, if it is a canvas item the options are passed to the canvas itemconfig command. 
+>You can also modify the DUI-specific option  _-initial_state_ .
 
 
 <a name="dui_item_cget"></a>
@@ -887,7 +888,7 @@ If it is a widget, the options are passed to the widget configure command, if it
 Items are selected in the same way as in **dui item get**.
 Option may have any of the values accepted by the create widget command if it is a widget, or by the canvas create item
 command if it is a canvas item.
-
+>You can also query the DUI-specific option  _-initial_state_ .
 
 <a name="dui_item_enable_or_disable"></a>
 
