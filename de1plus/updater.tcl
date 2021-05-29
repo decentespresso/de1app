@@ -24,6 +24,7 @@ proc determine_if_android {} {
         package require ble
         set ::undroid 0
         set ::android 1
+
     }
 
     if {$::android == 1 || $::undroid == 1} {
@@ -525,12 +526,15 @@ proc start_app_update {} {
 
     if {$::android == 1} {
         if {[borg networkinfo] == "none"} {
+
             set ::de1(app_update_button_label) [translate "No Wifi network"]; 
 
             catch {
                 .hello configure -text $::de1(app_update_button_label)
             }
 
+            # "no wifi network" label is already displayed, so on tap, Android launch wifi settings
+            launch_os_wifi_setting
             
             set ::app_updating 0
             return $::de1(app_update_button_label)

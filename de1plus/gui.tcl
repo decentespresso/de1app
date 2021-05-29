@@ -1457,6 +1457,12 @@ proc show_settings { {tab_to_show ""} } {
 
 	msg -INFO "show_settings"
 
+    if {$::android == 1} {
+		if {[borg networkinfo] == "none"} {
+        	set ::de1(app_update_button_label) [translate "No Wifi network"];
+    	}	
+    }
+
 	if {$tab_to_show == ""} {
 		page_to_show_when_off $::settings(active_settings_tab)
 		scheduler_feature_hide_show_refresh

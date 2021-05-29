@@ -1713,6 +1713,13 @@ proc all_in_list { x list } {
 	return $match
 }
 
+proc launch_os_wifi_setting {} {
+	if { $::android == 1 } {
+		borg activity android.settings.WIFI_SETTINGS {} {} {} {} {}
+	}
+
+}
+
 proc web_browser {url} {
     msg -INFO "Browser '$url'"
 	if { $::android == 1 } {
