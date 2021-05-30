@@ -76,6 +76,27 @@ namespace eval ::profile {
         }
 
         if {$temp_advanced(espresso_hold_time) > 0} {
+            if {$temp_advanced(espresso_hold_time) > 2} {
+                # Second rise step without limiter
+                set pressure_up [list \
+                    name [translate "forced rise without limit"] \
+                    temperature $temp_advanced(espresso_temperature_2) \
+                    sensor "coffee" \
+                    pump "pressure" \
+                    transition "fast" \
+                    pressure $temp_advanced(espresso_pressure) \
+                    seconds 2 \
+                    volume 0 \
+                    exit_if 1 \
+                    exit_type "pressure_over" \
+                    exit_pressure_over [expr $temp_advanced(espresso_pressure) - 0.1] \
+                    exit_pressure_under 0 \
+                    exit_flow_over 0 \
+                    exit_flow_under 0 \
+                ]
+                lappend temp_advanced(advanced_shot) $pressure_up
+                set temp_advanced(espresso_hold_time) [expr $temp_advanced(espresso_hold_time) - 2]
+            }
             set hold [list \
                 name [translate "rise and hold"] \
                 temperature $temp_advanced(espresso_temperature_2) \
@@ -99,6 +120,29 @@ namespace eval ::profile {
         }
 
         if {$temp_advanced(espresso_decline_time) > 0} {
+            # If this is the firest pressurized step we forced the pressure up
+            if {$temp_advanced(espresso_hold_time) < 2 && $temp_advanced(espresso_decline_time) > 2} {
+                # Second rise step without limiter
+                set pressure_up [list \
+                    name [translate "forced rise without limit"] \
+                    temperature $temp_advanced(espresso_temperature_2) \
+                    sensor "coffee" \
+                    pump "pressure" \
+                    transition "fast" \
+                    pressure $temp_advanced(espresso_pressure) \
+                    seconds 2 \
+                    volume 0 \
+                    exit_if 1 \
+                    exit_type "pressure_over" \
+                    exit_pressure_over [expr $temp_advanced(espresso_pressure) - 0.1] \
+                    exit_pressure_under 0 \
+                    exit_flow_over 0 \
+                    exit_flow_under 0 \
+                ]
+                lappend temp_advanced(advanced_shot) $pressure_up
+                set temp_advanced(espresso_decline_time) [expr $temp_advanced(espresso_decline_time) - 2]
+            }
+
             set decline [list \
                 name [translate "decline"] \
                 temperature $temp_advanced(espresso_temperature_3) \
