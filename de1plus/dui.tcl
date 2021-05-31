@@ -3261,7 +3261,7 @@ namespace eval ::dui {
 		
 		# A list of paths where to look for image files
 		variable img_dirs {}
-				
+		
 		proc add_dirs { args } {
 			variable img_dirs
 			
@@ -7826,18 +7826,19 @@ namespace eval ::dui::pages::dui_item_selector {
 		# Add the current/selected value if not included in the list of available items
 		set values [subst $values]
 		set data(item_ids) [ifexists opts(-values_ids)]
-		if { $selected ne "" } {
-			if { $selected ni $values } {
-				if { [llength $data(item_ids)] > 0 } { 
-					lappend data(item_ids) -1 
-				}
-				lappend values $selected
-			}
-		}
+#		if { $selected ne "" } {
+#			if { $selected ni $values } {
+#				if { [llength $data(item_ids)] > 0 } { 
+#					lappend data(item_ids) -1 
+#				}
+#				lappend values $selected
+#			}
+#		}
 		set data(item_values) $values		
 		set data(item_type) [ifexists opts(-category_name)]
 		set data(callback_cmd) [ifexists opts(-callback_cmd)]
 		set data(selectmode) [ifexists opts(-selectmode) "browse"]
+		dui item config $page_to_show items -selectmode $data(selectmode)
 		set data(empty_items_msg) [ifexists opts(-empty_items_msg) [translate "There are no available items to show"]]
 		set data(listbox_width) [number_in_range [ifexists opts(-listbox_width) 1775] {} 200 2100 {} 0]
 		set data(filter_string) {}
@@ -7848,11 +7849,30 @@ namespace eval ::dui::pages::dui_item_selector {
 		$widgets(items) delete 0 end
 		$widgets(items) insert 0 {*}$values
 		
-		if { $selected ne "" } {		
-			set idx [lsearch -exact $values $selected]
-			if { $idx >= 0 } {
+		if { $selected ne "" } {
+			if { $data(selectmode) in {browse single} } {
+				set idx [lsearch -exact $values $selected]
+				if { $idx < 0 } {
+					$widgets(items) insert end $selected
+					lappend $data(item_values) $selected
+					lappend $data(item_ids) -1
+					set idx [$widgets(items) index end]
+				}
 				$widgets(items) selection set $idx
 				$widgets(items) see $idx
+				items_select
+			} else {
+				foreach sel [split $selected ";"] {
+					set idx [lsearch -exact $values $sel]
+					if { $idx < 0 } {
+						$widgets(items) insert end $sel
+						lappend $data(item_values) $sel
+						lappend $data(item_ids) -1
+						set idx [$widgets(items) index end]
+					}
+					$widgets(items) selection set $idx
+					$widgets(items) see $idx
+				}
 				items_select
 			}
 		}
@@ -7945,8 +7965,8 @@ namespace eval ::dui::pages::dui_item_selector {
 		say [translate {done}] $::settings(sound_button_in)
 
 		set items_widget $widgets(items)
-		set item_values {}
-		set item_ids {}
+		set item_values [list]
+		set item_ids [list]
 		
 		if {[$items_widget curselection] ne ""} {
 			set sel_idx [$items_widget curselection]
