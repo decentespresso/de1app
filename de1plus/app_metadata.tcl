@@ -56,7 +56,7 @@ proc init_app_metadata {} {
 		propagate 1
 		data_type category
 		required 0
-		length list
+		length 1
 		default_dui_widget dcombobox
 	}
 	metadata add bean_type end {
@@ -73,7 +73,7 @@ proc init_app_metadata {} {
 		propagate 1
 		data_type category
 		required 0
-		length list
+		length 1
 		default_dui_widget dcombobox
 	}
 	metadata add roast_date end {
