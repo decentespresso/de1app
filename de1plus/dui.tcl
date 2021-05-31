@@ -3261,6 +3261,13 @@ namespace eval ::dui {
 		
 		# A list of paths where to look for image files
 		variable img_dirs {}
+
+		# A dictionary of images. Remembers whether an image has already been loaded to avoid doing it more than once,
+		# and allows deferred loading until the page is actually shown.
+		# Indexed by the normalized image path, the value is an empty string if it has not been loaded yet, and the
+		# image name (img_<counter>) if it has been.
+		variable images
+		set images [dict create]
 		
 		proc add_dirs { args } {
 			variable img_dirs
@@ -6104,7 +6111,6 @@ namespace eval ::dui {
 					set ids [dui::item::rounded_rectangle_outline $x $y $x1 $y1 $arc_offset $outline $disabledoutline \
 						$width $button_tags]
 				} else {
-if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}					
 					set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
 				}
 			}
@@ -6268,17 +6274,29 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 			dui::args::add_option_if_not_exists -anchor nw canvas_args
 			
 			dui::args::remove_options -tags
-			try {
-				set w [::image create $type $main_tag -file "$filename" {*}$args]
-			} on error err {
-				set msg "can't create image '$main_tag' in page(s) '$pages': $err"
-				msg -ERROR [namespace current] $msg
-				error $msg
-				return	
+			
+			set img_name ""
+			if { $filename ne "" && [dict exists $::dui::image::images "$filename"] } {
+				set img_name [dict get $::dui::image::images "$filename"]
+			} 
+			if { $img_name eq "" } {
+				#set img_name "[lindex $pages 0]-$main_tag"
+				set img_name $main_tag
+				try {
+					set w [::image create $type $img_name -file "$filename" {*}$args]
+					if { $filename ne "" } {
+						dict set ::dui::image::images "$filename" $img_name
+					}
+				} on error err {
+					set msg "can't create image '$main_tag' in page(s) '$pages': $err"
+					msg -ERROR [namespace current] $msg
+					error $msg
+					return
+				}
 			}
 			
 			try {
-				[dui canvas] create image $x $y -image $main_tag -tags $tags -state hidden {*}$canvas_args
+				[dui canvas] create image $x $y -image $img_name -tags $tags -state hidden {*}$canvas_args
 			} on error err {
 				set msg "can't add image '$main_tag' in page(s) '$pages' to canvas: $err"
 				msg -ERROR [namespace current] $msg
@@ -6291,7 +6309,8 @@ if { $main_tag eq "match_current_btn" } { msg "BUTTON ARGS: $args "}
 				set ${ns}::widgets($main_tag) $w
 			}			
 			#msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args'"			
-			return $main_tag
+			#return $main_tag
+			return $img_name
 		}
 				
 		# Named options:
