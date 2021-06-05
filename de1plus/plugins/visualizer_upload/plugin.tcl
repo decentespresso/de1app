@@ -221,7 +221,10 @@ namespace eval ::plugins::${plugin_name} {
     }
 
     proc async_dispatch {old new} {
-        after 100 ::plugins::visualizer_upload::uploadShotData
+        # Prevent uploading of data if last flow was HotWater or HotWaterRinse
+        if { $old eq "Espresso" } {
+            after 100 ::plugins::visualizer_upload::uploadShotData
+        }
     }
 
     proc browse {} {
