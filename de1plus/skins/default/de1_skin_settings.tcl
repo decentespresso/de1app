@@ -1441,4 +1441,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-show_settings settings_2c
+#show_settings settings_2c
