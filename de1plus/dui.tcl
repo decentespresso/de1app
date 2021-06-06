@@ -54,6 +54,7 @@ namespace eval ::dui {
 		speaking_pitch 1.0
 		speaking_rate 1.5
 		date_input_format "%d/%m/%Y"
+		preload_images 0
 	}
 
 	# Store in namespace variables and not in settings what are internal parameters that are not to be modified by client code.
@@ -3256,18 +3257,24 @@ namespace eval ::dui {
 	
 	### IMAGES SUB-ENSEMBLE ###
 	namespace eval image {
-		namespace export add_dirs dirs photoscale add find
+		namespace export add_dirs dirs add 
+		# photoscale find load is_loaded get set_delayed exists_delayed get_delayed load_delayed rm_delayed
 		namespace ensemble create
 		
 		# A list of paths where to look for image files
 		variable img_dirs {}
-
-		# A dictionary of images. Remembers whether an image has already been loaded to avoid doing it more than once,
-		# and allows deferred loading until the page is actually shown.
+		
+		# A dictionary of loaded images. Remembers whether an image has already been loaded to avoid doing it more than 
+		# once, and allows deferred loading until the page is actually shown.
 		# Indexed by the normalized image path, the value is an empty string if it has not been loaded yet, and the
-		# image name (img_<counter>) if it has been.
+		# image name (<first_page>-<main_tag>) if it has been.
 		variable images
 		set images [dict create]
+		
+		# A dictionary of images whose loading is delayed, to make startup faster. Indexed by the canvas ID of the 
+		# image, each value is a list with 1) the normalized image path; 2) the image type; 3) any extra named options
+		variable delayed_images
+		set delayed_images [dict create]
 		
 		proc add_dirs { args } {
 			variable img_dirs
@@ -3411,6 +3418,85 @@ namespace eval ::dui {
 			
 			return ""
 		}
+		
+		# Note that filename can be an empty string (adding it empty and later reading the image file is a trick used
+		#	in several places, e.g. for DSx backgrounds) 
+		proc load { type name filename {preload 1} args } {
+			set filename [file normalize "$filename"]
+			
+			if { [string is true $preload] } {
+				try {
+					::image create $type $name -file "$filename" {*}$args
+					if { $filename ne "" } {
+						dict set dui::image::images "$filename" $name
+					}
+				} on error err {
+					msg -ERROR [namespace current] "load: can't preload $type image '$filename' with name '$name': $err"
+					return "" 
+				}
+			} else {
+				try {
+					::image create $type $name {*}$args
+					if { $filename ne "" } {
+						dict set dui::image::images "$filename" $name
+						dui::image::set_delayed $name $filename $type {*}$args
+					}
+				} on error err {
+					msg -ERROR [namespace current] "load: can't delay-load $type image '$filename' with name '$name': $err"
+					return "" 
+				}
+			}
+			return $name
+		}
+		
+		proc is_loaded { filename } {
+			set filename [file normalize "$filename"]
+			if { [dict exists $::dui::image::images "$filename"] } {
+				return [expr {[dict get $::dui::image::images "$filename"] ne ""}]
+			} else {
+				return 0
+			}
+		}
+		
+		proc get { filename } {
+			set filename [file normalize "$filename"]
+			return [dict get $::dui::image::images "$filename"]
+		}
+		
+		proc set_delayed { img_name filename type args } {
+			dict set ::dui::image::delayed_images $img_name [list [file normalize $filename] $type {*}$args]
+		}
+
+		proc exists_delayed { img_name } {
+			return [dict exists $::dui::image::delayed_images $img_name]
+		}
+		
+		proc get_delayed { img_name } {
+			if { [exists_delayed $img_name] } {
+				return [dict get $::dui::image::delayed_images $img_name]
+			} else {
+				return ""
+			}
+		}
+
+		proc load_delayed { img_name } {
+			set dd [get_delayed $img_name]
+			if { [llength $dd] > 0 } {
+				try {
+					$img_name read [lindex $dd 0]
+				} on error err {
+					msg [namespace current] "load_delayed: can't load file '[lindex $dd 0]', $err"
+				}
+				
+				rm_delayed $img_name
+				return $img_name
+			}
+		}
+		
+		proc rm_delayed { img_name } {
+			set ::dui::image::delayed_images [dict remove $::dui::image::delayed_images $img_name] 
+		}
+		
 	}
 	
 	### ARGS SUB-ENSEMBLE ###
@@ -4386,7 +4472,17 @@ namespace eval ::dui {
 				msg -WARNING [namespace current] "page '$page_to_show' has no visual items to show"
 			}
 			
+			set preload_images [dui cget preload_images]
+			
 			foreach item $items_to_show {
+				set item_type [$can type $item]
+				if { !$preload_images && $item_type eq "image" } {
+					set img_name [$can itemcget $item -image]
+					if { [dui::image::exists_delayed $img_name] } {
+						set img_name [dui::image::load_delayed $img_name]
+					}
+				}
+				
 				set state [lsearch -glob -inline [$can gettags $item] {st:*}]
 				if { $state eq "" } {
 					set state normal
@@ -4399,7 +4495,7 @@ namespace eval ::dui {
 				
 				if { $state in {normal disabled} } {
 					if { $::android == 1 && [dui cget use_finger_down_for_tap] } {
-						if { [$can type $item] eq "window" } {
+						if { $item_type eq "window" } {
 							$can itemconfigure $item -state disabled
 							if { $state eq "normal" } {
 								# Do NOT just show the items. We need to check we're still in the same page after the 400 ms
@@ -6254,7 +6350,7 @@ namespace eval ::dui {
 			set can [dui canvas]
 
 			if { $filename ne "" } {
-				set filename [dui image find $filename yes]
+				set filename [dui::image::find $filename yes]
 				if { $filename eq "" } {
 					return
 				}
@@ -6275,40 +6371,29 @@ namespace eval ::dui {
 			
 			dui::args::remove_options -tags
 			
+			set preload_images [dui cget preload_images]
 			set img_name ""
-			if { $filename ne "" && [dict exists $::dui::image::images "$filename"] } {
-				set img_name [dict get $::dui::image::images "$filename"]
+			if { $filename ne "" && [dui::image::is_loaded "$filename"] } {
+				set img_name [dui::image::get "$filename"]
 			} 
 			if { $img_name eq "" } {
-				#set img_name "[lindex $pages 0]-$main_tag"
-				set img_name $main_tag
-				try {
-					set w [::image create $type $img_name -file "$filename" {*}$args]
-					if { $filename ne "" } {
-						dict set ::dui::image::images "$filename" $img_name
-					}
-				} on error err {
-					set msg "can't create image '$main_tag' in page(s) '$pages': $err"
-					msg -ERROR [namespace current] $msg
-					error $msg
-					return
-				}
+				set img_name "[lindex $pages 0]-$main_tag"
+				set img_name [dui::image::load $type $img_name $filename $preload_images {*}$args]
+				if { $img_name eq "" } return
 			}
 			
 			try {
 				[dui canvas] create image $x $y -image $img_name -tags $tags -state hidden {*}$canvas_args
 			} on error err {
-				set msg "can't add image '$main_tag' in page(s) '$pages' to canvas: $err"
-				msg -ERROR [namespace current] $msg
-				error $msg
+				msg -ERROR [namespace current] "image: can't add image '$filename' with tag '$main_tag' to canvas page(s) '$pages' : $err"
 				return
 			}
-	
+			
 			set ns [dui page get_namespace $pages]
 			if { $ns ne "" } {
-				set ${ns}::widgets($main_tag) $w
+				set ${ns}::widgets($main_tag) $img_name
 			}			
-			#msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args'"			
+			msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args' (img_name=$img_name)"
 			#return $main_tag
 			return $img_name
 		}

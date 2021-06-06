@@ -19,6 +19,7 @@ proc setup_environment {} {
 	dui config language [language]
 	dui font add_dirs "[homedir]/fonts/"
 	dui image add_dirs "[homedir]/skins/default/"
+	dui config preload_images $::settings(preload_all_page_images)
 	dui sound set button_in "[homedir]/sounds/KeypressStandard_120.ogg" \
 		button_out "[homedir]/sounds/KeypressDelete_120.ogg" \
 		page_change "[homedir]/sounds/KeypressDelete_120.ogg"
