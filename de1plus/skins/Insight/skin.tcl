@@ -1,6 +1,6 @@
 set ::debugging 0
 
-msg "rtl $::de1(language_rtl)"
+#msg "rtl $::de1(language_rtl)"
 
 package require de1plus 1.0
 

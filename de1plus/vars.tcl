@@ -3002,6 +3002,19 @@ proc seconds_text {num} {
 	}
 }
 
+
+proc seconds_text_abbreviated {num} {
+	if {$num == 0} {
+		return [translate "off"]
+	} elseif {$num == 1} {
+		return [subst {$num [translate "sec"]}]
+	} elseif {$num == 60} {
+		return [translate "1 min"]
+	} else {
+		return [subst {$num [translate "sec"]}]
+	}
+}
+
 proc screen_saver_change_minutes {num} {
 	if {$num == 0} {
 		set ::settings(saver_brightness) 0

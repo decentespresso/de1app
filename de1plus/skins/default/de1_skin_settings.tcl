@@ -315,16 +315,11 @@ add_de1_variable "settings_2c" 1600 240 -text "" -font Helv_9_bold -fill "#7f879
 
 add_de1_text "settings_2c" 984 830 -text [translate "3: Maximum"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
-#add_de1_variable "settings_2c" 2238 830 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {$::settings(settings_profile_type)}
-
 
 add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
 
 
 set adv_listbox_height [expr {int(7 * $::globals(listbox_length_multiplier))}]
-#if {$::settings(skale_bluetooth_address) != ""} {
-#	set adv_listbox_height 9
-#}
 
 add_de1_widget "settings_2c" listbox 70 310 { 
 	set ::advanced_shot_steps_widget $widget
@@ -345,8 +340,6 @@ proc set_advsteps_scrollbar_dimensions {} {
 
 
 
-
-#add_de1_text "settings_2c" 70 742 -text [translate "Insert a step"] -font Helv_9_bold -fill "#7f879a" -justify "left" -anchor "nw" 
 add_de1_widget "settings_2c" entry 70 822  {
 	set ::globals(widget_profile_step_save) $widget
 	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); change_current_adv_shot_step_name; profile_has_changed_set; hide_android_keyboard}
@@ -460,14 +453,18 @@ add_de1_text "settings_2c" 2345 680 -text [translate "transition"] -font Helv_6 
 	add_de1_variable "settings_2c" 2345 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate [ifexists ::current_adv_step(transition)]]}
 
 
-add_de1_text "settings_2c" 1090 1270 -text [translate "time"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(seconds) 1 127 %x %y %x0 %y0 %x1 %y1 %b; save_current_adv_shot_step; update_de1_explanation_chart } 980 900 1230 1240 ""
-	add_de1_variable "settings_2c" 1090 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[seconds_text [round_to_integer [ifexists ::current_adv_step(seconds)]]]}
+add_de1_text "settings_2c" 1060 1270 -text [translate "time"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(seconds) 1 127 %x %y %x0 %y0 %x1 %y1 %b; save_current_adv_shot_step; update_de1_explanation_chart } 960 900 1140 1240 ""
+	add_de1_variable "settings_2c" 1060 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[seconds_text_abbreviated [round_to_integer [ifexists ::current_adv_step(seconds)]]]}
 
 
-add_de1_text "settings_2c" 1360 1270 -text [translate "volume"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(volume) 1 1023 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1260 900 1500 1240 ""
-	add_de1_variable "settings_2c" 1360 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_liquid_measurement [ifexists ::current_adv_step(volume)]]}
+add_de1_text "settings_2c" 1230 1270 -text [translate "volume"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(volume) 1 1023 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1144 900 1320 1240 ""
+	add_de1_variable "settings_2c" 1230 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_liquid_measurement [ifexists ::current_adv_step(volume)]]}
+
+add_de1_text "settings_2c" 1410 1270 -text [translate "weight"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(weight) 0 1000 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1324 900 1500 1240 ""
+	add_de1_variable "settings_2c" 1410 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_weight_measurement [ifexists ::current_adv_step(weight)]]}
 
 
 add_de1_text "settings_2c" 1654 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
@@ -1444,4 +1441,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#show_settings calibrate
+show_settings settings_2c
