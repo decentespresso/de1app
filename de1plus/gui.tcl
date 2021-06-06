@@ -1179,6 +1179,7 @@ proc display_popup_android_message_if_necessary {intxt} {
 	if {$msg != ""} {
 		# post the message 1 second after the start, so that there's a slight delay 
 		after 1000 [list borg toast $msg 1]
+		msg -DEBUG "Popup: $msg"
 	}
 	
 }
