@@ -1166,6 +1166,8 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > >-**rect**: A rectangle. This accepts as formatting options those taken by **canvas create rect**.
 
+> >-**oval**: An oval. This accepts as formatting options those taken by **canvas create oval**.
+
 > >-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and **-radius** (determines how "round" the rectangle corners are).
 
 > >-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-arc_offset** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border).

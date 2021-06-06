@@ -6206,6 +6206,8 @@ namespace eval ::dui {
 					
 					set ids [dui::item::rounded_rectangle_outline $x $y $x1 $y1 $arc_offset $outline $disabledoutline \
 						$width $button_tags]
+				} elseif { $shape eq "oval" } {
+					set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
 				} else {
 					set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
 				}
@@ -6233,7 +6235,6 @@ namespace eval ::dui {
 					-style $style {*}[subst \$symbol${suffix}_args]
 				set suffix [incr i]
 			}
-			
 			
 			# Add each of the (possibly several) labels
 			set i 0
