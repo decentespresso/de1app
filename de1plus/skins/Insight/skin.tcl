@@ -1129,4 +1129,4 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
 #set_next_page off steam_zoom;
 ##
 
-set_next_page off steam_1;
+#set_next_page off steam_1;
