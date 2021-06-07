@@ -1032,7 +1032,7 @@ add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); 
 # future feature
 #add_de1_button "steam_1" {say [translate {rinse}] $::settings(sound_button_in); start_steam} 1030 1101 1760 1400
 
-add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle} 0 240 2560 1600
+add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle} 0 240 2560 1400
 add_de1_button "steam_3" {say "" $::settings(sound_button_in); set_next_page off steam_1; start_idle} 0 240 1000 1400
 add_de1_button "steam_1" {say "" $::settings(sound_button_in);vertical_clicker 9 1 ::settings(steam_timeout) 1 250 %x %y %x0 %y0 %x1 %y1 %b; save_settings; de1_send_steam_hotwater_settings} 200 580 900 1150 ""
 
@@ -1092,13 +1092,14 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 	add_de1_button "steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 0 1410 2560 1600
 
 	# realtime control over the steam flow rate
-	add_de1_widget "steam" scale 10 1436 {} -from 40 -to 250 -background "#e8e1df" -borderwidth 1 -showvalue 0  -bigincrement 100 -resolution 10 -length [rescale_x_skin 2540] -width [rescale_y_skin 150] -variable ::settings(steam_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {set_steam_flow} -orient horizontal -foreground #FFFFFF -troughcolor "#d7d9e5" -borderwidth 0  -highlightthickness 0 
+	add_de1_widget "steam steam_1 steam_3" scale 10 1436 {} -from 40 -to 250 -background "#e8e1df" -borderwidth 1 -showvalue 0  -bigincrement 100 -resolution 10 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(steam_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {set_steam_flow} -orient horizontal -foreground #FFFFFF -troughcolor "#d7d9e5" -borderwidth 0  -highlightthickness 0 
 
 
 	# when steam is off, display current steam heater temp
-	add_de1_text "steam_1" 1100 1270 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
-		add_de1_variable "steam_1" 1680 1270 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
-
+	add_de1_text "steam_1 steam_3" 1100 1220 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
+		add_de1_variable "steam_1 steam_3" 1680 1220 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
+		add_de1_text "steam_1 steam_3" 1100 1270 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
+		add_de1_variable "steam_1 steam_3" 1680 1270 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[return_steam_flow_calibration $::settings(steam_flow)]}
 
 # optional keyboard bindings
 focus .can
@@ -1128,4 +1129,4 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
 #set_next_page off steam_zoom;
 ##
 
-#set_next_page off steam;
+set_next_page off steam_1;
