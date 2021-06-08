@@ -416,6 +416,7 @@ array set ::settings {
 	flow_hold_stop_volumetric 100
 	flow_decline_stop_volumetric 100
 	pressure_decline_stop_volumetric 100
+	running_weight 0
 	steam_temperature 160
 	steam_timeout 120
 	skin "default"
