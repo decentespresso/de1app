@@ -1002,9 +1002,8 @@ namespace eval ::device::scale::history {
 		}
 
 		set $::device::scale::history::_final_weight_name $cwe
-		set ::settings(drink_weight) [round_to_one_digits $cwe]
+		set ::settings(running_weight) [round_to_one_digits $cwe]
 	}
-
 
 
 
@@ -1436,7 +1435,11 @@ namespace eval ::device::scale::callbacks {
 		}
 	}
 
-
+	proc save_drink_weight {event_dict} {
+		if { [dict get $event_dict previous_state] eq "Espresso" } {
+			set ::settings(drink_weight) [round_to_one_digits $::de1(final_espresso_weight)]
+		}
+	}
 
 	::de1::event::listener::on_major_state_change_add -noidle ::device::scale::callbacks::on_major_state_change
 
@@ -1445,6 +1448,8 @@ namespace eval ::device::scale::callbacks {
 	::de1::event::listener::on_major_state_change_add ::device::scale::saw::on_major_state_change
 
 	::de1::event::listener::after_flow_complete_add ::device::scale::history::stop_recording
+	
+	::de1::event::listener::after_flow_complete_add ::device::scale::callbacks::save_drink_weight
 
 	# -noidle should be close enough for scale's inbuilt timer
 	::de1::event::listener::on_flow_change_add -noidle ::device::scale::callbacks::on_flow_change_manage_timer
