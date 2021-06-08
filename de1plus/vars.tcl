@@ -1105,7 +1105,7 @@ proc drink_weight_text {} {
 		return ""
 	}
 
-	return [return_weight_measurement [ifexists ::settings(running_weight) 0.0]]
+	return [return_weight_measurement $::settings(running_weight)]
 }
 
 proc dump_stack {args} {
