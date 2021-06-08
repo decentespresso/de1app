@@ -181,7 +181,7 @@ Updates from the DE1 and scale continue.
 
 Now during preinfusion, the estimate of incremental dispensed water derived from the flow rate in the ShotSample, the number of half-cycles of mains since the last update, and the mains frequency, is added to `$::de1(volume)` and `$::de1(preinfusion_volume)`
 
-The scale begins to update the drink weight to `$::de1(final_espresso_weight)` and `$::settings(drink_weight)` During flow, the default implementation is track the weight estimate directly.
+The scale begins to update the drink weight to `$::de1(final_espresso_weight)` and `$::settings(running_weight)` During flow, the default implementation is track the weight estimate directly.
 
 ### Activate SAV
 
