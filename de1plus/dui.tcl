@@ -3371,7 +3371,7 @@ namespace eval ::dui {
 				}
 			}
 			
-			if { [string is true $rescale] } {
+			if { [string is true $rescale] && [file pathtype $filename] in {relative volumerelative} } {
 				set src_filename ""
 				foreach dir [dui image dirs] {
 					set full_fn [file join $dir "[expr {int($::dui::_base_screen_width)}]x[expr {int($::dui::_base_screen_height)}]" $filename]
@@ -3384,12 +3384,12 @@ namespace eval ::dui {
 				if { $src_filename eq "" } {
 					msg -WARNING [namespace current] "image file '$filename' not found"
 					return ""
-				} else {
+				} else {					
+					set filename [file join $dir "${screen_size_width}x${screen_size_height}" $filename]
 					catch {
-						file mkdir [file join $dir "${screen_size_width}x${screen_size_height}"]
+						file mkdir [file dirname $filename]
 					}
 					
-					set filename  [file join $dir "${screen_size_width}x${screen_size_height}" [file tail $filename]]
 					msg -DEBUG [namespace current] "resizing image $src_filename to $filename"
 					dui say [translate "Resizing image"]
 					
@@ -6220,7 +6220,7 @@ namespace eval ::dui {
 			set i 0
 			set suffix ""
 			while { [info exists image$suffix] && [subst \$image$suffix] ne "" } {
-				dui add image $pages [subst \$xsymbol$suffix] [subst \$ysymbol$suffix] -text [subst \$image$suffix] \
+				dui add image $pages [subst \$ximage$suffix] [subst \$yimage$suffix] [subst \$image$suffix] \
 					-tags [subst \$image${suffix}_tags] -aspect_type "dbutton_image$suffix" \
 					-style $style {*}[subst \$image${suffix}_args]
 				set suffix [incr i]
