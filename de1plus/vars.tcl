@@ -908,7 +908,8 @@ proc return_off_or_temperature {in} {
 }
 
 proc return_stop_at_weight_measurement {in} {
-	if {$in == 0} {
+
+	if {$in == 0 || $in == ""} {
 		return [translate "off"]
 	} else {
 
