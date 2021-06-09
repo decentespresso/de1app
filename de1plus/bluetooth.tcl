@@ -552,7 +552,7 @@ proc decent_scale_calc_xor4 {cmdtype cmdddata1 cmdddata2} {
 }
 
 proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} } {
-	::bt::msg -DEBUG "decent_scale_make_command $cmdtype $cmdddata $cmddata2\n[stacktrace]"
+	::bt::msg -DEBUG "decent_scale_make_command $cmdtype $cmdddata $cmddata2"
 	if {$cmddata2 == ""} {
 		::bt::msg -DEBUG "1 part decent scale command"
 		set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]
@@ -628,9 +628,6 @@ proc decentscale_timer_start {} {
 		::bt::msg -DEBUG "decentscale not connected, cannot start timer"
 		return
 	}
-
-	#set timerreset [decent_scale_make_command 0B 02 00]
-	#userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timerreset]
 
 	::bt::msg -DEBUG "decentscale_timer_start"
 	set timeron [decent_scale_make_command 0B 03 00]
@@ -1411,14 +1408,11 @@ proc de1_ble_handler { event data } {
 						#set ::de1(scale_type) [ifexists ::scale_types($address)]
 						if {$::settings(scale_type) == "decentscale"} {
 							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "decentscale"
-							#after 500 decentscale_enable_lcd
-							decentscale_tare
-
-							after 2000 decentscale_enable_lcd
-							#after 2000 decentscale_timer_start
-							after 4000 decentscale_enable_notifications
-							#after 4000 decentscale_timer_stop
-							#after 5000 decentscale_timer_off
+							decentscale_enable_lcd
+							after 2000 decentscale_enable_notifications
+							
+							# in case the first request was dropped
+							after 4000 decentscale_enable_lcd
 
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
 							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "atomaxskale"

@@ -2715,6 +2715,7 @@ proc profile_has_not_changed_set args {
 
 proc load_settings_vars {fn} {
 
+
 	msg -NOTICE "load_settings_vars $fn"
 
 	# default to no temp steps, so as to migrate older profiles that did not have this setting, and not accidentally enble this feature on them
@@ -2734,6 +2735,7 @@ proc load_settings_vars {fn} {
 			set temp_settings($k) $v
 		}
 	}
+
 
 	if {[ifexists temp_settings(settings_profile_type)] == "settings_2c" && [ifexists temp_settings(final_desired_shot_weight)] != "" && [ifexists temp_settings(final_desired_shot_weight_advanced)] == "" } {
 		msg -NOTICE "load_settings_vars: Using a default" \
@@ -2763,6 +2765,10 @@ proc load_settings_vars {fn} {
 		set temp_settings(final_desired_shot_volume) 0
 		set temp_settings(saver_brightness) 0		
 	}
+
+
+	# we accidentally saved water temp in profiles for about a year and then decided we didn't want that, so remove it from profiles if it's there
+	unset -nocomplain temp_settings(water_temperature) 
 
 	catch {
 		array set ::settings [array get temp_settings]
@@ -2794,7 +2800,7 @@ proc save_settings_vars {fn varlist} {
 }
 
 proc profile_vars {} {
- 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_pressure_range_advanced maximum_flow_range_advanced maximum_flow maximum_pressure_range_default maximum_flow_range_default}
+ 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_pressure_range_advanced maximum_flow_range_advanced maximum_flow maximum_pressure_range_default maximum_flow_range_default}
 }
 
 
@@ -2999,6 +3005,19 @@ proc seconds_text {num} {
 		return [translate "1 minute"]
 	} else {
 		return [subst {$num [translate "seconds"]}]
+	}
+}
+
+
+proc seconds_text_abbreviated {num} {
+	if {$num == 0} {
+		return [translate "off"]
+	} elseif {$num == 1} {
+		return [subst {$num [translate "sec"]}]
+	} elseif {$num == 60} {
+		return [translate "1 min"]
+	} else {
+		return [subst {$num [translate "sec"]}]
 	}
 }
 

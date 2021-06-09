@@ -444,13 +444,32 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 
 ### Images and sounds
 
-(PENDING DETAILS) 
+DUI implements 3 facilities for all images that previously were only available for page background images: resizing, caching, and preloading vs delaying load. These are implemented internally by a set of `dui image` subcommands that are not exported, as they are called automatically by DUI when `dui add image` or `dui page load` are used.
 
+**Images finding and resizing**
+
+If a relative path is provided to image commands such as `dui add image`, DUI searches for the file in its image search paths list. By default this includes images in subfolder **&lt;current_screen_width&gt;x&lt;current_screen_height&gt;** of the default skin, then in subfolder **&lt;current_screen_width&gt;x&lt;current_screen_height&gt;** of the active skin. Any other image directory must be explicitly added with `dui image add_dirs`.
+
+If the requested file is not found in any of the search paths, and option  _rescale=1_  is set (the default), then the same file is searched for in the **2560x1600** subfolders and, if found, the image is automatically rescaled and stored in **&lt;current_screen_width&gt;x&lt;current_screen_height&gt;**, so it doesn't have to be rescaled again next time.
+
+Search paths are tried in the order in which they were originally added.
+
+**Images caching**
+
+The first time an image is loaded, it is indexed by its normalized file path. Subsequent usages of the same path image automatically reuse the image that is already loaded. This is automatic and transparent to client code.
+
+**Preloading vs delayed loading**
+
+DUI setting parameter **preload_images** controls whether images are preloaded (loaded into memory from their path names) when they are setup with the `dui image add` command, or whether its loading is delayed until the first time a page in which the image appears is shown. The default value of **preload_images** is initialized by the DE1 app to the value of the global setting **preload_all_page_images**.
+
+
+#### Images and sounds API
+ 
 <a name="dui_image_add_dirs"></a>
 
 **dui image add_dirs**  _dirname ?dirname ...?_
 
->Append new folders to the list of directories that will be searched when an image filename with a relative path is provided to **dui add image**.
+>Append new folders to the list of directories that will be searched when an image filename with a relative path is provided to **dui add image**. Note that this must be the  _parent_  folder that contains subfolders for each available screen resolution. For the DE1 app, the default image search path includes the default skin folder, and the active skin folder.
 
 <a name="dui_image_dirs"></a>
 
@@ -462,16 +481,8 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 
 **dui image find**  _filename ?rescale?_
 
->Locates an image filename in the file system, and optionally rescales it if it's available in the base resolution but not in the current screen resolution.
+>Locates an image filename in the file system, and optionally rescales it if it's available in the base resolution but not in the current screen resolution. This is normally invoked automatically by DUI in `dui add image` commands, it doesn't have to be called by client code.
 
-<a name="dui_image_photoscale"></a>
-
-**dui image photoscale**  _image_name sx ?sy?_
-
->Rescales the size of an image to the current screen resolution.
-
-
-<a name="dui_sound_set"></a>
 
 **dui sound set**  _sound_name filename ?sound_name filename ...?_
 
@@ -506,13 +517,6 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 **dui say**  _message ?sound_name?_
 
 >Shows a message toast or makes a sound.
-
-
-<a name="dui_image_dirs"></a>
-
-**dui item image_dirs**
-
->Return the current list of directories that will be searched when an image filename with a relative path is provided to **dui add image**.
 
 
 <a name="pages"></a>
@@ -1117,9 +1121,13 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >Create an image from a file and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
 
->If  _filename_  doesn't specify the full path, the image is searched for sequentially in subfolder &lt;screen_size_width&gt;x&lt;screen_size_height&gt; of each of the image directories added with **dui add image_dirs** until a match is found.
+>If  _filename_  doesn't specify the full path, the image is searched for sequentially in subfolder &lt;screen_size_width&gt;x&lt;screen_size_height&gt; of each of the image directories added with **dui add image_dirs** until a match is found. If not found, it is then searched in the subfolder for the base screen resolution &lt;1280x1600&gt; and, if found, rescaled on the fly to the target screen resolution. The rescaled image is saved so next time it is just read from disk.
 
 >Non-DUI options are passed-through to [image create](https://www.tcl-lang.org/man/tcl/TkCmd/image.htm). The default image type is **photo**.
+
+>Images are loaded only once to reduce memory usage. A dictionary is kept with the normalized path of every loaded image so that, if it is added again to the canvas, the already loaded image is used. 
+
+>Images are actually loaded from their files either at setup time or at page load time (the first time a page that contains the image is shown). Use the second option to reduce app startup time. This is controlled by the DUI configuration setting **preload_images**.
 
 
 <a name="dui_add_dbutton"></a>
@@ -1157,6 +1165,8 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 > >-empty string: no background / invisible clickable area.
 
 > >-**rect**: A rectangle. This accepts as formatting options those taken by **canvas create rect**.
+
+> >-**oval**: An oval. This accepts as formatting options those taken by **canvas create oval**.
 
 > >-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and **-radius** (determines how "round" the rectangle corners are).
 
