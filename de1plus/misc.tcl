@@ -578,19 +578,9 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1280x800/admin/cleanbutton.png *
         skins/DSx/1280x800/admin/cleanbuttonW.png *
         skins/DSx/1280x800/admin/tabover.png *
-        skins/DSx/1280x800/background/bg1.jpg *
-        skins/DSx/1280x800/background/bg2.jpg *
-        skins/DSx/1280x800/background/bg3.jpg *
-        skins/DSx/1280x800/background/bg4.jpg *
-        skins/DSx/1280x800/background/bg5.jpg *
         skins/DSx/1280x800/big_scale.png *
         skins/DSx/1280x800/big_scale1.png *
         skins/DSx/1280x800/clock_bg.png *
-        skins/DSx/1280x800/dial/bg1.png *
-        skins/DSx/1280x800/dial/bg2.png *
-        skins/DSx/1280x800/dial/bg3.png *
-        skins/DSx/1280x800/dial/bg4.png *
-        skins/DSx/1280x800/dial/bg5.png *
         skins/DSx/1280x800/dial/cdeclb.png *
         skins/DSx/1280x800/dial/cdede.png *
         skins/DSx/1280x800/dial/cdedsv.png *
@@ -666,19 +656,9 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1920x1200/admin/cleanbutton.png *
         skins/DSx/1920x1200/admin/cleanbuttonW.png *
         skins/DSx/1920x1200/admin/tabover.png *
-        skins/DSx/1920x1200/background/bg1.jpg *
-        skins/DSx/1920x1200/background/bg2.jpg *
-        skins/DSx/1920x1200/background/bg3.jpg *
-        skins/DSx/1920x1200/background/bg4.jpg *
-        skins/DSx/1920x1200/background/bg5.jpg *
         skins/DSx/1920x1200/big_scale.png *
         skins/DSx/1920x1200/big_scale1.png *
         skins/DSx/1920x1200/clock_bg.png *
-        skins/DSx/1920x1200/dial/bg1.png *
-        skins/DSx/1920x1200/dial/bg2.png *
-        skins/DSx/1920x1200/dial/bg3.png *
-        skins/DSx/1920x1200/dial/bg4.png *
-        skins/DSx/1920x1200/dial/bg5.png *
         skins/DSx/1920x1200/dial/cdeclb.png *
         skins/DSx/1920x1200/dial/cdede.png *
         skins/DSx/1920x1200/dial/cdedsv.png *
@@ -753,19 +733,9 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/2560x1600/admin/cleanbutton.png *
         skins/DSx/2560x1600/admin/cleanbuttonW.png *
         skins/DSx/2560x1600/admin/tabover.png *
-        skins/DSx/2560x1600/background/bg1.jpg *
-        skins/DSx/2560x1600/background/bg2.jpg *
-        skins/DSx/2560x1600/background/bg3.jpg *
-        skins/DSx/2560x1600/background/bg4.jpg *
-        skins/DSx/2560x1600/background/bg5.jpg *
         skins/DSx/2560x1600/big_scale.png *
         skins/DSx/2560x1600/big_scale1.png *
         skins/DSx/2560x1600/clock_bg.png *
-        skins/DSx/2560x1600/dial/bg1.png *
-        skins/DSx/2560x1600/dial/bg2.png *
-        skins/DSx/2560x1600/dial/bg3.png *
-        skins/DSx/2560x1600/dial/bg4.png *
-        skins/DSx/2560x1600/dial/bg5.png *
         skins/DSx/2560x1600/dial/cdeclb.png *
         skins/DSx/2560x1600/dial/cdede.png *
         skins/DSx/2560x1600/dial/cdedsv.png *
@@ -851,16 +821,16 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/DSx_Plugins/DSx_backup.dsx *
         skins/DSx/DSx_Plugins/DSx_cal.dsx *
         skins/DSx/DSx_Plugins/DSx_coffee.dsx *
+        skins/DSx/DSx_Plugins/DSx_flow_check.off *
         skins/DSx/DSx_Plugins/DSx_plugin_UI.dsx *
         skins/DSx/DSx_Plugins/DSx_theme.dsx *
         skins/DSx/DSx_Plugins/DSx_workflow.dsx *
-        skins/DSx/DSx_Plugins/Pizza_dough.off *
-        skins/DSx/DSx_Plugins/wake_to_pinkcup.off *
-        skins/DSx/DSx_Plugins/DSx_flow_check.off *
         skins/DSx/DSx_Plugins/EY_calculator.off *
         skins/DSx/DSx_Plugins/history_delete.off *
         skins/DSx/DSx_Plugins/move_on_button.off *
+        skins/DSx/DSx_Plugins/Pizza_dough.off *
         skins/DSx/DSx_Plugins/step_to_history.off *
+        skins/DSx/DSx_Plugins/wake_to_pinkcup.off *
         skins/DSx/DSx_User_Set/.keep *
         skins/DSx/skin.tcl *
 
