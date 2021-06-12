@@ -9,7 +9,8 @@
 - [Details and API](#api)
   - [Environment setup](#environment_setup)
   - [Themes, aspects and styles](#aspects)
-  - [Fonts](#fonts)
+  - [Fonts and symbols](#fonts)
+  - [Images and sounds](#images_and_sounds)
   - [Pages](#pages)
   - [Visual items (GUI elements)](#items)
 
@@ -874,6 +875,13 @@ The following commands form the exported API of `dui item`, but the ensemble inc
 >Return unique valid widget pathnames corresponding to the provided canvas IDs, widget pathnames, or page and tags combinations.
 
 
+<a name="dui_item_pages"></a>
+
+**dui item pages**  _page_or_id_or_widget ?tag?_
+
+>Return a list of the pages in which the item referred to by  _page_or_id_or_widget_  and (optionally)  _tag_  appears.
+
+
 <a name="dui_item_config"></a>
 
 **dui item config**  _page_or_ids_or_widgets ?tags? option value ?option value ...?_
@@ -909,15 +917,28 @@ _enabled_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
 
 <a name="dui_item_show_or_hide"></a>
 
-**dui item show**  _page_or_ids_or_widgets ?tags?_
+**dui item show**  _page_or_ids_or_widgets ?tags? ?-option value ...?_
 
-**dui item hide**  _page_or_ids_or_widgets ?tags?_
+**dui item hide**  _page_or_ids_or_widgets ?tags? ?-option value ...?_
 
-**dui item show_or_hide**  _show page_or_ids_or_widgets ?tags?_
+**dui item show_or_hide**  _show page_or_ids_or_widgets ?tags? ?-option value ...?_
 
 >Show or hide the specified canvas items or widgets. 
-Items are selected in the same way as in **dui item get**. Add a "*" suffix to a main tag to show or hide all the items in a widget compound at once.
-_show_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
+Items are selected in the same way as in **dui item get**. Add a "*" suffix to a main tag to show or hide all the items in a widget compound at once. By default show or hides items only in the currently active page, and does nothing if the item does not appear in the current page. Showing or hiding by default also only affects the current state of the widget, but does not affect its initial state (how it will appears the next time a page that includes the item is shown). Use the  **-initial**  option to alter the initial state.
+
+> _show_  is coerced to a boolean (takes any value accepted by `string is true`, such as 1/0, true/false, yes/no, on/off, etc.)
+
+>**-check_page**  _boolean_
+
+>>If **-check_page** is  _true_  and **-current** is also  _true_ , only changes the state if the item appears in the currently active page. Default value is  _true_ . If you change state in an **after** command, this prevents the item appearing in the wrong page (if the user changes page in the midtime).
+
+>**-current**  _boolean_
+
+>>If **-current** is  _true_ , shows or hides the item immediately (but only if it appears in the currently active page when **-check_page** is  _true_ ). Default value is  _true_ .
+
+>**-initial**  _boolean_
+
+>>If **-initial** is  _true_ , permanently modifies the initial show/hide state of the item, that is, whether is is shown or hidden whenever its page is shown. Default value is  _false_ .
 
 
 <a name="dui_item_listbox_get_selection"></a>
@@ -1157,6 +1178,10 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 >**-bheight**  _height_
 
 > >Normally button dimensions are defined giving the rectangle top-left coordinates  _{x y}_  and bottom-down coordinates  _{x1 y1}_ , but  _{x1 y1}_  can be replaced by named options **-bwidth** and **-bheight**. This is most often used for defining a dbutton style for buttons that are always the same size.  _width_  and  _height_  must be pixel sizes in a 2560x1600 screen, and they are transformed automatically to the actual resolution.
+
+>**-anchor**  _anchor_value_
+
+> >If  _x1_  and  _y1_  are not defined (so, **-bwidth** and **-bheight** are used),  _anchor_value_  defines the alignment of the dbutton with respect to the coordinates  _{x y}_ . Anchor valid values are center, n, ne, nw, s, se, sw, w, and e. Default is "nw" (i.e.  _{x y}_  are the top-left coordinates).
 
 >**-shape**  _shape_
 
@@ -1681,7 +1706,32 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add graph**  _pages x y ?-option value ...?_
 
->Create a BLT graph widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a BLT graph widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . Returns the created command name. Non-DUI options are passed-through to the [BLT graph](http://blt.sourceforge.net/) command.
+
+>Most configuration of BLT graphs is not done in the **dui add graph** command, but through subcommands of the created widget, so you need to get the reference to the graph widget. This is returned from the call, can be retrieved by DUI using the page and tag, or, if using page namespaces, from the `widgets` namespace array. Like this:
+
+```tcl
+set widget [dui add graph <pages> <x> <y> -background ....]
+$widget axis configure ...
+$widget element create ...
+```
+
+>or 
+
+```tcl
+dui add graph <pages> <x> <y> -tags mygraph ...
+(...)
+set widget [dui item get_widget <page> mygraph]
+$widget axis configure ...
+$widget element create ...
+```
+
+>One tricky part of graphs is how to apply DUI styling to elements like axis or lines that are not created in the **dui add graph** call but afterwards. The **-as_options yes** argument of **dui aspect list** is intended for these cases, and can be applied as follows:
+
+```tcl
+$widget element create line_history_left_chart -xdata <xdata> -ydata <ydata> \
+    {*}[dui aspect list -type graph_line -style hv_line -as_options yes]
+```
 
 
 <a name="dui_add_text"></a>

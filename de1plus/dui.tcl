@@ -4703,7 +4703,7 @@ namespace eval ::dui {
 	namespace eval item {
 		namespace export add get get_widget config cget enable_or_disable enable disable \
 			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection \
-			relocate_text_wrt moveto
+			relocate_text_wrt moveto pages
 		namespace ensemble create
 	
 		variable sliders
@@ -4912,6 +4912,24 @@ namespace eval ::dui {
 			}
 		}
 		
+		# Returns the list of pages where the specified item appears
+		proc pages { page_or_id_or_widget {tag {}} } {
+			set can [dui canvas]
+			set ids [get $page_or_id_or_widget $tag]
+			if { [llength $ids] == 0} {
+				msg -WARNING [namespace current] "pages: can't find item with page_or_id_or_widget='$page_or_id_or_widget' and tag '$tag'"
+				return ""
+			}
+			
+			set tags [$can gettags [lindex $ids 0]]
+			set pages [list]
+			foreach page [lsearch -inline -all $tags {p:*}] {
+				lappend pages [string range $page 2 end]
+			}
+			
+			return $pages
+		}
+		
 		# "Smart" widgets enabler or disabler. 'enabled' can take any value equivalent to boolean (1, true, yes, etc.) 
 		# For text, changes its fill color to the default or provided font or disabled color.
 		# For other widgets like rectangle "clickable" button areas, enables or disables them.
@@ -4945,14 +4963,22 @@ namespace eval ::dui {
 		}
 		
 		# "Smart" widgets shower or hider. 'show' can take any value equivalent to boolean (1, true, yes, etc.)
-		# If check_page=1, only hides or shows if the items page is the currently active page. This is useful,
+		# Named options:
+		# -check_page (default 1): Only hides or shows if the items page is the currently active page. This is useful,
 		#	for example, if you're showing after a delay, as the page/page may have been changed in between.
-		proc show_or_hide { show page_or_ids_or_widgets {tags {}} { check_page 1 } } {
-			if { $tags eq "" && [llength $page_or_ids_or_widgets] == 1 && [dui page exists $page_or_ids_or_widgets] && $check_page } {
-				if { $page_or_ids_or_widgets ne [dui page current] } {
-					return
-				}
-			}
+		# -current (default 1): Shows or hides in the currently active page.
+		# -initial (default 0): Sets the initial state when the page is shown the next time, i.e. modifiess the
+		#	item -initial_state option.
+		proc show_or_hide { show page_or_ids_or_widgets {tags {}} args } {
+#			if { $tags eq "" && [llength $page_or_ids_or_widgets] == 1 && [dui page exists $paGranadage_or_ids_or_widgets] && $check_page } {
+#				if { $page_or_ids_or_widgets ne [dui page current] } {
+#					return
+#				}
+#			}
+			array set opts $args
+			set check_page [string is true [dui::args::get_option -check_page 1]]
+			set do_current [string is true [dui::args::get_option -current 1]]
+			set do_initial [string is true [dui::args::get_option -initial 0]]
 			
 			if { [string is true $show] || $show eq "show" } {
 				set state normal
@@ -4961,16 +4987,27 @@ namespace eval ::dui {
 			}
 			
 			foreach id [get $page_or_ids_or_widgets $tags] {
-				[dui canvas] itemconfigure $id -state $state
+				if { $do_current } {
+					if { $check_page } {
+						if { [dui page current] in [dui item pages $id] } {
+							[dui canvas] itemconfigure $id -state $state
+						}						
+					} else {
+						[dui canvas] itemconfigure $id -state $state
+					}
+				}
+				if { $do_initial } {
+					dui item config $id -initial_state $state
+				}
 			}
 		}
 		
-		proc show { page tags { check_page 1} } {
-			show_or_hide 1 $page $tags $check_page
+		proc show { page tags args } {
+			show_or_hide 1 $page $tags {*}$args
 		}
 		
-		proc hide { page tags { check_page 1} } {
-			show_or_hide 0 $page $tags $check_page
+		proc hide { page tags args } {
+			show_or_hide 0 $page $tags {*}$args
 		}
 
 		proc add_image_dirs { args } {
