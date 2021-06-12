@@ -2961,8 +2961,8 @@ proc handle_keypress {keycode} {
 		# e = espresso (emulate GUI button press)
 		start_espresso
 
-	} elseif {($::some_droid != 1 && $keycode == 105) || ($::some_droid == 1 && $keycode == 12)} {
-		# i = idle (emulate GUI button press)
+	} elseif {($::some_droid != 1 && $keycode == 105) || ($::some_droid != 1 && $keycode == 32) || ($::some_droid == 1 && $keycode == 12) || ($::some_droid == 1 && $keycode == 44)} {
+		# i (or space bar) = idle (emulate GUI button press) 
 		start_idle
 
 	} elseif {($::some_droid != 1 && $keycode == 102) || ($::some_droid == 1 && $keycode == 9)} {

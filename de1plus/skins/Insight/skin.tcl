@@ -798,6 +798,7 @@ add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_tempera
 	# current step description
 	add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos  [expr {$pos_top + (15 * $spacer)}] -justify right -anchor "nw" -text [translate "Current step"] -font Helv_7_bold -fill $dark -width [rescale_x_skin 520]
 		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos  [expr {$pos_top + (16 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#8297be" -width [rescale_x_skin 440] -textvariable {$::settings(current_frame_description)} 
+		add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column3_pos  [expr {$pos_top + (16 * $spacer)}] -justify left -anchor "ne" -text [translate "\[skip\]"] -font Helv_7 -fill "#8297be" -width [rescale_x_skin 440] 
 
 	# optionally skip this step by tapping on the page curl graphic (bottom right corner)
 	add_de1_button "espresso espresso_zoomed espresso_zoomed_temperature" {say [translate {skip}] $::settings(sound_button_in); borg toast [translate "Moved to next step"]; start_next_step;} 2020 1204 2560 1600

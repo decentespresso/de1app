@@ -459,12 +459,12 @@ add_de1_text "settings_2c" 1060 1270 -text [translate "time"] -font Helv_6 -fill
 
 
 add_de1_text "settings_2c" 1230 1270 -text [translate "volume"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(volume) 1 1023 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1144 900 1320 1240 ""
-	add_de1_variable "settings_2c" 1230 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_liquid_measurement [ifexists ::current_adv_step(volume)]]}
+	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(volume) 0 1023 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1144 900 1320 1240 ""
+	add_de1_variable "settings_2c" 1230 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_stop_at_volume_measurement [ifexists ::current_adv_step(volume)]]}
 
 add_de1_text "settings_2c" 1410 1270 -text [translate "weight"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(weight) 0 1000 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1324 900 1500 1240 ""
-	add_de1_variable "settings_2c" 1410 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_weight_measurement [ifexists ::current_adv_step(weight)]]}
+	add_de1_variable "settings_2c" 1410 1340 -text "-" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_stop_at_weight_measurement [ifexists ::current_adv_step(weight)]]}
 
 
 add_de1_text "settings_2c" 1654 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 

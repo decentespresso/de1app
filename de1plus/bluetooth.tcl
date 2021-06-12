@@ -566,6 +566,11 @@ proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} } {
 }
 
 proc tare_counter_incr {} {
+
+	# testing that tare counter can in fact be any not-recently-used integer
+	#set ::decent_scale_tare_counter [expr {int(rand() * 255)}]
+	#msg "tare counter is $::decent_scale_tare_counter"	
+
 	if {[info exists ::decent_scale_tare_counter] != 1} {
 		set ::decent_scale_tare_counter 253
 	} elseif {$::decent_scale_tare_counter >= 255} {
