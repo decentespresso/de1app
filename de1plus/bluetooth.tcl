@@ -942,16 +942,6 @@ proc bluetooth_connect_to_devices {} {
 
 		}
 	}
-
-	if {$::settings(scale_bluetooth_address) != ""} {
-
-		if {[android_8_or_newer] == 1} {
-			#ble_connect_to_scale
-		} else {
-			#after 3000 ble_connect_to_scale
-		}
-	}
-
 }
 
 
@@ -1034,6 +1024,17 @@ proc ble_connect_to_de1 {} {
 
 
 set ::currently_connecting_scale_handle 0
+
+proc ble_scale_connect {} {
+	if {[catch {
+		set ::currently_connecting_scale_handle [ble connect [string toupper $::settings(scale_bluetooth_address)] de1_ble_handler false]
+		::bt::msg -NOTICE "Connecting to scale on $::settings(scale_bluetooth_address)"
+	} err] != 0} {
+		set ::currently_connecting_scale_handle 0
+		::bt::msg -ERROR "Failed to start to BLE connect to scale because: '$err'"
+	}
+}
+
 proc ble_connect_to_scale {} {
 	::bt::msg -NOTICE ble_connect_to_scale
 
@@ -1041,11 +1042,6 @@ proc ble_connect_to_scale {} {
 		::bt::msg -NOTICE "Already connected to scale, don't try again"
 		return
 	}
-
-	#if {[ifexists ::currently_connecting_de1_handle] != 0} {
-		#return
-	#}
-
 
 	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
 		::bt::msg -NOTICE "in_fw_update_mode : ble_connect_to_scale"
@@ -1063,44 +1059,19 @@ proc ble_connect_to_scale {} {
 		return
 	}
 
-	set do_this 0
-	if {$do_this == 1} {
-		if {$::de1(scale_device_handle) != "0"} {
-			::bt::msg -NOTICE "Scale already connected, so disconnecting before reconnecting to it"
-			#return
-			catch {
-				#ble close $::de1(scale_device_handle)
-			}
-
-			catch {
-				set ::de1(scale_device_handle) 0
-				set ::de1(cmdstack) {};
-				set ::currently_connecting_scale_handle 0
-				after 1000 ble_connect_to_scale
-				# when the scale disconnect message occurs, this proc will get re-run and a connection attempt will be made
-				return
-			}
-
-		}
-	}
-
 	if {[llength $::de1(cmdstack)] > 2} {
 		::bt::msg -INFO "Too much backpressure, waiting with the connect"
 		after 300 ble_connect_to_scale
 		return
 	}
 
-	if {[catch {
-		set ::currently_connecting_scale_handle [ble connect [string toupper $::settings(scale_bluetooth_address)] de1_ble_handler false]
-		::bt::msg -NOTICE "Connecting to scale on $::settings(scale_bluetooth_address)"
-		set retcode 0
-	} err] != 0} {
-		set ::currently_connecting_scale_handle 0
-		set retcode 1
-		::bt::msg -ERROR "Failed to start to BLE connect to scale because: '$err'"
+	if {[ifexists ::currently_connecting_de1_handle] != 0} {
+		::bt::msg -INFO "Connecting to DE1 right now, waiting with the connect"
+		after 500 ble_connect_to_scale
+		return
 	}
-	return $retcode
 
+	userdata_append "connect to scale" ble_scale_connect
 }
 
 proc append_to_scale_bluetooth_list {address name type} {
@@ -1312,21 +1283,13 @@ proc de1_ble_handler { event data } {
 
 					} elseif {$address == $::settings(scale_bluetooth_address)} {
 
-					#set ::de1(scale_type) ""
-
 						set ::de1(wrote) 0
 						::bt::msg -NOTICE "$::settings(scale_type) disconnected $data_for_log"
-						#catch {
-							ble close $handle
-						#}
+						ble close $handle
 
 						# if the skale connection closed in the currentl one, then reset it
 						if {$handle == $::de1(scale_device_handle)} {
 							set ::de1(scale_device_handle) 0
-						}
-
-						if {$::currently_connecting_scale_handle == 0} {
-							#ble_connect_to_scale
 						}
 
 						catch {
@@ -1361,11 +1324,6 @@ proc de1_ble_handler { event data } {
 						if {$::de1(device_handle) == 0 && $::currently_connecting_de1_handle == 0} {
 							ble_connect_to_de1
 						}
-
-						#if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != "" && $::currently_connecting_scale_handle == 0} {
-							#userdata_append "connect to scale" ble_connect_to_scale
-							#ble_connect_to_scale
-						#}
 					}
 					set ::scanning 0
 				} elseif {$state eq "discovery"} {
