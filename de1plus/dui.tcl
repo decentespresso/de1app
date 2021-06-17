@@ -4499,7 +4499,7 @@ namespace eval ::dui {
 							$can itemconfigure $item -state disabled
 							if { $state eq "normal" } {
 								# Do NOT just show the items. We need to check we're still in the same page after the 400 ms
-								after 400 dui::item::show $page_to_show $item 1
+								after 400 dui::item::show $page_to_show $item
 							}
 						} else {
 							$can itemconfigure $item -state $state
