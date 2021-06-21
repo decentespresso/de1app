@@ -867,8 +867,10 @@ add_de1_text "settings_3" 55 544 -text [translate {Version}] -font Helv_10_bold 
 		add_de1_variable "settings_3" 400 430 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(water_count)]}
 
 proc scheduler_feature_hide_show_refresh {} {
-	if {$::de1(current_context) == "settings_3"} {
-		show_hide_from_variable $::scheduler_widgetids ::settings scheduler_enable write
+	if {[ifexists ::settings(scheduler_enable)] == 1} {
+		dui item show settings_3 scheduler
+	} else {
+		dui item hide settings_3 scheduler
 	}
 }
 
@@ -876,16 +878,13 @@ proc scheduler_feature_hide_show_refresh {} {
 # scheduled power up/down
 add_de1_widget "settings_3" checkbutton 50 1140 {} -text [translate "Keep hot"] -padx 0 -pady 0 -indicatoron true  -font Helv_8_bold -bg #FFFFFF -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::settings(scheduler_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -command scheduler_feature_hide_show_refresh -relief flat 
 
-	set scheduler_widget_id1 [add_de1_widget "settings_3_manual" scale 50 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
-	set scheduler_widget_id2 [add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -textvariable {[translate "Start:"] [format_alarm_time $::settings(scheduler_wake)]}]
-	set scheduler_widget_id3 [add_de1_widget "settings_3_manual" scale 670 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
-	set scheduler_widget_id4 [add_de1_variable "settings_3" 670 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -textvariable {[translate "End:"] [format_alarm_time $::settings(scheduler_sleep)]}]
-	set scheduler_widget_id5 [add_de1_variable "settings_3" 1240 1140 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[translate "Now: "] [time_format [clock seconds]]}]
-	set scheduler_widget_id6 [add_de1_button "settings_3" {say [translate {Settings}] $::settings(sound_button_in); launch_os_time_setting} 900 1100 1240 1190 ""]
+	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
+	add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw"  -tags [list scheduler_start_time scheduler] -textvariable {[translate "Start:"] [format_alarm_time $::settings(scheduler_wake)]}
+	add_de1_widget "settings_3" scale 670 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_end scheduler]
+	add_de1_variable "settings_3" 670 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -tags [list scheduler_end_time scheduler] -textvariable {[translate "End:"] [format_alarm_time $::settings(scheduler_sleep)]} 
+	add_de1_variable "settings_3" 1240 1140 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -tags [list scheduler_scale_now_time scheduler] -textvariable {[translate "Now: "] [time_format [clock seconds]]}
+	dui add dbutton "settings_3" 900 1100 1240 1190 -command {say [translate {Settings}] $::settings(sound_button_in); launch_os_time_setting}  -tags [list scheduler_settings_button scheduler]
 
-	set ::scheduler_widgetids [list $scheduler_widget_id1 $scheduler_widget_id2 $scheduler_widget_id3 $scheduler_widget_id4 $scheduler_widget_id5 $scheduler_widget_id6]
-
-	#trace add variable ::settings(scheduler_enable) write "show_hide_from_variable {$::scheduler_widgetids}"	
 	set_alarms_for_de1_wake_sleep
 
 add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
