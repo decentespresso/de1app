@@ -1718,6 +1718,12 @@ proc launch_os_wifi_setting {} {
 	if { $::android == 1 } {
 		borg activity android.settings.WIFI_SETTINGS {} {} {} {} {}
 	}
+}
+
+proc launch_os_time_setting {} {
+	if { $::android == 1 } {
+		borg activity android.settings.DATE_SETTINGS {} {} {} {} {}
+	}
 
 }
 
