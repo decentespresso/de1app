@@ -735,7 +735,7 @@ proc add_de1_action {context tclcmd} {
 }
 
 proc add_de1_button {displaycontexts tclcode x0 y0 x1 y1 {options {}}} {
-	dui add dbutton $displaycontexts $x0 $y0 $x1 $y1 -command $tclcode -theme none 
+	return [dui add dbutton $displaycontexts $x0 $y0 $x1 $y1 -command $tclcode -theme none]
 	
 #	global button_cnt
 #
