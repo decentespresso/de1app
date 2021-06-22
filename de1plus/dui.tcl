@@ -5125,12 +5125,11 @@ namespace eval ::dui {
 		proc relocate_text_wrt { page tag wrt { pos w } { xoffset 0 } { yoffset 0 } { anchor {} } { move_too {} } } {
 			set can [dui canvas]
 			set page [lindex $page 0]
-set debug [expr {$wrt eq "roast_level"}]			
 			set tag [get $page [lindex $tag 0]]
 			set wrt [get $page [lindex $wrt 0]]
 			lassign [$can bbox $wrt] x0 y0 x1 y1 
 			lassign [$can bbox $tag] wx0 wy0 wx1 wy1
-if { $debug } { msg "WRT COORDS: ($x0 $y0 $x1 $y1)" }			
+			
 			set xoffset [dui platform rescale_x $xoffset]
 			set yoffset [dui platform rescale_y $yoffset]
 			
@@ -5194,10 +5193,8 @@ if { $debug } { msg "WRT COORDS: ($x0 $y0 $x1 $y1)" }
 			
 			if { $lcoords == 2 } {
 				$can coords $tag [list $newx $newy]
-if { $debug } { msg "RELOCATING '$tag' FROM ($wx0 $wy0) to ($newx $newy)" }				
 			} elseif { $lcoords == 4 } {
 				$can coords $tag [list $newx $newy [expr {$newx+($wx1-$wx0)}] [expr {$newy+($wy1-$wy0)}]]
-if { $debug } { msg "RELOCATING '$tag' FROM ($wx0 $wy0) to ($newx $newy [expr {$newx+($wx1-$wx0)}] [expr {$newy+($wy1-$wy0)}])" }
 			}
 			
 			if { $move_too ne "" } {
@@ -5210,12 +5207,10 @@ if { $debug } { msg "RELOCATING '$tag' FROM ($wx0 $wy0) to ($newx $newy [expr {$
 					
 					if { [llength $mtcoords] == 2 } {
 						$can coords $w [list [expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}]]
-if { $debug } { msg "MOVING TOO '$w' FROM ([lindex $mtcoords 0] [lindex $mtcoords 1]) to ([expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}])" }						
 					} elseif { [llength $mtcoords] == 4 } {
 						$can coords $w [list [expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}] \
 							[expr {$newx+$mtxoffset+[lindex $mtcoords 2]-[lindex $mtcoords 0]}] \
 							[expr {$newy+$mtyoffset+[lindex $mtcoords 3]-[lindex $mtcoords 1]}]]
-if { $debug } { msg "MOVING TOO '$w' FROM ([lindex $mtcoords 0] [lindex $mtcoords 1]) to ([expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}] [expr {$newx+$mtxoffset+[lindex $mtcoords 2]-[lindex $mtcoords 0]}] [expr {$newy+$mtyoffset+[lindex $mtcoords 3]-[lindex $mtcoords 1]}])" }						
 					}
 				}
 			}
