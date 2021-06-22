@@ -652,10 +652,9 @@ variable **create_page_namespaces**.
 
 <a name="dui_page_theme"></a>
 
-**dui page theme**
+**dui page theme**  _default_ 
 
->Returns the name of the theme used when creating the page.
-
+>Returns the name of the theme used when creating the page. If the page has no namespace (and thus has no theme assigned), returns  _default_ , which, if not specified, is an empty string.
 
 <a name="dui_page_exists"></a>
 
