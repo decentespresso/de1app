@@ -745,7 +745,7 @@ namespace eval ::dui {
 			default.dbutton_symbol.font_size 28
 			default.dbutton_symbol.anchor center
 			default.dbutton_symbol.justify center
-			default.dbutton_symbol.fill white
+			default.dbutton_symbol.fill "#7f879a"
 			default.dbutton_symbol.disabledfill "#ccc"
 			
 			default.dbutton.shape.insight_ok round
@@ -784,8 +784,18 @@ namespace eval ::dui {
 			default.dcombobox.font_family notosansuiregular
 			default.dcombobox.font_size 16
 			
-			default.dcombobox_ddarrow.font_size 24
-			default.dcombobox_ddarrow.disabledfill "#ccc"
+			default.dbutton_dda.shape {}
+			default.dbutton_dda.fill {}
+			default.dbutton_dda.bwidth 70
+			default.dbutton_dda.bheight 65
+			default.dbutton_dda.symbol "sort-down"
+			
+			default.dbutton_dda_symbol.pos {0.5 0.25}
+			default.dbutton_dda_symbol.font_size 24
+			default.dbutton_dda_symbol.anchor center
+			default.dbutton_dda_symbol.justify center
+			default.dbutton_dda_symbol.fill "#7f879a"
+			default.dbutton_dda_symbol.disabledfill "#ddd"
 			
 			default.dcheckbox.font_family "Font Awesome 5 Pro"
 			default.dcheckbox.font_size 18
@@ -875,8 +885,30 @@ namespace eval ::dui {
 			default.text.font_size 16
 			default.text.relief flat
 			default.text.highlightthickness 1
+			
+			default.dbutton.shape.dne_clicker round 
+			default.dbutton.bwidth.dne_clicker 120 
+			default.dbutton.bheight.dne_clicker 140 
+			default.dbutton.radius.dne_clicker 20 
+			default.dbutton.anchor.dne_clicker center
+			default.dbutton_symbol.pos.dne_clicker {0.5 0.4} 
+			default.dbutton_symbol.anchor.dne_clicker center 
+			default.dbutton_symbol.font_size.dne_clicker 20
+			default.dbutton_label.pos.dne_clicker {0.5 0.8} 
+			default.dbutton_label.font_size.dne_clicker 10 
+			default.dbutton_label.anchor.dne_clicker center
+	
+			default.dbutton.shape.dne_pad_button round 
+			default.dbutton.bwidth.dne_pad_button 280 
+			default.dbutton.bheight.dne_pad_button 220 
+			default.dbutton.radius.dne_pad_button 20 
+			default.dbutton.anchor.dne_pad_button nw
+			default.dbutton_label.pos.dne_pad_button {0.5 0.5} 
+			default.dbutton_label.font_family.dne_pad_button notosansuibold 
+			default.dbutton_label.font_size.dne_pad_button 24 
+			default.dbutton_label.anchor.dne_pad_button center
 		}
-		
+
 		# Named options:
 		# 	-theme theme_name: to add to a theme different than the current one.
 		#	-type type_name: adds this type for all added aspects.
@@ -4181,9 +4213,9 @@ namespace eval ::dui {
 			return $is_deleted
 		}
 		
-		proc theme { page } {
+		proc theme { page {default {}} } {
 			variable pages_data
-			return [value_or_default pages_data(${page},theme) ""]
+			return [value_or_default pages_data(${page},theme) $default]
 		}
 
 		# Returns a boolean list telling which of the pages could be rethemed
@@ -4191,13 +4223,18 @@ namespace eval ::dui {
 			variable pages_data
 			set is_rethemed [lrepeat [llength $pages] 0]
 			
+			if { ![dui theme exists $new_theme] } {
+				msg -ERROR [namespace current] retheme: "new theme '$new_theme' is not a valid theme"
+				return $is_rethemed
+			}
+			
 			set i 0
 			foreach page $pages {
 				if { ![exists $page] } {
 					msg -WARNING [namespace current] "retheme: page '$page' does not exist"
 					continue
 				}
-				if { [theme $page] eq $new_theme } {
+				if { [theme $page "default"] eq $new_theme } {
 					continue
 				}
 				
@@ -5088,11 +5125,12 @@ namespace eval ::dui {
 		proc relocate_text_wrt { page tag wrt { pos w } { xoffset 0 } { yoffset 0 } { anchor {} } { move_too {} } } {
 			set can [dui canvas]
 			set page [lindex $page 0]
+set debug [expr {$wrt eq "roast_level"}]			
 			set tag [get $page [lindex $tag 0]]
 			set wrt [get $page [lindex $wrt 0]]
 			lassign [$can bbox $wrt] x0 y0 x1 y1 
 			lassign [$can bbox $tag] wx0 wy0 wx1 wy1
-			
+if { $debug } { msg "WRT COORDS: ($x0 $y0 $x1 $y1)" }			
 			set xoffset [dui platform rescale_x $xoffset]
 			set yoffset [dui platform rescale_y $yoffset]
 			
@@ -5150,8 +5188,17 @@ namespace eval ::dui {
 				# Embedded in catch as widgets like rectangles don't support -anchor
 				catch { $can itemconfigure $tag -anchor $anchor }
 			}
-			# Don't use command 'moveto' as then -anchor is not acknowledged
-			$can coords $tag "$newx $newy"
+			
+			# Don't use command 'moveto' as then -anchor is not acknowledged for text items
+			set lcoords [llength [$can coords $tag]]
+			
+			if { $lcoords == 2 } {
+				$can coords $tag [list $newx $newy]
+if { $debug } { msg "RELOCATING '$tag' FROM ($wx0 $wy0) to ($newx $newy)" }				
+			} elseif { $lcoords == 4 } {
+				$can coords $tag [list $newx $newy [expr {$newx+($wx1-$wx0)}] [expr {$newy+($wy1-$wy0)}]]
+if { $debug } { msg "RELOCATING '$tag' FROM ($wx0 $wy0) to ($newx $newy [expr {$newx+($wx1-$wx0)}] [expr {$newy+($wy1-$wy0)}])" }
+			}
 			
 			if { $move_too ne "" } {
 				lassign [$can bbox $tag] newx newy
@@ -5162,16 +5209,41 @@ namespace eval ::dui {
 					set mtyoffset [expr {[lindex $mtcoords 1]-$wy0}]
 					
 					if { [llength $mtcoords] == 2 } {
-						$can coords $w "[expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}]"
+						$can coords $w [list [expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}]]
+if { $debug } { msg "MOVING TOO '$w' FROM ([lindex $mtcoords 0] [lindex $mtcoords 1]) to ([expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}])" }						
 					} elseif { [llength $mtcoords] == 4 } {
-						$can coords $w "[expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}] \
+						$can coords $w [list [expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}] \
 							[expr {$newx+$mtxoffset+[lindex $mtcoords 2]-[lindex $mtcoords 0]}] \
-							[expr {$newy+$mtyoffset+[lindex $mtcoords 3]-[lindex $mtcoords 1]}]"
+							[expr {$newy+$mtyoffset+[lindex $mtcoords 3]-[lindex $mtcoords 1]}]]
+if { $debug } { msg "MOVING TOO '$w' FROM ([lindex $mtcoords 0] [lindex $mtcoords 1]) to ([expr {$newx+$mtxoffset}] [expr {$newy+$mtyoffset}] [expr {$newx+$mtxoffset+[lindex $mtcoords 2]-[lindex $mtcoords 0]}] [expr {$newy+$mtyoffset+[lindex $mtcoords 3]-[lindex $mtcoords 1]}])" }						
 					}
 				}
 			}
 					
-			return "$newx $newy"
+			return [list $newx $newy]
+		}
+		
+		proc relocate_dropdown_arrow { page tag  } {
+			set can [dui canvas]
+			set page [lindex $page 0]
+			set tag [lindex $tag 0]
+			
+			lassign [$can bbox [get $page $tag]] x0 y0 x1 y1 
+						
+			set dda_box_id [get $page "${tag}-dda"]
+			lassign [$can coords $dda_box_id] ax0 ay0
+			
+			foreach id [get $page "${tag}-dda-btn"] { 
+				lassign [$can coords $id] ix0 iy0
+				$can moveto $id [expr {$x1+($ix0-$ax0)}] [expr {$y0+($iy0-$ay0)}]
+			}
+			
+			set dda_sym_id [get $page "${tag}-dda-sym"]
+			# This only works correctly with bbox, not with coords, so it cannot be included in the loop above
+			lassign [$can bbox $dda_sym_id] ix0 iy0
+			$can moveto $dda_sym_id [expr {$x1+($ix0-$ax0)}] [expr {$y0+($iy0-$ay0)}]
+			
+			$can moveto $dda_box_id $x1 $y0
 		}
 		
 		# Ensures a minimum or maximum size of a widget in pixels. This is normally useful for text base entries like 
@@ -6340,6 +6412,7 @@ namespace eval ::dui {
 			set ns [dui page get_namespace $pages]
 				
 			set style [dui::args::get_option -style "" 0]
+			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
 			set var [dui::args::get_option -variable "" 1]
 			dui::args::process_aspects dclicker $style
 			
@@ -6363,9 +6436,8 @@ namespace eval ::dui {
 				} 
 				set editor_args [dui::args::extract_prefixed -editor_ ]
 				
-				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $min \
-					-max $max -default $default -smallincrement $smallincrement -bigincrement $bigincrement \
-					{*}$editor_args ]
+				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $min -max $max \
+					-default $default -smallincrement $smallincrement -bigincrement $bigincrement -theme $theme {*}$editor_args]
 				#set editor_cmd "if \{ \[dui item cget [lindex $pages 0] $main_tag -state\] eq \"normal\" \} \{ $editor_cmd \};"
 #				bind $widget <Double-Button-1> $editor_cmd
 			}
@@ -6431,7 +6503,7 @@ namespace eval ::dui {
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $img_name
 			}			
-			msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args' (img_name=$img_name)"
+			#msg -INFO [namespace current] image "add '$main_tag' to page(s) '$pages' with args '$args' (img_name=$img_name)"
 			#return $main_tag
 			return $img_name
 		}
@@ -6735,7 +6807,8 @@ namespace eval ::dui {
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
 			set style [dui::args::get_option -style "" 0]
-
+			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
+			
 			set values [dui::args::get_option -values {} 1]
 			#set values_ids [dui::args::get_option -values_ids {} 1]
 			#set item_type [dui::args::get_option -item_type {} 1]
@@ -6756,14 +6829,13 @@ namespace eval ::dui {
 			set cmd [dui::args::get_option -command {} 1]
 			set expand_cmd 0
 			if { $cmd eq "" } {
-				set cmd [list dui page load dui_item_selector]
+				set cmd [list dui::page::load dui_item_selector]
 				set expand_cmd 1
 			} elseif { $ns ne "" && [string is wordchar $cmd] && [namespace which -command ${ns}::$cmd] ne "" } {
 				set cmd "${ns}::$cmd"
 				set expand_cmd 1
 			} else {
 				regsub -all {%NS} $cmd $ns cmd
-				
 			}
 			if { $expand_cmd } {
 				lappend cmd $textvariable $values
@@ -6775,6 +6847,7 @@ namespace eval ::dui {
 						lappend cmd -$fn [dui::args::get_option -$fn {} 1]
 					}
 				}
+				lappend cmd -theme $theme
 				#set cmd [list say "select" $::settings(sound_button_in) \; {*}$cmd ]
 			}
 #			dui::args::process_font dcombobox $style
@@ -6784,18 +6857,10 @@ namespace eval ::dui {
 			
 			# Dropdown selection arrow
 			set arrow_tags [list ${main_tag}-dda {*}[lrange $tags 1 end]]
-			set arrow_id [dui add symbol $pages 10000 $y -symbol sort-down -tags $arrow_tags -anchor w -justify left \
-				-aspect_type dcombobox_ddarrow -command $cmd] 
-			#[dui canvas] bind $arrow_id [dui platform button_press] $select_cmd
-			
-			bind $w <Configure> [list dui::item::relocate_text_wrt [lindex $pages 0] ${main_tag}-dda $main_tag e 20 -12 w]
-#			foreach page $pages {
-#				set after_show_cmd [list dui item relocate_text_wrt $page ${main_tag}-dda $main_tag e 20 -12 w]
-#				dui page add_action $page show $after_show_cmd
-#			}
-			
-#			dui add dbutton $pages [expr {$x-5}] [expr {$y+}]  -command $select_cmd  \
-#				[expr {$x_widget+360}] [expr {$y_widget+68}] ]
+#			dui add dbutton $pages [expr {$x+650}] $y -bwidth 70 -bheight 65 -tags $arrow_tags \
+#				-command $cmd -symbol sort-down -symbol_pos {0.5 0.25} -style dbutton_dda
+			dui add dbutton $pages [expr {$x+650}] $y -tags $arrow_tags -aspect_type dbutton_dda -command $cmd -symbol sort-down
+			bind $w <Configure> [list dui::item::relocate_dropdown_arrow [lindex $pages 0] $main_tag]
 			
 			return $w
 		}
@@ -7592,13 +7657,7 @@ namespace eval ::dui::pages::dui_number_editor {
 		set x 625; set y 390
 		dui add entry $page $x $y -tags value -width 6 -data_type numeric -font_size +6 -canvas_anchor center \
 			-justify center
-				
-		# Increment/decrement clicker buttons style
-		dui aspect set -style dne_clicker {dbutton.shape round dbutton.bwidth 120 dbutton.bheight 140 
-			dbutton.radius 20 dbutton.anchor center
-			dbutton_symbol.pos {0.5 0.4} dbutton_symbol.anchor center dbutton_symbol.font_size 20
-			dbutton_label.pos {0.5 0.8} dbutton_label.font_size 10 dbutton_label.anchor center}
-		
+
 		# Decrement value arrows		
 		set hoffset 45; set bspace 140
 		dui add dbutton $page [expr {$x-$hoffset-$bspace}] $y -tags small_decr -style dne_clicker \
@@ -7634,12 +7693,6 @@ namespace eval ::dui::pages::dui_number_editor {
 		dui add listbox $page 450 780 -tags previous_values -canvas_width 350 -canvas_height 550 -yscrollbar 1 \
 			-label [translate "Previous values"] -label_style section_font_size -label_pos {450 700} -label_anchor nw 
 		bind $widgets(previous_values) <<ListboxSelect>> ::dui::pages::dui_number_editor::previous_values_select
-		
-#		# Numeric type pad
-		dui aspect set -style dne_pad_button {dbutton.shape round dbutton.bwidth 280 dbutton.bheight 220 
-			dbutton.radius 20 dbutton.anchor nw
-			button_label.pos {0.5 0.5} button_label.font_family notosansuibold 
-			button_label.font_size 24 button_label.anchor center}
 		
 		set x_base 1425; set y_base 290
 		set width 280; set height 220; set hspace 80; set vspace 60
@@ -7681,12 +7734,17 @@ namespace eval ::dui::pages::dui_number_editor {
 			msg -WARN [namespace current] load: "num_variable is required"
 			return 0
 		}
+		
+		if { [info exists opts(-theme)] } {
+			dui page retheme $page_to_show $opts(-theme)
+		}
+		
 		if { ![info exists $num_variable] } {
 			set $num_variable ""
 		}
 		
 		set data(previous_page) $page_to_hide
-		
+				
 		set fields {page_title callback_cmd previous_values default min max n_decimals smallincrement bigincrement}
 		foreach fn $fields {
 			set data($fn) [ifexists opts(-$fn)]
@@ -7947,7 +8005,7 @@ namespace eval ::dui::pages::dui_item_selector {
 	#	-selectmode: single, browse, multiple or extended.
 	#	-empty_items_msg: text to show if there are no items to select.
 	#	-listbox_width: the width in pixels of the filter entry and the items listbox.
-	
+	#	-theme: If provided and the current theme for the page is not the requested one, rethemes the page.
 	proc load { page_to_hide page_to_show variable values args } {
 		variable data
 		variable widgets
@@ -7957,6 +8015,11 @@ namespace eval ::dui::pages::dui_item_selector {
 			msg -WARN [namespace current] load "NO PAGE TO HIDE"
 		}
 		set data(previous_page) $page_to_hide
+		
+		if { [info exists opts(-theme)] } {
+			dui page retheme $page_to_show $opts(-theme)
+		}
+		
 		set data(page_title) [ifexists opts(-page_title) [translate "Select an item"]]
 				
 		# If no selected is given, but variable is given and it has a current value, use it as selected.
