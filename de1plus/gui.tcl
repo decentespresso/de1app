@@ -149,67 +149,68 @@ proc photoscale_android {img sx {sy ""} } {
 }
 
 proc add_de1_page {names filename {skin ""} } {
-
-	set ::settings(preload_all_page_images) 0
-
-	if {$skin == ""} {
-		set skin $::settings(skin)
-	}
-
-	set pngfilename "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/$filename"
-	set srcfilename "[homedir]/skins/$skin/2560x1600/$filename"
-
-	set make_new_image 0
-	if {$::screen_size_width == 1280 && $::screen_size_height == 800} {
-		# no redoing, as these are shipping with the app
-	} elseif {$::screen_size_width == 2560 && $::screen_size_height == 1600} {
-		# no redoing, as these are shipping with the app
-	} elseif {[file exists $pngfilename] != 1} {
-		set make_new_image 1
-		msg -DEBUG "Making new image because destination image does not exist: $pngfilename"
-	} elseif {[file mtime $srcfilename] > [file mtime $pngfilename]} {
-		# if the source image is newer than the target image, 
-		set make_new_image 1
-		msg -DEBUG "Making new image because date of src image is newer: $srcfilename"
-	}
-
-	if {$make_new_image == 1} {
-        borg toast [subst {[translate "Resizing image"]\n\n[file tail $filename]}]
-		borg spinner on
-    	catch {
-    		file mkdir "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/"
-    	}
-
-
-        set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
-        set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
-
-		image create photo $names -file $srcfilename
-		photoscale $names $rescale_images_y_ratio $rescale_images_x_ratio
-		borg spinner off
-		$names write $pngfilename  -format {jpeg -quality 90}
-		image delete $names
-
-	} else {
-		if {$::settings(preload_all_page_images) == 1} {
-			set iname [image create photo $names -file $pngfilename]
-			msg -DEBUG "loading page: '$names' with image '$pngfilename' with tclname: '$iname'"
-			#image create photo $names 			$names -file $pngfilename
-		}
-	}
-
-	#.can create image {0 0} -anchor nw -image $names -tag [list pages $name] -state hidden 
-	foreach name $names {
-		.can create image {0 0} -anchor nw  -tag [list pages $name] -state hidden 
-		if {$::settings(preload_all_page_images) == 1} {
-			#.can itemconfigure $names -image $names 
-			.can itemconfigure $name -image $names
-		} else {
-			set ::delayed_image_load($name) $pngfilename
-		}
-	}
-
-	#set ::image_to_page($pngfilename) $names
+	dui page add $names -bg_img $filename
+	
+#	set ::settings(preload_all_page_images) 0
+#
+#	if {$skin == ""} {
+#		set skin $::settings(skin)
+#	}
+#
+#	set pngfilename "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/$filename"
+#	set srcfilename "[homedir]/skins/$skin/2560x1600/$filename"
+#
+#	set make_new_image 0
+#	if {$::screen_size_width == 1280 && $::screen_size_height == 800} {
+#		# no redoing, as these are shipping with the app
+#	} elseif {$::screen_size_width == 2560 && $::screen_size_height == 1600} {
+#		# no redoing, as these are shipping with the app
+#	} elseif {[file exists $pngfilename] != 1} {
+#		set make_new_image 1
+#		msg -DEBUG "Making new image because destination image does not exist: $pngfilename"
+#	} elseif {[file mtime $srcfilename] > [file mtime $pngfilename]} {
+#		# if the source image is newer than the target image, 
+#		set make_new_image 1
+#		msg -DEBUG "Making new image because date of src image is newer: $srcfilename"
+#	}
+#
+#	if {$make_new_image == 1} {
+#        borg toast [subst {[translate "Resizing image"]\n\n[file tail $filename]}]
+#		borg spinner on
+#    	catch {
+#    		file mkdir "[homedir]/skins/$skin/${::screen_size_width}x${::screen_size_height}/"
+#    	}
+#
+#
+#        set rescale_images_x_ratio [expr {$::screen_size_height / 1600.0}]
+#        set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
+#
+#		image create photo $names -file $srcfilename
+#		photoscale $names $rescale_images_y_ratio $rescale_images_x_ratio
+#		borg spinner off
+#		$names write $pngfilename  -format {jpeg -quality 90}
+#		image delete $names
+#
+#	} else {
+#		if {$::settings(preload_all_page_images) == 1} {
+#			set iname [image create photo $names -file $pngfilename]
+#			msg -DEBUG "loading page: '$names' with image '$pngfilename' with tclname: '$iname'"
+#			#image create photo $names 			$names -file $pngfilename
+#		}
+#	}
+#
+#	#.can create image {0 0} -anchor nw -image $names -tag [list pages $name] -state hidden 
+#	foreach name $names {
+#		.can create image {0 0} -anchor nw  -tag [list pages $name] -state hidden 
+#		if {$::settings(preload_all_page_images) == 1} {
+#			#.can itemconfigure $names -image $names 
+#			.can itemconfigure $name -image $names
+#		} else {
+#			set ::delayed_image_load($name) $pngfilename
+#		}
+#	}
+#
+#	#set ::image_to_page($pngfilename) $names
 }	
 
 proc set_de1_screen_saver_directory {{dirname {}}} {
@@ -699,7 +700,7 @@ proc platform_button_unpress {} {
 
 
 proc add_variable_item_to_context {context label_name varcmd} {
-	msg -WARN "add_variable_item_to_context is OBSOLETE, please use DUI instead"
+	msg -WARNING "add_variable_item_to_context is DEPRECATED, please use 'dui page add_variable' instead"
 	# This may or may not work as dui::page::add_variable takes canvas IDs instead of labels.
 	dui::page::add_variable $context $label_name $varcmd
 	
