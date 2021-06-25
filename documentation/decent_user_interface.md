@@ -14,6 +14,130 @@
   - [Pages](#pages)
   - [Visual items (GUI elements)](#items)
 
+
+<a name="api_index"></a>
+
+## API Index
+
+- `dui`
+  - dui init
+  - dui canvas
+  - [dui config](#dui_config)
+  - [dui cget](#dui_cget)
+  - [dui say](#dui_say)
+  - _Non exported:_  dui::setup_ui
+- `dui platform`
+  - dui platform hide_android_keyboard
+  - dui platform button_press
+  - dui platform button_long_press
+  - dui platform finger_down
+  - dui platform button_unpress
+  - dui platform xscale_factor
+  - dui platform yscale_factor
+  - dui platform rescale_x
+  - dui platform rescale_y
+  - dui platform translate_coordinates_finger_down_x
+  - dui platform translate_coordinates_finger_down_y
+  - dui platform is_fast_double_tap
+- `dui theme`
+  - [dui theme add](#dui_theme_add)
+  - [dui theme set](#dui_theme_set)
+  - [dui theme get](#dui_theme_get)
+  - [dui theme exists](#dui_theme_exists)
+  - [dui theme list](#dui_theme_list)
+- `dui aspect`
+  - [dui aspect set](#dui_aspect_set)
+  - [dui aspect get](#dui_aspect_get)
+  - [dui aspect exists](#dui_aspect_exists)
+  - [dui aspect list](#dui_aspect_list)
+- `dui font`
+  - [dui font add_dirs](#dui_font_add_dirs)
+  - [dui font dirs](#dui_font_dirs)
+  - [dui font load](#dui_font_load)
+  - [dui font get](#dui_font_get)
+  - [dui font list](#dui_font_list)
+  - dui font width
+  - _Non exported:_  dui::font::add_or_get_familyname, dui::font::key
+- `dui symbol`
+  - [dui symbol_set](#dui_symbol_set)
+  - [dui symbol get](#dui_symbol_get)
+  - [dui symbol exists](#dui_symbol_exists)
+  - [dui symbol list](#dui_symbol_list)
+- `dui image`
+  - [dui image add_dirs](#dui_image_add_dirs)
+  - [dui image dirs](#dui_image_dirs)
+  - [dui image find](#dui_image_find)
+  - _Non exported:_  dui::image::photoscale, dui::image::find, dui::image::load, dui::image::is_loaded, dui::image::get, dui::image::set_delayed, dui::image::exists_delayed, dui::image::load_delayed, dui::image::rm_delayed.
+- `dui sound`
+  - [dui sound set](#dui_sound_set)
+  - [dui sound get](#dui_sound_get)
+  - [dui sound exists](#dui_sound_exists)
+  - [dui sound make](#dui_sound_make)
+  - [dui sound list](#dui_sound_list)  
+- `dui page`
+  - [dui page add](#dui_page_add)
+  - [dui page theme](#dui_page_theme)
+  - [dui page exists](#dui_page_exists)
+  - [dui page is_setup](#dui_page_is_setup)
+  - [dui page is_drawn](#dui_page_is_drawn)
+  - [dui page is_visible](#dui_page_is_visible)
+  - [dui page current](#dui_page_current)
+  - [dui page list](#dui_page_list)
+  - [dui page get_namespace](#dui_page_get_namespace)
+  - [dui page load](#dui_page_load)
+  - [dui page show](#dui_page_show)
+  - [dui page add_action](#dui_page_add_action)
+  - [dui page actions](#dui_page_actions)
+  - [dui page delete](#dui_page_delete)
+  - [dui page retheme](#dui_page_retheme)
+  - [dui page items](#dui_page_items)
+  - [dui page has_item](#dui_page_has_item)
+  - dui page update_onscreen_variables
+  - _Non exported:_  dui::page::setup, dui::page::add_items, dui::page::add_variable.
+- `dui item`
+  - [dui item add](#dui_item_add)
+  - [dui item get](#dui_item_get)
+  - [dui item get_widget](#dui_item_get_widget)
+  - [dui item pages](#dui_item_pages)
+  - [dui item config](#dui_item_config)
+  - [dui item cget](#dui_item_cget)
+  - [dui item enable](#dui_item_enable)
+  - [dui item disable](#dui_item_disable)
+  - [dui item enable_or_disable](#dui_item_enable_or_disable)
+  - [dui item show](#dui_item_show)
+  - [dui item hide](#dui_item_hide)
+  - [dui item show_or_hide](#dui_item_show_or_hide)
+  - [dui item moveto](#dui_item_moveto)
+  - [dui item listbox_get_selection](#dui_item_listbox_get_selection)
+  - [dui item listbox_set_selection](#dui_item_listbox_set_selection)
+  - _Non exported:_  dui::item::relocate_text_wrt, dui::item::relocate_dropdown_arrow, dui::item::ensure_size, dui::item::set_yscrollbar_dim, dui::item::scale_scroll, dui::item::scrolled_widget_moveto, dui::item::rounded_rectangle, dui::item::rounded_rectangle_outline, dui::item::scale_moveto, dui::item::drater_draw, dui::item::drater_clicker, dui::item::horizontal_clicker, dui::item::vertical_clicker, dui::item::anchor_inside_box, dui::item::anchor_coords.
+- `dui add`
+  - [dui add theme](#dui_add_theme)
+  - [dui add aspect](#dui_add_aspect)
+  - [dui add symbol](#dui_add_symbol)
+  - [dui add page](#dui_add_page)
+  - [dui add font](#dui_add_font)
+  - [dui add font_dirs](#dui_add_font_dirs)
+  - [dui add image_dirs](#dui_add_image_dirs)
+  - [dui add canvas_item](#dui_add_canvas_item)
+  - [dui add widget](#dui_add_widget)
+  - [dui add dtext](#dui_add_dtext)
+  - [dui add variable](#dui_add_variable)
+  - [dui add image](#dui_add_image)
+  - [dui add dbutton](#dui_add_dbutton)
+  - [dui add dclicker](#dui_add_dclicker)
+  - [dui add entry](#dui_add_entry)
+  - [dui add multiline_entry](#dui_add_multiline_entry)
+  - [dui add text](#dui_add_text)
+  - [dui add listbox](#dui_add_listbox)
+  - [dui add dcheckbox](#dui_add_dcheckbox)
+  - [dui add scale](#dui_add_scale)
+  - [dui add drater](#dui_add_drater)
+  - [dui add graph](#dui_add_graph)
+- `dui args`
+  - _Non exported:_  dui::args::add_option_if_not_exists, dui::args::remove_options, dui::args::has_option, dui::args::get_option, dui::args::extract_prefixed, dui::args::process_tags_and_var, dui::args::process_aspects, dui::args::process_font, dui::args::process_label.
+
+
 <a name="objective"></a>
 
 ## Objective
@@ -949,6 +1073,13 @@ Items are selected in the same way as in **dui item get**. Add a "*" suffix to a
 >>If **-initial** is  _true_ , permanently modifies the initial show/hide state of the item, that is, whether is is shown or hidden whenever its page is shown. Default value is  _false_ .
 
 
+<a name="dui_item_moveto"></a>
+
+**dui item moveto**  _page_or_id_or_widget tag x y_
+
+>Moves items to a new screen location.  _x_  and  _y_  give the new top-left coordinates. If  _tag_  selects all items in a compound (ends with a "*" character), all individual items of the compound will be moved, preserving their relative positions (use this to move, for example, dbuttons).
+
+
 <a name="dui_item_listbox_get_selection"></a>
 
 **dui item listbox_get_selection**  _page_or_id_or_widget ?tag values?_
@@ -961,13 +1092,6 @@ Items are selected in the same way as in **dui item get**. Add a "*" suffix to a
 **dui item listbox_set_selection**  _page_or_id_or_widget tag selected ?values reset_current?_
 
 >Selects the items matching the  _selected_  string in the specified listbox widget. If a  _values_  list is provided,  _selected_  is matched against  _values_  instead of the list values. If  _reset_current_  is 1 (or any other value that is coerced to a boolean  _true_ ), the current selection is reset first (this is only relevant with listboxes that accept multiple selections).
-
-
-<a name="dui_item_moveto"></a>
-
-**dui item moveto**  _page_or_id_or_widget tag x y_
-
->Moves items to a new screen location.  _x_  and  _y_  give the new top-left coordinates. If  _tag_  selects all items in a compound (ends with a "*" character), all individual items of the compound will be moved, preserving their relative positions (use this to move, for example, dbuttons).
 
 
 <a name="dui_add"></a>
@@ -1453,6 +1577,51 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 > >Use this syntax to pass additional options to the yscrollbar scale creation command.
 
 
+<a name="dui_add_text"></a>
+
+**dui add text**  _pages x y ?-option value ...?_
+
+>Create a Tk text widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+
+>Return the pathname of the Text widget. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
+
+> >&lt;main_tag&gt;: the Text widget.
+
+> >&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
+
+> >&lt;main_tag&gt;-ysb: (optional) the Tk scale widget used as vertical scrollbar.
+
+>Non-DUI options are passed-through to the Tk [text](https://www.tcl.tk/man/tcl8.6/TkCmd/text.htm) command.
+
+>**-label**  _text_
+
+>**-labelvariable**  _tcl_code_
+
+> >If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, associated to the text widget.
+
+>**-label_pos**  _{x y}_
+
+>**-label_pos**  _{anchor ?x_offset? ?y_offset?}_
+
+> >A list that determines the location of the label. If a pair of numeric coordinates are provided, they are interpreted as direct coordinates in the screen. If the first list item is not a number, it is interpreted as an anchor point relative to the edges of the listbox widget, and the label will be moved to the target position when the page is shown. 
+
+> >Valid anchor values are "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es". To get the label placed exactly as you want you normally also have to play with **-label_anchor** and **-label_justify**.
+
+> >The anchor value can optionally be followed by an  _x_offset_  and a  _y_offset_ , which will move the position by those fixed offsets after the anchor point is determined.
+
+>**-label_***option*** **  _value_
+
+> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add dtext** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
+
+>**-yscrollbar**  _true_or_false_
+
+> >If  _true_ , a vertical scrollbar is added to the right side of the text widget. The scrollbar is actually a Tk scale widget, not a Tk scrollbar widget. 
+
+>**-yscrollbar_***option*** **  _value_
+
+> >Use this syntax to pass additional options to the yscrollbar scale creation command.
+
+
 <a name="dui_add_listbox"></a>
 
 **dui add listbox**  _pages x y ?-option value ...?_
@@ -1740,48 +1909,3 @@ $widget element create ...
 $widget element create line_history_left_chart -xdata <xdata> -ydata <ydata> \
     {*}[dui aspect list -type graph_line -style hv_line -as_options yes]
 ```
-
-
-<a name="dui_add_text"></a>
-
-**dui add text**  _pages x y ?-option value ...?_
-
->Create a Tk text widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
-
->Return the pathname of the Text widget. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
-
-> >&lt;main_tag&gt;: the Text widget.
-
-> >&lt;main_tag&gt;-lbl: (optional) the canvas ID of the label text.
-
-> >&lt;main_tag&gt;-ysb: (optional) the Tk scale widget used as vertical scrollbar.
-
->Non-DUI options are passed-through to the Tk [text](https://www.tcl.tk/man/tcl8.6/TkCmd/text.htm) command.
-
->**-label**  _text_
-
->**-labelvariable**  _tcl_code_
-
-> >If **-label** or **-labelvariable** are used, adds a fixed or dynamic text label, respectively, associated to the text widget.
-
->**-label_pos**  _{x y}_
-
->**-label_pos**  _{anchor ?x_offset? ?y_offset?}_
-
-> >A list that determines the location of the label. If a pair of numeric coordinates are provided, they are interpreted as direct coordinates in the screen. If the first list item is not a number, it is interpreted as an anchor point relative to the edges of the listbox widget, and the label will be moved to the target position when the page is shown. 
-
-> >Valid anchor values are "n", "nw", "ne", "s", "sw", "se", "w", "wn", "ws", "e", "en", "es". To get the label placed exactly as you want you normally also have to play with **-label_anchor** and **-label_justify**.
-
-> >The anchor value can optionally be followed by an  _x_offset_  and a  _y_offset_ , which will move the position by those fixed offsets after the anchor point is determined.
-
->**-label_***option*** **  _value_
-
-> >Use this syntax to pass additional options to the label creation command. They will be passed through to either **dui add dtext** if **-label** was used, or to **dui add variable** if **-labelvariable** was used.
-
->**-yscrollbar**  _true_or_false_
-
-> >If  _true_ , a vertical scrollbar is added to the right side of the text widget. The scrollbar is actually a Tk scale widget, not a Tk scrollbar widget. 
-
->**-yscrollbar_***option*** **  _value_
-
-> >Use this syntax to pass additional options to the yscrollbar scale creation command.

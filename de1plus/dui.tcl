@@ -3946,7 +3946,7 @@ namespace eval ::dui {
 	### PAGE SUB-ENSEMBLE ###
 	namespace eval page {
 		namespace export add current exists is_setup is_drawn is_visible list theme retheme delete get_namespace \
-			load show add_action actions items has_item add_items add_variable update_onscreen_variables	
+			load show add_action actions items has_item	update_onscreen_variables
 		namespace ensemble create
 		
 		# Metadata for every added page. Array keys have the form '<page_name>,<type>', where <type> can be:
@@ -4531,7 +4531,7 @@ namespace eval ::dui {
 			#set end [clock milliseconds]
 			#puts "elapsed: [expr {$end - $start}]"
 			
-			dui page update_onscreen_variables
+			dui::page::update_onscreen_variables
 			dui platform hide_android_keyboard
 			#msg [namespace current] "Switched to page: $page_to_show [stacktrace]"
 		}
@@ -5674,7 +5674,7 @@ namespace eval ::dui {
 				uplevel #0 $callback_cmd
 			}
 			
-			dui page update_onscreen_variables
+			dui::page::update_onscreen_variables
 			return
 		}
 
@@ -5764,7 +5764,7 @@ namespace eval ::dui {
 				uplevel #0 $callback_cmd
 			}
 			
-			dui page update_onscreen_variables
+			dui::page::update_onscreen_variables
 			return
 		}
 						
@@ -6046,7 +6046,7 @@ namespace eval ::dui {
 			set varcode [dui::args::get_option -textvariable "" 1]
 	
 			set id [dui add dtext $pages $x $y {*}$args]
-			dui page add_variable $pages $id $varcode
+			dui::page::add_variable $pages $id $varcode
 			return $id
 		}
 		
