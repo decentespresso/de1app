@@ -198,11 +198,11 @@ namespace eval ::dui {
 				#set fontw 2
 			}
 	
-			# HOW TO HANDLE THIS?
-			if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
-				set ::rescale_images_x_ratio [expr {$screen_size_height / $::dui::_base_screen_height}]
-				set ::rescale_images_y_ratio [expr {$screen_size_width / $::dui::_base_screen_width}]
-			}
+			# NOT NEEDED ANYMORE
+#			if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
+#				set ::rescale_images_x_ratio [expr {$screen_size_height / $::dui::_base_screen_height}]
+#				set ::rescale_images_y_ratio [expr {$screen_size_width / $::dui::_base_screen_width}]
+#			}
 	
 			set global_font_size 18
 			
@@ -282,10 +282,10 @@ namespace eval ::dui {
 			wm minsize . $screen_size_width $screen_size_height
 
 			# TBD WHAT TO DO WITH THIS 
-			if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
-				set ::rescale_images_x_ratio [expr {$screen_size_height / $::dui::_base_screen_height}]
-				set ::rescale_images_y_ratio [expr {$screen_size_width / $::dui::_base_screen_width}]
-			}
+#			if {[file exists "skins/default/${screen_size_width}x${screen_size_height}"] != 1} {
+#				set ::rescale_images_x_ratio [expr {$screen_size_height / $::dui::_base_screen_height}]
+#				set ::rescale_images_y_ratio [expr {$screen_size_width / $::dui::_base_screen_width}]
+#			}
 	
 			# EB: Is this installed by default on PC/Mac/Linux?? No need to sdltk add it?
 			set helvetica_font "notosansuiregular"
@@ -298,6 +298,7 @@ namespace eval ::dui {
 				#set fontm [expr {($fontm * 1.20)}]
 			} 
 		}
+		
 
 		set fontawesome_brands [dui::font::add_or_get_familyname "Font Awesome 5 Brands-Regular-400.otf"]
 		set fontawesome_pro [dui::font::add_or_get_familyname "Font Awesome 5 Pro-Regular-400.otf"]
@@ -4911,8 +4912,11 @@ namespace eval ::dui {
 		# For text, changes its fill color to the default or provided font or disabled color.
 		# For other widgets like rectangle "clickable" button areas, enables or disables them.
 		# Does nothing if the widget is hidden.
-		proc enable_or_disable { enabled page_or_ids_or_widgets {tags {}} } {
+		proc enable_or_disable { enabled page_or_ids_or_widgets {tags {}} args } {
 			set can [dui canvas]
+			array set opts $args
+			set do_current [string is true [dui::args::get_option -current 1]]
+			set do_initial [string is true [dui::args::get_option -initial 0]]
 			
 			if { [string is true $enabled] || $enabled eq "enable" } {
 				set state normal
@@ -4920,9 +4924,14 @@ namespace eval ::dui {
 				set state disabled
 			}
 						
-			foreach item [get $page_or_ids_or_widgets $tags] {
-				if { [$can itemcget $item -state] ne "hidden" } {
-					$can itemconfigure $item -state $state
+			foreach id [get $page_or_ids_or_widgets $tags] {
+				if { $do_current } {
+					if { [$can itemcget $id -state] ne "hidden" } {
+						$can itemconfigure $id -state $state
+					}
+				}
+				if { $do_initial } {
+					dui item config $id -initial_state $state
 				}
 			}
 		} 
@@ -4931,12 +4940,12 @@ namespace eval ::dui {
 		# For text, changes its fill color to the default or provided disabled color.
 		# For other widgets like rectangle "clickable" button areas, disables them.
 		# Does nothing if the widget is hidden. 
-		proc disable { page_or_ids_or_widgets {tags {}} } {
-			enable_or_disable 0 $page_or_ids_or_widgets $tags
+		proc disable { page_or_ids_or_widgets {tags {}} args } {
+			enable_or_disable 0 $page_or_ids_or_widgets $tags {*}$args
 		}
 		
-		proc enable { page_or_ids_or_widgets {tags {}} } {
-			enable_or_disable 1 $page_or_ids_or_widgets $tags
+		proc enable { page_or_ids_or_widgets {tags {}} args } {
+			enable_or_disable 1 $page_or_ids_or_widgets $tags {*}$args
 		}
 		
 		# "Smart" widgets shower or hider. 'show' can take any value equivalent to boolean (1, true, yes, etc.)
