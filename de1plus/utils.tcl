@@ -46,6 +46,12 @@ proc setup_environment {} {
 		set settings(screen_size_height) $::screen_size_height
 		save_settings
 #	}
+	# Enrique: This shouldn't be necessary anymore but still the $::rescale_*_ratio vars are used in a couple of procs
+	if { ![file exists "skins/default/${::screen_size_width}x${::screen_size_height}"] } {
+		set ::rescale_images_x_ratio [expr {$::screen_size_height / $::dui::_base_screen_height}]
+		set ::rescale_images_y_ratio [expr {$::screen_size_width / $::dui::_base_screen_width}]
+	}
+
 
 	# Re-store what are now DUI namespace variables into the original global variables to ensure backwards-compatibility
 	# with existing code, until all code is migrated.
@@ -1042,19 +1048,20 @@ proc get_set_tablet_brightness { {setting ""} } {
 }
 
 
-proc settings_directory_graphics {} {
-    
-    global screen_size_width
-    global screen_size_height
-
-    set settingsdir "[homedir]/skins"
-    set dir "$settingsdir/$::settings(skin)/${screen_size_width}x${screen_size_height}"
-    
-    if {[info exists ::rescale_images_x_ratio] == 1} {
-        set dir "$settingsdir/$::settings(skin)/2560x1600"
-    }
-    return $dir
-}
+# Enrique: Not used anywhere in the code as of 25/06/2021, image directories now managed by DUI, so commenting 
+#proc settings_directory_graphics {} {
+#    
+#    global screen_size_width
+#    global screen_size_height
+#
+#    set settingsdir "[homedir]/skins"
+#    set dir "$settingsdir/$::settings(skin)/${screen_size_width}x${screen_size_height}"
+#    
+#    if {[info exists ::rescale_images_x_ratio] == 1} {
+#        set dir "$settingsdir/$::settings(skin)/2560x1600"
+#    }
+#    return $dir
+#}
 
 proc skin_directory_graphics {} {
     global screen_size_width

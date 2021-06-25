@@ -903,15 +903,24 @@ command if it is a canvas item.
 
 <a name="dui_item_enable_or_disable"></a>
 
-**dui item enable**  _page_or_ids_or_widgets ?tags?_
+**dui item enable**  _page_or_ids_or_widgets ?tags? ?-option value ...?_
 
-**dui item disable**  _page_or_ids_or_widgets ?tags?_
+**dui item disable**  _page_or_ids_or_widgets ?tags? ?-option value ...?_
 
-**dui item enable_or_disable**  _enabled page_or_ids_or_widgets ?tags?_
+**dui item enable_or_disable**  _enabled page_or_ids_or_widgets ?tags? ?-option value ...?_
 
 >Enable or disable the specified canvas items or widgets. 
 Items are selected in the same way as in **dui item get**. Add a "*" suffix to a main tag to enable or disable all the items in a widget compound at once.
 _enabled_ can be any value that is coerced to a boolean (1/0, true/false, etc.)
+
+>**-current**  _boolean_
+
+>>If **-current** is  _true_ , enables or disables the item immediately. Default value is  _true_ .
+
+>**-initial**  _boolean_
+
+>>If **-initial** is  _true_ , permanently modifies the initial enabled/disabled state of the item, that is, whether is is shown enabled (normal) or disabled whenever its page is shown. Default value is  _false_ .
+
 
 
 <a name="dui_item_show_or_hide"></a>
