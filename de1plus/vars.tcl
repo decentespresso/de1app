@@ -1522,6 +1522,10 @@ proc backup_settings {} {
 	#update_de1_explanation_chart
 }
 
+proc refresh_skin_directories {} {
+	unset -nocomplain ::skin_directories_cache
+}
+
 proc skin_directories {} {
 	if {[info exists ::skin_directories_cache] == 1} {
 		return $::skin_directories_cache
@@ -1534,6 +1538,13 @@ proc skin_directories {} {
 			continue
 		}
 	    
+		if {[ifexists ::settings(show_only_most_popular_skins)] == 1 && [ifexists ::settings(most_popular_skins)] != ""} {
+			puts "'$d' '[ifexists ::settings(most_popular_skins)]'"
+			if {[lsearch -exact [ifexists ::settings(most_popular_skins)] $d ] == -1} {
+				continue
+			}
+		}
+
 	    set fn "[homedir]/skins/$d/skin.tcl"
 	    set skintcl [read_file $fn]
 	    #set skintcl ""
@@ -1579,6 +1590,7 @@ proc fill_skin_listbox {} {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
+
 		$widget insert $cnt [translate $d]
 		if {$::settings(skin) == $d} {
 			set ::current_skin_number $cnt

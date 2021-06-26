@@ -633,9 +633,20 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 	# tap on version number on "app settings" tab, to visit a web page of this version's changelog
 	add_de1_button "settings_4" {if {[ifexists ::changelog_link] != ""} {web_browser $::changelog_link}} 750 220 1250 290   ""
 
+
+
+	set pos_vert 1300
+	set pos_top 940
+	set spacer 60
+	set optionfont "Helv_8"
+
+
 ##############################################################################
 # buttons to other settings pages
 	add_de1_text "settings_4" 1656 416 -text [translate "Skin"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
+
+		add_de1_widget "tabletstyles" checkbutton 1300 1060 {} -text [translate "Only show most popular skins"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(show_only_most_popular_skins)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 -command {refresh_skin_directories; fill_skin_listbox}
+
 		add_de1_button "settings_4" {say [translate {Styles}] $::settings(sound_button_in); set_next_page off tabletstyles; page_show tabletstyles; preview_tablet_skin; set_skins_scrollbar_dimensions }  1290 306 1900 510
 		set ::table_style_preview_image [add_de1_image "tabletstyles" 1300 450 ""]
 
@@ -655,10 +666,6 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			set_scrollbar_dimensions $::skin_scrollbar $::globals(tablet_styles_listbox)
 		}
 
-		set pos_vert 1300
-		set pos_top 940
-		set spacer 60
-		set optionfont "Helv_8"
 
 
 
@@ -1442,4 +1449,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#show_settings settings_3
+show_settings tabletstyles
