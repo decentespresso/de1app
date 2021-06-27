@@ -1449,4 +1449,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-show_settings tabletstyles
+#show_settings tabletstyles
