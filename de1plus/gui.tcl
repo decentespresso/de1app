@@ -119,7 +119,15 @@ proc photoscale_not_android {img sx {sy ""} } {
         foreach {sy_m sy_f} [Double2Fraction $sy] break
     }
     set tmp [image create photo]
-    $tmp copy $img -zoom $sx_m $sy_m -compositingrule set
+
+	if {[catch {
+	    catch {$tmp copy $img -zoom $sx_m $sy_m -compositingrule set} 
+	} err] != 0} {
+		# note that not all resolution resizes will work. Some take more memory than is available, 
+		# especially if the resolution change is a long float, and not an even number (ie, 2560->2559)
+		msg -ERROR "photoscale_not_android failed because: '$err'"
+	}
+
     $img blank
     $img copy $tmp -shrink -subsample $sx_f $sy_f -compositingrule set
     image delete $tmp
