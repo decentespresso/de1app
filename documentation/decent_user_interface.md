@@ -169,7 +169,7 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 ## Revision History
 
 * 2021-04-10 – Initial writing by [Enrique Bengoechea](https://github.com/ebengoechea)
-* 2021-04-10 - 2021-05-14 - Rewrite while the API evolves through nightly & beta, by [Enrique Bengoechea](https://github.com/ebengoechea)
+* 2021-04-11 - 2021-06-27 - Rewrite while the API evolves through nightly & beta, by [Enrique Bengoechea](https://github.com/ebengoechea)
 
 <a name="history"></a>
 
@@ -1295,7 +1295,9 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > >&lt;main_tag&gt;: the invisible "clickable" rectangle;
 
-> >&lt;main_tag&gt;-btn: the background button shape, which may itself be composed of several canvas items such as lines, rectangles and ovals;
+> >&lt;main_tag&gt;-btn: the background button shape, which may itself be composed of several canvas items such as lines, rectangles and ovals; For `-shape round_outline`, this is the background rounded rectangle.
+
+> >&lt;main_tag&gt;-out: the round button outline shape when `-shape round_outline` is used. It is itself composed of several canvas lines and arcs.
 
 > >&lt;main_tag&gt;-lbl, &lt;main_tag&gt;-lbl1, etc.: (optional) label text;
 
@@ -1327,10 +1329,11 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > >-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and **-radius** (determines how "round" the rectangle corners are).
 
-> >-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-arc_offset** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border).
+> >-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-arc_offset** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border). When using DUI styles it may sometimes be necessary to explicitly set **-fill {}** so it's not inherited from dbutton defaults.
+
+> >-**round_outline**: A rounded-corners rectangle with a visible outline border which, unlike **outline**, can be filled with a color different from the background. This is actually built overlapping a "round" dbutton and an "outline" dbutton. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled), **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-radius** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border).
 
 >**-command**  _tcl_code_
-
 > >Callback Tcl code to run when the button is clicked. When the page has a namesapce, if a plain name is used (only letters, numbers and underscores) and the namespace has a command with that name, it is used. If not specified and the page namespace has a command with the same number as the main tag, it is used.
 
 > >In addition to the standard substitutions, DUI adds the following:
