@@ -1064,12 +1064,14 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 	add_de1_text "steam" 1870 400 -justify right -anchor "nw" -text [translate "Auto-Off"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 		add_de1_variable "steam" 2470 400 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
 
-	add_de1_text "steam" 1870 470 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam" 2470 470 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
-	add_de1_text "steam" 1870 520 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam" 2470 520 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
-	add_de1_text "steam" 1870 570 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam" 2470 570 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+	add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+		add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
+	add_de1_text "steam" 1870 500 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+		add_de1_variable "steam" 2470 500 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
+	add_de1_text "steam" 1870 550 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+		add_de1_variable "steam" 2470 550 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[return_steam_flow_calibration $::settings(steam_flow)]}
+	add_de1_text "steam" 1870 600 -justify right -anchor "nw" -text [translate "Flow rate now"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+		add_de1_variable "steam" 2470 600 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
 
 	# zoomed steam chart
@@ -1086,13 +1088,13 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 
 	add_de1_text "steam_zoom_3 steam_zoom" 870 1490 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
 		add_de1_variable "steam_zoom_3 steam_zoom" 850 1490 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
-	add_de1_text "steam_zoom_3 steam_zoom" 870 1540 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
+	add_de1_text "steam_zoom_3 steam_zoom" 870 1540 -justify right -anchor "nw" -text [translate "Flow rate now"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
 		add_de1_variable "steam_zoom_3 steam_zoom" 850 1540 -justify left -anchor "ne" -text "" -font Helv_7 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
 	# stop button when zoomed on steam
 	#add_de1_variable "steam_zoom" 2100 1510 -text "\[ [translate "STOP"] \]" -font $green_button_font -fill "#2d3046" -anchor "center"  -textvariable {\[ [stop_text_if_espresso_stoppable] \]} 
 	#add_de1_button "steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 0 1410 2560 1600
-	dui add dbutton "steam_zoom_3 steam_zoom" 2100 1450 2540 1560 -tags circle_btn -shape round -label_font Helv_10_bold -fill "#ebedfa" -width 6 -outline red -label [translate "STOP"]  -label_fill black -command {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 
+	dui add dbutton "steam_zoom" 2100 1450 2540 1560 -tags circle_btn -shape round -label_font Helv_10_bold -fill "#ebedfa" -width 6 -outline red -label [translate "STOP"]  -label_fill black -command {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 
 
 
 
@@ -1103,7 +1105,7 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 	# when steam is off, display current steam heater temp
 	add_de1_text "steam_1 steam_3" 1100 1220 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 		add_de1_variable "steam_1 steam_3" 1680 1220 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
-		add_de1_text "steam_1 steam_3" 1100 1270 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
+		add_de1_text "steam_1 steam_3" 1100 1270 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 		add_de1_variable "steam_1 steam_3" 1680 1270 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[return_steam_flow_calibration $::settings(steam_flow)]}
 
 # optional keyboard bindings

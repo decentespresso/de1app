@@ -3437,7 +3437,7 @@ proc return_steam_flow_calibration {steam_flow} {
 	set in [expr {$steam_flow / 100.0}]
 
 	if {$::settings(enable_fluid_ounces) != 1} {
-		return [subst {[round_to_two_digits $in] [translate "mL/s"]}]
+		return [subst {[round_to_one_digits $in] [translate "mL/s"]}]
 	} else {
 		return [subst {[round_to_two_digits [ml_to_oz $in]] oz/s}]
 	}
