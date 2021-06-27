@@ -3560,12 +3560,15 @@ namespace eval ::gui::update {
 
 						steam_pressure append [round_to_two_digits $GroupPressure]
 						steam_flow append [round_to_two_digits $GroupFlow]
+						puts "SteamTemp : $SteamTemp "
+						set SteamTemp100th [expr {$SteamTemp / 100.00}]
 
 						if {$::settings(enable_fahrenheit) == 1} {
-							steam_temperature append \
-								[round_to_integer [celsius_to_fahrenheit $SteamTemp]]
+							steam_temperature append [round_to_integer [celsius_to_fahrenheit $SteamTemp]]
+							steam_temperature100th append [round_to_two_digits [celsius_to_fahrenheit $SteamTemp100th]]
 						} else {
 							steam_temperature append [round_to_integer $SteamTemp]
+							steam_temperature100th append [round_to_two_digits $SteamTemp100th]
 						}
 
 						steam_elapsed append [expr {[steam_pour_millitimer $update_received]/1000.0}]
