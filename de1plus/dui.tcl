@@ -6075,8 +6075,8 @@ namespace eval ::dui {
 		# Invisible buttons can show their clickable area while debugging, by setting namespace variable debug_buttons=1.
 		#	In that case, the outline color is given by aspect 'button.debug_outline' (or black if undefined).
 		# Generates up to 3 canvas items/tags per page. Default one is named upon the provided -tags and corresponds to 
-		#	the invisible "clickable" area. If a visible button is generated, it its assigned tag "<tag>.button".
-		#	If a label is specified, it gets tag "<tag>.label". Returns the list of all added tags.
+		#	the invisible "clickable" area. If a visible button is generated, it its assigned tag "<tag>-btn".
+		#	If a label is specified, it gets tag "<tag>-lbl". Returns the canvas ID of the invisible clickable rectangle.
 		#
 		# Named options:  
 		#	If the first two arguments are integer numbers, they are interpreted as the absolute bottom-right coordinates
@@ -6086,7 +6086,9 @@ namespace eval ::dui {
 		#	-bheight to set the height of the button. If this is provided, y1 is ignored and height is added to y0 instead.
 		#		Normally bwidth and bheight are used when defining a button style in the theme aspects, so that buttons
 		#		using a given style always have the same size.
-		#	-shape any of 'rect', 'rounded' (Barney/MimojaCafe style) or 'outline' (DSx style)
+		#	-shape: empty string for an invisible rectangle, or any of 'rect', 'oval', 'rounded' (Barney/MimojaCafe style),
+		#		'outline' (rounded rectangle outline without a fill, DSx style), or 'rounded_outline' (rounded rectangle
+		#		outline with a fill color).
 		#	-style to apply the default aspects of the provided style
 		#	-command tcl code to be run when the button is clicked
 		#	-label, -label1, -label2... label text, in case a label is to be shown inside the button
@@ -6254,6 +6256,18 @@ namespace eval ::dui {
 					
 					set ids [dui::item::rounded_rectangle_outline $x $y $x1 $y1 $arc_offset $outline $disabledoutline \
 						$width $button_tags]
+				} elseif { $shape eq "round_outline" } {
+					set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
+					set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
+					set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
+					set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
+					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
+					set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
+					
+					set ids [dui::item::rounded_rectangle $x $y $x1 $y1 $radius $fill $disabledfill $button_tags]
+					set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
+					set ids [dui::item::rounded_rectangle_outline $x $y $x1 $y1 $radius $outline \
+						$disabledoutline $width $outline_tags]
 				} elseif { $shape eq "oval" } {
 					set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
 				} else {
