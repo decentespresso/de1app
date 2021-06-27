@@ -3560,7 +3560,6 @@ namespace eval ::gui::update {
 
 						steam_pressure append [round_to_two_digits $GroupPressure]
 						steam_flow append [round_to_two_digits $GroupFlow]
-						puts "SteamTemp : $SteamTemp "
 						set SteamTemp100th [expr {$SteamTemp / 100.00}]
 
 						if {$::settings(enable_fahrenheit) == 1} {

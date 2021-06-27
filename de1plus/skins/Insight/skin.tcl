@@ -1090,8 +1090,11 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 		add_de1_variable "steam_zoom_3 steam_zoom" 850 1540 -justify left -anchor "ne" -text "" -font Helv_7 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
 	# stop button when zoomed on steam
-	add_de1_variable "steam_zoom" 2100 1510 -text "\[ [translate "STOP"] \]" -font $green_button_font -fill "#2d3046" -anchor "center"  -textvariable {\[ [stop_text_if_espresso_stoppable] \]} 
-	add_de1_button "steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 0 1410 2560 1600
+	#add_de1_variable "steam_zoom" 2100 1510 -text "\[ [translate "STOP"] \]" -font $green_button_font -fill "#2d3046" -anchor "center"  -textvariable {\[ [stop_text_if_espresso_stoppable] \]} 
+	#add_de1_button "steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 0 1410 2560 1600
+	dui add dbutton "steam_zoom_3 steam_zoom" 2100 1450 2540 1560 -tags circle_btn -shape round -label_font Helv_10_bold -fill "#ebedfa" -width 6 -outline red -label [translate "STOP"]  -label_fill black -command {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 
+
+
 
 	# realtime control over the steam flow rate
 	add_de1_widget "steam steam_1 steam_3" scale 10 1436 {} -from 40 -to 250 -background "#e8e1df" -borderwidth 1 -showvalue 0  -bigincrement 100 -resolution 10 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(steam_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {set_steam_flow} -orient horizontal -foreground #FFFFFF -troughcolor "#d7d9e5" -borderwidth 0  -highlightthickness 0 
@@ -1131,4 +1134,4 @@ proc skins_page_change_due_to_de1_state_change { textstate } {
 #set_next_page off steam_zoom;
 ##
 
-#set_next_page off steam_1;
+#set_next_page off steam_zoom;
