@@ -32,7 +32,7 @@ source "[homedir]/skins/default/standard_stop_buttons.tcl"
 #set_de1_screen_saver_directory "[homedir]/saver"
 
 # include the generic settings features for all DE1 skins.  
-source "[homedir]/skins/default/de1_skin_settings.tcl"
+#source "[homedir]/skins/default/de1_skin_settings.tcl"
 
 
 # example of loading a custom font (you need to indicate the TTF file and the font size)
