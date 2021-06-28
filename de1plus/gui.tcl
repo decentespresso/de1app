@@ -32,12 +32,17 @@ proc load_skin {} {
 			}
 		}
 		catch {
-			message_page [subst {[translate "Your choice of skin had an error and cannot be used."]\n\n$err}] [translate "Ok"]
+			message_page [subst {[translate "Your choice of skin had an error and cannot be used."]}] [translate "Ok"] [strip_crlf $err]
 		}
 		msg -ERROR "Failed to 'load_skin' because: '$err'"
 		after 10000 exit
 	}
 
+}
+
+proc strip_crlf {in} {
+	regsub -all {\r|\n} $in {} out
+	return $out
 }
 
 proc page_change_due_to_de1_state_change {textstate} {

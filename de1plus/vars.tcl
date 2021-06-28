@@ -2387,10 +2387,20 @@ proc save_settings_and_ask_to_restart_app {} {
 	message_page [translate "Please quit and restart this app to apply your changes."] [translate "Quit"];
 }
 
-proc message_page {msg buttonmsg} {
+proc message_page {msg buttonmsg {longertxt {}} } {
+
 	if {[catch {
+
+		if {$longertxt == ""} {
+			.can coords $::message_label [list [rescale_x_skin 1280] [rescale_y_skin 800]]
+		} else {
+			# if there is a longer message, then move the larger font label up, to make room for it
+			.can coords $::message_label [list [rescale_x_skin 1280] [rescale_y_skin 550]]
+		}
+
 		.can itemconfigure $::message_label -text $msg
 		.can itemconfigure $::message_button_label -text $buttonmsg
+		.can itemconfigure $::message_longertxt -text $longertxt
 		set_next_page off message; 
 		page_show message
 	} err] != 0} {

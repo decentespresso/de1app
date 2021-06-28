@@ -1,3 +1,4 @@
+
 ##############################################################################################################################################################################################################################################################################
 # DE1 SETTINGS pages
 
@@ -54,7 +55,8 @@ set ::settings(minimum_water_temperature) 1
 #set ::active_settings_tab settings_1
 
 # this is the message page
-set ::message_label [add_de1_text "message" 1280 800 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 900]
+set ::message_label [add_de1_text "message" 1280 800 -text "" -font Helv_15_bold -fill "#2d3046" -justify "center" -anchor "center" -width 1000]
+set ::message_longertxt [add_de1_text "message" 1280 875 -text "" -font Helv_6 -fill "#2d3046" -justify "center" -anchor "center" -width 1000]
 set ::message_button_label [add_de1_text "message" 1280 1310 -text "" -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
 set ::message_button [add_de1_button "message" {say [translate {Quit}] $::settings(sound_button_in); exit} 980 1210 1580 1410 ""]
 
