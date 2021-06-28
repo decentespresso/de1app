@@ -9,7 +9,7 @@ namespace eval ::plugins::${plugin_name} {
     variable author "Damian"
     variable contact "via Diaspora"
     variable description ""
-    variable version 1.2
+    variable version 1.3
     variable min_de1app_version {1.36.5}
 
     proc build_ui {} {
@@ -102,7 +102,7 @@ namespace eval ::plugins::${plugin_name} {
                 } else {
                     set ::plugins::DPx_Scheduler::minutes [expr $::plugins::DPx_Scheduler::minutes - 50]
                 }
-                ::plugins::DPx_Scheduler::plugins::DPx_Scheduler::minutes_digits
+                ::plugins::DPx_Scheduler::minutes_digits
             }
 
         dui add dbutton $page_name [expr $picker_x + 1324] [expr $picker_y +  800] \
@@ -114,7 +114,7 @@ namespace eval ::plugins::${plugin_name} {
                 } else {
                     set ::plugins::DPx_Scheduler::minutes [expr $::plugins::DPx_Scheduler::minutes + 50]
                 }
-                ::plugins::DPx_Scheduler::plugins::DPx_Scheduler::minutes_digits
+                ::plugins::DPx_Scheduler::minutes_digits
             }
 
         #minutes
@@ -128,7 +128,7 @@ namespace eval ::plugins::${plugin_name} {
                 } else {
                     set ::plugins::DPx_Scheduler::minutes 0
                 }
-                ::plugins::DPx_Scheduler::plugins::DPx_Scheduler::minutes_digits
+                ::plugins::DPx_Scheduler::minutes_digits
             }
 
         dui add dbutton $page_name [expr $picker_x + 1474] [expr $picker_y +  800] \
@@ -140,7 +140,7 @@ namespace eval ::plugins::${plugin_name} {
                 } else {
                     set ::plugins::DPx_Scheduler::minutes 59
                 }
-                ::plugins::DPx_Scheduler::plugins::DPx_Scheduler::minutes_digits
+                ::plugins::DPx_Scheduler::minutes_digits
             }
 
         #pm
@@ -332,7 +332,7 @@ namespace eval ::plugins::${plugin_name} {
         write_file $fn $DPx_shed
     }
 
-    proc DPx_sched_minutes_digits {} {
+    proc minutes_digits {} {
         if {$::plugins::DPx_Scheduler::minutes >= 50 && $::plugins::DPx_Scheduler::minutes < 60} {
             set a 5
         } elseif {$::plugins::DPx_Scheduler::minutes >= 40 && $::plugins::DPx_Scheduler::minutes < 50} {
