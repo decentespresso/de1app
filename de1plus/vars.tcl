@@ -2538,6 +2538,9 @@ proc select_profile { profile } {
 	set ::settings(maximum_pressure) 0
 	set ::settings(maximum_flow) 0
 
+	# 
+	unset -nocomplain ::settings(profile_video_help)
+
 	load_settings_vars $fn
 
 	set ::settings(profile_filename) $profile
@@ -2566,6 +2569,14 @@ proc select_profile { profile } {
 
 	update_onscreen_variables
 	profile_has_not_changed_set
+
+
+	set show_video_button 0
+	if {[ifexists ::settings(profile_video_help)] != ""} {
+		set show_video_button 1
+	}
+	dui item show_or_hide $show_video_button "settings_1" "profile_video_help_button" 
+
 
 	# as of v1.3 people can start an espresso from the group head, which means their currently selected 
 	# profile needs to sent right away to the DE1, in case the person taps the GH button to start espresso w/o leaving settings
