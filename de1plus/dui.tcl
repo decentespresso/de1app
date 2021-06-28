@@ -3946,7 +3946,7 @@ namespace eval ::dui {
 	### PAGE SUB-ENSEMBLE ###
 	namespace eval page {
 		namespace export add current exists is_setup is_drawn is_visible list theme retheme delete get_namespace \
-			load show add_action actions items has_item	update_onscreen_variables
+			load show add_action actions items has_item	update_onscreen_variables add_items
 		namespace ensemble create
 		
 		# Metadata for every added page. Array keys have the form '<page_name>,<type>', where <type> can be:
