@@ -17,8 +17,7 @@ proc setup_environment {} {
 		}
 	}
 	dui config language [language]
-	dui font add_dirs "[homedir]/fonts/"
-	dui image add_dirs "[homedir]/skins/default/"
+	dui font add_dirs "[homedir]/fonts/"	
 	dui config preload_images $::settings(preload_all_page_images)
 	dui sound set button_in "[homedir]/sounds/KeypressStandard_120.ogg" \
 		button_out "[homedir]/sounds/KeypressDelete_120.ogg" \
@@ -26,6 +25,9 @@ proc setup_environment {} {
 	
 	dui init $settings(screen_size_width) $settings(screen_size_height) $settings(orientation)
 	
+	# Do this after dui init, so if the same image is on the current skin and in default, the one in the skin directory takes precedence
+	dui image add_dirs "[homedir]/skins/default/"
+
 	source "bluetooth.tcl"
 	
 	# Configure actions on specific pages (this was previously hardcoded on page_display_change, and should be moved 
