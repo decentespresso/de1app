@@ -1094,7 +1094,7 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 	# stop button when zoomed on steam
 	#add_de1_variable "steam_zoom" 2100 1510 -text "\[ [translate "STOP"] \]" -font $green_button_font -fill "#2d3046" -anchor "center"  -textvariable {\[ [stop_text_if_espresso_stoppable] \]} 
 	#add_de1_button "steam_zoom" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 0 1410 2560 1600
-	dui add dbutton "steam_zoom" 2100 1450 2540 1560 -tags circle_btn -shape round -label_font Helv_10_bold -fill "#ebedfa" -width 6 -outline red -label [translate "STOP"]  -label_fill black -command {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 
+	dui add dbutton "steam_zoom" 2100 1450 2540 1560 -tags circle_stop_btn -shape round_outline -label_font Helv_10_bold -fill "#ebedfa" -width 7 -outline red -label [translate "STOP"]  -label_fill black -command {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle; check_if_steam_clogged} 
 
 
 
