@@ -1183,7 +1183,7 @@ namespace eval ::device::scale::saw {
 			set stop_early_by [expr { $_early_by_grams + [flow_now] * $_early_by_flow }]
 
 			if {$_target > 0 \
-					[$_mode_timer] > $_ignore_first_seconds \
+				&& [$_mode_timer] > $_ignore_first_seconds \
 				&& ! $::de1(app_autostop_triggered) \
 				&& [round_to_one_digits $thisweight] > \
 					[round_to_one_digits [expr { $_target - $stop_early_by }]]} {
