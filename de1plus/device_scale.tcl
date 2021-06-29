@@ -1176,16 +1176,17 @@ namespace eval ::device::scale::saw {
 							      ]
 		set profile_target [ifexists thisadvstep(weight)]
 
-		if {[::device::scale::saw::is_tracking_state] && ($_target > 0 || $profile_target > 0)} {
+		if {[::device::scale::saw::is_tracking_state]} {
 
 			set thisweight [weight_now]
 
 			set stop_early_by [expr { $_early_by_grams + [flow_now] * $_early_by_flow }]
 
-			if {    [$_mode_timer] > $_ignore_first_seconds \
-					&& ! $::de1(app_autostop_triggered) \
-					&& [round_to_one_digits $thisweight] > \
-						[round_to_one_digits [expr { $_target - $stop_early_by }]]} {
+			if {$_target > 0 \
+					[$_mode_timer] > $_ignore_first_seconds \
+				&& ! $::de1(app_autostop_triggered) \
+				&& [round_to_one_digits $thisweight] > \
+					[round_to_one_digits [expr { $_target - $stop_early_by }]]} {
 
 				start_idle
 
@@ -1198,9 +1199,10 @@ namespace eval ::device::scale::saw {
 				::gui::notify::scale_event saw_stop
 			}
 
-			if {! $::de1(app_stepskip_triggered) \
-					&& [round_to_one_digits $thisweight] > \
-						[round_to_one_digits [expr { $profile_target - $stop_early_by }]]} {
+			if {$profile_target > 0 \
+				&& ! $::de1(app_stepskip_triggered) \
+				&& [round_to_one_digits $thisweight] > \
+					[round_to_one_digits [expr { $profile_target - $stop_early_by }]]} {
 
 				start_next_step
 
