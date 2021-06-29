@@ -94,6 +94,7 @@ array set ::de1 {
 	widget_current_profile_name_color_changed "#969eb1"
 	water_level_mm_correction 5
 	app_autostop_triggered True
+	app_stepskip_triggered False
 	water_level_full_point 40
 	connect_time 0
 	water_level 20

@@ -1166,7 +1166,17 @@ namespace eval ::device::scale::saw {
 		variable _ignore_first_seconds
 		variable _mode_timer
 
-		if {[::device::scale::saw::is_tracking_state] && $_target > 0} {
+		array set thisadvstep \
+			[lindex $::settings(advanced_shot) \
+				[::gui::state::current_framenumber]]
+
+					set framedesc [format "%s: %s" \
+							       [expr {1 + [::gui::state::current_framenumber]}] \
+							       [ifexists thisadvstep(name)] \
+							      ]
+		set profile_target [ifexists thisadvstep(weight)]
+
+		if {[::device::scale::saw::is_tracking_state] && ($_target > 0 || $profile_target > 0)} {
 
 			set thisweight [weight_now]
 
@@ -1186,6 +1196,18 @@ namespace eval ::device::scale::saw {
 
 				msg -INFO "Weight based stop was triggered at ${thisweight} g for ${_target} g target"
 				::gui::notify::scale_event saw_stop
+			}
+
+			if {! $::de1(app_stepskip_triggered) \
+					&& [round_to_one_digits $thisweight] > \
+						[round_to_one_digits [expr { $profile_target - $stop_early_by }]]} {
+
+				start_next_step
+
+				set ::de1(app_stepskip_triggered) True
+
+				msg -INFO "Weight based step skip was triggered at ${thisweight} g for ${profile_target} g target"
+				::gui::notify::scale_event saw_skip
 			}
 		}
 	}

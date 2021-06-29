@@ -3225,6 +3225,10 @@ namespace eval ::gui::notify {
 				borg toast [translate {Stopping for weight}]
 			}
 
+			saw_skip {
+				borg toast [translate {Advancing to next step}]
+			}
+
 			default {
 
 				msg -ERROR "::gui::notify::scale_event called without matching event_id: $event_id $args"
@@ -3269,6 +3273,8 @@ namespace eval ::gui::update {
 
 			# The following logic, retained from prior versions, is likely a noop
 			# as the updates from the DE1 will set the framenumber to 0 or higher
+
+			set ::de1(app_stepskip_triggered) False
 
 			if {[::gui::state::previous_framenumber] >= 0} {
 				# don't draw a line a the first frame change
