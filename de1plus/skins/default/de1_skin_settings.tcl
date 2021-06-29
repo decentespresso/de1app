@@ -363,6 +363,14 @@ add_de1_text "settings_2c" 1380 680 -text [translate "sensor"] -font Helv_6 -fil
 proc settings2c_pressure_button {direction} {
 	say [translate {pressure}] $::settings(sound_button_in)
 
+	if {[ifexists ::current_adv_step(pump)] == ""} {
+		set ::current_adv_step(pump) pressure
+	}
+
+	if {[ifexists ::current_adv_step(pressure)] == ""} {
+		set ::current_adv_step(pressure) 0
+	}
+
 	if {[ifexists ::current_adv_step(pump)] == "pressure"} {
 		if {$direction eq "up"} {
 			set ::current_adv_step(pressure) [expr {$::current_adv_step(pressure) + 0.1}];
@@ -392,6 +400,14 @@ proc settings2c_pressure_button {direction} {
 
 proc settings2c_flow_button {direction} {
 	say [translate {pressure}] $::settings(sound_button_in)
+
+	if {[ifexists ::current_adv_step(pump)] == ""} {
+		set ::current_adv_step(pump) flow
+	}
+
+	if {[ifexists ::current_adv_step(flow)] == ""} {
+		set ::current_adv_step(flow) 0
+	}
 
 	if {[ifexists ::current_adv_step(pump)] == "flow"} {
 		if {$direction eq "up"} {
