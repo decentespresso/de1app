@@ -5400,22 +5400,27 @@ namespace eval ::dui {
 			set x1 [dui platform rescale_x $x1] 
 			set y1 [dui platform rescale_y $y1]
 		
-			lappend ids [$can create arc [expr $x0] [expr $y0+$arc_offset] [expr $x0+$arc_offset] [expr $y0] -style arc -outline $colour \
-				-width [expr $width-1] -tags $tags -start 90 -disabledoutline $disabled -state "hidden"]
-			lappend ids [$can create arc [expr $x0] [expr $y1-$arc_offset] [expr $x0+$arc_offset] [expr $y1] -style arc -outline $colour \
-				-width [expr $width-1] -tags $tags -start 180 -disabledoutline $disabled -state "hidden"]
-			lappend ids [$can create arc [expr $x1-$arc_offset] [expr $y0] [expr $x1] [expr $y0+$arc_offset] -style arc -outline $colour \
-				-width [expr $width-1] -tags $tags -start 0 -disabledoutline $disabled -state "hidden"]
-			lappend ids [$can create arc [expr $x1-$arc_offset] [expr $y1] [expr $x1] [expr $y1-$arc_offset] -style arc -outline $colour \
-				-width [expr $width-1] -tags $tags -start -90 -disabledoutline $disabled -state "hidden"]
+			if { $width > 1 } {
+				set arc_width [expr {$width-1}]
+			} else {
+				set arc_width $width
+			}
+			lappend ids [$can create arc [expr $x0] [expr $y0+$arc_offset+1] [expr $x0+$arc_offset+1] [expr $y0] -style arc -outline $colour \
+				-width $arc_width -tags $tags -start 90 -disabledoutline $disabled -state "hidden"]
+			lappend ids [$can create arc [expr $x0] [expr $y1-$arc_offset-1] [expr $x0+$arc_offset+1] [expr $y1] -style arc -outline $colour \
+				-width $arc_width -tags $tags -start 180 -disabledoutline $disabled -state "hidden"]
+			lappend ids [$can create arc [expr $x1-$arc_offset-1] [expr $y0] [expr $x1] [expr $y0+$arc_offset+1] -style arc -outline $colour \
+				-width $arc_width -tags $tags -start 0 -disabledoutline $disabled -state "hidden"]
+			lappend ids [$can create arc [expr $x1-$arc_offset-1] [expr $y1] [expr $x1] [expr $y1-$arc_offset+1] -style arc -outline $colour \
+				-width $arc_width -tags $tags -start -90 -disabledoutline $disabled -state "hidden"]
 			
-			lappend ids [$can create line [expr $x0+$arc_offset/2] [expr $y0] [expr $x1-$arc_offset/2] [expr $y0] -fill $colour \
+			lappend ids [$can create line [expr $x0+$arc_offset/2-1] [expr $y0] [expr $x1-$arc_offset/2+1] [expr $y0] -fill $colour \
 				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
-			lappend ids[$can create line [expr $x1] [expr $y0+$arc_offset/2] [expr $x1] [expr $y1-$arc_offset/2] -fill $colour \
+			lappend ids[$can create line [expr $x1] [expr $y0+$arc_offset/2-1] [expr $x1] [expr $y1-$arc_offset/2+1] -fill $colour \
 				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
-			lappend ids[$can create line [expr $x0+$arc_offset/2] [expr $y1] [expr $x1-$arc_offset/2] [expr $y1] -fill $colour \
+			lappend ids[$can create line [expr $x0+$arc_offset/2-1] [expr $y1] [expr $x1-$arc_offset/2+1] [expr $y1] -fill $colour \
 				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
-			lappend ids[$can create line [expr $x0] [expr $y0+$arc_offset/2] [expr $x0] [expr $y1-$arc_offset/2] -fill $colour \
+			lappend ids[$can create line [expr $x0] [expr $y0+$arc_offset/2-1] [expr $x0] [expr $y1-$arc_offset/2+1] -fill $colour \
 				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
 			return $ids
 		}
