@@ -812,7 +812,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			add_de1_variable "measurements" 1300 1060 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(default_font_calibration)}
 
 		add_de1_text "measurements" 1800 900 -text [translate "Screen Resolution"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 1800 960 {} -from 320 -to 2560 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
+			add_de1_widget "measurements" scale 1800 960 {} -from 320 -to 2800 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
 			add_de1_variable "measurements" 1800 1060 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(screen_size_width) x $::settings(screen_size_height)}
 
 
