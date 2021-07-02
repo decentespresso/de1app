@@ -317,10 +317,21 @@ namespace eval ::dui {
 
 		# Try to locate image folders automatically, in case they're not declared explicitly by the skin
 		set skin_img_dir [file normalize "${skin_dir}/${screen_size_width}x${screen_size_height}/"]
-		if { [file exists $skin_img_dir] && $skin_dir ni [dui item image_dirs] } {
-			dui image add_dirs $skin_dir
+		if { $skin_dir ni [dui item image_dirs] } {
+			if { [file exists $skin_img_dir] } {
+				dui image add_dirs $skin_dir
+			} elseif { [file exists "${skin_dir}/[expr {int($::dui::_base_screen_width)}]x[expr {int($::dui::_base_screen_height)}]/"] } {
+				try {
+					file mkdir $skin_img_dir
+					dui image add_dirs $skin_dir
+				} on error err {
+					msg -ERROR [namespace current] init: "can't create or folder '$skin_img_dir': $err"
+				}
+			} else {
+				msg -WARNING [namespace current] init: "skin default image directory '$skin_img_dir' not found, was not added"
+			}
 		}
-	
+		
 		# log dui settings for eventual debugging
 		msg -INFO "Platform data: tcl_platform=$::tcl_platform(platform), android=$android, undroid=$undroid, some_droid=$::some_droid"
 		msg -INFO "Screen data: width=$screen_size_width, height=$screen_size_height"
