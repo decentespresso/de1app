@@ -522,6 +522,12 @@ namespace eval ::de1::state::update {
 
 		::de1::packet::shotsample_parse $packed ShotSample
 
+		if {[array size ShotSample] == 0} {
+			# shotsample_parse can return with a blank, if the packet is invalid
+			msg -WARN "Invalid shot sample received, ignoring"			
+			return
+		}
+
 		# SampleTime not present in prior code
 		set ::de1(pressure) 			$ShotSample(GroupPressure)
 		set ::de1(flow)				$ShotSample(GroupFlow)
@@ -747,9 +753,9 @@ namespace eval ::de1::packet {
 			# pass
 		} else {
 			set ShotSample(HeadTemp) [convert_3_char_to_U24P16 \
-							  $ShotSample(HeadTemp1) \
-							  $ShotSample(HeadTemp2) \
-							  $ShotSample(HeadTemp3)]
+				$ShotSample(HeadTemp1) \
+				$ShotSample(HeadTemp2) \
+				$ShotSample(HeadTemp3)]
 		}
 
 	} ;# shotsample_parse
