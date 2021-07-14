@@ -734,6 +734,7 @@ proc close_all_ble_and_exit {} {
 		}
 	}
 
+	close_misc_bluetooth_handles
 
 	catch {
 		if {$::settings(ble_unpair_at_exit) == 1} {
@@ -845,8 +846,28 @@ proc android_8_or_newer {} {
 }
 
 
+proc close_misc_bluetooth_handles {} {
+	set count 0
+	foreach handle [ble info] {
+		::bt::msg -NOTICE "Closing misc bluetooth handle $handle"
+		catch {
+			ble close $handle
+		}
+		incr count
+	}
+	return $count
+
+}
+
 set ::ble_scanner {}
 set ::scanning -1
+
+# at startup, if we have any hanldes, close them
+set blecount [close_misc_bluetooth_handles]
+if {$blecount != 0} {
+	::bt::msg -NOTICE "Closed $blecount misc bluetooth handles"
+}
+
 
 proc check_if_initial_connect_didnt_happen_quickly {} {
 	::bt::msg -NOTICE "check_if_initial_connect_didnt_happen_quickly"
