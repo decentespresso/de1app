@@ -862,12 +862,13 @@ proc close_misc_bluetooth_handles {} {
 set ::ble_scanner {}
 set ::scanning -1
 
-# at startup, if we have any hanldes, close them
-set blecount [close_misc_bluetooth_handles]
-if {$blecount != 0} {
-	::bt::msg -NOTICE "Closed $blecount misc bluetooth handles"
+if {$::android == 1} {
+	# at startup, if we have any hanldes, close them
+	set blecount [close_misc_bluetooth_handles]
+	if {$blecount != 0} {
+		::bt::msg -NOTICE "Closed $blecount misc bluetooth handles"
+	}
 }
-
 
 proc check_if_initial_connect_didnt_happen_quickly {} {
 	::bt::msg -NOTICE "check_if_initial_connect_didnt_happen_quickly"
