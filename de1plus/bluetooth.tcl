@@ -900,19 +900,6 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 
 }
 
-
-proc ble_find_de1s {} {
-
-	return
-	if {$::android != 1} {
-		ble_connect_to_de1
-	}
-
-	after 30000 stop_scanner
-	::bt::msg -NOTICE "Starting ble_scanner from ::ble_find_de1s"
-	ble start $::ble_scanner
-}
-
 proc stop_scanner {} {
 
 	if {$::scanning == 0} {
@@ -1329,7 +1316,7 @@ proc de1_ble_handler { event data } {
 					#set ::de1(scale_type) ""
 
 						set ::de1(wrote) 0
-						::bt::msg -NOTICE "$::settings(scale_type) disconnected $data_for_log"
+						::bt::msg -NOTICE "scale $::settings(scale_type) disconnected $data_for_log"
 						#catch {
 							ble close $handle
 						#}
