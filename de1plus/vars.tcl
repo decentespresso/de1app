@@ -2570,18 +2570,11 @@ proc select_profile { profile } {
 	update_onscreen_variables
 	profile_has_not_changed_set
 
-
-	set show_video_button 0
-	if {[ifexists ::settings(profile_video_help)] != ""} {
-		set show_video_button 1
-	}
-	dui item show_or_hide $show_video_button "settings_1" "profile_video_help_button" 
-
-
 	# as of v1.3 people can start an espresso from the group head, which means their currently selected 
 	# profile needs to sent right away to the DE1, in case the person taps the GH button to start espresso w/o leaving settings
 	send_de1_settings_soon
 }
+
 
 set preview_profile_counter 0
 proc preview_profile {} {
@@ -2812,6 +2805,7 @@ proc load_settings_vars {fn} {
 	set ::setting(disable_long_press) 1
 
 	update_de1_explanation_chart
+
 
 }
 
