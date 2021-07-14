@@ -29,11 +29,20 @@ proc scale_enable_lcd {} {
 proc scale_disable_lcd {} {
 	::bt::msg -NOTICE scale_disable_lcd
 	if {$::settings(scale_type) == "atomaxskale"} {
-		skale_disable_lcd
+		set do_this 0
+		if {$do_this == 1} {
+			skale_disable_lcd
+		}
 	} elseif {$::settings(scale_type) == "decentscale"} {
-		decentscale_disable_lcd
-		# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
-		after 500 decentscale_disable_lcd
+		
+		set do_this 0
+		if {$do_this == 1} {
+			# disabled the LCD off for Decent Scale, so that we don't give false impression tha the scale is off
+			# ideally in future firmware we can find out if they are on usb power, and disable LEDs if they are
+			decentscale_disable_lcd
+			# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
+			after 500 decentscale_disable_lcd
+		}
 	}
 }
 
