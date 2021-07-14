@@ -811,11 +811,33 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			add_de1_widget "measurements" scale 1300 960 {} -from 0.1 -to 2 -background #e4d1c1 -borderwidth 1 -bigincrement 0.05 -showvalue 0 -resolution 0.05 -length [rescale_x_skin 400] -width [rescale_y_skin 100] -variable ::settings(default_font_calibration) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 			add_de1_variable "measurements" 1300 1060 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(default_font_calibration)}
 
+proc calculate_screen_flip_value {} {
+	# a checkbox turns the "screen flip" setting on/off. We then convert that into into reverselandscape/landscape
+	if {[info exists ::globals(screen_flip)] != 1} {
+		# global var has not yet been set, so set it from the saved settings variable
+		if {[ifexists ::settings(orientation)] == "landscape"} {
+			set ::globals(screen_flip) 0
+		} else {
+			set ::globals(screen_flip) 1
+		}
+	} else {
+		if {$::globals(screen_flip) == 0} {
+			set ::settings(orientation) "landscape"
+		} else {
+			set ::settings(orientation) "reverselandscape"
+		}
+	}
+	
+	return 0
+}
+
 		add_de1_text "measurements" 1800 900 -text [translate "Screen Resolution"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			add_de1_widget "measurements" scale 1800 960 {} -from 320 -to 2800 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
 			add_de1_variable "measurements" 1800 1060 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(screen_size_width) x $::settings(screen_size_height)}
+			calculate_screen_flip_value
+			add_de1_widget "measurements" checkbutton 2140 1060  {} -text [translate "flip"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::globals(screen_flip)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command calculate_screen_flip_value
 
-
+			
 		add_de1_text "measurements" 340 480 -text [translate "Screen saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			add_de1_widget "measurements" scale 340 560 {} -from 0 -to 100 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_y_skin 100] -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 			add_de1_variable "measurements" 340 660 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Brightness"] $::settings(saver_brightness)%}
@@ -1216,7 +1238,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				de1_send_steam_hotwater_settings
 				de1_enable_water_level_notifications
 			}
-			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout scale_bluetooth_address language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
+			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout scale_bluetooth_address language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 				.can itemconfigure $::message_button_label -text [translate "Wait"]
