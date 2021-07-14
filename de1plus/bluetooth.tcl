@@ -714,7 +714,7 @@ proc close_all_ble_and_exit {} {
 	###
 
 	::bt::msg -DEBUG "close_all_ble_and_exit, at entrance: [ble info]"
-	if {$::scanning  == 1} {
+	if {$::scanning == 1} {
 		catch {
 			ble stop $::ble_scanner
 		}
@@ -846,10 +846,6 @@ proc android_8_or_newer {} {
 
 
 set ::ble_scanner {}
-catch  {
-	# this will fail if this package has been loaded before "proc android_specific_stubs {}" has been run
-	set ::ble_scanner [ble scanner de1_ble_handler]
-}
 set ::scanning -1
 
 proc check_if_initial_connect_didnt_happen_quickly {} {
@@ -902,7 +898,7 @@ proc check_if_initial_connect_didnt_happen_quickly {} {
 
 proc stop_scanner {} {
 
-	if {$::scanning == 0} {
+	if {$::scanning != 1} {
 		return
 	}
 
@@ -915,7 +911,6 @@ proc stop_scanner {} {
 	set ::scanning 0
 	::bt::msg -NOTICE "Stopping ble_scanner from ::stop_scanner"
 	ble stop $::ble_scanner
-	#userdata_append "stop scanning" [list ble stop $::ble_scanner]
 }
 
 proc bluetooth_connect_to_devices {} {
@@ -1372,6 +1367,11 @@ proc de1_ble_handler { event data } {
 				} elseif {$state eq "discovery"} {
 					#ble_connect_to_de1
 				} elseif {$state eq "connected"} {
+
+					if {[info exists address] != 1} {
+						# this is very odd, no address yet connected
+						::bt::msg -NOTICE "full bluetooth log: $full_data_for_log"
+					}
 
 					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
 						::bt::msg -NOTICE "de1 connected $event $data_for_log"
@@ -2109,5 +2109,10 @@ proc scanning_restart {} {
 
 	set ::scanning 1
 	::bt::msg -NOTICE "Starting ble_scanner from ::scanning_restart"
+
+	if {$::ble_scanner == ""} {
+		set ::ble_scanner [ble scanner de1_ble_handler]
+	}
+
 	ble start $::ble_scanner
 }
