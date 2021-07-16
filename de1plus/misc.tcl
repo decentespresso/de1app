@@ -724,6 +724,81 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1920x1200/SbuttonF.png *
         skins/DSx/1920x1200/SbuttonS.png *
         skins/DSx/1920x1200/SbuttonW.png *
+        skins/DSx/2000x1200/2SbuttonA.png *
+        skins/DSx/2000x1200/2SbuttonE.png *
+        skins/DSx/2000x1200/3SbuttonA.png *
+        skins/DSx/2000x1200/3SbuttonE.png *
+        skins/DSx/2000x1200/3SbuttonF.png *
+        skins/DSx/2000x1200/3SbuttonS.png *
+        skins/DSx/2000x1200/3SbuttonW.png *
+        skins/DSx/2000x1200/admin/cleanbuttonW.png *
+        skins/DSx/2000x1200/big_scale.png *
+        skins/DSx/2000x1200/big_scale1.png *
+        skins/DSx/2000x1200/clock_bg.png *
+        skins/DSx/2000x1200/dial/cdeclb.png *
+        skins/DSx/2000x1200/dial/cdede.png *
+        skins/DSx/2000x1200/dial/cdedsv.png *
+        skins/DSx/2000x1200/dial/cdsvclb.png *
+        skins/DSx/2000x1200/dial/cdsvde.png *
+        skins/DSx/2000x1200/dial/cdsvdsv.png *
+        skins/DSx/2000x1200/dial/odeclb.png *
+        skins/DSx/2000x1200/dial/odede.png *
+        skins/DSx/2000x1200/dial/odedsv.png *
+        skins/DSx/2000x1200/dial/odsvclb.png *
+        skins/DSx/2000x1200/dial/odsvde.png *
+        skins/DSx/2000x1200/dial/odsvdsv.png *
+        skins/DSx/2000x1200/dial/rdeclb.png *
+        skins/DSx/2000x1200/dial/rdede.png *
+        skins/DSx/2000x1200/dial/rdedsv.png *
+        skins/DSx/2000x1200/dial/rdsvclb.png *
+        skins/DSx/2000x1200/dial/rdsvde.png *
+        skins/DSx/2000x1200/dial/rdsvdsv.png *
+        skins/DSx/2000x1200/icon.jpg *
+        skins/DSx/2000x1200/icons/arrow_left.png *
+        skins/DSx/2000x1200/icons/arrow_right.png *
+        skins/DSx/2000x1200/icons/bean.png *
+        skins/DSx/2000x1200/icons/bluecup.png *
+        skins/DSx/2000x1200/icons/button4.png *
+        skins/DSx/2000x1200/icons/button5.png *
+        skins/DSx/2000x1200/icons/button7.png *
+        skins/DSx/2000x1200/icons/button8.png *
+        skins/DSx/2000x1200/icons/click.png *
+        skins/DSx/2000x1200/icons/click1.png *
+        skins/DSx/2000x1200/icons/click_no_box.png *
+        skins/DSx/2000x1200/icons/DEespresso.png *
+        skins/DSx/2000x1200/icons/DEflush.png *
+        skins/DSx/2000x1200/icons/DEsteam.png *
+        skins/DSx/2000x1200/icons/DEwater.png *
+        skins/DSx/2000x1200/icons/espresso.png *
+        skins/DSx/2000x1200/icons/flush.png *
+        skins/DSx/2000x1200/icons/heart2.png *
+        skins/DSx/2000x1200/icons/history.png *
+        skins/DSx/2000x1200/icons/home.png *
+        skins/DSx/2000x1200/icons/jug.png *
+        skins/DSx/2000x1200/icons/jug_full.png *
+        skins/DSx/2000x1200/icons/niche.png *
+        skins/DSx/2000x1200/icons/orangecup.png *
+        skins/DSx/2000x1200/icons/people.png *
+        skins/DSx/2000x1200/icons/pinkcup.png *
+        skins/DSx/2000x1200/icons/power.png *
+        skins/DSx/2000x1200/icons/settings.png *
+        skins/DSx/2000x1200/icons/setup.png *
+        skins/DSx/2000x1200/icons/shift.png *
+        skins/DSx/2000x1200/icons/steam.png *
+        skins/DSx/2000x1200/icons/steam_timer.png *
+        skins/DSx/2000x1200/icons/stop.png *
+        skins/DSx/2000x1200/icons/store.png *
+        skins/DSx/2000x1200/icons/store_button.png *
+        skins/DSx/2000x1200/icons/water.png *
+        skins/DSx/2000x1200/icons/zoomminus.png *
+        skins/DSx/2000x1200/icons/zoomplus.png *
+        skins/DSx/2000x1200/icons/zoomshift.png *
+        skins/DSx/2000x1200/poweroff.png *
+        skins/DSx/2000x1200/SbuttonA.png *
+        skins/DSx/2000x1200/SbuttonE.png *
+        skins/DSx/2000x1200/SbuttonF.png *
+        skins/DSx/2000x1200/SbuttonS.png *
+        skins/DSx/2000x1200/SbuttonW.png *
         skins/DSx/2560x1600/2SbuttonA.png *
         skins/DSx/2560x1600/2SbuttonE.png *
         skins/DSx/2560x1600/3SbuttonA.png *
@@ -818,6 +893,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/DSx_Font_Files/notosansuiregular.ttf *
         skins/DSx/DSx_Font_Files/Roboto-Regular.ttf *
         skins/DSx/DSx_Font_Files/Skia.ttf *
+        skins/DSx/DSx_Home_Page/DSx_2021_home.page *
         skins/DSx/DSx_Plugins/DSx_admin.dsx *
         skins/DSx/DSx_Plugins/DSx_backup.dsx *
         skins/DSx/DSx_Plugins/DSx_cal.dsx *
