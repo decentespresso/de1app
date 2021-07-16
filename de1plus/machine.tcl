@@ -219,7 +219,7 @@ array set ::settings {
 	mmr_enabled 0	
 	default_font_calibration 0.5
 	log_fast 0
-	use_finger_down_for_tap 0
+	use_finger_down_for_tap 1
 	linear_resistance_adjustment 1
 	language en
 	display_time_in_screen_saver 0
