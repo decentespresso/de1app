@@ -5422,7 +5422,7 @@ namespace eval ::dui {
 				-width $arc_width -tags $tags -start 180 -disabledoutline $disabled -state "hidden"]
 			lappend ids [$can create arc [expr $x1-$arc_offset-1] [expr $y0] [expr $x1] [expr $y0+$arc_offset+1] -style arc -outline $colour \
 				-width $arc_width -tags $tags -start 0 -disabledoutline $disabled -state "hidden"]
-			lappend ids [$can create arc [expr $x1-$arc_offset-1] [expr $y1] [expr $x1] [expr $y1-$arc_offset+1] -style arc -outline $colour \
+			lappend ids [$can create arc [expr $x1-$arc_offset-1] [expr $y1] [expr $x1] [expr $y1-$arc_offset-1] -style arc -outline $colour \
 				-width $arc_width -tags $tags -start -90 -disabledoutline $disabled -state "hidden"]
 			
 			lappend ids [$can create line [expr $x0+$arc_offset/2-1] [expr $y0] [expr $x1-$arc_offset/2+1] [expr $y0] -fill $colour \
