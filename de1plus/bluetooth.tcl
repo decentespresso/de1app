@@ -848,7 +848,11 @@ proc android_8_or_newer {} {
 
 proc close_misc_bluetooth_handles {} {
 	set count 0
-	foreach handle [ble info] {
+	set handles {}
+	catch {
+		set handles [ble info]
+	}
+	foreach handle $handles {
 		::bt::msg -NOTICE "Closing misc bluetooth handle $handle"
 		catch {
 			ble close $handle
