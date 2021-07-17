@@ -512,12 +512,11 @@ add_de1_widget "steam" graph 1810 1090 {
 
 	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
 	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
+
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature100th -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
-	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
-
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
-	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3} 
 	$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 
 } -plotbackground #FFFFFF -width [rescale_x_skin 700] -height [rescale_y_skin 300] -borderwidth 1 -background #FFFFFF -plotrelief flat  -plotpady 0 -plotpadx 10
 
@@ -525,7 +524,6 @@ add_de1_widget "steam_3" graph 1810 1090 {
 	bind $widget [platform_button_press] { 
 		say [translate {stop}] $::settings(sound_button_in); 
 		say [translate {zoom}] $::settings(sound_button_in); 
-		#set_next_page off steam_zoom_3; 
 		set_next_page steam_3 steam_zoom_3; 
 		page_show $::de1(current_context);
 	}
@@ -533,6 +531,7 @@ add_de1_widget "steam_3" graph 1810 1090 {
 
 	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
 	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
 	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature100th -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);   
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
@@ -554,6 +553,7 @@ add_de1_widget "steam_zoom_3" graph 34 214 {
 
 	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
 	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249  -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
@@ -606,6 +606,7 @@ add_de1_widget "steam_zoom" graph 34 214 {
 
 	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
 	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 

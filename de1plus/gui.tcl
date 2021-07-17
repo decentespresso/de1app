@@ -3580,6 +3580,8 @@ namespace eval ::gui::update {
 						steam_pressure append [round_to_two_digits $GroupPressure]
 						steam_flow append [round_to_two_digits $GroupFlow]
 
+						steam_flow_goal append [round_to_two_digits [expr {$::settings(steam_flow) / 100.0}]]
+
 						if {$::settings(enable_fahrenheit) == 1} {
 							steam_temperature append [round_to_integer [celsius_to_fahrenheit $SteamTemp]]
 							steam_temperature100th append [round_to_two_digits [expr {[celsius_to_fahrenheit $SteamTemp] / 100.00}]]

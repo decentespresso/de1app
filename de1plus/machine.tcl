@@ -761,6 +761,7 @@ proc reset_gui_starting_steam {} {
 	steam_elapsed length 0
 	steam_pressure length 0
 	steam_flow length 0
+	steam_flow_goal length 0
 	steam_temperature length 0
 	#steam_pressure append 0
 	#steam_elapsed append 0
