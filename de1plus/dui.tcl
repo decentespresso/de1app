@@ -5504,7 +5504,7 @@ namespace eval ::dui {
 			#	to a slider_coord value.
 			if { $slider_coord eq "" && $varname ne "" } {
 				if { [info exists $varname] } {
-					set varvalue [number_in_range [subst \$$varname] 0 $from $to $resolution $n_decimals]  
+					set varvalue [number_in_range [subst \$$varname] 0 $from $to $resolution $n_decimals]
 				} else {
 					set varvalue [number_in_range $from 0 $from $to $resolution $n_decimals]
 					set $varname $varvalue
@@ -5525,9 +5525,9 @@ namespace eval ::dui {
                     } elseif { $varvalue >= $to } {
                         switch $orient h {set slider_coord [expr {$bx1-$swidth}]} v {set slider_coord $by0 }
                     } elseif { $orient eq "h" } {
-                        set slider_coord [expr {$bx0+($bx1-$bx0-$swidth)*$varvalue/($to-$from)}]
+                        set slider_coord [expr {round($bx0+($bx1-$bx0-$swidth)*double($varvalue-$from)/double($to-$from))}]
                     } else {
-                        set slider_coord [expr {($by1-$sheight)+($by1-$by0-$sheight)*$varvalue/($from-$to)}]
+                        set slider_coord [expr {round(($by1-$sheight)+($by1-$by0-$sheight)*double($varvalue-$from)/double($from-$to))}]
                     }
 				} else {
 					return
@@ -5539,12 +5539,12 @@ namespace eval ::dui {
 				# Horizontal
                 #if { ($slider_coord-$swidth/2) <= $bx0 } 
 				if { ($slider_coord-$offset) <= $bx0 } {
-					$can coords $front $bx0 $by0 [expr {$bx0+$swidth/2}] $by1
+					$can coords $front $bx0 $by0 [expr {$bx0+$swidth/2.0}] $by1
 					$can coords $slider $bx0 $sy0 [expr {$bx0+$swidth}] $sy1
 					if { $varvalue eq "" } { set $varname $from }
                 #elseif { $slider_coord >= ($bx1-$swidth/2) }
 				} elseif { $slider_coord >= ($bx1-$swidth+$offset) } {
-					$can coords $front $bx0 $by0 [expr {$bx1-$swidth/2}] $by1
+					$can coords $front $bx0 $by0 [expr {$bx1-$swidth/2.0}] $by1
 					$can coords $slider [expr {$bx1-$swidth}] $sy0 $bx1 $sy1
 					if { $varvalue eq "" } { set $varname $to }
 				} else {
@@ -5553,7 +5553,7 @@ namespace eval ::dui {
                     $can move $slider [expr {$slider_coord-$sx0-$offset}] 0
 					if { $varvalue eq "" } {
 						#set newcoord [expr {$from+($to-$from)*(($slider_coord-$swidth/2-$bx0)/($bx1-$swidth-$bx0))}]
-                        set newcoord [expr {$from+($to-$from)*(($slider_coord-$offset-$bx0)/($bx1-$swidth-$bx0))}]
+                        set newcoord [expr {round($from+($to-$from)*(double($slider_coord-$offset-$bx0)/double($bx1-$swidth-$bx0)))}]
                         set $varname [number_in_range $newcoord {} $from $to $resolution $n_decimals]
 					}
 				} 
@@ -5561,21 +5561,21 @@ namespace eval ::dui {
 				# Vertical
                 #if { ($slider_coord-$sheight/2) <= $by0 } 
 				if { ($slider_coord-$offset) <= $by0 } {
-					$can coords $front $bx0 [expr {$by0+$sheight/2}] $bx1 $by1
+					$can coords $front $bx0 [expr {$by0+$sheight/2.0}] $bx1 $by1
 					$can coords $slider $sx0 $by0 $sx1 [expr {$by0+$sheight}]
 					if { $varvalue eq "" } { set $varname $to }
                 # elseif { ($slider_coord+$sheight/2) >= $by1 } 
 				} elseif { ($slider_coord+$sheight-$offset) >= $by1 } {
-					$can coords $front $bx0 [expr {$by1-$sheight/2}] $bx1 $by1
+					$can coords $front $bx0 [expr {$by1-$sheight/2.0}] $bx1 $by1
 					$can coords $slider $sx0 [expr {$by1-$sheight}] $sx1 $by1
 					if { $varvalue eq "" } { set $varname $from }
 				} else {
-					$can coords $front $bx0 [expr {$slider_coord-$offset+$sheight/2}] $bx1 $by1
+					$can coords $front $bx0 [expr {$slider_coord-$offset+$sheight/2.0}] $bx1 $by1
 					#$can move $slider 0 [expr {$slider_coord-$sheight/2-$sy0}]
                     $can move $slider 0 [expr {$slider_coord-$offset-$sy0}]
 					if { $varvalue eq "" } {
 						#set newcoord [expr {$from+($to-$from)*($by1-$slider_coord-$sheight/2)/($by1-$sheight-$by0)}]
-                        set newcoord [expr {$from+($to-$from)*($by1-$sheight-$slider_coord+$offset)/($by1-$sheight-$by0)}]
+                        set newcoord [expr {round($from+($to-$from)*double($by1-$sheight-$slider_coord+$offset)/double($by1-$sheight-$by0))}]
 						set $varname [number_in_range $newcoord {} $from $to $resolution $n_decimals]
 					}
 				} 
@@ -7255,7 +7255,7 @@ namespace eval ::dui {
 				if { $ns ne "" } {
 					set "${ns}::widgets(${main_tag}-crc)" $id
 					set "${ns}::widgets($main_tag)" $ids
-				}								
+				}
 			} else {
 				# HORIZONTAL SCALE
 				if { $plus_minus } {
