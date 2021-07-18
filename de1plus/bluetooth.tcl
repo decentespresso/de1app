@@ -434,7 +434,7 @@ proc acaia_tare {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
-		error "Acaia Scale not connected, cannot send tare cmd"
+		::bt::msg -DEBUG "Acaia Scale not connected, cannot send tare cmd"
 		return
 	}
 
@@ -452,7 +452,7 @@ proc acaia_send_heartbeat {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
-		error "Acaia Scale not connected, cannot send heartbeat"
+		::bt::msg -DEBUG "Acaia Scale not connected, cannot send heartbeat"
 		return
 	}
 	set heartbeat [acaia_encode 00 02000200]
@@ -471,7 +471,7 @@ proc acaia_send_ident {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
-		error "Acaia Scale not connected, cannot send app ident"
+		::bt::msg -DEBUG "Acaia Scale not connected, cannot send app ident"
 		return
 	}
 
@@ -487,7 +487,7 @@ proc acaia_send_config {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
-		error "Acaia Scale not connected, cannot send app config"
+		::bt::msg -DEBUG "Acaia Scale not connected, cannot send app config"
 		return
 	}
 
@@ -505,7 +505,7 @@ proc acaia_enable_weight_notifications {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_acaia_ips))] == ""} {
-		error "Acaia Scale not connected, cannot enable weight notifications"
+		::bt::msg -DEBUG "Acaia Scale not connected, cannot enable weight notifications"
 		return
 	}
 
