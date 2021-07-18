@@ -133,6 +133,7 @@
   - [dui add listbox](#dui_add_listbox)
   - [dui add dcheckbox](#dui_add_dcheckbox)
   - [dui add scale](#dui_add_scale)
+  - [dui add dscale](#dui_add_dscale)
   - [dui add drater](#dui_add_drater)
   - [dui add graph](#dui_add_graph)
 - `dui args`
@@ -1705,6 +1706,9 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 > >Optional callback code to run when the checkbox is clicked.
 > >In addition to the usual substituttions, **%NS** will be replaced by the page namespace name, or the empty string if no page namespace is used.
 
+
+<a name="dui_add_scale"></a>
+
 **dui add scale**  _pages x y ?-option value ...?_
 
 >Create a Tk scale widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
@@ -1813,7 +1817,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >**-plus_minus**  _true_or_false_
 
-> >Whether to show (default) or hide the plus and minus on the line extremes.
+> >Whether to show (default) or hide the plus and minus on the line extremes. Tapping the plus or minus symbols increases/reduces the variable value by  _smallincrement_ . Tapping them fast three times increases/reduces the variable value by  _bigincrement_ .
 
 >**-default**  _number_
 
