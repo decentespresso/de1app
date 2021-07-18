@@ -5548,14 +5548,34 @@ namespace eval ::dui {
 					$can coords $slider [expr {$bx1-$swidth}] $sy0 $bx1 $sy1
 					if { $varvalue eq "" } { set $varname $to }
 				} else {
-					$can coords $front $bx0 $by0 $slider_coord $by1
-					#$can move $slider [expr {$slider_coord-($swidth/2)-$sx0}] 0
-                    $can move $slider [expr {$slider_coord-$sx0-$offset}] 0
-					if { $varvalue eq "" } {
-						#set newcoord [expr {$from+($to-$from)*(($slider_coord-$swidth/2-$bx0)/($bx1-$swidth-$bx0))}]
-                        set newcoord [expr {round($from+($to-$from)*(double($slider_coord-$offset-$bx0)/double($bx1-$swidth-$bx0)))}]
-                        set $varname [number_in_range $newcoord {} $from $to $resolution $n_decimals]
-					}
+#					$can coords $front $bx0 $by0 $slider_coord $by1
+#					#$can move $slider [expr {$slider_coord-($swidth/2)-$sx0}] 0
+#                    $can move $slider [expr {$slider_coord-$sx0-$offset}] 0
+#					if { $varvalue eq "" } {
+#						#set newcoord [expr {$from+($to-$from)*(($slider_coord-$swidth/2-$bx0)/($bx1-$swidth-$bx0))}]
+#                        set newcoord [expr {round($from+($to-$from)*(double($slider_coord-$offset-$bx0)/double($bx1-$swidth-$bx0)))}]
+#                        set $varname [number_in_range $newcoord {} $from $to $resolution $n_decimals]
+#					}
+                    
+                   if { $varvalue eq "" } {
+                       # Slider movement. Check we actually need to move if resolution is defined
+                       set varvalue [subst \$$varname]
+                       set newvalue [expr {round($from+($to-$from)*(double($slider_coord-$offset-$bx0)/double($bx1-$swidth-$bx0)))}]
+                       set newvalue [number_in_range $newvalue {} $from $to $resolution $n_decimals]
+                       
+                       if { abs($newvalue - $varvalue) > 1e-5 } {
+                           $can coords $front $bx0 $by0 $slider_coord $by1
+                           $can move $slider [expr {$slider_coord-$sx0-$offset}] 0
+                           set $varname $newvalue
+                       }
+                   } else {
+                       # Direct move to
+                       $can coords $front $bx0 $by0 $slider_coord $by1
+                       $can move $slider [expr {$slider_coord-$sx0-$offset}] 0
+#                       
+#                        set newvalue [expr {round($from+($to-$from)*(double($slider_coord-$offset-$bx0)/double($bx1-$swidth-$bx0)))}]
+#                        set $varname [number_in_range $newvalue {} $from $to $resolution $n_decimals]
+                   }
 				} 
 			} else {
 				# Vertical
@@ -5570,14 +5590,30 @@ namespace eval ::dui {
 					$can coords $slider $sx0 [expr {$by1-$sheight}] $sx1 $by1
 					if { $varvalue eq "" } { set $varname $from }
 				} else {
-					$can coords $front $bx0 [expr {$slider_coord-$offset+$sheight/2.0}] $bx1 $by1
-					#$can move $slider 0 [expr {$slider_coord-$sheight/2-$sy0}]
-                    $can move $slider 0 [expr {$slider_coord-$offset-$sy0}]
-					if { $varvalue eq "" } {
-						#set newcoord [expr {$from+($to-$from)*($by1-$slider_coord-$sheight/2)/($by1-$sheight-$by0)}]
-                        set newcoord [expr {round($from+($to-$from)*double($by1-$sheight-$slider_coord+$offset)/double($by1-$sheight-$by0))}]
-						set $varname [number_in_range $newcoord {} $from $to $resolution $n_decimals]
-					}
+#					$can coords $front $bx0 [expr {$slider_coord-$offset+$sheight/2.0}] $bx1 $by1
+#					#$can move $slider 0 [expr {$slider_coord-$sheight/2-$sy0}]
+#                    $can move $slider 0 [expr {$slider_coord-$offset-$sy0}]
+#					if { $varvalue eq "" } {
+#						#set newcoord [expr {$from+($to-$from)*($by1-$slider_coord-$sheight/2)/($by1-$sheight-$by0)}]
+#                        set newcoord [expr {round($from+($to-$from)*double($by1-$sheight-$slider_coord+$offset)/double($by1-$sheight-$by0))}]
+#						set $varname [number_in_range $newcoord {} $from $to $resolution $n_decimals]
+#					}
+                    if { $varvalue eq "" } {
+                        # Slider movement. Check we actually need to move if resolution is defined
+                        set varvalue [subst \$$varname]
+                        set newvalue [expr {round($from+($to-$from)*double($by1-$sheight-$slider_coord+$offset)/double($by1-$sheight-$by0))}]
+                        set newvalue [number_in_range $newvalue {} $from $to $resolution $n_decimals]
+                         
+                        if { abs($newvalue - $varvalue) > 1e-5 } {
+                            $can coords $front $bx0 [expr {$slider_coord-$offset+$sheight/2.0}] $bx1 $by1
+                            $can move $slider 0 [expr {$slider_coord-$offset-$sy0}]
+                            set $varname $newvalue
+                        }
+                    } else {
+                        # Direct move to
+                        $can coords $front $bx0 [expr {$slider_coord-$offset+$sheight/2.0}] $bx1 $by1
+                        $can move $slider 0 [expr {$slider_coord-$offset-$sy0}]
+                    }
 				} 
 			}
 		}
