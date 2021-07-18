@@ -31,6 +31,7 @@
   - dui platform button_press
   - dui platform button_long_press
   - dui platform finger_down
+  - dui platform finger_motion
   - dui platform button_unpress
   - dui platform xscale_factor
   - dui platform yscale_factor
@@ -169,7 +170,7 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 ## Revision History
 
 * 2021-04-10 – Initial writing by [Enrique Bengoechea](https://github.com/ebengoechea)
-* 2021-04-11 - 2021-06-27 - Rewrite while the API evolves through nightly & beta, by [Enrique Bengoechea](https://github.com/ebengoechea)
+* 2021-04-11 - 2021-07-18 - Rewrite while the API evolves through nightly & beta, by [Enrique Bengoechea](https://github.com/ebengoechea)
 
 <a name="history"></a>
 
@@ -1721,7 +1722,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >Return the list of all canvas IDs that form the scale compound. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
-> >&lt;main_tag&gt;: the slider circle;
+> >&lt;main_tag&gt;-crc: the slider circle;
 
 > >&lt;main_tag&gt;-bck: the background line;
 
@@ -1778,6 +1779,10 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > >The fill color of the foreground scale line (the part of the line that marks the variable value, i.e. the left section in horizontal scales, and the bottom section in vertical scales), and the slider circle, when the control is enabled.
 
+>**-activeforeground**  _color_
+
+> >The fill color of the slider circle when it is active (i.e. when it is tapped for moving it).
+
 >**-disabledforeground**  _color_
 
 > >The fill color of the foreground scale line and the slider circle when the control is disabled.
@@ -1806,7 +1811,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > >Passed to the full page number editor, and used when tapping repeteadly the plus/minus (currently implemented as triple-click, but may change).
 
->**-plus_minus**  _true_of_false_
+>**-plus_minus**  _true_or_false_
 
 > >Whether to show (default) or hide the plus and minus on the line extremes.
 

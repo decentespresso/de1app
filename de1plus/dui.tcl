@@ -848,6 +848,7 @@ namespace eval ::dui {
 	
 			default.dscale.orient horizontal
 			default.dscale.foreground "#4e85f4"
+            default.dscale.activeforeground "#4e85f4"
 			default.dscale.background "#7f879a"
 			default.dscale.sliderlength 75
 			
@@ -5498,8 +5499,6 @@ namespace eval ::dui {
                 }
 			}
                     
-msg -DEBUG [namespace current] dscale_moveto: "slider {$sx0 $sy0 $sx1 $sy1}, slider_coord=$slider_coord, slider_change=$slider_change, offset=$offset"
-                    
 			set varvalue ""
 			# If no slider_coord is given, reads the value from whatever is in variable $varname and transforms it
 			#	to a slider_coord value.
@@ -5533,8 +5532,6 @@ msg -DEBUG [namespace current] dscale_moveto: "slider {$sx0 $sy0 $sx1 $sy1}, sli
 				} else {
 					return
 				}
-                
-msg -DEBUG [namespace current] dscale_moveto: "variable '$varname' value is $varvalue, which gets slider_coord=$slider_coord"
 			}
 			
 			# Move the slider to slider_coord (x-axis for horizontal scale, y-axis for vertical scale) 
@@ -5568,17 +5565,17 @@ msg -DEBUG [namespace current] dscale_moveto: "variable '$varname' value is $var
 					$can coords $slider $sx0 $by0 $sx1 [expr {$by0+$sheight}]
 					if { $varvalue eq "" } { set $varname $to }
                 # elseif { ($slider_coord+$sheight/2) >= $by1 } 
-				} elseif { ($slider_coord+$sheight+$offset) >= $by1 } {
+				} elseif { ($slider_coord+$sheight-$offset) >= $by1 } {
 					$can coords $front $bx0 [expr {$by1-$sheight/2}] $bx1 $by1
 					$can coords $slider $sx0 [expr {$by1-$sheight}] $sx1 $by1
 					if { $varvalue eq "" } { set $varname $from }
 				} else {
-					$can coords $front $bx0 [expr {$slider_coord+$sheight/2}] $bx1 $by1
+					$can coords $front $bx0 [expr {$slider_coord-$offset+$sheight/2}] $bx1 $by1
 					#$can move $slider 0 [expr {$slider_coord-$sheight/2-$sy0}]
                     $can move $slider 0 [expr {$slider_coord-$offset-$sy0}]
 					if { $varvalue eq "" } {
 						#set newcoord [expr {$from+($to-$from)*($by1-$slider_coord-$sheight/2)/($by1-$sheight-$by0)}]
-                        set newcoord [expr {$from+($to-$from)*($by1-$slider_coord-$offset)/($by1-$sheight-$by0)}]
+                        set newcoord [expr {$from+($to-$from)*($by1-$sheight-$slider_coord+$offset)/($by1-$sheight-$by0)}]
 						set $varname [number_in_range $newcoord {} $from $to $resolution $n_decimals]
 					}
 				} 
@@ -5605,15 +5602,11 @@ msg -DEBUG [namespace current] dscale_moveto: "variable '$varname' value is $var
                 #set sliders(${page},${dscale_tag}) [expr {int($coord-($sx0+($sx1-$sx0)/2))}]
                 set sliders(${page},${dscale_tag}) [expr {int($coord-$sx0)}]
             }
-            
-            msg -DEBUG [namespace current] "dscale_start_motion: coord=$coord, sx0=$sx0, sx1=$sx1, Offset=$sliders(${page},${dscale_tag}) px"
 		}
         
         proc dscale_end_motion { page dscale_tag orient coord } {
             variable sliders
             set sliders(${page},${dscale_tag}) {}
-            
-            msg -DEBUG [namespace current] "dscale_end_motion: Offset=\{\}"
         }
         
 		# Paints each of the symbols of a drater control compound, according to the value of the underlying variable.
@@ -7163,6 +7156,7 @@ msg -DEBUG [namespace current] dscale_moveto: "variable '$varname' value is $var
 			set length [dui::args::get_option -length 300]
 			set sliderlength [dui::args::get_option -sliderlength 25]
 			set foreground [dui::args::get_option -foreground blue]
+            set activeforeground [dui::args::get_option -activeforeground blue]
 			set disabledforeground [dui::args::get_option -disabledforeground grey]
 			set background [dui::args::get_option -background grey]
 			set disabledbackground [dui::args::get_option -disabledforeground grey]
@@ -7250,9 +7244,13 @@ msg -DEBUG [namespace current] dscale_moveto: "variable '$varname' value is $var
 				# Vertical circle slider
 				set id [$can create oval [expr {$x-$sliderlength/2}] [expr {$yf-$sliderlength/2}] \
 					[expr {$x+$sliderlength/2}] [expr {$yf+$sliderlength/2}] -fill $foreground \
-					-disabledfill $disabledforeground -width 0 -tags [list {*}$tags ${main_tag}-crc] -state hidden]
+					-disabledfill $disabledforeground -activefill $activeforeground -width 0 \
+					-tags [list {*}$tags ${main_tag}-crc] -state hidden]
                 set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}
-				$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
+                $can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag v %y]
+                $can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag v %y]                
+                #$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
+				$can bind ${main_tag}-crc [dui platform button_motion] $moveto_cmd
 				lappend ids $id			
 				if { $ns ne "" } {
 					set "${ns}::widgets(${main_tag}-crc)" $id
@@ -7336,12 +7334,11 @@ msg -DEBUG [namespace current] dscale_moveto: "variable '$varname' value is $var
 				# Horizontal circle slider
 				set id [$can create oval [expr {$x1f-($sliderlength/2)}] [expr {$y1f-($sliderlength/2)}] \
 					[expr {$x1f+($sliderlength/2)}] [expr {$y1f+($sliderlength/2)}] -fill $foreground \
-					-disabledfill $disabledforeground -width 0 -tags [list {*}$tags ${main_tag}-crc] -state hidden]
-                set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}
-                
-                $can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag $orient %x]
-                $can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag $orient %x]
-                
+					-disabledfill $disabledforeground -activefill $activeforeground -width 0 \
+					-tags [list {*}$tags ${main_tag}-crc] -state hidden]
+                set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}                
+                $can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag h %x]
+                $can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag h %x]                
 				#$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
                 $can bind ${main_tag}-crc [dui platform button_motion] $moveto_cmd
 				lappend ids $id			
