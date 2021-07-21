@@ -2072,10 +2072,10 @@ proc highlight_extension {} {
 	set description ""
 
 
-	foreach {name value} { "Version: " version "Author: " author "Contact: " contact "\n" description} {
+	foreach {name value} { "Version:" version "Author:" author "Contact:" contact "\n" description} {
 		set conf [set ::plugins::${plugin}::${value}]
 		if { $conf != {} } {
-			append description "[translate $name]$conf\n"
+			append description "[translate $name] $conf\n"
 		}
 	}
 	.can itemconfigure $::extensions_metadata -text $description
