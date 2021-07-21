@@ -226,7 +226,7 @@ namespace eval ::dui {
 			} elseif {$settings(language) == "zh-hant" || $settings(language) == "zh-hans" || $settings(language) == "kr"} {
 				set helvetica_font [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
 				set helvetica_bold_font [dui::font::add_or_get_familyname "NotoSansCJKjp-Bold.otf"]
-				set global_font_name $helvetica_font	
+				set global_font_name [dui::font::add_or_get_familyname "notosansuiregular.ttf"]
 				set fontm [expr {($fontm * .94)}]
 			} else {
 				# we use the immense google font so that we can handle virtually all of the world's languages with consistency
