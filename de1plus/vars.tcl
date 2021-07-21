@@ -2415,12 +2415,19 @@ proc message_page {msg buttonmsg {longertxt {}} } {
 #set ::infopage_button [add_de1_button "infopage" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off off} 980 990 1580 1190 ""]
 
 
-proc info_page {msg buttonmsg} {
+proc info_page {msg buttonmsg {nextpage {}}} {
 	if {[catch {
 		.can itemconfigure $::infopage_label -text $msg
 		.can itemconfigure $::infopage_button_label -text $buttonmsg
-		set_next_page off infopage; 
+		set_next_page off infopage
 		page_show off
+
+		if {$nextpage != ""} {
+			msg -INFO "Setting next page after info to: '$nextpage'"
+			set_next_page off $nextpage
+		} else {
+			set_next_page off off
+		}
 	} err] != 0} {
 		msg -ERROR "info_page failed because: '$err'"
 	}
