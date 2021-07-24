@@ -1397,6 +1397,7 @@ proc de1_ble_handler { event data } {
 					if {[info exists address] != 1} {
 						# this is very odd, no address yet connected
 						::bt::msg -NOTICE "full bluetooth log: $full_data_for_log"
+						return
 					}
 
 					if {$::de1(device_handle) == 0 && $address == $::settings(bluetooth_address)} {
