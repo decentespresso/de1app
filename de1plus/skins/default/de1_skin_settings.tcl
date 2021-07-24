@@ -313,7 +313,7 @@ add_de1_widget "settings_2 settings_2a" graph 24 220 {
 add_de1_text "settings_2c" 70 230 -text [translate "Steps"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" 
 
 add_de1_text "settings_2c" 984 240 -text [translate "1: Temperature"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
-add_de1_variable "settings_2c" 1600 240 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "nw" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "flow"} {return [translate "2: Pump by Flow"]} else {return [translate "2: Pump by Pressure"]}]}
+add_de1_variable "settings_2c" 1600 240 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "nw" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "flow"} {return [translate "2: Flow rate goal"]} else {return [translate "2: Pressure goal"]}]}
 
 add_de1_text "settings_2c" 984 830 -text [translate "3: Maximum"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
