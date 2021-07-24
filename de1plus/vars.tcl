@@ -3334,12 +3334,12 @@ proc de1_version_string {} {
 	}
 
 	if { [package version de1app] ne ""  } {
-		append version ", [translate app]=v[package version de1app]"
+		append version ", [translate app]=v[package version de1app] [app_updates_policy_as_text]"
 	}
 
-	if { [app_updates_policy_as_text] ne ""  } {
-		append version ", [translate {branch}]=[app_updates_policy_as_text]"
-	}
+	#if { [app_updates_policy_as_text] ne ""  } {
+	#	append version ", [translate {branch}]=[app_updates_policy_as_text]"
+	#}
 	
 	if {[ifexists v(BLE_Sha)] != "" && $::settings(firmware_sha) != [ifexists v(BLE_Sha)] } {
 		set ::settings(firmware_sha) $v(BLE_Sha)
