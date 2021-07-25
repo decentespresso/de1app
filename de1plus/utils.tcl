@@ -695,6 +695,7 @@ proc random_saver_file {} {
 }
 
 proc tcl_introspection {} {
+
     catch {
         set txt ""
 
@@ -757,13 +758,49 @@ proc tcl_introspection {} {
         }
         append txt "TOTAL global variable memory used: $total bytes\n\n"
 
+		if {$::enable_profiling == 1} {
 
-        msg -DEBUG $txt
+			# this loads the overall app info
+			append txt [profilerdata]
+
+			# this gives you profiled run information about individual functions
+			# feel free to change these to those you are investigating
+			append txt [profilerdata ::load_skin]
+			append txt [profilerdata ::add_de1_text]
+			append txt [profilerdata ::add_de1_variable]
+			append txt [profilerdata ::de1_ble_handler]
+			append txt [profilerdata ::device::scale::process_weight_update]
+		}
+
+        msg -INFO $txt
     }
 
     after [expr {60 * 60 * 1000}] tcl_introspection
     #after [expr {1000}] tcl_introspection
 }
+
+proc add_commas_to_number { number } {
+	regsub -all \\d(?=(\\d{3})+([regexp -inline {\.\d*$} $number]$)) $number {\0,}
+}
+
+proc array_keys_decr_sorted_by_number_val {arrname {sort_order -decreasing}} {
+	upvar $arrname arr
+	foreach k [array names arr] {
+		#puts " $arr($k) "
+		set k2 "[format {"%0.12i"} $arr($k)] $k"
+		#puts "k2: $k2"
+		set t($k2) $k
+	}
+	
+	set toreturn {}
+	foreach k [lsort -dictionary $sort_order [array names t]] {
+		set v $t($k)
+		lappend toreturn $v
+	}
+	return $toreturn
+}
+
+
 
 proc random_splash_file {} {
     if {[info exists ::splash_files_cache] != 1} {
