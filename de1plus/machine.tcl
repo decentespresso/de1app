@@ -36,6 +36,8 @@ array set ::de1 {
 	factory_calibration_flow {}
 	advanced_shot_moveone_enabled 1
     found    0
+    decentscale_timer_on 0
+    bluetooth_scale_connection_attempts_tried 0
     scanning 1
     device_handle 0
     language_rtl 0

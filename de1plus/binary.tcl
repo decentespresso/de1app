@@ -1322,17 +1322,28 @@ proc parse_decent_scale_recv {packed destarrname} {
 
    		#unset -nocomplain recv
 	   	#::fields::unpack $packed [decent_scale_weight_read_spec] recv bigeendian
-
+	   	set cmd $recv(command)
 
    		unset -nocomplain recv
 	   	::fields::unpack $packed [decent_scale_weight_read_spec2] recv bigeendian
+	   	set recv(parsed) "weight"
+	   	set recv(command) $cmd
+
 	   	#::fields::unpack $packed [decent_scale_generic_read_spec] recv bigeendian
    	} elseif {$recv(command) == 0xAA} {
+	   	set recv(parsed) "button"
    		msg -DEBUG "Decentscale BUTTON pressed: [array get recv]"
    	} elseif {$recv(command) == 0x0C} {
    		unset -nocomplain recv
 	   	::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian
+	   	set recv(parsed) "timer"
    		msg -DEBUG "Decentscale time received: [array get recv]"
+   	} else {
+   		#unset -nocomplain recv
+	   	#::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian
+	   	#set recv(command) "unknown"
+	   	set recv(parsed) "unknown"
+   		msg -DEBUG "Decentscale unknown data received: [array get recv]"
    	}
 
 }

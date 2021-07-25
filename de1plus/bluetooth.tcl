@@ -643,14 +643,22 @@ proc decentscale_timer_start {} {
 		return
 	}
 
+	set ::de1(decentscale_timer_on) 1
 	::bt::msg -DEBUG "decentscale_timer_start"
 	set timeron [decent_scale_make_command 0B 03 00]
 	::bt::msg -DEBUG "decent scale timer on: '[::logging::format_asc_bin $timeron]'"
 	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron] 0
 
+	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.  
+	# So for now we send the same command twice. 
+	# In the future we'll check for the decent scale firmare version
+	# and only send the command twice if needed for the older decent scale firmware.
+	userdata_append "decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron] 0
+
 }
 
 proc decentscale_timer_stop {} {
+
 
 	if {$::de1(scale_device_handle) == 0} {
 		return
@@ -663,8 +671,16 @@ proc decentscale_timer_stop {} {
 
 	::bt::msg -DEBUG "decentscale_timer_stop"
 
+	set ::de1(decentscale_timer_on) 0
 	set timeroff [decent_scale_make_command 0B 00 00]
 	::bt::msg -DEBUG "decent scale timer stop: '[::logging::format_asc_bin $timeroff]'"
+	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
+
+
+	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.  
+	# So for now we send the same command twice. 
+	# In the future we'll check for the decent scale firmare version
+	# and only send the command twice if needed for the older decent scale firmware.
 	userdata_append "decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 
 }
@@ -685,6 +701,13 @@ proc decentscale_timer_reset {} {
 
 	::bt::msg -DEBUG "decent scale timer reset: '[::logging::format_asc_bin $timeroff]'"
 	userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
+
+
+	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.  
+	# So for now we send the same command twice. 
+	# In the future we'll check for the decent scale firmare version
+	# and only send the command twice if needed for the older decent scale firmware.
+	userdata_append "decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 }
 
 proc decentscale_tare {} {
@@ -704,6 +727,14 @@ proc decentscale_tare {} {
 	set tare [decent_scale_tare_cmd]
 
 	userdata_append "decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare] 0
+
+
+	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.  
+	# So for now we send the same command twice. 
+	# In the future we'll check for the decent scale firmare version
+	# and only send the command twice if needed for the older decent scale firmware.
+	userdata_append "decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare] 0
+
 }
 
 proc close_all_ble_and_exit {} {
@@ -746,7 +777,7 @@ proc close_all_ble_and_exit {} {
 	#after 2000 exit
 	::bt::msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
 	foreach h [ble info] {
-		::bt::msg -INFO "Open BLE handle: [ble info $h]"
+		::bt::msg -INFO "Closing this open BLE handle: [ble info $h]"
 		ble close $h
 	}
 	::bt::msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
@@ -1368,8 +1399,18 @@ proc de1_ble_handler { event data } {
 						# john 1-11-19 automatic reconnection attempts eventually kill the bluetooth stack on android 5.1
 						# john might want to make this happen automatically on Android 8, though. For now, it's a setting, which might
 						# eventually get auto-set as per the current Android version, if we can trust that to give us a reliable BLE stack.
+
 						if {$::settings(automatically_ble_reconnect_forever_to_scale) == 1} {
 							ble_connect_to_scale
+						} elseif {$::de1(bluetooth_scale_connection_attempts_tried) < 20} {
+							incr ::de1(bluetooth_scale_connection_attempts_tried)
+							::bt::msg -INFO "Disconnected from scale, trying again automatically.  Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
+							ble_connect_to_scale
+						} else {
+							# after 5 minutes, reset the scale retrier count back to zero that when coming back 
+							# to the DE1 after some time away, we can again retry scale connection 
+							::bt::msg -INFO "Resetting scale connect retries back to zero, after 300 second waiting"
+							after 300 "set ::de1(bluetooth_scale_connection_attempts_tried) 0"
 						}
 
 					}
@@ -1422,6 +1463,7 @@ proc de1_ble_handler { event data } {
 
 						set ::de1(wrote) 0
 						set ::de1(scale_device_handle) $handle
+						set ::de1(bluetooth_scale_connection_attempts_tried) 0
 
 						# resend the hotwater settings, because now we can stop on weight
 						after 7000 de1_send_steam_hotwater_settings
@@ -1770,6 +1812,7 @@ proc de1_ble_handler { event data } {
 
 						} elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
 							# decent scale
+							#::bt::msg -INFO "Decentscale writeback received"
 							parse_decent_scale_recv $value vals
 
 							#set sensorweight [expr {$t1 / 10.0}]
@@ -1782,6 +1825,8 @@ proc de1_ble_handler { event data } {
 
 						} elseif {$cuuid eq $::de1(cuuid_decentscale_read)} {
 							# decent scale
+
+							#::bt::msg -INFO "Decentscale read received"
 							parse_decent_scale_recv $value weightarray
 
 							if {[ifexists weightarray(command)] == [expr 0x0F] && [ifexists weightarray(data6)] == [expr 0xFE]} {
@@ -1790,24 +1835,31 @@ proc de1_ble_handler { event data } {
 
 								return
 							} elseif {[ifexists weightarray(command)] == 0xAA} {
-								::bt::msg -INFO "Decentscale BUTTON $weightarray(data3) pressed"
-								if {[ifexists $weightarray(data3)] == 1} {
+								::bt::msg -INFO "Decentscale BUTTON $weightarray(data3) pressed ([array get weightarray])-([ifexists weightarray(data3)])"
+								if {[ifexists weightarray(data3)] == 1} {
 									# button 1 "O" pressed
+									::bt::msg -INFO "Decentscale TARE BUTTON pressed"
 									decentscale_tare
-								} elseif {[ifexists $weightarray(data3)] == 2} {
+								} elseif {[ifexists weightarray(data3)] == 2} {
 									# button 2 "[]" pressed
-								}
-							} elseif {[ifexists weightarray(command)] != ""} {
-								::bt::msg -INFO "scale command received: [array get weightarray]"
-
-							}
-
-							if {[info exists weightarray(weight)] == 1} {
+									if {$::de1(decentscale_timer_on) == 1} {
+										::bt::msg -INFO "Decentscale TIMER STOP BUTTON pressed"
+										decentscale_timer_stop
+									} else {
+										::bt::msg -INFO "Decentscale TIMER RESET/START BUTTON pressed"
+										decentscale_timer_reset
+										after 500 decentscale_timer_start
+									}
+								} 
+							} elseif {[info exists weightarray(weight)] == 1} {
 								set sensorweight [expr {$weightarray(weight) / 10.0}]
 								::device::scale::process_weight_update $sensorweight $event_time
 							} else {
-								::bt::msg -INFO "decent scale recv: [array get weightarray]"
+								::bt::msg -INFO "decentscale recv: [array get weightarray]"
+
 							}
+														
+
 						} elseif {$cuuid eq $::de1(cuuid_acaia_ips_age)} {
 							# acaia scale
 							acaia_parse_response $value
@@ -1861,7 +1913,10 @@ proc de1_ble_handler { event data } {
 							::bt::msg -INFO "ACK water level write: [array get arr2] ($data_for_log)"
 						} elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
 							#parse_binary_water_level $value arr2
-							::bt::msg -INFO "ACK scale write: '$value_for_log'"
+							::bt::msg -INFO "ACK decentscale write back: '$value_for_log'"
+						} elseif {$cuuid eq $::de1(cuuid_decentscale_write)} {
+							#parse_binary_water_level $value arr2
+							::bt::msg -INFO "ACK decentscale write: '$value_for_log'"
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF80)} {
 							set tare [binary decode hex "10"]
 							set grams [binary decode hex "03"]
