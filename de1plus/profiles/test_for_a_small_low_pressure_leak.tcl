@@ -34,7 +34,7 @@ preinfusion_time 60
 pressure_end 10.0
 profile_hide 1
 profile_language en
-profile_notes {Put a blind (no hole) portafilter basket into your portafilter, and then run this profile to see if there are any water leaks in your machine.  Once pressure is reached, water will be turned off and pressure held.  A small mount of pressure loss is normal, because of leaking around the pump's valve.  After two minutes of no flow, your pressure should be above 8 bar.}
+profile_notes {Put a blind (no hole) portafilter basket into your portafilter, and then run this profile to see if there are any water leaks in your machine.  Once pressure is reached, water will be turned off and pressure held.  After five minutes check with a flashlight for any water droplets inside the machine.   You should not wait for the profile to stop. Start looking for leaks after 3 minutes and stop the profile once you feel assured there is no visible water leaking.}
 profile_title {Test/for a small low pressure leak}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
