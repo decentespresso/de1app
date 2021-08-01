@@ -3459,7 +3459,11 @@ namespace eval ::gui::update {
 								[expr {2.0 * [round_to_two_digits \
 										      $::de1(scale_weight_rate)] }]
 
-							set resistance_weight 0
+							if { [espresso_resistance_weight length] > 0 } {
+								set resistance_weight espresso_resistance_weight(end)
+							} else {
+	                          set resistance_weight 0
+							}
 							catch {
 								if {    $GroupPressure != 0 \
 										&& $::de1(scale_weight_rate) != "" \
