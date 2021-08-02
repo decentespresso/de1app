@@ -27,3 +27,6 @@
 [submodule "de1plus/plugins/DPx_Screen_Saver"]
 	path = de1plus/plugins/DPx_Screen_Saver
 	url = https://github.com/Damian-AU/DPx_Screen_Saver
+[submodule "de1plus/plugins/old_lcd_disable"]
+	path = de1plus/plugins/old_lcd_disable
+	url = https://github.com/bkeller2/old_lcd_disable
