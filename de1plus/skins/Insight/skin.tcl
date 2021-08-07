@@ -1100,8 +1100,8 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 
 
 	# realtime control over the steam flow rate
-	#add_de1_widget "steam steam_1 steam_3" scale 10 1436 {} -from 40 -to 250 -background "#e8e1df" -borderwidth 1 -showvalue 0  -bigincrement 100 -resolution 10 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(steam_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard; set_steam_flow} -orient horizontal -foreground #FFFFFF -troughcolor "#d7d9e5" -borderwidth 0  -highlightthickness 0
-	dui add dscale "steam steam_1 steam_3" 40 1510 {} -from 40 -to 250 -bigincrement 100 -smallincrement 10 -resolution 10 -length 1950 -width 14 -sliderlength 120 -variable ::settings(steam_flow) -command {set_steam_flow} -orient horizontal
+	add_de1_widget "steam steam_1 steam_3" scale 10 1436 {} -from 40 -to 250 -background "#e8e1df" -borderwidth 1 -showvalue 0  -bigincrement 100 -resolution 10 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(steam_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard; set_steam_flow} -orient horizontal -foreground #FFFFFF -troughcolor "#d7d9e5" -borderwidth 0  -highlightthickness 0
+	#dui add dscale "steam steam_1 steam_3" 40 1510 {} -from 40 -to 250 -bigincrement 100 -smallincrement 10 -resolution 10 -length 1950 -width 14 -sliderlength 120 -variable ::settings(steam_flow) -command {set_steam_flow} -orient horizontal
 
 	# when steam is off, display current steam heater temp
 	add_de1_text "steam_1 steam_3" 1100 1220 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
