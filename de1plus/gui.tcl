@@ -1706,8 +1706,8 @@ proc hide_android_keyboard {} {
 
 proc update_de1_explanation_chart_soon  { {context {}} } {
 	# we can optionally delay displaying the chart until data from the slider stops coming
-	update_de1_explanation_chart
-	return
+	#update_de1_explanation_chart
+	#return
 	
 	#after 10 {after cancel update_de1_explanation_chart; after idle update_de1_explanation_chart}
 	if {[info exists ::chart_update_id] == 1} {
