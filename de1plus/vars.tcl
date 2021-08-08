@@ -1539,8 +1539,8 @@ proc skin_directories {} {
 		}
 	    
 		if {[ifexists ::settings(show_only_most_popular_skins)] == 1 && [ifexists ::settings(most_popular_skins)] != ""} {
-			puts "'$d' '[ifexists ::settings(most_popular_skins)]'"
-			if {[lsearch -exact [ifexists ::settings(most_popular_skins)] $d ] == -1} {
+			#puts "'$d' '[ifexists ::settings(most_popular_skins)]'"
+			if {[lsearch -exact [string toupper [ifexists ::settings(most_popular_skins)]] [string toupper $d] ] == -1} {
 				continue
 			}
 		}
