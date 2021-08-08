@@ -373,9 +373,9 @@ proc settings2c_pressure_button {direction} {
 
 	if {[ifexists ::current_adv_step(pump)] == "pressure"} {
 		if {$direction eq "up"} {
-			set ::current_adv_step(pressure) [expr {$::current_adv_step(pressure) + 0.1}];
+			set ::current_adv_step(pressure) [round_to_one_digits [expr {$::current_adv_step(pressure) + 0.1}]];
 		} else {
-			set ::current_adv_step(pressure) [expr {$::current_adv_step(pressure) - 0.1}];
+			set ::current_adv_step(pressure) [round_to_one_digits [expr {$::current_adv_step(pressure) - 0.1}]];
 		}
 	} else { 
 		if {$direction eq "up"} {
@@ -411,9 +411,9 @@ proc settings2c_flow_button {direction} {
 
 	if {[ifexists ::current_adv_step(pump)] == "flow"} {
 		if {$direction eq "up"} {
-			set ::current_adv_step(flow) [expr {$::current_adv_step(flow) + 0.1}];
+			set ::current_adv_step(flow) [round_to_one_digits [expr {$::current_adv_step(flow) + 0.1}]];
 		} else {
-			set ::current_adv_step(flow) [expr {$::current_adv_step(flow) - 0.1}];
+			set ::current_adv_step(flow) [round_to_one_digits [expr {$::current_adv_step(flow) - 0.1}]];
 		}
 	} else { 
 		if {$direction eq "up"} {
