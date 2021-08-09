@@ -1485,10 +1485,12 @@ proc de1_ble_handler { event data } {
 						if {$::settings(scale_type) == "decentscale"} {
 							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "decentscale"
 							decentscale_enable_lcd
-							after 2000 decentscale_enable_notifications
+							after 100 decentscale_enable_lcd
+							after 200 decentscale_enable_notifications
+							after 300 decentscale_enable_notifications
 							
 							# in case the first request was dropped
-							after 4000 decentscale_enable_lcd
+							after 400 decentscale_enable_lcd
 
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
 							append_to_scale_bluetooth_list $address $::settings(scale_bluetooth_name) "atomaxskale"
