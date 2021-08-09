@@ -35,7 +35,7 @@ pressure_end 10.0
 profile_hide 1
 profile_language en
 profile_notes {Put a blind (no hole) portafilter basket into your portafilter, and then run this profile to see if there are any water leaks in your machine.  Once pressure is reached, water will be turned off and pressure held.  After five minutes check with a flashlight for any water droplets inside the machine.   You should not wait for the profile to stop. Start looking for leaks after 3 minutes and stop the profile once you feel assured there is no visible water leaking.}
-profile_title {Test/for a small low pressure leak}
+profile_title {Test/low pressure leak}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 

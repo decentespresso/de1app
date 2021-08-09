@@ -903,6 +903,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/tea_portafilter_white.tcl *
         profiles/tea_portafilter_tisane.tcl *
         profiles/test_leak.tcl *
+        profiles/test_for_a_small_low_pressure_leak.tcl *
         profiles/test_temperature.tcl *
         profiles/test_pressure_calibration.tcl *
         profiles/test_temperature_calibration.tcl *
