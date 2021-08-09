@@ -1112,8 +1112,14 @@ proc ble_connect_to_scale {} {
 	}
 
 	if {$::currently_connecting_scale_handle != 0} {
-		::bt::msg -INFO "Already trying to connect to Scale, so don't try again"
-		return
+		#::bt::msg -INFO "Already trying to connect to Scale, so don't try again"
+		::bt::msg -INFO "Already trying to connect to Scale, so try a reconnect request to see if that helps"
+
+		# it's possible to lose a connection attempt to the scale, so check again in one second, and keep trying until a scale device is found
+		#after 1000 ble_connect_to_scale
+		#return
+		ble reconnect $::currently_connecting_scale_handle
+		return 0
 	}
 
 	set do_this 0
@@ -1908,6 +1914,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_10)} {
 							parse_binary_shotframe $value arr3
 							::bt::msg -INFO "ACK shot frame written to DE1: [array get arr3] ($data_for_log)"
+
+							# keep track of what frames were acked as sent, so we can later make sure all were indeed acked
+							lappend ::de1(shot_frames_sent) [array get arr3]
 						} elseif {$cuuid eq $::de1(cuuid_11)} {
 							parse_binary_water_level $value arr2
 							::bt::msg -INFO "ACK water level write: [array get arr2] ($data_for_log)"
