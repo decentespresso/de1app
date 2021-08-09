@@ -100,6 +100,9 @@ proc run_next_userdata_cmd {} {
 					? "$_comment: " : "" }] \
 			"$_readable"
 
+		# setting "wrote" to 1 before running the command, so that if the command is not a BLE operation, it can choose to unset "wrote" and cause the cmd stack to continue unspooling
+		set ::de1(wrote) 1
+
 		set eer ""
 		set errcode [catch {
 			set result [{*}[lindex $cmd 1]]
@@ -112,9 +115,10 @@ proc run_next_userdata_cmd {} {
 		}
 
 		if {$result != 1} {
-
+			set ::de1(wrote) 0
+	
 			if {[string first "invalid handle" $::errorInfo] != -1 } {
-				comms_msg -INFO "Not retrying this command because BLE handle for the device is now invalid"
+				::comms::msg -INFO "Not retrying this command because BLE handle for the device is now invalid"
 				#after 500 run_next_userdata_cmd
 			} elseif {$vital != 1 } {
 				::comms::msg -NOTICE "Preceeding command failed; not retrying as not tagged as vital"
@@ -141,7 +145,6 @@ proc run_next_userdata_cmd {} {
 		}
 
 		set ::de1(cmdstack) $cmds
-		set ::de1(wrote) 1
 		set ::de1(previouscmd) [lindex $cmd 1]
 		if {[llength $::de1(cmdstack)] == 0} {
 			::comms::msg -INFO "command queue is now empty"
@@ -1221,6 +1224,9 @@ proc de1_send_shot_frames {} {
 	### NB: The BLE queue is not thread safe
 	###
 
+	# this is to track which frames are ACKed as having been successfully sent
+	unset -nocomplain ::de1(shot_frames_sent)
+
 	set parts [de1_packed_shot_wrapper]
 	set header [lindex $parts 0]
 
@@ -1256,7 +1262,59 @@ proc de1_send_shot_frames {} {
 		set_tank_temperature_threshold 0
 	}
 
+	userdata_append "Confirm that all shot frames were correctly sent"  [list confirm_de1_send_shot_frames_worked [lindex $parts 1]] 1
 	return
+}
+
+proc confirm_de1_send_shot_frames_worked {parts} {
+
+	::comms::msg -NOTICE "confirm_de1_send_shot_frames_worked (frames acked: [llength [ifexists ::de1(shot_frames_sent)]]) (frames desired: [llength $parts])"
+
+	set success 1
+
+	set num 0
+
+	foreach frame_sent [ifexists ::de1(shot_frames_sent)] {
+		::comms::msg -NOTICE "confirm_de1_send_shot_frames_worked : checking frame $num : $frame_sent"
+
+		array unset -nocomplain this_frame_array
+		array set this_frame_array $frame_sent
+
+		if {$num != [ifexists this_frame_array(FrameToWrite)]} {
+			::comms::msg -NOTICE "confirm_de1_send_shot_frames_worked : unexpected frame number, expected $num, got [ifexists this_frame_array(FrameToWrite)]"
+			set success 0
+			break
+		}
+
+		incr num
+	}
+
+	if {$success == 1} {
+		# check that the number of frames ACKed is the same number as what we sent
+		if {[llength [ifexists ::de1(shot_frames_sent)]] != [llength $parts]} {
+			::comms::msg -NOTICE "confirm_de1_send_shot_frames_worked : unexpected total number of frames acked, expected [llength $parts], got [llength [ifexists ::de1(shot_frames_sent)]]"
+			set success 0
+		}
+	}
+
+	if {$success != 1} {
+		# if this was not successful, try sending the shot frames again
+		::comms::msg -NOTICE "confirm_de1_send_shot_frames_worked : shot frames were not successfully sent, so trying to send them again"
+		
+		# in a half second, try again.  We put a delay in, so that if a logic error occurs, and this goes into a loop, it won't tie up the cpu 100% trying
+		#after 500 de1_send_shot_frames
+	} else {
+		::comms::msg -NOTICE "confirm_de1_send_shot_frames_worked : [llength [ifexists ::de1(shot_frames_sent)]] shot frames were successfully sent"
+	}
+
+	unset -nocomplain ::de1(shot_frames_sent)
+
+	#####
+	# this is needed because the BLE command stack relies on callbacks to continue unspooling. Since no BLE command was initiated in this proc, then no unspooling would occur, so we do this manually.
+	set ::de1(wrote) 0
+	after 100 run_next_userdata_cmd
+	return 1
+	#####
 }
 
 proc save_settings_to_de1 {} {

@@ -817,8 +817,6 @@ proc de1_packed_shot {shot_list} {
 
 	set this_profile $profile(advanced_shot)
 
-	msg  "asdf: '[ifexists ::settings(insert_preinfusion_pause)]'"
-
 	if {[ifexists ::settings(insert_preinfusion_pause)] == 1} {
 
 		msg -DEBUG "Prefixing profile with a 2 seconds slow start preinfusion pause"
