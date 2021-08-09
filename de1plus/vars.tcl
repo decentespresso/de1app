@@ -1591,6 +1591,11 @@ proc fill_skin_listbox {} {
 			continue
 		}
 
+		if {$d == "metric"} {
+			# typo in github was in lower case for Metric skin, so hacking the dispay of it here
+			set d "Metric"
+		}
+
 		$widget insert $cnt [translate $d]
 		if {$::settings(skin) == $d} {
 			set ::current_skin_number $cnt
