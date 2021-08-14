@@ -1441,6 +1441,15 @@ proc de1_ble_handler { event data } {
 					#ble_connect_to_de1
 				} elseif {$state eq "connected"} {
 
+					# testing "ble mtu" command http://www.androwish.org/index.html/info/d990702552f12a0a
+					# set mtu [ble mtu $handle] 
+					# ::bt::msg -NOTICE "DE1 BLE mtu is $mtu"
+					# set mtu1 [ble mtu $handle 4096] 
+					# ::bt::msg -NOTICE "DE1 BLE mtu set result was $mtu1"
+					# set mtu2 [ble mtu $handle] 
+					# :bt::msg -NOTICE "DE1 BLE mtu is now $mtu2"
+
+
 					if {[info exists address] != 1} {
 						# this is very odd, no address yet connected
 						::bt::msg -NOTICE "full bluetooth log: $full_data_for_log"
