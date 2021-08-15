@@ -454,14 +454,14 @@ proc settings2c_flow_label {} {
 
 add_de1_variable "settings_2c" 1710 680 -text ""  -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center"  -textvariable {[if {[ifexists ::current_adv_step(pump)] == "flow"} {return [translate "flow"]} else { return [translate "flow limit"] }]}
 add_de1_variable "settings_2c" 2010 680 -text ""  -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center"  -textvariable {[if {[ifexists ::current_adv_step(pump)] == "pressure"} {return [translate "pressure"]} else { return [translate "pressure limit"] }]}
-	add_de1_button "settings_2c" { settings2c_flow_button up } 1580 310 1820 380 ""
-	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "flow"; update_onscreen_variables; save_current_adv_shot_step; update_de1_explanation_chart} 1580 380 1820 570 ""
-	add_de1_button "settings_2c" { settings2c_flow_button down } 1580 570 1820 640 ""
+	add_de1_button "settings_2c" { settings2c_flow_button up } 1580 310 1820 410 ""
+	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "flow"; update_onscreen_variables; save_current_adv_shot_step; update_de1_explanation_chart} 1580 430 1820 520 ""
+	add_de1_button "settings_2c" { settings2c_flow_button down } 1580 540 1820 640 ""
 
 
-	add_de1_button "settings_2c" { settings2c_pressure_button up } 1890 310 2120 380 ""
-	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "pressure"; update_onscreen_variables; save_current_adv_shot_step; update_de1_explanation_chart} 1890 380 2120 570 ""
-	add_de1_button "settings_2c" { settings2c_pressure_button down } 1890 570 2120 640 ""
+	add_de1_button "settings_2c" { settings2c_pressure_button up } 1890 310 2120 410 ""
+	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "pressure"; update_onscreen_variables; save_current_adv_shot_step; update_de1_explanation_chart} 1890 430 2120 520 ""
+	add_de1_button "settings_2c" { settings2c_pressure_button down } 1890 540 2120 640 ""
 	add_de1_variable "settings_2c" 1710 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable { [ if {[ifexists ::current_adv_step(pump)] == "flow"} { return [return_flow_measurement $::current_adv_step(flow)] } else { settings2c_flow_label } ]  }
 	add_de1_variable "settings_2c" 2010 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "pressure"} {return_pressure_measurement $::current_adv_step(pressure)} else { settings2c_pressure_label }] }
 
