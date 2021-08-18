@@ -914,13 +914,13 @@ proc return_stop_at_weight_measurement {in} {
 	} else {
 
 	    if {$::de1(language_rtl) == 1} {
-			return [subst {[translate "g"][round_to_integer $in]}]
+			return [subst {[translate "g"][round_to_one_digits $in]}]
 		}
 
 		if {$::settings(enable_fluid_ounces) != 1} {
-			return [subst {[round_to_integer $in][translate "g"]}]
+			return [subst {[round_to_one_digits $in][translate "g"]}]
 		} else {
-			return [subst {[round_to_integer [ml_to_oz $in]] oz}]
+			return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
 		}
 	}
 }
