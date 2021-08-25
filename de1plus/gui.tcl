@@ -3172,8 +3172,9 @@ namespace eval ::gui::notify {
 		switch -exact -- $event_id {
 
 			abandoning_updates {
-
-				borg toast [translate {ABANDONING scale updates}]
+				if { $::settings(show_scale_notifications) } {
+					borg toast [translate {ABANDONING scale updates}]
+				}
 			}
 
 			retrying_updates {
@@ -3184,13 +3185,15 @@ namespace eval ::gui::notify {
 			}
 
 			timeout_updates {
-
-				borg toast "[translate {Check scale}]"
+				if { $::settings(show_scale_notifications) } {
+					borg toast "[translate {Check scale}]"
+				}
 			}
 
 			scale_reporting {
-
-				borg toast "[translate {Scale reporting}]"
+				if { $::settings(show_scale_notifications) } {
+					borg toast "[translate {Scale reporting}]"
+				}
 			}
 
 			not_connected {
@@ -3202,16 +3205,19 @@ namespace eval ::gui::notify {
 
 			    if { [::de1::state::current_state] == "Sleep" } { return }
 
-			    set what [translate {WARNING: Scale not connected}]
-			    borg toast $what
-			    say $what $::settings(sound_button_in)
+				if { $::settings(show_scale_notifications) } {
+					set what [translate {WARNING: Scale not connected}]
+					borg toast $what
+					say $what $::settings(sound_button_in)
+				}
 			}
 
 			no_updates {
-
-				set what [translate {WARNING: Scale not updating}]
-				borg toast $what
-				say $what $::settings(sound_button_in)
+				if { $::settings(show_scale_notifications) } {
+					set what [translate {WARNING: Scale not updating}]
+					borg toast $what
+					say $what $::settings(sound_button_in)
+				}
 			}
 
 			record_complete {

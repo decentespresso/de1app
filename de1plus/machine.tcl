@@ -449,6 +449,8 @@ array set ::settings {
 	last_version "1.34"
 
 	create_legacy_shotfiles 0
+
+	show_scale_notifications 1
 }
 
 # default de1plus skin
