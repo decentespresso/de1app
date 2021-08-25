@@ -5275,20 +5275,8 @@ namespace eval ::dui {
 			set class [winfo class $widget]
 						
 			if { $class eq "Listbox" } {
-				# get number of items visible in list box
-				set visible_items [lindex [split [$widget configure -height] " "] 4]
-				# get total items in listbox
-				set total_items [$widget size]
-
-				# if all the items fit on screen then there is nothing to do
-				if { $visible_items >= $total_items } {
-					return
-				}
-				# determine which item would be at the top if the last items is at the bottom
-				set last_top_item [expr $total_items - $visible_items]
-				# determine what percentage of the way down the current top item is
-				set rescaled_value [expr $dest1 * $total_items / $last_top_item]
-			} elseif { $class in {Multiline_entry Text} } {
+				set rescaled_value $dest1
+			} elseif { $class eq "Multiline_entry" || $class eq "Text" } {
 				if { $dest1 <= 0.0 && $dest2 >= 1.0 } {
 					return
 				}
@@ -5308,20 +5296,7 @@ namespace eval ::dui {
 			set widget [get_widget $page $widget_tag]
 			set class [winfo class $widget]
 			if { $class eq "Listbox" } {
-				# get number of items visible in list box
-				set visible_items [lindex [split [$widget configure -height] " "] 4]
-				# get total items in listbox
-				set total_items [$widget size]
-				# if all the items fit on screen then there is nothing to do
-				if {$visible_items >= $total_items} {
-					return
-				}
-				# determine which item would be at the top if the last items is at the bottom
-				set last_top_item [expr $total_items - $visible_items]
-				# determine which item should be at the top for the requested value
-				set top_item [expr int(round($last_top_item * $dest2))]
-				
-				$widget yview $top_item
+				$widget yview moveto $dest2
 			} elseif { $class in {Multiline_entry Text} } {
 				lassign [$widget yview] visible_start visible_end
 				if { $visible_start <= 0.0 && $visible_end >= 1.0 } {
