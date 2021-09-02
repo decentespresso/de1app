@@ -4567,6 +4567,35 @@ namespace eval ::dui {
 			catch { delay_screen_saver }
 			
 			set page_to_hide [current]
+
+			set reload [dui::args::get_option -reload 0 1]
+			if { $current_page eq $page_to_show && ![string is true $reload] } {
+				#msg -NOTICE [namespace current] load "returning because current_page == $page_to_show"
+				return 
+			}
+			
+			set hide_ns [get_namespace $page_to_hide]
+			set show_ns [get_namespace $page_to_show]
+			
+			if { $page_to_hide eq "" } {
+				set hide_page_type ""
+			} else {
+				set hide_page_type [type $page_to_hide]
+			}
+			set show_page_type [type $page_to_show]
+			if { $show_page_type eq "dialog" && $hide_page_type eq "dialog" } {
+				msg -WARNING [namespace current] load: "only one dialog page can be visible, can't move from dialog '$page_to_hide' to dialog '$page_to_show'"
+				return
+			}
+			if { $hide_page_type eq "dialog" } {
+				# If the dialog loads a page that is different from the one that opened it, treat it like a normal page
+				# change (hide all items) instead of a dialog closing (hide only the dialog and reenable the background page)
+				if { $page_to_hide ne $previous_page } {
+					array set dialog_states {}
+					set return_callback {}
+					set hide_page_type "default"
+				}
+			}
 			
 			# run general load actions (same for all pages) in the global context. 
 			# If 1 or a string is returned, the loading process continues. 
@@ -4586,22 +4615,7 @@ namespace eval ::dui {
 					}
 				}
 			}
-
-			set reload [dui::args::get_option -reload 0 1]
-			if { $current_page eq $page_to_show && ![string is true $reload] } {
-				#msg -NOTICE [namespace current] load "returning because current_page == $page_to_show"
-				return 
-			}
 			
-			set hide_ns [get_namespace $page_to_hide]
-			set show_ns [get_namespace $page_to_show]
-			if { $page_to_hide eq "" } {
-				set hide_page_type ""
-			} else {
-				set hide_page_type [type $page_to_hide]
-			}
-			set show_page_type [type $page_to_show] 
-
 			msg [namespace current] load "$page_to_hide -> $page_to_show"
 			dui sound make page_change
 			
@@ -8874,4 +8888,3 @@ namespace eval ::dui::pages::dui_confirm_dialog {
 	}
 
 }
-	
