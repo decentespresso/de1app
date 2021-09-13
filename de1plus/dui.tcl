@@ -372,7 +372,7 @@ namespace eval ::dui {
 		# Launch setup methods of pages created with 'dui add page'
 		dui page add dui_number_editor -namespace true -theme default
 		dui page add dui_item_selector -namespace true -theme default
-		dui page add dui_confirm_dialog -namespace true -theme default -type dialog -bbox {680 500 1880 1100} -bg_shape rect -bg_color blue
+		dui page add dui_confirm_dialog -namespace true -theme default -type dialog -bbox {680 500 1880 1100}
 		
 		set applied_ns {}
 		foreach page [page list] {
@@ -700,6 +700,10 @@ namespace eval ::dui {
 		array set aspects {
 			default.page.bg_img {}
 			default.page.bg_color "#d7d9e6"
+			
+			default.dialog_page.bg_shape round
+			default.dialog_page.bg_color "#fff"
+			default.dialog_page.width 0
 			
 			default.font.font_family notosansuiregular
 			default.font.font_size 16
@@ -4034,7 +4038,7 @@ namespace eval ::dui {
 	### PAGE SUB-ENSEMBLE ###
 	namespace eval page {
 		namespace export add current previous exists is_setup is_drawn is_visible type bbox list theme retheme recreate \
-			resize delete get_namespace load show close_dialog add_action actions items has_item \
+			resize delete get_namespace load show open_dialog close_dialog add_action actions items has_item \
 			update_onscreen_variables add_items calc_x calc_y calc_width calc_height
 		namespace ensemble create
 		
@@ -4114,18 +4118,25 @@ namespace eval ::dui {
 			# Parse arguments
 			set pages_data(${page},args) $args
 			set ns [dui::args::get_option -namespace [dui cget create_page_namespaces] 1]
-			set style [dui::args::get_option -style "" 1]
 			set theme [dui::args::get_option -theme [dui theme get] 1]
 			if { ![dui theme exists $theme] } {
-				msg -WARNING [namespace current] "theme '$theme' for pages '$pages' unknown, resorting to 'default'"
+				msg -WARNING [namespace current] add: "theme '$theme' for pages '$pages' unknown, resorting to 'default'"
 				set theme default
 			}
-			set page_type [dui::args::get_option -type "default" 1]	
+			set style [dui::args::get_option -style "" 1]
+			set page_type [dui::args::get_option -type "default" 1]
+			if { $page_type eq "dialog" } {
+				set aspect_type "dialog_page"
+			} else {
+				set aspect_type "page"
+			}
+			
+			dui::args::process_aspects $aspect_type $style
 			set bbox [subst {0 0 [expr {int($::dui::_base_screen_width)}] [expr {int($::dui::_base_screen_height)}]}]
 			set bbox [dui::args::get_option -bbox $bbox 1]
-			set bg_img [dui::args::get_option -bg_img [dui aspect get page bg_img -style $style] 1]
-			set bg_color [dui::args::get_option -bg_color [dui aspect get page bg_color -theme $theme -style $style] 1]
-			set bg_shape [dui::args::get_option -bg_shape [dui aspect get page bg_shape -theme $theme -style $style -default "rect"] 1]
+			set bg_img [dui::args::get_option -bg_img [dui aspect get $aspect_type bg_img -style $style] 1]
+			set bg_color [dui::args::get_option -bg_color [dui aspect get $aspect_type bg_color -theme $theme -style $style] 1]
+			set bg_shape [dui::args::get_option -bg_shape [dui aspect get $aspect_type bg_shape -theme $theme -style $style -default "rect"] 1]
 			
 			# Create "page infrastructure" variables
 			if { [string is true -strict $ns] } {
@@ -4587,15 +4598,6 @@ namespace eval ::dui {
 				msg -WARNING [namespace current] load: "only one dialog page can be visible, can't move from dialog '$page_to_hide' to dialog '$page_to_show'"
 				return
 			}
-			if { $hide_page_type eq "dialog" } {
-				# If the dialog loads a page that is different from the one that opened it, treat it like a normal page
-				# change (hide all items) instead of a dialog closing (hide only the dialog and reenable the background page)
-				if { $page_to_hide ne $previous_page } {
-					array set dialog_states {}
-					set return_callback {}
-					set hide_page_type "default"
-				}
-			}
 			
 			# run general load actions (same for all pages) in the global context. 
 			# If 1 or a string is returned, the loading process continues. 
@@ -4621,7 +4623,6 @@ namespace eval ::dui {
 			
 			#msg "page_display_change $page_to_show"
 			#set start [clock milliseconds]
-
 			set return_callback [dui::args::get_option -return_callback {} 1]
 			set disable_items [string is true [dui::args::get_option -disable_items 1 1]]
 			
@@ -4661,16 +4662,16 @@ namespace eval ::dui {
 			}
 
 			# update current and previous pages. In case the pages are dialogs, "previous_page" contains the stack of open pages
+			set back_from_dialog 0
 			if { $hide_page_type eq "dialog" } {
 				set previous_page [lappend previous_page $page_to_hide]
 				#set dialog_return_cmd [dui::args::get_option -reload 0 1]
+				set back_from_dialog [expr {$page_to_show eq $previous_page}]
 			} elseif { $page_to_hide ne {} } {
 				set previous_page $page_to_hide
 			}
 			set current_page $page_to_show
-			if { [info exists ::de1(current_context)] } {
-				set ::de1(current_context) $page_to_show
-			}
+			set ::de1(current_context) $page_to_show
 
 			# check if page background is an image with delayed loading that requires first-time-use loading now
 			set preload_images [dui cget preload_images]
@@ -4712,15 +4713,25 @@ namespace eval ::dui {
 				$can itemconfigure _dlg_bg -state hidden
 			} 
 			
-			if { $show_page_type ne "dialog" } {
-				# hide all canvas items at once!
-				$can itemconfigure all -state hidden
+			# If there's a set of saved item states, restore them, even if we're not back to the same page, as
+			# Tk widgets disabling is not restored by canvas showing them.
+			if { [array size dialog_states] > 0 } {
+				foreach item [array names dialog_states] {
+					if { [$can type $item] eq "window" } {
+						try {
+							[$can itemcget $item -window] configure -state $dialog_states($item)
+						} on error err {}
+					} 
+					$can itemconfigure $item -state $dialog_states($item)
+				}
+				array unset dialog_states
 			}
-
-			# show page background item first			
+			
+			# If showing a dialog page, store the state of the previous page items so it can be restored afterwards, 
+			# then disable them. If showing a normal page, just hide every single canvas item.
 			if { $show_page_type eq "dialog" } {
 				# Tk widgets always appear on top of any canvas item. So we need to iterate through widgets in the 
-				# background page, disabling those that don't overlap the dialog, and hiding that that do.
+				# background page, disabling those that don't overlap the dialog, and hiding those that do.
 				array set dialog_states {}
 				set hide_page_items [items $page_to_hide]
 				foreach item $hide_page_items {	
@@ -4753,50 +4764,43 @@ namespace eval ::dui {
 				$can raise $page_to_show
 				$can lower _dlg_bg $page_to_show
 				$can itemconfigure _dlg_bg -state normal
-			} 
-			
-			try {
-				# If we restrict to items that have tag 'pages', the screensaver images are not shown.
-				# TODO: Check how the saver is created, maybe that can be taken care off there, as without restricting
-				#	to have the 'pages' tag some unexpected items could eventually appear if user extra tags are 
-				#	used.
-				#$can itemconfigure pages&&$page_to_show -state normal
-				$can itemconfigure $page_to_show -state normal
-			} on error err {
-				msg -ERROR [namespace current] load: "showing page '$page_to_show' background: $err"
-			}
-			
-			# show page items using the "p:<page_name>" tags, unless they have a "st:hidden" tag.
-			# show Tk widgets initially disabled so then don't take the "phantom tap" from the previous page.
-			set items_to_show [items $page_to_show]
-			if { [llength $items_to_show] == 0 } {
-				# If no items to show, very likely the page has not been setup yet (e.g. a dui page in a plugin enabled late in the session)
-				# Try to auto-launch its setup if possible.
-				if { $show_ns ne "" && ![is_setup $page_to_show] } {
-					setup $page_to_show
-					
-					set items_to_show [items $page_to_show]
-					if { [llength $items_to_show] == 0 } {
-						msg -WARNING [namespace current] "page '$page_to_show' has no visual items to show"
-					}
-				} 
-			}
-			if { [llength $items_to_show] == 0 } {
-				msg -WARNING [namespace current] "page '$page_to_show' has no visual items to show"
-			}
-			
-			if { $show_page_type ne "dialog" && $hide_page_type eq "dialog" } {
-				# We only need to restore items to their original states before the dialog was shown
-				foreach item [array names dialog_states] {
-					if { [$can type $item] eq "window" } {
-						try {
-							[$can itemcget $item -window] configure -state $dialog_states($item)
-						} on error err {}
-					} 
-					$can itemconfigure $item -state $dialog_states($item)
-				}
-				array set dialog_states {}
 			} else {
+				# hide all canvas items at once!
+				$can itemconfigure all -state hidden
+			}
+			
+			if { !$back_from_dialog } {
+				# show page background item first
+				try {
+					# If we restrict to items that have tag 'pages', the screensaver images are not shown.
+					# TODO: Check how the saver is created, maybe that can be taken care off there, as without restricting
+					#	to have the 'pages' tag some unexpected items could eventually appear if user extra tags are 
+					#	used.
+					#$can itemconfigure pages&&$page_to_show -state normal
+					$can itemconfigure $page_to_show -state normal
+				} on error err {
+					msg -ERROR [namespace current] load: "showing page '$page_to_show' background: $err"
+				}
+				
+				# show page items using the "p:<page_name>" tags, unless they have a "st:hidden" tag.
+				# show Tk widgets initially disabled so then don't take the "phantom tap" from the previous page.
+				set items_to_show [items $page_to_show]
+				if { [llength $items_to_show] == 0 } {
+					# If no items to show, very likely the page has not been setup yet (e.g. a dui page in a plugin enabled late in the session)
+					# Try to auto-launch its setup if possible.
+					if { $show_ns ne "" && ![is_setup $page_to_show] } {
+						setup $page_to_show
+						
+						set items_to_show [items $page_to_show]
+						if { [llength $items_to_show] == 0 } {
+							msg -WARNING [namespace current] "page '$page_to_show' has no visual items to show"
+						}
+					} 
+				}
+				if { [llength $items_to_show] == 0 } {
+					msg -WARNING [namespace current] "page '$page_to_show' has no visual items to show"
+				}
+			
 				set previous_item $page_to_show
 				foreach item $items_to_show {
 					set item_type [$can type $item]
@@ -4914,11 +4918,13 @@ namespace eval ::dui {
 				return 0
 			}
 			
+			# TODO: Allow anchoring
 			set coords [dui::args::get_option -coords {} 1]
 			if { $coords ne {} } {
 				dui::page::moveto $page {*}$coords
 			}
 			
+			# TODO: Include a -resize argument!
 			dui page load $page {*}$args
 		}
 		
@@ -4931,11 +4937,13 @@ namespace eval ::dui {
 				return 0
 			}
 			
-			if { $return_callback ne {} } {
-				uplevel #0 $return_callback {*}$args
-				#after idle $return_callback {*}$args
-			}
+			set cmd $return_callback
 			dui page show [lindex [previous] end]
+			
+			if { $cmd ne {} } {
+				after idle $cmd {*}$args
+				#uplevel #0 $return_callback {*}$args
+			}
 		}
 		
 		proc add_action { pages event tclcode } {
@@ -5596,6 +5604,11 @@ namespace eval ::dui {
 		proc relocate_text_wrt { page tag wrt { pos w } { xoffset 0 } { yoffset 0 } { anchor {} } { move_too {} } } {
 			set can [dui canvas]
 			set page [lindex $page 0]
+			
+			if { ![dui::page::is_visible $page] } {
+				return
+			}
+			
 			set tag [get $page [lindex $tag 0]]
 			set wrt [get $page [lindex $wrt 0]]
 			lassign [$can bbox $wrt] x0 y0 x1 y1 
@@ -5694,6 +5707,10 @@ namespace eval ::dui {
 			set page [lindex $page 0]
 			set tag [lindex $tag 0]
 			
+			if { ![dui::page::is_visible $page] } {
+				return
+			}
+			
 			lassign [$can bbox [get $page $tag]] x0 y0 x1 y1 
 						
 			set dda_box_id [get $page "${tag}-dda"]
@@ -5754,6 +5771,10 @@ namespace eval ::dui {
 		# dynamically positioned.
 		proc set_yscrollbar_dim { page widget_tag {scrollbar_tag {}} } {
 			set can [dui canvas]
+			if { ![dui::page::is_visible $page] } {
+				return
+			}
+			
 			if { $scrollbar_tag eq "" } {
 				set scrollbar_tag ${widget_tag}-ysb
 			}
