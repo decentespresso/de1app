@@ -35,10 +35,9 @@ proc scale_disable_lcd {} {
 		}
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		
-		set do_this 0
-		if {$do_this == 1} {
-			# disabled the LCD off for Decent Scale, so that we don't give false impression tha the scale is off
-			# ideally in future firmware we can find out if they are on usb power, and disable LEDs if they are
+		if {$::settings(disable_decent_scale_lcd_on_sleep) == 1} {
+			# by default, disabled the LCD off for Decent Scale, so that we don't give false impression tha the scale is off
+			# ideally in future firmware we can find out if they are on usb power, and disable LEDs if they are. until then, disable only if set so in settings
 			decentscale_disable_lcd
 			# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
 			after 500 decentscale_disable_lcd

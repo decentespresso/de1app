@@ -451,6 +451,7 @@ array set ::settings {
 	create_legacy_shotfiles 0
 
 	show_scale_notifications 1
+	disable_decent_scale_lcd_on_sleep 0
 }
 
 # default de1plus skin
