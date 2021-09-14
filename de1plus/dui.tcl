@@ -4480,6 +4480,48 @@ namespace eval ::dui {
 			}
 		}
 		
+		# Moves a dialog page to a new location. Not exported as normally should only be called through open_dialog,
+		# thus ensuring that the background page items are properly disabled/hidden.
+		proc moveto { page x y {anchor nw} } {
+			variable pages_data
+			set can [dui canvas]
+			
+			set page [lindex $page 0]
+			if { [type $page] ne "dialog" } {
+				msg -WARNING [namespace current] moveto: "page '$page' has to be a dialog"
+				return 0
+			}
+			
+			lassign $pages_data($page,bbox) x0 y0 x1 y1
+			if { $x > 0 && $x < 1 } {
+				set x [expr {int($::dui::_base_screen_width*$x)}]
+			}
+			if { $y > 0 && $y < 1 } {
+				set y [expr {int($::dui::_base_screen_height*$y)}]
+			}
+			
+			if { $anchor ne "nw" } {
+				lassign [dui::item::anchor_coords $anchor $x $y [expr {$x1-$x0}] [expr {$y1-$y0}]] x y
+			}
+			
+			set dx [expr {int($x-$x0)}]
+			set dy [expr {int($y-$y0)}]
+			
+			if { $dx != 0 || $dy != 0 } {
+				set pages_data($page,bbox) [subst {$x $y [expr {$x1+$dx}] [expr {$y1+$dy}]}]
+				
+				set dx [dui::platform::rescale_x $dx]
+				set dy [dui::platform::rescale_y $dy]
+				
+				$can move $page $dx $dy 
+				foreach item [items $page] {
+					$can move $item $dx $dy
+				}
+			}
+			
+			return 1
+		}
+		
 		# Not exported as should only be called by other DUI commands
 		proc setup { page } {
 			variable pages_data
@@ -4889,15 +4931,19 @@ namespace eval ::dui {
 		
 		proc show { page_to_show } {
 			load $page_to_show -_run_load_actions no
-		}		
+		}
 
 		# Opens a page of type 'dialog'. 
 		# Named options:
-		#	-coords {x y}: A list with a pair of coordinates that gives the top-left point where the dialog should appear
-		#		on screen, on the base 2560x1600 space. If not defined, the dialog is open on the same position where
-		#		it was open the last time. If it has never been open, that will be the position where it was created.
-		#	-return_callback <proc_name>: The name of a tcl function that will process the parameters returned by the dialog when
-		#		it is closed. This callback function must have arguments that match those returned by the
+		#	-coords {x y}: A list with a pair of coordinates that gives the reference point (see -anchor) where the dialog 
+		#		should appear on screen, on the base 2560x1600 space, or in a percentage of that space (if >0 & <1).  
+		#		If not defined, the dialog is open on the same position where it was open the last time. 
+		#		If it has never been open, that will be the position where it was created.
+		#	-anchor <anchor>: Specifies how the reference point given in -coords should be anchored to, default is "nw".
+		#	-size {width height}: A list with the target width and height of the dialog page, on the base 2560x1600 space 
+		#		or in percentage of that space (if >0 & <1). The dialog page will be resized as needed, by recreating the page.
+		#	-return_callback <proc_name>: The name of a tcl function that will process the parameters returned by the dialog 
+		#		when it is closed. This callback function must have arguments that match those returned by the
 		#		dui::page::close_dialog call in the dialog code. 
 		#		If this is empty, no special processing is done. This can work, for example, if the dialog is used to
 		#		modify a global variable which the calling page reads automatically.
@@ -4906,7 +4952,7 @@ namespace eval ::dui {
 		#		there's a transparent full-screen size rectable on top. Tk widgets are always disabled, otherwise they
 		#		can be clicked as they always appear on top of canvas items.
 		#
-		#	-return_callback and -disable_items are passed to dui::page::load. All other arguments are also passed 
+		#	-return_callback and -disable_items are passed to dui::page::load. All additional arguments are also passed 
 		#		through to dui::page::load, which then passes them to the dialog page load method.
 		proc open_dialog { page args } {
 			if { ![exists $page] } {
@@ -4918,16 +4964,23 @@ namespace eval ::dui {
 				return 0
 			}
 			
-			# TODO: Allow anchoring
+			set dims [dui::args::get_option -size {} 1]
+			if { $dims ne {} } {
+				dui::page::resize $page {*}$dims
+			}
+
 			set coords [dui::args::get_option -coords {} 1]
+			set anchor [dui::args::get_option -anchor "nw" 1]
 			if { $coords ne {} } {
-				dui::page::moveto $page {*}$coords
+				dui::page::moveto $page {*}$coords $anchor
 			}
 			
-			# TODO: Include a -resize argument!
 			dui page load $page {*}$args
 		}
 		
+		# Closes a page of type 'dialog' and returns control to the page that opened the dialog, invoking the return
+		# callback (if it was defined) *AFTER* the previous page is totally loaded and shown. 
+		# Arguments given to dui::page::close_dialog are passed through to the return callback proc.
 		proc close_dialog { args } {
 			variable return_callback
 			
@@ -4942,7 +4995,6 @@ namespace eval ::dui {
 			
 			if { $cmd ne {} } {
 				after idle $cmd {*}$args
-				#uplevel #0 $return_callback {*}$args
 			}
 		}
 		
@@ -5179,46 +5231,13 @@ namespace eval ::dui {
 			return $height
 		}
 		
-		# Moves a dialog page to a new location. Not exported as normally should only be called through open_dialog,
-		# thus ensuring that the background page items are properly disabled/hidden..
-		proc moveto { page x y } {
-			variable pages_data
-			set can [dui canvas]
-			
-			set page [lindex $page 0]
-			if { [type $page] ne "dialog" } {
-				msg -WARNING [namespace current] moveto: "page '$page' has to be a dialog"
-				return 0
-			}
-			
-			lassign $pages_data($page,bbox) x0 y0 x1 y1
-			if { $x > 0 && $x < 1 } {
-				set x [expr {int($::dui::_base_screen_width*$x)}]
-			}
-			if { $y > 0 && $y < 1 } {
-				set y [expr {int($::dui::_base_screen_height*$y)}]
-			}			
-			set dx [expr {$x-$x0}]
-			set dy [expr {$y-$y0}]	
-			set pages_data($page,bbox) [subst {$x $y [expr {$x1+$dx}] [expr {$y1+$dy}]}]
-			
-			set dx [dui::platform::rescale_x $dx]
-			set dy [dui::platform::rescale_y $dy]
-			
-			$can move $page $dx $dy 
-			foreach item [items $page] {
-				$can move $item $dx $dy
-			}
-			
-			return 1
-		}
 		
 	}
 	
 	### ITEMS SUB-ENSEMBLE ###
 	# Items are visual items added to the canvas, either canvas items (text, arcs, lines...) or Tk widgets.
 	namespace eval item {
-		namespace export add get get_widget config cget enable_or_disable enable disable \
+		namespace export add delete get get_widget config cget enable_or_disable enable disable \
 			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection \
 			relocate_text_wrt moveto pages
 		namespace ensemble create
@@ -5243,6 +5262,25 @@ namespace eval ::dui {
 			} else {
 				msg -ERROR [namespace current] add: "no 'dui add $type' command available"
 			}
+		}
+
+		# Deletes items from the canvas. Returns the number of deleted items.
+		proc delete { page_or_ids_or_widgets {tags {}} } {
+			set items [get $page_or_ids_or_widgets $tags]
+			
+			if { [llength $items] > 0 } {
+				set can [dui canvas]
+				
+				foreach item $items {
+					if { [$can type $item] eq "window" } {
+						destroy [$can itemcget $item -window]
+					}
+				}
+				
+				$can delete {*}$items
+			}
+			
+			return [llength $items]
 		}
 		
 		# Canvas items selector using tags. Returns unique item IDs. Use trailing * as in "<tag>*" to return all  
@@ -8884,26 +8922,60 @@ namespace eval ::dui::pages::dui_confirm_dialog {
 	array set widgets {}
 		
 	variable data
-	array set data {}
-
-	proc setup {} {
-		set page [namespace tail [namespace current]]
-		
-		dui add dtext $page 0.5 0.4 -width 0.9 -anchor center -justify center -tags question -text "Are you sure?" 
-		
-		dui add dbutton $page 0.3 0.85 -bwidth 400 -bheight 100 -anchor center -tags yes_btn -shape round \
-			-label [translate {Yes}] -label_pos {0.5 0.5} -command [list ::dui::page::close_dialog "yes"]
-		
-		dui add dbutton $page 0.7 0.85 -bwidth 400 -bheight 100 -anchor center -tags no_btn -shape round \
-			-label [translate {No}] -label_pos {0.5 0.5} -command [list ::dui::page::close_dialog "no"]
+	array set data {
+		n_buttons 0
 	}
 
-	proc load { page_to_hide page_to_show question {yes_text "Yes"} {no_text "No"} args } {
+	proc setup {} {
+		variable data
+		set page [namespace tail [namespace current]]
+		
+		dui add dtext $page 0.5 0.4 -width 0.9 -anchor center -justify center -tags question -style dui_confirm_question -text "Are you sure?" 
+		
+		set data(n_buttons) 0
+		setup_buttons "Yes" "No"
+	}
+
+	proc setup_buttons { args } {
+		variable data
+		variable widgets
+		set page [namespace tail [namespace current]]
+		
+		set n_buttons [llength $args]
+		if { $n_buttons > 5 } {
+			set n_buttons 5
+		}
+		
+		if { $n_buttons == $data(n_buttons) } {
+			for { set i 1 } { $i <= $n_buttons } { incr i } {
+				dui item config $widgets(button${i}-lbl) -text [translate [lindex $args [expr {$i-1}]]]
+			}
+		} else {
+			set i 1
+			while { $i <= 5 && [dui::page::has_item $page button$i] } {
+				dui item delete $page button${i}*
+				incr i
+			}
+		
+			set pwidth [expr {(0.8-($n_buttons-1)*0.05)/$n_buttons}]
+			
+			for { set i 1 } { $i <= $n_buttons } { incr i } {
+				dui add dbutton $page [expr {0.1+(($pwidth+0.05)*($i-1))}] 0.85 -bwidth $pwidth -anchor w \
+					-tags button$i -style dui_confirm_button -bheight 100 -shape round \
+					-label [translate [lindex $args [expr {$i-1}]]] -label_pos {0.5 0.5} \
+					-command [list dui::page::close_dialog $i]
+			}
+			
+			set data(n_buttons) $n_buttons
+		}
+	}
+	
+	proc load { page_to_hide page_to_show question args } {
 		variable widgets
 		
 		dui item config $widgets(question) -text [translate $question]
-		dui item config $widgets(yes_btn-lbl) -text [translate $yes_text]
-		dui item config $widgets(no_btn-lbl) -text [translate $no_text]
+		
+		setup_buttons {*}$args
 		
 		return 1
 	}
