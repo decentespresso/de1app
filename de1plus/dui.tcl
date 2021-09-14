@@ -4619,33 +4619,12 @@ namespace eval ::dui {
 			
 			catch { delay_screen_saver }
 			
-			set page_to_hide [current]
-
-			set reload [dui::args::get_option -reload 0 1]
-			if { $current_page eq $page_to_show && ![string is true $reload] } {
-				#msg -NOTICE [namespace current] load "returning because current_page == $page_to_show"
-				return 
-			}
-			
-			set hide_ns [get_namespace $page_to_hide]
-			set show_ns [get_namespace $page_to_show]
-			
-			if { $page_to_hide eq "" } {
-				set hide_page_type ""
-			} else {
-				set hide_page_type [type $page_to_hide]
-			}
-			set show_page_type [type $page_to_show]
-			if { $show_page_type eq "dialog" && $hide_page_type eq "dialog" } {
-				msg -WARNING [namespace current] load: "only one dialog page can be visible, can't move from dialog '$page_to_hide' to dialog '$page_to_show'"
-				return
-			}
-			
 			# run general load actions (same for all pages) in the global context. 
 			# If 1 or a string is returned, the loading process continues. 
 			# If it's a string that matches a page name, the page to show is changed to that one. 
 			# If 0 is returned, the loading process is interrupted.
 			# Note that this time we don't use [string is true] as "off" is evaluated as boolean...
+			set page_to_hide [current]
 			foreach action [actions {} load] {
 				lappend action $page_to_hide $page_to_show
 				set action_result [uplevel #0 $action]
@@ -4658,6 +4637,26 @@ namespace eval ::dui {
 						set page_to_show $action_result	
 					}
 				}
+			}
+
+			set reload [dui::args::get_option -reload 0 1]
+			if { $current_page eq $page_to_show && ![string is true $reload] } {
+				msg -NOTICE [namespace current] load "returning because current_page == $page_to_show"
+				return 
+			}
+			
+			set hide_ns [get_namespace $page_to_hide]
+			set show_ns [get_namespace $page_to_show]
+			if { $page_to_hide eq "" } {
+				set hide_page_type ""
+			} else {
+				set hide_page_type [type $page_to_hide]
+			}
+			set show_page_type [type $page_to_show]
+			
+			if { $show_page_type eq "dialog" && $hide_page_type eq "dialog" } {
+				msg -WARNING [namespace current] load: "only one dialog page can be visible, can't move from dialog '$page_to_hide' to dialog '$page_to_show'"
+				return
 			}
 			
 			msg [namespace current] load "$page_to_hide -> $page_to_show"
@@ -4923,6 +4922,8 @@ namespace eval ::dui {
 			#msg [namespace current] "Switched to page: $page_to_show [stacktrace]"
 		}
 		
+		# A one-liner to conditionally load a page only if the specified widget is enabled. Useful for commands run
+		# when double-tapping an entry box.
 		proc load_if_widget_enabled { widget args } {
 			if { [$widget cget -state] eq "normal" } {
 				load {*}$args
