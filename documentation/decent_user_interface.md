@@ -77,26 +77,36 @@
   - [dui sound list](#dui_sound_list)  
 - `dui page`
   - [dui page add](#dui_page_add)
+  - [dui page delete](#dui_page_delete)  
   - [dui page theme](#dui_page_theme)
   - [dui page exists](#dui_page_exists)
+  - [dui page type](#dui_page_type)
   - [dui page is_setup](#dui_page_is_setup)
   - [dui page is_drawn](#dui_page_is_drawn)
   - [dui page is_visible](#dui_page_is_visible)
+  - [dui page bbox](#dui_page_bbox)
   - [dui page current](#dui_page_current)
+  - [dui page previous](#dui_page_previous)
   - [dui page list](#dui_page_list)
   - [dui page get_namespace](#dui_page_get_namespace)
   - [dui page load](#dui_page_load)
   - [dui page show](#dui_page_show)
+  - [dui page open_dialog](#dui_page_open_dialog)
+  - [dui page close_dialog](#dui_page_close_dialog)
   - [dui page add_action](#dui_page_add_action)
   - [dui page actions](#dui_page_actions)
-  - [dui page delete](#dui_page_delete)
+  - [dui page recreate](#dui_page_recreate)
   - [dui page retheme](#dui_page_retheme)
+  - [dui page resize](#dui_page_resize)
+  - [dui page moveto](#dui_page_moveto)
   - [dui page items](#dui_page_items)
   - [dui page has_item](#dui_page_has_item)
   - dui page update_onscreen_variables
-  - _Non exported:_  dui::page::setup, dui::page::add_items, dui::page::add_variable.
+  - dui page calc_x, dui page calc_y, dui page calc_width, dui page calc_height
+  - _Non exported:_  dui::page::setup, dui::page::add_items, dui::page::add_variable, dui::page::load_if_widget_enabled.
 - `dui item`
   - [dui item add](#dui_item_add)
+  - [dui item delete](#dui_item_delete)
   - [dui item get](#dui_item_get)
   - [dui item get_widget](#dui_item_get_widget)
   - [dui item pages](#dui_item_pages)
@@ -125,6 +135,7 @@
   - [dui add dtext](#dui_add_dtext)
   - [dui add variable](#dui_add_variable)
   - [dui add image](#dui_add_image)
+  - [dui add shape](#dui_add_shape)
   - [dui add dbutton](#dui_add_dbutton)
   - [dui add dclicker](#dui_add_dclicker)
   - [dui add entry](#dui_add_entry)
@@ -137,7 +148,8 @@
   - [dui add drater](#dui_add_drater)
   - [dui add graph](#dui_add_graph)
 - `dui args`
-  - _Non exported:_  dui::args::add_option_if_not_exists, dui::args::remove_options, dui::args::has_option, dui::args::get_option, dui::args::extract_prefixed, dui::args::process_tags_and_var, dui::args::process_aspects, dui::args::process_font, dui::args::process_label.
+  - _Non exported:_  dui::args::add_option_if_not_exists, dui::args::remove_options, dui::args::has_option, dui::args::get_option, dui::args::extract_prefixed, dui::args::process_tags_and_var, dui::args::process_aspects, dui::args::process_font, 
+dui::args::process_label, dui::args::process_sizes.
 
 
 <a name="objective"></a>
@@ -172,6 +184,7 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 
 * 2021-04-10 – Initial writing by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-04-11 - 2021-07-18 - Rewrite while the API evolves through nightly & beta, by [Enrique Bengoechea](https://github.com/ebengoechea)
+* 2021-09-14 - Update for dialog pages and related changes, by [Enrique Bengoechea](https://github.com/ebengoechea)
 
 <a name="history"></a>
 
@@ -239,7 +252,7 @@ Note that the `add_de1_<type>` commands in use before DUI only tackled the steps
 All others needed to be handled by skin/plugin code, but now are directly provided by the framework.
 
 After the pages and all its visual elements are created, normally during app startup, they are shown during the app lifecycle using the `dui page show <page_name> <args>` command. This will hide all the canvas items of the currently visible page, and show all the canvas items of the new page. Client code can create 
-callbacks that run whenever a specific page is loaded (after the `page show` command is invoked, but before the page is shown), after the page is shown, or when the page is hidden. This can be done by creating standard procs (named `load`, `show` and `hide`) in the page namespace, or by using command `dui page add_action` if page namespaces are not useed.
+callbacks that run whenever a specific page is setup, loaded (after the `page show` command is invoked, but before the page is shown), after the page is shown, or when the page is hidden. This can be done by creating standard procs (named `load`, `show` and `hide`) in the page namespace, or by using command `dui page add_action` if page namespaces are not useed.
 
 <a name="example"></a>
 
@@ -654,14 +667,17 @@ GUI elements are placed into pages. Internally they are all canvas children that
 DUI tracks which elements appear on each page, and shows the right ones when a page is requested to be shown, 
 hiding all others.
 
-Each page is just a background element, which can be either a full-page size image or a colored rectangle. This element
-receives the same label as the page name. Once the page is added, visual items can be added to it at fixed 
-coordinates in a 2560x1600 pixels space. The coordinates and other dimension options are mapped automatically to the 
-current resolution.
-Note that  _only landscape screen/tablet position is supported_ .
+Each page is just a background element, which can be either an image or a colored shape (rectangle, rounded-corners rectangle, etc.)
+This element receives the same label as the page name. Once the page is added, visual items can be added to it at fixed 
+coordinates relative to the page top-left position, in a theorical 2560x1600 pixels space. The coordinates and other dimension options are mapped automatically to the current resolution. Coordinates can be given in pixels (if they are >1) or in percentage from the available space (if they are >=0 and <1). Note that  _only landscape screen/tablet position is supported_ .
 
-Pages and their child elements are normally built during startup (though they can be perfectly defined later, too), 
-then pages are shown or hidden during the app session lifecycle, whenever `dui page show*` commands are used.
+Pages can be of two types. "default" pages occupy the whole screen, whereas "dialog" pages can be smaller, are shown 
+on top of the page that opens them, and normally return control to the page that opened them when they are closed.
+
+Pages and their child elements are normally built during startup, then pages are shown or hidden during the app session 
+lifecycle, whenever `dui page show*` commands are used.
+But if namespace pages are used, there is total freedom to define their life cycle at runtime, as they can be 
+[added](#dui_page_add), [removed](#dui_page_remove) and [recreated](#dui_page_recreate) at any moment.
 
 Each visual item can appear in more than one page, which makes it easy to build sets of similar pages with just some
 differences.
@@ -683,11 +699,11 @@ Although this code style is still supported, it is highly recommended that UI co
 1. Each page namespace contains by default 2 arrays:
 	- The **widgets** array contains handles to all the page visual items, indexed by the first tag name provided in the **-tags** option of each **dui add &lt;type&gt;** command.
 	- The **data** array contains page data. Non-qualified variable names in calls to **dui add &lt;type&gt;** commands 	automatically use data from this array (and auto-set it as necessary), simplifying the **dui add** syntax and promoting usage of namespace variables instead of global variables.
-2. If the page namespace includes commands whose names match the <a href="#page_actions">page events</a> **setup**, **load**, **show**, **hide** and **update_vars**, they are automatically called by DUI at the specific event.
+2. If the page namespace includes commands whose names match the [page events](#page_actions) **setup**, **load**, **show**, **hide** and **update_vars**, they are automatically called by DUI at the specific event.
 
 DUI offers the base namespace **::dui::pages** where page namespaces can be created as children, and uses it as default, but doesn't require you to use it. Any namespace can be used, by declaring it with the **-namespace** option of the <a href="#dui_page_add">dui page add</a> command.
 
-Another advantage of using page namespaces is that pages can be completely rebuilt on the fly, for example to change their aspect to anooher skin. See command <a href="#dui_page_retheme">dui page retheme</a>.
+Another advantage of using page namespaces is that pages can be completely rebuilt on the fly, for example to change their aspect to anooher skin. See commands [dui page recreate](#dui_page_recreate) and [dui page retheme](#dui_page_retheme).
 
 
 <a name="page_actions"></a>
@@ -747,6 +763,10 @@ Takes place whenever the <a href="#dui_add_variable">page variables</a> values a
 
 >Named options: 
 
+>**-type**  _page_type_
+
+> >Defines the type of page, which can be `default` or `dialog`.
+
 >**-theme**  _theme_name_
 
 > >Defines the theme to use for creating all the visual items of the page (during the **setup** actions). Used rarely, as the usual choice is to apply the default options from the current theme. The theme used when creating a page can be queried at any moment with <a href="#dui_page_theme">dui page theme</a>.
@@ -765,7 +785,13 @@ precedence over **-bg_color**.
 
 >**-bg_color**  _color_spec_
 
-> >Uses a full-page solid color rectangle as background, in case no background image is defined.
+> >Background color of the background shape, in case no background image is defined.
+
+>**-bg_shape**  _shape_
+
+> >Background shape that ocuppies the full screen. A rectangle by default, but can be any other shape accepted by
+[dui add shape](#dui_add_shape). Normally only dialog-type pages use a non-rectangular shape, such as a rounded-corners 
+rectangle.
 
 >**-namespace**  _true_false_or_namespace_
 
@@ -775,12 +801,33 @@ If the namespace does not exist, it is created. If the namespace does not alread
 variables, they are created. If this option is not specified, it takes its default value from the DUI configuration 
 variable **create_page_namespaces**.
 
+>**-bbox**  _list_of_4_coordinates_
+
+> >A list {x0 y0 x1 y1} that gives the top-left and bottom-right coordinates of the page bounding-box rectangle.
+Only relevant for pages of type "dialog".
+
+
+<a name="dui_page_delete"></a>
+
+**dui page delete**  _page_name ?keep_data?_
+
+>Deletes page  _page_name_ . All of its canvas items are removed, and its widgets destroyed. 
+
+>set  _keep_data_ to 1 (default is 0) if the page is going to be recreated. This still destroys the canvas items and widgets, but retains the page actions and other data so it's available again when re-creating the page.
+
 
 <a name="dui_page_theme"></a>
 
 **dui page theme**  _default_ 
 
 >Returns the name of the theme used when creating the page. If the page has no namespace (and thus has no theme assigned), returns  _default_ , which, if not specified, is an empty string.
+
+
+<a name="dui_page_type"></a>
+
+**dui page type**  _page_name_
+
+>Returns the type of page  _page_name_ , which can be either "default" or "dialog".
 
 <a name="dui_page_exists"></a>
 
@@ -804,12 +851,28 @@ variable **create_page_namespaces**.
 
 **dui page is_visible**  _page_name_
 
+>Returns whether the requested page is currently visible.
+
+<a name="dui_page_bbox"></a>
+
+**dui page bbox**  _page_name ?rescale?_
+
+>Returns a list with four elements {x0 y0 x1 y1} that give  top-left and bottom-right coordinates of the page current bounding 
+box. This is useful for "dialog" pages, for "default" pages it always returns 2560x1600. If  _rescale_  is 0 (the default case), the coordinates are returned in the base 2560x1600 space, whereas if it is 1, the coordinates are rescaled to the 
+current screen dimensions.
 
 <a name="dui_page_current"></a>
 
 **dui page current**
 
 >Returns the name of the currently visible page.
+
+<a name="dui_page_previous"></a>
+
+**dui page previous**
+
+>Returns the name of the page shown before the current visible page. For pages of type "dialog", this is the background
+page.
 
 
 <a name="dui_page_list"></a>
@@ -832,18 +895,72 @@ variable **create_page_namespaces**.
 
 **dui page show**  _page_name_
 
->Hides the currently visible page and shows the requested page. During this process, the <a href="#page_actions">page actions</a> **load**, **show**, and **hide** are invoked if they exist in the page namespace; if there are explicit page actions matching the same events, they are invoked too. Each of these 3 callbacks is invoked using as 2 first arguments the name of the page to hide and the name of the page to show. All additional arguments in  _args_  are passed through to the page **load** command and/or to the page load actions. Use this to initialize pages with specific data, or for communication between pages, instead of relying on global variables.
+>If  _page_name_  has type=default, hides the currently visible page and shows the requested page. If  _page_name_  has type=dialog, disables the currently visible page elements and shows the requested dialog page on top of it. During this process, the [page actions](#page_actions) **load**, **show**, and **hide** are invoked if they exist in the page namespace; if there are explicit page actions matching the same events, they are invoked too. Each of these 3 callbacks is invoked using as 2 first arguments the name of the page to hide and the name of the page to show. 
 
 >**dui page show** does the same as **dui page load** except that the **load** actions are not invoked. For example, this can be used when returning from a dialog page, when you want to re-show the page that invoked the dialog without re-loading its data.
 
 >If the page to be shown is the same page to be hidden, nothing is done, except if the option **-reload yes** is passed to **dui page load**. This option is useful when a page needs to be reloaded from the same page (for example, to show different data).
+
+>Named options:
+
+>**-reload**  _{boolean}_
+
+> >If  _true/yes/1/on_ , forces reloading the page when the page requested to be loaded is the same as the current one. Default is 0.
+
+>**-return_callback**  _tcl_proc_name_
+
+> >The fully qualified name of a tcl function that will process the parameters returned by the dialog when it is closed by calling [dui page close_dialog](#dui_page_close_dialog) and control is returned to the page that opened the dialog. This callback function must have arguments that match those given to dui::page::close_dialog call in the code. If no return callback is specified, no special processing is done when the dialog is closed. This can work, for example, if the dialog is used to modify a global variable which the calling page reads automatically. This callback is only executed when the dialog returns the the  _same_  page that opened it. If flow leads to a different page, the callback is not run.
+
+>**-disable_items**  _boolean_
+
+> >Whether canvas items in the background page (the one that invoked the dialog) are actually disabled (which may change their aspect) or not when the dialog is shown. Default is 1. Note that this only affects canvas items, Tk widgets are always disabled, or otherwise they would still accept events.
+
+
+>All additional arguments in  _args_  are passed through to the page **load** command and/or to the page load actions. Use this to initialize pages with specific data, or for communication between pages, instead of relying on global variables.
+
+
+<a name="dui_page_open_dialog"></a>
+
+**dui page open_dialog**  _page_name ?-option option_value ...?_
+
+>Open/Load the dialog page  _page_name_ . If  _page_name_  does not have type=dialog, does nothing.
+
+>Named options: 
+
+>**-coords**  _{x y}_
+
+> >2-elements list that provides the [coordinates](#dui_coordinates) where the dialog will be open. By default this is the 
+top-left point (anchor=nw), but this can be changed defining  _anchor_ . If this is not defined, the dialog will
+be open on the same place it was last opened, or, if it has never been loaded, where it was created.
+
+>**-anchor**  _anchor_
+
+> >Defines how the dialog is positioned with respect to the reference coordinates  _{x y}_ . Default is "nw". Valid anchor values are "center", "n", "ne", "nw", "s", "se", "sw", "w", and "e".
+
+>**-size**  _{width height}_
+
+> >2-elements list that provides the size of the dialog. If they are different from the current dialog dimensions, the dialog page will be recreated (deleted and setup again with the new dimensions).
+
+>**-return_callback**  _tcl_proc_name_
+
+> >The fully qualified name of a tcl function that will process the parameters returned by the dialog when it is closed by calling [dui page close_dialog](#dui_page_close_dialog) and control is returned to the page that opened the dialog. This callback function must have arguments that match those given to dui::page::close_dialog call in the code. If no return callback is specified, no special processing is done when the dialog is closed. This can work, for example, if the dialog is used to modify a global variable which the calling page reads automatically. This callback is only executed when the dialog returns the the  _same_  page that opened it. If flow leads to a different page, the callback is not run.
+
+>**-disable_items**  _boolean_
+
+> >Whether canvas items in the background page (the one that invoked the dialog) are actually disabled (which may change their aspect) or not when the dialog is shown. Default is 1. Note that this only affects canvas items, Tk widgets are always disabled, or otherwise they would still accept events.
+
+<a name="dui_page_close_dialog"></a>
+
+**dui page close_dialog**  _?args?_
+
+>Close the current dialog page and return control to the page that originally opened the dialog. If a  _return callback_  was provided on the dialog open call, it is executed  _after_  the dialog is hidden and the original page shown (i.e. after all hide and show actions have occurred). The optional arguments  _args_  are passed to the return callback. Does nothing if the current page doesn't have type=dialog.
 
 
 <a name="dui_page_add_action"></a>
 
 **dui page add_action**  _page_name event tcl_code_
 
->Adds the callback <a href="#page_actions">action</a> in  _tcl_code_  to the specified  _event_  of  _page_ . Possible events are **setup**, **load**, **show**, **hide** and **update_vars**. All added callback actions are run in the order in which they were added.
+>Adds the callback [action](#page_actions) in  _tcl_code_  to the specified  _event_  of  _page_ . Possible events are **setup**, **load**, **show**, **hide** and **update_vars**. All added callback actions are run in the order in which they were added.
 
 >If  _page_name_  is the empty string, the code will be run for  _all_  pages.
 
@@ -851,21 +968,38 @@ variable **create_page_namespaces**.
 
 **dui page actions**  _page_name event_
 
->Returns a list with the tcl code of each action of the specified  _event_  of the given  _page_ . If  _page_name_  is the empty string, returns the actions that are to be run for  _all__ pages.
+>Returns a list with the tcl code of each [action](#page_actions) of the specified  _event_  of the given  _page_ . If  _page_name_  is the empty string, returns the actions that are to be run for  _all__ pages.
 
-<a name="dui_page_delete"></a>
+<a name="dui_page_recreate"></a>
 
-**dui page delete**  _page_name ?keep_data?_
+**dui page recreate**  _page_name ?-option option_value ...?_
 
->Deletes page  _page_name_ . All of its canvas items are removed, and its widgets destroyed. 
+>Deletes page  _page_name_  and recreates it using a (possibly) different set of options. The page is recreated with the
+same set of options used to create it the last time, except those that are defined here, which take precedence.
+This only works with pages that have an associated namespace, as it requires a page **setup** command.
 
->set  _keep_data_ to 1 (default is 0) if the page is going to be recreated. This still destroys the canvas items and widgets, but retains the page actions and other data so it's available again when re-creating the page.
-
-<a name="dui_page_delete"></a>
+<a name="dui_page_retheme"></a>
 
 **dui page retheme**  _page_name new_theme_
 
 >Deletes page  _page_name_  and recreates it using a different theme. This only works with pages that have an associated namespace, as it requires a page **setup** command.
+
+<a name="dui_page_resize"></a>
+
+**dui page resize**  _page_name width height_
+
+>Resizes a [dialog page](#dialog_pages) to a new  _width_  and  _height_ , in the base 2560x1600 space. If  _width_  or
+_height_  are between 0 and 1, they are interpreted as percentages of the base space.
+
+<a name="dui_page_moveto"></a>
+
+**dui page moveto**  _page_name x y ?anchor?_
+
+>Moves a [dialog page](#dialog_pages) to a new position given by coordinates  _x_  and  _y_ , in the base 2560x1600 space. 
+_anchor_  defines how the dialog is positioned with respect to the reference coordinate given by {x y}, and has default
+value "nw". Valid anchor values are "center", "n", "ne", "nw", "s", "se", "sw", "w", and "e".
+If  _x_  or  _y_  are between 0 and 1, they are interpreted as percentages of the base space.
+
 
 <a name="dui_page_items"></a>
 
@@ -1108,9 +1242,21 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >A list with the pages where the item will be shown. The pages must have been declared previously using  **dui page add**. Note that adding an item to several pages does not duplicate the item. Only one instance of each visual item will be created, and that instance will be shown or hidden as relevant for the current visible page.
 
+<a name="dui_coordinates"></a>
+
 **{coords}**
 
->Normally the **x** and **y** coordinates where the item must be placed, in a 2560x1600 pixels space that will be mapped to the actual resolution in use. Some items like canvas lines or rectangles may take additional coordinates. 
+>The **x** and **y** coordinates where the item must be placed. Some items like canvas lines or rectangles may take additional coordinates. 
+>The coordinates can be given in two ways:
+
+>1. If their value is zero or greater or equal to 1, they are interpreted as relative locations with respect to the page top-left
+coordinate in a 2650x1600 pixels space, and are mapped internally to the actual resolution in use. In standard pages that
+occupy the full screen, the top-left coordinate is always {0 0}, but dialog pages are smaller than the screen and can be
+positioned anywhere, so the coordinates in that case are relative to the dialog top-left position.
+
+>2. If their value is greater than 0 and smaller than 1, they are interpreted as percentages of the available width or height,
+that is the width or height of the page they are placed in.
+
 >Note that canvas items and widgets must be placed in fixed locations, unlike other geometry managers like [grid](https://www.tcl.tk/man/tcl8.6/TkCmd/grid.htm). While this works great in most DE1 app pages, it's not ideal under some circunstances. Most notable is when using text-based data input, as the dimensions of entries or listboxes widgets are defined in number of characters (which are font-dependent) and not in pixels, and other widgets must be placed on their right or bottom sides. A few workarounds for these cases are:
 >1. Use pixel instead of character dimensions, using the **-canvas_width** and **-canvas_height** options instead of the **-width** and **-height** options of widgets like entries and listboxes.
 >2. Reposition items relative to others dynamically, using procs such as the (non exported) **::dui::item::relocate_text_wrt** or **::dui::item::set_yscrollbar_dim**. Because the actual dimensions of items are not accessible until the page is painted for the first time, these must be called on the page **show** command or **show** event action.
@@ -1241,7 +1387,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add dtext**  _pages x y ?-option value ...?_
 
->Create a text label and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a text label and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >Non-DUI options are passed-through to [canvas create text](https://www.tcl-lang.org/man/tcl/TkCmd/canvas.htm#M156).
 
@@ -1254,7 +1400,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add variable**  _pages x y ?-option value ...?_
 
->Create a text label whose contents are updated dynamically and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a text label whose contents are updated dynamically and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >Non-DUI options are passed-through to [canvas create text](https://www.tcl-lang.org/man/tcl/TkCmd/canvas.htm#M156).
 
@@ -1274,7 +1420,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add image**  _pages x y filename ?-option value ...?_
 
->Create an image from a file and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create an image from a file and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >If  _filename_  doesn't specify the full path, the image is searched for sequentially in subfolder &lt;screen_size_width&gt;x&lt;screen_size_height&gt; of each of the image directories added with **dui add image_dirs** until a match is found. If not found, it is then searched in the subfolder for the base screen resolution &lt;1280x1600&gt; and, if found, rescaled on the fly to the target screen resolution. The rescaled image is saved so next time it is just read from disk.
 
@@ -1284,12 +1430,32 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >Images are actually loaded from their files either at setup time or at page load time (the first time a page that contains the image is shown). Use the second option to reduce app startup time. This is controlled by the DUI configuration setting **preload_images**.
 
+<a name="dui_add_shape"></a>
+
+**dui add shape**  _shape pages x y ?x1 y1? ?-option value ...?_
+
+>Create a canvas shape and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x y}_ . 
+>These shapes can be ovals, rectangles or rounded-corners rectangles, and are normally used to enclose other elements
+like buttons or dialog pages.
+>  _shape_  can take any of the following values:
+
+> >-**rect**: A rectangle. This accepts as formatting options those taken by **canvas create rect**.
+
+> >-**oval**: An oval. This accepts as formatting options those taken by **canvas create oval**.
+
+> >-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and **-radius** (determines how "round" the rectangle corners are).
+
+> >-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-arc_offset** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border). When using DUI styles it may sometimes be necessary to explicitly set **-fill {}** so it's not inherited from parent (such as "dbutton") defaults.
+
+> >-**round_outline**: A rounded-corners rectangle with a visible outline border which, unlike **outline**, can be filled with a color different from the background. This is actually built overlapping a "round" shape and an "outline" shape. It accepts as formatting options **-fill** (fill color), **-disabledfill** (fill color when disabled), **-outline** (color of the outline), **-disabledoutline** (color of the outline when the shape is disabled), **-radius** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border).
+
+>Return a list with the canvas IDs of all the canvas items that conform the shape.
 
 <a name="dui_add_dbutton"></a>
 
 **dui add dbutton**  _pages x y ?x1 y1? ?-option value ...?_
 
->Create a "dui button" (a rectangular "clickable" area) from canvas primitive shapes and add it to the requested  _pages_  at coordinates  _{x y}_ . 
+>Create a "dui button" (a rectangular "clickable" area) from canvas primitive shapes and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x y}_ . 
 
 >The button background can be invisible (if no options are provided) or it can have different shapes depending on the **-shape** option. 
 
@@ -1313,27 +1479,16 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 >**-bheight**  _height_
 
-> >Normally button dimensions are defined giving the rectangle top-left coordinates  _{x y}_  and bottom-down coordinates  _{x1 y1}_ , but  _{x1 y1}_  can be replaced by named options **-bwidth** and **-bheight**. This is most often used for defining a dbutton style for buttons that are always the same size.  _width_  and  _height_  must be pixel sizes in a 2560x1600 screen, and they are transformed automatically to the actual resolution.
+> >Normally button dimensions are defined giving the rectangle top-left [coordinates](#dui_coordinates)  _{x y}_  and bottom-down coordinates  _{x1 y1}_ , but  _{x1 y1}_  can be replaced by named options **-bwidth** and **-bheight**. This is most often used for defining a dbutton style for buttons that are always the same size.  _width_  and  _height_  must be pixel sizes in a 2560x1600 screen, and they are transformed automatically to the actual resolution.
 
 >**-anchor**  _anchor_value_
 
-> >If  _x1_  and  _y1_  are not defined (so, **-bwidth** and **-bheight** are used),  _anchor_value_  defines the alignment of the dbutton with respect to the coordinates  _{x y}_ . Anchor valid values are center, n, ne, nw, s, se, sw, w, and e. Default is "nw" (i.e.  _{x y}_  are the top-left coordinates).
+> >If  _x1_  and  _y1_  are not defined (so, **-bwidth** and **-bheight** are used),  _anchor_value_  defines the alignment of the dbutton with respect to the coordinates  _{x y}_ . Anchor valid values are "center", "n", "ne", ""nw", "s", "se", "sw", "w", and "e". Default is "nw" (i.e.  _{x y}_  are the top-left coordinates).
 
 >**-shape**  _shape_
 
-> >Shape determines how the background button should be painted, and it accepts the following values:
-
-> >-empty string: no background / invisible clickable area.
-
-> >-**rect**: A rectangle. This accepts as formatting options those taken by **canvas create rect**.
-
-> >-**oval**: An oval. This accepts as formatting options those taken by **canvas create oval**.
-
-> >-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and **-radius** (determines how "round" the rectangle corners are).
-
-> >-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-arc_offset** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border). When using DUI styles it may sometimes be necessary to explicitly set **-fill {}** so it's not inherited from dbutton defaults.
-
-> >-**round_outline**: A rounded-corners rectangle with a visible outline border which, unlike **outline**, can be filled with a color different from the background. This is actually built overlapping a "round" dbutton and an "outline" dbutton. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled), **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-radius** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border).
+> >Shape determines how the background button should be painted. It can be an empty string (for no background / 
+invisible clickable area) or any of the shape values accepted by [dui add shape](#dui_add_shape).
 
 >**-command**  _tcl_code_
 > >Callback Tcl code to run when the button is clicked. When the page has a namesapce, if a plain name is used (only letters, numbers and underscores) and the namespace has a command with that name, it is used. If not specified and the page namespace has a command with the same number as the main tag, it is used.
@@ -1342,7 +1497,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 > >**%NS**: The page namespace, if defined.
 
-> >**%x0, %y0, %x1, %y1**: top-left and botton-right coordinates of the button rectangle.
+> >**%x0, %y0, %x1, %y1**: top-left and botton-right [coordinates](#dui_coordinates) of the button rectangle.
 
 >**-label**  _text_
 
@@ -1458,7 +1613,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add entry**  _pages x y ?-option value ...?_
 
->Create a text entry Tk widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a text entry Tk widget and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >Return the pathname of the entry widget. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
@@ -1535,7 +1690,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add multiline_entry**  _pages x y ?-option value ...?_
 
->Create a multiline text entry Tk widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a multiline text entry Tk widget and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >The multiline entry widget is [a simplified version of the text widget](https://wiki.tcl-lang.org/page/Multi-Line+Entry+Widget+in+Snit).
 
@@ -1586,7 +1741,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add text**  _pages x y ?-option value ...?_
 
->Create a Tk text widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a Tk text widget and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >Return the pathname of the Text widget. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
@@ -1631,7 +1786,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add listbox**  _pages x y ?-option value ...?_
 
->Create a listbox Tk widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a listbox Tk widget and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >Return the pathname of the listbox widget. The command also adds (if applicable) the following named tags to the canvas, and the same keys in the widgets page namespace array: 
 
@@ -1679,7 +1834,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add dcheckbox**  _pages x y ?-option value ...?_
 
->Create a "dui checkbox" widget and add it to the requested  _pages_  at coordinates  _{x y}_ . 
+>Create a "dui checkbox" widget and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x y}_ . 
 
 >This widget consists of a Fontawesome symbol variable with the actual clickable checkbox plus a text label. 
 
@@ -1711,7 +1866,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add scale**  _pages x y ?-option value ...?_
 
->Create a Tk scale widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a Tk scale widget and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >Non-DUI options are passed-through to the [scale create](https://www.tcl-lang.org/man/tcl/TkCmd/scale.htm) command.
 
@@ -1720,7 +1875,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add dscale**  _pages x y ?-option value ...?_
 
->Create a "dui scale" widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a "dui scale" widget and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >This scale offers a more modern looking aspect than Tk scales, and is built using canvas primitives (lines, circles and text). Most of its options receive the same names as the Tk scale widget options, though **-n_decimals** is used instead of **-digits**.
 
@@ -1838,7 +1993,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add drater**  _pages x y ?-option value ...?_
 
->Create a "dui rater" widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . 
+>Create a "dui rater" widget and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . 
 
 >The "drater" allows to rate something by assining it a number of stars (or other symbol). It can map to any integer variable, and allows as an option to use half-stars.
 
@@ -1895,7 +2050,7 @@ A few **dui add** commands just offer convenience shorthands to other commands, 
 
 **dui add graph**  _pages x y ?-option value ...?_
 
->Create a BLT graph widget and add it to the requested  _pages_  at coordinates  _{x, y}_ . Returns the created command name. Non-DUI options are passed-through to the [BLT graph](http://blt.sourceforge.net/) command.
+>Create a BLT graph widget and add it to the requested  _pages_  at [coordinates](#dui_coordinates)  _{x, y}_ . Returns the created command name. Non-DUI options are passed-through to the [BLT graph](http://blt.sourceforge.net/) command.
 
 >Most configuration of BLT graphs is not done in the **dui add graph** command, but through subcommands of the created widget, so you need to get the reference to the graph widget. This is returned from the call, can be retrieved by DUI using the page and tag, or, if using page namespaces, from the `widgets` namespace array. Like this:
 
