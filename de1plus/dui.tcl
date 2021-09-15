@@ -4083,6 +4083,8 @@ namespace eval ::dui {
 		#  -style to apply the default aspects of the provided style
 		#  -bg_img background image file to use
 		#  -bg_color background color to use, in case no background image is defined
+		#  -bg_shape the shape to use as background, if -bg_img is not defined. Default is rectangle, but can take any
+		#		other as accepted by 'dui add shape'.
 		#  -skin passed to ::add_de1_page if necessary
 		#  -namespace either a value that can be a boolean, or a list of namespaces names.
 		#		If the option is not specified, uses ::dui::create_page_namespaces as default. Then:
@@ -4095,7 +4097,6 @@ namespace eval ::dui {
 		#  -type: the type of the page, either "default" or "dialog". 
 		#  -bbox: for pages with type=dialog, the initial bounding box coordinates {x0 y0 x1 y1} of the dialog rectangle.
 		#		If not specified for a dialog-type page, it defaults to full page.
-		# TODO -style/-shape
 		
 		proc add { pages args } {
 			variable pages_data
@@ -4943,7 +4944,7 @@ namespace eval ::dui {
 		#	-anchor <anchor>: Specifies how the reference point given in -coords should be anchored to, default is "nw".
 		#	-size {width height}: A list with the target width and height of the dialog page, on the base 2560x1600 space 
 		#		or in percentage of that space (if >0 & <1). The dialog page will be resized as needed, by recreating the page.
-		#	-return_callback <proc_name>: The name of a tcl function that will process the parameters returned by the dialog 
+		#	-return_callback <proc_name>: Fully qualified name of a tcl function that will process the parameters returned by the dialog 
 		#		when it is closed. This callback function must have arguments that match those returned by the
 		#		dui::page::close_dialog call in the dialog code. 
 		#		If this is empty, no special processing is done. This can work, for example, if the dialog is used to
