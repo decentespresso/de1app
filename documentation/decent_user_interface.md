@@ -77,7 +77,7 @@
   - [dui sound list](#dui_sound_list)  
 - `dui page`
   - [dui page add](#dui_page_add)
-  - [dui page delete](#dui_page_delete)  
+  - [dui page delete](#dui_page_delete)
   - [dui page theme](#dui_page_theme)
   - [dui page exists](#dui_page_exists)
   - [dui page type](#dui_page_type)
@@ -184,7 +184,7 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 
 * 2021-04-10 – Initial writing by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-04-11 - 2021-07-18 - Rewrite while the API evolves through nightly & beta, by [Enrique Bengoechea](https://github.com/ebengoechea)
-* 2021-09-14 - Update for dialog pages and related changes, by [Enrique Bengoechea](https://github.com/ebengoechea)
+* 2021-09-16 - Update for dialog pages and related changes, by [Enrique Bengoechea](https://github.com/ebengoechea)
 
 <a name="history"></a>
 
@@ -671,8 +671,23 @@ Each page is just a background element, which can be either an image or a colore
 This element receives the same label as the page name. Once the page is added, visual items can be added to it at fixed 
 coordinates relative to the page top-left position, in a theorical 2560x1600 pixels space. The coordinates and other dimension options are mapped automatically to the current resolution. Coordinates can be given in pixels (if they are >1) or in percentage from the available space (if they are >=0 and <1). Note that  _only landscape screen/tablet position is supported_ .
 
-Pages can be of two types. "default" pages occupy the whole screen, whereas "dialog" pages can be smaller, are shown 
-on top of the page that opens them, and normally return control to the page that opened them when they are closed.
+There are 3 types of pages, and this is defined in the [dui page add](#dui_page_add) command:
+
+1. `default`: standard pages that occupy the whole screen. They're "independent pages" in the sense that the previous
+page stack that led to them is not kept.
+
+2. `dialog`: pages that don't occupy the whole screen, i.e. they are shown on top of the page that opens them. By default,
+when a dialog is closed it returns control to the page that launched it. The DUI framework keeps a stack of open dialogs 
+and returns control to the previous page when a dialog is closed, executing an optional return callback for communication
+between pages. Nevertheless, dialogs are not really modal windows, as there are several circumstances that divert the flow
+to a page different to the one that opened the dialog: when a GHC command is started; when the machine ends initial 
+heating; or when the screensaver is triggered. Programmers must take this into account and properly persist relevant 
+information for when these cases arise. The "hide" [page action](#page_actions) is very useful for taking care of this
+situation.
+
+3. `fpdialog` (full page dialog): pages that occupy the whole screen like "default" pages, but that behave like 
+"dialog" pages in their workflow.
+
 
 Pages and their child elements are normally built during startup, then pages are shown or hidden during the app session 
 lifecycle, whenever `dui page show*` commands are used.
@@ -765,7 +780,7 @@ Takes place whenever the <a href="#dui_add_variable">page variables</a> values a
 
 >**-type**  _page_type_
 
-> >Defines the type of page, which can be `default` or `dialog`.
+> >Defines the type of page, which can be `default`, `dialog` or `fpdialog` (full page dialog).
 
 >**-theme**  _theme_name_
 
@@ -827,7 +842,7 @@ Only relevant for pages of type "dialog".
 
 **dui page type**  _page_name_
 
->Returns the type of page  _page_name_ , which can be either "default" or "dialog".
+>Returns the type of page  _page_name_ , which can be either "default", "dialog" or "fpdialog" (full page dialog).
 
 <a name="dui_page_exists"></a>
 
@@ -858,8 +873,8 @@ Only relevant for pages of type "dialog".
 **dui page bbox**  _page_name ?rescale?_
 
 >Returns a list with four elements {x0 y0 x1 y1} that give  top-left and bottom-right coordinates of the page current bounding 
-box. This is useful for "dialog" pages, for "default" pages it always returns 2560x1600. If  _rescale_  is 0 (the default case), the coordinates are returned in the base 2560x1600 space, whereas if it is 1, the coordinates are rescaled to the 
-current screen dimensions.
+box. This is useful for "dialog" pages, for "default" and "fpdialog" pages it always returns 2560x1600. 
+If  _rescale_  is 0 (the default case), the coordinates are returned in the base 2560x1600 space, whereas if it is 1, the coordinates are rescaled to the current screen dimensions.
 
 <a name="dui_page_current"></a>
 
@@ -871,8 +886,8 @@ current screen dimensions.
 
 **dui page previous**
 
->Returns the name of the page shown before the current visible page. For pages of type "dialog", this is the background
-page.
+>If the current page has type "dialog" or "fpdialog", returns the name of the page that launched the current dialog. 
+If the current page hast type "default", returns an empty string.
 
 
 <a name="dui_page_list"></a>
@@ -895,7 +910,7 @@ page.
 
 **dui page show**  _page_name_
 
->If  _page_name_  has type=default, hides the currently visible page and shows the requested page. If  _page_name_  has type=dialog, disables the currently visible page elements and shows the requested dialog page on top of it. During this process, the [page actions](#page_actions) **load**, **show**, and **hide** are invoked if they exist in the page namespace; if there are explicit page actions matching the same events, they are invoked too. Each of these 3 callbacks is invoked using as 2 first arguments the name of the page to hide and the name of the page to show. 
+>If  _page_name_  has type=default or type=fpdialog, hides the currently visible page and shows the requested page. If  _page_name_  has type=dialog, disables the currently visible page elements and shows the requested dialog page on top of it. During this process, the [page actions](#page_actions) **load**, **show**, and **hide** are invoked if they exist in the page namespace; if there are explicit page actions matching the same events, they are invoked too. Each of these 3 callbacks is invoked using as 2 first arguments the name of the page to hide and the name of the page to show. 
 
 >**dui page show** does the same as **dui page load** except that the **load** actions are not invoked. For example, this can be used when returning from a dialog page, when you want to re-show the page that invoked the dialog without re-loading its data.
 
@@ -923,7 +938,7 @@ page.
 
 **dui page open_dialog**  _page_name ?-option option_value ...?_
 
->Open/Load the dialog page  _page_name_ . If  _page_name_  does not have type=dialog, does nothing.
+>Open/Load the dialog page  _page_name_ . If  _page_name_  does not have type=dialog or type=fpdialog (full page dialog), does nothing.
 
 >Named options: 
 
@@ -953,7 +968,7 @@ be open on the same place it was last opened, or, if it has never been loaded, w
 
 **dui page close_dialog**  _?args?_
 
->Close the current dialog page and return control to the page that originally opened the dialog. If a  _return callback_  was provided on the dialog open call, it is executed  _after_  the dialog is hidden and the original page shown (i.e. after all hide and show actions have occurred). The optional arguments  _args_  are passed to the return callback. Does nothing if the current page doesn't have type=dialog.
+>Close the current dialog page and return control to the page that originally opened the dialog. If a  _return callback_  was provided on the dialog open call, it is executed  _after_  the dialog is hidden and the original page is shown (i.e. after all hide and show actions have occurred). The optional arguments  _args_  are passed to the return callback. Does nothing if the current page doesn't have type=dialog or type=fpdialog (full page dialog).
 
 
 <a name="dui_page_add_action"></a>
@@ -988,14 +1003,14 @@ This only works with pages that have an associated namespace, as it requires a p
 
 **dui page resize**  _page_name width height_
 
->Resizes a [dialog page](#dialog_pages) to a new  _width_  and  _height_ , in the base 2560x1600 space. If  _width_  or
+>Resizes a [dialog page](#pages) to a new  _width_  and  _height_ , in the base 2560x1600 space. If  _width_  or
 _height_  are between 0 and 1, they are interpreted as percentages of the base space.
 
 <a name="dui_page_moveto"></a>
 
 **dui page moveto**  _page_name x y ?anchor?_
 
->Moves a [dialog page](#dialog_pages) to a new position given by coordinates  _x_  and  _y_ , in the base 2560x1600 space. 
+>Moves a [dialog page](#pages) to a new position given by coordinates  _x_  and  _y_ , in the base 2560x1600 space. 
 _anchor_  defines how the dialog is positioned with respect to the reference coordinate given by {x y}, and has default
 value "nw". Valid anchor values are "center", "n", "ne", "nw", "s", "se", "sw", "w", and "e".
 If  _x_  or  _y_  are between 0 and 1, they are interpreted as percentages of the base space.
