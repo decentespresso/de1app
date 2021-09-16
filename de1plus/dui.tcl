@@ -370,9 +370,9 @@ namespace eval ::dui {
 		$can bind _dlg_bg <Double-Button-1> {break}
 		
 		# Launch setup methods of pages created with 'dui add page'
-		dui page add dui_number_editor -namespace true -theme default
-		dui page add dui_item_selector -namespace true -theme default
-		dui page add dui_confirm_dialog -namespace true -theme default -type dialog -bbox {680 500 1880 1100}
+		dui page add dui_number_editor -namespace true -type fpdialog -theme default
+		dui page add dui_item_selector -namespace true -type fpdialog -theme default
+		dui page add dui_confirm_dialog -namespace true -type dialog -theme default -bbox {680 500 1880 1100}
 		
 		set applied_ns {}
 		foreach page [page list] {
@@ -4063,6 +4063,14 @@ namespace eval ::dui {
 		variable dialog_states
 		array set dialog_states {}
 		
+		# Use a dictionary to store the current pages stack when dialogs are shown, to allow for several dialogs.
+		# The first element in the stack should always be a non-dialog page. If a non-dialog page is loaded,
+		# the stack is cleared and the new non-dialog page is the new first item. As dialogs (either type=dialog or
+		# type=fpdialog) are loaded, they are addded on top of the stack.
+		# Stack keys are the page names. Stack values store the return callback. 
+		variable page_stack
+		set page_stack [dict create]
+
 		# A cache to only update variables whose values have actually changed. 
 		variable variables_cache
 		array set variables_cache {}
@@ -4130,6 +4138,10 @@ namespace eval ::dui {
 				set aspect_type "dialog_page"
 			} else {
 				set aspect_type "page"
+				if { $page_type ne "default" && $page_type ne "fpdialog" } {
+					msg -WARNING [namespace current] add: "page type '$page_type' not supported, assuming 'default'"
+					set page_type "default"
+				}
 			}
 			
 			dui::args::process_aspects $aspect_type $style
@@ -4166,7 +4178,7 @@ namespace eval ::dui {
 							if { ![info exists ${page_ns}::data] } {
 								namespace eval $page_ns {
 									variable data
-									array set $data {}
+									array set data {}
 								}
 							}
 							if { ![info exists ${page_ns}::widgets] } {
@@ -4245,8 +4257,15 @@ namespace eval ::dui {
 		}
 
 		proc previous {} {
-			variable previous_page
-			return $previous_page
+#			variable previous_page
+#			return $previous_page
+			variable page_stack
+			
+			if { [dict size $page_stack] > 1 } {
+				return [lindex [dict keys $page_stack] end-1]
+			} else {
+				return {}
+			}
 		}
 		
 		proc exists { page } {
@@ -4616,8 +4635,9 @@ namespace eval ::dui {
 			variable pages_data
 			variable return_callback
 			variable dialog_states
+			variable page_stack
 			set can [dui canvas]
-			
+msg "LOAD $page_to_show, args=$args"
 			catch { delay_screen_saver }
 			
 			# run general load actions (same for all pages) in the global context. 
@@ -4655,11 +4675,10 @@ namespace eval ::dui {
 			}
 			set show_page_type [type $page_to_show]
 			
-			if { $show_page_type eq "dialog" && $hide_page_type eq "dialog" } {
-				msg -WARNING [namespace current] load: "only one dialog page can be visible, can't move from dialog '$page_to_hide' to dialog '$page_to_show'"
-				return
-			}
-			
+#			if { $show_page_type eq "dialog" && $hide_page_type eq "dialog" } {
+#				msg -WARNING [namespace current] load: "only one dialog page can be visible, can't move from dialog '$page_to_hide' to dialog '$page_to_show'"
+#				return
+#			}			
 			msg [namespace current] load "$page_to_hide -> $page_to_show"
 			dui sound make page_change
 			
@@ -4703,6 +4722,26 @@ namespace eval ::dui {
 				}
 			}
 
+			# Handle page stack
+msg "CHANGING PAGE FROM '$page_to_hide' to '$page_to_show', show_page_type=$show_page_type, return_callback=$return_callback"			
+			if { $show_page_type eq "default" } {
+				set page_stack [dict create $page_to_show {}]
+			} else {
+				# If the page to show was already in the stack, remove any page after it.
+				set show_stack_idx [lsearch [dict keys $page_stack] $page_to_show]
+				if { $show_stack_idx > -1 } {
+					if { $show_stack_idx < [dict size $page_stack] } {
+						dict unset page_stack {*}[lrange [dict keys $page_stack] [expr {$show_stack_idx+1}] end]
+					}
+					set page_stack [dict replace $page_stack $page_to_show $return_callback]
+				} else {
+					dict set page_stack $page_to_show $return_callback
+				}
+				#{ $show_page_type eq "dialog" || $show_page_type eq "fpdialog" }
+				
+			}
+msg "CHANGING PAGE FROM '$page_to_hide' to '$page_to_show', page_stack=$page_stack"
+			
 			# update current and previous pages. In case the pages are dialogs, "previous_page" contains the stack of open pages
 			set back_from_dialog 0
 			if { $hide_page_type eq "dialog" } {
@@ -4961,7 +5000,8 @@ namespace eval ::dui {
 				msg -WARNING [namespace current] open_dialog: "page '$page' does not exist"
 				return 0
 			}
-			if { [type $page] ne "dialog" } {
+			set page_type [type $page] 
+			if { $page_type ne "dialog" && $page_type ne "fpdialog" } {
 				msg -WARNING [namespace current] open_dialog: "page '$page' is not a dialog"
 				return 0
 			}
@@ -4984,19 +5024,32 @@ namespace eval ::dui {
 		# callback (if it was defined) *AFTER* the previous page is totally loaded and shown. 
 		# Arguments given to dui::page::close_dialog are passed through to the return callback proc.
 		proc close_dialog { args } {
-			variable return_callback
+			#variable return_callback
+			variable page_stack
 			
 			set page [current]
-			if { [type $page] ne "dialog" } {
+			set page_type [type $page]
+			if { $page_type ne "dialog" && $page_type ne "fpdialog" } {
 				msg -WARNING [namespace current] close_dialog: "page '$page' is not a dialog"
 				return 0
 			}
 			
-			set cmd $return_callback
-			dui page show [lindex [previous] end]
-			
-			if { $cmd ne {} } {
-				after idle $cmd {*}$args
+			#set cmd $return_callback
+
+			set previous_page [previous]
+			if { $previous_page eq {} } {
+				msg -WARNING [namespace current] close_dialog: "no previous page to return to"
+				dui page load off
+				return 0
+			} else {
+				set return_callback [dict get $page_stack $page]
+				dui page show $previous_page
+
+				if { $return_callback ne {} } {
+					after idle $return_callback $args
+				}
+					
+				return 1
 			}
 		}
 		
@@ -8333,9 +8386,7 @@ namespace eval ::dui::pages::dui_number_editor {
 	array set widgets {}
 		
 	variable data
-	array set data {		
-		previous_page {}
-		callback_cmd {}
+	array set data {
 		page_title {}
 		num_variable {}
 		value {}
@@ -8354,7 +8405,6 @@ namespace eval ::dui::pages::dui_number_editor {
 		set page [namespace tail [namespace current]]
 		
 		# Page and title
-		#dui page add $page -namespace 1
 		dui add variable $page 1280 100 -tags page_title -style page_title
 		
 		# Insight-style background shapes
@@ -8456,9 +8506,7 @@ namespace eval ::dui::pages::dui_number_editor {
 			set $num_variable ""
 		}
 		
-		set data(previous_page) $page_to_hide
-				
-		set fields {page_title callback_cmd previous_values default min max n_decimals smallincrement bigincrement}
+		set fields {page_title previous_values default min max n_decimals smallincrement bigincrement}
 		foreach fn $fields {
 			set data($fn) [ifexists opts(-$fn)]
 		}
@@ -8503,7 +8551,9 @@ namespace eval ::dui::pages::dui_number_editor {
 	proc set_value { new_value } {
 		variable data
 		if { $new_value ne "" } {
-			if { $new_value != 0 } { set new_value [string trimleft $new_value 0] } 
+			if { $new_value != 0 } { 
+				set new_value [string trimleft $new_value 0] 
+			} 
 			set new_value [format [value_format] $new_value]
 		}
 		set data(value) $new_value
@@ -8608,12 +8658,13 @@ namespace eval ::dui::pages::dui_number_editor {
 	}
 	
 	proc page_cancel {} {
-		variable data
-		if { $data(callback_cmd) ne "" } {
-			$data(callback_cmd) {}
-		} else {
-			dui page show $data(previous_page)
-		}
+		dui page close_dialog {}
+#		variable data
+#		if { $data(callback_cmd) ne "" } {
+#			$data(callback_cmd) {}
+#		} else {
+#			dui page show $data(previous_page)
+#		}
 	}
 	
 	proc page_done {} {
@@ -8635,11 +8686,7 @@ namespace eval ::dui::pages::dui_number_editor {
 			set $data(num_variable) $data(value)
 		}
 		
-		if { $data(callback_cmd) ne "" } {
-			$data(callback_cmd) $data(value)
-		} else {
-			dui page show $data(previous_page)
-		}
+		dui page close_dialog $data(value)
 	}
 }
 
@@ -8652,8 +8699,6 @@ namespace eval ::dui::pages::dui_item_selector {
 	# directly add to it, and it may contain a filtered version of "item_values".	
 	variable data
 	array set data {
-		previous_page {}
-		callback_cmd {}
 		page_title {}
 		variable {} 
 		item_type {}
@@ -8673,7 +8718,6 @@ namespace eval ::dui::pages::dui_item_selector {
 		set font_size +1
 		
 		# Page and title
-		#dui page add $page -namespace 1
 		dui add variable $page 1280 100 -tags page_title -style page_title
 		
 		# Insight-style background shapes
@@ -8724,11 +8768,6 @@ namespace eval ::dui::pages::dui_item_selector {
 		variable widgets
 		array set opts $args
 
-		if { $page_to_hide eq "" } {
-			msg -WARN [namespace current] load "NO PAGE TO HIDE"
-		}
-		set data(previous_page) $page_to_hide
-		
 		if { [info exists opts(-theme)] } {
 			dui page retheme $page_to_show $opts(-theme)
 		}
@@ -8746,7 +8785,7 @@ namespace eval ::dui::pages::dui_item_selector {
 		set data(item_ids) [ifexists opts(-values_ids)]
 		set data(item_values) $values		
 		set data(item_type) [ifexists opts(-category_name)]
-		set data(callback_cmd) [ifexists opts(-callback_cmd)]
+#		set data(callback_cmd) [ifexists opts(-callback_cmd)]
 		set data(selectmode) [ifexists opts(-selectmode) "browse"]
 		dui item config $page_to_show items -selectmode $data(selectmode)
 		set data(empty_items_msg) [ifexists opts(-empty_items_msg) [translate "There are no available items to show"]]
@@ -8823,7 +8862,6 @@ namespace eval ::dui::pages::dui_item_selector {
 		set items_widget $widgets(items)
 		set item_values $data(item_values)
 		set filter_string $data(filter_string) 
-		set filter_indexes $data(filter_indexes)
 		
 		if { [string length $filter_string ] < 3 } {
 			# Show full list
@@ -8831,13 +8869,13 @@ namespace eval ::dui::pages::dui_item_selector {
 				$items_widget delete 0 end
 				$items_widget insert 0 {*}$item_values
 			}
-			set filter_indexes {}
+			set data(filter_indexes) {}
 		} else {
-			set filter_indexes [lsearch -all -nocase $item_values "*$filter_string*"]
+			set data(filter_indexes) [lsearch -all -nocase $item_values "*$filter_string*"]
 	
 			$items_widget delete 0 end
 			set i 0
-			foreach idx $filter_indexes { 
+			foreach idx $data(filter_indexes) { 
 				$items_widget insert $i [lindex $item_values $idx]
 				incr i 
 			}
@@ -8861,12 +8899,7 @@ namespace eval ::dui::pages::dui_item_selector {
 	proc page_cancel {} {
 		variable data
 		say [translate {cancel}] $::settings(sound_button_in)
-		
-		if { $data(callback_cmd) ne "" } {
-			$data(callback_cmd) {} {} $data(item_type)
-		} else {
-			dui page show $data(previous_page)
-		}
+		dui page close_dialog {} {} $data(item_type)
 	}
 		
 	proc page_done {} {
@@ -8901,20 +8934,16 @@ namespace eval ::dui::pages::dui_item_selector {
 			}
 		}
 
-		set selectmode [$items_widget cget -selectmode]
-		if { $selectmode in {single browse} } {
+		if { [$items_widget cget -selectmode] in {single browse} } {
 			set item_values [lindex $item_values 0]
 			set item_ids [lindex $item_ids 0]
 		}
-		
-		if { $data(callback_cmd) ne "" } {
-			$data(callback_cmd) $item_values $item_ids $data(item_type)
-		} else {
-			if { $data(variable) ne "" } {
-				set $data(variable) $item_values
-			}
-			dui page show $data(previous_page)
+
+		if { $data(variable) ne "" } {
+			set $data(variable) $item_values
 		}
+				
+		dui page close_dialog $item_values $item_ids $data(item_type)
 	}
 
 }
