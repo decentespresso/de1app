@@ -4059,15 +4059,15 @@ namespace eval ::dui {
 
 		variable current_page {}
 		variable previous_page {}
-		variable return_callback {}
 		variable dialog_states
 		array set dialog_states {}
 		
-		# Use a dictionary to store the current pages stack when dialogs are shown, to allow for several dialogs.
+		# Use a dictionary to store the current pages stack when dialogs are shown, to allow for several dialogs,
+		# each with its own return callback.
 		# The first element in the stack should always be a non-dialog page. If a non-dialog page is loaded,
 		# the stack is cleared and the new non-dialog page is the new first item. As dialogs (either type=dialog or
 		# type=fpdialog) are loaded, they are addded on top of the stack.
-		# Stack keys are the page names. Stack values store the return callback. 
+		# Stack keys are the page names. Stack values store the return callbacks. 
 		variable page_stack
 		set page_stack [dict create]
 
@@ -4633,11 +4633,10 @@ namespace eval ::dui {
 			variable current_page
 			variable previous_page
 			variable pages_data
-			variable return_callback
 			variable dialog_states
 			variable page_stack
 			set can [dui canvas]
-msg "LOAD $page_to_show, args=$args"
+
 			catch { delay_screen_saver }
 			
 			# run general load actions (same for all pages) in the global context. 
@@ -4723,24 +4722,20 @@ msg "LOAD $page_to_show, args=$args"
 			}
 
 			# Handle page stack
-msg "CHANGING PAGE FROM '$page_to_hide' to '$page_to_show', show_page_type=$show_page_type, return_callback=$return_callback"			
 			if { $show_page_type eq "default" } {
 				set page_stack [dict create $page_to_show {}]
-			} else {
+			} elseif { !($current_page eq $page_to_show && [string is true $reload]) }  {
 				# If the page to show was already in the stack, remove any page after it.
 				set show_stack_idx [lsearch [dict keys $page_stack] $page_to_show]
 				if { $show_stack_idx > -1 } {
-					if { $show_stack_idx < [dict size $page_stack] } {
+					if { $show_stack_idx < [dict size $page_stack]-1 } {
 						dict unset page_stack {*}[lrange [dict keys $page_stack] [expr {$show_stack_idx+1}] end]
 					}
-					set page_stack [dict replace $page_stack $page_to_show $return_callback]
+					#set page_stack [dict replace $page_stack $page_to_show $return_callback]
 				} else {
 					dict set page_stack $page_to_show $return_callback
 				}
-				#{ $show_page_type eq "dialog" || $show_page_type eq "fpdialog" }
-				
 			}
-msg "CHANGING PAGE FROM '$page_to_hide' to '$page_to_show', page_stack=$page_stack"
 			
 			# update current and previous pages. In case the pages are dialogs, "previous_page" contains the stack of open pages
 			set back_from_dialog 0
@@ -5024,7 +5019,6 @@ msg "CHANGING PAGE FROM '$page_to_hide' to '$page_to_show', page_stack=$page_sta
 		# callback (if it was defined) *AFTER* the previous page is totally loaded and shown. 
 		# Arguments given to dui::page::close_dialog are passed through to the return callback proc.
 		proc close_dialog { args } {
-			#variable return_callback
 			variable page_stack
 			
 			set page [current]
@@ -5033,8 +5027,6 @@ msg "CHANGING PAGE FROM '$page_to_hide' to '$page_to_show', page_stack=$page_sta
 				msg -WARNING [namespace current] close_dialog: "page '$page' is not a dialog"
 				return 0
 			}
-			
-			#set cmd $return_callback
 
 			set previous_page [previous]
 			if { $previous_page eq {} } {
