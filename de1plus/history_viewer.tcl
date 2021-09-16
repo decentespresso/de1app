@@ -41,7 +41,7 @@ namespace eval ::history_viewer {
 	proc init {} {
 		pages::setup_default_styles
 		
-		dui page add history_viewer -namespace ::history_viewer::pages::history_viewer
+		dui page add history_viewer -namespace ::history_viewer::pages::history_viewer -type fpdialog
 	
 		vectors::init
 	}
