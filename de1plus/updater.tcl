@@ -361,7 +361,7 @@ proc verify_decent_tls_certificate {} {
 
 proc schedule_app_update_check {} {
     # 3am is when we check for an app update
-    set aftertime [next_alarm_time [expr {3 * 60 * 60}]]
+    set aftertime [next_alarm_time [expr {24 * 60 * 60}]]
     msg -INFO "Scheduling next app update check for [clock format $aftertime]"
     after $aftertime scheduled_app_update_check
 }
