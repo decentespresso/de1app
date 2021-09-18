@@ -510,14 +510,14 @@ namespace eval ::dui {
 			return {<ButtonRelease-1>}
 		}
 
-        proc button_motion {} {
-            global android 
-            if {$android == 1} {
-                return {<<FingerMotion>>}
-            }
-            return {<B1-Motion>}
-        }
-        
+		proc button_motion {} {
+			global android 
+			if {$android == 1} {
+				return {<<FingerMotion>>}
+			}
+			return {<B1-Motion>}
+		}
+		
 		proc xscale_factor {} {
 			#global screen_size_width
 			return [expr {$::dui::_base_screen_width / [dui cget screen_size_width]}]
@@ -696,14 +696,16 @@ namespace eval ::dui {
 		namespace ensemble create
 		
 		variable aspects
-		
+
 		array set aspects {
 			default.page.bg_img {}
 			default.page.bg_color "#d7d9e6"
 			
-			default.dialog_page.bg_shape round
+			default.dialog_page.bg_shape round_outline
 			default.dialog_page.bg_color "#fff"
-			default.dialog_page.width 0
+			default.dialog_page.fill "#fff"
+			default.dialog_page.outline "#7f879a"
+			default.dialog_page.width 1
 			
 			default.font.font_family notosansuiregular
 			default.font.font_size 16
@@ -781,10 +783,11 @@ namespace eval ::dui {
 			
 			default.entry.relief flat
 			default.entry.bg white
-			default.entry.font_size 16
 			default.entry.disabledbackground "#ccc"
+			default.entry.font_size 16
 			default.entry.width 2
 			default.entry.foreground black
+			default.entry.disabledforeground white
 			
 			default.multiline_entry.relief flat
 			default.multiline_entry.foreground black
@@ -925,6 +928,9 @@ namespace eval ::dui {
 			default.dbutton_label.font_family.dne_pad_button notosansuibold 
 			default.dbutton_label.font_size.dne_pad_button 24 
 			default.dbutton_label.anchor.dne_pad_button center
+			
+			default.dbutton.shape.dui_confirm_button round
+			default.dbutton.bheight.dui_confirm_button 100
 		}
 
 		# Named options:
@@ -4227,26 +4233,18 @@ namespace eval ::dui {
 				}
 				if { $img_name ne "" } {
 					foreach page $pages {
-						$can create image {0 0} -anchor nw -image $img_name -tags [::list pages $page] -state "hidden"
+						$can create image {0 0} -anchor nw -image $img_name -tags [::list $page pages] -state "hidden"
 					}
 				}
 			} 
 			
 			if { $bg_img eq "" } {
 				foreach page $pages {
-					if { $bg_color ne "" && $bg_shape in {{} "rect" "rectangle" "round"} } {
+					if { $bg_color ne "" && $bg_shape in {{} rect rectangle round round_outline} } {
 						dui::args::add_option_if_not_exists -fill $bg_color
-						dui::args::add_option_if_not_exists -width 0
+						#dui::args::add_option_if_not_exists -width 0
 					}
-					dui add shape $bg_shape {} {*}$bbox -tags [::list pages $page] {*}$args
-					
-#						if { $page_type eq "dialog" } {
-#							dui add shape $bg_shape {*}$bbox -tags [::list pages $page]
-#							# TODO: Allow different types of rectangles. First create dui::add::drectangle
-#							dui::item::rounded_rectangle {*}$bbox 40 blue blue [::list pages $page]
-#						} else {
-#							$can create rect {*}$bbox -fill $bg_color -width 0 -tags [::list pages $page] -state "hidden"
-#						}
+					dui add shape $bg_shape {} {*}$bbox -tags [::list $page pages] -aspect_type $aspect_type {*}$args
 				}
 			}
 		}
@@ -4378,14 +4376,13 @@ namespace eval ::dui {
 					continue
 				}
 
-				set items_to_delete [items $page]
+				set items_to_delete [items $page 1]
 				foreach item $items_to_delete {
 					if { [$can type $item] eq "window" } {
 						destroy [$can itemcget $item -window]
 					}
 				}
 				$can delete {*}$items_to_delete
-				$can delete {*}[$can find withtag pages&&$page]
 			
 				if { $keep_data } {
 					set pages_data(${page},state) {0 0}
@@ -4419,7 +4416,7 @@ namespace eval ::dui {
 			set i 0
 			foreach page $pages {
 				if { ![exists $page] } {
-					msg -WARNING [namespace current] retheme: "page '$page' does not exist"
+					msg -WARNING [namespace current] recreate: "page '$page' does not exist"
 					continue
 				}
 				
@@ -4533,8 +4530,7 @@ namespace eval ::dui {
 				set dx [dui::platform::rescale_x $dx]
 				set dy [dui::platform::rescale_y $dy]
 				
-				$can move $page $dx $dy 
-				foreach item [items $page] {
+				foreach item [items $page 1] {
 					$can move $item $dx $dy
 				}
 			}
@@ -4639,6 +4635,10 @@ namespace eval ::dui {
 
 			catch { delay_screen_saver }
 			
+			if { [dui::args::has_option -theme] } {
+				dui page retheme $page_to_show [dui::args::get_option -theme {} 1]
+			}
+				
 			# run general load actions (same for all pages) in the global context. 
 			# If 1 or a string is returned, the loading process continues. 
 			# If it's a string that matches a page name, the page to show is changed to that one. 
@@ -4838,6 +4838,7 @@ namespace eval ::dui {
 				
 				$can raise _dlg_bg
 				$can raise $page_to_show
+				$can raise $page_to_show*
 				$can lower _dlg_bg $page_to_show
 				$can itemconfigure _dlg_bg -state normal
 			} else {
@@ -4853,7 +4854,7 @@ namespace eval ::dui {
 					#	to have the 'pages' tag some unexpected items could eventually appear if user extra tags are 
 					#	used.
 					#$can itemconfigure pages&&$page_to_show -state normal
-					$can itemconfigure $page_to_show -state normal
+					$can itemconfigure $page_to_show*||$page_to_show -state normal
 				} on error err {
 					msg -ERROR [namespace current] load: "showing page '$page_to_show' background: $err"
 				}
@@ -5011,7 +5012,8 @@ namespace eval ::dui {
 			if { $coords ne {} } {
 				dui::page::moveto $page {*}$coords $anchor
 			}
-			
+
+			dui::args::add_option_if_not_exists -theme [dui theme get]
 			dui page load $page {*}$args
 		}
 		
@@ -5071,18 +5073,29 @@ namespace eval ::dui {
 			return [ifexists pages_data($page,$event)]
 		}
 				
-		proc items { page } {
+		proc items { page {include_bg 0} } {
+			set can [dui canvas]
 			if { [llength $page] > 1 } {
 				set page [lindex $page 0]
 			}
-			return [[dui canvas] find withtag p:$page]
+			
+			set items [$can find withtag p:$page]
+			if { [string is true $include_bg] } {
+				lappend items {*}[$can find withtag pages&&($page||$page*)]
+			}
+			return $items
 		}
 		
-		proc has_item { page tag } {
+		proc has_item { page tag {include_bg 0} } {
 			if { [llength $page] > 1 } {
 				set page [lindex $page 0]
 			}
-			set items [[dui canvas] find withtag $tag&&p:$page]
+
+			if { [string is true $include_bg] } {
+				set items [[dui canvas] find withtag ($tag&&p:$page)||$page||$page*)]
+			} else {
+				set items [[dui canvas] find withtag $tag&&p:$page]
+			}
 			return [expr {$items ne ""}]
 		}
 		
@@ -6821,9 +6834,11 @@ namespace eval ::dui {
 			set tags [dui::args::process_tags_and_var $pages shape {} 1 args 1]
 			set main_tag [lindex $tags 0]
 			
-			set style [dui::args::get_option -style "" 1]
-			set aspect_type [dui::args::get_option -aspect_type shape]
 			lassign [dui::args::process_sizes $pages $x $y -bwidth 300 -bheight 300 1] rx ry rx1 ry1
+			
+			set style [dui::args::get_option -style "" 1]
+			set aspect_type [list [dui::args::get_option -aspect_type $shape 1] $shape shape]
+			dui::args::process_aspects $aspect_type $style {} {bg_img bg_color bg_shape}
 			
 			# As soon as the rect has a non-zero width (or maybe an outline or fill?), its "clickable" area becomes only
 			#	the border, so if a visible rectangular button is needed, we have to add an invisible clickable rect on 
@@ -6831,29 +6846,30 @@ namespace eval ::dui {
 			set ids {}
 			
 			if { $shape eq "round" } {
-				set fill [dui::args::get_option -fill [dui aspect get shape fill -style $style]]
-				set disabledfill [dui::args::get_option -disabledfill [dui aspect get shape disabledfill -style $style]]
-				set radius [dui::args::get_option -radius [dui aspect get shape radius -style $style -default 40]]
+				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style]]
+				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill -style $style]]
+				set radius [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default 40]]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $tags]
 			} elseif { $shape eq "outline" } {
-				set outline [dui::args::get_option -outline [dui aspect get shape outline -style $style]]
-				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get shape disabledoutline -style $style]]
-				set arc_offset [dui::args::get_option -arc_offset [dui aspect get shape arc_offset -style $style -default 50]]
-				set width [dui::args::get_option -width [dui aspect get shape width -style $style -default 3]]
+				set outline [dui::args::get_option -outline [dui aspect get $aspect_type outline -style $style]]
+				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get $aspect_type disabledoutline -style $style]]
+				set arc_offset [dui::args::get_option -arc_offset [dui aspect get $aspect_type arc_offset -style $style -default 50]]
+				set width [dui::args::get_option -width [dui aspect get $aspect_type width -style $style -default 3]]
 				
 				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline $disabledoutline \
 					$width $tags]
 			} elseif { $shape eq "round_outline" } {
-				set fill [dui::args::get_option -fill [dui aspect get shape fill -style $style]]
-				set disabledfill [dui::args::get_option -disabledfill [dui aspect get shape disabledfill -style $style]]
-				set radius [dui::args::get_option -radius [dui aspect get shape radius -style $style -default 40]]
-				set outline [dui::args::get_option -outline [dui aspect get shape outline -style $style]]
-				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get shape disabledoutline -style $style]]
-				set width [dui::args::get_option -width [dui aspect get shape width -style $style -default 3]]
+				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style]]
+				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill -style $style]]
+				set radius [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default 40]]
+				set outline [dui::args::get_option -outline [dui aspect get $aspect_type outline -style $style]]
+				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get $aspect_type disabledoutline -style $style]]
+				set width [dui::args::get_option -width [dui aspect get $aspect_type width -style $style -default 3]]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $tags]
 				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
+msg "DUI ADD SHAPE outline_tags=[list ${main_tag}-out {*}[lrange $tags 1 end]]"
 				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
 					$disabledoutline $width $outline_tags]
 			} elseif { $shape eq "oval" } {
@@ -7199,7 +7215,7 @@ namespace eval ::dui {
 				} 
 				set editor_args [dui::args::extract_prefixed -editor_ ]
 				
-				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $min -max $max \
+				set editor_cmd [list dui page open_dialog $editor_page $var -n_decimals $n_decimals -min $min -max $max \
 					-default $default -smallincrement $smallincrement -bigincrement $bigincrement -theme $theme {*}$editor_args]
 				#set editor_cmd "if \{ \[dui item cget [lindex $pages 0] $main_tag -state\] eq \"normal\" \} \{ $editor_cmd \};"
 #				bind $widget <Double-Button-1> $editor_cmd
@@ -7411,6 +7427,7 @@ namespace eval ::dui {
 			set main_tag [lindex $tags 0]
 			
 			set style [dui::args::get_option -style "" 0]
+			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
 			dui::args::process_aspects entry $style
 			
 			# Data type and validation
@@ -7479,7 +7496,7 @@ namespace eval ::dui {
 				if { ![string is true $editor_page] } {
 					set editor_cmd [list dui::page::load_if_widget_enabled $widget $editor_page $textvariable \
 						-n_decimals $n_decimals -min $min -max $max -default $default -smallincrement $smallincrement \
-						-bigincrement $bigincrement -page_title $editor_page_title]
+						-bigincrement $bigincrement -page_title $editor_page_title -theme $theme]
 					set editor_cmd "if \{ \[\[dui canvas\] itemcget $widget -state\] eq \"normal\" \} \{ $editor_cmd \}" 
 
 					bind $widget <Double-Button-1> $editor_cmd
@@ -7601,7 +7618,8 @@ namespace eval ::dui {
 			if { $expand_cmd } {
 				lappend cmd $textvariable $values
 				if { $callback_cmd ne "" } {
-					lappend cmd -callback_cmd $callback_cmd
+					#lappend cmd -callback_cmd $callback_cmd
+					lappend cmd -return_callback $callback_cmd
 				}
 				foreach fn {values_ids item_type page_title listbox_width} { 
 					if { [dui::args::has_option -$fn] } {
@@ -7806,7 +7824,7 @@ namespace eval ::dui {
 					set biginc $smallinc
 				}			
 					
-				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $from \
+				set editor_cmd [list dui page open_dialog $editor_page $var -n_decimals $n_decimals -min $from \
 					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
 					-page_title $editor_page_title]
 				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
@@ -7850,6 +7868,7 @@ namespace eval ::dui {
 			set ns [dui page get_namespace $pages]
 												
 			set style [dui::args::get_option -style "" 0]
+			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
 			dui::args::process_aspects dscale $style ""
 			set label_id [dui::args::process_label $pages $x $y dscale $style ${main_tag}-bck]
 			set var [dui::args::get_option -variable "" 1]
@@ -8080,9 +8099,9 @@ namespace eval ::dui {
 					set editor_page "dui_number_editor" 
 				}
 				set editor_page_title [dui::args::get_option -editor_page_title]
-				set editor_cmd [list dui page load $editor_page $var -n_decimals $n_decimals -min $from \
+				set editor_cmd [list dui page open_dialog $editor_page $var -n_decimals $n_decimals -min $from \
 					-max $to -default $default -smallincrement $smallinc -bigincrement $biginc \
-					-page_title $editor_page_title]
+					-page_title $editor_page_title -theme $theme]
 				set editor_cmd "if \{ \[$can itemcget $label_id -state\] eq \"normal\" \} \{ $editor_cmd \}"
 				$can bind $label_id [dui platform button_press] $editor_cmd
 			}
@@ -8490,9 +8509,9 @@ namespace eval ::dui::pages::dui_number_editor {
 			return 0
 		}
 		
-		if { [info exists opts(-theme)] } {
-			dui page retheme $page_to_show $opts(-theme)
-		}
+#		if { [info exists opts(-theme)] } {
+#			dui page retheme $page_to_show $opts(-theme)
+#		}
 		
 		if { ![info exists $num_variable] } {
 			set $num_variable ""
@@ -8760,9 +8779,9 @@ namespace eval ::dui::pages::dui_item_selector {
 		variable widgets
 		array set opts $args
 
-		if { [info exists opts(-theme)] } {
-			dui page retheme $page_to_show $opts(-theme)
-		}
+#		if { [info exists opts(-theme)] } {
+#			dui page retheme $page_to_show $opts(-theme)
+#		}
 		
 		set data(page_title) [ifexists opts(-page_title) [translate "Select an item"]]
 				
@@ -8984,9 +9003,8 @@ namespace eval ::dui::pages::dui_confirm_dialog {
 			
 			for { set i 1 } { $i <= $n_buttons } { incr i } {
 				dui add dbutton $page [expr {0.1+(($pwidth+0.05)*($i-1))}] 0.85 -bwidth $pwidth -anchor w \
-					-tags button$i -style dui_confirm_button -bheight 100 -shape round \
+					-tags button$i -style dui_confirm_button -command [list dui::page::close_dialog $i] \
 					-label [translate [lindex $args [expr {$i-1}]]] -label_pos {0.5 0.5} \
-					-command [list dui::page::close_dialog $i]
 			}
 			
 			set data(n_buttons) $n_buttons
