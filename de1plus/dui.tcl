@@ -4815,16 +4815,23 @@ namespace eval ::dui {
 						set w [$can itemcget $item -window]
 						# "try" as not all widgets support the -state option (e.g. Graph)	
 						try {
-							set dialog_states($item) [$w cget -state]
-							$w configure -state disabled
+							set state [$w cget -state]
+							set dialog_states($item) $state
+							if { $state ne "hidden" } {
+								$w configure -state disabled
+							}
 						} on error err {
 							#msg -WARNING [namespace current] add: "widget of type '[winfo class $w]' doesn't support the -state option"
-							set dialog_states($item) [$can itemcget $item -state]
-							$can itemconfigure $item -state disabled
+							set state [$can itemcget $item -state]
+							set dialog_states($item) $state
+							if { $state ne "hidden" } {
+								$can itemconfigure $item -state disabled
+							}
 						}
 					} else {
-						set dialog_states($item) [$can itemcget $item -state]
-						if { $disable_items } {
+						set state [$can itemcget $item -state]
+						set dialog_states($item) $state
+						if { $disable_items && $state ne "hidden" } {
 							$can itemconfigure $item -state disabled
 						}
 					}
