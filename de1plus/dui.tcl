@@ -4674,10 +4674,10 @@ namespace eval ::dui {
 			}
 			set show_page_type [type $page_to_show]
 			
-#			if { $show_page_type eq "dialog" && $hide_page_type eq "dialog" } {
-#				msg -WARNING [namespace current] load: "only one dialog page can be visible, can't move from dialog '$page_to_hide' to dialog '$page_to_show'"
-#				return
-#			}			
+			if { $show_page_type eq "dialog" && $hide_page_type eq "dialog" } {
+				msg -WARNING [namespace current] load: "only one dialog page can be visible, can't move from dialog '$page_to_hide' to dialog '$page_to_show'"
+				return
+			}			
 			msg [namespace current] load "$page_to_hide -> $page_to_show"
 			dui sound make page_change
 			
@@ -5405,7 +5405,7 @@ namespace eval ::dui {
 		# This is used by all 'dui item' subcommands that use Tk widgets, so that client code can refer to them
 		#	by any of canvas ID, page/canvas tag, or by widget pathname.
 		# proc get_widget { page {tag_or_widget {}} }
-		proc get_widget { page_or_ids_or_widget {tag {}} } {			
+		proc get_widget { page_or_ids_or_widget {tag {}} } {
 			set widget [lindex [get $page_or_ids_or_widget $tag] 0]
 			if { [winfo exists $widget] } {
 				return $widget
@@ -5417,7 +5417,7 @@ namespace eval ::dui {
 			}
 			return ""
 		}
-		
+
 		# Provides a single interface to configure options for both canvas items (text, arcs...) and canvas widgets 
 		#	(window entries, listboxes, etc.)
 		# Allows specifiying items/widgets in 3 ways:
@@ -5657,13 +5657,24 @@ namespace eval ::dui {
 			return $sound_dirs
 		}
 		
-		# Moves canvas items or compounds to a new screen location
+		# Moves canvas items or compounds to a new screen location. Accepts percentage and empty coordinates.
 		proc moveto { page_or_id_or_widget tag x y } {
 			set can [dui canvas]
 			set tag [lindex $tag 0]
 			set items [dui item get $page_or_id_or_widget $tag]
-			set x [dui platform rescale_x $x]
-			set y [dui platform rescale_y $y]
+			
+			if { $tag eq {} } {
+				set page [lindex [pages [lindex $items 0]] 0]
+			} else {
+				set page [lindex $page_or_id_or_widget 0]
+			}
+
+			if { $x ne {} } {
+				set x [dui::page::calc_x $page $x]
+			}
+			if { $y ne {} } {
+				set y [dui::page::calc_y $page $y]
+			}
 			
 			if { [string range $tag end-1 end] eq "*" } {
 				set refitem [dui item get $page_or_id_or_widget [string range $tag 0 end-1]]
@@ -5676,6 +5687,12 @@ namespace eval ::dui {
 			}
 			
 			lassign [$can coords $refitem] rx0 ry0 rx1 ry1
+			if { $x eq {} } {
+				set x $rx0
+			}
+			if { $y eq {} } {
+				set y $ry0
+			}
 			foreach id $items {
 				lassign [$can coords $id] x0 y0 x1 y1
 				set nx0 [expr {$x+$x0-$rx0}]
@@ -7382,7 +7399,7 @@ msg "DUI ADD SHAPE outline_tags=[list ${main_tag}-out {*}[lrange $tags 1 end]]"
 				}
 			}
 			
-			# Allow using widget pathnames to retrieve canvas items (also needed for backwards compatiblity with 
+			# Allow using widget pathnames to retrieve canvas items (also needed for backwards compatibility with 
 			#	existing code)
 			lappend tags $widget
 			
@@ -8966,31 +8983,34 @@ namespace eval ::dui::pages::dui_confirm_dialog {
 	variable data
 	array set data {
 		n_buttons 0
+		question_y 0.4 
+		buttons_y 0.85
 	}
 
 	proc setup {} {
 		variable data
 		set page [namespace tail [namespace current]]
 		
-		dui add dtext $page 0.5 0.4 -width 0.9 -anchor center -justify center -tags question -style dui_confirm_question -text "Are you sure?" 
+		dui add dtext $page 0.5 $data(question_y) -width 0.9 -anchor center -justify center -tags question \
+			-style dui_confirm_question -text "Are you sure?" 
 		
 		set data(n_buttons) 0
-		setup_buttons "Yes" "No"
+		setup_buttons {Yes No}
 	}
 
-	proc setup_buttons { args } {
+	proc setup_buttons { labels y } {
 		variable data
 		variable widgets
 		set page [namespace tail [namespace current]]
 		
-		set n_buttons [llength $args]
+		set n_buttons [llength $labels]
 		if { $n_buttons > 5 } {
 			set n_buttons 5
 		}
 		
-		if { $n_buttons == $data(n_buttons) } {
+		if { $n_buttons == $data(n_buttons) && $y == $data(buttons_y) } {
 			for { set i 1 } { $i <= $n_buttons } { incr i } {
-				dui item config $widgets(button${i}-lbl) -text [translate [lindex $args [expr {$i-1}]]]
+				dui item config $widgets(button${i}-lbl) -text [translate [lindex $labels [expr {$i-1}]]]
 			}
 		} else {
 			set i 1
@@ -9002,21 +9022,29 @@ namespace eval ::dui::pages::dui_confirm_dialog {
 			set pwidth [expr {(0.8-($n_buttons-1)*0.05)/$n_buttons}]
 			
 			for { set i 1 } { $i <= $n_buttons } { incr i } {
-				dui add dbutton $page [expr {0.1+(($pwidth+0.05)*($i-1))}] 0.85 -bwidth $pwidth -anchor w \
+				dui add dbutton $page [expr {0.1+(($pwidth+0.05)*($i-1))}] $y -bwidth $pwidth -anchor w \
 					-tags button$i -style dui_confirm_button -command [list dui::page::close_dialog $i] \
-					-label [translate [lindex $args [expr {$i-1}]]] -label_pos {0.5 0.5} \
+					-label [translate [lindex $labels [expr {$i-1}]]] -label_pos {0.5 0.5} \
 			}
 			
 			set data(n_buttons) $n_buttons
+			set data(buttons_y) $y
 		}
 	}
 	
-	proc load { page_to_hide page_to_show question args } {
+	proc load { page_to_hide page_to_show question {button_labels {Yes No}} args } {
 		variable widgets
+		variable data
+		set page [namespace tail [namespace current]]
 		
+		set question_y [dui::args::get_option -question_y 0.4 0]
+		if { $question_y != $data(question_y) } {
+			dui item moveto $page question {} $question_y
+			set data(question_y) $question_y
+		}
 		dui item config $widgets(question) -text [translate $question]
-		
-		setup_buttons {*}$args
+
+		setup_buttons $button_labels [dui::args::get_option -buttons_y 0.85 0]
 		
 		return 1
 	}
