@@ -3940,7 +3940,7 @@ namespace eval ::dui {
 				set y1 [expr {$y+$height}]
 			} 
 			
-			if { [llength $largs] > 0 && [string is entier [lindex $largs 0]] } {
+			if { [llength $largs] > 0 && [string is double [lindex $largs 0]] } {
 				if { $x1 <= 0 } {
 					set x1 [dui::page::calc_x $pages [lindex $largs 0] $rescale]
 					set largs [lrange $largs 1 end]
@@ -3948,7 +3948,7 @@ namespace eval ::dui {
 					msg -WARNING [namespace current] process_sizes: "conflicting width and x1 arguments specified"
 				}
 				
-				if { [llength $largs] > 0 && [string is entier [lindex $largs 0]] } {
+				if { [llength $largs] > 0 && [string is double [lindex $largs 0]] } {
 					if { $y1 <= 0 } {
 						set y1 [dui::page::calc_x $pages [lindex $largs 0] $rescale]
 						set largs [lrange $largs 1 end]
@@ -6693,7 +6693,7 @@ namespace eval ::dui {
 			
 			set coords {}
 			set i 0
-			while { [llength $args] > 0 && [string is entier [lindex $args 0]] } {
+			while { [llength $args] > 0 && [string is double [lindex $args 0]] } {
 				if { $i % 2 == 0 } {
 					set coord [dui::page::calc_x $pages [lindex $args 0]]
 				} else {
@@ -6971,18 +6971,19 @@ msg "DUI ADD SHAPE outline_tags=[list ${main_tag}-out {*}[lrange $tags 1 end]]"
 				set y1 [expr {$y+$bheight}]
 			}		 
 			
-			if { [llength $args] > 0 && [string is entier [lindex $args 0]] } {
+			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
 				if { $x1 <= 0 } {
 					set x1 [dui::page::calc_x $first_page [lindex $args 0] 0]
 					set args [lrange $args 1 end]
 				}
 			}
-			if { [llength $args] > 0 && [string is entier [lindex $args 0]] } {
+			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
 				if { $y1 <= 0 } {
-					set y1 [dui::page::calc_x $first_page [lindex $args 0] 0]
+					set y1 [dui::page::calc_y $first_page [lindex $args 0] 0]
 					set args [lrange $args 1 end]
 				}				
 			}
+						
 			if { $x1 <= 0 } {
 				set x1 [expr {$x+100}]
 			}
@@ -6994,6 +6995,7 @@ msg "DUI ADD SHAPE outline_tags=[list ${main_tag}-out {*}[lrange $tags 1 end]]"
 			if { $anchor ne "nw" } {
 				lassign [dui::item::anchor_coords $anchor $x $y [expr {$x1-$x}] [expr {$y1-$y}]] x y x1 y1
 			}
+			
 			
 			set tags [dui::args::process_tags_and_var $pages dbutton {} 1 args 1]
 			set main_tag [lindex $tags 0]
@@ -7144,7 +7146,7 @@ msg "DUI ADD SHAPE outline_tags=[list ${main_tag}-out {*}[lrange $tags 1 end]]"
 			while { [info exists symbol$suffix] && [subst \$symbol$suffix] ne "" } {
 				dui add symbol $pages [subst \$xsymbol$suffix] [subst \$ysymbol$suffix] -text [subst \$symbol$suffix] \
 					-tags [subst \$symbol${suffix}_tags] -aspect_type "dbutton_symbol$suffix" \
-					-style $style {*}[subst \$symbol${suffix}_args]
+					-style $style -_abs_coords 1 {*}[subst \$symbol${suffix}_args]
 				set suffix [incr i]
 			}
 			
@@ -9002,10 +9004,10 @@ namespace eval ::dui::pages::dui_confirm_dialog {
 			-style dui_confirm_question -text "Are you sure?" 
 		
 		set data(n_buttons) 0
-		setup_buttons {Yes No}
+		setup_buttons {Yes No} $data(buttons_y)
 	}
 
-	proc setup_buttons { labels y } {
+	proc setup_buttons { labels {y 0.85} } {
 		variable data
 		variable widgets
 		set page [namespace tail [namespace current]]
