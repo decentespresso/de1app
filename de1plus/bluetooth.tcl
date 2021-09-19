@@ -610,7 +610,7 @@ proc decentscale_enable_notifications {} {
 
 proc decentscale_enable_lcd {} {
 
-	if {$::de1(scale_device_handle) == 0} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
 	}
 	set screenon [decent_scale_make_command 0A 01 01]
@@ -619,7 +619,7 @@ proc decentscale_enable_lcd {} {
 }
 
 proc decentscale_disable_lcd {} {
-	if {$::de1(scale_device_handle) == 0} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
 	}
 	set screenoff [decent_scale_make_command 0A 00 00]
@@ -633,7 +633,7 @@ proc decentscale_disable_lcd {} {
 }
 
 proc decentscale_timer_start {} {
-	if {$::de1(scale_device_handle) == 0} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		::bt::msg -DEBUG "decentscale_timer_start - no scale_device_handle"
 		return
 	}
@@ -660,7 +660,7 @@ proc decentscale_timer_start {} {
 proc decentscale_timer_stop {} {
 
 
-	if {$::de1(scale_device_handle) == 0} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
 	}
 
@@ -687,7 +687,7 @@ proc decentscale_timer_stop {} {
 
 proc decentscale_timer_reset {} {
 
-	if {$::de1(scale_device_handle) == 0} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
 	}
 
