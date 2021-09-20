@@ -35,7 +35,7 @@ proc scale_disable_lcd {} {
 		}
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		
-		set do_this 0
+		set do_this 1
 		if {$do_this == 1} {
 			# disabled the LCD off for Decent Scale, so that we don't give false impression tha the scale is off
 			# ideally in future firmware we can find out if they are on usb power, and disable LEDs if they are
@@ -560,17 +560,29 @@ proc decent_scale_calc_xor4 {cmdtype cmdddata1 cmdddata2} {
 	return $xor
 }
 
-proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} } {
+proc decent_scale_calc_xor8 {cmdtype cmdddata1 cmdddata2 cmdddata3} {
+	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata1 ^ $cmdddata2 ^ $cmdddata3 ^ 0x00}]]
+	::bt::msg -DEBUG "decent_scale_calc_xor4 for '$cmdtype' '$cmdddata1' '$cmdddata2' '$cmdddata3' is '$xor'"
+	return $xor
+}
+
+proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} {cmddata3 {}} } {
 	::bt::msg -DEBUG "decent_scale_make_command $cmdtype $cmdddata $cmddata2"
 	if {$cmddata2 == ""} {
+		# 1 command
 		::bt::msg -DEBUG "1 part decent scale command"
 		set hex [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor "0x$cmdtype" "0x$cmdddata"]}]
 		#set hex2 [subst {03${cmdtype}${cmdddata}000000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x00"]}]
-	} else {
+	} elseif {$cmddata3 == ""} {
+		# 2 commands
 		::bt::msg -DEBUG "2 part decent scale command"
 		set hex [subst {03${cmdtype}${cmdddata}${cmddata2}0000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x$cmddata2"]}]
+	} else {
+		# 3 commands
+		::bt::msg -DEBUG "3 part decent scale command"
+		set hex [subst {03${cmdtype}${cmdddata}${cmddata2}${cmddata3}00[decent_scale_calc_xor8 "0x$cmdtype" "0x$cmdddata" "0x$cmddata2" "0x$cmddata3"]}]
 	}
-	::bt::msg -DEBUG "hex is '$hex' for '$cmdtype' '$cmdddata' '$cmddata2'"
+	::bt::msg -DEBUG "hex is '$hex' for '$cmdtype' '$cmdddata' '$cmddata2' '$cmddata3'"
 	return [binary decode hex $hex]
 }
 
@@ -613,7 +625,14 @@ proc decentscale_enable_lcd {} {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
 	}
-	set screenon [decent_scale_make_command 0A 01 01]
+
+	if {$::settings(enable_fluid_ounces) != 1} {
+		# grams on display
+		set screenon [decent_scale_make_command 0A 01 01 00]
+	} else {
+		# ounces on display
+		set screenon [decent_scale_make_command 0A 01 01 01]
+	}
 	::bt::msg -DEBUG "decent scale screen on: '[::logging::format_asc_bin $screenon]'"
 	userdata_append "decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon] 0
 }
@@ -1802,6 +1821,17 @@ proc de1_ble_handler { event data } {
 										after 500 decentscale_timer_start
 									}
 								} 
+							} elseif {[ifexists weightarray(command)] == 0x0A} {
+								::bt::msg -INFO "decentscale LED callback recv: [array get weightarray]"								
+								set ::de1(scale_battery_level) [ifexists weightarray(data5)]
+								if {$::de1(scale_battery_level) > 100} {
+									set ::de1(scale_battery_level) 100
+									set ::de1(scale_usb_powered) 1
+								}
+
+								::bt::msg -INFO "decentscale battery: $::de1(scale_battery_level)"								
+								::bt::msg -INFO "decentscale usb powered: $::de1(scale_usb_powered)"								
+
 							} elseif {[info exists weightarray(weight)] == 1} {
 								set sensorweight [expr {$weightarray(weight) / 10.0}]
 								::device::scale::process_weight_update $sensorweight $event_time

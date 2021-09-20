@@ -40,6 +40,8 @@ array set ::de1 {
     bluetooth_scale_connection_attempts_tried 0
     scanning 1
     device_handle 0
+    scale_battery_level 100
+    scale_usb_powered 0
     language_rtl 0
     scale_device_handle 0
     decentscale_device_handle 0
@@ -996,7 +998,7 @@ proc start_idle {} {
 	#after 1000 read_de1_state
 	
 	if {$::de1(scale_device_handle) != 0} {
-		#scale_enable_lcd
+		scale_enable_lcd
 	}
 
 	if {$::android == 0} {
@@ -1048,7 +1050,11 @@ proc start_sleep {} {
 	de1_send_state "go to sleep" $::de1_state(Sleep)
 
 	if {$::de1(scale_device_handle) != 0} {
-		#scale_disable_lcd
+
+		# of on usb power, then turn off the LCD when the tablet goes to sleep
+		if {[ifexists ::de1(scale_usb_powered)] == 1} {
+			scale_disable_lcd
+		}
 	}
 
 	
