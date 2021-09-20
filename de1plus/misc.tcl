@@ -950,7 +950,6 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/log_upload/plugin.tcl *
 
         plugins/old_lcd_disable/plugin.tcl *
-        plugins/old_lcd_disable/LICENSE *
 
         plugins/DPx_Screen_Saver/plugin.tcl *
         plugins/DPx_Steam_Stop/plugin.tcl *
