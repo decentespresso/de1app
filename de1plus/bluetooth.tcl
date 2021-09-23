@@ -767,14 +767,6 @@ proc close_all_ble_and_exit {} {
 
 	close_misc_bluetooth_handles
 
-	catch {
-		if {$::settings(ble_unpair_at_exit) == 1} {
-			#ble unpair $::de1(de1_address)
-			#ble unpair $::settings(bluetooth_address)
-		}
-	}
-
-	#after 2000 exit
 	::bt::msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
 	foreach h [ble info] {
 		::bt::msg -INFO "Closing this open BLE handle: [ble info $h]"
@@ -1539,26 +1531,10 @@ proc de1_ble_handler { event data } {
 			}
 
 			characteristic {
-				#.t insert end "${event}: ${data}\n"
-				#if {[string first A001 $data] != -1} {
-				#}
-				#if {[string first 83 $data] != -1} {
-				#}
-
 				if {$state eq "discovery"} {
 					# save the mapping because we now need it for Android 7
 					set ::cinstance($cuuid) $cinstance
 					set ::sinstance($suuid) $sinstance
-
-
-					#ble_connect_to_de1
-					# && ($properties & 0x10)
-					# later turn on notifications
-
-					# john don't enable all notifications
-					#set cmds [ble userdata $handle]
-					#lappend cmds [list ble enable $handle $suuid $sinstance $cuuid $cinstance]
-					#ble userdata $handle $cmds
 				} elseif {$state eq "connected"} {
 
 					if {$access eq "r" || $access eq "c"} {
@@ -1566,13 +1542,7 @@ proc de1_ble_handler { event data } {
 							set ::de1(wrote) 0
 							run_next_userdata_cmd
 						}
-							#set ::de1(wrote) 0
-							#run_next_userdata_cmd
 
-						# change notification or read request
-						#de1_ble_new_value $cuuid $value
-						# change notification or read request
-						#de1_ble_new_value $cuuid $value
 						if {$suuid eq $::de1(suuid) \
 							&& [info exists ::de1_cuuids_to_command_names($cuuid)]} {
 							eval set command_name $::de1_cuuids_to_command_names($cuuid)
@@ -1583,8 +1553,6 @@ proc de1_ble_handler { event data } {
 						if {$cuuid eq $::de1(cuuid_0D)} {
 							set ::de1(last_ping) [clock seconds]
 							::de1::state::update::from_shotvalue $value $event_time
-							#set ::de1(wrote) 0
-							#run_next_userdata_cmd
 							set do_this 0
 							if {$do_this == 1} {
 								# this tries to handle bad write situations, but it might have side effects if it is not working correctly.
@@ -1656,7 +1624,6 @@ proc de1_ble_handler { event data } {
 								}
 
 							} elseif {$mmr_id == "803834"} {
-								#parse_binary_mmr_read_int $value arr2
 
 								::bt::msg -INFO "MMR read: heater voltage: '[ifexists arr2(Data0)]' len=[ifexists arr(Len)]"
 								set ::settings(heater_voltage) [ifexists arr2(Data0)]
@@ -1676,13 +1643,11 @@ proc de1_ble_handler { event data } {
 									::bt::msg -INFO "MMR read: espresso_warmup_timeout2: '[ifexists arr2(Data1)]'"
 									set ::settings(espresso_warmup_timeout) [ifexists arr2(Data1)]
 
-									#mmr_read "hot_water_idle_temp" "803818" "00"
 									mmr_read "phase_1_flow_rate" "803810" "02"
 								}
 
 
 							} elseif {$mmr_id == "800008"} {
-								#parse_binary_mmr_read_int $value arr2
 
 								if {[ifexists arr(Len)] == 12} {
 									# it's possibly to read all 3 MMR characteristics at once
@@ -1742,7 +1707,6 @@ proc de1_ble_handler { event data } {
 							run_next_userdata_cmd
 
 						} elseif {$cuuid eq $::de1(cuuid_12)} {
-							#set ::de1(last_ping) [clock seconds]
 							calibration_ble_received $value
 						} elseif {$cuuid eq $::de1(cuuid_11)} {
 							set ::de1(last_ping) [clock seconds]
@@ -1753,7 +1717,6 @@ proc de1_ble_handler { event data } {
 							set ::de1(water_level) $mm
 
 						} elseif {$cuuid eq $::de1(cuuid_09)} {
-							#set ::de1(last_ping) [clock seconds]
 							parse_map_request $value arr2
 							#
 							# TODO: These messages need clarification
@@ -1762,10 +1725,8 @@ proc de1_ble_handler { event data } {
 							if {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 0} {
 								::bt::msg -NOTICE "BLE recv: finished erasing fw '[ifexists arr2(FWToMap)]'"
 								set ::de1(currently_erasing_firmware) 0
-								#write_firmware_now
 							} elseif {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 1} {
 								::bt::msg -NOTICE "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
-								#after 1000 read_fw_erase_progress
 							} elseif {$::de1(currently_erasing_firmware) == 0 && [ifexists arr2(FWToErase)] == 0} {
 								::bt::msg -ERROR "BLE firmware find error BLE recv: [array get arr2] '$value_for_log'"
 
@@ -1783,9 +1744,6 @@ proc de1_ble_handler { event data } {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_hotwater_desc $value arr2
 							::bt::msg -INFO "hotwater data received: [array get arr2] ($data_for_log)"
-
-							#update_de1_substate $value
-
 						} elseif {$cuuid eq $::de1(cuuid_0C)} {
 							set ::de1(last_ping) [clock seconds]
 							parse_binary_shot_desc $value arr2
@@ -1802,15 +1760,6 @@ proc de1_ble_handler { event data } {
 							set ::de1(last_ping) [clock seconds]
 							update_de1_state $value
 
-							#if {[info exists ::globals(if_in_sleep_move_to_idle)] == 1} {
-							#	unset ::globals(if_in_sleep_move_to_idle)
-							#	if {$::de1_num_state($::de1(state)) == "Sleep"} {
-									# when making a new connection to the espresso machine, if the machine is currently asleep, then take it out of sleep
-									# but only do this check once, right after connection establisment
-							#		start_idle
-							#	}
-							#}
-							#update_de1_substate $value
 							set ::de1(wrote) 0
 							run_next_userdata_cmd
 
@@ -1818,8 +1767,6 @@ proc de1_ble_handler { event data } {
 							# decent scale
 							#::bt::msg -INFO "Decentscale writeback received"
 							parse_decent_scale_recv $value vals
-
-							#set sensorweight [expr {$t1 / 10.0}]
 
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF81)} {
 							# Atomax scale
@@ -1898,8 +1845,6 @@ proc de1_ble_handler { event data } {
 							    "[::logging::short_ble_uuid $cuuid]: $value_for_log"
 						}
 
-						#set ::de1(wrote) 0
-
 					} elseif {$access eq "w"} {
 						set ::de1(wrote) 0
 						run_next_userdata_cmd
@@ -1919,10 +1864,8 @@ proc de1_ble_handler { event data } {
 							parse_binary_water_level $value arr2
 							::bt::msg -INFO "ACK water level write: [array get arr2] ($data_for_log)"
 						} elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
-							#parse_binary_water_level $value arr2
 							::bt::msg -INFO "ACK decentscale write back: '$value_for_log'"
 						} elseif {$cuuid eq $::de1(cuuid_decentscale_write)} {
-							#parse_binary_water_level $value arr2
 							::bt::msg -INFO "ACK decentscale write: '$value_for_log'"
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF80)} {
 							set tare [binary decode hex "10"]
@@ -1957,8 +1900,6 @@ proc de1_ble_handler { event data } {
 									::bt::msg -INFO "ACK state change written to DE1: '[array get arr]'"
 								} elseif {$cuuid eq $::de1(cuuid_06)} {
 									if {$::de1(currently_erasing_firmware) == 1 && $::de1(currently_updating_firmware) == 0} {
-										# erase ack received
-										#set ::de1(currently_erasing_firmware) 0
 										::bt::msg -INFO "firmware erase write ack recved: [string length $value] bytes: $value : [array get arr2]"
 									} elseif {$::de1(currently_erasing_firmware) == 0 && $::de1(currently_updating_firmware) == 1} {
 
@@ -1970,7 +1911,6 @@ proc de1_ble_handler { event data } {
 									}
 								} elseif {$cuuid eq $::de1(cuuid_09) && $::de1(currently_erasing_firmware) == 1} {
 									::bt::msg -INFO "fw request to erase sent"
-									#write_firmware_now
 								} else {
 								    ::bt::msg -INFO "ACK wrote to" \
 									    [::logging::short_ble_uuid $cuuid] \
@@ -1987,17 +1927,11 @@ proc de1_ble_handler { event data } {
 							}
 						}
 
-						#set ::de1(wrote) 0
-
-						# change notification or read request
-						#de1_ble_new_value $cuuid $value
 
 					} else {
 						::bt::msg -ERROR "weird characteristic received: $data_for_log"
 					}
 
-					#run_next_userdata_cmd
-					#run_next_userdata_cmd
 				}
 			}
 			service {
@@ -2044,7 +1978,6 @@ proc de1_ble_handler { event data } {
 					set run_this 0
 
 					if {$run_this == 1} {
-						#set cmds [lindex [ble userdata $handle] 0]
 						set lst [ble userdata $handle]
 						set cmds [unshift lst]
 						ble userdata $handle $lst
@@ -2067,9 +2000,6 @@ proc de1_ble_handler { event data } {
 			}
 		}
 	}
-
-	#run_next_userdata_cmd
-
 }
 
 # john 1/15/2020 this is a bit of a hack to work around a firmware bug in 7C24F200 that has the fan turn on during sleep, if the fan threshold is set > 0
