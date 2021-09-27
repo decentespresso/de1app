@@ -118,8 +118,8 @@ array set ::de1 {
 	voltage 110
 	has_catering_kit 0
 	has_plumbing_kit 0
-	max_pressure 12
-	max_flowrate 6
+	max_pressure 12.0
+	max_flowrate 12.0
 	max_flowrate_v11 8
 	version ""
 	min_temperature 80
