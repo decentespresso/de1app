@@ -4043,9 +4043,9 @@ namespace eval ::dui {
 
 	### PAGE SUB-ENSEMBLE ###
 	namespace eval page {
-		namespace export add current previous exists is_setup is_drawn is_visible type bbox list theme retheme recreate \
-			resize delete get_namespace load show open_dialog close_dialog add_action actions items has_item \
-			update_onscreen_variables add_items calc_x calc_y calc_width calc_height
+		namespace export add current previous exists is_setup is_drawn is_visible type bbox width height list theme \
+			retheme recreate resize delete get_namespace load show open_dialog close_dialog add_action actions items has_item \
+			update_onscreen_variables add_items calc_x calc_y calc_width calc_height split_space
 		namespace ensemble create
 		
 		# Metadata for every added page. Array keys have the form '<page_name>,<type>', where <type> can be:
@@ -4347,6 +4347,16 @@ namespace eval ::dui {
 			}
 			
 			return $bbox
+		}
+		
+		proc width { page {rescale 0} } {
+			lassign [bbox $page $rescale] px0 py0 px1 py1
+			return [expr {$px1-$px0}]
+		}
+
+		proc height { page {rescale 0} } {
+			lassign [bbox $page $rescale] px0 py0 px1 py1
+			return [expr {$py1-$py0}]
 		}
 		
 		proc list {} {
@@ -5020,7 +5030,9 @@ namespace eval ::dui {
 				dui::page::moveto $page {*}$coords $anchor
 			}
 
-			dui::args::add_option_if_not_exists -theme [dui theme get]
+            if { $page_type eq "dialog" } { 
+                dui::args::add_option_if_not_exists -theme [dui theme get]
+            }
 			dui page load $page {*}$args
 		}
 		
@@ -5298,6 +5310,51 @@ namespace eval ::dui {
 			return $height
 		}
 		
+		# Splits/slices a distance, defined by 'start' and 'end', using the spec given by args. Each argument provides 
+		# either an absolute number of pixels (if >=1) or a percentage (if >=0 & <1). Once the absolute
+		# portions are removed from the total distance, the remaining distance is splitted according to their relative ratio.
+		# Returns a list, with one more element than $args, giving the cut point of each slice.
+		# page_or_coords can be either a list with 4 coordinates {x0 y0 x1 y1} defining the available space, or the name
+		# of a page. In the second case, the coords used are the bounding box for the page, shifted to {0 0} top-left
+		# position so that the resulting values can be used to place items also in dialog pages.
+		proc split_space { start end args } {
+			set distance [expr {$end-$start}]
+			
+			# Loop first to compute the height of each item
+			set sum_px_spec 0
+			set sum_perc_spec 0
+			foreach spec $args {
+				if { $spec > 0 && $spec < 1 } {
+					set sum_perc_spec [expr {$sum_perc_spec+$spec}]
+				} elseif { $spec >= 1 } {
+					set sum_px_spec [expr {$sum_px_spec+$spec}]
+				}
+			}
+			
+			set available_px [expr {$distance-$sum_px_spec}]
+			if { $available_px < 0 } {
+				set available_px 0
+			}
+			
+			# Compute each item distance in pixels
+			set result $start
+			set i0 $start
+			foreach spec $args {
+				if { $spec < 0 } {
+					set idist 0
+				} elseif { $spec > 0 && $spec < 1 } {
+					set idist [expr {round($available_px*($spec/$sum_perc_spec))}]
+				} elseif { $spec >= 1 } {
+					set idist $spec
+				}
+				set i1 [expr {$i0+$idist}]
+				lappend result $i1
+				
+				set i0 $i1
+			}
+ 
+			return $result
+		}
 		
 	}
 	
