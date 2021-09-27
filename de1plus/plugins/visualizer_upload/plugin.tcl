@@ -35,8 +35,12 @@ namespace eval ::plugins::${plugin_name} {
             set ::plugins::visualizer_upload::settings(visualizer_browse_url) "https://visualizer.coffee/shots/<ID>"
             set needs_save_settings 1
         }
-        if { ![info exists ::plugins::visualizer_upload::settings(visualizer_download_url)] } {
+        if { ![info exists ::plugins::visualizer_upload::settings(last_action)] } {
             set ::plugins::visualizer_upload::settings(visualizer_download_url) "https://visualizer.coffee/api/shots/<ID>"
+            set ::plugins::visualizer_upload::settings(last_download_result) {}
+            set ::plugins::visualizer_upload::settings(last_download_id) {}
+            set ::plugins::visualizer_upload::settings(last_download_shot_start) {}
+            set ::plugins::visualizer_upload::settings(last_action) {}
         }
         if { $needs_save_settings == 1 } {
             plugins save_settings visualizer_upload
@@ -57,22 +61,24 @@ namespace eval ::plugins::${plugin_name} {
 
         msg "uploading shot"
         borg toast [translate "Uploading Shot"]
-
+        
+        set settings(last_action) "upload"
+        set settings(last_upload_shot) $::settings(espresso_clock)
+        set settings(last_upload_result) ""
+        set settings(last_upload_id) ""
+        
         set content [encoding convertto utf-8 $content]
 
         http::register https 443 [list ::tls::socket -servername $settings(visualizer_url)]
 
-        set username $settings(visualizer_username)
-        set password $settings(visualizer_password)
-
-        if {$username eq "demo@demo123"} {
-            borg toast [translate "Please configure your username in the settings"]
-            set settings(last_upload_result) [translate "Please configure your username in the settings"]
+        if {![has_credentials]} {
+            borg toast [translate "Please configure your username and password in the settings"]
+            set settings(last_upload_result) [translate "Please configure your username and password in the settings"]
             plugins save_settings visualizer_upload
             return
         }
 
-        set auth "Basic [binary encode base64 $username:$password]"
+        set auth "Basic [binary encode base64 $settings(visualizer_username):$settings(visualizer_password)]"
         set boundary "--------[clock seconds]"
         set type "multipart/form-data, charset=utf-8, boundary=$boundary"
         set headerl [list Authorization "$auth"]
@@ -126,9 +132,11 @@ namespace eval ::plugins::${plugin_name} {
             plugins save_settings visualizer_upload
             return
         }
+        
         msg "Upload successful with id: $uploaded_id"
         set settings(last_upload_id) $uploaded_id
         set settings(last_upload_result) "[translate {Upload successful with id}] $uploaded_id"
+        
         plugins save_settings visualizer_upload
 	
 
@@ -137,9 +145,11 @@ namespace eval ::plugins::${plugin_name} {
 
     proc uploadShotData {} {
         variable settings
+        set settings(last_action) "upload"
         set settings(last_upload_shot) $::settings(espresso_clock)
         set settings(last_upload_result) ""
         set settings(last_upload_id) ""
+        
         if { ! $settings(auto_upload) } {
             set settings(last_upload_result) [translate "Not uploaded: auto-upload is not enabled"]
             save_plugin_settings visualizer_upload
@@ -182,7 +192,7 @@ namespace eval ::plugins::${plugin_name} {
             set visualizer_id $settings(last_upload_id)
         }
         if { $type eq "download_all" } {
-            set url $settings(visualizer_download_url)
+            set url "$settings(visualizer_download_url)/download"
         } elseif { $type eq "donwload_essentials" } {
             set url "$settings(visualizer_download_url)/download?essentials=1"
         } else {
@@ -218,13 +228,17 @@ namespace eval ::plugins::${plugin_name} {
             set visualizer_id $settings(last_upload_id)
         }
         
-        if { what eq "essentials" } {
+        set settings(last_action) "download"
+        set settings(last_download_id) $visualizer_id
+        set settings(last_download_result) ""
+        set settings(last_download_shot_start) ""
+        
+        if { $what eq "essentials" } {
             set url_type "download_all"
         } else {
             set url_type "download_essentials"
         }
         set download_link [id_to_url $visualizer_id $url_type]
-        
         ::http::register https 443 ::tls::socket
         tls::init -tls1 0 -ssl2 0 -ssl3 0 -tls1.1 0 -tls1.2 1 -servername $settings(visualizer_url) $settings(visualizer_url) 443
         
@@ -232,14 +246,13 @@ namespace eval ::plugins::${plugin_name} {
             set token [::http::geturl $download_link -timeout 10000]
             set status [::http::status $token]
             set answer [::http::data $token]
-            set meta [::http::meta $token]
             set ncode [::http::ncode $token]
             set code [::http::code $token]
             ::http::cleanup $token
         } err] != 0} {
-            msg -WARNING [namespace current] download: "Could not download visualizer shot '$download_link' : $err"
+            msg "could not download visualizer shot '$download_link' : $err"
             dui say [translate "Download failed"]
-            set data(download_status_msg) [translate "Download failed"]
+            set settings(last_download_result) "[translate {Download failed!}] $code"
             catch { ::http::cleanup $token }
             return
         }
@@ -249,19 +262,27 @@ namespace eval ::plugins::${plugin_name} {
                 set response [::json::json2dict $answer]
             } err] != 0} {
                 set my_err ""
-                msg -WARNING [namespace current] download: "Unexpected Visualizer answer: $answer"
+                msg "unexpected Visualizer answer: $answer"
                 dui say [translate "Download failed"] 
-                set data(upload_status_msg) [translate "Download failed"]
+                set settings(last_download_result) "[translate {Download failed!}] [translate {Could not parse JSON answer}]"
                 return
-            }       
+            }
         } else {
-            msg -WARNING [namespace current] "Could not get Visualizer url $download_link: $code"
+            msg "could not get Visualizer url $download_link: $code"
             dui say [translate "Download failed"]
-            set data(upload_status_msg) [translate "Download failed"]
+            set settings(last_download_result) "[translate {Download failed!}] $code"
             return
         }
 
+        set settings(last_download_result) [translate {Download successful!}]
+        set settings(last_download_shot_start) [dict get $response start_time] 
         return $response
+    }
+
+    proc has_credentials {} {
+        variable settings
+        return [expr { [string trim $settings(visualizer_username)] ne "" && $settings(visualizer_username) ne "demo@demo123" || \
+            [string trim $settings(visualizer_password)] ne "" }]
     }
     
     proc main {} {
@@ -315,13 +336,11 @@ namespace eval ::plugins::${plugin_name}::visualizer_settings {
         bind $widgets(auto_upload_min_seconds) <Return> [namespace current]::save_settings
                 
         # Last upload shot
-        dui add dtext $page_name 1350 480 -tags last_upload_label -text [translate "Last upload:"] -font Helv_8 -width 900 -fill "#444444"
-        dui add variable $page_name 1350 540 -tags last_upload -textvariable {[::plugins::visualizer_upload::visualizer_settings::format_shot_start]} \
-            -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left" 
+        dui add dtext $page_name 1350 480 -tags last_action_label -text [translate "Last upload:"] -font Helv_8 -width 900 -fill "#444444"
+        dui add dtext $page_name 1350 540 -tags last_action -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left" 
         
         # Last upload result
-        dui add variable $page_name 1350 600 -tags last_upload_result -textvariable {$::plugins::visualizer_upload::settings(last_upload_result)} \
-            -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left"
+        dui add dtext $page_name 1350 600 -tags last_action_result -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left"
         
         # Browse last uploaded shot in system browser 920 
         dui add dbutton $page_name 1350 800 -tags browse -bwidth 450 -bheight 350 -label [translate "Scan QR or tap here to open the shot in the system browser"] \
@@ -335,15 +354,26 @@ namespace eval ::plugins::${plugin_name}::visualizer_settings {
 
     # This is run immediately after the settings page is shown, wherever it is invoked from.
     proc show { page_to_hide page_to_show } {
-        set last_upload_id [ifexists ::plugins::visualizer_upload::settings(last_upload_id) {}]
+        if { $plugins::visualizer_upload::settings(last_action) eq "download" } {
+            set last_id $::plugins::visualizer_upload::settings(last_download_id)
+            dui item config $page_to_show last_action_label -text [translate "Last download:"]
+            dui item config $page_to_show last_action -text "[translate {Shot started on }] $plugins::visualizer_upload::settings(last_download_shot_start)"
+            dui item config $page_to_show last_action_result -text $::plugins::visualizer_upload::settings(last_download_result)
+        } else {
+            set last_id $::plugins::visualizer_upload::settings(last_upload_id)
+            set data(last_action_result) $::plugins::visualizer_upload::settings(last_upload_result)
+            dui item config $page_to_show last_action_label -text [translate "Last upload:"]
+            dui item config $page_to_show last_action -text [::plugins::visualizer_upload::visualizer_settings::format_shot_start]
+            dui item config $page_to_show last_action_result -text $::plugins::visualizer_upload::settings(last_upload_result)
+        }
         
         # QR: See http://www.androwish.org/index.html/file?name=jni/zint/backend_tcl/demo/demo.tcl&ci=b68e63bacab3647f
-        if { $last_upload_id eq {} } {
+        if { $last_id eq {} } {
             dui item hide $page_to_show browse*
             [namespace current]::qr_img blank
         } else {
             dui item show $page_to_show browse*
-            zint encode [::plugins::visualizer_upload::id_to_url $last_upload_id browse] [namespace current]::qr_img -barcode QR -scale 2.6
+            zint encode [::plugins::visualizer_upload::id_to_url $last_id browse] [namespace current]::qr_img -barcode QR -scale 2.6
         }
     }
 
