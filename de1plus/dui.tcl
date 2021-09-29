@@ -366,7 +366,7 @@ namespace eval ::dui {
 		# Create a special transparent full-page background for pages with type=dialog
 		$can create rect 0 0 [dui platform rescale_x $::dui::_base_screen_width] \
 			[dui platform rescale_y $::dui::_base_screen_height] -fill {} -width 0 -tags _dlg_bg -state hidden
-		$can bind _dlg_bg [dui::platform::button_press] {break}
+		$can bind _dlg_bg [dui::platform::button_press] {dui::page::dialog_background_press; break}
 		$can bind _dlg_bg <Double-Button-1> {break}
 		
 		# Launch setup methods of pages created with 'dui add page'
@@ -758,7 +758,7 @@ namespace eval ::dui {
 			default.dbutton_label1.justify center
 			default.dbutton_label1.fill "#7f879a"
 			default.dbutton_label1.activefill "#7f879a"
-			default.dbutton_label1.disabledfill black
+			default.dbutton_label1.disabledfill "#ccc"
 			
 			default.dbutton_symbol.pos {0.2 0.5}
 			default.dbutton_symbol.font_size 28
@@ -931,6 +931,42 @@ namespace eval ::dui {
 			
 			default.dbutton.shape.dui_confirm_button round
 			default.dbutton.bheight.dui_confirm_button 100
+			
+
+			default.dtext.font_size.menu_dlg_title +1
+			default.dtext.anchor.menu_dlg_title center
+			default.dtext.justify.menu_dlg_title center
+				
+			default.dbutton.shape.menu_dlg_close rect 
+			default.dbutton.fill.menu_dlg_close {} 
+			default.dbutton.symbol.menu_dlg_close times
+			default.dbutton_symbol.pos.menu_dlg_close {0.5 0.5}
+			default.dbutton_symbol.anchor.menu_dlg_close center
+			default.dbutton_symbol.justify.menu_dlg_close center
+			default.dbutton_symbol.fill.menu_dlg_close #3a3b3c
+				
+			default.dbutton.shape.menu_dlg_btn rect
+			default.dbutton.fill.menu_dlg_btn {}
+			default.dbutton.disabledfill.menu_dlg_btn {}
+			default.dbutton_label.pos.menu_dlg_btn {0.25 0.4} 
+			default.dbutton_label.anchor.menu_dlg_btn w
+			default.dbutton_label.fill.menu_dlg_btn #7f879a
+			default.dbutton_label.disabledfill.menu_dlg_btn #ddd
+				
+			default.dbutton_label1.pos.menu_dlg_btn {0.25 0.78} 
+			default.dbutton_label1.anchor.menu_dlg_btn w
+			default.dbutton_label1.fill.menu_dlg_btn #ccc
+			default.dbutton_label1.disabledfill.menu_dlg_btn #ddd
+			default.dbutton_label1.font_size.menu_dlg_btn -3
+				
+			default.dbutton_symbol.pos.menu_dlg_btn {0.15 0.5} 
+			default.dbutton_symbol.anchor.menu_dlg_btn center
+			default.dbutton_symbol.justify.menu_dlg_btn center
+			default.dbutton_symbol.fill.menu_dlg_btn #3a3b3c
+			default.dbutton_symbol.disabledfill.menu_dlg_btn #ddd
+				
+			default.line.fill.menu_dlg_sepline #ddd
+			default.line.width.menu_dlg_sepline 1 
 		}
 
 		# Named options:
@@ -5354,6 +5390,23 @@ namespace eval ::dui {
 			}
  
 			return $result
+		}
+		
+		# Run when the background page of a dialog is clicked.
+		# If the page has a close_dialog command, invoke it (useful for dialogs that need to always provide 
+		# data back to the invoking page), otherwise just call dui::page::close_dialog
+		proc dialog_background_press { } {
+			set dlg_page [current]
+			if { [type $dlg_page] ne "dialog" } {
+				return
+			}
+			
+			set ns [get_namespace $dlg_page]
+			if { [info procs ${ns}::close_dialog] ne "" } {
+				${ns}::close_dialog
+			} else {
+				dui::page::close_dialog
+			}
 		}
 		
 	}
