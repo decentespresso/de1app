@@ -775,6 +775,7 @@ namespace eval ::dui {
 			default.dbutton_label.font_size.insight_ok 19
 			
 			default.dclicker.fill {}
+			default.dclicker.disabledfill {}
 			default.dclicker_label.pos {0.5 0.5}
 			default.dclicker_label.font_size 18
 			default.dclicker_label.fill black
@@ -797,6 +798,7 @@ namespace eval ::dui {
 			default.multiline_entry.font_size 16
 			default.multiline_entry.width 15
 			default.multiline_entry.height 5
+			default.multiline_entry.wrap word
 
 			default.dcombobox.relief flat
 			default.dcombobox.bg white
@@ -906,6 +908,7 @@ namespace eval ::dui {
 			default.text.font_size 16
 			default.text.relief flat
 			default.text.highlightthickness 1
+			default.text.wrap word
 			
 			default.dbutton.shape.dne_clicker round 
 			default.dbutton.bwidth.dne_clicker 120 
@@ -932,7 +935,6 @@ namespace eval ::dui {
 			default.dbutton.shape.dui_confirm_button round
 			default.dbutton.bheight.dui_confirm_button 100
 			
-
 			default.dtext.font_size.menu_dlg_title +1
 			default.dtext.anchor.menu_dlg_title center
 			default.dtext.justify.menu_dlg_title center
@@ -7003,7 +7005,7 @@ namespace eval ::dui {
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $tags]
 				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
-msg "DUI ADD SHAPE outline_tags=[list ${main_tag}-out {*}[lrange $tags 1 end]]"
+				
 				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
 					$disabledoutline $width $outline_tags]
 			} elseif { $shape eq "oval" } {
