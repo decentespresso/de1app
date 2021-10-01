@@ -24,12 +24,12 @@ final_desired_shot_volume 42
 final_desired_shot_weight 42
 final_desired_shot_weight_advanced 42
 tank_desired_water_temperature 0
-final_desired_shot_volume_advanced 42
+final_desired_shot_volume_advanced 0
 profile_title {Filter 2.0}
 profile_language en
 preinfusion_stop_pressure 4.0
 profile_hide 0
-final_desired_shot_volume_advanced_count_start 2
+final_desired_shot_volume_advanced_count_start 1
 beverage_type espresso
 maximum_pressure 0
 maximum_pressure_range_advanced 0.6
@@ -37,3 +37,4 @@ maximum_flow_range_advanced 0.6
 maximum_flow 0
 maximum_pressure_range_default 0.9
 maximum_flow_range_default 1.0
+
