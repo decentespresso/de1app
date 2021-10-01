@@ -697,10 +697,19 @@ proc start_app_update {} {
         set perc [expr {100.0 * ($cnt / [array size tofetch])}]
         incr cnt
 
-        set ::de1(app_update_button_label) "$cnt/[array size tofetch] ($k)"; 
-        catch {
-            .hello configure -text "$cnt/[array size tofetch] ($k)"
-            update
+
+        if {[ifexists ::settings(app_updates_beta_enabled)] == 2} {
+            set ::de1(app_update_button_label) "$cnt/[array size tofetch] ([file tail $k])"; 
+            catch {
+                .hello configure -text "$cnt/[array size tofetch] ([file tail $k])"
+                update
+            }
+        } else {
+            set ::de1(app_update_button_label) "$cnt/[array size tofetch]"; 
+            catch {
+                .hello configure -text "$cnt/[array size tofetch]"
+                update
+            }
         }
 
         catch { update_onscreen_variables }
@@ -744,9 +753,9 @@ proc start_app_update {} {
                     msg -ERROR "Failed to accurately download $k, retrying"
                     file delete $fn
 
-                    set ::de1(app_update_button_label) "$cnt/[array size tofetch] ($k - retry #$attempt)"; 
+                    set ::de1(app_update_button_label) "$cnt/[array size tofetch] ([file tail $k] - retry #$attempt)"; 
                     catch {
-                        .hello configure -text "$cnt/[array size tofetch] ($k - retry #$attempt)"
+                        .hello configure -text "$cnt/[array size tofetch] ([file tail $k] - retry #$attempt)"
                         update
                     }
 
@@ -758,9 +767,9 @@ proc start_app_update {} {
             }
 
             if {$success != 1} {
-                set ::de1(app_update_button_label) "Unable to download $cnt/[array size tofetch] ($k)"; 
+                set ::de1(app_update_button_label) "Unable to download $cnt/[array size tofetch] ([file tail $k])"; 
                 catch {
-                    .hello configure -text "Unable to download $cnt/[array size tofetch] ($k)"
+                    .hello configure -text "Unable to download $cnt/[array size tofetch] ([file tail $k])"
                     update
                 }
                 msg -ERROR "Failed to accurately download $k"
