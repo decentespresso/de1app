@@ -29,7 +29,7 @@ proc scale_enable_lcd {} {
 proc scale_disable_lcd {} {
 	::bt::msg -NOTICE scale_disable_lcd
 	if {$::settings(scale_type) == "atomaxskale"} {
-		set do_this 0
+		set do_this 1
 		if {$do_this == 1} {
 			skale_disable_lcd
 		}
@@ -1502,6 +1502,12 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "atomaxskale"
 							#set ::de1(scale_type) "atomaxskale"
+
+							# atomax Bluetooth has a bug where battery level is always reported as 100%, so no point
+							# in fetching it.  Setting it to as-if-usb-powered because that's how most people use it.
+							set ::de1(scale_battery_level) 100
+							set ::de1(scale_usb_powered) 1
+
 							skale_enable_lcd
 							after 1000 skale_enable_weight_notifications
 							after 2000 skale_enable_button_notifications
