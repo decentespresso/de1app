@@ -1040,6 +1040,11 @@ proc make_de1_dir {srcdir destdirs} {
             set source "$srcdir/$file"
             set dest "$destdir/$file"
 
+            if {[file exists $source] != 1} {
+                puts "File does not exist: '$source'"
+                continue
+            }
+
             set mtime [file mtime $source]
             set mtime_saved [ifexists lmanifest_mtime($file)]
 
