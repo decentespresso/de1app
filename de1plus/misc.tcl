@@ -885,7 +885,7 @@ proc make_de1_dir {srcdir destdirs} {
         saver/2560x1600/rainbow_dj.jpg *
 
         profiles/adaptive_allonge.tcl *
-        profiles/Filter_20.tcl
+        profiles/Filter_20.tcl *
         profiles/best_practice.tcl *
         profiles/flow_calibration.tcl *
         profiles/7g\ basket.tcl *
