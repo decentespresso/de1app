@@ -172,7 +172,7 @@ proc init_app_metadata {} {
 		name_plural "Dose weights"
 		short_name "Dose" 
 		short_name_plural "Doses"
-		propagate 1
+		propagate 0
 		data_type number
 		min 0.0
 		max 30.0
@@ -196,7 +196,7 @@ proc init_app_metadata {} {
 		name_plural "Drink weights"
 		short_name "Yield" 
 		short_name_plural "Yields"
-		propagate 1
+		propagate 0
 		data_type number
 		min 0.0
 		max 500.0
