@@ -5670,11 +5670,15 @@ namespace eval ::dui {
 			} else {
 				set state disabled
 			}
-						
+
 			foreach id [get $page_or_ids_or_widgets $tags] {
 				if { $do_current } {
 					if { [$can itemcget $id -state] ne "hidden" } {
 						$can itemconfigure $id -state $state
+						# Tk widgets need to be enabled/disabled directly, not through the canvas
+						if { [$can type $id] eq "window" } {
+							[$can itemcget $id -window] configure -state $state
+						}
 					}
 				}
 				if { $do_initial } {
