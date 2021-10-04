@@ -344,7 +344,7 @@ proc verify_decent_tls_certificate {} {
         if {$sha1 == "BF735474BA9AA423EC03AB9F980BE68BCAA35E57"} {
             msg -INFO "https cert matches what we expect, good"
         } else {
-            msg -ERROR "https matches what we expect. Decent might have changed to a new SSL cert, or something bad is happening. SHA1 received='$sha1'"
+            msg -ERROR "https does not match what we expect. Decent might have changed to a new SSL cert, or something bad is happening. SHA1 received='$sha1'"
         }
     }
 
