@@ -1077,6 +1077,8 @@ proc check_if_steam_clogged {} {
 		return 
 	}
 
+	#msg -DEBUG "check_if_steam_clogged"	
+
 	if {$::settings(enable_descale_steam_check) != 1} {
 		return
 	}
@@ -1087,7 +1089,7 @@ proc check_if_steam_clogged {} {
 		set ::settings(steam_over_temp_threshold) [celsius_to_fahrenheit 180]
 	}
 	
-	set ::settings(steam_over_pressure_threshold) 6
+	set ::settings(steam_over_pressure_threshold) 8
 
 	set bad_pressure 0
 	set bad_temp 0
@@ -1118,11 +1120,16 @@ proc check_if_steam_clogged {} {
 
 	}
 
-	if {$bad_pressure == 1 || $bad_temp == 1} {
+	if {$bad_pressure == 1} {
 		set_next_page off descalewarning;
 		page_show descalewarning
 
+	} elseif {$bad_temp == 1} {
+		info_page [subst {[translate "Your steam is getting too hot."] [translate "Increase your steam flow rate or lower the steam temperature in the calibration settings."]}] [translate Ok] steam_3
+	} else {
+		#msg -DEBUG "check_if_steam_clogged found no problem"	
 	}
+
 }
 
 proc has_flowmeter {} {
