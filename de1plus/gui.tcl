@@ -3592,6 +3592,9 @@ namespace eval ::gui::update {
 						if {$GroupPressure > $::settings(steam_over_pressure_threshold)} {
 							borg toast [translate "Warning: steam pressure is too high"]
 						}
+						if {$SteamTemp > $::settings(steam_over_temp_threshold)} {
+							borg toast [translate "Warning: steam temperature is too high"]
+						}
 
 						steam_flow append [round_to_two_digits $GroupFlow]
 
