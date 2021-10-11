@@ -626,6 +626,12 @@ proc decentscale_enable_lcd {} {
 		return
 	}
 
+	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
+		::bt::msg -DEBUG "decent scale not connected, cannot enable LCD"
+		return
+	}
+
+
 	if {$::settings(enable_fluid_ounces) != 1} {
 		# grams on display
 		set screenon [decent_scale_make_command 0A 01 01 00]
@@ -1491,7 +1497,7 @@ proc de1_ble_handler { event data } {
 
 						if {$::settings(scale_type) == "decentscale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "decentscale"
-							decentscale_enable_lcd
+
 							after 100 decentscale_enable_lcd
 							after 200 decentscale_enable_notifications
 							after 300 decentscale_enable_notifications
