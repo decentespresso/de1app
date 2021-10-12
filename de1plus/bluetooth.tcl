@@ -1416,10 +1416,6 @@ proc de1_ble_handler { event data } {
 
 						::device::scale::event::apply::on_disconnect_callbacks $event_dict
 
-						# john 1-11-19 automatic reconnection attempts eventually kill the bluetooth stack on android 5.1
-						# john might want to make this happen automatically on Android 8, though. For now, it's a setting, which might
-						# eventually get auto-set as per the current Android version, if we can trust that to give us a reliable BLE stack.
-
 						if {$::de1(bluetooth_scale_connection_attempts_tried) < 20} {
 							incr ::de1(bluetooth_scale_connection_attempts_tried)
 							::bt::msg -INFO "Disconnected from scale, trying again automatically.  Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
