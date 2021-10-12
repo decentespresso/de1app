@@ -231,7 +231,6 @@ array set ::settings {
 	steam_over_temp_threshold 180
 	disable_long_press 0
 	steam_over_pressure_threshold 8
-	automatically_ble_reconnect_forever_to_scale 0
 	chart_total_shot_flow 1
 	steam_over_pressure_count_trigger 10
 	do_async_update_check 0
