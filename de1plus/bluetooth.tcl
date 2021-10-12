@@ -1420,9 +1420,7 @@ proc de1_ble_handler { event data } {
 						# john might want to make this happen automatically on Android 8, though. For now, it's a setting, which might
 						# eventually get auto-set as per the current Android version, if we can trust that to give us a reliable BLE stack.
 
-						if {$::settings(automatically_ble_reconnect_forever_to_scale) == 1} {
-							ble_connect_to_scale
-						} elseif {$::de1(bluetooth_scale_connection_attempts_tried) < 20} {
+						if {$::de1(bluetooth_scale_connection_attempts_tried) < 20} {
 							incr ::de1(bluetooth_scale_connection_attempts_tried)
 							::bt::msg -INFO "Disconnected from scale, trying again automatically.  Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
 							ble_connect_to_scale
@@ -1430,9 +1428,8 @@ proc de1_ble_handler { event data } {
 							# after 5 minutes, reset the scale retrier count back to zero that when coming back 
 							# to the DE1 after some time away, we can again retry scale connection 
 							::bt::msg -INFO "Resetting scale connect retries back to zero, after 300 second waiting"
-							after 300 "set ::de1(bluetooth_scale_connection_attempts_tried) 0"
+							after 300000 "set ::de1(bluetooth_scale_connection_attempts_tried) 0"
 						}
-
 					}
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1
