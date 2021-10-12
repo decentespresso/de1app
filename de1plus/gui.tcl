@@ -3205,7 +3205,7 @@ namespace eval ::gui::notify {
 
 			    if { [::de1::state::current_state] == "Sleep" } { return }
 
-				if { $::settings(show_scale_notifications) } {
+				if { $::settings(show_scale_notifications) && $::de1(bluetooth_scale_connection_attempts_tried) < 1} {
 					set what [translate {WARNING: Scale not connected}]
 					borg toast $what
 					say $what $::settings(sound_button_in)
