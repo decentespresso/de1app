@@ -835,6 +835,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/skin.tcl *
 
         saver/1280x800/black_saver.jpg *
+        saver/1280x800/emmyart1.jpg *
         saver/1280x800/Black\ Steel.jpg *
         saver/1280x800/Cozy-Home.jpg *
         saver/1280x800/Floral.jpg *
@@ -859,6 +860,7 @@ proc make_de1_dir {srcdir destdirs} {
         saver/1280x800/three_women.jpg *
         saver/1280x800/rainbow_dj.jpg *
         saver/2560x1600/black_saver.jpg *
+        saver/2560x1600/emmyart1.jpg *
         saver/2560x1600/Black\ Steel.jpg *
         saver/2560x1600/Cozy-Home.jpg *
         saver/2560x1600/Floral.jpg *
