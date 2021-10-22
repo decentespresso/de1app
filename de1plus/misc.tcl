@@ -895,6 +895,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/flow_calibration.tcl *
         profiles/7g\ basket.tcl *
         profiles/cleaning_forward_flush.tcl *
+        profiles/Cleaning_forward_flush_x5.tcl *
         profiles/adaptive_espresso.tcl *
         profiles/Best\ overall\ pressure\ profile.tcl *
         profiles/weber_spring_clean.tcl *
