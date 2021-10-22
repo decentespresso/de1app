@@ -1533,13 +1533,17 @@ proc skin_directories {} {
 
 	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/skins/" *]]
 	set dd {}
+
+	# overriding settings to include Insight Dark now
+	set ::settings(most_popular_skins) [list Insight "Insight Dark" MimojaCafe metric DSx SWDark4]
+
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
 	    
 		if {[ifexists ::settings(show_only_most_popular_skins)] == 1 && [ifexists ::settings(most_popular_skins)] != ""} {
-			#puts "'$d' '[ifexists ::settings(most_popular_skins)]'"
+			puts "'$d' '[ifexists ::settings(most_popular_skins)]'"
 			if {[lsearch -exact [string toupper [ifexists ::settings(most_popular_skins)]] [string toupper $d] ] == -1} {
 				continue
 			}

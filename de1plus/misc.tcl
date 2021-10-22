@@ -530,6 +530,70 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Insight/2560x1600/describe_espresso.jpg *
         skins/Insight/2560x1600/describe_espresso2.jpg *
 
+        skins/Insight\ Dark/1280x800/icon.jpg *
+        skins/Insight\ Dark/skin.tcl *
+        skins/Insight\ Dark/1280x800/espresso_1.png *
+        skins/Insight\ Dark/1280x800/espresso_1_zoomed.png *
+        skins/Insight\ Dark/1280x800/espresso_2.png *
+        skins/Insight\ Dark/1280x800/espresso_2_zoomed.png *
+        skins/Insight\ Dark/1280x800/espresso_3.png *
+        skins/Insight\ Dark/1280x800/espresso_3_zoomed.png *
+        skins/Insight\ Dark/1280x800/steam_1.png *
+        skins/Insight\ Dark/1280x800/steam_2.png *
+        skins/Insight\ Dark/1280x800/steam_3.png *
+        skins/Insight\ Dark/1280x800/water_1.png *
+        skins/Insight\ Dark/1280x800/water_2.png *
+        skins/Insight\ Dark/1280x800/water_3.png *
+        skins/Insight\ Dark/1280x800/preheat_1.png *
+        skins/Insight\ Dark/1280x800/preheat_2.png *
+        skins/Insight\ Dark/1280x800/preheat_3.png *
+        skins/Insight\ Dark/1280x800/preheat_4.png *
+        skins/Insight\ Dark/1280x800/scentone_1.jpg *
+        skins/Insight\ Dark/1280x800/scentone_tropical.jpg *
+        skins/Insight\ Dark/1280x800/scentone_berry.jpg *
+        skins/Insight\ Dark/1280x800/scentone_citrus.jpg *
+        skins/Insight\ Dark/1280x800/scentone_stone.jpg *
+        skins/Insight\ Dark/1280x800/scentone_cereal.jpg *
+        skins/Insight\ Dark/1280x800/scentone_chocolate.jpg *
+        skins/Insight\ Dark/1280x800/scentone_flower.jpg *
+        skins/Insight\ Dark/1280x800/scentone_spice.jpg *
+        skins/Insight\ Dark/1280x800/scentone_vegetable.jpg *
+        skins/Insight\ Dark/1280x800/scentone_savory.jpg *
+        skins/Insight\ Dark/1280x800/describe_espresso0.jpg *
+        skins/Insight\ Dark/1280x800/describe_espresso.jpg *
+        skins/Insight\ Dark/1280x800/describe_espresso2.jpg *
+        skins/Insight\ Dark/2560x1600/icon.jpg *
+        skins/Insight\ Dark/2560x1600/espresso_1.png *
+        skins/Insight\ Dark/2560x1600/espresso_1_zoomed.png *
+        skins/Insight\ Dark/2560x1600/espresso_2.png *
+        skins/Insight\ Dark/2560x1600/espresso_2_zoomed.png *
+        skins/Insight\ Dark/2560x1600/espresso_3.png *
+        skins/Insight\ Dark/2560x1600/espresso_3_zoomed.png *
+        skins/Insight\ Dark/2560x1600/steam_1.png *
+        skins/Insight\ Dark/2560x1600/steam_2.png *
+        skins/Insight\ Dark/2560x1600/steam_3.png *
+        skins/Insight\ Dark/2560x1600/water_1.png *
+        skins/Insight\ Dark/2560x1600/water_2.png *
+        skins/Insight\ Dark/2560x1600/water_3.png *
+        skins/Insight\ Dark/2560x1600/preheat_1.png *
+        skins/Insight\ Dark/2560x1600/preheat_2.png *
+        skins/Insight\ Dark/2560x1600/preheat_3.png *
+        skins/Insight\ Dark/2560x1600/preheat_4.png *
+        skins/Insight\ Dark/2560x1600/scentone_1.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_tropical.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_berry.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_citrus.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_stone.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_cereal.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_chocolate.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_flower.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_spice.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_vegetable.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_savory.jpg *
+        skins/Insight\ Dark/2560x1600/describe_espresso0.jpg *
+        skins/Insight\ Dark/2560x1600/describe_espresso.jpg *
+        skins/Insight\ Dark/2560x1600/describe_espresso2.jpg *
+
         skins/MimojaCafe/1280x800/icon.jpg *
         skins/MimojaCafe/2560x1600/icon.jpg *
         skins/MimojaCafe/fonts/Font\ Awesome\ 5\ Free-Solid-900.otf *
