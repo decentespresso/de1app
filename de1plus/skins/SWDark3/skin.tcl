@@ -155,7 +155,7 @@ add_de1_page "preheat_4" "preheat_4.png"
 # new screensavers while we're at it. 
 #set_de1_screen_saver_directory "[skin_directory]/screen_saver"
  
-source "[homedir]/skins/default/de1_skin_settings.tcl"
+#source "[homedir]/skins/default/de1_skin_settings.tcl"
 
 # the standard behavior when the DE1 is doing something is for tapping anywhere on the screen to stop that. This "source" command does that.
 #source "[homedir]/skins/default/standard_includes.tcl"

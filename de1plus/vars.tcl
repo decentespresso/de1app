@@ -914,13 +914,13 @@ proc return_stop_at_weight_measurement {in} {
 	} else {
 
 	    if {$::de1(language_rtl) == 1} {
-			return [subst {[translate "g"][round_to_integer $in]}]
+			return [subst {[translate "g"][round_to_one_digits $in]}]
 		}
 
 		if {$::settings(enable_fluid_ounces) != 1} {
-			return [subst {[round_to_integer $in][translate "g"]}]
+			return [subst {[round_to_one_digits $in][translate "g"]}]
 		} else {
-			return [subst {[round_to_integer [ml_to_oz $in]] oz}]
+			return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
 		}
 	}
 }
@@ -1105,7 +1105,7 @@ proc drink_weight_text {} {
 		return ""
 	}
 
-	return [return_weight_measurement $::settings(drink_weight)]
+	return [return_weight_measurement $::settings(running_weight)]
 }
 
 proc dump_stack {args} {
@@ -1522,6 +1522,10 @@ proc backup_settings {} {
 	#update_de1_explanation_chart
 }
 
+proc refresh_skin_directories {} {
+	unset -nocomplain ::skin_directories_cache
+}
+
 proc skin_directories {} {
 	if {[info exists ::skin_directories_cache] == 1} {
 		return $::skin_directories_cache
@@ -1529,11 +1533,22 @@ proc skin_directories {} {
 
 	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/skins/" *]]
 	set dd {}
+
+	# overriding settings to include Insight Dark now
+	set ::settings(most_popular_skins) [list Insight "Insight Dark" MimojaCafe metric DSx SWDark4]
+
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
 	    
+		if {[ifexists ::settings(show_only_most_popular_skins)] == 1 && [ifexists ::settings(most_popular_skins)] != ""} {
+			#puts "'$d' '[ifexists ::settings(most_popular_skins)]'"
+			if {[lsearch -exact [string toupper [ifexists ::settings(most_popular_skins)]] [string toupper $d] ] == -1} {
+				continue
+			}
+		}
+
 	    set fn "[homedir]/skins/$d/skin.tcl"
 	    set skintcl [read_file $fn]
 	    #set skintcl ""
@@ -1579,6 +1594,12 @@ proc fill_skin_listbox {} {
 		if {$d == "CVS" || $d == "example"} {
 			continue
 		}
+
+		if {$d == "metric"} {
+			# typo in github was in lower case for Metric skin, so hacking the dispay of it here
+			set d "Metric"
+		}
+
 		$widget insert $cnt [translate $d]
 		if {$::settings(skin) == $d} {
 			set ::current_skin_number $cnt
@@ -1730,6 +1751,22 @@ proc bluetooth_character {} {
 	return "\uE018"
 }
 
+proc thermometer_character {} {
+	if {[language] == "ar" || [language] == "he"} {
+		return "T:"
+	}
+
+	return "\uF2C9"
+}
+
+proc scale_character {} {
+	if {[language] == "ar" || [language] == "he"} {
+		return "SCALE:"
+	}
+
+	return "\uF515"
+}
+
 proc usb_character {} {
 	if {[language] == "ar" || [language] == "he"} {
 		return "USB:"
@@ -1795,7 +1832,10 @@ proc fill_ble_listbox {} {
 }
 
 proc fill_ble_scale_listbox {} {
-	
+	fill_peripheral_listbox
+}
+
+proc fill_peripheral_listbox {} {
 
 	set widget $::ble_scale_listbox_widget
 	$widget delete 0 99999
@@ -1803,33 +1843,44 @@ proc fill_ble_scale_listbox {} {
 	set current_ble_number 0
 
 	set one_selected 0
-	foreach d [lsort -dictionary -increasing $::scale_bluetooth_list] {
+	foreach d $::peripheral_device_list {
 		set addr [dict get $d address]
 		set name [dict get $d name]
-		set type [dict get $d type]
-		set icon [bluetooth_character]
+		set connectiontype [dict get $d connectiontype]
+		set devicetype [dict get $d devicetype]
+		set family [dict get $d devicefamily]
+		set icon "UNKN:"
 
-		if { $name eq "" } { set name $type }
+		if {$devicetype eq "thermometer"} {
+			set icon [thermometer_character]
+		} elseif {$devicetype eq "scale"} {
+			set icon [scale_character]
+		} elseif {$connectiontype eq "ble"} {
+			set icon [bluetooth_character]
+		}
+
+		if { $name eq "" } { set name $family }
 		if {$addr == [ifexists ::settings(scale_bluetooth_address)]} {
 			$widget insert $cnt " \[[checkboxchar]\] $icon $name"
 			set one_selected 1
 		} else {
 			$widget insert $cnt " \[   \] $icon $name"
 		}
-			#$widget insert $cnt $addr
+
 		if {[ifexists ::settings(scale_bluetooth_address)] == $addr} {
 			set current_ble_number $cnt
 		}
+
 		incr cnt
 	}
-	
-	$widget selection set $current_ble_number;
 
-	set ::scale_needs_to_be_selected 0
-	if {[llength $::de1_device_list] > 0 && $one_selected == 0} {
-		set ::scale_needs_to_be_selected 1
-	}
+	$widget selection set $current_ble_number;
 	
+	set ::peripheral_needs_to_be_selected 0
+	if {[llength $::de1_device_list] > 0 && $one_selected == 0} {
+		set ::peripheral_needs_to_be_selected 1
+	}
+
 	make_current_listbox_item_blue $widget
 }
 
@@ -2060,10 +2111,10 @@ proc highlight_extension {} {
 	set description ""
 
 
-	foreach {name value} { "Version: " version "Author: " author "Contact: " contact "\n" description} {
+	foreach {name value} { "Version:" version "Author:" author "Contact:" contact "\n" description} {
 		set conf [set ::plugins::${plugin}::${value}]
 		if { $conf != {} } {
-			append description "[translate $name]$conf\n"
+			append description "[translate $name] $conf\n"
 		}
 	}
 	.can itemconfigure $::extensions_metadata -text $description
@@ -2375,10 +2426,20 @@ proc save_settings_and_ask_to_restart_app {} {
 	message_page [translate "Please quit and restart this app to apply your changes."] [translate "Quit"];
 }
 
-proc message_page {msg buttonmsg} {
+proc message_page {msg buttonmsg {longertxt {}} } {
+
 	if {[catch {
+
+		if {$longertxt == ""} {
+			.can coords $::message_label [list [rescale_x_skin 1280] [rescale_y_skin 800]]
+		} else {
+			# if there is a longer message, then move the larger font label up, to make room for it
+			.can coords $::message_label [list [rescale_x_skin 1280] [rescale_y_skin 550]]
+		}
+
 		.can itemconfigure $::message_label -text $msg
 		.can itemconfigure $::message_button_label -text $buttonmsg
+		.can itemconfigure $::message_longertxt -text $longertxt
 		set_next_page off message; 
 		page_show message
 	} err] != 0} {
@@ -2393,12 +2454,19 @@ proc message_page {msg buttonmsg} {
 #set ::infopage_button [add_de1_button "infopage" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off off} 980 990 1580 1190 ""]
 
 
-proc info_page {msg buttonmsg} {
+proc info_page {msg buttonmsg {nextpage {}}} {
 	if {[catch {
 		.can itemconfigure $::infopage_label -text $msg
 		.can itemconfigure $::infopage_button_label -text $buttonmsg
-		set_next_page off infopage; 
+		set_next_page off infopage
 		page_show off
+
+		if {$nextpage != ""} {
+			msg -INFO "Setting next page after info to: '$nextpage'"
+			set_next_page off $nextpage
+		} else {
+			set_next_page off off
+		}
 	} err] != 0} {
 		msg -ERROR "info_page failed because: '$err'"
 	}
@@ -2466,41 +2534,53 @@ proc change_bluetooth_device {} {
 proc change_scale_bluetooth_device {} {
 	set w $::ble_scale_listbox_widget
 
-
 	if {$w == ""} {
 		return
 	}
 	if {[$w curselection] == ""} {
-		# no current selection
-		#return ""
 		msg -NOTICE "change_scale_bluetooth_device: re-connecting to scale"
 		ble_connect_to_scale
 		return
 	}
 	set selection_index [$w curselection]
-	set dic [lindex $::scale_bluetooth_list $selection_index]
+
+	msg "selected item" $selection_index
+	set dic [lindex $::peripheral_device_list $selection_index]
 	set addr [dict get $dic address]
 	set name [dict get $dic name]
+	set connectiontyte [dict get $dic connectiontype]
+	set devicetype [dict get $dic devicetype]
+	set devicefamily [dict get $dic devicefamily]
 
 	if { $name == "" } {
-		set name [dict get $dic type]
+		set name $devicefamily
 	}
 
-	set ::settings(scale_bluetooth_address) $addr
-	set ::settings(scale_bluetooth_name) $name
-
-	set ::settings(scale_type) [ifexists ::scale_types($addr)]
-	msg -INFO "change_scale_bluetooth_device: set scale type to: '$::settings(scale_type)' $addr"
-
-	if {$addr == $::settings(scale_bluetooth_address)} {
-		ble_connect_to_scale
+	if {$connectiontyte ne "ble"} {
+		msg -WARNING "Non BLE peripheral requested for connect. Damn!"
 		return
+	}
+
+	msg -INFO  "selected $devicetype $name @ $addr"
+
+	if {$devicetype eq "scale"} {
+		set ::settings(scale_bluetooth_address) $addr
+		set ::settings(scale_bluetooth_name) $name
+		set ::settings(scale_type) $devicefamily
+		msg "set scale type to: '$::settings(scale_type)' $addr"
+
+		if {$addr == $::settings(scale_bluetooth_address)} {
+			ble_connect_to_scale
+			return
+		}
+	} else {
+		msg -WARNING "Non scale peripheral requested for connect. Damn!"
 	}
 
 	save_settings
 	ble_connect_to_scale
 
-	fill_ble_scale_listbox
+	fill_peripheral_listbox
 }
 
 
@@ -2515,6 +2595,9 @@ proc select_profile { profile } {
 	# Disable limits by default
 	set ::settings(maximum_pressure) 0
 	set ::settings(maximum_flow) 0
+
+	# 
+	unset -nocomplain ::settings(profile_video_help)
 
 	load_settings_vars $fn
 
@@ -2549,6 +2632,7 @@ proc select_profile { profile } {
 	# profile needs to sent right away to the DE1, in case the person taps the GH button to start espresso w/o leaving settings
 	send_de1_settings_soon
 }
+
 
 set preview_profile_counter 0
 proc preview_profile {} {
@@ -2779,6 +2863,7 @@ proc load_settings_vars {fn} {
 	set ::setting(disable_long_press) 1
 
 	update_de1_explanation_chart
+
 
 }
 
@@ -3300,12 +3385,12 @@ proc de1_version_string {} {
 	}
 
 	if { [package version de1app] ne ""  } {
-		append version ", [translate app]=v[package version de1app]"
+		append version ", [translate app]=v[package version de1app] [app_updates_policy_as_text]"
 	}
 
-	if { [app_updates_policy_as_text] ne ""  } {
-		append version ", [translate {branch}]=[app_updates_policy_as_text]"
-	}
+	#if { [app_updates_policy_as_text] ne ""  } {
+	#	append version ", [translate {branch}]=[app_updates_policy_as_text]"
+	#}
 	
 	if {[ifexists v(BLE_Sha)] != "" && $::settings(firmware_sha) != [ifexists v(BLE_Sha)] } {
 		set ::settings(firmware_sha) $v(BLE_Sha)
@@ -3425,7 +3510,7 @@ proc return_steam_flow_calibration {steam_flow} {
 	set in [expr {$steam_flow / 100.0}]
 
 	if {$::settings(enable_fluid_ounces) != 1} {
-		return [subst {[round_to_two_digits $in] [translate "mL/s"]}]
+		return [subst {[round_to_one_digits $in] [translate "mL/s"]}]
 	} else {
 		return [subst {[round_to_two_digits [ml_to_oz $in]] oz/s}]
 	}
@@ -3659,4 +3744,16 @@ proc app_updates_policy_as_text {} {
  	return [translate $progname]
 }
 
+proc set_resolution_height_from_width { {discard {}} } {
+	set ::settings(screen_size_height) [expr {int($::settings(screen_size_width)/1.6)}]
 
+	# check the width and make sure it is a multiple of 160. If not, pick the nearest setting.
+	for {set x [expr {$::settings(screen_size_width) - 0}]} {$x <= 2800} {incr x} {
+		set ratio [expr {$x / 160.0}]
+		if {$ratio == int($ratio)} {
+			set ::settings(screen_size_width) $x
+			set ::settings(screen_size_height) [expr {int($::settings(screen_size_width)/1.6)}]
+			break
+		}
+	}
+}

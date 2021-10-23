@@ -36,8 +36,12 @@ array set ::de1 {
 	factory_calibration_flow {}
 	advanced_shot_moveone_enabled 1
     found    0
+    decentscale_timer_on 0
+    bluetooth_scale_connection_attempts_tried 0
     scanning 1
     device_handle 0
+    scale_battery_level 100
+    scale_usb_powered 0
     language_rtl 0
     scale_device_handle 0
     decentscale_device_handle 0
@@ -94,6 +98,7 @@ array set ::de1 {
 	widget_current_profile_name_color_changed "#969eb1"
 	water_level_mm_correction 5
 	app_autostop_triggered True
+	app_stepskip_triggered False
 	water_level_full_point 40
 	connect_time 0
 	water_level 20
@@ -113,8 +118,8 @@ array set ::de1 {
 	voltage 110
 	has_catering_kit 0
 	has_plumbing_kit 0
-	max_pressure 12
-	max_flowrate 6
+	max_pressure 12.0
+	max_flowrate 12.0
 	max_flowrate_v11 8
 	version ""
 	min_temperature 80
@@ -218,14 +223,14 @@ array set ::settings {
 	mmr_enabled 0	
 	default_font_calibration 0.5
 	log_fast 0
-	use_finger_down_for_tap 0
+	use_finger_down_for_tap 1
 	linear_resistance_adjustment 1
 	language en
 	display_time_in_screen_saver 0
+	insert_preinfusion_pause 0
 	steam_over_temp_threshold 180
 	disable_long_press 0
-	steam_over_pressure_threshold 6
-	automatically_ble_reconnect_forever_to_scale 0
+	steam_over_pressure_threshold 8
 	chart_total_shot_flow 1
 	steam_over_pressure_count_trigger 10
 	do_async_update_check 0
@@ -396,6 +401,8 @@ array set ::settings {
 	flow_rate_transition "smooth"
 	water_speed_type "flow"
 	speaking_pitch 1.0
+	show_only_most_popular_skins 1
+	most_popular_skins {Insight MimojaCafe metric DSx SWDark4}
 	sound_button_in 8
 	sound_button_out 11
 	profile_notes {}
@@ -416,6 +423,7 @@ array set ::settings {
 	flow_hold_stop_volumetric 100
 	flow_decline_stop_volumetric 100
 	pressure_decline_stop_volumetric 100
+	running_weight 0
 	steam_temperature 160
 	steam_timeout 120
 	skin "default"
@@ -442,6 +450,8 @@ array set ::settings {
 	last_version "1.34"
 
 	create_legacy_shotfiles 0
+
+	show_scale_notifications 1
 }
 
 # default de1plus skin
@@ -457,12 +467,6 @@ set ::de1_device_list {}
 if { $settings(bluetooth_address) != ""} {
 	append_to_de1_list $settings(bluetooth_address) "DE1" "ble"
 }
-
-
-	#error "atomaxscale"
-# initial filling of BLE scale list
-#set ::scale_bluetooth_list $::settings(scale_bluetooth_address)
-
 
 array set ::de1_state {
 	Sleep \x00
@@ -517,7 +521,7 @@ array set ::de1_num_state {
 
 
 
-set ::scale_bluetooth_list ""
+set ::peripheral_device_list ""
 array set ::de1_num_state_reversed [reverse_array ::de1_num_state]
 
 
@@ -757,6 +761,7 @@ proc reset_gui_starting_steam {} {
 	steam_elapsed length 0
 	steam_pressure length 0
 	steam_flow length 0
+	steam_flow_goal length 0
 	steam_temperature length 0
 	#steam_pressure append 0
 	#steam_elapsed append 0
@@ -992,7 +997,7 @@ proc start_idle {} {
 	#after 1000 read_de1_state
 	
 	if {$::de1(scale_device_handle) != 0} {
-		#scale_enable_lcd
+		scale_enable_lcd
 	}
 
 	if {$::android == 0} {
@@ -1044,7 +1049,11 @@ proc start_sleep {} {
 	de1_send_state "go to sleep" $::de1_state(Sleep)
 
 	if {$::de1(scale_device_handle) != 0} {
-		#scale_disable_lcd
+
+		# of on usb power, then turn off the LCD when the tablet goes to sleep
+		if {[ifexists ::de1(scale_usb_powered)] == 1} {
+			scale_disable_lcd
+		}
 	}
 
 	
@@ -1067,6 +1076,8 @@ proc check_if_steam_clogged {} {
 		return 
 	}
 
+	#msg -DEBUG "check_if_steam_clogged"	
+
 	if {$::settings(enable_descale_steam_check) != 1} {
 		return
 	}
@@ -1077,7 +1088,7 @@ proc check_if_steam_clogged {} {
 		set ::settings(steam_over_temp_threshold) [celsius_to_fahrenheit 180]
 	}
 	
-	set ::settings(steam_over_pressure_threshold) 6
+	set ::settings(steam_over_pressure_threshold) 8
 
 	set bad_pressure 0
 	set bad_temp 0
@@ -1108,11 +1119,16 @@ proc check_if_steam_clogged {} {
 
 	}
 
-	if {$bad_pressure == 1 || $bad_temp == 1} {
+	if {$bad_pressure == 1} {
 		set_next_page off descalewarning;
 		page_show descalewarning
 
+	} elseif {$bad_temp == 1} {
+		info_page [subst {[translate "Your steam is getting too hot."] [translate "Increase your steam flow rate or lower the steam temperature in the calibration settings."]}] [translate Ok] steam_3
+	} else {
+		#msg -DEBUG "check_if_steam_clogged found no problem"	
 	}
+
 }
 
 proc has_flowmeter {} {

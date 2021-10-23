@@ -94,14 +94,13 @@ proc make_de1_dir {srcdir destdirs} {
         skins/SWDark3/1280x800/preheat_3.png *
         skins/SWDark3/1280x800/preheat_4.png *
         skins/SWDark3/1280x800/espresso_2_zoomed.png *
-
-
     }
 
 
         # plugins/example.tcl *
         # plugins/example-settings.tdb *
 
+#        profiles/best_practice_light.tcl *
 
 
     set files {
@@ -531,6 +530,70 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Insight/2560x1600/describe_espresso.jpg *
         skins/Insight/2560x1600/describe_espresso2.jpg *
 
+        skins/Insight\ Dark/1280x800/icon.jpg *
+        skins/Insight\ Dark/skin.tcl *
+        skins/Insight\ Dark/1280x800/espresso_1.png *
+        skins/Insight\ Dark/1280x800/espresso_1_zoomed.png *
+        skins/Insight\ Dark/1280x800/espresso_2.png *
+        skins/Insight\ Dark/1280x800/espresso_2_zoomed.png *
+        skins/Insight\ Dark/1280x800/espresso_3.png *
+        skins/Insight\ Dark/1280x800/espresso_3_zoomed.png *
+        skins/Insight\ Dark/1280x800/steam_1.png *
+        skins/Insight\ Dark/1280x800/steam_2.png *
+        skins/Insight\ Dark/1280x800/steam_3.png *
+        skins/Insight\ Dark/1280x800/water_1.png *
+        skins/Insight\ Dark/1280x800/water_2.png *
+        skins/Insight\ Dark/1280x800/water_3.png *
+        skins/Insight\ Dark/1280x800/preheat_1.png *
+        skins/Insight\ Dark/1280x800/preheat_2.png *
+        skins/Insight\ Dark/1280x800/preheat_3.png *
+        skins/Insight\ Dark/1280x800/preheat_4.png *
+        skins/Insight\ Dark/1280x800/scentone_1.jpg *
+        skins/Insight\ Dark/1280x800/scentone_tropical.jpg *
+        skins/Insight\ Dark/1280x800/scentone_berry.jpg *
+        skins/Insight\ Dark/1280x800/scentone_citrus.jpg *
+        skins/Insight\ Dark/1280x800/scentone_stone.jpg *
+        skins/Insight\ Dark/1280x800/scentone_cereal.jpg *
+        skins/Insight\ Dark/1280x800/scentone_chocolate.jpg *
+        skins/Insight\ Dark/1280x800/scentone_flower.jpg *
+        skins/Insight\ Dark/1280x800/scentone_spice.jpg *
+        skins/Insight\ Dark/1280x800/scentone_vegetable.jpg *
+        skins/Insight\ Dark/1280x800/scentone_savory.jpg *
+        skins/Insight\ Dark/1280x800/describe_espresso0.jpg *
+        skins/Insight\ Dark/1280x800/describe_espresso.jpg *
+        skins/Insight\ Dark/1280x800/describe_espresso2.jpg *
+        skins/Insight\ Dark/2560x1600/icon.jpg *
+        skins/Insight\ Dark/2560x1600/espresso_1.png *
+        skins/Insight\ Dark/2560x1600/espresso_1_zoomed.png *
+        skins/Insight\ Dark/2560x1600/espresso_2.png *
+        skins/Insight\ Dark/2560x1600/espresso_2_zoomed.png *
+        skins/Insight\ Dark/2560x1600/espresso_3.png *
+        skins/Insight\ Dark/2560x1600/espresso_3_zoomed.png *
+        skins/Insight\ Dark/2560x1600/steam_1.png *
+        skins/Insight\ Dark/2560x1600/steam_2.png *
+        skins/Insight\ Dark/2560x1600/steam_3.png *
+        skins/Insight\ Dark/2560x1600/water_1.png *
+        skins/Insight\ Dark/2560x1600/water_2.png *
+        skins/Insight\ Dark/2560x1600/water_3.png *
+        skins/Insight\ Dark/2560x1600/preheat_1.png *
+        skins/Insight\ Dark/2560x1600/preheat_2.png *
+        skins/Insight\ Dark/2560x1600/preheat_3.png *
+        skins/Insight\ Dark/2560x1600/preheat_4.png *
+        skins/Insight\ Dark/2560x1600/scentone_1.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_tropical.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_berry.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_citrus.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_stone.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_cereal.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_chocolate.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_flower.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_spice.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_vegetable.jpg *
+        skins/Insight\ Dark/2560x1600/scentone_savory.jpg *
+        skins/Insight\ Dark/2560x1600/describe_espresso0.jpg *
+        skins/Insight\ Dark/2560x1600/describe_espresso.jpg *
+        skins/Insight\ Dark/2560x1600/describe_espresso2.jpg *
+
         skins/MimojaCafe/1280x800/icon.jpg *
         skins/MimojaCafe/2560x1600/icon.jpg *
         skins/MimojaCafe/fonts/Font\ Awesome\ 5\ Free-Solid-900.otf *
@@ -817,6 +880,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/DSx_Font_Files/notosansuiregular.ttf *
         skins/DSx/DSx_Font_Files/Roboto-Regular.ttf *
         skins/DSx/DSx_Font_Files/Skia.ttf *
+        skins/DSx/DSx_Home_Page/DSx_2021_home.page *
         skins/DSx/DSx_Plugins/DSx_admin.dsx *
         skins/DSx/DSx_Plugins/DSx_backup.dsx *
         skins/DSx/DSx_Plugins/DSx_cal.dsx *
@@ -827,7 +891,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/DSx_Plugins/DSx_workflow.dsx *
         skins/DSx/DSx_Plugins/EY_calculator.off *
         skins/DSx/DSx_Plugins/history_delete.off *
-        skins/DSx/DSx_Plugins/move_on_button.off *
+        skins/DSx/DSx_Plugins/history_zoom.dsx *
         skins/DSx/DSx_Plugins/Pizza_dough.off *
         skins/DSx/DSx_Plugins/step_to_history.off *
         skins/DSx/DSx_Plugins/wake_to_pinkcup.off *
@@ -835,6 +899,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/skin.tcl *
 
         saver/1280x800/black_saver.jpg *
+        saver/1280x800/emmyart1.jpg *
         saver/1280x800/Black\ Steel.jpg *
         saver/1280x800/Cozy-Home.jpg *
         saver/1280x800/Floral.jpg *
@@ -859,6 +924,7 @@ proc make_de1_dir {srcdir destdirs} {
         saver/1280x800/three_women.jpg *
         saver/1280x800/rainbow_dj.jpg *
         saver/2560x1600/black_saver.jpg *
+        saver/2560x1600/emmyart1.jpg *
         saver/2560x1600/Black\ Steel.jpg *
         saver/2560x1600/Cozy-Home.jpg *
         saver/2560x1600/Floral.jpg *
@@ -885,11 +951,15 @@ proc make_de1_dir {srcdir destdirs} {
         saver/2560x1600/rainbow_dj.jpg *
 
         profiles/adaptive_allonge.tcl *
+        profiles/easy_blooming_active_pressure_decline.tcl *
+        profiles/TurboBloom.tcl *
+        profiles/TurboTurbo.tcl *
+        profiles/Filter_20.tcl *
         profiles/best_practice.tcl *
-        profiles/best_practice_light.tcl *
         profiles/flow_calibration.tcl *
         profiles/7g\ basket.tcl *
         profiles/cleaning_forward_flush.tcl *
+        profiles/Cleaning_forward_flush_x5.tcl *
         profiles/adaptive_espresso.tcl *
         profiles/Best\ overall\ pressure\ profile.tcl *
         profiles/weber_spring_clean.tcl *
@@ -903,6 +973,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/tea_portafilter_white.tcl *
         profiles/tea_portafilter_tisane.tcl *
         profiles/test_leak.tcl *
+        profiles/test_for_a_small_low_pressure_leak.tcl *
         profiles/test_temperature.tcl *
         profiles/test_pressure_calibration.tcl *
         profiles/test_temperature_calibration.tcl *
@@ -947,6 +1018,8 @@ proc make_de1_dir {srcdir destdirs} {
 
         plugins/log_upload/plugin.tcl *
 
+        plugins/old_lcd_disable/plugin.tcl *
+
         plugins/DPx_Screen_Saver/plugin.tcl *
         plugins/DPx_Steam_Stop/plugin.tcl *
 
@@ -990,7 +1063,6 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/SDB/plugin.tcl *
 
         allcerts.pem *
-        
     }
 #        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
 #        profiles/Powerful\ 10\ bar\ shot.tcl *
@@ -1025,6 +1097,8 @@ proc make_de1_dir {srcdir destdirs} {
         set manifest ""
         set files_copied 0
 
+        set prev_existing_file {}
+
         set filecnt 0
         foreach {file scope} $files {
             incr filecnt
@@ -1034,6 +1108,13 @@ proc make_de1_dir {srcdir destdirs} {
 
             set source "$srcdir/$file"
             set dest "$destdir/$file"
+
+            if {[file exists $source] != 1} {
+                puts "File '$source' ($file) does not exist, previous file was: '$prev_existing_file'"
+                continue
+            }
+
+            set prev_existing_file $file
 
             set mtime [file mtime $source]
             set mtime_saved [ifexists lmanifest_mtime($file)]

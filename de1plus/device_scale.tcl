@@ -1002,9 +1002,8 @@ namespace eval ::device::scale::history {
 		}
 
 		set $::device::scale::history::_final_weight_name $cwe
-		set ::settings(drink_weight) [round_to_one_digits $cwe]
+		set ::settings(running_weight) [round_to_one_digits $cwe]
 	}
-
 
 
 
@@ -1167,16 +1166,27 @@ namespace eval ::device::scale::saw {
 		variable _ignore_first_seconds
 		variable _mode_timer
 
-		if {[::device::scale::saw::is_tracking_state] && $_target > 0} {
+		array set thisadvstep \
+			[lindex $::settings(advanced_shot) \
+				[::gui::state::current_framenumber]]
+
+					set framedesc [format "%s: %s" \
+							       [expr {1 + [::gui::state::current_framenumber]}] \
+							       [ifexists thisadvstep(name)] \
+							      ]
+		set profile_target [ifexists thisadvstep(weight)]
+
+		if {[::device::scale::saw::is_tracking_state]} {
 
 			set thisweight [weight_now]
 
 			set stop_early_by [expr { $_early_by_grams + [flow_now] * $_early_by_flow }]
 
-			if {    [$_mode_timer] > $_ignore_first_seconds \
-					&& ! $::de1(app_autostop_triggered) \
-					&& [round_to_one_digits $thisweight] > \
-						[round_to_one_digits [expr { $_target - $stop_early_by }]]} {
+			if {$_target > 0 \
+				&& [$_mode_timer] > $_ignore_first_seconds \
+				&& ! $::de1(app_autostop_triggered) \
+				&& [round_to_one_digits $thisweight] > \
+					[round_to_one_digits [expr { $_target - $stop_early_by }]]} {
 
 				start_idle
 
@@ -1187,6 +1197,19 @@ namespace eval ::device::scale::saw {
 
 				msg -INFO "Weight based stop was triggered at ${thisweight} g for ${_target} g target"
 				::gui::notify::scale_event saw_stop
+			}
+
+			if {$profile_target > 0 \
+				&& ! $::de1(app_stepskip_triggered) \
+				&& [round_to_one_digits $thisweight] > \
+					[round_to_one_digits [expr { $profile_target - $stop_early_by }]]} {
+
+				start_next_step
+
+				set ::de1(app_stepskip_triggered) True
+
+				msg -INFO "Weight based step skip was triggered at ${thisweight} g for ${profile_target} g target"
+				::gui::notify::scale_event saw_skip
 			}
 		}
 	}
@@ -1436,7 +1459,11 @@ namespace eval ::device::scale::callbacks {
 		}
 	}
 
-
+	proc save_drink_weight {event_dict} {
+		if { [dict get $event_dict previous_state] eq "Espresso" } {
+			set ::settings(drink_weight) [round_to_one_digits $::de1(final_espresso_weight)]
+		}
+	}
 
 	::de1::event::listener::on_major_state_change_add -noidle ::device::scale::callbacks::on_major_state_change
 
@@ -1445,6 +1472,8 @@ namespace eval ::device::scale::callbacks {
 	::de1::event::listener::on_major_state_change_add ::device::scale::saw::on_major_state_change
 
 	::de1::event::listener::after_flow_complete_add ::device::scale::history::stop_recording
+	
+	::de1::event::listener::after_flow_complete_add ::device::scale::callbacks::save_drink_weight
 
 	# -noidle should be close enough for scale's inbuilt timer
 	::de1::event::listener::on_flow_change_add -noidle ::device::scale::callbacks::on_flow_change_manage_timer

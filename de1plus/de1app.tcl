@@ -9,6 +9,12 @@ package provide de1plus 1.0
 
 package require de1_logging 1.0
 
+set ::enable_profiling 0
+
+if {$::enable_profiling == 1} {
+	package require de1_profiler 1.0
+}
+
 try {
 	package require de1_main
 } on error {result ropts} {

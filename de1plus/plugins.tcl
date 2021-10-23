@@ -192,6 +192,7 @@ namespace eval ::plugins {
         }
         lappend ::settings(enabled_plugins) $plugin
         ::save_settings
+        plugins peek $plugin
         plugins load $plugin
         return 1;
     }

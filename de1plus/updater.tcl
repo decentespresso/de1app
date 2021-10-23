@@ -344,7 +344,7 @@ proc verify_decent_tls_certificate {} {
         if {$sha1 == "BF735474BA9AA423EC03AB9F980BE68BCAA35E57"} {
             msg -INFO "https cert matches what we expect, good"
         } else {
-            msg -ERROR "https matches what we expect. Decent might have changed to a new SSL cert, or something bad is happening. SHA1 received='$sha1'"
+            msg -ERROR "https does not match what we expect. Decent might have changed to a new SSL cert, or something bad is happening. SHA1 received='$sha1'"
         }
     }
 
@@ -361,7 +361,7 @@ proc verify_decent_tls_certificate {} {
 
 proc schedule_app_update_check {} {
     # 3am is when we check for an app update
-    set aftertime [next_alarm_time [expr {3 * 60 * 60}]]
+    set aftertime [next_alarm_time [expr {24 * 60 * 60}]]
     msg -INFO "Scheduling next app update check for [clock format $aftertime]"
     after $aftertime scheduled_app_update_check
 }
@@ -697,9 +697,19 @@ proc start_app_update {} {
         set perc [expr {100.0 * ($cnt / [array size tofetch])}]
         incr cnt
 
-        set ::de1(app_update_button_label) "$cnt/[array size tofetch]"; 
-        catch {
-            .hello configure -text "$cnt/[array size tofetch]"
+
+        if {[ifexists ::settings(app_updates_beta_enabled)] == 2} {
+            set ::de1(app_update_button_label) "$cnt/[array size tofetch] ([file tail $k])"; 
+            catch {
+                .hello configure -text "$cnt/[array size tofetch] ([file tail $k])"
+                update
+            }
+        } else {
+            set ::de1(app_update_button_label) "$cnt/[array size tofetch]"; 
+            catch {
+                .hello configure -text "$cnt/[array size tofetch]"
+                update
+            }
         }
 
         catch { update_onscreen_variables }
@@ -726,8 +736,9 @@ proc start_app_update {} {
 
         if {$skip_this_file != 1} {
             set newsha ""
-            set max_attempts 3
-            for {set attempt 0} {$attempt < $max_attempts} {incr attempt} {
+            set max_attempts 4
+            set success 0
+            for {set attempt 1} {$attempt <= $max_attempts} {incr attempt} {
                 catch {
                     file delete $fn
                     msg -INFO "HTTP GET $url saving to $fn"
@@ -741,10 +752,29 @@ proc start_app_update {} {
                 if {$arr(filesha) != $newsha} {
                     msg -ERROR "Failed to accurately download $k, retrying"
                     file delete $fn
+
+                    set ::de1(app_update_button_label) "$cnt/[array size tofetch] ([file tail $k] - retry #$attempt)"; 
+                    catch {
+                        .hello configure -text "$cnt/[array size tofetch] ([file tail $k] - retry #$attempt)"
+                        update
+                    }
+
                 } else {
                     # successful fetch 
+                    set success 1
                     break
                 }
+            }
+
+            if {$success != 1} {
+                set ::de1(app_update_button_label) "Unable to download $cnt/[array size tofetch] ([file tail $k])"; 
+                catch {
+                    .hello configure -text "Unable to download $cnt/[array size tofetch] ([file tail $k])"
+                    update
+                }
+                msg -ERROR "Failed to accurately download $k"
+                set ::app_updating 0
+                return -1
             }
 
             # call 'update' to keep the gui responsive

@@ -815,7 +815,35 @@ proc de1_packed_shot {shot_list} {
 	set frame_names ""
 	set extension_frames ""
 
-	foreach step $profile(advanced_shot) {
+	set this_profile $profile(advanced_shot)
+
+	if {[ifexists ::settings(insert_preinfusion_pause)] == 1} {
+
+		msg -DEBUG "Prefixing profile with a 2 seconds slow start preinfusion pause"
+
+        set pause [list \
+            name [translate "Pause"] \
+            temperature $::settings(espresso_temperature) \
+            sensor "coffee" \
+            pump "flow" \
+            transition "fast" \
+            pressure 0 \
+            flow 0 \
+            seconds 2 \
+            volume 0 \
+            exit_if 0 \
+            exit_pressure_over 0 \
+            exit_pressure_under 0 \
+            exit_flow_over 6 \
+            exit_flow_under 0 \
+        ]
+
+        set this_profile [concat [list $pause] $this_profile]
+
+	}
+
+
+	foreach step $this_profile {
 		unset -nocomplain props
 		array set props $step
 
@@ -902,6 +930,10 @@ proc de1_packed_shot {shot_list} {
 	set NumberOfPreinfuseFrames [ifexists profile(final_desired_shot_volume_advanced_count_start)]
 	if {$NumberOfPreinfuseFrames == ""} {
 		set NumberOfPreinfuseFrames 0
+	}
+
+	if {[ifexists ::setting(insert_preinfusion_pause)] == 1} {
+		incr NumberOfPreinfuseFrames
 	}
 	set hdr(NumberOfPreinfuseFrames) $NumberOfPreinfuseFrames
 
@@ -1288,17 +1320,28 @@ proc parse_decent_scale_recv {packed destarrname} {
 
    		#unset -nocomplain recv
 	   	#::fields::unpack $packed [decent_scale_weight_read_spec] recv bigeendian
-
+	   	set cmd $recv(command)
 
    		unset -nocomplain recv
 	   	::fields::unpack $packed [decent_scale_weight_read_spec2] recv bigeendian
+	   	set recv(parsed) "weight"
+	   	set recv(command) $cmd
+
 	   	#::fields::unpack $packed [decent_scale_generic_read_spec] recv bigeendian
    	} elseif {$recv(command) == 0xAA} {
+	   	set recv(parsed) "button"
    		msg -DEBUG "Decentscale BUTTON pressed: [array get recv]"
    	} elseif {$recv(command) == 0x0C} {
    		unset -nocomplain recv
 	   	::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian
+	   	set recv(parsed) "timer"
    		msg -DEBUG "Decentscale time received: [array get recv]"
+   	} else {
+   		#unset -nocomplain recv
+	   	#::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian
+	   	#set recv(command) "unknown"
+	   	set recv(parsed) "unknown"
+   		msg -DEBUG "Decentscale unknown data received: [array get recv]"
    	}
 
 }

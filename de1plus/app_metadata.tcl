@@ -196,7 +196,7 @@ proc init_app_metadata {} {
 		name_plural "Drink weights"
 		short_name "Yield" 
 		short_name_plural "Yields"
-		propagate 1
+		propagate 0
 		data_type number
 		min 0.0
 		max 500.0
