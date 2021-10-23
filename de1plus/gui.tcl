@@ -2416,6 +2416,7 @@ proc show_hide_from_variable {widgetids n1 n2 op} {
 
 # causes the water level widget to change between colors (blinking) at an inreasing rate as the water level goes lower
 proc water_level_color_check {widget} {
+
 	if {$::settings(waterlevel_indicator_blink) != 1} {
 		return
 	}
@@ -3619,3 +3620,11 @@ namespace eval ::gui::update {
 	} ;# append_live_data_to_espresso_chart
 
 } ;# ::gui::update
+
+
+proc gridconfigure {widget} {
+	# tkblt has not implemented this command, despite what the docs say
+	if {[package versions BLT] != ""} {
+		$widget grid configure -color $::grid_color 
+	}
+}
