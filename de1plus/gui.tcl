@@ -2427,6 +2427,11 @@ proc water_level_color_check {widget} {
 	}
 	incr ::water_level_color_check_count 
 	set colors [list  "#7ad2ff"  "#ff6b6b"]
+
+	if {[ifexists ::insight_dark_mode] == 1} {
+		set colors [list  "#003e5d"  "#790000"]
+	}
+
 	if {$::water_level_color_check_count > [expr {-1 + [llength $colors]}] } {
 		set ::water_level_color_check_count 0
 	}
