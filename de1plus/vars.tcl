@@ -966,18 +966,10 @@ proc preinfusion_pour_timer_text {} {
 
 proc total_pour_timer_text {} {
     if {$::de1(language_rtl) == 1} {
-		if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
-			return "[return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]] < [translate {total}] [translate {s}][espresso_elapsed_timer]"
-		} else {
-			return "[translate {s}][espresso_elapsed_timer] [translate {total}] "
-		}
+		return "[translate {s}][espresso_elapsed_timer] [translate {total}] "
 	}
 
-	if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
-		return "[espresso_elapsed_timer][translate {s}] [translate {total}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]]"
-	} else {
-		return "[espresso_elapsed_timer][translate {s}] [translate {total}]"
-	}
+	return "[espresso_elapsed_timer][translate {s}] [translate {total}]"
 }
 
 proc espresso_done_timer_text {} {
@@ -995,6 +987,11 @@ proc espresso_done_timer_text {} {
 
 proc pouring_timer_text {} {
     if {$::de1(language_rtl) == 1} {
+
+		if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
+			return "[return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]] < [translate {pouring}] [translate {s}][espresso_elapsed_timer]"
+		}
+
 		if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
 			return "[translate {s}][espresso_pour_timer] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
 
@@ -1003,11 +1000,14 @@ proc pouring_timer_text {} {
 		}
 	}
 
+	if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(settings_profile_type) == "settings_2c"} {
+		return "[espresso_elapsed_timer][translate {s}] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]]"
+	}
+
 	if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
 		return "[espresso_pour_timer][translate {s}] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
-	} else {
-		return "[espresso_pour_timer][translate {s}] [translate {pouring}]"
 	}
+	return "[espresso_pour_timer][translate {s}] [translate {pouring}]"
 
 }
 
