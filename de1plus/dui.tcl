@@ -4940,18 +4940,18 @@ namespace eval ::dui {
 						set img_name [$can itemcget $item -image]
 						if { [dui::image::exists_delayed $img_name] } {
 							set img_name [dui::image::load_delayed $img_name]
-							}
 						}
-							
-						set state [lsearch -glob -inline [$can gettags $item] {st:*}]
-						if { $state eq "" } {
+					}
+
+					set state [lsearch -glob -inline [$can gettags $item] {st:*}]
+					if { $state eq "" } {
+						set state normal
+					} else {
+						set state [string range $state 3 end]
+						if { $state ni {hidden disabled} } {
 							set state normal
-						} else {
-							set state [string range $state 3 end]
-							if { $state ni {hidden disabled} } {
-								set state normal
-							}
 						}
+					}
 						
 					if { $state in {normal disabled} } {
 						if { $::android == 1 && [dui cget use_finger_down_for_tap] } {
@@ -4968,13 +4968,15 @@ namespace eval ::dui {
 							$can itemconfigure $item -state $state
 						}
 						
-						if { $show_page_type eq "dialog" } {
+						if { $show_page_type eq "dialog" && $previous_item ne {} } {
 							# Ensure the z-order stack is properly maintained 
 							$can raise $item $previous_item
 						}
 					}
 					
-					set previous_item $item
+					if { $state ne "hidden" && $item ne {} } {
+						set previous_item $item
+					}
 				}
 			}
 			
@@ -5851,6 +5853,11 @@ namespace eval ::dui {
 			set wrt [get $page [lindex $wrt 0]]
 			lassign [$can bbox $wrt] x0 y0 x1 y1 
 			lassign [$can bbox $tag] wx0 wy0 wx1 wy1
+			
+			if { $x0 eq {} || $wx0 eq {} } {
+				# One of the items is hidden, so we can't get its coordinates
+				return {}
+			}
 			
 			set xoffset [dui platform rescale_x $xoffset]
 			set yoffset [dui platform rescale_y $yoffset]
@@ -7061,7 +7068,7 @@ namespace eval ::dui {
 		#		given in -symbol_* that are passed through to 'dui add symbol'
 		#	-radius for rounded rectangles, and -arc_offset for rounded outline rectangles
 		#	All others passed through to the respective visible button creation command.
-		proc dbutton { pages x y args } {
+		proc dbutton { pages x y args } { 			
 			set debug_buttons [dui cget debug_buttons]
 			set can [dui canvas]
 			set ns [dui page get_namespace $pages]
@@ -7567,7 +7574,7 @@ namespace eval ::dui {
 		proc entry { pages x y args } {
 			set tags [dui::args::process_tags_and_var $pages entry -textvariable 1]
 			set main_tag [lindex $tags 0]
-			
+ 
 			set style [dui::args::get_option -style "" 0]
 			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
 			dui::args::process_aspects entry $style
