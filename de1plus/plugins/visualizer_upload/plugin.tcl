@@ -8,8 +8,8 @@ set plugin_name "visualizer_upload"
 namespace eval ::plugins::${plugin_name} {
     variable author "Johanna Schander"
     variable contact "coffee-plugins@mimoja.de"
-    variable version 1.1
-    variable description "Upload your last shot to visualizer.coffee"
+    variable version 1.2
+    variable description "Upload and download shots to/from visualizer.coffee"
     variable name "Upload to visualizer"
 
     # Paint settings screen
@@ -41,6 +41,9 @@ namespace eval ::plugins::${plugin_name} {
             set ::plugins::visualizer_upload::settings(last_download_id) {}
             set ::plugins::visualizer_upload::settings(last_download_shot_start) {}
             set ::plugins::visualizer_upload::settings(last_action) {}
+        }
+        if { ![info exists ::plugins::visualizer_upload::settings(download_by_code_url)] } {
+            set ::plugins::visualizer_upload::settings(download_by_code_url) "https://visualizer.coffee/api/shots/shared?code=<ID>"
         }
         if { $needs_save_settings == 1 } {
             plugins save_settings visualizer_upload
@@ -185,7 +188,7 @@ namespace eval ::plugins::${plugin_name} {
         }
     }
 
-    # type = browse / download_all / download_essentials
+    # type = browse / download_all / download_essentials / donwload_by_code
     proc id_to_url { {visualizer_id {}} {type browse} } {
         variable settings
         if { $visualizer_id eq {} } {
@@ -193,8 +196,10 @@ namespace eval ::plugins::${plugin_name} {
         }
         if { $type eq "download_all" } {
             set url "$settings(visualizer_download_url)/download"
-        } elseif { $type eq "donwload_essentials" } {
+        } elseif { $type eq "download_essentials" } {
             set url "$settings(visualizer_download_url)/download?essentials=1"
+        } elseif { $type eq "download_by_code" } {
+            set url $settings(download_by_code_url)
         } else {
             set url $settings(visualizer_browse_url)
         }
@@ -221,11 +226,20 @@ namespace eval ::plugins::${plugin_name} {
         }
     }
     
-    # what = all / essentials
+	# if 'visualizer_id' has 4 characters, it is a download code instead (we make it anything with less than 10 chars). 
+    # what = all / essentials, only used when 'visualizer_id' is a shot ID and not a download code.
     proc download { visualizer_id {what essentials} } {
         variable settings
+
+        if { $what eq "essentials" } {
+            set url_type "download_essentials"
+        } else {
+            set url_type "download_all"
+        }
         if { $visualizer_id eq {} } {
             set visualizer_id $settings(last_upload_id)
+        } elseif { [string length $visualizer_id] < 10 } {
+            set url_type "download_by_code"
         }
         
         set settings(last_action) "download"
@@ -233,12 +247,9 @@ namespace eval ::plugins::${plugin_name} {
         set settings(last_download_result) ""
         set settings(last_download_shot_start) ""
         
-        if { $what eq "essentials" } {
-            set url_type "download_all"
-        } else {
-            set url_type "download_essentials"
-        }
         set download_link [id_to_url $visualizer_id $url_type]
+        msg "downloading url '$download_link'"
+
         ::http::register https 443 ::tls::socket
         tls::init -tls1 0 -ssl2 0 -ssl3 0 -tls1.1 0 -tls1.2 1 -servername $settings(visualizer_url) $settings(visualizer_url) 443
         
@@ -259,7 +270,7 @@ namespace eval ::plugins::${plugin_name} {
         
         if { $status eq "ok" && $ncode == 200 } {
             if {[catch {
-                set response [::json::json2dict $answer]
+                set response [::json::json2dict [encoding convertfrom utf-8 $answer]]
             } err] != 0} {
                 set my_err ""
                 msg "unexpected Visualizer answer: $answer"
@@ -274,6 +285,42 @@ namespace eval ::plugins::${plugin_name} {
             return
         }
 
+        if { $url_type eq "download_by_code" && [dict exists $response profile_url] } {
+            set profile_url [dict get $response profile_url]
+            
+            if {[catch {
+                set token [::http::geturl $profile_url -timeout 10000]
+                set status [::http::status $token]
+                set answer [::http::data $token]
+                set ncode [::http::ncode $token]
+                set code [::http::code $token]
+                ::http::cleanup $token
+            } err] != 0} {
+                msg "could not download profile url '$profile_url' : $err"
+                dui say [translate "Download failed"]
+                set settings(last_download_result) "[translate {Download failed!}] $code"
+                catch { ::http::cleanup $token }
+                return
+            }
+
+            if { $status eq "ok" && $ncode == 200 } {
+                if {[catch {
+                    dict set response profile [list {*}[encoding convertfrom utf-8 $answer]]
+                } err] != 0} {
+                    set my_err ""
+                    msg "unexpected Visualizer profile url answer: $answer"
+                    dui say [translate "Download failed"] 
+                    set settings(last_download_result) "[translate {Download failed!}] [translate {Could not parse profile answer}]"
+                    return
+                }
+            } else {
+                msg "could not get profile url $profile_url: $code"
+                dui say [translate "Download failed"]
+                set settings(last_download_result) "[translate {Download failed!}] $code"
+                return
+            }
+        }
+        
         set settings(last_download_result) [translate {Download successful!}]
         set settings(last_download_shot_start) [dict get $response start_time] 
         return $response
