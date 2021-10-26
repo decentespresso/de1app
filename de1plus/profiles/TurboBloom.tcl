@@ -1,6 +1,6 @@
 advanced_shot {{exit_if 1 flow 8.0 volume 100 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 86.00 name preinfusion pressure 1 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 4.00 max_flow_or_pressure 0 exit_pressure_under 0 seconds 20.00} {exit_if 1 flow 0 volume 100 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 70.00 name {dynamic bloom} pressure 6.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 exit_pressure_over 11 max_flow_or_pressure 0 exit_pressure_under 2.20 seconds 40.00} {exit_if 0 flow 2.2 volume 100 max_flow_or_pressure_range 1.0 transition fast exit_flow_under 0 temperature 80.00 name ramp pressure 6.0000000000000036 sensor coffee pump pressure exit_type pressure_under exit_flow_over 6 exit_pressure_over 11 max_flow_or_pressure 0.0 exit_pressure_under 0 seconds 4.00} {exit_if 1 flow 2.2 volume 100 max_flow_or_pressure_range 1.0 transition fast exit_flow_under 0 temperature 77.00 name {6 bar} pressure 6.0000000000000036 sensor coffee pump pressure exit_type flow_under exit_flow_over 6 exit_pressure_over 11 max_flow_or_pressure 4.5 exit_pressure_under 0 seconds 2.00} {exit_if 0 flow 3.200000000000001 volume 100 max_flow_or_pressure_range 1.0 transition smooth exit_flow_under 0 temperature 77.00 name decline pressure 2.999999999999999 sensor coffee pump pressure exit_type pressure_under exit_flow_over 6 exit_pressure_over 11 max_flow_or_pressure 4.5 exit_pressure_under 0 seconds 40.00}}
 espresso_temperature_steps_enabled 0
-author {Joe D}
+author Decent
 espresso_hold_time 15
 preinfusion_time 20
 espresso_pressure 6.0
@@ -20,7 +20,7 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes {Dynamic bloom into pressure extraction. Based on the "easy blooming" profile structure from Luca and Stephane and modified to primarily target high extraction grinders at high flow rates, typically ending around 3-4.5ml/s. Dial with ratio once grind is giving an ending flowrate in the range. Includes a significant temperature drop that reduces harshness (although the actual temperature drop is much less than programmed). By Joe D.}
+profile_notes {Dynamic bloom into pressure extraction. Based on the 'easy blooming' profile structure from Luca and Stephane and modified to primarily target high extraction grinders at high flow rates, typically ending around 3-4.5ml/s. Dial with ratio once grind is giving an ending flowrate in the range. Includes a significant temperature drop that reduces harshness (although the actual temperature drop is much less than programmed). By Joe D.}
 final_desired_shot_volume 0
 final_desired_shot_weight 0
 final_desired_shot_weight_advanced 39

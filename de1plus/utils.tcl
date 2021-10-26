@@ -1000,7 +1000,7 @@ proc translate {english} {
             }
             append t "\}"
             msg -NOTICE "Appending new phrase: '$english' to [homedir]/translation.tcl"
-            append_file "[homedir]/translation.tcl" $t
+            append_file "[homedir]/translation.tcl" [encoding convertto utf-8 $t]
 
             set ::already_shown_trans($english) 1
         }
