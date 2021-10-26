@@ -7595,7 +7595,9 @@ namespace eval ::dui {
 				dui::args::add_option_if_not_exists -width [expr {int($width * $::globals(entry_length_multiplier))}]
 			}
 			
-			if { ![dui::args::has_option -vcmd] } {
+			if { [dui::args::has_option -vcmd] } {
+				dui::args::add_option_if_not_exists -validate key
+			} else {
 				set vcmd ""
 				if { $data_type eq "numeric" } {
 					set vcmd [list ::dui::validate_numeric %P $n_decimals $min $max]
@@ -7607,6 +7609,8 @@ namespace eval ::dui {
 					set error_fg [dui aspect get dtext fill -style error -default red] 
 					set vcmd [list ::dui::validate_date %P %W $dateformat $fg $error_fg]
 					set validate [dui::args::get_option -validate focus 1]
+				} else {
+					set validate key
 				}
 				
 				if { $vcmd ne "" } {
