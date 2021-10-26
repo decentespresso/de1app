@@ -1040,8 +1040,8 @@ if {$::settings(scale_bluetooth_address) != ""} {
 	# hot water - optional feature when scale is connected
 	add_de1_text "water " 1870 1200 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterweightflow_text]} 
-	add_de1_text "water " 1870 1300 -justify right -anchor "nw" -text [translate "Total Weight"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-	add_de1_variable "water" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[drink_weight_text]} 
+	add_de1_text "water water_3" 1870 1300 -justify right -anchor "nw" -text [translate "Total Weight"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
+	add_de1_variable "water water_3" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[drink_weight_text]} 
 } else {
 	add_de1_text "water " 1870 1200 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
