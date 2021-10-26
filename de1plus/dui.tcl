@@ -825,8 +825,8 @@ namespace eval ::dui {
 			default.dcheckbox.anchor nw
 			default.dcheckbox.justify left
 			
-			default.dcheckbox_label.pos "en 30 -10"
-			default.dcheckbox_label.anchor nw
+			default.dcheckbox_label.pos "e 30 0"
+			default.dcheckbox_label.anchor w
 			default.dcheckbox_label.justify left
 			
 			default.listbox.relief flat
@@ -968,7 +968,18 @@ namespace eval ::dui {
 			default.dbutton_symbol.disabledfill.menu_dlg_btn #ddd
 				
 			default.line.fill.menu_dlg_sepline #ddd
-			default.line.width.menu_dlg_sepline 1 
+			default.line.width.menu_dlg_sepline 1
+			
+			default.dtext.fill.menu_dlg "#7f879a"
+			default.dtext.disabledfill.menu_dlg "#ccc"
+			default.dcheckbox.fill.menu_dlg "#7f879a"
+			default.dcheckbox.disabledfill.menu_dlg "#ccc"
+			default.dcheckbox_label.fill.menu_dlg "#7f879a"
+			default.dcheckbox_label.disabledfill.menu_dlg "#ccc"
+			
+			default.dbutton.shape.menu_dlg round
+			default.dbutton.radius.menu_dlg 25
+			default.dbutton.fill.menu_dlg "#c0c5e3"
 		}
 
 		# Named options:
