@@ -72,7 +72,7 @@ namespace eval ::dui {
 	variable entry_length_multiplier 1
 	variable listbox_length_multiplier 1
 	variable listbox_global_width_multiplier 1
-
+	
 	variable _base_screen_width 2560.0
 	variable _base_screen_height 1600.0
 	
@@ -5446,6 +5446,12 @@ namespace eval ::dui {
 		# Within each image directory, it will look in the <screen_width>x<screen_height> subfolder.
 		variable img_dirs {}
 		variable sound_dirs {}
+		
+		# Tracks press times for longpress and similar events. Indexed by keys "<widget_id>,<event>".
+		variable press_events
+		array set press_events {}
+		# Milliseconds to distinguish between press and longpress
+		variable longpress_threshold 200
 	
 		# Just a wrapper for the dui::add::<type> commands, for consistency of the API
 		proc add { type args } {
@@ -6773,6 +6779,32 @@ namespace eval ::dui {
 			set y1 [expr {$y0+$height+$yoffset}]
 			return [list $x0 $y0 $x1 $y1]
 		}
+		
+		proc longpress_press { widget_name longpress_command } {
+			variable longpress_threshold
+			set ::dui::item::press_events($widget_name,press) [clock milliseconds]
+			after $longpress_threshold [subst {
+				if { \[info exists ::dui::item::press_events($widget_name,press)\] } {
+					unset -nocomplain ::dui::item::press_events($widget_name,press)
+					uplevel #0 $longpress_command
+				}
+			}]
+		}
+		
+		proc longpress_unpress { widget_name {press_command {}} } {
+			variable press_events
+			variable longpress_threshold
+			if { [info exists press_events($widget_name,press)] } {
+				if { ([clock milliseconds]-$press_events($widget_name,press)) <= $longpress_threshold } {
+					unset -nocomplain ::dui::item::press_events($widget_name,press)
+					if { $press_command ne {} } {
+						uplevel #0 $press_command
+					}
+				} else {
+					unset -nocomplain ::dui::item::press_events($widget_name,press)
+				}
+			}
+		}		
 	}
 
 	### ADD SUBENSEMBLE: COMMANDS TO CREATE CANVAS ITEMS AND WIDGETS AND ADD THEM TO THE CANVAS ###
@@ -7070,6 +7102,7 @@ namespace eval ::dui {
 		#		outline with a fill color).
 		#	-style to apply the default aspects of the provided style
 		#	-command tcl code to be run when the button is clicked
+		#	-longpress_cmd tcl code to be run when the button is long pressed
 		#	-label, -label1, -label2... label text, in case a label is to be shown inside the button
 		#	-labelvariable, -label1variable... to use a variable as label text
 		#	-label_pos, -label1_pos... a list with 2 elements between 0 and 1 that specify the x and y percentages where to position
@@ -7086,6 +7119,7 @@ namespace eval ::dui {
 			set first_page [lindex $pages 0]
 			
 			set cmd [dui::args::get_option -command {} 1]
+			set longpress_cmd [dui::args::get_option -longpress_cmd {} 1]
 			set style [dui::args::get_option -style "" 1]
 			set aspect_type [dui::args::get_option -aspect_type dbutton]
 			dui::args::process_aspects dbutton $style {} {use_biginc orient}
@@ -7129,7 +7163,6 @@ namespace eval ::dui {
 			if { $anchor ne "nw" } {
 				lassign [dui::item::anchor_coords $anchor $x $y [expr {$x1-$x}] [expr {$y1-$y}]] x y x1 y1
 			}
-			
 			
 			set tags [dui::args::process_tags_and_var $pages dbutton {} 1 args 1]
 			set main_tag [lindex $tags 0]
@@ -7303,6 +7336,19 @@ namespace eval ::dui {
 			
 			# Clickable rect
 			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden]
+			if { $longpress_cmd ne "" } {
+				if { $ns ne "" } { 
+					if { [string is wordchar $longpress_cmd] && [namespace which -command "${ns}::$longpress_cmd"] ne "" } {
+						set longpress_cmd ${ns}::$longpress_cmd
+					}				
+					regsub -all {%NS} $longpress_cmd $ns longpress_cmd
+				}
+				regsub {%x0} $longpress_cmd $rx longpress_cmd
+				regsub {%x1} $longpress_cmd $rx1 longpress_cmd
+				regsub {%y0} $longpress_cmd $ry longpress_cmd
+				regsub {%y1} $longpress_cmd $ry1 longpress_cmd
+			}
+			
 			if { $cmd eq "" } {
 				if { $ns ne "" && [namespace which -command "${ns}::${main_tag}"] ne "" } {
 					set cmd "${ns}::${main_tag}"
@@ -7321,8 +7367,16 @@ namespace eval ::dui {
 			}
 			if { $cmd eq "" } {
 				msg -WARN [namespace current] dbutton "'$main_tag' in page(s) '$pages' does not have a command"
+				
+				if { $longpress_cmd ne "" } {
+					$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $id $longpress_cmd]
+					$can bind $id [dui::platform::button_unpress] [list ::dui::item::longpress_unpress $id]
+				}
+			} elseif { $longpress_cmd eq "" } {
+				$can bind $id [dui::platform::button_press] $cmd
 			} else {
-				$can bind $id [dui platform button_press] $cmd
+				$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $id $longpress_cmd]
+				$can bind $id [dui::platform::button_unpress] [list ::dui::item::longpress_unpress $id $cmd]
 			}
 			
 			if { $ns ne "" } {

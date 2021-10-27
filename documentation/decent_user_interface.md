@@ -185,7 +185,7 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 * 2021-04-10 – Initial writing by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-04-11 - 2021-07-18 - Rewrite while the API evolves through nightly & beta, by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-09-16 - Update for dialog pages and related changes, by [Enrique Bengoechea](https://github.com/ebengoechea)
-
+* 2021-10-27 - `dui::add::dbutton` gets a new `-longpress_cmd` option, by [Enrique Bengoechea](https://github.com/ebengoechea)
 <a name="history"></a>
 
 ## History
@@ -1507,6 +1507,15 @@ invisible clickable area) or any of the shape values accepted by [dui add shape]
 
 >**-command**  _tcl_code_
 > >Callback Tcl code to run when the button is clicked. When the page has a namesapce, if a plain name is used (only letters, numbers and underscores) and the namespace has a command with that name, it is used. If not specified and the page namespace has a command with the same number as the main tag, it is used.
+
+> >In addition to the standard substitutions, DUI adds the following:
+
+> >**%NS**: The page namespace, if defined.
+
+> >**%x0, %y0, %x1, %y1**: top-left and botton-right [coordinates](#dui_coordinates) of the button rectangle.
+
+>**-longpress_cmd**  _tcl_code_
+> >Callback Tcl code to run when the button receives a long press. When the page has a namesapce, if a plain name is used (only letters, numbers and underscores) and the namespace has a command with that name, it is used. If not specified and the page namespace has a command with the same number as the main tag, it is used.
 
 > >In addition to the standard substitutions, DUI adds the following:
 
