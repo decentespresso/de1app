@@ -186,6 +186,9 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 * 2021-04-11 - 2021-07-18 - Rewrite while the API evolves through nightly & beta, by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-09-16 - Update for dialog pages and related changes, by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-10-27 - `dui::add::dbutton` gets a new `-longpress_cmd` option, by [Enrique Bengoechea](https://github.com/ebengoechea)
+* 2021-10-28 - Define the radius of each corner separately in rounded rectangles shapes and buttons, by [Enrique Bengoechea](https://github.com/ebengoechea)
+
+
 <a name="history"></a>
 
 ## History
@@ -1460,9 +1463,14 @@ like buttons or dialog pages.
 
 > >-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and **-radius** (determines how "round" the rectangle corners are).
 
+>> **radius** can be a list of up to 4 elements, giving the radius of each of the 4 corners separately, starting top-left and going clockwards {top-left top-right bottom-right bottom-left}. If it has less than 4 elements, they are replicated until having 4 elements. A radius of 0 draws a 90º angle.
+
 > >-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-arc_offset** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border). When using DUI styles it may sometimes be necessary to explicitly set **-fill {}** so it's not inherited from parent (such as "dbutton") defaults.
 
 > >-**round_outline**: A rounded-corners rectangle with a visible outline border which, unlike **outline**, can be filled with a color different from the background. This is actually built overlapping a "round" shape and an "outline" shape. It accepts as formatting options **-fill** (fill color), **-disabledfill** (fill color when disabled), **-outline** (color of the outline), **-disabledoutline** (color of the outline when the shape is disabled), **-radius** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border).
+
+>> **arc_offset** can be a list of up to 4 elements, giving the radius of each of the 4 corners separately, starting top-left and going clockwards {top-left top-right bottom-right bottom-left}. If it has less than 4 elements, they are replicated until having 4 elements. A radius of 0 draws a 90º angle.
+
 
 >Return a list with the canvas IDs of all the canvas items that conform the shape.
 
