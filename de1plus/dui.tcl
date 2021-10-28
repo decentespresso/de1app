@@ -6149,26 +6149,62 @@ namespace eval ::dui {
 		# Return the canvas IDs of all created items.
 		# Doesn't rescale the coordinates {x0 y0 x1 y1} as this is normally not intended to be called by client code,
 		# but to be invoked from dui::add:shape, dui::add::dbutton, etc.
+		# 'radius' can be a list of up to 4 elements, giving the radius of each of the 4 corners separately, starting
+		#	top-left and going clockwards {top-left top-right bottom-right bottom-left}. If it has less than 4 elements,
+		#	they are replicated until having 4 elements.
 		proc rounded_rectangle { x0 y0 x1 y1 radius colour disabled tags } {
 			set can [dui canvas]
 			set ids {}
-#			set x0 [dui platform rescale_x $x0] 
-#			set y0 [dui platform rescale_y $y0] 
-#			set x1 [dui platform rescale_x $x1] 
-#			set y1 [dui platform rescale_y $y1]
+			set nradius [llength $radius]
+			set radius [lreplicate 4 $radius]
+			lassign $radius radius1 radius2 radius3 radius4
+			set maxradius [tcl::mathfunc::max {*}$radius]
 			
-			lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius] [expr $y0 + $radius] -fill $colour -disabledfill $disabled \
-				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
-			lappend ids [$can create oval [expr $x1-$radius] $y0 $x1 [expr $y0 + $radius] -fill $colour -disabledfill $disabled \
-				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
-			lappend ids [$can create oval $x0 [expr $y1-$radius] [expr $x0+$radius] $y1 -fill $colour -disabledfill $disabled \
-				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
-			lappend ids [$can create oval [expr $x1-$radius] [expr $y1-$radius] $x1 $y1 -fill $colour -disabledfill $disabled \
-				-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
-			lappend ids [$can create rectangle [expr $x0 + ($radius/2.0)] $y0 [expr $x1-($radius/2.0)] $y1 -fill $colour \
-				-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
-			lappend ids [$can create rectangle $x0 [expr $y0 + ($radius/2.0)] $x1 [expr $y1-($radius/2.0)] -fill $colour \
-				-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+			if { $radius1 > 0 } {
+				lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius1] [expr $y0 + $radius1] -fill $colour -disabledfill $disabled \
+					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+			}
+			if { $radius2 > 0 } {
+				lappend ids [$can create oval [expr $x1-$radius2] $y0 $x1 [expr $y0 + $radius2] -fill $colour -disabledfill $disabled \
+					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+			}
+			if { $radius3 > 0 } {
+				lappend ids [$can create oval [expr $x1-$radius3] [expr $y1-$radius3] $x1 $y1 -fill $colour -disabledfill $disabled \
+					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+			}			
+			if { $radius4 > 0 } {
+				lappend ids [$can create oval $x0 [expr $y1-$radius4] [expr $x0+$radius4] $y1 -fill $colour -disabledfill $disabled \
+					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+			}
+			
+			if { $nradius == 1 } {
+				lappend ids [$can create rectangle [expr $x0 + ($radius1/2.0)] $y0 [expr $x1-($radius1/2.0)] $y1 -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create rectangle $x0 [expr $y0 + ($radius1/2.0)] $x1 [expr $y1-($radius1/2.0)] -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+			} else {
+				# Draw 5 rectangles to cover all possible combinations
+				# Inner rectangle
+				lappend ids [$can create rectangle [expr {$x0+($maxradius/2.0)}] [expr {$y0+($maxradius/2.0)}] \
+					[expr {$x1-($maxradius/2.0)}] [expr {$y1-($maxradius/2.0)}] -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+				# Top rectangle
+				lappend ids [$can create rectangle [expr {$x0+($radius1/2.0)}] $y0 \
+					[expr {$x1-($radius2/2.0)}] [expr {$y0+($maxradius/2.0)}] -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+				# Bottom rectangle
+				lappend ids [$can create rectangle [expr {$x0+($radius4/2.0)}] [expr {$y1-($maxradius/2.0)}] \
+					[expr {$x1-($radius3/2.0)}] $y1 -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+				# Left rectangle
+				lappend ids [$can create rectangle $x0 [expr {$y0+($radius1/2.0)}] \
+					[expr {$x0+($maxradius/2.0)}] [expr {$y1-($radius4/2.0)}] -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+				# Right rectangle
+				lappend ids [$can create rectangle [expr {$x1-($maxradius/2.0)}] [expr {$y0+($radius2/2.0)}] \
+					$x1 [expr {$y1-($radius3/2.0)}] -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+			}
 			return $ids
 		}
 		
@@ -6176,35 +6212,52 @@ namespace eval ::dui {
 		# Return the canvas IDs of all created items. 
 		# Doesn't rescale the coordinates {x0 y0 x1 y1} as this is normally not intended to be called by client code,
 		# but to be invoked from dui::add:shape, dui::add::dbutton, etc.
-		proc rounded_rectangle_outline { x0 y0 x1 y1 arc_offset colour disabled width tags } {
+		# 'radius' can be a list of up to 4 elements, giving the radius of each of the 4 corners separately, starting
+		#	top-left and going clockwards {top-left top-right bottom-right bottom-left}. If it has less than 4 elements,
+		#	they are replicated until having 4 elements.		
+		proc rounded_rectangle_outline { x0 y0 x1 y1 radius colour disabled width tags } {
 			set can [dui canvas]
 			set ids {}
-#			set x0 [dui platform rescale_x $x0] 
-#			set y0 [dui platform rescale_y $y0] 
-#			set x1 [dui platform rescale_x $x1] 
-#			set y1 [dui platform rescale_y $y1]
-		
+
+			set nradius [llength $radius]
+			set radius [lreplicate 4 $radius]
+			lassign $radius radius1 radius2 radius3 radius4
+			set maxradius [tcl::mathfunc::max {*}$radius]
+			
 			if { $width > 1 } {
+				# Adjustment to look better under Android, that uses dithering
 				set arc_width [expr {$width-1}]
 			} else {
 				set arc_width $width
 			}
-			lappend ids [$can create arc [expr $x0] [expr $y0+$arc_offset+1] [expr $x0+$arc_offset+1] [expr $y0] -style arc -outline $colour \
-				-width $arc_width -tags $tags -start 90 -disabledoutline $disabled -state "hidden"]
-			lappend ids [$can create arc [expr $x0] [expr $y1-$arc_offset-1] [expr $x0+$arc_offset+1] [expr $y1] -style arc -outline $colour \
-				-width $arc_width -tags $tags -start 180 -disabledoutline $disabled -state "hidden"]
-			lappend ids [$can create arc [expr $x1-$arc_offset-1] [expr $y0] [expr $x1] [expr $y0+$arc_offset+1] -style arc -outline $colour \
-				-width $arc_width -tags $tags -start 0 -disabledoutline $disabled -state "hidden"]
-			lappend ids [$can create arc [expr $x1-$arc_offset-1] [expr $y1] [expr $x1] [expr $y1-$arc_offset-1] -style arc -outline $colour \
-				-width $arc_width -tags $tags -start -90 -disabledoutline $disabled -state "hidden"]
-			
-			lappend ids [$can create line [expr $x0+$arc_offset/2-1] [expr $y0] [expr $x1-$arc_offset/2+1] [expr $y0] -fill $colour \
+			if { $radius1 > 0 } {
+				lappend ids [$can create arc $x0 [expr {$y0+$radius1+1.0}] [expr {$x0+$radius1+1.0}] $y0 -style arc -outline $colour \
+					-width $arc_width -tags $tags -start 90 -disabledoutline $disabled -state "hidden"]
+			}
+			if { $radius2 > 0 } {
+				lappend ids [$can create arc [expr {$x1-$radius2-1}] $y0 $x1 [expr {$y0+$radius2+1}] -style arc -outline $colour \
+					-width $arc_width -tags $tags -start 0 -disabledoutline $disabled -state "hidden"]
+			}
+			if { $radius3 > 0 } {
+				lappend ids [$can create arc [expr {$x1-$radius3-1.0}] $y1 $x1 [expr {$y1-$radius3-1.0}] -style arc -outline $colour \
+					-width $arc_width -tags $tags -start -90 -disabledoutline $disabled -state "hidden"]
+			}			
+			if { $radius4 > 0 } {
+				lappend ids [$can create arc $x0 [expr {$y1-$radius4-1.0}] [expr {$x0+$radius4+1.0}] $y1 -style arc -outline $colour \
+					-width $arc_width -tags $tags -start 180 -disabledoutline $disabled -state "hidden"]
+			}
+
+			# Top line
+			lappend ids [$can create line [expr {$x0+$radius1/2.0-1.0}] $y0 [expr {$x1-$radius2/2.0+1.0}] $y0 -fill $colour \
 				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
-			lappend ids[$can create line [expr $x1] [expr $y0+$arc_offset/2-1] [expr $x1] [expr $y1-$arc_offset/2+1] -fill $colour \
+			# Right line
+			lappend ids[$can create line $x1 [expr {$y0+$radius2/2.0-1.0}] $x1 [expr {$y1-$radius3/2.0+1.0}] -fill $colour \
 				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
-			lappend ids[$can create line [expr $x0+$arc_offset/2-1] [expr $y1] [expr $x1-$arc_offset/2+1] [expr $y1] -fill $colour \
+			# Bottom line
+			lappend ids[$can create line [expr {$x0+$radius4/2.0-1.0}] $y1 [expr {$x1-$radius3/2.0+1.0}] $y1 -fill $colour \
 				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
-			lappend ids[$can create line [expr $x0] [expr $y0+$arc_offset/2-1] [expr $x0] [expr $y1-$arc_offset/2+1] -fill $colour \
+			# Left line
+			lappend ids[$can create line $x0 [expr {$y0+$radius1/2.0-1.0}] $x0 [expr {$y1-$radius4/2.0+1.0}] -fill $colour \
 				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
 			return $ids
 		}
@@ -8546,6 +8599,22 @@ proc lunique {list} {
 	return $new
 }
 
+# Forces a list or set of arguments to be a list of length $len, removing elements if necessary, or replicating them
+# as many times as necessary.
+proc lreplicate { len args } {
+	set largs [concat {*}$args]
+	set n [llength $largs]
+	
+	if { $len == $n } {
+		return $largs
+	} elseif { $len < $n } {
+		return [lrange $largs 0 [expr {$len-1}]]
+	} else {
+		set largs [lrepeat [expr {int($len/$n)+1}] {*}$largs]
+		return [lrange $largs 0 [expr {$len-1}]]
+	}
+}
+
 # Sets or changes a numeric value within a valid range, using the given resolution, and formats it 
 #	with the given number of decimals.
 # This is normally used from scales or clickers.
@@ -9251,3 +9320,4 @@ namespace eval ::dui::pages::dui_confirm_dialog {
 	}
 
 }
+
