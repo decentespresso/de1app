@@ -3689,27 +3689,45 @@ proc range_check_shot_variables {} {
 	range_check_variable ::settings(final_desired_shot_volume_advanced_count_start) 0 20
 	range_check_variable ::settings(tank_desired_water_temperature) 0 45
 
-
-
-
-
-
 }
 
 proc change_espresso_temperature {amount} {
 
-	if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+	if {$::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b"} {
+		# pressure or flow profile
 
-		# if step temps are enabled then set the preinfusion start temp to the global temp 
-		# and then apply the relative change desired to each subsequent step
-		set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + $amount}]
-		set ::settings(espresso_temperature_0) $::settings(espresso_temperature)			
-		set ::settings(espresso_temperature_1) [expr {$::settings(espresso_temperature_1) + $amount}]
-		set ::settings(espresso_temperature_2) [expr {$::settings(espresso_temperature_2) + $amount}]
-		set ::settings(espresso_temperature_3) [expr {$::settings(espresso_temperature_3) + $amount}]
+		if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
 
+			# if step temps are enabled then set the preinfusion start temp to the global temp 
+			# and then apply the relative change desired to each subsequent step
+			set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + $amount}]
+			set ::settings(espresso_temperature_0) $::settings(espresso_temperature)			
+			set ::settings(espresso_temperature_1) [expr {$::settings(espresso_temperature_1) + $amount}]
+			set ::settings(espresso_temperature_2) [expr {$::settings(espresso_temperature_2) + $amount}]
+			set ::settings(espresso_temperature_3) [expr {$::settings(espresso_temperature_3) + $amount}]
+
+		} else {
+			set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + $amount}]
+		}
 	} else {
-		set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + $amount}]
+		# advanced shots need every step changed
+
+		set newshot {}
+		set cnt 0
+		foreach step $::settings(advanced_shot) {
+			incr cnt
+			array unset -nocomplain props
+			array set props $step
+			set temp [ifexists props(temperature)]
+			set newtemp [expr {$temp + $amount}]
+			if {$cnt == 1} {
+				set ::settings(espresso_temperature) $newtemp
+			}
+
+			set props(temperature) $newtemp
+			lappend newshot [array get props]
+		}
+		set ::settings(advanced_shot) $newshot
 	}
 
 	range_check_shot_variables
