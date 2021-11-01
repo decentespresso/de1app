@@ -2460,7 +2460,9 @@ proc water_level_color_check {widget} {
 		set blinkrate 500
 	}
 
-	$widget configure -background $color
+	catch {
+		$widget configure -background $color
+	}
 	after $blinkrate water_level_color_check $widget
 }
 
