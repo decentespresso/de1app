@@ -1831,16 +1831,24 @@ proc fill_ble_listbox {} {
 	make_current_listbox_item_blue $widget
 }
 
-proc fill_ble_scale_listbox {} {
-	fill_peripheral_listbox
-}
-
 proc fill_peripheral_listbox {} {
 
 	set widget $::ble_scale_listbox_widget
+
 	$widget delete 0 99999
 	set cnt 0
 	set current_ble_number 0
+
+	# count peripherals with the same name, so we can differentiate them in the listbox if needed
+	foreach d $::peripheral_device_list {
+		set name [dict get $d name]
+		if {[info exists peripherals_seen($name)] == 1} {
+			incr peripherals_seen($name)
+		} else {
+			set peripherals_seen($name) 1
+		}
+	}
+
 
 	set one_selected 0
 	foreach d $::peripheral_device_list {
@@ -1860,6 +1868,12 @@ proc fill_peripheral_listbox {} {
 		}
 
 		if { $name eq "" } { set name $family }
+
+		if {$peripherals_seen($name) > 1} {
+			# this peripheral appears twice in a ble scan, so give the last two digits of the ble address to differentiate it
+			set name "[string range $addr end-1 end]-$name"
+		}
+
 		if {$addr == [ifexists ::settings(scale_bluetooth_address)]} {
 			$widget insert $cnt " \[[checkboxchar]\] $icon $name"
 			set one_selected 1
@@ -2530,21 +2544,21 @@ proc change_bluetooth_device {} {
 	fill_ble_listbox
 }
 
-
 proc change_scale_bluetooth_device {} {
 	set w $::ble_scale_listbox_widget
 
 	if {$w == ""} {
 		return
 	}
-	if {[$w curselection] == ""} {
-		msg -NOTICE "change_scale_bluetooth_device: re-connecting to scale"
-		ble_connect_to_scale
+
+	set selection_index [$w curselection]
+	if {$selection_index == ""} {
 		return
 	}
-	set selection_index [$w curselection]
 
-	msg "selected item" $selection_index
+	puts "selection_index: $selection_index"
+
+	msg "selected item" 	
 	set dic [lindex $::peripheral_device_list $selection_index]
 	set addr [dict get $dic address]
 	set name [dict get $dic name]
@@ -2569,18 +2583,26 @@ proc change_scale_bluetooth_device {} {
 		set ::settings(scale_type) $devicefamily
 		msg "set scale type to: '$::settings(scale_type)' $addr"
 
-		if {$addr == $::settings(scale_bluetooth_address)} {
+		set handle $::de1(scale_device_handle)
+		if {$handle != "" && $handle != 0} {
+			set ::de1(scale_device_handle) 0
+			#set ::de1(cmdstack) {};
+			#set ::currently_connecting_scale_handle 0
+			ble close $handle
 			ble_connect_to_scale
-			return
+		}  else {
+			ble_connect_to_scale
 		}
+
+		#after 500 
+
 	} else {
 		msg -WARNING "Non scale peripheral requested for connect. Damn!"
 	}
 
 	save_settings
-	ble_connect_to_scale
-
 	fill_peripheral_listbox
+
 }
 
 
