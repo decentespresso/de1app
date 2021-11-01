@@ -1,7 +1,12 @@
 package require http
 package require tls
 package require json
-package require zint
+# zint may not be available in some standard Tcl/Tk distributions, for example on MacOS.
+try {
+    package require zint
+} on error err {
+    msg -WARNING "::plugins::visualizer_upload can't generate QR codes: $err"
+}
 
 set plugin_name "visualizer_upload"
 
@@ -389,8 +394,14 @@ namespace eval ::plugins::${plugin_name}::visualizer_settings {
         # Last upload result
         dui add dtext $page_name 1350 600 -tags last_action_result -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left"
         
-        # Browse last uploaded shot in system browser 920 
-        dui add dbutton $page_name 1350 800 -tags browse -bwidth 450 -bheight 350 -label [translate "Scan QR or tap here to open the shot in the system browser"] \
+        # Browse last uploaded shot in system browser 920
+        try {
+            package present zint
+            set browse_msg [translate "Scan QR or tap here to open the shot in the system browser"]  
+        } on error err {
+			set browse_msg [translate "Tap here to open the shot in the system browser"]
+        }
+        dui add dbutton $page_name 1350 800 -tags browse -bwidth 450 -bheight 350 -label $browse_msg \
             -label_font Helv_8 -label_fill white -label_width 380 -label_justify center \
             -command ::plugins::visualizer_upload::browse -style insight_ok
 
@@ -420,7 +431,9 @@ namespace eval ::plugins::${plugin_name}::visualizer_settings {
             [namespace current]::qr_img blank
         } else {
             dui item show $page_to_show browse*
-            zint encode [::plugins::visualizer_upload::id_to_url $last_id browse] [namespace current]::qr_img -barcode QR -scale 2.6
+            catch {
+                zint encode [::plugins::visualizer_upload::id_to_url $last_id browse] [namespace current]::qr_img -barcode QR -scale 2.6
+            }
         }
     }
 
