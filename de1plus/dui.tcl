@@ -6158,7 +6158,8 @@ namespace eval ::dui {
 			set nradius [llength $radius]
 			set radius [lreplicate 4 $radius]
 			lassign $radius radius1 radius2 radius3 radius4
-			set maxradius [tcl::mathfunc::max {*}$radius]
+			
+			set maxradius [::max {*}$radius]
 			
 			if { $radius1 > 0 } {
 				lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius1] [expr $y0 + $radius1] -fill $colour -disabledfill $disabled \
@@ -6222,7 +6223,8 @@ namespace eval ::dui {
 			set nradius [llength $radius]
 			set radius [lreplicate 4 $radius]
 			lassign $radius radius1 radius2 radius3 radius4
-			set maxradius [tcl::mathfunc::max {*}$radius]
+			
+			set maxradius [::max {*}$radius]
 			
 			if { $width > 1 } {
 				# Adjustment to look better under Android, that uses dithering
@@ -8668,6 +8670,11 @@ proc value_or_default { var {default {}} } {
 	} else {
 		return $default
 	}
+}
+
+# tcl::mathfunc::max fails on older Androwish (TheLeydenJar), so we create our version, taken from https://wiki.tcl-lang.org/page/max # 
+proc max { args } {
+	lindex [lsort -real $args] end
 }
 
 ### FULL-PAGE EDITORS ################################################################################################
