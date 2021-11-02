@@ -2183,10 +2183,14 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 proc setup_images_for_first_page {} {
 	
 	msg -DEBUG "setup_images_for_first_page"
-	set fn [random_splash_file]
+	set fn [dui::image::find "splash.jpg"]
+
+	if {$fn == "" || ![file exists $fn]} {
+		msg "skin/splash.jpg does not exist. Using default wallpaper"
+		set fn [random_splash_file]
+	}
 	image create photo splash -file $fn 
 	.can create image {0 0} -anchor nw -image splash -tag splash -state normal
-#	pack .can
 	
 	update
 	return
