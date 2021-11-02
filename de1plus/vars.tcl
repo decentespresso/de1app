@@ -3031,7 +3031,10 @@ proc ghc_required {} {
 	if {$::settings(ghc_is_installed) != 0 && $::settings(ghc_is_installed) != 1 && $::settings(ghc_is_installed) != 2 && $::settings(ghc_is_installed) != 4} {
 		return 1
 	}
-	return $::undroid == 1
+	if {$::undroid == 1 && $::android == 0} {
+		return 0
+	}
+	return 0
 }
 
 proc start_text_if_espresso_ready {} {
