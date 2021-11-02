@@ -2183,10 +2183,14 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 proc setup_images_for_first_page {} {
 	
 	msg -DEBUG "setup_images_for_first_page"
-	set fn [random_splash_file]
+	set fn [dui::image::find "splash.jpg"]
+
+	if {$fn == "" || ![file exists $fn]} {
+		msg "skin/splash.jpg does not exist. Using default wallpaper"
+		set fn [random_splash_file]
+	}
 	image create photo splash -file $fn 
 	.can create image {0 0} -anchor nw -image splash -tag splash -state normal
-#	pack .can
 	
 	update
 	return
@@ -2215,6 +2219,12 @@ proc ui_startup {} {
 	}
 	#ble_find_de1s
 	
+	# auto-setup of DUI pages. dui init and setting of folders may need to be done before skin & plugins inits?
+	#dui init
+	dui font add_dirs "[homedir]/fonts"
+	dui item add_image_dirs "[homedir]/skins/$::settings(skin)" "[homedir]/skins/default"
+	dui setup_ui
+
 	setup_images_for_first_page
 	setup_images_for_other_pages
 	history_viewer init
@@ -2236,13 +2246,6 @@ proc ui_startup {} {
 		set ::settings(last_version) $app_version
 		save_settings
 	}
-
-	# auto-setup of DUI pages. dui init and setting of folders may need to be done before skin & plugins inits?
-	#dui init
-	dui font add_dirs "[homedir]/fonts"
-	dui item add_image_dirs "[homedir]/skins/$::settings(skin)" "[homedir]/skins/default"
-	dui setup_ui
-	
 
 	.can itemconfigure splash -state hidden
 	
