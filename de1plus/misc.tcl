@@ -952,10 +952,16 @@ proc make_de1_dir {srcdir destdirs} {
     set skin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "$srcdir/skins" * ]]
     puts "Checking for skin filelists in $skin_folders"
 
-    set test_files {}
-    foreach s $skin_folders {
+    set plugin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "$srcdir/plugins" * ]]
+    puts "Checking for plugin filelists in $plugin_folders"
+
+    set all_folders {$skin_folders $plugin_folders} 
+    puts "Checking for plugin filelists in $all_folders"
+
+    foreach s $all_folders {
         set fbasename [file rootname [file tail $s]]
         if {[file exists "$srcdir/skins/$fbasename/filelist.txt"] == 1} {
+            set log_files {}
             puts "Found filelist.txt in $srcdir/skins/$fbasename/filelist.txt"
             set a [open "$srcdir/skins/$fbasename/filelist.txt"]
             set lines [split [read $a] "\n"]
@@ -965,11 +971,13 @@ proc make_de1_dir {srcdir destdirs} {
                     continue
                 }
                 lappend files "$line *"
-                lappend test_files "$line *"
+                lappend log_files "$line *"
             }
+            puts "Files added from filelists: $log_files"
         }
     }
-    puts "Files added from filelists: $test_files"
+
+    puts "Filelist: $files"
 
     set old_timestamp 0
     # load the local manifest into memory
