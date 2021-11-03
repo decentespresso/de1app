@@ -964,8 +964,8 @@ proc make_de1_dir {srcdir destdirs} {
                 if {$line eq {}} {
                     continue
                 }
-                lappend files "$srcdir/skins/$fbasename/$line" *
-                lappend log_files "$srcdir/skins/$fbasename/$line"
+                lappend files "skins/$fbasename/$line" *
+                lappend log_files "skins/$fbasename/$line"
             }
             puts "Files added from filelists: $log_files"
         }
