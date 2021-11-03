@@ -964,8 +964,8 @@ proc make_de1_dir {srcdir destdirs} {
                 if {$line eq {}} {
                     continue
                 }
-                lappend files "$line * \n"
-                lappend test_files "$line * \n"
+                lappend files "$line *"
+                lappend test_files "$line *"
             }
         }
     }
