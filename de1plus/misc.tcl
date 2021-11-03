@@ -1034,6 +1034,7 @@ proc make_de1_dir {srcdir destdirs} {
                 } else {
                     set lmanifest_sha($file) $sha256
                     set lmanifest_mtime($file) $mtime
+                    puts $sha256
                 }
             }
 
