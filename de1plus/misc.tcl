@@ -955,9 +955,7 @@ proc make_de1_dir {srcdir destdirs} {
     set plugin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "$srcdir/plugins" * ]]
     puts "Checking for plugin filelists in $plugin_folders"
 
-    set all_folders {}
-    lappend all_folders $skin_folders $plugin_folders
-    puts "Checking for plugin filelists in $all_folders"
+    set all_folders [concat $skin_folders $plugin_folders]
 
     foreach s $all_folders {
         set fbasename [file rootname [file tail $s]]
@@ -971,8 +969,8 @@ proc make_de1_dir {srcdir destdirs} {
                 if {$line eq {}} {
                     continue
                 }
-                lappend files "$line *"
-                lappend log_files "$line *"
+                lappend files $line *
+                lappend log_files $line
             }
             puts "Files added from filelists: $log_files"
         }
