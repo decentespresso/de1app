@@ -954,9 +954,9 @@ proc make_de1_dir {srcdir destdirs} {
 
     foreach s $skin_folders {
         set fbasename [file rootname [file tail $s]]
-        if {[file exists "[homedir]/skins/$fbasename/filelist.txt"] == 1} {
-            puts "Found filelist.txt in [homedir]/skins/$fbasename/filelist.txt"
-            set a [open "[homedir]/skins/$fbasename/filelist.txt"]
+        if {[file exists "$srcdir/skins/$fbasename/filelist.txt"] == 1} {
+            puts "Found filelist.txt in $srcdir/skins/$fbasename/filelist.txt"
+            set a [open "$srcdir/skins/$fbasename/filelist.txt"]
             set lines [split [read $a] "\n"]
             close $a;
             foreach line $lines {
