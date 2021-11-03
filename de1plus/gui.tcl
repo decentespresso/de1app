@@ -2246,7 +2246,6 @@ proc ui_startup {} {
 	dui font add_dirs "[homedir]/fonts"
 	dui item add_image_dirs "[homedir]/skins/$::settings(skin)" "[homedir]/skins/default"
 	dui setup_ui
-	
 
 	.can itemconfigure splash -state hidden
 	

@@ -1,108 +1,6 @@
 package provide de1_misc 1.0
 
 proc make_de1_dir {srcdir destdirs} {
-
-    set not_these  {
-        splash/1280x800/1960.jpg *
-        splash/1280x800/8bit.jpg *
-        splash/1280x800/aliens.jpg *
-        splash/1280x800/chalkboard.jpg *
-        splash/1280x800/circus.jpg *
-        splash/1280x800/dark_choices.jpg *
-        splash/1280x800/dark_comic.jpg *
-        splash/1280x800/fashion_girls.jpg *
-        splash/1280x800/grey_room.jpg *
-        splash/1280x800/jackpot.jpg *
-        splash/1280x800/jimshaw.jpg *
-        splash/1280x800/leonardo.jpg *
-        splash/1280x800/manga_girls.jpg *
-        splash/1280x800/manga_outfits.jpg *
-        splash/1280x800/modern.jpg *
-        splash/1280x800/warhol.jpg *
-        splash/1280x800/watercolor.jpg *
-        splash/1280x800/wired_superheroes.jpg *
-
-        splash/2560x1600/1960.jpg *
-        splash/2560x1600/8bit.jpg *
-        splash/2560x1600/aliens.jpg *
-        splash/2560x1600/chalkboard.jpg *
-        splash/2560x1600/circus.jpg *
-        splash/2560x1600/dark_choices.jpg *
-        splash/2560x1600/dark_comic.jpg *
-        splash/2560x1600/fashion_girls.jpg *
-        splash/2560x1600/grey_room.jpg *
-        splash/2560x1600/jackpot.jpg *
-        splash/2560x1600/jimshaw.jpg *
-        splash/2560x1600/leonardo.jpg *
-        splash/2560x1600/manga_girls.jpg *
-        splash/2560x1600/manga_outfits.jpg *
-        splash/2560x1600/modern.jpg *
-        splash/2560x1600/warhol.jpg *
-        splash/2560x1600/watercolor.jpg *
-        splash/2560x1600/wired_superheroes.jpg *
-
-        skins/SWDark3/screen_saver/2560x1600/saver-1.jpg *
-        skins/SWDark3/screen_saver/2560x1600/saver-2.jpg *
-        skins/SWDark3/screen_saver/2560x1600/saver-3.jpg *
-        skins/SWDark3/screen_saver/1280x800/saver-1.jpg *
-        skins/SWDark3/screen_saver/1280x800/saver-2.jpg *
-        skins/SWDark3/screen_saver/1280x800/saver-3.jpg *
-        skins/SWDark3/swdark2_functions.tcl *
-        skins/SWDark3/skin.tcl *
-        skins/SWDark3/2560x1600/water_3.png *
-        skins/SWDark3/2560x1600/water_2.png *
-        skins/SWDark3/2560x1600/steam_1.png *
-        skins/SWDark3/2560x1600/steam_3.png *
-        skins/SWDark3/2560x1600/icon.jpg *
-        skins/SWDark3/2560x1600/espresso_1_zoomed.png *
-        skins/SWDark3/2560x1600/water_1.png *
-        skins/SWDark3/2560x1600/steam_2.png *
-        skins/SWDark3/2560x1600/sleep.png *
-        skins/SWDark3/2560x1600/espresso_3_zoomed.png *
-        skins/SWDark3/2560x1600/espresso_2.png *
-        skins/SWDark3/2560x1600/espresso_3.png *
-        skins/SWDark3/2560x1600/espresso_1.png *
-        skins/SWDark3/2560x1600/fill_tank.png *
-        skins/SWDark3/2560x1600/preheat_1.png *
-        skins/SWDark3/2560x1600/saver-1.png *
-        skins/SWDark3/2560x1600/preheat_2.png *
-        skins/SWDark3/2560x1600/saver-2.png *
-        skins/SWDark3/2560x1600/saver-3.png *
-        skins/SWDark3/2560x1600/preheat_3.png *
-        skins/SWDark3/2560x1600/preheat_4.png *
-        skins/SWDark3/2560x1600/espresso_2_zoomed.png *
-        skins/SWDark3/userdata/swdark2_usersettings.tdb *
-        skins/SWDark3/1280x800/water_3.png *
-        skins/SWDark3/1280x800/water_2.png *
-        skins/SWDark3/1280x800/steam_1.png *
-        skins/SWDark3/1280x800/steam_3.png *
-        skins/SWDark3/1280x800/icon.jpg *
-        skins/SWDark3/1280x800/espresso_1_zoomed.png *
-        skins/SWDark3/1280x800/water_1.png *
-        skins/SWDark3/1280x800/steam_2.png *
-        skins/SWDark3/1280x800/sleep.png *
-        skins/SWDark3/1280x800/espresso_3_zoomed.png *
-        skins/SWDark3/1280x800/espresso_2.png *
-        skins/SWDark3/1280x800/espresso_3.png *
-        skins/SWDark3/1280x800/espresso_1.png *
-        skins/SWDark3/1280x800/fill_tank.png *
-        skins/SWDark3/1280x800/preheat_1.png *
-        skins/SWDark3/1280x800/saver-1.png *
-        skins/SWDark3/1280x800/preheat_2.png *
-        skins/SWDark3/1280x800/saver-2.png *
-        skins/SWDark3/1280x800/saver-3.png *
-        skins/SWDark3/1280x800/preheat_3.png *
-        skins/SWDark3/1280x800/preheat_4.png *
-        skins/SWDark3/1280x800/espresso_2_zoomed.png *
-    }
-
-
-        # plugins/example.tcl *
-        # plugins/example-settings.tdb *
-
-#        profiles/best_practice_light.tcl *
-
-
     set files {
         binary.tcl *
         bluetooth.tcl *
@@ -1064,14 +962,25 @@ proc make_de1_dir {srcdir destdirs} {
 
         allcerts.pem *
     }
-#        profiles/Traditional\ lever\ machine\ at\ 9\ bar.tcl *
-#        profiles/Powerful\ 10\ bar\ shot.tcl *
 
-    #set srcdir "/d/admin/code/de1beta"
-    #set srcdir "."
-    #set destdirs [list "/d/download/sync/de1" "/d/download/sync/de1plus" "/d/download/sync/de1plusbig"]
-    #set destdirs [list "/d/download/sync/de1plus"]
-    #set destdirs [list "/d/download/sync/de1beta"]
+    # Have skins deal with their own filelist if they want to
+    set skin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "[homedir]/skins" * ]]
+
+    foreach s $skin_folders {
+        set fbasename [file rootname [file tail $s]]
+        if {[file exists "[homedir]/skins/$fbasename/filelist.txt"] == 1} {
+
+            set a [open "[homedir]/skins/$fbasename/filelist.txt"]
+            set lines [split [read $a] "\n"]
+            close $a;
+            foreach line $lines {
+                if {$line eq {}} {
+                    continue
+                }
+                lappend files $line * \n
+            }
+        }
+    }
 
     set old_timestamp 0
     # load the local manifest into memory
