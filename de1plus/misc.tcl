@@ -949,7 +949,7 @@ proc make_de1_dir {srcdir destdirs} {
     }
 
     # Have skins deal with their own filelist if they want to
-    set skin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "[homedir]/skins" * ]]
+    set skin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "$srcdir/skins" * ]]
     puts "Checking for skin filelists in $skin_folders"
 
     foreach s $skin_folders {
