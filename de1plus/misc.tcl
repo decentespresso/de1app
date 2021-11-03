@@ -492,21 +492,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Insight\ Dark/2560x1600/describe_espresso.jpg *
         skins/Insight\ Dark/2560x1600/describe_espresso2.jpg *
 
-        skins/MimojaCafe/1280x800/icon.jpg *
-        skins/MimojaCafe/2560x1600/icon.jpg *
-        skins/MimojaCafe/fonts/Font\ Awesome\ 5\ Free-Solid-900.otf *
-        skins/MimojaCafe/fonts/Mazzard\ Light.otf *
-        skins/MimojaCafe/fonts/Mazzard\ Medium.otf *
-        skins/MimojaCafe/fonts/Mazzard\ Regular.otf *
-        skins/MimojaCafe/fonts/Mazzard\ SemiBold.otf *
-        skins/MimojaCafe/framework.tcl *
-        skins/MimojaCafe/interfaces/default_settings_screen.tcl *
-        skins/MimojaCafe/interfaces/default_ui.tcl *
-        skins/MimojaCafe/interfaces/magadan_ui.tcl *
-        skins/MimojaCafe/settings.tcl *
-        skins/MimojaCafe/theme.tcl *
-        skins/MimojaCafe/skin.tcl *
-
         skins/metric/1280x800/icon.jpg *
         skins/metric/2560x1600/icon.jpg *
         skins/metric/fonts/Mazzard\ Light.otf *
