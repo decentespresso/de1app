@@ -969,7 +969,7 @@ proc make_de1_dir {srcdir destdirs} {
                 if {$line eq {}} {
                     continue
                 }
-                lappend files $line *
+                lappend files "$line" *
                 lappend log_files $line
             }
             puts "Files added from filelists: $log_files"
