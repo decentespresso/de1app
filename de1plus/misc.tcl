@@ -950,11 +950,12 @@ proc make_de1_dir {srcdir destdirs} {
 
     # Have skins deal with their own filelist if they want to
     set skin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "[homedir]/skins" * ]]
+    puts "Checking for skin filelists in $skin_folders"
 
     foreach s $skin_folders {
         set fbasename [file rootname [file tail $s]]
         if {[file exists "[homedir]/skins/$fbasename/filelist.txt"] == 1} {
-
+            puts "Found filelist.txt in [homedir]/skins/$fbasename/filelist.txt"
             set a [open "[homedir]/skins/$fbasename/filelist.txt"]
             set lines [split [read $a] "\n"]
             close $a;
