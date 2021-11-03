@@ -971,7 +971,27 @@ proc make_de1_dir {srcdir destdirs} {
         }
     }
 
-    puts "Filelist: $files"
+    set plugin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "$srcdir/plugins" * ]]
+    puts "Checking for plugin filelists in $plugin_folders"
+
+    foreach s $plugin_folders {
+        set fbasename [file rootname [file tail $s]]
+        if {[file exists "$srcdir/plugins/$fbasename/filelist.txt"] == 1} {
+            set log_files {}
+            puts "Found filelist.txt in $srcdir/plugins/$fbasename/filelist.txt"
+            set a [open "$srcdir/plugins/$fbasename/filelist.txt"]
+            set lines [split [read $a] "\n"]
+            close $a;
+            foreach line $lines {
+                if {$line eq {}} {
+                    continue
+                }
+                lappend files "plugins/$fbasename/$line" *
+                lappend log_files "plugins/$fbasename/$line"
+            }
+            puts "Files added from filelists: $log_files"
+        }
+    }
 
     set old_timestamp 0
     # load the local manifest into memory
