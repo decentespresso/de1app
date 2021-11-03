@@ -12,8 +12,8 @@ proc make_de1_dir {srcdir destdirs} {
         gui.tcl *
         history_viewer.tcl *
         dui.tcl *
-		metadata.tcl *
-		app_metadata.tcl *
+        metadata.tcl *
+        app_metadata.tcl *
         machine.tcl *
         utils.tcl *
         main.tcl *
@@ -975,8 +975,6 @@ proc make_de1_dir {srcdir destdirs} {
             puts "Files added from filelists: $log_files"
         }
     }
-
-    puts "Filelist: $files"
 
     set old_timestamp 0
     # load the local manifest into memory
