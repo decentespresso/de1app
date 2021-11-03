@@ -955,7 +955,8 @@ proc make_de1_dir {srcdir destdirs} {
     set plugin_folders [lsort -dictionary [glob -nocomplain -tails -type d -directory "$srcdir/plugins" * ]]
     puts "Checking for plugin filelists in $plugin_folders"
 
-    set all_folders {$skin_folders $plugin_folders} 
+    set all_folders {}
+    lappend all_folders $skin_folders $plugin_folders
     puts "Checking for plugin filelists in $all_folders"
 
     foreach s $all_folders {
