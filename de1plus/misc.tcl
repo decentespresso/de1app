@@ -492,28 +492,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Insight\ Dark/2560x1600/describe_espresso.jpg *
         skins/Insight\ Dark/2560x1600/describe_espresso2.jpg *
 
-        skins/metric/1280x800/icon.jpg *
-        skins/metric/2560x1600/icon.jpg *
-        skins/metric/fonts/Mazzard\ Light.otf *
-        skins/metric/fonts/Mazzard\ Medium.otf *
-        skins/metric/fonts/Mazzard\ Regular.otf *
-        skins/metric/fonts/Mazzard\ SemiBold.otf *
-        skins/metric/packages/constants.tcl *
-        skins/metric/packages/framework.tcl *
-        skins/metric/packages/functions.tcl *
-        skins/metric/packages/meter.tcl *
-        skins/metric/packages/settings.tcl *
-        skins/metric/packages/statusbar.tcl *
-        skins/metric/pages/debug.tcl *
-        skins/metric/pages/espresso.tcl *
-        skins/metric/pages/espresso_done.tcl *
-        skins/metric/pages/flush.tcl *
-        skins/metric/pages/home.tcl *
-        skins/metric/pages/steam.tcl *
-        skins/metric/pages/water.tcl *
-        skins/metric/README.md *
-        skins/metric/skin.tcl *
-
         skins/DSx/1280x800/2SbuttonA.png *
         skins/DSx/1280x800/2SbuttonE.png *
         skins/DSx/1280x800/3SbuttonA.png *
@@ -910,40 +888,6 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/keyboard_control/settings.tdb *
 
         plugins/log_debug/plugin.tcl *
-
-        plugins/DYE/1280x800/bean_DSx.png *
-        plugins/DYE/1280x800/bean_Insight.png *
-        plugins/DYE/1280x800/bean_MimojaCafe.png *
-        plugins/DYE/1280x800/espresso_DSx.png *
-        plugins/DYE/1280x800/espresso_Insight.png *
-        plugins/DYE/1280x800/espresso_MimojaCafe.png *
-        plugins/DYE/1280x800/niche_DSx.png *
-        plugins/DYE/1280x800/niche_Insight.png *
-        plugins/DYE/1280x800/niche_MimojaCafe.png *
-        plugins/DYE/1280x800/people_DSx.png *
-        plugins/DYE/1280x800/people_Insight.png *
-        plugins/DYE/1280x800/people_MimojaCafe.png *
-        plugins/DYE/2560x1600/bean_DSx.png *
-        plugins/DYE/2560x1600/bean_Insight.png *
-        plugins/DYE/2560x1600/bean_MimojaCafe.png *
-        plugins/DYE/2560x1600/espresso_DSx.png *
-        plugins/DYE/2560x1600/espresso_Insight.png *
-        plugins/DYE/2560x1600/espresso_MimojaCafe.png *
-        plugins/DYE/2560x1600/niche_DSx.png *
-        plugins/DYE/2560x1600/niche_Insight.png *
-        plugins/DYE/2560x1600/niche_MimojaCafe.png *
-        plugins/DYE/2560x1600/people_DSx.png *
-        plugins/DYE/2560x1600/people_Insight.png *
-        plugins/DYE/2560x1600/people_MimojaCafe.png *
-        plugins/DYE/changelog.md *
-        plugins/DYE/DYE.tcl *
-        plugins/DYE/plugin.tcl *
-        plugins/DYE/setup_DSx.tcl *
-        plugins/DYE/setup_Insight.tcl *
-        plugins/DYE/setup_MimojaCafe.tcl *
-
-        plugins/SDB/SDB.tcl *
-        plugins/SDB/plugin.tcl *
 
         allcerts.pem *
     }
