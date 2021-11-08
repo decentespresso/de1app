@@ -18,6 +18,9 @@
 [submodule "de1plus/plugins/DYE"]
 	path = de1plus/plugins/DYE
 	url = https://github.com/ebengoechea/de1app_plugin_DYE
+[submodule "de1plus/skins/metric"]
+	path = de1plus/skins/Metric
+	url = https://github.com/barneyhawes/decent-metric/
 [submodule "de1plus/skins/DSx"]
 	path = de1plus/skins/DSx
 	url = https://github.com/Damian-AU/DSx
