@@ -2204,12 +2204,11 @@ package require de1_shot 2.0
 proc ui_startup {} {
 	
 	load_settings
-	
+
 	# Metric is now uppercase, so this is translation code
 	if { $::settings(skin) eq "metric" } {
 		set ::settings(skin) "Metric"
 	}
-
 
 	::profile::sync_from_legacy	
 	setup_environment

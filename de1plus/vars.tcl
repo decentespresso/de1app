@@ -1535,7 +1535,7 @@ proc skin_directories {} {
 	set dd {}
 
 	# overriding settings to include Insight Dark now
-	set ::settings(most_popular_skins) [list Insight "Insight Dark" MimojaCafe metric DSx SWDark4]
+	set ::settings(most_popular_skins) [list Insight "Insight Dark" MimojaCafe Metric DSx SWDark4]
 
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
@@ -1593,11 +1593,6 @@ proc fill_skin_listbox {} {
 	foreach d [skin_directories] {
 		if {$d == "CVS" || $d == "example"} {
 			continue
-		}
-
-		if {$d == "metric"} {
-			# typo in github was in lower case for Metric skin, so hacking the dispay of it here
-			set d "Metric"
 		}
 
 		$widget insert $cnt [translate $d]
