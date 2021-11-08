@@ -101,6 +101,7 @@
   - [dui page moveto](#dui_page_moveto)
   - [dui page items](#dui_page_items)
   - [dui page has_item](#dui_page_has_item)
+  - [dui page split_space](#dui_page_split_space)
   - dui page update_onscreen_variables
   - dui page calc_x, dui page calc_y, dui page calc_width, dui page calc_height
   - _Non exported:_  dui::page::setup, dui::page::add_items, dui::page::add_variable, dui::page::load_if_widget_enabled.
@@ -138,6 +139,8 @@
   - [dui add shape](#dui_add_shape)
   - [dui add dbutton](#dui_add_dbutton)
   - [dui add dclicker](#dui_add_dclicker)
+  - [dui add dselector](#dui_add_dselector)
+  - [dui add dtoggle](#dui_add_dtoggle)
   - [dui add entry](#dui_add_entry)
   - [dui add multiline_entry](#dui_add_multiline_entry)
   - [dui add text](#dui_add_text)
@@ -149,7 +152,7 @@
   - [dui add graph](#dui_add_graph)
 - `dui args`
   - _Non exported:_  dui::args::add_option_if_not_exists, dui::args::remove_options, dui::args::has_option, dui::args::get_option, dui::args::extract_prefixed, dui::args::process_tags_and_var, dui::args::process_aspects, dui::args::process_font, 
-dui::args::process_label, dui::args::process_sizes.
+dui::args::process_label, dui::args::process_sizes, dui::item::dselector_click, dui::item::dselector_draw, dui::item::dtoggle_click, dui::item::dtoggle_draw.
 
 
 <a name="objective"></a>
@@ -187,6 +190,8 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 * 2021-09-16 - Update for dialog pages and related changes, by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-10-27 - `dui::add::dbutton` gets a new `-longpress_cmd` option, by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-10-28 - Define the radius of each corner separately in rounded rectangles shapes and buttons, by [Enrique Bengoechea](https://github.com/ebengoechea)
+* 2021-11-08 - New controls `dselector` and `dtoggle`, by [Enrique Bengoechea](https://github.com/ebengoechea)
+
 
 
 <a name="history"></a>
@@ -1031,6 +1036,13 @@ If  _x_  or  _y_  are between 0 and 1, they are interpreted as percentages of th
 
 >Returns whether  _tag_  corresponds to an item tag in page  _page_name_ .
 
+<a name="dui_page_split_space"></a>
+
+**dui page split_space**  _start  end  spec1 ?spec2? ?spec3? ..._
+
+>Splits a vertical or horizontal page distance between  _start_  and  _end_  according to the specification given by each _spec_ , and returns a list of "cut" points with one more element than  _specs_ . Each item of  _specs_  has to be a positive value greater than 1 (fixed-pixel distance), or a positive value smaller than one (percentage of total), for each split. First the size of all fixed-pixel sizes will be removed from the total, then the remaining distance will be allocated to each percentage size according to its relative size (they don't have to add up to 1).
+
+
 
 <a name="items"></a>
 
@@ -1639,6 +1651,167 @@ invisible clickable area) or any of the shape values accepted by [dui add shape]
 >**-editor_page_title**  _title_
 
 > >The page title to show on the editor page.
+
+
+<a name="dui_add_dselector"></a>
+
+**dui add dselector**  _pages x y ?x1 y1? ?-option value ...?_
+
+>Create a set of buttons shown together in a row or column that allow selecting one or several options,.
+
+>Return the list of all canvas IDs that form the button compound. 
+
+>**-orient**  _horizontal_or_vertical_
+
+> >Whether to show as a row ( _horizontal_ , the default) or as a column ( _vertical_ ) of buttons.
+
+>**-multiple**  _boolean_
+
+> >If 0/false/no/off (the default case), the target value can have a single value, and only one button in the row or column can be active at each time. If 1/true/yes/on, the target value is a list (whose elements can be in any order) with the set of items that are active in the dselector.
+
+>**-variable**  _variable_name_
+
+> >Name of the global variable whose value will be shown in the control. It is a list with multiple elements if `-multiple` is 1. Tapping on the dselector buttons modifies the variable value, and if the variable value changes anywhere, then the dselector will automatically update itself to reflect the new value.
+
+> >If not specified and a page namespace is used, uses `::<page_namespace>::data(<main_tag>)`.
+
+> >If a plain name is given (only letters, numbers and underscores) and a page namespace is used, uses ``::<page_namespace>::data(<textvariable>)`.
+
+> >**%NS** in  _variable_name_  will be substituted by the page namespace, or an empty string if no page namespace is used.
+
+>**-values**  _list_of_possible_values_
+
+> >A list with the possible values that  _variable_  can take.
+
+>**-lengths**  _lengths_specification_
+
+> >A list with the same length as  _values_ , giving a specification of the length of each button, as interpreted by [dui::page::split_space](#dui_page_split_space). _length_  is the button width if orientation is horizontal, or height if the orientation is vertical. If not defined, each button has the same length.
+
+>**-command**  _tcl_code_
+
+> >Runs  _tcl_code_  when any of the buttons is clicked. If 1 or true or yes, and a page namespace command exists with the same name as the main tag, it will the command invoked. If it is a plain name (letters, numbers and underscores only) and the name matches a namespace command, it will be the command invoked. The following substitutions are performed in  _tcl_code_  :
+)> >-**%NS**: Substituted by the page namespace, is one is used, or an empty string otherwise.
+
+> >-**%V**: Substituted by the list of possible values.
+
+> >-**%v**: Substituted by the tapped value.
+
+> >-**%m**: Substituted by 0 or 1, depeding on the value of the  _-multiple_  option.
+
+> >-**%x0**, **%x1**, **%y0**, **%y1**: Bounding box coordinates of the tapped button.
+
+>**-labels**  _list_of_labels_
+
+> >An optional list with the same length as  _values_ , providing the label text for each dbutton in the dselector.
+
+>**-symbols**  _list_of_symbols_
+
+> >An optional list with the same length as  _values_ , providing a symbol for each dbutton in the dselector.
+
+>**-fill**  _color_
+
+> >Background fill color for non-selected dbuttons.
+
+>**-selectedfill**  _color_
+
+> >Background fill color for selected dbuttons.
+
+>**-outline**  _color_
+
+> >Fill color of the outline border line of non-selected dbuttons.
+
+>**-selectedoutline**  _color_
+
+> >Fill color of the outline border line of selected dbuttons.
+
+>**-label_fill**  _color_
+
+> >Font fill color of the labels of non-selected dbuttons.
+
+>**-label_selectedfill**  _color_
+
+> >Font fill color of the labels of selected dbuttons.
+
+>**-symbol_fill**  _color_
+
+> >Font fill color of the symbols of non-selected dbuttons.
+
+>**-symbol_selectedfill**  _color_
+
+> >Font fill color of the symbols of selected dbuttons.
+
+>All additional arguments in  _args_  are passed through to each of the individual [dui::add::dbutton](#dui_add_dbutton) calls.
+
+
+<a name="dui_add_dtoggle"></a>
+
+**dui add dtoggle**  _pages x y ?x1 y1? ?-option value ...?_
+
+>Create a toggle switch button that allows defining a boolean variable. A visually more modern version of the [dcheckbox](#dui_add_dcheckbox).
+>Return the canvas IDs of the clickable area. Accepts the same named options as **dui add dbutton** plus the following ones:
+>**-width**  _width_
+
+>**-height**  _height_
+
+> >Normally bounding box dimensions are defined giving the rectangle top-left [coordinates](#dui_coordinates)  _{x y}_  and bottom-down coordinates  _{x1 y1}_ , but  _{x1 y1}_  can be replaced by named options **-width** and **-height**.  _width_  and  _height_  must be pixel sizes in a 2560x1600 screen, and they are transformed automatically to the actual resolution.
+
+>**-anchor**  _anchor_value_
+
+> >If  _x1_  and  _y1_  are not defined (so, **-width** and **-height** are used),  _anchor_value_  defines the alignment of the toggle bounding box with respect to the coordinates  _{x y}_ . Anchor valid values are "center", "n", "ne", ""nw", "s", "se", "sw", "w", and "e". Default is "nw" (i.e.  _{x y}_  are the top-left coordinates).
+
+>**-sliderwidth**  _width_
+
+> >Width of the inner circle, in pixels in a 2560x1600 space, transformed automatically to the actual resolution.
+
+>**-variable**  _variable_name_
+
+> >Name of the global boolean variable whose value will be shown in the control. Tapping on the dtoggle button modifies the variable value, and if the variable value changes anywhere, then the dtoggle will automatically update itself to reflect the new value.
+
+> >If not specified and a page namespace is used, uses `::<page_namespace>::data(<main_tag>)`.
+
+> >If a plain name is given (only letters, numbers and underscores) and a page namespace is used, uses ``::<page_namespace>::data(<textvariable>)`.
+
+> >**%NS** in  _variable_name_  will be substituted by the page namespace, or an empty string if no page namespace is used.
+
+>**-foreground**  _color_
+
+> >Fill color of the slider circle when the value is  _false_ .
+
+>**-selectedforeground**  _color_
+
+> >Fill color of the slider circle when the value is  _true_ .
+
+>**-disabledforeground**  _color_
+
+> >Fill color of the slider circle when the widget is disabled.
+
+>**-outline_width**  _width_
+
+> >Width in pixels (in the 2560x1800 base space) of the slider circle outline. Use zero for not drawing an outline.
+
+>**-outline**  _color_
+
+> >Fill color of the slider circle outline when the value is  _false_ .
+
+>**-selectedoutline**  _color_
+
+> >Fill color of the slider circle outline when the value is  _true_ .
+
+>**-disabledoutline**  _color_
+
+> >Fill color of the slider circle outline when the widget is disabled.
+
+>**-background**  _color_
+
+> >Fill color of the background rounded rectangle when the value is  _false_ .
+
+>**-selectedbackground**  _color_
+
+> >Fill color of the background rounded rectangle when the value is  _true_ .
+
+>**-disabledbackground**  _color_
+
+> >Fill color of the background rounded rectangle when the widget is disabled.
 
 
 <a name="dui_add_entry"></a>

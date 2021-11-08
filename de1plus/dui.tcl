@@ -539,7 +539,7 @@ namespace eval ::dui {
 		# on android we track finger-down, instead of button-press, as it gives us lower latency by avoding having to distinguish a potential gesture from a tap
 		# finger down gives a http://blog.tcl.tk/39474
 		proc translate_coordinates_finger_down_x { x } {
- 
+	
 			if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
 					return [expr {$x * [winfo screenwidth .] / 10000}]
 				}
@@ -980,6 +980,28 @@ namespace eval ::dui {
 			default.dbutton.shape.menu_dlg round
 			default.dbutton.radius.menu_dlg 25
 			default.dbutton.fill.menu_dlg "#c0c5e3"
+			
+			default.dselector.radius 40
+			default.dselector.fill white
+			default.dselector.selectedfill "#4e85f4"
+			default.dselector.outline "#c0c5e3"
+			default.dselector.selectedoutline "#4e85f4"
+			default.dselector.label_fill "#c0c5e3"
+			default.dselector.label_selectedfill white
+			
+			default.dtoggle.width 120
+			default.dtoggle.height 68
+			default.dtoggle.outline_width 0
+			default.dtoggle.background "#c0c5e3"
+			default.dtoggle.foreground white
+			default.dtoggle.outline white
+			default.dtoggle.selectedbackground "light blue"
+			default.dtoggle.selectedforeground "#4e85f4"
+			default.dtoggle.selectedoutline "dark blue"
+			default.dtoggle.disabledbackground "#ccc"
+			default.dtoggle.disabledforeground white
+			default.dtoggle.disabledoutline white
+			
 		}
 
 		# Named options:
@@ -5081,9 +5103,9 @@ namespace eval ::dui {
 				dui::page::moveto $page {*}$coords $anchor
 			}
 
-            if { $page_type eq "dialog" } { 
-                dui::args::add_option_if_not_exists -theme [dui theme get]
-            }
+			if { $page_type eq "dialog" } { 
+				dui::args::add_option_if_not_exists -theme [dui theme get]
+			}
 			dui page load $page {*}$args
 		}
 		
@@ -5403,7 +5425,7 @@ namespace eval ::dui {
 				
 				set i0 $i1
 			}
- 
+	
 			return $result
 		}
 		
@@ -6158,7 +6180,6 @@ namespace eval ::dui {
 			set nradius [llength $radius]
 			set radius [lreplicate 4 $radius]
 			lassign $radius radius1 radius2 radius3 radius4
-			
 			set maxradius [::max {*}$radius]
 			
 			if { $radius1 > 0 } {
@@ -6219,11 +6240,11 @@ namespace eval ::dui {
 		proc rounded_rectangle_outline { x0 y0 x1 y1 radius colour disabled width tags } {
 			set can [dui canvas]
 			set ids {}
-
+			set main_tag [lindex $tags 0]
+			
 			set nradius [llength $radius]
 			set radius [lreplicate 4 $radius]
 			lassign $radius radius1 radius2 radius3 radius4
-			
 			set maxradius [::max {*}$radius]
 			
 			if { $width > 1 } {
@@ -6234,33 +6255,33 @@ namespace eval ::dui {
 			}
 			if { $radius1 > 0 } {
 				lappend ids [$can create arc $x0 [expr {$y0+$radius1+1.0}] [expr {$x0+$radius1+1.0}] $y0 -style arc -outline $colour \
-					-width $arc_width -tags $tags -start 90 -disabledoutline $disabled -state "hidden"]
+					-width $arc_width -tags [list ${main_tag}-nw {*}$tags] -start 90 -disabledoutline $disabled -state "hidden"]
 			}
 			if { $radius2 > 0 } {
 				lappend ids [$can create arc [expr {$x1-$radius2-1}] $y0 $x1 [expr {$y0+$radius2+1}] -style arc -outline $colour \
-					-width $arc_width -tags $tags -start 0 -disabledoutline $disabled -state "hidden"]
+					-width $arc_width -tags [list ${main_tag}-ne {*}$tags] -start 0 -disabledoutline $disabled -state "hidden"]
 			}
 			if { $radius3 > 0 } {
 				lappend ids [$can create arc [expr {$x1-$radius3-1.0}] $y1 $x1 [expr {$y1-$radius3-1.0}] -style arc -outline $colour \
-					-width $arc_width -tags $tags -start -90 -disabledoutline $disabled -state "hidden"]
+					-width $arc_width -tags [list ${main_tag}-se {*}$tags] -start -90 -disabledoutline $disabled -state "hidden"]
 			}			
 			if { $radius4 > 0 } {
 				lappend ids [$can create arc $x0 [expr {$y1-$radius4-1.0}] [expr {$x0+$radius4+1.0}] $y1 -style arc -outline $colour \
-					-width $arc_width -tags $tags -start 180 -disabledoutline $disabled -state "hidden"]
+					-width $arc_width -tags [list ${main_tag}-sw {*}$tags] -start 180 -disabledoutline $disabled -state "hidden"]
 			}
 
 			# Top line
 			lappend ids [$can create line [expr {$x0+$radius1/2.0-1.0}] $y0 [expr {$x1-$radius2/2.0+1.0}] $y0 -fill $colour \
-				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
+				-width $width -tags [list ${main_tag}-n {*}$tags] -disabledfill $disabled -state "hidden"]
 			# Right line
-			lappend ids[$can create line $x1 [expr {$y0+$radius2/2.0-1.0}] $x1 [expr {$y1-$radius3/2.0+1.0}] -fill $colour \
-				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
+			lappend ids [$can create line $x1 [expr {$y0+$radius2/2.0-1.0}] $x1 [expr {$y1-$radius3/2.0+1.0}] -fill $colour \
+				-width $width -tags [list ${main_tag}-e {*}$tags] -disabledfill $disabled -state "hidden"]
 			# Bottom line
-			lappend ids[$can create line [expr {$x0+$radius4/2.0-1.0}] $y1 [expr {$x1-$radius3/2.0+1.0}] $y1 -fill $colour \
-				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
+			lappend ids [$can create line [expr {$x0+$radius4/2.0-1.0}] $y1 [expr {$x1-$radius3/2.0+1.0}] $y1 -fill $colour \
+				-width $width -tags [list ${main_tag}-s {*}$tags] -disabledfill $disabled -state "hidden"]
 			# Left line
-			lappend ids[$can create line $x0 [expr {$y0+$radius1/2.0-1.0}] $x0 [expr {$y1-$radius4/2.0+1.0}] -fill $colour \
-				-width $width -tags $tags -disabledfill $disabled -state "hidden"]
+			lappend ids [$can create line $x0 [expr {$y0+$radius1/2.0-1.0}] $x0 [expr {$y1-$radius4/2.0+1.0}] -fill $colour \
+				-width $width -tags [list ${main_tag}-w {*}$tags] -disabledfill $disabled -state "hidden"]
 			return $ids
 		}
 		
@@ -6859,7 +6880,166 @@ namespace eval ::dui {
 					unset -nocomplain ::dui::item::press_events($widget_name,press)
 				}
 			}
-		}		
+		}
+		
+		# Run when any of the buttons in a dselector is tapped. This relies on the target variable having a 
+		# trace variable write that runs dselector_draw.
+		proc dselector_click { i n varname value multiple } {
+			set curvalue [subst \$$varname]
+			if { $multiple } {
+				if { $value in $curvalue } {
+					set $varname [list_remove_element $curvalue $value]
+				} else {
+					lappend $varname $value
+				}
+			} else {
+				if { [llength $curvalue] > 1 } {
+					set curvalue [lindex $curvalue 0]
+				}
+				if { $curvalue ne $value } {
+					set $varname $value
+				}
+			}
+		}
+		
+		# Paints each of the buttons in a dselector control compound, to reflect the value of the underlying variable.
+		# Needs 'args' at the end because this is called from a 'trace add variable'.
+		proc dselector_draw { page main_tag varname values multiple orient fill selectedfill outline selectedoutline 
+				label_fill label_selectedfill symbol_fill symbol_selectedfill args } {
+			set can [dui canvas]
+			set n [llength $values]
+			set curval [subst \$$varname]
+			
+			if { ![string is true $multiple] && [llength $curval] > 1 } {
+				set curval [lindex $curval 0]
+			}
+
+			for { set i 1 } { $i <= $n } { incr i } {
+				if { [lindex $values [expr {$i-1}]] in $curval } {
+					dui item config $page ${main_tag}_${i}-btn -fill $selectedfill
+					# Line items are colored with -fill and arc items with -outline, so we catch
+					catch {
+						dui item config $page ${main_tag}_${i}-out -fill $selectedoutline
+						dui item config $page ${main_tag}_${i}-out -outline $selectedoutline
+					}
+					if { $label_selectedfill ne {} } {
+						dui item config $page ${main_tag}_${i}-lbl -fill $label_selectedfill
+					}
+					
+					# Ensure the selected element outline bordering a (possibly) non-selected element is shown on top,
+					# otherwise we have unwanted lines on the border.
+					if { $orient eq "v" } {
+						if { $i == 1 && $n > 1 } {
+							if { [lindex $values 1] in $curval } {
+								dui item config $page ${main_tag}_${i}-out-s -fill $outline
+							} else {
+								dui item config $page ${main_tag}_${i}-out-s -fill $selectedoutline
+							}
+							
+							$can raise [dui item get $page ${main_tag}_$i-out-s] [dui item get $page ${main_tag}_[expr {$i+1}]-out-n]
+						} elseif { $i == $n && $n > 1 } {
+							if { [lindex $values $n-1] in $curval } {
+								dui item config $page ${main_tag}_${i}-out-n -fill $outline
+							} else {
+								dui item config $page ${main_tag}_${i}-out-n -fill $selectedoutline
+							}
+
+							$can raise [dui item get $page ${main_tag}_$i-out-n] [dui item get $page ${main_tag}_[expr {$i-1}]-out-s]
+						} elseif { $n > 1 } {
+							if { [lindex $values $i-1] in $curval } {
+								dui item config $page ${main_tag}_${i}-out-n -fill $outline
+							} else {
+								dui item config $page ${main_tag}_${i}-out-n -fill $selectedoutline
+							}
+							if { [lindex $values $i+1] in $curval } {
+								dui item config $page ${main_tag}_${i}-out-s -fill $outline
+							} else {
+								dui item config $page ${main_tag}_${i}-out-s -fill $selectedoutline
+							}
+							
+							$can raise [dui item get $page ${main_tag}_$i-out-s] [dui item get $page ${main_tag}_[expr {$i+1}]-out-n]
+							$can raise [dui item get $page ${main_tag}_$i-out-n] [dui item get $page ${main_tag}_[expr {$i-1}]-out-s]
+						}
+					} else {
+						if { $i == 1 && $n > 1 } {
+							if { [lindex $values 1] in $curval } {
+								dui item config $page ${main_tag}_${i}-out-e -fill $outline
+							} else {
+								dui item config $page ${main_tag}_${i}-out-e -fill $selectedoutline
+							}
+							
+							$can raise [dui item get $page ${main_tag}_$i-out-e] [dui item get $page ${main_tag}_[expr {$i+1}]-out-w]
+						} elseif { $i == $n && $n > 1 } {
+							if { [lindex $values $n-1] in $curval } {
+								dui item config $page ${main_tag}_${i}-out-w -fill $outline
+							} else {
+								dui item config $page ${main_tag}_${i}-out-w -fill $selectedoutline
+							}
+							
+							$can raise [dui item get $page ${main_tag}_$i-out-w] [dui item get $page ${main_tag}_[expr {$i-1}]-out-e]
+						} elseif { $n > 1 } {
+							if { [lindex $values $i+1] in $curval } {
+								dui item config $page ${main_tag}_${i}-out-e -fill $outline
+							} else {
+								dui item config $page ${main_tag}_${i}-out-e -fill $selectedoutline
+							}
+							if { [lindex $values $i-1] in $curval } {
+								dui item config $page ${main_tag}_${i}-out-w -fill $outline
+							} else {
+								dui item config $page ${main_tag}_${i}-out-w -fill $selectedoutline
+							}
+							
+							$can raise [dui item get $page ${main_tag}_$i-out-e] [dui item get $page ${main_tag}_[expr {$i+1}]-out-w]
+							$can raise [dui item get $page ${main_tag}_$i-out-w] [dui item get $page ${main_tag}_[expr {$i-1}]-out-e]
+						}
+					}
+					
+				} else {
+					dui item config $page ${main_tag}_${i}-btn -fill $fill
+					# Line items are colored with -fill and arc items with -outline, so we catch
+					catch {
+						dui item config $page ${main_tag}_${i}-out -fill $outline
+						dui item config $page ${main_tag}_${i}-out -outline $outline
+					}
+					if { $label_fill ne {} } {
+						dui item config $page ${main_tag}_${i}-lbl -fill $label_fill
+					}
+				}
+			}
+		}
+				
+		# Run when dtoggle is tapped. This relies on the target variable having a trace variable write that runs 
+		# dtoggle_draw.
+		proc dtoggle_click { varname } {
+			set $varname [expr {![string is true [subst \$$varname]]}]
+		}
+		
+		# Paint each dtoggle control compound item, to refelect the value of its boolean variable.
+		# Needs 'args' at the end because this is called from a 'trace add variable'.
+		proc dtoggle_draw { page main_tag varname x0 y0 x1 y1 sliderwidth outline_width foreground selectedforeground 
+				background selectedbackground outline selectedoutline args } {
+			set can [dui::canvas]
+			set curval [subst \$$varname]
+			
+			if { [string is true $curval] } {
+				dui item config $page ${main_tag}-bck -fill $selectedbackground
+				dui item config $page ${main_tag}-crc -fill $selectedforeground
+				if { $outline_width > 0 } {
+					dui item config $page ${main_tag}-crc -outline $selectedoutline
+				}
+				$can coords [dui item get $page ${main_tag}-crc] [expr {$x1-$sliderwidth+$outline_width+2}] \
+					[expr {$y0+$outline_width+2}] [expr {$x1-$outline_width-2}] [expr {$y0+$sliderwidth-$outline_width-2}]
+				
+			} else {
+				dui item config $page ${main_tag}-bck -fill $background
+				dui item config $page ${main_tag}-crc -fill $foreground
+				if { $outline_width > 0 } {
+					dui item config $page ${main_tag}-crc -outline $outline
+				}
+				$can coords [dui item get $page ${main_tag}-crc] [expr {$x0+$outline_width+2}] [expr {$y0+$outline_width+2}] \
+					[expr {$x0+$sliderwidth-$outline_width-2}] [expr {$y0+$sliderwidth-$outline_width-2}]
+			}
+		}
 	}
 
 	### ADD SUBENSEMBLE: COMMANDS TO CREATE CANVAS ITEMS AND WIDGETS AND ADD THEM TO THE CANVAS ###
@@ -6972,8 +7152,8 @@ namespace eval ::dui {
 				set x [dui::platform::rescale_x $x]
 				set y [dui::platform::rescale_y $y]
 			} else {
-    			set x [dui::page::calc_x $first_page $x]
-    			set y [dui::page::calc_y $first_page $y]
+				set x [dui::page::calc_x $first_page $x]
+				set y [dui::page::calc_y $first_page $y]
 			}
 			
 			set tags [dui::args::process_tags_and_var $pages dtext ""]
@@ -7102,8 +7282,9 @@ namespace eval ::dui {
 				set arc_offset [dui::args::get_option -arc_offset [dui aspect get $aspect_type arc_offset -style $style -default 50]]
 				set width [dui::args::get_option -width [dui aspect get $aspect_type width -style $style -default 3]]
 				
+				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
 				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline $disabledoutline \
-					$width $tags]
+					$width $outline_tags]
 			} elseif { $shape eq "round_outline" } {
 				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style]]
 				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill -style $style]]
@@ -7327,6 +7508,7 @@ namespace eval ::dui {
 					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
 					set arc_offset [dui::args::get_option -arc_offset [dui aspect get dbutton arc_offset -style $style -default 50]]
 					set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
+					set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
 					
 					set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline $disabledoutline \
 						$width $button_tags]
@@ -7499,6 +7681,282 @@ namespace eval ::dui {
 			}
 
 			return [dui add dbutton $pages $x $y -command $cmd -aspect_type dclicker {*}$args]
+		}
+
+		# A set of dbuttons joined in a row or column that allows selecting one or more elements. 
+		# -orient
+		# -variable
+		# -values
+		# -lengths
+		# -multiple
+		# -command
+		# -fill
+		# -selectedfill
+		# -outline
+		# -selectedoutline
+		# -labels
+		# -label_fill
+		# -label_selectedfill
+		# -symbols
+		# -symbols_selectedfill
+		proc dselector { pages x y args } {
+			set can [dui::canvas]
+			set tags [dui::args::process_tags_and_var $pages dselector -variable 1]
+			set main_tag [lindex $tags 0]
+			set ns [dui page get_namespace $pages]
+				
+			set style [dui::args::get_option -style "" 0]
+			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
+			set var [dui::args::get_option -variable "" 1]
+			if { ![info exists $var] } {
+				set $var {}
+			}
+			set multiple [string is true [dui::args::get_option -multiple 0 1]]
+			dui::args::process_aspects dselector $style
+
+			set values [dui::args::get_option -values {} 1]
+			set labels [dui::args::get_option -labels {} 1]
+			set symbols [dui::args::get_option -symbols {} 1]
+			set images [dui::args::get_option -images {} 1]
+			set n [::max [llength $values] [llength $labels] [llength $symbols] [llength $images]]
+			if { $n == 0 } {
+				msg -WARNING [namespace current] dselector: "any of 'values', 'labels', 'symbols' or 'images' must be specified"
+				return
+			}
+			if { $values eq {} } {
+				set values [lsequence 1 $n]
+			}
+			if { $labels eq {} && $symbols eq {} && $images eq {} } {
+				set labels $values
+			}
+			
+			set fill [dui::args::get_option -fill white 1]
+			set selectedfill [dui::args::get_option -selectedfill grey 1]
+			set outline [dui::args::get_option -outline $selectedfill 1]
+			set selectedoutline [dui::args::get_option -selectedoutline $selectedfill 1]
+			set width [dui::args::get_option -width 2 1]
+			
+			if { $labels eq {} } {
+				set label_fill {}
+				set label_selectedfill {}
+			} else {
+				set label_fill [dui::args::get_option -label_fill $selectedfill 1]
+				set label_selectedfill [dui::args::get_option -label_selectedfill $fill 1]
+			}
+			if { $symbols eq {} } {
+				set symbol_fill {}
+				set symbol_selectedfill {}
+			} else {
+				set symbol_fill [dui::args::get_option -symbol_fill $selectedfill 1]
+				set symbol_selectedfill [dui::args::get_option -symbol_selectedfill $fill 1]
+			}
+
+			lassign [dui::args::process_sizes $pages $x $y -bwidth 600 -bheight 100 0] x y x1 y1
+			set lengths [dui::args::get_option -lengths {} 1]
+			if { $lengths eq {} } {
+				set lengths [lreplicate $n 0.1]
+			} elseif { [llength $lengths] != $n } {
+				set lengths [lreplicate $n $lengths] 
+			}
+
+			set radius [lreplicate 4 [dui::args::get_option -radius 40 1]]
+			set user_cmd [dui::args::get_option -command {} 1]
+			if { $user_cmd ne {} } {
+				if { $ns ne "" } { 
+					if { [string is wordchar $user_cmd] && [namespace which -command "${ns}::$user_cmd"] ne "" } {
+						set user_cmd ${ns}::$user_cmd
+					}				
+					regsub -all {%NS} $user_cmd $ns user_cmd
+				}
+				
+				regsub {%V} $user_cmd $values user_cmd
+				regsub {%m} $user_cmd $multiple user_cmd
+			}
+			
+			set orient [string range [dui::args::get_option -orient h 1] 0 0]
+			if { $orient eq "v" } {
+				set splits [dui::page::split_space $y $y1 {*}$lengths]
+			} else {
+				set splits [dui::page::split_space $x $x1 {*}$lengths]
+			}
+
+			set ids {}
+			for { set i 0 } { $i < $n } { incr i } {
+				set i1 [expr {$i+1}]
+				set iargs $args
+				
+				if { $orient eq "v" } {
+					if { $i == 0 } {
+						lappend iargs -shape round_outline -radius [list [lindex $radius 0] [lindex $radius 1] 0 0] \
+							-outline $outline -fill $fill -width $width -label_fill $label_fill
+					} elseif { $i == [expr {$n-1}] } {
+						lappend iargs -shape round_outline -radius [list 0 0 [lindex $radius 2] [lindex $radius 3]] \
+							-outline $outline -fill $fill -width $width -label_fill $label_fill
+					} else {
+						lappend iargs -shape round_outline -radius {0 0 0 0} -outline $outline -fill $fill -width $width \
+							-label_fill $label_fill
+					}
+					set ix $x
+					set iy [lindex $splits $i]
+					set ix1 $x1
+					set iy1 [lindex $splits $i1]
+				} else {
+					if { $i == 0 } {
+						lappend iargs -shape round_outline -radius [list [lindex $radius 0] 0 0 [lindex $radius 3]] \
+							-outline $outline -fill $fill -width $width -label_fill $label_fill
+					} elseif { $i == [expr {$n-1}] } {
+						lappend iargs -shape round_outline -radius [list 0 [lindex $radius 1] [lindex $radius 2] 0] \
+							-outline $outline -fill $fill -width $width -label_fill $label_fill
+					} else {
+						lappend iargs -shape round_outline -radius {0 0 0 0} -outline $outline -fill $fill -width $width \
+							-label_fill $label_fill
+					}
+					set ix [lindex $splits $i]
+					set iy $y
+					set ix1 [lindex $splits $i1]
+					set iy1 $y1
+				}
+				
+				if { $labels ne {} } {
+					lappend iargs -label [lindex $labels $i] -label_fill $label_fill
+				}
+				if { $symbols ne {} } {
+					lappend iargs -symbol [lindex $symbols $i] -symbol_fill $symbol_fill
+				}
+				
+				set cmd [::list ::dui::item::dselector_click $i1 $n $var [lindex $values $i] $multiple]
+				set id [dui::add::dbutton $pages $ix $iy $ix1 $iy1 -tags ${main_tag}_$i1 -command $cmd {*}$iargs]
+				lappend ids $id
+				
+				if { $user_cmd ne {} } {
+					regsub {%x0} $user_cmd $ix user_cmd
+					regsub {%x1} $user_cmd $ix1 user_cmd
+					regsub {%y0} $user_cmd $iy user_cmd
+					regsub {%y1} $user_cmd $iy1 user_cmd
+					regsub {%v} $user_cmd [lindex $values $i] user_cmd
+						
+					$can bind $id [dui::platform::button_press] [list + {*}$user_cmd]
+				}
+			}
+
+			set draw_cmd [::list ::dui::item::dselector_draw [lindex $pages 0] $main_tag $var $values $multiple $orient $fill \
+				$selectedfill $outline $selectedoutline $label_fill $label_selectedfill $symbol_fill $symbol_selectedfill]
+			# Initialize the control
+			uplevel #0 $draw_cmd
+			trace add variable $var write $draw_cmd
+			
+			return $ids
+		}
+
+		# Toggle-switch, a modern-looking checkbox alternative
+		# -width
+		# -height
+		# -sliderwidth: width/height or the slider circle
+		# -foreground fill color of the slider circle, when false
+		# -selectedforeground inner color of the slider circle, when true
+		# -disabledforeground inner color of the slider circle, when disabled
+		# -background fill color of the background rounded line, when false
+		# -selectedbackground fill color of the background rounded line, when true
+		# -disabledbackground fill color of the background rounded line, when disabled
+		# -outline_width
+		# -outline fill color of the circle outline line, when false
+		# -selectedoutline fill color of the circle outline line, when true
+		# -disabledoutline fill color of the circle outline line, when disabled
+		# -label and -label_* options
+		proc dtoggle { pages x y args } {
+			set can [dui::canvas]
+			set tags [dui::args::process_tags_and_var $pages dtoggle -variable 1]
+			set main_tag [lindex $tags 0]
+			set ns [dui page get_namespace $pages]
+				
+			set style [dui::args::get_option -style "" 0]
+			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
+			set var [dui::args::get_option -variable "" 1]
+			if { ![info exists $var] } {
+				set $var 0
+			}
+			dui::args::process_aspects dtoggle $style
+
+			lassign [dui::args::process_sizes $pages $x $y -width 60 -height 35 1] x y x1 y1
+			set sliderwidth [dui::args::get_option -sliderwidth {} 1]
+			if { $sliderwidth eq {} } {
+				set sliderwidth [expr {$y1-$y-2}]
+			} else {
+				set sliderwidth [dui::platform::rescale_x $sliderwidth]
+			}
+			
+			set background [dui::args::get_option -background grey 1]
+			set selectedbackground [dui::args::get_option -selectedbackground aquamarine 1]
+			set disabledbackground [dui::args::get_option -disabledbackground "#ccc" 1]
+			set foreground [dui::args::get_option -foreground white 1]
+			set selectedforeground [dui::args::get_option -selectedforeground blue 1]
+			set disabledforeground [dui::args::get_option -disabledforeground "#ccc" 1]
+			set outline_width [dui::args::get_option -outline_width 1 1]
+			if { $outline_width ne {} && $outline_width > 0 } {
+				set outline_width [dui::platform::rescale_x $outline_width]
+			}
+			set outline [dui::args::get_option -outline $foreground	1]
+			set selectedoutline [dui::args::get_option -selectedoutline black 1]
+			set user_cmd [dui::args::get_option -command {} 1]
+			
+			set ids {}
+			#$can create rect $x $y $x1 $y1 -width 1 -fill {} -outline pink -tags [list ${main_tag}-border {*}$tags] -state hidden
+			
+			# Background rounded-extremes line
+			set id [$can create line [expr {$x+$sliderwidth/2.0}] [expr {$y+$sliderwidth/2.0}] \
+				[expr {$x1-$sliderwidth/2.0}] [expr {$y+$sliderwidth/2.0}] -width [expr {$y1-$y}] \
+				-fill $background -disabledfill $disabledbackground -capstyle round \
+				-tags [list ${main_tag}-bck {*}$tags] -state hidden]
+			lappend ids $id
+			if { $ns ne "" } {
+				set "${ns}::widgets(${main_tag}-bck)" $id
+			}
+
+			# Inner slider circle
+			set id [$can create oval [expr {$x+$outline_width+2}] [expr {$y+$outline_width+2}] \
+				[expr {$x+$sliderwidth-$outline_width-2}] [expr {$y+$sliderwidth-$outline_width-2}] -fill $foreground \
+				-disabledfill $disabledforeground -width $outline_width -outline $outline \
+				-tags [list {*}$tags ${main_tag}-crc] -state hidden]
+			lappend ids $id	
+			if { $ns ne "" } {
+				set "${ns}::widgets(${main_tag}-crc)" $id
+			}
+
+			# Transparent tappable rectangle
+			set id [$can create rect [expr {$x-6}] [expr {$y+12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} \
+				-tags $tags -state hidden]
+			lappend ids $id
+			if { $ns ne "" } {
+				set "${ns}::widgets($main_tag)" $ids
+			}
+			
+			set cmd [::list ::dui::item::dtoggle_click $var]
+			$can bind $id [dui::platform::button_press] $cmd
+
+			set draw_cmd [::list ::dui::item::dtoggle_draw [lindex $pages 0] $main_tag $var $x $y $x1 $y1 \
+				$sliderwidth $outline_width $foreground $selectedforeground $background $selectedbackground \
+				$outline $selectedoutline]
+			# Initialize the control
+			uplevel #0 $draw_cmd
+			trace add variable $var write $draw_cmd
+			
+			if { $user_cmd ne {} } {
+				if { $ns ne "" } { 
+					if { [string is wordchar $user_cmd] && [namespace which -command "${ns}::$user_cmd"] ne "" } {
+						set user_cmd ${ns}::$user_cmd
+					}				
+					regsub -all {%NS} $user_cmd $ns user_cmd
+				}
+				
+				regsub {%x0} $user_cmd $x user_cmd
+				regsub {%x1} $user_cmd $x1 user_cmd
+				regsub {%y0} $user_cmd $y user_cmd
+				regsub {%y1} $user_cmd $y1 user_cmd
+					
+				$can bind $id [dui::platform::button_press] [list + {*}$user_cmd]
+			}
+			
+			return $id
 		}
 		
 		# Extra named options:
@@ -7694,7 +8152,7 @@ namespace eval ::dui {
 		proc entry { pages x y args } {
 			set tags [dui::args::process_tags_and_var $pages entry -textvariable 1]
 			set main_tag [lindex $tags 0]
- 
+	
 			set style [dui::args::get_option -style "" 0]
 			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
 			dui::args::process_aspects entry $style
@@ -8258,10 +8716,10 @@ namespace eval ::dui {
 					[expr {$x+$sliderlength/2}] [expr {$yf+$sliderlength/2}] -fill $foreground \
 					-disabledfill $disabledforeground -activefill $activeforeground -width 0 \
 					-tags [list {*}$tags ${main_tag}-crc] -state hidden]
-                set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}
-                $can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag v %y]
-                $can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag v %y]                
-                #$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
+				set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}
+				$can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag v %y]
+				$can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag v %y]                
+				#$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
 				$can bind ${main_tag}-crc [dui platform button_motion] $moveto_cmd
 				lappend ids $id			
 				if { $ns ne "" } {
@@ -8348,11 +8806,11 @@ namespace eval ::dui {
 					[expr {$x1f+($sliderlength/2)}] [expr {$y1f+($sliderlength/2)}] -fill $foreground \
 					-disabledfill $disabledforeground -activefill $activeforeground -width 0 \
 					-tags [list {*}$tags ${main_tag}-crc] -state hidden]
-                set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}                
-                $can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag h %x]
-                $can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag h %x]                
+				set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}                
+				$can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag h %x]
+				$can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag h %x]                
 				#$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
-                $can bind ${main_tag}-crc [dui platform button_motion] $moveto_cmd
+				$can bind ${main_tag}-crc [dui platform button_motion] $moveto_cmd
 				lappend ids $id			
 				if { $ns ne "" } {
 					set "${ns}::widgets(${main_tag}-crc)" $id
@@ -8617,6 +9075,45 @@ proc lreplicate { len args } {
 	}
 }
 
+# Returns a list with a sequence of numbers. 'step' is assumed to be 1 or -1 if not defined, depending on whether
+# it's an increasing or decreasing seqence. Properly formats the sequence numbers, using the maximum number of
+# decimals used in any of the input arguments.
+proc lsequence { from to {step {}} } {
+	set seq {}
+	if { $step eq {} } {
+		if { $to >= $from } {
+			set step 1
+		} else {
+			set step -1
+		}
+	}
+	
+	if { $step == 0 } {
+		return {}
+	} elseif { $to > $from && $step < 0 } {
+		return {}
+	} elseif { $to < $from && $step > 0 } {
+		return {}
+	}
+	
+	set n_dec_from [string length [lindex [split $from .] 1]]
+	set n_dec_to [string length [lindex [split $to .] 1]]
+	set n_dec_step [string length [lindex [split $step .] 1]]
+	set n_decimals [::max $n_dec_from $n_dec_to $n_dec_step]
+	
+	for {set i 0} true {incr i} {
+		set x [expr {$i*$step + $from}]
+		if { $step > 0 && $x > $to} {
+			break
+		} elseif { $step < 0 && $x < $to } {
+			break
+		}
+		lappend seq [format "%.${n_decimals}f" $x]
+	}
+	
+	return $seq
+}
+
 # Sets or changes a numeric value within a valid range, using the given resolution, and formats it 
 #	with the given number of decimals.
 # This is normally used from scales or clickers.
@@ -8674,7 +9171,19 @@ proc value_or_default { var {default {}} } {
 
 # tcl::mathfunc::max fails on older Androwish (TheLeydenJar), so we create our version, taken from https://wiki.tcl-lang.org/page/max # 
 proc max { args } {
+	if { [llength $args] == 0 } {
+		msg -WARNING max: "empty arguments"
+		return {}
+	}
 	lindex [lsort -real $args] end
+}
+
+proc min { args } {
+	if { [llength $args] == 0 } {
+		msg -WARNING min: "empty arguments"
+		return {}
+	}	
+	lindex [lsort -real $args] 0
 }
 
 ### FULL-PAGE EDITORS ################################################################################################
