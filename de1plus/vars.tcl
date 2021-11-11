@@ -1109,7 +1109,7 @@ proc drink_weight_text {} {
 }
 
 proc dump_stack {args} {
-	msg -DEBUG [stacktrace]
+	msg -INFO [stacktrace]
 }
 
 #trace add variable de1(final_water_weight) write dump_stack
