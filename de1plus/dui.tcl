@@ -7604,7 +7604,8 @@ namespace eval ::dui {
 			}
 			if { $cmd eq "" } {
 				msg -WARN [namespace current] dbutton "'$main_tag' in page(s) '$pages' does not have a command"
-				
+				dump_stack
+
 				if { $longpress_cmd ne "" } {
 					$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $id $longpress_cmd]
 					$can bind $id [dui::platform::button_unpress] [list ::dui::item::longpress_unpress $id]
