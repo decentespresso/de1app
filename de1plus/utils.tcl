@@ -679,7 +679,8 @@ proc random_saver_file {} {
             }
         }
 
-        set ::saver_files_cache [glob -nocomplain "[saver_directory]/${::screen_size_width}x${::screen_size_height}/*.jpg"]
+	set saver_path "[saver_directory]/${::screen_size_width}x${::screen_size_height}/"
+        set ::saver_files_cache [glob -nocomplain -path $saver_path {*.[Jj][Pp][Gg]}]
 
          if {$::settings(screen_saver_change_interval) == 0} {
             # remove all other savers if we are only showing the black one
