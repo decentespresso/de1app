@@ -1386,10 +1386,12 @@ proc de1_ble_handler { event data } {
  				} elseif {[string first "ACAIA" $name] == 0 \
  					|| [string first "LUNAR" $name]    == 0 \
  					|| [string first "PROCH" $name]    == 0 \
-					|| [string first "PYXIS" $name]    == 0 } {
+					|| [string first "PYXIS" $name]    == 0 \
+					|| [string first "PEARLS" $name]    == 0 } {
 
 					# Pyxis BLE UART bridge style device
-					if { [string first "PYXIS" $name] == 0 } {
+					if { [string first "PYXIS" $name] == 0 \
+					  || [string first "PEARLS" $name] == 0 } {
 						set ::acaia_is_pyxis_family 1
 						set ::settings(force_acaia_heartbeat) 1
 						set ::acaia_suuid $::de1(suuid_acaia_pyxis)
