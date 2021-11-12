@@ -72,9 +72,6 @@ array set ::de1 {
 	suuid_decentscale "0000FFF0-0000-1000-8000-00805F9B34FB"
 	cuuid_acaia_ips_age "00002A80-0000-1000-8000-00805F9B34FB"
 	suuid_acaia_ips "00001820-0000-1000-8000-00805F9B34FB"
-	cuuid_acaia_pyxis_status "49535343-1E4D-4BD9-BA61-23C647249616"
-	cuuid_acaia_pyxis_cmd "49535343-8841-43F4-A8D4-ECBE34729BB3"
-	suuid_acaia_pyxis "00001820-0000-1000-8000-00805F9B34FB"
 	suuid_felicita "0000FFE0-0000-1000-8000-00805F9B34FB"
 	cuuid_felicita "0000FFE1-0000-1000-8000-00805F9B34FB"
 	suuid_hiroiajimmy "06C31822-8682-4744-9211-FEBC93E3BECE"
@@ -186,6 +183,31 @@ array set ::de1_cuuids_to_command_names {
 }
 
 array set ::de1_command_names_to_cuuids [reverse_array ::de1_cuuids_to_command_names]
+
+
+#set ::de1(in_fw_update_mode) 1
+
+
+#namespace import blt::*
+#namespace import -force blt::tile::*
+
+
+#espresso_elapsed append 0
+#espresso_pressure append 0
+#espresso_flow append 0
+#espresso_temperature_mix append 0
+#espresso_temperature_basket append 0
+#espresso_state_change append 0
+
+#espresso_elapsed append 0 1 2
+#espresso_pressure append 0 1 4
+# espresso_pressure espresso_temperature_mix espresso_temperature_basket
+
+#global accelerometer
+#set accelerometer 0
+#if {[flight_mode_enable] == 1} {#
+#	set accelerometer 1
+#}
 
 array set ::settings {
 	enable_rise 0
