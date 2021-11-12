@@ -416,9 +416,9 @@ proc hiroia_parse_response { value } {
 #### Acaia
 set ::acaia_command_buffer ""
 set ::acaia_is_pyxis_family 0
-set ::acaia_suuid {}
-set ::acaia_cuuid_weight {}
-set ::acaia_cuuid_cmd {}
+set ::acaia_suuid $::de1(suuid_acaia_ips)
+set ::acaia_cuuid_weight $::de1(cuuid_acaia_ips_age)
+set ::acaia_cuuid_cmd $::de1(cuuid_acaia_ips_age)
 
 proc acaia_encode {msgType payload} {
 
