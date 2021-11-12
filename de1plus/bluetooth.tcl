@@ -1552,7 +1552,7 @@ proc de1_ble_handler { event data } {
 							after 200 hiroia_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
-							ble mtu $handle 247
+							if {$::acaia_is_pyxis_family} {ble mtu $handle 247}
 							acaia_send_ident
 							after 500 acaia_send_config
 							after 1000 acaia_enable_weight_notifications
