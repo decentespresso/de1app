@@ -28,7 +28,7 @@ preinfusion_time 20
 pressure_end 6.0
 profile_hide 0
 profile_language en
-profile_notes {This profile does an espresso-focused preinfusion, raises to 8.6 bar and then detects the current flow to keep it stable ever after. I believe this might make better espresso when it is not perfectly dialed in. See it like this - you are dialing in the constant flow rate, not the pressure curve or the shape of the flow curve. Faster flow rates might taste better with longer shots. Taken to the extreme, this profile can do something similar to the Rao Allonge if you just grind coarse enough.}
+profile_notes {The more forgiving evolution of Scott Rao's original blooming profile. Designed to produce tasty espressos from a wide range of grind settings. Accomplished by 2 main features in the recipe: 1. The Blooming stage declines from 4bar to 2 bar. Blooming time is dictated by the grind size (Course is shorter, finer is longer) and ensures a more consistent puck resistance.  2. An adaptive pressure phase based on the flow rate evolution. e.g. When resistance is lower (faster flowrate) pressure declines. If resistance is higher (slower flowrate) pressure increases.  Best used with a large flat burr and light roasts. If using darker roasts, reduce the temps to 84°C-86°C and increase the exit pressure to enable a shorter bloom. Note conical burrs can use higher temperatures.  20g dose with a ratio between 1 : 2 to 1 : 2.5 with total shot times ranging from 25 to 45 seconds.}
 profile_title {Gagné/Adaptive Shot 92C v1.0}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
