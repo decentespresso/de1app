@@ -1386,6 +1386,7 @@ proc de1_ble_handler { event data } {
  					|| [string first "LUNAR" $name]    == 0 \
  					|| [string first "PROCH" $name]    == 0 \
 					|| [string first "PYXIS" $name]    == 0 \
+					|| [string first "CINCO" $name]    == 0 \
 					|| [string first "PEARLS" $name]    == 0 } {
 
 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
@@ -1542,18 +1543,30 @@ proc de1_ble_handler { event data } {
 							after 200 hiroia_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
+
+							# 2021 lunar is detected via the appropriate characteristic
+							if {$::settings(scale_bluetooth_name) in {"PYXIS" "SCALES" "CINCO"}} {
+								set ::settings(acaia_is_pyxis_family) == 1
+							}
+
 							if {$::settings(acaia_is_pyxis_family) == 1} {
 								set ::settings(acaia_suuid) $::de1(suuid_acaia_pyxis)
 								set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_pyxis_cmd)
 								set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_pyxis_status)
+								set ::settings(force_acaia_heartbeat) 1
 								ble mtu $handle 247
 								msg -INFO "Connecting to Pyxis Familiy Scale"
 							} else {
 								set ::settings(acaia_suuid) $::de1(suuid_acaia_ips)
 								set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_ips_age)
 								set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_ips_age)
+								set ::settings(force_acaia_heartbeat) 0
+								if { [string first "PROCH" $::settings(scale_bluetooth_name)] != -1 } {
+									set ::settings(force_acaia_heartbeat) 1
+								}
 								msg -INFO "Connecting to Lunar Familiy Scale"
 							}
+							save_settings
 							acaia_send_ident
 							after 500 acaia_send_config
 							after 1000 acaia_enable_weight_notifications
