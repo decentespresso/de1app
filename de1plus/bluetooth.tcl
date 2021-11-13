@@ -1547,10 +1547,12 @@ proc de1_ble_handler { event data } {
 								set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_pyxis_cmd)
 								set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_pyxis_status)
 								ble mtu $handle 247
+								msg -INFO "Connecting to Pyxis Familiy Scale"
 							} else {
 								set ::settings(acaia_suuid) $::de1(suuid_acaia_ips)
 								set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_ips_age)
 								set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_ips_age)
+								msg -INFO "Connecting to Lunar Familiy Scale"
 							}
 							acaia_send_ident
 							after 500 acaia_send_config
@@ -1595,6 +1597,9 @@ proc de1_ble_handler { event data } {
 					if {$::settings(scale_type) == "aciascale"} {
 						if {$sinstance == $::de1(suuid_acaia_pyxis)} {
 							set ::settings(acaia_is_pyxis_family) 1
+							save_settings
+						} else {
+							set ::settings(acaia_is_pyxis_family) 0
 							save_settings
 						}
 					}
