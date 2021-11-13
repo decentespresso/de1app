@@ -1520,9 +1520,6 @@ proc de1_ble_handler { event data } {
 							# 2021 lunar is detected via the appropriate characteristic
 							if {$::settings(scale_bluetooth_name) in {"PYXIS" "SCALES" "CINCO"}} {
 								set ::settings(acaia_is_pyxis_family) == 1
-							}
-
-							if {$::settings(acaia_is_pyxis_family) == 1} {
 								set ::settings(acaia_suuid) $::de1(suuid_acaia_pyxis)
 								set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_pyxis_cmd)
 								set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_pyxis_status)
@@ -1530,6 +1527,7 @@ proc de1_ble_handler { event data } {
 								ble mtu $handle 247
 								msg -INFO "Connecting to Pyxis Familiy Scale"
 							} else {
+								set ::settings(acaia_is_pyxis_family) == 0
 								set ::settings(acaia_suuid) $::de1(suuid_acaia_ips)
 								set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_ips_age)
 								set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_ips_age)
@@ -1539,6 +1537,7 @@ proc de1_ble_handler { event data } {
 								}
 								msg -INFO "Connecting to Lunar Familiy Scale"
 							}
+
 							save_settings
 							acaia_send_ident
 							after 500 acaia_send_config
@@ -1580,15 +1579,6 @@ proc de1_ble_handler { event data } {
 					# save the mapping because we now need it for Android 7
 					set ::cinstance($cuuid) $cinstance
 					set ::sinstance($suuid) $sinstance
-					if {$::settings(scale_type) == "aciascale"} {
-						if {$sinstance == $::de1(suuid_acaia_pyxis)} {
-							set ::settings(acaia_is_pyxis_family) 1
-							save_settings
-						} else {
-							set ::settings(acaia_is_pyxis_family) 0
-							save_settings
-						}
-					}
 				} elseif {$state eq "connected"} {
 
 					if {$access eq "r" || $access eq "c"} {
