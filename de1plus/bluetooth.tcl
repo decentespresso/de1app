@@ -1345,51 +1345,25 @@ proc de1_ble_handler { event data } {
 							#ble_connect_to_de1
 						}
 					}
-				} elseif {[string first Skale $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "atomaxskale"
-
-					if {$address == $::settings(scale_bluetooth_address)} {
-						if {$::currently_connecting_scale_handle == 0} {
-							::bt::msg -INFO "Not currently connecting to scale, so trying now"
-							ble_connect_to_scale
-						}
-					}
-
-				} elseif {[string first "Decent Scale" $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "decentscale"
-
-					if {$address == $::settings(scale_bluetooth_address)} {
-						if {$::currently_connecting_scale_handle == 0} {
-							::bt::msg -INFO "Not currently connecting to scale, so trying now"
-							ble_connect_to_scale
-						}
-					}
-				} elseif {[string first "FELICITA" $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "felicita"
-
-					if {$address == $::settings(scale_bluetooth_address)} {
-						if {$::currently_connecting_scale_handle == 0} {
-							::bt::msg -INFO "Not currently connecting to scale, so trying now"
-							ble_connect_to_scale
-						}
-					}
- 				} elseif {[string first "HIROIA JIMMY" $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "hiroiajimmy"
-
-					if {$address == $::settings(scale_bluetooth_address)} {
-						if {$::currently_connecting_scale_handle == 0} {
-							::bt::msg -INFO "Not currently connecting to scale, so trying now"
-							ble_connect_to_scale
-						}
-					}
- 				} elseif {[string first "ACAIA" $name] == 0 \
+				} else {
+					if {[string first Skale $name] == 0} {
+						append_to_peripheral_list $address $name "ble" "scale" "atomaxskale"
+					} elseif {[string first "Decent Scale" $name] == 0} {
+						append_to_peripheral_list $address $name "ble" "scale" "decentscale"
+					} elseif {[string first "FELICITA" $name] == 0} {
+						append_to_peripheral_list $address $name "ble" "scale" "felicita"
+					} elseif {[string first "HIROIA JIMMY" $name] == 0} {
+						append_to_peripheral_list $address $name "ble" "scale" "hiroiajimmy"
+					} elseif {[string first "ACAIA" $name] == 0 \
  					|| [string first "LUNAR" $name]    == 0 \
  					|| [string first "PROCH" $name]    == 0 \
 					|| [string first "PYXIS" $name]    == 0 \
 					|| [string first "CINCO" $name]    == 0 \
 					|| [string first "PEARLS" $name]    == 0 } {
-
-					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
+						append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
+					} else {
+						return
+					}
 
 					if {$address == $::settings(scale_bluetooth_address)} {
 						if {$::currently_connecting_scale_handle == 0} {
@@ -1397,8 +1371,6 @@ proc de1_ble_handler { event data } {
 							ble_connect_to_scale
 						}
 					}
-				} else {
-					#
 				}
 			}
 			connection {
