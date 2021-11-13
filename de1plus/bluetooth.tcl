@@ -1388,29 +1388,6 @@ proc de1_ble_handler { event data } {
 					|| [string first "PYXIS" $name]    == 0 \
 					|| [string first "PEARLS" $name]    == 0 } {
 
-					# Pyxis BLE UART bridge style device
-					if { [string first "PYXIS" $name] == 0 \
-					  || [string first "PEARLS" $name] == 0 } {
-						set ::settings(acaia_is_pyxis_family) 1
-						set ::settings(force_acaia_heartbeat) 1
-						set ::settings(acaia_suuid) $::de1(suuid_acaia_pyxis)
-						set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_pyxis_status)
-						set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_pyxis_cmd)
-						msg -INFO "Found a pyxis family scale"
-					} else {
-						# Pearl is the only non-pyxis requiring heartbeat
-						if { [string first "PROCH" $name] != -1 } {
-							set ::settings(force_acaia_heartbeat) 1
-						} else {
-							set ::settings(force_acaia_heartbeat) 0
-						}
-						set ::settings(acaia_is_pyxis_family) 0
-						set ::settings(acaia_suuid) $::de1(suuid_acaia_ips)
-						set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_ips_age)
-						set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_ips_age)
-						msg -INFO "Found a lunar family scale."
-					}
-
 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
 
 					if {$address == $::settings(scale_bluetooth_address)} {
@@ -1615,6 +1592,12 @@ proc de1_ble_handler { event data } {
 					# save the mapping because we now need it for Android 7
 					set ::cinstance($cuuid) $cinstance
 					set ::sinstance($suuid) $sinstance
+					if {$::settings(scale_type) == "aciascale"} {
+						if {$sinstance == $::de1(suuid_acaia_pyxis)} {
+							set ::settings(acaia_is_pyxis_family) 1
+							save_settings
+						}
+					}
 				} elseif {$state eq "connected"} {
 
 					if {$access eq "r" || $access eq "c"} {
