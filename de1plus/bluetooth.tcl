@@ -1366,6 +1366,7 @@ proc de1_ble_handler { event data } {
 					}
 
 					if {$address == $::settings(scale_bluetooth_address)} {
+						set ::settings(scale_bluetooth_name) $name
 						if {$::currently_connecting_scale_handle == 0} {
 							::bt::msg -INFO "Not currently connecting to scale, so trying now"
 							ble_connect_to_scale
