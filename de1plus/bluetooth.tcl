@@ -456,7 +456,7 @@ proc acaia_send_ident {} {
 
 
 	if {[ifexists ::sinstance([set ::settings(acaia_suuid)])] == ""} {
-		::bt::msg -DEBUG "Acaia Scale not connected, cannot send app ident"
+		::bt::msg -DEBUG "Acaia Scale not connected ([set ::settings(acaia_suuid)]), cannot send app ident"
 		return
 	}
 
