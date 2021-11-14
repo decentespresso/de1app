@@ -1204,7 +1204,7 @@ proc ble_connect_to_scale {} {
 }
 
 proc append_to_peripheral_list {address name connectiontype devicetype devicefamily} {
-	::bt::msg -NOTICE append_to_peripheral_list
+	::bt::msg -NOTICE append_to_peripheral_list $name "at" $address
 
 	foreach { entry } $::peripheral_device_list {
 		if { [dict get $entry address] eq $address} {
