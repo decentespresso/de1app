@@ -1,4 +1,4 @@
-Copackage provide de1_profile 2.0
+package provide de1_profile 2.0
 
 package require huddle
 package require json
