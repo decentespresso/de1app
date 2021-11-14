@@ -488,4 +488,30 @@ namespace eval ::profile {
             }
         }
     }
+    
+    # "sanitize" filename from profile title. Refactored from proc save_profile, so this is reusable in other parts
+    # of the code such as profiles importing from Visualizer.
+    proc filename_from_title { title } {
+        set fn $title
+        regsub -all {\s+} $fn _ fn 
+        regsub -all {\/+} $fn __ fn 
+        regsub -all {[\u0000-\u001f;:?<>(){}\[\]\|!@#$%^&*-\+=~`,.'"]+} $fn "" fn
+        return [string range $fn 0 59]
+    }
+    
+    # Ensure the profile type follows the latest app standard values. Refactored from proc select_profile, so this is reusable in other parts
+    # of the code such as profiles importing from Visualizer. 
+    proc fix_profile_type { profile_type } {
+        if { $profile_type eq "settings_2" || $profile_type eq "settings_profile_pressure" } {
+            set profile_type "settings_2a"
+        } elseif { $profile_type eq "settings_profile_flow" } {
+            set profile_type "settings_2b"
+        } elseif { $profile_type eq "settings_profile_advanced" || $profile_type eq "settings_2c2" } {
+            # old profile names that shouldn't exist any more, so upgrade them to the latest name
+            set profile_type "settings_2c"
+        }
+        
+        return $profile_type
+    }
+    
 }
