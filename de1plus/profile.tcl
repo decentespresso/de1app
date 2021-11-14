@@ -1,4 +1,4 @@
-package provide de1_profile 2.0
+Copackage provide de1_profile 2.0
 
 package require huddle
 package require json
@@ -8,17 +8,17 @@ namespace eval ::profile {
     variable current {}
     variable profile_version 2
 
-    proc pressure_to_advanced_list {} {
-        array set temp_advanced [settings_to_advanced_list]
+    proc pressure_to_advanced_list { {settingsvar ::settings} } {
+        array set temp_advanced [settings_to_advanced_list $settingsvar]
 
         set temp_advanced(advanced_shot) {}
         set temp_advanced(final_desired_shot_volume_advanced_count_start) 0
 
         if {[ifexists temp_advanced(espresso_temperature_steps_enabled)] == 1} {
-            set temp_bump_time_seconds $::settings(temp_bump_time_seconds)
+            set temp_bump_time_seconds [ifexists ${settingsvar}(temp_bump_time_seconds) 2]
             set first_frame_len $temp_bump_time_seconds
 
-            set second_frame_len [expr {$temp_advanced(preinfusion_time) - $temp_bump_time_seconds}]		
+            set second_frame_len [expr {$temp_advanced(preinfusion_time) - $temp_bump_time_seconds}]
             if {$second_frame_len < 0} { 
                 set second_frame_len 0
             }
@@ -191,17 +191,17 @@ namespace eval ::profile {
         return [array get temp_advanced]
     }
 
-    proc flow_to_advanced_list {} {
-        array set temp_advanced [settings_to_advanced_list]
+    proc flow_to_advanced_list { {settingsvar ::settings} } {
+        array set temp_advanced [settings_to_advanced_list $settingsvar]
 
         set temp_advanced(advanced_shot) {}
         set temp_advanced(final_desired_shot_volume_advanced_count_start) 0
 
         if {[ifexists temp_advanced(espresso_temperature_steps_enabled)] == 1} {
-            set temp_bump_time_seconds $::settings(temp_bump_time_seconds)
+            set temp_bump_time_seconds [ifexists ${settingsvar}(temp_bump_time_seconds) 2]
             set first_frame_len $temp_bump_time_seconds
 
-            set second_frame_len [expr {$temp_advanced(preinfusion_time) - $temp_bump_time_seconds}]		
+            set second_frame_len [expr {$temp_advanced(preinfusion_time) - $temp_bump_time_seconds}]
             if {$second_frame_len < 0} { 
                 set second_frame_len 0
             }
@@ -332,11 +332,11 @@ namespace eval ::profile {
         return [array get temp_advanced]
     }
 
-    proc settings_to_advanced_list {} {
+    proc settings_to_advanced_list { {settingsvar ::settings} } {
         array set temp_advanced {}
         foreach k [list profile_filename {*}[profile_vars]] {
-            if {[info exists ::settings($k)] == 1} {
-                set temp_advanced($k) $::settings($k)
+            if {[info exists ${settingsvar}($k)] == 1} {
+                set temp_advanced($k) [subst \$${settingsvar}($k)]
             }
         }
         return [array get temp_advanced]
