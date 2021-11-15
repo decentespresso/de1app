@@ -472,9 +472,9 @@ namespace eval ::logging {
 		    return "$_handle: $_action $_cuuid $_value"
 		}
 
-		mte {
-			set _mte [::logging::short_ble_uuid [lindex $ble_command 3]]
-			set retval "$_handle: $_mte"
+		mtu {
+			set _mtu [::logging::short_ble_uuid [lindex $ble_command 3]]
+			set retval "$_handle: $_mtu"
 		}
 
 		default {

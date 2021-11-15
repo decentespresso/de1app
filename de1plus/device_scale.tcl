@@ -345,7 +345,9 @@ namespace eval ::device::scale {
 
 			decentscale { decentscale_tare }
 
-			acaiascale { acaia_tare }
+			acaiascale { acaia_tare $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)}
+			acaiapyxis { acaia_tare $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)}
+
 
 			felicita { felicita_tare }
 

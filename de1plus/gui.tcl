@@ -1590,8 +1590,6 @@ proc ui_startup {} {
 	::profile::sync_from_legacy	
 	setup_environment
 		
-	bluetooth_connect_to_devices
-	
 	if {[ifexists ::settings(enable_shot_history_export)] == "1"} {
 		shot_history_export
 	}
@@ -1628,6 +1626,9 @@ proc ui_startup {} {
 	dui font add_dirs "[homedir]/fonts"
 	dui item add_image_dirs "[homedir]/skins/$::settings(skin)" "[homedir]/skins/default"
 	dui setup_ui
+
+	bluetooth_connect_to_devices
+
 
 	.can itemconfigure splash -state hidden
 	

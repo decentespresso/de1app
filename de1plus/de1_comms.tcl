@@ -100,6 +100,7 @@ proc run_next_userdata_cmd {} {
 					? "$_comment: " : "" }] \
 			"$_readable"
 
+
 		# setting "wrote" to 1 before running the command, so that if the command is not a BLE operation, it can choose to unset "wrote" and cause the cmd stack to continue unspooling
 		set ::de1(wrote) 1
 
@@ -116,7 +117,8 @@ proc run_next_userdata_cmd {} {
 
 		if {$result != 1} {
 			set ::de1(wrote) 0
-	
+			msg -ERROR $::errorInfo
+
 			if {[string first "invalid handle" $::errorInfo] != -1 } {
 				::comms::msg -INFO "Not retrying this command because BLE handle for the device is now invalid"
 				#after 500 run_next_userdata_cmd
@@ -148,6 +150,9 @@ proc run_next_userdata_cmd {} {
 		set ::de1(previouscmd) [lindex $cmd 1]
 		if {[llength $::de1(cmdstack)] == 0} {
 			::comms::msg -INFO "command queue is now empty"
+		} else {
+			::comms::msg -INFO "HEAD ([llength $::de1(cmdstack)]) >>>" \
+			[lindex [lindex $::de1(cmdstack) 0] 0] 
 		}
 
 		# try the bluetooth stack in a second, in case there were no bluetooth commands succeeded
