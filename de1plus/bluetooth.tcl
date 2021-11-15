@@ -470,7 +470,7 @@ proc acaia_send_ident {suuid cuuid} {
 	userdata_append "send acaia ident" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $ident] 1
 }
 
-proc acaia_send_ident_heartbeat {suuid cuuid} {
+proc acaia_send_get_settings {suuid cuuid} {
 	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
@@ -482,12 +482,17 @@ proc acaia_send_ident_heartbeat {suuid cuuid} {
 
 	set sinstance $::sinstance($suuid)
 	set cinstance $::cinstance($cuuid)
+	set get_settings [acaia_encode 06 0000000000000000]
+	userdata_append "send acaia empty" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $get_settings] 1
+
+}
+
+proc acaia_send_ident_heartbeat {suuid cuuid} {
+
 
 	# Pyxis needs ident for heartbeat
 	acaia_send_ident $suuid $cuuid
-	
-	set empty [acaia_encode 06 0000000000000000000000000000000000]
-	userdata_append "send acaia empty" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $empty] 1
+	acaia_send_get_settings $suuid $cuuid
 
 	after 1000 acaia_send_ident_heartbeat $suuid $cuuid
 }
