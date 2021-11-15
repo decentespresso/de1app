@@ -494,7 +494,7 @@ proc acaia_send_ident_heartbeat {suuid cuuid} {
 	acaia_send_ident $suuid $cuuid
 	acaia_send_get_settings $suuid $cuuid
 
-	after 1000 acaia_send_ident_heartbeat $suuid $cuuid
+	after 1000 {acaia_send_ident_heartbeat $suuid $cuuid}
 }
 
 proc acaia_send_heartbeat {suuid cuuid} {
@@ -517,7 +517,7 @@ proc acaia_send_heartbeat {suuid cuuid} {
 	# Pyxis also requests settings here with the official app, that seems to be optional
 
 	if { $::settings(force_acaia_heartbeat) == 1 } {
-		after 3000 acaia_send_heartbeat $suuid $cuuid
+		after 3000 {acaia_send_heartbeat $suuid $cuuid} 
 	}
 	::bt::msg -INFO "Send ACAIA heartbeat" 
 }
@@ -1525,9 +1525,9 @@ proc de1_ble_handler { event data } {
 							set cuuid $::de1(cuuid_acaia_ips_age)
 
 							acaia_send_ident $suuid $cuuid
-							after 500 acaia_send_config $suuid $cuuid
-							after 1000 acaia_enable_weight_notifications $suuid $cuuid
-							after 4000 acaia_send_heartbeat $suuid $cuuid
+							after 500 {acaia_send_config $suuid $cuuid}
+							after 1000 {acaia_enable_weight_notifications $suuid $cuuid}
+							after 4000 {acaia_send_heartbeat $suuid $cuuid}
 							msg -INFO "Connecting to Lunar Familiy Scale"
 
 						} elseif {$::settings(scale_type) == "acaiapyxis"} {
@@ -1539,10 +1539,10 @@ proc de1_ble_handler { event data } {
 							set cuuid $::de1(cuuid_acaia_pyxis_cmd)
 
 							acaia_enable_weight_notifications $suuid $::de1(cuuid_acaia_pyxis_status)
-							after 500 acaia_send_ident $suuid $cuuid
-							after 1000 acaia_send_config $suuid $cuuid
-							after 2000 acaia_send_ident_heartbeat $suuid $cuuid
-							after 4000 acaia_send_heartbeat $suuid $cuuid
+							after 500 {acaia_send_ident $suuid $cuuid}
+							after 1000 {acaia_send_config $suuid $cuuid}
+							after 2000 {acaia_send_ident_heartbeat $suuid $cuuid}
+							after 4000 {acaia_send_heartbeat $suuid $cuuid}
 							msg -INFO "Connecting to Pyxis Familiy Scale"
 
 						} else {
