@@ -106,6 +106,8 @@ proc scale_enable_weight_notifications {} {
 		decentscale_enable_notifications
 	} elseif {$::settings(scale_type) == "acaiascale"} {
 		acaia_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "acaiapyxis"} {
+		acaia_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "hiroiajimmy"} {
@@ -427,113 +429,129 @@ proc acaia_encode {msgType payload} {
 	return $data
 }
 
-proc acaia_tare {} {
+proc acaia_tare {suuid cuuid} {
 
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
 
-	if {[ifexists ::sinstance([set ::settings(acaia_suuid)])] == ""} {
+	if {[ifexists ::sinstance($suuid)] == ""} {
 		::bt::msg -DEBUG "Acaia Scale not connected, cannot send tare cmd"
 		return
 	}
 
-	set sinstance $::sinstance([set ::settings(acaia_suuid)])
-	set cinstance $::cinstance([set ::settings(acaia_cuuid_cmd)])
+	set sinstance $::sinstance($suuid)
+	set cinstance $::cinstance($cuuid)
 
 	set tare [acaia_encode 04  0000000000000000000000000000000000]
 
-	userdata_append "send acaia tare" [list ble write $::de1(scale_device_handle) $::settings(acaia_suuid) $sinstance $::settings(acaia_cuuid_cmd) $cinstance $tare] 1
+	userdata_append "send acaia tare" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $tare] 1
 
 	# The tare is not yet confirmed to us, we can therefore assume it worked out
 }
 
-proc acaia_send_ident {} {
+proc acaia_send_ident {suuid cuuid} {
 
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
 
 
-	if {[ifexists ::sinstance([set ::settings(acaia_suuid)])] == ""} {
-		::bt::msg -DEBUG "Acaia Scale not connected ([set ::settings(acaia_suuid)]), cannot send app ident"
+	if {[ifexists ::sinstance($suuid] == ""} {
+		::bt::msg -DEBUG "Acaia Scale not connected ($suuids), cannot send app ident"
 		return
 	}
 
-	set sinstance $::sinstance([set ::settings(acaia_suuid)])
-	set cinstance $::cinstance([set ::settings(acaia_cuuid_cmd)])
+	set sinstance $::sinstance($suuid)
+	set cinstance $::cinstance($cuuid)
 
 	set ident [acaia_encode 0B 3031323334353637383930313233349A6D]
 
-	userdata_append "send acaia ident" [list ble write $::de1(scale_device_handle) $::settings(acaia_suuid) $sinstance $::settings(acaia_cuuid_cmd) $cinstance $ident] 1
+	userdata_append "send acaia ident" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $ident] 1
 }
 
-proc acaia_send_heartbeat {} {
-
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+proc acaia_send_ident_heartbeat {suuid cuuid} {
+	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
 
-	if {[ifexists ::sinstance([set ::settings(acaia_suuid)])] == ""} {
-		::bt::msg -DEBUG "Acaia Scale ([set ::settings(acaia_suuid)]) not connected, cannot send heartbeat"
+	if {[ifexists ::sinstance($suuid)] == ""} {
+		::bt::msg -DEBUG "Acaia Scale ($suuid) not connected, cannot send heartbeat"
 		return
 	}
 
-	set sinstance $::sinstance([set ::settings(acaia_suuid)])
-	set cinstance $::cinstance([set ::settings(acaia_cuuid_cmd)])
+	set sinstance $::sinstance($suuid)
+	set cinstance $::cinstance($cuuid)
 
 	# Pyxis needs ident for heartbeat
-	if {$::settings(acaia_is_pyxis_family)} {
-		acaia_send_ident
+	acaia_send_ident $suuid $cuuid
+	
+	set empty [acaia_encode 06 0000000000000000000000000000000000]
+	userdata_append "send acaia empty" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $empty] 1
+
+	after 1000 acaia_send_ident_heartbeat $suuid $cuuid
+}
+
+proc acaia_send_heartbeat {suuid cuuid} {
+	if {$::de1(scale_device_handle) == 0} {
+		return
 	}
+
+	if {[ifexists ::sinstance($suuid)] == ""} {
+		::bt::msg -DEBUG "Acaia Scale ($suuid) not connected, cannot send heartbeat"
+		return
+	}
+
+	set sinstance $::sinstance($suuid)
+	set cinstance $::cinstance($cuuid)
 
 	set heartbeat [acaia_encode 00 02000200]
 
-	userdata_append "send acaia heartbeat" [list ble write $::de1(scale_device_handle) $::settings(acaia_suuid) $sinstance $::settings(acaia_cuuid_cmd) $cinstance $heartbeat] 1
+	userdata_append "send acaia heartbeat" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $heartbeat] 1
 
 	# Pyxis also requests settings here with the official app, that seems to be optional
 
 	if { $::settings(force_acaia_heartbeat) == 1 } {
-		after 3000 acaia_send_heartbeat
+		after 3000 acaia_send_heartbeat $suuid $cuuid
 	}
 	::bt::msg -INFO "Send ACAIA heartbeat" 
 }
 
 
-proc acaia_send_config {} {
+proc acaia_send_config {suuid cuuid} {
 
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
 
-	if {[ifexists ::sinstance([set ::settings(acaia_suuid)])] == ""} {
+	if {[ifexists ::sinstance($suuid)] == ""} {
 		::bt::msg -DEBUG "Acaia Scale not connected, cannot send app config"
 		return
 	}
 
-	set sinstance $::sinstance([set ::settings(acaia_suuid)])
-	set cinstance $::cinstance([set ::settings(acaia_cuuid_cmd)])
+	set sinstance $::sinstance($suuid)
+	set cinstance $::cinstance($cuuid)
 
 	set ident [acaia_encode 0C 0900010102020503041506]
 
-	userdata_append "send acaia comfig" [list ble write $::de1(scale_device_handle) $::settings(acaia_suuid) $sinstance $::settings(acaia_cuuid_cmd) $cinstance $ident] 1
+	userdata_append "send acaia comfig" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $ident] 1
 }
 
 
-proc acaia_enable_weight_notifications {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "acaiascale"} {
+proc acaia_enable_weight_notifications {suuid cuuid} {
+	if {$::de1(scale_device_handle) == 0} {
 		return
 	}
 
-	if {[ifexists ::sinstance([set ::settings(acaia_suuid)])] == ""} {
+	if {[ifexists ::sinstance($suuid)] == ""} {
 		::bt::msg -DEBUG "Acaia Scale not connected, cannot enable weight notifications"
 		return
 	}
 
-	set sinstance $::sinstance([set ::settings(acaia_suuid)])
-	set cinstance $::cinstance([set ::settings(acaia_cuuid_cmd)])
+	set sinstance $::sinstance($suuid)
+	set cinstance $::cinstance($cuuid)
 
-	userdata_append "enable acaia scale weight notifications" [list ble enable $::de1(scale_device_handle) $::settings(acaia_suuid) $sinstance $::settings(acaia_cuuid_weight) $cinstance] 1
+	userdata_append "enable acaia scale weight notifications" [list ble enable $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance] 1
 }
 
 proc acaia_parse_response { value } {
@@ -1355,12 +1373,13 @@ proc de1_ble_handler { event data } {
 					} elseif {[string first "HIROIA JIMMY" $name] == 0} {
 						append_to_peripheral_list $address $name "ble" "scale" "hiroiajimmy"
 					} elseif {[string first "ACAIA" $name] == 0 \
- 					|| [string first "LUNAR" $name]    == 0 \
- 					|| [string first "PROCH" $name]    == 0 \
-					|| [string first "PYXIS" $name]    == 0 \
+ 					|| [string first "PROCH" $name]    == 0 } {
+						append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
+					} elseif {[string first "PYXIS" $name] == 0 \
+					|| [string first "LUNAR" $name]    == 0 \ 
 					|| [string first "CINCO" $name]    == 0 \
 					|| [string first "PEARLS" $name]    == 0 } {
-						append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
+						append_to_peripheral_list $address $name "ble" "scale" "acaiapyxis"
 					} else {
 						return
 					}
@@ -1517,35 +1536,35 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
 
-							# 2021 lunar is detected via the appropriate characteristic
-							if {[string first "LUNAR" $::settings(scale_bluetooth_name)] == 0 \
-							 || [string first "PYXIS" $::settings(scale_bluetooth_name)] == 0 \
-							 || [string first "CINCO" $::settings(scale_bluetooth_name)] == 0 \
-							 || [string first "PEARLS" $::settings(scale_bluetooth_name)]== 0 } {
-								set ::settings(acaia_is_pyxis_family) 1
-								set ::settings(acaia_suuid) $::de1(suuid_acaia_pyxis)
-								set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_pyxis_cmd)
-								set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_pyxis_status)
+							set ::settings(force_acaia_heartbeat) 0
+							if { [string first "PROCH" $::settings(scale_bluetooth_name)] != -1 } {
 								set ::settings(force_acaia_heartbeat) 1
-								ble mtu $handle 247
-								msg -INFO "Connecting to Pyxis Familiy Scale"
-							} else {
-								set ::settings(acaia_is_pyxis_family) 0
-								set ::settings(acaia_suuid) $::de1(suuid_acaia_ips)
-								set ::settings(acaia_cuuid_cmd) $::de1(cuuid_acaia_ips_age)
-								set ::settings(acaia_cuuid_weight) $::de1(cuuid_acaia_ips_age)
-								set ::settings(force_acaia_heartbeat) 0
-								if { [string first "PROCH" $::settings(scale_bluetooth_name)] != -1 } {
-									set ::settings(force_acaia_heartbeat) 1
-								}
-								msg -INFO "Connecting to Lunar Familiy Scale"
 							}
-
 							save_settings
-							acaia_send_ident
-							after 500 acaia_send_config
-							after 1000 acaia_enable_weight_notifications
-							after 4000 acaia_send_heartbeat
+							set suuid $::de1(suuid_acaia_ips)
+							set cuuid $::de1(cuuid_acaia_ips_age)
+
+							acaia_send_ident $suuid $cuuid
+							after 500 acaia_send_config $suuid $cuuid
+							after 1000 acaia_enable_weight_notifications $suuid $cuuid
+							after 4000 acaia_send_heartbeat $suuid $cuuid
+							msg -INFO "Connecting to Lunar Familiy Scale"
+
+						} elseif {$::settings(scale_type) == "acaiapyxis"} {
+							set ::settings(force_acaia_heartbeat) 1
+							save_settings
+							userdata_append "sent acaia mtu to 247" [list ble mtu $handle 247] 1
+
+							set suuid $::de1(suuid_acaia_pyxis)
+							set cuuid $::de1(cuuid_acaia_pyxis_cmd)
+
+							acaia_enable_weight_notifications $suuid $::de1(cuuid_acaia_pyxis_status)
+							after 500 acaia_send_ident $suuid $cuuid
+							after 1000 acaia_send_config $suuid $cuuid
+							after 2000 acaia_send_ident_heartbeat $suuid $cuuid
+							after 4000 acaia_send_heartbeat $suuid $cuuid
+							msg -INFO "Connecting to Pyxis Familiy Scale"
+
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
@@ -1866,8 +1885,11 @@ proc de1_ble_handler { event data } {
 							} else {
 								::bt::msg -INFO "decentscale recv: [array get weightarray]"
 							}
-						} elseif {$cuuid eq $::settings(acaia_cuuid_weight)} {
-							# acaia scale
+						} elseif {$cuuid eq $::de1(cuuid_acaia_ips_age)} {
+							# acaia scale (gen 1, fw 2)
+							acaia_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_acaia_pyxis_status)} {
+							# acaia scale (gen 2, fw 1)
 							acaia_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_felicita)} {
 							# felicita scale
