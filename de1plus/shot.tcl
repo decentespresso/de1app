@@ -305,14 +305,22 @@ namespace eval ::shot {
         blt::vector create espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3
         blt::vector create espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x
         blt::vector create espresso_flow_delta_negative espresso_flow_delta_negative_2x
+        # Beware all the shot handling commands use the settings, so the export process overwrites the settings
+        # with those from the shot, and we must be careful to restore them afterwards.
+        backup_settings
 
         foreach d $dirs {
             set fn "[homedir]/history/${d}"
             set fbasename [file rootname [file tail $d]]
-            convert_legacy_to_v2 $fn "[homedir]/history_v2" "${fbasename}.json" 0
+            if {[file exists "[homedir]/history_v2/${fbasename}.json"]} {
+                continue
+            }
 
+            convert_legacy_to_v2 $fn "[homedir]/history_v2" "${fbasename}.json" 0
         }
 
+        array set ::settings [array get ::settings_backup]
+        unset -nocomplain ::settings_backup
         blt::vector destroy espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_temperature100th steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance
         blt::vector destroy espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow espresso_water_dispensed espresso_flow_weight_raw espresso_de1_explanation_chart_temperature  espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_selected_step
         blt::vector destroy espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
@@ -335,12 +343,12 @@ namespace eval ::shot {
         borg toast [translate "Converting shot file"]
 
         if { [string is true $create_vectors] } {
-            blt::vector create espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_temperature100th steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance
-            blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow espresso_water_dispensed espresso_flow_weight_raw espresso_de1_explanation_chart_temperature  espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_selected_step
-            blt::vector create espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
-            blt::vector create espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3
-            blt::vector create espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x
-            blt::vector create espresso_flow_delta_negative espresso_flow_delta_negative_2x
+            foreach sn [espresso_chart_structures] {
+                blt::vector create $sn
+            }
+            # Beware all the shot handling commands use the settings, so the export process overwrites the settings
+            # with those from the shot, and we must be careful to restore them afterwards.
+            backup_settings
         }
         
         if { $target_dir eq {} } {
@@ -354,10 +362,11 @@ namespace eval ::shot {
         msg -INFO [namespace current] "Converting shot '$fn' to version 2, target '$target_file'"
 
         if {[catch {
-            set shot_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]
-            array set ::past_shot $shot_file_contents
-
+            array set ::past_shot [encoding convertfrom utf-8 [read_binary_file $fn]]
+            # BEWARE we are overwritting the whole settings! If something fails the app will stay with an old 
+            # version of the settings (as of the time of the imported shot)
             array set ::settings $::past_shot(settings)
+
             read_past_legacy_shot
             ::profile::sync_from_legacy
             set data [create]
@@ -365,16 +374,14 @@ namespace eval ::shot {
         } err] != 0} { 
             msg -ERROR "Error while converting $file :" $err
             borg toast [translate "Failure while converting. Please check logs"]
-            set target_file {}
         }
 
         if { [string is true $create_vectors] } {
-            blt::vector destroy espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_temperature100th steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance
-            blt::vector destroy espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow espresso_water_dispensed espresso_flow_weight_raw espresso_de1_explanation_chart_temperature  espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_selected_step
-            blt::vector destroy espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
-            blt::vector destroy espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3
-            blt::vector destroy espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x
-            blt::vector destroy espresso_flow_delta_negative espresso_flow_delta_negative_2x
+            array set ::settings [array get ::settings_backup]
+            unset -nocomplain ::settings_backup
+            foreach sn [espresso_chart_structures] {
+                blt::vector destroy $sn
+            }
         }
         
         return $target_file
