@@ -105,9 +105,9 @@ proc scale_enable_weight_notifications {} {
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		decentscale_enable_notifications
 	} elseif {$::settings(scale_type) == "acaiascale"} {
-		acaia_enable_weight_notifications
+		acaia_enable_weight_notifications $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)
 	} elseif {$::settings(scale_type) == "acaiapyxis"} {
-		acaia_enable_weight_notifications
+		acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "hiroiajimmy"} {
