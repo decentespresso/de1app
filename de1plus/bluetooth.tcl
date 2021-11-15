@@ -458,7 +458,7 @@ proc acaia_send_ident {suuid cuuid} {
 
 
 	if {[ifexists ::sinstance($suuid] == ""} {
-		::bt::msg -DEBUG "Acaia Scale not connected ($suuids), cannot send app ident"
+		::bt::msg -DEBUG "Acaia Scale not connected ($suuid), cannot send app ident"
 		return
 	}
 
@@ -1378,12 +1378,12 @@ proc de1_ble_handler { event data } {
 					} elseif {[string first "HIROIA JIMMY" $name] == 0} {
 						append_to_peripheral_list $address $name "ble" "scale" "hiroiajimmy"
 					} elseif {[string first "ACAIA" $name] == 0 \
- 					|| [string first "PROCH" $name]    == 0 } {
+ 					       || [string first "PROCH" $name]    == 0 } {
 						append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
 					} elseif {[string first "PYXIS" $name] == 0 \
-					|| [string first "LUNAR" $name]    == 0 \ 
-					|| [string first "CINCO" $name]    == 0 \
-					|| [string first "PEARLS" $name]    == 0 } {
+						   || [string first "LUNAR" $name] == 0 \
+						   || [string first "CINCO" $name] == 0 \
+						   || [string first "PEARLS" $name] == 0 } {
 						append_to_peripheral_list $address $name "ble" "scale" "acaiapyxis"
 					} else {
 						return
