@@ -1598,7 +1598,12 @@ proc ui_startup {} {
 		shot_history_count_profile_use
 	}
 	#ble_find_de1s
-	
+
+	# on non android devices fill ::de1 variable with the good stuff before loading the skin
+	if {$::android != 1} {
+		ble_connect_to_de1
+	}
+
 	setup_images_for_first_page
 	setup_images_for_other_pages
 	history_viewer init
