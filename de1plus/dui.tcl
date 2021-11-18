@@ -7752,7 +7752,9 @@ namespace eval ::dui {
 				set symbol_selectedfill [dui::args::get_option -symbol_selectedfill $fill 1]
 			}
 
-			lassign [dui::args::process_sizes $pages $x $y -bwidth 600 -bheight 100 0] x y x1 y1
+			# Don't pass the page here because the page top-left offset is already taken into the posterior call to dui::add::dbutton 
+			lassign [dui::args::process_sizes {} $x $y -bwidth 600 -bheight 100 0] x y x1 y1
+			
 			set lengths [dui::args::get_option -lengths {} 1]
 			if { $lengths eq {} } {
 				set lengths [lreplicate $n 0.1]
@@ -7877,7 +7879,8 @@ namespace eval ::dui {
 				set $var 0
 			}
 			dui::args::process_aspects dtoggle $style
-
+			dui::args::process_label $pages $x $y dtoggle $style
+			
 			lassign [dui::args::process_sizes $pages $x $y -width 60 -height 35 1] x y x1 y1
 			set sliderwidth [dui::args::get_option -sliderwidth {} 1]
 			if { $sliderwidth eq {} } {
