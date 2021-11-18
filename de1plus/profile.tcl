@@ -768,13 +768,13 @@ namespace eval ::profile {
             
             # Move on if
             if { $step(exit_if) } {
-                if { $step(exit_flow_over) > 0 } {
+                if { $step(exit_type) eq "flow_over" } {
                     dict set pdict $stepn exit_if "Move on if flow is \\1 \\2 mL/s" "over" [round_to_one_digits $step(exit_flow_over)]
-                } elseif { $step(exit_flow_under) > 0 } {
+                } elseif { $step(exit_type) eq "flow_under" } {
                     dict set pdict $stepn exit_if "Move on if flow is \\1 \\2 mL/s" "under" [round_to_one_digits $step(exit_flow_under)]
-                } elseif { $step(exit_pressure_over) > 0 } {
+                } elseif { $step(exit_type) eq "pressure_over" } {
                     dict set pdict $stepn exit_if "Move on if pressure is \\1 \\2 bar" "over" [round_to_one_digits $step(exit_pressure_over)]
-                } elseif { $step(exit_pressure_under) > 0 } {
+                } elseif { $step(exit_type) eq "pressure_under" } {
                     dict set pdict $stepn exit_if "Move on if pressure is \\1 \\2 mL/s" "under" [round_to_one_digits $step(exit_pressure_under)]
                 }
             }
