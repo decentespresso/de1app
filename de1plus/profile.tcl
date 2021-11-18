@@ -35,7 +35,7 @@ namespace eval ::profile {
 
         if {$first_frame_len > 0} {
             set preinfusion [list \
-                name [translate "preinfusion temp boost"] \
+                name "preinfusion temp boost" \
                 temperature $temp_advanced(espresso_temperature_0) \
                 sensor "coffee" \
                 pump "flow" \
@@ -57,7 +57,7 @@ namespace eval ::profile {
 
         if {$second_frame_len > 0} {
             set preinfusion2 [list \
-                name [translate "preinfusion"] \
+                name "preinfusion" \
                 temperature $temp_advanced(espresso_temperature_1) \
                 sensor "coffee" \
                 pump "flow" \
@@ -81,7 +81,7 @@ namespace eval ::profile {
             if {$temp_advanced(espresso_hold_time) > 3} {
                 # Second rise step without limiter
                 set pressure_up [list \
-                    name [translate "forced rise without limit"] \
+                    name "forced rise without limit" \
                     temperature $temp_advanced(espresso_temperature_2) \
                     sensor "coffee" \
                     pump "pressure" \
@@ -99,7 +99,7 @@ namespace eval ::profile {
                 set temp_advanced(espresso_hold_time) [expr $temp_advanced(espresso_hold_time) - 3]
             }
             set hold [list \
-                name [translate "rise and hold"] \
+                name "rise and hold" \
                 temperature $temp_advanced(espresso_temperature_2) \
                 sensor "coffee" \
                 pump "pressure" \
@@ -125,7 +125,7 @@ namespace eval ::profile {
             if {$temp_advanced(espresso_hold_time) < 3 && $temp_advanced(espresso_decline_time) > 3} {
                 # Second rise step without limiter
                 set pressure_up [list \
-                    name [translate "forced rise without limit"] \
+                    name "forced rise without limit" \
                     temperature $temp_advanced(espresso_temperature_3) \
                     sensor "coffee" \
                     pump "pressure" \
@@ -144,7 +144,7 @@ namespace eval ::profile {
             }
 
             set decline [list \
-                name [translate "decline"] \
+                name "decline" \
                 temperature $temp_advanced(espresso_temperature_3) \
                 sensor "coffee" \
                 pump "pressure" \
@@ -167,7 +167,7 @@ namespace eval ::profile {
 
         if {[llength $temp_advanced(advanced_shot)] == 0} {
                 set empty [list \
-                name [translate "empty"] \
+                name "empty" \
                 temperature 90 \
                 sensor "coffee" \
                 pump "flow" \
@@ -220,7 +220,7 @@ namespace eval ::profile {
 
         if {$first_frame_len > 0} {
             set preinfusion [list \
-                name [translate "preinfusion boost"] \
+                name "preinfusion boost" \
                 temperature $temp_advanced(espresso_temperature_0) \
                 sensor "coffee" \
                 pump "flow" \
@@ -242,7 +242,7 @@ namespace eval ::profile {
 
         if {$second_frame_len > 0} {
             set preinfusion2 [list \
-                name [translate "preinfusion"] \
+                name "preinfusion" \
                 temperature $temp_advanced(espresso_temperature_1) \
                 sensor "coffee" \
                 pump "flow" \
@@ -264,7 +264,7 @@ namespace eval ::profile {
 
         if {$temp_advanced(espresso_hold_time) > 0} {
             set hold [list \
-                name [translate "hold"] \
+                name "hold" \
                 temperature $temp_advanced(espresso_temperature_2) \
                 sensor "coffee" \
                 pump "flow" \
@@ -287,7 +287,7 @@ namespace eval ::profile {
 
         if {$temp_advanced(espresso_hold_time) > 0} {
             set decline [list \
-                name [translate "decline"] \
+                name "decline" \
                 temperature $temp_advanced(espresso_temperature_3) \
                 sensor "coffee" \
                 pump "flow" \
@@ -310,7 +310,7 @@ namespace eval ::profile {
 
         if {[llength $temp_advanced(advanced_shot)] == 0} {
                 set empty [list \
-                name [translate "empty"] \
+                name "empty" \
                 temperature 90 \
                 sensor "coffee" \
                 pump "flow" \
