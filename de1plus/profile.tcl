@@ -600,8 +600,8 @@ namespace eval ::profile {
     # Step 1 to <nsteps> is each a dictionary which can have keys 'name', 'type', 'track', 'temp', 'flow_or_pressure', 'max', and 'exit_if'
     #
     # If a step doesn't have values for an element (e.g. a step doesn't define any "maximum" values), that key is NOT created.    
-    proc legacy_to_textual { list_profile } {
-        array set profile $list_profile
+    proc legacy_to_textual { profile_list } {
+        array set profile $profile_list
         set pdict [dict create]
     
         # Step 0 contains profile "globals"
