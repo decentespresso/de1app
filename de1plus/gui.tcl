@@ -1587,7 +1587,7 @@ proc ui_startup {} {
 		set ::settings(skin) "Metric"
 	}
 
-	::profile::sync_from_legacy	
+	#::profile::sync_from_legacy	
 	setup_environment
 		
 	if {[ifexists ::settings(enable_shot_history_export)] == "1"} {
@@ -1633,7 +1633,6 @@ proc ui_startup {} {
 	dui setup_ui
 
 	bluetooth_connect_to_devices
-
 
 	.can itemconfigure splash -state hidden
 	
