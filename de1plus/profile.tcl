@@ -9,13 +9,15 @@ namespace eval ::profile {
     variable profile_version 2
 
     proc pressure_to_advanced_list { {settingsvar ::settings} } {
-        array set temp_advanced [settings_to_advanced_list $settingsvar]
+        upvar $settingsvar source_var
+
+        array set temp_advanced [settings_to_advanced_list source_var]
 
         set temp_advanced(advanced_shot) {}
         set temp_advanced(final_desired_shot_volume_advanced_count_start) 0
 
         if {[ifexists temp_advanced(espresso_temperature_steps_enabled)] == 1} {
-            set temp_bump_time_seconds [ifexists ${settingsvar}(temp_bump_time_seconds) 2]
+            set temp_bump_time_seconds [ifexists source_var(temp_bump_time_seconds) 2]
             set first_frame_len $temp_bump_time_seconds
 
             set second_frame_len [expr {$temp_advanced(preinfusion_time) - $temp_bump_time_seconds}]
@@ -192,13 +194,15 @@ namespace eval ::profile {
     }
 
     proc flow_to_advanced_list { {settingsvar ::settings} } {
-        array set temp_advanced [settings_to_advanced_list $settingsvar]
+        upvar $settingsvar source_var
+
+        array set temp_advanced [settings_to_advanced_list source_var]
 
         set temp_advanced(advanced_shot) {}
         set temp_advanced(final_desired_shot_volume_advanced_count_start) 0
 
         if {[ifexists temp_advanced(espresso_temperature_steps_enabled)] == 1} {
-            set temp_bump_time_seconds [ifexists ${settingsvar}(temp_bump_time_seconds) 2]
+            set temp_bump_time_seconds [ifexists source_var(temp_bump_time_seconds) 2]
             set first_frame_len $temp_bump_time_seconds
 
             set second_frame_len [expr {$temp_advanced(preinfusion_time) - $temp_bump_time_seconds}]
@@ -333,10 +337,12 @@ namespace eval ::profile {
     }
 
     proc settings_to_advanced_list { {settingsvar ::settings} } {
+        upvar $settingsvar source_var
+		
         array set temp_advanced {}
         foreach k [list profile_filename {*}[profile_vars]] {
-            if {[info exists ${settingsvar}($k)] == 1} {
-                set temp_advanced($k) [subst \$${settingsvar}($k)]
+            if {[info exists source_var($k)] == 1} {
+                set temp_advanced($k) $source_var($k)
             }
         }
         return [array get temp_advanced]
@@ -569,25 +575,19 @@ namespace eval ::profile {
         }
     
         if { $profile(advanced_shot) eq {} } {
-            # Dirty dirty trick, try to refactor pressure_to_advanced_list and flow_to_advanced_list to read an array instead
-            # of using a variable name
-            array set ::_prof_temp_shot [array get profile]
-            
             # Ensure the profile's advanced_shot variable is always defined
             switch $profile(settings_profile_type) \
                 settings_2a {
-                    array set temp_profile [pressure_to_advanced_list ::_prof_temp_shot]
+                    array set temp_profile [pressure_to_advanced_list profile]
                     set profile(advanced_shot) $temp_profile(advanced_shot)
                 } settings_2b {
-                    array set temp_profile [flow_to_advanced_list ::_prof_temp_shot]
+                    array set temp_profile [flow_to_advanced_list profile]
                     set profile(advanced_shot) $temp_profile(advanced_shot)
                 }
-            
-            unset -nocomplain ::_prof_temp_shot
         }
         
         return [array get profile]
-    }        
+    }
     
     # Returns a dictionary with a textual representation of the provided profile.
     # The dictionary keys are the step numbers, with 0 corresponding to "global" profile metadata. Each step is also a dictionary.
