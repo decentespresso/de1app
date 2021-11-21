@@ -2,6 +2,7 @@ advanced_shot {{exit_if 1 flow 11 volume 500 transition fast exit_flow_under 0 t
 author Decent
 bean_brand {}
 bean_type {}
+beverage_type tea_portafilter
 espresso_decline_time 0
 espresso_hold_time 25
 espresso_pressure 8.6
@@ -14,8 +15,8 @@ espresso_temperature_steps_enabled 1
 final_desired_shot_volume 36
 final_desired_shot_volume_advanced 0
 final_desired_shot_volume_advanced_count_start 1
-final_desired_shot_weight 36
-final_desired_shot_weight_advanced 36
+final_desired_shot_weight 350
+final_desired_shot_weight_advanced 350
 flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_hold 2
@@ -31,11 +32,11 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4
 preinfusion_time 0
 pressure_end 6.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {This profile requires a specially designed tea portafilter that opens its valve at pressures of 3 bar or above.  Put a tea bag or loose leaf tea into the basket.  Makes about 230ml of tea in 3 minutes.  The 2 bar of pressure extract a stronger brew, with different flavors.  You can up the pressure during the infusion steps, if you tighten the screw on your tea portafilter.}
 profile_title {Tea portafilter/tisane}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 80
-beverage_type {tea_portafilter}
+
