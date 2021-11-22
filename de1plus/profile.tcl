@@ -520,6 +520,32 @@ namespace eval ::profile {
         return $profile_type
     }
         
+	proc profile_type_text { profile_type {beverage_type {}} } {
+		switch [fix_profile_type $profile_type] \
+		settings_2a {
+			set type "Pressure"
+		} settings_2b {
+			set type "Flow"
+		} settings_2c {
+			set type "Advanced"
+		} default {
+			set type "Unknown"
+		}
+		
+		switch [lindex $beverage_type 0] \
+			pourover {
+				set beverage_type "pour-over "
+			} tea_portafilter {
+				set beverage_type "tea "
+			} {} {
+				set beverage_type ""
+			} default {
+				set beverage_type "$beverage_type "
+			}
+		
+		return "${type} ${beverage_type}profile"
+	}
+	
     # Based on proc load_settings_vars, but only loads profile variables, and returns a list with the profile (which can be
     # coerced to an array) instead of loading the profile into the global settings. The source file can also be a shot 
     # file, and only the profile-related vars will be loaded from it, plus any variables given in list $extra_vars.
