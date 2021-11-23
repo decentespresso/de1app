@@ -546,41 +546,67 @@ namespace eval ::profile {
 		return "${type} ${beverage_type}profile"
 	}
 	
-    # Based on proc load_settings_vars, but only loads profile variables, and returns a list with the profile (which can be
-    # coerced to an array) instead of loading the profile into the global settings. The source file can also be a shot 
-    # file, and only the profile-related vars will be loaded from it, plus any variables given in list $extra_vars.
-    proc read_legacy { profile_path {extra_vars {}} } {
-        if { [file pathtype $profile_path] eq "relative" && [file dirname $profile_path] eq "." } {
-            set profile_path "[homedir]/profiles/[file tail $profile_path]"
-        }
-        if { [file extension $profile_path] eq "" } {
-            append profile_path ".tcl"
-        }
-        if { ![file exists $profile_path] } {
-            msg -WARNING [namespace current] load_profile: "profile file '$profile_path' not found"
-            return
+    # Based on proc load_settings_vars, but only loads profile variables, and returns a list with the profile (which is
+    # normally then coerced to an array) instead of loading the profile into the global settings. 
+    # Reads from different sources, extracting only the profile-related vars from the source.
+    proc read_legacy { src_type {src {}} {extra_vars 1} } {
+        if { $src_type eq "next" || $src_type eq "settings" || $src_type eq "array_name" } {
+            if { $src_type eq "next" || $src_type eq "settings" } {
+                upvar "::settings" src_array 
+            } else {
+                upvar $src src_array
+            }
+        } elseif { $src_type eq "shot_file" || $src_type eq "profile_file" } {
+            if { [file pathtype $src] eq "relative" && [file dirname $src] eq "." } {
+                if { $src_type eq "shot_file" } {
+                    set filepath "[homedir]/history/[file tail $src]"
+                } else {
+                    set filepath "[homedir]/profiles/[file tail $src]"
+                }
+            }
+            if { [file extension $filepath] eq "" } {
+                append filepath ".tcl"
+            }
+            if { ![file exists $filepath] } {
+                msg -WARNING [namespace current] read_legacy: "file '$filepath' not found"
+                return
+            }
+
+            try {
+                array set src_array [encoding convertfrom utf-8 [read_binary_file $filepath]]
+            } on error err {
+                msg -WARNING [namespace current] read_legacy: "error reading file '$filepath': $err"
+                return
+            }
+        
+            if { $src_type eq "shot_file" } {
+                array set src_array $src_array(settings)
+            }
+        } elseif { $src_type eq "list" } {
+            array set src_array [$src]
         }
         
-        msg -INFO [namespace current] read_profile: "reading file '$profile_path'"
+#        msg -INFO [namespace current] read_profile: "reading file '$profile_path'"
         array set profile {}
     
-        # Set defaults in case they are not defined in the profile file 
+        # Set defaults in case they are not defined in the source data 
         set profile(final_desired_shot_volume_advanced_count_start) 0
         set profile(settings_profile_type) "settings_2a"
         set profile(beverage_type) "espresso"
     
-        try {
-            array set arrfile [encoding convertfrom utf-8 [read_binary_file $profile_path]]
-        } on error err {
-            msg -WARNING [namespace current] read_profile: "error reading profile '$fn': $err"
-            return
+        if { [string is true $extra_vars] } {
+            set profile_vars [concat [::profile_vars] profile_filename profile_to_save original_profile_title]
+        } elseif { $extra_vars eq {} } {
+            set profile_vars [::profile_vars]
+        } else {
+            set profile_vars [concat [::profile_vars] $extra_vars]
         }
-    
-        foreach k [concat [::profile_vars] $extra_vars] {
-            if { [info exists arrfile($k)] } {
-                set profile($k) $arrfile($k)
-            } elseif { ![info exists profile($k)] } {
-                set profile($k) {}
+        
+        foreach var $profile_vars {
+            if { [info exists src_array($var)] } {
+                set profile($var) $src_array($var)
+            } elseif { ![info exists profile($var)] } {
+                set profile($var) {}
             }
         }
         
