@@ -696,7 +696,83 @@ namespace eval ::profile {
             return 0
         }
     }
+
+    # Everything in the base app is built around selecting a profile in the GUI and save it in the settings. Base procs
+    # don't work with other input/ouput parameters. So we need to circumvent around those restrictions.
+    # Here we mimic what is done in proc select_profile (vars.tcl), but without using a saved profile.
+    # Return 1 if the profile was successfully imported, and 0 otherwise.
+    proc import_legacy { profile_list } {
+        if { [llength $profile_list] == 0 } {
+            msg -WARNING [namespace current] import_legacy: "profile_list is empty"
+            return 0
+        }
+        array set profile $profile_list
+        msg -INFO [namespace current] import_legacy: "importing profile '$profile(profile_title)'"
         
+        # Predefine some settings that may be missing or were added later to profiles (we may find older profiles without these features)
+        set ::settings(preinfusion_flow_rate) 4
+        set ::settings(maximum_pressure) 0
+        set ::settings(maximum_flow) 0
+        unset -nocomplain ::settings(profile_video_help)
+        
+        # Read the profile variables from the shot and overwrite the settings
+        foreach fn [concat profile_filename [::profile_vars]] {
+            if { [info exists profile($fn)] } {
+                set ::settings($fn) $profile($fn)
+            } else {
+                set ::settings($fn) {}
+            }
+        }
+        
+        # Then modify a few things
+        if { ![info exists profile(profile_filename)] } {
+            set ::settings(profile_filename) [::profile::filename_from_title $profile(profile_title)] 
+        }
+        # ensure the profile is saved under the new name and not duplicated if saved several times
+        set ::settings(profile) $::settings(profile_title)
+        set ::settings(original_profile_title) $profile(profile_title)
+        set ::settings(profile_to_save) $profile(profile_title)
+        
+        set ::settings(profile_has_changed) 1
+        set ::settings(profile_hide) 0
+    
+        # Ensure the profile type follows the latest app standard values
+        set ::settings(settings_profile_type) [::profile::fix_profile_type $::settings(settings_profile_type)]
+        
+        # Make sure the presets/profile editing GUI pages are updated to reflect the changes 
+        set fn [::profile::find_file $::settings(profile_filename) 1]
+        if { $fn eq "" } {
+            msg -INFO [namespace current] import_legacy: "no saved profile matches imported profile filename '$::settings(profile_filename)', creating it"
+            save_profile
+        } else {
+            # Ensure the profile is shown in the presets list, so it can be selected. Only way to do this, with how the 
+            # default skin works, is to modify the profile file. Preserve the sorting order of the lines in the original
+            # profile file.
+            array set saved_profile [encoding convertfrom utf-8 [read_binary_file $fn]]
+            if { ![info exists saved_profile(profile_hide)] || $saved_profile(profile_hide) == 1 } {
+                msg -INFO [namespace current] import_legacy: "unhiding profile '$::settings(profile)'"
+                ::profile::modify_legacy $fn {profile_hide 0}
+            }
+        }
+        
+        set ::settings(active_settings_tab) $::settings(settings_profile_type)
+        fill_profiles_listbox
+        if { $::settings(settings_profile_type) eq "settings_2c" } {
+            fill_advanced_profile_steps_listbox
+            load_advanced_profile_step 1
+        }
+        update_de1_explanation_chart
+        profile_has_changed_set_colors
+        
+        # As of v1.3 people can start an espresso from the group head, which means the just imported profile needs to sent 
+        # right away to the DE1, in case the person taps the GH button to start espresso w/o leaving DYE.
+        send_de1_settings_soon
+        
+        ::save_settings
+        dui say [translate "Profile imported"]
+        return 1
+    }
+
     # Returns a dictionary with a textual representation of the provided profile.
     # The dictionary keys are the step numbers, with 0 corresponding to "global" profile metadata. Each step is also a dictionary.
     # Each step variable is a list, where the first element is the translatable text string, and subsequent (optional) elements are the 
