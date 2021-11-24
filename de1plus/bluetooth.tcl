@@ -1140,6 +1140,8 @@ proc ble_connect_to_scale {} {
 		return
 	}
 
+	remove_matching_ble_queue_entries {^SCALE:}
+
 	if {[catch {
 		set ::currently_connecting_scale_handle [ble connect [string toupper $::settings(scale_bluetooth_address)] de1_ble_handler false]
 		::bt::msg -NOTICE "Connecting to scale on $::settings(scale_bluetooth_address)"
