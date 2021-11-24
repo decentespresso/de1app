@@ -1603,6 +1603,10 @@ invisible clickable area) or any of the shape values accepted by [dui add shape]
 
 > >Use this syntax to pass additional options to the image creation command **dui add image**.
 
+>**-tap_pad**  _{padding0 ?padding1? ?padding2? ?padding3?}_
+
+> >A list with up to 4 distances that increase the tapping area in each of the 4 directions  _{left top right bottom}_ . The padding distances are replicated if less than 4 values are provided: if the list only has one value, it is used in the 4 directions. If it has 2 values, the first applies to both left and right (horizontal) and the second to top and bottom (vertical). It it has 3 values, the first value is reused for the bottom..
+
 
 **dui add dclicker**  _pages x y ?x1 y1? ?-option value ...?_
 
@@ -1690,7 +1694,8 @@ invisible clickable area) or any of the shape values accepted by [dui add shape]
 >**-command**  _tcl_code_
 
 > >Runs  _tcl_code_  when any of the buttons is clicked. If 1 or true or yes, and a page namespace command exists with the same name as the main tag, it will the command invoked. If it is a plain name (letters, numbers and underscores only) and the name matches a namespace command, it will be the command invoked. The following substitutions are performed in  _tcl_code_  :
-)> >-**%NS**: Substituted by the page namespace, is one is used, or an empty string otherwise.
+)
+> >-**%NS**: Substituted by the page namespace, is one is used, or an empty string otherwise.
 
 > >-**%V**: Substituted by the list of possible values.
 
@@ -1748,7 +1753,8 @@ invisible clickable area) or any of the shape values accepted by [dui add shape]
 **dui add dtoggle**  _pages x y ?x1 y1? ?-option value ...?_
 
 >Create a toggle switch button that allows defining a boolean variable. A visually more modern version of the [dcheckbox](#dui_add_dcheckbox).
->Return the canvas IDs of the clickable area. Accepts the same named options as **dui add dbutton** plus the following ones:
+>Return the canvas IDs of the clickable area. Accepts the same named options as **dui add dbutton** plus the following ones:
+
 >**-width**  _width_
 
 >**-height**  _height_
@@ -1759,7 +1765,8 @@ invisible clickable area) or any of the shape values accepted by [dui add shape]
 
 > >If  _x1_  and  _y1_  are not defined (so, **-width** and **-height** are used),  _anchor_value_  defines the alignment of the toggle bounding box with respect to the coordinates  _{x y}_ . Anchor valid values are "center", "n", "ne", ""nw", "s", "se", "sw", "w", and "e". Default is "nw" (i.e.  _{x y}_  are the top-left coordinates).
 
->**-sliderwidth**  _width_
+
+>**-sliderwidth**  _width_
 
 > >Width of the inner circle, in pixels in a 2560x1600 space, transformed automatically to the actual resolution.
 
