@@ -1199,6 +1199,8 @@ proc remove_matching_ble_queue_entries {comment_regexp} {
 
 	set old_stack $::de1(cmdstack)
 	set old_length [llength $old_stack]
+	set needs_poke 0
+	set index 0 
 
 	set new_stack {}
 	foreach cmd $old_stack {
@@ -1208,7 +1210,11 @@ proc remove_matching_ble_queue_entries {comment_regexp} {
 			::comms::msg -DEBUG "ble_queue: Removing" \
 				[string range [lindex $cmd 0] 0 30] \
 				"... for '$comment_regexp'"
+			if {$index == 0} {
+				set needs_poke 1
+			}
 		}
+		incr index
 	}
 	set new_length [llength $new_stack]
 
@@ -1220,6 +1226,10 @@ proc remove_matching_ble_queue_entries {comment_regexp} {
 	}
 
 	set ::de1(cmdstack) $new_stack
+
+	if {$needs_poke} {
+		run_next_userdata_cmd
+	}
 }
 
 proc de1_send_shot_frames {} {
