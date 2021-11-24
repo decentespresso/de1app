@@ -520,32 +520,59 @@ namespace eval ::profile {
         return $profile_type
     }
         
-	proc profile_type_text { profile_type {beverage_type {}} } {
-		switch [fix_profile_type $profile_type] \
-		settings_2a {
-			set type "Pressure"
-		} settings_2b {
-			set type "Flow"
-		} settings_2c {
-			set type "Advanced"
-		} default {
-			set type "Unknown"
-		}
-		
-		switch [lindex $beverage_type 0] \
-			pourover {
-				set beverage_type "pour-over "
-			} tea_portafilter {
-				set beverage_type "tea "
-			} {} {
-				set beverage_type ""
-			} default {
-				set beverage_type "$beverage_type "
-			}
-		
-		return "${type} ${beverage_type}profile"
-	}
-	
+    proc profile_type_text { profile_type {beverage_type {}} } {
+        switch [fix_profile_type $profile_type] \
+        settings_2a {
+            set type "Pressure"
+        } settings_2b {
+            set type "Flow"
+        } settings_2c {
+            set type "Advanced"
+        } default {
+            set type "Unknown"
+        }
+        
+        switch [lindex $beverage_type 0] \
+            pourover {
+                set beverage_type "pour-over "
+            } tea_portafilter {
+                set beverage_type "tea "
+            } {} {
+                set beverage_type ""
+            } default {
+                set beverage_type "$beverage_type "
+            }
+        
+        return "${type} ${beverage_type}profile"
+    }
+    
+    proc find_file { filename {legacy 0} } {
+        if { [string is true $legacy] } {
+            set folder "profiles"
+            set ext ".tcl"
+        } else {
+            set folder "profiles_v2"
+            set ext ".json"
+        }
+
+        if { [file extension $filename] eq "" || [file extension $filename] ne $ext } {
+            append filename $ext
+        }
+        
+        if { [file pathtype $filename] eq "relative" && [file dirname $filename] eq "." } {
+            set filepath "[homedir]/profiles/[file tail $filename]"
+        } else {
+            set filepath $filename
+        }
+        
+        if { ![file exists $filepath] } {
+            msg -WARNING [namespace current] find_file: "profile file '$filename' not found"
+            return ""
+        }
+        
+        return $filepath
+    }
+        
     # Based on proc load_settings_vars, but only loads profile variables, and returns a list with the profile (which is
     # normally then coerced to an array) instead of loading the profile into the global settings. 
     # Reads from different sources, extracting only the profile-related vars from the source.
@@ -557,21 +584,11 @@ namespace eval ::profile {
                 upvar $src src_array
             }
         } elseif { $src_type eq "shot_file" || $src_type eq "profile_file" } {
-            if { [file pathtype $src] eq "relative" && [file dirname $src] eq "." } {
-                if { $src_type eq "shot_file" } {
-                    set filepath "[homedir]/history/[file tail $src]"
-                } else {
-                    set filepath "[homedir]/profiles/[file tail $src]"
-                }
-            }
-            if { [file extension $filepath] eq "" } {
-                append filepath ".tcl"
-            }
-            if { ![file exists $filepath] } {
-                msg -WARNING [namespace current] read_legacy: "file '$filepath' not found"
+            set filepath [find_file $src 1]
+            if { $filepath eq {} } {
                 return
             }
-
+            
             try {
                 array set src_array [encoding convertfrom utf-8 [read_binary_file $filepath]]
             } on error err {
@@ -641,6 +658,45 @@ namespace eval ::profile {
         return [array get profile]
     }
     
+    proc modify_legacy { filename changes_list } {
+        array set arrchanges $changes_list
+        
+        set filepath [find_file $filename 1]
+        if { $filepath eq {} } {
+            return 0
+        }
+        
+        try {
+            array set profile [encoding convertfrom utf-8 [read_binary_file $filepath]]
+        } on error err {
+            msg -ERROR [namespace current] modify_legacy: "error parsing '$filepath': $err"
+            return 0
+        }
+
+        set some_change 0
+        foreach var [array names arrchanges] {
+            if { $var in [profile_vars] } {
+                if { ![info exists profile($var)] || $profile($var) ne $arrchanges($var) } {
+                    msg -INFO [namespace current] modify_legacy: "Profile '$filename' variable '$var' changes from '$profile($var)' to '$arrchanges($var)'"
+                    set profile($var) $arrchanges($var)
+                    set some_change 1
+                } else {
+                    msg -INFO [namespace current] modify_legacy: "Profile '$filename' variable '$var' no need to change"
+                }
+                
+            } else {
+                msg -WARNING [namespace current] modify_legacy: "'$var' is not a valid profile variable"
+            }
+        }
+
+        if { $some_change } {
+            save_array_to_file profile $filepath
+            return 1
+        } else {
+            return 0
+        }
+    }
+        
     # Returns a dictionary with a textual representation of the provided profile.
     # The dictionary keys are the step numbers, with 0 corresponding to "global" profile metadata. Each step is also a dictionary.
     # Each step variable is a list, where the first element is the translatable text string, and subsequent (optional) elements are the 
