@@ -492,6 +492,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Insight\ Dark/2560x1600/describe_espresso.jpg *
         skins/Insight\ Dark/2560x1600/describe_espresso2.jpg *
 
+        skins/DSx/1280x800/decent_logo.png *
         skins/DSx/1280x800/2SbuttonA.png *
         skins/DSx/1280x800/2SbuttonE.png *
         skins/DSx/1280x800/3SbuttonA.png *
@@ -570,6 +571,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1280x800/SbuttonF.png *
         skins/DSx/1280x800/SbuttonS.png *
         skins/DSx/1280x800/SbuttonW.png *
+        skins/DSx/1920x1200/decent_logo.png *
         skins/DSx/1920x1200/2SbuttonA.png *
         skins/DSx/1920x1200/2SbuttonE.png *
         skins/DSx/1920x1200/3SbuttonA.png *
@@ -647,6 +649,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/DSx/1920x1200/SbuttonF.png *
         skins/DSx/1920x1200/SbuttonS.png *
         skins/DSx/1920x1200/SbuttonW.png *
+        skins/DSx/2560x1600/decent_logo.png *
         skins/DSx/2560x1600/2SbuttonA.png *
         skins/DSx/2560x1600/2SbuttonE.png *
         skins/DSx/2560x1600/3SbuttonA.png *
