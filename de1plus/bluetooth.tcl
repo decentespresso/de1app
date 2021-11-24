@@ -1133,7 +1133,9 @@ proc ble_connect_to_scale {} {
 		::bt::msg -INFO "Too much backpressure, waiting with the connect"
 		::comms::msg -INFO "Current cmd: ([llength $::de1(cmdstack)]) >>>" \
 			[lindex [lindex $::de1(cmdstack) 0] 0] 
-			
+		
+		run_next_userdata_cmd
+
 		after 1000 ble_connect_to_scale
 		return
 	}
