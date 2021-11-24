@@ -532,7 +532,7 @@ namespace eval ::profile {
             set type "Unknown"
         }
         
-        switch [lindex $beverage_type 0] \
+        switch [string trim [lindex $beverage_type 0]] \
             pourover {
                 set beverage_type "pour-over "
             } tea_portafilter {
@@ -559,8 +559,12 @@ namespace eval ::profile {
             append filename $ext
         }
         
-        if { [file pathtype $filename] eq "relative" && [file dirname $filename] eq "." } {
-            set filepath "[homedir]/profiles/[file tail $filename]"
+        if { [file pathtype $filename] eq "relative" } {
+            if { [file dirname $filename] eq "." } {
+                set filepath "[homedir]/${folder}/[file tail $filename]"
+            } else {
+                set filepath "[homedir]/$filename"
+            }
         } else {
             set filepath $filename
         }
