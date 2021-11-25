@@ -612,6 +612,7 @@ namespace eval ::profile {
     
         # Set defaults in case they are not defined in the source data 
         set profile(final_desired_shot_volume_advanced_count_start) 0
+        set profile(espresso_temperature_steps_enabled) 0
         set profile(settings_profile_type) "settings_2a"
         set profile(beverage_type) "espresso"
     
@@ -784,7 +785,7 @@ namespace eval ::profile {
     #    numbers, but all user-definable profile variables are coded like this, so things like "quickly/gradually" or "sensor/coffee"
     #    also appear as replaceable strings.
     #
-    # Step 0 dictionary can have keys 'title', 'type', 'nsteps', 'notes', 'preheat', 'limiter' and 'stop_at'. 
+    # Step 0 dictionary can have keys 'title', 'type', 'nsteps', 'preheat', 'limiter', 'stop_at', 'temp_steps' and 'notes'.  
     # Step 1 to <nsteps> is each a dictionary which can have keys 'name', 'type', 'track', 'temp', 'flow_or_pressure', 'max', and 'exit_if'
     #
     # If a step doesn't have values for an element (e.g. a step doesn't define any "maximum" values), that key is NOT created.    
@@ -795,15 +796,18 @@ namespace eval ::profile {
         # Step 0 contains profile "globals"
         dict set pdict 0 title [list $profile(profile_title)] 
         
-        set bev_type [value_or_default $profile(beverage_type) "espresso"]
+        set is_basic_profile 0
+        set bev_type [string trim [lindex [value_or_default $profile(beverage_type) "espresso"] 0]]
         if { $bev_type == 0 } {
             set bev_type "espresso"
         }
         switch [fix_profile_type $profile(settings_profile_type)] \
             settings_2a {
                 dict set pdict 0 type [list "Pressure $bev_type profile"]
+                set is_basic_profile 1
             } settings_2b {
                 dict set pdict 0 type [list "Flow $bev_type profile"]
+                set is_basic_profile 1
             } settings_2c {
                 dict set pdict 0 type [list "Advanced $bev_type profile"]
             } default {
@@ -826,7 +830,13 @@ namespace eval ::profile {
             dict set pdict 0 limiter [list "Limiter ranges of action: \\1 mL/s and \\2 bar" \
                 [round_to_one_digits $profile(maximum_flow_range_advanced)] [round_to_one_digits $profile(maximum_pressure_range_advanced)]]
         }
-    
+
+        # Temperature steps
+        set temp_steps [string is true [value_or_default profile(espresso_temperature_steps_enabled) 0]]
+        if { $temp_steps } {
+            dict set pdict 0 temp_steps [list "Per-step temperatures enabled"]
+        }
+        
         # Ending criteria
         set txt ""
         set items {}    
@@ -859,11 +869,20 @@ namespace eval ::profile {
         
         foreach stepl $profile(advanced_shot) {
             array set step $stepl
-            # Ignore the extra 3-second steps added by conversion of basic (flow/pressure) to advanced profile, as they are 
-            # not in the GUI and would only confuse users, and undo the 3-seconds adjustments to match what's defined in the GUI 
-            if { $profile(espresso_hold_time) > 0 && $step(seconds) == 3 && $step(volume) == 0 && $step(exit_if) == 0 } {
-                set time_adjust 3.0
-                continue
+            if { $is_basic_profile } {
+                # Ignore the 2 seconds temperature ramp-up added when per-step temperatures are enabled 
+                if { $stepn == 1 && $temp_steps } {
+                    set time_adjust [value_or_default profile(temp_bump_time_seconds) 2.0]
+                    set temp_steps 0
+                    continue
+                }
+                
+                # Ignore the extra 3-second steps added by conversion of basic (flow/pressure) to advanced profile, as they are 
+                # not in the GUI and would only confuse users, and undo the 3-seconds adjustments to match what's defined in the GUI 
+                if { $profile(espresso_hold_time) > 0 && $step(seconds) == 3 && $step(volume) == 0 && $step(exit_if) == 0 } {
+                    set time_adjust 3.0
+                    continue
+                }
             }
             
             dict set pdict $stepn name [list $step(name)]
