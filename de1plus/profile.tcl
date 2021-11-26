@@ -602,6 +602,8 @@ namespace eval ::profile {
         
             if { $src_type eq "shot_file" } {
                 array set src_array $src_array(settings)
+            } elseif { $src_type eq "profile_file" } {
+                set src_array(profile_filename) [file rootname [file tail $filepath]]
             }
         } elseif { $src_type eq "list" } {
             array set src_array [$src]
@@ -682,7 +684,7 @@ namespace eval ::profile {
         foreach var [array names arrchanges] {
             if { $var in [profile_vars] } {
                 if { ![info exists profile($var)] || $profile($var) ne $arrchanges($var) } {
-                    msg -INFO [namespace current] modify_legacy: "Profile '$filename' variable '$var' changes from '$profile($var)' to '$arrchanges($var)'"
+                    msg -INFO [namespace current] modify_legacy: "Profile '$filename' variable '$var' changes from '[value_or_default profile($var) {}]' to '$arrchanges($var)'"
                     set profile($var) $arrchanges($var)
                     set some_change 1
                 } else {
