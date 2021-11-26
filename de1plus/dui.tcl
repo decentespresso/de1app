@@ -3744,7 +3744,6 @@ namespace eval ::dui {
 				if { [string is integer $main_tag] || ![regexp {^([A-Za-z0-9_\-])+$} $main_tag] } {
 					set msg "process_tags_and_var: main tag '$main_tag' can only have letters, numbers, underscores and hyphens, and cannot be a number" 
 					msg -ERROR [namespace current] $msg
-					info_page $msg
 					return 0
 				}
 			}
@@ -3753,7 +3752,6 @@ namespace eval ::dui {
 				if { [dui page has_item $page $main_tag] } {
 					set msg "process_tags_and_var: main tag '$main_tag' already exists in page '$page', duplicates are not allowed"
 					msg -ERROR [namespace current] $msg
-					info_page $msg
 					return 0
 				}
 			}			
