@@ -50,6 +50,9 @@ namespace eval ::plugins::${plugin_name} {
         if { ![info exists ::plugins::visualizer_upload::settings(download_by_code_url)] } {
             set ::plugins::visualizer_upload::settings(download_by_code_url) "https://visualizer.coffee/api/shots/shared?code=<ID>"
         }
+        if { ![info exists ::plugins::visualizer_upload::settings(download_all_last_shared)] } {
+            set ::plugins::visualizer_upload::settings(download_all_last_shared) "https://visualizer.coffee/api/shots/shared"
+        }
         if { $needs_save_settings == 1 } {
             plugins save_settings visualizer_upload
         }
@@ -205,7 +208,10 @@ namespace eval ::plugins::${plugin_name} {
             set url "$settings(visualizer_download_url)/download?essentials=1"
         } elseif { $type eq "download_by_code" } {
             set url $settings(download_by_code_url)
-        } else {
+        } elseif { $type eq "download_all_last_shared" } {
+            set url $settings(download_all_last_shared)
+            return $url
+        }  else {
             set url $settings(visualizer_browse_url)
         }
         
@@ -243,10 +249,14 @@ namespace eval ::plugins::${plugin_name} {
         }
         if { $visualizer_id eq {} } {
             set visualizer_id $settings(last_upload_id)
+            if { $what eq "download_all_last_shared" } {
+                set url_type "download_all_last_shared"
+                msg "Downloading all shared shots"
+            } 
         } elseif { [string length $visualizer_id] < 10 } {
             set url_type "download_by_code"
         }
-        
+
         set settings(last_action) "download"
         set settings(last_download_id) $visualizer_id
         set settings(last_download_result) ""
@@ -258,8 +268,15 @@ namespace eval ::plugins::${plugin_name} {
         ::http::register https 443 ::tls::socket
         tls::init -tls1 0 -ssl2 0 -ssl3 0 -tls1.1 0 -tls1.2 1 -servername $settings(visualizer_url) $settings(visualizer_url) 443
         
+        set headerl {}
+        if {[has_credentials] && $url_type == "download_all_last_shared"} {
+            set auth "Basic [binary encode base64 $settings(visualizer_username):$settings(visualizer_password)]"
+            set headerl [list Authorization "$auth"]
+             msg "Downloading with authorization"
+        }
+
         if {[catch {
-            set token [::http::geturl $download_link -timeout 10000]
+            set token [::http::geturl $download_link -headers $headerl  -method GET -timeout 10000]
             set status [::http::status $token]
             set answer [::http::data $token]
             set ncode [::http::ncode $token]
@@ -268,14 +285,19 @@ namespace eval ::plugins::${plugin_name} {
         } err] != 0} {
             msg "could not download visualizer shot '$download_link' : $err"
             dui say [translate "Download failed"]
-            set settings(last_download_result) "[translate {Download failed!}] $code"
+            set settings(last_download_result) "[translate {Download failed!}] [ifexists code] [ifexists ncode]"
             catch { ::http::cleanup $token }
             return
         }
         
         if { $status eq "ok" && $ncode == 200 } {
             if {[catch {
-                set response [::json::json2dict [encoding convertfrom utf-8 $answer]]
+                if { $url_type eq "download_all_last_shared" } {
+                    set listResponse [encoding convertfrom utf-8 $answer]
+                    set response [::json::json2dict "{\"list\": $listResponse}"]
+                } else {
+                    set response [::json::json2dict [encoding convertfrom utf-8 $answer]]
+                }
             } err] != 0} {
                 set my_err ""
                 msg "unexpected Visualizer answer: $answer"
@@ -327,7 +349,9 @@ namespace eval ::plugins::${plugin_name} {
         }
         
         set settings(last_download_result) [translate {Download successful!}]
-        set settings(last_download_shot_start) [dict get $response start_time] 
+        if { $url_type ne "download_all_last_shared"} {
+            set settings(last_download_shot_start) [dict get $response start_time] 
+        }
         return $response
     }
 
