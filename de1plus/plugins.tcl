@@ -144,8 +144,10 @@ namespace eval ::plugins {
         } err opts_dict] != 0} {
             ::logging::log_error_result_opts_dict $err $opts_dict
             catch {
-                # remove from enabled plugins
-                disable_plugin $plugin
+                if {!::debugging} {
+                    # remove from enabled plugins
+                    disable_plugin $plugin
+                }
             }
             catch {
                 info_page [subst {${plugin}:[translate "The plugin could not be loaded. Disabled"]\n\n$err}] [translate "Ok"]
