@@ -4,7 +4,7 @@ package provide de1_history_viewer 1.1
 #
 namespace eval ::history_viewer {
 	namespace export init open
-    namespace ensemble create
+	namespace ensemble create
 	#
 	# Data Vectors
 	#
@@ -383,38 +383,33 @@ namespace eval ::history_viewer {
 				graph_line.color.hv_temperature_mix #ff888c
 				graph_line.smooth.hv_temperature_mix $smooth 
 
-				graph_line.linewidth.hv_temperature_goal [dui platform rescale_x 8] 
-				graph_line.color.hv_temperature_goal #ffa5a6 
-				graph_line.smooth.hv_temperature_goal $smooth 
-				graph_line.dashes.hv_temperature_goal {5 5}
-
 				graph_line.linewidth.hv_pressure_goal [dui platform rescale_x 8] 
-				graph_line.color.hv_pressure_goal #3D5682
+				graph_line.color.hv_pressure_goal #69fdb3
 				graph_line.smooth.hv_pressure_goal $smooth 
 				graph_line.dashes.hv_pressure_goal {5 5}
 
 				graph_line.linewidth.hv_flow_goal [dui platform rescale_x 8] 
-				graph_line.color.hv_flow_goal #F27405
+				graph_line.color.hv_flow_goal #7aaaff
 				graph_line.smooth.hv_flow_goal $smooth 
 				graph_line.dashes.hv_flow_goal {5 5}
 					
 				graph_line.linewidth.hv_pressure [dui platform rescale_x 12] 
-				graph_line.color.hv_pressure #417491
+				graph_line.color.hv_pressure #18c37e
 				graph_line.smooth.hv_pressure $smooth 
 				graph_line.dashes.hv_pressure [list $::settings(chart_dashes_pressure)]
 					
 				graph_line.linewidth.hv_flow [dui platform rescale_x 12] 
-				graph_line.color.hv_flow #F27405
+				graph_line.color.hv_flow #4e85f4
 				graph_line.smooth.hv_flow $smooth 
 				graph_line.dashes.hv_flow [list $::settings(chart_dashes_flow)]
 
 				graph_line.linewidth.hv_flow_weight [dui platform rescale_x 12] 
-				graph_line.color.hv_flow_weight #F28705
+				graph_line.color.hv_flow_weight #a2693d
 				graph_line.smooth.hv_flow_weight $smooth 
 				graph_line.dashes.hv_flow_weight [list $::settings(chart_dashes_flow)]
 
 				graph_line.linewidth.hv_weight [dui platform rescale_x 6] 
-				graph_line.color.hv_weight #f8b888
+				graph_line.color.hv_weight #a2693d
 				graph_line.smooth.hv_weight $smooth 
 				graph_line.dashes.hv_weight [list $::settings(chart_dashes_espresso_weight)]
 
