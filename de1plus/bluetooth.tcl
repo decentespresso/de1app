@@ -130,7 +130,7 @@ proc scale_enable_grams {} {
 	if {$::settings(scale_type) == "atomaxskale"} {
 		skale_enable_grams
 	} elseif {$::settings(scale_type) == "decentscale"} {
-		#nothing
+		# nothing to do, as this is already set as part of LED on command
 	}
 }
 
