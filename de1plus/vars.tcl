@@ -1826,6 +1826,17 @@ proc fill_ble_listbox {} {
 	make_current_listbox_item_blue $widget
 }
 
+proc remove_peripheral {address} {
+
+	set newdict {}
+	foreach d $::peripheral_device_list {
+		if {[dict get $d address] != $address} {
+			lappend newdict $d
+		}
+	}
+	set ::peripheral_device_list $newdict
+}
+
 proc fill_peripheral_listbox {} {
 
 	set widget $::ble_scale_listbox_widget
