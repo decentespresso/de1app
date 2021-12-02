@@ -1140,11 +1140,11 @@ proc ble_connect_to_scale {} {
 		return
 	}
 
-	remove_matching_ble_queue_entries {^SCALE:}
+	# 2021-11-25 Johanna: Removed to see if it is the cause for the lunar connection issues
+	#remove_matching_ble_queue_entries {^SCALE:}
 
-	# 2021-11-25 Johanna: try autoconnect
 	if {[catch {
-		set ::currently_connecting_scale_handle [ble connect [string toupper $::settings(scale_bluetooth_address)] de1_ble_handler true]
+		set ::currently_connecting_scale_handle [ble connect [string toupper $::settings(scale_bluetooth_address)] de1_ble_handler false]
 		::bt::msg -NOTICE "Connecting to scale on $::settings(scale_bluetooth_address)"
 		set retcode 0
 	} err] != 0} {
