@@ -311,50 +311,73 @@ namespace eval ::plugins::${plugin_name} {
             set settings(last_download_result) "[translate {Download failed!}] $code"
             return
         }
-
+        
         if { $url_type eq "download_by_code" && [dict exists $response profile_url] } {
-            set profile_url [dict get $response profile_url]
-            
-            if {[catch {
-                set token [::http::geturl $profile_url -timeout 10000]
-                set status [::http::status $token]
-                set answer [::http::data $token]
-                set ncode [::http::ncode $token]
-                set code [::http::code $token]
-                ::http::cleanup $token
-            } err] != 0} {
-                msg "could not download profile url '$profile_url' : $err"
-                dui say [translate "Download failed"]
-                set settings(last_download_result) "[translate {Download failed!}] $code"
-                catch { ::http::cleanup $token }
-                return
-            }
-
-            if { $status eq "ok" && $ncode == 200 } {
-                if {[catch {
-                    dict set response profile [list {*}[encoding convertfrom utf-8 $answer]]
-                } err] != 0} {
-                    set my_err ""
-                    msg "unexpected Visualizer profile url answer: $answer"
-                    dui say [translate "Download failed"] 
-                    set settings(last_download_result) "[translate {Download failed!}] [translate {Could not parse profile answer}]"
-                    return
-                }
-            } else {
-                msg "could not get profile url $profile_url: $code"
-                dui say [translate "Download failed"]
-                set settings(last_download_result) "[translate {Download failed!}] $code"
-                return
-            }
+            dict set response profile [download_profile [dict get $response profile_url]]
         }
         
         set settings(last_download_result) [translate {Download successful!}]
-        if { $url_type ne "download_all_last_shared"} {
+        if { [dict exists $response start_time] } {
             set settings(last_download_shot_start) [dict get $response start_time] 
         }
         return $response
     }
 
+    proc download_profile { profile_url } {
+        variable settings
+        
+        if { $profile_url eq "" } {
+            return {}
+        }
+        
+        set profile {}
+        msg "downloading profile url '$profile_url'"
+
+        ::http::register https 443 ::tls::socket
+        tls::init -tls1 0 -ssl2 0 -ssl3 0 -tls1.1 0 -tls1.2 1 -servername $settings(visualizer_url) $settings(visualizer_url) 443
+        
+        set headerl {}
+        if { [has_credentials] } {
+            set auth "Basic [binary encode base64 $settings(visualizer_username):$settings(visualizer_password)]"
+            set headerl [list Authorization "$auth"]
+            msg "Downloading with authorization"
+        }
+        
+        if {[catch {
+            set token [::http::geturl $profile_url -timeout 10000]
+            set status [::http::status $token]
+            set answer [::http::data $token]
+            set ncode [::http::ncode $token]
+            set code [::http::code $token]
+            ::http::cleanup $token
+        } err] != 0} {
+            msg "could not download profile url '$profile_url' : $err"
+            dui say [translate "Profile download failed"]
+            set settings(last_download_result) "[translate {Profile download failed!}] [ifexists code]"
+            catch { ::http::cleanup $token }
+            return {}
+        }
+
+        if { $status eq "ok" && $ncode == 200 } {
+            if {[catch {
+                set profile [list {*}[encoding convertfrom utf-8 $answer]]
+            } err] != 0} {
+                set my_err ""
+                msg "unexpected Visualizer profile url answer: $answer"
+                dui say [translate "Profile download failed"] 
+                set settings(last_download_result) "[translate {Profile download failed!}] [translate {Could not parse profile answer}]"
+                return {}
+            }
+        } else {
+            msg "could not get profile url $profile_url: $code"
+            dui say [translate "Profile download failed"]
+            set settings(last_download_result) "[translate {Download failed!}] $code"
+            return {}
+        }
+        
+        return $profile
+    }
+    
     proc has_credentials {} {
         variable settings
         return [expr { [string trim $settings(visualizer_username)] ne "" && $settings(visualizer_username) ne "demo@demo123" || \
