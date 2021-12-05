@@ -650,17 +650,15 @@ namespace eval ::profile {
             set profile(final_desired_shot_volume) $profile(final_desired_shot_weight)
         }
     
-        if { $profile(advanced_shot) eq {} } {
-            # Ensure the profile's advanced_shot variable is always defined
-            switch $profile(settings_profile_type) \
-                settings_2a {
-                    array set temp_profile [pressure_to_advanced_list profile]
-                    set profile(advanced_shot) $temp_profile(advanced_shot)
-                } settings_2b {
-                    array set temp_profile [flow_to_advanced_list profile]
-                    set profile(advanced_shot) $temp_profile(advanced_shot)
-                }
-        }
+        # Ensure the profile's advanced_shot variable is always defined. Overwrite it if already defined.
+        switch $profile(settings_profile_type) \
+            settings_2a {
+                array set temp_profile [pressure_to_advanced_list profile]
+                set profile(advanced_shot) $temp_profile(advanced_shot)
+            } settings_2b {
+                array set temp_profile [flow_to_advanced_list profile]
+                set profile(advanced_shot) $temp_profile(advanced_shot)
+            }
         
         return [array get profile]
     }
