@@ -833,7 +833,7 @@ namespace eval ::profile {
 
         # Temperature steps
         set temp_steps [string is true [value_or_default profile(espresso_temperature_steps_enabled) 0]]
-        if { $temp_steps } {
+        if { $is_basic_profile & $temp_steps } {
             dict set pdict 0 temp_steps [list "Per-step temperatures enabled"]
         }
         
