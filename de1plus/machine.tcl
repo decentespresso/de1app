@@ -989,6 +989,28 @@ proc start_idle {} {
 	}
 }
 
+proc start_schedIdle {} {
+	msg -NOTICE "Tell DE1 to start to go IDLE from a scheduler call"
+
+	# Ensure we are not locking the screen during use.
+	# This is only relevant when waking up the machine
+	if  {[sdltk screensaver] == 1} {
+		sdltk screensaver off
+	}
+
+	if {$::de1(device_handle) == 0} {
+		start_idle
+	}
+
+	de1_send_state "go idle" $::de1_state(SchedIdle)
+	
+	if {$::de1(scale_device_handle) != 0} {
+		scale_enable_lcd
+	}
+}
+
+
+
 
 proc start_sleep {} {
 

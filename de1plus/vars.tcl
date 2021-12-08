@@ -205,7 +205,7 @@ proc set_alarms_for_de1_wake_sleep {} {
 
 proc scheduler_wake {} {
 	msg -NOTICE "Scheduled wake occured at [clock format [clock seconds]]"
-	start_idle
+	start_schedIdle
 
 	# after alarm has occured go ahead and set the alarm for tommorrow
 	after 2000 set_alarms_for_de1_wake_sleep
