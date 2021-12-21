@@ -187,6 +187,9 @@ namespace eval ::profile {
         set temp_advanced(final_desired_shot_weight_advanced) $temp_advanced(final_desired_shot_weight)
         set temp_advanced(final_desired_shot_volume_advanced) $temp_advanced(final_desired_shot_volume)
 
+        # On advanced profiles this is a GUI bound variable.
+        # Per step settings are edited with the UI editor
+        # This is not sent to the machine and only set here for compat
         set temp_advanced(maximum_pressure_range_advanced) $temp_advanced(maximum_pressure_range_default)
         set temp_advanced(maximum_flow_range_advanced) $temp_advanced(maximum_flow_range_default)
 
@@ -330,6 +333,9 @@ namespace eval ::profile {
         set temp_advanced(final_desired_shot_weight_advanced) $temp_advanced(final_desired_shot_weight)
         set temp_advanced(final_desired_shot_volume_advanced) $temp_advanced(final_desired_shot_volume)
 
+        # On advanced profiles this is a GUI bound variable.
+        # Per step settings are edited with the UI editor
+        # This is not sent to the machine and only set here for compat
         set temp_advanced(maximum_pressure_range_advanced) $temp_advanced(maximum_pressure_range_default)
         set temp_advanced(maximum_flow_range_advanced) $temp_advanced(maximum_flow_range_default)
 
