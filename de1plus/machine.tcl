@@ -203,6 +203,8 @@ array set ::settings {
 	log_fast 0
 	use_finger_down_for_tap 1
 	linear_resistance_adjustment 1
+	resistance_curve 0
+	weight_detail_curve 0
 	language en
 	display_time_in_screen_saver 0
 	insert_preinfusion_pause 0

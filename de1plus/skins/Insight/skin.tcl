@@ -271,7 +271,9 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 1174 {
 ####
 
 add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 40 30 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
-add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1600 30 -text [translate "Puck resistance"] -font Helv_7_bold -fill "#d2d200" -justify "left" -anchor "ne"
+#add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1600 30 -text [translate "Puck resistance"] -font Helv_7_bold -fill "#d2d200" -justify "left" -anchor "ne"
+add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" checkbutton 1300 30 {} -text [translate "Resistance"] -indicatoron true  -font Helv_7_bold -bg #FFFFFF -anchor nw -foreground #d2d200 -variable ::settings(resistance_curve)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #d2d200 -relief flat -bd 0 -justify "left"  -command {should_hide_show_puck_resistance_line; save_settings } 
+
 add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1970 30 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "ne"
 
 add_de1_text "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 40 30 -text [translate "Temperature ([return_html_temperature_units])"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
@@ -281,18 +283,22 @@ add_de1_text "off espresso espresso_3" 40 220 -text [translate "Pressure (bar)"]
 add_de1_text "off espresso espresso_3" 40 677 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
 if {$::settings(scale_bluetooth_address) != ""} {
 	add_de1_text "off espresso espresso_3" 1970 677 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 
-	add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 700 30 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 	
+
+
+	#add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 700 30 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 	
+	add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" checkbutton 480 30 {} -text [translate "Weight (g/s)"] -indicatoron true  -font Helv_7_bold -bg #FFFFFF -anchor nw -foreground #a2693d -variable ::settings(weight_detail_curve)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #a2693d -relief flat -bd 0 -justify "left"  -command {should_hide_show_weight_detail_line; save_settings } 
 }
 
 add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([return_html_temperature_units])"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
 
 
 
-
-
 #######################
 # zoomed espresso
 add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
+
+	set ::espresso_zoomed_graph $widget
+
 	bind $widget [platform_button_press] { 
 
 		set x [translate_coordinates_finger_down_x %x]
@@ -354,7 +360,7 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 
 	if {$::settings(scale_bluetooth_address) != ""} {
 		$widget element create line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 8] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
-		$widget element create line_espresso_flow_weight_raw_2x  -xdata espresso_elapsed -ydata espresso_flow_weight_raw -symbol none -label "" -linewidth [rescale_x_skin 2] -color #f8b888 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 ; 
+		$widget element create line_espresso_flow_weight_raw_2x  -xdata espresso_elapsed -ydata espresso_flow_weight_raw -symbol none -label "" -linewidth [rescale_x_skin 2] -color #f8b888 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -hide yes; 
 		$widget element create god_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 16] -color #edd4c1 -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 
 		if {$::settings(chart_total_shot_weight) == 1 || $::settings(chart_total_shot_weight) == 2} {
@@ -362,14 +368,14 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 		}
 
 		# when using Resistance calculated from the flowmeter, use a solid line to indicate it is well measured
-		$widget element create line_espresso_resistance  -xdata espresso_elapsed -ydata espresso_resistance_weight -symbol none -label "" -linewidth [rescale_x_skin 4] -color #e5e500 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  
+		#$widget element create line_espresso_resistance  -xdata espresso_elapsed -ydata espresso_resistance_weight -symbol none -label "" -linewidth [rescale_x_skin 4] -color #e5e500 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  
 
 	} else {
 
 		# when using Resistance calculated from the flowmeter, use a dashed line to indicate it is approximately measured
 	}
 
-	$widget element create line_espresso_resistance_dashed  -xdata espresso_elapsed -ydata espresso_resistance -symbol none -label "" -linewidth [rescale_x_skin 4] -color #e5e500 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {6 2}; 
+	$widget element create line_espresso_resistance_dashed  -xdata espresso_elapsed -ydata espresso_resistance -symbol none -label "" -linewidth [rescale_x_skin 4] -color #e5e500 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {6 2} -hide no 
 
 	$widget element create god_line2_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 24] -color #c5ffe7  -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ; 
@@ -396,6 +402,38 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 
 	#$widget axis configure y2 -color #206ad4 -tickfont Helv_6 -gridminor 0 -min 0.0 -max $::de1(max_flowrate) -majorticks {0 0.5 1 1.5 2 2.5 3 3.5 4 4.5 5 5.5 6} -hide 0; 
 } -plotbackground $chart_background -width [rescale_x_skin 1990] -height [rescale_y_skin 1510] -borderwidth 1 -background $chart_background -plotrelief flat -plotpady 0 -plotpadx 10
+
+
+proc obs_toggle_hide_show_puck_resistance_line {} {
+	if {[ifexists ::settings(resistance_curve)] == 1} {
+		set ::settings(resistance_curve) 0
+	} else {
+		set ::settings(resistance_curve) 1
+	}
+
+	should_hide_show_puck_resistance_line
+}
+
+proc should_hide_show_puck_resistance_line {} {
+
+	if {[ifexists ::settings(resistance_curve)] == 1} {
+		$::espresso_zoomed_graph element configure line_espresso_resistance_dashed -hide no
+	} else {
+		$::espresso_zoomed_graph element configure line_espresso_resistance_dashed -hide yes
+	}
+}
+should_hide_show_puck_resistance_line
+
+
+proc should_hide_show_weight_detail_line {} {
+
+	if {[ifexists ::settings(weight_detail_curve)] == 1} {
+		$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide no
+	} else {
+		$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide yes
+	}
+}
+should_hide_show_weight_detail_line
 
 #######################
 
@@ -471,42 +509,43 @@ update_temperature_charts_y_axis
 
 # click anywhere on the chart to zoom pressure/flow.  This button is only to cover the parts that aren't overlaid by the charts, such as the text labels
 add_de1_button "off espresso espresso_3" {
-		say [translate {zoom}] $::settings(sound_button_in); 
-		set_next_page off off_zoomed; 
-		set_next_page espresso espresso_zoomed; 
-		set_next_page espresso_3 espresso_3_zoomed; 
-		page_show $::de1(current_context);
+	say [translate {zoom}] $::settings(sound_button_in); 
+	set_next_page off off_zoomed; 
+	set_next_page espresso espresso_zoomed; 
+	set_next_page espresso_3 espresso_3_zoomed; 
+	page_show $::de1(current_context);
 } 10 240 2012 1135
 
 # click anywhere on the chart to zoom pressure/flow.  This button is only to cover the parts that aren't overlaid by the charts, such as the text labels
 add_de1_button "off espresso espresso_3" {
-		say [translate {zoom}] $::settings(sound_button_in); 
-		set_next_page off off_zoomed_temperature;
-		set_next_page espresso espresso_zoomed_temperature;
-		set_next_page espresso_3 espresso_3_zoomed_temperature;
-		page_show $::de1(current_context);
+	say [translate {zoom}] $::settings(sound_button_in); 
+	set_next_page off off_zoomed_temperature;
+	set_next_page espresso espresso_zoomed_temperature;
+	set_next_page espresso_3 espresso_3_zoomed_temperature;
+	page_show $::de1(current_context);
 } 10 1136 2012 1600
 
+
 add_de1_button "off_zoomed espresso_zoomed espresso_3_zoomed" {
-		say [translate {zoom}] $::settings(sound_button_in); 
-		set_next_page espresso_3 espresso_3; 
-		set_next_page espresso_3_zoomed espresso_3; 
-		set_next_page espresso espresso; 
-		set_next_page espresso_zoomed espresso; 
-		set_next_page off off; 
-		set_next_page off_zoomed off; 
-		page_show $::de1(current_context);
-} 1 1 2012 1135
+	say [translate {zoom}] $::settings(sound_button_in); 
+	set_next_page espresso_3 espresso_3; 
+	set_next_page espresso_3_zoomed espresso_3; 
+	set_next_page espresso espresso; 
+	set_next_page espresso_zoomed espresso; 
+	set_next_page off off; 
+	set_next_page off_zoomed off; 
+	page_show $::de1(current_context);
+} 1 100 2012 1135
 
 add_de1_button "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" {
-		say [translate {zoom}] $::settings(sound_button_in); 
-		set_next_page espresso_3 espresso_3; 
-		set_next_page espresso_3_zoomed_temperature espresso_3; 
-		set_next_page espresso espresso; 
-		set_next_page espresso_zoomed_temperature espresso; 
-		set_next_page off off; 
-		set_next_page off_zoomed_temperature off; 
-		page_show $::de1(current_context);
+	say [translate {zoom}] $::settings(sound_button_in); 
+	set_next_page espresso_3 espresso_3; 
+	set_next_page espresso_3_zoomed_temperature espresso_3; 
+	set_next_page espresso espresso; 
+	set_next_page espresso_zoomed_temperature espresso; 
+	set_next_page off off; 
+	set_next_page off_zoomed_temperature off; 
+	page_show $::de1(current_context);
 } 1 1 2012 1600
 
 # the "go to sleep" button and the whole-screen button for coming back awake
