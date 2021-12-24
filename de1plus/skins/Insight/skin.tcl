@@ -272,7 +272,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 1174 {
 
 add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 40 30 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
 #add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1600 30 -text [translate "Puck resistance"] -font Helv_7_bold -fill "#d2d200" -justify "left" -anchor "ne"
-add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" checkbutton 1300 30 {} -text [translate "Resistance"] -indicatoron true  -font Helv_7_bold -bg #FFFFFF -anchor nw -foreground #d2d200 -variable ::settings(resistance_curve)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #d2d200 -relief flat -bd 0 -justify "left"  -command {should_hide_show_puck_resistance_line; save_settings } 
+add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" checkbutton 1300 30 {} -text [translate "Resistance"] -indicatoron true  -font Helv_7_bold -bg $chart_background -anchor nw -foreground #d2d200 -variable ::settings(resistance_curve)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground $chart_background  -bd 0 -activeforeground #d2d200 -relief flat -bd 0 -justify "left"  -command {should_hide_show_puck_resistance_line; save_settings } 
 
 add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1970 30 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "ne"
 
@@ -286,7 +286,7 @@ if {$::settings(scale_bluetooth_address) != ""} {
 
 
 	#add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 700 30 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 	
-	add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" checkbutton 480 30 {} -text [translate "Weight (g/s)"] -indicatoron true  -font Helv_7_bold -bg #FFFFFF -anchor nw -foreground #a2693d -variable ::settings(weight_detail_curve)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #a2693d -relief flat -bd 0 -justify "left"  -command {should_hide_show_weight_detail_line; save_settings } 
+	add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" checkbutton 480 30 {} -text [translate "Weight (g/s)"] -indicatoron true  -font Helv_7_bold -bg $chart_background -anchor nw -foreground #a2693d -variable ::settings(weight_detail_curve)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground $chart_background  -bd 0 -activeforeground #a2693d -relief flat -bd 0 -justify "left"  -command {should_hide_show_weight_detail_line; save_settings } 
 }
 
 add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([return_html_temperature_units])"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
@@ -426,11 +426,12 @@ should_hide_show_puck_resistance_line
 
 
 proc should_hide_show_weight_detail_line {} {
-
-	if {[ifexists ::settings(weight_detail_curve)] == 1} {
-		$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide no
-	} else {
-		$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide yes
+	if {$::settings(scale_bluetooth_address) != ""} {
+		if {[ifexists ::settings(weight_detail_curve)] == 1} {
+			$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide no
+		} else {
+			$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide yes
+		}
 	}
 }
 should_hide_show_weight_detail_line
