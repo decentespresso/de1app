@@ -417,9 +417,13 @@ proc obs_toggle_hide_show_puck_resistance_line {} {
 proc should_hide_show_puck_resistance_line {} {
 
 	if {[ifexists ::settings(resistance_curve)] == 1} {
-		$::espresso_zoomed_graph element configure line_espresso_resistance_dashed -hide no
+		catch {
+			$::espresso_zoomed_graph element configure line_espresso_resistance_dashed -hide no
+		}
 	} else {
-		$::espresso_zoomed_graph element configure line_espresso_resistance_dashed -hide yes
+		catch {
+			$::espresso_zoomed_graph element configure line_espresso_resistance_dashed -hide yes
+		}
 	}
 }
 should_hide_show_puck_resistance_line
@@ -428,9 +432,13 @@ should_hide_show_puck_resistance_line
 proc should_hide_show_weight_detail_line {} {
 	if {$::settings(scale_bluetooth_address) != ""} {
 		if {[ifexists ::settings(weight_detail_curve)] == 1} {
-			$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide no
+			catch {
+				$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide no
+			}
 		} else {
-			$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide yes
+			catch {
+				$::espresso_zoomed_graph element configure line_espresso_flow_weight_raw_2x -hide yes
+			}
 		}
 	}
 }
