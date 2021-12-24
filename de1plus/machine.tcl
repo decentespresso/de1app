@@ -1004,7 +1004,16 @@ proc start_schedIdle {} {
 		start_idle
 	}
 
-	de1_send_state "go idle" $::de1_state(SchedIdle)
+	set idlecmd $::de1_state(Idle)
+	catch {
+		if {$::settings(firmware_version_number) >= 1293} {
+			# new firmware scheduled-wake command was only working as of v1293 firmware
+			set idlecmd $::de1_state(SchedIdle)
+		}
+	}
+
+	de1_send_state "go idle" $idlecmd
+
 	
 	if {$::de1(scale_device_handle) != 0} {
 		scale_enable_lcd
