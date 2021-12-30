@@ -1207,19 +1207,23 @@ proc later_new_de1_connection_setup {} {
 
 	set_heater_tweaks
 
+	################
 	# we send the flow calibration on app startup to the de1, so that we can calibration the DE1 at the decent factory without needing to power up the DE1.  We set the country-specific calibration in the tablet, and then it will be sent to the DE1 when it powers up
 	# 
 	# We have an exception here, which is if the settings on the app are set to 1, which is the app default, then it's possible the settings file was just recreated with defaults, and rather than decalibrating the DE1 with a default setting, in that case we
 	# fetch the current setting from the DE1
+	#
+	# We use a three precision 1.000 to differentiate between an intentional 1.00 setting and a default 1.000 setting.  If calbration is changed, it will always be two digits of precision, never 3.
+	#
 	set calibration_flow_multiplier [ifexists ::settings(calibration_flow_multiplier)]
-	if {$calibration_flow_multiplier == "1"} {
+	if {$calibration_flow_multiplier == "1.000"} {
 		# if the flow calibration is set to the default of 1 then fetch the current setting from the machine
 		# this should only occur when the settings file was recently deleted and recreated with defaults
 		get_calibration_flow_multiplier
 	} else {
 		set_calibration_flow_multiplier $calibration_flow_multiplier
 	}
-
+	################
 
 	after 5000 read_de1_state
 	after 7000 get_heater_voltage
