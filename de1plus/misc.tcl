@@ -881,17 +881,12 @@ proc make_de1_dir {srcdir destdirs} {
 
         plugins/visualizer_upload/plugin.tcl *
         plugins/D_Flow_Espresso_Profile/plugin.tcl *
-
         plugins/log_upload/plugin.tcl *
-
         plugins/old_lcd_disable/plugin.tcl *
-
         plugins/DPx_Screen_Saver/plugin.tcl *
         plugins/DPx_Steam_Stop/plugin.tcl *
-
         plugins/keyboard_control/plugin.tcl *
         plugins/keyboard_control/settings.tdb *
-
         plugins/log_debug/plugin.tcl *
 
         allcerts.pem *
