@@ -880,6 +880,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/Damian's\ LRv3.tcl *
 
         plugins/visualizer_upload/plugin.tcl *
+        plugins/D_Flow_Espresso_Profile/plugin.tcl *
 
         plugins/log_upload/plugin.tcl *
 
