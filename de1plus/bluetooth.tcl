@@ -1933,7 +1933,7 @@ proc de1_ble_handler { event data } {
 							} else {
 								::bt::msg -ERROR "ACK for write to" \
 									[::logging::short_ble_uuid $cuuid] \
-									"of unknown device: '$event_for_log'"
+									"of unknown device: '$value_for_log'"
 							}
 						}
 
