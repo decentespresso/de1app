@@ -459,6 +459,7 @@ proc acaia_send_heartbeat {suuid cuuid} {
 	userdata_append "SCALE: send acaia heartbeat" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $heartbeat] 1
 
 	if { $::settings(force_acaia_heartbeat) == 1 } {
+		after 1000 [list acaia_send_config $suuid $cuuid]
 		after 2000 [list acaia_send_heartbeat $suuid $cuuid]
 	}
 }
