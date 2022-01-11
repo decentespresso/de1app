@@ -1493,6 +1493,7 @@ proc de1_ble_handler { event data } {
 							msg -INFO "Pyxis scale showed up"
 
 							if {[ifexist ::sinstance($::de1(suuid_acaia_pyxis))] == {}} {
+								msg -NOTICE "fake connction to acaia scale. Closing handle again"
 								ble close $handle
 								ble_connect_to_scale
 								return
