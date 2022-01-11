@@ -1492,6 +1492,12 @@ proc de1_ble_handler { event data } {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiapyxis"
 							msg -INFO "Pyxis scale showed up"
 
+							if {[ifexist ::sinstance($::de1(suuid_acaia_pyxis))] == {}} {
+								ble close $handle
+								ble_connect_to_scale
+								return
+							}
+
 							set ::settings(force_acaia_heartbeat) 1
 							set mtu1 [ble mtu $handle 247]
 							msg -INFO "MTU is $mtu1"
