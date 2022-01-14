@@ -1496,7 +1496,7 @@ proc de1_ble_handler { event data } {
 								msg -NOTICE "fake connction to acaia scale. Closing handle again"
 								#ble close $handle
 								#ble_connect_to_scale
-								return
+								#return
 							}
 
 							set ::settings(force_acaia_heartbeat) 1
