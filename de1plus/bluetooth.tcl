@@ -1492,7 +1492,7 @@ proc de1_ble_handler { event data } {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiapyxis"
 							msg -INFO "Pyxis scale showed up"
 
-							if {[ifexist ::sinstance($::de1(suuid_acaia_pyxis))] == {}} {
+							if {[ifexists ::sinstance($::de1(suuid_acaia_pyxis))] == {}} {
 								msg -NOTICE "fake connction to acaia scale. Closing handle again"
 								ble close $handle
 								ble_connect_to_scale
