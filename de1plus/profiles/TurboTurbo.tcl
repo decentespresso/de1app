@@ -32,7 +32,7 @@ preinfusion_flow_rate 4.0
 preinfusion_stop_pressure 4.0
 preinfusion_time 20
 pressure_end 4.0
-profile_hide 1
+profile_hide 0
 profile_language en
 profile_notes {Non-blooming turbo shot profile intended primarily for high extraction grinders with ending flow of 3-4.5ml/s. The profile uses maximum fill rate in preinfusion as coarse grinds saturate easily and quickly. Dial with ratio once grind is giving an ending flowrate in the range. Includes a significant temperature drop that reduces harshness (although the actual temperature drop is much less than programmed).  By Joe D.}
 profile_title TurboTurbo
