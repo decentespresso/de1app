@@ -26,7 +26,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4.0
 preinfusion_time 20
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {This profile is a variation on the Rao Allongé. After preinfusion, pressure raises to 8.6 bar and then detects the current flow to keep it stable ever after. I believe this might make better espresso when it is not perfectly dialed in. See it like this - you are dialing in the constant flow rate, not the pressure curve or the shape of the flow curve. Faster flow rates might taste better with longer shots. Taken to the extreme, this profile can do something similar to the Rao Allonge if you just grind coarse enough.}
 profile_title {Gagné/Adaptive Allongé 94C v1.0}

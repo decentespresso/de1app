@@ -32,7 +32,7 @@ preinfusion_guarantee 0
 preinfusion_stop_pressure 4
 preinfusion_time 0
 pressure_end 6.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {This profile requires a specially designed tea portafilter that opens its valve at pressures of 3 bar or above.  Put a tea bag or loose leaf tea into the basket.  Makes about 230ml of tea in 3 minutes.  The 2 bar of pressure extract a stronger brew, with different flavors.  You can up the pressure during the infusion steps, if you tighten the screw on your tea portafilter.}
 profile_title {Tea portafilter/tisane}
