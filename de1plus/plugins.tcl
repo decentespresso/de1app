@@ -108,6 +108,14 @@ namespace eval ::plugins {
         plugins load_settings $plugin
 
         if {[catch {
+
+                if {$plugin == "D_Flow_Espresso_Profile"} {
+                    if {[plugin_enabled $plugin] != true} {
+                        # don't peek into the D-Flow plugin code at all if not enabled, because it overwrites other code in the de1app.  Can undo this patch once D-Flow behaves like other extensions
+                        return 0
+                    }
+                }
+
                 msg -INFO [namespace current] "sourcing $plugin"
                 if {[::plugins::read $plugin] != 1} {
                     error "sourcing failed"
