@@ -1707,9 +1707,12 @@ proc profile_directories {} {
 }
 
 proc delete_selected_profile {} {
+
 	set w $::globals(profiles_listbox)
-	#$w selection set $::current_profile_number
-	#set profile [lindex [profile_directories] [lindex [$w curselection] 0]]
+	if {[$w curselection] == ""} {
+		msg -NOTICE "No profile has yet been tapped by the user to delete, so doing nothing"
+		return
+	}
 	set profile $::profile_number_to_directory([$w curselection]) 
 
 	set fn "[homedir]/profiles/${profile}.tcl"
