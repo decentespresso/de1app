@@ -73,11 +73,23 @@ set water_level_widget_background "#f2f2fc"
 set water_level_widget_background_espresso "#ededfa"
 set progress_text_color "#5a5d75"
 set noprogress_text_color "#b1b9cd"
-
+set dark "#5a5d75"
+set lighter "#969eb1"
+set lightest "#bec7db"
+set pressurelabelcolor "#008c4c"
+set temperature_label_color "#e73249"
+set flow_label_color "#206ad4"
 set ::grid_color "#E0E0E0"
+set datacard_data_color "#42465c"
 
 
 if {[ifexists ::insight_dark_mode] == 1} {
+	set pressurelabelcolor "#50c17b"
+	set temperature_label_color "#ff5a67"
+	set flow_label_color "#7ca8ff"
+	set dark "#c2c5e1"
+	set lighter "#a3abbf"
+	set lightest "#bec7db"
 	set toptab_selected_color "#aeb0b1"
 	set toptab_unselected_color "#4f5254"
 	set startbutton_font_color "#aeb0b1"
@@ -88,6 +100,7 @@ if {[ifexists ::insight_dark_mode] == 1} {
 	set water_level_widget_background_espresso "#1f2429"
 	set ::grid_color "#444444"
 	set progress_text_color "#b1b9cd"
+	set datacard_data_color "#8b90a8"
 	set noprogress_text_color "#5a5d75"
 }
 
@@ -270,17 +283,17 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 1174 {
 
 ####
 
-add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 40 30 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
+add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 40 30 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill $flow_label_color -justify "left" -anchor "nw"
 #add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1600 30 -text [translate "Puck resistance"] -font Helv_7_bold -fill "#d2d200" -justify "left" -anchor "ne"
 add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" checkbutton 1300 30 {} -text [translate "Resistance"] -indicatoron true  -font Helv_7_bold -bg $chart_background -anchor nw -foreground #d2d200 -variable ::settings(resistance_curve)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground $chart_background  -bd 0 -activeforeground #d2d200 -relief flat -bd 0 -justify "left"  -command {should_hide_show_puck_resistance_line; save_settings } 
 
-add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1970 30 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "ne"
+add_de1_text "off_zoomed espresso_zoomed espresso_3_zoomed" 1970 30 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill $pressurelabelcolor -justify "left" -anchor "ne"
 
-add_de1_text "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 40 30 -text [translate "Temperature ([return_html_temperature_units])"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
+add_de1_text "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 40 30 -text [translate "Temperature ([return_html_temperature_units])"] -font Helv_7_bold -fill $temperature_label_color -justify "left" -anchor "nw"
 
-add_de1_text "off espresso espresso_3" 40 220 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill "#008c4c" -justify "left" -anchor "nw"
+add_de1_text "off espresso espresso_3" 40 220 -text [translate "Pressure (bar)"] -font Helv_7_bold -fill $pressurelabelcolor -justify "left" -anchor "nw"
 
-add_de1_text "off espresso espresso_3" 40 677 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill "#206ad4" -justify "left" -anchor "nw"
+add_de1_text "off espresso espresso_3" 40 677 -text [translate "Flow (mL/s)"] -font Helv_7_bold -fill $flow_label_color -justify "left" -anchor "nw"
 if {$::settings(scale_bluetooth_address) != ""} {
 	add_de1_text "off espresso espresso_3" 1970 677 -text [translate "Weight (g/s)"] -font Helv_7_bold -fill "#a2693d" -justify "left" -anchor "ne" 
 
@@ -289,7 +302,7 @@ if {$::settings(scale_bluetooth_address) != ""} {
 	add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" checkbutton 480 30 {} -text [translate "Weight (g/s)"] -indicatoron true  -font Helv_7_bold -bg $chart_background -anchor nw -foreground #a2693d -variable ::settings(weight_detail_curve)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground $chart_background  -bd 0 -activeforeground #a2693d -relief flat -bd 0 -justify "left"  -command {should_hide_show_weight_detail_line; save_settings } 
 }
 
-add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([return_html_temperature_units])"] -font Helv_7_bold -fill "#e73249" -justify "left" -anchor "nw"
+add_de1_text "off espresso espresso_3" 40 1128 -text [translate "Temperature ([return_html_temperature_units])"] -font Helv_7_bold -fill $temperature_label_color -justify "left" -anchor "nw"
 
 
 
@@ -745,9 +758,6 @@ if {$::settings(enable_fahrenheit) == 1} {
 	set column2 2210
 }
 
-set dark "#5a5d75"
-set lighter "#969eb1"
-set lightest "#bec7db"
 set column1_pos 2060
 set column3_pos 2512
 
@@ -975,29 +985,29 @@ if {$preheat_water_volume_feature_enabled == 1} {
 #add_de1_text "preheat_2" 1870 1250 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 #add_de1_text "preheat_4" 1870 1200 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 add_de1_variable "preheat_3 preheat_4" 1870 1250 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[flush_done_timer] < $::settings(seconds_to_display_done_flush)} {return [translate Done]} else { return ""}]} 
-add_de1_variable "preheat_3 preheat_4" 2470 1250 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[flush_done_timer] < $::settings(seconds_to_display_done_flush)} {return "[flush_done_timer][translate s]"} else { return ""}]} 
+add_de1_variable "preheat_3 preheat_4" 2470 1250 -justify left -anchor "ne" -font Helv_8 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[if {[flush_done_timer] < $::settings(seconds_to_display_done_flush)} {return "[flush_done_timer][translate s]"} else { return ""}]} 
 
 add_de1_text "preheat_3 preheat_4"  1870 1200 -justify right -anchor "nw" -text [translate "Metal temperature"] -font Helv_8 -fill  "#7f879a"  -width [rescale_x_skin 520]
-add_de1_variable "preheat_3 preheat_4"  2470 1200  -justify left -anchor "ne" -font Helv_8 -fill  "#42465c"  -width [rescale_x_skin 520] -textvariable {[group_head_heater_temperature_text]} 
+add_de1_variable "preheat_3 preheat_4"  2470 1200  -justify left -anchor "ne" -font Helv_8 -fill  $datacard_data_color  -width [rescale_x_skin 520] -textvariable {[group_head_heater_temperature_text]} 
 #add_de1_text "preheat_4"  1870 1200 -justify right -anchor "nw" -text [translate "Metal temperature"] -font Helv_8 -fill  "#7f879a"  -width [rescale_x_skin 520]
 #add_de1_variable "preheat_4"  2470 1200  -justify left -anchor "ne" -font Helv_8 -fill  "#42465c"  -width [rescale_x_skin 520] -textvariable {[group_head_heater_temperature_text_rtl_aware]} 
 
 add_de1_text "preheat_2" 1870 1250 -justify right -anchor "nw" -text [translate "Water temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "preheat_2" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
+add_de1_variable "preheat_2" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
 
 #add_de1_text "preheat_3" 1870 1250 -justify right -anchor "nw" -text [translate "Water temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "preheat_3" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[watertemp_text]} 
 
 
 add_de1_text "preheat_2 preheat_4" 1870 1300 -justify right -anchor "nw" -text [translate "Pouring"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "preheat_2 preheat_4" 2470 1300 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[flush_pour_timer][translate "s"]} 
+add_de1_variable "preheat_2 preheat_4" 2470 1300 -justify left -anchor "ne" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -text "" -textvariable {[flush_pour_timer][translate "s"]} 
 
 #add_de1_text "preheat_4" 1870 1250 -justify right -anchor "nw" -text [translate "Pouring"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "preheat_4" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[flush_pour_timer][translate "s"]} 
 
 # feature disabled until flowmeter reporting over BLE is implemented
 #add_de1_text "preheat_3" 1880 1250 -justify right -anchor "nw" -text [translate "Total volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-#add_de1_variable "preheat_3" 2470 1250 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
+#add_de1_variable "preheat_3" 2470 1250 -justify left -anchor "ne" -text "" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 
 ##########################################################################################################################################################################################################################################################################
 
@@ -1066,14 +1076,14 @@ add_de1_button "water_3" {say "" $::settings(sound_button_in); set_next_page off
 #add_de1_text "water" 1870 1250 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 #add_de1_text "water_3" 1870 1200 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 add_de1_text "water water_3" 1870 1250 -justify right -anchor "nw" -text [translate "Pouring"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-add_de1_variable "water water_3" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_pour_timer][translate "s"]} 
+add_de1_variable "water water_3" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -text "" -textvariable {[water_pour_timer][translate "s"]} 
 
 #add_de1_text "water_3" 1870 1250 -justify right -anchor "nw" -text [translate "Pouring"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 #add_de1_variable "water_3" 2470 1250 -justify left -anchor "ne" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -text "" -textvariable {[water_pour_timer][translate "s"]} 
 
 
 add_de1_variable "water_3" 1870 1200 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[water_done_timer] < $::settings(seconds_to_display_done_hotwater)} {return [translate Done]} else { return ""}]} 
-add_de1_variable "water_3" 2470 1200 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[water_done_timer] < $::settings(seconds_to_display_done_hotwater)} {return "[water_done_timer][translate s]"} else { return ""}]} 
+add_de1_variable "water_3" 2470 1200 -justify left -anchor "ne" -font Helv_8 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[if {[water_done_timer] < $::settings(seconds_to_display_done_hotwater)} {return "[water_done_timer][translate s]"} else { return ""}]} 
 
 
 # current water temperature - not getting this via BLE at the moment 1/4/19 so do not display in the UI
@@ -1087,12 +1097,12 @@ add_de1_variable "water_3" 2470 1200 -justify left -anchor "ne" -font Helv_8 -te
 if {$::settings(scale_bluetooth_address) != ""} {
 	# hot water - optional feature when scale is connected
 	add_de1_text "water " 1870 1200 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterweightflow_text]} 
+	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[waterweightflow_text]} 
 	add_de1_text "water water_3" 1870 1300 -justify right -anchor "nw" -text [translate "Total Weight"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-	add_de1_variable "water water_3" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[drink_weight_text]} 
+	add_de1_variable "water water_3" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[drink_weight_text]} 
 } else {
 	add_de1_text "water " 1870 1200 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 	#add_de1_text "water " 1870 1300 -justify right -anchor "nw" -text [translate "Total Volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 	#add_de1_variable "water" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 }
@@ -1156,41 +1166,41 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 
 	#add_de1_text "steam steam_3" 1870 1200 -justify right -anchor "nw" -text [translate "Time"] -font Helv_8_bold -fill "#5a5d75" -width [rescale_x_skin 520]
 	add_de1_text "steam" 1870 350 -justify right -anchor "nw" -text [translate "Steaming"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam" 2470 350 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steam_pour_timer][translate "s"]} 
+		add_de1_variable "steam" 2470 350 -justify left -anchor "ne" -font Helv_8 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[steam_pour_timer][translate "s"]} 
 	add_de1_text "steam_3" 1870 350 -justify right -anchor "nw" -text [translate "Steaming"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam_3" 2470 350 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steam_pour_timer][translate "s"]} 
+		add_de1_variable "steam_3" 2470 350 -justify left -anchor "ne" -font Helv_8 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[steam_pour_timer][translate "s"]} 
 
 	add_de1_variable "steam_3" 1870 400 -justify right -anchor "nw" -text [translate "Done"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[steam_done_timer] < $::settings(seconds_to_display_done_steam)} {return [translate Done]} else { return ""}]} 
-		add_de1_variable "steam_3" 2470 400 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[steam_done_timer] < $::settings(seconds_to_display_done_steam)} {return "[steam_done_timer][translate s]"} else { return ""}]} 
+		add_de1_variable "steam_3" 2470 400 -justify left -anchor "ne" -font Helv_8 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[if {[steam_done_timer] < $::settings(seconds_to_display_done_steam)} {return "[steam_done_timer][translate s]"} else { return ""}]} 
 	add_de1_text "steam" 1870 400 -justify right -anchor "nw" -text [translate "Auto-Off"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam" 2470 400 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
+		add_de1_variable "steam" 2470 400 -justify left -anchor "ne" -font Helv_8 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
 
 	add_de1_text "steam" 1870 450 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
+		add_de1_variable "steam" 2470 450 -justify left -anchor "ne" -font Helv_8 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
 	add_de1_text "steam" 1870 500 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam" 2470 500 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
+		add_de1_variable "steam" 2470 500 -justify left -anchor "ne" -font Helv_8 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
 	add_de1_text "steam" 1870 550 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam" 2470 550 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[dui platform hide_android_keyboard; return_steam_flow_calibration $::settings(steam_flow)]}
+		add_de1_variable "steam" 2470 550 -justify left -anchor "ne" -text "" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[dui platform hide_android_keyboard; return_steam_flow_calibration $::settings(steam_flow)]}
 	add_de1_text "steam" 1870 600 -justify right -anchor "nw" -text [translate "Flow rate now"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam" 2470 600 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+		add_de1_variable "steam" 2470 600 -justify left -anchor "ne" -text "" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
 
 	# zoomed steam chart
 	add_de1_text "steam_zoom_3 steam_zoom" 250 1440 -justify right -anchor "nw" -text [translate "Steaming"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam_zoom_3 steam_zoom" 230 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steam_pour_timer][translate "s"]} 
+		add_de1_variable "steam_zoom_3 steam_zoom" 230 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[steam_pour_timer][translate "s"]} 
 	add_de1_variable "steam_zoom_3 steam_zoom" 250 1490 -justify right -anchor "nw" -text [translate "Done"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520] -textvariable {[if {[steam_done_timer] < $::settings(seconds_to_display_done_steam)} {return [translate Done]} else { return ""}]} 
-		add_de1_variable "steam_zoom_3 steam_zoom" 230 1490 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[if {[steam_done_timer] < $::settings(seconds_to_display_done_steam)} {return "[steam_done_timer][translate s]"} else { return ""}]} 
+		add_de1_variable "steam_zoom_3 steam_zoom" 230 1490 -justify left -anchor "ne" -font Helv_7 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[if {[steam_done_timer] < $::settings(seconds_to_display_done_steam)} {return "[steam_done_timer][translate s]"} else { return ""}]} 
 	add_de1_text "steam_zoom_3 steam_zoom" 250 1540 -justify right -anchor "nw" -text [translate "Auto-Off"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam_zoom_3 steam_zoom" 230 1540 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
+		add_de1_variable "steam_zoom_3 steam_zoom" 230 1540 -justify left -anchor "ne" -font Helv_7 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
 
 	add_de1_text "steam_zoom_3 steam_zoom" 870 1440 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam_zoom_3 steam_zoom" 850 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
-		#add_de1_variable "steam_zoom_3 steam_zoom" 700 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[round_to_integer $::de1(steam_heater_temperature)]} 
+		add_de1_variable "steam_zoom_3 steam_zoom" 850 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
+		#add_de1_variable "steam_zoom_3 steam_zoom" 700 1440 -justify left -anchor "ne" -font Helv_7 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[round_to_integer $::de1(steam_heater_temperature)]} 
 
 	add_de1_text "steam_zoom_3 steam_zoom" 870 1490 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam_zoom_3 steam_zoom" 850 1490 -justify left -anchor "ne" -font Helv_7 -text "" -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
+		add_de1_variable "steam_zoom_3 steam_zoom" 850 1490 -justify left -anchor "ne" -font Helv_7 -text "" -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[pressure_text]} 
 	add_de1_text "steam_zoom_3 steam_zoom" 870 1540 -justify right -anchor "nw" -text [translate "Flow rate now"] -font Helv_7 -fill "#7f879a" -width [rescale_x_skin 520]
-		add_de1_variable "steam_zoom_3 steam_zoom" 850 1540 -justify left -anchor "ne" -text "" -font Helv_7 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+		add_de1_variable "steam_zoom_3 steam_zoom" 850 1540 -justify left -anchor "ne" -text "" -font Helv_7 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 
 	# stop button when zoomed on steam
 	#add_de1_variable "steam_zoom" 2100 1510 -text "\[ [translate "STOP"] \]" -font $green_button_font -fill $startbutton_font_color -anchor "center"  -textvariable {\[ [stop_text_if_espresso_stoppable] \]} 
