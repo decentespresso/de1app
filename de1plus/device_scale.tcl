@@ -1366,8 +1366,9 @@ namespace eval ::device::scale::callbacks {
 
 		set this_state [dict get $event_dict this_state]
 
-		if { [::de1::state::is_flow_state $this_state] \
-			     && $::device::scale::run_timer } {
+		if { ([::de1::state::is_flow_state $this_state] \
+			     && $::device::scale::run_timer) && \
+				 ($::settings(scale_timer_espresso_only) == 0 || $this_state == "Espresso") } {
 
 			scale_timer_reset
 		}
@@ -1446,6 +1447,9 @@ namespace eval ::device::scale::callbacks {
 	proc on_flow_change_manage_timer {event_dict} {
 
 		if { ! $::device::scale::run_timer } { return }
+
+		if { $::settings(scale_timer_espresso_only) == 1 && \
+			     [dict get $event_dict this_state] != "Espresso" }  { return }
 
 		if { [::de1::state::flow_phase \
 			      [dict get $event_dict this_state] \

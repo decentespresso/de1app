@@ -432,6 +432,7 @@ array set ::settings {
 	create_legacy_shotfiles 0
 
 	show_scale_notifications 1
+	scale_timer_espresso_only 0
 }
 
 # default de1plus skin
