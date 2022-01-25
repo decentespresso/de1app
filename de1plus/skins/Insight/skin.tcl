@@ -76,17 +76,23 @@ set noprogress_text_color "#b1b9cd"
 set dark "#5a5d75"
 set ::lighter "#969eb1"
 set lightest "#bec7db"
-set ::pressurelabelcolor "#008c4c"
-set ::temperature_label_color "#e73249"
-set ::flow_label_color "#206ad4"
+set ::pressurelabelcolor "#00b672"
+set ::pressurelinecolor "#00b672"
+set ::temperature_label_color "#ff7880"
+set ::temperature_line_color "#ff7880"
+set ::flow_label_color "#6c9bff"
+set ::flow_line_color "#6c9bff"
 set ::grid_color "#E0E0E0"
 set datacard_data_color "#42465c"
 
 
 if {[ifexists ::insight_dark_mode] == 1} {
 	set ::pressurelabelcolor "#50c17b"
+	set ::pressurelinecolor "#50c17b"
 	set ::temperature_label_color "#ff5a67"
+	set ::temperature_line_color "#ff5a67"
 	set ::flow_label_color "#7ca8ff"
+	set ::flow_line_color "#7ca8ff"
 	set dark "#c2c5e1"
 	set ::lighter "#a3abbf"
 	set lightest "#bec7db"
@@ -182,13 +188,13 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 267 {
 	}
 	set ::skin::insight::graph::pressure $widget
 
-	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #69fdb3  -smooth $::settings(live_graph_smoothing_technique)  -pixels 0 -dashes {5 5}; 
-	$widget element create line_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
-	$widget element create god_line_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 20] -color #c5ffe7  -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique)  -pixels 0 -dashes {5 5}; 
+	$widget element create line_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+	$widget element create god_line_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 20] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ; 
 
 	# show the explanation
-	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 15] -color #47e098  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 15] -color $::pressurelinecolor  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 	
 	#$widget element create line_espresso_de1_explanation_chart_pressure_part1 -xdata espresso_de1_explanation_chart_elapsed_1 -ydata espresso_de1_explanation_chart_pressure_1 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_1)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 	#$widget element create line_espresso_de1_explanation_chart_pressure_part2 -xdata espresso_de1_explanation_chart_elapsed_2 -ydata espresso_de1_explanation_chart_pressure_2 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_2)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
@@ -216,9 +222,9 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
 	}
 	set ::skin::insight::graph::flow $widget
 
-	$widget element create line_espresso_flow_goal  -xdata espresso_elapsed -ydata espresso_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #7aaaff -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5}; 
+	$widget element create line_espresso_flow_goal  -xdata espresso_elapsed -ydata espresso_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5}; 
 
-	$widget element create line_espresso_flow  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 12] -color #4e85f4 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_espresso_flow  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 12] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
 
 
 	if {$::settings(display_flow_delta_line) == 1} {
@@ -236,7 +242,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
 
 	}
 
-	$widget element create god_line_espresso_flow  -xdata espresso_elapsed -ydata god_espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 24] -color #e4edff -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+	$widget element create god_line_espresso_flow  -xdata espresso_elapsed -ydata god_espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 24] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 	$widget element create line_espresso_state_change_2 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0; 
 	$widget axis configure x -color $::flow_label_color -tickfont Helv_6 ; 
 
@@ -244,7 +250,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
 	gridconfigure $widget 
 
 	# show the shot configuration
-	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -label "" -linewidth [rescale_x_skin 15] -color #98c5ff  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -label "" -linewidth [rescale_x_skin 15] -color $::flow_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 	#$widget element create line_espresso_de1_explanation_chart_flow_part1 -xdata espresso_de1_explanation_chart_elapsed_flow_1 -ydata espresso_de1_explanation_chart_flow_1 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_1)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 	#$widget element create line_espresso_de1_explanation_chart_flow_part2 -xdata espresso_de1_explanation_chart_elapsed_flow_2 -ydata espresso_de1_explanation_chart_flow_2 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_2)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 	#$widget element create line_espresso_de1_explanation_chart_flow_part3 -xdata espresso_de1_explanation_chart_elapsed_flow_3 -ydata espresso_de1_explanation_chart_flow_3 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_3)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
@@ -262,12 +268,12 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 1174 {
 	}
 	set ::skin::insight::graph::temperature $widget
 
-	$widget element create line_espresso_temperature_goal -xdata espresso_elapsed -ydata espresso_temperature_goal -symbol none -label ""  -linewidth [rescale_x_skin 8] -color #ffa5a6 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
-	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 12] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+	$widget element create line_espresso_temperature_goal -xdata espresso_elapsed -ydata espresso_temperature_goal -symbol none -label ""  -linewidth [rescale_x_skin 8] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
+	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 12] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 	#$widget element create line_espresso_temperature_mix -xdata espresso_elapsed -ydata espresso_temperature_mix -symbol none -label ""  -linewidth [rescale_x_skin 2] -color #ffc2c1 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 
 	#-dashes $::settings(chart_dashes_temperature_mix);  
 
-	$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 15] -color #ff888c  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 15] -color $::temperature_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 
 	$widget element create god_line_espresso_temperature_basket -xdata espresso_elapsed -ydata god_espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 24] -color #ffe4e7 -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
@@ -348,27 +354,27 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 	set ::skin::insight::graph::combined_zoomed $widget
 
 
-	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #69fdb3  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
-	$widget element create line2_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 12] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
+	$widget element create line2_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 12] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
 
 	if {$::settings(display_pressure_delta_line) == 1} {
 		$widget element create line_espresso_pressure_delta_1  -xdata espresso_elapsed -ydata espresso_pressure_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #40dc94 -pixels 0 -smooth $::settings(live_graph_smoothing_technique) 
 	}
 
-	$widget element create line_espresso_flow_goal_2x  -xdata espresso_elapsed -ydata espresso_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color #7aaaff -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5}; 
-	$widget element create line_espresso_flow_2x  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 12] -color #4e85f4 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes $::settings(chart_dashes_flow);   
-	$widget element create god_line_espresso_flow_2x  -xdata espresso_elapsed -ydata god_espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 24] -color #e4edff -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_flow_goal_2x  -xdata espresso_elapsed -ydata espresso_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5}; 
+	$widget element create line_espresso_flow_2x  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 12] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes $::settings(chart_dashes_flow);   
+	$widget element create god_line_espresso_flow_2x  -xdata espresso_elapsed -ydata god_espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 24] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 
 
 
 	if {$::settings(chart_total_shot_flow) == 1} {
-		$widget element create line_espresso_total_flow  -xdata espresso_elapsed -ydata espresso_water_dispensed -symbol none -label "" -linewidth [rescale_x_skin 6] -color #98c5ff -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);
+		$widget element create line_espresso_total_flow  -xdata espresso_elapsed -ydata espresso_water_dispensed -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);
 		
 	}
 
 
 	if {$::settings(display_flow_delta_line) == 1} {
-		$widget element create line_espresso_flow_delta_1  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #98c5ff -pixels 0 -smooth $::settings(live_graph_smoothing_technique) 
+		$widget element create line_espresso_flow_delta_1  -xdata espresso_elapsed -ydata espresso_flow_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color $::flow_line_color -pixels 0 -smooth $::settings(live_graph_smoothing_technique) 
 	}
 
 	if {$::settings(scale_bluetooth_address) != ""} {
@@ -390,7 +396,7 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 
 	$widget element create line_espresso_resistance_dashed  -xdata espresso_elapsed -ydata espresso_resistance -symbol none -label "" -linewidth [rescale_x_skin 4] -color #e5e500 -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {6 2} -hide no 
 
-	$widget element create god_line2_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 24] -color #c5ffe7  -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+	$widget element create god_line2_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 24] -color $::temperature_line_color  -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ; 
 
 	$widget axis configure x -color $::lighter -tickfont Helv_7_bold; 
@@ -398,7 +404,7 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 	$widget axis configure y -color $::lighter -tickfont Helv_7_bold -min 0.0 -max $::settings(zoomed_y_axis_scale) -subdivisions 5 -majorticks {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20} -hide 0; 
 
 	# show the explanation for pressure
-	$widget element create line_espresso_de1_explanation_chart_pressure_zoomed -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 16] -color #47e098  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_de1_explanation_chart_pressure_zoomed -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 16] -color $::pressurelinecolor  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 	#$widget element create line_espresso_de1_explanation_chart_pressure_part1 -xdata espresso_de1_explanation_chart_elapsed_1 -ydata espresso_de1_explanation_chart_pressure_1 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_1)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 	#$widget element create line_espresso_de1_explanation_chart_pressure_part2 -xdata espresso_de1_explanation_chart_elapsed_2 -ydata espresso_de1_explanation_chart_pressure_2 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_2)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
@@ -406,7 +412,7 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 
 	# show the explanation for flow
 	#$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 5] -color #888888  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
-	$widget element create line_espresso_de1_explanation_chart_flow_zoom -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow  -label "" -linewidth [rescale_x_skin 18] -color #98c5ff  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_de1_explanation_chart_flow_zoom -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow  -label "" -linewidth [rescale_x_skin 18] -color $::flow_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 	#$widget element create line_espresso_de1_explanation_chart_flow_part1 -xdata espresso_de1_explanation_chart_elapsed_flow_1 -ydata espresso_de1_explanation_chart_flow_1 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_1)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 	#$widget element create line_espresso_de1_explanation_chart_flow_part2 -xdata espresso_de1_explanation_chart_elapsed_flow_2 -ydata espresso_de1_explanation_chart_flow_2 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_2)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
@@ -476,11 +482,11 @@ add_de1_widget "off_zoomed_temperature espresso_zoomed_temperature espresso_3_zo
 	} 
 	set ::skin::insight::graph::temperature_zoomed $widget
 
-	$widget element create line_espresso_temperature_goal -xdata espresso_elapsed -ydata espresso_temperature_goal -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #ffa5a6 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
-	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
-	$widget element create god_line_espresso_temperature_basket -xdata espresso_elapsed -ydata god_espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 20] -color #ffe4e7 -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
-	$widget element create line_espresso_temperature_mix2 -xdata espresso_elapsed -ydata espresso_temperature_mix -symbol none -label ""  -linewidth [rescale_x_skin 2] -color #ffc2c1 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 
-	$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 15] -color #ff888c  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_temperature_goal -xdata espresso_elapsed -ydata espresso_temperature_goal -symbol none -label ""  -linewidth [rescale_x_skin 6] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
+	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 10] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+	$widget element create god_line_espresso_temperature_basket -xdata espresso_elapsed -ydata god_espresso_temperature_basket -symbol none -label ""  -linewidth [rescale_x_skin 20] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_temperature_mix2 -xdata espresso_elapsed -ydata espresso_temperature_mix -symbol none -label ""  -linewidth [rescale_x_skin 2] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 
+	$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 15] -color $::temperature_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 	$widget element create line_espresso_state_change_4 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ; 
 	$widget axis configure x -color $::temperature_label_color -tickfont Helv_6; 
@@ -607,11 +613,11 @@ add_de1_widget "steam" graph 1810 1090 {
 	}
 	set ::skin::insight::graph::steam $widget
 
-	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
-	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
-	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
+	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::flow_line_color  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::flow_line_color  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
 
-	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature100th -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature100th -symbol none -label ""  -linewidth [rescale_x_skin 6] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color #888888 -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 	$widget axis configure y -color #888888 -tickfont Helv_6 -min 0.0 
@@ -627,10 +633,10 @@ add_de1_widget "steam_3" graph 1810 1090 {
 	}
 	set ::skin::insight::graph::steam_done $widget
 
-	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
-	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
-	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
-	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature100th -symbol none -label ""  -linewidth [rescale_x_skin 6] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);   
+	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::flow_line_color  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::flow_line_color  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
+	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature100th -symbol none -label ""  -linewidth [rescale_x_skin 6] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);   
 
 	$widget axis configure x -color #888888 -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3} 
@@ -650,15 +656,15 @@ add_de1_widget "steam_zoom_3" graph 34 214 {
 	}
 	set ::skin::insight::graph::steam_done_zoomed $widget
 
-	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
-	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
-	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
+	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color $::flow_line_color  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 10] -color $::flow_line_color  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249  -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color #888888 -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
-	$widget axis configure y -color #888888 -tickfont Helv_6 -min 0.0 -title "[translate "Flow rate"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
+	$widget axis configure y -color #888888 -tickfont Helv_6 -min 0.0 -title "[translate "Flow rate"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor $::lighter;
 	gridconfigure $widget 
 } -plotbackground $chart_background -width [rescale_x_skin 2490] -height [rescale_y_skin 700] -borderwidth 1 -background $chart_background -plotrelief flat  -plotpady 0 -plotpadx 10
 
@@ -676,16 +682,16 @@ add_de1_widget "steam_zoom_3" graph 34 914 {
 
 	#$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
 	#$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
-	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249  -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color $::temperature_line_color  -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color #008c4c -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
 	
 	if {$::settings(enable_fahrenheit) == 1} {
-		$widget axis configure y -color #888888 -tickfont Helv_6 -min 250 -max 350 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+		$widget axis configure y -color #888888 -tickfont Helv_6 -min 250 -max 350 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor $::lighter;
 	} else {
-		$widget axis configure y -color #888888 -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+		$widget axis configure y -color #888888 -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor $::lighter;
 	}
 	gridconfigure $widget 
 	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
@@ -705,15 +711,15 @@ add_de1_widget "steam_zoom" graph 34 214 {
 	}
 	set ::skin::insight::graph::steam_zoomed $widget
 
-	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
-	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
-	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
+	$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+	$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+	$widget element create line_steam_flow_goal -xdata steam_elapsed -ydata steam_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5};
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color #888888 -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
-	$widget axis configure y -color #888888 -tickfont Helv_6 -min 0.0 -title "[translate "Flow rate"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
+	$widget axis configure y -color #888888 -tickfont Helv_6 -min 0.0 -title "[translate "Flow rate"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor $::lighter;
 	gridconfigure $widget 
 } -plotbackground $chart_background -width [rescale_x_skin 2490] -height [rescale_y_skin 700] -borderwidth 1 -background $chart_background -plotrelief flat  -plotpady 0 -plotpadx 10
 
@@ -732,15 +738,15 @@ add_de1_widget "steam_zoom" graph 34 914 {
 
 	#$widget element create line_steam_pressure -xdata steam_elapsed -ydata steam_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color #18c37e  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
 	#$widget element create line_steam_flow -xdata steam_elapsed -ydata steam_flow -symbol none -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
-	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+	$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color $::temperature_line_color	 -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 	#$widget element create line_steam_temperature -xdata steam_elapsed -ydata steam_temperature -symbol none -label ""  -linewidth [rescale_x_skin 10] -color #e73249 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
 	$widget axis configure x -color #888888 -tickfont Helv_6 -linewidth [rescale_x_skin 2] 
 	#$widget axis configure y -color #008c4c -tickfont Helv_6 -min 0.0 -max [expr {$::settings(max_steam_pressure) + 0.01}] -subdivisions 5 -majorticks {0.25 0.5 0.75 1 1.25 1.5 1.75 2 2.25 2.5 2.75 3}  -title "[translate "Flow rate"] - [translate "Temperature"] - [translate {pressure (bar)}]" -titlefont Helv_7 -titlecolor #5a5d75;
 	if {$::settings(enable_fahrenheit) == 1} {
-		$widget axis configure y -color #888888 -tickfont Helv_6 -min 250 -max 350 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+		$widget axis configure y -color #888888 -tickfont Helv_6 -min 250 -max 350 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor $::lighter;
 	} else {
-		$widget axis configure y -color #888888 -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor #5a5d75;
+		$widget axis configure y -color #888888 -tickfont Helv_6 -min 130 -max 180 -title "[translate "Temperature"]" -titlefont Helv_7 -titlecolor $::lighter;
 	}
 	gridconfigure $widget 
 } -plotbackground $chart_background -width [rescale_x_skin 2490] -height [rescale_y_skin 490] -borderwidth 1 -background $chart_background -plotrelief flat  -plotpady 0 -plotpadx 10
