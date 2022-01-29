@@ -1672,6 +1672,13 @@ proc profile_directories {} {
 		#	continue
 		#}
 
+		set dflow_test [string tolower [string range $d 0 5]]
+		if {$dflow_test == "d-flow"} {
+			if {[plugin_enabled "D_Flow_Espresso_Profile"] != true} {
+				continue
+			}
+		}
+
 		set filecontents [encoding convertfrom utf-8 [read_binary_file "[homedir]/profiles/$d"]]
 	    if {[string first "settings_profile_type settings_2b" $filecontents] != -1 || [string first "settings_profile_type settings_2c" $filecontents] != -1 || [string first "settings_profile_type settings_profile_flow" $filecontents] != -1 || [string first "settings_profile_type settings_profile_advanced" $filecontents] != -1} {
 
