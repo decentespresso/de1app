@@ -382,7 +382,7 @@ array set ::settings {
 	water_speed_type "flow"
 	speaking_pitch 1.0
 	show_only_most_popular_skins 1
-	most_popular_skins {Insight MimojaCafe Metric DSx SWDark4}
+	most_popular_skins {Insight MimojaCafe Metric DSx SWDark4 MiniMetric}
 	sound_button_in 8
 	sound_button_out 11
 	profile_notes {}
