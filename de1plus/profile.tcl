@@ -44,6 +44,7 @@ namespace eval ::profile {
                 flow $temp_advanced(preinfusion_flow_rate) \
                 seconds $first_frame_len \
                 volume 0 \
+                weight 0 \
                 exit_if "1" \
                 exit_type "pressure_over" \
                 exit_pressure_over $temp_advanced(preinfusion_stop_pressure) \
@@ -66,6 +67,7 @@ namespace eval ::profile {
                 flow $temp_advanced(preinfusion_flow_rate) \
                 seconds $second_frame_len \
                 volume 0 \
+                weight 0 \
                 exit_if "1" \
                 exit_type "pressure_over" \
                 exit_pressure_over $temp_advanced(preinfusion_stop_pressure) \
@@ -89,6 +91,7 @@ namespace eval ::profile {
                     pressure $temp_advanced(espresso_pressure) \
                     seconds 3 \
                     volume 0 \
+                    weight 0 \
                     exit_if 0 \
                     exit_pressure_over 0 \
                     exit_pressure_under 0 \
@@ -107,6 +110,7 @@ namespace eval ::profile {
                 pressure $temp_advanced(espresso_pressure) \
                 seconds $temp_advanced(espresso_hold_time) \
                 volume 0 \
+                weight 0 \
                 exit_if 0 \
                 exit_pressure_over 0 \
                 exit_pressure_under 0 \
@@ -133,6 +137,7 @@ namespace eval ::profile {
                     pressure $temp_advanced(espresso_pressure) \
                     seconds 3 \
                     volume 0 \
+                    weight 0 \
                     exit_if 0 \
                     exit_pressure_over 0 \
                     exit_pressure_under 0 \
@@ -152,6 +157,7 @@ namespace eval ::profile {
                 pressure $temp_advanced(pressure_end) \
                 seconds $temp_advanced(espresso_decline_time) \
                 volume 0 \
+                weight 0 \
                 exit_if 0 \
                 exit_pressure_over 0 \
                 exit_pressure_under 0 \
@@ -175,6 +181,7 @@ namespace eval ::profile {
                 flow 0 \
                 seconds 0 \
                 volume 0 \
+                weight 0 \
                 exit_if 0 \
                 exit_pressure_over 0 \
                 exit_pressure_under 0 \
@@ -232,6 +239,7 @@ namespace eval ::profile {
                 flow $temp_advanced(preinfusion_flow_rate) \
                 seconds $first_frame_len \
                 volume 0 \
+                weight 0 \
                 exit_if "1" \
                 exit_type "pressure_over" \
                 exit_pressure_over $temp_advanced(preinfusion_stop_pressure) \
@@ -254,6 +262,7 @@ namespace eval ::profile {
                 flow $temp_advanced(preinfusion_flow_rate) \
                 seconds $second_frame_len \
                 volume 0 \
+                weight 0 \
                 exit_if "1" \
                 exit_type "pressure_over" \
                 exit_pressure_over $temp_advanced(preinfusion_stop_pressure) \
@@ -275,6 +284,7 @@ namespace eval ::profile {
                 flow $temp_advanced(flow_profile_hold) \
                 seconds $temp_advanced(espresso_hold_time) \
                 volume 0 \
+                weight 0 \
                 exit_if 0 \
                 exit_pressure_over 0 \
                 exit_pressure_under 0 \
@@ -298,6 +308,7 @@ namespace eval ::profile {
                 flow $temp_advanced(flow_profile_decline) \
                 seconds $temp_advanced(espresso_decline_time) \
                 volume 0 \
+                weight 0 \
                 exit_if 0 \
                 exit_pressure_over 0 \
                 exit_pressure_under 0 \
@@ -321,6 +332,7 @@ namespace eval ::profile {
                 flow 0 \
                 seconds 0 \
                 volume 0 \
+                weight 0 \
                 exit_if 0 \
                 exit_pressure_over 0 \
                 exit_pressure_under 0 \
@@ -366,6 +378,7 @@ namespace eval ::profile {
         foreach step $legacy_profile(advanced_shot) {
             unset -nocomplain props
             array set props $step
+            ifexists props(weight) 0
 
             set huddle_step [huddle create \
                 name [ifexists props(name)] \
@@ -377,7 +390,9 @@ namespace eval ::profile {
                 flow [ifexists props(flow)] \
                 seconds [ifexists props(seconds)] \
                 volume [ifexists props(volume)] \
+                weight [ifexists props(weight)] \
             ]
+            
             if {[ifexists props(exit_if)] == 1} {
                 if {[ifexists props(exit_type)] == "pressure_under"} {
                     set exit_type "pressure"
