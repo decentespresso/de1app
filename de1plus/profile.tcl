@@ -824,19 +824,6 @@ namespace eval ::profile {
             dict set pdict 0 preheat [list "Preheat water tank at \\1 ºC" [round_to_one_digits $profile(tank_desired_water_temperature)]]
         }
     
-        # Limiters
-        set ndef [expr {($profile(maximum_pressure_range_advanced)>0)+($profile(maximum_flow_range_advanced)>0)}]
-        if { $ndef == 1 } {
-            if { $profile(maximum_flow_range_advanced) > 0 } {
-                dict set pdict 0 limiter [list "Limiter range of action: \\1 mL/s" [round_to_one_digits $profile(maximum_flow_range_advanced)]]
-            } elseif { $profile(maximum_pressure_range_advanced) > 0 } {
-                dict set pdict 0 limiter [list "Limiter range of action: \\1 bar" [round_to_one_digits $profile(maximum_pressure_range_advanced)]]
-            }
-        } elseif { $ndef == 2 } {
-            dict set pdict 0 limiter [list "Limiter ranges of action: \\1 mL/s and \\2 bar" \
-                [round_to_one_digits $profile(maximum_flow_range_advanced)] [round_to_one_digits $profile(maximum_pressure_range_advanced)]]
-        }
-
         # Temperature steps
         set temp_steps [string is true [value_or_default profile(espresso_temperature_steps_enabled) 0]]
         if { $is_basic_profile && $temp_steps } {
@@ -872,7 +859,8 @@ namespace eval ::profile {
         set prev_pressure_or_flow 0.0 
         set prev_pump ""
         set time_adjust 0.0
-        
+        set uses_limiters 0
+		
         foreach stepl $profile(advanced_shot) {
             array set step $stepl
             if { $is_basic_profile } {
@@ -925,6 +913,7 @@ namespace eval ::profile {
                 if { $step(max_flow_or_pressure) > 0 } {
                     append txt " with a pressure limit of \\3 bar"
                     lappend items [round_to_one_digits $step(max_flow_or_pressure)]
+                    set uses_limiters 1
                 }
             } elseif { $step(pump) eq "pressure" } {
                 if { $stepn == 1 || ($prev_pump ne "pressure" && $step(pressure) > 0) || \
@@ -942,7 +931,8 @@ namespace eval ::profile {
                 if { $step(max_flow_or_pressure) > 0 } {
                     append txt " with a flow limit of \\3 mL/s"
                     lappend items [round_to_one_digits $step(max_flow_or_pressure)]
-                }                
+                    set uses_limiters 1
+                }
             }
             
             dict set pdict $stepn flow_or_pressure [list $txt {*}$items]
@@ -1006,6 +996,21 @@ namespace eval ::profile {
         }
     
         dict set pdict 0 nsteps [expr {$stepn-1}]
+
+        # Limiters
+        if { $uses_limiters } {
+            set ndef [expr {($profile(maximum_pressure_range_advanced)>0)+($profile(maximum_flow_range_advanced)>0)}]
+            if { $ndef == 1 } {
+                if { $profile(maximum_flow_range_advanced) > 0 } {
+                    dict set pdict 0 limiter [list "Limiter range of action: \\1 mL/s" [round_to_one_digits $profile(maximum_flow_range_advanced)]]
+                } elseif { $profile(maximum_pressure_range_advanced) > 0 } {
+                    dict set pdict 0 limiter [list "Limiter range of action: \\1 bar" [round_to_one_digits $profile(maximum_pressure_range_advanced)]]
+                }
+            } elseif { $ndef == 2 } {
+                dict set pdict 0 limiter [list "Limiter ranges of action: \\1 mL/s and \\2 bar" \
+                    [round_to_one_digits $profile(maximum_flow_range_advanced)] [round_to_one_digits $profile(maximum_pressure_range_advanced)]]
+            }
+        }
         
         return $pdict
     }
