@@ -31,5 +31,5 @@
 	path = de1plus/plugins/old_lcd_disable
 	url = https://github.com/bkeller2/old_lcd_disable
 [submodule "de1plus/skins/MiniMetric"]
-	path = de1plus/skins/MiniMetric
+	path = de1plus/skins/Mini Metric
 	url = https://github.com/barneyhawes/mini-metric
