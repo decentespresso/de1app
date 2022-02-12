@@ -1,25 +1,39 @@
 advanced_shot {{exit_if 0 flow 4.0 volume 0 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 98.00 name preinfusion sensor coffee pump flow exit_flow_over 6 exit_pressure_over 0 max_flow_or_pressure 0 exit_pressure_under 0 seconds 4.00} {exit_if 0 flow 1.0 volume 0 max_flow_or_pressure_range 0.6 transition smooth exit_flow_under 0 temperature 95.00 name preinfusion sensor coffee pump flow exit_flow_over 6 exit_pressure_over 0 max_flow_or_pressure 0 seconds 8.00 exit_pressure_under 0} {exit_if 1 flow 1.0 volume 0 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 92.00 name preinfusion sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 0.30 max_flow_or_pressure 0 exit_pressure_under 0 seconds 10.00} {exit_if 0 flow 0.1 volume 0 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 88.00 name {0.1 mL/s bloom} sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 0.30 max_flow_or_pressure 0 seconds 90.00 exit_pressure_under 0} {exit_if 0 flow 3.0 volume 0 max_flow_or_pressure_range 0.6 transition smooth exit_flow_under 0 temperature 87.00 pressure 0 name ramp sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 0.30 max_flow_or_pressure 0.8 seconds 10.00 exit_pressure_under 0} {exit_if 0 flow 3.0 volume 0 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 84.00 pressure 0 name {3 mL/s} sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 0.30 max_flow_or_pressure 0.8 seconds 60.00 exit_pressure_under 0}}
-espresso_temperature_steps_enabled 1
 author Decent
-espresso_hold_time 25
-preinfusion_time 0
-espresso_pressure 8.6
+beverage_type filter
 espresso_decline_time 0
-pressure_end 6.0
+espresso_hold_time 25
+espresso_pressure 8.6
 espresso_temperature 98.00
 espresso_temperature_0 90.0
 espresso_temperature_1 88.0
 espresso_temperature_2 88.0
 espresso_temperature_3 88.0
-settings_profile_type settings_2c
-flow_profile_preinfusion 4
-flow_profile_preinfusion_time 5
-flow_profile_hold 2
-flow_profile_hold_time 8
+espresso_temperature_steps_enabled 1
+final_desired_shot_volume 36
+final_desired_shot_volume_advanced 36
+final_desired_shot_volume_advanced_count_start 2
+final_desired_shot_weight 100
+final_desired_shot_weight_advanced 100
 flow_profile_decline 1.2
 flow_profile_decline_time 17
+flow_profile_hold 2
+flow_profile_hold_time 8
 flow_profile_minimum_pressure 4
+flow_profile_preinfusion 4
+flow_profile_preinfusion_time 5
+maximum_flow 0
+maximum_flow_range_advanced 1.0
+maximum_flow_range_default 1.0
+maximum_pressure 0
+maximum_pressure_range_advanced 0.9
+maximum_pressure_range_default 0.9
 preinfusion_flow_rate 4
+preinfusion_stop_pressure 4
+preinfusion_time 0
+pressure_end 6.0
+profile_hide 1
+profile_language en
 profile_notes {Make excellent filter-style coffee using a normal espresso basket, a paper filter, and your DE1.  No V60 or other equipment required.
 
 The process: (1) insert two micron 55mm paper filter into the bottom of a clean portafilter basket.  (2) Rinser the filter and basket with hot water.  (3) Fill the basket with 20g to 22g of finely ground coffee, not quite espresso grind, but far finer than any filter grind.  (4) WDT the grounds.  (5) tamping is optional.  (6) Place a metal mesh filter on top.  (7) Lock in the portafilter and make the espresso to a 5:1 ratio. (8) Dilute with 225g-250g of water.
@@ -34,21 +48,7 @@ The keys to Filter 2.1 are:
 (5) After brewing 48g of liquid, dilute to your preferred strength (I dilute to 260g total liquid). 
 (6) My typical extractions are 24%—26^, 8%—8.5 TDS, 16g in, 48g out. Pressure never rises above 0.3 bar.  
 (7) When dialing in, if pressure never rises at all, grind finer. If pressure exceeds 0.3 bar during the last few seconds, grind coarser.}
-final_desired_shot_volume 36
-final_desired_shot_weight 100
-final_desired_shot_weight_advanced 100
-tank_desired_water_temperature 0
-final_desired_shot_volume_advanced 36
 profile_title {Filter 2.1}
-profile_language en
-preinfusion_stop_pressure 4
-profile_hide 0
-final_desired_shot_volume_advanced_count_start 2
-beverage_type tea_portafilter
-maximum_pressure 0
-maximum_pressure_range_advanced 0.9
-maximum_flow_range_advanced 1.0
-maximum_flow 0
-maximum_pressure_range_default 0.9
-maximum_flow_range_default 1.0
+settings_profile_type settings_2c
+tank_desired_water_temperature 0
 
