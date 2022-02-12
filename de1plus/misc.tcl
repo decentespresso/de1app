@@ -821,6 +821,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/TurboBloom.tcl *
         profiles/TurboTurbo.tcl *
         profiles/Filter_20.tcl *
+        profiles/Filter_21.tcl *
         profiles/best_practice.tcl *
         profiles/flow_calibration.tcl *
         profiles/7g\ basket.tcl *
