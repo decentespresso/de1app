@@ -815,6 +815,7 @@ proc make_de1_dir {srcdir destdirs} {
         saver/2560x1600/rainbow_dj.jpg *
 
         profiles/I_got_your_back.tcl *
+        profiles/tea_in_a_basket.tcl *
         profiles/adaptive_allonge.tcl *
         profiles/easy_blooming_active_pressure_decline.tcl *
         profiles/TurboBloom.tcl *
