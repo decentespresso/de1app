@@ -34,7 +34,7 @@ preinfusion_time 0
 pressure_end 6.0
 profile_hide 1
 profile_language en
-profile_notes {This profile makes an acceptable mug of tea using a regular portafilter espresso basket.  Place half a teaspoon of loose leaf tea, or a teabag, into a basket of any size.  Works best of teas that prefer high brewing temperatures, such as English Breakfast.  For better quality brews, the tea portafilter, but this technique works well enough if you don't own that.}
+profile_notes {This profile makes an acceptable mug of tea using a regular portafilter espresso basket.  Place half a teaspoon of loose leaf tea, or a teabag, into a basket of any size.  Works best of teas that prefer high brewing temperatures, such as English Breakfast.  For better quality brews, use a tea portafilter, but this technique works well enough if you don't own that.}
 profile_title {Tea/in a basket}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
