@@ -615,6 +615,19 @@ proc maxstring {in maxlength {optmsg {}} } {
 	return $in
 }
 
+# truncates strings that are too long to display and add a ...message on the end.
+# this version counts paragraph breaks as having "crlfequiv" equivalent characters
+proc maxstring_with_crlf_count {in maxlength crlfequiv {optmsg {}} } {
+
+	set crlfs [regexp -all {\n\n} $in]
+	set thislen [expr {[string length $in] + ($crlfs * $crlfequiv)}]
+	if {$thislen > $maxlength} {
+		return "[string range $in 0 [expr {$maxlength - ($crlfs * $crlfequiv)}]]...$optmsg"
+	}
+
+	return $in
+}
+
 #set text_cnt 0
 proc add_de1_text {args} {
 	return [dui add dtext [lindex $args 0] [lindex $args 1] [lindex $args 2] -compatibility_mode 1 {*}[lrange $args 3 end]]
