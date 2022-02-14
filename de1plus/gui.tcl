@@ -619,7 +619,7 @@ proc maxstring {in maxlength {optmsg {}} } {
 # this version counts paragraph breaks as having "crlfequiv" equivalent characters
 proc maxstring_with_crlf_count {in maxlength crlfequiv {optmsg {}} } {
 
-	set crlfs [regexp -all {\n\n} $in]
+	set crlfs [regexp -all {\n\n} [string range $in 0 $maxlength]]
 	set thislen [expr {[string length $in] + ($crlfs * $crlfequiv)}]
 	if {$thislen > $maxlength} {
 		return "[string range $in 0 [expr {$maxlength - ($crlfs * $crlfequiv)}]]...$optmsg"
