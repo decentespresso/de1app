@@ -558,6 +558,8 @@ namespace eval ::profile {
                 set beverage_type "pour-over "
             } tea_portafilter {
                 set beverage_type "tea "
+            } tea {
+                set beverage_type "tea "
             } {} {
                 set beverage_type ""
             } default {

@@ -344,7 +344,7 @@ proc init_app_metadata {} {
 		short_name_plural "Bev. types"
 		propagate 0
 		data_type category
-		values {espresso tea_portafilter cleaning calibrate}
+		values {espresso tea pourover tea_portafilter cleaning calibrate}
 		required 1
 		length 1
 		default_dui_widget dcombobox
