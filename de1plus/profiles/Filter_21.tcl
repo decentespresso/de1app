@@ -1,18 +1,18 @@
 advanced_shot {{exit_if 0 flow 4.0 volume 0 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 98.00 name preinfusion sensor coffee pump flow exit_flow_over 6 exit_pressure_over 0 max_flow_or_pressure 0 exit_pressure_under 0 seconds 4.00} {exit_if 0 flow 1.0 volume 0 max_flow_or_pressure_range 0.6 transition smooth exit_flow_under 0 temperature 95.00 name preinfusion sensor coffee pump flow exit_flow_over 6 exit_pressure_over 0 max_flow_or_pressure 0 seconds 8.00 exit_pressure_under 0} {exit_if 1 flow 1.0 volume 0 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 92.00 name preinfusion sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 0.30 max_flow_or_pressure 0 exit_pressure_under 0 seconds 10.00} {exit_if 0 flow 0.1 volume 0 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 88.00 name {0.1 mL/s bloom} sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 0.30 max_flow_or_pressure 0 seconds 90.00 exit_pressure_under 0} {exit_if 0 flow 3.0 volume 0 max_flow_or_pressure_range 0.6 transition smooth exit_flow_under 0 temperature 87.00 pressure 0 name ramp sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 0.30 max_flow_or_pressure 0.8 seconds 10.00 exit_pressure_under 0} {exit_if 0 flow 3.0 volume 0 max_flow_or_pressure_range 0.6 transition fast exit_flow_under 0 temperature 84.00 pressure 0 name {3 mL/s} sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 0.30 max_flow_or_pressure 0.8 seconds 60.00 exit_pressure_under 0}}
 author Decent
-beverage_type filter
+beverage_type pourover
 espresso_decline_time 0
 espresso_hold_time 25
 espresso_pressure 8.6
-espresso_temperature 98.00
+espresso_temperature 98.0
 espresso_temperature_0 90.0
 espresso_temperature_1 88.0
 espresso_temperature_2 88.0
 espresso_temperature_3 88.0
 espresso_temperature_steps_enabled 1
 final_desired_shot_volume 36
-final_desired_shot_volume_advanced 36
-final_desired_shot_volume_advanced_count_start 2
+final_desired_shot_volume_advanced 0
+final_desired_shot_volume_advanced_count_start 0
 final_desired_shot_weight 100
 final_desired_shot_weight_advanced 100
 flow_profile_decline 1.2
