@@ -36,17 +36,26 @@ profile_hide 1
 profile_language en
 profile_notes {Make excellent filter-style coffee using a normal espresso basket, a paper filter, and your DE1.  No V60 or other equipment required.
 
-The process: (1) insert two micron 55mm paper filter into the bottom of a clean portafilter basket.  (2) Rinser the filter and basket with hot water.  (3) Fill the basket with 20g to 22g of finely ground coffee, not quite espresso grind, but far finer than any filter grind.  (4) WDT the grounds.  (5) tamping is optional.  (6) Place a metal mesh filter on top.  (7) Lock in the portafilter and make the espresso to a 5:1 ratio. (8) Dilute with 225g-250g of water.
+A new technique developed by Scott Rao, for making filter coffee with an espresso machine and 24g basket.  The process: (1) insert two micron 55mm paper filter into the bottom of a clean portafilter basket.  (2) Rinser the filter and basket with hot water.  (3) Fill the basket with 20g to 22g of finely ground coffee, not quite espresso grind, but far finer than any filter grind.  (4) WDT the grounds.  (5) tamping is optional.  (6) Place a metal mesh filter on top.  (7) Lock in the portafilter and make the espresso to a 5:1 ratio. (8) Dilute with 225g-250g of water.
 
-From Scott Rao: I put the Filter 2.1 profile on in the Internet prematurely, hoping others would try it out and offer suggestions. I received some interesting feedback, some of which helped, and some of which sent me down some dead ends. Now every extraction is stellar.   
+From Scott Rao: I put the Filter 2.0 profile on in the Internet prematurely, hoping others would try it out and offer suggestions. I received some interesting feedback, some of which helped, and some of which sent me down some dead ends. Now every extraction is stellar.   
+
 My Filter 2.1 of Pradera Geisha yesterday scored 88.5, exceeding my cupping score by a point. Every cup recently has been juicy, clean, and free of astringency. I consider the profile complete, and better than 99% of pourovers out there. 2.0 is also fast, as total brew time is 2:00. That is especially helpful for cafes seeking a way to brew individual cups with maximum efficiency, which was the goal of this project. 
-The keys to Filter 2.1 are:  
+
+The keys to Filter 2.0 are:  
+
 (1) Use a paper filter cut to size. The Whatman lab filters yielded cleaner cups, but often imparted off-flavors and weren’t food grade/ food safe, so I dropped those. I’m currently using Chemex filters cut to 55mm circles. I finally found a use for all of that wasteful extra filter paper. 
+
 (2) Use an oversized basket relative to dose, to keep pressure as low as possible. (more pressure > more astringency from a given channel). For this profile, I used 16g in a 25g basket. 
+
 (3) Use a fine enough grind to use a 3:1 ratio, such that the puck provides enough resistance to maintain a slurry during the bloom (this took months to figure out). 
+
 (4) This profile is made for a 15-17g dose. With a larger dose, proportionally increase the water volume in the steps before the bloom. Likewise, if you use 16g in a smaller basket, such as 20g, decrease the amount of preinfusion water, as there will be less headspace to fill. 
+
 (5) After brewing 48g of liquid, dilute to your preferred strength (I dilute to 260g total liquid). 
-(6) My typical extractions are 24%—26^, 8%—8.5 TDS, 16g in, 48g out. Pressure never rises above 0.3 bar.  
+
+(6) My typical extractions are 24%-26%, 8%-8.5% TDS, 16g in, 48g out. Pressure never rises above 0.3 bar.  
+
 (7) When dialing in, if pressure never rises at all, grind finer. If pressure exceeds 0.3 bar during the last few seconds, grind coarser.}
 profile_title {Filter 2.1}
 settings_profile_type settings_2c
