@@ -1168,6 +1168,8 @@ namespace eval ::device::scale::saw {
 		variable _ignore_first_seconds
 		variable _mode_timer
 
+		unset -nocomplain thisadvstep
+
 		array set thisadvstep \
 			[lindex $::settings(advanced_shot) \
 				[::gui::state::current_framenumber]]
