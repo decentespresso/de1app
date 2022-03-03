@@ -2278,8 +2278,11 @@ proc load_advanced_profile_step {{force 0}} {
 	unset -nocomplain ::current_adv_step
 	# max flow / max pressure are not always set, so we set it now
 	array set ::current_adv_step {max_flow_or_pressure 0 max_flow_or_pressure_range 0.6}
-	array set ::current_adv_step [lindex $::settings(advanced_shot) $stepnum]
 
+	# Max weight is not always set, so we set it here
+	array set ::current_adv_step {weight 0.0}
+
+	array set ::current_adv_step [lindex $::settings(advanced_shot) $stepnum]
 
 	make_current_listbox_item_blue $::advanced_shot_steps_widget
 
