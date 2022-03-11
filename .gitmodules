@@ -33,3 +33,6 @@
 [submodule "de1plus/skins/MiniMetric"]
 	path = de1plus/skins/Mini Metric
 	url = https://github.com/barneyhawes/mini-metric
+[submodule "de1plus/plugins/D_Flow_Espresso_Profile"]
+	path = de1plus/plugins/D_Flow_Espresso_Profile
+	url = https://github.com/Damian-AU/D_Flow_Espresso_Profile
