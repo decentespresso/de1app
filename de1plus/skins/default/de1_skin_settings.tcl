@@ -1432,7 +1432,7 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 
 		#add_de1_variable "calibrate" 1750 750 -text "" -font Helv_15 -fill "#7f879a" -anchor "ne" -textvariable {[return_temperature_measurement $::settings(steam_temperature)]}
 		add_de1_variable "calibrate" 1750 [expr {(4 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_heater_calibration $::settings(steam_temperature)]}
-		add_de1_variable "calibrate" 1750 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_flow_calibration $::settings(steam_flow)]}
+		set ::steam_flow_rate_calibration_label [add_de1_variable "calibrate" 1750 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row}]  -text "" -font Helv_10 -fill "#7f879a" -anchor "ne" -textvariable {[return_steam_flow_calibration $::settings(steam_flow)]}]
 
 
 	# entry fields
@@ -1474,7 +1474,22 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 			set max_steam_flow_rate 400
 		}
 
-		add_de1_widget "calibrate" scale 1880 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row - [rescale_y_skin 16]}]  {} -to $max_steam_flow_rate -from 40 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 10 -length [rescale_x_skin 400]  -width [rescale_y_skin 90] -variable ::settings(steam_flow) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "calibrate" scale 1880 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row - [rescale_y_skin 16]}]  { set ::steam_flow_calibration_widget $widget } -to $max_steam_flow_rate -from 40 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 10 -length [rescale_x_skin 400]  -width [rescale_y_skin 90] -variable ::settings(steam_flow) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+
+		add_de1_text "calibrate" 850 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row}]  -text [translate "Steam flow rate"] -font Helv_11_bold -fill "#7f879a" -anchor "nw" 
+
+		add_de1_variable "calibrate" 1550 [expr {(5 * $calibration_row_spacing) + $calibration_labels_row - [rescale_y_skin 24]}]  -width [rescale_y_skin 750]  -text "" -font Helv_6 -fill "#7f879a" -anchor "nw" -textvariable {[if {[ifexists ::settings(skin)] == "Insight" || [ifexists ::settings(skin)] == "Insight Dark" || [ifexists ::settings(skin)] == "Metric" || [ifexists ::settings(skin)] == "MiniMetric"} {
+				.can itemconfigure $::steam_flow_calibration_widget -state hidden
+				.can itemconfigure $::steam_flow_rate_calibration_label -state hidden
+
+				#.can itemconfigure $::steam_flow_calibration_note -state normal
+				return [translate {With the skin you are using, the steam flow rate is set in real time while steaming.  It is not set on this page.}]
+			} else {
+				.can itemconfigure $::steam_flow_calibration_widget -state normal
+				.can itemconfigure $::steam_flow_rate_calibration_label -state normal
+				#.can itemconfigure $::steam_flow_calibration_note -state hidden
+				return ""
+			}]}
 
 		add_de1_widget "calibrate2" scale 1350 1060  {} -to 1.5 -from -1.0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement .1 -resolution .01 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(stop_weight_before_seconds) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal
 		add_de1_variable "calibrate2" 1970 1080  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[format "%.2f %s" $::settings(stop_weight_before_seconds) [translate {seconds}]]}
