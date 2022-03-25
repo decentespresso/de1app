@@ -34,7 +34,7 @@ preinfusion_time 0
 pressure_end 6.0
 profile_hide 1
 profile_language en
-profile_notes {This profile requires a specially the Decent Espresso tea portafilter and is optimized for the tea named "Tsuyuhikari Sensha" from Blue Willow Tea https://www.bluewillowtea.com/ - Taste wise, this profile created a similar taste to the mug made with a French press, with a 3 minute and 65C temperature water, though the end beverage quantity is less on the DE1 version. Three infusion steps were used, because we found the 4th infusion to be unpleasant.  We use a 4 gram dose of leaves for this profile.}
+profile_notes {This profile requires a specially the Decent Espresso tea portafilter and is optimized for the tea named "Tsuyuhikari Sencha" from Blue Willow Tea https://www.bluewillowtea.com/ - Taste wise, this profile created a similar taste to the mug made with a French press, with a 3 minute and 65C temperature water, though the end beverage quantity is less on the DE1 version. Three infusion steps were used, because we found the 4th infusion to be unpleasant.  We use a 4 gram dose of leaves for this profile.}
 profile_title {Tea portafilter/Blue Willow: Tsuyuhikari Sensha}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
