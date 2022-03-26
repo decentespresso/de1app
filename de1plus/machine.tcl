@@ -272,11 +272,11 @@ array set ::settings {
 	also_load_god_shot 1
 	advanced_shot {}
 	water_time_max 60
-	battery_medium_trigger 90
+	battery_medium_trigger_v2 30
 	battery_medium_brightness 70
-	battery_low_trigger 60
+	battery_low_trigger_v2 20
 	battery_low_brightness 50
-	battery_very_low_trigger 30
+	battery_very_low_trigger_v2 10
 	battery_very_low_brightness 10
 	orientation "landscape"
 	grinder_dose_weight 0

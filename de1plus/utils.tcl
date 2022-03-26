@@ -533,7 +533,7 @@ proc check_battery_low {brightness_to_use} {
     #return 100
     set percent [battery_percent]
 
-    if {$percent < $::settings(battery_very_low_trigger)} {
+    if {$percent < $::settings(battery_very_low_trigger_v2)} {
         if {$current_brightness > $::settings(battery_very_low_brightness)} {
             get_set_tablet_brightness $::settings(battery_very_low_brightness)
             msg -WARNING "Battery is very low ($percent < $::settings(battery_very_low_trigger)) so lowering screen to $::settings(battery_very_low_brightness)"
@@ -541,7 +541,7 @@ proc check_battery_low {brightness_to_use} {
         if {$brightness_to_use > $::settings(battery_very_low_brightness)} {
             return $::settings(battery_very_low_brightness)
         }
-    } elseif {$percent < $::settings(battery_low_trigger)} {
+    } elseif {$percent < $::settings(battery_low_trigger_v2)} {
         if {$current_brightness > $::settings(battery_low_brightness)} {
             get_set_tablet_brightness $::settings(battery_low_brightness)
             msg -WARNING "Battery is low ($percent < $::settings(battery_low_trigger)) so lowering screen to $::settings(battery_low_brightness)"
@@ -550,7 +550,7 @@ proc check_battery_low {brightness_to_use} {
             return $::settings(battery_low_brightness)
         }
         #return $brightness_to_use
-    } elseif {$percent < $::settings(battery_medium_trigger)} {
+    } elseif {$percent < $::settings(battery_medium_trigger_v2)} {
         if {$current_brightness > $::settings(battery_medium_brightness)} {
             get_set_tablet_brightness $::settings(battery_medium_brightness)
             msg -NOTICE "Battery is medium ($percent < $::settings(battery_medium_trigger)) so lowering screen to $::settings(battery_medium_brightness)"
