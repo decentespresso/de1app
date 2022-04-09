@@ -132,7 +132,7 @@ namespace eval ::plugins {
         } err opts_dict] != 0} {
             ::logging::log_error_result_opts_dict $err $opts_dict
             catch {
-                info_page [subst {${plugin}:[translate "The plugin could not be sourced for metadata"]\n\n$err}] [translate "Ok"]
+                info_page [subst {${plugin}:[translate "The plugin did not load correctly"]\n\n$err}] [translate "Ok"]
             }
         }
     }
