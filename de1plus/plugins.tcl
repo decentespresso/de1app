@@ -116,6 +116,14 @@ namespace eval ::plugins {
                     }
                 }
 
+                # these plugins don't work without Androwish/Undroidwish
+                if {$::android != 1 && $::undroid != 1} {
+                    if {$plugin == "SDB" || $plugin == "DYE"} {
+                        # the DYE and SDB plugins require Androwish/Undroidwish, or it crashes the app on peeking
+                        return 0
+                    }
+                }
+
                 msg -INFO [namespace current] "sourcing $plugin"
                 if {[::plugins::read $plugin] != 1} {
                     error "sourcing failed"
