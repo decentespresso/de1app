@@ -3418,28 +3418,12 @@ proc round_to_half_integer {in} {
 
 proc check_firmware_update_is_available {} {
 
-	#if {$::settings(ghc_is_installed) != 0} {
-		# ok to do v1.3 fw update
-		#if {$::settings(force_fw_update) != 1} {
-			#set ::de1(firmware_update_button_label) "Up to date"
-			#return ""
-		#}
-	#} else {
-		#if {$::settings(force_fw_update) != 1} {
-		#	set ::de1(firmware_update_button_label) "Up to date"
-		#	return ""
-		#}
-	#}
-
 	if {[ifexists ::de1(firmware_crc)] == ""} {
 		set ::de1(firmware_crc) [crc::crc32 -filename [fwfile]]
 	}
 
-	# obsolete method, comparing settings-saved CRC of last fw upload, to what DE1 reports as CRC
-	if {($::de1(firmware_crc) != [ifexists ::settings(firmware_crc)]) && $::de1(currently_updating_firmware) == ""} {
-		##obsolete - set ::de1(firmware_update_button_label) "Firmware update available"
-	} else {
-		# pass
+	if {$::de1(firmware_update_button_label) != "Firmware Update"} {
+		return;
 	}
 
 	set ::de1(firmware_update_button_label) "Up to date"
@@ -3453,8 +3437,6 @@ proc check_firmware_update_is_available {} {
 		}
 
 	}
-
-
 
 	return ""
 }
@@ -3487,9 +3469,7 @@ proc firmware_update_eta_label {} {
 	}	
 }
 
-
 proc firmware_uploaded_label {} {
-
 
 	if {($::de1(firmware_bytes_uploaded) == 0 || $::de1(firmware_update_size) == 0) && $::de1(currently_updating_firmware) != "1" && $::de1(currently_erasing_firmware) != "1"} {
 		if {$::de1(firmware_crc) == [ifexists ::settings(firmware_crc)]} {

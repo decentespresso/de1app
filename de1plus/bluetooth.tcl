@@ -1295,17 +1295,6 @@ proc ble_connect_to_scale {} {
 		return
 	}
 
-	#if {[ifexists ::currently_connecting_de1_handle] != 0} {
-		#return
-	#}
-
-
-	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
-		::bt::msg -NOTICE "in_fw_update_mode : ble_connect_to_scale"
-		return
-	}
-
-
 	if {$::settings(scale_bluetooth_address) == ""} {
 		::bt::msg -INFO "No Scale BLE address in settings, so not connecting to it"
 		return
@@ -1376,12 +1365,6 @@ proc append_to_peripheral_list {address name connectiontype devicetype devicefam
 proc later_new_de1_connection_setup {} {
 	::bt::msg -NOTICE later_new_de1_connection_setup
 	# less important stuff, also some of it is dependent on BLE version
-
-	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
-		::bt::msg -NOTICE "in_fw_update_mode : later_new_de1_connection_setup skipped"
-		return
-	}
-
 
 	::bt::msg -NOTICE "later_new_de1_connection_setup"
 	de1_enable_mmr_notifications

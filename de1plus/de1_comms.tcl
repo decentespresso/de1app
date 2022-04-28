@@ -211,10 +211,6 @@ proc de1_connect_handler { handle address name} {
 	append_to_de1_list $address $name "ble"
 
 	if {[ifexists ::de1(in_fw_update_mode)] == 1} {
-		::comms::msg -NOTICE "in_fw_update_mode : de1 connected"
-
-		::comms::msg -NOTICE "Tell DE1 to start to go to SLEEP (so it's asleep during firmware upgrade)"
-		de1_send_state "go to sleep" $::de1_state(Sleep)
 		set_fan_temperature_threshold 60
 	} else {
 		de1_enable_mmr_notifications
@@ -445,11 +441,9 @@ proc de1_event_handler { command_name value {update_received 0}} {
 		if {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 0} {
 			::comms::msg -NOTICE "BLE recv: finished erasing fw '[ifexists arr2(FWToMap)]'"
 			set ::de1(currently_erasing_firmware) 0
-			#write_firmware_now
 
 		} elseif {$::de1(currently_erasing_firmware) == 1 && [ifexists arr2(FWToErase)] == 1} {
 			::comms::msg -NOTICE "BLE recv: currently erasing fw '[ifexists arr2(FWToMap)]'"
-			#after 1000 read_fw_erase_progress
 
 		} elseif {$::de1(currently_erasing_firmware) == 0 && [ifexists arr2(FWToErase)] == 0} {
 			::comms::msg -ERROR "BLE firmware find error BLE recv: '$value' [array get arr2]'"
@@ -741,21 +735,6 @@ proc fwfile {} {
 	}
 
 	return $fw
-
-	# obsolete as of 6-6-20 a only using one firmware file again now
-
-	if {$::settings(ghc_is_installed) != 0} {
-		# new firmware for v1.3 machines and newer, that have a GHC.
-		# this dual firmware aspect is temporary, only until we have improved the firmware to be able to correctly migrate v1.0 v1.1 hardware machines to the new calibration settings.
-		# please do not bypass this test and load the new firmware on your v1.0 v1.1 machines yet.  Once we have new firmware is known to work on those older machines, we'll get rid of the 2nd firmware image.
-
-		# note that ghc_is_installed=1 ghc hw is there but unused, whereas ghc_is_installed=3 ghc hw is required.
-		::comms::msg -NOTICE "using v1.3 firmware"
-		return "[homedir]/fw/bootfwupdate2.dat"
-	} else {
-		::comms::msg -NOTICE "using v1.1 firmware"
-		return "[homedir]/fw/bootfwupdate.dat"
-	}
 }
 
 
@@ -769,19 +748,6 @@ proc start_firmware_update {} {
 		}
 	}
 
-	if {$::settings(ghc_is_installed) != 0} {
-		# ok to do v1.3 fw update
-		#if {$::settings(force_fw_update) != 1} {
-	#		set ::de1(firmware_update_button_label) "Up to date"
-	#		return
-	#	}
-	} else {
-		#if {$::settings(force_fw_update) != 1} {
-		#	set ::de1(firmware_update_button_label) "Up to date"
-		#	return
-		#}
-	}
-
 	if {$::de1(currently_erasing_firmware) == 1} {
 		::comms::msg -INFO "Already erasing firmware"
 		return
@@ -791,9 +757,6 @@ proc start_firmware_update {} {
 		::comms::msg -INFO "Already updating firmware"
 		return
 	}
-
-
-	#de1_enable_maprequest_notifications
 
 	set ::de1(firmware_bytes_uploaded) 0
 	set ::de1(firmware_update_size) [file size [fwfile]]
@@ -813,8 +776,6 @@ proc start_firmware_update {} {
 	set arr(FirstError3) 0
 	set data [make_packed_maprequest arr]
 
-	#set ::de1(firmware_update_button_label) "Updating"
-
 	# it'd be useful here to test that the maprequest was correctly packed
 
 	set ::de1(currently_erasing_firmware) 1
@@ -822,28 +783,15 @@ proc start_firmware_update {} {
 
 	set ::de1(firmware_update_button_label) "Starting"
 
-	#de1_send_state "go to sleep" $::de1_state(Sleep)
-
-	#set ::de1(firmware_update_binary) [read_binary_file [fwfile]]
-	#set ::de1(firmware_bytes_uploaded) 0
-
-
 	if {$::android == 1} {
-		userdata_append "Erase firmware do: [array get arr]" [list de1_comm  write "FWMapRequest" $data] 1
+		userdata_append "Erase firmware do: [array get arr]" [list de1_comm write "FWMapRequest" $data] 1
 		after 10000 write_firmware_now
-
-		# if the firmware erase does not return in 15 seconds, try again, until eventually we stop trying because it succeeeded.
-		#after 15000 start_firmware_update
-
 
 	} else {
 		after 1000 write_firmware_now
 	}
 }
 
-#proc get_firmware_file_specs {} {
-#	parse_firmware_file_header [read_binary_file [fwfile]] arr
-#}
 
 proc write_firmware_now {} {
 	::comms::msg -NOTICE write_firmware_now
@@ -865,16 +813,26 @@ proc firmware_upload_next {} {
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
 		::comms::msg -DEBUG "DE1 not connected, cannot send BLE command 11"
 		return
+
+	}
+	if {[llength $::de1(cmdstack)] > 2} {
+		::bt::msg -INFO "Too much backpressure, waiting with the next firmw"
+		::comms::msg -INFO "Current cmd: ([llength $::de1(cmdstack)]) >>>" \
+			[lindex [lindex $::de1(cmdstack) 0] 0] 
+		
+		run_next_userdata_cmd
+
+		after 1000 firmware_upload_next
+		return
 	}
 
-	#delay_screen_saver
+	set ::de1(firmware_update_button_label) "Updating: [firmware_update_eta_label] [firmware_uploaded_label]"
 
 	if  {$::de1(firmware_bytes_uploaded) >= $::de1(firmware_update_size)} {
 		set ::settings(firmware_crc) [crc::crc32 -filename [fwfile]]
 		save_settings
 
 		if {$::android != 1} {
-			set ::de1(firmware_update_button_label) "Updated"
 			set ::de1(currently_updating_firmware) 0
 
 		} else {
@@ -883,12 +841,7 @@ proc firmware_upload_next {} {
 
 			set ::de1(firmware_update_button_label) "Testing"
 
-			#set ::de1(firmware_update_size) 0
 			unset -nocomplain ::de1(firmware_update_binary)
-			#set ::de1(firmware_bytes_uploaded) 0
-
-			#write_FWMapRequest(self.FWMapRequest, 0, 0, 1, 0xFFFFFF, True)
-			#def write_FWMapRequest(ctic, WindowIncrement=0, FWToErase=0, FWToMap=0, FirstError=0, withResponse=True):
 
 			set arr(WindowIncrement) 0
 			set arr(FWToErase) 0
@@ -899,23 +852,23 @@ proc firmware_upload_next {} {
 			set data [make_packed_maprequest arr]
 			userdata_append "Find first error in firmware update: [array get arr]" [list de1_comm write "FWMapRequest" $data] 1
 		}
+	# Transfer next data block
 	} else {
-		set ::de1(firmware_update_button_label) "Updating"
-
-	    set data "\x10[make_U24P0 $::de1(firmware_bytes_uploaded)][string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]"
+		if {$::android != 1} {
+			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
+			after 1000 firmware_upload_next
+			return
+		}
+		
+		set data "\x10[make_U24P0 $::de1(firmware_bytes_uploaded)][string range $::de1(firmware_update_binary) $::de1(firmware_bytes_uploaded) [expr {15 + $::de1(firmware_bytes_uploaded)}]]"
 
 		userdata_append "Write firmware: [::logging::format_mmr_short $data]" \
 			[list de1_comm write "WriteToMMR" $data] 1
 
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
-		if {$::android != 1} {
-			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
-			after 1 firmware_upload_next
-			#firmware_upload_next
-		}
+
 	}
 }
-
 
 proc mmr_read {note address length} {
 	if {[mmr_available] == 0} {
@@ -943,12 +896,6 @@ proc mmr_read {note address length} {
 }
 
 proc mmr_write { note address length value} {
-
-	if {$::de1(currently_erasing_firmware) == 1 && $::de1(currently_updating_firmware) == 0} {
-		::comms::msg -NOTICE "Unable to mmr_write because currently upgrading firmware"
-		return
-	}
-
 	if {[mmr_available] == 0} {
 		::comms::msg -NOTICE "Unable to mmr_write because MMR not available"
 		return
