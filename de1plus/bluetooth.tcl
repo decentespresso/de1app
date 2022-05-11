@@ -1811,6 +1811,7 @@ proc de1_ble_handler { event data } {
 								} 
 							} elseif {[ifexists weightarray(command)] == 0x0A} {
 								::bt::msg -INFO "decentscale LED callback recv: [array get weightarray]"								
+								set ::de1(scale_fw_version) [ifexists weightarray(data6)]
 								set ::de1(scale_battery_level) [ifexists weightarray(data5)]
 								if {$::de1(scale_battery_level) > 100} {
 									set ::de1(scale_battery_level) 100
@@ -1819,10 +1820,18 @@ proc de1_ble_handler { event data } {
 
 								::bt::msg -INFO "decentscale battery: $::de1(scale_battery_level)"								
 								::bt::msg -INFO "decentscale usb powered: $::de1(scale_usb_powered)"								
+								::bt::msg -INFO "decentscale firmware version: $::de1(scale_fw_version)"								
 
 							} elseif {[info exists weightarray(weight)] == 1} {
 								set sensorweight [expr {$weightarray(weight) / 10.0}]
 								::device::scale::process_weight_update $sensorweight $event_time
+							 	if {[info exists weightarray(timestamp)] == 1} {
+									set ::de1(scale_timestamp) $weightarray(timestamp)				
+									#set ::de1(scale_minutes) $weightarray(minutes)				
+									#set ::de1(scale_seconds) $weightarray(seconds)				
+									#set ::de1(scale_milliseconds) $weightarray(milliseconds)				
+									#::bt::msg -INFO "decentscale timestamp: $::de1(scale_timestamp) - $weightarray(minutes):$weightarray(minutes):$weightarray(milliseconds) [array get weightarray]"
+								}
 							} else {
 								::bt::msg -INFO "decentscale recv: [array get weightarray]"
 							}

@@ -294,11 +294,27 @@ proc decent_scale_generic_read_spec {} {
 	return $spec
 }
 
+proc decent_scale_generic_read_spec_v12 {} {
+	set spec {
+		model {char {} {} {unsigned} {}}
+		command {char {} {} {unsigned} {}}
+		data3 {char {} {} {unsigned} {}}
+		data4 {char {} {} {unsigned} {}}
+		data5 {char {} {} {unsigned} {}}
+		data6 {char {} {} {unsigned} {}}
+		data7 {char {} {} {unsigned} {}}
+		data8 {char {} {} {unsigned} {}}
+		data9 {char {} {} {unsigned} {}}
+		xor {char {} {} {unsigned} {}}
+	}
+	return $spec
+}
+
 proc decent_scale_weight_read_spec {} {
 	set spec {
 		model {char {} {} {unsigned} {}}
 		wtype {char {} {} {unsigned} {}}
-		weight {Short {} {} {signed} {}}
+		weight {Short {} {} {} {}}
 		rate {Short {} {} {unsigned} {}}
 		xor {char {} {} {unsigned} {}}
 	}
@@ -309,12 +325,29 @@ proc decent_scale_weight_read_spec2 {} {
 	set spec {
 		model {char {} {} {unsigned} {}}
 		wtype {char {} {} {unsigned} {}}
-		weight {Short {} {} {signed} {}}
+		weight {Short {} {} {} {}}
 		rate {Short {} {} {unsigned} {}}
 		xor {char {} {} {unsigned} {}}
 	}
 	return $spec
 }
+
+proc decent_scale_weight_read_spec_v12 {} {
+	set spec {
+		model {char {} {} {unsigned} {}}
+		wtype {char {} {} {unsigned} {}}
+		weight {Short {} {} {} {}}
+		minutes {char {} {} {unsigned} {}}
+		seconds {char {} {} {unsigned} {}}
+		milliseconds {char {} {} {unsigned} {}}
+		unused1 {char {} {} {unsigned} {}}
+		unused2 {char {} {} {unsigned} {}}
+		xor {char {} {} {unsigned} {}}
+	}
+
+	return $spec
+}
+
 
 # typedef struct {
 #   U32 CheckSum;    // The checksum of the rest of the encrypted image. Includes "CheckSums" + "Data" fields, not "Header"
@@ -369,7 +402,7 @@ proc calibrate_spec {} {
 		CalCommand {char {} {} {unsigned} {}}
 		CalTarget {char {} {} {unsigned} {}}
 		DE1ReportedVal {Int {} {} {unsigned} {double(round(100*($val / 65536.0)))/100}}
-		MeasuredVal {Int {} {} {signed} {double(round(100*($val / 65536.0)))/100}}
+		MeasuredVal {Int {} {} {} {double(round(100*($val / 65536.0)))/100}}
 	}
 	return $spec
 }
@@ -1313,7 +1346,15 @@ proc parse_decent_scale_recv {packed destarrname} {
 	upvar $destarrname recv
 	unset -nocomplain recv
 
-   	::fields::unpack $packed [decent_scale_generic_read_spec] recv bigeendian
+	if {[string length $packed] == 7} {
+   		::fields::unpack $packed [decent_scale_generic_read_spec] recv bigeendian
+	} elseif {[string length $packed] == 10} {
+   		::fields::unpack $packed [decent_scale_generic_read_spec_v12] recv bigeendian
+	} else {
+		msg -DEBUG "Unexpected data length in Decentscale message: length=[string length $packed]"
+		return 
+	}
+
 
    	if {$recv(command) == 0xCE || $recv(command) == 0xCA} {
    		# weight comes as a short, so use a different parsing format in this case, otherwise just return bytes
@@ -1323,7 +1364,20 @@ proc parse_decent_scale_recv {packed destarrname} {
 	   	set cmd $recv(command)
 
    		unset -nocomplain recv
-	   	::fields::unpack $packed [decent_scale_weight_read_spec2] recv bigeendian
+
+		if {[string length $packed] == 7} {
+		   	::fields::unpack $packed [decent_scale_weight_read_spec2] recv bigeendian
+		} elseif {[string length $packed] == 10} {
+		   	::fields::unpack $packed [decent_scale_weight_read_spec_v12] recv bigeendian
+
+		   	# convert timestamp into milliseconds and also store that in the data structure
+		   	set timestamp [expr { ($recv(minutes) * 600) + ($recv(seconds) * 10) + $recv(milliseconds) }]
+		   	set recv(timestamp) $timestamp
+		} else {
+			msg -DEBUG "Unexpected data length in Decentscale weight message: length=[string length $packed]"
+			return 
+		}
+
 	   	set recv(parsed) "weight"
 	   	set recv(command) $cmd
 
@@ -1332,10 +1386,13 @@ proc parse_decent_scale_recv {packed destarrname} {
 	   	set recv(parsed) "button"
    		msg -DEBUG "Decentscale BUTTON pressed: [array get recv]"
    	} elseif {$recv(command) == 0x0C} {
-   		unset -nocomplain recv
-	   	::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian
-	   	set recv(parsed) "timer"
-   		msg -DEBUG "Decentscale time received: [array get recv]"
+   		#unset -nocomplain recv
+	   	#::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian
+	   	#set recv(parsed) "timer"
+   		#msg -DEBUG "Decentscale time received: [array get recv]"
+   		# feature not implemented in the firmware, removed from spec
+	   	set recv(parsed) "unknown"
+   		msg -DEBUG "Decentscale unexpected timer data received: [array get recv]"
    	} else {
    		#unset -nocomplain recv
 	   	#::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian

@@ -853,6 +853,14 @@ proc return_flow_weight_measurement {in} {
 	}
 }
 
+proc return_scale_timer {} {
+	if {$::de1(scale_timestamp) == 0} {
+		return "-"
+	}
+
+	return [round_to_one_digits [expr {$::de1(scale_timestamp) / 10.0}]]
+}
+
 proc return_weight_measurement {in} {
     if {$::de1(language_rtl) == 1} {
 		return [subst {[translate "g"][round_to_one_digits $in]}]

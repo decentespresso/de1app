@@ -41,6 +41,7 @@ array set ::de1 {
     scanning 1
     device_handle 0
     scale_battery_level 100
+    scale_fw_version 0
     scale_usb_powered 0
     language_rtl 0
     scale_device_handle 0
@@ -115,6 +116,7 @@ array set ::de1 {
 	serial_number 0
 	scale_sensor_weight 0
 	scale_weight {}
+	scale_timestamp 0
 	scale_weight_rate 0
 	scale_weight_rate_raw 0
 	final_water_weight 0
