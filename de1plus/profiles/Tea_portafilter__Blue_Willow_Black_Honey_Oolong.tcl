@@ -34,8 +34,8 @@ preinfusion_time 0
 pressure_end 6.0
 profile_hide 1
 profile_language en
-profile_notes {This profile requires a specially the Decent Espresso tea portafilter and is optimized for the tea named "Black Honey Bug Bite Oolong" from Blue Willow Tea https://www.bluewillowtea.com/ - Taste wise, this profile created a full 10oz mug that tasted the same as the second gongfu-style infusion.  We use a 3 gram dose of leaves for this profile.}
-profile_title {Tea portafilter/Blue Willow: Black Honey Oolong}
+profile_notes {This profile requires the Decent Espresso tea portafilter and is optimized for the tea named "Black Honey Bug Bite Oolong" from Blue Willow Tea https://www.bluewillowtea.com/ - Taste wise, this profile created a full 10oz mug that tasted the same as the second gongfu-style infusion.  We use a 2.3 to 3 gram dose of leaves for this profile.}
+profile_title {Tea portafilter/Bug Bite Oolong}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 

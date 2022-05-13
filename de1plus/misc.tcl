@@ -817,6 +817,9 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/I_got_your_back.tcl *
         profiles/Tea_portafilter__Blue_Willow_Tsuyuhikari_Sencha.tcl *
         profiles/Tea_portafilter__Blue_Willow_Black_Honey_Oolong.tcl *
+        profiles/Tea_portafilter__Blue_Willow_lunar_winter.tcl *
+        profiles/Tea_portafilter__Blue_Willow_black_phoenix_1.tcl *
+        profiles/Tea_portafilter__Blue_Willow_black_phoenix_2.tcl *
         profiles/tea_in_a_basket.tcl *
         profiles/adaptive_allonge.tcl *
         profiles/easy_blooming_active_pressure_decline.tcl *
