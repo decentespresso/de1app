@@ -49,7 +49,7 @@ if {$tk != ""} {
 		after 3000 exit;
 	} -height 10 -width 40
 	frame .frame -border 2
-	button .frame.redownloadapp -text " Redownload entire app " -command { 
+	button .frame.redownloadapp -text "Redownload" -command { 
 		
 		catch { .hello configure -text "Working" ; update}
 		catch { file delete "manifest.txt"; }
@@ -58,13 +58,13 @@ if {$tk != ""} {
 		catch { start_app_update;} 
 		exit 
 	} 
-	button .frame.exitapp -text " --- Exit --- " -command { exit } 
-	button .frame.resetapp -text " Reset settings " -command { 
+	button .frame.exitapp -text " Exit" -height 3 -width 10 -command { exit } 
+	button .frame.resetapp -text "Reset settings" -command { 
 		
 		catch { file delete "settings.tdb"; } ; 
 		exit 
 	} 
-	button .frame.iconcreate -text " Create icon " -command { 
+	button .frame.iconcreate -text "Create app icon" -command { 
 		
 		catch {
 			source "pkgIndex.tcl"
@@ -79,16 +79,35 @@ if {$tk != ""} {
 			cd "[file dirname [info script]]"
 
 			install_de1plus_app_icon
-			after 1000 exit
+			#after 1000 exit
 		}
 	} 
-	button .frame.resetskin -text " Reset skin " -command { 
+
+	button .frame.iconcreate2 -text "Create cloud app icon" -command { 
+		
+		catch {
+			source "pkgIndex.tcl"
+			catch {
+			        # john 4-11-20 Android 10 is failing on this script, if we don't include these two dependencies
+			        package require snit
+			        package require de1_updater
+			}
+
+			package require de1_main
+			package require de1_gui
+			cd "[file dirname [info script]]"
+
+			install_update_app_icon
+			#after 1000 exit
+		}
+	} 	
+	button .frame.resetskin -text "Reset skin" -command { 
 		
 		reset_skin
 		exit 
 	} 
 	
-	button .frame.restorebk -text " Restore backup " -command { 
+	button .frame.restorebk -text "Restore backup" -command { 
 
 		
 		if {[file exists $bk] != 1} {
@@ -111,12 +130,15 @@ if {$tk != ""} {
 			after 1000 exit 
 		}
 	} 
+
+	pack .frame.exitapp -side top -pady 10 -padx 50
 	
 	pack .hello  -pady 10 -padx 10
-	pack .frame -side bottom -pady 0 -padx 0
+	pack .frame -side bottom -pady 10 -padx 10
 
 	pack .frame.resetapp -side left -pady 10 -padx 10
 	pack .frame.iconcreate -side left -pady 10 -padx 10
+	pack .frame.iconcreate2 -side left -pady 10 -padx 10
 	pack .frame.resetskin -side left -pady 10 -padx 10
 
 	# display the 'restore backup' button if a backup is available
@@ -124,10 +146,9 @@ if {$tk != ""} {
 		pack .frame.restorebk -side left -pady 10 -padx 10
 	}
 	
-	# john 13-11-19 taking away this button as many users click it and it causes huge downloads.
+	# john 13-11-19 taking away this button as many users click it and it causes huge downloads.	
 	# better to ask them to redownload the entire app from our web site https://decentespresso.com/downloads
 	#pack .frame.redownloadapp -side right -pady 10 -padx 10
-	pack .frame.exitapp -side right -pady 10 -padx 50
 	
 	.hello configure -text "[ifexists ::de1(app_update_button_label)] Update app"
 

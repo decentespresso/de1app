@@ -526,7 +526,7 @@ proc install_update_app_icon {} {
 
 	set appurl "file://[appdir]/appupdate.tcl"
 	catch {
-		set x [borg shortcut add "Decent Update" $appurl $iconbase64_de1]
+		set x [borg shortcut add "Update Decent" $appurl $iconbase64_de1]
 		msg -NOTICE "shortcut added: '$x'"
 	}
 
