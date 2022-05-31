@@ -994,6 +994,8 @@ proc set_tank_temperature_threshold {temp} {
 	}
 }
 
+
+
 # /*
 #  *  Memory Mapped Registers
 #  *
@@ -1032,6 +1034,32 @@ proc set_heater_tweaks {} {
 	mmr_write "hot_water_idle_temp $::settings(hot_water_idle_temp)" "803818" "04" [zero_pad [long_to_little_endian_hex $::settings(hot_water_idle_temp)] 4]
 	mmr_write "espresso_warmup_timeout $::settings(espresso_warmup_timeout)" "803838" "04" [zero_pad [long_to_little_endian_hex $::settings(espresso_warmup_timeout)] 4]
 }
+
+proc toggle_usb_charger_on {} {
+
+	if {$::de1(usb_charger_on) == 0} {
+		set ::de1(usb_charger_on) 1
+	} else {
+		set ::de1(usb_charger_on) 0
+	}
+	set_usb_charger_on $::de1(usb_charger_on)
+}
+
+proc set_usb_charger_on {usbon} {
+	::comms::msg -NOTICE set_usb_charger_on "'$usbon'"
+
+	###
+	### NB: The BLE queue is not thread safe
+	###
+
+	remove_matching_ble_queue_entries {^MMR set_usb_charger_on}
+
+	::comms::msg -INFO "Setting usb charger on to '$usbon'"
+	mmr_write "set_usb_charger_on" "803854" "04" [zero_pad [int_to_hex $usbon] 2]
+
+	set ::de1(usb_charger_on) $usbon
+}
+
 
 proc set_steam_flow {desired_flow} {
 	::comms::msg -NOTICE set_steam_flow "'$desired_flow'"

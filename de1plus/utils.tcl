@@ -520,6 +520,17 @@ proc battery_percent {} {
     return $percent
 }
 
+proc battery_state {} {
+
+    array set powerinfo [sdltk powerinfo]
+    set state [ifexists powerinfo(state)]
+    if {$state == ""} {
+        set state "~"
+    }
+
+    return $state
+}
+
 
 # dim the screen automaticaly if the battery is low
 proc check_battery_low {brightness_to_use} {
@@ -530,8 +541,21 @@ proc check_battery_low {brightness_to_use} {
         set current_brightness [expr {abs($current_brightness)}]
     }
 
-    #return 100
+    
     set percent [battery_percent]
+
+    #####################
+    # keep battery charged between 40% and 60%
+    if {$percent <= 40} {
+		# turn USB charger on
+		#set_usb_charger_on 1
+    } elseif {$percent >= 60} {
+		# turn USB charger off
+		#set_usb_charger_on 0
+    }
+
+
+    #####################
 
     if {$percent < $::settings(battery_very_low_trigger_v2)} {
         if {$current_brightness > $::settings(battery_very_low_brightness)} {
