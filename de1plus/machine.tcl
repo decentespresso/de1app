@@ -39,6 +39,7 @@ array set ::de1 {
     decentscale_timer_on 0
     bluetooth_scale_connection_attempts_tried 0
     scanning 1
+    usb_charger_on 1
     device_handle 0
     scale_battery_level 100
     scale_fw_version 0
