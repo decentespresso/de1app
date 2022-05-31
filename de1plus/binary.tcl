@@ -985,13 +985,22 @@ proc de1_packed_shot {shot_list} {
 
 # return two values as a list, with the 1st being the packed header, and the 2nd value itself
 # being a list of packed frames
-proc de1_packed_shot_wrapper {} {
-	if {[ifexists ::settings(settings_profile_type)] == "settings_2b"} {
-		return [de1_packed_shot [::profile::flow_to_advanced_list]]
-	} elseif {([ifexists ::settings(settings_profile_type)] == "settings_2c" || [ifexists ::settings(settings_profile_type)] == "settings_2c2")} {
-		return [de1_packed_shot [::profile::settings_to_advanced_list]]
+proc de1_packed_shot_wrapper { {override {}} } {
+
+	if {$override == "cool"} {
+		# set first frame temperature to 5C 
+		array set coolsettings [array get ::settings]
+		set coolsettings(espresso_temperature) 1
+		set coolsettings(espresso_temperature_0) 1
+		return [de1_packed_shot [::profile::pressure_to_advanced_list coolsettings]]
 	} else {
-		return [de1_packed_shot [::profile::pressure_to_advanced_list]]
+		if {[ifexists ::settings(settings_profile_type)] == "settings_2b"} {
+			return [de1_packed_shot [::profile::flow_to_advanced_list]]
+		} elseif {([ifexists ::settings(settings_profile_type)] == "settings_2c" || [ifexists ::settings(settings_profile_type)] == "settings_2c2")} {
+			return [de1_packed_shot [::profile::settings_to_advanced_list]]
+		} else {
+			return [de1_packed_shot [::profile::pressure_to_advanced_list]]
+		}
 	}
 }
 

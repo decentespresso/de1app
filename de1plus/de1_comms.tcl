@@ -1232,7 +1232,7 @@ proc remove_matching_ble_queue_entries {comment_regexp} {
 	}
 }
 
-proc de1_send_shot_frames {} {
+proc de1_send_shot_frames { {override {}} } {
 	::comms::msg -NOTICE de1_send_shot_frames
 
 	###
@@ -1242,7 +1242,7 @@ proc de1_send_shot_frames {} {
 	# this is to track which frames are ACKed as having been successfully sent
 	unset -nocomplain ::de1(shot_frames_sent)
 
-	set parts [de1_packed_shot_wrapper]
+	set parts [de1_packed_shot_wrapper $override]
 	set header [lindex $parts 0]
 
 	####

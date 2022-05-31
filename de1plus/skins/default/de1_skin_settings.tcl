@@ -636,7 +636,7 @@ add_de1_text "settings_3" 1304 220 -text [translate "Maintenance"] -font Helv_10
 
 	# prepare for transport button
 	add_de1_text "settings_3" 2290 610 -text [translate "Transport"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-		add_de1_button "settings_3" {say [translate {Transport}] $::settings(sound_button_in); set_next_page off travel_prepare; page_show travel_prepare; } 1910 516 2540 720
+		add_de1_button "settings_3" {say [translate {Transport}] $::settings(sound_button_in); de1_send_shot_frames "cool"; set_next_page off travel_prepare; page_show travel_prepare; } 1910 516 2540 720
 
 
 	# calibrate feature
@@ -1032,7 +1032,7 @@ add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso m
 	add_de1_text "travel_prepare" 1520 1000 -text [translate "After you press Ok, pull the water tank forward as shown in this photograph."] -font Helv_10_bold -fill "#a77171" -anchor "nw" -width 500
 	add_de1_text "travel_prepare" 280 1504 -text [translate "Cancel"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 	add_de1_text "travel_prepare" 2300 1504 -text [translate "Ok"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
-	add_de1_button "travel_prepare" {say [translate {Cancel}] $::settings(sound_button_in);page_to_show_when_off settings_3;} 0 1200 600 1600 ""
+	add_de1_button "travel_prepare" {say [translate {Cancel}] $::settings(sound_button_in); de1_send_shot_frames; page_to_show_when_off settings_3;} 0 1200 600 1600 ""
 	add_de1_button "travel_prepare" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_3; start_air_purge} 1960 1200 2560 1600 ""
 	add_de1_text "travel_do" 1280 120 -text [translate "Now removing water from your espresso machine."] -font Helv_15_bold -fill "#a77171" -anchor "center" -width 1000
 	add_de1_text "travel_do" 1520 1000 -text [translate "You can turn your machine off once it is out of water. It will then be ready for transport."] -font Helv_10_bold -fill "#a77171" -anchor "nw" -width 500
