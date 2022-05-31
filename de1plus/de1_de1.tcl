@@ -425,8 +425,11 @@ namespace eval ::de1::state {
 	}
 
 	proc current_substate {} {
-
-		expr { $::de1_substate_types($::de1(substate)) }
+		set s "unknown substate"
+		catch {
+			set s [expr { $::de1_substate_types($::de1(substate)) }]
+		}
+		return $s
 	}
 
 	proc is_flow_state {{state_text "None"} {substate_text "None"}} {

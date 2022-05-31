@@ -1033,6 +1033,10 @@ proc set_heater_tweaks {} {
 	mmr_write "phase_2_flow_rate $::settings(phase_2_flow_rate)" "803814" "04" [zero_pad [long_to_little_endian_hex $::settings(phase_2_flow_rate)] 4]
 	mmr_write "hot_water_idle_temp $::settings(hot_water_idle_temp)" "803818" "04" [zero_pad [long_to_little_endian_hex $::settings(hot_water_idle_temp)] 4]
 	mmr_write "espresso_warmup_timeout $::settings(espresso_warmup_timeout)" "803838" "04" [zero_pad [long_to_little_endian_hex $::settings(espresso_warmup_timeout)] 4]
+
+	# aka SteamPurgeMode - set to 1 to have two taps to turn steam off.  First tap goes to puffs, second tap goes to steam purge
+	mmr_write "steam_two_tap_stop $::settings(steam_two_tap_stop)" "803850" "04" [zero_pad [long_to_little_endian_hex $::settings(steam_two_tap_stop)] 4]
+
 }
 
 proc toggle_usb_charger_on {} {

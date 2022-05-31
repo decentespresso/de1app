@@ -147,7 +147,7 @@ array set ::de1 {
 	pour_volume 0
 	water_time_min 1
 	steam_time_min 1
-	steam_time_max 250
+	steam_time_max 255
 	last_ping 0
 	steam_heater_temperature 150
 	connectivity "ble"
@@ -195,6 +195,7 @@ array set ::settings {
 	force_fw_update 0
 	preset_counter 1
 	screen_size_width {}
+	steam_two_tap_stop 0
 	ble_debug 0
 	tank_desired_water_temperature 0
 	screen_size_height {}
@@ -530,6 +531,7 @@ array set ::de1_substate_types {
 	16	"CleanGroup"
 	17  "refill"
 	18	"PausedSteam"
+	20	"puffing"
 	200 "Error_NaN"
 	201 "Error_Inf"
 	202 "Error_Generic"
