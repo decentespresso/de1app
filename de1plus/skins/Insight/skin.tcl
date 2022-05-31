@@ -1153,7 +1153,7 @@ add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); 
 
 add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle} 0 240 2560 1400
 add_de1_button "steam_3" {say "" $::settings(sound_button_in); set_next_page off steam_1; start_idle} 0 240 1000 1400
-add_de1_button "steam_1" {say "" $::settings(sound_button_in);vertical_clicker 9 1 ::settings(steam_timeout) 1 250 %x %y %x0 %y0 %x1 %y1 %b; save_settings; de1_send_steam_hotwater_settings} 200 580 900 1150 ""
+add_de1_button "steam_1" {say "" $::settings(sound_button_in);vertical_clicker 9 1 ::settings(steam_timeout) 1 255 %x %y %x0 %y0 %x1 %y1 %b; save_settings; de1_send_steam_hotwater_settings} 200 580 900 1150 ""
 
 
 add_de1_text "steam_1" 70 250 -text [translate "1) Choose auto-off time"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 900]
