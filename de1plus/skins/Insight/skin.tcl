@@ -952,10 +952,10 @@ add_de1_button "espresso_zoomed_temperature" {say [translate {stop}] $::settings
 ##########################################################################################################################################################################################################################################################################
 # settings for preheating a cup
 
-add_de1_variable "preheat_1" 1390 775 -text [translate "START"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
-add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1390 865 -text [translate "FLUSH"] -font Helv_10 -fill "#7f879a" -anchor "center" 
-add_de1_variable "preheat_2" 1390 775 -text [translate "STOP"] -font $green_button_font -fill $startbutton_font_color -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
-add_de1_variable "preheat_3 preheat_4" 1390 775 -text [translate "RESTART"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
+add_de1_variable "preheat_1" 1396 775 -text [translate "START"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
+add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1396 865 -text [translate "FLUSH"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+add_de1_variable "preheat_2" 1396 775 -text [translate "STOP"] -font $green_button_font -fill $startbutton_font_color -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
+add_de1_variable "preheat_3 preheat_4" 1396 775 -text [translate "RESTART"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
 
 #1030 210 1800 1400
 add_de1_button "preheat_1 preheat_3 preheat_4" {say [translate {Heat up}] $::settings(sound_button_in); set ::settings(preheat_temperature) 90; set_next_page hotwaterrinse preheat_2; start_flush} 0 240 2560 1400
@@ -1023,11 +1023,11 @@ add_de1_variable "preheat_2 preheat_4" 2470 1300 -justify left -anchor "ne" -fon
 # future feature
 # add_de1_text "water_1 water_3" 1390 1270 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
 
-add_de1_variable "water_1" 1390 775 -text [translate "START"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
-add_de1_variable "water_3" 1390 775 -text [translate "RESTART"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
-add_de1_variable "water" 1390 775 -text [translate "STOP"] -font $green_button_font -fill $startbutton_font_color -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
+add_de1_variable "water_1" 1396 775 -text [translate "START"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[start_text_if_espresso_ready]} 
+add_de1_variable "water_3" 1396 775 -text [translate "RESTART"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[restart_text_if_espresso_ready]} 
+add_de1_variable "water" 1396 775 -text [translate "STOP"] -font $green_button_font -fill $startbutton_font_color -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
 
-add_de1_text "water_1 water water_3" 1390 865 -text [translate "WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+add_de1_text "water_1 water water_3" 1396 865 -text [translate "WATER"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 add_de1_button "water_1 water_3" {say [translate {Hot water}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 240 2560 1400
 add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set_next_page off water_3 ; start_idle} 0 240 2560 1600
 
@@ -1138,11 +1138,11 @@ if {$::settings(scale_bluetooth_address) != ""} {
 
 #add_de1_text "steam_3" 2180 1280 -text [translate "Rinse"] -font Helv_10_bold -fill "#eae9e9" -anchor "center" 
 
-add_de1_variable "steam_1" 1390 775 -text [translate "START"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[start_text_if_steam_ready]} 
-add_de1_variable "steam" 1390 775 -text [translate "STOP"] -font $green_button_font -fill $startbutton_font_color -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
-add_de1_variable "steam_3" 1390 775 -text [translate "RESTART"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[restart_text_if_steam_ready]} 
+add_de1_variable "steam_1" 1396 775 -text [translate "START"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[start_text_if_steam_ready]} 
+add_de1_variable "steam" 1396 775 -text [translate "STOP"] -font $green_button_font -fill $startbutton_font_color -anchor "center"  -textvariable {[stop_text_if_espresso_stoppable]} 
+add_de1_variable "steam_3" 1396 775 -text [translate "RESTART"] -font $green_button_font -fill $startbutton_font_color -anchor "center" -textvariable {[restart_text_if_steam_ready]} 
 
-add_de1_text "steam_1 steam steam_3" 1390 865 -text [translate "STEAM"] -font Helv_10 -fill "#7f879a" -anchor "center" 
+add_de1_text "steam_1 steam steam_3" 1396 865 -text [translate "STEAM"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
 add_de1_button "steam_1" {say [translate {steam}] $::settings(sound_button_in); if {$::settings(steam_disabled) == 0} { set_next_page steam steam; start_steam} else {set ::settings(steam_disabled) 0; de1_send_steam_hotwater_settings } } 1030 240 2560 1100
 add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); if {$::settings(steam_disabled) == 0} { set_next_page steam steam; start_steam} else {set ::settings(steam_disabled) 0; de1_send_steam_hotwater_settings } } 1030 240 2560 1070
