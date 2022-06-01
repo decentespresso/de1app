@@ -1037,6 +1037,9 @@ proc set_heater_tweaks {} {
 	# aka SteamPurgeMode - set to 1 to have two taps to turn steam off.  First tap goes to puffs, second tap goes to steam purge
 	mmr_write "steam_two_tap_stop $::settings(steam_two_tap_stop)" "803850" "04" [zero_pad [long_to_little_endian_hex $::settings(steam_two_tap_stop)] 4]
 
+	set_flush_timeout $::settings(flush_seconds)
+	set_flush_flow_rate $::settings(flush_flow)
+	set_hotwater_flow_rate $::settings(hotwater_flow)
 }
 
 proc toggle_usb_charger_on {} {
@@ -1051,29 +1054,40 @@ proc toggle_usb_charger_on {} {
 
 proc set_usb_charger_on {usbon} {
 	::comms::msg -NOTICE set_usb_charger_on "'$usbon'"
-
-	###
-	### NB: The BLE queue is not thread safe
-	###
-
 	remove_matching_ble_queue_entries {^MMR set_usb_charger_on}
-
 	::comms::msg -INFO "Setting usb charger on to '$usbon'"
 	mmr_write "set_usb_charger_on" "803854" "04" [zero_pad [int_to_hex $usbon] 2]
 
+	# this is a cached variable to find out the current usb charge state it should be in, but not necessarily to be 100% trusted
 	set ::de1(usb_charger_on) $usbon
+}
+
+proc set_hotwater_flow_rate {rate} {
+	::comms::msg -NOTICE set_hotwater_flow_rate "'$rate'"
+	remove_matching_ble_queue_entries {^MMR set_hotwater_flow_rate}
+	::comms::msg -INFO "Setting hot water flow rate to '$rate'"
+	mmr_write "set_hotwater_flow_rate" "80384C" "04" [zero_pad [long_to_little_endian_hex [expr {int(10 * $rate)}] ] 2]
+}
+
+
+proc set_flush_flow_rate {rate} {
+	::comms::msg -NOTICE set_flush_flow_rate "'$rate'"
+	remove_matching_ble_queue_entries {^MMR set_flush_flow_rate}
+	::comms::msg -INFO "Setting flush flow rate to '$rate'"
+	mmr_write "set_calibration_flow_multiplier" "803840" "04" [zero_pad [long_to_little_endian_hex [expr {int(10 * $rate)}] ] 2]
+}
+
+proc set_flush_timeout {seconds} {
+	::comms::msg -NOTICE set_flush_timeout "'$seconds'"
+	remove_matching_ble_queue_entries {^MMR set_flush_timeout}
+	::comms::msg -INFO "Setting flush timeout seconds to '$seconds'"
+	mmr_write "set_calibration_flow_multiplier" "803848" "04" [zero_pad [long_to_little_endian_hex [expr {int(10 * $seconds)}] ] 2]
 }
 
 
 proc set_steam_flow {desired_flow} {
 	::comms::msg -NOTICE set_steam_flow "'$desired_flow'"
-
-	###
-	### NB: The BLE queue is not thread safe
-	###
-
 	remove_matching_ble_queue_entries {^MMR set_steam_flow}
-
 	::comms::msg -INFO "Setting steam flow rate to '$desired_flow'"
 	mmr_write "set_steam_flow" "803828" "04" [zero_pad [int_to_hex $desired_flow] 2]
 }

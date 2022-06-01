@@ -231,6 +231,9 @@ array set ::settings {
 	ghc_mode 0
 	fan_threshold 60
 	steam_flow 700
+	hotwater_flow 8.0
+	flush_flow 4.0
+	flush_seconds 3.0
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	hot_water_idle_temp "990"
@@ -531,6 +534,7 @@ array set ::de1_substate_types {
 	16	"CleanGroup"
 	17  "refill"
 	18	"PausedSteam"
+	19	"UserNotPresent"
 	20	"puffing"
 	200 "Error_NaN"
 	201 "Error_Inf"

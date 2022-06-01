@@ -1271,7 +1271,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				de1_send_steam_hotwater_settings
 				de1_enable_water_level_notifications
 			}
-			if {[array_item_difference ::settings ::settings_backup "steam_two_tap_stop enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
+			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 				.can itemconfigure $::message_button_label -text [translate "Wait"]
@@ -1314,12 +1314,14 @@ set calibration_row_spacing 120
 
 
 # (re)calibration page
-add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+add_de1_text "calibrate calibrate2 calibrate3" 1280 290 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 
-	add_de1_text "calibrate calibrate2" 2520 1510 -text [subst {\[ [translate "More"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
-		add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); get_heater_voltage; page_to_show_when_off calibrate2;} 2200 1400 2560 1600 ""
-		
-		add_de1_button "calibrate2" {say [translate {Done}] $::settings(sound_button_in); set_heater_tweaks; page_to_show_when_off calibrate;} 2200 1400 2560 1600 ""
+	add_de1_text "calibrate" 2520 1510 -text [subst {\[ [translate "Page 1 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
+	add_de1_text "calibrate2" 2520 1510 -text [subst {\[ [translate "Page 2 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
+	add_de1_text "calibrate3" 2520 1510 -text [subst {\[ [translate "Page 3 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
+		add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); get_heater_voltage; page_to_show_when_off calibrate2;} 2200 1400 2560 1600 ""		
+		add_de1_button "calibrate2" {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off calibrate3;} 2200 1400 2560 1600 ""
+		add_de1_button "calibrate3" {say [translate {Done}] $::settings(sound_button_in); set_heater_tweaks; page_to_show_when_off calibrate;} 2200 1400 2560 1600 ""
 
 		###############################################################################################
 		# Nominal heater voltage. (Address 803834)
@@ -1378,11 +1380,26 @@ add_de1_text "calibrate calibrate2" 1280 290 -text [translate "Calibrate"] -font
 		add_de1_text "calibrate2" 350 1080 -text "\[ [translate "Defaults for cafe"] \]" -font Helv_8_bold -fill "#4e85f4" -anchor "nw" -justify "left" 
 		add_de1_button "calibrate2" {set ::settings(hot_water_idle_temp) 850; set ::settings(espresso_warmup_timeout) 100; set ::settings(phase_1_flow_rate) 10; set ::settings(phase_2_flow_rate) 40; } 300 980 840 1060 ""		
 		add_de1_button "calibrate2" {set ::settings(hot_water_idle_temp) 990; set ::settings(espresso_warmup_timeout) 10; set ::settings(phase_1_flow_rate) 20; set ::settings(phase_2_flow_rate) 40; } 300 1070 840 1150 ""		
-		add_de1_widget "calibrate2" checkbutton 880 1000 {} -text [translate "Two tap steam stop"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(steam_two_tap_stop)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 
-		add_de1_widget "calibrate2" checkbutton 880 1080 {} -text [translate "Slow start"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(insert_preinfusion_pause)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 
+		
+		add_de1_widget "calibrate3" checkbutton 1350 560 {} -text [translate "Two tap steam stop"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(steam_two_tap_stop)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 
+		add_de1_widget "calibrate3" checkbutton 1350 660 {} -text [translate "Slow start"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(insert_preinfusion_pause)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 
 
-	add_de1_text "calibrate calibrate2" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-		add_de1_button "calibrate calibrate2" {say [translate {Done}] $::settings(sound_button_in); 
+		add_de1_text "calibrate3" 350 500  -text [translate "Hot water flow rate"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_widget "calibrate3" scale 350 560  {} -to 10 -from 1 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution .1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(hotwater_flow) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate3" 970 580  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_flow_measurement $::settings(hotwater_flow)]}
+
+		add_de1_text "calibrate3" 350 700  -text [translate "Flush flow rate"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_widget "calibrate3" scale 350 760  {} -to 10 -from 1 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution .1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(flush_flow) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate3" 970 780  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_flow_measurement $::settings(flush_flow)]}
+
+		add_de1_text "calibrate3" 350 900  -text [translate "Flush timeout"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+		add_de1_widget "calibrate3" scale 350 960  {} -to 120 -from 3 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution .1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(flush_seconds) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_variable "calibrate3" 970 980  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[seconds_text $::settings(flush_seconds)]}
+
+
+
+	add_de1_text "calibrate calibrate2 calibrate3" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+		add_de1_button "calibrate calibrate2 calibrate3" {say [translate {Done}] $::settings(sound_button_in); 
 		if {[ifexists ::calibration_disabled_fahrenheit] == 1} {
 			set ::settings(enable_fahrenheit) 1
 			unset -nocomplain ::calibration_disabled_fahrenheit
@@ -1555,4 +1572,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#show_settings settings_1
+#after 1 show_settings calibrate3
