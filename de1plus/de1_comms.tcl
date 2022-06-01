@@ -1074,14 +1074,21 @@ proc set_flush_flow_rate {rate} {
 	::comms::msg -NOTICE set_flush_flow_rate "'$rate'"
 	remove_matching_ble_queue_entries {^MMR set_flush_flow_rate}
 	::comms::msg -INFO "Setting flush flow rate to '$rate'"
-	mmr_write "set_calibration_flow_multiplier" "803840" "04" [zero_pad [long_to_little_endian_hex [expr {int(10 * $rate)}] ] 2]
+	mmr_write "set_flush_flow_rate" "803840" "04" [zero_pad [long_to_little_endian_hex [expr {int(10 * $rate)}] ] 2]
 }
 
 proc set_flush_timeout {seconds} {
 	::comms::msg -NOTICE set_flush_timeout "'$seconds'"
 	remove_matching_ble_queue_entries {^MMR set_flush_timeout}
 	::comms::msg -INFO "Setting flush timeout seconds to '$seconds'"
-	mmr_write "set_calibration_flow_multiplier" "803848" "04" [zero_pad [long_to_little_endian_hex [expr {int(10 * $seconds)}] ] 2]
+	mmr_write "set_flush_timeout" "803848" "04" [zero_pad [long_to_little_endian_hex [expr {int(10 * $seconds)}] ] 2]
+}
+
+proc set_feature_flags {UserNotPresent} {
+	::comms::msg -NOTICE set_feature_flags "'$UserNotPresent'"
+	remove_matching_ble_queue_entries {^MMR set_feature_flags}
+	::comms::msg -INFO "Setting feature flags '$UserNotPresent'"
+	mmr_write "set_feature_flags" "803858" "04" [zero_pad [long_to_little_endian_hex $UserNotPresent] 2]
 }
 
 

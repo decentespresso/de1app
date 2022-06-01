@@ -185,7 +185,11 @@ proc return_de1_packed_steam_hotwater_settings {} {
 		set steam_temperature 0
 	}
 
-	set arr(TargetSteamTemp) [convert_float_to_U8P0 $steam_temperature]
+	if {$::settings(steam_disabled) != 1} {
+		set arr(TargetSteamTemp) [convert_float_to_U8P0 $steam_temperature]
+	} else {
+		set arr(TargetSteamTemp) [convert_float_to_U8P0 0]
+	}
 	set arr(TargetSteamLength) [convert_float_to_U8P0 $::settings(steam_timeout)]
 	set arr(TargetHotWaterTemp) [convert_float_to_U8P0 $::settings(water_temperature)]
 	

@@ -1206,6 +1206,9 @@ proc later_new_de1_connection_setup {} {
 	de1_enable_state_notifications
 	de1_enable_temp_notifications
 
+	# not yet ready to implement this, as need to constantly tell the DE1 when user is present, if we do enable this, and also need to show something useful in the UI
+	#set_feature_flags 1
+
 	set_heater_tweaks
 
 	################

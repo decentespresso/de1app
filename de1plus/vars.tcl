@@ -3054,6 +3054,30 @@ proc ghc_required {} {
 proc start_text_if_espresso_ready {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
+
+	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
+		
+		if {[ghc_required]} {
+			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
+			return [translate "READY"]
+		}
+		return [translate "START"]
+	}
+	return [translate "WAIT"]
+}
+
+proc start_text_if_steam_ready {} {
+	if {$::settings(steam_disabled) == 1} {
+		return [translate "DISABLED"]
+	}
+
+	if {[steamtemp] < 125} {
+		return [translate "HEATING"]
+	}
+
+	set num $::de1(substate)
+	set substate_txt $::de1_substate_types($num)
+
 	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
 		
 		if {[ghc_required]} {
@@ -3079,6 +3103,29 @@ proc restart_text_if_espresso_ready {} {
 
 }
 
+proc restart_text_if_steam_ready {} {
+
+	if {$::settings(steam_disabled) == 1} {
+		return [translate "DISABLED"]
+	}
+
+
+	if {[steamtemp] < 125} {
+		return [translate "HEATING"]
+	}
+
+	set num $::de1(substate)
+	set substate_txt $::de1_substate_types($num)
+	if {$substate_txt == "ready" && $::de1(device_handle) != 0} {
+		if {[ghc_required]} {
+			# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
+			return [translate "READY"]
+		}
+		return [translate "RESTART"]
+	}
+	return [translate "WAIT"]
+
+}
 proc stop_text_if_espresso_stoppable {} {
 	set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
