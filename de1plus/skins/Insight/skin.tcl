@@ -1157,8 +1157,8 @@ add_de1_variable "steam_3" 1396 775 -text [translate "RESTART"] -font $green_but
 
 add_de1_text "steam_1 steam steam_3" 1396 865 -text [translate "STEAM"] -font Helv_10 -fill "#7f879a" -anchor "center" 
 
-add_de1_button "steam_1" {say [translate {steam}] $::settings(sound_button_in); if {$::settings(steam_disabled) == 0} { set_next_page steam steam; start_steam} else {set ::settings(steam_disabled) 0; de1_send_steam_hotwater_settings } } 1030 240 2560 1100
-add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); if {$::settings(steam_disabled) == 0} { set_next_page steam steam; start_steam} else {set ::settings(steam_disabled) 0; de1_send_steam_hotwater_settings } } 1030 240 2560 1070
+add_de1_button "steam_1" {say [translate {steam}] $::settings(sound_button_in); if {$::settings(steam_disabled) == 0} { set_next_page steam steam; start_steam} else {set ::settings(steam_disabled) 0; set ::de1(steam_disable_toggle) [expr {!$::settings(steam_disabled)}]; de1_send_steam_hotwater_settings } } 1030 240 2560 1100
+add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); if {$::settings(steam_disabled) == 0} { set_next_page steam steam; start_steam} else {set ::settings(steam_disabled) 0; set ::de1(steam_disable_toggle) [expr {!$::settings(steam_disabled)}]; de1_send_steam_hotwater_settings } } 1030 240 2560 1070
 
 
 # future feature
@@ -1237,18 +1237,25 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 	#dui add dscale "steam steam_1 steam_3" 40 1510 {} -from 40 -to 250 -bigincrement 100 -smallincrement 10 -resolution 10 -length 1950 -width 14 -sliderlength 120 -variable ::settings(steam_flow) -command {set_steam_flow} -orient horizontal
 
 	# when steam is off, display current steam heater temp
-	add_de1_variable "steam_1 steam_3" 1100 1250 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[if {$::settings(steam_disabled) != 1} {return [translate "Temperature"]}] } 
-		add_de1_variable "steam_1 steam_3" 1700 1250 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[if {$::settings(steam_disabled) != 1} { return [steamtemp_text]}]} 
-	add_de1_variable "steam_1 steam_3" 1100 1200 -justify right -anchor "nw" -text [translate "Goal (tap to disable)"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[if {$::settings(steam_disabled) != 1} {return [translate "Goal (tap to disable)"]}] } 
-		add_de1_variable "steam_1 steam_3" 1700 1200 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[if {$::settings(steam_disabled) != 1} { return_temperature_measurement $::settings(steam_temperature)} else { return "" }]} 
+	add_de1_text "steam_1 steam_3" 1100 1250 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520] 
+		add_de1_variable "steam_1 steam_3" 1700 1250 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
+	add_de1_text "steam_1 steam_3" 1100 1200 -justify right -anchor "nw" -text [translate "Goal"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
+		add_de1_variable "steam_1 steam_3" 1700 1200 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[if {$::settings(steam_disabled) != 1} { return_steam_temperature_measurement $::settings(steam_temperature)} else { return [translate "off"] }]} 
+		dui add dtoggle "steam_1 steam_3" 1500 1210 -height 36 -width 80 -anchor nw -variable ::de1(steam_disable_toggle) -command disable_steam_toggle 
 
 
-		add_de1_variable "steam_1 steam_3" 1100 1300 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[if {$::settings(steam_disabled) != 1} {return [translate "Flow rate max"]}] } 
+		set ::de1(steam_disable_toggle) [expr {!$::settings(steam_disabled)}]
+		proc disable_steam_toggle {} {
+			set ::settings(steam_disabled)  [expr {!$::de1(steam_disable_toggle)}]
+		}
+
+
+		add_de1_text "steam_1 steam_3" 1100 1300 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 			# hide the android toolbar if it is shown during steaming, because it obscures the flow rate slider
-			add_de1_variable "steam_1" 1700 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[ dui platform hide_android_keyboard; ; if {$::settings(steam_disabled) != 1} { return_steam_flow_calibration $::settings(steam_flow) }] }
-			add_de1_variable "steam_3" 1700 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable  {[ if {$::settings(steam_disabled) != 1} { return_steam_flow_calibration $::settings(steam_flow) }] }
+			add_de1_variable "steam_1" 1700 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[dui platform hide_android_keyboard; ; return_steam_flow_calibration $::settings(steam_flow)] }
+			add_de1_variable "steam_3" 1700 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable  {[return_steam_flow_calibration $::settings(steam_flow)] }
 
-		add_de1_button "steam_1 steam_3" {if {$::settings(steam_disabled) != 1} { set ::settings(steam_disabled) 1 } else { set ::settings(steam_disabled) 0};  de1_send_steam_hotwater_settings } 1060 1160 1760 1400
+		add_de1_button "steam_1 steam_3" {if {$::settings(steam_disabled) != 1} { set ::settings(steam_disabled) 1 } else { set ::settings(steam_disabled) 0};  de1_send_steam_hotwater_settings; set ::de1(steam_disable_toggle) [expr {!$::settings(steam_disabled)}] } 1040 1160 1760 1400
 
 
 # optional keyboard bindings

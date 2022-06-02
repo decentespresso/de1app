@@ -805,7 +805,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		
 		#add_de1_text "measurements" 1300 480 -text [translate "Units"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			#add_de1_widget "measurements" checkbutton 1300 560 {} -text [translate "Fahrenheit"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
-			#dui add dselector "measurements" 1280 480 -bwidth 500 -bheight 80 -orient h -anchor nw -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] \
+			dui add dselector "measurements" 2280 480 -bwidth 500 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] 
 
 
 
@@ -832,8 +832,10 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			if {[ifexists ::settings(skin)] == "Insight" && [ghc_required] != 1} {
 				# this feature is specific to the Insight skin
 				#add_de1_widget "measurements" checkbutton 1800 40 {} -text [translate "One-tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(one_tap_mode)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-				dui add dtoggle "measurements" 1700 504 -height 60 -anchor nw -variable ::settings(one_tap_mode) 
-				add_de1_text "measurements" 1840 504 -text [translate "One-tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+
+				# obsoleted by GHC
+				#dui add dtoggle "measurements" 1700 504 -height 60 -anchor nw -variable ::settings(one_tap_mode) 
+				#add_de1_text "measurements" 1840 504 -text [translate "One-tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 
 			}
 
@@ -843,8 +845,8 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 				# note: we could likely replicate this feature in the future with a firmware requiest to repeat the command indefinitely, and this would be UL compliant as the first time would need to be GHC started.
 				#add_de1_widget "measurements" checkbutton 1800 80  {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-				dui add dtoggle "measurements"  1700 604 -height 60 -anchor nw -variable ::settings(stress_test) 
-				add_de1_text "measurements" 1840 604 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+				dui add dtoggle "measurements"  1740 604 -height 60 -anchor nw -variable ::settings(stress_test) 
+				add_de1_text "measurements" 1880 604 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 			}
 
 			#set ::_placebo_true 1
@@ -852,18 +854,23 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 			#add_de1_widget "measurements" checkbutton 950 90  {} -text [translate "clock"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(display_time_in_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-			dui add dtoggle "measurements" 1140 490 -height 60 -anchor ne -variable ::settings(display_time_in_screen_saver) 
-			add_de1_text "measurements" 1000 490 -text [translate "clock"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
+			dui add dtoggle "measurements" 1140 510 -height 40 -width 80 -anchor ne -variable ::settings(display_time_in_screen_saver) 
+			add_de1_text "measurements" 1040 504 -text [translate "clock"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
 
 
-			if {$::android == 1} {
+			#if {$::android != 1} {
 				# for tablets, allow "finger down" to be a "tap" instead of the default "mousedown" OS-defined action
-				add_de1_widget "measurements" checkbutton 1300 800  {} -text [translate "Fast tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(use_finger_down_for_tap)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-			}
+			#add_de1_widget "measurements" checkbutton 1300 800  {} -text [translate "Fast tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(use_finger_down_for_tap)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-		add_de1_text "measurements" 1300 900 -text [translate "Font size"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 1300 960 {} -from 0.1 -to 2 -background #e4d1c1 -borderwidth 1 -bigincrement 0.05 -showvalue 0 -resolution 0.05 -length [rescale_x_skin 400] -width [rescale_y_skin 100] -variable ::settings(default_font_calibration) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-			add_de1_variable "measurements" 1300 1060 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(default_font_calibration)}
+			dui add dtoggle "measurements" 1280 704 -height 60 -anchor nw -variable ::settings(use_finger_down_for_tap) 
+			add_de1_text "measurements" 1420 704 -text [translate "Fast tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+
+
+			#}
+
+		add_de1_text "measurements" 1300 940 -text [translate "Font size"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+			add_de1_widget "measurements" scale 1300 1000 {} -from 0.1 -to 2 -background #e4d1c1 -borderwidth 1 -bigincrement 0.05 -showvalue 0 -resolution 0.05 -length [rescale_x_skin 400] -width [rescale_y_skin 100] -variable ::settings(default_font_calibration) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+			add_de1_variable "measurements" 1300 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(default_font_calibration)}
 
 proc calculate_screen_flip_value {} {
 	# a checkbox turns the "screen flip" setting on/off. We then convert that into into reverselandscape/landscape
@@ -885,11 +892,15 @@ proc calculate_screen_flip_value {} {
 	return 0
 }
 
-		add_de1_text "measurements" 1800 900 -text [translate "Screen Resolution"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 1800 960 {} -from 320 -to 2800 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
-			add_de1_variable "measurements" 1800 1060 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(screen_size_width) x $::settings(screen_size_height)}
+		add_de1_text "measurements" 1800 940 -text [translate "Resolution"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+			add_de1_widget "measurements" scale 1800 1000 {} -from 320 -to 2800 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
+			add_de1_variable "measurements" 1800 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(screen_size_width) x $::settings(screen_size_height)}
 			calculate_screen_flip_value
-			add_de1_widget "measurements" checkbutton 2140 1060  {} -text [translate "flip"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::globals(screen_flip)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command calculate_screen_flip_value
+			#add_de1_widget "measurements" checkbutton 2100 1320  {} -text [translate "flip"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::globals(screen_flip)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command calculate_screen_flip_value
+
+			dui add dtoggle "measurements" 2300 954 -height 40 -width 80 -anchor ne -variable ::settings(screen_flip) -command calculate_screen_flip_value
+			add_de1_text "measurements" 2210 946 -text [translate "flip"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
+
 
 			
 		add_de1_text "measurements" 340 480 -text [translate "Screen saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
