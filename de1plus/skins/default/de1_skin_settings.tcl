@@ -228,17 +228,16 @@ add_de1_text "settings_2c2" 70 230 -text [translate "Preheat water tank"] -font 
 	add_de1_widget "settings_2c2" scale 70 300 {} -to 49 -from -4 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 2400]  -width [rescale_y_skin 150] -variable ::settings(tank_desired_water_temperature) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "settings_2c2" 70 450 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_temperature_setting_or_off $::settings(tank_desired_water_temperature)]}
 
+
 # total water volume stopping of shots
 add_de1_text "settings_2c2" 70 530 -text [translate "Stop at water volume"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 	add_de1_widget "settings_2c2" scale 70 600 {} -to 2240 -from -240 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 1500]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "settings_2c2" 70 750 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume_advanced)]}
 
-	#	dui add dclicker "settings_2c2" 1600 900 -bwidth 610 -bheight 75 -tags stop_water_volume -labelvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume_advanced)]} -style dye_double -min 1 -max 2000 -default $::settings(final_desired_shot_volume_advanced) -n_decimals 0 -smallincrement 1 -bigincrement 10 -editor_page yes -editor_page_title [translate "Stop at water volume"] 
-	# dui add dclicker "settings_2c2" 1600 1000 -bwidth 610 -bheight 75 -tags drink_tds -labelvariable {$%NS::data(drink_tds)%} -style dye_double -min 1 -max 100 -default 10 -n_decimals 2 -smallincrement 1 -bigincrement 10 -editor_page yes -editor_page_title [translate "Edit Total Dissolved Solids (%%)"] 
-	
-
-		
-
+#	dui add dclicker "settings_2c2" 1670 930 -bwidth 610  -bheight 75 -tags final_desired_shot_volume_advanced -orient h -style default \
+#		-labelvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume_advanced)]} \
+#		-variable ::settings(final_desired_shot_volume_advanced) -min 0 -max 2000 -default 5 -n_decimals 0 \
+#		-smallincrement 1 -bigincrement 10 -editor_page yes -editor_page_title [translate "Stop at water volume"]	
 	
 	add_de1_text "settings_2c2" 1670 530 -text [translate "Track water volume"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 	add_de1_widget "settings_2c2" scale 1670 600 {} -to 20 -from -10 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 500]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume_advanced_count_start) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
@@ -368,6 +367,7 @@ add_de1_text "settings_2c" 1380 680 -text [translate "sensor"] -font Helv_6 -fil
 	add_de1_variable "settings_2c" 1380 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[translate [ifexists ::current_adv_step(sensor)]]}
 
 proc settings2c_pressure_button {direction} {
+
 	say [translate {pressure}] $::settings(sound_button_in)
 
 	if {[ifexists ::current_adv_step(pump)] == ""} {
@@ -464,6 +464,7 @@ proc settings2c_flow_button {direction} {
 }
 
 proc settings2c_pressure_label {} {
+
 	if {[ifexists ::current_adv_step(max_flow_or_pressure)] > 0} {
 		return "$::current_adv_step(max_flow_or_pressure) bar"
 	}
@@ -482,12 +483,39 @@ proc settings2c_flow_label {} {
 add_de1_variable "settings_2c" 1710 680 -text ""  -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center"  -textvariable {[if {[ifexists ::current_adv_step(pump)] == "flow"} {return [translate "flow"]} else { return [translate "flow limit"] }]}
 add_de1_variable "settings_2c" 2010 680 -text ""  -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center"  -textvariable {[if {[ifexists ::current_adv_step(pump)] == "pressure"} {return [translate "pressure"]} else { return [translate "pressure limit"] }]}
 	add_de1_button "settings_2c" { settings2c_flow_button up } 1580 310 1820 410 ""
-	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "flow"; update_onscreen_variables; save_current_adv_shot_step; update_de1_explanation_chart} 1580 430 1820 520 ""
+	add_de1_button "settings_2c" { tap_flow_central_button } 1580 430 1820 520 ""
 	add_de1_button "settings_2c" { settings2c_flow_button down } 1580 540 1820 640 ""
 
+proc tap_pressure_central_button {} {
+	say [translate {pressure}] $::settings(sound_button_in);
+	if {$::current_adv_step(pump) != "pressure"} {
+		set ::current_adv_step(pump) "pressure"; 
+	} else {
+		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"]
+	}
+
+	update_onscreen_variables; 
+	save_current_adv_shot_step; 
+	update_de1_explanation_chart
+}
+
+proc tap_flow_central_button {} {
+
+
+	say [translate {pressure}] $::settings(sound_button_in);
+	if {$::current_adv_step(pump) != "flow"} {
+		set ::current_adv_step(pump) "flow"; 
+	} else {
+		dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"]
+	}
+	
+	update_onscreen_variables; 
+	save_current_adv_shot_step; 
+	update_de1_explanation_chart
+}
 
 	add_de1_button "settings_2c" { settings2c_pressure_button up } 1890 310 2120 410 ""
-	add_de1_button "settings_2c" { say [translate {pressure}] $::settings(sound_button_in);set ::current_adv_step(pump) "pressure"; update_onscreen_variables; save_current_adv_shot_step; update_de1_explanation_chart} 1890 430 2120 520 ""
+	add_de1_button "settings_2c" { tap_pressure_central_button } 1890 430 2120 520 ""
 	add_de1_button "settings_2c" { settings2c_pressure_button down } 1890 540 2120 640 ""
 	add_de1_variable "settings_2c" 1710 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable { [ if {[ifexists ::current_adv_step(pump)] == "flow"} { return [return_flow_measurement $::current_adv_step(flow)] } else { settings2c_flow_label } ]  }
 	add_de1_variable "settings_2c" 2010 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "pressure"} {return_pressure_measurement $::current_adv_step(pressure)} else { settings2c_pressure_label }] }
@@ -1647,4 +1675,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 1 show_settings measurements
+#after 1 show_settings settings_2c
