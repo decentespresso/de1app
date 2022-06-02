@@ -692,7 +692,17 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 # buttons to other settings pages
 	add_de1_text "settings_4" 1656 416 -text [translate "Skin"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
 
-		add_de1_widget "tabletstyles" checkbutton 1300 1060 {} -text [translate "Only show most popular skins"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(show_only_most_popular_skins)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 -command {refresh_skin_directories; fill_skin_listbox}
+		#add_de1_widget "tabletstyles" checkbutton 1300 860 {} -text [translate "Only show most popular skins"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(show_only_most_popular_skins)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 -command {refresh_skin_directories; fill_skin_listbox}
+		add_de1_text "tabletstyles" 1450 1060 -justify left -anchor "nw" -font $optionfont -text [translate "Only show most popular skins"]  -fill "#4e85f4" -width [rescale_x_skin 1000] 
+		dui add dtoggle "tabletstyles" 1300 1060 -height 60 -width 120 -anchor nw -variable ::settings(show_only_most_popular_skins) -command { if {1 == 1} { toggle_show_only_popular_skins } }
+		add_de1_button "tabletstyles" { set ::settings(show_only_most_popular_skins) [expr {!$::settings(show_only_most_popular_skins)}]; toggle_show_only_popular_skins } 1300 1060 2100 1120
+
+		
+		proc toggle_show_only_popular_skins {} {
+			refresh_skin_directories
+			fill_skin_listbox
+		}
+
 
 		add_de1_button "settings_4" {say [translate {Styles}] $::settings(sound_button_in); set_next_page off tabletstyles; page_show tabletstyles; preview_tablet_skin; set_skins_scrollbar_dimensions }  1290 306 1900 510
 		set ::table_style_preview_image [add_de1_image "tabletstyles" 1300 450 ""]
@@ -805,18 +815,21 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		
 		#add_de1_text "measurements" 1300 480 -text [translate "Units"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			#add_de1_widget "measurements" checkbutton 1300 560 {} -text [translate "Fahrenheit"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
-			dui add dselector "measurements" 2280 480 -bwidth 500 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] 
+			dui add dselector "measurements" 2280 480 -bwidth 600 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] 
+			
 
 
 
 			#add_de1_widget "measurements" checkbutton 1650 60 {} -text [translate "AM/PM"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_ampm)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 			dui add dtoggle "measurements" 1280 504 -height 60 -anchor nw -variable ::settings(enable_ampm) 
 			add_de1_text "measurements" 1420 504 -text [translate "AM/PM"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+			add_de1_button "measurements" { set ::settings(enable_ampm) [expr {!$::settings(enable_ampm)}] } 1280 504 1650 564
 
 			#add_de1_widget "measurements" checkbutton 2000 560 {} -text [translate "1.234,56"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_commanumbers)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
 			dui add dtoggle "measurements" 1280 604 -height 60 -anchor nw -variable ::settings(enable_commanumbers) 
 			add_de1_text "measurements" 1420 604 -text [translate "1.234,56"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+			add_de1_button "measurements" { set ::settings(enable_commanumbers) [expr {!$::settings(enable_commanumbers)}] } 1280 604 1670 664
 
 	
 		
@@ -855,7 +868,8 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			#add_de1_widget "measurements" checkbutton 950 90  {} -text [translate "clock"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(display_time_in_screen_saver)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
 			dui add dtoggle "measurements" 1140 510 -height 40 -width 80 -anchor ne -variable ::settings(display_time_in_screen_saver) 
-			add_de1_text "measurements" 1040 504 -text [translate "clock"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
+			add_de1_text "measurements" 1040 498 -text [translate "clock"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
+			add_de1_button "measurements" { set ::settings(display_time_in_screen_saver) [expr {!$::settings(display_time_in_screen_saver)}] } 840 504 1140 550
 
 
 			#if {$::android != 1} {
@@ -864,6 +878,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 			dui add dtoggle "measurements" 1280 704 -height 60 -anchor nw -variable ::settings(use_finger_down_for_tap) 
 			add_de1_text "measurements" 1420 704 -text [translate "Fast tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+			add_de1_button "measurements" { set ::settings(use_finger_down_for_tap) [expr {!$::settings(use_finger_down_for_tap)}] } 1280 704 1670 764
 
 
 			#}
@@ -899,7 +914,9 @@ proc calculate_screen_flip_value {} {
 			#add_de1_widget "measurements" checkbutton 2100 1320  {} -text [translate "flip"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::globals(screen_flip)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command calculate_screen_flip_value
 
 			dui add dtoggle "measurements" 2300 954 -height 40 -width 80 -anchor ne -variable ::settings(screen_flip) -command calculate_screen_flip_value
-			add_de1_text "measurements" 2210 946 -text [translate "flip"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
+			add_de1_text "measurements" 2210 940 -text [translate "flip"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
+			add_de1_button "measurements" { set ::settings(screen_flip) [expr {!$::settings(screen_flip)}] } 2010 946 2310 990 
+
 
 
 			
@@ -998,7 +1015,11 @@ proc scheduler_feature_hide_show_refresh {} {
 
 #add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
 # scheduled power up/down
-add_de1_widget "settings_3" checkbutton 50 1140 {} -text [translate "Keep hot"] -padx 0 -pady 0 -indicatoron true  -font Helv_8_bold -bg #FFFFFF -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::settings(scheduler_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -command scheduler_feature_hide_show_refresh -relief flat 
+#add_de1_widget "settings_3" checkbutton 50 1440 {} -text [translate "Keep hot"] -padx 0 -pady 0 -indicatoron true  -font Helv_8_bold -bg #FFFFFF -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::settings(scheduler_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -command scheduler_feature_hide_show_refresh -relief flat 
+add_de1_text "settings_3" 180 1134 -justify left -anchor "nw" -font $optionfont -text [translate "Keep hot"]  -fill "#4e85f4" -width [rescale_x_skin 1000] 
+dui add dtoggle "settings_3" 50 1140 -height 50 -width 100 -anchor nw -variable ::settings(scheduler_enable) -command scheduler_feature_hide_show_refresh 
+add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {!$::settings(scheduler_enable)}] } 50 1140 500 1190
+
 
 	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
 	add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw"  -tags [list scheduler_start_time scheduler] -textvariable {[translate "Start"] [format_alarm_time $::settings(scheduler_wake)]}
@@ -1426,8 +1447,17 @@ add_de1_text "calibrate calibrate2 calibrate3" 1280 290 -text [translate "Calibr
 		add_de1_button "calibrate2" {set ::settings(hot_water_idle_temp) 850; set ::settings(espresso_warmup_timeout) 100; set ::settings(phase_1_flow_rate) 10; set ::settings(phase_2_flow_rate) 40; } 300 980 840 1060 ""		
 		add_de1_button "calibrate2" {set ::settings(hot_water_idle_temp) 990; set ::settings(espresso_warmup_timeout) 10; set ::settings(phase_1_flow_rate) 20; set ::settings(phase_2_flow_rate) 40; } 300 1070 840 1150 ""		
 		
-		add_de1_widget "calibrate3" checkbutton 1350 560 {} -text [translate "Two tap steam stop"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(steam_two_tap_stop)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 
-		add_de1_widget "calibrate3" checkbutton 1350 660 {} -text [translate "Slow start"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(insert_preinfusion_pause)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 
+		#add_de1_widget "calibrate3" checkbutton 1350 860 {} -text [translate "Two tap steam stop"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(steam_two_tap_stop)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 
+		#add_de1_widget "calibrate3" checkbutton 1350 960 {} -text [translate "Slow start"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(insert_preinfusion_pause)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0 
+
+		dui add dtoggle "calibrate3" 1350 560 -height 60 -anchor nw -variable ::settings(steam_two_tap_stop) 
+		add_de1_text "calibrate3" 1500 560 -text [translate "Two tap steam stop"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+		add_de1_button "calibrate3" { set ::settings(steam_two_tap_stop) [expr {!$::settings(steam_two_tap_stop)}] } 1350 560 1950 620
+
+		dui add dtoggle "calibrate3" 1350 660 -height 60 -anchor nw -variable ::settings(insert_preinfusion_pause) 
+		add_de1_text "calibrate3" 1500 660 -text [translate "Slow start"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+		add_de1_button "calibrate3" { set ::settings(insert_preinfusion_pause) [expr {!$::settings(insert_preinfusion_pause)}] } 1350 660 1950 720
+
 
 		add_de1_text "calibrate3" 350 500  -text [translate "Hot water flow rate"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
 		add_de1_widget "calibrate3" scale 350 560  {} -to 10 -from 1 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution .1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(hotwater_flow) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
