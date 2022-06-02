@@ -7948,7 +7948,7 @@ namespace eval ::dui {
 			}
 
 			# Transparent tappable rectangle
-			set id [$can create rect [expr {$x-6}] [expr {$y+12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} \
+			set id [$can create rect [expr {$x-6}] [expr {$y-12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} \
 				-tags $tags -state hidden]
 			lappend ids $id
 			if { $ns ne "" } {
