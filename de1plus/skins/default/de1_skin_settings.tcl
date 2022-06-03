@@ -1773,4 +1773,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-after 1 show_settings settings_2a
+#after 1 show_settings settings_2a
