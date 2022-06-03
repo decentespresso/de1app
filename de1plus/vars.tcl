@@ -1523,6 +1523,14 @@ proc celsius_to_fahrenheit {in} {
 	return $x
 }
 
+proc fahrenheit_to_celsius {in} {
+	set x 0
+	catch {
+		set x [expr {($in - 32) / 1.8}]
+	}
+	return $x
+}
+
 proc ml_to_oz {in} {
 	set x 0
 	catch {
@@ -2324,7 +2332,7 @@ proc change_current_adv_shot_step_name {} {
 	fill_advanced_profile_steps_listbox
 }
 
-proc save_current_adv_shot_step {} {
+proc save_current_adv_shot_step { {discard {}} } {
 	set ::settings(advanced_shot) [lreplace $::settings(advanced_shot) [current_adv_step] [current_adv_step]  [array get ::current_adv_step]]
 
 	profile_has_changed_set

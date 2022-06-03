@@ -324,7 +324,11 @@ add_de1_variable "settings_2c" 1600 240 -text "" -font Helv_9_bold -fill "#7f879
 add_de1_text "settings_2c" 984 830 -text [translate "3: Maximum"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
 
-add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
+add_de1_widget "settings_2c" checkbutton 1600 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
+# for some reason, use of a dtoggle here is buggy below, the dtoggle does not update its visual state, but otherwise works fine
+# add_de1_text "settings_2c" 1700 830 -text [translate "4: Move on if..."] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
+# dui add dtoggle "settings_2c"  1600 840 -width 80 -height 40 -anchor nw  -command save_current_adv_shot_step  -variable ::current_adv_step(exit_if) -tags xyz
+# add_de1_variable "settings_2c" 2220 840 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "nw" -textvariable {$::current_adv_step(exit_if)}
 
 
 set adv_listbox_height [expr {int(7 * $::globals(listbox_length_multiplier))}]
@@ -361,6 +365,14 @@ add_de1_button "settings_2c" {say [translate {add}] $::settings(sound_button_in)
 add_de1_text "settings_2c" 1070 680 -text [translate "goal"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1070 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_temperature_setting [ifexists ::current_adv_step(temperature)]]}
 	add_de1_button "settings_2c" {say [translate {temperature}] $::settings(sound_button_in);vertical_clicker 1.5 .5 ::current_adv_step(temperature) $::settings(minimum_water_temperature) 105 %x %y %x0 %y0 %x1 %y1 %b; save_current_adv_shot_step; update_de1_explanation_chart} 980 310 1150 640 ""
+	
+	#dui add dclicker "settings_2c" 980 310 -bwidth 200  -bheight 320 -tags temperature -orient v -style default -variable ::current_adv_step(temperature) -min $::settings(minimum_water_temperature) -max 105 -default 5 -n_decimals 1  -smallincrement 0.5 -bigincrement 10 -use_biginc false -editor_page yes -editor_page_title [translate "Temperature"] -command ::after_temp_dclicker
+
+#proc ::after_temp_dclicker {} {
+#	save_current_adv_shot_step
+#	profile_has_changed_set
+#}	
+
 
 add_de1_text "settings_2c" 1380 680 -text [translate "sensor"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" { say [translate {sensor}] $::settings(sound_button_in); if {[ifexists ::current_adv_step(sensor)] == "water"} {  set ::current_adv_step(sensor) "coffee" } else { set ::current_adv_step(sensor) "water" }; save_current_adv_shot_step } 1200 310 1550 680 ""
@@ -486,14 +498,17 @@ add_de1_variable "settings_2c" 2010 680 -text ""  -font Helv_6 -fill "#7f879a" -
 	add_de1_button "settings_2c" { tap_flow_central_button } 1580 430 1820 520 ""
 	add_de1_button "settings_2c" { settings2c_flow_button down } 1580 540 1820 640 ""
 
+
+
 proc tap_pressure_central_button {} {
 	say [translate {pressure}] $::settings(sound_button_in);
 	if {$::current_adv_step(pump) != "pressure"} {
 		set ::current_adv_step(pump) "pressure"; 
 	} else {
-		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"]
+		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -return_callback save_current_adv_shot_step
 	}
 
+	profile_has_changed_set
 	update_onscreen_variables; 
 	save_current_adv_shot_step; 
 	update_de1_explanation_chart
@@ -501,24 +516,64 @@ proc tap_pressure_central_button {} {
 
 proc tap_flow_central_button {} {
 
+	profile_has_changed_set
 
 	say [translate {pressure}] $::settings(sound_button_in);
 	if {$::current_adv_step(pump) != "flow"} {
 		set ::current_adv_step(pump) "flow"; 
 	} else {
-		dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"]
+		dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"] -return_callback save_current_adv_shot_step
 	}
+	
 	
 	update_onscreen_variables; 
 	save_current_adv_shot_step; 
 	update_de1_explanation_chart
+	profile_has_changed_set
+}
+
+proc tap_flow_text_label {} {
+	profile_has_changed_set
+	if {$::current_adv_step(pump) != "flow"} {
+		dui page open_dialog dui_number_editor ::current_adv_step(max_flow_or_pressure) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(max_flow_or_pressure) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow limit"] -return_callback save_current_adv_shot_step
+	} else {
+		dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"] -return_callback save_current_adv_shot_step
+	}
+	
+
+}
+proc tap_pressure_text_label {} {
+	if {$::current_adv_step(pump) != "pressure"} {
+		dui page open_dialog dui_number_editor ::current_adv_step(max_flow_or_pressure) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(max_flow_or_pressure) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Pressure limit"] -return_callback save_current_adv_shot_step
+	} else {
+		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -return_callback save_current_adv_shot_step
+	}
+	profile_has_changed_set
+	save_current_adv_shot_step
 }
 
 	add_de1_button "settings_2c" { settings2c_pressure_button up } 1890 310 2120 410 ""
 	add_de1_button "settings_2c" { tap_pressure_central_button } 1890 430 2120 520 ""
 	add_de1_button "settings_2c" { settings2c_pressure_button down } 1890 540 2120 640 ""
+
+
 	add_de1_variable "settings_2c" 1710 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable { [ if {[ifexists ::current_adv_step(pump)] == "flow"} { return [return_flow_measurement $::current_adv_step(flow)] } else { settings2c_flow_label } ]  }
 	add_de1_variable "settings_2c" 2010 744 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -justify "center" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "pressure"} {return_pressure_measurement $::current_adv_step(pressure)} else { settings2c_pressure_label }] }
+
+	add_de1_button "settings_2c" { tap_flow_text_label } 1580 650 1820 780 ""
+	add_de1_button "settings_2c" { tap_pressure_text_label } 1890 650 2120 780 "" 
+
+proc temp_entry_callback { {discard {}} } {
+	set ::current_adv_step(temperature) [fahrenheit_to_celsius $::fahrenheit_water]
+	save_current_adv_shot_step
+	profile_has_changed_set
+}
+
+	if {$::settings(enable_fahrenheit) == 1} {
+		add_de1_button "settings_2c" { set ::fahrenheit_water [round_to_integer [celsius_to_fahrenheit $::current_adv_step(temperature)]]; profile_has_changed_set; dui page open_dialog dui_number_editor ::fahrenheit_water -n_decimals 0 -min 0 -max [celsius_to_fahrenheit 105]  -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Temperature"] -return_callback temp_entry_callback  } 980 650 1150 780 ""   
+	} else {
+		add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(temperature) -n_decimals 1 -min 0 -max 105 -default $::current_adv_step(temperature) -smallincrement 0.5 -bigincrement 10 -use_biginc 1 -page_title [translate "Temperature"] -return_callback save_current_adv_shot_step  } 980 650 1150 780 ""   
+	}
 
 
 add_de1_text "settings_2c" 2345 680 -text [translate "transition"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
@@ -531,34 +586,34 @@ add_de1_text "settings_2c" 1060 1270 -text [translate "time"] -font Helv_6 -fill
 	add_de1_variable "settings_2c" 1060 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[seconds_text_abbreviated [round_to_integer [ifexists ::current_adv_step(seconds)]]]}
 
 
-add_de1_text "settings_2c" 1230 1270 -text [translate "volume"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 1260 1270 -text [translate "volume"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(volume) 0 1023 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1144 900 1320 1240 ""
-	add_de1_variable "settings_2c" 1230 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_stop_at_volume_measurement [ifexists ::current_adv_step(volume)]]}
+	add_de1_variable "settings_2c" 1260 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_stop_at_volume_measurement [ifexists ::current_adv_step(volume)]]}
 
-add_de1_text "settings_2c" 1400 1270 -text [translate "weight"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(weight) 0 1000 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1324 900 1500 1240 ""
-	add_de1_variable "settings_2c" 1400 1340 -text "-" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_stop_at_weight_measurement [ifexists ::current_adv_step(weight)]]}
+add_de1_text "settings_2c" 1450 1270 -text [translate "weight"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(weight) 0 1000 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1354 900 1540 1240 ""
+	add_de1_variable "settings_2c" 1450 1340 -text "-" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_stop_at_weight_measurement [ifexists ::current_adv_step(weight)]]}
 
 
-add_de1_text "settings_2c" 1654 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-add_de1_text "settings_2c" 1654 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_variable "settings_2c" 1654 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_over"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_over) 11] } else  { return "-" } ] }
-	add_de1_button "settings_2c" { say [translate {pressure is over}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_over" } { set ::current_adv_step(exit_type) "pressure_over" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_pressure_over) 0 13 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 1540 900 1750 1240 ""
+add_de1_text "settings_2c" 1700 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 1700 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+	add_de1_variable "settings_2c" 1700 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_over"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_over) 11] } else  { return "-" } ] }
+	add_de1_button "settings_2c" { say [translate {pressure is over}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_over" } { set ::current_adv_step(exit_type) "pressure_over" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_pressure_over) 0 13 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 1580 900 1750 1240 ""
 
-add_de1_text "settings_2c" 1890 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-add_de1_text "settings_2c" 1890 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_variable "settings_2c" 1890 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_under"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_under) 0] } else  { return "-" } ] }
+add_de1_text "settings_2c" 1930 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 1930 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+	add_de1_variable "settings_2c" 1930 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_under"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_under) 0] } else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {pressure is under}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_under" } { set ::current_adv_step(exit_type) "pressure_under" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_pressure_under) 0 13 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 1790 900 1990 1240 ""
 
 
-add_de1_text "settings_2c" 2144 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-add_de1_text "settings_2c" 2144 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_variable "settings_2c" 2144 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_over"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_over) 6]} else  { return "-" } ] }
+add_de1_text "settings_2c" 2154 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 2154 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+	add_de1_variable "settings_2c" 2154 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_over"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_over) 6]} else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {flow is over}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if {[ifexists ::current_adv_step(exit_type)] != "flow_over" } { set ::current_adv_step(exit_type) "flow_over" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_flow_over) 0 6 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 2020 900 2230 1240 ""
 
-add_de1_text "settings_2c" 2394 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-add_de1_text "settings_2c" 2394 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_variable "settings_2c" 2394 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_under"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_under) 0] } else  { return "-" } ] }
+add_de1_text "settings_2c" 2388 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+add_de1_text "settings_2c" 2388 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
+	add_de1_variable "settings_2c" 2388 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_under"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_under) 0] } else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {flow is under}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "flow_under" } { set ::current_adv_step(exit_type) "flow_under" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_flow_under) 0 6 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 2270 900 2500 1240 ""
 
 
