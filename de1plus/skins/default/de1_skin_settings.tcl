@@ -223,16 +223,23 @@ add_de1_widget "settings_2b" graph 24 220 {
 
 ############################
 
+
 # preheat tank temperature
 add_de1_text "settings_2c2" 70 230 -text [translate "Preheat water tank"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-	add_de1_widget "settings_2c2" scale 70 300 {} -to 49 -from -4 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 2400]  -width [rescale_y_skin 150] -variable ::settings(tank_desired_water_temperature) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "settings_2c2" 70 450 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_temperature_setting_or_off $::settings(tank_desired_water_temperature)]}
+	add_de1_widget "settings_2c2" scale 70 300 {} -to 45 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 2400]  -width [rescale_y_skin 120] -variable ::settings(tank_desired_water_temperature) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2c2" 70 420 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_temperature_setting_or_off $::settings(tank_desired_water_temperature)]}
+	add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(tank_desired_water_temperature) -n_decimals 0 -min 1 -max 45 -default $::settings(tank_desired_water_temperature) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Preheat water tank"] -return_callback callback_after_adv_profile_data_entry  } 50 210 600 294 ""   
+	add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(tank_desired_water_temperature) -n_decimals 0 -min 1 -max 45 -default $::settings(tank_desired_water_temperature) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Preheat water tank"] -return_callback callback_after_adv_profile_data_entry  } 50 424 600 500 ""   
+
 
 
 # total water volume stopping of shots
 add_de1_text "settings_2c2" 70 530 -text [translate "Stop at water volume"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-	add_de1_widget "settings_2c2" scale 70 600 {} -to 2240 -from -240 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 1500]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "settings_2c2" 70 750 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume_advanced)]}
+	add_de1_widget "settings_2c2" scale 70 600 {} -to 2000 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 1500]  -width [rescale_y_skin 120] -variable ::settings(final_desired_shot_volume_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2c2" 70 720 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume_advanced)]}
+	add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(final_desired_shot_volume_advanced) -n_decimals 0 -min 1 -max 2000 -default $::settings(final_desired_shot_volume_advanced) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Stop at water volume"] -return_callback callback_after_adv_profile_data_entry  } 50 504 600 592 ""   
+	add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(final_desired_shot_volume_advanced) -n_decimals 0 -min 1 -max 2000 -default $::settings(final_desired_shot_volume_advanced) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Stop at water volume"] -return_callback callback_after_adv_profile_data_entry  } 50 722 600 798 ""   
+
 
 #	dui add dclicker "settings_2c2" 1670 930 -bwidth 610  -bheight 75 -tags final_desired_shot_volume_advanced -orient h -style default \
 #		-labelvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume_advanced)]} \
@@ -240,8 +247,8 @@ add_de1_text "settings_2c2" 70 530 -text [translate "Stop at water volume"] -fon
 #		-smallincrement 1 -bigincrement 10 -editor_page yes -editor_page_title [translate "Stop at water volume"]	
 	
 	add_de1_text "settings_2c2" 1670 530 -text [translate "Track water volume"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-	add_de1_widget "settings_2c2" scale 1670 600 {} -to 20 -from -10 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 500]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_volume_advanced_count_start) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "settings_2c2" 1670 750 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[when_to_start_pour_tracking_advanced]}
+	add_de1_widget "settings_2c2" scale 1670 600 {} -to 10 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 1 -length [rescale_x_skin 800]  -width [rescale_y_skin 120] -variable ::settings(final_desired_shot_volume_advanced_count_start) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2c2" 1670 720 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 600 -justify "left" -textvariable {[when_to_start_pour_tracking_advanced]}
 
 proc apply_range_to_all_steps {ignored} {
 	set new_profile {}
@@ -260,12 +267,19 @@ proc apply_range_to_all_steps {ignored} {
 }
 
 # limits
-add_de1_text "settings_2c2" 70 830 -text [translate "Limiter ranges of action"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-add_de1_widget "settings_2c2" scale 70 900  {} -from 0 -to 8  -background $::settings(color_stage_2)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_y_skin 150] -variable ::settings(maximum_flow_range_advanced)     -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-add_de1_variable "settings_2c2" 70 1050 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_flow_range_advanced) mL/s}
+add_de1_text "settings_2c2" 70 830 -text [translate "Limit flow range"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+add_de1_widget "settings_2c2" scale 70 900  {} -from 0 -to 8  -background $::settings(color_stage_2)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_y_skin 120] -variable ::settings(maximum_flow_range_advanced)     -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+add_de1_variable "settings_2c2" 70 1020 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_flow_range_advanced) mL/s}
+add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_flow_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_flow_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit flow range"] -return_callback callback_after_adv_profile_data_entry  } 50 830 600 894 ""   
+add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_flow_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_flow_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit flow range"] -return_callback callback_after_adv_profile_data_entry  } 50 1024 600 1100 ""   
 
-add_de1_widget "settings_2c2" scale 800 900 {} -from 0 -to 8 -background $::settings(color_stage_2)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_y_skin 150] -variable ::settings(maximum_pressure_range_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-add_de1_variable "settings_2c2" 800 1050 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_pressure_range_advanced) bar}
+
+
+add_de1_text "settings_2c2" 800 830 -text [translate "Limit pressure range"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
+add_de1_widget "settings_2c2" scale 800 900 {} -from 0 -to 8 -background $::settings(color_stage_2)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_y_skin 120] -variable ::settings(maximum_pressure_range_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+add_de1_variable "settings_2c2" 800 1020 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_pressure_range_advanced) bar}
+add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_pressure_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_pressure_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit pressure range"] -return_callback callback_after_adv_profile_data_entry  } 780 830 1330 894 ""   
+add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_pressure_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_pressure_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit pressure range"] -return_callback callback_after_adv_profile_data_entry  } 780 1024 1330 1100 ""   
 
 
 # (beta) weight based shot ending, only displayed if a skale is connected
@@ -276,8 +290,12 @@ if {$::settings(scale_bluetooth_address) != ""} {
 
 	# 1/18/19 support for weight-bsaed ending of advanced shots
 	add_de1_text "settings_2c2" 70 1130 -text [translate "Stop at weight"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-	add_de1_widget "settings_2c2" scale 70 1200 {} -to 2130 -from -130 -background $::settings(color_stage_3)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.2 -length [rescale_x_skin 2400]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "settings_2c2" 70 1350 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
+	add_de1_widget "settings_2c2" scale 70 1200 {} -to 2000 -from 0 -background $::settings(color_stage_3)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.2 -length [rescale_x_skin 2400]  -width [rescale_y_skin 120] -variable ::settings(final_desired_shot_weight_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_variable "settings_2c2" 70 1320 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
+
+	add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(final_desired_shot_weight_advanced) -n_decimals 1 -min 0.1 -max 2000 -default $::settings(final_desired_shot_weight_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Stop at weight"] -return_callback callback_after_adv_profile_data_entry  } 50 1130 600 1194 ""   
+	add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(final_desired_shot_weight_advanced) -n_decimals 1 -min 0.1 -max 2000 -default $::settings(final_desired_shot_weight_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Stop at weight"] -return_callback callback_after_adv_profile_data_entry  } 50 1324 600 1400 ""   
+
 
 } else {
 	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at pour:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
@@ -608,23 +626,23 @@ add_de1_text "settings_2c" 1450 1270 -text [translate "weight"] -font Helv_6 -fi
 add_de1_text "settings_2c" 1700 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 1700 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1700 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_over"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_over) 11] } else  { return "-" } ] }
-	add_de1_button "settings_2c" { say [translate {pressure is over}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_over" } { set ::current_adv_step(exit_type) "pressure_over" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_pressure_over) 0 13 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 1580 900 1750 1240 ""
-	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_pressure_over) -n_decimals 1 -min 0 -max 11 -default $::current_adv_step(exit_pressure_over) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure is over"] -return_callback callback_after_adv_profile_data_entry  } 1580 1250 1750 1380 ""   
+	add_de1_button "settings_2c" { say [translate {pressure is over}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_over" } { set ::current_adv_step(exit_type) "pressure_over" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_pressure_over) 0 13 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 1580 900 1780 1240 ""
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_pressure_over) -n_decimals 1 -min 0 -max 11 -default $::current_adv_step(exit_pressure_over) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure is over"] -return_callback callback_after_adv_profile_data_entry  } 1580 1250 1780 1380 ""   
 
 
 
 add_de1_text "settings_2c" 1930 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 1930 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1930 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_under"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_under) 0] } else  { return "-" } ] }
-	add_de1_button "settings_2c" { say [translate {pressure is under}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_under" } { set ::current_adv_step(exit_type) "pressure_under" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_pressure_under) 0 13 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 1790 900 1990 1240 ""
-	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_pressure_under) -n_decimals 1 -min 0 -max 11 -default $::current_adv_step(exit_pressure_under) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure is under"] -return_callback callback_after_adv_profile_data_entry  } 1790 1250 1990 1380 ""   
+	add_de1_button "settings_2c" { say [translate {pressure is under}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_under" } { set ::current_adv_step(exit_type) "pressure_under" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_pressure_under) 0 13 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 1790 900 2010 1240 ""
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_pressure_under) -n_decimals 1 -min 0 -max 11 -default $::current_adv_step(exit_pressure_under) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure is under"] -return_callback callback_after_adv_profile_data_entry  } 1790 1250 2010 1380 ""   
 
 
 add_de1_text "settings_2c" 2154 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 2154 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 2154 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_over"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_over) 6]} else  { return "-" } ] }
-	add_de1_button "settings_2c" { say [translate {flow is over}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if {[ifexists ::current_adv_step(exit_type)] != "flow_over" } { set ::current_adv_step(exit_type) "flow_over" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_flow_over) 0 6 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 2020 900 2230 1240 ""
-	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_flow_over) -n_decimals 1 -min 0 -max 6 -default $::current_adv_step(exit_flow_over) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Flow is over"] -return_callback callback_after_adv_profile_data_entry  } 2020 1250 2230 1380 ""   
+	add_de1_button "settings_2c" { say [translate {flow is over}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if {[ifexists ::current_adv_step(exit_type)] != "flow_over" } { set ::current_adv_step(exit_type) "flow_over" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_flow_over) 0 6 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 2020 900 2260 1240 ""
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_flow_over) -n_decimals 1 -min 0 -max 6 -default $::current_adv_step(exit_flow_over) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Flow is over"] -return_callback callback_after_adv_profile_data_entry  } 2020 1250 2260 1380 ""   
 
 add_de1_text "settings_2c" 2388 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 2388 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
@@ -1746,4 +1764,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 1 show_settings settings_2c
+#after 1 show_settings settings_2c2
