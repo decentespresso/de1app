@@ -505,7 +505,7 @@ proc tap_pressure_central_button {} {
 	if {$::current_adv_step(pump) != "pressure"} {
 		set ::current_adv_step(pump) "pressure"; 
 	} else {
-		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -return_callback save_current_adv_shot_step
+		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -return_callback callback_after_adv_profile_data_entry
 	}
 
 	profile_has_changed_set
@@ -522,7 +522,7 @@ proc tap_flow_central_button {} {
 	if {$::current_adv_step(pump) != "flow"} {
 		set ::current_adv_step(pump) "flow"; 
 	} else {
-		dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"] -return_callback save_current_adv_shot_step
+		dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"] -return_callback callback_after_adv_profile_data_entry
 	}
 	
 	
@@ -535,18 +535,18 @@ proc tap_flow_central_button {} {
 proc tap_flow_text_label {} {
 	profile_has_changed_set
 	if {$::current_adv_step(pump) != "flow"} {
-		dui page open_dialog dui_number_editor ::current_adv_step(max_flow_or_pressure) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(max_flow_or_pressure) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow limit"] -return_callback save_current_adv_shot_step
+		dui page open_dialog dui_number_editor ::current_adv_step(max_flow_or_pressure) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(max_flow_or_pressure) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow limit"] -return_callback callback_after_adv_profile_data_entry
 	} else {
-		dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"] -return_callback save_current_adv_shot_step
+		dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"] -return_callback callback_after_adv_profile_data_entry
 	}
 	
 
 }
 proc tap_pressure_text_label {} {
 	if {$::current_adv_step(pump) != "pressure"} {
-		dui page open_dialog dui_number_editor ::current_adv_step(max_flow_or_pressure) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(max_flow_or_pressure) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Pressure limit"] -return_callback save_current_adv_shot_step
+		dui page open_dialog dui_number_editor ::current_adv_step(max_flow_or_pressure) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(max_flow_or_pressure) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Pressure limit"] -return_callback callback_after_adv_profile_data_entry
 	} else {
-		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -return_callback save_current_adv_shot_step
+		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -return_callback callback_after_adv_profile_data_entry
 	}
 	profile_has_changed_set
 	save_current_adv_shot_step
@@ -569,11 +569,18 @@ proc temp_entry_callback { {discard {}} } {
 	profile_has_changed_set
 }
 
-	if {$::settings(enable_fahrenheit) == 1} {
-		add_de1_button "settings_2c" { set ::fahrenheit_water [round_to_integer [celsius_to_fahrenheit $::current_adv_step(temperature)]]; profile_has_changed_set; dui page open_dialog dui_number_editor ::fahrenheit_water -n_decimals 0 -min 0 -max [celsius_to_fahrenheit 105]  -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Temperature"] -return_callback temp_entry_callback  } 980 650 1150 780 ""   
-	} else {
-		add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(temperature) -n_decimals 1 -min 0 -max 105 -default $::current_adv_step(temperature) -smallincrement 0.5 -bigincrement 10 -use_biginc 1 -page_title [translate "Temperature"] -return_callback save_current_adv_shot_step  } 980 650 1150 780 ""   
-	}
+
+proc callback_after_adv_profile_data_entry  { {discard {}} } {
+	save_current_adv_shot_step
+	profile_has_changed_set
+}
+
+# tap temperature label to do data entry
+if {$::settings(enable_fahrenheit) == 1} {
+	add_de1_button "settings_2c" { set ::fahrenheit_water [round_to_integer [celsius_to_fahrenheit $::current_adv_step(temperature)]]; profile_has_changed_set; dui page open_dialog dui_number_editor ::fahrenheit_water -n_decimals 0 -min 0 -max [celsius_to_fahrenheit 105]  -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Temperature"] -return_callback temp_entry_callback  } 980 650 1150 780 ""   
+} else {
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(temperature) -n_decimals 1 -min 0 -max 105 -default $::current_adv_step(temperature) -smallincrement 0.5 -bigincrement 10 -use_biginc 1 -page_title [translate "Temperature"] -return_callback callback_after_adv_profile_data_entry  } 980 650 1150 780 ""   
+}
 
 
 add_de1_text "settings_2c" 2345 680 -text [translate "transition"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
@@ -584,37 +591,46 @@ add_de1_text "settings_2c" 2345 680 -text [translate "transition"] -font Helv_6 
 add_de1_text "settings_2c" 1060 1270 -text [translate "time"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(seconds) 0 127 %x %y %x0 %y0 %x1 %y1 %b; save_current_adv_shot_step; update_de1_explanation_chart } 960 900 1140 1240 ""
 	add_de1_variable "settings_2c" 1060 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[seconds_text_abbreviated [round_to_integer [ifexists ::current_adv_step(seconds)]]]}
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(seconds) -n_decimals 0 -min 0 -max 127 -default $::current_adv_step(seconds) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Time"] -return_callback callback_after_adv_profile_data_entry  } 960 1250 1140 1380 ""   
 
 
 add_de1_text "settings_2c" 1260 1270 -text [translate "volume"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
-	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(volume) 0 1023 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1144 900 1320 1240 ""
+	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(volume) 0 1023 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1144 900 1344 1240 ""
 	add_de1_variable "settings_2c" 1260 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_stop_at_volume_measurement [ifexists ::current_adv_step(volume)]]}
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(volume) -n_decimals 0 -min 0 -max 1023 -default $::current_adv_step(volume) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Volume"] -return_callback callback_after_adv_profile_data_entry  } 1144 1250 1344 1380 ""   
 
 add_de1_text "settings_2c" 1450 1270 -text [translate "weight"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(weight) 0 1000 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1354 900 1540 1240 ""
 	add_de1_variable "settings_2c" 1450 1340 -text "-" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_stop_at_weight_measurement [ifexists ::current_adv_step(weight)]]}
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(weight) -n_decimals 0 -min 0 -max 1000 -default $::current_adv_step(weight) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Weight"] -return_callback callback_after_adv_profile_data_entry  } 1354 1250 1540 1380 ""   
 
 
 add_de1_text "settings_2c" 1700 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 1700 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1700 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_over"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_over) 11] } else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {pressure is over}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_over" } { set ::current_adv_step(exit_type) "pressure_over" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_pressure_over) 0 13 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 1580 900 1750 1240 ""
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_pressure_over) -n_decimals 1 -min 0 -max 11 -default $::current_adv_step(exit_pressure_over) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure is over"] -return_callback callback_after_adv_profile_data_entry  } 1580 1250 1750 1380 ""   
+
+
 
 add_de1_text "settings_2c" 1930 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 1930 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 1930 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "pressure_under"} { return_pressure_measurement [ifexists ::current_adv_step(exit_pressure_under) 0] } else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {pressure is under}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "pressure_under" } { set ::current_adv_step(exit_type) "pressure_under" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_pressure_under) 0 13 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 1790 900 1990 1240 ""
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_pressure_under) -n_decimals 1 -min 0 -max 11 -default $::current_adv_step(exit_pressure_under) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure is under"] -return_callback callback_after_adv_profile_data_entry  } 1790 1250 1990 1380 ""   
 
 
 add_de1_text "settings_2c" 2154 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 2154 1270 -text [translate "is over"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 2154 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_over"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_over) 6]} else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {flow is over}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if {[ifexists ::current_adv_step(exit_type)] != "flow_over" } { set ::current_adv_step(exit_type) "flow_over" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_flow_over) 0 6 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 2020 900 2230 1240 ""
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_flow_over) -n_decimals 1 -min 0 -max 6 -default $::current_adv_step(exit_flow_over) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Flow is over"] -return_callback callback_after_adv_profile_data_entry  } 2020 1250 2230 1380 ""   
 
 add_de1_text "settings_2c" 2388 1240 -text [translate "flow"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 add_de1_text "settings_2c" 2388 1270 -text [translate "is under"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_variable "settings_2c" 2388 1340 -text "" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable { [ if {[ifexists ::current_adv_step(exit_if)] == 1 && [ifexists ::current_adv_step(exit_type)] == "flow_under"} { return_flow_measurement [ifexists ::current_adv_step(exit_flow_under) 0] } else  { return "-" } ] }
 	add_de1_button "settings_2c" { say [translate {flow is under}] $::settings(sound_button_in); set ::current_adv_step(exit_if) 1; if { [ifexists ::current_adv_step(exit_type)] != "flow_under" } { set ::current_adv_step(exit_type) "flow_under" } else { vertical_clicker 1.9 .1 ::current_adv_step(exit_flow_under) 0 6 %x %y %x0 %y0 %x1 %y1 %b}; save_current_adv_shot_step; } 2270 900 2500 1240 ""
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(exit_flow_under) -n_decimals 1 -min 0 -max 6 -default $::current_adv_step(exit_flow_under) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Flow is under"] -return_callback callback_after_adv_profile_data_entry  } 2270 1250 2500 1380 ""   
 
 
 ############################
