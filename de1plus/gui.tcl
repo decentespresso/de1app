@@ -1059,16 +1059,32 @@ proc show_settings { {tab_to_show ""} } {
 
 }
 
+proc check_if_should_send_user_present_notice {} {
+	set seconds_since_last_idle_update [expr {[clock seconds] - $::globals(time_last_idle_update)}]
+	#msg -INFO "check_if_should_send_user_present_notice '$::de1_num_state($::de1(state))' - $seconds_since_last_idle_update"
+	if {$::de1_num_state($::de1(state)) == "Idle"} {
+		if {$seconds_since_last_idle_update > 30} {
+			start_idle
+			set ::globals(time_last_idle_update) [clock seconds]
+			msg -INFO "updating time_last_idle_update and setting user-not-idle"		
+		} else {
+			#msg -INFO "NOT updating time_last_idle_update and setting user-not-idle"		
+		}
+	}
+
+}
+
 proc page_to_show_when_off {page_to_show args} {
 	set_next_page off $page_to_show
 	dui page load $page_to_show {*}$args
+	check_if_should_send_user_present_notice
 #	page_show $page_to_show
 }
 
 proc page_show {page_to_show args} {
 	dui page load $page_to_show {*}$args
-#	set page_to_hide $::de1(current_context)
-#	return [page_display_change $page_to_hide $page_to_show] 
+	check_if_should_send_user_present_notice
+
 }
 
 proc display_brightness {percentage} {
@@ -1079,6 +1095,7 @@ proc display_brightness {percentage} {
 
 proc page_display_change {page_to_hide page_to_show args} {
 	dui page load $page_to_show {*}$args
+	check_if_should_send_user_present_notice
 }
 
 proc adjust_machine_nextpage { page_to_hide page_to_show } { 
