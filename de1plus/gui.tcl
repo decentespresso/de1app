@@ -1060,18 +1060,19 @@ proc show_settings { {tab_to_show ""} } {
 }
 
 proc check_if_should_send_user_present_notice {} {
-	set seconds_since_last_idle_update [expr {[clock seconds] - $::globals(time_last_idle_update)}]
-	#msg -INFO "check_if_should_send_user_present_notice '$::de1_num_state($::de1(state))' - $seconds_since_last_idle_update"
-	if {$::de1_num_state($::de1(state)) == "Idle"} {
-		if {$seconds_since_last_idle_update > 30} {
-			start_idle
-			set ::globals(time_last_idle_update) [clock seconds]
-			msg -INFO "updating time_last_idle_update and setting user-not-idle"		
-		} else {
-			#msg -INFO "NOT updating time_last_idle_update and setting user-not-idle"		
+	catch {
+		set seconds_since_last_idle_update [expr {[clock seconds] - $::globals(time_last_idle_update)}]
+		#msg -INFO "check_if_should_send_user_present_notice '$::de1_num_state($::de1(state))' - $seconds_since_last_idle_update"
+		if {$::de1_num_state($::de1(state)) == "Idle"} {
+			if {$seconds_since_last_idle_update > 30} {
+				start_idle
+				set ::globals(time_last_idle_update) [clock seconds]
+				msg -INFO "updating time_last_idle_update and setting user-not-idle"		
+			} else {
+				#msg -INFO "NOT updating time_last_idle_update and setting user-not-idle"		
+			}
 		}
 	}
-
 }
 
 proc page_to_show_when_off {page_to_show args} {

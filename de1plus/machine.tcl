@@ -155,6 +155,8 @@ array set ::de1 {
 
 set ::de1(last_ping) [clock seconds]
 
+set ::globals(time_last_idle_update) [clock seconds]
+
 set ::de1(maxpressure) 12 
 
 
