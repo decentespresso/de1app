@@ -2554,3 +2554,20 @@ proc wrap_string {input {threshold 75} {returnlist 0}} {
     }
     
 }
+
+proc zero_if_empty {in} {
+	puts "in: $in"
+	if {$in == ""} {
+		puts "returning 0"
+		return 0
+	}
+	return $in
+}
+
+proc toggle_0_1 {in} {
+	if {$in == 1} {
+		return 0
+	}
+	return 1
+
+}

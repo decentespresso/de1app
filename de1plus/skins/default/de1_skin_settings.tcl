@@ -1038,6 +1038,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			add_de1_variable "measurements" 1300 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(default_font_calibration)}
 
 proc calculate_screen_flip_value {} {
+	#puts calculate_screen_flip_value
 	# a checkbox turns the "screen flip" setting on/off. We then convert that into into reverselandscape/landscape
 	if {[info exists ::globals(screen_flip)] != 1} {
 		# global var has not yet been set, so set it from the saved settings variable
@@ -1053,6 +1054,7 @@ proc calculate_screen_flip_value {} {
 			set ::settings(orientation) "reverselandscape"
 		}
 	}
+	#puts $::settings(orientation)
 	
 	return 0
 }
@@ -1063,9 +1065,9 @@ proc calculate_screen_flip_value {} {
 			calculate_screen_flip_value
 			#add_de1_widget "measurements" checkbutton 2100 1320  {} -text [translate "flip"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::globals(screen_flip)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command calculate_screen_flip_value
 
-			dui add dtoggle "measurements" 2300 954 -height 40 -width 80 -anchor ne -variable ::settings(screen_flip) -command calculate_screen_flip_value
+			dui add dtoggle "measurements" 2300 954 -height 40 -width 80 -anchor ne -variable ::globals(screen_flip)
 			add_de1_text "measurements" 2210 940 -text [translate "flip"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
-			add_de1_button "measurements" { set ::settings(screen_flip) [expr {!$::settings(screen_flip)}] } 2010 946 2310 990 
+			add_de1_button "measurements" { set ::globals(screen_flip) [expr {!$::globals(screen_flip)}] ; calculate_screen_flip_value} 2010 946 2310 990 
 
 
 
@@ -1155,8 +1157,8 @@ add_de1_text "settings_3" 55 544 -text [translate {Version}] -font Helv_10_bold 
 		add_de1_variable "settings_3" 400 370 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(steaming_count)]}
 		add_de1_variable "settings_3" 400 430 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(water_count)]}
 
-proc scheduler_feature_hide_show_refresh { args } {
-	#puts scheduler_feature_hide_show_refresh
+proc scheduler_feature_hide_show_refresh {  } {
+	puts "scheduler_feature_hide_show_refresh $::settings(scheduler_enable)"
 	if {[ifexists ::settings(scheduler_enable)] == 1} {
 		dui item show settings_3 scheduler
 	} else {
@@ -1169,10 +1171,10 @@ proc scheduler_feature_hide_show_refresh { args } {
 #add_de1_widget "settings_3" checkbutton 50 1440 {} -text [translate "Keep hot"] -padx 0 -pady 0 -indicatoron true  -font Helv_8_bold -bg #FFFFFF -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::settings(scheduler_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -command scheduler_feature_hide_show_refresh -relief flat 
 add_de1_text "settings_3" 180 1134 -justify left -anchor "nw" -font $optionfont -text [translate "Keep hot"]  -fill "#4e85f4" -width [rescale_x_skin 1000] 
 dui add dtoggle "settings_3" 50 1140 -height 50 -width 100 -anchor nw -variable ::settings(scheduler_enable) -command scheduler_feature_hide_show_refresh 
-add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {!$::settings(scheduler_enable)}] } 50 1140 500 1190
+add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::settings(scheduler_enable)}]; scheduler_feature_hide_show_refresh } 50 1140 500 1190
 
 # hack used because the -command to dtoggle command above is not working
-trace add variable ::settings(scheduler_enable) write scheduler_feature_hide_show_refresh
+#trace add variable ::settings(scheduler_enable) write scheduler_feature_hide_show_refresh
 
 
 	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #7f879a -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
@@ -1801,4 +1803,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 1 show_settings water_1
+#after 1 show_settings settings_3
