@@ -1131,7 +1131,8 @@ add_de1_text "settings_3" 55 544 -text [translate {Version}] -font Helv_10_bold 
 		add_de1_variable "settings_3" 400 370 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(steaming_count)]}
 		add_de1_variable "settings_3" 400 430 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(water_count)]}
 
-proc scheduler_feature_hide_show_refresh {} {
+proc scheduler_feature_hide_show_refresh { args } {
+	#puts scheduler_feature_hide_show_refresh
 	if {[ifexists ::settings(scheduler_enable)] == 1} {
 		dui item show settings_3 scheduler
 	} else {
@@ -1145,6 +1146,9 @@ proc scheduler_feature_hide_show_refresh {} {
 add_de1_text "settings_3" 180 1134 -justify left -anchor "nw" -font $optionfont -text [translate "Keep hot"]  -fill "#4e85f4" -width [rescale_x_skin 1000] 
 dui add dtoggle "settings_3" 50 1140 -height 50 -width 100 -anchor nw -variable ::settings(scheduler_enable) -command scheduler_feature_hide_show_refresh 
 add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {!$::settings(scheduler_enable)}] } 50 1140 500 1190
+
+# hack used because the -command to dtoggle command above is not working
+trace add variable ::settings(scheduler_enable) write scheduler_feature_hide_show_refresh
 
 
 	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
