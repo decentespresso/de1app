@@ -102,25 +102,33 @@ add_de1_text "settings_2a settings_2b" 45 755 -text [translate "1: preinfuse"] -
 
 	set ::preinfusion_pressure_widget [add_de1_widget "settings_2a" scale 670 850 {} -from $::de1(maxpressure) -to 0 -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 	set ::preinfusion_pressure_widget_label [add_de1_variable "settings_2a" 820 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {< $::settings(preinfusion_stop_pressure) [translate bar]}]
-
-	add_de1_button "settings_2a" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(preinfusion_stop_pressure) -n_decimals 0 -min 1 -max 60 -default $::settings(preinfusion_stop_pressure) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Time"] -return_callback profile_has_changed_set  } 1720 1000 2300 1100 ""   
-
+	add_de1_button "settings_2a" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(preinfusion_stop_pressure) -n_decimals 1 -min 1 -max $::de1(maxpressure) -default $::settings(preinfusion_stop_pressure) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure"] -return_callback profile_has_changed_set  } 650 1325 840 1425 ""   
+	
 
 	# flow profile preinfusion
 	add_de1_widget "settings_2b" scale 47 850 {} -from 0 -to 60 -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 	add_de1_variable "settings_2b" 47 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(preinfusion_time) [list $::preinfusion_flow_widget $::preinfusion_flow_widget_label $::preinfusion_flow_pressure_widget $::preinfusion_flow_pressure_widget_label];  preinfusion_seconds_text $::settings(preinfusion_time)]}
 	add_de1_button "settings_2a settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(preinfusion_time) -n_decimals 0 -min 1 -max 60 -default $::settings(preinfusion_time) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Time"] -return_callback profile_has_changed_set  } 37 1000 600 1100 ""   
 
+
+
 	#add_de1_button "settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(preinfusion_time) -n_decimals 0 -min 1 -max 60 -default $::settings(preinfusion_time) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Time"] -return_callback profile_has_changed_set  } 37 1000 600 1100 ""   
 	
 	set ::preinfusion_flow_widget [add_de1_widget "settings_2b" scale 670 850 {} -from $::de1(max_flowrate_v11) -to 0 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_1)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 	set ::preinfusion_flow_widget_label [add_de1_variable "settings_2b" 820 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
 
+
+
 	set ::preinfusion_flow_pressure_widget [add_de1_widget "settings_2b" scale 47 1115 {} -to $::de1(maxpressure) -from 0  -background $::settings(color_stage_1) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution .1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_stop_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal ]
 	set ::preinfusion_flow_pressure_widget_label [add_de1_variable "settings_2b" 47 1265 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {< $::settings(preinfusion_stop_pressure) [translate bar]}]
+	add_de1_button "settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(preinfusion_stop_pressure) -n_decimals 1 -min 1 -max $::de1(maxpressure) -default $::settings(preinfusion_stop_pressure) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure"] -return_callback profile_has_changed_set  } 37 1265 437 1345 ""   
 
 	set ::preinfusion_pressure_flow_widget [add_de1_widget "settings_2a" scale 47 1175 {} -to $::de1(max_flowrate_v11) -from 0 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_1)  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(preinfusion_flow_rate) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal ]
 	set ::preinfusion_pressure_flow_widget_label [add_de1_variable "settings_2a" 47 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(preinfusion_flow_rate)]}]
+
+	add_de1_button "settings_2a" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(preinfusion_flow_rate) -n_decimals 1 -min 1 -max $::de1(max_flowrate_v11) -default $::settings(preinfusion_flow_rate) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Flow rate"] -return_callback profile_has_changed_set  } 37 1325 547 1425 ""   
+	add_de1_button "settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(preinfusion_flow_rate) -n_decimals 1 -min 1 -max $::de1(max_flowrate_v11) -default $::settings(preinfusion_flow_rate) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Flow rate"] -return_callback profile_has_changed_set  } 650 1325 840 1425 ""   
+
 
 add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 	add_de1_widget "settings_2a" scale 892 850 {} -from 0 -to 60 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 1 -length [rescale_x_skin 600] -width [rescale_y_skin 150] -variable ::settings(espresso_hold_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
@@ -134,11 +142,17 @@ add_de1_text "settings_2a" 890 755 -text [translate "2: rise and hold"] -font He
 
 	set ::espresso_pressure_widget [add_de1_widget "settings_2a" scale 1516 850 {} -to 0 -from $::de1(maxpressure) -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(espresso_pressure) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0]
 	set ::espresso_pressure_widget_label [add_de1_variable "settings_2 settings_2a" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(espresso_pressure)]}]
+	add_de1_button "settings_2a" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(espresso_pressure) -n_decimals 1 -min 1 -max $::de1(maxpressure) -default $::settings(espresso_pressure) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure"] -return_callback profile_has_changed_set  } 1500 1325 1680 1405 ""   
+	add_de1_button "settings_2a" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(espresso_) -n_decimals 1 -min 1 -max $::de1(max_flowrate) -default $::settings(espresso_pressure) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure"] -return_callback profile_has_changed_set  } 1500 1325 1680 1405 ""   
+
 
 
 # Flow limit
 add_de1_text "settings_2a" 890 1120 -text [translate "Limit flow"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 	add_de1_widget "settings_2a" scale 892 1175 {} -from 0 -to 8 -background $::settings(color_stage_2)  -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 546] -width [rescale_y_skin 150] -variable ::settings(maximum_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command "profile_has_changed_set"
+	add_de1_button "settings_2a" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_flow) -n_decimals 1 -min 1 -max $::de1(max_flowrate_v11) -default $::settings(maximum_flow) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Flow rate"] -return_callback profile_has_changed_set  } 882 1325 1372 1425 ""   
+	add_de1_button "settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_pressure) -n_decimals 1 -min 1 -max $::de1(max_pressure) -default $::settings(maximum_pressure) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressyre"] -return_callback profile_has_changed_set  } 882 1325 1372 1425 ""   
+
 
 add_de1_variable "settings_2a" 892 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[settings_flow_label]}
 
@@ -146,9 +160,11 @@ add_de1_variable "settings_2a" 892 1325 -text "" -font Helv_8 -fill "#4e85f4" -a
 add_de1_text "settings_2 settings_2a" 1730 755 -text [translate "3: decline"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 	add_de1_widget "settings_2 settings_2a" scale 1730 850 {} -from 0 -to 60 -background $::settings(color_stage_3) -borderwidth 1 -showvalue 0 -bigincrement 1 -resolution 1 -length [rescale_x_skin 605] -width [rescale_y_skin 150] -variable ::settings(espresso_decline_time) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
 	add_de1_variable "settings_2 settings_2a" 1735 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[canvas_hide_if_zero $::settings(espresso_decline_time) [list $::espresso_pressure_decline_widget $::espresso_pressure_decline_widget_label]; seconds_text $::settings(espresso_decline_time)]}
+
 	
 	set ::espresso_pressure_decline_widget [add_de1_widget "settings_2a" scale 2360 850 {} -from $::de1(maxpressure) -to 0 -background $::settings(color_stage_3) -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470]  -width [rescale_y_skin 150] -variable ::settings(pressure_end) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 	set ::espresso_pressure_decline_widget_label [add_de1_variable "settings_2 settings_2a" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_pressure_measurement $::settings(pressure_end)]}]
+	add_de1_button "settings_2a" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(pressure_end) -n_decimals 1 -min 1 -max $::de1(max_pressure) -default $::settings(pressure_end) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure"] -return_callback profile_has_changed_set  } 2350 1325 2550 1405 ""   
 
 # display each temperature step, and if you tap on a number, allow editing of all at once
 add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature 0.5; profile_has_changed_set } 2404 192 2590 320
@@ -202,6 +218,7 @@ add_de1_text "settings_2b" 890 755 -text [translate "2: hold"] -font Helv_10_bol
 
 	set ::flow_hold_widget [add_de1_widget "settings_2b" scale 1516 850 {} -from $::de1(max_flowrate_v11) -to 0 -tickinterval 0  -showvalue 0 -background $::settings(color_stage_2)  -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470] -width [rescale_y_skin 150] -variable ::settings(flow_profile_hold) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #000000 -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 	set ::flow_hold_widget_label [add_de1_variable "settings_2b" 1667 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_hold)]}]
+	add_de1_button "settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(flow_profile_hold) -n_decimals 1 -min 1 -max $::de1(max_flowrate_v11) -default $::settings(flow_profile_hold) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Flow rate"] -return_callback profile_has_changed_set  } 1500 1325 1700 1405 ""   
 
 add_de1_text "settings_2b" 890 1120 -text [translate "Limit pressure"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 600 -justify "left" 
 	add_de1_widget "settings_2b" scale 892 1175 {} -from 0 -to 12 -background $::settings(color_stage_2)  -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 546] -width [rescale_y_skin 150] -variable ::settings(maximum_pressure) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -command "profile_has_changed_set"
@@ -214,6 +231,8 @@ add_de1_text "settings_2b" 1730 755 -text [translate "3: decline"] -font Helv_10
 	
 	set ::flow_decline_widget [add_de1_widget "settings_2b" scale 2360 850 {} -from $::de1(max_flowrate_v11) -to 0  -background $::settings(color_stage_3) -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_y_skin 470]  -width [rescale_y_skin 150] -variable ::settings(flow_profile_decline) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 ]
 	set ::flow_decline_widget_label [add_de1_variable "settings_2b" 2510 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_flow_measurement $::settings(flow_profile_decline)]}]
+	add_de1_button "settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(flow_profile_decline) -n_decimals 1 -min 1 -max $::de1(max_flowrate_v11) -default $::settings(flow_profile_decline) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Flow rate"] -return_callback profile_has_changed_set  } 2340 1325 2610 1405 ""   
+
 
 add_de1_widget "settings_2b" graph 24 220 { 
 	update_de1_explanation_chart;
@@ -296,6 +315,9 @@ if {$::settings(scale_bluetooth_address) != ""} {
 	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 	add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background $::settings(color_stage_3)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.2 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
+
+	add_de1_button "settings_2a settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(final_desired_shot_weight) -n_decimals 1 -min 1 -max 100 -default $::settings(final_desired_shot_weight) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Pressure"] -return_callback profile_has_changed_set  } 1720 1325 2110 1405 ""   
+
 
 	# 1/18/19 support for weight-bsaed ending of advanced shots
 	add_de1_text "settings_2c2" 70 1130 -text [translate "Stop at weight"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
@@ -1777,4 +1799,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 1 show_settings settings_2a
+#after 1 show_settings settings_2b
