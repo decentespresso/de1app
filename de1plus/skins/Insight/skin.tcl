@@ -72,6 +72,7 @@ set steam_control_foreground "#e8e1df"
 set water_level_widget_background "#f2f2fc"
 set water_level_widget_background_espresso "#ededfa"
 set progress_text_color "#5a5d75"
+set tappable_text_color "#4e85f4"
 set noprogress_text_color "#b1b9cd"
 set dark "#5a5d75"
 set ::lighter "#969eb1"
@@ -1047,8 +1048,13 @@ add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set
 # future feature
 #add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
 
-add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 40 10 ::settings(water_volume) 10 250 %x %y %x0 %y0 %x1 %y1 %b; save_settings; de1_send_steam_hotwater_settings} 0 560 520 1170 ""
-add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 9 1 ::settings(water_temperature) 20 110 %x %y %x0 %y0 %x1 %y1 %b; save_settings; de1_send_steam_hotwater_settings} 551 450 1000 1180 ""
+proc change_water_steam_settings { {discard {}} } {
+	save_settings
+	de1_send_steam_hotwater_settings
+}
+
+add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 40 10 ::settings(water_volume) 10 250 %x %y %x0 %y0 %x1 %y1 %b; change_water_steam_settings} 0 560 520 1170 ""
+add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 9 1 ::settings(water_temperature) 20 110 %x %y %x0 %y0 %x1 %y1 %b; change_water_steam_settings} 551 450 1000 1180 ""
 
 #add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_volume) 1 400 %x %y %x0 %y0 %x1 %y1} 0 210 550 1400 "mousemove"
 #add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1} 551 210 1029 1400 "mousemove"
@@ -1066,15 +1072,23 @@ add_de1_text "water_3" 1070 250 -text [translate "2) Hot water will pour"] -font
 
 if {$::settings(scale_bluetooth_address) != ""} {
 	# hot water - stop on weight, optional feature when scale is connected
-	add_de1_text "water_1" 300 1300  -text [translate "WEIGHT"] -font Helv_7 -fill "#7f879a" -anchor "center" 
-	add_de1_variable "water_1" 300 1250 -text "" -font Helv_10_bold -fill $startbutton_font_color -anchor "center"  -textvariable {[return_weight_measurement $::settings(water_volume)]}
+	add_de1_text "water_1" 300 1300  -text [translate "WEIGHT"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
+	add_de1_variable "water_1" 300 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center"  -textvariable {[return_weight_measurement $::settings(water_volume)]}
+
+	add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_volume) -n_decimals 0 -min 10 -max 250 -default $::settings(water_volume) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "WEIGHT"] -return_callback change_water_steam_settings } 137 1200 460 1370 ""   
+
 } else {
-	add_de1_text "water_1" 300 1300  -text [translate "VOLUME"] -font Helv_7 -fill "#7f879a" -anchor "center" 
-	add_de1_variable "water_1" 300 1250 -text "" -font Helv_10_bold -fill $startbutton_font_color -anchor "center"  -textvariable {[return_liquid_measurement $::settings(water_volume)]}
+	add_de1_text "water_1" 300 1300  -text [translate "VOLUME"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
+	add_de1_variable "water_1" 300 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center"  -textvariable {[return_liquid_measurement $::settings(water_volume)]}
+
+	add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_volume) -n_decimals 0 -min 10 -max 250 -default $::settings(water_volume) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "VOLUME"] -return_callback change_water_steam_settings } 137 1200 460 1370 ""   
+
 }
 
-add_de1_variable "water_1" 755 1250 -text "" -font Helv_10_bold -fill $startbutton_font_color -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
-add_de1_text "water_1" 755 1300 -text [translate "TEMP"] -font Helv_7 -fill "#7f879a" -anchor "center" 
+add_de1_variable "water_1" 755 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
+add_de1_text "water_1" 755 1300 -text [translate "TEMP"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
+add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_temperature) -n_decimals 0 -min 20 -max 110 -default $::settings(water_temperature) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Temperature"] -return_callback change_water_steam_settings } 590 1200 920 1380  ""   
+
 
 
 if {$::settings(scale_bluetooth_address) != ""} {
@@ -1176,9 +1190,12 @@ add_de1_text "steam" 1070 250 -text [translate "2) Steaming your milk"] -font He
 add_de1_text "steam_3" 1070 250 -text [translate "2) Steam your milk"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 650]
 add_de1_text "steam_3" 1840 250 -text [translate "3) Make amazing latte art"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 680]
 
-add_de1_variable "steam_1" 537 1250 -text "" -font Helv_10_bold -fill $startbutton_font_color -anchor "center"  -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
-add_de1_variable "steam steam_3" 537 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center"  -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
-add_de1_text "steam_1 steam steam_3" 537 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill "#7f879a" -anchor "center" 
+add_de1_variable "steam_1" 537 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center"  -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
+
+	add_de1_variable "steam steam_3" 537 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center"  -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
+	add_de1_text "steam_1" 537 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
+	add_de1_text "steam steam_3" 537 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill "#7f879a" -anchor "center" 
+	add_de1_button "steam_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(steam_timeout) -n_decimals 0 -min 1 -max 255 -default $::settings(steam_timeout) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "AUTO-OFF"]  } 337 1180 737 1370 ""   
 
 
 add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Information"] -font Helv_9_bold -fill $progress_text_color -width [rescale_x_skin 520]

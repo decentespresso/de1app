@@ -554,7 +554,8 @@ proc tap_pressure_central_button {} {
 	if {$::current_adv_step(pump) != "pressure"} {
 		set ::current_adv_step(pump) "pressure"; 
 	} else {
-		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -return_callback callback_after_adv_profile_data_entry
+		# john disabled 2nd tap causing data entry page, because this is not consistently done in all icons on this page, so can cause confusion
+		#dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -return_callback callback_after_adv_profile_data_entry
 	}
 
 	profile_has_changed_set
@@ -571,7 +572,8 @@ proc tap_flow_central_button {} {
 	if {$::current_adv_step(pump) != "flow"} {
 		set ::current_adv_step(pump) "flow"; 
 	} else {
-		dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"] -return_callback callback_after_adv_profile_data_entry
+		# john disabled 2nd tap causing data entry page, because this is not consistently done in all icons on this page, so can cause confusion
+		# dui page open_dialog dui_number_editor ::current_adv_step(flow) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(flow) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Flow rate goal"] -return_callback callback_after_adv_profile_data_entry
 	}
 	
 	
@@ -1173,10 +1175,10 @@ add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {!$::settin
 trace add variable ::settings(scheduler_enable) write scheduler_feature_hide_show_refresh
 
 
-	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
-	add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw"  -tags [list scheduler_start_time scheduler] -textvariable {[translate "Start"] [format_alarm_time $::settings(scheduler_wake)]}
+	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #7f879a -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
+	add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw"  -tags [list scheduler_start_time scheduler] -textvariable {[translate "Start"] [format_alarm_time $::settings(scheduler_wake)]}
 	add_de1_widget "settings_3" scale 670 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_end scheduler]
-	add_de1_variable "settings_3" 670 1340 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -tags [list scheduler_end_time scheduler] -textvariable {[translate "End"] [format_alarm_time $::settings(scheduler_sleep)]} 
+	add_de1_variable "settings_3" 670 1340 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -tags [list scheduler_end_time scheduler] -textvariable {[translate "End"] [format_alarm_time $::settings(scheduler_sleep)]} 
 	add_de1_variable "settings_3" 1240 1140 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -tags [list scheduler_scale_now_time scheduler] -textvariable {[translate "Now"] [time_format [clock seconds]]}
 	dui add dbutton "settings_3" 900 1100 1240 1190 -command {say [translate {Settings}] $::settings(sound_button_in); launch_os_time_setting}  -tags [list scheduler_settings_button scheduler]
 
@@ -1276,7 +1278,7 @@ add_de1_text "descale_prepare" 70 50 -text [translate "Prepare to descale"] -fon
 
 add_de1_text "settings_3" 1304 1080  -text [translate "Water level"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	add_de1_widget "settings_3" scale 1304 1170 {} -from 3 -to 70 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1190] -width [rescale_y_skin 115] -variable ::settings(water_refill_point) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-	add_de1_variable "settings_3" 1304 1300 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] [water_tank_level_to_milliliters $::settings(water_refill_point)] [translate mL] ([expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}][translate mm])}
+	add_de1_variable "settings_3" 1304 1300 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] [water_tank_level_to_milliliters $::settings(water_refill_point)] [translate mL] ([expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}][translate mm])}
 	add_de1_variable "settings_3" 2488 1120 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[translate "Now:"] [water_tank_level_to_milliliters $::de1(water_level)] [translate mL] ([round_to_integer $::de1(water_level)][translate mm])}
 	#add_de1_button "settings_3" {start_refill_kit }  0 760 620 820
 
@@ -1300,12 +1302,12 @@ if {$enable_spoken_buttons == 1} {
 
 add_de1_text "settings_4" 50 566 -text [translate "Screen brightness"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	add_de1_widget "settings_4" scale 50 660 {} -from 0 -to 100 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1170] -width [rescale_y_skin 135] -variable ::settings(app_brightness) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -command {display_brightness}
-	add_de1_variable "settings_4" 50 800 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "App:"] $::settings(app_brightness)%}
+	add_de1_variable "settings_4" 50 800 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "App:"] $::settings(app_brightness)%}
 
 
 add_de1_text "settings_3" 50 770 -text [translate "Energy saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	add_de1_widget "settings_3" scale 50 870 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1170] -width [rescale_y_skin 135] -variable ::settings(screen_saver_delay) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-	add_de1_variable "settings_3" 50 1020 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Cool down after:"] [minutes_text $::settings(screen_saver_delay)]}
+	add_de1_variable "settings_3" 50 1020 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Cool down after:"] [minutes_text $::settings(screen_saver_delay)]}
 
 
 add_de1_button "settings_1" {say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; save_profile} 2300 1220 2550 1410
@@ -1799,4 +1801,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 1 show_settings settings_2b
+#after 1 show_settings water_1
