@@ -6249,12 +6249,15 @@ namespace eval ::dui {
 			lassign $radius radius1 radius2 radius3 radius4
 			set maxradius [::max {*}$radius]
 			
-			if { $width > 1 } {
+			# in discussion https://github.com/decentespresso/de1app/issues/246 decided to remove -1 width code in the arc drawing, as it looks better at the same width
+			#if { $width > 1 } {
 				# Adjustment to look better under Android, that uses dithering
-				set arc_width [expr {$width-1}]
-			} else {
-				set arc_width $width
-			}
+			#	set arc_width [expr {$width-1}]
+			#} else {
+			#	set arc_width $width
+			#}
+			set arc_width $width
+
 			if { $radius1 > 0 } {
 				lappend ids [$can create arc $x0 [expr {$y0+$radius1+1.0}] [expr {$x0+$radius1+1.0}] $y0 -style arc -outline $colour \
 					-width $arc_width -tags [list ${main_tag}-nw {*}$tags] -start 90 -disabledoutline $disabled -state "hidden"]
