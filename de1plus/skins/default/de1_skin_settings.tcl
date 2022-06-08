@@ -373,12 +373,17 @@ add_de1_variable "settings_2c" 1600 240 -text "" -font Helv_9_bold -fill "#7f879
 add_de1_text "settings_2c" 984 830 -text [translate "3: Maximum"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 
 
-add_de1_widget "settings_2c" checkbutton 1600 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
-# for some reason, use of a dtoggle here is buggy below, the dtoggle does not update its visual state, but otherwise works fine
-# add_de1_text "settings_2c" 1700 830 -text [translate "4: Move on if..."] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
-# dui add dtoggle "settings_2c"  1600 840 -width 80 -height 40 -anchor nw  -command save_current_adv_shot_step  -variable ::current_adv_step(exit_if) -tags xyz
-# add_de1_variable "settings_2c" 2220 840 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "nw" -textvariable {$::current_adv_step(exit_if)}
+#add_de1_widget "settings_2c" checkbutton 1600 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
+# for some reason, use of a dtoggle here is buggy below, the dtoggle does not update its visual state, but otherwise works fine, using a shadow variable to work around it. Might be due to ::current_adv_step being deleted/recreated and thus breaking the trace function
+proc flip_adv_step_move_on_if {} {
+	set ::current_adv_step(exit_if) [expr {!$::current_adv_step(exit_if)}]; 
+	save_current_adv_shot_step
+	set ::current_adv_step_exit_if $::current_adv_step(exit_if)
+}
 
+add_de1_variable "settings_2c" 1700 830 -text [translate "4: Move on if..."] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -textvariable {[set ::current_adv_step_exit_if $::current_adv_step(exit_if); return [translate "4: Move on if..."]]}
+dui add dtoggle "settings_2c"  1600 840 -width 80 -height 40 -anchor nw  -variable ::current_adv_step_exit_if
+add_de1_button "settings_2c" { flip_adv_step_move_on_if } 1580 820 2200 890
 
 set adv_listbox_height [expr {int(7 * $::globals(listbox_length_multiplier))}]
 
@@ -965,7 +970,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		
 		#add_de1_text "measurements" 1300 480 -text [translate "Units"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			#add_de1_widget "measurements" checkbutton 1300 560 {} -text [translate "Fahrenheit"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
-			dui add dselector "measurements" 2280 480 -bwidth 600 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] -width 2
+			dui add dselector "measurements" 2280 480 -bwidth 600 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] -width 2 -fill "#f8f8f8" -selectedfill "#4d85f4"
 			
 
 
@@ -1083,7 +1088,7 @@ proc calculate_screen_flip_value {} {
 			add_de1_variable "measurements" 340 840 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[screen_saver_change_minutes $::settings(screen_saver_change_interval)]}
 
 			add_de1_text "measurements" 340 940 -text [translate "App version"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-				dui add dselector "measurements" 340 1020 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2
+				dui add dselector "measurements" 340 1020 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#f8f8f8" -selectedfill "#4d85f4"
 				#add_de1_widget "measurements" radiobutton 340 1210  {} -value 0 -text [translate "stable"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(app_updates_beta_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 				#add_de1_widget "measurements" radiobutton 600 1210  {} -value 1 -text [translate "beta"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(app_updates_beta_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 				#add_de1_widget "measurements" radiobutton 860 1210  {} -value 2 -text [translate "nightly"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(app_updates_beta_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
@@ -1803,4 +1808,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 1 show_settings settings_3
+#after 1 show_settings settings_2c
