@@ -1033,7 +1033,11 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 			dui add dtoggle "measurements" 1280 704 -height 60 -anchor nw -variable ::settings(use_finger_down_for_tap) 
 			add_de1_text "measurements" 1420 704 -text [translate "Fast tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
-			add_de1_button "measurements" { set ::settings(use_finger_down_for_tap) [expr {!$::settings(use_finger_down_for_tap)}] } 1280 704 1670 764
+			add_de1_button "measurements" { set ::settings(use_finger_down_for_tap) [expr {!$::settings(use_finger_down_for_tap)}] } 1280 704 1700 764
+
+			dui add dtoggle "measurements" 1280 804 -height 60 -anchor nw -variable ::settings(smart_battery_charging) 
+			add_de1_text "measurements" 1420 804 -text [translate "Smart charging"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+			add_de1_button "measurements" { set ::settings(smart_battery_charging) [expr {!$::settings(smart_battery_charging)}] } 1280 804 1700 864
 
 
 			#}
@@ -1808,4 +1812,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 1 show_settings settings_2c
+#after 1 show_settings measurements

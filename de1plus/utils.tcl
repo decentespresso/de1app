@@ -546,12 +546,16 @@ proc check_battery_low {brightness_to_use} {
 
     #####################
     # keep battery charged between 40% and 60%
-    if {$percent <= 40} {
-		# turn USB charger on
+	if {$::settings(smart_battery_charging) == 1} {
+	    if {$percent <= 40} {
+			# turn USB charger on
+			set_usb_charger_on 1
+	    } elseif {$percent >= 60} {
+			# turn USB charger off
+			set_usb_charger_on 0
+	    }
+    } else {
 		set_usb_charger_on 1
-    } elseif {$percent >= 60} {
-		# turn USB charger off
-		set_usb_charger_on 0
     }
 
 
