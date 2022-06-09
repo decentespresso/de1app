@@ -1049,6 +1049,7 @@ add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set
 #add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
 
 proc change_water_steam_settings { {discard {}} } {
+	#puts change_water_steam_settings
 	save_settings
 	de1_send_steam_hotwater_settings
 }
@@ -1180,7 +1181,7 @@ add_de1_button "steam_3" {say [translate {steam}] $::settings(sound_button_in); 
 
 add_de1_button "steam" {say [translate {stop}] $::settings(sound_button_in); set_next_page off steam_3; start_idle} 0 240 2560 1400
 add_de1_button "steam_3" {say "" $::settings(sound_button_in); set_next_page off steam_1; start_idle} 0 240 1000 1400
-add_de1_button "steam_1" {say "" $::settings(sound_button_in);vertical_clicker 9 1 ::settings(steam_timeout) 1 255 %x %y %x0 %y0 %x1 %y1 %b; save_settings; de1_send_steam_hotwater_settings} 200 580 900 1150 ""
+add_de1_button "steam_1" {say "" $::settings(sound_button_in);vertical_clicker 9 1 ::settings(steam_timeout) 1 255 %x %y %x0 %y0 %x1 %y1 %b; change_water_steam_settings} 200 580 900 1150 ""
 
 
 add_de1_text "steam_1" 70 250 -text [translate "1) Choose auto-off time"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 900]
@@ -1195,7 +1196,7 @@ add_de1_variable "steam_1" 537 1250 -text "" -font Helv_10_bold -fill $tappable_
 	add_de1_variable "steam steam_3" 537 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center"  -textvariable {[round_to_integer $::settings(steam_timeout)][translate "s"]}
 	add_de1_text "steam_1" 537 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
 	add_de1_text "steam steam_3" 537 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill "#7f879a" -anchor "center" 
-	add_de1_button "steam_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(steam_timeout) -n_decimals 0 -min 1 -max 255 -default $::settings(steam_timeout) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "AUTO-OFF"]  } 337 1180 737 1370 ""   
+	add_de1_button "steam_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(steam_timeout) -n_decimals 0 -min 1 -max 255 -default $::settings(steam_timeout) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "AUTO-OFF"] -return_callback change_water_steam_settings } 337 1180 737 1370 ""   
 
 
 add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Information"] -font Helv_9_bold -fill $progress_text_color -width [rescale_x_skin 520]
