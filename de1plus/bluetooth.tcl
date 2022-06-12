@@ -805,6 +805,13 @@ proc close_all_ble_and_exit {} {
 proc app_exit {} {
 	::bt::msg -NOTICE app_exit
 
+	if {$::de1(usb_charger_on) != 1} {
+		# always leave the app with the charger set to ON
+		set ::de1(usb_charger_on) 1
+		set_usb_charger_on $::de1(usb_charger_on)
+		save_settings
+	}
+
 	tcl_introspection
 
 	if {$::android != 1} {
