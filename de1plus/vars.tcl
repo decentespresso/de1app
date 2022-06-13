@@ -1658,7 +1658,7 @@ proc make_current_listbox_item_blue { widget} {
 			#}
 
 		} else {
-			$widget itemconfigure $x -foreground #b2bad0 -background #fbfaff
+			$widget itemconfigure $x -foreground #666666 -background #fbfaff
 		}
 	}
 
