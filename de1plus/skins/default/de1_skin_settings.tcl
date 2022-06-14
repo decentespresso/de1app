@@ -1543,12 +1543,34 @@ set calibration_row_spacing 120
 # (re)calibration page
 add_de1_text "calibrate calibrate2 calibrate3" 1280 290 -text [translate "Calibrate"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 
-	add_de1_text "calibrate" 2520 1510 -text [subst {\[ [translate "Page 1 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
-	add_de1_text "calibrate2" 2520 1510 -text [subst {\[ [translate "Page 2 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
-	add_de1_text "calibrate3" 2520 1510 -text [subst {\[ [translate "Page 3 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
-		add_de1_button "calibrate" {say [translate {Done}] $::settings(sound_button_in); get_heater_voltage; page_to_show_when_off calibrate2;} 2200 1400 2560 1600 ""		
-		add_de1_button "calibrate2" {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off calibrate3;} 2200 1400 2560 1600 ""
-		add_de1_button "calibrate3" {say [translate {Done}] $::settings(sound_button_in); set_heater_tweaks; page_to_show_when_off calibrate;} 2200 1400 2560 1600 ""
+	#add_de1_text "calibrate" 2520 1510 -text [subst {\[ [translate "Page 1 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
+	#add_de1_text "calibrate2" 2520 1510 -text [subst {\[ [translate "Page 2 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
+	#add_de1_text "calibrate3" 2520 1510 -text [subst {\[ [translate "Page 3 of 3"] \]}] -font Helv_10_bold -fill "#666666" -anchor "ne"
+
+	dui add dbutton "calibrate" 2050 1460 -style insight_ok -anchor nw -command show_page_calibrate_2 -label [subst {[translate "Page 1 of 3"] >}]
+	dui add dbutton "calibrate2" 2050 1460 -style insight_ok -anchor nw -command show_page_calibrate_3 -label [subst {[translate "Page 2 of 3"] >}]
+	dui add dbutton "calibrate3" 2050 1460 -style insight_ok -anchor nw -command show_page_calibrate -label [subst {[translate "Page 3 of 3"] >}]
+
+proc show_page_calibrate {} {
+	say [translate {Done}] $::settings(sound_button_in)
+	set_heater_tweaks; 
+	page_to_show_when_off calibrate
+}	
+
+proc show_page_calibrate_2 {} {
+	say [translate {Done}] $::settings(sound_button_in)
+	get_heater_voltage; 
+	page_to_show_when_off calibrate2
+}	
+
+proc show_page_calibrate_3 {} {
+	say [translate {Done}] $::settings(sound_button_in)
+	page_to_show_when_off calibrate3
+}	
+
+		#add_de1_button "calibrate" {show_page_calibrate_2} 2200 1400 2560 1600 ""		
+		#add_de1_button "calibrate2" {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off calibrate3;} 2200 1400 2560 1600 ""
+		#add_de1_button "calibrate3" {say [translate {Done}] $::settings(sound_button_in); set_heater_tweaks; page_to_show_when_off calibrate;} 2200 1400 2560 1600 ""
 
 		###############################################################################################
 		# Nominal heater voltage. (Address 803834)
@@ -1813,7 +1835,7 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 2 show_settings calibrate3
+#after 2 show_settings calibrate
 
 
 # enable for debugging
