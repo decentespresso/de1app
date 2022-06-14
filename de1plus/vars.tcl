@@ -1500,6 +1500,9 @@ proc round_to_two_digits {in} {
 }
 
 proc round_to_one_digits {in} {
+	if {$in == ""} {
+		return ""
+	}
 	set x 0
 	catch {
     	set x [expr {round($in * 10.0)/10.0}]

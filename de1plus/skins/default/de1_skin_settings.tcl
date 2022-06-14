@@ -1093,10 +1093,6 @@ proc calculate_screen_flip_value {} {
 
 			add_de1_text "measurements" 340 940 -text [translate "App version"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 				dui add dselector "measurements" 340 1020 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#f8f8f8" -selectedfill "#4d85f4"
-				#add_de1_widget "measurements" radiobutton 340 1210  {} -value 0 -text [translate "stable"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(app_updates_beta_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-				#add_de1_widget "measurements" radiobutton 600 1210  {} -value 1 -text [translate "beta"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(app_updates_beta_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-				#add_de1_widget "measurements" radiobutton 860 1210  {} -value 2 -text [translate "nightly"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(app_updates_beta_enabled)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
-
 
 	add_de1_text "settings_4" 2290 616 -text [translate "Extensions"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
 	add_de1_button "settings_4" {say [translate {Extensions}] $::settings(sound_button_in); fill_extensions_listbox; page_to_show_when_off extensions; ; set_extensions_scrollbar_dimensions}  1910 520 2530 720

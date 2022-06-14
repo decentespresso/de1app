@@ -490,9 +490,9 @@ proc saver_page_onload { page_to_hide page_to_show } {
 
 
 proc page_onload { page_to_hide page_to_show } {
-	if {$page_to_show ne "saver" } {
-		display_brightness $::settings(app_brightness)
-	}
+	#if {$page_to_show ne "saver" } {
+	#	display_brightness $::settings(app_brightness)
+	#}
 	
 	if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {		
 		msg "Doing next stress test step: '$::idle_next_step '"
@@ -534,6 +534,9 @@ proc battery_state {} {
 
 # dim the screen automaticaly if the battery is low
 proc check_battery_low {brightness_to_use} {
+
+	#display_brightness $::settings(app_brightness)
+
     set current_brightness [get_set_tablet_brightness]
     if {$current_brightness == ""} {
         set current_brightness 100
