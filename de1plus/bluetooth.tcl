@@ -1217,6 +1217,12 @@ proc later_new_de1_connection_setup {} {
 	#set_feature_flags 1
 
 	set_heater_tweaks
+	get_refill_kit_present
+
+	# if the refill kit auto detect should be overridden, do that at app launch, as well as later in the gui if they change the setting
+	if {$::settings(refill_kit_override) != -1} {	
+		send_refill_kit_override
+	} 
 
 	################
 	# we send the flow calibration on app startup to the de1, so that we can calibration the DE1 at the decent factory without needing to power up the DE1.  We set the country-specific calibration in the tablet, and then it will be sent to the DE1 when it powers up
@@ -1704,6 +1710,9 @@ proc de1_ble_handler { event data } {
 							} elseif {$mmr_id == "80382C"} {
 								::bt::msg -INFO "MMR read: steam_highflow_start: '$mmr_val'"
 								set ::settings(steam_highflow_start) $mmr_val
+							} elseif {$mmr_id == "80385C"} {
+								::bt::msg -INFO "MMR read: steam_highflow_start: '$mmr_val'"
+								set ::de1(refill_kit_detected) $mmr_val
 							} else {
 							    ::bt::msg -ERROR "Uknown type of direct MMR read" \
 								    [::logging::format_mmr $value]

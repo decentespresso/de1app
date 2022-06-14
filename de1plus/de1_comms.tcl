@@ -270,13 +270,15 @@ proc de1_event_handler { command_name value {update_received 0}} {
 	} elseif {$command_name eq "ReadFromMMR"} {
 		# MMR read
 
-		::comms::msg -DEBUG "MMR read: '[::logging::format_mmr $value]'"
+		::comms::msg -NOTICE "MMR read: '[::logging::format_mmr $value]'"
 
 		parse_binary_mmr_read $value arr
-		set mmr_id $arr(Address)
+		set mmr_id [string to upper $arr(Address)]
 		set mmr_val [ifexists arr(Data0)]
 
 		parse_binary_mmr_read_int $value arr2
+
+		::comms::msg -NOTICE "MMR ID: '$mmr_id'"
 
 		if {$mmr_id == "80381C"} {
 			::comms::msg -INFO "Read: GHC is installed: '$mmr_val'"
@@ -306,6 +308,11 @@ proc de1_event_handler { command_name value {update_received 0}} {
 		} elseif {$mmr_id == "803828"} {
 			::comms::msg -INFO "MMRead: steam flow: '$mmr_val'"
 			set ::settings(steam_flow) $mmr_val
+
+		} elseif {$mmr_id == "80385C"} {
+			::comms::msg -NOTICE "MMRead: get_refill_kit_present: '$mmr_val'"
+
+			set ::de1(refill_kit_detected) $mmr_val
 
 		} elseif {$mmr_id == "803818"} {
 			::comms::msg -INFO "MMRead: hot_water_idle_temp: '[ifexists arr2(Data0)]'"
@@ -972,7 +979,9 @@ proc set_tank_temperature_threshold {temp} {
 	###
 
 
-	catch { after cancel $::_pending_tank_temperature_change }
+	if {[info exists ::_pending_tank_temperature_change] == 1} {
+		catch { after cancel $::_pending_tank_temperature_change }
+	}
 	remove_matching_ble_queue_entries {^MMR set_tank_temperature_threshold}
 
 	if {$temp < 10} {
@@ -1053,6 +1062,8 @@ proc toggle_usb_charger_on {} {
 }
 
 proc set_usb_charger_on {usbon} {
+	dump_stack
+	set ::de1(usb_charger_on) $usbon
 	::comms::msg -NOTICE set_usb_charger_on "'$usbon'"
 	remove_matching_ble_queue_entries {^MMR set_usb_charger_on}
 	::comms::msg -INFO "Setting usb charger on to '$usbon'"
@@ -1098,6 +1109,35 @@ proc set_steam_flow {desired_flow} {
 	::comms::msg -INFO "Setting steam flow rate to '$desired_flow'"
 	mmr_write "set_steam_flow" "803828" "04" [zero_pad [int_to_hex $desired_flow] 2]
 }
+
+proc send_refill_kit_override {} {
+	if {$::settings(refill_kit_override) == 0} {
+		set_refill_kit_present 0
+	} elseif {$::settings(refill_kit_override) == 1} {
+		set_refill_kit_present 1
+	} else {
+		if {$::de1(refill_kit_detected) != ""} {
+			set_refill_kit_present $::de1(refill_kit_detected)
+		} else {
+			# if nothing detected, but they want automatic, set refill kit to on
+			set_refill_kit_present 1
+		}
+	}
+}
+
+proc set_refill_kit_present {true_or_false} {
+	::comms::msg -NOTICE set_refill_kit_present "'$true_or_false'"
+	remove_matching_ble_queue_entries {^MMR set_refill_kit_present}
+	::comms::msg -INFO "Setting refill_kit_present to '$true_or_false'"
+	mmr_write "set_refill_kit_present $::settings(steam_two_tap_stop)" "80385C" "04" [zero_pad [long_to_little_endian_hex $true_or_false] 4]	
+}
+
+
+proc get_refill_kit_present {} {
+	::comms::msg -NOTICE get_refill_kit_present
+	mmr_read "get_refill_kit_present" "80385C" "00"
+}
+
 
 proc get_steam_flow {} {
 	::comms::msg -NOTICE get_steam_flow

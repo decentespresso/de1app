@@ -970,7 +970,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		
 		#add_de1_text "measurements" 1300 480 -text [translate "Units"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			#add_de1_widget "measurements" checkbutton 1300 560 {} -text [translate "Fahrenheit"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
-			dui add dselector "measurements" 2280 480 -bwidth 600 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] -width 2 -fill "#f8f8f8" -selectedfill "#4d85f4"
+			dui add dselector "measurements" 2280 480 -bwidth 600 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] -width 2 -fill "#f8f8f8" -selectedfill "#4d85f4" 
 			
 
 
@@ -1623,7 +1623,12 @@ add_de1_text "calibrate calibrate2 calibrate3" 1280 290 -text [translate "Calibr
 		add_de1_text "calibrate3" 1500 660 -text [translate "Slow start"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 		add_de1_button "calibrate3" { set ::settings(insert_preinfusion_pause) [expr {!$::settings(insert_preinfusion_pause)}] } 1350 660 1950 720
 
+		add_de1_variable "calibrate3" 1350 756  -text [translate "Refill kit: detected"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" -textvariable {[if {$::de1(refill_kit_detected) == ""} {return [translate "Refill kit: unable to detect"]} elseif {$::de1(refill_kit_detected) == "0"} {	return [translate "Refill kit: not detected"]} elseif {$::de1(refill_kit_detected) == "1"} { return [translate "Refill kit: detected"] } ]}
+		dui add dselector "calibrate3" 1350 820 -bwidth 900 -bheight 80 -orient h -anchor nw -values {-1 0 1} -variable ::settings(refill_kit_override) -default {-1} -labels [list [translate "automatic"] [translate "disabled"] [translate "enabled"]] -width 3 -fill "#f8f8f8" -selectedfill "#4d85f4" -command send_refill_kit_override_from_gui
 
+proc send_refill_kit_override_from_gui {args} {
+	send_refill_kit_override
+}
 		add_de1_text "calibrate3" 350 500  -text [translate "Hot water flow rate"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
 		add_de1_widget "calibrate3" scale 350 560  {} -to 10 -from 1 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution .1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(hotwater_flow) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "calibrate3" 970 580  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_flow_measurement $::settings(hotwater_flow)]}
@@ -1812,4 +1817,4 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 1 show_settings measurements
+#after 2 show_settings calibrate3
