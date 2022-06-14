@@ -1182,7 +1182,7 @@ add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::setti
 #trace add variable ::settings(scheduler_enable) write scheduler_feature_hide_show_refresh
 
 
-	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #7f879a -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
+	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
 	add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw"  -tags [list scheduler_start_time scheduler] -textvariable {[translate "Start"] [format_alarm_time $::settings(scheduler_wake)]}
 	add_de1_widget "settings_3" scale 670 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_end scheduler]
 	add_de1_variable "settings_3" 670 1340 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -tags [list scheduler_end_time scheduler] -textvariable {[translate "End"] [format_alarm_time $::settings(scheduler_sleep)]} 
@@ -1815,10 +1815,12 @@ proc setting_profile_type_to_text { } {
 
 #after 2 show_settings calibrate3
 
+
+# enable for debugging
 proc flush_log_loop {} {
 	::logging::flush_log
 	after 100 flush_log_loop
 
 }
 
-after 100 flush_log_loop
+#after 100 flush_log_loop
