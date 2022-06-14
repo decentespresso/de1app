@@ -1105,7 +1105,7 @@ proc calculate_screen_flip_value {} {
 		add_de1_widget "extensions" listbox 340 480 { 
 			set ::extensions_widget $widget
 			bind $widget <<ListboxSelect>> ::highlight_extension
-		} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::extensions_widget} -yscrollcommand {scale_scroll_new $::extensions_widget ::extensions_slider} -font global_font -bd 0 -height [expr {int(9 * $::globals(listbox_length_multiplier))}] -width 26 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1		
+		} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::extensions_widget} -yscrollcommand {scale_scroll_new $::extensions_widget ::extensions_slider} -font global_font -bd 0 -height [expr {int(9 * $::globals(listbox_length_multiplier))}] -width 26 -foreground #666666 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1		
 		set ::extension_highlighted -1
 
 		# Old -fill "#444444"
@@ -1818,3 +1818,11 @@ proc setting_profile_type_to_text { } {
 }
 
 #after 2 show_settings calibrate3
+
+proc flush_log_loop {} {
+	::logging::flush_log
+	after 100 flush_log_loop
+
+}
+
+after 100 flush_log_loop
