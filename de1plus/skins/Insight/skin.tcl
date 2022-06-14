@@ -1259,7 +1259,9 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 		add_de1_variable "steam_1 steam_3" 1700 1250 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
 	add_de1_text "steam_1 steam_3" 1100 1200 -justify right -anchor "nw" -text [translate "Preheat to"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 		add_de1_variable "steam_1 steam_3" 1700 1200 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[if {$::settings(steam_disabled) != 1} { return_steam_temperature_measurement $::settings(steam_temperature)} else { return [translate "off"] }]} 
-		dui add dtoggle "steam_1 steam_3" 1490 1216 -height 36 -width 80 -anchor nw -variable ::de1(steam_disable_toggle) -command disable_steam_toggle 
+
+		add_de1_text "steam_1 steam_3" 1100 1150 -justify right -anchor "nw" -text [translate "Enabled"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
+		dui add dtoggle "steam_1 steam_3" 1700 1150 -height 36 -width 80 -anchor ne -variable ::de1(steam_disable_toggle) -command disable_steam_toggle 
 
 
 		set ::de1(steam_disable_toggle) [expr {!$::settings(steam_disabled)}]
