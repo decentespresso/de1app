@@ -490,9 +490,9 @@ proc saver_page_onload { page_to_hide page_to_show } {
 
 
 proc page_onload { page_to_hide page_to_show } {
-	#if {$page_to_show ne "saver" } {
-	#	display_brightness $::settings(app_brightness)
-	#}
+	if {$page_to_show ne "saver" } {
+		display_brightness $::settings(app_brightness)
+	}
 	
 	if {$::settings(stress_test) == 1 && $::de1_num_state($::de1(state)) == "Idle" && [info exists ::idle_next_step] == 1} {		
 		msg "Doing next stress test step: '$::idle_next_step '"
@@ -531,20 +531,8 @@ proc battery_state {} {
     return $state
 }
 
+proc check_battery_charger {} {
 
-# dim the screen automaticaly if the battery is low
-proc check_battery_low {brightness_to_use} {
-
-	#display_brightness $::settings(app_brightness)
-
-    set current_brightness [get_set_tablet_brightness]
-    if {$current_brightness == ""} {
-        set current_brightness 100
-    } else {
-        set current_brightness [expr {abs($current_brightness)}]
-    }
-
-    
     set percent [battery_percent]
 
     #####################
@@ -561,6 +549,22 @@ proc check_battery_low {brightness_to_use} {
 		set_usb_charger_on 1
     }
 
+}
+
+# dim the screen automaticaly if the battery is low
+proc check_battery_low {brightness_to_use} {
+
+	puts check_battery_low
+
+    set current_brightness [get_set_tablet_brightness]
+    if {$current_brightness == ""} {
+        set current_brightness 100
+    } else {
+        set current_brightness [expr {abs($current_brightness)}]
+    }
+
+    
+    set percent [battery_percent]
 
     #####################
 
@@ -596,10 +600,9 @@ proc check_battery_low {brightness_to_use} {
 }
 
 proc schedule_minute_task {} {
-    
-    check_battery_low 100
+    check_battery_charger
+    check_battery_low $::settings(app_brightness)
     after 60000 schedule_minute_task
-    #after 1000 schedule_minute_task
 
 }
 

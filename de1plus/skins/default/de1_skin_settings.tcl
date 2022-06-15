@@ -1841,6 +1841,7 @@ proc setting_profile_type_to_text { } {
 # enable for debugging
 proc flush_log_loop {} {
 	::logging::flush_log
+	#::flush $::logging::_log_fh
 	after 100 flush_log_loop
 
 }

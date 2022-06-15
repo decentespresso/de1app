@@ -955,6 +955,7 @@ proc start_water {} {
 }
 
 proc start_idle {} {
+
 	msg -NOTICE "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 
 	# Ensure we are not locking the screen during use.
