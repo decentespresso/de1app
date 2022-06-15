@@ -954,12 +954,6 @@ proc start_water {} {
 
 }
 
-# doesn't actually change anything on the DE1 as this is a read-only state, except that it resets the DE1's "user is present" counter
-proc start_busy {} {
-	de1_send_state "indicate busy" $::de1_state(Busy)
-
-}
-
 proc start_idle {} {
 	msg -NOTICE "Tell DE1 to start to go IDLE (and stop whatever it is doing)"
 

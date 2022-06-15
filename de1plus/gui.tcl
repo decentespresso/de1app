@@ -1065,9 +1065,8 @@ proc check_if_should_send_user_present_notice {} {
 		set seconds_since_last_idle_update [expr {[clock seconds] - $::globals(time_last_idle_update)}]
 		msg -INFO "check_if_should_send_user_present_notice '$::de1_num_state($::de1(state))' - $seconds_since_last_idle_update"
 		if {$::de1_num_state($::de1(state)) == "Idle"} {
-			if {$seconds_since_last_idle_update > 30} {
-				#start_idle
-				start_busy
+			if {$seconds_since_last_idle_update > 3} {
+				set_user_present
 				set ::globals(time_last_idle_update) [clock seconds]
 				msg -INFO "updating time_last_idle_update and setting user-not-idle"		
 			} else {
