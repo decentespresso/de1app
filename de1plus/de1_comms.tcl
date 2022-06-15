@@ -946,8 +946,8 @@ proc mmr_write { note address length value} {
 
 	if {$::de1(currently_erasing_firmware) == 1 && $::de1(currently_updating_firmware) == 0} {
 		::comms::msg -NOTICE "Unable to mmr_write because currently upgrading firmware"
-	}
 		return
+	}
 
 	if {[mmr_available] == 0} {
 		::comms::msg -NOTICE "Unable to mmr_write because MMR not available"
