@@ -1083,7 +1083,7 @@ proc set_usb_charger_on {usbon} {
 proc set_user_present {} {
 	remove_matching_ble_queue_entries {^MMR set_user_present}
 	::comms::msg -INFO "Setting user is present"
-	mmr_write "set_user_present" "803860" "04" [zero_pad [int_to_hex 0] 2]
+	mmr_write "set_user_present" "803860" "04" [zero_pad [int_to_hex 1] 2]
 }
 
 proc set_hotwater_flow_rate {rate} {
