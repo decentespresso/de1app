@@ -83,6 +83,10 @@ array set ::de1 {
 	suuid_hiroiajimmy "06C31822-8682-4744-9211-FEBC93E3BECE"
 	cuuid_hiroiajimmy_cmd "06C31823-8682-4744-9211-FEBC93E3BECE"
 	cuuid_hiroiajimmy_status "06C31824-8682-4744-9211-FEBC93E3BECE"
+	suuid_eureka_precisa "0000FFF0-0000-1000-8000-00805F9B34FB"
+	cuuid_eureka_precisa_status "0000FFF1-0000-1000-8000-00805F9B34FB"
+	cuuid_eureka_precisa_cmd "0000FFF2-0000-1000-8000-00805F9B34FB"
+
 	cinstance 0
 	fan_threshold 0
 	tank_temperature_threshold 0

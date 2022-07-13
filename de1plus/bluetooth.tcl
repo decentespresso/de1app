@@ -57,6 +57,8 @@ proc scale_timer_start {} {
 		after 500 decentscale_timer_start
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_start_timer
+	} elseif {$::settings(scale_type) == "eureka_precisa"} {
+		eureka_precisa_start_timer
 	}
 }
 
@@ -71,6 +73,8 @@ proc scale_timer_stop {} {
 		after 500 decentscale_timer_stop
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_stop_timer
+	} elseif {$::settings(scale_type) == "eureka_precisa"} {
+		eureka_precisa_stop_timer
 	}
 }
 
@@ -87,6 +91,8 @@ proc scale_timer_reset {} {
 		after 500 decentscale_timer_reset
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_timer_reset
+	} elseif {$::settings(scale_type) == "eureka_precisa"} {
+		eureka_precisa_reset_timer
 	}
 }
 
@@ -111,6 +117,8 @@ proc scale_enable_weight_notifications {} {
 		felicita_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "hiroiajimmy"} {
 		hiroia_enable_weight_notifications
+	}  elseif {$::settings(scale_type) == "eureka_precisa"} {
+		eureka_precisa_enable_weight_notifications
 	}
 }
 
@@ -131,6 +139,8 @@ proc scale_enable_grams {} {
 		skale_enable_grams
 	} elseif {$::settings(scale_type) == "decentscale"} {
 		# nothing to do, as this is already set as part of LED on command
+	} elseif {$::settings(scale_type) == "eureka_precisa"} {
+		eureka_precisa_set_unit
 	}
 }
 
@@ -412,6 +422,98 @@ proc hiroia_parse_response { value } {
 		}
 	}
 }
+
+#### Eureka Precisa / Krell CFS-9002
+proc eureka_precisa_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "eureka_precisa"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_eureka_precisa))] == ""} {
+		error "Eureka Precisa Scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable eureka precisa scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_eureka_precisa) $::sinstance($::de1(suuid_eureka_precisa)) $::de1(cuuid_eureka_precisa_status) $::cinstance($::de1(cuuid_eureka_precisa_status))] 1
+}
+
+proc eureka_precisa_cmd {payload name} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "eureka_precisa"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_eureka_precisa))] == ""} {
+		error "Eureka Precisa Scale not connected, cannot send $name cmd"
+		return
+	}
+
+	userdata_append "SCALE: eureka_precisa $name" [list ble write $::de1(scale_device_handle) $::de1(suuid_eureka_precisa) $::sinstance($::de1(suuid_eureka_precisa)) $::de1(cuuid_eureka_precisa_cmd) $::cinstance($::de1(cuuid_eureka_precisa_cmd)) $payload] 0
+	# The tare is not yet confirmed to us, we can therefore assume it worked out
+}
+
+proc eureka_precisa_tare {} {
+
+	set tare [binary decode hex "AA023131"]
+
+	eureka_precisa_cmd $tare "tare"
+
+}
+
+proc eureka_precisa_turn_off {} {
+
+	set payload [binary decode hex "AA023232"]
+
+	eureka_precisa_cmd $payload "turn scale off"
+}
+
+proc eureka_precisa_start_timer {} {
+	set payload [binary decode hex "AA023333"]
+
+	eureka_precisa_cmd $payload "start timer"
+}
+
+proc eureka_precisa_stop_timer {} {
+	set payload [binary decode hex "AA023434"]
+
+	eureka_precisa_cmd $payload "stop timer"
+}
+
+proc eureka_precisa_reset_timer {} {
+	# also stops
+	set payload [binary decode hex "AA023535"]
+
+	eureka_precisa_cmd $payload "reset timer"
+}
+
+proc eureka_precisa_beep_twice {} {
+	set payload [binary decode hex "AA023737"]
+
+	eureka_precisa_cmd $payload "beep twice"
+}
+
+proc eureka_precisa_set_unit {} {
+	# also stops
+	set grams [binary decode hex "AA033600"]
+	set oz [binary decode hex "AA033601"]
+	set ml [binary decode hex "AA033602"]
+
+	eureka_precisa_cmd $grams "set unit"
+}
+
+proc eureka_precisa_parse_response { value } {
+	if {[string bytelength $value] >= 9} {
+		binary scan $value "cucucu cu su cu su" h1 h2 h3 timer_running timer sign weight
+		# AA (<- header) 09 (<- type) 14 (<-notification type)
+		if {[info exists weight] && $h1 == 170 && $h2 == 9 && $h3 == 65 } {
+			if {$sign == 1} {
+				set weight [expr $weight * -1]
+			}
+			::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
+		}
+	}
+}
+
 
 
 #### Acaia
@@ -1335,6 +1437,9 @@ proc de1_ble_handler { event data } {
  				} elseif {[string first "HIROIA JIMMY" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "hiroiajimmy"
 
+ 				} elseif {[string first "CFS-9002" $name] == 0} {
+					append_to_peripheral_list $address $name "ble" "scale" "eureka_precisa"
+
  				} elseif {[string first "ACAIA" $name] == 0 \
  					|| [string first "PROCH" $name]    == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
@@ -1492,6 +1597,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "hiroiajimmy"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "hiroiajimmy"
 							after 200 hiroia_enable_weight_notifications
+						} elseif {$::settings(scale_type) == "eureka_precisa"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "eureka_precisa"
+							after 200 eureka_precisa_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
 							set ::settings(force_acaia_heartbeat) 0
@@ -1866,6 +1974,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_hiroiajimmy_status)} {
 							# hiroia jimmy scale
 							hiroia_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_eureka_precisa_status)} {
+							# eureka precisa scale
+							eureka_precisa_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF82)} {
 							set t0 {}
 							#set t1 {}

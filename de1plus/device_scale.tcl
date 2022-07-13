@@ -352,6 +352,8 @@ namespace eval ::device::scale {
 			felicita { felicita_tare }
 
 			hiroiajimmy { hiroia_tare }
+
+			eureka_precisa { eureka_precisa_tare }
 		}
 
 		set ::device::scale::_tare_last_requested [clock milliseconds]
