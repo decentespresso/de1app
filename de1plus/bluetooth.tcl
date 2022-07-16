@@ -413,52 +413,6 @@ proc hiroia_parse_response { value } {
 	}
 }
 
-#### Eureka Precisa / Krell CFS-9002
-proc eureka_precisa_enable_weight_notifications {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "eureka_precisa"} {
-		return
-	}
-
-	if {[ifexists ::sinstance($::de1(suuid_eureka_precisa))] == ""} {
-		error "eureka_precisa Scale not connected, cannot enable weight notifications"
-		return
-	}
-
-	userdata_append "SCALE: enable eureka precisa scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_eureka_precisa) $::sinstance($::de1(suuid_eureka_precisa)) $::de1(cuuid_eureka_precisa_status) $::cinstance($::de1(cuuid_eureka_precisa_status))] 1
-}
-
-proc eureka_precisa_tare {} {
-
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "eureka_precisa"} {
-		return
-	}
-
-	if {[ifexists ::sinstance($::de1(suuid_eureka_precisa))] == ""} {
-		error "eureka_precisa Scale not connected, cannot send tare cmd"
-		return
-	}
-
-	set tare [binary decode hex "54"]
-
-	userdata_append "SCALE: eureka_precisa tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_eureka_precisa) $::sinstance($::de1(suuid_eureka_precisa)) $::de1(cuuid_eureka_precisa_cmd) $::cinstance($::de1(cuuid_eureka_precisa_cmd)) $tare] 0
-	# The tare is not yet confirmed to us, we can therefore assume it worked out
-}
-
-proc eureka_precisa_parse_response { value } {
-	if {[string bytelength $value] >= 9} {
-		binary scan $value cucucua1a2a1a2 h1 h2 h3 timer_running timer sign weight
-		if {[info exists weight] && $h1 == 170 && $h2 == 9 && h3 == 65 } {
-			set weight [ scan $weight %d ]
-			if {$weight == ""} { return }
-			if {$sign == 1} {
-				set weight [expr $weight * -1]
-			}
-			::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
-		}
-	}
-}
-
-
 
 #### Acaia
 set ::acaia_command_buffer ""
@@ -1381,9 +1335,6 @@ proc de1_ble_handler { event data } {
  				} elseif {[string first "HIROIA JIMMY" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "hiroiajimmy"
 
- 				} elseif {[string first "CFS-9002" $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "eureka_precisa"
-
  				} elseif {[string first "ACAIA" $name] == 0 \
  					|| [string first "PROCH" $name]    == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
@@ -1915,9 +1866,6 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_hiroiajimmy_status)} {
 							# hiroia jimmy scale
 							hiroia_parse_response $value
-						} elseif {$cuuid eq $::de1(cuuid_eureka_precisa_status)} {
-							# eureka precisa scale
-							eureka_precisa_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF82)} {
 							set t0 {}
 							#set t1 {}
