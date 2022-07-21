@@ -468,8 +468,11 @@ namespace eval ::dui {
 			# make sure on-screen keyboard doesn't auto-pop up, and if
 			# physical keyboard is connected, make sure navbar stays hidden
 			sdltk textinput off
-			#	# this auto-hides the bottom android controls, which can appear if a gesture was made
-			borg systemui $::android_full_screen_flags
+			
+			if {[android_11_or_newer] == 0} {
+				#	# this auto-hides the bottom android controls, which can appear if a gesture was made
+				borg systemui $::android_full_screen_flags
+			}
 			catch { focus [dui canvas] }
 		}
 		
