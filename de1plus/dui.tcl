@@ -464,28 +464,6 @@ namespace eval ::dui {
 		variable last_click_time
 		array set last_click_time {}
 		
-
-		proc android_11_or_newer {} {
-
-			if {$::android != 1} {
-				::bt::msg -INFO "android_11_or_newer reports: not android (0)"
-				return 0
-			}
-
-			catch {
-				set x [borg osbuildinfo]
-				array set androidprops $x
-				::bt::msg -NOTICE [array get androidprops]
-				::bt::msg -NOTICE "Android release reported: '$androidprops(version.release)'"
-			}
-			set test 0
-			catch {
-				set test [expr {$androidprops(version.release) >= 11}]
-			}
-
-			return $test
-		}
-
 		proc hide_android_keyboard {} {
 			# make sure on-screen keyboard doesn't auto-pop up, and if
 			# physical keyboard is connected, make sure navbar stays hidden
