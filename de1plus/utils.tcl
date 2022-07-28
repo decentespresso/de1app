@@ -603,8 +603,12 @@ proc check_battery_low {brightness_to_use} {
 }
 
 proc schedule_minute_task {} {
-    check_battery_charger
-    check_battery_low $::settings(app_brightness)
+    catch {
+    	check_battery_charger
+    }
+    catch {
+	    check_battery_low $::settings(app_brightness)
+	}
     after 60000 schedule_minute_task
 
 }
