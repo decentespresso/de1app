@@ -535,8 +535,11 @@ proc check_battery_charger {} {
 
     set percent [battery_percent]
 
+    msg -INFO "Battery percent is: $percent %, smart charging = $::settings(smart_battery_charging)"
+
+
     #####################
-    # keep battery charged between 40% and 60%
+    # keep battery charged between 55% and 65%
 	if {$::settings(smart_battery_charging) == 1} {
 	    if {$percent <= 55} {
 			# turn USB charger on
