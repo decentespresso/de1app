@@ -1026,14 +1026,16 @@ proc start_schedIdle {} {
 	}
 
 	set idlecmd $::de1_state(Idle)
+	set cmdd "go idle"
 	catch {
 		if {$::settings(firmware_version_number) >= 1293} {
 			# new firmware scheduled-wake command was only working as of v1293 firmware
 			set idlecmd $::de1_state(SchedIdle)
+			set cmdd "go scheduled idle"
 		}
 	}
 
-	de1_send_state "go idle" $idlecmd
+	de1_send_state $cmdd $idlecmd
 
 	
 	if {$::de1(scale_device_handle) != 0} {
