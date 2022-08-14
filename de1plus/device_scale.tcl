@@ -1430,9 +1430,13 @@ namespace eval ::device::scale::callbacks {
 
 				# (Here is a good place to select different weight-estimation algorithms)
 			}
-
 			felicita {
-
+				set ::device::scale::run_timer True
+			}
+			eureka_precisa {
+				set ::device::scale::run_timer True
+			}
+			atomaxskale {
 				set ::device::scale::run_timer True
 			}
 		}
