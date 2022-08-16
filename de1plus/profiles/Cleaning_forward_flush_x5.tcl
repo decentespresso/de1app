@@ -31,7 +31,7 @@ profile_language kr
 preinfusion_stop_pressure 4.0
 profile_hide 0
 final_desired_shot_volume_advanced_count_start 2
-beverage_type Cleaning
+beverage_type cleaning
 maximum_pressure 0
 maximum_pressure_range_advanced 0.6
 maximum_flow_range_advanced 0.6
