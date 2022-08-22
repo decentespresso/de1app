@@ -1012,6 +1012,10 @@ proc start_idle {} {
 	}
 }
 
+proc unset_sent_scheduled_idle {} {
+	unset -nocomplain ::globals(sent_scheduled_idle)
+}
+
 proc start_schedIdle {} {
 	msg -NOTICE "Tell DE1 to start to go IDLE from a scheduler call"
 
@@ -1034,6 +1038,11 @@ proc start_schedIdle {} {
 			set cmdd "go scheduled idle"
 		}
 	}
+
+
+	# used to tell the "user is present" code that the IDLE state that just occured, was not caused by a user action
+	set ::globals(sent_scheduled_idle) 1
+	after 5000 unset_sent_scheduled_idle
 
 	de1_send_state $cmdd $idlecmd
 
