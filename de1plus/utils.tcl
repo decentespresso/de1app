@@ -2415,6 +2415,17 @@ proc render_arabic args {
   return $arabic_string 
 }
 
+proc is_valid_timestamp {timestamp} {
+    set valid_timestamp 0
+    catch {
+        # Try to convert timestamp number to valid format
+        clock format $timestamp -format "%Y-%m-%d %H:%M:%S %z"
+        set valid_timestamp 1
+        msg -DEBUG "'$timestamp' is a valid timestamp"
+    }
+    return $valid_timestamp
+}
+
 proc iso8601clock {{now {}}} {
     if {$now == ""} {
         set now [clock seconds]

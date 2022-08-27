@@ -95,7 +95,7 @@ namespace eval ::app {
 
 		# Use modified ISO 8601 (no T, add space before zone)
 
-		if { $::app::build_timestamp } {
+		if {$::app::build_timestamp != "" && [is_valid_timestamp $::app::build_timestamp]} {
 			set ::app::build_time_string [clock format $::app::build_timestamp \
 							      -format "%Y-%m-%d %H:%M:%S %z"]
 		} else {
