@@ -383,7 +383,7 @@ proc scheduled_app_update_check {} {
 
 proc check_timestamp_for_app_update_available_async { {check_only 0} } {
 
-    set host "http://decentespresso.com"
+    set host "https://decentespresso.com"
     set progname "de1plus"
     if {[ifexists ::settings(app_updates_beta_enabled)] == 1} {
         set progname "de1beta"
@@ -416,7 +416,7 @@ proc check_timestamp_for_app_update_available_async_part2 { remote_timestamp_in 
     set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
     msg -INFO "Local timestamp: '$local_timestamp'"
 
-    if {$remote_timestamp == ""} {
+    if {$remote_timestamp == "" || ![is_valid_timestamp $remote_timestamp]} {
         msg -WARNING "unable to fetch remote timestamp"
 
         if {$check_only != 1} {
@@ -452,7 +452,7 @@ proc check_timestamp_for_app_update_available_async_part2 { remote_timestamp_in 
 
 proc check_timestamp_for_app_update_available { {check_only 0} } {
 
-    set host "http://decentespresso.com"
+    set host "https://decentespresso.com"
     set progname "de1plus"
     if {[ifexists ::settings(app_updates_beta_enabled)] == 1} {
         set progname "de1beta"
@@ -481,7 +481,7 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
     set local_timestamp [string trim [read_file "[homedir]/timestamp.txt"]]
     msg -INFO "Local timestamp: '$local_timestamp'"
 
-    if {$remote_timestamp == ""} {
+    if {$remote_timestamp == "" || ![is_valid_timestamp $remote_timestamp]} {
         msg -WARNING "unable to fetch remote timestamp"
 
         if {$check_only != 1} {
@@ -541,6 +541,20 @@ proc start_app_update {} {
         }
     }
 
+    set has_tls 0
+    catch {
+        package present tls
+        set has_tls 1
+    }    
+
+    if {$has_tls != 1} {
+        # undroid doesn't support https
+        msg -ERROR "Cannot find tls package - Undroid needs to be updated"
+        set ::de1(app_update_button_label) [translate "Cannot reach update server securely"];
+        set ::app_updating 0
+        return $::de1(app_update_button_label)
+    }
+
     set cert_check [verify_decent_tls_certificate]
     if {$cert_check != 1} {
         msg -ERROR "https certification is not what we expect, update failed"
@@ -553,20 +567,6 @@ proc start_app_update {} {
     }
 
     set host "https://decentespresso.com"
-    set host2 "https://decentespresso.com"
-    #set host "http://10.0.1.200:8000"
-
-    set has_tls 0
-    catch {
-        package package present tls
-        set has_tls 1
-    }    
-
-
-    if {$has_tls == 1} {
-        # undroid doesn't yet support https
-        set host "http://decentespresso.com"
-    }
 
     set progname "de1plus"
     if {[ifexists ::settings(app_updates_beta_enabled)] == 1} {
@@ -590,14 +590,14 @@ proc start_app_update {} {
     }
 
     ##############################################################################################################
-    # get manifest both as raw TXT and as gzip compressed, to detect tampering 
-    #set url_manifest "$host/download/sync/$progname/manifest.txt"
-    set url_manifest_gz "$host2/download/sync/$progname/manifest.gz"
+    # get manifest as gzip compressed
+    set url_manifest_gz "$host/download/sync/$progname/manifest.gz"
     set remote_manifest_gz {}
     set remote_manifest {}
     catch {
         set remote_manifest_gz [decent_http_get $url_manifest_gz]
         set remote_manifest [zlib gunzip $remote_manifest_gz]
+        msg -INFO "Successfully retrieved and decompressed remote manifest file"
     }
     set remote_manifest_gunzip_length 0
     set remote_manifest_gunzip_parts_length -1
