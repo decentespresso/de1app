@@ -88,6 +88,13 @@ namespace eval ::app {
 
 			set ::app::build_timestamp [string trim [read $_fh]]
 
+			if {[catch {incr ::app::build_timestamp 0}]} {
+				msg -NOTICE "timestamp.txt is not a valid integer: '$::app::build_timestamp', resetting to zero"
+				set ::app::build_timestamp 0
+			}
+
+			
+
 		} else {
 
 			set ::app::build_timestamp 0
@@ -96,8 +103,7 @@ namespace eval ::app {
 		# Use modified ISO 8601 (no T, add space before zone)
 
 		if { $::app::build_timestamp } {
-			set ::app::build_time_string [clock format $::app::build_timestamp \
-							      -format "%Y-%m-%d %H:%M:%S %z"]
+			set ::app::build_time_string [clock format $::app::build_timestamp -format "%Y-%m-%d %H:%M:%S %z"]
 		} else {
 			set ::app::build_time_string [translate "Unknown"]
 		}
