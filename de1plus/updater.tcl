@@ -558,7 +558,7 @@ proc start_app_update {} {
 
     set has_tls 0
     catch {
-        package package present tls
+        package present tls
         set has_tls 1
     }    
 
