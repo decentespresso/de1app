@@ -563,8 +563,8 @@ proc start_app_update {} {
     }    
 
 
-    if {$has_tls == 1} {
-        # undroid doesn't yet support https
+    if {$has_tls != 1} {
+        # undroid doesn't yet support https, so fallback to plain http in that case
         set host "http://decentespresso.com"
     }
 
