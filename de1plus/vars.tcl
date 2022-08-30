@@ -3204,11 +3204,11 @@ proc seconds_text {num} {
 	if {$num == 0} {
 		return [translate "off"]
 	} elseif {$num == 1} {
-		return [subst {$num [translate "second"]}]
+		return [subst {[round_to_integer $num] [translate "second"]}]
 	} elseif {$num == 60} {
 		return [translate "1 minute"]
 	} else {
-		return [subst {$num [translate "seconds"]}]
+		return [subst {[round_to_integer $num] [translate "seconds"]}]
 	}
 }
 

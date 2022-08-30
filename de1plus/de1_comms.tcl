@@ -1475,7 +1475,12 @@ proc de1_send_steam_hotwater_settings {} {
 
 	set_steam_flow $::settings(steam_flow)
 	set_steam_highflow_start $::settings(steam_highflow_start)
+
+	set_flush_timeout $::settings(flush_seconds)
+	set_flush_flow_rate $::settings(flush_flow)
+	
 }
+
 
 proc de1_send_calibration {calib_target reported measured {calibcmd 1} } {
 	::comms::msg -NOTICE de1_send_calibration

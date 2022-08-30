@@ -243,7 +243,7 @@ array set ::settings {
 	hotwater_flow 8.0
 	flush_flow 6.0
 	steam_disabled 0
-	flush_seconds 3.0
+	flush_seconds 5.0
 	color_stage_1 "#c8e7d5"
 	color_stage_2 "#efdec2"
 	hot_water_idle_temp "990"
