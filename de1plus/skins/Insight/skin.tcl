@@ -1007,7 +1007,7 @@ add_de1_variable "preheat_1" 755 1250 -text "" -font Helv_10_bold -fill $tappabl
 add_de1_variable "preheat_2 preheat_3 preheat_4" 755 1250 -text "" -font Helv_10_bold -fill #7f879a -anchor "center" -textvariable {[seconds_text $::settings(flush_seconds)]}
 add_de1_text "preheat_1" 755 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
 add_de1_text "preheat_2 preheat_3 preheat_4" 755 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill #7f879a -anchor "center" 
-add_de1_variable "preheat_1 preheat_2 preheat_3 preheat_4" 755 510 -text ""  -width [rescale_x_skin 400] -font Helv_7 -justify "center" -fill $progress_text_color -anchor "center" -textvariable {[if {$::settings(flush_seconds) > 10} { return [translate "Warning: long flush times can cool the group head"] } else { return "" }]}
+add_de1_variable "preheat_1 preheat_2 preheat_3 preheat_4" 755 510 -text ""  -width [rescale_x_skin 400] -font Helv_7 -justify "center" -fill $progress_text_color -anchor "center" -textvariable {[if {$::settings(flush_seconds) > 10 && $::settings(flush_flow) > 4.0} { return [translate "Warning: long flush times can cool the group head"] } else { return "" }]}
 
 add_de1_button "preheat_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(flush_seconds) -n_decimals 0 -min 3 -max 120 -default $::settings(flush_seconds) -smallincrement 1 -bigincrement 1 -use_biginc 1 -page_title [translate "AUTO-OFF"] -return_callback change_water_steam_settings } 590 1200 920 1380  ""   
 
@@ -1097,7 +1097,8 @@ add_de1_text "water water_3" 70 250 -text [translate "1) Settings"] -font Helv_9
 add_de1_text "water_3" 1070 250 -text [translate "2) Hot water will pour"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 650]
 
 # hotlink on hot water flow rate, goes to calibration page to change it
-add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); backup_settings; calibration_gui_init; set_next_page off calibrate3 ; start_idle} 2120 1100 2500 1400
+# john - disabled as not that useful, as "max flow possible while retaining temp accuracy" is now the default
+#add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); backup_settings; calibration_gui_init; set_next_page off calibrate3 ; start_idle} 2120 1100 2500 1400
 
 
 
@@ -1163,13 +1164,13 @@ add_de1_variable "water_3" 2470 1200 -justify left -anchor "ne" -font Helv_8 -te
 if {$::settings(scale_bluetooth_address) != ""} {
 	# hot water - optional feature when scale is connected
 	add_de1_text "water " 1870 1200 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "" -font Helv_8 -fill $tappable_text_color -width [rescale_x_skin 520] -textvariable {[waterweightflow_text]} 
+	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "-" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[waterweightflow_text]} 
 	add_de1_text "water water_3" 1870 1300 -justify right -anchor "nw" -text [translate "Total Weight"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-	add_de1_variable "water water_3" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[drink_weight_text]} 
+	add_de1_variable "water water_3" 2470 1300 -justify left -anchor "ne" -text "-" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[drink_weight_text]} 
 
 } else {
 	add_de1_text "water" 1870 1200 -justify right -anchor "nw" -text [translate "Flow rate"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
-	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "-" -font Helv_8 -fill $tappable_text_color -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
+	add_de1_variable "water" 2470 1200 -justify left -anchor "ne" -text "-" -font Helv_8 -fill $datacard_data_color -width [rescale_x_skin 520] -textvariable {[waterflow_text]} 
 	#add_de1_text "water " 1870 1300 -justify right -anchor "nw" -text [translate "Total Volume"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 520]
 	#add_de1_variable "water" 2470 1300 -justify left -anchor "ne" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 520] -textvariable {[watervolume_text]} 
 }

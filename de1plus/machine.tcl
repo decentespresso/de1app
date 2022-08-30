@@ -240,7 +240,7 @@ array set ::settings {
 	ghc_mode 0
 	fan_threshold 60
 	steam_flow 700
-	hotwater_flow 8.0
+	hotwater_flow 10
 	flush_flow 6.0
 	steam_disabled 0
 	flush_seconds 5.0
