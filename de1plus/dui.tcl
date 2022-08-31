@@ -9277,7 +9277,7 @@ namespace eval ::dui::pages::dui_number_editor {
 
 		dui add dbutton $page [expr {$x-$hoffset-$bspace*3}] $y -tags to_min -style dne_clicker \
 			-symbol arrow-to-left -labelvariable {[format [%NS::value_format] $%NS::data(min)]} \
-			-command { %NS::set_value -$%NS::data(min) } 
+			-command { %NS::set_value $%NS::data(min) } 
 
 		# Increment value arrows
 		dui add dbutton $page [expr {$x+$hoffset+$bspace}] $y -tags small_incr -style dne_clicker \
