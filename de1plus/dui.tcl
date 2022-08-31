@@ -9401,9 +9401,12 @@ namespace eval ::dui::pages::dui_number_editor {
 			set number_editor_previous_values($context) $existing
 			set ::settings(dui_number_editor_previous_values) [array get number_editor_previous_values]
 			save_settings
+
+			catch {
+				$nextproc $newvalue
+			}
 		}
 
-		$nextproc $newvalue
 	}
 
 
