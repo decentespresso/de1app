@@ -1000,8 +1000,7 @@ add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker
 #add_de1_text "preheat_2 preheat_3 preheat_4" 364 1300  -text [translate "FLOW RATE"] -font Helv_7 -fill #7f879a -anchor "center" 
 #add_de1_variable "preheat_1" 364 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center"  -textvariable {[return_flow_measurement $::settings(flush_flow)]}
 #add_de1_variable "preheat_2 preheat_3 preheat_4" 364 1250 -text "" -font Helv_10_bold -fill #7f879a -anchor "center"  -textvariable {[return_flow_measurement $::settings(flush_flow)]}
-#add_de1_button "preheat_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(flush_flow) -n_decimals 1 -min 1 -max 10 -default $::settings(flush_flow) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "FLOW RATE"] -return_callback change_water_steam_settings } 137 1200 520 1370 ""   
-add_de1_widget "preheat_1 preheat_2 preheat_3 preheat_4" scale 10 1436 {} -from 1 -to 10 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 1  -resolution 1 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(flush_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard;  save_settings; set_flush_flow_rate} -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
+add_de1_widget "preheat_1 preheat_2 preheat_3 preheat_4" scale 10 1436 {} -from 1 -to 10 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 1  -resolution 1 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(flush_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard; change_water_steam_settings } -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
 
 add_de1_text "preheat_1" 1100 1300 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 	# hide the android toolbar if it is shown during steaming, because it obscures the flow rate slider
@@ -1017,7 +1016,7 @@ add_de1_text "preheat_1" 520 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fil
 add_de1_text "preheat_2 preheat_3 preheat_4" 520 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill #7f879a -anchor "center" 
 add_de1_variable "preheat_1 preheat_2 preheat_3 preheat_4" 520 350 -text ""  -width [rescale_x_skin 400] -font Helv_7 -justify "center" -fill $progress_text_color -anchor "center" -textvariable {[if {$::settings(flush_seconds) > 10 && $::settings(flush_flow) > 4.0} { return [translate "Warning: long flush times can cool the group head"] } else { return "" }]}
 
-add_de1_button "preheat_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(flush_seconds) -n_decimals 0 -min 3 -max 120 -default $::settings(flush_seconds) -smallincrement 1 -bigincrement 1 -use_biginc 0 -page_title [translate "AUTO-OFF"] -return_callback change_water_steam_settings } 290 1200 750 1380  ""   
+add_de1_button "preheat_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(flush_seconds) -n_decimals 0 -min 3 -max 120 -default $::settings(flush_seconds) -smallincrement 1 -previous_values [::dui::pages::dui_number_editor::get_previous_values flush_seconds] -bigincrement 10 -use_biginc 0 -page_title [translate "AUTO-OFF"] -return_callback "::dui::pages::dui_number_editor::save_previous_value set_flush_flow_rate flush_seconds" } 290 1200 750 1380  ""   
 
 
 
@@ -1082,7 +1081,9 @@ add_de1_button "water" {say [translate {stop}] $::settings(sound_button_in); set
 # future feature
 #add_de1_button "water_1 water_3" {say [translate {rinse}] $::settings(sound_button_in); set_next_page water water; start_water} 1030 1101 1760 1400
 
+
 proc change_water_steam_settings { {discard {}} } {
+	#puts "discarded: $discard"
 	#puts change_water_steam_settings
 	save_settings
 	de1_send_steam_hotwater_settings
@@ -1116,21 +1117,19 @@ if {$::settings(scale_bluetooth_address) != ""} {
 	add_de1_text "water_1" 300 1300  -text [translate "WEIGHT"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
 	add_de1_variable "water_1" 300 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center"  -textvariable {[return_weight_measurement $::settings(water_volume)]}
 
-	add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_volume) -n_decimals 0 -min 10 -max 250 -default $::settings(water_volume) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "WEIGHT"] -return_callback change_water_steam_settings } 137 1200 460 1370 ""   
+	add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_volume) -n_decimals 0 -min 10 -max 250 -default $::settings(water_volume) -smallincrement .1 -previous_values [::dui::pages::dui_number_editor::get_previous_values water_volume] -bigincrement 1 -use_biginc 1 -page_title [translate "WEIGHT"] -return_callback "::dui::pages::dui_number_editor::save_previous_value change_water_steam_settings water_volume" } 137 1200 460 1370 ""   
 
 } else {
 	add_de1_text "water_1" 300 1300  -text [translate "VOLUME"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
 	add_de1_variable "water_1" 300 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center"  -textvariable {[return_liquid_measurement $::settings(water_volume)]}
 
-	add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_volume) -n_decimals 0 -min 10 -max 250 -default $::settings(water_volume) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "VOLUME"] -return_callback change_water_steam_settings } 137 1200 460 1370 ""   
-
+	add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_volume) -n_decimals 0 -min 10 -max 250 -default $::settings(water_volume) -smallincrement .1 -previous_values [::dui::pages::dui_number_editor::get_previous_values water_volume] -bigincrement 1 -use_biginc 1 -page_title [translate "VOLUME"] -return_callback "::dui::pages::dui_number_editor::save_previous_value change_water_steam_settings water_volume" } 137 1200 460 1370 ""   
 }
 
 
 add_de1_variable "water_1" 755 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center" -textvariable {[return_temperature_measurement $::settings(water_temperature)]}
 add_de1_text "water_1" 755 1300 -text [translate "TEMP"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
-add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_temperature) -n_decimals 0 -min 20 -max 110 -default $::settings(water_temperature) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Temperature"] -return_callback change_water_steam_settings } 590 1200 920 1380  ""   
-
+add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_temperature) -n_decimals 0 -min 20 -max 110 -default $::settings(water_temperature) -smallincrement .1 -previous_values [::dui::pages::dui_number_editor::get_previous_values water_temperature] -bigincrement 1 -use_biginc 1 -page_title [translate "Temperature"] -return_callback "::dui::pages::dui_number_editor::save_previous_value change_water_steam_settings water_temperature" } 590 1200 920 1380  ""   
 
 add_de1_widget "water water_1 water_3" scale 10 1436 {} -from 1 -to 10 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 1  -resolution 1 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(hotwater_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard;  save_settings; set_hotwater_flow_rate} -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
 
@@ -1245,8 +1244,7 @@ add_de1_variable "steam_1" 537 1250 -text "" -font Helv_10_bold -fill $tappable_
 	add_de1_variable "steam steam_3" 537 1250 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center"  -textvariable {[seconds_text $::settings(steam_timeout)]}
 	add_de1_text "steam_1" 537 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
 	add_de1_text "steam steam_3" 537 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill "#7f879a" -anchor "center" 
-	add_de1_button "steam_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(steam_timeout) -n_decimals 0 -min 1 -max 255 -default $::settings(steam_timeout) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "AUTO-OFF"] -return_callback change_water_steam_settings } 337 1180 737 1370 ""   
-
+	add_de1_button "steam_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(steam_timeout) -n_decimals 0 -min 1 -max 255 -default $::settings(steam_timeout) -smallincrement .1 -previous_values [::dui::pages::dui_number_editor::get_previous_values steam_timeout] -bigincrement 1 -use_biginc 1 -page_title [translate "AUTO-OFF"] -return_callback "::dui::pages::dui_number_editor::save_previous_value change_water_steam_settings steam_timeout" } 337 1180 737 1370 ""   
 
 add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Information"] -font Helv_9_bold -fill $progress_text_color -width [rescale_x_skin 520]
 

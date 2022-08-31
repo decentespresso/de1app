@@ -237,6 +237,7 @@ array set ::settings {
 	calibration_flow_multiplier "1.000"
 	phase_1_flow_rate 20
 	phase_2_flow_rate 40
+	dui_number_editor_previous_values {}
 	ghc_mode 0
 	fan_threshold 60
 	steam_flow 700

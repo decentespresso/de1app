@@ -839,7 +839,9 @@ namespace eval ::dui {
 			default.listbox.disabledforeground "#cccccc"
 			default.listbox.selectmode browse
 			default.listbox.justify left
-
+			default.listbox.font_size 24
+			default.listbox.font_family notosansuiregular
+			
 			default.listbox_label.pos "wn -10 0"
 			default.listbox_label.anchor ne
 			default.listbox_label.justify right
@@ -9375,6 +9377,37 @@ namespace eval ::dui::pages::dui_number_editor {
 		return 1
 	}
 	
+
+	# convenience function for getting previous values for a dui_number_editor
+	proc get_previous_values { context } {
+		array set number_editor_previous_values $::settings(dui_number_editor_previous_values)
+		set existing [ifexists number_editor_previous_values($context)]
+		set existing2 [lsort -unique [lrange $existing end-20 end]]
+		catch {
+			# if we can sort this numerically, try to.  Might fail if the list is text, not numbers
+			set existing2 [lsort -real -unique [lrange $existing end-20 end]]
+		}
+		return $existing2
+	}
+
+	# adds the new value to the saved previous values and then calls the next proc to handle the new value
+	proc save_previous_value { nextproc context newvalue } {
+
+		if {$newvalue != ""} {
+			array set number_editor_previous_values $::settings(dui_number_editor_previous_values)
+			set existing [ifexists number_editor_previous_values($context)]
+			lappend existing $newvalue
+			
+			set number_editor_previous_values($context) $existing
+			set ::settings(dui_number_editor_previous_values) [array get number_editor_previous_values]
+			save_settings
+		}
+
+		$nextproc $newvalue
+	}
+
+
+
 	proc show { page_to_hide page_to_show } {
 		variable data
 		set page [namespace tail [namespace current]]
