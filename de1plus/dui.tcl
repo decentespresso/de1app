@@ -9527,7 +9527,10 @@ namespace eval ::dui::pages::dui_number_editor {
 		}
 		
 		if { $data(num_variable) ne "" } {
-			set $data(num_variable) $data(value)
+			# john changed so that a invalid entry (such as a blank) no longer causes a Tcl error
+			catch {
+				set $data(num_variable) $data(value)
+			}
 		}
 		
 		dui page close_dialog $data(value)
