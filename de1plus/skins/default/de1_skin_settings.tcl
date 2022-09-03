@@ -1657,10 +1657,12 @@ proc send_refill_kit_override_from_gui {args} {
 		add_de1_widget "calibrate3" scale 350 760  {} -to 10 -from 1 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution .1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(flush_flow) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "calibrate3" 970 780  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_flow_measurement $::settings(flush_flow)]}
 
-		add_de1_text "calibrate3" 350 900  -text [translate "Flush timeout"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
-		add_de1_widget "calibrate3" scale 350 960  {} -to 120 -from 3 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution .1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(flush_seconds) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "calibrate3" 970 980  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[seconds_text $::settings(flush_seconds)]}
-
+		if {$::settings(skin) != "MimojaCafe" && $::settings(skin) != "DSx"} {
+			# those skins implement their own flush timers, and so this firmware control causes problems for them
+			add_de1_text "calibrate3" 350 900  -text [translate "Flush timeout"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left" 
+			add_de1_widget "calibrate3" scale 350 960  {} -to 120 -from 3 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution .1 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(flush_seconds) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+			add_de1_variable "calibrate3" 970 980  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[seconds_text $::settings(flush_seconds)]}
+		}
 
 
 	add_de1_text "calibrate calibrate2 calibrate3" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
