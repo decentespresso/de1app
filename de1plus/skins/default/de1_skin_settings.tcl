@@ -659,7 +659,7 @@ add_de1_text "settings_2c" 1260 1270 -text [translate "volume"] -font Helv_6 -fi
 add_de1_text "settings_2c" 1450 1270 -text [translate "weight"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
 	add_de1_button "settings_2c" {say [translate {time}] $::settings(sound_button_in);vertical_clicker 9 1 ::current_adv_step(weight) 0 1000 %x %y %x0 %y0 %x1 %y1; save_current_adv_shot_step } 1354 900 1540 1240 ""
 	add_de1_variable "settings_2c" 1450 1340 -text "-" -font Helv_7_bold -fill "#4e85f4" -anchor "center" -textvariable {[return_stop_at_weight_measurement [ifexists ::current_adv_step(weight)]]}
-	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(weight) -n_decimals 0 -min 0 -max 1000 -default $::current_adv_step(weight) -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Weight"] -previous_values [::dui::pages::dui_number_editor::get_previous_values weight] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry weight"  } 1354 1250 1540 1380 ""   
+	add_de1_button "settings_2c" { profile_has_changed_set; dui page open_dialog dui_number_editor ::current_adv_step(weight) -n_decimals 1 -min 0 -max 1000 -default $::current_adv_step(weight) -smallincrement 0.1 -bigincrement 10 -use_biginc 1 -page_title [translate "Weight"] -previous_values [::dui::pages::dui_number_editor::get_previous_values weight] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry weight"  } 1354 1250 1540 1380 ""   
 
 
 add_de1_text "settings_2c" 1700 1240 -text [translate "pressure"] -font Helv_6 -fill "#7f879a" -anchor "center" -width 400 -justify "center" 
