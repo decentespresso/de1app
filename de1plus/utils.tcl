@@ -554,14 +554,15 @@ proc check_battery_charger {} {
 			# indicate that usb should be kept off until we reach under 55%, as we're now discharging
 			set ::de1(battery_discharging) 1
 
-	    } else {
-
-	    	# if we're currently discharging, then tell the DE1 to keep USB power off
-	    	if {$::de1(battery_discharging) == 1} {
-		    	# send a "usb charger off" message regularly, to keep it off, otherwise a de1 ten minute timeout turns it back on
-				set_usb_charger_on 0
-			}
-	    }
+	    } elseif {$::de1(battery_discharging) == 1} {
+    		# if we're currently discharging, then tell the DE1 to keep USB power off
+	    	# send a "usb charger off" message regularly, to keep it off, otherwise a de1 ten minute timeout turns it back on
+			set_usb_charger_on 0
+		} else {
+			# we're in a charging cycle, so send a reminder to DE1 to have the charger on.
+			# this isn't strictly needed, except to hand a unlikely case where the charger=on command was sent to the de1 by the app, but bluetooth connection was temporarily bad, and so the de1 didn't receive the message
+			set_usb_charger_on 1
+		}
     } else {
 		set_usb_charger_on 1
     }
