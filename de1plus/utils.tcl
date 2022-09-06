@@ -537,16 +537,30 @@ proc check_battery_charger {} {
 
     msg -INFO "Battery percent is: $percent %, smart charging = $::settings(smart_battery_charging)"
 
-
     #####################
     # keep battery charged between 55% and 65%
 	if {$::settings(smart_battery_charging) == 1} {
 	    if {$percent <= 55} {
 			# turn USB charger on
 			set_usb_charger_on 1
+
+			# indicate that usb should be kept on, we are now charging
+			set ::de1(battery_discharging) 0
+
 	    } elseif {$percent >= 65} {
 			# turn USB charger off
 			set_usb_charger_on 0
+
+			# indicate that usb should be kept off until we reach under 55%, as we're now discharging
+			set ::de1(battery_discharging) 1
+
+	    } else {
+
+	    	# if we're currently discharging, then tell the DE1 to keep USB power off
+	    	if {$::de1(battery_discharging) == 1} {
+		    	# send a "usb charger off" message regularly, to keep it off, otherwise a de1 ten minute timeout turns it back on
+				set_usb_charger_on 0
+			}
 	    }
     } else {
 		set_usb_charger_on 1
