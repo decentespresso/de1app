@@ -985,8 +985,14 @@ if {$preheat_water_volume_feature_enabled == 1} {
 }
 
 add_de1_button "preheat_3 preheat_4" {say "" $::settings(sound_button_in); set_next_page off preheat_1; start_idle} 0 240 1000 1400
-add_de1_text "preheat_1" 1070 250 -text [translate "1) Hot water will pour out"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
-add_de1_text "preheat_2" 1070 250 -text [translate "1) Hot water is pouring out"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
+#add_de1_text "preheat_1" 1070 250 -text [translate "1) Hot water will pour out"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
+#add_de1_text "preheat_2" 1070 250 -text [translate "1) Hot water is pouring out"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
+
+add_de1_text "preheat_1" 70 250 -text [translate "1) Choose auto-off time"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 900]
+add_de1_text "preheat_1" 1070 250 -text [translate "2) Hot water will pour"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
+add_de1_text "preheat_2" 1070 250 -text [translate "2) Hot water is pouring"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
+
+
 add_de1_text "preheat_3 preheat_4" 1070 250 -text [translate "1) Hot water will pour out"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 650]
 
 
@@ -1095,14 +1101,14 @@ add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 9
 #add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_volume) 1 400 %x %y %x0 %y0 %x1 %y1} 0 210 550 1400 "mousemove"
 #add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1} 551 210 1029 1400 "mousemove"
 
-add_de1_text "water_1" 70 250 -text [translate "1) Settings"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width 900
+add_de1_text "water_1" 70 250 -text [translate "1) Choose quantity and temperature"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 900]
 
 add_de1_text "water_1" 1070 250 -text [translate "2) Hot water will pour"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
 add_de1_text "water" 1070 250 -text [translate "2) Hot water is pouring"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
 add_de1_text "water_3" 1840 250 -text [translate "3) Done"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
 
 
-add_de1_text "water water_3" 70 250 -text [translate "1) Settings"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 900]
+add_de1_text "water water_3" 70 250 -text [translate "1) Choose water volume and temperature"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 900]
 add_de1_text "water_3" 1070 250 -text [translate "2) Hot water will pour"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 650]
 
 # hotlink on hot water flow rate, goes to calibration page to change it
