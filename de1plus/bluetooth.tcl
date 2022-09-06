@@ -652,7 +652,11 @@ proc acaia_scan_buffer_for_msg {h1 h2 msg_t len event_t} {
 
 			# NOTE: while length threshold is arbitrary, could cause reporting issues the higher the threshold
 			if {$msg_type != 12 || ($event_type != 5 && $event_type != 11) || $length > 64} {
-				# not the messages we want - continue forward searching
+				# NOTE: This is the simplified version of the equation to skip an entire msg in the buffer 
+				# length already incorporates 2 bytes of the metadata length, but the checksum is also 2 bytes, so it negates
+				# subtracting 1 due to index starting at 0
+				set i [expr {$i + $::ACAIA_METADATA_LEN + $length - 1}]
+				# not the messages we want - continue forward searching and skip the entire message
 				continue
 			} 
 			# success - found metadata
