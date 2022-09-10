@@ -650,6 +650,7 @@ proc acaia_scan_buffer_for_msg {h1 h2 msg_t len event_t} {
 			set event_type [lindex $::acaia_command_buffer [expr {$i + 4}]]
 			set ::acaia_msg_end [expr {$i + $::ACAIA_METADATA_LEN + $length}]
 
+			# msg -DEBUG "MSG_TYPE $msg_type LEN $length EVENT_TYPE $event_type"
 			# NOTE: while length threshold is arbitrary, could cause reporting issues the higher the threshold
 			if {$msg_type != 12 || ($event_type != 5 && $event_type != 11) || $length > 64} {
 				# NOTE: This is the simplified version of the equation to skip an entire msg in the buffer 
@@ -698,9 +699,9 @@ proc acaia_parse_response {value} {
 proc acaia_find_payload {event_t} {
 	set payload_offset -1
 	if {$event_t == 5} {
-		set payload_offset $::ACAIA_METADATA_LEN
+		set payload_offset [expr {$::acaia_msg_start + $::ACAIA_METADATA_LEN}]
 	} elseif {$event_t == 11} {
-		set payload_offset [expr {$::ACAIA_METADATA_LEN + 3}]
+		set payload_offset [expr {$::acaia_msg_start + $::ACAIA_METADATA_LEN + 3}]
 	} else {
 		# should never hit this
 		msg -NOTICE "UNSUPPORTED ACAIA EVENT TYPE: $::acaia_command_buffer... Skipping"
@@ -717,8 +718,8 @@ proc acaia_decode_weight {payload_offset} {
 	if {$is_negative} {
 		set calculated_weight [expr {$calculated_weight * -1.0}]
 	}
-	# msg -DEBUG "H1 $h1 H2 $h2 MSG_TYPE $msg_t LEN $len EVENT_TYPE $event_t WEIGHT $calculated_weight \
-		# UNIT $unit IS_NEG $is_negative"
+	# msg -DEBUG "WEIGHT $calculated_weight \
+		UNIT $unit IS_NEG $is_negative BUFFER $::acaia_command_buffer"
 	set sensorweight $calculated_weight
 	::device::scale::process_weight_update $sensorweight ;# $event_time
 }
