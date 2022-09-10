@@ -1175,18 +1175,25 @@ proc scheduler_feature_hide_show_refresh {  } {
 
 #add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
 # scheduled power up/down
-#add_de1_widget "settings_3" checkbutton 50 1440 {} -text [translate "Keep hot"] -padx 0 -pady 0 -indicatoron true  -font Helv_8_bold -bg #FFFFFF -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::settings(scheduler_enable)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -command scheduler_feature_hide_show_refresh -relief flat 
 add_de1_text "settings_3" 180 1134 -justify left -anchor "nw" -font $optionfont -text [translate "Keep hot"]  -fill "#4e85f4" -width [rescale_x_skin 1000] 
 dui add dtoggle "settings_3" 50 1140 -height 50 -width 100 -anchor nw -variable ::settings(scheduler_enable) -command scheduler_feature_hide_show_refresh 
 add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::settings(scheduler_enable)}]; scheduler_feature_hide_show_refresh } 50 1140 500 1190
+
+
 
 # hack used because the -command to dtoggle command above is not working
 #trace add variable ::settings(scheduler_enable) write scheduler_feature_hide_show_refresh
 
 
-	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
+	add_de1_widget "settings_3" scale 50 1200 {} -from 0 -to 86340 -background #e4d1c1 -borderwidth 1 -bigincrement 600 -showvalue 0 -resolution 60 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_wake) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_start scheduler]
 	add_de1_variable "settings_3" 50 1340 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw"  -tags [list scheduler_start_time scheduler] -textvariable {[translate "Start"] [format_alarm_time $::settings(scheduler_wake)]}
-	add_de1_widget "settings_3" scale 670 1200 {} -from 0 -to 85800 -background #e4d1c1 -borderwidth 1 -bigincrement 3600 -showvalue 0 -resolution 600 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_end scheduler]
+	
+	# dui_number_editor can't do times, so can't be used for start/end time data entry
+	#add_de1_button "settings_3" { dui page open_dialog dui_number_editor ::settings(scheduler_wake) -n_decimals 1 -min 0 -max 85800 -default $::settings(scheduler_wake) -smallincrement 60 -previous_values [::dui::pages::dui_number_editor::get_previous_values scheduler_wake] -bigincrement 1 -use_biginc 1 -page_title [translate "Start"] } 50 1340 500 1400 ""   
+
+
+
+	add_de1_widget "settings_3" scale 670 1200 {} -from 0 -to 86340 -background #e4d1c1 -borderwidth 1 -bigincrement 600 -showvalue 0 -resolution 60 -length [rescale_x_skin 570] -width [rescale_y_skin 135] -variable ::settings(scheduler_sleep) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -tags [list scheduler_scale_end scheduler]
 	add_de1_variable "settings_3" 670 1340 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -tags [list scheduler_end_time scheduler] -textvariable {[translate "End"] [format_alarm_time $::settings(scheduler_sleep)]} 
 	add_de1_variable "settings_3" 1240 1140 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -tags [list scheduler_scale_now_time scheduler] -textvariable {[translate "Now"] [time_format [clock seconds]]}
 	dui add dbutton "settings_3" 900 1100 1240 1190 -command {say [translate {Settings}] $::settings(sound_button_in); launch_os_time_setting}  -tags [list scheduler_settings_button scheduler]

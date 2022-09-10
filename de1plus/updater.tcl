@@ -981,5 +981,9 @@ proc reset_skin {} {
     set ::settings(skin) "Insight"
     set ::settings(enabled_plugins) ""
 
+    # also reset the screen resolution to default
+    set ::settings(screen_size_height) "800"
+    set ::settings(screen_size_width) "1280"
+
     save_array_to_file ::settings $s
 }

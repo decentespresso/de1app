@@ -3481,11 +3481,11 @@ proc de1_version_string {} {
 	}
 
 	if {[ifexists ::settings(firmware_version_number)] != ""} {
-		append version ", [translate current]=[ifexists ::settings(firmware_version_number)]"
+		append version ", [translate firmware]=v[ifexists ::settings(firmware_version_number)]"
 	}
 	
 	if {[ifexists ::de1(Firmware_file_Version)] != "" && [ifexists ::settings(firmware_version_number)] != "" && [ifexists ::de1(Firmware_file_Version)] != [ifexists ::settings(firmware_version_number)] } {
-		append version ", [translate available]=[ifexists ::de1(Firmware_file_Version)]"
+		append version ", [translate available]=v[ifexists ::de1(Firmware_file_Version)]"
 	}
 
 	if { [package version de1app] ne ""  } {

@@ -38,6 +38,7 @@ array set ::de1 {
     found    0
     decentscale_timer_on 0
     bluetooth_scale_connection_attempts_tried 0
+    battery_discharging 0
     refill_kit_detected {}
     scanning 1
     usb_charger_on 1
