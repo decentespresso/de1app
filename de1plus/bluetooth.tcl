@@ -719,7 +719,7 @@ proc acaia_decode_weight {payload_offset} {
 		set calculated_weight [expr {$calculated_weight * -1.0}]
 	}
 	# msg -DEBUG "WEIGHT $calculated_weight \
-		UNIT $unit IS_NEG $is_negative BUFFER $::acaia_command_buffer"
+		# UNIT $unit IS_NEG $is_negative BUFFER $::acaia_command_buffer"
 	set sensorweight $calculated_weight
 	::device::scale::process_weight_update $sensorweight ;# $event_time
 }
