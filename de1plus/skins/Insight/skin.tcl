@@ -993,7 +993,8 @@ add_de1_text "preheat_1" 1070 250 -text [translate "2) Hot water will pour"] -fo
 add_de1_text "preheat_2" 1070 250 -text [translate "2) Hot water is pouring"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
 
 
-add_de1_text "preheat_3 preheat_4" 1070 250 -text [translate "1) Hot water will pour out"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 650]
+add_de1_text "preheat_3 preheat_4" 1070 250 -text [translate "2) Hot water will pour"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 650]
+add_de1_text "preheat_2 preheat_3 preheat_4" 70 250 -text [translate "1) Choose auto-off time"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 900]
 
 
 
@@ -1008,7 +1009,7 @@ add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker
 #add_de1_variable "preheat_2 preheat_3 preheat_4" 364 1250 -text "" -font Helv_10_bold -fill #7f879a -anchor "center"  -textvariable {[return_flow_measurement $::settings(flush_flow)]}
 add_de1_widget "preheat_1 preheat_2 preheat_3 preheat_4" scale 10 1436 {} -from 1 -to 10 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 1  -resolution 1 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(flush_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard; change_water_steam_settings } -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
 
-add_de1_text "preheat_1" 1100 1300 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
+add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1100 1300 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 	# hide the android toolbar if it is shown during steaming, because it obscures the flow rate slider
 	add_de1_variable "preheat_1" 1700 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[dui platform hide_android_keyboard; ; return_flow_measurement $::settings(flush_flow)] }
 	add_de1_variable "preheat_2 preheat_3 preheat_4" 1700 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable  {[return_flow_measurement $::settings(flush_flow)] }
@@ -1027,7 +1028,7 @@ add_de1_button "preheat_1" { profile_has_changed_set; dui page open_dialog dui_n
 
 
 #add_de1_text "preheat_1" 1840 250 -text [translate "2) Done"] -font Helv_9 -fill "#b1b9cd" -anchor "nw" -width [rescale_x_skin 680]
-add_de1_text "preheat_3 preheat_4" 1840 250 -text [translate "2) Done"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 680]
+add_de1_text "preheat_3 preheat_4" 1840 250 -text [translate "3) Done"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 680]
 
 if {$preheat_water_volume_feature_enabled == 1} {
 	add_de1_variable "preheat_1" 540 1250 -text "" -font Helv_10_bold -fill $startbutton_font_color -anchor "center" -textvariable {[return_liquid_measurement $::settings(preheat_volume)]}
@@ -1102,13 +1103,14 @@ add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_clicker 9
 #add_de1_button "water_1" {say "" $::settings(sound_button_in);vertical_slider ::settings(water_temperature) 20 96 %x %y %x0 %y0 %x1 %y1} 551 210 1029 1400 "mousemove"
 
 add_de1_text "water_1" 70 250 -text [translate "1) Choose quantity and temperature"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 900]
+add_de1_text "water_1" 70 250 -text [translate "1) Choose quantity and temperature"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 900]
 
 add_de1_text "water_1" 1070 250 -text [translate "2) Hot water will pour"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
 add_de1_text "water" 1070 250 -text [translate "2) Hot water is pouring"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
 add_de1_text "water_3" 1840 250 -text [translate "3) Done"] -font Helv_9_bold -fill $progress_text_color -anchor "nw" -width [rescale_x_skin 650]
 
 
-add_de1_text "water water_3" 70 250 -text [translate "1) Choose water volume and temperature"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 900]
+add_de1_text "water water_3" 70 250 -text [translate "1) Choose quantity and temperature"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 900]
 add_de1_text "water_3" 1070 250 -text [translate "2) Hot water will pour"] -font Helv_9_bold -fill $noprogress_text_color -anchor "nw" -width [rescale_x_skin 650]
 
 # hotlink on hot water flow rate, goes to calibration page to change it
