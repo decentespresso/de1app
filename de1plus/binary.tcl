@@ -513,10 +513,16 @@ proc convert_float_to_U8P1 {in} {
 }
 
 proc convert_float_to_U8P0 {in} {
+	set out 0
+
 	if {$in > 256} {
 		set in 256
 	}
-	return [expr {round($in)}]
+	catch {
+		# handle case of converting a blank to a number
+		set out [expr {round($in)}]
+	}
+	return $out 
 }
 
 proc convert_float_to_U16P8 {in} {

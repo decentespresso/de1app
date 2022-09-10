@@ -9405,6 +9405,9 @@ namespace eval ::dui::pages::dui_number_editor {
 			catch {
 				$nextproc $newvalue
 			}
+		} else {
+			# don't let dui put the invalid value into the variable
+			puts "XXXX invalid value of $newvalue detected"
 		}
 
 	}
@@ -9560,6 +9563,12 @@ namespace eval ::dui::pages::dui_number_editor {
 				if { $data(value) > 0 } { set data(value) [string trimleft $data(value) 0] }
 				set data(value) [format $fmt $data(value)]
 			}
+		} else {
+			# blank entry is treated the same as minimum value
+			msg -INFO "Empty data entered, so using minimum value of '$data(min)'"
+			set data(value) $data(min)
+			set $data(num_variable) [format $fmt $data(min)]
+			set $data(num_variable) $data(value)			
 		}
 		
 		if { $data(num_variable) ne "" } {
@@ -9568,6 +9577,8 @@ namespace eval ::dui::pages::dui_number_editor {
 				set $data(num_variable) $data(value)
 			}
 		}
+
+
 		
 		dui page close_dialog $data(value)
 	}
