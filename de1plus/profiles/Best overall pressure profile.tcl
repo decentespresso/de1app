@@ -38,4 +38,4 @@ maximum_flow_range_advanced 0.6
 maximum_flow 3.5
 maximum_pressure_range_default 0.9
 maximum_flow_range_default 1.0
-
+read_only 1

@@ -38,4 +38,4 @@ profile_notes {This profile requires the Decent Espresso tea portafilter and is 
 profile_title {Tea portafilter/Oolong 1st extraction}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-
+read_only 1

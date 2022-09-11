@@ -32,4 +32,4 @@ profile_language en
 preinfusion_stop_pressure 4.0
 profile_hide 1
 beverage_type espresso
-
+read_only 1

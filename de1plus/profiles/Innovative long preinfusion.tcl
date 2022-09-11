@@ -34,4 +34,4 @@ settings_profile_type settings_2b
 tank_desired_water_temperature 0
 water_temperature 80
 beverage_type {espresso}
-
+read_only 1

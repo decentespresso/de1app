@@ -36,6 +36,7 @@ profile_hide 0
 profile_language en
 profile_notes {Dynamic bloom into pressure extraction. Based on the 'easy blooming' profile structure from Luca and Stephane and modified to primarily target high extraction grinders at high flow rates, typically ending around 3-4.5ml/s. Dial with ratio once grind is giving an ending flowrate in the range. Includes a significant temperature drop that reduces harshness (although the actual temperature drop is much less than programmed). By Joe D.}
 profile_title TurboBloom
+read_only 1
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 

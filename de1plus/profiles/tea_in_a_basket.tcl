@@ -38,4 +38,4 @@ profile_notes {This profile makes an acceptable mug of tea using a regular porta
 profile_title {Tea/in a basket}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-
+read_only 1

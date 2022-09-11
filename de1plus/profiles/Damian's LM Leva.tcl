@@ -33,4 +33,4 @@ preinfusion_stop_pressure 4
 profile_hide 1
 final_desired_shot_volume_advanced_count_start 2
 beverage_type espresso
-
+read_only 1

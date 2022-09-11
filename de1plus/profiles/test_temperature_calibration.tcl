@@ -38,4 +38,4 @@ profile_notes {Make a device to read ºC inside a basket.  Drill a 3mm hole in a
 profile_title {Test/temperature calibration}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
-
+read_only 1

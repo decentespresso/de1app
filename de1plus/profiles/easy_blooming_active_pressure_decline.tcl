@@ -38,4 +38,4 @@ profile_notes {This profile is a more forgiving evolution of Scott Rao’s origi
 profile_title {Easy blooming - active pressure decline}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-
+read_only 1

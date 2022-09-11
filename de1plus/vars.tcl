@@ -1752,13 +1752,18 @@ proc delete_selected_profile {} {
 	set fn "[homedir]/profiles/${profile}.tcl"
 	msg -NOTICE "About to delete profile: '$fn'"
 
-	if {$profile == "default"} {
-		msg -NOTICE "cannot delete default profile"
+	if {$profile == "default" || $::settings(read_only) == 1} {
+		msg -NOTICE "cannot delete built in profile '$profile', so hilding it instead"
+		hide_unhide_toggle_profile $fn
 		return
 	}
 	#return
 
-	file delete $fn
+	catch {
+		# if run on a readonly file system, like on OSX version in Downloads folder, this will fail
+		file delete $fn
+	}
+
 	set ::settings(profile) "default"
 	fill_profiles_listbox 
 	#preview_profile 
@@ -1972,14 +1977,26 @@ proc array_keys_sorted_by_val {arrname {sort_order -increasing}} {
 	return $toreturn
 }
 
-proc fill_specific_profiles_listbox { widget selected_profile_name hide_mode} {
-	$widget delete 0 99999
+proc get_profile_titles {} {
 
-	set selected_profile_number 0
-	set cnt 0
-	set grouping ""
+	foreach d [profile_directories] {
 
-	unset -nocomplain ::profile_number_to_directory
+		unset -nocomplain profile
+		catch {
+			set fn "[homedir]/profiles/$d.tcl"
+
+			array set profile [encoding convertfrom utf-8 [read_binary_file $fn]]
+		}
+
+		lappend profiles [translate [ifexists profile(profile_title)]]
+		
+	}
+
+	return [lsort -unique $profiles]
+
+}
+
+proc get_profile_filenames {} {
 
 	foreach d [profile_directories] {
 
@@ -1991,9 +2008,24 @@ proc fill_specific_profiles_listbox { widget selected_profile_name hide_mode} {
 		}
 
 		set profile_to_title($d) [translate [ifexists profile(profile_title)]]
+		#puts "found: '[ifexists profile(profile_title)]'"
 	}
 
 	set profiles [array_keys_sorted_by_val profile_to_title]
+	return $profiles
+
+}
+
+proc fill_specific_profiles_listbox { widget selected_profile_name hide_mode} {
+	$widget delete 0 99999
+
+	set selected_profile_number 0
+	set cnt 0
+	set grouping ""
+
+	unset -nocomplain ::profile_number_to_directory
+	set profiles [get_profile_filenames]
+
 
 	foreach d $profiles {
 
@@ -2693,6 +2725,34 @@ proc select_profile { profile } {
 	send_de1_settings_soon
 }
 
+proc hide_unhide_toggle_profile {fn} {
+	catch {
+		array set thisprofile [encoding convertfrom utf-8 [read_binary_file $fn]]
+	}
+
+	if {[info exists thisprofile(profile_title)] != 1} {
+		msg -WARNING "Corrupt profile file to preview: '$d'"
+		return
+	}
+
+
+	if {[ifexists thisprofile(profile_hide)] == 1} {
+		set thisprofile(profile_hide) 0
+	} else {
+		set thisprofile(profile_hide) 1
+	}
+	save_array_to_file thisprofile $fn 
+
+	set ::filling_profiles 1
+
+	# need to save and restore the scrollbar value, because we're refilling the listbox to show hide/show state change
+	set oldscrollbarbalue [$::profiles_scrollbar get]
+	fill_profiles_listbox
+	unset -nocomplain ::filling_profiles 
+
+	$::profiles_scrollbar set $oldscrollbarbalue
+	listbox_moveto $::globals(profiles_listbox) $::profiles_slider $oldscrollbarbalue
+}
 
 set preview_profile_counter 0
 proc preview_profile {} {
@@ -2722,39 +2782,11 @@ proc preview_profile {} {
 
 	#set profile [lindex [profile_directories] [$w curselection]]
 	set profile $::profile_number_to_directory([$w curselection]) 
-
-	
 	set fn "[homedir]/profiles/${profile}.tcl"
 
 	if {[ifexists ::profiles_hide_mode] == 1} {
-
-		catch {
-			array set thisprofile [encoding convertfrom utf-8 [read_binary_file $fn]]
-		}
-
-		if {[info exists thisprofile(profile_title)] != 1} {
-			msg -WARNING "Corrupt profile file to preview: '$d'"
-			return
-		}
-
-
-		if {[ifexists thisprofile(profile_hide)] == 1} {
-			set thisprofile(profile_hide) 0
-		} else {
-			set thisprofile(profile_hide) 1
-		}
-		save_array_to_file thisprofile $fn 
-		set ::filling_profiles 1
-
-		# need to save and restore the scrollbar value, because we're refilling the listbox to show hide/show state change
-		set oldscrollbarbalue [$::profiles_scrollbar get]
-		fill_profiles_listbox
-		unset -nocomplain ::filling_profiles 
-
-		$::profiles_scrollbar set $oldscrollbarbalue
-		listbox_moveto $::globals(profiles_listbox) $::profiles_slider $oldscrollbarbalue
+		hide_unhide_toggle_profile $fn
 		return
-
 	}
 
 	select_profile $profile
@@ -2949,15 +2981,19 @@ proc profile_vars {} {
  	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_pressure_range_advanced maximum_flow_range_advanced maximum_flow maximum_pressure_range_default maximum_flow_range_default}
 }
 
-
 proc set_profile_title_untitled {} {
 	# if no name then give it a name which is just a number
 	if {$::settings(profile_title) == ""} {
-		incr ::settings(preset_counter)  
-		save_settings
-
+		preset_counter_get_and_incr
 		set ::settings(profile_title) [subst {[translate "Untitled"] $::settings(preset_counter)}]
+		set profile(profile_hide) 0
 	}
+}
+
+proc preset_counter_get_and_incr {} {
+	incr ::settings(preset_counter)  
+	save_settings
+	return $::settings(preset_counter)
 }
 
 proc save_profile {} {
@@ -2967,6 +3003,29 @@ proc save_profile {} {
 
 	# if no name then give it a name which is just a number
 	set_profile_title_untitled
+
+	if {[ifexists ::settings(read_only)] == 1} {
+		# if a profile is read-only, give it a new name by adding a unique counter to the end of the title
+		# and then unmark it as read-only
+		set ::settings(read_only) 0
+
+		if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
+			incr profcnt 2
+
+			set profile_titles [string toupper [get_profile_titles]]
+			set newtitle [subst {$::settings(profile_title) $profcnt}]
+			puts "searching for '$newtitle' in '$profile_titles'"
+			while {[lsearch -exact $profile_titles [string toupper $newtitle]] != -1} {
+				incr profcnt
+				set newtitle [subst {$::settings(profile_title) $profcnt}]
+			}
+
+			set ::settings(profile_title) $newtitle
+			set ::settings(profile) $newtitle
+		}
+
+	}
+
 
 	#set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure}
 	#set profile_name_to_save $::settings(profile_to_save) 
@@ -2990,15 +3049,17 @@ proc save_profile {} {
 		}
 	}
 	
+	set tclfile ${profile_filename}
 	set fn "[homedir]/profiles/${profile_filename}.tcl"
 	
 	if {[write_file $fn ""] == 0} {
 		set fn "[homedir]/profiles/${profile_timestamp}.tcl"
+		set tclfile ${profile_timestamp}
 	}
 
 	# set the title back to its title, after we display SAVED for a second
 	# moves the cursor to the end of the seletion after showing the "saved" message.
-	after 1000 "set ::settings(profile_title) \{$::settings(profile_title)\}; $::globals(widget_profile_name_to_save) icursor 999"
+	after 500 "set ::settings(profile_title) \{$::settings(profile_title)\}; $::globals(widget_profile_name_to_save) icursor 999; select_profile $tclfile"
 
 	# Save V2 of profiles in parallel
 	::profile::save "[homedir]/profiles_v2/${profile_filename}.json"

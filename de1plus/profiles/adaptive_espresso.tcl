@@ -33,4 +33,4 @@ profile_title {Gagné/Adaptive Shot 92C v1.0}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 80
-
+read_only 1

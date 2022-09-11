@@ -38,4 +38,4 @@ profile_notes {A new technique developed by Scott Rao, for making filter coffee 
 profile_title {Filter 2.0}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-
+read_only 1

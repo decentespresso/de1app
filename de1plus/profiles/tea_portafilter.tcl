@@ -38,4 +38,4 @@ profile_notes {This profile requires a specially designed tea portafilter that o
 profile_title {Tea portafilter/black tea}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-
+read_only 1

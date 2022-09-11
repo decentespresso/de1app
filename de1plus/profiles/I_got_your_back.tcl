@@ -37,4 +37,4 @@ profile_notes {The goal of this profile is to never fail to make an acceptable e
 profile_title {I got your back}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-
+read_only 1

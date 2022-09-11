@@ -39,4 +39,4 @@ profile_title {Flow profile for milky drinks}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
 water_temperature 86.0
-
+read_only 1

@@ -37,4 +37,4 @@ profile_notes {This profile simulates a Londinium R machines extraction style. T
 profile_title {Damian's LRv2}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-
+read_only 1

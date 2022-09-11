@@ -28,3 +28,4 @@ settings_profile_type settings_2a
 tank_desired_water_temperature 0
 water_temperature 80
 beverage_type {manual}
+read_only 1

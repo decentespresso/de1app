@@ -38,4 +38,4 @@ profile_notes {Put a blind (no hole) portafilter basket into your portafilter, a
 profile_title {Test/low pressure leak}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-
+read_only 1

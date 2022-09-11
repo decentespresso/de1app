@@ -34,3 +34,4 @@ settings_profile_type settings_2c
 tank_desired_water_temperature 0
 water_temperature 86.0
 beverage_type {calibrate}
+read_only 1

@@ -37,4 +37,4 @@ profile_notes {For use with machines that have a group head controller (GHC).  H
 profile_title {GHC/manual flow control}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
-
+read_only 1
