@@ -517,7 +517,11 @@ proc eureka_precisa_parse_response { value } {
 
 
 #### Acaia
+set ::ACAIA_METADATA_LEN 5
+
 set ::acaia_command_buffer ""
+set ::acaia_msg_start 0
+set ::acaia_msg_end 0 
 
 proc acaia_encode {msgType payload} {
 
@@ -609,36 +613,115 @@ proc acaia_enable_weight_notifications {suuid cuuid} {
 	userdata_append "SCALE: enable acaia scale weight notifications" [list ble enable $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance] 1
 }
 
-proc acaia_parse_response { value } {
+proc acaia_msg_at_minimum {} {
+	# Acaia scale minimum message length = 6
+	return [expr {([llength $::acaia_command_buffer] - $::acaia_msg_start) >= 6}]
+}
 
-	append ::acaia_command_buffer $value
+proc acaia_msg_ready {} {
+	return [expr {$::acaia_msg_end <= [llength $::acaia_command_buffer]}]
+}
 
-	if {[string bytelength $::acaia_command_buffer] > 4} {
-		# 0xEF
-		set HEADER1 239
-		# 0xDD
-		set HEADER2 221
+proc acaia_scan_buffer_for_msg {h1 h2 msg_t len event_t} {
+	upvar 1 $h1 header1
+	upvar 1 $h2 header2
+	upvar 1 $msg_t msg_type
+	upvar 1 $len length
+	upvar 1 $event_t event_type
 
-		binary scan $::acaia_command_buffer cucucucucuicucu \
-			h1 h2 msgtype len event_type weight unit neg
-		if { [info exists h1] && [info exists h2] && [info exists len]} {
-			if { ($h1 == $HEADER1) && ($h2 == $HEADER2) \
-				&& [info exists neg] \
-				&& $msgtype == 12 && $event_type == 5 } {
-				# we have valid data, extract it
-				set calulated_weight [expr {$weight / pow(10.0, $unit)}]
-				set is_negative [expr {$neg > 1.0}]
-				if {$is_negative} {
-					set calulated_weight [expr {$calulated_weight * -1.0}]
-				}
-				set sensorweight $calulated_weight
-				::device::scale::process_weight_update $sensorweight ;# $event_time
+	set has_metadata 0
+	# HEADER1 = 0xEF = 239; HEADER2 = 0xDD = 221
+	set HEADER1 239
+	set HEADER2 221
+	for {set i $::acaia_msg_start} {$i < [expr {[llength $::acaia_command_buffer] - 1}]} {incr i} {
+		set header1 [lindex $::acaia_command_buffer $i]
+		set header2 [lindex $::acaia_command_buffer [expr {$i + 1}]]
+		if {($header1 == $HEADER1) && ($header2 == $HEADER2)} {
+			set ::acaia_msg_start $i
+			# since msg_start is set, recheck if there is still a valid msg in the buffer before continuing
+			if {![acaia_msg_at_minimum]} {
+				# valid msg - need more data before parsing
+				set has_metadata 1
+				break 
 			}
-			if { [string bytelength $::acaia_command_buffer] >= $len } {
-				set ::acaia_command_buffer ""
-			}
+			# at the minimum message length - grab metadata
+			set msg_type [lindex $::acaia_command_buffer [expr {$i + 2}]]
+			set length [lindex $::acaia_command_buffer [expr {$i + 3}]]
+			set event_type [lindex $::acaia_command_buffer [expr {$i + 4}]]
+			set ::acaia_msg_end [expr {$i + $::ACAIA_METADATA_LEN + $length}]
+
+			# msg -DEBUG "MSG_TYPE $msg_type LEN $length EVENT_TYPE $event_type"
+			# NOTE: while length threshold is arbitrary, could cause reporting issues the higher the threshold
+			if {$msg_type != 12 || ($event_type != 5 && $event_type != 11) || $length > 64} {
+				# NOTE: This is the simplified version of the equation to skip an entire msg in the buffer 
+				# length already incorporates 2 bytes of the metadata length, but the checksum is also 2 bytes, so it negates
+				# subtracting 1 due to index starting at 0
+				set i [expr {$i + $::ACAIA_METADATA_LEN + $length - 1}]
+				# not the messages we want - continue forward searching and skip the entire message
+				continue
+			} 
+			# success - found metadata
+			set has_metadata 1
+			break
 		}
 	}
+	return $has_metadata
+}
+
+proc acaia_parse_response {value} {
+	binary scan $value cu* bytes
+	set ::acaia_command_buffer [concat $::acaia_command_buffer $bytes]
+	set at_minimum [acaia_msg_at_minimum]
+	if {!$at_minimum} {
+		# buffer is not at the minimum length - immediately return
+		return
+	}
+	set has_metadata [acaia_scan_buffer_for_msg h1 h2 msg_t len event_t]
+	# scanning narrows the buffer, determine if we're still at the minimum msg length 
+	set at_minimum [acaia_msg_at_minimum]
+	set is_ready [acaia_msg_ready]
+	if {$has_metadata && (!$at_minimum || !$is_ready)} {
+		# found a msg, but we don't have enough data to parse - circle back
+		return
+	} elseif {$has_metadata && $at_minimum && $is_ready} {
+		# msg is ready - decode weight
+		set payload_offset [acaia_find_payload $event_t]
+		if {$payload_offset > 0} {
+			acaia_decode_weight $payload_offset
+		}
+	}
+	# clear the buffer - completed parsing or buffer didn't have any metadata
+	set ::acaia_command_buffer ""
+	set ::acaia_msg_start 0
+	set ::acaia_msg_end 0
+}
+
+proc acaia_find_payload {event_t} {
+	set payload_offset -1
+	if {$event_t == 5} {
+		set payload_offset [expr {$::acaia_msg_start + $::ACAIA_METADATA_LEN}]
+	} elseif {$event_t == 11} {
+		set payload_offset [expr {$::acaia_msg_start + $::ACAIA_METADATA_LEN + 3}]
+	} else {
+		# should never hit this
+		msg -NOTICE "UNSUPPORTED ACAIA EVENT TYPE: $::acaia_command_buffer... Skipping"
+	}
+	return $payload_offset
+}
+
+proc acaia_decode_weight {payload_offset} {
+	set weight_payload [lrange $::acaia_command_buffer $payload_offset end]
+	set value [expr {(([lindex $weight_payload 1] & 0xFF) << 8) + ([lindex $weight_payload 0] & 0xFF)}]
+	set unit [expr {[lindex $weight_payload 4] & 0xFF}];
+	set calculated_weight [expr { $value / pow(10.0, $unit)}]
+	set is_negative [expr {[lindex $weight_payload 5] > 1.0}]
+	if {$is_negative} {
+		set calculated_weight [expr {$calculated_weight * -1.0}]
+	}
+	# msg -DEBUG "WEIGHT $calculated_weight \
+		# UNIT $unit IS_NEG $is_negative BUFFER $::acaia_command_buffer"
+	set sensorweight $calculated_weight
+	::device::scale::process_weight_update $sensorweight ;# $event_time
 }
 
 #### Decent Scale

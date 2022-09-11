@@ -96,6 +96,7 @@ namespace eval ::device::scale {
 	# Watchdogs for seeing scale updates
 
 	variable _watchdog_timeout 1000
+	variable _watchdog_tickle_timeout 2000
 	variable _watchdog_update_tries 10
 
 	variable _watchdog_id ""
@@ -401,7 +402,7 @@ namespace eval ::device::scale {
 			    "${::device::scale::_watchdog_update_tries}, ABANDONING"
 
 			::gui::notify::scale_event abandoning_updates
-
+			::device::scale::_watchdog_cancel
 		} else {
 		    msg -WARNING "Scale updates not seen, $tries of" \
 			    "${::device::scale::_watchdog_update_tries}"
@@ -429,7 +430,7 @@ namespace eval ::device::scale {
 
 		after cancel $::device::scale::_watchdog_id
 
-		set ::device::scale::_watchdog_id [ after $::device::scale::_watchdog_timeout \
+		set ::device::scale::_watchdog_id [ after $::device::scale::_watchdog_tickle_timeout \
 				  [list ::device::scale::_watchdog_fire] ]
 	}
 
@@ -445,10 +446,9 @@ namespace eval ::device::scale {
 	proc _watchdog_cancel {} {
 
 		if { $::device::scale::_watchdog_id != "" } {
-
 			after cancel $::device::scale::_watchdog_id
+			set ::device::scale::_watchdog_id ""
 			msg -INFO "Scale watchdog cancelled"
-
 		} else {
 			msg -DEBUG "Scale watchdog cancel - no ID to cancel"
 		}
