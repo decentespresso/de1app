@@ -1752,7 +1752,7 @@ proc delete_selected_profile {} {
 	set fn "[homedir]/profiles/${profile}.tcl"
 	msg -NOTICE "About to delete profile: '$fn'"
 
-	if {$profile == "default" || $::settings(read_only) == 1} {
+	if {$profile == "default" || [ifexists ::settings(read_only)] == 1} {
 		msg -NOTICE "cannot delete built in profile '$profile', so hilding it instead"
 		hide_unhide_toggle_profile $fn
 		return
