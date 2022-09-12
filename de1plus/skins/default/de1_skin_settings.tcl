@@ -1421,6 +1421,16 @@ set pos_app_label 2270
 # and also moves the label of the profile type, up or down, based on how many lines of text the profile takes
 proc wrapped_profile_title {} {
 
+	# if the current profile has changed, display a * to the right of its name
+	# tapping on that tab, while editing it, will auto-save that profile to the samena,e
+	if {$::settings(profile_has_changed) == 1} {
+		set changedicon "*"
+	} else {
+		set changedicon ""
+	}
+
+
+
 	set newheight [rescale_y_skin 80]
 	set final [ifexists ::settings(profile_title)]
 
@@ -1445,7 +1455,7 @@ proc wrapped_profile_title {} {
 	.can coords $::tab3_profile_label [lindex [.can coords $::tab3_profile_label] 0] $newheight
 	.can coords $::tab4_profile_label [lindex [.can coords $::tab4_profile_label] 0] $newheight
 
-	return [string trim $final "\n/"]
+	return [string trim $final "\n/"]$changedicon
 }
 
 
@@ -1811,14 +1821,6 @@ set ::settings(active_settings_tab) $::settings(settings_profile_type)
 
 proc setting_profile_type_to_text { } {
 
-	# if the current profile has changed, display a * to the right of its name
-	# tapping on that tab, while editing it, will auto-save that profile to the samena,e
-	if {$::settings(profile_has_changed) == 1} {
-		set changedicon "*"
-	} else {
-		set changedicon ""
-	}
-
 	set in $::settings(settings_profile_type)
 	if {$in == "settings_2a"} {
 		if {$::de1(current_context) == "settings_1"} {
@@ -1827,7 +1829,7 @@ proc setting_profile_type_to_text { } {
 			.can itemconfigure $::preview_graph_advanced -state hidden
 		}
 		#return [translate "Pressure profile"]
-		return [translate "PRESSURE"]$changedicon
+		return [translate "PRESSURE"]
 	} elseif {$in == "settings_2b"} {
 		if {$::de1(current_context) == "settings_1"} {
 			.can itemconfigure $::preview_graph_pressure -state hidden
@@ -1835,17 +1837,17 @@ proc setting_profile_type_to_text { } {
 			.can itemconfigure $::preview_graph_advanced -state hidden
 		}
 		#return [translate "Flow profile"]
-		return [translate "FLOW"]$changedicon
+		return [translate "FLOW"]
 	} elseif {$in == "settings_2c" || $in == "settings_2c2"} {
 		if {$::de1(current_context) == "settings_1"} {
 			.can itemconfigure $::preview_graph_pressure -state hidden
 			.can itemconfigure $::preview_graph_flow -state hidden
 			.can itemconfigure $::preview_graph_advanced -state normal
 		}
-		return [translate "ADVANCED"]$changedicon
+		return [translate "ADVANCED"]
 		#return [translate "Advanced profile"]
 	} else {
-		return [translate "PROFILE"]$changedicon
+		return [translate "PROFILE"]
 	}
 }
 
