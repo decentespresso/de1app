@@ -3063,7 +3063,9 @@ proc save_profile {} {
 
 	# set the title back to its title, after we display SAVED for a second
 	# moves the cursor to the end of the seletion after showing the "saved" message.
-	after 500 "set ::settings(profile_title) \{$::settings(profile_title)\}; $::globals(widget_profile_name_to_save) icursor 999; select_profile $tclfile"
+
+	set cmd "set ::settings(profile_title) \{$::settings(profile_title)\}; $::globals(widget_profile_name_to_save) icursor 999; select_profile \{$tclfile\}"
+	after 500 $cmd
 
 	# Save V2 of profiles in parallel
 	::profile::save "[homedir]/profiles_v2/${profile_filename}.json"
