@@ -1398,9 +1398,9 @@ if {[ifexists ::settings(read_only)] == 1} {return [translate "Pick a new name t
 
 
 	add_de1_text "profile_notes" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button "settings_1" {say [translate {Notes}] $::settings(sound_button_in); page_to_show_when_off profile_notes}  1350 820 2530 1180
+	add_de1_button "settings_1" {say [translate {Notes}] $::settings(sound_button_in); set ::global(previous_profile_notes) $::settings(profile_notes); page_to_show_when_off profile_notes}  1350 820 2530 1180
 
-	add_de1_button "profile_notes" {say [translate {Done}] $::settings(sound_button_in); profile_has_changed_set; page_to_show_when_off settings_1;} 0 0 2560 1600 ""
+	add_de1_button "profile_notes" {say [translate {Done}] $::settings(sound_button_in); if {$::global(previous_profile_notes) != $::settings(profile_notes)} { profile_has_changed_set} ; page_to_show_when_off settings_1;} 0 0 2560 1600 ""
 	add_de1_text "profile_notes" 1280 300 -text [translate "Notes"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 	set profile_notes_widget [add_de1_widget "profile_notes" multiline_entry 250 440 {} -canvas_height 730 -canvas_width 2070 -wrap word -font Helv_8 -borderwidth 0 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_notes) -relief flat -highlightthickness 1 -highlightcolor #000000]
 
