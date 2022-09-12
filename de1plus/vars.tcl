@@ -2685,6 +2685,9 @@ proc change_scale_bluetooth_device {} {
 
 
 proc select_profile { profile } {
+
+	msg -NOTICE "select_profile: '$profile'"
+
 	set fn "[homedir]/profiles/${profile}.tcl"
 	set ::settings(profile) $profile
 	set ::settings(profile_notes) ""
@@ -3005,6 +3008,8 @@ proc save_profile {} {
 		return
 	}
 
+	msg -NOTICE "saving profile: '$::settings(profile_filename)'"
+
 	# if no name then give it a name which is just a number
 	set_profile_title_untitled
 
@@ -3064,7 +3069,7 @@ proc save_profile {} {
 	# set the title back to its title, after we display SAVED for a second
 	# moves the cursor to the end of the seletion after showing the "saved" message.
 
-	set cmd "set ::settings(profile_title) \{$::settings(profile_title)\}; $::globals(widget_profile_name_to_save) icursor 999; select_profile \{$tclfile\}"
+	set cmd "set ::settings(profile_title) \{$::settings(profile_title)\}; $::globals(widget_profile_name_to_save) icursor 999; select_profile \{$tclfile\}"	
 	after 500 $cmd
 
 	# Save V2 of profiles in parallel
