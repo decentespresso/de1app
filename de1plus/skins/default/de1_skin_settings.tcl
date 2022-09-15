@@ -1394,6 +1394,10 @@ if {[ifexists ::settings(read_only)] == 1} {return [translate "Pick a new name t
 			set ::globals(widget_profile_name_to_save) $widget
 			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; save_profile; hide_android_keyboard}
 			bind $widget <Leave> hide_android_keyboard
+
+			# this binding stops double-clicking of text inside entry, from doing something.
+			bind $widget <Double-Button-1> {break}
+			
 		} -width [expr {int(38 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_title) -relief flat  -highlightthickness 1 -highlightcolor #000000 
 
 
