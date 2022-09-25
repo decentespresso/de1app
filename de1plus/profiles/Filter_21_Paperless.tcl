@@ -21,7 +21,7 @@ flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
 profile_notes {8g+10g (18g) in 22g basket
-This is a modification of Scott Rao's 2.1 profile that doesn't use a paper filter. This profile has only been tested WITH a scale. 1) Grind 8g of coffee as you would for Traditional Lever or E61 9bar profiles that you like. 2) WDT all the way to the bottom and get as flat a bed as you can. 3) Grind 10g of coffee on top of that as you would for a V60 or a little finer. 3) WDT just the surface and OCD the top. 4) Tamp gently. 5) Place a metal mesh filter on top.  6) Lock in the portafilter and it should make the espresso to a little less than 5:1 ratio.
+This is a modification of Scott Rao's 2.1 profile that doesn't use a paper filter. This profile has only been tested WITH a scale. 1) Grind 8g of coffee as you would for Traditional Lever or E61 9bar profiles that you like. 2) WDT all the way to the bottom and get as flat a bed as you can. 3) Grind 10g of coffee on top of that as you would for a V60 or a little finer. 4) WDT just the surface and OCD the top. 5) Tamp gently. 6) Place a metal mesh filter on top. 7) Lock in the portafilter and it should make the espresso to a little less than 5:1 ratio.
 }
 final_desired_shot_volume 42
 final_desired_shot_weight 42
