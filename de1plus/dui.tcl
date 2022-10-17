@@ -3519,8 +3519,9 @@ namespace eval ::dui {
 					msg -DEBUG [namespace current] "resizing image $src_filename to $filename"
 					dui say [translate "Resizing image"]
 					
-					set rescale_images_x_ratio [expr {$screen_size_height / $::dui::_base_screen_height}]
-					set rescale_images_y_ratio [expr {$screen_size_width / $::dui::_base_screen_width}]
+					# X = width as per https://www.techopedia.com/definition/10108/x-y-z-matrix
+					set rescale_images_x_ratio [expr {$screen_size_width / $::dui::_base_screen_width}]
+					set rescale_images_y_ratio [expr {$screen_size_height / $::dui::_base_screen_height}]
 					set imgname "_resize_[expr {int(rand()*1000)}]"
 												
 					::image create photo $imgname -file $src_filename
