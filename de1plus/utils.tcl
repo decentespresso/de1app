@@ -1500,6 +1500,11 @@ proc load_settings {} {
         set ::settings(stop_weight_before_seconds) 0.15
     }
 
+    if {[ifexists ::settings(refill_kit_override)] == -1 } {
+    	# ray added a new MMR setting where 2=auto-detect
+        set ::settings(refill_kit_override) 2
+    }
+
     # Starting with v1.35, logging is always enabled
     # Variable may be accessed by skins, retain at this time
     # Variable is a placebo, there is no check in ::logging

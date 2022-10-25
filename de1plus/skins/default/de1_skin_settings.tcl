@@ -1668,7 +1668,7 @@ proc show_page_calibrate_3 {} {
 		add_de1_button "calibrate3" { set ::settings(insert_preinfusion_pause) [expr {!$::settings(insert_preinfusion_pause)}] } 1350 660 1950 720
 
 		add_de1_variable "calibrate3" 1350 760  -text [translate "Refill kit: detected"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -justify "left" -textvariable {[if {$::de1(refill_kit_detected) == ""} {return [translate "Refill kit: unable to detect"]} elseif {$::de1(refill_kit_detected) == "0"} {	return [translate "Refill kit: not detected"]} elseif {$::de1(refill_kit_detected) == "1"} { return [translate "Refill kit: detected"] } ]}
-		dui add dselector "calibrate3" 1350 820 -bwidth 900 -bheight 80 -orient h -anchor nw -values {-1 0 1} -variable ::settings(refill_kit_override) -default {-1} -labels [list [translate "auto-detect"] [translate "force off"] [translate "force on"]] -width 3 -fill "#f8f8f8" -selectedfill "#4d85f4" -command send_refill_kit_override_from_gui
+		dui add dselector "calibrate3" 1350 820 -bwidth 900 -bheight 80 -orient h -anchor nw -values {2 0 1} -variable ::settings(refill_kit_override) -default {-1} -labels [list [translate "auto-detect"] [translate "force off"] [translate "force on"]] -width 3 -fill "#f8f8f8" -selectedfill "#4d85f4" -command send_refill_kit_override_from_gui
 
 proc send_refill_kit_override_from_gui {args} {
 	send_refill_kit_override

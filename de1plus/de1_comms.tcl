@@ -1128,6 +1128,8 @@ proc send_refill_kit_override {} {
 		set_refill_kit_present 0
 	} elseif {$::settings(refill_kit_override) == 1} {
 		set_refill_kit_present 1
+	} elseif {$::settings(refill_kit_override) == 2 || $::settings(refill_kit_override) == -1} {
+		set_refill_kit_present 2
 	} else {
 		if {$::de1(refill_kit_detected) != ""} {
 			set_refill_kit_present $::de1(refill_kit_detected)
@@ -1138,11 +1140,11 @@ proc send_refill_kit_override {} {
 	}
 }
 
-proc set_refill_kit_present {true_or_false} {
-	::comms::msg -NOTICE set_refill_kit_present "'$true_or_false'"
+proc set_refill_kit_present {number} {
+	::comms::msg -NOTICE set_refill_kit_present "'$number'"
 	remove_matching_ble_queue_entries {^MMR set_refill_kit_present}
-	::comms::msg -INFO "Setting refill_kit_present to '$true_or_false'"
-	mmr_write "set_refill_kit_present $::settings(steam_two_tap_stop)" "80385C" "04" [zero_pad [long_to_little_endian_hex $true_or_false] 4]	
+	::comms::msg -INFO "Setting refill_kit_present to '$number'"
+	mmr_write "set_refill_kit_present $::settings(steam_two_tap_stop)" "80385C" "04" [zero_pad [long_to_little_endian_hex $number] 4]	
 }
 
 

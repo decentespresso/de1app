@@ -211,7 +211,7 @@ array set ::settings {
 	log_enabled True
 	app_updates_beta_enabled 0
 	current_frame_description {}
-	refill_kit_override -1
+	refill_kit_override 2
 	mmr_enabled 0	
 	default_font_calibration 0.5
 	log_fast 0
