@@ -849,7 +849,7 @@ namespace eval ::dui {
 			default.listbox.disabledforeground "#cccccc"
 			default.listbox.selectmode browse
 			default.listbox.justify left
-			default.listbox.font_size 24
+			default.listbox.font_size 16
 			default.listbox.font_family notosansuiregular
 			
 			default.listbox_label.pos "wn -10 0"
@@ -9418,7 +9418,7 @@ namespace eval ::dui::pages::dui_number_editor {
 			}
 		} else {
 			# don't let dui put the invalid value into the variable
-			puts "XXXX invalid value of $newvalue detected"
+			msg -INFO "Invalid data-entry value of '$newvalue' detected ($nextproc/$context)"
 		}
 
 	}
