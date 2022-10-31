@@ -171,6 +171,11 @@ namespace eval ::dui {
 					set screen_size_width 1340
 					set screen_size_height 800
 					#set fontm 2
+				} elseif {$width == 2000 && ($height == 1128 || $height == 1200)} {
+					# samsung a7 (not lite) custom resolution
+					set screen_size_width 2000
+					set screen_size_height 1200
+					#set fontm 2
 				} elseif {$width == 1920} {
 					set screen_size_width 1920
 					set screen_size_height 1080
