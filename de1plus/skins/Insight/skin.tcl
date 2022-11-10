@@ -1021,7 +1021,7 @@ add_de1_variable "preheat_1" 520 1250 -text "" -font Helv_10_bold -fill $tappabl
 add_de1_variable "preheat_2 preheat_3 preheat_4" 520 1250 -text "" -font Helv_10_bold -fill #7f879a -anchor "center" -textvariable {[seconds_text $::settings(flush_seconds)]}
 add_de1_text "preheat_1" 520 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
 add_de1_text "preheat_2 preheat_3 preheat_4" 520 1300 -text [translate "AUTO-OFF"] -font Helv_7 -fill #7f879a -anchor "center" 
-add_de1_variable "preheat_1 preheat_2 preheat_3 preheat_4" 520 350 -text ""  -width [rescale_x_skin 400] -font Helv_7 -justify "center" -fill $progress_text_color -anchor "center" -textvariable {[if {$::settings(flush_seconds) > 10 && $::settings(flush_flow) > 4.0} { return [translate "Warning: long flush times can cool the group head"] } else { return "" }]}
+add_de1_variable "preheat_1 preheat_2 preheat_3 preheat_4" 520 370 -text ""  -width [rescale_x_skin 920] -font Helv_7 -justify "center" -fill $progress_text_color -anchor "center" -textvariable {[if {$::settings(flush_seconds) > 10 && $::settings(flush_flow) > 4.0} { return [translate "Warning: long flush times can cool the group head"] } else { return "" }]}
 
 add_de1_button "preheat_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(flush_seconds) -n_decimals 0 -min 3 -max 120 -default $::settings(flush_seconds) -smallincrement 1 -previous_values [::dui::pages::dui_number_editor::get_previous_values flush_seconds] -bigincrement 10 -use_biginc 0 -page_title [translate "AUTO-OFF"] -return_callback "::dui::pages::dui_number_editor::save_previous_value set_flush_flow_rate flush_seconds" } 290 1200 750 1380  ""   
 
