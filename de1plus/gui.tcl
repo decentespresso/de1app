@@ -732,7 +732,9 @@ proc show_going_to_sleep_page  {} {
 		msg -INFO "delaying screen saver because firmware is updating"
 		delay_screen_saver
 		return
-	}
+	}	
+
+
 
 	msg -INFO "show_going_to_sleep_page"
  	if {$::de1(current_context) == "sleep" || $::de1(current_context) == "saver"} {
@@ -844,6 +846,10 @@ proc de1_connected_state { {hide_delay 0} } {
 		return [translate Connected]
 		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_device_list"
 	} else {
+
+#		if {[ifexists ::de1(in_fw_update_mode)] == 1} {
+#			return ""
+#		}
 
 
 		if {$::de1(device_handle) == 0} {
