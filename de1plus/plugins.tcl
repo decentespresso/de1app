@@ -177,6 +177,12 @@ namespace eval ::plugins {
 
         foreach p $plugin_sources {
             set fbasename [file rootname [file tail $p]]
+
+            if {[string tolower $fbasename] == "dpx_steam_stop"} {
+                # incommpatible with firmware v1330 and newer because this functionality is already in the firmware, so plugin not needed
+                continue
+            }
+
             if {[file exists "[homedir]/[plugin_directory]/$fbasename/plugin.tcl"] == 1} {
                 lappend plugins $fbasename
             }
