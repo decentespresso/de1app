@@ -976,8 +976,10 @@ proc translation_langs_array {} {
         en English \
         kr "\uD55C\uAD6D\uC5B4" \
         fr "\u0066\u0072\u0061\u006E\u00E7\u0061\u0069\u0073" \
+        ca Catalan \
         de Deutsch \
         de-ch Schwiizerd\u00FCtsch \
+        de-oe "\u00D6sterreichische" \
         it italiano \
         ar "Arabic (with Dubai font)" \
         da "dansk" \
