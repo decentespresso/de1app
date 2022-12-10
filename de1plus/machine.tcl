@@ -30,7 +30,7 @@ array set ::de1 {
 	current_frame_number 0
 	in_eco_steam_mode 0
 	calibration_pressure {}
-	steam_eco_temperature 135
+	steam_eco_temperature 136
 	steam_eco_delay_seconds 600
 	calibration_temperature {}
 	calibration_flow {}
