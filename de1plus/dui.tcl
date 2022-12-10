@@ -9393,10 +9393,10 @@ namespace eval ::dui::pages::dui_number_editor {
 	proc get_previous_values { context } {
 		array set number_editor_previous_values $::settings(dui_number_editor_previous_values)
 		set existing [ifexists number_editor_previous_values($context)]
-		set existing2 [lsort -unique [lrange $existing end-20 end]]
+		set existing2 [lsort -unique [lrange $existing end-5 end]]
 		catch {
 			# if we can sort this numerically, try to.  Might fail if the list is text, not numbers
-			set existing2 [lsort -real -unique [lrange $existing end-20 end]]
+			set existing2 [lsort -real -unique [lrange $existing end-5 end]]
 		}
 		return $existing2
 	}
