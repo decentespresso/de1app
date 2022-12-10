@@ -1309,19 +1309,28 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 	add_de1_widget "steam steam_1 steam_3" scale 10 1436 {} -from 40 -to 250 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 100 -resolution 10 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(steam_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard; set_steam_flow} -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
 	#dui add dscale "steam steam_1 steam_3" 40 1510 {} -from 40 -to 250 -bigincrement 100 -smallincrement 10 -resolution 10 -length 1950 -width 14 -sliderlength 120 -variable ::settings(steam_flow) -command {set_steam_flow} -orient horizontal
 
+proc enabled_steam_eco_mode_label {} {
+	if {$::de1(in_eco_steam_mode) == 1 && $::settings(steam_disabled) != 1} {
+		return [translate "Enabled (eco mode)"]
+	}
+	return [translate "Enabled"]
+}
+
 	# when steam is off, display current steam heater temp
 	add_de1_text "steam_1 steam_3" 1100 1250 -justify right -anchor "nw" -text [translate "Temperature"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520] 
 		add_de1_variable "steam_1 steam_3" 1700 1250 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[steamtemp_text]} 
 	add_de1_text "steam_1 steam_3" 1100 1200 -justify right -anchor "nw" -text [translate "Preheat to"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 		add_de1_variable "steam_1 steam_3" 1700 1200 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[if {$::settings(steam_disabled) != 1} { return_steam_temperature_measurement $::settings(steam_temperature)} else { return [translate "off"] }]} 
 
-		add_de1_text "steam_1 steam_3" 1100 1150 -justify right -anchor "nw" -text [translate "Enabled"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
+		add_de1_variable "steam_1 steam_3" 1100 1150 -justify right -anchor "nw" -text [translate "Enabled"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[enabled_steam_eco_mode_label]} 
 		dui add dtoggle "steam_1 steam_3" 1700 1150 -height 36 -width 80 -anchor ne -variable ::de1(steam_disable_toggle) -command disable_steam_toggle 
 
 
 		set ::de1(steam_disable_toggle) [expr {!$::settings(steam_disabled)}]
 		proc disable_steam_toggle {} {
 			set ::settings(steam_disabled)  [expr {!$::de1(steam_disable_toggle)}]
+			delay_screen_saver
+			de1_send_steam_hotwater_settings
 		}
 
 
@@ -1330,7 +1339,7 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 			add_de1_variable "steam_1" 1700 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable {[dui platform hide_android_keyboard; ; return_steam_flow_calibration $::settings(steam_flow)] }
 			add_de1_variable "steam_3" 1700 1300 -justify left -anchor "ne" -font Helv_8 -text "" -fill "#969eb1" -width [rescale_x_skin 520] -textvariable  {[return_steam_flow_calibration $::settings(steam_flow)] }
 
-		add_de1_button "steam_1 steam_3" {if {$::settings(steam_disabled) != 1} { set ::settings(steam_disabled) 1 } else { set ::settings(steam_disabled) 0};  de1_send_steam_hotwater_settings; set ::de1(steam_disable_toggle) [expr {!$::settings(steam_disabled)}] } 1040 1160 1760 1400
+		add_de1_button "steam_1 steam_3" {set ::de1(steam_disable_toggle) [expr {!$::de1(steam_disable_toggle)}] ; disable_steam_toggle } 1040 1160 1760 1400
 
 
 # optional keyboard bindings

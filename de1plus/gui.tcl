@@ -682,6 +682,11 @@ proc stop_screen_saver_timer {} {
 		unset -nocomplain ::screen_saver_alarm_handle
 	}
 
+	if {[info exists ::steam_eco_alarm_handle] == 1} {
+		after cancel $::steam_eco_alarm_handle
+		unset -nocomplain ::steam_eco_alarm_handle
+	}
+
 }
 
 
@@ -692,6 +697,22 @@ proc delay_screen_saver {} {
 	if {$::settings(screen_saver_delay) != 0 } {
 		set ::screen_saver_alarm_handle [after [expr {60 * 1000 * $::settings(screen_saver_delay)}] "show_going_to_sleep_page"]
 	}
+
+	# if the timers are active, then find the next alarm time and set an alarm to wake in that many milliseconds from now
+	if {$::settings(eco_steam) == 1} {
+		# ten minute eco 
+		set ::steam_eco_alarm_handle [after [expr {$::de1(steam_eco_delay_seconds) * 1000}] do_eco_steam]
+
+		if {$::de1(in_eco_steam_mode) == 1} {
+			# return steam to normal temperature
+			msg -INFO "Disabling steam eco mode"
+			set ::de1(in_eco_steam_mode) 0
+			de1_send_steam_hotwater_settings
+		}
+
+
+	}
+
 }
 
 proc after_info {} {
@@ -701,6 +722,12 @@ proc after_info {} {
 		append t $id:[after info $id]\n
 	}
 	return $t
+}
+
+proc do_eco_steam {} {
+	msg -INFO "Enabling steam eco mode ($::de1(steam_eco_temperature)C)"
+	set ::de1(in_eco_steam_mode) 1
+	de1_send_steam_hotwater_settings
 }
 
 proc show_going_to_sleep_page  {} {

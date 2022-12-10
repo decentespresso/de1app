@@ -186,7 +186,11 @@ proc return_de1_packed_steam_hotwater_settings {} {
 	}
 
 	if {$::settings(steam_disabled) != 1} {
-		set arr(TargetSteamTemp) [convert_float_to_U8P0 $steam_temperature]
+		if {$::de1(in_eco_steam_mode) == 1} {
+			set arr(TargetSteamTemp) [convert_float_to_U8P0 $::de1(steam_eco_temperature)]
+		} else {
+			set arr(TargetSteamTemp) [convert_float_to_U8P0 $steam_temperature]
+		}
 	} else {
 		set arr(TargetSteamTemp) [convert_float_to_U8P0 0]
 	}

@@ -28,7 +28,10 @@ package require de1_logging 1.0
 array set ::de1 {
 	firmware_crc ""
 	current_frame_number 0
+	in_eco_steam_mode 0
 	calibration_pressure {}
+	steam_eco_temperature 135
+	steam_eco_delay_seconds 600
 	calibration_temperature {}
 	calibration_flow {}
 	factory_calibration_pressure {}
@@ -222,6 +225,7 @@ array set ::settings {
 	language en
 	display_time_in_screen_saver 0
 	insert_preinfusion_pause 0
+	eco_steam 1
 	steam_over_temp_threshold 180
 	disable_long_press 0
 	steam_over_pressure_threshold 8
