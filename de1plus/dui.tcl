@@ -9311,7 +9311,7 @@ namespace eval ::dui::pages::dui_number_editor {
 		
 #		# Previous values listbox
 		dui add listbox $page 450 780 -tags previous_values -canvas_width 350 -canvas_height 550 -yscrollbar 1 \
-			-label [translate "Previous values"] -label_style section_font_size -label_pos {450 700} -label_anchor nw 
+			-label [translate "Previous values"] -label_style section_font_size -label_pos {450 700} -label_anchor nw -font_size +15
 		bind $widgets(previous_values) <<ListboxSelect>> ::dui::pages::dui_number_editor::previous_values_select
 		
 		set x_base 1425; set y_base 290
