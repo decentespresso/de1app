@@ -1356,8 +1356,8 @@ add_de1_text "create_preset" 2275 1520 -text [translate "Cancel"] -font Helv_10_
 
 	add_de1_text "create_preset" 2060 1060 -text [translate "Your existing profile will be automatically copied.";] -font Helv_7 -width 300 -fill "#5a5d75" -anchor "center" -justify "center"
 
-	add_de1_button "create_preset" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) ; set_profile_title_untitled } 220 690 800 1190
-	add_de1_button "create_preset" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(preinfusion_guarantee) 0; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) ; set_profile_title_untitled } 980 690 1580 1190
+	add_de1_button "create_preset" {say [translate {PRESSURE}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2a"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(beverage_type) "espresso"; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) ; set_profile_title_untitled } 220 690 800 1190
+	add_de1_button "create_preset" {say [translate {FLOW}] $::settings(sound_button_in); set ::settings(settings_profile_type) "settings_2b"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(beverage_type) "espresso"; set ::settings(preinfusion_guarantee) 0; set ::settings(profile_title) ""; update_de1_explanation_chart; set ::settings(active_settings_tab) $::settings(settings_profile_type) ; set_profile_title_untitled } 980 690 1580 1190
 	add_de1_button "create_preset" {say [translate {ADVANCED}] $::settings(sound_button_in); 
 		if {$::settings(settings_profile_type) == "settings_2a"} { profile::advanced_list_to_settings [profile::pressure_to_advanced_list]; } elseif {$::settings(settings_profile_type) == "settings_2b"} {profile::advanced_list_to_settings [profile::flow_to_advanced_list]; }
 		set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; 
@@ -1365,6 +1365,7 @@ add_de1_text "create_preset" 2275 1520 -text [translate "Cancel"] -font Helv_10_
 		set ::settings(final_desired_shot_weight_advanced) [ifexists ::settings(final_desired_shot_weight)]; 		; 
 		set ::settings(final_desired_shot_volume_advanced_count_start) 2; 
 		set ::settings(tank_desired_water_temperature) 0; 
+		set ::settings(beverage_type) "espresso"; 
 		set ::settings(active_settings_tab) $::settings(settings_profile_type); 	
 		fill_advanced_profile_steps_listbox; 
 		update_de1_explanation_chart;
