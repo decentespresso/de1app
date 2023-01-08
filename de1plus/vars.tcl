@@ -3696,7 +3696,7 @@ proc return_steam_flow_calibration {steam_flow} {
 
 proc return_steam_heater_calibration {steam_temperature} {
 
-	if {$steam_temperature < 130} {
+	if {$steam_temperature < 135} {
 		return [translate "off"]		
 	}
 	return [return_temperature_setting $steam_temperature]
