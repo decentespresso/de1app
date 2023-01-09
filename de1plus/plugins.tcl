@@ -232,8 +232,12 @@ namespace eval ::plugins {
         if { [file exists $fn] } {
             set settings_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]
             if {[string length $settings_file_contents] != 0} {
-                array set [plugin_settings $plugin] $settings_file_contents
-                return 1
+                catch {
+                    array set [plugin_settings $plugin] $settings_file_contents
+                    return 1
+                }
+                return 0
+                
             }
         }
         msg -INFO [namespace current] "Settings file $fn not found"
