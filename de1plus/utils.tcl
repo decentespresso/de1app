@@ -1481,6 +1481,11 @@ proc load_settings {} {
     set ::settings(seconds_to_display_done_flush) 300
     set ::settings(seconds_to_display_done_hotwater) 300
 
+	if {[string is double -strict $::settings(calibration_flow_multiplier)] != 1 || $::settings(calibration_flow_multiplier) == "0.13"} {
+		msg --WARNING "Flow calibration had invalid value: '$::settings(calibration_flow_multiplier)'"
+		set ::settings(calibration_flow_multiplier) 1
+	}
+
     set skintcl [read_file "[skin_directory]/skin.tcl"]
 
     # copy the BLE address from Skale to the new generic "scale" BLE address (20-9-19 added support for two kinds of scales)
