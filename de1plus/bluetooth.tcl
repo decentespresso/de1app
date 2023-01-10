@@ -1531,7 +1531,8 @@ proc de1_ble_handler { event data } {
  					|| [string first "PROCH" $name]    == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
 					
-				} elseif {[string first "PEARL" $name] == 0 \
+				} elseif {[string first "PEARLS" $name] == 0 \
+ 					|| [string first "PEARL-" $name]   == 0 \
  					|| [string first "LUNAR" $name]    == 0 \
  					|| [string first "PYXIS" $name]    == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiapyxis"
