@@ -418,7 +418,7 @@ add_de1_text "bev_type" 1280 1310 -text [translate "Done"] -font Helv_10_bold -f
 add_de1_button "bev_type" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off "settings_2c"}  980 1210 1580 1410
 add_de1_text "bev_type" 1280 90 -text [translate "Beverage type"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 add_de1_text "bev_type" 800 650 -text [translate "What kind of beverage is this profile making?"] -font Helv_15_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" -width [rescale_x_skin 1000]
-dui add dselector "bev_type" 1800 800 -bwidth 800 -bheight 700 -orient v -anchor center -values [bevtype_kv_list 1] -variable ::settings(beverage_type) -labels [bevtype_kv_list 2]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
+dui add dselector "bev_type" 1800 800 -bwidth 800 -bheight 700 -orient v -anchor center -values [bevtype_kv_list 1] -variable ::settings(beverage_type) -labels [bevtype_kv_list 2]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4" -command profile_has_changed_set
 
 #############################
 
