@@ -418,7 +418,7 @@ add_de1_text "bev_type" 1280 1310 -text [translate "Done"] -font Helv_10_bold -f
 add_de1_button "bev_type" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off "settings_2c"}  980 1210 1580 1410
 add_de1_text "bev_type" 1280 90 -text [translate "Beverage type"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 add_de1_text "bev_type" 800 650 -text [translate "What kind of beverage is this profile making?"] -font Helv_15_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" -width [rescale_x_skin 1000]
-dui add dselector "bev_type" 1800 800 -bwidth 800 -bheight 700 -orient v -anchor center -values [bevtype_kv_list 1] -variable ::settings(beverage_type) -labels [bevtype_kv_list 2]  -width 2 -fill "#f8f8f8" -selectedfill "#4d85f4"
+dui add dselector "bev_type" 1800 800 -bwidth 800 -bheight 700 -orient v -anchor center -values [bevtype_kv_list 1] -variable ::settings(beverage_type) -labels [bevtype_kv_list 2]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 
 #############################
 
@@ -1032,7 +1032,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		
 		#add_de1_text "measurements" 1300 480 -text [translate "Units"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			#add_de1_widget "measurements" checkbutton 1300 560 {} -text [translate "Fahrenheit"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(enable_fahrenheit)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
-			dui add dselector "measurements" 2280 480 -bwidth 600 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] -width 2 -fill "#f8f8f8" -selectedfill "#4d85f4" 
+			dui add dselector "measurements" 2280 480 -bwidth 600 -bheight 80 -orient h -anchor ne -values {0 1} -variable ::settings(enable_fahrenheit) -labels [list [translate "Celsius"] [translate "Fahrenheit"]] -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4" 
 			
 
 
@@ -1154,7 +1154,7 @@ proc calculate_screen_flip_value {} {
 			add_de1_variable "measurements" 340 840 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[screen_saver_change_minutes $::settings(screen_saver_change_interval)]}
 
 			add_de1_text "measurements" 340 940 -text [translate "App version"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-				dui add dselector "measurements" 340 1020 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#f8f8f8" -selectedfill "#4d85f4"
+				dui add dselector "measurements" 340 1020 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 
 	add_de1_text "settings_4" 2290 616 -text [translate "Extensions"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
 	add_de1_button "settings_4" {say [translate {Extensions}] $::settings(sound_button_in); fill_extensions_listbox; page_to_show_when_off extensions; ; set_extensions_scrollbar_dimensions}  1910 520 2530 720
@@ -1732,7 +1732,7 @@ proc show_page_calibrate_3 {} {
 
 
 		add_de1_variable "calibrate3" 1350 960  -text [translate "Refill kit: detected"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -justify "left" -textvariable {[if {$::de1(refill_kit_detected) == ""} {return [translate "Refill kit: unable to detect"]} elseif {$::de1(refill_kit_detected) == "0"} {	return [translate "Refill kit: not detected"]} elseif {$::de1(refill_kit_detected) == "1"} { return [translate "Refill kit: detected"] } ]}
-		dui add dselector "calibrate3" 1350 1020 -bwidth 900 -bheight 80 -orient h -anchor nw -values {2 0 1} -variable ::settings(refill_kit_override) -default {-1} -labels [list [translate "auto-detect"] [translate "force off"] [translate "force on"]] -width 3 -fill "#f8f8f8" -selectedfill "#4d85f4" -command send_refill_kit_override_from_gui
+		dui add dselector "calibrate3" 1350 1020 -bwidth 900 -bheight 80 -orient h -anchor nw -values {2 0 1} -variable ::settings(refill_kit_override) -default {-1} -labels [list [translate "auto-detect"] [translate "force off"] [translate "force on"]] -width 3 -fill "#FAFAFA" -selectedfill "#4d85f4" -command send_refill_kit_override_from_gui
 
 proc send_refill_kit_override_from_gui {args} {
 	send_refill_kit_override
