@@ -361,12 +361,72 @@ add_de1_widget "settings_2 settings_2a" graph 24 220 {
 } -plotbackground $chart_background_color -width [rescale_x_skin 2375] -height [rescale_y_skin 500] -borderwidth 1 -background #FFFFFF -plotrelief raised -plotpady 0 -plotpadx 10
 
 
-############################
+#############################
+# change beverage type in advanced profiles
+
+proc bevtype2desc_list {} {
+    set list_bevtype2desc {
+        espresso Espresso 
+        pourover "Pour over" 
+        filter "Filter coffee" 
+        tea_portafilter "Tea portafilter" 
+        tea Tea 
+        calibrate Calibration 
+        cleaning Cleaning 
+        manual Manual 
+    }
+    return $list_bevtype2desc
+}
+
+proc bevtype_kv_list { {keys_or_values {}} } {
+    #return 1
+
+    array set arr_bevtype2desc [bevtype2desc_list]
+
+    set ks ""
+    set vs ""
+    foreach { k v } [bevtype2desc_list] {
+        lappend ks [translate $k]
+        lappend vs $v
+    }
+
+    if {$keys_or_values == 1} {
+        return $ks
+    } elseif {$keys_or_values == 2} {
+        return $vs
+    }
+    return [list $ks $vs]
+}
+
+proc bevtype2stepdesc {} {
+
+    set bevtype [ifexists ::settings(beverage_type)]
+    array set arr_bevtype2stepdesc { 
+        calibrate "Calibration steps" 
+        cleaning "Cleaning steps" 
+        espresso "Espresso steps" 
+        filter "Filter coffee steps" 
+        manual "Manual steps" 
+        pourover "Pour over steps" 
+        tea "Tea steps" 
+        tea_portafilter "Tea portafilter steps" 
+    }
+    return [translate [ifexists arr_bevtype2stepdesc($bevtype)]]
+}
+
+add_de1_text "bev_type" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+add_de1_button "bev_type" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off "settings_2c"}  980 1210 1580 1410
+add_de1_text "bev_type" 1280 90 -text [translate "Beverage type"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+add_de1_text "bev_type" 800 650 -text [translate "What kind of beverage is this profile making?"] -font Helv_15_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" -width [rescale_x_skin 1000]
+dui add dselector "bev_type" 1800 800 -bwidth 800 -bheight 700 -orient v -anchor center -values [bevtype_kv_list 1] -variable ::settings(beverage_type) -labels [bevtype_kv_list 2]  -width 2 -fill "#f8f8f8" -selectedfill "#4d85f4"
+
+#############################
 
 
 ############################
 # advanced flow profiling
-add_de1_text "settings_2c" 70 230 -text [translate "Steps"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" 
+add_de1_variable "settings_2c" 70 230 -text "" -font Helv_10_bold -fill "#4e85f4" -anchor "nw" -textvariable {[bevtype2stepdesc]}
+add_de1_button "settings_2c" {say [translate {new}] $::settings(sound_button_in); page_to_show_when_off "bev_type"; } 0 200 700 300
 
 add_de1_text "settings_2c" 984 240 -text [translate "1: Temperature"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" 
 add_de1_variable "settings_2c" 1600 240 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "nw" -textvariable {[if {[ifexists ::current_adv_step(pump)] == "flow"} {return [translate "2: Flow rate goal"]} else {return [translate "2: Pressure goal"]}]}
@@ -1347,6 +1407,7 @@ add_de1_text "create_preset" 2275 1520 -text [translate "Cancel"] -font Helv_10_
 
 	add_de1_text "create_preset" 1280 90 -text [translate "New Preset"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 	add_de1_text "create_preset" 1280 650 -text [translate "What kind of preset?"] -font Helv_15_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
+
 	
 	#add_de1_text "create_preset" 520 1090 -text [translate "Pressure"] -font Helv_10_bold -fill "#5a5d75" -anchor "center" 
 
@@ -1858,7 +1919,7 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 2 show_settings calibrate
+#after 2 show_settings bev_type
 
 
 # enable for debugging
