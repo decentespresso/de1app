@@ -709,10 +709,7 @@ proc delay_screen_saver {} {
 			set ::de1(in_eco_steam_mode) 0
 			de1_send_steam_hotwater_settings
 		}
-
-
 	}
-
 }
 
 proc after_info {} {

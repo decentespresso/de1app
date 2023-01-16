@@ -181,7 +181,7 @@ proc return_de1_packed_steam_hotwater_settings {} {
 
 	# turn the steam heater off completely, if the heater is set to below 130ºC
 	set steam_temperature $::settings(steam_temperature)
-	if {$steam_temperature < 130} {
+	if {$steam_temperature < 135} {
 		set steam_temperature 0
 	}
 
