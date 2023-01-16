@@ -6,7 +6,7 @@ espresso_pressure 0.0
 espresso_temperature 88.0
 final_desired_shot_volume 0
 final_desired_shot_volume_advanced 0
-final_desired_shot_weight 36
+final_desired_shot_weight 0
 final_desired_shot_weight_advanced 0
 flow_profile_decline 1.2
 flow_profile_decline_time 17

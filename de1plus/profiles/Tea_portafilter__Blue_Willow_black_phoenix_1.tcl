@@ -13,8 +13,8 @@ espresso_temperature_steps_enabled 1
 final_desired_shot_volume 36
 final_desired_shot_volume_advanced 0
 final_desired_shot_volume_advanced_count_start 1
-final_desired_shot_weight 100
-final_desired_shot_weight_advanced 330.2
+final_desired_shot_weight 0
+final_desired_shot_weight_advanced 0
 flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_hold 2
