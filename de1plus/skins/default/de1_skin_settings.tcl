@@ -169,7 +169,9 @@ add_de1_button "settings_1 settings_2a settings_2b" {say [translate {temperature
 	add_de1_button "settings_1 settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature -0.5; profile_has_changed_set } 2404 600 2590 730
 	add_de1_button "settings_2a settings_2b" {say [translate {temperature}] $::settings(sound_button_in); ; toggle_espresso_steps_option; profile_has_changed_set; } 2404 370 2590 560
 
-	add_de1_variable "settings_1 settings_2a settings_2b" 2470 600 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_temperature_setting ::settings(espresso_temperature)]}
+	# todo: allow typing in of a new temperature value and then the entire profile changes relative to that change, change text color to #4e85f4
+	add_de1_variable "settings_1 settings_2a settings_2b" 2470 600 -text "" -font Helv_8_bold -fill "#7f879a" -anchor "center" -textvariable {[round_and_return_temperature_setting ::settings(espresso_temperature)]}
+
 	add_de1_variable "settings_2a settings_2b" 820 760 -text "" -font Helv_8_bold -fill "#4e85f4" -anchor "ne" -textvariable {[if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { return [subst {[round_and_return_step_temperature_setting ::settings(espresso_temperature_0)] / [round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}]} else {return ""}]}
 	#add_de1_variable "settings_2a settings_2b" 674 790 -text "" -font Helv_8 -fill "#AAAAAA" -anchor "center" -textvariable {[if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} { return "/" } else { return "" }]}
 	#add_de1_variable "settings_2a settings_2b" 744 790 -text "" -font Helv_8 -fill "#4e85f4" -anchor "center" -textvariable {[round_and_return_step_temperature_setting ::settings(espresso_temperature_1)]}
