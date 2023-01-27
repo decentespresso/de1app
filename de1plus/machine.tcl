@@ -225,7 +225,7 @@ array set ::settings {
 	language en
 	display_time_in_screen_saver 0
 	insert_preinfusion_pause 0
-	eco_steam 1
+	eco_steam 0
 	steam_over_temp_threshold 180
 	disable_long_press 0
 	steam_over_pressure_threshold 8
