@@ -816,6 +816,7 @@ proc make_de1_dir {srcdir destdirs} {
 
         profiles/I_got_your_back.tcl *
         profiles/80s_Espresso.tcl *
+        profiles/Steam_only.tcl *        
         profiles/Extractamundo_Dos.tcl *
         profiles/Tea_portafilter__Blue_Willow_Tsuyuhikari_Sencha.tcl *
         profiles/Tea_portafilter__Blue_Willow_Black_Honey_Oolong.tcl *
