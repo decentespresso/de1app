@@ -504,7 +504,7 @@ proc page_onload { page_to_hide page_to_show } {
 
 
 proc check_if_battery_low_and_give_message {} {
-    if {[battery_percent] < 10 && $::android == 1} {
+    if {[battery_percent] < 5 && $::android == 1} {
         info_page [subst {[translate "We noticed that your battery power is very low."]\n\n[translate "Maybe you are turning your DE1 off using the power switch on the back?"]\n\n[translate "If so, that prevents the tablet from charging."]\n\n[translate "Instead, put the DE1 to sleep by tapping the power icon in the App."]}] [translate "Ok"]
     }
 }
@@ -540,14 +540,23 @@ proc check_battery_charger {} {
     #####################
     # keep battery charged between 55% and 65%
 	if {$::settings(smart_battery_charging) == 1} {
-	    if {$percent <= 55} {
+		set bottom 90
+		set top 95
+
+		# don't cycle the power as often if currently on the screen saver
+		if {$::de1(current_context) == "sleep" || $::de1(current_context) == "saver"} {
+			set bottom 15
+		}
+
+
+	    if {$percent <= $bottom} {
 			# turn USB charger on
 			set_usb_charger_on 1
 
 			# indicate that usb should be kept on, we are now charging
 			set ::de1(battery_discharging) 0
 
-	    } elseif {$percent >= 65} {
+	    } elseif {$percent >= $top} {
 			# turn USB charger off
 			set_usb_charger_on 0
 
