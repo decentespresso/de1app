@@ -581,7 +581,12 @@ proc check_battery_charger {} {
 # dim the screen automaticaly if the battery is low
 proc check_battery_low {brightness_to_use} {
 
-	puts check_battery_low
+    if {$::settings(dim_screen_when_battery_low) == 0} {
+    	# if this feature is disabled, skip
+    	return $brightness_to_use
+    }
+
+	#puts check_battery_low
 
     set current_brightness [get_set_tablet_brightness]
     if {$current_brightness == ""} {

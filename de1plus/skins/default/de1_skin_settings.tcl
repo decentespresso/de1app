@@ -1071,14 +1071,18 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 			}
 
+
+			dui add dtoggle "measurements"  1740 604 -height 60 -anchor nw -variable ::settings(dim_screen_when_battery_low) 
+			add_de1_text "measurements" 1880 584 -text [translate "Dim screen when battery low"] -font $optionfont -width [rescale_y_skin 440] -fill "#4e85f4" -anchor "nw" 
+
 			if {[ghc_required] == 0} {
 				# this feature requires NO GHC to be installed because UL requires that all dangerous operations be started on the GHC. 
 				# The way this feature currently works is by sending a bluetooth start command after the command ends. With a GHC installed, that bluetooth command is ignored
 				# note: we could likely replicate this feature in the future with a firmware requiest to repeat the command indefinitely, and this would be UL compliant as the first time would need to be GHC started.
 				#add_de1_widget "measurements" checkbutton 1800 80  {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-				dui add dtoggle "measurements"  1740 604 -height 60 -anchor nw -variable ::settings(stress_test) 
-				add_de1_text "measurements" 1880 604 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+				dui add dtoggle "measurements"  1740 804 -height 60 -anchor nw -variable ::settings(stress_test) 
+				add_de1_text "measurements" 1880 804 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 			}
 
 			#set ::_placebo_true 1
@@ -1921,7 +1925,7 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 2 show_settings bev_type
+#after 2 show_settings measurements
 
 
 # enable for debugging
