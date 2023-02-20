@@ -36,3 +36,6 @@
 [submodule "de1plus/plugins/D_Flow_Espresso_Profile"]
 	path = de1plus/plugins/D_Flow_Espresso_Profile
 	url = https://github.com/Damian-AU/D_Flow_Espresso_Profile
+[submodule "de1plus/plugins/DPx_Flow_Calibrator"]
+	path = de1plus/plugins/DPx_Flow_Calibrator
+	url = https://github.com/Damian-AU/DPx_Flow_Calibrator
