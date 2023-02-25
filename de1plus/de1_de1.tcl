@@ -911,14 +911,15 @@ namespace eval ::de1::sav {
 	# Disabing in-app SAV for basic profiles:
 	#   settings_2a -- basic pressure
 	#   settings_2b -- basic flow
+	# and HotWater pours
 	# when a scale is expected to be present
-	# (should preserve ability to use with HotWater)
 
 	# ::de1::sav::skip_sav_check can be overriden by skins or extensions
 
 	proc skip_sav_check {} {
 
-		expr { $::settings(settings_profile_type) in {{settings_2a} {settings_2b}} \
+		expr { ( [::de1::state::current_state] == "HotWater" || \
+			       $::settings(settings_profile_type) in {{settings_2a} {settings_2b}} ) \
 			       && [::device::scale::expecting_present] }
 	}
 
