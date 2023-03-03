@@ -1,5 +1,6 @@
 advanced_shot {}
 author Decent
+beverage_type espresso
 espresso_decline_time 0
 espresso_hold_time 25
 espresso_pressure 9.0
@@ -21,6 +22,7 @@ flow_profile_hold_time 0
 flow_profile_minimum_pressure 6
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6
+maximum_pressure 9.5
 preinfusion_flow_rate 1.5
 preinfusion_guarantee 0
 preinfusion_stop_pressure 1.0
@@ -30,8 +32,8 @@ profile_hide 1
 profile_language en
 profile_notes {Another approach created by a famously innovative Seattle-based espresso machine manufacturer, this technique requires you to grind your coffee very finely.  Try this with very lightly roasted coffee beans.  The resulting flavor is more like a pour-over than espresso.}
 profile_title {Innovative long preinfusion}
+read_only 1
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
 water_temperature 80
-beverage_type {espresso}
-read_only 1
+
