@@ -1074,6 +1074,8 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 
 			dui add dtoggle "measurements"  1740 604 -height 60 -anchor nw -variable ::settings(dim_screen_when_battery_low) 
 			add_de1_text "measurements" 1880 584 -text [translate "Dim screen when battery low"] -font $optionfont -width [rescale_y_skin 440] -fill "#4e85f4" -anchor "nw" 
+			add_de1_button "measurements" { set ::settings(dim_screen_when_battery_low) [expr {!$::settings(dim_screen_when_battery_low)}] } 1740 574 2280 690
+
 
 			if {[ghc_required] == 0} {
 				# this feature requires NO GHC to be installed because UL requires that all dangerous operations be started on the GHC. 
@@ -1081,8 +1083,8 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 				# note: we could likely replicate this feature in the future with a firmware requiest to repeat the command indefinitely, and this would be UL compliant as the first time would need to be GHC started.
 				#add_de1_widget "measurements" checkbutton 1800 80  {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-				dui add dtoggle "measurements"  1740 804 -height 60 -anchor nw -variable ::settings(stress_test) 
-				add_de1_text "measurements" 1880 804 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+				dui add dtoggle "measurements"  1740 704 -height 60 -anchor nw -variable ::settings(stress_test) 
+				add_de1_text "measurements" 1880 704 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 			}
 
 			#set ::_placebo_true 1
@@ -1103,16 +1105,20 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			add_de1_text "measurements" 1420 704 -text [translate "Fast tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 			add_de1_button "measurements" { set ::settings(use_finger_down_for_tap) [expr {!$::settings(use_finger_down_for_tap)}] } 1280 704 1700 764
 
-			dui add dtoggle "measurements" 1280 804 -height 60 -anchor nw -variable ::settings(smart_battery_charging) 
-			add_de1_text "measurements" 1420 804 -text [translate "Smart charging"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
-			add_de1_button "measurements" { set ::settings(smart_battery_charging) [expr {!$::settings(smart_battery_charging)}] } 1280 804 1700 864
+			#dui add dtoggle "measurements" 1280 804 -height 60 -anchor nw -variable ::settings(smart_battery_charging) 
+			#add_de1_text "measurements" 1420 804 -text [translate "Smart charging"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+			#add_de1_button "measurements" { set ::settings(smart_battery_charging) [expr {!$::settings(smart_battery_charging)}] } 1280 804 1700 864
 
 
 			#}
 
-		add_de1_text "measurements" 1300 940 -text [translate "Font size"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 1300 1000 {} -from 0.1 -to 2 -background #e4d1c1 -borderwidth 1 -bigincrement 0.05 -showvalue 0 -resolution 0.05 -length [rescale_x_skin 400] -width [rescale_y_skin 100] -variable ::settings(default_font_calibration) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-			add_de1_variable "measurements" 1300 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(default_font_calibration)}
+		add_de1_text "measurements" 1300 800 -text [translate "Font size"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+			add_de1_widget "measurements" scale 1300 850 {} -from 0.1 -to 2 -background #e4d1c1 -borderwidth 1 -bigincrement 0.05 -showvalue 0 -resolution 0.05 -length [rescale_x_skin 400] -width [rescale_y_skin 100] -variable ::settings(default_font_calibration) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
+			add_de1_variable "measurements" 1300 950 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(default_font_calibration)}
+
+		add_de1_text "measurements" 1300 1020 -text [translate "Smart charging"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+			dui add dselector "measurements" 1300 1080 -bwidth 1000 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(smart_battery_charging)  -labels [list [translate "off"] [translate "on"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
+
 
 proc calculate_screen_flip_value {} {
 	#puts calculate_screen_flip_value
@@ -1136,33 +1142,34 @@ proc calculate_screen_flip_value {} {
 	return 0
 }
 
-		add_de1_text "measurements" 1800 940 -text [translate "Resolution"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 1800 1000 {} -from 320 -to 2800 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
-			add_de1_variable "measurements" 1800 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(screen_size_width) x $::settings(screen_size_height)}
+		add_de1_text "measurements" 1800 800 -text [translate "Resolution"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+			add_de1_widget "measurements" scale 1800 860 {} -from 320 -to 2800 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
+			add_de1_variable "measurements" 1800 960 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(screen_size_width) x $::settings(screen_size_height)}
 			calculate_screen_flip_value
 			#add_de1_widget "measurements" checkbutton 2100 1320  {} -text [translate "flip"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::globals(screen_flip)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command calculate_screen_flip_value
 
-			dui add dtoggle "measurements" 2300 954 -height 40 -width 80 -anchor ne -variable ::globals(screen_flip)
-			add_de1_text "measurements" 2210 940 -text [translate "flip"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
-			add_de1_button "measurements" { set ::globals(screen_flip) [expr {!$::globals(screen_flip)}] ; calculate_screen_flip_value} 2010 946 2310 990 
+			dui add dtoggle "measurements" 2300 814 -height 40 -width 80 -anchor ne -variable ::globals(screen_flip)
+			add_de1_text "measurements" 2210 800 -text [translate "flip"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "ne" 
+			add_de1_button "measurements" { set ::globals(screen_flip) [expr {!$::globals(screen_flip)}] ; calculate_screen_flip_value} 2010 806 2310 850 
 
 
 
 			
-		add_de1_text "measurements" 340 480 -text [translate "Screen saver"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+		add_de1_text "measurements" 340 500 -text [translate "Screen saver"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
 			add_de1_widget "measurements" scale 340 560 {} -from 0 -to 100 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_y_skin 100] -variable ::settings(saver_brightness) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-			add_de1_variable "measurements" 340 660 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Brightness"] $::settings(saver_brightness)%}
+			add_de1_variable "measurements" 340 660 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Brightness"] $::settings(saver_brightness)%}
 
 			add_de1_variable "measurements" 20 1540 -text "" -font Helv_6 -fill "#888888" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Battery"] [battery_percent]% : [battery_state] : $::de1(usb_charger_on)}
 			add_de1_button "measurements" {say [translate {USB}] $::settings(sound_button_in); toggle_usb_charger_on} 0 1400 600 1600
 
 			add_de1_widget "measurements" scale 340 740 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_y_skin 100] -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0
-			add_de1_variable "measurements" 340 840 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[screen_saver_change_minutes $::settings(screen_saver_change_interval)]}
+			add_de1_variable "measurements" 340 840 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[screen_saver_change_minutes $::settings(screen_saver_change_interval)]}
 
-			add_de1_text "measurements" 340 940 -text [translate "App version"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
-				dui add dselector "measurements" 340 1020 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
+			add_de1_text "measurements" 340 920 -text [translate "App version"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
+				dui add dselector "measurements" 340 980 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 
-	add_de1_text "settings_4" 2290 616 -text [translate "Extensions"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
+
+	add_de1_text "settings_4" 2290 616 -text [translate "Extensions"] -font Helv_8_bold -fill "#FFFFFF" -anchor "center" 
 	add_de1_button "settings_4" {say [translate {Extensions}] $::settings(sound_button_in); fill_extensions_listbox; page_to_show_when_off extensions; ; set_extensions_scrollbar_dimensions}  1910 520 2530 720
 
 		add_de1_text "extensions" 1280 300 -text [translate "Extensions"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 

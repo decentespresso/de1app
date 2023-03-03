@@ -538,16 +538,25 @@ proc check_battery_charger {} {
     msg -INFO "Battery percent is: $percent %, smart charging = $::settings(smart_battery_charging)"
 
     #####################
-    # keep battery charged between 55% and 65%
+
 	if {$::settings(smart_battery_charging) == 1} {
+	    # keep battery charged between 55% and 65%
+		set bottom 55
+		set top 65
+
+	} elseif {$::settings(smart_battery_charging) == 2} {
+	    # keep battery charged between 90% to 95% when the machine is being used
 		set bottom 90
 		set top 95
 
+		# let battery discharge down to 15% if screen saver is on
 		# don't cycle the power as often if currently on the screen saver
 		if {$::de1(current_context) == "sleep" || $::de1(current_context) == "saver"} {
 			set bottom 15
 		}
+	}
 
+	if {$::settings(smart_battery_charging) == 1 || $::settings(smart_battery_charging) == 2} {
 
 	    if {$percent <= $bottom} {
 			# turn USB charger on
