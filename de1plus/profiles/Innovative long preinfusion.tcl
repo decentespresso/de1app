@@ -25,7 +25,7 @@ flow_profile_preinfusion_time 6
 maximum_pressure 9.5
 preinfusion_flow_rate 1.5
 preinfusion_guarantee 0
-preinfusion_stop_pressure 1.0
+preinfusion_stop_pressure 2.0
 preinfusion_time 37
 pressure_end 1.0
 profile_hide 1
