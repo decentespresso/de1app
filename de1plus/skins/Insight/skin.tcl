@@ -85,6 +85,7 @@ set ::temperature_line_color "#ff7880"
 set ::pressurelinecolor_god "#5deea6"
 set ::flow_line_color_god "#a7d1ff"
 set ::temperature_line_color_god "#ffafb4"
+set ::weightlinecolor_god "#edd4c1"
 
 set ::pressurelabelcolor "#00b672"
 set ::temperature_label_color "#ff7880"
@@ -101,6 +102,7 @@ if {[ifexists ::insight_dark_mode] == 1} {
 	set ::pressurelinecolor_god "#007032"
 	set ::flow_line_color_god "#175baa"
 	set ::temperature_line_color_god "#a10024"
+	set ::weightlinecolor_god "#5d3200"
 
 
 	set ::pressurelabelcolor "#50c17b"
@@ -247,7 +249,7 @@ add_de1_widget "off espresso espresso_1 espresso_2 espresso_3" graph 20 723 {
 
 	if {$::settings(scale_bluetooth_address) != ""} {
 		$widget element create line_espresso_flow_weight  -xdata espresso_elapsed -ydata espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 6] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
-		$widget element create god_line_espresso_flow_weight  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 12] -color #edd4c1 -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+		$widget element create god_line_espresso_flow_weight  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 12] -color $::weightlinecolor_god -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 
 		if {$::settings(chart_total_shot_weight) == 2} {
 			$widget element create line_espresso_weight  -xdata espresso_elapsed -ydata espresso_weight_chartable -symbol none -label "" -linewidth [rescale_x_skin 4] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);  
@@ -394,7 +396,7 @@ add_de1_widget "off_zoomed espresso_zoomed espresso_3_zoomed" graph 20 78 {
 	if {$::settings(scale_bluetooth_address) != ""} {
 		$widget element create line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 8] -color #a2693d -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 		$widget element create line_espresso_flow_weight_raw_2x  -xdata espresso_elapsed -ydata espresso_flow_weight_raw -symbol none -label "" -linewidth [rescale_x_skin 2] -color #f8b888 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -hide yes; 
-		$widget element create god_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 16] -color #edd4c1 -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
+		$widget element create god_line_espresso_flow_weight_2x  -xdata espresso_elapsed -ydata god_espresso_flow_weight -symbol none -label "" -linewidth [rescale_x_skin 16] -color $::weightlinecolor_god -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
 
 		if {$::settings(chart_total_shot_weight) == 1 || $::settings(chart_total_shot_weight) == 2} {
 			$widget element create line_espresso_weight_2x  -xdata espresso_elapsed -ydata espresso_weight_chartable -symbol none -label "" -linewidth [rescale_x_skin 6] -color #f8b888 -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_espresso_weight);  
