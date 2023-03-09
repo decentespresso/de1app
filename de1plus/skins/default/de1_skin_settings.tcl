@@ -1117,7 +1117,7 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			add_de1_variable "measurements" 1300 950 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(default_font_calibration)}
 
 		add_de1_text "measurements" 1300 1020 -text [translate "Smart charging"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			dui add dselector "measurements" 1300 1080 -bwidth 1000 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(smart_battery_charging)  -labels [list [translate "off"] [translate "on"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
+			dui add dselector "measurements" 1300 1080 -bwidth 1000 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(smart_battery_charging)  -labels [list [translate "off"] [translate "on"] [translate "night"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 
 
 proc calculate_screen_flip_value {} {
