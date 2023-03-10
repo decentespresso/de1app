@@ -839,8 +839,15 @@ namespace eval ::de1::sav {
 	proc on_hotwater_start {args} {
 
 		variable _target
-
-		set _target $::settings(water_volume)
+		if {$::de1(scale_device_handle) != 0} {
+			# "hot water: stop on weight" feature. Works with the scale, so it's more accurate.
+			# we ask for more water than we need, so that we can definitely get enough
+			# to stop on weight.
+			
+			set _target 250
+		} else {
+			set _target $::settings(water_volume)
+		}
 
 		# Ensure testable with > 0
 		set _target [scan $_target %g]

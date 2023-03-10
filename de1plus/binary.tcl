@@ -201,8 +201,8 @@ proc return_de1_packed_steam_hotwater_settings {} {
 		# "hot water: stop on weight" feature. Works with the scale, so it's more accurate.
 		# we ask for more water than we need, so that we can definitely get enough
 		# to stop on weight.
-		set arr(TargetHotWaterVol) [convert_float_to_U8P0 [expr { 2 * $::settings(water_volume)}] ]
-		#set arr(TargetHotWaterVol) [convert_float_to_U8P0 $::settings(water_volume)]
+		# a very incorrect flow calibration might cause issues, so turning SAV off if SAW is on
+		set arr(TargetHotWaterVol) [convert_float_to_U8P0 250]
 	} else {
 		set arr(TargetHotWaterVol) [convert_float_to_U8P0 $::settings(water_volume)]
 	}
