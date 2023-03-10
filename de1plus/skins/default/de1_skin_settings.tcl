@@ -1865,7 +1865,9 @@ proc send_refill_kit_override_from_gui {args} {
 		set max_steam_flow_rate 250
 		if {[ifexists ::settings(machine_model)] >= 5} {
 			# the de1xxl and de1xxxl models have a higher maximum flow rate for steam because of higher powered heaters
-			set max_steam_flow_rate 400
+			# john 10-3-23 firmware does not yet support flow rates above 2.5
+			#set max_steam_flow_rate 400
+
 		}
 
 		add_de1_widget "calibrate" scale 1880 [expr {(6 *$calibration_row_spacing) + $calibration_labels_row - [rescale_y_skin 16]}]  { set ::steam_flow_calibration_widget $widget } -to $max_steam_flow_rate -from 40 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 10 -length [rescale_x_skin 400]  -width [rescale_y_skin 90] -variable ::settings(steam_flow) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
