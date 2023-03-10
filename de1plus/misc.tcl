@@ -895,7 +895,6 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/old_lcd_disable/plugin.tcl *
         plugins/DPx_Screen_Saver/plugin.tcl *
         plugins/DPx_Steam_Stop/plugin.tcl *
-	plugins/DPx_Flow_Calibrator/plugin.tcl
         plugins/keyboard_control/plugin.tcl *
         plugins/keyboard_control/settings.tdb *
         plugins/log_debug/plugin.tcl *
