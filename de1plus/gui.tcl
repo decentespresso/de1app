@@ -864,11 +864,7 @@ proc de1_connected_state { {hide_delay 0} } {
 			# only show the "connected" message for 5 seconds
 			return ""
 		}
-		#return "[translate Connected] : $elapsed"
-		#borg toast "[translate Connected]"
-		#borg toast "[translate Connected]"
 		return [translate Connected]
-		#return "[translate Connected] $elapsed [translate seconds] - last ping: $::de1(last_ping) $::de1_device_list"
 	} else {
 
 #		if {[ifexists ::de1(in_fw_update_mode)] == 1} {
@@ -934,9 +930,17 @@ proc display_popup_android_message_if_necessary {intxt} {
 	set msg ""
 	regexp {\[(.*?)\]} $intxt discard msg
 	if {$msg != ""} {
+
+		# replace $weight with the weight
+		regsub {\$weight} $msg [drink_weight_text] msg
+
+		set msg [string trim $msg]
+
 		# post the message 1 second after the start, so that there's a slight delay 
-		after 1000 [list borg toast $msg 1]
-		msg -DEBUG "Popup: $msg"
+		if {$msg != ""} {
+			after 1000 [list borg toast $msg 1]
+			msg -DEBUG "Popup: $msg"
+		}
 	}
 	
 }
