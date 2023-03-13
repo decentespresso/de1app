@@ -194,7 +194,14 @@ proc return_de1_packed_steam_hotwater_settings {} {
 	} else {
 		set arr(TargetSteamTemp) [convert_float_to_U8P0 0]
 	}
-	set arr(TargetSteamLength) [convert_float_to_U8P0 $::settings(steam_timeout)]
+
+	set steam_timeout $::settings(steam_timeout)
+	if {$steam_timeout == 0} {
+		# a setting of zero would mean, turn off steam immediately, so we set it instead to the maximum allowed
+		set steam_timeout 255
+	}
+	set arr(TargetSteamLength) [convert_float_to_U8P0 $steam_timeout]
+
 	set arr(TargetHotWaterTemp) [convert_float_to_U8P0 $::settings(water_temperature)]
 	
 	if {$::de1(scale_device_handle) != 0} {
