@@ -480,7 +480,7 @@ add_de1_text "settings_2c" 490 796 -text [translate "Message"] -font Helv_7_bold
 add_de1_widget "settings_2c" entry 490 846  {
 	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); change_current_adv_shot_step_name; profile_has_changed_set; hide_android_keyboard}
 	bind $widget <Leave> hide_android_keyboard
-} -width [expr {int(8 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::current_adv_step(popup)
+} -width [expr {int(9 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::current_adv_step(popup)
 
 
 add_de1_button "settings_2c" {say [translate {delete}] $::settings(sound_button_in); delete_current_adv_step; profile_has_changed_set; update_de1_explanation_chart} 740 250 920 500

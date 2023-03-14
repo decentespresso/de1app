@@ -935,6 +935,7 @@ proc display_popup_android_message_if_necessary {msg} {
 		# replace $weight with the weight
 		regsub {\$weight} $msg [drink_weight_text] msg
 		regsub {\$timer} $msg [espresso_timer_text] msg
+		regsub {\$pressure} $msg [pressure_text] msg
 
 		set msg [string trim $msg]
 
