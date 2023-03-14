@@ -920,19 +920,21 @@ proc cancel_borg_notifications {} {
 	borg notification delete
 }
 
-proc display_popup_android_message_if_necessary {intxt} {
+proc display_popup_android_message_if_necessary {msg} {
 
-	if {[string first "*" $intxt] != -1} {
+	if {[string first "*" $msg] != -1} {
 		# beep if a * is found in the description
 		borg beep
 	}
 
-	set msg ""
-	regexp {\[(.*?)\]} $intxt discard msg
+	#set msg ""
+	#regexp {\[(.*?)\]} $intxt discard msg
+
 	if {$msg != ""} {
 
 		# replace $weight with the weight
 		regsub {\$weight} $msg [drink_weight_text] msg
+		regsub {\$timer} $msg [espresso_timer_text] msg
 
 		set msg [string trim $msg]
 
@@ -2743,6 +2745,7 @@ namespace eval ::gui::update {
 					[expr {$::gui::state::_state_change_chart_value * -1}]
 			}
 
+			set framepopup ""
 			switch $::settings(settings_profile_type) {
 
 				settings_2a {
@@ -2775,6 +2778,8 @@ namespace eval ::gui::update {
 							       [expr {1 + [::gui::state::current_framenumber]}] \
 							       [ifexists thisadvstep(name)] \
 							      ]
+
+					set framepopup [ifexists thisadvstep(popup)]
 				}
 
 				default { set framedesc "-" }
@@ -2785,7 +2790,7 @@ namespace eval ::gui::update {
 				preinfusion -
 				pouring {
 					set ::settings(current_frame_description) $framedesc
-					display_popup_android_message_if_necessary $framedesc
+					display_popup_android_message_if_necessary $framepopup
 				}
 
 				default { set ::settings(current_frame_description) "" }

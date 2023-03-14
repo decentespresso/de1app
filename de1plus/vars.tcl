@@ -376,6 +376,10 @@ proc espresso_timer {} {
 	return [expr {([clock milliseconds] - $::timers(espresso_start) )/1000}]
 }
 
+proc espresso_timer_text {} {
+	return [seconds_text [espresso_timer]]
+}
+
 proc espresso_millitimer {{time_reference 0}} {
 
 	# Accept seconds or ms, always returns ms; 10000000000 is Sat Nov 20 09:46:40 PST 2286
@@ -814,6 +818,18 @@ proc return_liquid_measurement {in} {
 	}
 }
 
+proc return_liquid_measurement_1d {in} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "mL"] [round_to_one_digits $in] }]
+    }
+
+	if {$::settings(enable_fluid_ounces) != 1} {
+		return [subst {[round_to_one_digits $in] [translate "mL"]}]
+	} else {
+		return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
+	}
+}
+
 proc return_flow_calibration_measurement {in} {
     if {$::de1(language_rtl) == 1} {
 		return [subst {[translate "mL/s"] [round_to_one_digits [expr {0.1 * $in}]]}]
@@ -903,7 +919,11 @@ proc return_stop_at_volume_measurement {in} {
 	if {$in == 0} {
 		return [translate "off"]
 	} else {
-		return [return_liquid_measurement [round_to_integer $in]]
+		if {[round_to_integer $in] == [round_to_one_digits $in]} {
+			return [return_liquid_measurement [round_to_integer $in]]
+		} else {
+			return [return_liquid_measurement_1d [round_to_one_digits $in]]
+		}
 	}
 }
 
@@ -2336,7 +2356,7 @@ proc load_advanced_profile_step {{force 0}} {
 
 	unset -nocomplain ::current_adv_step
 	# max flow / max pressure are not always set, so we set it now
-	array set ::current_adv_step {max_flow_or_pressure 0 max_flow_or_pressure_range 0.6}
+	array set ::current_adv_step {max_flow_or_pressure 0 max_flow_or_pressure_range 0.6 popup ""}
 
 	# Max weight is not always set, so we set it here
 	array set ::current_adv_step {weight 0.0}

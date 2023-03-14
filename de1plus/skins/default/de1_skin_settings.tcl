@@ -468,12 +468,19 @@ proc set_advsteps_scrollbar_dimensions {} {
 }
 
 
-
-add_de1_widget "settings_2c" entry 70 822  {
+add_de1_text "settings_2c" 70 796 -text [translate "Title"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" 
+add_de1_widget "settings_2c" entry 70 846  {
 	set ::globals(widget_profile_step_save) $widget
 	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); change_current_adv_shot_step_name; profile_has_changed_set; hide_android_keyboard}
 	bind $widget <Leave> hide_android_keyboard
-	} -width [expr {int(27 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::profile_step_name_to_add
+} -width [expr {int(16 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::profile_step_name_to_add
+
+
+add_de1_text "settings_2c" 490 796 -text [translate "Message"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" 
+add_de1_widget "settings_2c" entry 490 846  {
+	bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); change_current_adv_shot_step_name; profile_has_changed_set; hide_android_keyboard}
+	bind $widget <Leave> hide_android_keyboard
+} -width [expr {int(8 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::current_adv_step(popup)
 
 
 add_de1_button "settings_2c" {say [translate {delete}] $::settings(sound_button_in); delete_current_adv_step; profile_has_changed_set; update_de1_explanation_chart} 740 250 920 500
@@ -1934,7 +1941,7 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 2 show_settings measurements
+#after 2 show_settings settings_2c
 
 
 # enable for debugging
