@@ -64,7 +64,10 @@ namespace eval ::plugins::${plugin_name} {
     }
 
     proc msg { msg } {
-        ::msg [namespace current] {*}$msg
+        catch {
+            # a bad message migth cause an error here, so catching it
+            ::msg [namespace current] {*}$msg
+        }
     }
 
     proc upload {content} {
