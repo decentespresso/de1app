@@ -2771,6 +2771,7 @@ namespace eval ::gui::update {
 
 				settings_2c {
 
+					unset -nocomplain thisadvstep
 					array set thisadvstep \
 						[lindex $::settings(advanced_shot) \
 							 [::gui::state::current_framenumber]]
