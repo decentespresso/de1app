@@ -33,7 +33,7 @@ preinfusion_time 20
 pressure_end 4.0
 profile_hide 0
 profile_language en
-profile_notes {This technique causes a furor when Rao first published it.  His extraction of 24% is 2% higher than what is usually attainable with only the very best grinders, yet Rao did it with an inexpensive home grinder.  This technique is especially appropriate for lightly roasted, complex and expensive coffee beans.}
+profile_notes {This technique causes a furor when Rao first published it.  His extraction of 24% is 2% higher than what is usually attainable with only the very best grinders, yet Rao did it with an inexpensive home grinder.  This technique is especially appropriate for lightly roasted, complex and expensive coffee beans.  If you have a bluetooth scale, you can keep track of how much dripping into the cup there is before the ramp stage.  8 grams of total dripping, within 2 grams, seems to give the best tasting results. Try adusting your grind and dose to get that amount of dripping, and see if you like how it tastes.}
 profile_title {Blooming Espresso}
 read_only 1
 settings_profile_type settings_2c
