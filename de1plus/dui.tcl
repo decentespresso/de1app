@@ -227,10 +227,11 @@ namespace eval ::dui {
 				set helvetica_font [dui::font::add_or_get_familyname "Dubai-Regular.otf"]
 				set helvetica_bold_font [dui::font::add_or_get_familyname "Dubai-Bold.otf"]
 				set global_font_name [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
-			} elseif {$settings(language) == "he2" || $settings(language) == "heb2"} {
+			} elseif {$settings(language) == "he" || $settings(language) == "heb"} {
 				set helvetica_font [dui::font::add_or_get_familyname "hebrew-regular.ttf"]
-				set helvetica_bold_font [dui::font::add_or_get_familyname "hebrew-bold.tt"]
-				set global_font_name [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
+				set helvetica_bold_font [dui::font::add_or_get_familyname "hebrew-bold.ttf"]
+				set global_font_name $helvetica_font
+				#[dui::font::add_or_get_familyname "hebrew-regular.otf"]
 				set listbox_length_multiplier 1.35
 				set entry_length_multiplier 0.86				
 			} elseif {$settings(language) == "zh-hant" || $settings(language) == "zh-hans" || $settings(language) == "kr"} {
