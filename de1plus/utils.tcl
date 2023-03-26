@@ -1008,7 +1008,7 @@ proc translation_langs_array {} {
         da "dansk" \
         sv "svenska" \
         no "Nynorsk" \
-        he "\u05E2\u05D1\u05E8\u05D9\u05EA" \
+        he "\u05EA\u05D9\u05E8\u05D1\u05E2" \
         es "\u0065\u0073\u0070\u0061\u00F1\u006F\u006C" \
         pt "\u0070\u006F\u0072\u0074\u0075\u0067\u0075\u00EA\u0073" \
         pl "\u004A\u119\u007A\u0079\u006B\u0020\u0070\u006F\u006C\u0073\u006B\u0069" \
