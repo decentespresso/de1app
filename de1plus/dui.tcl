@@ -227,7 +227,7 @@ namespace eval ::dui {
 				set helvetica_font [dui::font::add_or_get_familyname "Dubai-Regular.otf"]
 				set helvetica_bold_font [dui::font::add_or_get_familyname "Dubai-Bold.otf"]
 				set global_font_name [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
-			} elseif {$settings(language) == "he" || $settings(language) == "heb"} {
+			} elseif {$settings(language) == "he2" || $settings(language) == "heb2"} {
 				set helvetica_font [dui::font::add_or_get_familyname "hebrew-regular.ttf"]
 				set helvetica_bold_font [dui::font::add_or_get_familyname "hebrew-bold.tt"]
 				set global_font_name [dui::font::add_or_get_familyname "NotoSansCJKjp-Regular.otf"]
