@@ -1361,7 +1361,7 @@ add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso m
 
 set descalepos 1050
 if {[is_r2l] == 1} {
-	set descalepos 1900
+	set descalepos 1800
 }
 
 add_de1_text "descale_prepare" 70 50 -text [translate "Prepare to descale"] -font Helv_20_bold -fill "#a77171" -anchor "nw" -width 1000
