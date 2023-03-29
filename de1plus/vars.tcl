@@ -1790,10 +1790,18 @@ proc delete_selected_profile {} {
 
 }
 
+proc is_r2l {} {
+	if {[language] == "ar" || [language] == "he"} {
+		return 1
+	}
+
+	return 0
+
+}
 
 # the checkbox character is not available in all fonts, so we use an X instead then
 proc checkboxchar {} {
-	if {[language] == "ar" || [language] == "he"} {
+	if {[is_r2l] == 1} {
 		return "X"
 	}
 
@@ -1801,7 +1809,7 @@ proc checkboxchar {} {
 }
 
 proc bluetooth_character {} {
-	if {[language] == "ar" || [language] == "he"} {
+	if {[is_r2l] == 1} {
 		return "BLE:"
 	}
 
@@ -1809,7 +1817,7 @@ proc bluetooth_character {} {
 }
 
 proc thermometer_character {} {
-	if {[language] == "ar" || [language] == "he"} {
+	if {[is_r2l] == 1} {
 		return "T:"
 	}
 
@@ -1817,15 +1825,32 @@ proc thermometer_character {} {
 }
 
 proc scale_character {} {
-	if {[language] == "ar" || [language] == "he"} {
+	if {[is_r2l] == 1} {
 		return "SCALE:"
 	}
 
 	return "\uF515"
 }
 
+proc r2l_anchor {} {
+	if {[is_r2l] == 1} {
+		return "se"
+	}
+
+	return "sw"
+}
+
+proc r2l_justify {} {
+	if {[is_r2l] == 1} {
+		return "right"
+	}
+
+	return "left"
+}
+
+
 proc usb_character {} {
-	if {[language] == "ar" || [language] == "he"} {
+	if {[is_r2l] == 1} {
 		return "USB:"
 	}
 
@@ -1833,7 +1858,7 @@ proc usb_character {} {
 }
 
 proc wifi_character {} {
-	if {[language] == "ar" || [language] == "he"} {
+	if {[is_r2l] == 1} {
 		return "WIFI:"
 	}
 
