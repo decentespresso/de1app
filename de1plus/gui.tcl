@@ -832,7 +832,6 @@ proc update_chart {} {
 
 proc de1_connected_state { {hide_delay 0} } {
 
-	check_front_switch
 	set hide_delay $::settings(display_connected_msg_seconds)
 
 	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
