@@ -1834,10 +1834,10 @@ proc scale_character {} {
 
 proc r2l_anchor {} {
 	if {[is_r2l] == 1} {
-		return "se"
+		return "ne"
 	}
 
-	return "sw"
+	return "nw"
 }
 
 proc r2l_justify {} {
@@ -2331,7 +2331,7 @@ proc fill_advanced_profile_steps_listbox {} {
 		array set props $step
 
 		set name $props(name)
-		$widget insert $cnt "[expr {1 + $cnt}]. $name"
+		$widget insert $cnt "[translate [expr {1 + $cnt}].] [translate $name]"
 		incr cnt
 	}
 	
@@ -3966,7 +3966,7 @@ proc when_to_start_pour_tracking_advanced {} {
 			array set steparr [lindex [ifexists ::settings(advanced_shot)] [expr {-1 + $::settings(final_desired_shot_volume_advanced_count_start)}]]
 			set stepdesc [ifexists steparr(name)]
 		}
-		return [subst {[translate "After step"] $::settings(final_desired_shot_volume_advanced_count_start) - $stepdesc}]
+		return [subst {[translate "After step"] $::settings(final_desired_shot_volume_advanced_count_start) - [translate $stepdesc]}]
 	} else {
 		return [translate "Immediately"]
 	}

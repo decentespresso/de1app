@@ -297,7 +297,7 @@ proc apply_range_to_all_steps {ignored} {
 # limits
 add_de1_text "settings_2c2" 70 830 -text [translate "Limit flow range"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 add_de1_widget "settings_2c2" scale 70 900  {} -from 0 -to 8  -background $::settings(color_stage_2)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_y_skin 120] -variable ::settings(maximum_flow_range_advanced)     -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-add_de1_variable "settings_2c2" 70 1020 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_flow_range_advanced) mL/s}
+add_de1_variable "settings_2c2" 70 1020 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_flow_range_advanced) [translate mL/s]}
 #add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_flow_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_flow_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit flow range"] -previous_values [::dui::pages::dui_number_editor::get_previous_values maximum_flow_range_advanced] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry maximum_flow_range_advanced"  } 50 830 600 894 ""   
 add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_flow_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_flow_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit flow range"] -previous_values [::dui::pages::dui_number_editor::get_previous_values maximum_flow_range_advanced] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry maximum_flow_range_advanced"  } 50 1024 600 1100 ""   
 
@@ -305,7 +305,7 @@ add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog du
 
 add_de1_text "settings_2c2" 800 830 -text [translate "Limit pressure range"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
 add_de1_widget "settings_2c2" scale 800 900 {} -from 0 -to 8 -background $::settings(color_stage_2)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_y_skin 120] -variable ::settings(maximum_pressure_range_advanced) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
-add_de1_variable "settings_2c2" 800 1020 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_pressure_range_advanced) bar}
+add_de1_variable "settings_2c2" 800 1020 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {$::settings(maximum_pressure_range_advanced) [translate bar]}
 #add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_pressure_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_pressure_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit pressure range"] -previous_values [::dui::pages::dui_number_editor::get_previous_values maximum_pressure_range_advanced] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry maximum_pressure_range_advanced"  } 780 830 1330 894 ""   
 add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_pressure_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_pressure_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit pressure range"] -previous_values [::dui::pages::dui_number_editor::get_previous_values maximum_pressure_range_advanced] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry maximum_pressure_range_advanced"  } 780 1024 1330 1100 ""   
 
@@ -1361,7 +1361,14 @@ add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso m
 
 set descalepos 1050
 if {[is_r2l] == 1} {
-	set descalepos 1800
+	set descalepos 1760
+	set descaleposn 1820
+
+	add_de1_text "descale_prepare" $descaleposn 280 -text [translate "1."] -font Helv_8_bold -fill "#a77171" -anchor [r2l_anchor] -justify [r2l_justify] -width 400
+	add_de1_text "descale_prepare" $descaleposn 670 -text [translate "2."] -font Helv_8_bold -fill "#a77171" -anchor [r2l_anchor] -justify [r2l_justify] -width 400
+	add_de1_text "descale_prepare" $descaleposn 970 -text [translate "3."] -font Helv_8_bold -fill "#a77171" -anchor [r2l_anchor] -justify [r2l_justify] -width 400
+	add_de1_text "descale_prepare" $descaleposn 1350 -text [translate "4."] -font Helv_8_bold -fill "#a77171" -anchor [r2l_anchor] -justify [r2l_justify] -width 400
+
 }
 
 add_de1_text "descale_prepare" 70 50 -text [translate "Prepare to descale"] -font Helv_20_bold -fill "#a77171" -anchor "nw" -width 1000
@@ -1946,7 +1953,7 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 2 show_settings settings_2c
+#after 2 show_settings descale_prepare
 
 
 # enable for debugging

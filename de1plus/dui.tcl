@@ -9330,7 +9330,7 @@ namespace eval ::dui::pages::dui_number_editor {
 				}
 				
 				dui add dbutton $page $x $y [expr {$x+$width}] [expr {$y+$height}] -tags $tag -style dne_pad_button \
-					-label "$num" -command [list %NS::enter_character $num] 
+					-label [translate $num] -command [list %NS::enter_character $num] 
 				
 				incr col
 			}
