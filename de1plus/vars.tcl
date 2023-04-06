@@ -2390,7 +2390,7 @@ proc load_advanced_profile_step {{force 0}} {
 
 	make_current_listbox_item_blue $::advanced_shot_steps_widget
 
-	set ::profile_step_name_to_add $::current_adv_step(name)
+	set ::profile_step_name_to_add [translate $::current_adv_step(name)]
 	set ::current_step_number $stepnum
 }
 
