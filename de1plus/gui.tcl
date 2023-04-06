@@ -2632,26 +2632,26 @@ namespace eval ::gui::notify {
 
 			abandoning_updates {
 				if { $::settings(show_scale_notifications) } {
-					borg toast [translate {ABANDONING scale updates}]
+					borg toast [translate_toast {ABANDONING scale updates}]
 				}
 			}
 
 			retrying_updates {
 
 			    if { $::gui::notify::show_scale_update_watchdog_notifications } {
-				borg toast "[translate {Retrying scale updates}] [join $args]"
+				borg toast "[translate_toast {Retrying scale updates}] [join $args]"
 			    }
 			}
 
 			timeout_updates {
 				if { $::settings(show_scale_notifications) } {
-					borg toast "[translate {Check scale}]"
+					borg toast "[translate_toast {Check scale}]"
 				}
 			}
 
 			scale_reporting {
 				if { $::settings(show_scale_notifications) } {
-					borg toast "[translate {Scale reporting}]"
+					borg toast "[translate_toast {Scale reporting}]"
 				}
 			}
 
@@ -2665,7 +2665,7 @@ namespace eval ::gui::notify {
 			    if { [::de1::state::current_state] == "Sleep" } { return }
 
 				if { $::settings(show_scale_notifications) && $::de1(bluetooth_scale_connection_attempts_tried) < 1} {
-					set what [translate {WARNING: Scale not connected}]
+					set what [translate_toast {WARNING: Scale not connected}]
 					borg toast $what
 					say $what $::settings(sound_button_in)
 				}
@@ -2673,24 +2673,24 @@ namespace eval ::gui::notify {
 
 			no_updates {
 				if { $::settings(show_scale_notifications) } {
-					set what [translate {WARNING: Scale not updating}]
+					set what [translate_toast {WARNING: Scale not updating}]
 					borg toast $what
 					say $what $::settings(sound_button_in)
 				}
 			}
 
 			record_complete {
-				set what [translate {Shot complete}]
+				set what [translate_toast {Shot complete}]
 				borg toast $what
 				say $what $::settings(sound_button_in)
 			}
 
 			saw_stop {
-				borg toast [translate {Stopping for weight}]
+				borg toast [translate_toast {Stopping for weight}]
 			}
 
 			saw_skip {
-				borg toast [translate {Advancing to next step}]
+				borg toast [translate_toast {Advancing to next step}]
 			}
 
 			default {
@@ -2707,7 +2707,7 @@ namespace eval ::gui::notify {
 
 			sav_stop {
 
-				borg toast [translate {Stopping for volume}]
+				borg toast [translate_toast {Stopping for volume}]
 			}
 
 			default {
@@ -3053,10 +3053,10 @@ namespace eval ::gui::update {
 						steam_pressure append [round_to_two_digits $GroupPressure]
 
 						if {$GroupPressure > $::settings(steam_over_pressure_threshold)} {
-							borg toast [translate "Warning: steam pressure is too high"]
+							borg toast [translate_toast "Warning: steam pressure is too high"]
 						}
 						if {$SteamTemp > $::settings(steam_over_temp_threshold)} {
-							borg toast [translate "Warning: steam temperature is too high"]
+							borg toast [translate_toast "Warning: steam temperature is too high"]
 						}
 
 						steam_flow append [round_to_two_digits $GroupFlow]

@@ -2261,7 +2261,7 @@ proc highlight_extension {} {
 proc fill_plugin_settings {} {
 	set stepnum [$::extensions_widget curselection]
 	if {$stepnum == ""} {
-		borg toast [translate "No extension selected"]
+		borg toast [translate_toast "No extension selected"]
 		return
 	}
 
