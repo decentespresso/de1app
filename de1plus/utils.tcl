@@ -1029,8 +1029,11 @@ proc translation_langs_array {} {
     ]
 }
 
+proc toast_translate {english} {
+	return [translate $english 1]
+}
 
-proc translate {english} {
+proc translate {english {istoast 0} } {
 
     if {$english == ""} { 
         return "" 
@@ -1049,20 +1052,29 @@ proc translate {english} {
             # this word has been translated into the desired non-english language
 
             if {[ifexists available([language])] != ""} {
-                # if the translated version of the English is NOT blank, return it
-                if {[language] == "ar" && ($::android == 1 || $::undroid == 1)} {
-                    # use the "arb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
-                    if {[ifexists available(arb)] != ""} {
-                        return $available(arb)
-                    }
-                }
 
-                if {[language] == "he" && ($::android == 1 || $::undroid == 1)} {
-                    # use the "heb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
-                    if {[ifexists available(heb)] != ""} {
-                        return $available(heb)
-                    }
-                }
+            	if {$istoast == 1} {
+            		# if this is a toast (a popup message) on Android, then we don't reverse the Left-to-Right languages
+            		# but we do reverse it if it's not a toast
+
+				} else {
+					# reverse text for right-to-left languages
+
+	                # if the translated version of the English is NOT blank, return it
+	                if {[language] == "ar" && ($::android == 1 || $::undroid == 1)} {
+	                    # use the "arb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
+	                    if {[ifexists available(arb)] != ""} {
+	                        return $available(arb)
+	                    }
+	                }
+
+	                if {[language] == "he" && ($::android == 1 || $::undroid == 1)} {
+	                    # use the "heb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
+	                    if {[ifexists available(heb)] != ""} {
+	                        return $available(heb)
+	                    }
+	                }
+	            }
 
                 return $available([language])
             } else {
