@@ -74,7 +74,7 @@ namespace eval ::plugins::${plugin_name} {
         variable settings
 
         msg "uploading shot"
-        borg toast [translate "Uploading Shot"]
+        borg toast [translate_toast "Uploading Shot"]
         
         set settings(last_action) "upload"
         set settings(last_upload_shot) $::settings(espresso_clock)
@@ -86,7 +86,7 @@ namespace eval ::plugins::${plugin_name} {
         http::register https 443 [list ::tls::socket -servername $settings(visualizer_url)]
 
         if {![has_credentials]} {
-            borg toast [translate "Please configure your username and password in the settings"]
+            borg toast [translate_toast "Please configure your username and password in the settings"]
             set settings(last_upload_result) [translate "Please configure your username and password in the settings"]
             plugins save_settings visualizer_upload
             return
@@ -113,7 +113,7 @@ namespace eval ::plugins::${plugin_name} {
             msg "answer $answer"
         } err] != 0} {
             msg "Could not upload shot! $err"
-            borg toast [translate "Upload failed!"]
+            borg toast [translate_toast "Upload failed!"]
             set settings(last_upload_result) "[translate {Upload failed!}] ERR $err"
             plugins save_settings visualizer_upload
             catch { http::cleanup $token }
@@ -123,14 +123,14 @@ namespace eval ::plugins::${plugin_name} {
         http::cleanup $token
         if {$returncode == 401} {
             msg "Upload failed. Unauthorized"
-            borg toast [translate "Upload failed! Authentication failed. Please check username / password"]
+            borg toast [translate_toast "Upload failed! Authentication failed. Please check username / password"]
             set settings(last_upload_result) [translate "Authentication failed. Please check username / password"]
             plugins save_settings visualizer_upload
             return
         }
         if {[string length $answer] == 0 || $returncode != 200} {
             msg "Upload failed: $returnfullcode"
-            borg toast "Upload failed!"
+            borg toast [translate_toast "Upload failed!"]
             set settings(last_upload_result) "[translate {Upload failed!}] $returnfullcode"
             plugins save_settings visualizer_upload
             return
