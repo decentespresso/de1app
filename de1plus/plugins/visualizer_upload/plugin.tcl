@@ -136,7 +136,7 @@ namespace eval ::plugins::${plugin_name} {
             return
         }
 
-        borg toast "Upload successful"
+        borg toast [translate_toast "Upload successful"]
         if {[catch {
             set response [::json::json2dict $answer]
             set uploaded_id [dict get $response id]
