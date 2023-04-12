@@ -1790,6 +1790,15 @@ proc delete_selected_profile {} {
 
 }
 
+ proc justify_r2l {} {
+
+	if {[language] == "ar" || [language] == "he"} {
+		return "right"
+	}
+
+	return "left"
+ }
+
 proc is_r2l {} {
 	if {[language] == "ar" || [language] == "he"} {
 		return 1
