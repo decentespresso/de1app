@@ -2340,7 +2340,14 @@ proc fill_advanced_profile_steps_listbox {} {
 		array set props $step
 
 		set name $props(name)
-		$widget insert $cnt "[translate [expr {1 + $cnt}].] [translate $name]"
+		#$widget insert $cnt "[translate [expr {1 + $cnt}].] [translate $name]"
+
+		if {[is_r2l] == 1} {
+			$widget insert $cnt "[translate $name] [translate [expr {1 + $cnt}].]"
+		}  else {
+			$widget insert $cnt "[translate [expr {1 + $cnt}].] [translate $name]"
+		}
+
 		incr cnt
 	}
 	
