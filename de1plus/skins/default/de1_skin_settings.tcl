@@ -388,8 +388,8 @@ proc bevtype_kv_list { {keys_or_values {}} } {
     set ks ""
     set vs ""
     foreach { k v } [bevtype2desc_list] {
-        lappend ks [translate $k]
-        lappend vs $v
+        lappend ks $k
+        lappend vs [translate $v]
     }
 
     if {$keys_or_values == 1} {
