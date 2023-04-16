@@ -570,6 +570,7 @@ array set ::de1_substate_types {
 	214 "Error_HiCurrent"
 	215 "Error_LoCurrent"
 	216 "Error_BootFill"
+	217 "Error_NoAC"
 }
 
 
@@ -612,6 +613,7 @@ array set ::de1_substate_type_description {
 	214 "Measured a current that is out of bounds."
 	215 "Not enough current flowing, despite something being turned on."
 	216 "Could not get up to pressure during boot pressure test, possibly because no water"
+	217 "Front button off"
 }
 
 
@@ -1179,6 +1181,22 @@ proc check_if_steam_clogged {} {
 		#msg -DEBUG "check_if_steam_clogged found no problem"	
 	}
 
+}
+
+proc check_front_switch {} {
+    set num $::de1(substate)
+	set substate_txt $::de1_substate_types($num)
+	if {$substate_txt != "Error_NoAC" && $::de1(current_context) == "no_ac"} {
+	    page_show off
+	}
+	if {$substate_txt == "Error_NoAC"} {
+	    page_show no_ac
+	}
+	if {$substate_txt == "Error_NoAC"} {
+	    return [translate "Turn the switch on"]
+    } else {
+        return ""
+    }
 }
 
 proc has_flowmeter {} {
