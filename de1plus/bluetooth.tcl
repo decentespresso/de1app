@@ -119,6 +119,8 @@ proc scale_enable_weight_notifications {} {
 		hiroia_enable_weight_notifications
 	}  elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_enable_weight_notifications
+	}  elseif {$::settings(scale_type) == "smartchef"} {
+		smartchef_enable_weight_notifications
 	}
 }
 
@@ -946,6 +948,45 @@ proc decentscale_tare {} {
 
 }
 
+#### Smartchef Scale
+proc smartchef_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "smartchef"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_smartchef))] == ""} {
+		::bt::msg -DEBUG "decent scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable smartchef scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_smartchef) $::sinstance($::de1(suuid_smartchef)) $::de1(cuuid_smartchef_status) $::cinstance($::de1(cuuid_smartchef_status))] 0
+}
+
+proc smartchef_tare {} {
+	#software based taring is not supported by the scale
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "smartchef"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_smartchef))] == ""} {
+		error "Smartchef Scale not connected, cannot send tare cmd"
+		return
+	}
+	
+	# set tare [binary decode hex ""] 
+
+	# userdata_append "SCALE: smartchef tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_smartchef) $::sinstance($::de1(suuid_smartchef)) $::de1(cuuid_smartchef_cmd) $::cinstance($::de1(cuuid_smartchef_cmd)) $tare] 0
+}
+
+proc smartchef_parse_response { value } {
+	binary scan $value cu* binary
+	set weight [expr {([lindex $binary 5] << 8) + [lindex $binary 6]}]
+	if {[lindex $binary 3] > 10} {
+		set weight [expr $weight * -1]
+	}
+	::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
+}
+
 proc close_all_ble_and_exit {} {
 	::bt::msg -NOTICE close_all_ble_and_exit
 
@@ -1536,6 +1577,8 @@ proc de1_ble_handler { event data } {
  					|| [string first "LUNAR" $name]    == 0 \
  					|| [string first "PYXIS" $name]    == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiapyxis"
+				} elseif {[string first "smartchef" $name] == 0 } {
+					append_to_peripheral_list $address $name "ble" "scale" "smartchef"
 				} else {
 					return
 				}
@@ -1688,6 +1731,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "eureka_precisa"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "eureka_precisa"
 							after 200 eureka_precisa_enable_weight_notifications
+						} elseif {$::settings(scale_type) == "smartchef"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "smartchef"
+							after 100 smartchef_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
 							set ::settings(force_acaia_heartbeat) 0
@@ -2062,9 +2108,12 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_hiroiajimmy_status)} {
 							# hiroia jimmy scale
 							hiroia_parse_response $value
-						} elseif {$cuuid eq $::de1(cuuid_eureka_precisa_status)} {
+						} elseif {$cuuid eq $::de1(cuuid_eureka_precisa_status) && $::settings(scale_type) == "eureka_precisa"} {
 							# eureka precisa scale
 							eureka_precisa_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_smartchef_status) && $::settings(scale_type) == "smartchef"} {
+							# smartchef scale
+							smartchef_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF82)} {
 							set t0 {}
 							#set t1 {}

@@ -90,6 +90,10 @@ array set ::de1 {
 	suuid_eureka_precisa "0000FFF0-0000-1000-8000-00805F9B34FB"
 	cuuid_eureka_precisa_status "0000FFF1-0000-1000-8000-00805F9B34FB"
 	cuuid_eureka_precisa_cmd "0000FFF2-0000-1000-8000-00805F9B34FB"
+	suuid_smartchef "0000FFF0-0000-1000-8000-00805F9B34FB"
+	cuuid_smartchef_status "0000FFF1-0000-1000-8000-00805F9B34FB"
+	cuuid_smartchef_cmd "0000FFF2-0000-1000-8000-00805F9B34FB"
+
 
 	cinstance 0
 	fan_threshold 0
@@ -1181,22 +1185,6 @@ proc check_if_steam_clogged {} {
 		#msg -DEBUG "check_if_steam_clogged found no problem"	
 	}
 
-}
-
-proc check_front_switch {} {
-    set num $::de1(substate)
-	set substate_txt $::de1_substate_types($num)
-	if {$substate_txt != "Error_NoAC" && $::de1(current_context) == "no_ac"} {
-	    page_show off
-	}
-	if {$substate_txt == "Error_NoAC"} {
-	    page_show no_ac
-	}
-	if {$substate_txt == "Error_NoAC"} {
-	    return [translate "Turn the switch on"]
-    } else {
-        return ""
-    }
 }
 
 proc has_flowmeter {} {
