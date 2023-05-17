@@ -955,7 +955,7 @@ proc smartchef_enable_weight_notifications {} {
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_smartchef))] == ""} {
-		::bt::msg -DEBUG "decent scale not connected, cannot enable weight notifications"
+		::bt::msg -DEBUG "smartchef scale not connected, cannot enable weight notifications"
 		return
 	}
 
@@ -972,7 +972,7 @@ proc smartchef_tare {} {
 		error "Smartchef Scale not connected, cannot send tare cmd"
 		return
 	}
-	
+	borg toast "Press tare button on scale"
 	# set tare [binary decode hex ""] 
 
 	# userdata_append "SCALE: smartchef tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_smartchef) $::sinstance($::de1(suuid_smartchef)) $::de1(cuuid_smartchef_cmd) $::cinstance($::de1(cuuid_smartchef_cmd)) $tare] 0
