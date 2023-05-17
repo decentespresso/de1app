@@ -1187,6 +1187,22 @@ proc check_if_steam_clogged {} {
 
 }
 
+proc check_front_switch {} {
+    set num $::de1(substate)
+	set substate_txt $::de1_substate_types($num)
+	if {$substate_txt != "Error_NoAC" && $::de1(current_context) == "no_ac"} {
+	    page_show off
+	}
+	if {$substate_txt == "Error_NoAC"} {
+	    page_show no_ac
+	}
+	if {$substate_txt == "Error_NoAC"} {
+	    return [translate "Turn the switch on"]
+    } else {
+        return ""
+    }
+}
+
 proc has_flowmeter {} {
 	return $::de1(has_flowmeter)
 }
