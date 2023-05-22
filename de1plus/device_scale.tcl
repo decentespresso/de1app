@@ -355,6 +355,8 @@ namespace eval ::device::scale {
 			hiroiajimmy { hiroia_tare }
 
 			eureka_precisa { eureka_precisa_tare }
+
+			smartchef {smartchef_tare}
 		}
 
 		set ::device::scale::_tare_last_requested [clock milliseconds]
