@@ -121,6 +121,8 @@ proc scale_enable_weight_notifications {} {
 		eureka_precisa_enable_weight_notifications
 	}  elseif {$::settings(scale_type) == "smartchef"} {
 		smartchef_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "difluid"} {
+		difluid_enable_weight_notifications
 	}
 }
 
@@ -987,6 +989,43 @@ proc smartchef_parse_response { value } {
 	::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
 }
 
+#### Difluid Scale
+proc difluid_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "difluid"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_difluid))] == ""} {
+		::bt::msg -DEBUG "difluid scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable difluid scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))] 0
+}
+
+proc difluid_tare {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "difluid"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_difluid))] == ""} {
+		error "Difluid Scale not connected, cannot send tare cmd"
+		return
+	}
+	# set tare [binary decode hex ""] 
+
+	# userdata_append "SCALE: difluid tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid)) $tare] 0
+}
+
+proc difluid_parse_response { value } {
+	binary scan $value cu* binary
+	set weight [expr {([lindex $binary 5] << 8) + [lindex $binary 6]}]
+	if {[lindex $binary 3] > 10} {
+		set weight [expr $weight * -1]
+	}
+	::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
+}
+
 proc close_all_ble_and_exit {} {
 	::bt::msg -NOTICE close_all_ble_and_exit
 
@@ -1579,6 +1618,8 @@ proc de1_ble_handler { event data } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiapyxis"
 				} elseif {[string first "smartchef" $name] == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "smartchef"
+				} elseif {[string first "DiFluid Microbalance" $name] == 0 } {
+					append_to_peripheral_list $address $name "ble" "scale" "difluid"
 				} else {
 					return
 				}
@@ -1734,6 +1775,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "smartchef"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "smartchef"
 							after 100 smartchef_enable_weight_notifications
+						} elseif {$::settings(scale_type) == "difluid"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "difluid"
+							after 100 difluid_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
 							set ::settings(force_acaia_heartbeat) 0

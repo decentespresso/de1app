@@ -357,6 +357,8 @@ namespace eval ::device::scale {
 			eureka_precisa { eureka_precisa_tare }
 
 			smartchef {smartchef_tare}
+
+			difluid {difluid_tare}
 		}
 
 		set ::device::scale::_tare_last_requested [clock milliseconds]
