@@ -77,9 +77,9 @@ proc scale_timer_stop {} {
 		felicita_stop_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_stop_timer
-	}
-	elseif {$::settings(scale_type) == "difluid"} {
+	} elseif {$::settings(scale_type) == "difluid"} {
 		difluid_stop_timer 
+		difluid_reset_timer
 	}
 }
 
@@ -98,9 +98,8 @@ proc scale_timer_reset {} {
 		felicita_timer_reset
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_reset_timer
-	}
-	elseif {$::settings(scale_type) == "difluid"} {
-		difluid_reset_timer 
+	} elseif {$::settings(scale_type) == "difluid"} {
+		# moved the reset to the stop function because stop is more like a pause 
 	}
 }
 
@@ -1040,7 +1039,7 @@ if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "difluid"} {
 	}
 	set timer_start [binary decode hex "DFDF03020100C4"]
 
-	userdata_append "SCALE: difluid starttimer" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))  $timer_start] 0
+	userdata_append "SCALE: difluid starttimer" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid)) $timer_start] 0
 }
 
 proc difluid_stop_timer {} {
@@ -1054,7 +1053,7 @@ if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "difluid"} {
 	}
 	set timer_stop [binary decode hex "DFDF03010100C3"]
 
-	userdata_append "SCALE: difluid stoptimer" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))  $timer_stop] 0
+	userdata_append "SCALE: difluid stoptimer" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid)) $timer_stop] 0
 }
 
 proc difluid_reset_timer {} {
@@ -1068,7 +1067,7 @@ if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "difluid"} {
 	}
 	set timer_reset [binary decode hex "DFDF03020100C4"]
 
-	userdata_append "SCALE: difluid resettimer" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))  $timer_reset] 0
+	userdata_append "SCALE: difluid resettimer" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid)) $timer_reset] 0
 }
 
 proc difluid_set_to_grams {} {

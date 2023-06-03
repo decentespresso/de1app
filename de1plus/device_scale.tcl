@@ -1443,6 +1443,9 @@ namespace eval ::device::scale::callbacks {
 			atomaxskale {
 				set ::device::scale::run_timer True
 			}
+			difluid {
+				set ::device::scale::run_timer True
+			}
 		}
 	}
 
