@@ -59,6 +59,8 @@ proc scale_timer_start {} {
 		felicita_start_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_start_timer
+	} elseif {$::settings(scale_type) == "difluid"} {
+		difluid_start_timer 
 	}
 }
 
@@ -75,6 +77,9 @@ proc scale_timer_stop {} {
 		felicita_stop_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_stop_timer
+	}
+	elseif {$::settings(scale_type) == "difluid"} {
+		difluid_stop_timer 
 	}
 }
 
@@ -93,6 +98,9 @@ proc scale_timer_reset {} {
 		felicita_timer_reset
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_reset_timer
+	}
+	elseif {$::settings(scale_type) == "difluid"} {
+		difluid_reset_timer 
 	}
 }
 
@@ -999,8 +1007,12 @@ proc difluid_enable_weight_notifications {} {
 		::bt::msg -DEBUG "difluid scale not connected, cannot enable weight notifications"
 		return
 	}
-
+	## enable auto notifications to get messages
+	
+	set enableNotificationMessage [binary decode hex "DFDF01000101C1"]
 	userdata_append "SCALE: enable difluid scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))] 0
+	userdata_append "SCALE: difluid automessage" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid)) $enableNotificationMessage] 0
+	difluid_set_to_grams
 }
 
 proc difluid_tare {} {
@@ -1012,18 +1024,79 @@ proc difluid_tare {} {
 		error "Difluid Scale not connected, cannot send tare cmd"
 		return
 	}
-	# set tare [binary decode hex ""] 
+	set tare [binary decode hex "DFDF03020101C5"]
 
-	# userdata_append "SCALE: difluid tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid)) $tare] 0
+	userdata_append "SCALE: difluid tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))  $tare] 0
+}
+
+proc difluid_start_timer {} {
+if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "difluid"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_difluid))] == ""} {
+		error "Difluid Scale not connected, cannot send starttimer cmd"
+		return
+	}
+	set timer_start [binary decode hex "DFDF03020100C4"]
+
+	userdata_append "SCALE: difluid starttimer" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))  $timer_start] 0
+}
+
+proc difluid_stop_timer {} {
+if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "difluid"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_difluid))] == ""} {
+		error "Difluid Scale not connected, cannot send stoptimer cmd"
+		return
+	}
+	set timer_stop [binary decode hex "DFDF03010100C3"]
+
+	userdata_append "SCALE: difluid stoptimer" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))  $timer_stop] 0
+}
+
+proc difluid_reset_timer {} {
+if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "difluid"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_difluid))] == ""} {
+		error "Difluid Scale not connected, cannot send resettimer cmd"
+		return
+	}
+	set timer_reset [binary decode hex "DFDF03020100C4"]
+
+	userdata_append "SCALE: difluid resettimer" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))  $timer_reset] 0
+}
+
+proc difluid_set_to_grams {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "difluid"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_difluid))] == ""} {
+		error "Difluid Scale not connected, cannot send set2grams cmd"
+		return
+	}
+	set grams [binary decode hex "DFDF01040100C4"]
+
+	userdata_append "SCALE: difluid set2grams" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))  $grams] 0
 }
 
 proc difluid_parse_response { value } {
-	binary scan $value cu* binary
-	set weight [expr {([lindex $binary 5] << 8) + [lindex $binary 6]}]
-	if {[lindex $binary 3] > 10} {
-		set weight [expr $weight * -1]
+	
+	if {[string bytelength $value] >= 19} {
+		 binary scan $value H* data
+		if {[info exists data] } {
+			set weight [scan [string range $data 10 17] %x]
+			if {$weight < 20000} {
+			::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
+			}
 	}
-	::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
+
+		}	
 }
 
 proc close_all_ble_and_exit {} {
@@ -1618,7 +1691,7 @@ proc de1_ble_handler { event data } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiapyxis"
 				} elseif {[string first "smartchef" $name] == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "smartchef"
-				} elseif {[string first "DiFluid Microbalance" $name] == 0 } {
+				} elseif {[string first "Microbalance" $name] == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "difluid"
 				} else {
 					return
@@ -2158,6 +2231,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_smartchef_status) && $::settings(scale_type) == "smartchef"} {
 							# smartchef scale
 							smartchef_parse_response $value
+							} elseif {$cuuid eq $::de1(cuuid_difluid)} {
+							# difluid scale
+							difluid_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_skale_EF82)} {
 							set t0 {}
 							#set t1 {}
