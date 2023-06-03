@@ -993,7 +993,7 @@ proc smartchef_parse_response { value } {
 	if {[lindex $binary 3] > 10} {
 		set weight [expr $weight * -1]
 	}
-	::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
+	::device::scale::process_weight_update [expr $weight / 10.0] ;
 }
 
 #### Difluid Scale
@@ -1091,7 +1091,7 @@ proc difluid_parse_response { value } {
 		if {[info exists data] } {
 			set weight [scan [string range $data 10 17] %x]
 			if {$weight < 20000} {
-			::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
+			::device::scale::process_weight_update [expr $weight / 10.0] ;
 			}
 	}
 
