@@ -1004,7 +1004,7 @@ proc translation_langs_array {} {
         de-ch Schwiizerd\u00FCtsch \
         de-oe "\u00D6sterreichische" \
         it italiano \
-        ar "Arabic (with Dubai font)" \
+        ar "Arabic" \
         da "dansk" \
         sv "svenska" \
         no "Nynorsk" \
