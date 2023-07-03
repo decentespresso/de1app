@@ -93,6 +93,8 @@ array set ::de1 {
 	suuid_smartchef "0000FFF0-0000-1000-8000-00805F9B34FB"
 	cuuid_smartchef_status "0000FFF1-0000-1000-8000-00805F9B34FB"
 	cuuid_smartchef_cmd "0000FFF2-0000-1000-8000-00805F9B34FB"
+	suuid_difluid "000000EE-0000-1000-8000-00805F9B34FB"
+	cuuid_difluid "0000AA01-0000-1000-8000-00805F9B34FB"
 
 
 	cinstance 0
