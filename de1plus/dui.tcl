@@ -6889,8 +6889,8 @@ namespace eval ::dui {
 			}]]
 		}
 		
-		proc longpress_unpress { widget_name {press_command {}} } {
-			variable longpress_timer			
+		proc longpress_unpress { widget_name  {press_command {}} } {
+			variable longpress_timer
 			if { $longpress_timer ne {} } {
 				after cancel $longpress_timer
 				set ::dui::item::longpress_timer {}
