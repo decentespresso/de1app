@@ -39,3 +39,6 @@
 [submodule "de1plus/plugins/DPx_Flow_Calibrator"]
 	path = de1plus/plugins/DPx_Flow_Calibrator
 	url = https://github.com/Damian-AU/DPx_Flow_Calibrator
+[submodule "de1plus/plugins/D_Scheduler"]
+	path = de1plus/plugins/D_Scheduler
+	url = https://github.com/Damian-AU/D_Scheduler
