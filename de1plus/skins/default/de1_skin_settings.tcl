@@ -1236,6 +1236,12 @@ add_de1_text "settings_3" 55 544 -text [translate {Version}] -font Helv_10_bold 
 #add_de1_text "settings_3" 1310 380 -text [translate "Water level"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" 
 #	add_de1_variable "settings_3" 1600 380 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left" -textvariable {[round_to_integer $::de1(water_level)][translate mm]}
 
+proc fetch_possible_de1_sn {} {
+	return {}
+	return [list 100 200 300]
+}
+
+
 	#add_de1_text "settings_3" 1310 350 -text [translate "Counter"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "left"
 
 	add_de1_text "settings_3" 55 220 -text [translate "Counter"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
@@ -1245,6 +1251,33 @@ add_de1_text "settings_3" 55 544 -text [translate {Version}] -font Helv_10_bold 
 		add_de1_variable "settings_3" 400 310 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(espresso_count)]}
 		add_de1_variable "settings_3" 400 370 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(steaming_count)]}
 		add_de1_variable "settings_3" 400 430 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_y_skin 1000] -justify "right" -textvariable {[round_to_integer $::settings(water_count)]}
+
+		add_de1_variable "settings_3" 1250 544 -text "" -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[de1_sn_show]}
+		add_de1_button "settings_3" {show_de1_sn_page} 500 544 1250 600
+
+
+	add_de1_text "enter_de1_sn" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "enter_de1_sn" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off "settings_3"}  980 1210 1580 1410
+	add_de1_text "enter_de1_sn" 1280 90 -text [translate "DE1 serial number"] -font Helv_20_bold -width 1280 -fill "#444444" -anchor "center" -justify "center" 
+	add_de1_text "enter_de1_sn" 1280 650 -text [translate "What is the serial number of this machine?"] -font Helv_15_bold -fill "#444444" -anchor "center" -justify "center" -width [rescale_x_skin 2000]
+	dui add dselector "enter_de1_sn" 1280 900 -bwidth 2000 -bheight 100 -orient f -anchor center -values [fetch_possible_de1_sn] -variable ::settings(sn) -labels [fetch_possible_de1_sn]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4" 
+
+proc show_de1_sn_page {} {
+	# only allow setting the serial number if we didn't receive one from the machine itself
+	if {[ifexists ::de1(sn)] == ""} {
+		page_to_show_when_off enter_de1_sn
+	}
+}
+
+proc de1_sn_show {} {
+
+	if {[ifexists ::settings(sn)] != ""} {
+		return [subst {[translate "SN:"][ifexists ::settings(sn)]}]
+	} else {
+		return ""
+		#return [subst {\[[translate "Tap to enter your DE1 serial #"]\]}]
+	}
+}
 
 proc scheduler_feature_hide_show_refresh {  } {
 	puts "scheduler_feature_hide_show_refresh $::settings(scheduler_enable)"
@@ -1955,9 +1988,6 @@ proc setting_profile_type_to_text { } {
 	}
 }
 
-#after 2 show_settings descale_prepare
-
-
 # enable for debugging
 proc flush_log_loop {} {
 	::logging::flush_log
@@ -1967,3 +1997,6 @@ proc flush_log_loop {} {
 }
 
 #after 100 flush_log_loop
+
+
+#after 2 show_settings settings_3

@@ -1559,6 +1559,7 @@ proc later_new_de1_connection_setup {} {
 
 	set_heater_tweaks
 	get_refill_kit_present
+	get_sn
 
 	# if the refill kit auto detect should be overridden, do that at app launch, as well as later in the gui if they change the setting
 	if {$::settings(refill_kit_override) != -1} {	
@@ -1980,6 +1981,17 @@ proc de1_ble_handler { event data } {
 							} elseif {$mmr_id == "803828"} {
 								::bt::msg -INFO "MMR read: steam flow: '$mmr_val'"
 								set ::settings(steam_flow) $mmr_val
+							} elseif {$mmr_id == "803830"} {
+								::bt::msg -INFO "MMR read: sn: '$mmr_val' [array get arr2]"
+
+								set sn [ifexists arr2(Data0)]
+								if {$sn != "" && $sn != 0} {
+									set ::settings(sn) $sn
+								}
+
+								# dupe copy, of what we receive via firmware so we can NOT let them change it if we did receive it via BLE
+								set ::de1(sn) $sn
+
 							} elseif {$mmr_id == "803818"} {
 								::bt::msg -INFO "MMR read: hot_water_idle_temp: '[ifexists arr2(Data0)]'"
 								set ::settings(hot_water_idle_temp) [ifexists arr2(Data0)]

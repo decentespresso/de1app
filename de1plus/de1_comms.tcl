@@ -309,6 +309,18 @@ proc de1_event_handler { command_name value {update_received 0}} {
 			::comms::msg -INFO "MMRead: steam flow: '$mmr_val'"
 			set ::settings(steam_flow) $mmr_val
 
+		} elseif {$mmr_id == "803830"} {
+			::comms::msg  -INFO "MMR read: sn: '$mmr_val' [array get arr2]"
+
+			set sn [ifexists arr2(Data0)]
+			
+			if {$sn != "" && $sn != 0} {
+				set ::settings(sn) $sn
+			}
+
+			# dupe copy, of what we receive via firmware so we can NOT let them change it if we did receive it via BLE
+			set ::de1(sn) $sn
+
 		} elseif {$mmr_id == "80385C"} {
 			::comms::msg -NOTICE "MMRead: get_refill_kit_present: '$mmr_val'"
 
@@ -1157,6 +1169,11 @@ proc get_refill_kit_present {} {
 proc get_steam_flow {} {
 	::comms::msg -NOTICE get_steam_flow
 	mmr_read "get_steam_flow" "803828" "00"
+}
+
+proc get_sn {} {
+	::comms::msg -NOTICE get_sn
+	mmr_read "get_sn" "803830" "00"
 }
 
 proc get_3_mmr_cpuboard_machinemodel_firmwareversion {} {
