@@ -226,6 +226,7 @@ proc decent_async_http_get {url cmd {timeout 30000}} {
     return $token
 }
 
+
 proc decent_http_get {url {timeout 30000}} {
 
     set body {}
@@ -327,6 +328,13 @@ proc pause {time} {
 
 proc verify_decent_tls_certificate {} {
 
+    # disabled for now, but does currently work, so we always return true, and put the failure in the the log
+    # However: if we pinned updates to this SHA1 then people who did not update in a while, 
+    # and Decentespresso.com now had a new SSL cert, would get an error during updates.
+
+    return 1
+
+
     catch {    
         package require tls
         msg -INFO "Using TLS version [tls::version]"
@@ -339,20 +347,28 @@ proc verify_decent_tls_certificate {} {
         
         array set status_array $status
         msg -INFO "TLS status: [array get status_array]"
+        #puts "subj: '[ifexists status_array(subject)]'"
 
-        set sha1 [ifexists status_array(sha1_hash)]
-        if {$sha1 == "BF735474BA9AA423EC03AB9F980BE68BCAA35E57"} {
-            msg -INFO "https cert matches what we expect, good"
-        } else {
-            msg -ERROR "https does not match what we expect. Decent might have changed to a new SSL cert, or something bad is happening. SHA1 received='$sha1'"
-        }
+        #set sha1 [ifexists status_array(sha1_hash)]
+        #if {$sha1 == "CB23B4F32C08FAE212A39544837A8AD40D09F7FD"} {
+        #    msg -INFO "https cert matches what we expect, good"
+        #} else {
+        #    msg -ERROR "https does not match what we expect. Decent might have changed to a new SSL cert, or something bad is happening. SHA1 received='$sha1'"
+        #}
     }
+
+    # the cert should be for the decentespress.com domain
+    if {[ifexists status_array(subject)] == {CN=*.decentespresso.com}} {
+        msg -INFO "Valid SSL cert found: '[ifexists status_array(subject)]'"
+        return 1
+    }
+
 
     # disabled for now, but does currently work, so we always return true, and put the failure in the the log
     # However: if we pinned updates to this SHA1 then people who did not update in a while, 
     # and Decentespresso.com now had a new SSL cert, would get an error during updates.
 
-    return 1
+    return 0
 
 
     # if the sha_1 hash on the certificate doesn't match what we expect, return the entire array of what we received from the https connection, optionally to display it to the user
@@ -541,16 +557,17 @@ proc start_app_update {} {
         }
     }
 
-    set cert_check [verify_decent_tls_certificate]
-    if {$cert_check != 1} {
-        msg -ERROR "https certification is not what we expect, update failed"
-        foreach {k v} $cert_check {
-            msg -DEBUG "$k : '$v'"
-        }
-        set ::de1(app_update_button_label) [translate "Internet encryption problem"]; 
-        set ::app_updating 0
-        return $::de1(app_update_button_label)
-    }
+    # disabled by John 5-9-23 while testing out a new of verifying the SSL cert is valid
+    #set cert_check [verify_decent_tls_certificate]
+    #if {$cert_check != 1} {
+    #    msg -ERROR "https certification is not what we expect, update failed"
+    #    foreach {k v} $cert_check {
+    #        msg -DEBUG "$k : '$v'"
+    #    }
+    #    set ::de1(app_update_button_label) [translate "Internet encryption problem"]; 
+    #    set ::app_updating 0
+    #    return $::de1(app_update_button_label)
+    #}
 
     set host "https://decentespresso.com"
     set host2 "https://decentespresso.com"
