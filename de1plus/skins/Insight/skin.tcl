@@ -1346,7 +1346,7 @@ proc enabled_steam_eco_mode_label {} {
 
 # optional keyboard bindings
 focus .can
-bind Canvas <KeyPress> {handle_keypress %k}
+#bind Canvas <KeyPress> {handle_keypress %k}
 
 profile_has_changed_set_colors
 
