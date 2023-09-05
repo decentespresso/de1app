@@ -1257,15 +1257,50 @@ proc fetch_possible_de1_sn {} {
 
 
 	add_de1_text "enter_de1_sn" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button "enter_de1_sn" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off "settings_3"}  980 1210 1580 1410
-	add_de1_text "enter_de1_sn" 1280 90 -text [translate "DE1 serial number"] -font Helv_20_bold -width 1280 -fill "#444444" -anchor "center" -justify "center" 
-	add_de1_text "enter_de1_sn" 1280 650 -text [translate "What is the serial number of this machine?"] -font Helv_15_bold -fill "#444444" -anchor "center" -justify "center" -width [rescale_x_skin 2000]
-	dui add dselector "enter_de1_sn" 1280 900 -bwidth 2000 -bheight 100 -orient f -anchor center -values [fetch_possible_de1_sn] -variable ::settings(sn) -labels [fetch_possible_de1_sn]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4" 
+	add_de1_button "enter_de1_sn" {say [translate {Ok}] $::settings(sound_button_in); save_hand_typed_de1_serial;}  980 1210 1580 1410
+	add_de1_text "enter_de1_sn" 1280 300 -text [translate "DE1 serial number"] -font Helv_17_bold -width 1280 -fill "#444444" -anchor "center" -justify "center" 
+	add_de1_text "enter_de1_sn" 1280 700 -text [translate "What is the serial number of this machine?"] -font Helv_10_bold -fill "#444444" -anchor "center" -justify "center" -width [rescale_x_skin 2000]
+	add_de1_variable "enter_de1_sn" 1280 500 -text "" -font Helv_10_bold -fill "#7f879a" -anchor "center" -width [rescale_y_skin 2000] -justify "center" -textvariable {[translate "These are the machines you own:"] #[join [ifexists ::de1(all_my_sn)] ", #"].}
+
+	add_de1_widget "enter_de1_sn" entry 1100 800 {
+			set ::globals(widget_decent_sn_enter) $widget
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); hide_android_keyboard; save_hand_typed_de1_serial}
+			bind $widget <Leave> hide_android_keyboard
+
+			# this binding stops double-clicking of text inside entry, from doing something.
+			bind $widget <Double-Button-1> {break}
+			
+		} -width [expr {int(10 * $::globals(entry_length_multiplier))}] -font Helv_12  -borderwidth 2 -bg #efeef3  -foreground #4e85f4 -textvariable ::settings(sn) -relief flat  -highlightthickness 1 -highlightcolor #000000 
+
+
+proc save_hand_typed_de1_serial {} {
+
+	if {$::settings(sn) != ""} {
+		if {[lsearch -exact [ifexists ::de1(all_my_sn)] $::settings(sn) ] == -1} {
+			puts "lsearch : [lsearch -exact $::settings(sn) [ifexists ::de1(all_my_sn)]] = lsearch -exact $::settings(sn) [ifexists ::de1(all_my_sn)]"
+			set ::settings(sn) ""
+			return
+		}
+	}
+
+	page_to_show_when_off "settings_3"
+}
+
 
 proc show_de1_sn_page {} {
 	# only allow setting the serial number if we didn't receive one from the machine itself
 	if {[ifexists ::de1(sn)] == ""} {
-		page_to_show_when_off enter_de1_sn
+
+		set result [confirm_functioning_decent_login]
+		if {$result == 1} {
+			set sns [fetch_decent_de1_serial_numbers_for_current_login]
+			set ::de1(all_my_sn) $sns
+
+			page_to_show_when_off enter_de1_sn
+		} elseif {$result == -1 || $result == 0} {
+			# invalid login or no login, ask to login now
+			decent_login_show
+		}
 	}
 }
 
@@ -1273,10 +1308,150 @@ proc de1_sn_show {} {
 
 	if {[ifexists ::settings(sn)] != ""} {
 		return [subst {[translate "SN:"][ifexists ::settings(sn)]}]
-	} else {
-		return ""
-		#return [subst {\[[translate "Tap to enter your DE1 serial #"]\]}]
+	} 
+	return ""
+}
+
+proc do_wifi_connection_test { {pagetoreturn {settings_4}} } {
+
+
+    if {$::android == 1} {
+        if {[borg networkinfo] == "none"} {
+
+            set ::de1(app_update_button_label) [translate "No Wifi network"]; 
+
+            catch {
+                .hello configure -text $::de1(app_update_button_label)
+            }
+
+            # "no wifi network" label is already displayed, so on tap, Android launch wifi settings
+            launch_os_wifi_setting
+            
+            set ::app_updating 0
+            return $::de1(app_update_button_label)
+        }
+    }
+
+    set cert_check [verify_decent_tls_certificate]
+    puts "cert_check: $cert_check"
+    if {$cert_check != 1} {
+        return [info_page [translate "Your Wifi connection is not working correctly"] [translate "Ok"] $pagetoreturn]
+    }
+
+}
+
+proc decent_login_show {} {
+
+
+	after 100 do_wifi_connection_test decent_login
+
+	if {[ifexists ::settings(decent_login_email)] == ""} {
+		set ::settings(decent_login_email) "email@"
+	} 
+
+	page_to_show_when_off decent_login
+}
+
+proc confirm_functioning_decent_login {} {
+	if {[ifexists ::settings(decent_login_password_encrypted)] == ""} {
+		# no login credentials
+		return 0
 	}
+
+	if {[ifexists ::settings(decent_login_password_encrypted)] != ""} {
+		set result [fetch_decent_api "login_test"]
+		if {$result == "0"} {
+			return -1
+		}
+
+		if {$result == ""} {
+			# unable to get anything from the network
+			return -2
+		}
+		return 1
+	}
+}
+
+proc decent_espresso_website_url {} {
+	#return "http://localhost:8000"
+
+	return "http://decentespresso.com"
+}
+
+proc decent_login_save {} {
+
+	if {[ifexists ::settings(decent_login_email)] == "email@"} {
+		set ::settings(decent_login_email) ""
+	} elseif {[ifexists ::settings(decent_login_email)] == ""} {
+		set ::settings(decent_login_email) ""
+	} elseif {[ifexists ::settings(decent_login_email)] != "" && [ifexists ::settings(decent_login_password)] == "" && [ifexists ::settings(decent_login_password_encrypted)] != ""} {
+		# if they didn't enter a pw but they have previously, then don't touch the apparently working login
+		#set ::settings(decent_login_email) ""
+	} elseif {[ifexists ::settings(decent_login_password)] != ""} {
+		set url "[decent_espresso_website_url]/support/api/login_test"
+		set reply [string trim [geturl_auth $url  $::settings(decent_login_email) $::settings(decent_login_password)]]
+		msg -INFO "Login attempted, reply='$reply'"
+
+		if {$reply != "" && $reply != "0" && [string length $reply] > 4} {
+
+			# store a one-way encrypted version of the password that was returned, not the password itself
+			set ::settings(decent_login_password_encrypted) $reply
+			set ::settings(decent_login_password) ""
+
+			if {[ifexists ::de1(sn)] == ""} {
+				set sns [fetch_decent_de1_serial_numbers_for_current_login]
+				set ::de1(all_my_sn) $sns
+
+				if {[llength $sns] == 1} {
+					set ::settings(sn) $sns
+			        return [info_page [subst {[translate "Success."]\n\n[translate "Your serial number is:"] $sns}] [translate "Ok"] "settings_4"]			
+				} elseif {[llength $sns] > 1} {
+					# they need to choose which SN is this machine
+			        return [info_page [subst {[translate "Success."]\n\n[translate "You now need to specify your machine's serial number."]}] [translate "Ok"] "enter_de1_sn"]
+				}
+			}
+
+	        return [info_page [translate "Success"] [translate "Ok"] "settings_4"]			
+		} elseif {$reply == 0} {
+			set ::settings(decent_login_email) ""
+			set ::settings(decent_login_password) ""
+
+	        return [info_page [translate "Your login details were not correct"] [translate "Ok"] "settings_4"]			
+		} else {
+			set ::settings(decent_login_email) ""
+			set ::settings(decent_login_password) ""
+	        return [info_page [translate "Your Wifi connection is not working correctly"] [translate "Ok"] "settings_4"]			
+		}
+	} else {
+		set ::settings(decent_login_email) ""
+		set ::settings(decent_login_password) ""
+	}
+
+	page_to_show_when_off settings_4
+}
+
+proc fetch_decent_api { path } {
+	set url "[decent_espresso_website_url]/support/api/$path"
+	puts $url
+	set reply [string trim [geturl_auth $url  $::settings(decent_login_email) $::settings(decent_login_password_encrypted)]]
+
+	puts "reply: '$reply'"
+	return $reply
+}
+
+proc fetch_decent_de1_serial_numbers_for_current_login {} {
+	return [fetch_decent_api "sn"]
+	#return [split [fetch_decent_api "sn"] \n]
+}
+
+
+proc decent_login_status_show {} {
+
+	if {[ifexists ::settings(decent_login_email)] != ""} {
+		return [subst  {[translate "Logged in as:"] [ifexists ::settings(decent_login_email)]}]
+	} 
+	
+	return [subst {\[[translate "Link your Decent Espresso account"]\]}]
 }
 
 proc scheduler_feature_hide_show_refresh {  } {
@@ -1287,6 +1462,9 @@ proc scheduler_feature_hide_show_refresh {  } {
 		dui item hide settings_3 scheduler
 	}
 }
+
+
+
 
 #add_de1_widget "settings_2c" checkbutton 1538 830 {} -text [translate "4: Move on if..."] -padx 0 -pady 0 -indicatoron true  -font Helv_9_bold -anchor nw -foreground #7f879a -activeforeground #7f879a -variable ::current_adv_step(exit_if)  -borderwidth 0  -highlightthickness 0  -command save_current_adv_shot_step -selectcolor #f9f9f9 -activebackground #f9f9f9 -bg #f9f9f9 -relief flat 
 # scheduled power up/down
@@ -1316,6 +1494,39 @@ add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::setti
 	set_alarms_for_de1_wake_sleep
 
 add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+
+	add_de1_variable "settings_4" 2520 220 -text "zxxz" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[decent_login_status_show]}
+	add_de1_button "settings_4" {decent_login_show} 1300 210 2560 280 
+
+	add_de1_text "decent_login" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "decent_login" {say [translate {Ok}] $::settings(sound_button_in); decent_login_save}  980 1210 1580 1410
+	add_de1_text "decent_login" 1280 300 -text [translate "Link your Decent Espresso Account"] -font Helv_16_bold -width 1280 -fill "#444444" -anchor "center" -justify "center" 
+	add_de1_text "decent_login" 300 470 -text [translate "Email address"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
+	add_de1_text "decent_login" 300 670 -text [translate "Password"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
+	add_de1_text "decent_login" 300 820 -text [translate "(your password will not be permanently stored on this device)"] -font Helv_6 -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
+
+
+
+	add_de1_widget "decent_login" entry 300 530 {
+			set ::globals(widget_decent_login_email_address) $widget
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); hide_android_keyboard}
+			bind $widget <Leave> hide_android_keyboard
+
+			# this binding stops double-clicking of text inside entry, from doing something.
+			bind $widget <Double-Button-1> {break}
+			
+		} -width [expr {int(50 * $::globals(entry_length_multiplier))}] -font Helv_12  -borderwidth 2 -bg #efeef3  -foreground #4e85f4 -textvariable ::settings(decent_login_email) -relief flat  -highlightthickness 1 -highlightcolor #000000 
+
+	add_de1_widget "decent_login" entry 300 730 {
+			set ::globals(widget_decent_login_password) $widget
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate_toast "Testing"]; hide_android_keyboard; decent_login_save}
+			bind $widget <Leave> hide_android_keyboard
+
+			# this binding stops double-clicking of text inside entry, from doing something.
+			bind $widget <Double-Button-1> {break}
+			
+		} -width [expr {int(50 * $::globals(entry_length_multiplier))}] -font Helv_12  -borderwidth 2 -bg #efeef3  -foreground #4e85f4 -textvariable ::settings(decent_login_password) -relief flat  -highlightthickness 1 -highlightcolor #000000 
+
 
 	add_de1_variable "settings_4" 980 1016 -text {} -font Helv_8_bold -fill "#FFFFFF" -anchor "center"  -textvariable {[scanning_state_text]} 
 		add_de1_button "settings_4" {say [translate {Search}] $::settings(sound_button_in); scanning_restart} 650 960 1260 1070
@@ -1999,4 +2210,5 @@ proc flush_log_loop {} {
 #after 100 flush_log_loop
 
 
-#after 2 show_settings settings_3
+#after 2 show_settings decent_login
+#after 2 show_settings settings_4
