@@ -2655,11 +2655,13 @@ proc geturl_auth {url username password} {
     #puts "geturl_auth $url $username $password"
     
     #set auth "Basic [base64::encode $username:$password]"
-	set auth "Basic [binary encode base64 $username:$password]"
-
-    set headerl [list Authorization $auth]
-    set tok [http::geturl $url -headers $headerl]
-    set res [http::data $tok]
-    http::cleanup $tok
+	set res ""
+	catch {
+		set auth "Basic [binary encode base64 $username:$password]"
+	    set headerl [list Authorization $auth]
+	    set tok [http::geturl $url -headers $headerl]
+	    set res [http::data $tok]
+	    http::cleanup $tok
+	}
     return $res
 }
