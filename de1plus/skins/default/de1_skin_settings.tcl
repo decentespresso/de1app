@@ -1380,6 +1380,9 @@ proc decent_espresso_website_url {} {
 
 proc decent_login_save {} {
 
+	# for testing of having a DE1 that is not registered
+	#set ::de1(sn) 6263
+
 	if {[ifexists ::settings(decent_login_email)] == "email@"} {
 		set ::settings(decent_login_email) ""
 	} elseif {[ifexists ::settings(decent_login_email)] == ""} {
@@ -1398,13 +1401,39 @@ proc decent_login_save {} {
 			set ::settings(decent_login_password_encrypted) $reply
 			set ::settings(decent_login_password) ""
 
+			set sns [fetch_decent_de1_serial_numbers_for_current_login]
+			set ::de1(all_my_sn) $sns
+
+			if {[ifexists ::de1(sn)] != ""} {
+				# check to see if this SN is in their account
+				
+				if {[lsearch -exact $sns $::de1(sn) ] == -1} {
+			        return [info_page [subst {[translate "Success."]\n\n[translate "However, this espresso machine does not appear in your account."]\n\n[translate "We've emailed tech support to help fix this for you."]}] [translate "Ok"] "settings_4"]			
+				}
+			}
+
 			if {[ifexists ::de1(sn)] == ""} {
-				set sns [fetch_decent_de1_serial_numbers_for_current_login]
-				set ::de1(all_my_sn) $sns
+
+
+				if {[llength $sns] == 0} {
+
+					#if {[ifexists ::settings(sn)] != ""} {
+				    #    return [info_page [subst {[translate "Success."]\n\n[translate "However, this espresso machine serial number is not registered to your account."]\n\n[translate "An email was sent to tech support, to help fix this for you."]}] [translate "Ok"] "settings_4"]			
+					#} else {
+						# likely running w/o a connection to a DE1
+			        return [info_page [translate "Success."] [translate "Ok"] "settings_4"]			
+					#}
+				} 
+
 
 				if {[llength $sns] == 1} {
-					set ::settings(sn) $sns
-			        return [info_page [subst {[translate "Success."]\n\n[translate "Your serial number is:"] $sns}] [translate "Ok"] "settings_4"]			
+					if {[ifexists ::de1(sn)] == ""} {
+						# if they have an old machine that doesn't self-identify its serial number, the assume this machine is the one machine they own
+						set ::settings(sn) $sn
+				        return [info_page [subst {[translate "Success."]\n\n[translate "Your serial number is:"] $sns}] [translate "Ok"] "settings_4"]			
+					}
+
+			        return [info_page [translate "Success."] [translate "Ok"] "settings_4"]			
 				} elseif {[llength $sns] > 1} {
 					# they need to choose which SN is this machine
 			        return [info_page [subst {[translate "Success."]\n\n[translate "You now need to specify your machine's serial number."]}] [translate "Ok"] "enter_de1_sn"]
@@ -1495,7 +1524,7 @@ add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::setti
 
 add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-	add_de1_variable "settings_4" 2520 220 -text "zxxz" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[decent_login_status_show]}
+	add_de1_variable "settings_4" 2520 220 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[decent_login_status_show]}
 	add_de1_button "settings_4" {decent_login_show} 1300 210 2560 280 
 
 	add_de1_text "decent_login" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
@@ -1504,6 +1533,17 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 	add_de1_text "decent_login" 300 470 -text [translate "Email address"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
 	add_de1_text "decent_login" 300 670 -text [translate "Password"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
 	add_de1_text "decent_login" 300 820 -text [translate "(your password will not be permanently stored on this device)"] -font Helv_6 -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
+	add_de1_text "decent_login" 2300 1000 -text [translate "Need to create an account?"] -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" 
+	add_de1_variable "decent_login" 2300 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[decent_password_forgot_link_show]}
+	add_de1_button "decent_login" {say [translate "Need to create an account?"] $::settings(sound_button_in); web_browser [subst {"https://decentespresso.com/contact?subject=[percent20encode {I own your espresso machine but do not have an account}]&body=[percent20encode [subst "My serial number is: #[ifexists ::settings(sn)]"]] }] } 1600 950 2350 1060
+	add_de1_button "decent_login" {say [translate "Forgot your password?"] $::settings(sound_button_in); web_browser "https://decentespresso.com/support/submit_password_resend?email=[percent20encode [ifexists ::settings(decent_login_email)]]" } 1600 1090 2350 1180
+
+proc decent_password_forgot_link_show {} {
+	if {[ifexists ::settings(decent_login_email)] != ""} {
+		return [translate "Forgot your password?"]
+	}
+	return ""
+}
 
 
 
@@ -2211,4 +2251,4 @@ proc flush_log_loop {} {
 
 
 #after 2 show_settings decent_login
-#after 2 show_settings settings_4
+#after 2 show_settings decent_login
