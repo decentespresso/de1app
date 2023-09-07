@@ -1342,7 +1342,6 @@ proc do_wifi_connection_test { {pagetoreturn {settings_4}} } {
 
 proc decent_login_show {} {
 
-
 	after 100 do_wifi_connection_test decent_login
 
 	if {[ifexists ::settings(decent_login_email)] == ""} {
@@ -1380,9 +1379,6 @@ proc decent_espresso_website_url {} {
 
 proc decent_login_save {} {
 
-	# for testing of having a DE1 that is not registered
-	#set ::de1(sn) 6263
-
 	if {[ifexists ::settings(decent_login_email)] == "email@"} {
 		set ::settings(decent_login_email) ""
 	} elseif {[ifexists ::settings(decent_login_email)] == ""} {
@@ -1404,15 +1400,19 @@ proc decent_login_save {} {
 			set sns [fetch_decent_de1_serial_numbers_for_current_login]
 			set ::de1(all_my_sn) $sns
 
-			if {[ifexists ::de1(sn)] != ""} {
+			if {[ifexists ::settings(sn)] != ""} {
 				# check to see if this SN is in their account
 				
-				if {[lsearch -exact $sns $::de1(sn) ] == -1} {
+				if {[lsearch -exact $sns $::settings(sn) ] == -1} {
+					set subject "My DE1 serial number #$::settings(sn) is not associated with my login"
+					set body "I linked my de1app to my Decent account, and found that this account does not list the DE1 #$::settings(sn) I am connected to."
+					after 100 [list fetch_decent_api "email?subject=[percent20encode $subject]&body=[percent20encode $body]"]
+					
 			        return [info_page [subst {[translate "Success."]\n\n[translate "However, this espresso machine does not appear in your account."]\n\n[translate "We've emailed tech support to help fix this for you."]}] [translate "Ok"] "settings_4"]			
 				}
 			}
 
-			if {[ifexists ::de1(sn)] == ""} {
+			if {[ifexists ::settings(sn)] == ""} {
 
 
 				if {[llength $sns] == 0} {
@@ -1533,17 +1533,69 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 	add_de1_text "decent_login" 300 470 -text [translate "Email address"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
 	add_de1_text "decent_login" 300 670 -text [translate "Password"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
 	add_de1_text "decent_login" 300 820 -text [translate "(your password will not be permanently stored on this device)"] -font Helv_6 -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
-	add_de1_text "decent_login" 2300 1000 -text [translate "Need to create an account?"] -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" 
+	add_de1_variable "decent_login" 2300 900 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[decent_email_support_link_show]}
+	add_de1_variable "decent_login" 2300 1000 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[decent_need_to_create_an_account_link_show]}
 	add_de1_variable "decent_login" 2300 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[decent_password_forgot_link_show]}
-	add_de1_button "decent_login" {say [translate "Need to create an account?"] $::settings(sound_button_in); web_browser [subst {"https://decentespresso.com/contact?subject=[percent20encode {I own your espresso machine but do not have an account}]&body=[percent20encode [subst "My serial number is: #[ifexists ::settings(sn)]"]] }] } 1600 950 2350 1060
 	add_de1_button "decent_login" {say [translate "Forgot your password?"] $::settings(sound_button_in); web_browser "https://decentespresso.com/support/submit_password_resend?email=[percent20encode [ifexists ::settings(decent_login_email)]]" } 1600 1090 2350 1180
+	add_de1_button "decent_login" {say [translate "Need to create an account?"] $::settings(sound_button_in); web_browser [subst {"https://decentespresso.com/contact?subject=[percent20encode {I own your espresso machine but do not have an account}]&body=[percent20encode [subst "My serial number is: #[ifexists ::settings(sn)]"]] }] } 1600 980 2350 1060
+	add_de1_button "decent_login" {say [translate "Email tech support"] $::settings(sound_button_in); page_to_show_when_off email_support; } 1600 880 2350 960
+
+
+	add_de1_text "email_support" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "email_support" {say [translate {Ok}] $::settings(sound_button_in); send_decent_tech_support_email}  980 1210 1580 1410
+	add_de1_text "email_support" 1280 300 -text [translate "Email Decent Espresso Tech Support"] -font Helv_16_bold -width 1280 -fill "#444444" -anchor "center" -justify "center" 
+	add_de1_text "email_support" 300 470 -text [translate "Subject"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
+	add_de1_text "email_support" 300 720 -text [translate "Body"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
+
+	set ::de1(tech_support_subject) ""
+	set ::de1(tech_support_body) ""
+	add_de1_widget "email_support" entry 300 530 {
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); hide_android_keyboard}
+			bind $widget <Leave> hide_android_keyboard
+
+			# this binding stops double-clicking of text inside entry, from doing something.
+			bind $widget <Double-Button-1> {break}
+			
+		} -width [expr {int(50 * $::globals(entry_length_multiplier))}] -font Helv_12  -borderwidth 2 -bg #efeef3  -foreground #4e85f4 -textvariable ::de1(tech_support_subject) -relief flat  -highlightthickness 1 -highlightcolor #000000 
+
+	add_de1_widget "email_support" multiline_entry 300 786 {} -canvas_height 330 -canvas_width 1800 -wrap word -font Helv_8 -borderwidth 0 -bg #efeef3  -foreground #4e85f4 -textvariable ::de1(tech_support_body) -relief flat -highlightthickness 1 -highlightcolor #000000
+
+#	set email_support_widget [add_de1_widget "email_support" multiline_entry 250 440 {} -canvas_height 730 -canvas_width 2070 -wrap word -font Helv_8 -borderwidth 0 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(profile_notes) -relief flat -highlightthickness 1 -highlightcolor #000000]
+
+
+proc decent_email_support_link_show {} {
+	if {[ifexists ::settings(decent_login_password_encrypted)] != ""} {
+		return [translate "Email tech support"]
+	}
+	return ""
+}
+
 
 proc decent_password_forgot_link_show {} {
-	if {[ifexists ::settings(decent_login_email)] != ""} {
+	if {[ifexists ::settings(decent_login_email)] != "" && [ifexists ::settings(decent_login_password)] == "" && [ifexists ::settings(decent_login_password_encrypted)] == ""} {
 		return [translate "Forgot your password?"]
 	}
 	return ""
 }
+
+proc decent_need_to_create_an_account_link_show {} {
+	if {[ifexists ::settings(decent_login_email)] == ""} {
+		return [translate "Need to create an account?"]
+	}
+	return ""
+}
+
+proc send_decent_tech_support_email {} {
+	if {[ifexists ::de1(tech_support_subject)] != "" && [ifexists ::de1(tech_support_body)] != ""} {
+		set result [fetch_decent_api "email?subject=[percent20encode $::de1(tech_support_subject)]&body=[percent20encode $::de1(tech_support_body)]"]
+		if {$result == 0} {
+			return [info_page [subst {[translate "A problem occurred sending your email."]\n\n[translate "We recommend you try sending your email using our website."]}] [translate "Ok"] "settings_4"]
+		}
+		return [info_page [translate "Email sent."] [translate "Ok"] "settings_4"]
+	}
+	return [info_page [translate "No email sent."] [translate "Ok"] "settings_4"]
+}
+
 
 
 
@@ -1559,7 +1611,7 @@ proc decent_password_forgot_link_show {} {
 
 	add_de1_widget "decent_login" entry 300 730 {
 			set ::globals(widget_decent_login_password) $widget
-			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate_toast "Testing"]; hide_android_keyboard; decent_login_save}
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); hide_android_keyboard; decent_login_save}
 			bind $widget <Leave> hide_android_keyboard
 
 			# this binding stops double-clicking of text inside entry, from doing something.
@@ -2251,4 +2303,4 @@ proc flush_log_loop {} {
 
 
 #after 2 show_settings decent_login
-#after 2 show_settings decent_login
+#after 2 show_settings email_support
