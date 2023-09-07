@@ -1587,8 +1587,9 @@ proc decent_need_to_create_an_account_link_show {} {
 
 proc send_decent_tech_support_email {} {
 	if {[ifexists ::de1(tech_support_subject)] != "" && [ifexists ::de1(tech_support_body)] != ""} {
-		set result [fetch_decent_api "email?subject=[percent20encode $::de1(tech_support_subject)]&body=[percent20encode $::de1(tech_support_body)]"]
-		if {$result == 0} {
+		set tech_support_body [subst {$::de1(tech_support_body)\n\nSN: [ifexists ::settings(sn)]}]
+		set result [fetch_decent_api "email?subject=[percent20encode $::de1(tech_support_subject)]&body=[percent20encode $tech_support_body]"]
+		if {$result == 0 || $result == ""} {
 			return [info_page [subst {[translate "A problem occurred sending your email."]\n\n[translate "We recommend you try sending your email using our website."]}] [translate "Ok"] "settings_4"]
 		}
 		return [info_page [translate "Email sent."] [translate "Ok"] "settings_4"]

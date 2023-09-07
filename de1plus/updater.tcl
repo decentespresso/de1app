@@ -176,6 +176,12 @@ proc percent20encode {in} {
     regsub -all "\\)" $out "%29" out
     regsub -all "\\(" $out "%28" out
     
+    regsub -all " " $in "%20" out
+    regsub -all "\n" $out "%0D" out
+    #regsub -all "&" $out "%26" out
+    regsub -all {"} $out "%22" out
+    regsub -all "\\?" $out "%3F" out
+    regsub -all "," $out "%2C" out    
     #puts "urlenc: '$in' / '$out'"
     return $out
 }
