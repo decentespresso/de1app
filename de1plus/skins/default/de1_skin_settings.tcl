@@ -1340,9 +1340,21 @@ proc do_wifi_connection_test { {pagetoreturn {settings_4}} } {
 
 }
 
+set ::de1(password_not_needed_string) [translate "No need to enter your password"]
 proc decent_login_show {} {
 
-	after 100 do_wifi_connection_test decent_login
+	do_wifi_connection_test decent_login
+
+	if {[ifexists ::settings(decent_login_password_encrypted)] != ""} {
+		set result [fetch_decent_api "login_test"]
+		if {$result == "0"  || $result == ""} {
+			set ::settings(decent_login_password_encrypted)] ""
+			set ::settings(decent_login_password)] ""
+			return [info_page [translate "Your login no longer works, please re-enter your details."] [translate "Ok"] "decent_login"]
+		} else {
+			set ::settings(decent_login_password) $::de1(password_not_needed_string)
+		}
+	}
 
 	if {[ifexists ::settings(decent_login_email)] == ""} {
 		set ::settings(decent_login_email) "email@"
@@ -1371,6 +1383,8 @@ proc confirm_functioning_decent_login {} {
 	}
 }
 
+
+
 proc decent_espresso_website_url {} {
 	#return "http://localhost:8000"
 
@@ -1378,6 +1392,12 @@ proc decent_espresso_website_url {} {
 }
 
 proc decent_login_save {} {
+
+	# this is the "No need to enter your password" blank that is in the password field by default when a valid login is confirmed
+	if {[ifexists ::settings(decent_login_password)] == $::de1(password_not_needed_string)} {
+		set ::settings(decent_login_password) ""
+	}
+
 
 	if {[ifexists ::settings(decent_login_email)] == "email@"} {
 		set ::settings(decent_login_email) ""
