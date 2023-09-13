@@ -1663,6 +1663,8 @@ proc ui_startup {} {
 		shot_history_export
 	}
 
+	shot_history_upload_to_decent
+
 	if {[ifexists ::settings(mark_most_popular_profiles_used)] == "1"} {
 		shot_history_count_profile_use
 	}

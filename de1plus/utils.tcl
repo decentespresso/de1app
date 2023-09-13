@@ -3,6 +3,8 @@ package provide de1_utils 1.1
 package require de1_logging 1.0
 package require de1_metadata 1.0
 
+package require struct::set  
+
 proc setup_environment {} {
 	global android
 	global undroid
@@ -1880,10 +1882,15 @@ proc launch_os_time_setting {} {
 proc web_browser {url} {
     msg -INFO "Browser '$url'"
 	if { $::android == 1 } {
-		borg activity android.intent.action.VIEW $url text/html
+		#borg activity android.intent.action.VIEW $url text/html [list package com.android.chrome]
+		borg activity android.intent.action.VIEW $url text/html 
 	} elseif { $::tcl_platform(platform) eq "windows" } {
 		eval exec [auto_execok start] $url
+	} elseif { $::tcl_platform(os) eq "Darwin" } {
+		eval exec open $url
 	}	
+
+		
 }
 
 proc font_width {untranslated_txt font} {
@@ -1974,6 +1981,104 @@ proc shot_history_count_profile_use {} {
 }
 
 
+proc shot_history_upload_to_decent {} {
+
+	return
+
+	if {[ifexists ::settings(decent_login_password_encrypted)] != ""} {
+		set result [fetch_decent_api "login_test"]
+		if {$result == "0"  || $result == ""} {
+			msg -INFO "shot_history_upload_to_decent: link to a Decent Espresso account no longer works, cannot upload history"
+			return
+		} else {
+			# all good, decent login works
+		}
+	} else {
+		msg -INFO "shot_history_upload_to_decent: this app is not linked to a Decent Espresso account, cannot upload history"
+		return
+	}
+
+	set shots_uploaded_file "history/shots_uploaded_to_decent.tdb"
+	set previously_uploaded_shots [read_file $shots_uploaded_file]
+    set historical_shots [struct::set difference $previously_uploaded_shots [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+
+
+    set dirs $historical_shots
+    set dd {}
+
+    foreach d $dirs {
+        set tailname [file tail $d]
+        set newfile [file rootname $tailname]
+        set fname "history/$newfile.csv" 
+        if {[file exists $fname] != 1} {
+            unset -nocomplain arr
+            set txt ""
+            catch {
+            	set txt [read_file "history/$d"]
+                array set arr $txt
+            }
+            if {[array size arr] == 0} {
+                msg -ERROR "Corrupted shot history item: 'history/$d'"
+                continue
+            }
+
+            if {[ifexists arr(uploaded_to_decent)] != 1} {
+            	msg -INFO "Exporting history item: $fname"
+	            #export_csv arr $fname
+            	msg -INFO "shot_history_upload_to_decent: uploading $fname to Decent"
+	            set result [upload_shot_to_decent $txt]
+            } else {
+            	# shot was previously uploaded to Decent, should have been in our cached list
+            	msg -INFO "shot_history_upload_to_decent: shot $fname was previously uploaded to Decent, should have been in our cached list"
+            	set result 1
+            }	
+            if {$result == 1} {
+            	#set arr(uploaded_to_decent) 1
+            	lappend previously_uploaded_shots $fname
+            	write_file $fn "$txt\nuploaded_to_decent 1"
+            } else {
+            	msg -INFO "shot_history_upload_to_decent: failed to upload shot $fname to Decent"
+            }
+        }
+    }
+
+    # quicky cache of what files have already been uploaded, so we don't have to check every one 
+    write_file $shots_uploaded_file $previously_uploaded_shots
+
+    return 
+}
+
+proc upload_shot_to_decent {txt} {
+	set result [fetch_decent_api "upload_shot"]
+	return $result
+}
+
+proc fetch_decent_api { path } {
+	set url "[decent_espresso_website_url]/support/api/$path"
+	puts $url
+	set reply [string trim [geturl_auth $url $::settings(decent_login_email) $::settings(decent_login_password_encrypted)]]
+
+	puts "reply: '$reply'"
+	return $reply
+}
+
+proc fetch_decent_de1_serial_numbers_for_current_login {} {
+	return [fetch_decent_api "sn"]
+	#return [split [fetch_decent_api "sn"] \n]
+}
+
+
+proc decent_login_status_show {} {
+
+	if {[ifexists ::settings(decent_login_email)] != ""} {
+		return [subst  {[translate "Logged in as:"] [ifexists ::settings(decent_login_email)]}]
+	} 
+	
+	return [subst {\[[translate "Link your Decent Espresso account"]\]}]
+}
+
+
+
 proc shot_history_export {} {
 
     # optionally disable this feature
@@ -2023,7 +2128,6 @@ proc shot_history_export {} {
     }
 
     return [lsort -dictionary -increasing $dd]
-
 }
 
 # Export one shot from memory, to a file
@@ -2651,17 +2755,34 @@ proc toggle_0_1 {in} {
 
 }
 
-proc geturl_auth {url username password} {
+proc geturl_auth {url username password {postcontents {}} } {
     #puts "geturl_auth $url $username $password"
     
     #set auth "Basic [base64::encode $username:$password]"
 	set res ""
 	catch {
+
 		set auth "Basic [binary encode base64 $username:$password]"
-	    set headerl [list Authorization $auth]
-	    set tok [http::geturl $url -headers $headerl]
+
+		if {$postcontents == ""} {
+		    set headerl [list Authorization $auth]
+	    	set tok [http::geturl $url -headers $headerl]
+	    } else {
+	        set md5 [binary encode base64 [::md5::md5 $postfile]]
+		    set headerl [list Authorization $auth Content-MD5 $md5 "Content-Transfer-Encoding" "BASE64"]
+	        set tok [::http::geturl $url -headers $headerl -type "text/plain" -query $postfile -timeout $timeout]
+
+	    }
 	    set res [http::data $tok]
 	    http::cleanup $tok
 	}
     return $res
 }
+
+
+proc decent_espresso_website_url {} {
+    #return "http://localhost:8000"
+
+    return "http://decentespresso.com"
+}
+

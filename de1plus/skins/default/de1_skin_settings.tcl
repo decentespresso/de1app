@@ -869,6 +869,23 @@ add_de1_button "settings_1" {say [translate {edit}] $::settings(sound_button_in)
 
 add_de1_text "settings_3" 1304 220 -text [translate "Maintenance"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
+	add_de1_text "settings_3" 2520 220 -text [translate "Read DE1 Manual"] -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" 
+	add_de1_button "settings_3" {web_browser "http://localhost:2068/doc/quickstart_one.html"} 1300 210 2560 280 
+
+proc webServer {chan addr port} {
+    while {[gets $chan] ne ""} {}
+    catch {
+    	puts $chan "HTTP/1.1 200 OK\nConnection: close\nContent-Type: text/html\n"
+	    set fn "[appdir]/doc/quickstart_one.html"
+	    puts $chan [encoding convertfrom [read_binary_file $fn]]
+	    close $chan
+	}
+}
+
+catch {
+	socket -server webServer 2068
+}
+
 	# prepare for transport button
 	add_de1_text "settings_3" 2290 610 -text [translate "Transport"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center"
 		add_de1_button "settings_3" {say [translate {Transport}] $::settings(sound_button_in); de1_send_shot_frames "cool"; set_next_page off travel_prepare; page_show travel_prepare; } 1910 516 2540 720
@@ -1385,12 +1402,6 @@ proc confirm_functioning_decent_login {} {
 
 
 
-proc decent_espresso_website_url {} {
-	#return "http://localhost:8000"
-
-	return "http://decentespresso.com"
-}
-
 proc decent_login_save {} {
 
 	# this is the "No need to enter your password" blank that is in the password field by default when a valid login is confirmed
@@ -1477,30 +1488,6 @@ proc decent_login_save {} {
 	}
 
 	page_to_show_when_off settings_4
-}
-
-proc fetch_decent_api { path } {
-	set url "[decent_espresso_website_url]/support/api/$path"
-	puts $url
-	set reply [string trim [geturl_auth $url  $::settings(decent_login_email) $::settings(decent_login_password_encrypted)]]
-
-	puts "reply: '$reply'"
-	return $reply
-}
-
-proc fetch_decent_de1_serial_numbers_for_current_login {} {
-	return [fetch_decent_api "sn"]
-	#return [split [fetch_decent_api "sn"] \n]
-}
-
-
-proc decent_login_status_show {} {
-
-	if {[ifexists ::settings(decent_login_email)] != ""} {
-		return [subst  {[translate "Logged in as:"] [ifexists ::settings(decent_login_email)]}]
-	} 
-	
-	return [subst {\[[translate "Link your Decent Espresso account"]\]}]
 }
 
 proc scheduler_feature_hide_show_refresh {  } {
