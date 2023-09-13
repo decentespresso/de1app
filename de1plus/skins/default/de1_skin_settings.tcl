@@ -869,7 +869,7 @@ add_de1_button "settings_1" {say [translate {edit}] $::settings(sound_button_in)
 
 add_de1_text "settings_3" 1304 220 -text [translate "Maintenance"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
-	add_de1_text "settings_3" 2520 220 -text [translate "Read DE1 Manual"] -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" 
+	add_de1_text "settings_3" 2520 220 -text "\[[translate "Read DE1 Manual"]\]" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" 
 	add_de1_button "settings_3" {web_browser "http://localhost:2068/doc/quickstart_one.html"} 1300 210 2560 280 
 
 proc webServer {chan addr port} {
