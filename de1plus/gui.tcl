@@ -739,7 +739,7 @@ proc show_going_to_sleep_page  {} {
 		}
 	}
 
-	if {$::de1_num_state($::de1(state)) != "Idle"} {
+	if {$::de1_num_state($::de1(state)) != "Idle" && $::de1_num_state($::de1(state)) != "Refill"} {
 		# never go to sleep if the DE1 is not idle
 		msg -INFO "delaying screen saver because de1 is not idle: '$::de1_num_state($::de1(state))'"
 		delay_screen_saver
