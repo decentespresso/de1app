@@ -57,8 +57,6 @@ proc make_de1_dir {srcdir destdirs} {
         sounds/KeypressStandard_120.ogg *
         sounds/KeypressDelete_120.ogg *
 
-        doc/quickstart_one.html *
-
         "fonts/Font Awesome 5 Brands-Regular-400.otf" *
         "fonts/Font Awesome 5 Duotone-Solid-900.otf" *
         "fonts/Font Awesome 5 Pro-Light-300.otf" *

@@ -870,7 +870,7 @@ add_de1_button "settings_1" {say [translate {edit}] $::settings(sound_button_in)
 add_de1_text "settings_3" 1304 220 -text [translate "Maintenance"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 
 	add_de1_text "settings_3" 2520 220 -text "\[[translate "Read Manual: Cleaning"]\]" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" 
-	add_de1_button "settings_3" {web_browser "http://localhost:2068/doc/quickstart_one.html#pf21"} 1300 210 2560 280 
+	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart/quickstart.html#pf21"} 1300 210 2560 280 
 
 
 proc webServer {chan addr port} {
@@ -884,7 +884,8 @@ proc webServer {chan addr port} {
 }
 
 catch {
-	socket -server webServer 2068
+	# disabled for now, using website instead
+	#socket -server webServer 2068
 }
 
 	# prepare for transport button
