@@ -797,6 +797,12 @@ proc start_app_update {} {
                 }
                 msg -ERROR "Failed to accurately download $k"
                 set ::app_updating 0
+
+                catch {
+                    # retry the update automatically
+                    after 1000 start_app_update
+                }
+
                 return -1
             }
 
@@ -806,9 +812,16 @@ proc start_app_update {} {
             if {$newsha == ""} {
                 set newsha [calc_sha $fn]
             }
+
             if {$arr(filesha) != $newsha} {
                 msg -ERROR "Failed to accurately download $k"
                 set ::app_updating 0
+
+                catch {
+                    # retry the update automatically
+                    after 1000 start_app_update
+                }
+
                 return -1
             }
 
