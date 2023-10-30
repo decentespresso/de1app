@@ -41,8 +41,8 @@ namespace eval ::plugins::${plugin_name} {
 		set auth [dict getnull $state request query auth]
 		set auth [lindex $auth 1]
 
-		msg -DEBUG [namespace current] "Header Auth: \"$header_auth\" should be \"Bearer $::plugins::web_api::settings(webserver_authentication_key)\""
-		msg -DEBUG [namespace current] "Query Auth: \"$auth\" should be \"$::plugins::web_api::settings(webserver_authentication_key)\""
+#		msg -DEBUG [namespace current] "Header Auth: \"$header_auth\" should be \"Bearer $::plugins::web_api::settings(webserver_authentication_key)\""
+#		msg -DEBUG [namespace current] "Query Auth: \"$auth\" should be \"$::plugins::web_api::settings(webserver_authentication_key)\""
 
 		if {$header_auth eq "Bearer $::plugins::web_api::settings(webserver_authentication_key)"} {
 			return true
@@ -118,15 +118,15 @@ namespace eval ::plugins::${plugin_name} {
 		if { ![check_auth $state] } {
 			return;
 		}
-		msg -INFO [namespace current] "togglePower: [dict getnull $state request query]"
 
 		set target_state [lindex [dict getnull $state request query active] 1]
+		set post_state [lindex [dict getnull $state request post] 0]
 
-		if {$target_state eq true} {
+		if {$target_state eq true || [string toupper $post_state] eq "ON"} {
 			::wibble::togglePowerOn $state
 		}
 
-		if {$target_state eq false} {
+		if {$target_state eq false || [string toupper $post_state] eq "OFF"} {
 			::wibble::togglePowerOff $state
 		}
 
