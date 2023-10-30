@@ -65,7 +65,18 @@ namespace eval ::plugins::${plugin_name} {
 
 	# Utilities
 
-	proc ::wibble::return_200_json {{content "{status: ok}"}} {
+	proc ::wibble::return_200_json {{overwrite {}}} {
+
+		if { $::de1_num_state($::de1(state)) != "Sleep" } {
+			set awake "true"
+		} else {
+			set awake "false"
+		}
+		if { $overwrite != {} } {
+			set awake $overwrite
+		}
+
+		set content "{\"status\": \"ok\", \"active\": $awake}"
 
 		dict set response status 200
 		dict set state response header content-type "" {application/json charset utf-8}
@@ -90,7 +101,7 @@ namespace eval ::plugins::${plugin_name} {
 
 		start_idle
 
-		::wibble::return_200_json
+		::wibble::return_200_json true
 	}
 
 	proc ::wibble::togglePowerOff {state} {
@@ -100,7 +111,7 @@ namespace eval ::plugins::${plugin_name} {
 
 		start_sleep
 
-		::wibble::return_200_json
+		::wibble::return_200_json false
 	}
 
 	proc ::wibble::flushLog {state} {
@@ -110,7 +121,7 @@ namespace eval ::plugins::${plugin_name} {
 
 		::logging::flush_log
 
-		::wibble::return_200_json
+		::wibble::return_200_text
 	}
 
 	proc ::wibble::checkStatus {state} {
