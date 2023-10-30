@@ -898,6 +898,7 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/keyboard_control/plugin.tcl *
         plugins/keyboard_control/settings.tdb *
         plugins/log_debug/plugin.tcl *
+        plugins/web_api/plugin.tcl *
 
         allcerts.pem *
     }
