@@ -114,6 +114,25 @@ namespace eval ::plugins::${plugin_name} {
 		::wibble::return_200_json false
 	}
 
+	proc ::wibble::togglePower {state} {
+		if { ![check_auth $state] } {
+			return;
+		}
+		msg -INFO [namespace current] "togglePower: [dict getnull $state request query]"
+
+		set target_state [lindex [dict getnull $state request query active] 1]
+
+		if {$target_state eq true} {
+			::wibble::togglePowerOn $state
+		}
+
+		if {$target_state eq false} {
+			::wibble::togglePowerOff $state
+		}
+
+		::wibble::return_200_json
+	}
+
 	proc ::wibble::flushLog {state} {
 		if { ![check_auth $state] } {
 			return;
@@ -145,8 +164,9 @@ namespace eval ::plugins::${plugin_name} {
 
         ::wibble::handle /on togglePowerOn
         ::wibble::handle /off togglePowerOff
-	::wibble::handle /status checkStatus
-	::wibble::handle /flush flushLog
+		::wibble::handle /toggle togglePower
+		::wibble::handle /status checkStatus
+		::wibble::handle /flush flushLog
         ::wibble::handle / notfound
 
         # Start a server and enter the event loop if not already there.
