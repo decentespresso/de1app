@@ -37,18 +37,22 @@ namespace eval ::plugins::${plugin_name} {
 	# Auth
 
 	proc ::wibble::check_auth {state} {
+		set header_auth [dict getnull $state request header authorization]
 		set auth [dict getnull $state request query auth]
 		set auth [lindex $auth 1]
 
-		if {$auth eq ""} {
-			return [unauthorized $state]
+		msg -DEBUG [namespace current] "Header Auth: \"$header_auth\" should be \"Bearer $::plugins::web_api::settings(webserver_authentication_key)\""
+		msg -DEBUG [namespace current] "Query Auth: \"$auth\" should be \"$::plugins::web_api::settings(webserver_authentication_key)\""
+
+		if {$header_auth eq "Bearer $::plugins::web_api::settings(webserver_authentication_key)"} {
+			return true
 		}
 
-		if {$auth != $::plugins::web_api::settings(webserver_authentication_key)} {
-			return [unauthorized $state]
+		if {$auth eq $::plugins::web_api::settings(webserver_authentication_key)} {
+			return true
 		}
 
-		return true;
+		return [unauthorized $state]
 	}
 
 	proc ::wibble::unauthorized {state} {
