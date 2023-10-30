@@ -41,9 +41,6 @@ namespace eval ::plugins::${plugin_name} {
 		set auth [dict getnull $state request query auth]
 		set auth [lindex $auth 1]
 
-#		msg -DEBUG [namespace current] "Header Auth: \"$header_auth\" should be \"Bearer $::plugins::web_api::settings(webserver_authentication_key)\""
-#		msg -DEBUG [namespace current] "Query Auth: \"$auth\" should be \"$::plugins::web_api::settings(webserver_authentication_key)\""
-
 		if {$header_auth eq "Bearer $::plugins::web_api::settings(webserver_authentication_key)"} {
 			return true
 		}
@@ -65,18 +62,23 @@ namespace eval ::plugins::${plugin_name} {
 
 	# Utilities
 
-	proc ::wibble::return_200_json {{overwrite {}}} {
+	proc ::wibble::return_200_json {} {
 
 		if { $::de1_num_state($::de1(state)) != "Sleep" } {
 			set awake "true"
 		} else {
 			set awake "false"
 		}
-		if { $overwrite != {} } {
-			set awake $overwrite
+
+		if { $::plugins::web_api::recent_target_state != {} } {
+			msg -DEBUG web_api "recent_target_state is $::plugins::web_api::recent_target_state"
+			set awake $::plugins::web_api::recent_target_state
+			after 800 { set ::plugins::web_api::recent_target_state {} }
 		}
 
 		set content "{\"status\": \"ok\", \"active\": $awake}"
+
+		msg -INFO web_api "Sending response: $content"
 
 		dict set response status 200
 		dict set state response header content-type "" {application/json charset utf-8}
@@ -99,25 +101,31 @@ namespace eval ::plugins::${plugin_name} {
 			return;
 		}
 
+		msg -INFO web_api "Turning the machine on"
+		set ::plugins::web_api::recent_target_state true
 		start_idle
 
-		::wibble::return_200_json true
+		::wibble::return_200_json
 	}
 
 	proc ::wibble::togglePowerOff {state} {
 		if { ![check_auth $state] } {
 			return;
 		}
+		msg -INFO web_api "Turning the machine off"
 
+		set ::plugins::web_api::recent_target_state false
 		start_sleep
 
-		::wibble::return_200_json false
+		::wibble::return_200_json
 	}
 
 	proc ::wibble::togglePower {state} {
 		if { ![check_auth $state] } {
 			return;
 		}
+
+		msg -DEBUG web_api "toggle called"
 
 		set target_state [lindex [dict getnull $state request query active] 1]
 		set post_state [lindex [dict getnull $state request post] 0]
@@ -159,6 +167,8 @@ namespace eval ::plugins::${plugin_name} {
 
 		::wibble::return_200_text $not_sleep
 	}
+
+	set ::plugins::web_api::recent_target_state {}
 
 	# Define handlers
 
