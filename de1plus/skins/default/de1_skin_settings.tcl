@@ -1252,6 +1252,23 @@ proc calculate_screen_flip_value {} {
 ##############################################################################
 
 
+# show manual feature
+add_de1_text "settings_4" 1310 820 -text [translate "Documentation"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
+	add_de1_text "settings_4" 1900 980 -text [translate "Quickstart Guide"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
+
+if {[language] == "de"} {
+	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_de/"} 1290 820 2550 1100
+} elseif {[language] == "kr"} {
+	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_kr/"} 1290 820 2550 1100
+} elseif {[language] == "zh-hans"} {
+	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_zh/"} 1290 820 2550 1100
+} else {
+	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart/"} 1290 820 2550 1100
+}
+
+
+
+
 # exit app feature
 add_de1_text "settings_4" 1310 1130 -text [translate "Exit app"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	add_de1_text "settings_4" 1900 1290 -text [translate "Exit"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
