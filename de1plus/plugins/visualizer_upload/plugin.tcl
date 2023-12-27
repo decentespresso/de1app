@@ -102,25 +102,54 @@ namespace eval ::plugins::${plugin_name} {
         set contentHeader "Content-Disposition: form-data; name=\"file\"; filename=\"file.shot\"\r\nContent-Type: application/octet-stream\r\n"
         set body "--$boundary\r\n$contentHeader\r\n$content\r\n--$boundary--\r\n"
 
-        if {[catch {
-            set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 30000]
-            msg $token
-            set status [http::status $token]
-            set answer [http::data $token]
-            set returncode [http::ncode $token]
-            set returnfullcode [http::code $token]
-            msg "status: $status"
-            msg "answer $answer"
-        } err] != 0} {
-            msg "Could not upload shot! $err"
-            borg toast [translate_toast "Upload failed!"]
-            set settings(last_upload_result) "[translate {Upload failed!}] ERR $err"
-            plugins save_settings visualizer_upload
-            catch { http::cleanup $token }
-            return
+
+        set returncode 0
+        set returnfullcode ""
+        set answer ""
+
+        # Initialize retry counter
+        set retryCount 0
+        set maxRetries 3
+        set success 0
+
+        # modification by Tom Schmidt to retry visualizer uploads 3 times
+        # https://3.basecamp.com/3671212/buckets/7351439/messages/6863865822#__recording_6880174537 
+
+        while {$retryCount < $maxRetries && !$success} {
+            if {[catch {
+                # Execute the HTTP POST request
+                set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 30000]
+                msg $token
+
+                set status [http::status $token]
+                set answer [http::data $token]
+                set returncode [http::ncode $token]
+                set returnfullcode [http::code $token]
+                msg "status: $status"
+                msg "answer $answer"
+
+                http::cleanup $token
+
+                # Check if response code indicates success
+                if {$returncode == 200} {
+                    set success 1
+                } else {
+                    # Increment retry counter if response code is not 200
+                    incr retryCount
+                    after 100
+                }
+            } err] != 0} {
+                # Increment retry counter in case of error
+                incr retryCount
+                # Log error message
+                msg "Error during Visualizer upload attempt $retryCount: $err"
+                # borg toast [translate "retrying upload!"]
+                # Clean up HTTP token if necessary
+                catch { http::cleanup $token }
+                after 100
+            }
         }
 
-        http::cleanup $token
         if {$returncode == 401} {
             msg "Upload failed. Unauthorized"
             borg toast [translate_toast "Upload failed! Authentication failed. Please check username / password"]
