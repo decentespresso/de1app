@@ -597,6 +597,18 @@ proc add_visual_item_to_context {context label_name} {
 	dui page add_items $context $label_name
 }
 
+# add multiple visuals to multiple contexts
+proc add_visual_items_to_contexts { contexts tags } {
+    set context_list [split $contexts " "]
+    set tag_list [split $tags " " ]
+    foreach context $context_list {
+        foreach tag $tag_list {
+            add_visual_item_to_context $context $tag
+        }
+    }
+}
+
+
 #set button_cnt 0
 proc add_de1_action {context tclcmd} {
 	dui page add_action $context show $tclcmd
