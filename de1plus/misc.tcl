@@ -63,6 +63,9 @@ proc make_de1_dir {srcdir destdirs} {
         "fonts/Font Awesome 5 Pro-Regular-400.otf" *
         "fonts/Font Awesome 5 Pro-Solid-900.otf" *
 
+        "fonts/Font Awesome 6 Pro-Regular-400.otf" *
+        "fonts/Font Awesome 6 Brands-Regular-400.otf" *
+
         fonts/NotoSansCJKjp-Bold.otf *
         fonts/NotoSansCJKjp-Regular.otf *
         fonts/notosansuibold.ttf *
@@ -88,6 +91,10 @@ proc make_de1_dir {srcdir destdirs} {
         skins/default/skin.tcl *
         skins/default/standard_includes.tcl *
         skins/default/standard_stop_buttons.tcl *
+
+        skins/Streamline/Inter-SemiBold.ttf *
+        skins/Streamline/skin.tcl *
+
 
         skins/default/1280x800/nothing_on.png *
         skins/default/1280x800/firmware_upgrade.jpg *
