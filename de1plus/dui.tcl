@@ -956,7 +956,7 @@ namespace eval ::dui {
 				
 			default.dbutton.shape.menu_dlg_close rect 
 			default.dbutton.fill.menu_dlg_close {} 
-			default.dbutton.symbol.menu_dlg_close times
+			default.dbutton.symbol.menu_dlg_close xmark
 			default.dbutton_symbol.pos.menu_dlg_close {0.5 0.5}
 			default.dbutton_symbol.anchor.menu_dlg_close center
 			default.dbutton_symbol.justify.menu_dlg_close center
@@ -10712,11 +10712,11 @@ namespace eval ::dui::pages::dui_number_editor {
 			-command { %NS::incr_value -$%NS::data(smallincrement) }
 		
 		dui add dbutton $page [expr {$x-$hoffset-$bspace*2}] $y -tags big_decr -style dne_clicker \
-			-symbol chevron-double-left -labelvariable {-[format [%NS::value_format] $%NS::data(bigincrement)]} \
+			-symbol chevrons-left -labelvariable {-[format [%NS::value_format] $%NS::data(bigincrement)]} \
 			-command { %NS::incr_value -$%NS::data(bigincrement) } 
 
 		dui add dbutton $page [expr {$x-$hoffset-$bspace*3}] $y -tags to_min -style dne_clicker \
-			-symbol arrow-to-left -labelvariable {[format [%NS::value_format] $%NS::data(min)]} \
+			-symbol arrow-left-to-line -labelvariable {[format [%NS::value_format] $%NS::data(min)]} \
 			-command { %NS::set_value $%NS::data(min) } 
 
 		# Increment value arrows
@@ -10725,11 +10725,11 @@ namespace eval ::dui::pages::dui_number_editor {
 			-command { %NS::incr_value $%NS::data(smallincrement) }
 			
 		dui add dbutton $page [expr {$x+$hoffset+$bspace*2}] $y -tags big_incr -style dne_clicker \
-			-symbol chevron-double-right -labelvariable {+[format [%NS::value_format] $%NS::data(bigincrement)]} \
+			-symbol chevrons-right -labelvariable {+[format [%NS::value_format] $%NS::data(bigincrement)]} \
 			-command { %NS::incr_value $%NS::data(bigincrement) } 
 	
 		dui add dbutton $page [expr {$x+$hoffset+$bspace*3}] $y -tags to_max -style dne_clicker \
-			-symbol arrow-to-right -labelvariable {[format [%NS::value_format] $%NS::data(max)]} \
+			-symbol arrow-right-to-line -labelvariable {[format [%NS::value_format] $%NS::data(max)]} \
 			-command { %NS::set_value $%NS::data(max) } 
 		
 		# Erase button
