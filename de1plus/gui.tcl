@@ -645,6 +645,61 @@ proc add_de1_text {args} {
 	return [dui add dtext [lindex $args 0] [lindex $args 1] [lindex $args 2] -compatibility_mode 1 {*}[lrange $args 3 end]]
 }
 
+# text widget that has variable fonts/properties in it, and any element can be tappable
+#
+# example:
+#
+# add_de1_rich_text $pages 1020 160 [list \
+# 	[list -text "This is a long text" -font "Inter-Bold11" -foreground black -exec "puts 1" ] \
+# 	[list -text " " -font "Inter-Bold11"] \
+# 	[list -text "widget with multiple" -font "Inter-Bold16" -foreground blue -exec "puts 2" ] \
+# 	[list -text " " -font "Inter-Bold11"] \
+# 	[list -text "fonts on one line." -font "Inter-Bold24" -foreground red -exec "puts 3" ] \
+# ]
+
+proc add_de1_rich_text {context x y textparts} {
+
+	set name "rich_${x}_${y}_"
+	set code ""
+	set startpos 0
+	set endpos 0
+	set cnt 0
+	foreach text $textparts {
+		incr cnt
+
+		set opts ""
+		set txt ""
+		set exec ""
+		foreach {k v} $text {
+			if {$k == "-text"} {
+				set txt $v
+			} elseif {$k == "-exec"} {
+				set exec $v
+			} else {
+				append opts " $k $v "
+			}
+		}
+
+		set endpos [expr {$startpos + [string length $txt]}]
+		append code [subst {
+			\$widget tag configure tag_$name$cnt $opts
+			\$widget insert end "$txt" 
+			\$widget tag add tag_$name$cnt 1.$startpos 1.$endpos
+		}]
+
+		if {$exec != ""} {
+		append code [subst {
+			\$widget tag bind tag_$name$cnt \[platform_button_press\] {$exec}
+		}]
+
+		}
+
+		set startpos $endpos
+
+	}
+	return [add_de1_widget $context "text" $x $y $code -relief flat -highlightthickness 0 -insertwidth 0]
+}
+
 #set image_cnt 0
 proc add_de1_image {args} {
 	return [dui add image [lindex $args 0] [lindex $args 1] [lindex $args 2] [lindex $args 3] -theme none]
