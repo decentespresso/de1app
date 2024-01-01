@@ -13,7 +13,7 @@ set plugin_name "visualizer_upload"
 namespace eval ::plugins::${plugin_name} {
     variable author "Johanna Schander"
     variable contact "coffee-plugins@mimoja.de"
-    variable version 1.2
+    variable version 1.3
     variable description "Upload and download shots to/from visualizer.coffee"
     variable name "Upload to visualizer"
 
@@ -109,13 +109,13 @@ namespace eval ::plugins::${plugin_name} {
 
         # Initialize retry counter
         set retryCount 0
-        set maxRetries 3
+        set maxAttempts 4
         set success 0
 
         # modification by Tom Schmidt to retry visualizer uploads 3 times
         # https://3.basecamp.com/3671212/buckets/7351439/messages/6863865822#__recording_6880174537 
 
-        while {$retryCount < $maxRetries && !$success} {
+        while {$retryCount < $maxAttempts && !$success} {
             if {[catch {
                 # Execute the HTTP POST request
                 set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 30000]
@@ -141,12 +141,17 @@ namespace eval ::plugins::${plugin_name} {
             } err] != 0} {
                 # Increment retry counter in case of error
                 incr retryCount
+
                 # Log error message
                 msg "Error during Visualizer upload attempt $retryCount: $err"
-                # borg toast [translate "retrying upload!"]
+                set returnfullcode $err
+
                 # Clean up HTTP token if necessary
                 catch { http::cleanup $token }
-                after 100
+
+                if {$retryCount < $maxAttempts} {
+                    after [expr {150 * $retryCount}]
+                }
             }
         }
 
