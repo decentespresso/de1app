@@ -1557,6 +1557,11 @@ proc update_de1_plus_advanced_explanation_chart { {context {}} } {
 	
 	# first step temp
 	array set props [lindex $::settings(advanced_shot) 0]
+
+	if {[ifexists props(temperature)] == ""} {
+		msg -ERROR "Empty props(temperature) received by update_de1_plus_advanced_explanation_chart"
+		return
+	}
 	espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
 	espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10.0}]
 
