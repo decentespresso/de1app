@@ -657,13 +657,15 @@ proc add_de1_text {args} {
 # 	[list -text "fonts on one line." -font "Inter-Bold24" -foreground red -exec "puts 3" ] \
 # ]
 
-proc add_de1_rich_text {context x y textparts} {
+proc add_de1_rich_text {context x y font justification height width textparts args} {
 
 	set name "rich_${x}_${y}_"
 	set code ""
 	set startpos 0
 	set endpos 0
 	set cnt 0
+	
+	
 	foreach text $textparts {
 		incr cnt
 
@@ -673,6 +675,7 @@ proc add_de1_rich_text {context x y textparts} {
 		foreach {k v} $text {
 			if {$k == "-text"} {
 				set txt $v
+				#set width [expr {$width + [string length $v]}]
 			} elseif {$k == "-exec"} {
 				set exec $v
 			} else {
@@ -683,8 +686,9 @@ proc add_de1_rich_text {context x y textparts} {
 		set endpos [expr {$startpos + [string length $txt]}]
 		append code [subst {
 			\$widget tag configure tag_$name$cnt $opts
+			\$widget tag configure tag_$name$cnt -justify $justification			
 			\$widget insert end "$txt" 
-			\$widget tag add tag_$name$cnt 1.$startpos 1.$endpos
+			\$widget tag add tag_$name$cnt 1.$startpos 1.$endpos 
 		}]
 
 		if {$exec != ""} {
@@ -697,7 +701,8 @@ proc add_de1_rich_text {context x y textparts} {
 		set startpos $endpos
 
 	}
-	return [add_de1_widget $context "text" $x $y $code -relief flat -highlightthickness 0 -insertwidth 0]
+
+	return [add_de1_widget $context "text" $x $y $code -relief flat  -highlightthickness 0 -insertwidth 0 -height $height -width $width]
 }
 
 #set image_cnt 0
