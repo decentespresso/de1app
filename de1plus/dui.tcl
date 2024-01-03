@@ -90,6 +90,10 @@ namespace eval ::dui {
 		variable listbox_length_multiplier
 		variable listbox_global_width_multiplier
 
+
+		set settings(app_title) $::settings(skin)
+
+
 		if { ![info exists ::loaded_fonts] } {
 			set loaded_fonts {}
 		}
