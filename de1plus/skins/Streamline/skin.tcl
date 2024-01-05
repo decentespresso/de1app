@@ -45,10 +45,11 @@ load_font "Inter-Thin14" "[skin_directory]/Inter-Thin.ttf" 14
 set left_label_color #05386c
 set scale_disconnected_color #cd5360
 
-set pages [list off steam espresso water flush info hotwaterrinse]
+set ::pages [list off steam espresso water flush info hotwaterrinse]
+set ::pages_not_off [list steam espresso water flush info hotwaterrinse]
 
-dui page add $pages -bg_color "#FFFFFF"
-#add_de1_page $pages "pumijo2.jpg"
+dui page add $::pages -bg_color "#FFFFFF"
+#add_de1_page $::pages "pumijo2.jpg"
 
 # load a default profile if none is loaded
 if {[ifexists ::settings(profile_filename)] == ""} {
@@ -67,28 +68,30 @@ if {$::android != 1} {
 	cause_random_data
 }
 
+
+
 ############################################################################################################################################################################################################
 # draw the background shapes
 
 # far left grey area where buttons appear
-rectangle $pages 0 0 657 1600 #efefef
+rectangle $::pages 0 0 657 1600 #efefef
 
 # empty area on 2/3rd of the right side
-rectangle $pages 657 0 2560 1600 #ffffff
+rectangle $::pages 657 0 2560 1600 #ffffff
 
 # lower horizontal bar where shot data is shown
 if {$::settings(ghc_is_installed) == 0} { 
-	rectangle $pages 687 1220 2130 1566 #efefef
+	rectangle $::pages 687 1220 2130 1566 #efefef
 } else {
-	rectangle $pages 687 1220 2480 1566 #efefef
+	rectangle $::pages 687 1220 2480 1566 #efefef
 }
 
 #line separating the left grey box
-rectangle $pages 0 824 660 836 #ffffff
+rectangle $::pages 0 824 660 836 #ffffff
 
-rectangle $pages 58 603 590 604 #121212
-rectangle $pages 58 1061 590 1062 #121212
-rectangle $pages 58 1282 590 1283 #121212
+rectangle $::pages 58 603 590 604 #121212
+rectangle $::pages 58 1061 590 1062 #121212
+rectangle $::pages 58 1282 590 1283 #121212
 
 ############################################################################################################################################################################################################
 
@@ -133,14 +136,14 @@ proc show_DYE_page {} {
 	#[list -text "Grind @ 15" -font "Inter-Bold11" -foreground $left_label_color -exec "puts 1" ] \
 	#[list -text "     |     " -font "Inter-Thin14"] \
 
-set toprightbtns [add_de1_rich_text $pages 2500 44 right 0 40 "#FFFFFF" [list \
+set toprightbtns [add_de1_rich_text $::pages 2500 44 right 0 40 "#FFFFFF" [list \
 	$dyebtns  \
 	[list -text "Settings" -font "Inter-Bold12" -foreground $left_label_color -exec  { say [translate {settings}] $::settings(sound_button_in); show_settings} ] \
 	[list -text {        } -font "Inter-Bold12"] \
 	[list -text "Sleep" -font "Inter-Bold12" -foreground $left_label_color -exec "say [translate {sleep}] $::settings(sound_button_in);start_sleep" ] \
 ]]
 
-add_de1_variable $pages 700 54 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $left_label_color -width [rescale_x_skin 1200] -textvariable {[ifexists settings(profile_title)]} 
+add_de1_variable $::pages 700 54 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $left_label_color -width [rescale_x_skin 1200] -textvariable {[ifexists settings(profile_title)]} 
 
 
 ############################################################################################################################################################################################################
@@ -157,7 +160,7 @@ proc streamline_status_msg_click {} {
 	puts "ERROR TAPPED $::streamline_global(status_msg_clickable)"	
 }
 
-set streamline_status_msg [add_de1_rich_text $pages 2500 164 right 0 40 "#FFFFFF" [list \
+set streamline_status_msg [add_de1_rich_text $::pages 2500 164 right 0 40 "#FFFFFF" [list \
 	[list -text {$::streamline_global(status_msg_text)}  -font "Inter-Black18" -foreground $scale_disconnected_color  ] \
 	[list -text "   " -font "Inter-Black18"] \
 	[list -text {$::streamline_global(status_msg_clickable)}  -font "Inter-Black18" -foreground "#1967d4" -exec "streamline_status_msg_click" ] \
@@ -169,7 +172,7 @@ trace add variable ::streamline_global(status_msg_clickable) write ::refresh_$st
 
 
 
-rectangle $pages 700 136 2502 136 #121212
+rectangle $::pages 700 136 2502 136 #121212
 
 ############################################################################################################################################################################################################
 
@@ -210,7 +213,7 @@ if {$::settings(scale_bluetooth_address) != ""} {
 
 }
 
-set streamline_status_msg [add_de1_rich_text $pages 702 158 left 1 50 "#FFFFFF" $btns ]
+set streamline_status_msg [add_de1_rich_text $::pages 702 158 left 1 50 "#FFFFFF" $btns ]
 
 # GH temp
 #trace add variable ::de1(head_temperature) write ::refresh_$streamline_status_msg
@@ -235,12 +238,12 @@ if {$::settings(scale_bluetooth_address) == ""} {
 # draw text labels for the buttons on the left margin
 
 # labels
-add_de1_text $pages 60 318 -justify left -anchor "nw" -text [translate "Dose"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 60 434 -justify left -anchor "nw" -text [translate "Beverage"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 60 655 -justify left -anchor "nw" -text [translate "Temp"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 60 892 -justify left -anchor "nw" -text [translate "Steam"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 60 1117 -justify left -anchor "nw" -text [translate "Flush"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 60 1338 -justify left -anchor "nw" -text [translate "Hot Water"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 60 318 -justify left -anchor "nw" -text [translate "Dose"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 60 434 -justify left -anchor "nw" -text [translate "Beverage"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 60 655 -justify left -anchor "nw" -text [translate "Temp"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 60 892 -justify left -anchor "nw" -text [translate "Steam"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 60 1117 -justify left -anchor "nw" -text [translate "Flush"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 60 1338 -justify left -anchor "nw" -text [translate "Hot Water"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
 
 # tap areas
 add_de1_button "off" {puts "Dose"} 37 292 236 388 ""
@@ -257,11 +260,11 @@ add_de1_button "off" {puts "Hot Water"} 37 1310 236 1406 ""
 # data card on the bottom center
 
 # labels
-add_de1_text $pages 980 1239 -justify right -anchor "ne" -text [translate "14 Sep, 18:45"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 300]
-add_de1_text $pages 980 1272 -justify right -anchor "ne" -text [translate "Extractamundo"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 300]
-add_de1_text $pages 980 1357 -justify right -anchor "ne" -text [translate "Preinfusion"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 980 1419 -justify right -anchor "ne" -text [translate "Extraction"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 980 1484 -justify right -anchor "ne" -text [translate "Total"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 980 1239 -justify right -anchor "ne" -text [translate "14 Sep, 18:45"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 300]
+add_de1_text $::pages 980 1272 -justify right -anchor "ne" -text [translate "Extractamundo"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 300]
+add_de1_text $::pages 980 1357 -justify right -anchor "ne" -text [translate "Preinfusion"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 980 1419 -justify right -anchor "ne" -text [translate "Extraction"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 980 1484 -justify right -anchor "ne" -text [translate "Total"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
 
 
 # rounded rectangle color 
@@ -273,8 +276,8 @@ add_de1_text $pages 980 1484 -justify right -anchor "ne" -text [translate "Total
 # font color
 #dui aspect set -theme default -type dbutton label_fill "#121212"
 
-#dui add dbutton $pages 702 1244 763 1298 -tags profile_back -label "asdf"  -command { puts profile_back } 
-#dui add dbutton $pages 980 1244 1041 1298 -tags profile_fwd -label "asdf"  -command { puts profile_fwd } 
+#dui add dbutton $::pages 702 1244 763 1298 -tags profile_back -label "asdf"  -command { puts profile_back } 
+#dui add dbutton $::pages 980 1244 1041 1298 -tags profile_fwd -label "asdf"  -command { puts profile_fwd } 
 # rounded rectangle color 
 #dui aspect set -theme default -type dbutton outline "#D8D8D8"
 dui aspect set -theme default -type dbutton outline "#efefef"
@@ -307,44 +310,46 @@ dui aspect set -theme default -type dbutton_symbol font_size 12
 dui aspect set -theme default -type dbutton_symbol pos ".50 .5"
 
 if {$::android == 1 || $::undroid == 1} {
-	dui add dbutton $pages 705 1244 766 1298 -tags profile_back -symbol "arrow-left"  -command { puts profile_back } 
-	dui add dbutton $pages 1000 1244 1061 1298 -tags profile_fwd -symbol "arrow-right"  -command { puts profile_fwd } 
+	dui add dbutton $::pages 705 1244 766 1298 -tags profile_back -symbol "arrow-left"  -command { puts profile_back } 
+	dui add dbutton $::pages 1000 1244 1061 1298 -tags profile_fwd -symbol "arrow-right"  -command { puts profile_fwd } 
 } else {
-	dui add dbutton $pages 705 1244 766 1298  -tags profile_back -label "<"  -command { puts profile_back } 
-	dui add dbutton $pages 1000 1244 1061 1298  -tags profile_fwd -label ">"  -command { puts profile_fwd } 
+	dui add dbutton $::pages 705 1244 766 1298  -tags profile_back -label "<"  -command { puts profile_back } 
+	dui add dbutton $::pages 1000 1244 1061 1298  -tags profile_fwd -label ">"  -command { puts profile_fwd } 
 }
 
-add_de1_text $pages 1084 1254 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1084 1357 -justify right -anchor "nw" -text [translate "15s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1084 1419 -justify right -anchor "nw" -text [translate "30s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1084 1483 -justify right -anchor "nw" -text [translate "45s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1084 1254 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1084 1357 -justify right -anchor "nw" -text [translate "15s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1084 1419 -justify right -anchor "nw" -text [translate "30s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1084 1483 -justify right -anchor "nw" -text [translate "45s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
 
-add_de1_text $pages 1205 1254 -justify right -anchor "nw" -text [translate "Weight"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1205 1357 -justify right -anchor "nw" -text [translate "10g"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1205 1419 -justify right -anchor "nw" -text [translate "29g"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1205 1483 -justify right -anchor "nw" -text [translate "39g"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1205 1254 -justify right -anchor "nw" -text [translate "Weight"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1205 1357 -justify right -anchor "nw" -text [translate "10g"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1205 1419 -justify right -anchor "nw" -text [translate "29g"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1205 1483 -justify right -anchor "nw" -text [translate "39g"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
 
-add_de1_text $pages 1346 1254 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1346 1357 -justify right -anchor "nw" -text [translate "17ml"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1346 1419 -justify right -anchor "nw" -text [translate "30ml"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1346 1483 -justify right -anchor "nw" -text [translate "47ml"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1346 1254 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1346 1357 -justify right -anchor "nw" -text [translate "17ml"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1346 1419 -justify right -anchor "nw" -text [translate "30ml"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1346 1483 -justify right -anchor "nw" -text [translate "47ml"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
 
-add_de1_text $pages 1495 1254 -justify right -anchor "nw" -text [translate "Temp"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1495 1357 -justify right -anchor "nw" -text [translate "90ºC"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1495 1419 -justify right -anchor "nw" -text [translate "90ºC-86ºC"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1495 1254 -justify right -anchor "nw" -text [translate "Temp"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1495 1357 -justify right -anchor "nw" -text [translate "90ºC"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1495 1419 -justify right -anchor "nw" -text [translate "90ºC-86ºC"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
 
-add_de1_text $pages 1677 1254 -justify right -anchor "nw" -text [translate "Flow"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1677 1357 -justify right -anchor "nw" -text [translate "1.5ml/s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
-add_de1_text $pages 1677 1419 -justify right -anchor "nw" -text [translate "3.8ml/s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1677 1254 -justify right -anchor "nw" -text [translate "Flow"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1677 1357 -justify right -anchor "nw" -text [translate "1.5ml/s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
+add_de1_text $::pages 1677 1419 -justify right -anchor "nw" -text [translate "3.8ml/s"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 200]
 
-add_de1_text $pages 1828 1254 -justify right -anchor "nw" -text [translate "Pressure"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 300]
-add_de1_text $pages 1828 1362 -justify right -anchor "nw" -text [translate "0.9 bar (1.3 peak)"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 300]
-add_de1_text $pages 1828 1419 -justify right -anchor "nw" -text [translate "6.0 bar (6.5 peak)"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 300]
+add_de1_text $::pages 1828 1254 -justify right -anchor "nw" -text [translate "Pressure"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 300]
+add_de1_text $::pages 1828 1362 -justify right -anchor "nw" -text [translate "0.9 bar (1.3 peak)"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 300]
+add_de1_text $::pages 1828 1419 -justify right -anchor "nw" -text [translate "6.0 bar (6.5 peak)"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 300]
 
-rectangle $pages 718 1316 2089 1316 #121212
+rectangle $::pages 718 1316 2089 1316 #121212
 
 
 ############################################################################################################################################################################################################
+
+
 
 
 ############################################################################################################################################################################################################
@@ -353,13 +358,13 @@ rectangle $pages 718 1316 2089 1316 #121212
 set left_label_color #121212
 
 # labels
-add_de1_text $pages 426 341 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 426 435 -justify center -anchor "center" -text [translate "1:2.3"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 426 474 -justify center -anchor "center" -text [translate " (46g)"] -font Inter-Regular12 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 426 679 -justify left -anchor "center" -text [translate "92ºC"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 426 917 -justify left -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 426 1137 -justify left -anchor "center" -text [translate "5s"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 426 1358 -justify left -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 426 341 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 426 435 -justify center -anchor "center" -text [translate "1:2.3"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 426 474 -justify center -anchor "center" -text [translate " (46g)"] -font Inter-Regular12 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 426 679 -justify left -anchor "center" -text [translate "92ºC"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 426 917 -justify left -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 426 1137 -justify left -anchor "center" -text [translate "5s"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 426 1358 -justify left -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $left_label_color -width [rescale_x_skin 200]
 
 # tap areas
 add_de1_button "off" {puts "Dose value"} 359 292 496 388 ""
@@ -379,10 +384,10 @@ set left_label_color #777777
 
 #########
 # dose/beverage labels
-add_de1_text $pages 94 552 -justify center -anchor "center" -text [translate "18:36"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
-add_de1_text $pages 234 552 -justify center -anchor "center" -text [translate "19:39"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 388 552 -justify center -anchor "center" -text [translate "20.5:42"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 554 552 -justify center -anchor "center" -text [translate "21:44"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 94 552 -justify center -anchor "center" -text [translate "18:36"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
+add_de1_text $::pages 234 552 -justify center -anchor "center" -text [translate "19:39"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 388 552 -justify center -anchor "center" -text [translate "20.5:42"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 554 552 -justify center -anchor "center" -text [translate "21:44"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
 
 # dose/beverage tap areas
 add_de1_button "off" {puts "Dose value 1"} 37 521 169 584 ""
@@ -393,10 +398,10 @@ add_de1_button "off" {puts "Dose value 4"} 466 521 613 584 ""
 
 #########
 # temp labels
-add_de1_text $pages 94 774 -justify center -anchor "center" -text [translate "75ºC"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
-add_de1_text $pages 234 774 -justify center -anchor "center" -text [translate "80ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 388 774 -justify center -anchor "center" -text [translate "92ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 554 774 -justify center -anchor "center" -text [translate "85ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 94 774 -justify center -anchor "center" -text [translate "75ºC"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
+add_de1_text $::pages 234 774 -justify center -anchor "center" -text [translate "80ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 388 774 -justify center -anchor "center" -text [translate "92ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 554 774 -justify center -anchor "center" -text [translate "85ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
 
 # temp tap areas
 add_de1_button "off" {puts "Temp value 1"} 37 743 169 806 ""
@@ -407,10 +412,10 @@ add_de1_button "off" {puts "Temp value 4"} 466 743 613 806 ""
 
 #########
 # steam labels
-add_de1_text $pages 94 1014 -justify center -anchor "center" -text [translate "25s"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
-add_de1_text $pages 234 1014 -justify center -anchor "center" -text [translate "29s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 388 1014 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 554 1014 -justify center -anchor "center" -text [translate "40s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 94 1014 -justify center -anchor "center" -text [translate "25s"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
+add_de1_text $::pages 234 1014 -justify center -anchor "center" -text [translate "29s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 388 1014 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 554 1014 -justify center -anchor "center" -text [translate "40s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
 
 # steam tap areas
 add_de1_button "off" {puts "steam value 1"} 37 983 169 1046 ""
@@ -421,10 +426,10 @@ add_de1_button "off" {puts "steam value 4"} 466 983 613 1046 ""
 
 #########
 # flush labels
-add_de1_text $pages 94 1230 -justify center -anchor "center" -text [translate "2s"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
-add_de1_text $pages 234 1230 -justify center -anchor "center" -text [translate "5s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 388 1230 -justify center -anchor "center" -text [translate "10s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 554 1230 -justify center -anchor "center" -text [translate "15s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 94 1230 -justify center -anchor "center" -text [translate "2s"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
+add_de1_text $::pages 234 1230 -justify center -anchor "center" -text [translate "5s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 388 1230 -justify center -anchor "center" -text [translate "10s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 554 1230 -justify center -anchor "center" -text [translate "15s"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
 
 # flush tap areas
 add_de1_button "off" {puts "flush value 1"} 37 1194 169 1257 ""
@@ -436,15 +441,15 @@ add_de1_button "off" {puts "flush value 4"} 466 1194 613 1257 ""
 
 #########
 # hot water labels
-add_de1_text $pages 94 1454 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
-add_de1_text $pages 234 1454 -justify center -anchor "center" -text [translate "120ml"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 388 1454 -justify center -anchor "center" -text [translate "180ml"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 554 1454 -justify center -anchor "center" -text [translate "200ml"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 94 1454 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
+add_de1_text $::pages 234 1454 -justify center -anchor "center" -text [translate "120ml"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 388 1454 -justify center -anchor "center" -text [translate "180ml"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 554 1454 -justify center -anchor "center" -text [translate "200ml"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
 
-add_de1_text $pages 94 1534 -justify center -anchor "center" -text [translate "75ºC"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
-add_de1_text $pages 234 1534 -justify center -anchor "center" -text [translate "80ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 388 1534 -justify center -anchor "center" -text [translate "85ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
-add_de1_text $pages 554 1534 -justify center -anchor "center" -text [translate "90ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 94 1534 -justify center -anchor "center" -text [translate "75ºC"] -font Inter-Bold11 -fill $left_label_color_selected -width [rescale_x_skin 200]
+add_de1_text $::pages 234 1534 -justify center -anchor "center" -text [translate "80ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 388 1534 -justify center -anchor "center" -text [translate "85ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
+add_de1_text $::pages 554 1534 -justify center -anchor "center" -text [translate "90ºC"] -font Inter-Bold11 -fill $left_label_color -width [rescale_x_skin 200]
 
 
 # hot water tap areas
@@ -499,15 +504,94 @@ dui aspect set -theme default -type dbutton label_pos ".50 .50"
 # the selected profile button
 
 # button color
-dui aspect set -theme default -type dbutton fill "#3e5682"
+#dui aspect set -theme default -type dbutton fill "#3e5682"
+dui aspect set -theme default -type dbutton fill "#d8d8d8"
 
 # font color
-dui aspect set -theme default -type dbutton label_fill "#ffffff"
+#dui aspect set -theme default -type dbutton label_fill "#ffffff"
+dui aspect set -theme default -type dbutton label_fill "#3c5782"
 
 # width of text of profile selection button
 dui aspect set -theme default -type dbutton_label width 220
 
-dui add dbutton $pages 58 27 311 136 -tags profile_1_btn -label "Damian's LRv2 Long Name"  -command { puts profile_1_btn }
+
+proc refresh_favorite_profile_button_labels {} {
+
+	set profiles [ifexists ::settings(favorite_profiles)]
+
+	set b1 ""
+	set b2 ""
+	set b3 ""
+	set b4 ""
+
+	catch {
+		set b1 [dict get $profiles 1 title]
+		regsub -all {/} $b1 {/ } b1
+	}
+	catch {
+		set b2 [dict get $profiles 2 title]
+		regsub -all {/} $b2 {/ } b2
+	}
+	catch {
+		set b3 [dict get $profiles 3 title]
+		regsub -all {/} $b3 {/ } b3
+	}
+	catch {
+		set b4 [dict get $profiles 4 title]
+		regsub -all {/} $b4 {/ } b4
+	}
+
+	set changed 0
+	if {$b1 == ""} {
+		set b1 "Default"
+		set t1 "default"
+		dict set profiles 1 name $t1
+		dict set profiles 1 title $b1
+		set changed 1
+	}
+
+	if {$b2 == ""} {
+		set b2 "Adaptive (for medium roasts)"
+		set t2 "best_practice"		
+		dict set profiles 2 name $t2
+		dict set profiles 2 title $b2
+		set changed 1
+	}
+
+	if {$b3 == ""} {
+		set b3 "Rao Allongé"
+		set t3 "rao_allonge"		
+		dict set profiles 3 name $t3
+		dict set profiles 3 title $b3
+		set changed 1
+	}
+
+	if {$b4 == ""} {
+		set b4 "Cleaning/ Forward Flush x5"
+		set t4 "Cleaning_forward_flush_x5"		
+		dict set profiles 4 name $t4
+		dict set profiles 4 title $b4
+		set changed 1
+	}
+
+
+	if {$changed == 1} {
+		set ::settings(favorite_profiles) $profiles	
+		save_settings	
+	}
+
+	set ::streamline_favorite_profile_buttons(label_1) $b1
+	set ::streamline_favorite_profile_buttons(label_2) $b2
+	set ::streamline_favorite_profile_buttons(label_3) $b3
+	set ::streamline_favorite_profile_buttons(label_4) $b4
+
+	#puts "b1: $b1 / b2: $b2 / b3 : $b3 / b4: $b4"
+
+}
+refresh_favorite_profile_button_labels
+
+set ::streamline_favorite_profile_buttons(1) [dui add dbutton "off" 58 27 311 136 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { streamline_profile_select 1 }]
+set ::streamline_favorite_profile_buttons(1b) [dui add dbutton $::pages_not_off 58 27 311 136 -tags profile_1b_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)} ]
 
 ####
 # NOT selected profile buttons
@@ -518,10 +602,20 @@ dui aspect set -theme default -type dbutton fill "#d8d8d8"
 # font color
 dui aspect set -theme default -type dbutton label_fill "#3c5782"
 
-dui add dbutton $pages 341 27 592 136 -tags profile_2_btn -label "Default"  -command { puts profile_2_btn } 
-dui add dbutton $pages 58 157 311 267 -tags profile_3_btn -label "Rao Allonge" -selectedfill #ff0000 -activebackground #ff0000 -activebackground #ff0000 -activeForeground #ff0000 -command { puts profile_3_btn } 
-dui add dbutton $pages 341 157 592 267 -tags profile_4_btn -label "Extramundo Dos!"  -command { puts profile_4_btn } 
+set ::streamline_favorite_profile_buttons(2) [dui add dbutton "off" 341 27 592 136 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { streamline_profile_select 2 } ]
+set ::streamline_favorite_profile_buttons(3) [dui add dbutton "off" 58 157 311 267 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { streamline_profile_select 3 } ]
+set ::streamline_favorite_profile_buttons(4) [dui add dbutton "off" 341 157 592 267 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { streamline_profile_select 4 } ]
+set ::streamline_favorite_profile_buttons(2b) [dui add dbutton $::pages_not_off 341 27 592 136 -tags profile_2b_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  ]
+set ::streamline_favorite_profile_buttons(3b) [dui add dbutton $::pages_not_off 58 157 311 267 -tags profile_3b_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)}  ]
+set ::streamline_favorite_profile_buttons(4b) [dui add dbutton $::pages_not_off 341 157 592 267 -tags profile_4b_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}  ]
 
+
+#.can itemconfigure $::streamline_favorite_profile_buttons(1) -fill "#3e5682"
+#.can itemconfigure $::streamline_favorite_profile_buttons(2) -fill "#3e5682"
+
+#dui item config $::streamline_favorite_profile_buttons(1) label -fill "#3e5682"
+
+puts "ERROR [dui item config $::streamline_favorite_profile_buttons(3)]"
 
 
 ############################################################################################################################################################################################################
@@ -556,26 +650,74 @@ dui aspect set -theme default -type dbutton label_pos ".50 .22"
 
 
 # the - buttons
-dui add dbutton $pages 262 292 359 388 -tags minus_dose_btn -label "_"  -command { puts plus_dose_btn } 
-dui add dbutton $pages 262 407 359 503 -tags minus_beverage_btn -label "_"  -command { puts minus_beverage_btn } 
-dui add dbutton $pages 262 629 359 725 -tags minus_temp_btn -label "_"  -command { puts minus_temp_btn } 
-dui add dbutton $pages 262 866 359 962 -tags minus_steam_btn -label "_"  -command { puts minus_steam_btn } 
-dui add dbutton $pages 262 1089 359 1185 -tags minus_flush_btn -label "_"  -command { puts minus_flush_btn } 
-dui add dbutton $pages 262 1310 359 1406 -tags minus_hotwater_btn -label "_"  -command { puts minus_hotwater_btn } 
+dui add dbutton $::pages 262 292 359 388 -tags minus_dose_btn -label "_"  -command { puts plus_dose_btn } 
+dui add dbutton $::pages 262 407 359 503 -tags minus_beverage_btn -label "_"  -command { puts minus_beverage_btn } 
+dui add dbutton $::pages 262 629 359 725 -tags minus_temp_btn -label "_"  -command { puts minus_temp_btn } 
+dui add dbutton $::pages 262 866 359 962 -tags minus_steam_btn -label "_"  -command { puts minus_steam_btn } 
+dui add dbutton $::pages 262 1089 359 1185 -tags minus_flush_btn -label "_"  -command { puts minus_flush_btn } 
+dui add dbutton $::pages 262 1310 359 1406 -tags minus_hotwater_btn -label "_"  -command { puts minus_hotwater_btn } 
 
 # label position
 dui aspect set -theme default -type dbutton label_pos ".50 .44" 
 
 # the + buttons
-dui add dbutton $pages 495 292 591 388 -tags plus_dose_btn -label "+"  -command { puts plus_dose_btn } 
-dui add dbutton $pages 495 407 591 503 -tags plus_beverage_btn -label "+"  -command { puts plus_beverage_btn } 
-dui add dbutton $pages 495 629 591 725 -tags plus_temp_btn -label "+"  -command { puts plus_temp_btn } 
-dui add dbutton $pages 495 866 591 962 -tags plus_steam_btn -label "+"  -command { puts plus_steam_btn } 
-dui add dbutton $pages 495 1089 591 1185 -tags plus_flush_btn -label "+"  -command { puts plus_flush_btn } 
-dui add dbutton $pages 495 1310 591 1406 -tags plus_hotwater_btn -label "+"  -command { puts plus_hotwater_btn } 
+dui add dbutton $::pages 495 292 591 388 -tags plus_dose_btn -label "+"  -command { puts plus_dose_btn } 
+dui add dbutton $::pages 495 407 591 503 -tags plus_beverage_btn -label "+"  -command { puts plus_beverage_btn } 
+dui add dbutton $::pages 495 629 591 725 -tags plus_temp_btn -label "+"  -command { puts plus_temp_btn } 
+dui add dbutton $::pages 495 866 591 962 -tags plus_steam_btn -label "+"  -command { puts plus_steam_btn } 
+dui add dbutton $::pages 495 1089 591 1185 -tags plus_flush_btn -label "+"  -command { puts plus_flush_btn } 
+dui add dbutton $::pages 495 1310 591 1406 -tags plus_hotwater_btn -label "+"  -command { puts plus_hotwater_btn } 
 
 ############################################################################################################################################################################################################
 
+
+
+############################################################################################################################################################################################################
+# Profile QuickSettings
+
+# font to use
+dui aspect set -theme default -type dbutton label_font Inter-Bold24 
+
+# label position
+dui aspect set -theme default -type dbutton label_pos ".50 .5" 
+
+# font color
+dui aspect set -theme default -type dbutton label_fill "#ffffff"
+
+# rounded rectangle color 
+dui aspect set -theme default -type dbutton outline "#b9bcdd"
+
+# inside button color
+dui aspect set -theme default -type dbutton fill "#b9bcdd"
+
+dui aspect set -theme default -type dbutton radius 26
+
+dui add dbutton "settings_1" 80 1460 200 1580  -tags profile_btn_1 -label "1"  -command { save_favorite_profile 1 } 
+dui add dbutton "settings_1" 220 1460 340 1580   -tags profile_btn_2 -label "2"  -command { save_favorite_profile 2 } 
+dui add dbutton "settings_1" 360 1460 480 1580  -tags profile_btn_3 -label "3"  -command { save_favorite_profile 3} 
+dui add dbutton "settings_1" 500 1460 620 1580  -tags profile_btn_4 -label "4"  -command { save_favorite_profile 4 } 
+
+proc streamline_profile_select { slot } {
+
+	set profiles [ifexists ::settings(favorite_profiles)]
+	select_profile [dict get $profiles $slot name]
+
+}
+
+proc save_favorite_profile { slot } {
+	set profiles [ifexists ::settings(favorite_profiles)]
+
+	dict set profiles $slot name $::settings(profile_filename)
+	dict set profiles $slot title $::settings(profile_title)
+
+	set ::settings(favorite_profiles) $profiles
+	#refresh_favorite_profile_button_labels
+	refresh_favorite_profile_button_labels
+	#save_settings
+	borg toast [translate "Saved in slot $slot"]
+}
+
+############################################################################################################################################################################################################
 
 
 
@@ -669,7 +811,7 @@ set ::grid_color "#E0E0E0"
 
 set charts_width 1830
 
-add_de1_widget $pages graph 680 250 { 
+add_de1_widget $::pages graph 680 250 { 
 
 	set ::streamline_chart $widget
 
@@ -688,11 +830,12 @@ add_de1_widget $pages graph 680 250 {
 
 	# show the explanation
 	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 15] -color $::pressurelinecolor  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -label "" -linewidth [rescale_x_skin 15] -color $::flow_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 	gridconfigure $widget 
 
 	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular20 -linewidth [rescale_x_skin 2] -subdivisions 5 -majorticks {0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125 130 135 140 145 150 155 160 165 170 175 180 185 190 195 200 205 210 215 220 225 230 235 240 245 250 255} 
-	$widget axis configure y -color $::pressurelabelcolor -tickfont Inter-Regular20 -min 0.0 -max [expr {$::de1(max_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3 4 5 6 7 8 9 10 11 12} 
+	$widget axis configure y -color $::pressurelabelcolor -tickfont Inter-Regular20 -min 0 -max [expr {$::de1(max_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3 4 5 6 7 8 9 10 11 12} 
 } -plotbackground $::chart_background -width [rescale_x_skin $charts_width] -height [rescale_y_skin 943] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
 ############################################################################################################################################################################################################
 
@@ -727,3 +870,6 @@ streamline_adjust_chart_x_axis
 add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off off; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
 
 #add_de1_button "sleep" {say [translate {sleep}] $::settings(sound_button_in);set_next_page off off; after 1000 start_idle} 0 0 2560 1600
+
+
+#after 100 "show_settings settings_1"
