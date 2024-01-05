@@ -906,7 +906,7 @@ proc start_espresso {} {
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
 		after 200 [list update_de1_state "$::de1_state(Espresso)\x1"]
-		after 30000 [list update_de1_state "$::de1_state(Idle)\x5"]
+		after 90000 [list update_de1_state "$::de1_state(Idle)\x5"]
 	}
 
 	return	

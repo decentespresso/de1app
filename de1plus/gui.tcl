@@ -645,7 +645,7 @@ proc add_de1_text {args} {
 	return [dui add dtext [lindex $args 0] [lindex $args 1] [lindex $args 2] -compatibility_mode 1 {*}[lrange $args 3 end]]
 }
 
-# text widget that has variable fonts/properties in it, and any element can be tappable
+# text widget that has variable fonts/properties in it, and any element can be tappable. If refresh=1 then it is updated at 10hz
 #
 # example:
 #
@@ -656,15 +656,16 @@ proc add_de1_text {args} {
 # 	[list -text " " -font "Inter-Bold11"] \
 # 	[list -text "fonts on one line." -font "Inter-Bold24" -foreground red -exec "puts 3" ] \
 # ]
-
-proc add_de1_rich_text {context x y font justification height width textparts args} {
+proc add_de1_rich_text {context x y justification autorefresh width backgroundcolor textparts args} {
 
 	set name "rich_${x}_${y}_"
 	set code ""
+	set height 1
 	set startpos 0
 	set endpos 0
 	set cnt 0
-	
+
+	set widget [add_de1_widget $context "text" $x $y "" -relief flat  -highlightthickness 0 -insertwidth 0 -height $height -background $backgroundcolor  -selectbackground $backgroundcolor  -width $width ]
 	
 	foreach text $textparts {
 		incr cnt
@@ -673,9 +674,9 @@ proc add_de1_rich_text {context x y font justification height width textparts ar
 		set txt ""
 		set exec ""
 		foreach {k v} $text {
+			# allow options of -text -exec and anything else is passed along to the text widget. We implement -text and -exec ourselves
 			if {$k == "-text"} {
 				set txt $v
-				#set width [expr {$width + [string length $v]}]
 			} elseif {$k == "-exec"} {
 				set exec $v
 			} else {
@@ -683,27 +684,52 @@ proc add_de1_rich_text {context x y font justification height width textparts ar
 			}
 		}
 
-		set endpos [expr {$startpos + [string length $txt]}]
-		append code [subst {
-			\$widget tag configure tag_$name$cnt $opts
-			\$widget tag configure tag_$name$cnt -justify $justification			
-			\$widget insert end "$txt" 
-			\$widget tag add tag_$name$cnt 1.$startpos 1.$endpos 
-		}]
+		#if {$txt != ""} {
+			set endpos [expr {$startpos + [string length $txt]}]
 
-		if {$exec != ""} {
-		append code [subst {
-			\$widget tag bind tag_$name$cnt \[platform_button_press\] {$exec}
-		}]
+			# create and configure the tags that define the look of this chunk of text
+			append codetags [subst {\n\t$widget tag configure tag_$name$cnt $opts -justify $justification\n\t$widget tag add tag_$name$cnt 1.$startpos 1.$endpos\n}]
 
-		}
+			# insert the text as a separate step, so that we don't needlessly recreate tags when refreshing this
+			append codetext [subst {\t$widget insert end "$txt" tag_$name$cnt\n}]
+
+			if {$exec != ""} {
+				# if there's a tap action on this text, define it once as part of the tags
+				append codetags [subst {\t$widget tag bind tag_$name$cnt \[platform_button_press\] {$exec}\n}]
+			}
+		#}
 
 		set startpos $endpos
 
 	}
 
-	return [add_de1_widget $context "text" $x $y $code -relief flat  -highlightthickness 0 -insertwidth 0 -height $height -width $width]
+	# for some reason, the -anchor option is not available at creation time, but it is available later as a configuration option.
+	# and it's essential for the correct positioning of the widget when right aligned
+	if {$justification == "right"} {
+		.can itemconfigure $widget -anchor ne		
+	}
+
+	# create the tags for this widget
+	eval $codetags
+
+	# create a function which updates the text on the widget, and run that once, allowing other functions to now refresh at will
+	#
+	# example refresh approach:
+	# set toprightbtns [add_de1_rich_text $pages 2500 44 "Inter-Bold12" ...
+	# trace add variable ::water_level write ::refresh_$toprightbtns
+
+	set proccode [subst {proc ::refresh_$widget \{args\} \{ $widget delete 1.0 end\n$codetext \} }]
+	eval $proccode
+	::refresh_$widget
+
+	if {$autorefresh == 1} {
+		dui page add_action $context update_vars ::refresh_$widget
+	}
+
+	return $widget
 }
+
+
 
 #set image_cnt 0
 proc add_de1_image {args} {
@@ -1047,7 +1073,7 @@ proc update_onscreen_variables { {state {}} } {
 proc set_dummy_espresso_vars {} {
 	if { $::android } { return }
 	
-	if {[expr {int(rand() * 100)}] > 96} {
+	if {[expr {int(rand() * 100)}] >= 99} {
 		set ::gui::state::_state_change_chart_value \
 			[expr {$::gui::state::_state_change_chart_value * -1}]
 
@@ -1067,10 +1093,10 @@ proc set_dummy_espresso_vars {} {
 				#update_de1_state "$::de1_state(Idle)\x1"
 			}
 		} else {
-			if {[expr {int(rand() * 100)}] > 90} {
-				# occasionally set the de1 to heating mode
-				update_de1_state "$::de1_state(Idle)\x0"
-			}
+			#if {[expr {int(rand() * 100)}] > 90} {
+				# occasionally stop the espresso
+				# update_de1_state "$::de1_state(Idle)\x0"
+			#}
 		}
 	} elseif {$::de1(state) == 4} {
 		# espresso
@@ -3092,6 +3118,9 @@ namespace eval ::gui::update {
 						espresso_temperature_basket append \
 							[return_temperature_number $HeadTemp]
 
+						espresso_temperature_basket10th append \
+							[round_to_two_digits [expr {[return_temperature_number $HeadTemp] / 10.0}]]
+
 						espresso_state_change append $::gui::state::_state_change_chart_value
 
 						# don't chart goals at zero, instead take them off the chart
@@ -3115,6 +3144,8 @@ namespace eval ::gui::update {
 						espresso_temperature_goal append \
 							[return_temperature_number $SetHeadTemp]
 
+						espresso_temperature_goal10th append \
+							[round_to_two_digits [expr {[return_temperature_number $SetHeadTemp] / 10.0}]]
 
 						set total_water_volume \
 							[expr {$::de1(preinfusion_volume) + $::de1(pour_volume)}]

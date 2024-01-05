@@ -62,7 +62,6 @@ proc make_de1_dir {srcdir destdirs} {
         "fonts/Font Awesome 5 Pro-Light-300.otf" *
         "fonts/Font Awesome 5 Pro-Regular-400.otf" *
         "fonts/Font Awesome 5 Pro-Solid-900.otf" *
-
         "fonts/Font Awesome 6 Pro-Regular-400.otf" *
         "fonts/Font Awesome 6 Brands-Regular-400.otf" *
 

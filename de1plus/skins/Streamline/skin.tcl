@@ -50,75 +50,31 @@ set pages [list off steam espresso water flush info hotwaterrinse]
 dui page add $pages -bg_color "#FFFFFF"
 #add_de1_page $pages "pumijo2.jpg"
 
+# load a default profile if none is loaded
+if {[ifexists ::settings(profile_filename)] == ""} {
+	select_profile "default"
+}
 
-############################################################################################################################################################################################################
-# top right line with profile name and various text labels that are buttons
-
-
-
-add_de1_rich_text $pages 1612 44 "Inter-Bold11" right 1 40 [list \
-	[list -text "Grind @ 15" -font "Inter-Bold11" -foreground $left_label_color -exec "puts 1" ] \
-	[list -text "     |     " -font "Inter-Thin14"] \
-	[list -text "Tare" -font "Inter-Bold11" -foreground $left_label_color -exec "puts 1" ] \
-	[list -text "        " -font "Inter-Bold11"] \
-	[list -text "DYE" -font "Inter-Bold11" -foreground $left_label_color -exec "puts 1" ] \
-	[list -text "        " -font "Inter-Bold11"] \
-	[list -text "Clean" -font "Inter-Bold11" -foreground $left_label_color -exec "puts 1" ] \
-	[list -text "        " -font "Inter-Bold11"] \
-	[list -text "Settings" -font "Inter-Bold11" -foreground $left_label_color -exec "puts 1" ] \
-	[list -text "        " -font "Inter-Bold11"] \
-	[list -text "Sleep" -font "Inter-Bold11" -foreground $left_label_color -exec "puts 1" ] \
-]
-
-add_de1_text $pages 700 54 -justify left -anchor "nw" -text [translate "Damian's LRv3 Long Name Profile"] -font Inter-HeavyBold24 -fill $left_label_color -width [rescale_x_skin 1200]
-
-#add_de1_text $pages 2500 164 -justify left -anchor "ne" -text [translate "Scale Disconnected"] -font Inter-Black18 -fill $scale_disconnected_color -width [rescale_x_skin 1200]
-
-add_de1_rich_text $pages 1620 164 "Inter-Bold11" right 1 40 [list \
-	[list -text [translate "Scale Disconnected!"]  -font "Inter-Black18" -foreground $scale_disconnected_color  ] \
-	[list -text "   " -font "Inter-Black18"] \
-	[list -text "Reconnect" -font "Inter-Black18" -foreground "#1967d4" -exec "puts 2" ] \
-]
-
-rectangle $pages 700 136 2502 136 #121212
-
-############################################################################################################################################################################################################
-
-
-
-############################################################################################################################################################################################################
-# The Mix/Group/Steam/Tank status line
-
-
-add_de1_rich_text $pages 702 158 "Inter-Bold18" left 1 44 [list \
-	[list -text "Mix" -font "Inter-Bold18" -foreground #121212  ] \
-	[list -text " " -font "Inter-Bold18"] \
-	[list -text "90ºC" -font "Inter-SemiBold18" -foreground #121212   ] \
-	[list -text "   " -font "Inter-SemiBold18"] \
-	[list -text "Group" -font "Inter-Bold18" -foreground #121212  ] \
-	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text "77ºC" -font "Inter-SemiBold18" -foreground #121212  ] \
-	[list -text "   " -font "Inter-Bold16"] \
-	[list -text "Steam" -font "Inter-Bold18" -foreground #121212  ] \
-	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text "40ºC" -font "Inter-SemiBold18" -foreground #121212 ] \
-	[list -text "   " -font "Inter-Bold16"] \
-	[list -text "Tank" -font "Inter-Bold18" -foreground #121212  ] \
-	[list -text " " -font "Inter-Bold16"] \
-	[list -text "350ml" -font "Inter-SemiBold18" -foreground #121212  ] \
-	[list -text "   " -font "Inter-Bold16"] \
-	[list -text "Weight" -font "Inter-Bold18" -foreground #121212  -exec "puts tare" ] \
-	[list -text " " -font "Inter-Bold16"] \
-	[list -text "36.2g" -font "Inter-Bold18" -foreground #1967d4  -exec "puts tare" ] \
-]
-
-############################################################################################################################################################################################################
+if {$::android != 1} {
+	proc cause_random_data {} {
+		set x [steamtemp]
+		set x [pressure]
+		set x [watertemp]
+		set x [waterflow]
+		set x [water_mix_temperature]
+		after 1000 cause_random_data
+	}
+	cause_random_data
+}
 
 ############################################################################################################################################################################################################
 # draw the background shapes
 
 # far left grey area where buttons appear
 rectangle $pages 0 0 657 1600 #efefef
+
+# empty area on 2/3rd of the right side
+rectangle $pages 657 0 2560 1600 #ffffff
 
 # lower horizontal bar where shot data is shown
 if {$::settings(ghc_is_installed) == 0} { 
@@ -134,6 +90,143 @@ rectangle $pages 58 603 590 604 #121212
 rectangle $pages 58 1061 590 1062 #121212
 rectangle $pages 58 1282 590 1283 #121212
 
+############################################################################################################################################################################################################
+
+############################################################################################################################################################################################################
+# DYE support
+
+set dyebtns ""
+
+if { [plugins enabled DYE] } {
+	package require sqlite3
+	if { [plugins available SDB] } {
+		plugins enable SDB
+	}
+	dui page load DYE current 
+
+	set dyebtn1 [list -text "DYE" -font "Inter-Bold11" -foreground $left_label_color -exec "show_DYE_page" ]
+	set dyebtn2 [list -text "        " -font "Inter-Bold11"]
+	set dyebtn3 [list -text "DYE" -font "Inter-Bold11" -foreground $left_label_color -exec "show_DYE_page" ]
+	set dyebtn4 [list -text "        " -font "Inter-Bold11"]
+
+	set dyebtns "$dyebtn1 $dyebtn2 $dyebtn3 $dyebtn4"
+}
+
+proc show_DYE_page {} {
+	if { [plugins enabled DYE] } {
+		plugins::DYE::open -which_shot default -theme MimojaCafe -coords {700 250} -anchor nw
+	}
+}
+############################################################################################################################################################################################################
+
+
+
+############################################################################################################################################################################################################
+# top right line with profile name and various text labels that are buttons
+
+
+	#[list -text "Tare" -font "Inter-Bold11" -foreground $left_label_color -exec "puts 1" ] \
+	#[list -text "        " -font "Inter-Bold11"] \
+
+	#[list -text "Clean" -font "Inter-Bold11" -foreground $left_label_color -exec  { say [translate {settings}] $::settings(sound_button_in); show_settings} ] \
+	#[list -text "        " -font "Inter-Bold11"] \
+	#[list -text "Grind @ 15" -font "Inter-Bold11" -foreground $left_label_color -exec "puts 1" ] \
+	#[list -text "     |     " -font "Inter-Thin14"] \
+
+set toprightbtns [add_de1_rich_text $pages 2500 44 right 0 40 "#FFFFFF" [list \
+	$dyebtns  \
+	[list -text "Settings" -font "Inter-Bold12" -foreground $left_label_color -exec  { say [translate {settings}] $::settings(sound_button_in); show_settings} ] \
+	[list -text {        } -font "Inter-Bold12"] \
+	[list -text "Sleep" -font "Inter-Bold12" -foreground $left_label_color -exec "say [translate {sleep}] $::settings(sound_button_in);start_sleep" ] \
+]]
+
+add_de1_variable $pages 700 54 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $left_label_color -width [rescale_x_skin 1200] -textvariable {[ifexists settings(profile_title)]} 
+
+
+############################################################################################################################################################################################################
+# The status message on the top right. Might be clickable.
+
+# testing
+#after 1000 {set ::streamline_global(status_msg_text) [translate "Scale Disconnected!"]}
+#after 1000 {set ::streamline_global(status_msg_clickable) [translate "Reconnect"]}
+
+set ::streamline_global(status_msg_text) ""
+set ::streamline_global(status_msg_clickable) ""
+
+proc streamline_status_msg_click {} {
+	puts "ERROR TAPPED $::streamline_global(status_msg_clickable)"	
+}
+
+set streamline_status_msg [add_de1_rich_text $pages 2500 164 right 0 40 "#FFFFFF" [list \
+	[list -text {$::streamline_global(status_msg_text)}  -font "Inter-Black18" -foreground $scale_disconnected_color  ] \
+	[list -text "   " -font "Inter-Black18"] \
+	[list -text {$::streamline_global(status_msg_clickable)}  -font "Inter-Black18" -foreground "#1967d4" -exec "streamline_status_msg_click" ] \
+]]
+
+trace add variable ::streamline_global(status_msg_clickable) write ::refresh_$streamline_status_msg
+
+############################################################################################################################################################################################################
+
+
+
+rectangle $pages 700 136 2502 136 #121212
+
+############################################################################################################################################################################################################
+
+
+
+############################################################################################################################################################################################################
+# The Mix/Group/Steam/Tank status line
+
+
+set btns [list \
+	[list -text "Mix" -font "Inter-Bold18" -foreground #121212  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[mixtemp_text 1]} -font "Inter-SemiBold18" -foreground #121212   ] \
+	[list -text "   " -font "Inter-SemiBold18"] \
+	[list -text "Group" -font "Inter-Bold18" -foreground #121212  ] \
+	[list -text " " -font "Inter-SemiBold18"] \
+	[list -text {[group_head_heater_temperature_text 1]} -font "Inter-SemiBold18" -foreground #121212  ] \
+	[list -text "   " -font "Inter-Bold16"] \
+	[list -text "Steam" -font "Inter-Bold18" -foreground #121212  ] \
+	[list -text " " -font "Inter-SemiBold18"] \
+	[list -text {[steam_heater_temperature_text 1]} -font "Inter-SemiBold18" -foreground #121212 ] \
+	[list -text "   " -font "Inter-Bold16"] \
+	[list -text "Tank" -font "Inter-Bold18" -foreground #121212  ] \
+	[list -text " " -font "Inter-Bold16"] \
+	[list -text {[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]] [translate ml]} -font "Inter-SemiBold18" -foreground #121212  ] \
+	[list -text "   " -font "Inter-Bold16"] \
+]
+
+if {$::settings(scale_bluetooth_address) != ""} {
+	lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground #1967d4  -exec "::device::scale::tare" ] 
+	lappend btns [list -text " " -font "Inter-Bold16"  -exec "puts tare" ]
+	lappend btns [list -text {[drink_weight_text]} -font "Inter-Bold18" -foreground #1967d4  -exec "::device::scale::tare" ]
+	lappend btns [list -text "   " -font "Inter-Bold16"]
+
+
+
+	
+
+}
+
+set streamline_status_msg [add_de1_rich_text $pages 702 158 left 1 50 "#FFFFFF" $btns ]
+
+# GH temp
+#trace add variable ::de1(head_temperature) write ::refresh_$streamline_status_msg
+
+# steam temp
+#trace add variable ::de1(steam_heater_temperature) write ::refresh_$streamline_status_msg
+
+# mix temp
+#trace add variable ::de1(mix_temperature) write ::refresh_$streamline_status_msg
+
+# tank level
+#trace add variable ::de1(water_level) write ::refresh_$streamline_status_msg
+
+if {$::settings(scale_bluetooth_address) == ""} {
+	#trace add variable ::de1(scale_weight) write ::refresh_$streamline_status_msg
+}
 ############################################################################################################################################################################################################
 
 
@@ -560,8 +653,8 @@ if {$::settings(ghc_is_installed) == 0} {
 # the espresso chart
 
 set ::pressurelinecolor "#0ba581"
-set ::flow_line_color "#6c9bff"
-set ::temperature_line_color "#ff7880"
+set ::flow_line_color "#1e67c7"
+set ::temperature_line_color "#bb5f6b"
 
 set ::pressurelinecolor_god "#5deea6"
 set ::flow_line_color_god "#a7d1ff"
@@ -571,30 +664,64 @@ set ::chart_background "#FFFFFF"
 
 set ::pressurelabelcolor "#121212"
 set ::temperature_label_color "#ff7880"
-set ::flow_label_color "#6c9bff"
+set ::flow_label_color "#1e67c7"
 set ::grid_color "#E0E0E0"
 
 set charts_width 1830
 
 add_de1_widget $pages graph 680 250 { 
 
-	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 8] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique)  -pixels 0 -dashes {5 5}; 
-	$widget element create line_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 10] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
-	#$widget element create god_line_espresso_pressure -xdata espresso_elapsed -ydata god_espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 20] -color $::pressurelinecolor_god  -smooth $::settings(live_graph_smoothing_technique) -pixels 0; 
-	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 6] -color #AAAAAA  -pixels 0 ; 
+	set ::streamline_chart $widget
+
+	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 2] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique)  -pixels 0 -dashes {5 5}; 
+	$widget element create line_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_pressure); 
+	
+	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 2] -color #121212  -pixels 0 ; 
+
+	$widget element create line_espresso_flow_goal  -xdata espresso_elapsed -ydata espresso_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 2] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes {5 5}; 
+	$widget element create line_espresso_flow  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_flow);  
+
+	$widget element create line_espresso_temperature_goal -xdata espresso_elapsed -ydata espresso_temperature_goal10th -symbol none -label ""  -linewidth [rescale_x_skin 2] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
+	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket10th -symbol none -label ""  -linewidth [rescale_x_skin 6] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
+
+	$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 15] -color $::temperature_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 	# show the explanation
 	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 15] -color $::pressurelinecolor  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
-	if {$::settings(display_pressure_delta_line) == 1} {
-		$widget element create line_espresso_pressure_delta2  -xdata espresso_elapsed -ydata espresso_pressure_delta -symbol none -label "" -linewidth [rescale_x_skin 2] -color #40dc94 -pixels 0 -smooth $::settings(live_graph_smoothing_technique) 
-	}
-
 	gridconfigure $widget 
 
-	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular20 -linewidth [rescale_x_skin 2] 
+	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular20 -linewidth [rescale_x_skin 2] -subdivisions 5 -majorticks {0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125 130 135 140 145 150 155 160 165 170 175 180 185 190 195 200 205 210 215 220 225 230 235 240 245 250 255} 
 	$widget axis configure y -color $::pressurelabelcolor -tickfont Inter-Regular20 -min 0.0 -max [expr {$::de1(max_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3 4 5 6 7 8 9 10 11 12} 
 } -plotbackground $::chart_background -width [rescale_x_skin $charts_width] -height [rescale_y_skin 943] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
 ############################################################################################################################################################################################################
 
+proc streamline_adjust_chart_x_axis {} {
 
+	set widget $::streamline_chart
+	set sz [espresso_pressure length]
+	#puts "streamline_adjust_chart_x_axis $sz"
+	if {$sz < 2} {
+		$widget axis configure x -majorticks {0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125 130 135 140 145 150 155 160 165 170 175 180 185 190 195 200 205 210 215 220 225 230 235 240 245 250 255} 
+		#-subdivisions 4
+	} elseif {$sz < 99} {
+		$widget axis configure x -majorticks {1 2 3 4 5 6 7 8 9 10 11 12 13 14} 
+		#-subdivisions 2
+	} elseif {$sz < 300} {
+		$widget axis configure x -majorticks {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 } 
+		#$widget axis configure x -majorticks {1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60} 
+		#-subdivisions 5
+	} elseif {$sz < 600} {
+		$widget axis configure x -majorticks {0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38 40 42 44 46 48 50 52 54 56 58 60 62 64} 
+		#-subdivisions 5
+	} else  {
+		$widget axis configure x -majorticks {0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125 130 135 140 145 150 155 160 165 170 175 180 185 190 195 200 205 210 215 220 225 230 235 240 245 250 255} 
+		#-subdivisions 5
+	}
+
+	after 1000 streamline_adjust_chart_x_axis
+	
+}
+streamline_adjust_chart_x_axis
+
+add_de1_button "saver sleep descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off off; page_show off; start_idle; de1_send_waterlevel_settings; } 0 0 2560 1600 "buttonnativepress"

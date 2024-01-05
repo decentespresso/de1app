@@ -32,11 +32,13 @@ proc clear_espresso_chart {} {
 	espresso_flow_delta_negative_2x length 0
 	espresso_temperature_mix length 0
 	espresso_temperature_basket length 0
+	espresso_temperature_basket10th length 0
 	espresso_state_change length 0
 	espresso_pressure_goal length 0
 	espresso_flow_goal length 0
 	espresso_flow_goal_2x length 0
 	espresso_temperature_goal length 0
+	espresso_temperature_goal10th length 0
 
 	espresso_de1_explanation_chart_elapsed length 0
 	espresso_de1_explanation_chart_elapsed_1 length 0
@@ -67,11 +69,13 @@ proc clear_espresso_chart {} {
 	espresso_flow_delta_negative_2x append 0
 	espresso_temperature_mix append [return_temperature_number $::settings(espresso_temperature)]
 	espresso_temperature_basket append [return_temperature_number $::settings(espresso_temperature)]
+	espresso_temperature_basket10th append [round_to_two_digits [expr {[return_temperature_number $::settings(espresso_temperature)] / 10.0}]]
 	espresso_state_change append 0
 	espresso_pressure_goal append -1
 	espresso_flow_goal append -1
 	espresso_flow_goal_2x append -1
 	espresso_temperature_goal append [return_temperature_number $::settings(espresso_temperature)]
+	espresso_temperature_goal10th append [round_to_two_digits [expr {[return_temperature_number $::settings(espresso_temperature)] / 10.0}]]
 
 	god_shot_reference_reset
 	
@@ -83,7 +87,7 @@ proc clear_espresso_chart {} {
 }	
 
 proc espresso_chart_structures {} {
-	return [list espresso_elapsed espresso_pressure espresso_weight espresso_weight_chartable espresso_flow espresso_flow_weight espresso_flow_weight_raw espresso_water_dispensed espresso_flow_weight_2x espresso_flow_2x espresso_resistance espresso_resistance_weight espresso_pressure_delta espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_temperature espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3 espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_elapsed_flow_3 espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3]
+	return [list espresso_elapsed espresso_pressure espresso_weight espresso_weight_chartable espresso_flow espresso_flow_weight espresso_flow_weight_raw espresso_water_dispensed espresso_flow_weight_2x espresso_flow_2x espresso_resistance espresso_resistance_weight espresso_pressure_delta espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_temperature_goal10th espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_temperature espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3 espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_elapsed_flow_3 espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3]
 }
 
 proc backup_espresso_chart {} {
@@ -589,7 +593,8 @@ proc waterflow {} {
 		}
 
 
-		set ::de1(flow) [expr {(.1 * (rand() - 0.5)) + $::de1(flow)}]		
+		set ::de1(flow) [expr {(.3 * (rand() - 0.5)) + $::de1(flow)}]		
+		set ::de1(goal_flow) [expr {(.3 * (rand() - 0.5)) + $::de1(goal_flow)}]		
 
 		if {$::de1_num_state($::de1(state)) == "Espresso"} {
 			if {[espresso_millitimer] < 5000} {	
@@ -622,6 +627,7 @@ proc watervolume {} {
 }
 
 proc steamtemp {} {
+
 	if {$::android == 0} {
 
 		set ::de1(steam_heater_temperature) [expr {(160+(rand() * 5))}]
@@ -645,7 +651,8 @@ proc watertemp {} {
 		}
 
 		#set ::de1(head_temperature) [expr {rand() + $::de1(head_temperature) - 0.5}]
-		set ::de1(head_temperature) [expr {(.2 * (rand() - 0.6)) + $::de1(head_temperature)}]		
+		set ::de1(head_temperature) [expr {(1 * (rand() - .5)) + $::de1(head_temperature)}]		
+		set ::de1(goal_temperature) [expr {(1 * (rand() - .5)) + $::de1(goal_temperature)}]		
 		#set ::de1(head_temperature) 90
 
 	}
@@ -674,6 +681,7 @@ proc pressure {} {
 
 
 			set ::de1(pressure) [expr {(.5 * (rand() - 0.5)) + $::de1(pressure)}]
+			set ::de1(goal_pressure) [expr {(.5 * (rand() - 0.5)) + $::de1(goal_pressure)}]
 		} elseif {$::de1(state) == 5} { 
 			#steam
 			if {[ifexists ::de1(pressure)] == ""} {
@@ -729,7 +737,11 @@ proc group_head_heater_temperature {} {
 	
 	if {$::android == 0} {
 		# slowly have the water level drift
-		set ::de1(water_level) [expr {$::de1(water_level) + (.1*(rand() - 0.5))}]
+		set ::de1(head_temperature) [expr {$::de1(head_temperature) + (.1*(rand() - 0.5))}]
+
+		if {$::de1(head_temperature) < 10} {
+			set ::de1(head_temperature) 80
+		}
 	}
 
 	return $::de1(head_temperature)
@@ -737,7 +749,7 @@ proc group_head_heater_temperature {} {
 
 proc steam_heater_temperature {} {
 	if {$::android == 0} {
-		set ::de1(mix_temperature) [expr {140 + (rand() * 20.0)}]
+		set ::de1(steam_heater_temperature) [expr {140.0 + (rand() * 1)}]
 	}
 
 	return $::de1(steam_heater_temperature)
@@ -745,12 +757,18 @@ proc steam_heater_temperature {} {
 }
 proc water_mix_temperature {} {
 	if {$::android == 0} {
-		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
+		#if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
 			if {$::de1(mix_temperature) == "" || $::de1(mix_temperature) < 85 || $::de1(mix_temperature) > 99} {
 				set ::de1(mix_temperature) 94
+				
 			}
-			set ::de1(mix_temperature) [expr {$::de1(head_temperature) + ((rand() - 0.5) * 2) }]
-		}
+			#if {$::de1(mix_temperature) == "" || $::de1(mix_temperature) < 1 || $::de1(mix_temperature) > 9} {
+				#
+				#set ::de1(mix_temperature) 5
+				
+			#}
+			set ::de1(mix_temperature) [expr {$::de1(mix_temperature) + ((rand() - 0.5) * 2) }]
+		#}
 			#return [return_flow_weight_measurement [expr {(rand() * 6)}]]
 	}
 
@@ -1261,16 +1279,16 @@ proc diff_flow_rate_text {} {
 
 
 
-proc mixtemp_text {} {
-	return [return_temperature_measurement [water_mix_temperature]]
+proc mixtemp_text {{integer 0}} {
+	return [return_temperature_measurement [water_mix_temperature] $integer]
 }
 
-proc watertemp_text {} {
-	return [return_temperature_measurement [watertemp]]
+proc watertemp_text {{integer 0}} {
+	return [return_temperature_measurement [watertemp] $integer]
 }
 
-proc steamtemp_text {} {
-	return [return_temperature_measurement [steamtemp]]
+proc steamtemp_text {{integer 0}} {
+	return [return_temperature_measurement [steamtemp] $integer]
 }
 
 proc pressure_text {} {
@@ -1350,18 +1368,24 @@ proc return_temperature_number {in} {
 # we were using the wrong unicode symbol for the degrees sign (should be \u00B0 not \u00BA).
 # http://www.fileformat.info/info/unicode/char/b0/index.htm
 # http://www.fileformat.info/info/unicode/char/ba/index.htm
-proc return_temperature_measurement {in} {
+proc return_temperature_measurement {in {integer 0}} {
 	if {$::settings(enable_fahrenheit) == 1} {
 		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 	} else {
+		if {$integer == 1} {
+			return [subst {[round_to_integer $in]\u00B0C}]
+		}
 		return [subst {[round_to_one_digits $in]\u00B0C}]
 	}
 }
 
-proc return_steam_temperature_measurement {in} {
+proc return_steam_temperature_measurement {in {integer 0}} {
 	if {$::settings(enable_fahrenheit) == 1} {
 		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 	} else {
+		if {$integer == 1} {
+			return [subst {[round_to_integer $in]\u00B0C}]
+		}
 		return [subst {[round_to_integer $in]\u00B0C}]
 	}
 }
@@ -1430,26 +1454,26 @@ proc return_delta_temperature_measurement {in} {
 	return $s
 }
 
-proc setting_steam_temperature_text {} {
-	return [return_temperature_measurement [setting_steam_temperature]]
+proc setting_steam_temperature_text { {integer 0}} {
+	return [return_temperature_measurement [setting_steam_temperature] $integer]
 }
-proc setting_water_temperature_text {} {
-	return [return_temperature_measurement [setting_water_temperature]]
-}
-
-
-
-proc steam_heater_temperature_text {} {
-	return [return_temperature_measurement [steam_heater_temperature]]
+proc setting_water_temperature_text { {integer 0}} {
+	return [return_temperature_measurement [setting_water_temperature] $integer]
 }
 
-proc group_head_heater_temperature_text {} {
-	return [return_temperature_measurement [group_head_heater_temperature]]
+
+
+proc steam_heater_temperature_text { {integer 0} } {
+	return [return_temperature_measurement [steam_heater_temperature] $integer]
 }
 
-proc group_head_heater_temperature_text_rtl_aware {} {
+proc group_head_heater_temperature_text { {integer 0} } {
+	return [return_temperature_measurement [group_head_heater_temperature] $integer]
+}
 
-	return [subst {[return_temperature_measurement [group_head_heater_temperature]] [translate "metal"]}]
+proc group_head_heater_temperature_text_rtl_aware { {integer 0}} {
+
+	return [subst {[return_temperature_measurement [group_head_heater_temperature] $integer] [translate "metal"]}]
 }
 
 proc coffee_temp_text_rtl_aware {} {
@@ -2567,6 +2591,7 @@ proc preview_history {w args} {
 		espresso_flow length 0; espresso_flow append $props(espresso_flow)
 		espresso_flow_weight length 0; espresso_flow_weight append $props(espresso_flow_weight)
 		espresso_temperature_basket length 0; espresso_temperature_basket append $props(espresso_temperature_basket)
+		espresso_temperature_basket10th length 0; espresso_temperature_goal10th append [round_to_two_digits [expr {[return_temperature_number $::settings(espresso_temperature_basket)] / 10.0}]
 		espresso_temperature_mix length 0; espresso_temperature_mix append $props(espresso_temperature_mix)
 
 		make_current_listbox_item_blue $::globals(history_listbox)
