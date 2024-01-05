@@ -724,4 +724,6 @@ proc streamline_adjust_chart_x_axis {} {
 }
 streamline_adjust_chart_x_axis
 
-add_de1_button "saver sleep descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off off; page_show off; start_idle; de1_send_waterlevel_settings; } 0 0 2560 1600 "buttonnativepress"
+add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off off; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
+
+#add_de1_button "sleep" {say [translate {sleep}] $::settings(sound_button_in);set_next_page off off; after 1000 start_idle} 0 0 2560 1600

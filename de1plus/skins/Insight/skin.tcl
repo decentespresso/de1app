@@ -605,6 +605,7 @@ if {$::debugging == 1} {
 	add_de1_button "off espresso_3 preheat_1 preheat_3 preheat_4 steam_1 steam_3 steam_zoom_3 water_1 water_3 water_4 off_zoomed espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {sleep}] $::settings(sound_button_in); set ::current_espresso_page "off"; start_sleep} 2014 1420 2284 1600
 }
 add_de1_text "sleep" 2500 1440 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
+add_de1_button "sleep" {say [translate {sleep}] $::settings(sound_button_in); set_next_page off off; after 1000 start_idle} 0 0 2560 1600
 
 # settings button 
 add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed steam_1 water_1 preheat_1 steam_3 steam_zoom_3 water_3 preheat_3 preheat_4 off_zoomed_temperature espresso_3_zoomed_temperature" { say [translate {settings}] $::settings(sound_button_in); show_settings } 2285 1420 2560 1600

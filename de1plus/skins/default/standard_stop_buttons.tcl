@@ -28,7 +28,6 @@ add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_but
 
 
 add_de1_text "sleep" 2500 1450 -justify right -anchor "ne" -text [translate "Going to sleep"] -font Helv_20_bold -fill "#DDDDDD" 
-add_de1_button "sleep" {say [translate {sleep}] $::settings(sound_button_in);start_sleep} 0 0 2560 1600
 
 #bind Canvas <ButtonPress-1> {+; focus %W}
 
