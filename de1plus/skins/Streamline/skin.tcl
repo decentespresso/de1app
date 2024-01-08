@@ -473,49 +473,13 @@ add_de1_button "off" {puts "hot water value 8"} 466 1489 613 1566 ""
 ############################################################################################################################################################################################################
 # four ESPRESSO PROFILE shotcut buttons at the top left
 
-# rounded rectangle color 
-dui aspect set -theme default -type dbutton outline "#D8D8D8"
-
-# inside button color
-dui aspect set -theme default -type dbutton fill "#d8d8d8"
-#d8d8d8
-
-
-# font to use
-dui aspect set -theme default -type dbutton label_font Inter-Bold11
-
-# rounded retangle radius
-dui aspect set -theme default -type dbutton radius 18
-
-# rounded retangle line width
-dui aspect set -theme default -type dbutton width 2 
-
-
-# width of the text, to enable auto-wrapping
-dui aspect set -theme default -type dbutton_label width [rescale_x_skin 480]
-
-# button shape
-dui aspect set -theme default -type dbutton shape round_outline 
-
-# label position
-dui aspect set -theme default -type dbutton label_pos ".50 .50" 
-
-####
-# the selected profile button
-
-# button color
-#dui aspect set -theme default -type dbutton fill "#3e5682"
-dui aspect set -theme default -type dbutton fill "#d8d8d8"
-
-# font color
-#dui aspect set -theme default -type dbutton label_fill "#ffffff"
-dui aspect set -theme default -type dbutton label_fill "#3c5782"
-
-# width of text of profile selection button
-dui aspect set -theme default -type dbutton_label width 220
-
 
 proc refresh_favorite_profile_button_labels {} {
+
+	if {[ifexists ::streamline_selected_favorite_profile] == ""} {
+		set ::streamline_selected_favorite_profile 1
+	}
+
 
 	set profiles [ifexists ::settings(favorite_profiles)]
 
@@ -526,19 +490,20 @@ proc refresh_favorite_profile_button_labels {} {
 
 	catch {
 		set b1 [dict get $profiles 1 title]
-		regsub -all {/} $b1 {/ } b1
+		regsub -all {/} $b1 {:} b1
 	}
 	catch {
 		set b2 [dict get $profiles 2 title]
-		regsub -all {/} $b2 {/ } b2
+		regsub -all {/} $b2 {:} b2
 	}
 	catch {
 		set b3 [dict get $profiles 3 title]
-		regsub -all {/} $b3 {/ } b3
+		regsub -all {/} $b3 {:} b3
 	}
 	catch {
 		set b4 [dict get $profiles 4 title]
-		regsub -all {/} $b4 {/ } b4
+		regsub -all {/} $b4 {:} b4
+		puts "b4: '$b4'"
 	}
 
 	set changed 0
@@ -587,14 +552,95 @@ proc refresh_favorite_profile_button_labels {} {
 
 	#puts "b1: $b1 / b2: $b2 / b3 : $b3 / b4: $b4"
 
-}
-refresh_favorite_profile_button_labels
+	set b1c "#d8d8d8"
+	set b2c "#d8d8d8"
+	set b3c "#d8d8d8"
+	set b4c "#d8d8d8"
 
-set ::streamline_favorite_profile_buttons(1) [dui add dbutton "off" 58 27 311 136 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { streamline_profile_select 1 }]
-set ::streamline_favorite_profile_buttons(1b) [dui add dbutton $::pages_not_off 58 27 311 136 -tags profile_1b_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)} ]
+	set lb1c "#3e5682"
+	set lb2c "#3e5682"
+	set lb3c "#3e5682"
+	set lb4c "#3e5682"
+
+	#regsub -all {/} $::settings(profile_title) {/ } profile_title
+	#puts "profile_title: '$profile_title' vs '$b4'"
+	#set  $slot
+
+	if {$::streamline_selected_favorite_profile == 1} {
+		set b1c "#3e5682"
+		set lb1c "#ffffff"
+	} elseif {$::streamline_selected_favorite_profile == 2} {
+		set b2c "#3e5682"
+		set lb2c "#ffffff"
+	} elseif {$::streamline_selected_favorite_profile == 3} {
+		set b3c "#3e5682"
+		set lb3c "#ffffff"
+	} elseif {$::streamline_selected_favorite_profile == 4} {
+		set b4c "#3e5682"
+		set lb4c "#ffffff"
+	}
+	.can itemconfigure profile_1_btn-btn -fill $b1c
+	.can itemconfigure profile_2_btn-btn -fill $b2c
+	.can itemconfigure profile_3_btn-btn -fill $b3c
+	.can itemconfigure profile_4_btn-btn -fill $b4c
+
+	#.can itemconfigure profile_1_btn-out -fill $b1c
+	#.can itemconfigure profile_2_btn-out -fill $b2c
+	#.can itemconfigure profile_3_btn-out -fill $b3c
+	#.can itemconfigure profile_4_btn-out -fill $b4c
+
+	.can itemconfigure profile_1_btn-lbl -fill $lb1c
+	.can itemconfigure profile_2_btn-lbl -fill $lb2c
+	.can itemconfigure profile_3_btn-lbl -fill $lb3c
+	.can itemconfigure profile_4_btn-lbl -fill $lb4c
+}
+
 
 ####
-# NOT selected profile buttons
+# favorite profile buttons
+
+
+# rounded rectangle color 
+dui aspect set -theme default -type dbutton outline "#efefef"
+
+# inside button color
+dui aspect set -theme default -type dbutton fill "#d8d8d8"
+#d8d8d8
+
+
+# font to use
+dui aspect set -theme default -type dbutton label_font Inter-Bold11
+
+# rounded retangle radius
+dui aspect set -theme default -type dbutton radius 18
+
+# rounded rectangle line width
+dui aspect set -theme default -type dbutton width 2
+
+
+# width of the text, to enable auto-wrapping
+dui aspect set -theme default -type dbutton_label width [rescale_x_skin 480]
+
+# button shape
+dui aspect set -theme default -type dbutton shape round_outline 
+
+# label position
+dui aspect set -theme default -type dbutton label_pos ".50 .50" 
+
+####
+# the selected profile button
+
+# button color
+#dui aspect set -theme default -type dbutton fill "#3e5682"
+dui aspect set -theme default -type dbutton fill "#d8d8d8"
+
+# font color
+#dui aspect set -theme default -type dbutton label_fill "#ffffff"
+dui aspect set -theme default -type dbutton label_fill "#3c5782"
+
+# width of text of profile selection button
+dui aspect set -theme default -type dbutton_label width 220
+
 
 # button color
 dui aspect set -theme default -type dbutton fill "#d8d8d8"
@@ -602,20 +648,21 @@ dui aspect set -theme default -type dbutton fill "#d8d8d8"
 # font color
 dui aspect set -theme default -type dbutton label_fill "#3c5782"
 
-set ::streamline_favorite_profile_buttons(2) [dui add dbutton "off" 341 27 592 136 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { streamline_profile_select 2 } ]
-set ::streamline_favorite_profile_buttons(3) [dui add dbutton "off" 58 157 311 267 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { streamline_profile_select 3 } ]
-set ::streamline_favorite_profile_buttons(4) [dui add dbutton "off" 341 157 592 267 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { streamline_profile_select 4 } ]
-set ::streamline_favorite_profile_buttons(2b) [dui add dbutton $::pages_not_off 341 27 592 136 -tags profile_2b_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  ]
-set ::streamline_favorite_profile_buttons(3b) [dui add dbutton $::pages_not_off 58 157 311 267 -tags profile_3b_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)}  ]
-set ::streamline_favorite_profile_buttons(4b) [dui add dbutton $::pages_not_off 341 157 592 267 -tags profile_4b_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}  ]
+dui add dbutton "off" 58 27 311 136 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { streamline_profile_select 1 }
+dui add dbutton "off" 341 27 592 136 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { streamline_profile_select 2 } 
+dui add dbutton "off" 58 157 311 267 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { streamline_profile_select 3 } 
+dui add dbutton "off" 341 157 592 267 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { streamline_profile_select 4 } 
+
+refresh_favorite_profile_button_labels
 
 
-#.can itemconfigure $::streamline_favorite_profile_buttons(1) -fill "#3e5682"
+#dui add dbutton "off" 58 157 311 267 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { streamline_profile_select 3 } 
+#.can itemconfigure profile_3_btn-btn -fill "#ff0000"
 #.can itemconfigure $::streamline_favorite_profile_buttons(2) -fill "#3e5682"
 
 #dui item config $::streamline_favorite_profile_buttons(1) label -fill "#3e5682"
 
-puts "ERROR [dui item config $::streamline_favorite_profile_buttons(3)]"
+#puts "ERROR [dui item config $::streamline_favorite_profile_buttons(3)]"
 
 
 ############################################################################################################################################################################################################
@@ -701,7 +748,9 @@ proc streamline_profile_select { slot } {
 
 	set profiles [ifexists ::settings(favorite_profiles)]
 	select_profile [dict get $profiles $slot name]
-
+	set ::streamline_selected_favorite_profile $slot
+	streamline_adjust_chart_x_axis
+	refresh_favorite_profile_button_labels
 }
 
 proc save_favorite_profile { slot } {
@@ -714,7 +763,7 @@ proc save_favorite_profile { slot } {
 	#refresh_favorite_profile_button_labels
 	refresh_favorite_profile_button_labels
 	#save_settings
-	borg toast [translate "Saved in slot $slot"]
+	borg toast [translate "Saved favorite profile"]
 }
 
 ############################################################################################################################################################################################################
@@ -834,7 +883,7 @@ add_de1_widget $::pages graph 680 250 {
 
 	gridconfigure $widget 
 
-	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular20 -linewidth [rescale_x_skin 2] -subdivisions 5 -majorticks {0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125 130 135 140 145 150 155 160 165 170 175 180 185 190 195 200 205 210 215 220 225 230 235 240 245 250 255} 
+	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular20 -linewidth [rescale_x_skin 2] -subdivisions 5 -majorticks {0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210 220 230 240 250} 
 	$widget axis configure y -color $::pressurelabelcolor -tickfont Inter-Regular20 -min 0 -max [expr {$::de1(max_pressure) + 0.01}] -subdivisions 5 -majorticks {1 2 3 4 5 6 7 8 9 10 11 12} 
 } -plotbackground $::chart_background -width [rescale_x_skin $charts_width] -height [rescale_y_skin 943] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
 ############################################################################################################################################################################################################
@@ -843,6 +892,7 @@ proc streamline_adjust_chart_x_axis {} {
 
 	set widget $::streamline_chart
 	set sz [espresso_pressure length]
+
 	#puts "streamline_adjust_chart_x_axis $sz"
 	if {$sz < 2} {
 		$widget axis configure x -majorticks {0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125 130 135 140 145 150 155 160 165 170 175 180 185 190 195 200 205 210 215 220 225 230 235 240 245 250 255} 
@@ -857,8 +907,11 @@ proc streamline_adjust_chart_x_axis {} {
 	} elseif {$sz < 600} {
 		$widget axis configure x -majorticks {0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38 40 42 44 46 48 50 52 54 56 58 60 62 64} 
 		#-subdivisions 5
+	} elseif {$sz < 1200} {
+		$widget axis configure x -majorticks {0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38 40 42 44 46 48 50 52 54 56 58 60 62 64} 
+		#-subdivisions 5
 	} else  {
-		$widget axis configure x -majorticks {0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 125 130 135 140 145 150 155 160 165 170 175 180 185 190 195 200 205 210 215 220 225 230 235 240 245 250 255} 
+		$widget axis configure x -majorticks {} 
 		#-subdivisions 5
 	}
 
