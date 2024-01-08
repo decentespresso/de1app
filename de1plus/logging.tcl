@@ -87,6 +87,8 @@ namespace eval ::logging {
 		}
 	}
 
+
+
 	proc default_logger {args} {
 
 		set now [clock milliseconds]
@@ -125,11 +127,51 @@ namespace eval ::logging {
 		}
 		set formatted_output [string trimright $formatted_output]
 
-		if { $severity <= $::logging::severity_limit_logfile } {
-			catch {
-				puts $::logging::_log_fh $formatted_output
+
+		#####################
+		# automatic log suppression if the same message is happening over and over
+		
+		set prev_time 0
+		if {[info exists ::logmsg_time_tracker($message)] == 1} {
+			set prev_time $::logmsg_time_tracker($message)
+		}
+
+		set difftime 100000
+		if {$prev_time != "0"} {
+			set difftime [expr {$now - $prev_time}]
+		}
+		set ::logmsg_time_tracker($message) $now
+
+
+		if {$difftime < 1000} {
+			# don't display a message if it's happening more than once a second
+
+			if {[info exists ::supressing_log_msgs($message)] == 1} {
+				# don't repeat the message
+			} else {
+				append formatted_output " - SUPPRESSING REPEATS"
+				set ::supressing_log_msgs($message) 1
+				
+				if { $severity <= $::logging::severity_limit_logfile } {
+					catch {
+						puts $::logging::_log_fh $formatted_output
+					}
+				}
+
 			}
 		}
+
+		if {$difftime >= 1000} {
+
+			unset -nocomplain ::supressing_log_msgs($message)
+
+			if { $severity <= $::logging::severity_limit_logfile } {
+				catch {
+					puts $::logging::_log_fh $formatted_output
+				}
+			}
+		}
+
 
 		if { $severity <= $::logging::severity_limit_console } {
 			catch {
@@ -144,6 +186,8 @@ namespace eval ::logging {
 					$message
 			}
 		}
+
+		#####################
 	}
 
 	# TODO: catch log-rotation and file-open errors and somehow report them
