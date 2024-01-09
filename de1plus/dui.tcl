@@ -90,10 +90,6 @@ namespace eval ::dui {
 		variable listbox_length_multiplier
 		variable listbox_global_width_multiplier
 
-
-		set settings(app_title) $::settings(skin)
-
-
 		if { ![info exists ::loaded_fonts] } {
 			set loaded_fonts {}
 		}
@@ -6404,7 +6400,11 @@ namespace eval ::dui {
 					msg -WARNING [namespace current] "page '$page_to_show' has no visual items to show"
 				}
 			
-				set previous_item $page_to_show
+				if { $show_page_type eq "dialog" } {
+					set previous_item $page_to_show
+				} else {
+					set previous_item [$can find withtag pages&&$page_to_show]
+				}
 				foreach item $items_to_show {
 					set item_type [$can type $item]
 					if { !$preload_images && $item_type eq "image" } {
@@ -6439,7 +6439,7 @@ namespace eval ::dui {
 							$can itemconfigure $item -state $state
 						}
 						
-						if { $show_page_type eq "dialog" && $previous_item ne {} } {
+						if { $previous_item ne {} } {
 							# Ensure the z-order stack is properly maintained 
 							$can raise $item $previous_item
 						}
@@ -6637,7 +6637,7 @@ namespace eval ::dui {
 		#	the job.
 		proc add_items { pages tags } {
 			set can [dui canvas]
-			
+
 			foreach tag $tags {
 				if { [string is integer $tag] } {
 					set ids $tag
@@ -6647,14 +6647,17 @@ namespace eval ::dui {
 				
 				foreach id $ids {
 					set item_tags [$can gettags $id]
+					set changed 0
 					foreach page $pages {
 						if { "p:$page" ni $item_tags } {
 							lappend item_tags "p:$page"
+							set changed 1
 						}
 					}
-					
-					msg -DEBUG [namespace current] add_items "with tag(s) '$item_tags' to page(s) '$pages'"
-					$can itemconfigure $tag -tags $item_tags
+					if {$changed == 1} {
+						$can itemconfigure $id -tags $item_tags	
+						msg -DEBUG [namespace current] add_items "with tag(s) '$id' to page(s) '$pages'"
+					}
 				}
 			}
 		}
