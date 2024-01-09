@@ -895,14 +895,23 @@ proc return_scale_timer {} {
 	return [round_to_one_digits [expr {$::de1(scale_timestamp) / 10.0}]]
 }
 
-proc return_weight_measurement {in} {
+proc return_weight_measurement {in {integer 0}} {
     if {$::de1(language_rtl) == 1} {
+    	if {$integer == 1} {
+			return [subst {[translate "g"][round_to_integer $in]}]
+    	}
 		return [subst {[translate "g"][round_to_one_digits $in]}]
     }
 
 	if {$::settings(enable_fluid_ounces) != 1} {
+    	if {$integer == 1} {
+			return [subst {[round_to_integer $in][translate "g"]}]
+		}
 		return [subst {[round_to_one_digits $in][translate "g"]}]
 	} else {
+    	if {$integer == 1} {
+			return [subst {[round_to_integer [ml_to_oz $in]] oz}]
+		}
 		return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
 	}
 }
@@ -1481,8 +1490,8 @@ proc coffee_temp_text_rtl_aware {} {
 
 }
 
-proc setting_espresso_temperature_text {} {
-	return [return_temperature_measurement [setting_espresso_temperature]]
+proc setting_espresso_temperature_text { {integer 0} } {
+	return [return_temperature_measurement [setting_espresso_temperature] $integer]
 }
 
 proc setting_espresso_pressure {} {
