@@ -4056,4 +4056,42 @@ proc set_resolution_height_from_width { {discard {}} } {
 		}
 	}
 }
+
+
 proc determine_final_weight { {tochange 0} } {
+	# SAW
+	set var ""
+	if {[::device::scale::expecting_present]} {
+		if {$::settings(settings_profile_type) == "settings_2c"} {
+			set var ::settings(final_desired_shot_weight_advanced)
+		} else {
+			set var ::settings(final_desired_shot_weight)
+		}
+	}
+	# SAV
+	if {$::settings(settings_profile_type) == "settings_2c"} {
+		set var ::settings(final_desired_shot_volume_advanced)
+	} else {
+		set var ::settings(final_desired_shot_volume)
+	}
+
+	if {$tochange != 0} {
+		set $var [expr {[ifexists $var] + $tochange}]
+	}
+	return [ifexists $var]
+}
+
+proc dose_weight_ratio {} {
+	set dose $::settings(grinder_dose_weight)
+	set final [determine_final_weight]
+
+	set ratio [round_to_two_digits [expr {1.0 * $final / $dose }]]
+
+	if {[round_to_integer $ratio] == $ratio} {
+		return "1:[round_to_integer $ratio]"
+	} elseif {[round_to_one_digits $ratio] == $ratio} {
+		return "1:[round_to_one_digits $ratio]"
+	
+	}
+	return "1:$ratio"
+}
