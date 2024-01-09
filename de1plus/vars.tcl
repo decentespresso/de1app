@@ -3142,6 +3142,9 @@ proc save_profile {} {
 		if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] == 1} {
 			append profile_filename "_" $profile_timestamp
 		}
+
+		# save the new filename in settings
+		set ::settings(profile_filename) $profile_filename
 	}
 	
 	set tclfile ${profile_filename}
