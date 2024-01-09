@@ -3047,7 +3047,8 @@ proc load_settings_vars {fn} {
 
 
 	# we accidentally saved water temp in profiles for about a year and then decided we didn't want that, so remove it from profiles if it's there
-	unset -nocomplain temp_settings(water_temperature) 
+	# john 9-1-2024 changed our mind again to wanting it
+	#unset -nocomplain temp_settings(water_temperature) 
 
 	catch {
 		array set ::settings [array get temp_settings]
@@ -3080,7 +3081,7 @@ proc save_settings_vars {fn varlist} {
 }
 
 proc profile_vars {} {
- 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_pressure_range_advanced maximum_flow_range_advanced maximum_flow maximum_pressure_range_default maximum_flow_range_default grinder_dose_weight}
+ 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_pressure_range_advanced maximum_flow_range_advanced maximum_flow maximum_pressure_range_default maximum_flow_range_default grinder_dose_weight steam_timeout flush_seconds water_temperature water_volume  }
 }
 
 proc set_profile_title_untitled {} {
