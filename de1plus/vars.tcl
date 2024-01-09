@@ -3089,7 +3089,7 @@ proc preset_counter_get_and_incr {} {
 	return $::settings(preset_counter)
 }
 
-proc save_profile {} {
+proc save_profile {  {do_saved_msg 1} } {
 	if {$::settings(profile_title) == [translate "Saved"]} {
 		return
 	}
@@ -3159,7 +3159,9 @@ proc save_profile {} {
 	# moves the cursor to the end of the seletion after showing the "saved" message.
 
 	set cmd "set ::settings(profile_title) \{$::settings(profile_title)\}; $::globals(widget_profile_name_to_save) icursor 999; select_profile \{$tclfile\}"	
-	after 500 $cmd
+	if {$do_saved_msg == 1} {
+		after 500 $cmd
+	}
 
 	# Save V2 of profiles in parallel
 	::profile::save "[homedir]/profiles_v2/${profile_filename}.json"
@@ -3169,11 +3171,15 @@ proc save_profile {} {
 
 		fill_profiles_listbox 
 		update_de1_explanation_chart
-		set ::settings(profile_title) [translate "Saved"]
+		if {$do_saved_msg == 1} {
+			set ::settings(profile_title) [translate "Saved"]
+		}
 		profile_has_not_changed_set
 
 	} else {
-		set ::settings(profile_title) [translate "Invalid name"]
+		if {$do_saved_msg == 1} {
+			set ::settings(profile_title) [translate "Invalid name"]
+		}
 	}
 
 	profile_has_changed_set_colors
