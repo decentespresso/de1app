@@ -4056,3 +4056,4 @@ proc set_resolution_height_from_width { {discard {}} } {
 		}
 	}
 }
+proc determine_final_weight { {tochange 0} } {
