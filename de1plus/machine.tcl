@@ -1190,6 +1190,11 @@ proc check_if_steam_clogged {} {
 }
 
 proc check_front_switch {} {
+
+		# disabled 9-1-2024 by John as this is buggy in current firmware. Will re-enable once it is not buggy.
+		return ""
+
+
     set num $::de1(substate)
 	set substate_txt $::de1_substate_types($num)
 	if {$substate_txt != "Error_NoAC" && $::de1(current_context) == "no_ac"} {
