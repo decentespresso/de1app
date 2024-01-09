@@ -1019,6 +1019,15 @@ proc preinfusion_pour_timer_text {} {
 	return [subst {[espresso_preinfusion_timer][translate "s"] [translate "preinfusion"]}]
 }
 
+proc seconds_text_very_abbreviated {in} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "s"]$in }]
+	}
+
+	return [subst {$in[translate "s"] }]
+}
+
+
 proc total_pour_timer_text {} {
     if {$::de1(language_rtl) == 1} {
 		return "[translate {s}][espresso_elapsed_timer] [translate {total}] "
@@ -3113,6 +3122,7 @@ proc save_profile {  {do_saved_msg 1} } {
 		# if a profile is read-only, give it a new name by adding a unique counter to the end of the title
 		# and then unmark it as read-only
 		set ::settings(read_only) 0
+		#unset -nocomplain ::settings(Author)
 
 		if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
 			incr profcnt 2
