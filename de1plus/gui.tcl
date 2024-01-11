@@ -656,11 +656,11 @@ proc add_de1_text {args} {
 # 	[list -text " " -font "Inter-Bold11"] \
 # 	[list -text "fonts on one line." -font "Inter-Bold24" -foreground red -exec "puts 3" ] \
 # ]
-proc add_de1_rich_text {context x y justification autorefresh width backgroundcolor textparts args} {
+proc add_de1_rich_text {context x y justification autorefresh height width backgroundcolor textparts args} {
 
 	set name "rich_${x}_${y}_"
 	set code ""
-	set height 1
+	#set height 2
 	set startpos 0
 	set endpos 0
 	set cnt 0
