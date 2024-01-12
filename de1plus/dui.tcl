@@ -8307,6 +8307,9 @@ namespace eval ::dui {
 		}
 		
 		proc longpress_press { widget_name longpress_command {longpress_threshold 0}} {
+			variable longpress_timer
+			after cancel $longpress_timer
+			
 			variable longpress_default_threshold
 			if { $longpress_threshold <= 0 } {
 				set longpress_threshold $longpress_default_threshold
