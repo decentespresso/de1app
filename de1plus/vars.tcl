@@ -895,21 +895,23 @@ proc return_scale_timer {} {
 	return [round_to_one_digits [expr {$::de1(scale_timestamp) / 10.0}]]
 }
 
+# integer = 1 means always return an integer
+# integer = 2 means return an integer if the decimal value is .0
 proc return_weight_measurement {in {integer 0}} {
     if {$::de1(language_rtl) == 1} {
-    	if {$integer == 1} {
+    	if {$integer == 1 || ($integer == 2 && [round_to_one_digits $in] == [round_to_integer $in])} {
 			return [subst {[translate "g"][round_to_integer $in]}]
     	}
 		return [subst {[translate "g"][round_to_one_digits $in]}]
     }
 
 	if {$::settings(enable_fluid_ounces) != 1} {
-    	if {$integer == 1} {
+    	if {$integer == 1 || ($integer == 2 && [round_to_one_digits $in] == [round_to_integer $in])} {
 			return [subst {[round_to_integer $in][translate "g"]}]
 		}
 		return [subst {[round_to_one_digits $in][translate "g"]}]
 	} else {
-    	if {$integer == 1} {
+    	if {$integer == 1 || ($integer == 2 && [round_to_one_digits $in] == [round_to_integer $in])} {
 			return [subst {[round_to_integer [ml_to_oz $in]] oz}]
 		}
 		return [subst {[round_to_one_digits [ml_to_oz $in]] oz}]
@@ -1560,6 +1562,14 @@ proc round_to_two_digits {in} {
     }
     return $x
 }
+
+proc round_to_one_digits_if_needed {in} {
+	if {[round_to_one_digits $in] == [round_to_integer $in]} {
+		return [round_to_integer $in]
+	}
+	return [round_to_one_digits $in]
+}
+
 
 proc round_to_one_digits {in} {
 	if {$in == ""} {

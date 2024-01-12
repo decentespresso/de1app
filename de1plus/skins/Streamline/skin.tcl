@@ -71,28 +71,37 @@ if {$::android != 1} {
 
 
 
+##################################################################################################
+# UI related convenience procs below, moved over from Mimoja Cafe so they can be generally used
+
+proc streamline_rectangle {contexts x1 y1 x2 y2 colour } {
+	dui add canvas_item rect $contexts $x1 $y1 $x2 $y2 -fill $colour -width 0
+}
+
+
+
 ############################################################################################################################################################################################################
 # draw the background shapes
 
 # far left grey area where buttons appear
-rectangle $::pages 0 0 657 1600 #efefef
+streamline_rectangle $::pages 0 0 657 1600 #efefef
 
 # empty area on 2/3rd of the right side
-rectangle $::pages 657 0 2560 1600 #ffffff
+streamline_rectangle $::pages 657 0 2560 1600 #ffffff
 
 # lower horizontal bar where shot data is shown
 if {$::settings(ghc_is_installed) == 0} { 
-	rectangle $::pages 687 1220 2130 1566 #efefef
+	streamline_rectangle $::pages 687 1220 2130 1566 #efefef
 } else {
-	rectangle $::pages 687 1220 2480 1566 #efefef
+	streamline_rectangle $::pages 687 1220 2480 1566 #efefef
 }
 
 #line separating the left grey box
-rectangle $::pages 0 824 660 836 #ffffff
+streamline_rectangle $::pages 0 824 660 836 #ffffff
 
-rectangle $::pages 58 603 590 604 #121212
-rectangle $::pages 58 1061 590 1062 #121212
-rectangle $::pages 58 1282 590 1283 #121212
+streamline_rectangle $::pages 58 603 590 604 #CCCCCC
+streamline_rectangle $::pages 58 1061 590 1062 #CCCCCC
+streamline_rectangle $::pages 58 1282 590 1283 #CCCCCC
 
 ############################################################################################################################################################################################################
 
@@ -207,7 +216,7 @@ trace add variable ::streamline_global(status_msg_clickable) write ::refresh_$st
 
 
 
-rectangle $::pages 700 136 2502 136 #121212
+streamline_rectangle $::pages 700 136 2502 136 #121212
 
 ############################################################################################################################################################################################################
 
@@ -379,7 +388,7 @@ add_de1_text $::pages 1828 1254 -justify right -anchor "nw" -text [translate "Pr
 add_de1_text $::pages 1828 1362 -justify right -anchor "nw" -text [translate "0.9 bar (1.3 peak)"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 300]
 add_de1_text $::pages 1828 1419 -justify right -anchor "nw" -text [translate "6.0 bar (6.5 peak)"] -font Inter-SemiBold18 -fill #121212 -width [rescale_x_skin 300]
 
-rectangle $::pages 718 1316 2089 1316 #121212
+streamline_rectangle $::pages 718 1316 2089 1316 #CCCCCC
 
 
 ############################################################################################################################################################################################################
@@ -398,8 +407,8 @@ if {[ifexists ::settings(grinder_dose_weight)] == "" || [ifexists ::settings(gri
 #	set ::settings(grinder_dose_weight) 15
 
 # labels
-add_de1_variable $::pages 426 341 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::left_label_color -width [rescale_x_skin 200] -textvariable {[return_weight_measurement $::settings(grinder_dose_weight)]}
-add_de1_variable $::pages 426 435 -justify center -anchor "center" -text [translate "45g"] -font Inter-Bold16 -fill $::left_label_color -width [rescale_x_skin 200] -textvariable {[return_weight_measurement [determine_final_weight] 1]}
+add_de1_variable $::pages 426 341 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::left_label_color -width [rescale_x_skin 200] -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
+add_de1_variable $::pages 426 435 -justify center -anchor "center" -text [translate "45g"] -font Inter-Bold16 -fill $::left_label_color -width [rescale_x_skin 200] -textvariable {[return_weight_measurement [determine_final_weight] 2]}
 add_de1_variable $::pages 426 474 -justify center -anchor "center" -text [translate "1:2.3"] -font Inter-Regular12 -fill $::left_label_color -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
 add_de1_variable $::pages 426 679 -justify center -anchor "center" -text [translate "92ºC"] -font Inter-Bold16 -fill $::left_label_color -width [rescale_x_skin 200] -textvariable {[setting_espresso_temperature_text 1]}   
 add_de1_variable $::pages 426 917 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::left_label_color -width [rescale_x_skin 200]  -textvariable {[seconds_text_very_abbreviated $::settings(steam_timeout)]}
@@ -425,69 +434,42 @@ set ::left_label_color_selected #121212
 set ::left_label_color #777777
 
 #########
-# dose/beverage labels
-add_de1_text $::pages 94 552 -justify center -anchor "center" -text [translate "18:36"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 234 552 -justify center -anchor "center" -text [translate "19:39"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 388 552 -justify center -anchor "center" -text [translate "20.5:42"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 554 552 -justify center -anchor "center" -text [translate "21:44"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-
-# dose/beverage tap areas
-add_de1_button "off" {puts "Dose value 1"} 37 521 169 584 ""
-add_de1_button "off" {puts "Dose value 2"} 169 521 301 584 ""
-add_de1_button "off" {puts "Dose value 3"} 301 521 466 584 ""
-add_de1_button "off" {puts "Dose value 4"} 466 521 613 584 ""
-#########
-
-#########
-# temp labels
-dui add dbutton $::pages 34 728 154 820 -tags temperature_1_btn -labelvariable {$::streamline_favorite_temperature_buttons(label_1)}  -command { streamline_temperature_select 1 } -longpress_cmd {streamline_set_temperature_preset 1 }
-dui add dbutton $::pages 174 728 304 820 -tags temperature_2_btn -labelvariable {$::streamline_favorite_temperature_buttons(label_2)}  -command { streamline_temperature_select 2 } -longpress_cmd {streamline_set_temperature_preset 2 }
-dui add dbutton $::pages 328 728 448 820 -tags temperature_3_btn -labelvariable {$::streamline_favorite_temperature_buttons(label_3)}  -command { streamline_temperature_select 3 } -longpress_cmd {streamline_set_temperature_preset 3 }
-dui add dbutton $::pages 494 728 614 820 -tags temperature_4_btn -labelvariable {$::streamline_favorite_temperature_buttons(label_4)}  -command { streamline_temperature_select 4 } -longpress_cmd {streamline_set_temperature_preset 4 }
-
-#add_de1_text $::pages 94 774 -justify center -anchor "center" -text [translate "75ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-#add_de1_text $::pages 234 774 -justify center -anchor "center" -text [translate "80ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-#add_de1_text $::pages 388 774 -justify center -anchor "center" -text [translate "92ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-#add_de1_text $::pages 554 774 -justify center -anchor "center" -text [translate "85ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-
-# temp tap areas
-#add_de1_button "off" { streamline_temperature_select 1} 37 743 169 806 ""
-#add_de1_button "off" { streamline_temperature_select 2} 169 743 301 806 ""
-#add_de1_button "off" { streamline_temperature_select 3} 301 743 466 806 ""
-#add_de1_button "off" { streamline_temperature_select 4} 466 743 613 806 ""
-########
-
-#########
-# steam labels
-add_de1_text $::pages 94 1014 -justify center -anchor "center" -text [translate "25s"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 234 1014 -justify center -anchor "center" -text [translate "29s"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 388 1014 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 554 1014 -justify center -anchor "center" -text [translate "40s"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-
-# steam tap areas
-add_de1_button "off" {puts "steam value 1"} 37 983 169 1046 ""
-add_de1_button "off" {puts "steam value 2"} 169 983 301 1046 ""
-add_de1_button "off" {puts "steam value 3"} 301 983 466 1046 ""
-add_de1_button "off" {puts "steam value 4"} 466 983 613 1046 ""
-#########
-
-#########
-# flush labels
-add_de1_text $::pages 94 1230 -justify center -anchor "center" -text [translate "2s"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 234 1230 -justify center -anchor "center" -text [translate "5s"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 388 1230 -justify center -anchor "center" -text [translate "10s"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 554 1230 -justify center -anchor "center" -text [translate "15s"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-
-# flush tap areas
-add_de1_button "off" {puts "flush value 1"} 37 1194 169 1257 ""
-add_de1_button "off" {puts "flush value 2"} 169 1194 301 1257 ""
-add_de1_button "off" {puts "flush value 3"} 301 1194 466 1257 ""
-add_de1_button "off" {puts "flush value 4"} 466 1194 613 1257 ""
-#########
+# dose/beverage presets
+dui add dbutton $::pages 24 508 164 600 -tags dosebev_1_btn -labelvariable {$::streamline_favorite_dosebev_buttons(label_1)}  -command { streamline_dosebev_select 1 } -longpress_cmd {streamline_set_dosebev_preset 1 }
+dui add dbutton $::pages 164 508 314 600 -tags dosebev_2_btn -labelvariable {$::streamline_favorite_dosebev_buttons(label_2)}  -command { streamline_dosebev_select 2 } -longpress_cmd {streamline_set_dosebev_preset 2 }
+dui add dbutton $::pages 318 508 458 600 -tags dosebev_3_btn -labelvariable {$::streamline_favorite_dosebev_buttons(label_3)}  -command { streamline_dosebev_select 3 } -longpress_cmd {streamline_set_dosebev_preset 3 }
+dui add dbutton $::pages 484 508 624 600 -tags dosebev_4_btn -labelvariable {$::streamline_favorite_dosebev_buttons(label_4)}  -command { streamline_dosebev_select 4 } -longpress_cmd {streamline_set_dosebev_preset 4 }
 
 
 #########
-# hot water labels
+# temp presets
+dui add dbutton $::pages 24 728 164 820 -tags temperature_1_btn -labelvariable {$::streamline_favorite_temperature_buttons(label_1)}  -command { streamline_temperature_select 1 } -longpress_cmd {streamline_set_temperature_preset 1 }
+dui add dbutton $::pages 164 728 314 820 -tags temperature_2_btn -labelvariable {$::streamline_favorite_temperature_buttons(label_2)}  -command { streamline_temperature_select 2 } -longpress_cmd {streamline_set_temperature_preset 2 }
+dui add dbutton $::pages 318 728 458 820 -tags temperature_3_btn -labelvariable {$::streamline_favorite_temperature_buttons(label_3)}  -command { streamline_temperature_select 3 } -longpress_cmd {streamline_set_temperature_preset 3 }
+dui add dbutton $::pages 484 728 624 820 -tags temperature_4_btn -labelvariable {$::streamline_favorite_temperature_buttons(label_4)}  -command { streamline_temperature_select 4 } -longpress_cmd {streamline_set_temperature_preset 4 }
+
+
+#########
+# steam presets
+dui add dbutton $::pages 24 966 164 1058 -tags steam_1_btn -labelvariable {$::streamline_favorite_steam_buttons(label_1)}  -command { streamline_steam_select 1 } -longpress_cmd {streamline_set_steam_preset 1 }
+dui add dbutton $::pages 164 966 314 1058 -tags steam_2_btn -labelvariable {$::streamline_favorite_steam_buttons(label_2)}  -command { streamline_steam_select 2 } -longpress_cmd {streamline_set_steam_preset 2 }
+dui add dbutton $::pages 318 966 458 1058 -tags steam_3_btn -labelvariable {$::streamline_favorite_steam_buttons(label_3)}  -command { streamline_steam_select 3 } -longpress_cmd {streamline_set_steam_preset 3 }
+dui add dbutton $::pages 484 966 624 1058 -tags steam_4_btn -labelvariable {$::streamline_favorite_steam_buttons(label_4)}  -command { streamline_steam_select 4 } -longpress_cmd {streamline_set_steam_preset 4 }
+
+
+
+#########
+# flush presets
+dui add dbutton $::pages 24 1196 164 1272 -tags flush_1_btn -labelvariable {$::streamline_favorite_flush_buttons(label_1)}  -command { streamline_flush_select 1 } -longpress_cmd {streamline_set_flush_preset 1 }
+dui add dbutton $::pages 164 1196 314 1272 -tags flush_2_btn -labelvariable {$::streamline_favorite_flush_buttons(label_2)}  -command { streamline_flush_select 2 } -longpress_cmd {streamline_set_flush_preset 2 }
+dui add dbutton $::pages 318 1196 458 1272 -tags flush_3_btn -labelvariable {$::streamline_favorite_flush_buttons(label_3)}  -command { streamline_flush_select 3 } -longpress_cmd {streamline_set_flush_preset 3 }
+dui add dbutton $::pages 484 1196 624 1272 -tags flush_4_btn -labelvariable {$::streamline_favorite_flush_buttons(label_4)}  -command { streamline_flush_select 4 } -longpress_cmd {streamline_set_flush_preset 4 }
+
+
+
+
+#########
+# hot water presets
 add_de1_text $::pages 94 1454 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
 add_de1_text $::pages 234 1454 -justify center -anchor "center" -text [translate "120ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
 add_de1_text $::pages 388 1454 -justify center -anchor "center" -text [translate "180ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
@@ -822,16 +804,9 @@ proc save_profile_and_update_de1_soon {} {
 
 proc flash_button {buttontag firstcolor finalcolor} {
 	.can itemconfigure $buttontag-btn -fill $::plus_minus_flash_on_color2 
-	after 50 "flash2_button $buttontag $firstcolor $finalcolor"
-}
-
-proc flash2_button {buttontag firstcolor finalcolor} {
-	.can itemconfigure $buttontag-btn -fill $::plus_minus_flash_on_color
-	after 100 "flash3_button $buttontag $firstcolor ::plus_minus_flash_off_color"
-}
-proc flash3_button {buttontag firstcolor finalcolor} {
-	.can itemconfigure $buttontag-btn -fill $::plus_minus_flash_on_color2 
-	after 50 ".can itemconfigure $buttontag-btn -fill $::plus_minus_flash_off_color"
+	after 40 .can itemconfigure $buttontag-btn -fill $::plus_minus_flash_on_color
+	after 120 .can itemconfigure $buttontag-btn -fill $::plus_minus_flash_on_color2 
+	after 160 .can itemconfigure $buttontag-btn -fill $::plus_minus_flash_off_color
 }
 
 proc streamline_dose_btn { args } {
@@ -848,6 +823,7 @@ proc streamline_dose_btn { args } {
 			save_profile_and_update_de1_soon
 		}
 	}
+	refresh_favorite_dosebev_button_labels
 }
 
 proc streamline_beverage_btn { args } {
@@ -864,6 +840,8 @@ proc streamline_beverage_btn { args } {
 			save_profile_and_update_de1_soon
 		}
 	}
+
+	refresh_favorite_dosebev_button_labels
 }
 
 
@@ -898,6 +876,7 @@ proc streamline_steam_btn { args } {
 			save_profile_and_update_de1_soon
 		}
 	}
+	refresh_favorite_steam_button_labels
 }
 proc streamline_flush_btn { args } {
 	if {$args == "-"} {
@@ -917,7 +896,10 @@ proc streamline_flush_btn { args } {
 			#flash_button "streamline_plus_flush_btn" $::plus_minus_flash_refused_color $::plus_minus_flash_off_color
 		}
 	}
+	refresh_favorite_flush_button_labels
 }
+
+
 
 proc streamline_hot_water_setting_change {} {
 
@@ -1056,7 +1038,7 @@ proc save_favorite_profile { slot } {
 	#refresh_favorite_profile_button_labels
 	refresh_favorite_profile_button_labels
 	#save_settings
-	borg toast [translate "Saved favorite profile"]
+	borg toast [translate "Saved"]
 }
 
 ############################################################################################################################################################################################################
@@ -1137,6 +1119,61 @@ proc streamline_set_temperature_preset { slot } {
 	set ::settings(favorite_temperatures) $temperatures	
 	save_settings	
 	refresh_favorite_temperature_button_labels
+
+	.can itemconfigure temperature_${slot}_btn-btn -fill "#3e5682"
+	after 100 .can itemconfigure temperature_${slot}_btn-btn -fill "#efefef"
+	after 200 .can itemconfigure temperature_${slot}_btn-btn -fill "#3e5682"
+	after 300 .can itemconfigure temperature_${slot}_btn-btn -fill "#efefef"
+	borg toast [translate "Saved"]
+	
+}
+
+
+proc streamline_set_steam_preset { slot } {
+	set steams [ifexists ::settings(favorite_steams)]
+	dict set steams $slot value $::settings(steam_timeout)
+	set ::settings(favorite_steams) $steams	
+	save_settings	
+	refresh_favorite_steam_button_labels
+
+	.can itemconfigure steam_${slot}_btn-btn -fill "#3e5682"
+	after 100 .can itemconfigure steam_${slot}_btn-btn -fill "#efefef"
+	after 200 .can itemconfigure steam_${slot}_btn-btn -fill "#3e5682"
+	after 300 .can itemconfigure steam_${slot}_btn-btn -fill "#efefef"
+	borg toast [translate "Saved"]
+	
+}
+
+
+proc streamline_set_flush_preset { slot } {
+	set flushs [ifexists ::settings(favorite_flushs)]
+	dict set flushs $slot value $::settings(flush_seconds)
+	set ::settings(favorite_flushs) $flushs	
+	save_settings	
+	refresh_favorite_flush_button_labels
+
+	.can itemconfigure flush_${slot}_btn-btn -fill "#3e5682"
+	after 100 .can itemconfigure flush_${slot}_btn-btn -fill "#efefef"
+	after 200 .can itemconfigure flush_${slot}_btn-btn -fill "#3e5682"
+	after 300 .can itemconfigure flush_${slot}_btn-btn -fill "#efefef"
+	borg toast [translate "Saved"]
+	
+}
+
+
+proc streamline_set_dosebev_preset { slot } {
+	set dosebevs [ifexists ::settings(favorite_dosebevs)]
+	dict set dosebevs $slot value [round_to_two_digits $::settings(grinder_dose_weight)]
+	dict set dosebevs $slot value2 [round_to_two_digits [determine_final_weight] ]
+	set ::settings(favorite_dosebevs) $dosebevs	
+	save_settings	
+	refresh_favorite_dosebev_button_labels
+
+	.can itemconfigure dosebev_${slot}_btn-btn -fill "#3e5682"
+	after 100 .can itemconfigure dosebev_${slot}_btn-btn -fill "#efefef"
+	after 200 .can itemconfigure dosebev_${slot}_btn-btn -fill "#3e5682"
+	after 300 .can itemconfigure dosebev_${slot}_btn-btn -fill "#efefef"
+	borg toast [translate "Saved"]
 }
 
 
@@ -1150,12 +1187,6 @@ proc refresh_favorite_temperature_button_labels {} {
 	catch {
 		set streamline_selected_favorite_temperature [dict get $temperatures selected number]
 	}
-
-	if {$streamline_selected_favorite_temperature == ""} {
-		#after 500 "streamline_temperature_select 1"
-		#set streamline_selected_favorite_temperature 1
-	}
-
 
 	set temperatures [ifexists ::settings(favorite_temperatures)]
 
@@ -1210,11 +1241,10 @@ proc refresh_favorite_temperature_button_labels {} {
 	}
 
 	set ::streamline_favorite_temperature_buttons(label_1) [return_temperature_measurement $t1 1]
-	set ::streamline_favorite_temperature_buttons(label_2) [return_temperature_measurement $t2 2]
-	set ::streamline_favorite_temperature_buttons(label_3) [return_temperature_measurement $t3 3]
-	set ::streamline_favorite_temperature_buttons(label_4) [return_temperature_measurement $t4 4]
+	set ::streamline_favorite_temperature_buttons(label_2) [return_temperature_measurement $t2 1]
+	set ::streamline_favorite_temperature_buttons(label_3) [return_temperature_measurement $t3 1]
+	set ::streamline_favorite_temperature_buttons(label_4) [return_temperature_measurement $t4 1]
 
-	#puts "b1: $b1 / b2: $b2 / b3 : $b3 / b4: $b4"
 
 	set b1c "#d8d8d8"
 	set b2c "#d8d8d8"
@@ -1226,11 +1256,6 @@ proc refresh_favorite_temperature_button_labels {} {
 	set lb3c $::left_label_color
 	set lb4c $::left_label_color
 
-	#regsub -all {/} $::settings(temperature_title) {/ } temperature_title
-	#puts "temperature_title: '$temperature_title' vs '$b4'"
-	#set  $slot
-
-	#puts "streamline_selected_favorite_temperature: $streamline_selected_favorite_temperature"
 
 	if {$::settings(espresso_temperature) == [dict get $temperatures 1 value]} {
 		set b1c "#3e5682"
@@ -1248,23 +1273,367 @@ proc refresh_favorite_temperature_button_labels {} {
 		set b4c "#3e5682"
 		set lb4c "#000000"
 	}
-	#.can itemconfigure temperature_1_btn-btn -fill $b1c
-	#.can itemconfigure temperature_2_btn-btn -fill $b2c
-	#.can itemconfigure temperature_3_btn-btn -fill $b3c
-	#.can itemconfigure temperature_4_btn-btn -fill $b4c
-	#.can itemconfigure temperature_4_btn-out-ne -fill "#ff0000"
-
-	#dui item config "off" temperature_4_btn-out-ne  -outline "#ff0000"
-
-	#.can itemconfigure temperature_1_btn-out -fill $b1c
-	#.can itemconfigure temperature_2_btn-out -fill $b2c
-	#.can itemconfigure temperature_3_btn-out -fill $b3c
-	#.can itemconfigure temperature_4_btn-out -fill $b4c
 
 	.can itemconfigure temperature_1_btn-lbl -fill $lb1c
 	.can itemconfigure temperature_2_btn-lbl -fill $lb2c
 	.can itemconfigure temperature_3_btn-lbl -fill $lb3c
 	.can itemconfigure temperature_4_btn-lbl -fill $lb4c
+}
+
+
+
+proc refresh_favorite_steam_button_labels {} {
+
+	puts "refresh_favorite_steam_button_labels"
+
+	set steams [ifexists ::settings(favorite_steams)]
+	set streamline_selected_favorite_steam ""
+	catch {
+		set streamline_selected_favorite_steam [dict get $steams selected number]
+	}
+
+	set steams [ifexists ::settings(favorite_steams)]
+
+	set t1 ""
+	set t2 ""
+	set t3 ""
+	set t4 ""
+
+	catch {
+		set t1 [dict get $steams 1 value]
+	}
+	catch {
+		set t2 [dict get $steams 2 value]
+	}
+	catch {
+		set t3 [dict get $steams 3 value]
+	}
+	catch {
+		set t4 [dict get $steams 4 value]
+	}
+
+	set changed 0
+	if {$t1 == ""} {
+		set t1 "20"
+		dict set steams 1 value $t1
+		set changed 1
+	}
+
+	if {$t2 == ""} {
+		set t2 "25"		
+		dict set steams 2 value $t2
+		set changed 1
+	}
+
+	if {$t3 == ""} {
+		set t3 "30"		
+		dict set steams 3 value $t3
+		set changed 1
+	}
+
+	if {$t4 == ""} {
+		set t4 "40"		
+		dict set steams 4 value $t4
+		set changed 1
+	}
+
+
+	if {$changed == 1} {
+		set ::settings(favorite_steams) $steams	
+		save_settings	
+		
+	}
+
+	set ::streamline_favorite_steam_buttons(label_1) [seconds_text_very_abbreviated $t1]
+	set ::streamline_favorite_steam_buttons(label_2) [seconds_text_very_abbreviated $t2]
+	set ::streamline_favorite_steam_buttons(label_3) [seconds_text_very_abbreviated $t3]
+	set ::streamline_favorite_steam_buttons(label_4) [seconds_text_very_abbreviated $t4]
+
+
+	set b1c "#d8d8d8"
+	set b2c "#d8d8d8"
+	set b3c "#d8d8d8"
+	set b4c "#d8d8d8"
+
+	set lb1c $::left_label_color
+	set lb2c $::left_label_color
+	set lb3c $::left_label_color
+	set lb4c $::left_label_color
+
+
+	if {$::settings(steam_timeout) == [dict get $steams 1 value]} {
+		set b1c "#3e5682"
+		set lb1c "#000000"
+	} 
+	if {$::settings(steam_timeout) == [dict get $steams 2 value]} {
+		set b2c "#3e5682"
+		set lb2c "#000000"
+	} 
+	if {$::settings(steam_timeout) == [dict get $steams 3 value]} {
+		set b3c "#3e5682"
+		set lb3c "#000000"
+	} 
+	if {$::settings(steam_timeout) == [dict get $steams 4 value]} {
+		set b4c "#3e5682"
+		set lb4c "#000000"
+	}
+
+	.can itemconfigure steam_1_btn-lbl -fill $lb1c
+	.can itemconfigure steam_2_btn-lbl -fill $lb2c
+	.can itemconfigure steam_3_btn-lbl -fill $lb3c
+	.can itemconfigure steam_4_btn-lbl -fill $lb4c
+}
+
+
+proc refresh_favorite_dosebev_button_labels {} {
+
+	puts "refresh_favorite_dosebev_button_labels"
+
+	set dosebevs [ifexists ::settings(favorite_dosebevs)]
+	set streamline_selected_favorite_dosebev ""
+	catch {
+		set streamline_selected_favorite_dosebev [dict get $dosebevs selected number]
+	}
+
+	set dosebevs [ifexists ::settings(favorite_dosebevs)]
+	set changed 0
+
+	####
+	# dose fist
+	set t1 ""
+	set t2 ""
+	set t3 ""
+	set t4 ""
+
+	catch {
+		set t1 [dict get $dosebevs 1 value]
+	}
+	catch {
+		set t2 [dict get $dosebevs 2 value]
+	}
+	catch {
+		set t3 [dict get $dosebevs 3 value]
+	}
+	catch {
+		set t4 [dict get $dosebevs 4 value]
+	}
+
+	if {$t1 == ""} {
+		set t1 "15"
+		dict set dosebevs 1 value $t1
+		set changed 1
+	}
+
+	if {$t2 == ""} {
+		set t2 "16"		
+		dict set dosebevs 2 value $t2
+		set changed 1
+	}
+
+	if {$t3 == ""} {
+		set t3 "18"		
+		dict set dosebevs 3 value $t3
+		set changed 1
+	}
+
+	if {$t4 == ""} {
+		set t4 "20"		
+		dict set dosebevs 4 value $t4
+		set changed 1
+	}
+
+	# beverage second
+	set bt1 ""
+	set bt2 ""
+	set bt3 ""
+	set bt4 ""
+
+	catch {
+		set bt1 [dict get $dosebevs 1 value2]
+	}
+	catch {
+		set bt2 [dict get $dosebevs 2 value2]
+	}
+	catch {
+		set bt3 [dict get $dosebevs 3 value2]
+	}
+	catch {
+		set bt4 [dict get $dosebevs 4 value2]
+	}
+
+	if {$bt1 == ""} {
+		set bt1 "30"
+		dict set dosebevs 1 value2 $bt1
+		set changed 1
+	}
+
+	if {$bt2 == ""} {
+		set bt2 "32"		
+		dict set dosebevs 2 value2 $bt2
+		set changed 1
+	}
+
+	if {$bt3 == ""} {
+		set bt3 "36"		
+		dict set dosebevs 3 value2 $bt3
+		set changed 1
+	}
+
+	if {$bt4 == ""} {
+		set bt4 "40"		
+		dict set dosebevs 4 value2 $bt4
+		set changed 1
+	}
+
+	######
+
+	if {$changed == 1} {
+		set ::settings(favorite_dosebevs) $dosebevs	
+		#save_settings	
+		
+	}
+
+	set ::streamline_favorite_dosebev_buttons(label_1) "[round_to_one_digits_if_needed $t1]:[round_to_one_digits_if_needed $bt1]"
+	set ::streamline_favorite_dosebev_buttons(label_2) "[round_to_one_digits_if_needed $t2]:[round_to_one_digits_if_needed $bt2]"
+	set ::streamline_favorite_dosebev_buttons(label_3) "[round_to_one_digits_if_needed $t3]:[round_to_one_digits_if_needed $bt3]"
+	set ::streamline_favorite_dosebev_buttons(label_4) "[round_to_one_digits_if_needed $t4]:[round_to_one_digits_if_needed $bt4]"
+
+
+	set b1c "#d8d8d8"
+	set b2c "#d8d8d8"
+	set b3c "#d8d8d8"
+	set b4c "#d8d8d8"
+
+	set lb1c $::left_label_color
+	set lb2c $::left_label_color
+	set lb3c $::left_label_color
+	set lb4c $::left_label_color
+
+
+	
+	if {[round_to_two_digits $::settings(grinder_dose_weight)] == [dict get $dosebevs 1 value] && [round_to_two_digits [determine_final_weight] ] == [dict get $dosebevs 1 value2]} {
+		set b1c "#3e5682"
+		set lb1c "#000000"
+	} 
+	if {[round_to_two_digits $::settings(grinder_dose_weight)] == [dict get $dosebevs 2 value] && [round_to_two_digits [determine_final_weight] ] == [dict get $dosebevs 2 value2]} {
+		set b2c "#3e5682"
+		set lb2c "#000000"
+	} 
+	if {[round_to_two_digits $::settings(grinder_dose_weight)] == [dict get $dosebevs 3 value] && [round_to_two_digits [determine_final_weight] ] == [dict get $dosebevs 3 value2]} {
+		set b3c "#3e5682"
+		set lb3c "#000000"
+	} 
+	if {[round_to_two_digits $::settings(grinder_dose_weight)] == [dict get $dosebevs 4 value] && [round_to_two_digits [determine_final_weight] ] == [dict get $dosebevs 4 value2]} {
+		set b4c "#3e5682"
+		set lb4c "#000000"
+	}
+
+	.can itemconfigure dosebev_1_btn-lbl -fill $lb1c
+	.can itemconfigure dosebev_2_btn-lbl -fill $lb2c
+	.can itemconfigure dosebev_3_btn-lbl -fill $lb3c
+	.can itemconfigure dosebev_4_btn-lbl -fill $lb4c
+}
+
+proc refresh_favorite_flush_button_labels {} {
+
+	puts "refresh_favorite_flush_button_labels"
+
+	set flushs [ifexists ::settings(favorite_flushs)]
+	set streamline_selected_favorite_flush ""
+	catch {
+		set streamline_selected_favorite_flush [dict get $flushs selected number]
+	}
+
+	set flushs [ifexists ::settings(favorite_flushs)]
+
+	set t1 ""
+	set t2 ""
+	set t3 ""
+	set t4 ""
+
+	catch {
+		set t1 [dict get $flushs 1 value]
+	}
+	catch {
+		set t2 [dict get $flushs 2 value]
+	}
+	catch {
+		set t3 [dict get $flushs 3 value]
+	}
+	catch {
+		set t4 [dict get $flushs 4 value]
+	}
+
+	set changed 0
+	if {$t1 == ""} {
+		set t1 "3"
+		dict set flushs 1 value $t1
+		set changed 1
+	}
+
+	if {$t2 == ""} {
+		set t2 "5"		
+		dict set flushs 2 value $t2
+		set changed 1
+	}
+
+	if {$t3 == ""} {
+		set t3 "10"		
+		dict set flushs 3 value $t3
+		set changed 1
+	}
+
+	if {$t4 == ""} {
+		set t4 "15"		
+		dict set flushs 4 value $t4
+		set changed 1
+	}
+
+
+	if {$changed == 1} {
+		set ::settings(favorite_flushs) $flushs	
+		save_settings	
+		
+	}
+
+	set ::streamline_favorite_flush_buttons(label_1) [seconds_text_very_abbreviated $t1]
+	set ::streamline_favorite_flush_buttons(label_2) [seconds_text_very_abbreviated $t2]
+	set ::streamline_favorite_flush_buttons(label_3) [seconds_text_very_abbreviated $t3]
+	set ::streamline_favorite_flush_buttons(label_4) [seconds_text_very_abbreviated $t4]
+
+
+	set b1c "#d8d8d8"
+	set b2c "#d8d8d8"
+	set b3c "#d8d8d8"
+	set b4c "#d8d8d8"
+
+	set lb1c $::left_label_color
+	set lb2c $::left_label_color
+	set lb3c $::left_label_color
+	set lb4c $::left_label_color
+
+
+	if {$::settings(flush_seconds) == [dict get $flushs 1 value]} {
+		set b1c "#3e5682"
+		set lb1c "#000000"
+	} 
+	if {$::settings(flush_seconds) == [dict get $flushs 2 value]} {
+		set b2c "#3e5682"
+		set lb2c "#000000"
+	} 
+	if {$::settings(flush_seconds) == [dict get $flushs 3 value]} {
+		set b3c "#3e5682"
+		set lb3c "#000000"
+	} 
+	if {$::settings(flush_seconds) == [dict get $flushs 4 value]} {
+		set b4c "#3e5682"
+		set lb4c "#000000"
+	}
+
+	.can itemconfigure flush_1_btn-lbl -fill $lb1c
+	.can itemconfigure flush_2_btn-lbl -fill $lb2c
+	.can itemconfigure flush_3_btn-lbl -fill $lb3c
+	.can itemconfigure flush_4_btn-lbl -fill $lb4c
 }
 
 
@@ -1275,7 +1644,7 @@ proc streamline_temperature_select { slot } {
 		return ""
 	}
 
-	#catch {
+	catch {
 		# get the favoritae button values
 		set temperatures [ifexists ::settings(favorite_temperatures)]
 
@@ -1288,12 +1657,100 @@ proc streamline_temperature_select { slot } {
 		save_profile_and_update_de1_soon	
 
 
-	#}
+	}
 
 	refresh_favorite_temperature_button_labels
 }
 
 refresh_favorite_temperature_button_labels
+
+
+proc streamline_steam_select { slot } {
+	puts "streamline_steam_select { $slot } "
+
+	if {[dui page current] != "off"} {
+		return ""
+	}
+
+	catch {
+		# get the favoritae button values
+		set steams [ifexists ::settings(favorite_steams)]
+
+		# set the setting
+		set ::settings(steam_timeout) [dict get $steams $slot value]
+
+		# save the new selected button 
+		dict set steams selected number $slot
+		set ::settings(favorite_steams) $steams	
+		save_profile_and_update_de1_soon	
+
+
+	}
+
+	refresh_favorite_steam_button_labels
+}
+
+refresh_favorite_steam_button_labels
+
+
+proc streamline_dosebev_select { slot } {
+	puts "streamline_dosebev_select { $slot } "
+
+	if {[dui page current] != "off"} {
+		return ""
+	}
+
+	catch {
+		# get the favoritae button values
+		set dosebevs [ifexists ::settings(favorite_dosebevs)]
+
+		# set the setting
+		set ::settings(grinder_dose_weight) [dict get $dosebevs $slot value]
+
+		# setting the final weight is more complicated, as it is stored in a few different places depending on the profile
+		set desired_weight [dict get $dosebevs $slot value2]
+		set weight_diff [expr {$desired_weight - [determine_final_weight]}]
+		determine_final_weight $weight_diff
+
+		# save the new selected button 
+		dict set dosebevs selected number $slot
+		set ::settings(favorite_dosebevs) $dosebevs	
+		save_profile_and_update_de1_soon	
+
+
+	}
+
+	refresh_favorite_dosebev_button_labels
+}
+refresh_favorite_dosebev_button_labels
+
+proc streamline_flush_select { slot } {
+	puts "streamline_flush_select { $slot } "
+
+	if {[dui page current] != "off"} {
+		return ""
+	}
+
+	catch {
+		# get the favoritae button values
+		set flushs [ifexists ::settings(favorite_flushs)]
+
+		# set the setting
+		set ::settings(flush_seconds) [dict get $flushs $slot value]
+
+		# save the new selected button 
+		dict set flushs selected number $slot
+		set ::settings(favorite_flushs) $flushs	
+		save_profile_and_update_de1_soon	
+
+
+	}
+
+	refresh_favorite_flush_button_labels
+}
+refresh_favorite_flush_button_labels
+
+
 
 ############################################################################################################################################################################################################
 # the espresso chart
