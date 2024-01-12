@@ -5958,7 +5958,7 @@ namespace eval ::dui {
 		proc retheme { pages new_theme {force 0} } {
 			if { ![dui theme exists $new_theme] } {
 				msg -ERROR [namespace current] retheme: "new theme '$new_theme' is not a valid theme"
-				return $is_rethemed
+				return 0
 			}
 			
 			if { [string is true $force] } {
