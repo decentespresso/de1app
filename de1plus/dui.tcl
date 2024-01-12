@@ -6400,11 +6400,7 @@ namespace eval ::dui {
 					msg -WARNING [namespace current] "page '$page_to_show' has no visual items to show"
 				}
 			
-				if { $show_page_type eq "dialog" } {
-					set previous_item $page_to_show
-				} else {
-					set previous_item [$can find withtag pages&&$page_to_show]
-				}
+				set previous_item $page_to_show
 				foreach item $items_to_show {
 					set item_type [$can type $item]
 					if { !$preload_images && $item_type eq "image" } {
@@ -6439,7 +6435,7 @@ namespace eval ::dui {
 							$can itemconfigure $item -state $state
 						}
 						
-						if { $previous_item ne {} } {
+						if { $show_page_type eq "dialog" && $previous_item ne {} } {
 							# Ensure the z-order stack is properly maintained 
 							$can raise $item $previous_item
 						}
@@ -6651,6 +6647,10 @@ namespace eval ::dui {
 					foreach page $pages {
 						if { "p:$page" ni $item_tags } {
 							lappend item_tags "p:$page"
+							set page_id [$can find withtag $page]
+							if { $page_id ne {} } {
+								$can raise $id $page
+							}
 							set changed 1
 						}
 					}
