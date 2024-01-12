@@ -7705,33 +7705,33 @@ namespace eval ::dui {
 
 			if { $radius1 > 0 } {
 				lappend ids [$can create arc $x0 [expr {$y0+$radius1+1.0}] [expr {$x0+$radius1+1.0}] $y0 -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-nw {*}$tags] -start 90 -disabledoutline $disabled -state "hidden"]
+					-width $arc_width -tags [list ${main_tag}-nw ${main_tag}-cor {*}$tags] -start 90 -disabledoutline $disabled -state "hidden"]
 			}
 			if { $radius2 > 0 } {
 				lappend ids [$can create arc [expr {$x1-$radius2-1}] $y0 $x1 [expr {$y0+$radius2+1}] -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-ne {*}$tags] -start 0 -disabledoutline $disabled -state "hidden"]
+					-width $arc_width -tags [list ${main_tag}-ne ${main_tag}-cor {*}$tags] -start 0 -disabledoutline $disabled -state "hidden"]
 			}
 			if { $radius3 > 0 } {
 				lappend ids [$can create arc [expr {$x1-$radius3-1.0}] $y1 $x1 [expr {$y1-$radius3-1.0}] -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-se {*}$tags] -start -90 -disabledoutline $disabled -state "hidden"]
+					-width $arc_width -tags [list ${main_tag}-se ${main_tag}-cor {*}$tags] -start -90 -disabledoutline $disabled -state "hidden"]
 			}			
 			if { $radius4 > 0 } {
 				lappend ids [$can create arc $x0 [expr {$y1-$radius4-1.0}] [expr {$x0+$radius4+1.0}] $y1 -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-sw {*}$tags] -start 180 -disabledoutline $disabled -state "hidden"]
+					-width $arc_width -tags [list ${main_tag}-sw ${main_tag}-cor {*}$tags] -start 180 -disabledoutline $disabled -state "hidden"]
 			}
 
 			# Top line
 			lappend ids [$can create line [expr {$x0+$radius1/2.0-1.0}] $y0 [expr {$x1-$radius2/2.0+1.0}] $y0 -fill $colour \
-				-width $width -tags [list ${main_tag}-n {*}$tags] -disabledfill $disabled -state "hidden"]
+				-width $width -tags [list ${main_tag}-n ${main_tag}-lin {*}$tags] -disabledfill $disabled -state "hidden"]
 			# Right line
 			lappend ids [$can create line $x1 [expr {$y0+$radius2/2.0-1.0}] $x1 [expr {$y1-$radius3/2.0+1.0}] -fill $colour \
-				-width $width -tags [list ${main_tag}-e {*}$tags] -disabledfill $disabled -state "hidden"]
+				-width $width -tags [list ${main_tag}-e ${main_tag}-lin {*}$tags] -disabledfill $disabled -state "hidden"]
 			# Bottom line
 			lappend ids [$can create line [expr {$x0+$radius4/2.0-1.0}] $y1 [expr {$x1-$radius3/2.0+1.0}] $y1 -fill $colour \
-				-width $width -tags [list ${main_tag}-s {*}$tags] -disabledfill $disabled -state "hidden"]
+				-width $width -tags [list ${main_tag}-s ${main_tag}-lin {*}$tags] -disabledfill $disabled -state "hidden"]
 			# Left line
 			lappend ids [$can create line $x0 [expr {$y0+$radius1/2.0-1.0}] $x0 [expr {$y1-$radius4/2.0+1.0}] -fill $colour \
-				-width $width -tags [list ${main_tag}-w {*}$tags] -disabledfill $disabled -state "hidden"]
+				-width $width -tags [list ${main_tag}-w ${main_tag}-lin {*}$tags] -disabledfill $disabled -state "hidden"]
 			return $ids
 		}
 		
