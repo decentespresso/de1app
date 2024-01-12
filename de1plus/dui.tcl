@@ -90,6 +90,8 @@ namespace eval ::dui {
 		variable listbox_length_multiplier
 		variable listbox_global_width_multiplier
 
+		set settings(app_title) $::settings(skin)
+		
 		if { ![info exists ::loaded_fonts] } {
 			set loaded_fonts {}
 		}
@@ -11363,26 +11365,5 @@ namespace eval ::dui::pages::dui_confirm_dialog {
 		return 1
 	}
 
-}
-
-##################################################################################################
-# UI related convenience procs below, moved over from Mimoja Cafe so they can be generally used
-
-proc rectangle {contexts x1 y1 x2 y2 colour } {
-	catch {
-		if {$::iconik_transparent_theme} {
-			return
-		}
-	}
-	set x1 [rescale_x_skin $x1] 
-	set y1 [rescale_y_skin $y1] 
-	set x2 [rescale_x_skin $x2] 
-	set y2 [rescale_y_skin $y2]
-	if { [info exists ::_rect_id] != 1 } { set ::_rect_id 0 }
-	set tag "rect_$::_rect_id"
-    .can create rectangle $x1 $y1 $x2 $y2 -fill $colour -outline $colour -width 0 -tag $tag -state "hidden"
-	add_visual_items_to_contexts $contexts $tag
-	incr ::_rect_id
-	return $tag
 }
 
