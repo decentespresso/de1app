@@ -1,0 +1,41 @@
+advanced_shot {{flow 5.0 exit_if 0 volume 75 max_flow_or_pressure_range 1.0 transition fast popup {} exit_flow_under 0 temperature 94.0 weight 0 name prewet pressure 9.0 pump flow sensor coffee exit_flow_over 6 exit_pressure_over 0 max_flow_or_pressure 5.0 seconds 15 exit_pressure_under 0} {flow 0 exit_if 0 volume 75 max_flow_or_pressure_range 1.0 transition fast popup {} exit_flow_under 0 temperature 94.0 weight 0 name bloom pressure 9.0 sensor coffee pump flow exit_flow_over 6 exit_pressure_over 0 max_flow_or_pressure 0 exit_pressure_under 0 seconds 30} {flow 1.3 exit_if 0 volume 200 max_flow_or_pressure_range 1.0 transition fast popup {} exit_flow_under 0 temperature 92.0 weight 0 name s1 pressure 9.0 pump flow sensor coffee exit_flow_over 6 exit_pressure_over 0 max_flow_or_pressure 0 seconds 60 exit_pressure_under 0} {flow 1.3 exit_if 0 volume 200 max_flow_or_pressure_range 1.0 transition fast popup {} exit_flow_under 0 temperature 90.0 weight 0 name s2 pressure 9.0 pump flow sensor coffee exit_flow_over 6 exit_pressure_over 0 max_flow_or_pressure 0 seconds 60 exit_pressure_under 0} {flow 1.3 exit_if 0 volume 200 max_flow_or_pressure_range 1.0 transition fast popup {} exit_flow_under 0 temperature 88.0 weight 0 name s3 pressure 9.0 pump flow sensor coffee exit_flow_over 6 exit_pressure_over 0 max_flow_or_pressure 0 seconds 100 exit_pressure_under 0}}
+author Decent
+beverage_type espresso
+espresso_decline_time 40
+espresso_hold_time 10
+espresso_pressure 8.5
+espresso_temperature 94.0
+espresso_temperature_0 94.0
+espresso_temperature_1 94.0
+espresso_temperature_2 94.0
+espresso_temperature_3 94.0
+espresso_temperature_steps_enabled 0
+final_desired_shot_volume 36
+final_desired_shot_volume_advanced 0
+final_desired_shot_volume_advanced_count_start 2
+final_desired_shot_weight 0.0
+final_desired_shot_weight_advanced 0.0
+flow_profile_decline 1.2
+flow_profile_decline_time 17
+flow_profile_hold 2
+flow_profile_hold_time 8
+flow_profile_minimum_pressure 4
+flow_profile_preinfusion 4
+flow_profile_preinfusion_time 5
+maximum_flow 4.0
+maximum_flow_range_advanced 1.0
+maximum_flow_range_default 1.0
+maximum_pressure 0
+maximum_pressure_range_advanced 0.9
+maximum_pressure_range_default 0.9
+preinfusion_flow_rate 4
+preinfusion_stop_pressure 4.0
+preinfusion_time 20
+pressure_end 2.0
+profile_hide 1
+profile_language en
+profile_notes {Center a hand-cut Chemex filter paper in the bottom of a Filter3 basket. Wet it with Flush water. Add 22 grams of coffee and shake to level the grounds.  Gently lock the portafilter in.  Place a cup, tap the COFFEE icon on the Group Head to start.  Optional: 30 seconds into the extraction, unlock the portafilter, swirl and check for 2cm-4cm of water on the grounds.  Adjust the grind if necessary for next time: finer if you saw not enough water, coarser if there was too much water on the grounds.  If water comes out of the holes at the top of the basket, your grind is too fine.}
+profile_title Filter3
+settings_profile_type settings_2c
+tank_desired_water_temperature 0
+
