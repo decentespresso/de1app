@@ -470,27 +470,39 @@ dui add dbutton $::pages 484 1196 624 1272 -tags flush_4_btn -labelvariable {$::
 
 #########
 # hot water presets
-add_de1_text $::pages 94 1454 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 234 1454 -justify center -anchor "center" -text [translate "120ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 388 1454 -justify center -anchor "center" -text [translate "180ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 554 1454 -justify center -anchor "center" -text [translate "200ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
 
-add_de1_text $::pages 94 1534 -justify center -anchor "center" -text [translate "75ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 234 1534 -justify center -anchor "center" -text [translate "80ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 388 1534 -justify center -anchor "center" -text [translate "85ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
-add_de1_text $::pages 554 1534 -justify center -anchor "center" -text [translate "90ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
+dui add dbutton $::pages 24 1420 164 1492 -tags hwvol_1_btn -labelvariable {$::streamline_favorite_hwvol_buttons(label_1)}  -command { streamline_hwvol_select 1 } -longpress_cmd {streamline_set_hwvol_preset 1 }
+dui add dbutton $::pages 164 1420 314 1492 -tags hwvol_2_btn -labelvariable {$::streamline_favorite_hwvol_buttons(label_2)}  -command { streamline_hwvol_select 2 } -longpress_cmd {streamline_set_hwvol_preset 2 }
+dui add dbutton $::pages 318 1420 458 1492 -tags hwvol_3_btn -labelvariable {$::streamline_favorite_hwvol_buttons(label_3)}  -command { streamline_hwvol_select 3 } -longpress_cmd {streamline_set_hwvol_preset 3 }
+dui add dbutton $::pages 484 1420 624 1492 -tags hwvol_4_btn -labelvariable {$::streamline_favorite_hwvol_buttons(label_4)}  -command { streamline_hwvol_select 4 } -longpress_cmd {streamline_set_hwvol_preset 4 }
+
+dui add dbutton $::pages 24 1506 164 1578 -tags hwtemp_1_btn -labelvariable {$::streamline_favorite_hwtemp_buttons(label_1)}  -command { streamline_hwtemp_select 1 } -longpress_cmd {streamline_set_hwtemp_preset 1 }
+dui add dbutton $::pages 164 1506 314 1578 -tags hwtemp_2_btn -labelvariable {$::streamline_favorite_hwtemp_buttons(label_2)}  -command { streamline_hwtemp_select 2 } -longpress_cmd {streamline_set_hwtemp_preset 2 }
+dui add dbutton $::pages 318 1506 458 1578 -tags hwtemp_3_btn -labelvariable {$::streamline_favorite_hwtemp_buttons(label_3)}  -command { streamline_hwtemp_select 3 } -longpress_cmd {streamline_set_hwtemp_preset 3 }
+dui add dbutton $::pages 484 1506 624 1578 -tags hwtemp_4_btn -labelvariable {$::streamline_favorite_hwtemp_buttons(label_4)}  -command { streamline_hwtemp_select 4 } -longpress_cmd {streamline_set_hwtemp_preset 4 }
+
+
+#add_de1_text $::pages 94 1454 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
+#add_de1_text $::pages 234 1454 -justify center -anchor "center" -text [translate "120ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
+#add_de1_text $::pages 388 1454 -justify center -anchor "center" -text [translate "180ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
+#add_de1_text $::pages 554 1454 -justify center -anchor "center" -text [translate "200ml"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
+
+#add_de1_text $::pages 94 1534 -justify center -anchor "center" -text [translate "75ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
+#add_de1_text $::pages 234 1534 -justify center -anchor "center" -text [translate "80ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
+#add_de1_text $::pages 388 1534 -justify center -anchor "center" -text [translate "85ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
+#add_de1_text $::pages 554 1534 -justify center -anchor "center" -text [translate "90ºC"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 200]
 
 
 # hot water tap areas
-add_de1_button "off" {puts "hot water value 1"} 37 1424 169 1489 ""
-add_de1_button "off" {puts "hot water value 2"} 169 1424 301 1489 ""
-add_de1_button "off" {puts "hot water value 3"} 301 1424 466 1489 ""
-add_de1_button "off" {puts "hot water value 4"} 466 1424 613 1489 ""
+#add_de1_button "off" {puts "hot water value 1"} 37 1424 169 1489 ""
+#add_de1_button "off" {puts "hot water value 2"} 169 1424 301 1489 ""
+#add_de1_button "off" {puts "hot water value 3"} 301 1424 466 1489 ""
+#add_de1_button "off" {puts "hot water value 4"} 466 1424 613 1489 ""
 
-add_de1_button "off" {puts "hot water value 5"} 37 1489 169 1566 ""
-add_de1_button "off" {puts "hot water value 6"} 169 1489 301 1566 ""
-add_de1_button "off" {puts "hot water value 7"} 301 1489 466 1566 ""
-add_de1_button "off" {puts "hot water value 8"} 466 1489 613 1566 ""
+#add_de1_button "off" {puts "hot water value 5"} 37 1489 169 1566 ""
+#add_de1_button "off" {puts "hot water value 6"} 169 1489 301 1566 ""
+#add_de1_button "off" {puts "hot water value 7"} 301 1489 466 1566 ""
+#add_de1_button "off" {puts "hot water value 8"} 466 1489 613 1566 ""
 #########
 
 
@@ -914,6 +926,7 @@ proc streamline_hot_water_setting_change {} {
 	}
 	#return [subst {[return_temperature_measurement $::settings(water_temperature) 1]\n([return_liquid_measurement $::settings(water_volume)])}]
 	#return [return_temperature_measurement $::settings(water_temperature) 1]
+
 }
 
 
@@ -952,7 +965,9 @@ proc streamline_hotwater_btn { args } {
 		}
 	}
 	streamline_hot_water_setting_change
+	refresh_favorite_hw_button_labels
 }
+
 proc toggle_streamline_hot_water_setting {} {
 	puts toggle_streamline_hot_water_setting
 	if {$::streamline_hotwater_btn_mode == "ml"} {
@@ -1037,7 +1052,7 @@ proc save_favorite_profile { slot } {
 	set ::settings(favorite_profiles) $profiles
 	#refresh_favorite_profile_button_labels
 	refresh_favorite_profile_button_labels
-	#save_settings
+	save_settings
 	borg toast [translate "Saved"]
 }
 
@@ -1159,6 +1174,41 @@ proc streamline_set_flush_preset { slot } {
 	borg toast [translate "Saved"]
 	
 }
+
+
+proc streamline_set_hwvol_preset { slot } {
+	set hwvols [ifexists ::settings(favorite_hwvols)]
+	dict set hwvols $slot value $::settings(water_volume)
+	set ::settings(favorite_hwvols) $hwvols	
+	save_settings	
+	streamline_hot_water_setting_change
+
+	.can itemconfigure hwvol_${slot}_btn-btn -fill "#3e5682"
+	after 100 .can itemconfigure hwvol_${slot}_btn-btn -fill "#efefef"
+	after 200 .can itemconfigure hwvol_${slot}_btn-btn -fill "#3e5682"
+	after 300 .can itemconfigure hwvol_${slot}_btn-btn -fill "#efefef"
+	borg toast [translate "Saved"]
+	
+	refresh_favorite_hw_button_labels
+}
+
+
+proc streamline_set_hwtemp_preset { slot } {
+	set hwtemps [ifexists ::settings(favorite_hwtemps)]
+	dict set hwtemps $slot value $::settings(water_temperature)
+	set ::settings(favorite_hwtemps) $hwtemps	
+	save_settings	
+	streamline_hot_water_setting_change
+
+	.can itemconfigure hwtemp_${slot}_btn-btn -fill "#3e5682"
+	after 100 .can itemconfigure hwtemp_${slot}_btn-btn -fill "#efefef"
+	after 200 .can itemconfigure hwtemp_${slot}_btn-btn -fill "#3e5682"
+	after 300 .can itemconfigure hwtemp_${slot}_btn-btn -fill "#efefef"
+	borg toast [translate "Saved"]
+
+	refresh_favorite_hw_button_labels	
+}
+
 
 
 proc streamline_set_dosebev_preset { slot } {
@@ -1385,6 +1435,200 @@ proc refresh_favorite_steam_button_labels {} {
 }
 
 
+proc refresh_favorite_hw_button_labels {} {
+
+	puts "refresh_favorite_hw_button_labels"
+
+	set hwvols [ifexists ::settings(favorite_hwvols)]
+	set streamline_selected_favorite_hwvol ""
+	catch {
+		set streamline_selected_favorite_hwvol [dict get $hwvols selected number]
+	}
+
+	set hwtemps [ifexists ::settings(favorite_hwtemps)]
+	catch {
+		set streamline_selected_favorite_hwtemp [dict get $hwtemps selected number]
+	}
+
+	set changed 0
+
+	####
+	# vol fist
+	set t1 ""
+	set t2 ""
+	set t3 ""
+	set t4 ""
+
+	catch {
+		set t1 [dict get $hwvols 1 value]
+	}
+	catch {
+		set t2 [dict get $hwvols 2 value]
+	}
+	catch {
+		set t3 [dict get $hwvols 3 value]
+	}
+	catch {
+		set t4 [dict get $hwvols 4 value]
+	}
+
+	if {$t1 == ""} {
+		set t1 "10"
+		dict set hwvols 1 value $t1
+		set changed 1
+	}
+
+	if {$t2 == ""} {
+		set t2 "20"		
+		dict set hwvols 2 value $t2
+		set changed 1
+	}
+
+	if {$t3 == ""} {
+		set t3 "50"		
+		dict set hwvols 3 value $t3
+		set changed 1
+	}
+
+	if {$t4 == ""} {
+		set t4 "100"		
+		dict set hwvols 4 value $t4
+		set changed 1
+	}
+
+	# temp second
+	set bt1 ""
+	set bt2 ""
+	set bt3 ""
+	set bt4 ""
+
+	catch {
+		set bt1 [dict get $hwtemps 1 value]
+	}
+	catch {
+		set bt2 [dict get $hwtemps 2 value]
+	}
+	catch {
+		set bt3 [dict get $hwtemps 3 value]
+	}
+	catch {
+		set bt4 [dict get $hwtemps 4 value]
+	}
+
+	if {$bt1 == ""} {
+		set bt1 "30"
+		dict set hwtemps 1 value $bt1
+		set changed 1
+	}
+
+	if {$bt2 == ""} {
+		set bt2 "40"		
+		dict set hwtemps 2 value $bt2
+		set changed 1
+	}
+
+	if {$bt3 == ""} {
+		set bt3 "50"		
+		dict set hwtemps 3 value $bt3
+		set changed 1
+	}
+
+	if {$bt4 == ""} {
+		set bt4 "60"		
+		dict set hwtemps 4 value $bt4
+		set changed 1
+	}
+
+	######
+
+	if {$changed == 1} {
+		set ::settings(favorite_hwvols) $hwvols	
+		set ::settings(favorite_hwtemps) $hwtemps	
+		save_settings	
+		
+	}
+
+	set ::streamline_favorite_hwvol_buttons(label_1) "[return_liquid_measurement $t1]"
+	set ::streamline_favorite_hwvol_buttons(label_2) "[return_liquid_measurement $t2]"
+	set ::streamline_favorite_hwvol_buttons(label_3) "[return_liquid_measurement $t3]"
+	set ::streamline_favorite_hwvol_buttons(label_4) "[return_liquid_measurement $t4]"
+
+	set ::streamline_favorite_hwtemp_buttons(label_1) "[return_temperature_measurement $bt1 1]"
+	set ::streamline_favorite_hwtemp_buttons(label_2) "[return_temperature_measurement $bt2 1]"
+	set ::streamline_favorite_hwtemp_buttons(label_3) "[return_temperature_measurement $bt3 1]"
+	set ::streamline_favorite_hwtemp_buttons(label_4) "[return_temperature_measurement $bt4 1]"
+
+
+	set b1c "#d8d8d8"
+	set b2c "#d8d8d8"
+	set b3c "#d8d8d8"
+	set b4c "#d8d8d8"
+
+	set lb1c $::left_label_color
+	set lb2c $::left_label_color
+	set lb3c $::left_label_color
+	set lb4c $::left_label_color
+
+	set b1c2 "#d8d8d8"
+	set b2c2 "#d8d8d8"
+	set b3c2 "#d8d8d8"
+	set b4c2 "#d8d8d8"
+
+	set lb1c2 $::left_label_color
+	set lb2c2 $::left_label_color
+	set lb3c2 $::left_label_color
+	set lb4c2 $::left_label_color
+
+
+	
+	if {[round_to_two_digits $::settings(water_volume)] == [dict get $hwvols 1 value]} {
+		set b1c "#3e5682"
+		set lb1c "#000000"
+	} 
+	if {[round_to_two_digits $::settings(water_volume)] == [dict get $hwvols 2 value]} {
+		set b2c "#3e5682"
+		set lb2c "#000000"
+	} 
+	if {[round_to_two_digits $::settings(water_volume)] == [dict get $hwvols 3 value]} {
+		set b3c "#3e5682"
+		set lb3c "#000000"
+	} 
+	if {[round_to_two_digits $::settings(water_volume)] == [dict get $hwvols 4 value]} {
+		set b4c "#3e5682"
+		set lb4c "#000000"
+	}
+
+
+	
+	if {[round_to_two_digits $::settings(water_temperature)] == [dict get $hwtemps 1 value]} {
+		set b1c2 "#3e5682"
+		set lb1c2 "#000000"
+	} 
+	if {[round_to_two_digits $::settings(water_temperature)] == [dict get $hwtemps 2 value]} {
+		set b2c2 "#3e5682"
+		set lb2c2 "#000000"
+	} 
+	if {[round_to_two_digits $::settings(water_temperature)] == [dict get $hwtemps 3 value]} {
+		set b3c2 "#3e5682"
+		set lb3c2 "#000000"
+	} 
+	if {[round_to_two_digits $::settings(water_temperature)] == [dict get $hwtemps 4 value]} {
+		set b4c2 "#3e5682"
+		set lb4c2 "#000000"
+	}
+
+	.can itemconfigure hwvol_1_btn-lbl -fill $lb1c
+	.can itemconfigure hwvol_2_btn-lbl -fill $lb2c
+	.can itemconfigure hwvol_3_btn-lbl -fill $lb3c
+	.can itemconfigure hwvol_4_btn-lbl -fill $lb4c
+
+	.can itemconfigure hwtemp_1_btn-lbl -fill $lb1c2
+	.can itemconfigure hwtemp_2_btn-lbl -fill $lb2c2
+	.can itemconfigure hwtemp_3_btn-lbl -fill $lb3c2
+	.can itemconfigure hwtemp_4_btn-lbl -fill $lb4c2
+
+}
+
 proc refresh_favorite_dosebev_button_labels {} {
 
 	puts "refresh_favorite_dosebev_button_labels"
@@ -1489,8 +1733,7 @@ proc refresh_favorite_dosebev_button_labels {} {
 
 	if {$changed == 1} {
 		set ::settings(favorite_dosebevs) $dosebevs	
-		#save_settings	
-		
+		save_settings			
 	}
 
 	set ::streamline_favorite_dosebev_buttons(label_1) "[round_to_one_digits_if_needed $t1]:[round_to_one_digits_if_needed $bt1]"
@@ -1751,6 +1994,59 @@ proc streamline_flush_select { slot } {
 refresh_favorite_flush_button_labels
 
 
+proc streamline_hwvol_select { slot } {
+	puts "streamline_hwvol_select { $slot } "
+
+	if {[dui page current] != "off"} {
+		return ""
+	}
+
+#	catch {
+		# get the favoritae button values
+		set hwvols [ifexists ::settings(favorite_hwvols)]
+
+		# set the setting
+		set ::settings(water_volume) [dict get $hwvols $slot value]
+
+		# save the new selected button 
+		dict set hwvols selected number $slot
+		set ::settings(favorite_hwvols) $hwvols	
+		save_profile_and_update_de1_soon	
+
+
+#	}
+	streamline_hot_water_setting_change
+	refresh_favorite_hw_button_labels
+}
+refresh_favorite_hw_button_labels
+
+
+proc streamline_hwtemp_select { slot } {
+	puts "streamline_hwtemp_select { $slot } "
+
+	if {[dui page current] != "off"} {
+		return ""
+	}
+
+	#catch {
+		# get the favoritae button values
+		set hwtemps [ifexists ::settings(favorite_hwtemps)]
+
+		# set the setting
+		set ::settings(water_temperature) [dict get $hwtemps $slot value]
+
+		# save the new selected button 
+		dict set hwtemps selected number $slot
+		set ::settings(favorite_hwtemps) $hwtemps	
+		save_profile_and_update_de1_soon	
+
+
+	#}
+
+	streamline_hot_water_setting_change
+	refresh_favorite_hw_button_labels
+}
+refresh_favorite_hw_button_labels
 
 ############################################################################################################################################################################################################
 # the espresso chart
