@@ -1879,6 +1879,16 @@ proc launch_os_time_setting {} {
 
 }
 
+
+# useful for self-updating Androwish or adding more packages
+proc apk_install {path} {
+    msg -INFO "Install APK '$path'"
+	if { $::android == 1 } {
+		#borg activity android.intent.action.VIEW $url text/html [list package com.android.chrome]
+		borg activity android.intent.action.VIEW "file://$path" application/vnd.android.package-archive
+	}		
+}
+
 proc web_browser {url} {
     msg -INFO "Browser '$url'"
 	if { $::android == 1 } {
@@ -1888,9 +1898,7 @@ proc web_browser {url} {
 		eval exec [auto_execok start] $url
 	} elseif { $::tcl_platform(os) eq "Darwin" } {
 		eval exec open $url
-	}	
-
-		
+	}		
 }
 
 proc font_width {untranslated_txt font} {
