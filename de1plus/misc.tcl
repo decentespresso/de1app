@@ -96,6 +96,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Streamline/Inter-Regular.ttf *
         skins/Streamline/Inter-Thin.ttf *
         skins/Streamline/Inter-Bold.ttf *
+        skins/Streamline/icomoon.ttf *
         skins/Streamline/skin.tcl *
         skins/Streamline/1280x800/icon.jpg *
         skins/Streamline/2560x1600/icon.jpg *
