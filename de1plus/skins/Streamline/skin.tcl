@@ -42,6 +42,10 @@ load_font "Inter-Black18" "[skin_directory]/Inter-SemiBold.ttf" 14
 # Vertical bar in top right buttons
 load_font "Inter-Thin14" "[skin_directory]/Inter-Thin.ttf" 14
 
+# button icon font
+load_font "icomoon" "[skin_directory]/icomoon.ttf" 30
+
+
 set ::left_label_color #05386c
 set scale_disconnected_color #cd5360
 
@@ -89,11 +93,17 @@ streamline_rectangle $::pages 0 0 657 1600 #efefef
 # empty area on 2/3rd of the right side
 streamline_rectangle $::pages 657 0 2560 1600 #ffffff
 
+# set ::settings(ghc_is_installed) 1
+
 # lower horizontal bar where shot data is shown
 if {$::settings(ghc_is_installed) == 0} { 
-	streamline_rectangle $::pages 687 1220 2130 1566 #efefef
+#	streamline_rectangle $::pages 687 1220 2130 1566 #efefef
+	#streamline_rectangle $::pages 687 1220 2480 1566 #efefef
+	dui add shape round $::pages 687 1220 -bwidth 1443 -bheight 346 -radius {20 20 20 20} -fill "#efefef"
+
 } else {
-	streamline_rectangle $::pages 687 1220 2480 1566 #efefef
+	#streamline_rectangle $::pages 687 1220 2480 1566 #efefef
+	dui add shape round $::pages 687 1220 -bwidth 1848 -bheight 346 -radius {20 20 20 20} -fill "#efefef"
 }
 
 #line separating the left grey box
@@ -1082,10 +1092,12 @@ if {$::settings(ghc_is_installed) == 0} {
 
 	# font color
 	dui aspect set -theme default -type dbutton label_fill "#121212"
+	dui aspect set -theme default -type dbutton label1_fill "#121212"
 
 	# font to use
 	dui aspect set -theme default -type dbutton label_font Inter-Bold12 
-
+	
+	dui aspect set -theme default -type dbutton label1_font icomoon
 	# rounded retangle radius
 	dui aspect set -theme default -type dbutton radius 18
 
@@ -1097,33 +1109,42 @@ if {$::settings(ghc_is_installed) == 0} {
 
 	# label position
 	dui aspect set -theme default -type dbutton label_pos ".50 .75" 
+	dui aspect set -theme default -type dbutton label1_pos ".50 .35" 
 
 
 	# Four GHC buttons on bottom right
 	if {$::android == 1 || $::undroid == 1} {
-		set s1 "mug"
-		set s2 "clouds"
-		set s3 "droplet"
-		set s4 "shower-down"
+
+		# custom characters in a font made by Pulak
+		set s1 "\uE915"
+		set s2 "\uE917"
+		set s3 "\uE918"
+		set s4 "\uE916"
+
+		# font awesome
 		set s5 "hand"
+
 	} else {
+
 		set s1 "C"
 		set s2 "S"
 		set s3 "W"
 		set s4 "F"
 		set s5 "S"
 	}
-	dui add dbutton "off" 2159 1216 2316 1384 -tags espresso_btn -symbol $s1 -label [translate "Coffee"]   -command {say [translate {Espresso}] $::settings(sound_button_in); start_espresso} 
-	dui add dbutton "off" 2159 1401 2316 1566 -tags steam_btn -symbol $s2 -label [translate "Steam"]   -command {say [translate {Steam}] $::settings(sound_button_in); start_steam} 
-	dui add dbutton "off" 2336 1216 2497 1384 -tags water_btn -symbol $s3 -label [translate "Water"]   -command {say [translate {Water}] $::settings(sound_button_in); start_water} 
-	dui add dbutton "off" 2336 1401 2497 1566 -tags flush_btn -symbol $s4 -label [translate "Flush"]  -command {say [translate {Flush}] $::settings(sound_button_in); start_flush} 
+
+		dui add dbutton "off" 2159 1216 2316 1384 -tags espresso_btn -label1 $s1 -label [translate "Coffee"]   -command {say [translate {Espresso}] $::settings(sound_button_in); start_espresso} 
+		dui add dbutton "off" 2336 1216 2497 1384 -tags water_btn -label1 $s3 -label [translate "Water"]   -command {say [translate {Water}] $::settings(sound_button_in); start_water} 
+		dui add dbutton "off" 2336 1401 2497 1566 -tags flush_btn -label1 $s4 -label [translate "Flush"]  -command {say [translate {Flush}] $::settings(sound_button_in); start_flush} 
+		dui add dbutton "off" 2159 1401 2316 1566 -tags steam_btn -label1 $s2 -label [translate "Steam"]   -command {say [translate {Steam}] $::settings(sound_button_in); start_steam} 
+
 
 	# stop button
 	#dui add dbutton "espresso water steam hotwaterrinse" 2159 1216 2494 1566 -tags espresso_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
 	dui aspect set -theme default -type dbutton outline "#d9505e"
 	dui aspect set -theme default -type dbutton label_fill "#d9505e"
 	dui aspect set -theme default -type dbutton_symbol fill #d9505e
-	dui add dbutton "espresso water steam hotwaterrinse" 2200 1256 2470 1526 -tags espresso_btn -symbol $s5  -label [translate "Stop Coffee"] -command {say [translate {Stop Coffee}] $::settings(sound_button_in); start_idle} 
+	dui add dbutton "espresso water steam hotwaterrinse" 2200 1256 2470 1526 -tags espresso_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
 }
 
 ############################################################################################################################################################################################################
@@ -2135,5 +2156,4 @@ add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(s
 
 
 #after 1000 "show_settings settings_1"
-
 
