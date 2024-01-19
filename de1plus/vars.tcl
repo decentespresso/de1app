@@ -2816,6 +2816,7 @@ proc select_profile { profile } {
 	# 
 	unset -nocomplain ::settings(profile_video_help)
 
+
 	load_settings_vars $fn
 
 	set ::settings(profile_filename) $profile
@@ -3052,7 +3053,18 @@ proc load_settings_vars {fn} {
 	if { ![info exists temp_settings(beverage_type)] } {
 		set temp_settings(beverage_type) {}
 	}
+
+	#########
+	# these were temporarily being saved in profiles, for a week, and then that was removed, so we remove them from profiles now if someone had it there. https://github.com/decentespresso/de1app/commit/f76b3aa5841ddd71141c3a301662734bfc4f6c4e
+	if { [info exists temp_settings(grinder_dose_weight)] == 1} {
+		unset temp_settings(grinder_dose_weight)
+	}
+	if { [info exists temp_settings(grinder_setting)] == 1} {
+		unset temp_settings(grinder_setting)
+	}
+	#########
 		
+
 	if { ![info exists temp_settings(read_only)] } {
 		set temp_settings(read_only) 0
 	}
@@ -3063,6 +3075,8 @@ proc load_settings_vars {fn} {
 		set temp_settings(final_desired_shot_volume) 0
 		set temp_settings(saver_brightness) 0		
 	}
+
+
 
 
 	# we accidentally saved water temp in profiles for about a year and then decided we didn't want that, so remove it from profiles if it's there
