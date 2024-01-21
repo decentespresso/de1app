@@ -42,3 +42,6 @@
 [submodule "de1plus/plugins/D_Scheduler"]
 	path = de1plus/plugins/D_Scheduler
 	url = https://github.com/Damian-AU/D_Scheduler
+[submodule "de1plus/skins/DSx2"]
+	path = de1plus/skins/DSx2
+	url = https://github.com/Damian-AU/DSx2
