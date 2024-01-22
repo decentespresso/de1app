@@ -261,6 +261,12 @@ proc time_format {seconds {crlf 0} {include_day 0} } {
 		} else {
 			return [subst {[string trim [clock format $seconds -format {%H:%M}]]}]
 		}
+	} elseif {$include_day == 2} {
+		if {$::settings(enable_ampm) == 1} {
+			return [subst {[translate [clock format $seconds -format {%a}]] [string trimleft [clock format $seconds -format {%d}] 0],$crlftxt[string trim [clock format $seconds -format {%l:%M %p}]]}]
+		} else {
+			return [subst {[translate [clock format $seconds -format {%a}]] [string trimleft [clock format $seconds -format {%d}] 0],$crlftxt[string trim [clock format $seconds -format {%H:%M}]]}]
+		}
 	} else {
 		if {$::settings(enable_ampm) == 1} {
 			return [subst {[translate [clock format $seconds -format {%A}]]$crlftxt[string trim [clock format $seconds -format {%l:%M %p}]]}]

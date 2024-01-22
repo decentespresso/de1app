@@ -314,8 +314,10 @@ add_de1_button "off" {toggle_streamline_hot_water_setting} 37 1310 236 1406 ""
 # data card on the bottom center
 
 # labels
-add_de1_text $::pages 980 1239 -justify right -anchor "ne" -text [translate "14 Sep, 18:45"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 300]
-add_de1_text $::pages 980 1272 -justify right -anchor "ne" -text [translate "Extractamundo"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 300]
+set ::streamline_current_history_profile_name ""
+set ::streamline_current_history_profile_clock ""
+add_de1_variable $::pages 980 1239 -justify right -anchor "ne" -text [translate "14 Sep, 18:45"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 300] -textvariable {[time_format $::streamline_current_history_profile_clock 0 2]}
+add_de1_variable $::pages 980 1272 -justify right -anchor "ne" -text [translate "xExtractamundo"] -font Inter-Bold11 -fill $::left_label_color -width [rescale_x_skin 300] -textvariable {$::streamline_current_history_profile_name}
 add_de1_text $::pages 980 1357 -justify right -anchor "ne" -text [translate "Preinfusion"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
 add_de1_text $::pages 980 1419 -justify right -anchor "ne" -text [translate "Extraction"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
 add_de1_text $::pages 980 1484 -justify right -anchor "ne" -text [translate "Total"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
@@ -364,11 +366,11 @@ dui aspect set -theme default -type dbutton_symbol font_size 12
 dui aspect set -theme default -type dbutton_symbol pos ".50 .5"
 
 if {$::android == 1 || $::undroid == 1} {
-	dui add dbutton $::pages 705 1244 766 1298 -tags profile_back -symbol "arrow-left"  -command { puts profile_back } 
-	dui add dbutton $::pages 1000 1244 1061 1298 -tags profile_fwd -symbol "arrow-right"  -command { puts profile_fwd } 
+	dui add dbutton $::pages 705 1244 766 1298 -tags profile_back -symbol "arrow-left"  -command { streamline_history_profile_back } 
+	dui add dbutton $::pages 1000 1244 1061 1298 -tags profile_fwd -symbol "arrow-right"  -command { streamline_history_profile_fwd } 
 } else {
-	dui add dbutton $::pages 705 1244 766 1298  -tags profile_back -label "<"  -command { puts profile_back } 
-	dui add dbutton $::pages 1000 1244 1061 1298  -tags profile_fwd -label ">"  -command { puts profile_fwd } 
+	dui add dbutton $::pages 705 1244 766 1298  -tags profile_back -label "<"  -command { streamline_history_profile_back } 
+	dui add dbutton $::pages 1000 1244 1061 1298  -tags profile_fwd -label ">"  -command { streamline_history_profile_fwd } 
 }
 
 add_de1_text $::pages 1084 1254 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold18 -fill #121212 -width [rescale_x_skin 200]
@@ -2104,11 +2106,11 @@ add_de1_widget $::pages graph 680 250 {
 	$widget element create line_espresso_temperature_goal -xdata espresso_elapsed -ydata espresso_temperature_goal10th -symbol none -label ""  -linewidth [rescale_x_skin 2] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes {5 5}; 
 	$widget element create line_espresso_temperature_basket -xdata espresso_elapsed -ydata espresso_temperature_basket10th -symbol none -label ""  -linewidth [rescale_x_skin 6] -color $::temperature_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0 -dashes $::settings(chart_dashes_temperature);  
 
-	$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 15] -color $::temperature_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 	# show the explanation
-	$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 15] -color $::pressurelinecolor  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
-	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -label "" -linewidth [rescale_x_skin 15] -color $::flow_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	#$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 15] -color $::pressurelinecolor  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	#$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -label "" -linewidth [rescale_x_skin 15] -color $::flow_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
+	#$widget element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature  -label "" -linewidth [rescale_x_skin 15] -color $::temperature_line_color  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 
 	gridconfigure $widget 
 
@@ -2157,3 +2159,60 @@ add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(s
 
 #after 1000 "show_settings settings_1"
 
+
+
+	#puts "[homedir]/history/$current_shot_filename"
+	#set past_shot [array get past_shot_array]
+
+proc streamline_load_history_shot {current_shot_filename} {
+
+	array set past_shot_array [read_file "[homedir]/history/$current_shot_filename"]
+	#puts $past_shot
+	espresso_elapsed set [ifexists past_shot_array(espresso_elapsed)]
+	espresso_pressure set [ifexists past_shot_array(espresso_pressure)]
+
+	espresso_weight set [ifexists past_shot_array(espresso_weight)]
+	espresso_flow set [ifexists past_shot_array(espresso_flow)]
+	espresso_temperature_basket set [ifexists past_shot_array(espresso_temperature_basket)]
+	espresso_state_change set [ifexists past_shot_array(espresso_state_change)]
+	espresso_pressure_goal set [ifexists past_shot_array(espresso_pressure_goal)]
+	espresso_flow_goal set [ifexists past_shot_array(espresso_flow_goal)]
+	espresso_temperature_goal set [ifexists past_shot_array(espresso_temperature_goal)]
+
+	set ::streamline_current_history_profile_clock [ifexists past_shot_array(clock)]
+
+	array set profile_data [ifexists past_shot_array(settings)]
+	set ::streamline_current_history_profile_name [ifexists profile_data(profile_title)]
+	#set ::streamline_current_history_profile_name [clock seconds]
+	#exit
+
+}
+proc streamline_load_currently_selected_history_shot {} {
+	set current_shot_filename [lindex $::streamline_history_files $::streamline_history_file_selected_number]
+	streamline_load_history_shot $current_shot_filename
+}
+
+proc streamline_init_history_files {} {
+	set ::streamline_history_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+	set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
+}
+
+proc streamline_history_profile_back {} {
+	set ::streamline_history_file_selected_number [expr {$::streamline_history_file_selected_number	 - 1}]
+	if {$::streamline_history_file_selected_number < 0} {
+		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
+	}
+	streamline_load_currently_selected_history_shot
+}
+
+proc streamline_history_profile_fwd {} {
+	set ::streamline_history_file_selected_number [expr {$::streamline_history_file_selected_number	 + 1}]
+	if {$::streamline_history_file_selected_number > [llength $::streamline_history_files]-1} {
+		set ::streamline_history_file_selected_number 0
+	}
+	streamline_load_currently_selected_history_shot
+}
+
+streamline_init_history_files
+streamline_load_currently_selected_history_shot
+#	exit
