@@ -842,6 +842,19 @@ proc return_liquid_measurement {in} {
 	}
 }
 
+# lowercase ml variation for Pulak's preference
+proc return_liquid_measurement_ml {in} {
+    if {$::de1(language_rtl) == 1} {
+		return [subst {[translate "mL"] [round_to_integer $in] }]
+    }
+
+	if {$::settings(enable_fluid_ounces) != 1} {
+		return [subst {[round_to_integer $in] [translate "ml"]}]
+	} else {
+		return [subst {[round_to_integer [ml_to_oz $in]] oz}]
+	}
+}
+
 proc return_liquid_measurement_1d {in} {
     if {$::de1(language_rtl) == 1} {
 		return [subst {[translate "mL"] [round_to_one_digits $in] }]
