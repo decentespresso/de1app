@@ -664,8 +664,28 @@ proc add_de1_rich_text {context x y justification autorefresh height width backg
 	set startpos 0
 	set endpos 0
 	set cnt 0
+	set font ""
 
-	set widget [add_de1_widget $context "text" $x $y "" -relief flat  -highlightthickness 0 -insertwidth 0 -height $height -background $backgroundcolor  -selectbackground $backgroundcolor  -width $width ]
+
+	# find the name of the first font mentioned and use that to size this line
+	foreach text $textparts {
+		incr cnt
+
+		set opts ""
+		set txt ""
+		set exec ""
+		foreach {k v} $text {
+			if {$k == "-font"} {
+				set font $v
+			}
+		}
+		if {$font != ""} {
+			break
+		}
+	}
+
+
+	set widget [add_de1_widget $context "text" $x $y "" -relief flat  -highlightthickness 0 -insertwidth 0 -height $height -background $backgroundcolor  -selectbackground $backgroundcolor -font $font -width $width ]
 	
 	foreach text $textparts {
 		incr cnt
