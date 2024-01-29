@@ -3233,7 +3233,13 @@ proc save_profile {  {do_saved_msg 1} } {
 		set ::settings(profile) $::settings(profile_title)
 
 		fill_profiles_listbox 
-		update_de1_explanation_chart
+		
+		if {$::settings(skin) == "Insight" || $::settings(skin) == "Insight Dark"} {
+			# this was set for all skins, but only insight skin shows the explanation chart
+			update_de1_explanation_chart
+		}
+
+
 		if {$do_saved_msg == 1} {
 			set ::settings(profile_title) [translate "Saved"]
 		}
