@@ -134,6 +134,7 @@ namespace eval ::dui {
 			}
 	
 			sdltk screensaver off
+			set fontm $::settings(default_font_calibration)
 			
 			if { $screen_size_width eq "" || $screen_size_height eq "" } {
 				# A better approach than a pause to wait for the lower panel to move away might be to "bind . <<ViewportUpdate>>" 
@@ -145,8 +146,22 @@ namespace eval ::dui {
 	
 				set width [winfo screenwidth .]
 				set height [winfo screenheight .]
+
+				msg -ERROR "width: $width height: $height"
 	
-				if {$width > 2300} {
+				if {$width == 2960 && $height == 1730} {
+
+					# samsung a9 14" tablet custom resolution
+					borg toast $height
+					set screen_size_width 2960
+					set screen_size_height 1848
+					set fontm 0.70
+					set ::settings(default_font_calibration) $fontm
+
+					set ::settings(orientation) "reverselandscape"
+					borg screenorientation $::settings(orientation)
+
+				} elseif {$width > 2300} {
 					set screen_size_width 2560
 					if {$height > 1450} {
 						set screen_size_height 1600
@@ -168,6 +183,7 @@ namespace eval ::dui {
 					set screen_size_width 2048
 					set screen_size_height 1536
 					#set fontm 2
+
 				} elseif {$width == 1340 && ($height == 736 || $height == 800)} {
 					# samsung a7 lite custom resolution
 					set screen_size_width 1340
@@ -201,7 +217,6 @@ namespace eval ::dui {
 			}
 	
 			# Android seems to automatically resize fonts appropriately to the current resolution
-			set fontm $settings(default_font_calibration)
 			#set fontw 1
 	
 			if {$::undroid == 1} {
