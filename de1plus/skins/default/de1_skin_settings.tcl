@@ -1180,7 +1180,7 @@ proc calculate_screen_flip_value {} {
 }
 
 		add_de1_text "measurements" 1800 800 -text [translate "Resolution"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
-			add_de1_widget "measurements" scale 1800 860 {} -from 320 -to 2800 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
+			add_de1_widget "measurements" scale 1800 860 {} -from 320 -to 2960 -background #e4d1c1 -borderwidth 1 -bigincrement 400 -showvalue 0 -resolution 1 -length [rescale_x_skin 500] -width [rescale_y_skin 100] -variable ::settings(screen_size_width) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0  -command set_resolution_height_from_width
 			add_de1_variable "measurements" 1800 960 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {$::settings(screen_size_width) x $::settings(screen_size_height)}
 			calculate_screen_flip_value
 			#add_de1_widget "measurements" checkbutton 2100 1320  {} -text [translate "flip"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::globals(screen_flip)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat -command calculate_screen_flip_value
