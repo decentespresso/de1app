@@ -26,9 +26,9 @@ namespace eval ::plugins::${plugin_name} {
             array set  ::plugins::visualizer_upload::settings {
                 auto_upload 1
                 visualizer_endpoint api/shots/upload
-                visualizer_password passwd
+                visualizer_password {}
                 visualizer_url visualizer.coffee
-                visualizer_username demo@demo123
+                visualizer_username {}
             }
             set needs_save_settings 1
         }
@@ -73,6 +73,14 @@ namespace eval ::plugins::${plugin_name} {
     proc upload {content} {
         variable settings
 
+        if {![has_credentials]} {
+            #borg toast [translate_toast "Please configure your username and password in the settings"]
+            #set settings(last_upload_result) [translate "Please configure your username and password in the settings"]
+            #plugins save_settings visualizer_upload
+            return {}
+        }
+
+
         msg "uploading shot"
         borg toast [translate_toast "Uploading Shot"]
         
@@ -84,13 +92,6 @@ namespace eval ::plugins::${plugin_name} {
         set content [encoding convertto utf-8 $content]
 
         http::register https 443 [list ::tls::socket -servername $settings(visualizer_url)]
-
-        if {![has_credentials]} {
-            borg toast [translate_toast "Please configure your username and password in the settings"]
-            set settings(last_upload_result) [translate "Please configure your username and password in the settings"]
-            plugins save_settings visualizer_upload
-            return
-        }
 
         set auth "Basic [binary encode base64 $settings(visualizer_username):$settings(visualizer_password)]"
         set boundary "--------[clock seconds]"
@@ -362,7 +363,7 @@ namespace eval ::plugins::${plugin_name} {
 
     proc download_profile { profile_url } {
         variable settings
-        
+
         if { $profile_url eq "" } {
             return {}
         }
@@ -417,8 +418,7 @@ namespace eval ::plugins::${plugin_name} {
     
     proc has_credentials {} {
         variable settings
-        return [expr { [string trim $settings(visualizer_username)] ne "" && $settings(visualizer_username) ne "demo@demo123" || \
-            [string trim $settings(visualizer_password)] ne "" }]
+        return [expr { [string trim $settings(visualizer_username)] ne "" && $settings(visualizer_username) ne "demo@demo123" && [string trim $settings(visualizer_password)] ne "" }]
     }
     
     proc main {} {
