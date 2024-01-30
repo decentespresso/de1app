@@ -1003,6 +1003,20 @@ dui add dbutton $::pages 1330 50 1630 170 -tags profile_5_btn -labelvariable {$:
 
 
 
+# button color
+dui aspect set -theme default -type dbutton fill "#ffffff"
+
+# rounded rectangle color 
+dui aspect set -theme default -type dbutton outline "#c5cdda"
+
+dui aspect set -theme default -type dbutton width 2
+
+# rounded retangle radius
+#dui aspect set -theme default -type dbutton radius 36
+dui aspect set -theme default -type dbutton radius 28
+
+
+
 
 ############################################################################################################################################################################################################
 # DYE support
@@ -1016,14 +1030,7 @@ if { [plugins enabled DYE] } {
 	}
 	dui page load DYE current 
 
-	#set dyebtn1 [list -text "DYE" -font "Inter-Bold11" -foreground $::left_label_color -exec "show_DYE_page" ]
-	#set dyebtn2 [list -text "        " -font "Inter-Bold11"]
-	#set dyebtn3 [list -text "DYE" -font "Inter-Bold11" -foreground $::left_label_color -exec "show_DYE_page" ]
-	#set dyebtn4 [list -text "        " -font "Inter-Bold11"]
-
-	#set dyebtns "$dyebtn1 $dyebtn2 $dyebtn3 $dyebtn4"
-
-	dui add dbutton $::pages 1910 76 2100 145 -tags settings_btn -label "DYE"  -command { show_DYE_page }] 
+	dui add dbutton $::pages 1900 76 2090 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
 
 }
 
@@ -1034,18 +1041,6 @@ proc show_DYE_page {} {
 }
 ############################################################################################################################################################################################################
 
-
-# button color
-dui aspect set -theme default -type dbutton fill "#ffffff"
-
-# rounded rectangle color 
-dui aspect set -theme default -type dbutton outline "#c5cdda"
-
-dui aspect set -theme default -type dbutton width 2
-
-# rounded retangle radius
-#dui aspect set -theme default -type dbutton radius 36
-dui aspect set -theme default -type dbutton radius 28
 
 dui add dbutton $::pages 2120 76 2300 145 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_in); show_settings }
 dui add dbutton $::pages 2330 76 2510 145 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_in);start_sleep }
