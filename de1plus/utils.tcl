@@ -1145,7 +1145,9 @@ proc android_specific_stubs {} {
             # do nothing
         } elseif {[lindex $args 0] == "systemui"} {
             # do nothing
-        } elseif {[lindex $args 0] == "osbuildinfo"} {
+        } elseif {[lindex $args 0] == "systemui"} {
+            # do nothing
+        } elseif {[lindex $args 0] == "screenorientation"} {
             # do nothing
             return ""
         } elseif {[lindex $args 0] == "spinner"} {

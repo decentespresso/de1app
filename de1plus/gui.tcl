@@ -1213,15 +1213,15 @@ proc check_if_should_send_user_present_notice {} {
 
 	catch {
 		set seconds_since_last_idle_update [expr {[clock seconds] - $::globals(time_last_idle_update)}]
-		msg -INFO "check_if_should_send_user_present_notice '$::de1_num_state($::de1(state))' - $seconds_since_last_idle_update"
+		#msg -INFO "check_if_should_send_user_present_notice '$::de1_num_state($::de1(state))' - $seconds_since_last_idle_update"
 		if {$::de1_num_state($::de1(state)) == "Idle"} {
 			if {[info exists ::globals(sent_scheduled_idle)] == 1} {
 				# we just caused a scheduled idle, no need to indicate user is present
-				msg -INFO "scheduler_idle does not cause user-present notice"
+				#msg -INFO "scheduler_idle does not cause user-present notice"
 			} elseif {$seconds_since_last_idle_update > 30} {
 				set_user_present
 				set ::globals(time_last_idle_update) [clock seconds]
-				msg -INFO "updating time_last_idle_update and setting user-not-idle"		
+				#msg -INFO "updating time_last_idle_update and setting user-not-idle"		
 			} else {
 				#msg -INFO "NOT updating time_last_idle_update and setting user-not-idle"		
 			}
