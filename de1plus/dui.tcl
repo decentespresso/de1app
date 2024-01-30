@@ -1118,7 +1118,7 @@ namespace eval ::dui {
 			if { $theme ne "default" } {
 				::set avalue [get $type $aspect -theme default {*}$args]
 				if { $avalue eq "" } {
-					msg -NOTICE [namespace current] "aspect '$theme.[join $type /].$aspect' not found and no alternative available"
+					msg -DEBUG [namespace current] "aspect '$theme.[join $type /].$aspect' not found and no alternative available"
 				}
 				return $avalue
 			}
@@ -6673,7 +6673,6 @@ namespace eval ::dui {
 					}
 					if {$changed == 1} {
 						$can itemconfigure $id -tags $item_tags	
-						msg -DEBUG [namespace current] add_items "with tag(s) '$id' to page(s) '$pages'"
 					}
 				}
 			}
@@ -7009,7 +7008,7 @@ namespace eval ::dui {
 					
 				}
 				if { $found eq "" } {
-					msg -NOTICE [namespace current] get: "no canvas tag matches '$tag' in page '$page'"
+					msg -DEBUG [namespace current] get: "no canvas tag matches '$tag' in page '$page'"
 				} else {
 					lappend ids {*}$found
 				}
@@ -9092,8 +9091,7 @@ namespace eval ::dui {
 				regsub {%y1} $cmd $ry1 cmd
 			}
 			if { $cmd eq "" } {
-				msg -WARN [namespace current] dbutton "'$main_tag' in page(s) '$pages' does not have a command"
-				dump_stack
+				msg -DEBUG [namespace current] dbutton "'$main_tag' in page(s) '$pages' does not have a command"
 
 				if { $longpress_cmd ne "" } {
 					$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $id \
