@@ -854,7 +854,7 @@ proc tcl_introspection {} {
 			append txt [profilerdata ::device::scale::process_weight_update]
 		}
 
-        msg -INFO $txt
+        msg -DEBUG $txt
     }
 
     after [expr {60 * 60 * 1000}] tcl_introspection

@@ -87,7 +87,7 @@ namespace eval ::plugins {
     }
 
     proc peek {plugin} {
-        #msg -INFO [namespace current] "peeking $plugin"
+        msg -DEBUG [namespace current] "peeking $plugin"
         if { [peeked $plugin] } {
             return
         }
@@ -124,7 +124,7 @@ namespace eval ::plugins {
                     }
                 }
 
-                #msg -INFO [namespace current] "sourcing $plugin"
+                msg -DEBUG [namespace current] "sourcing $plugin"
                 if {[::plugins::read $plugin] != 1} {
                     error "sourcing failed"
                 }
@@ -227,7 +227,7 @@ namespace eval ::plugins {
 
 
     proc load_settings {plugin} {
-        #msg -NOTICE [namespace current] "loading settings for $plugin"
+        msg -DEBUG [namespace current] "loading settings for $plugin"
         set fn [plugin_settings_file $plugin]
         if { [file exists $fn] } {
             set settings_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]
@@ -240,7 +240,7 @@ namespace eval ::plugins {
                 
             }
         }
-        #msg -INFO [namespace current] "Settings file $fn not found"
+        msg -DEBUG [namespace current] "Settings file $fn not found"
         return 0
     }
 
