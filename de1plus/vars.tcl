@@ -2835,7 +2835,7 @@ proc select_profile { profile } {
 	# 
 	unset -nocomplain ::settings(profile_video_help)
 
-
+	
 	load_settings_vars $fn
 
 	set ::settings(profile_filename) $profile
@@ -2851,6 +2851,8 @@ proc select_profile { profile } {
 
 	set ::settings(settings_profile_type) [::profile::fix_profile_type $::settings(settings_profile_type)]
 	set ::settings(profile) $::settings(profile_title)
+
+
 
 	::profile::sync_from_legacy
 
@@ -3109,8 +3111,10 @@ proc load_settings_vars {fn} {
 	# john disabling LONG PRESS support as it appears to be buggy on tablets https://3.basecamp.com/3671212/buckets/7351439/messages/2566269076#__recording_2595312790
 	set ::setting(disable_long_press) 1
 
-	update_de1_explanation_chart
-
+	if {$::settings(skin) == "Insight" || $::settings(skin) == "Insight Dark"} {
+		# this was set for all skins, but only insight skin shows the explanation chart
+		update_de1_explanation_chart
+	}
 
 }
 

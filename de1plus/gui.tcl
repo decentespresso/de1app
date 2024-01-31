@@ -2530,13 +2530,29 @@ proc load_god_shot { {force 0} } {
 
 }
 
-proc profile_title {} {
-	if {$::settings(profile_has_changed) == 1} {
-		return "$::settings(profile_title)*"
-	} else {
-		return $::settings(profile_title)
+proc profile_title { {filename {}} } {
 
+	if {$filename == ""} {
+		# no filename given, so it's the current profile title
+		if {$::settings(profile_has_changed) == 1} {
+			return "$::settings(profile_title)*"
+		} else {
+			return $::settings(profile_title)
+
+		}
 	}
+
+	# or give it a filename to fetch the title 
+	catch {
+		set fn "[homedir]/profiles/${filename}.tcl"
+		foreach {k v} [encoding convertfrom utf-8 [read_binary_file $fn]] {
+			set temp_settings($k) $v
+		}
+	}
+
+	#puts "ERROR profile_title [ifexists temp_settings(profile_title)]"
+	return [ifexists temp_settings(profile_title)]
+
 }
 
 # i = idle (0)
