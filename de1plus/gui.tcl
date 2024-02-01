@@ -1283,6 +1283,12 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 
 proc update_de1_explanation_chart { {context {}} } {
 
+	if {$::settings(skin) != "Insight" && $::settings(skin) != "Insight Dark"} {
+		# only Insight skin needs this feature
+		return {}
+	}
+
+
 	espresso_de1_explanation_chart_elapsed length 0
 	espresso_de1_explanation_chart_temperature length 0
 	espresso_de1_explanation_chart_temperature_10 length 0

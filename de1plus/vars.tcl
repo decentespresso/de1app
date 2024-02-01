@@ -263,9 +263,9 @@ proc time_format {seconds {crlf 0} {include_day 0} } {
 		}
 	} elseif {$include_day == 2} {
 		if {$::settings(enable_ampm) == 1} {
-			return [subst {[translate [clock format $seconds -format {%a}]] [string trimleft [clock format $seconds -format {%d}] 0],$crlftxt[string trim [clock format $seconds -format {%l:%M %p}]]}]
+			return [subst {[string trimleft [clock format $seconds -format {%a %d}] 0] [translate [clock format $seconds -format {%b}]],$crlftxt[string trim [clock format $seconds -format {%l:%M %p}]]}]
 		} else {
-			return [subst {[translate [clock format $seconds -format {%a}]] [string trimleft [clock format $seconds -format {%d}] 0],$crlftxt[string trim [clock format $seconds -format {%H:%M}]]}]
+			return [subst {[string trimleft [clock format $seconds -format {%a %d}] 0] [translate [clock format $seconds -format {%b}]],$crlftxt[string trim [clock format $seconds -format {%H:%M}]]}]
 		}
 	} else {
 		if {$::settings(enable_ampm) == 1} {
@@ -3111,10 +3111,7 @@ proc load_settings_vars {fn} {
 	# john disabling LONG PRESS support as it appears to be buggy on tablets https://3.basecamp.com/3671212/buckets/7351439/messages/2566269076#__recording_2595312790
 	set ::setting(disable_long_press) 1
 
-	if {$::settings(skin) == "Insight" || $::settings(skin) == "Insight Dark"} {
-		# this was set for all skins, but only insight skin shows the explanation chart
-		update_de1_explanation_chart
-	}
+	update_de1_explanation_chart
 
 }
 
@@ -3237,11 +3234,7 @@ proc save_profile {  {do_saved_msg 1} } {
 		set ::settings(profile) $::settings(profile_title)
 
 		fill_profiles_listbox 
-		
-		if {$::settings(skin) == "Insight" || $::settings(skin) == "Insight Dark"} {
-			# this was set for all skins, but only insight skin shows the explanation chart
-			update_de1_explanation_chart
-		}
+		update_de1_explanation_chart
 
 
 		if {$do_saved_msg == 1} {
