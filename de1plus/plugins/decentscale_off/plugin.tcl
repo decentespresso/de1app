@@ -8,7 +8,7 @@ namespace eval ::plugins::${plugin_name} {
     variable contact "Via Diaspora"
     variable version 1.0
     variable name "Decent Scale Off"
-    variable description "Turn battery-powered Decent Scale off when DE1 sleeps"
+    variable description "Turn battery-powered Decent Scale off when DE1 sleeps. Requires Decent Scale v1.2 or newer."
 
     proc decentscale_disable_lcd {} {
         if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
