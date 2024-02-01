@@ -447,7 +447,7 @@ array set ::settings {
 	comms_debugging 0
 	scale_stop_at_half_shot 0
 	lock_screen_during_screensaver 0
-	enabled_plugins {DYE SDB visualizer_upload}
+	enabled_plugins {visualizer_upload D_Scheduler DPx_Flow_Calibrator D_Flow_Espresso_Profile}
 
 	maximum_flow 0
 	maximum_flow_range_default 1.0
