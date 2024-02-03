@@ -48,7 +48,7 @@ add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_but
 	add_de1_button "tankempty" {say [translate {Exit}] $::settings(sound_button_in); .can itemconfigure $::message_label -text [translate "Going to sleep"]; .can itemconfigure $::message_button_label -text [translate "Wait"]; after 10000 {.can itemconfigure $::message_button_label -text [translate "Ok"]; }; set_next_page off message; page_show message; after 500 app_exit} 0 1402 800 1600
 	add_de1_button "tankempty refill" {say [translate {awake}] $::settings(sound_button_in);start_refill_kit} 1760 1402 2560 1600
 
-add_de1_button "sleep" {say [translate {sleep}] $::settings(sound_button_in); set_next_page off off; after 1000 start_idle} 0 0 2560 1600
+add_de1_button "sleep" {say [translate {sleep}] $::settings(sound_button_in); set_next_page off off; page_show off; after 1000 start_idle} 0 0 2560 1600
 
 # front button is off page
 add_de1_page "no_ac" "front_button.jpg" "default"
