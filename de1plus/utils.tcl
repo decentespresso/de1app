@@ -1131,6 +1131,8 @@ proc android_specific_stubs {} {
                 return [list "percent" 75]
             } elseif {[lindex $args 0] == "textinput"} {
                 return 0
+            } elseif {[lindex $args 0] == "screensaver"} {
+                return 0
             } else {
                 msg -ERROR "unknown sdktk comment: '$args'"
             }

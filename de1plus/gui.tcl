@@ -1284,7 +1284,7 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 proc update_de1_explanation_chart { {context {}} } {
 
 	if {$::de1(current_context) != "settings_1" && $::settings(skin) != "Insight" && $::settings(skin) != "Insight Dark"} {
-		# only Insight skin needs this feature
+		# only Insight skin needs this feature, or if you are currently looking at the Settings 1 tab
 		return {}
 	}
 
@@ -1324,7 +1324,7 @@ proc update_de1_explanation_chart { {context {}} } {
 		set ::settings(espresso_temperature_3) $::settings(espresso_temperature)
 	}
 
-	clear_espresso_chart
+	#clear_espresso_chart
 
 	if {$::settings(settings_profile_type) == "settings_2b"} {
 		update_de1_plus_flow_explanation_chart
