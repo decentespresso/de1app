@@ -8483,11 +8483,18 @@ namespace eval ::dui {
 		
 		# Paint each dtoggle control compound item, to refelect the value of its boolean variable.
 		# Needs 'args' at the end because this is called from a 'trace add variable'.
-		proc dtoggle_draw { page main_tag varname x0 y0 x1 y1 sliderwidth outline_width foreground selectedforeground 
+		proc dtoggle_draw { page main_tag varname sliderwidth outline_width foreground selectedforeground 
 				background selectedbackground outline selectedoutline args } {
 			set can [dui::canvas]
 			set curval [subst \$$varname]
 			
+			# Original coordinates passed to the proc don't work if the dtoggle has been moved
+			lassign [$can coords [dui item get $page ${main_tag}-bck]] x0 y0 x1 y1
+			set x0 [expr {$x0-$sliderwidth/2.0}] 
+			set y0 [expr {$y0-$sliderwidth/2.0}]
+			set x1 [expr {$x1+$sliderwidth/2.0}] 
+			set y1 [expr {$y1+$sliderwidth/2.0}]
+					
 			if { [string is true $curval] } {
 				dui item config $page ${main_tag}-bck -fill $selectedbackground
 				dui item config $page ${main_tag}-crc -fill $selectedforeground
@@ -9447,8 +9454,8 @@ namespace eval ::dui {
 			set cmd [::list ::dui::item::dtoggle_click $var]
 			$can bind $id [dui::platform::button_press] $cmd
 
-			set draw_cmd [::list ::dui::item::dtoggle_draw [lindex $pages 0] $main_tag $var $x $y $x1 $y1 \
-				$sliderwidth $outline_width $foreground $selectedforeground $background $selectedbackground \
+			set draw_cmd [::list ::dui::item::dtoggle_draw [lindex $pages 0] $main_tag $var $sliderwidth \
+				$outline_width $foreground $selectedforeground $background $selectedbackground \
 				$outline $selectedoutline]
 			# Initialize the control
 			uplevel #0 $draw_cmd
