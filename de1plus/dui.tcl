@@ -8902,8 +8902,18 @@ namespace eval ::dui {
 				}
 				
 				set "label${suffix}_pos" [dui::args::get_option -pos {0.5 0.5} 1 "label${suffix}_args"]
-				set "xlabel$suffix" [expr {$x+int($x1-$x)*[lindex [subst \$label${suffix}_pos] 0]}]
-				set "ylabel$suffix" [expr {$y+int($y1-$y)*[lindex [subst \$label${suffix}_pos] 1]}]
+				set lx [lindex [subst \$label${suffix}_pos] 0]
+				set ly [lindex [subst \$label${suffix}_pos] 1]
+				if { $lx >= 0.0 && $lx <= 1.0} {
+					set "xlabel$suffix" [expr {$x+int($x1-$x)*$lx}]
+				} else {
+					set "xlabel$suffix" [expr {$x+$lx}]
+				}
+				if { $ly >= 0.0 && $ly <= 1.0 } {
+					set "ylabel$suffix" [expr {$y+int($y1-$y)*$ly}]
+				} else {
+					set "ylabel$suffix" [expr {$y+$ly}]
+				}
 				
 				set suffix [incr i]
 				set "label$suffix" [dui::args::get_option "-label$suffix" "" 1]
@@ -8919,13 +8929,24 @@ namespace eval ::dui {
 				set "symbol${suffix}_args" [dui::args::extract_prefixed "-symbol${suffix}_"]
 				
 				foreach aspect [dui aspect list -type [list "${aspect_type}_symbol$suffix" symbol] -style $style] {
-					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_symbol$suffix" $aspect -style $style \
+					dui::args::add_option_if_not_exists -$aspect \
+						[dui aspect get "${aspect_type}_symbol$suffix" $aspect -style $style \
 						-default {} -default_type symbol] "symbol${suffix}_args"
 				}
 				
 				set "symbol${suffix}_pos" [dui::args::get_option -pos {0.5 0.5} 1 "symbol${suffix}_args"]
-				set "xsymbol$suffix" [expr {$x+int($x1-$x)*[lindex [subst \$symbol${suffix}_pos] 0]}]
-				set "ysymbol$suffix" [expr {$y+int($y1-$y)*[lindex [subst \$symbol${suffix}_pos] 1]}]
+				set lx [lindex [subst \$symbol${suffix}_pos] 0]
+				set ly [lindex [subst \$symbol${suffix}_pos] 1]
+				if { $lx >= 0.0 && $lx <= 1.0 } {
+					set "xsymbol$suffix" [expr {$x+int($x1-$x)*$lx}]
+				} else {
+					set "xsymbol$suffix" [expr {$x+$lx}]
+				}
+				if { $ly >= 0.0 && $ly <= 1.0 } {
+					set "ysymbol$suffix" [expr {$y+int($y1-$y)*$ly}]
+				} else {
+					set "ysymbol$suffix" [expr {$y+$ly}]
+				}
 				
 				set suffix [incr i]
 				set "symbol$suffix" [dui::args::get_option "-symbol$suffix" "" 1]
