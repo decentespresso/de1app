@@ -4121,19 +4121,34 @@ proc determine_final_weight { {tochange 0} } {
 	if {[::device::scale::expecting_present]} {
 		if {$::settings(settings_profile_type) == "settings_2c"} {
 			set var ::settings(final_desired_shot_weight_advanced)
+			set var_disable ::settings(final_desired_shot_volume_advanced)
 		} else {
 			set var ::settings(final_desired_shot_weight)
+			set var_disable ::settings(final_desired_shot_volume)
 		}
 	}
 	# SAV
 	if {$::settings(settings_profile_type) == "settings_2c"} {
 		set var ::settings(final_desired_shot_volume_advanced)
+		set var_weight ::settings(final_desired_shot_weight_advanced)
 	} else {
 		set var ::settings(final_desired_shot_volume)
+		set var_weight ::settings(final_desired_shot_weight)
 	}
 
 	if {$tochange != 0} {
 		set $var [expr {[ifexists $var] + $tochange}]
+
+		# if weight stopping is being used, then disable volume stopping, since it's not as accurate
+		if {[info exists var_disable] == 1} {
+			set $var_disable 0
+		}
+
+		if {[info exists var_weight] == 1} {
+			# set weight as well, even though they don't have a scale,  so it's stored in the profile, in case they someday have a scale
+			set $var_weight [expr {[ifexists $var] + $tochange}]
+		}
+
 	}
 	return [ifexists $var]
 }

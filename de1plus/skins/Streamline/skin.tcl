@@ -1,6 +1,6 @@
 package require de1 1.0
 
-set ::settings(ghc_is_installed) 0
+set ::settings(ghc_is_installed) 1
 
 set ghc_pos_pffset 0
 if {$::settings(ghc_is_installed) == 0} { 
@@ -523,25 +523,27 @@ if {$::android == 1 || $::undroid == 1} {
 add_de1_text $::pages 1416 1328 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold18 -fill $::data_card_text_color -width [rescale_x_skin 200]
 add_de1_variable $::pages 1416 1390 -justify right -anchor "nw" -text [translate "15s"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[round_to_integer $::streamline_preinfusion_time]} 
 add_de1_variable $::pages 1416 1454 -justify right -anchor "nw" -text [translate "30s"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[round_to_integer $::streamline_final_extraction_time]}
-add_de1_variable $::pages 1416 1516 -justify right -anchor "nw" -text [translate "45s"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[round_to_integer $::streamline_extraction_time]}
+add_de1_variable $::pages 1416 1516 -justify right -anchor "nw" -text [translate "45s"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[round_to_integer $::streamline_shot_time]}
 
 add_de1_text $::pages 1542 1328 -justify right -anchor "nw" -text [translate "Weight"] -font Inter-Bold18 -fill $::data_card_text_color -width [rescale_x_skin 200]
 add_de1_variable $::pages 1542 1390 -justify right -anchor "nw" -text [translate "10g"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_weight_measurement $::streamline_preinfusion_weight]} 
 add_de1_variable $::pages 1542 1454 -justify right -anchor "nw" -text [translate "29g"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_weight_measurement $::streamline_final_extraction_weight]} 
-add_de1_variable $::pages 1542 1516 -justify right -anchor "nw" -text [translate "39g"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_weight_measurement $::streamline_extraction_weight]} 
+add_de1_variable $::pages 1542 1516 -justify right -anchor "nw" -text [translate "39g"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_weight_measurement $::streamline_shot_weight]} 
 
 add_de1_text $::pages 1734 1328 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold18 -fill $::data_card_text_color -width [rescale_x_skin 200]
 add_de1_variable $::pages 1734 1390 -justify right -anchor "nw" -text [translate "17ml"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_liquid_measurement_ml $::streamline_preinfusion_volume]} 
 add_de1_variable $::pages 1734 1454 -justify right -anchor "nw" -text [translate "30ml"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_liquid_measurement_ml $::streamline_final_extraction_volume]} 
-add_de1_variable $::pages 1734 1516 -justify right -anchor "nw" -text [translate "47ml"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_liquid_measurement_ml $::streamline_extraction_volume]} 
+add_de1_variable $::pages 1734 1516 -justify right -anchor "nw" -text [translate "47ml"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_liquid_measurement_ml $::streamline_shot_volume]} 
 
+set ::streamline_preinfusion_temp ""
+set ::streamline_extraction_temp ""
 add_de1_text $::pages 1888 1328 -justify right -anchor "nw" -text [translate "Temp"] -font Inter-Bold18 -fill $::data_card_text_color -width [rescale_x_skin 200]
-add_de1_variable $::pages 1888 1390 -justify right -anchor "nw" -text [translate "90ºC"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_temperature_measurement [round_to_integer $::streamline_preinfusion_temp_low]]-[return_temperature_measurement [round_to_integer $::streamline_preinfusion_temp_high]]}
-add_de1_variable $::pages 1888 1454 -justify right -anchor "nw" -text [translate "90ºC-86ºC"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {[return_temperature_measurement [round_to_integer $::streamline_extraction_temp_low]]-[return_temperature_measurement [round_to_integer $::streamline_extraction_temp_high]]}
+add_de1_variable $::pages 1888 1390 -justify right -anchor "nw" -text [translate "90ºC"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_preinfusion_temp}
+add_de1_variable $::pages 1888 1454 -justify right -anchor "nw" -text [translate "90ºC-86ºC"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_extraction_temp}
 
 add_de1_text $::pages 2075 1328 -justify right -anchor "nw" -text [translate "Peak Flow"] -font Inter-Bold18 -fill $::data_card_text_color -width [rescale_x_skin 200]
-add_de1_variable $::pages 2075 1390 -justify right -anchor "nw" -text [translate "1.5ml/s"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_preinfusion_peak_flow] [translate "ml/s"} 
-add_de1_variable $::pages 2075 1454 -justify right -anchor "nw" -text [translate "3.8ml/s"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_extraction_peak_flow] [translate "ml/s"} 
+add_de1_variable $::pages 2075 1390 -justify right -anchor "nw" -text [translate "1.5ml/s"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_preinfusion_peak_flow [translate "ml/s"]} 
+add_de1_variable $::pages 2075 1454 -justify right -anchor "nw" -text [translate "3.8ml/s"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_extraction_peak_flow [translate "ml/s"]} 
 
 add_de1_text $::pages 2232 1328 -justify right -anchor "nw" -text [translate "Peak Pressure"] -font Inter-Bold18 -fill $::data_card_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages 2232 1390 -justify right -anchor "nw" -text [translate "0.9 bar (1.3 peak)"] -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_peak_pressure [translate "bar"]}
@@ -2339,13 +2341,20 @@ proc streamline_load_history_shot {current_shot_filename} {
 	set stepnum 0
 
 	foreach t [ifexists past_shot_array(espresso_elapsed)] {
-		set espresso_pressure [lindex $past_shot_array(espresso_pressure) $i]
-		set espresso_weight [lindex $past_shot_array(espresso_weight) $i]
-		set espresso_flow [lindex $past_shot_array(espresso_flow) $i]
-		set espresso_flow_weight [lindex $past_shot_array(espresso_flow_weight) $i]
-		set espresso_temperature_basket [lindex $past_shot_array(espresso_temperature_basket) $i]
-		set espresso_water_dispensed [lindex $past_shot_array(espresso_water_dispensed) $i]
-		set espresso_state_change [lindex $past_shot_array(espresso_state_change) $i]
+
+
+		set espresso_pressure [return_zero_if_blank [lindex $past_shot_array(espresso_pressure) $i]]
+		set espresso_weight [return_zero_if_blank [lindex $past_shot_array(espresso_weight) $i]]
+		set espresso_flow [return_zero_if_blank [lindex $past_shot_array(espresso_flow) $i]]
+		set espresso_flow_weight [return_zero_if_blank [lindex $past_shot_array(espresso_flow_weight) $i]]
+		set espresso_temperature_basket [return_zero_if_blank [lindex $past_shot_array(espresso_temperature_basket) $i]]
+		set espresso_water_dispensed [return_zero_if_blank [lindex $past_shot_array(espresso_water_dispensed) $i]]
+		set espresso_state_change [return_zero_if_blank [lindex $past_shot_array(espresso_state_change) $i]]
+
+		if {$espresso_water_dispensed == 0 || $espresso_water_dispensed == ""} {
+			# ship shots 
+			#continue
+		}
 
 		if {$state_change != $espresso_state_change} {
 			incr stepnum
@@ -2388,9 +2397,46 @@ proc streamline_load_history_shot {current_shot_filename} {
 		incr i
 	}
 
-	set ::streamline_final_extraction_time [expr {$::streamline_extraction_time - $::streamline_preinfusion_time}]
-	set ::streamline_final_extraction_volume [expr {$::streamline_extraction_volume - $::streamline_preinfusion_volume}]
-	set ::streamline_final_extraction_weight [expr {$::streamline_extraction_weight - $::streamline_preinfusion_weight}]
+	if {$state == "preinfusion"} {
+		# if there was no extraction, use blanks
+		set ::streamline_extraction_weight ""
+		set ::streamline_extraction_volume ""
+		set ::streamline_extraction_temp_high ""
+		set ::streamline_extraction_temp_low ""
+		set ::streamline_extraction_peak_flow ""
+		set ::streamline_extraction_peak_pressure ""
+	}
+
+
+	
+
+	set ::streamline_shot_time $t
+	set ::streamline_shot_weight $espresso_weight
+	set ::streamline_shot_volume [expr {10.0 * $espresso_water_dispensed}]
+	set ::streamline_final_extraction_time [expr {$t - $::streamline_preinfusion_time}]
+	set ::streamline_final_extraction_volume [expr {$::streamline_shot_volume - $::streamline_preinfusion_volume}]
+	set ::streamline_final_extraction_weight [expr {$::streamline_shot_weight - $::streamline_preinfusion_weight}]
+
+
+
+	set ::streamline_preinfusion_temp ""
+	if {$::streamline_preinfusion_temp_high == 0} {
+		# no label
+	} elseif {[round_to_integer $::streamline_preinfusion_temp_low] == [round_to_integer $::streamline_preinfusion_temp_high]} {
+		set ::streamline_preinfusion_temp [return_temperature_measurement $::streamline_preinfusion_temp_high 1]
+	} else {
+		set ::streamline_preinfusion_temp "[return_temperature_measurement $::streamline_preinfusion_temp_low 1]~[return_temperature_measurement $::streamline_preinfusion_temp_high 1]"
+	}
+
+	set ::streamline_extraction_temp ""
+	if {$::streamline_extraction_temp_high == 0} {
+		# no label
+	} elseif {[round_to_integer $::streamline_extraction_temp_low] == $::streamline_extraction_temp_high} {
+		set ::streamline_extraction_temp [return_temperature_measurement $::streamline_extraction_temp_high 1]
+	} else {
+		set ::streamline_extraction_temp "[return_temperature_measurement $::streamline_extraction_temp_low 1]~[return_temperature_measurement $::streamline_extraction_temp_high 1]"
+	}
+
 
 	puts "preinfusion_peak_pressure : $::streamline_preinfusion_peak_pressure"
 	puts "preinfusion_peak_flow : $::streamline_preinfusion_peak_flow"
