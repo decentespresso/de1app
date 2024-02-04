@@ -8369,6 +8369,7 @@ namespace eval ::dui {
 		
 		proc dbutton_press { main_tag press_command args } {
 			variable longpress_timer
+
 			# Handles a bug in android which doesn't seem to cancel timers properly 
 			after cancel $longpress_timer
 			set ::dui::item::longpress_timer {}
@@ -8421,7 +8422,7 @@ namespace eval ::dui {
 			}
 		}
 		
-		proc longpress_press { widget_name longpress_command {longpress_threshold 0}} {
+		proc longpress_press { main_tag longpress_command {longpress_threshold 0}} {
 			variable longpress_timer
 			variable longpress_default_threshold
 			
@@ -8436,6 +8437,13 @@ namespace eval ::dui {
 				set ::dui::item::longpress_timer {}
 				uplevel #0 $longpress_command
 			}]]
+		}
+
+		proc longpress_unpress { main_tag press_command args } {
+			variable longpress_timer
+			if { $longpress_timer ne {} } {
+				dbutton_press $main_tag $press_command $args
+			} 
 		}
 		
 		# Run when any of the buttons in a dselector is tapped. This relies on the target variable having a 
@@ -9230,19 +9238,19 @@ namespace eval ::dui {
 				msg -DEBUG [namespace current] dbutton "'$main_tag' in page(s) '$pages' does not have a command"
 
 				if { $longpress_cmd ne "" } {
-					$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $id \
+					$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $main_tag \
 							$longpress_cmd $longpress_threshold]
 					$can bind $id [dui::platform::button_unpress] \
-							[list ::dui::item::dbutton_press $main_tag $cmd {*}$press_args] 
+							[list ::dui::item::longpress_unpress $main_tag $cmd {*}$press_args] 
 				}
 			} elseif { $longpress_cmd eq "" } {
 				$can bind $id [dui::platform::button_press] [list ::dui::item::dbutton_press $main_tag \
 					$cmd {*}$press_args]
 			} else {
-				$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $id \
+				$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $main_tag \
 						$longpress_cmd $longpress_threshold]
 				$can bind $id [dui::platform::button_unpress] \
-					[list ::dui::item::dbutton_press $main_tag $cmd {*}$press_args] 
+					[list ::dui::item::longpress_unpress $main_tag $cmd {*}$press_args] 
 			}
 			
 			if { $ns ne "" } {
