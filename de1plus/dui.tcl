@@ -6930,7 +6930,7 @@ namespace eval ::dui {
 		variable press_events
 		array set press_events {}
 		# Milliseconds to distinguish between press and longpress
-		variable longpress_default_threshold 300
+		variable longpress_default_threshold 1500
 		# Current longpress "after" event
 		variable longpress_timer {}
 	
@@ -8423,9 +8423,11 @@ namespace eval ::dui {
 		
 		proc longpress_press { widget_name longpress_command {longpress_threshold 0}} {
 			variable longpress_timer
-			after cancel $longpress_timer
-			
 			variable longpress_default_threshold
+			
+			after cancel $longpress_timer
+			set ::dui::item::longpress_timer {}
+			
 			if { $longpress_threshold <= 0 } {
 				set longpress_threshold $longpress_default_threshold
 			}
