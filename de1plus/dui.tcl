@@ -8322,6 +8322,105 @@ namespace eval ::dui {
 			return [list $x0 $y0 $x1 $y1]
 		}
 		
+		# Helper private function for dbutton_press
+		proc _process_pressfill { tag fill pressfill } {
+			set can [dui canvas]
+			
+			$can itemconfigure $tag -fill [lindex $pressfill 0]
+			
+			# Parse the -pressfill list, which contains {color time color time ... time}
+			# If some time is missing, adds 40 ms to last time. Always finish with the 
+			# original button fill color.
+			set ms 0
+			set max_ms 0
+			set col {}
+			set n [llength $pressfill]
+			set j 1
+			while { $j < $n } {
+				set ms 0
+				set col {}
+				if { [string is integer [lindex $pressfill $j]] } {
+					set ms [lindex $pressfill $j]
+					set max_ms [::max $ms $max_ms]
+					if { $j < [expr {$n-1}] } {
+						set col [lindex $pressfill [incr j 1]]
+					}
+				} else {
+					set col [lindex $pressfill $j]
+				}
+
+				if { $col ne {} } {
+					if { $ms == 0 } {
+						set ms [incr max_ns 40]
+					}
+					after $ms $can itemconfigure $tag -fill $col
+				}
+				
+				incr j 1
+			}
+			
+			if { $max_ms == 0 } {
+				set max_ms 200
+			} elseif { $col ne {} && $ms == $max_ms } {
+				incr max_ns 40
+			}
+			after $max_ms $can itemconfigure $tag -fill $fill
+		}
+		
+		proc dbutton_press { main_tag press_command args } {
+			variable longpress_timer
+			# Handles a bug in android which doesn't seem to cancel timers properly 
+			after cancel $longpress_timer
+			set ::dui::item::longpress_timer {}
+			
+			set can [dui canvas]
+			set pressfill [dui::args::get_option -pressfill]
+			if { $pressfill ne {} } {
+				set fill [dui::args::get_option -fill]
+				if { $fill eq {} } {
+					set fill [$can itemcget $main_tag-btn -fill]
+				}
+				
+				_process_pressfill $main_tag-btn $fill $pressfill
+			}
+
+			set i 0
+			set suffix "" 
+			set label_fill [dui::args::get_option -label_fill]
+			set label_pressfill [dui::args::get_option -label_pressfill]
+			while { $label_pressfill ne "" } {
+				if { $label_fill eq {} } {
+					set label_fill [$can itemcget $main_tag-lbl$suffix -fill]
+				}
+				
+				_process_pressfill $main_tag-lbl$suffix $label_fill $label_pressfill
+				
+				set suffix [incr i]
+				set "label_fill" [dui::args::get_option "-label${suffix}_fill" "" 1]
+				set "label_pressfill" [dui::args::get_option "-label${suffix}_pressfill" "" 1]
+			}
+			
+			set i 0
+			set suffix "" 
+			set symbol_fill [dui::args::get_option -symbol_fill]
+			set symbol_pressfill [dui::args::get_option -symbol_pressfill]
+			while { $symbol_pressfill ne "" } {
+				if { $symbol_fill eq {} } {
+					set symbol_fill [$can itemcget $main_tag-sym$suffix -fill]
+				}
+
+				_process_pressfill $main_tag-sym$suffix $symbol_fill $symbol_pressfill
+				
+				set suffix [incr i]
+				set "symbol_fill" [dui::args::get_option "-symbol${suffix}_fill" "" 1]
+				set "symbol_pressfill" [dui::args::get_option "-symbol${suffix}_pressfill" "" 1]
+			}
+							
+			if { $press_command ne {} } {
+				uplevel #0 $press_command
+			}
+		}
+		
 		proc longpress_press { widget_name longpress_command {longpress_threshold 0}} {
 			variable longpress_timer
 			after cancel $longpress_timer
@@ -8335,18 +8434,6 @@ namespace eval ::dui {
 				set ::dui::item::longpress_timer {}
 				uplevel #0 $longpress_command
 			}]]
-		}
-		
-		proc longpress_unpress { widget_name  {press_command {}} } {
-			variable longpress_timer
-			if { $longpress_timer ne {} } {
-				after cancel $longpress_timer
-				set ::dui::item::longpress_timer {}
-				
-				if { $press_command ne {} } {
-					uplevel #0 $press_command
-				}
-			} 
 		}
 		
 		# Run when any of the buttons in a dselector is tapped. This relies on the target variable having a 
@@ -8648,6 +8735,9 @@ namespace eval ::dui {
 					}
 					dui::args::add_option_if_not_exists -width $width
 				}
+				
+				# Pressfill defined only when inside dbuttons, remove or error is raised
+				dui::args::remove_options pressfill
 			}
 			
 			try {
@@ -8824,6 +8914,8 @@ namespace eval ::dui {
 		#	-radius for rounded rectangles, and -arc_offset for rounded outline rectangles
 		#	-tap_pad A list with up to 4 elements, specifying an increase in tapping area in each of the 4 directions.
 		#	All others passed through to the respective visible button creation command.
+		#	-pressfill: Background color when pressing the button 
+		#	-pressoutline: Outline color when pressing the button
 		proc dbutton { pages x y args } { 			
 			set debug_buttons [dui cget debug_buttons]
 			set can [dui canvas]
@@ -8899,6 +8991,7 @@ namespace eval ::dui {
 			set suffix "" 
 			set label [dui::args::get_option -label "" 1]
 			set labelvar [dui::args::get_option -labelvariable "" 1]
+			set press_args [list]
 			while { [subst \$label$suffix] ne "" || [subst \$labelvar$suffix] ne "" } {
 				set "label${suffix}_tags" [list "${main_tag}-lbl$suffix" {*}[lrange $tags 1 end]]	
 				set "label${suffix}_args" [dui::args::extract_prefixed "-label${suffix}_"]
@@ -8907,6 +9000,9 @@ namespace eval ::dui {
 					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_label$suffix" $aspect \
 						-style $style -default {} -default_type dtext] "label${suffix}_args"
 				}
+				
+				lappend press_args "-label${suffix}_fill" [dui::args::get_option -fill "" 0 "label${suffix}_args"]
+				lappend press_args "-label${suffix}_pressfill" [dui::args::get_option -pressfill "" 1 "label${suffix}_args"]
 				
 				set "label${suffix}_pos" [dui::args::get_option -pos {0.5 0.5} 1 "label${suffix}_args"]
 				set lx [lindex [subst \$label${suffix}_pos] 0]
@@ -8940,6 +9036,9 @@ namespace eval ::dui {
 						[dui aspect get "${aspect_type}_symbol$suffix" $aspect -style $style \
 						-default {} -default_type symbol] "symbol${suffix}_args"
 				}
+				
+				lappend press_args "-symbol${suffix}_fill" [dui::args::get_option -fill "" 0 "symbol${suffix}_args"]
+				lappend press_args "-symbol${suffix}_pressfill" [dui::args::get_option -pressfill "" 1 "symbol${suffix}_args"]
 				
 				set "symbol${suffix}_pos" [dui::args::get_option -pos {0.5 0.5} 1 "symbol${suffix}_args"]
 				set lx [lindex [subst \$symbol${suffix}_pos] 0]
@@ -9009,12 +9108,14 @@ namespace eval ::dui {
 				
 				if { $shape eq "round" } {
 					set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
+					lappend press_args -fill $fill
 					set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
 					set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
 					
 					set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
 				} elseif { $shape eq "outline" } {
 					set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
+					lappend press_args -outline $outline
 					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
 					set arc_offset [dui::args::get_option -arc_offset [dui aspect get dbutton arc_offset -style $style -default 50]]
 					set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
@@ -9024,9 +9125,11 @@ namespace eval ::dui {
 						$width $button_tags]
 				} elseif { $shape eq "round_outline" } {
 					set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
+					lappend press_args -fill $fill
 					set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
 					set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
 					set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
+					lappend press_args -outline $outline
 					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
 					set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
 					
@@ -9118,20 +9221,26 @@ namespace eval ::dui {
 				regsub {%y0} $cmd $ry cmd
 				regsub {%y1} $cmd $ry1 cmd
 			}
+			
+			lappend press_args -pressfill [dui::args::get_option -pressfill \
+				[dui aspect get dbutton pressfill -style $style -default {}] 1]			
 			if { $cmd eq "" } {
 				msg -DEBUG [namespace current] dbutton "'$main_tag' in page(s) '$pages' does not have a command"
 
 				if { $longpress_cmd ne "" } {
 					$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $id \
 							$longpress_cmd $longpress_threshold]
-					$can bind $id [dui::platform::button_unpress] [list ::dui::item::longpress_unpress $id]
+					$can bind $id [dui::platform::button_unpress] \
+							[list ::dui::item::dbutton_press $main_tag $cmd {*}$press_args] 
 				}
 			} elseif { $longpress_cmd eq "" } {
-				$can bind $id [dui::platform::button_press] $cmd
+				$can bind $id [dui::platform::button_press] [list ::dui::item::dbutton_press $main_tag \
+					$cmd {*}$press_args]
 			} else {
 				$can bind $id [dui::platform::button_press] [list ::dui::item::longpress_press $id \
 						$longpress_cmd $longpress_threshold]
-				$can bind $id [dui::platform::button_unpress] [list ::dui::item::longpress_unpress $id $cmd]
+				$can bind $id [dui::platform::button_unpress] \
+					[list ::dui::item::dbutton_press $main_tag $cmd {*}$press_args] 
 			}
 			
 			if { $ns ne "" } {
