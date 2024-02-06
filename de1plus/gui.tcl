@@ -1324,7 +1324,9 @@ proc update_de1_explanation_chart { {context {}} } {
 		set ::settings(espresso_temperature_3) $::settings(espresso_temperature)
 	}
 
-	#clear_espresso_chart
+	if {$::settings(skin) == "Insight" || $::settings(skin) == "Insight Dark"} {
+		clear_espresso_chart
+	}
 
 	if {$::settings(settings_profile_type) == "settings_2b"} {
 		update_de1_plus_flow_explanation_chart
