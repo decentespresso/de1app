@@ -11,17 +11,17 @@ namespace eval ::plugins::${plugin_name} {
     variable description "Turn battery-powered Decent Scale off when DE1 sleeps. Requires Decent Scale v1.2 or newer."
 
     proc decentscale_disable_lcd {} {
-        if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
-                return
-        }
-        set screenoff [decent_scale_make_command 0A 00 00]
+	    if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
+		    return
+	    }
+	    set scaleoff [decent_scale_make_command 0A 02 00]
 
-        if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
-                ::bt::msg -DEBUG "decentscale not connected, cannot disable LCD"
-                return
-        }
+	    if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
+		    ::bt::msg -DEBUG "decentscale not connected, cannot sleep scale"
+		    return
+	    }
 
-        userdata_append "SCALE: decentscale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenoff] 0
+	    userdata_append "SCALE: decentscale : sleep" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $scaleoff] 0
     }
 
     proc main {} {
@@ -31,10 +31,9 @@ namespace eval ::plugins::${plugin_name} {
             ::bt::msg -NOTICE scale_sleep
             if {$::settings(scale_type) == "decentscale"} {
                 if {$::de1(scale_usb_powered) == 0} {
-                    after 3000 decentscale_sleep
+                    after 3000 ::plugins::decentscale_off::decentscale_disable_lcd
                 } else {
-#                    decentscale_disable_lcd
-                    ::plugins::scale_off::decentscale_disable_lcd
+                    decentscale_disable_lcd
                 }
             }
         }
