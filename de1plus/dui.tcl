@@ -6930,7 +6930,7 @@ namespace eval ::dui {
 		variable press_events
 		array set press_events {}
 		# Milliseconds to distinguish between press and longpress
-		variable longpress_default_threshold 1500
+		variable longpress_default_threshold 750
 		# Current longpress "after" event
 		variable longpress_timer {}
 	
