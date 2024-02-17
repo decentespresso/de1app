@@ -1486,9 +1486,9 @@ proc decent_login_save {} {
 
 
 				if {[llength $sns] == 1} {
-					if {[ifexists ::de1(sn)] == ""} {
+					if {[ifexists ::de1(sn)] == "" || [ifexists ::de1(sn)] == "0"} {
 						# if they have an old machine that doesn't self-identify its serial number, the assume this machine is the one machine they own
-						set ::settings(sn) $sn
+						set ::settings(sn) $sns
 				        return [info_page [subst {[translate "Success."]\n\n[translate "Your serial number is:"] $sns}] [translate "Ok"] "settings_4"]			
 					}
 
