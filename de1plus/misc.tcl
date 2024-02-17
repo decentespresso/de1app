@@ -101,6 +101,9 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Streamline/1280x800/icon.jpg *
         skins/Streamline/2560x1600/icon.jpg *
 
+        skins/Streamline Dark/skin.tcl *
+        skins/Streamline Dark/1280x800/icon.jpg *
+        skins/Streamline Dark/2560x1600/icon.jpg *
 
         skins/default/1280x800/nothing_on.png *
         skins/default/1280x800/firmware_upgrade.jpg *

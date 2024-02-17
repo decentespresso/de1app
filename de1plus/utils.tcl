@@ -2618,6 +2618,22 @@ proc iso8601stringparse {in} {
 }
 
 proc zero_pad {number len} {
+
+	# handle non integers
+	if {[round_to_integer $number] != $number} {
+		set parts [split $number .]
+
+	    set out [lindex $parts 0]
+	    while {[string length $out] < $len} {
+	        set out "0$out"
+	    }
+
+	    if {[lindex $parts 1] != ""} {
+	    	append out ".[lindex $parts 1]"
+	    }
+	    return $out
+	} 
+
     set out $number
     while {[string length $out] < $len} {
         set out "0$out"

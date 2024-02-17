@@ -367,6 +367,25 @@ proc round_one_digits {amount} {
 	return $x
 }
 
+# convert 0 to O symbols. Useful for monospaced fonts.
+proc zero_to_o {in} {
+
+	regsub -all 0 $in O out
+	return $out
+}
+
+proc round_one_digits_or_integer_if_needed {amount} {
+	set x $amount
+	catch {set x [expr round($amount * 10)/10.00]}
+
+	set y [round_to_integer $amount]
+	if {$y == $x} {
+		return $y
+	}
+
+	return $x
+}
+
 
 proc canvas'textvar {canvas tag _var args} {
 	msg -WARNING "Unexpected use of canvas'textvar"
@@ -728,6 +747,9 @@ proc add_de1_rich_text {context x y justification autorefresh height width backg
 	if {$justification == "right"} {
 		.can itemconfigure $widget -anchor ne		
 	}
+
+
+	bindtags $widget [list SdlTkNoTextInput {*}[bindtags $widget]]
 
 	# create the tags for this widget
 	eval $codetags
