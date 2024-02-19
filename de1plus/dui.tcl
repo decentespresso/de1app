@@ -14,6 +14,7 @@ catch {
 	# tksvg breaks all images loading in the older Androwish distributions of the first DE1 tablets.
 	# so, at the moment it's disabled.
 	package require tksvg
+	package require struct::set
 }
 
 # from https://developer.android.com/reference/android/view/View.html#SYSTEM_UI_FLAG_IMMERSIVE
@@ -5587,8 +5588,8 @@ namespace eval ::dui {
 
 		variable current_page {}
 		variable previous_page {}
-		variable dialog_states
-		array set dialog_states {}
+		variable dlg_normal_widgets {}
+		variable dlg_normal_items {}
 		
 		# Use a dictionary to store the current pages stack when dialogs are shown, to allow for several dialogs,
 		# each with its own return callback.
@@ -6161,7 +6162,9 @@ namespace eval ::dui {
 			variable current_page
 			variable previous_page
 			variable pages_data
-			variable dialog_states
+			variable dlg_normal_widgets
+			variable dlg_normal_items
+			
 			variable page_stack
 			set can [dui canvas]
 
@@ -6323,56 +6326,64 @@ namespace eval ::dui {
 			
 			# If there's a set of saved item states, restore them, even if we're not back to the same page, as
 			# Tk widgets disabling is not restored by canvas showing them.
-			if { [array size dialog_states] > 0 } {
-				foreach item [array names dialog_states] {
-					if { [$can type $item] eq "window" } {
-						try {
-							[$can itemcget $item -window] configure -state $dialog_states($item)
-						} on error err {}
-					} 
-					$can itemconfigure $item -state $dialog_states($item)
-				}
-				array unset dialog_states
+			foreach item $dlg_normal_widgets {
+				try {
+					[$can itemcget $item -window] configure -state normal
+				} on error err {}
+				$can itemconfigure $item -state normal
 			}
+			set dlg_normal_widgets [::list]			
+			foreach item $dlg_normal_items {
+				$can itemconfigure $item -state normal
+			}
+			set dlg_normal_items [::list]
 			
 			# If showing a dialog page, store the state of the previous page items so it can be restored afterwards, 
 			# then disable them. If showing a normal page, just hide every single canvas item.
-			if { $show_page_type eq "dialog" } {
+			if { $show_page_type eq "dialog" } {				
 				# Tk widgets always appear on top of any canvas item. So we need to iterate through widgets in the 
 				# background page, disabling those that don't overlap the dialog, and hiding those that do.
-				array set dialog_states {}
+				#array set dialog_states {}
+#				set dlg_normal_widgets [list]
+#				set dlg_normal_items [list]
 				set hide_page_items [items $page_to_hide]
-				foreach item $hide_page_items {	
+				foreach item $hide_page_items {
 					if { [$can type $item] eq "window" } {
 						set w [$can itemcget $item -window]
 						# "try" as not all widgets support the -state option (e.g. Graph)	
 						try {
 							set state [$w cget -state]
-							set dialog_states($item) $state
-							if { $state ne "hidden" } {
+							if { $state eq "normal" } {
 								$w configure -state disabled
+								$can itemconfigure $item -state disabled
+								lappend dlg_normal_widgets $item
 							}
 						} on error err {
 							#msg -WARNING [namespace current] add: "widget of type '[winfo class $w]' doesn't support the -state option"
 							set state [$can itemcget $item -state]
-							set dialog_states($item) $state
-							if { $state ne "hidden" } {
+							if { $state eq "normal" } {
 								$can itemconfigure $item -state disabled
+								lappend dlg_normal_items $item
 							}
 						}
 					} else {
 						set state [$can itemcget $item -state]
-						set dialog_states($item) $state
-						if { $disable_items && $state ne "hidden" } {
+						if { $disable_items && $state eq "normal" } {
 							$can itemconfigure $item -state disabled
+							lappend dlg_normal_items $item
 						}
 					}
 				}
-			
-				foreach item [$can find overlapping {*}[bbox $page_to_show 1]] {
-					if { [$can type $item] eq "window" && $item in $hide_page_items } {
+				
+				set overlapping [$can find overlapping {*}[bbox $page_to_show 1]]
+				set overlapping [::struct::set intersect $overlapping $hide_page_items]
+				foreach item $overlapping {
+					if { [$can type $item] eq "window" } {
 						$can itemconfigure $item -state hidden
 					}
+#					if { [$can type $item] eq "window" && $item in $hide_page_items } {
+#						$can itemconfigure $item -state hidden
+#					}
 				}
 				
 				$can raise _dlg_bg
