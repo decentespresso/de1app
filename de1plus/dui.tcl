@@ -8324,13 +8324,13 @@ namespace eval ::dui {
 		
 		# Helper private function for dbutton_press
 		proc _process_pressfill { tag fill pressfill } {
-			set can [dui canvas]
-			
+			set can [dui canvas]			
 			$can itemconfigure $tag -fill [lindex $pressfill 0]
 			
 			# Parse the -pressfill list, which contains {color time color time ... time}
-			# If some time is missing, adds 40 ms to last time. Always finish with the 
-			# original button fill color.
+			# If some time is missing, adds 40 ms to last time. 
+			# If last value is a time, finishes with the original button fill color, 
+			#	if it's a color, ends up with that color.
 			set ms 0
 			set max_ms 0
 			set col {}
@@ -8364,7 +8364,13 @@ namespace eval ::dui {
 			} elseif { $col ne {} && $ms == $max_ms } {
 				incr max_ns 40
 			}
-			after $max_ms $can itemconfigure $tag -fill $fill
+			
+			incr n -1
+			if { $n == 0 || [string is integer [lindex $pressfill $n]] } {
+				after $max_ms $can itemconfigure $tag -fill $fill
+			} else {
+				after $max_ms $can itemconfigure $tag -fill [lindex $pressfill $n]
+			}
 		}
 		
 		proc dbutton_press { main_tag press_command args } {
@@ -8373,6 +8379,10 @@ namespace eval ::dui {
 			# Handles a bug in android which doesn't seem to cancel timers properly 
 			after cancel $longpress_timer
 			set ::dui::item::longpress_timer {}
+
+			if { $press_command ne {} } {
+				uplevel #0 $press_command
+			}
 			
 			set can [dui canvas]
 			set pressfill [dui::args::get_option -pressfill]
@@ -8415,10 +8425,6 @@ namespace eval ::dui {
 				set suffix [incr i]
 				set "symbol_fill" [dui::args::get_option "-symbol${suffix}_fill" "" 1]
 				set "symbol_pressfill" [dui::args::get_option "-symbol${suffix}_pressfill" "" 1]
-			}
-							
-			if { $press_command ne {} } {
-				uplevel #0 $press_command
 			}
 		}
 		
