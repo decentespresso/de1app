@@ -5473,7 +5473,7 @@ namespace eval ::dui {
 				
 				if { [llength $largs] > 0 && [string is double [lindex $largs 0]] } {
 					if { $y1 <= 0 } {
-						set y1 [dui::page::calc_x $pages [lindex $largs 0] $rescale]
+						set y1 [dui::page::calc_y $pages [lindex $largs 0] $rescale]
 						set largs [lrange $largs 1 end]
 					} else {
 						msg -WARNING [namespace current] process_sizes: "conflicting height and y1 arguments specified"
