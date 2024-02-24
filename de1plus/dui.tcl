@@ -8400,10 +8400,6 @@ namespace eval ::dui {
 			after cancel $longpress_timer
 			set ::dui::item::longpress_timer {}
 
-			if { $press_command ne {} } {
-				uplevel #0 $press_command
-			}
-			
 			set can [dui canvas]
 			set pressfill [dui::args::get_option -pressfill]
 			if { $pressfill ne {} } {
@@ -8445,6 +8441,10 @@ namespace eval ::dui {
 				set suffix [incr i]
 				set "symbol_fill" [dui::args::get_option "-symbol${suffix}_fill" "" 1]
 				set "symbol_pressfill" [dui::args::get_option "-symbol${suffix}_pressfill" "" 1]
+			}
+			
+			if { $press_command ne {} } {
+				uplevel #0 $press_command
 			}
 		}
 		
