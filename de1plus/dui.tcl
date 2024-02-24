@@ -6662,25 +6662,34 @@ namespace eval ::dui {
 		proc add_items { pages tags } {
 			set can [dui canvas]
 
-			foreach tag $tags {
+			# Search for page backgrounds only once
+			set pages_bgs [::list]
+			foreach page $pages {
+				lappend pages_bgs [$can find withtag pages&&$page]
+			}
+			
+			# Reversing here and below needed to preserve correct z-order
+			foreach tag [lreverse $tags] {
 				if { [string is integer $tag] } {
 					set ids $tag
-				} else {
-					set ids [$can find withtag $tag]
+				} else {					
+					set ids [lreverse [$can find withtag $tag]]
 				}
 				
 				foreach id $ids {
 					set item_tags [$can gettags $id]
 					set changed 0
+					set page_n 0
 					foreach page $pages {
 						if { "p:$page" ni $item_tags } {
 							lappend item_tags "p:$page"
-							set page_id [$can find withtag $page]
-							if { $page_id ne {} } {
-								$can raise $id $page
+							set page_bg [lindex $pages_bgs $page_n]
+							if { $page_bg ne {} } {
+								$can raise $id $page_bg
 							}
 							set changed 1
 						}
+						incr page_n 1
 					}
 					if {$changed == 1} {
 						$can itemconfigure $id -tags $item_tags	
