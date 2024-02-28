@@ -7236,21 +7236,24 @@ namespace eval ::dui {
 			set check_page [string is true [dui::args::get_option -check_page 1]]
 			set do_current [string is true [dui::args::get_option -current 1]]
 			set do_initial [string is true [dui::args::get_option -initial 0]]
+			set can [dui canvas]
+			set current_page [dui page current]
 			
 			if { [string is true $show] || $show eq "show" } {
 				set state normal
 			} else {
 				set state hidden
 			}
-			
+						
 			foreach id [get $page_or_ids_or_widgets $tags] {
+if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_page=$current_page, state=$state, in pages=[dui item pages $id]" }				
 				if { $do_current } {
 					if { $check_page } {
-						if { [dui page current] in [dui item pages $id] } {
-							[dui canvas] itemconfigure $id -state $state
-						}						
+						if { $current_page in [dui item pages $id] } {
+							$can itemconfigure $id -state $state
+						}
 					} else {
-						[dui canvas] itemconfigure $id -state $state
+						$can itemconfigure $id -state $state
 					}
 				}
 				if { $do_initial } {
@@ -9226,7 +9229,6 @@ namespace eval ::dui {
 			set ry [expr {$ry-$tp1}] 
 			set rx1 [expr {$rx1+$tp2}] 
 			set ry1 [expr {$ry1+$tp3}]
-
 			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden]
 			if { $longpress_cmd ne "" } {
 				if { $ns ne "" } { 
@@ -9490,7 +9492,8 @@ namespace eval ::dui {
 				}
 				
 				set cmd [::list ::dui::item::dselector_click $i1 $n $var [lindex $values $i] $multiple]
-				set id [dui::add::dbutton $pages $ix $iy $ix1 $iy1 -tags [list ${main_tag}_$i1 ${main_tag}*] -command $cmd {*}$iargs]
+				set id [dui::add::dbutton $pages $ix $iy $ix1 $iy1 -tags \
+					[concat ${main_tag}_$i1 [lrange $tags 1 end]] -command $cmd {*}$iargs]
 				lappend ids $id
 				
 				if { $user_cmd ne {} } {
@@ -9504,8 +9507,9 @@ namespace eval ::dui {
 				}
 			}
 
-			set draw_cmd [::list ::dui::item::dselector_draw [lindex $pages 0] $main_tag $var $values $multiple $orient $fill \
-				$selectedfill $outline $selectedoutline $label_fill $label_selectedfill $symbol_fill $symbol_selectedfill]
+			set draw_cmd [::list ::dui::item::dselector_draw [lindex $pages 0] $main_tag $var $values \
+				$multiple $orient $fill $selectedfill $outline $selectedoutline $label_fill \
+				$label_selectedfill $symbol_fill $symbol_selectedfill]
 			# Initialize the control
 			uplevel #0 $draw_cmd
 			trace add variable $var write $draw_cmd
