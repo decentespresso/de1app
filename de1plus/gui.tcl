@@ -1305,8 +1305,8 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 
 proc update_de1_explanation_chart { {context {}} } {
 
-	if {$::de1(current_context) != "settings_1" && $::settings(skin) != "Insight" && $::settings(skin) != "Insight Dark"} {
-		# only Insight skin needs this feature, or if you are currently looking at the Settings 1 tab
+	if {[string range $::de1(current_context) 0 7] != "settings" && $::settings(skin) != "Insight" && $::settings(skin) != "Insight Dark"} {
+		# only Insight skin needs this feature, or if you are currently looking at a Settings tab
 		return {}
 	}
 
