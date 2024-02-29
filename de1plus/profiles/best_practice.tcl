@@ -35,7 +35,7 @@ pressure_end 4.0
 profile_hide 0
 profile_language en
 profile_notes {This profile aims to unite the best practices in espresso extraction that we have learned so far with the Decent. It unites Brakel's Londonium, Rao's Blooming and Gagné's Adaptive profiles. The flow rate during extraction will automatically adjust itself from the flow rate actually happening during the Pressurize step and then gently increase it from there.  A 15g dose is typical.  Aim for a flow rate around 1.5 ml/s at the Pressurize step. 15g in, 33g out, in 32 seconds is a typical recipe for a medium roast.  Grind fine enough to keep dripping during preinfusion to around 4g. If you have a bluetooth scale, you can keep track of how much dripping into the cup there is before the ramp stage.  4 grams of total dripping, within 1 gram, seems to give the best tasting results. Try adusting your grind and dose to get that amount of dripping, and see if you like how it tastes.}
-profile_title {Adaptive (for medium roasts)}
+profile_title {Adaptive}
 read_only 1
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
