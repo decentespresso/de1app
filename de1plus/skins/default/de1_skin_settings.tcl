@@ -1828,9 +1828,9 @@ add_de1_text "create_preset" 2275 1520 -text [translate "Cancel"] -font Helv_10_
 	add_de1_button "create_preset" {say [translate {ADVANCED}] $::settings(sound_button_in); 
 		if {$::settings(settings_profile_type) == "settings_2a"} { profile::advanced_list_to_settings [profile::pressure_to_advanced_list]; } elseif {$::settings(settings_profile_type) == "settings_2b"} {profile::advanced_list_to_settings [profile::flow_to_advanced_list]; }
 		set ::settings(settings_profile_type) "settings_2c"; set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(profile_title) ""; 
-		set ::settings(final_desired_shot_volume_advanced) [ifexists ::settings(final_desired_shot_volume)]; 		
-		set ::settings(final_desired_shot_weight_advanced) [ifexists ::settings(final_desired_shot_weight)]; 		; 
-		set ::settings(final_desired_shot_volume_advanced_count_start) 2; 
+		#set ::settings(final_desired_shot_volume_advanced) [ifexists ::settings(final_desired_shot_volume)]; 		
+		#set ::settings(final_desired_shot_weight_advanced) [ifexists ::settings(final_desired_shot_weight)]; 		; 
+		#set ::settings(final_desired_shot_volume_advanced_count_start) 2; 
 		set ::settings(tank_desired_water_temperature) 0; 
 		set ::settings(beverage_type) "espresso"; 
 		set ::settings(active_settings_tab) $::settings(settings_profile_type); 	
