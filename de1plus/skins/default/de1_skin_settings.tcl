@@ -873,6 +873,8 @@ add_de1_text "settings_3" 1304 220 -text [translate "Maintenance"] -font Helv_10
 
 if {[language] == "de"} {
 	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_de/quickstart_de.html#pf22"} 1300 210 2560 280 
+} elseif {[language] == "fr"} {
+	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_fr/quickstart_fr.html#pf21"} 1300 210 2560 280 
 } elseif {[language] == "kr"} {
 	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_kr/quickstart_kr.html#pf21"} 1300 210 2560 280 
 } elseif {[language] == "zh-hans"} {
