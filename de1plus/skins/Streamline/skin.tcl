@@ -197,10 +197,14 @@ load_font "Inter-Thin14" "[homedir]/skins/Streamline/Inter-Thin.ttf" 14
 load_font "icomoon" "[homedir]/skins/Streamline/icomoon.ttf" 30
 
 # mono data card
-load_font "mono10" "[homedir]/skins/Streamline/RobotoMono-Regular.ttf" 12
+#load_font "mono10" "[homedir]/skins/Streamline/RobotoMono-Regular.ttf" 12
+#load_font "mono10" "[homedir]/skins/Streamline/IBMPlexMono-Regular.ttf" 12
+load_font "mono10" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 12
 
 # mono data card
-load_font "mono10bold" "[homedir]/skins/Streamline/RobotoMono-SemiBold" 12
+#load_font "mono10bold" "[homedir]/skins/Streamline/RobotoMono-SemiBold" 12
+#load_font "mono10bold" "[homedir]/skins/Streamline/IBMPlexMono-SemiBold.ttf" 12
+load_font "mono10bold" "[homedir]/skins/Streamline/NotoSansMono-ExtraBold.ttf" 12
 
 set ::pages [list off steam espresso water flush info hotwaterrinse]
 set ::pages_not_off [list steam espresso water flush info hotwaterrinse]
@@ -506,7 +510,7 @@ set ::streamline_current_history_profile_clock ""
 
 add_de1_text $::pages 890 1344 -justify center -anchor "center" -text [translate "SHOT HISTORY"] -font Inter-Bold18 -fill $::data_card_text_color -width [rescale_x_skin 400]
 
-add_de1_variable $::pages 890 1404 -justify center -anchor "center" -font Inter-Bold16 -fill $::data_card_text_color  -width [rescale_x_skin 300] -textvariable {[time_format $::streamline_current_history_profile_clock 0 2]}
+add_de1_variable $::pages 890 1404 -justify center -anchor "center" -font Inter-Bold18 -fill $::data_card_text_color  -width [rescale_x_skin 300] -textvariable {[time_format $::streamline_current_history_profile_clock 0 2]}
 add_de1_variable $::pages 890 1470 -justify center -anchor "center" -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 1000] -textvariable {$::streamline_current_history_profile_name} 
 
 
@@ -862,8 +866,8 @@ dui aspect set -theme default -type dbutton radius [rescale_y_skin 56]
 dui aspect set -theme default -type dbutton label_fill $::settings_sleep_button_text_color
 
 
-dui add dbutton $::pages 2100 76 2300 145 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_in); show_settings }
-dui add dbutton $::pages 2330 76 2530 145 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_in);start_sleep }
+dui add dbutton $::pages 2100 66 2300 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_in); show_settings }
+dui add dbutton $::pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_in);start_sleep }
 
 
 
