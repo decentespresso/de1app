@@ -6930,7 +6930,7 @@ namespace eval ::dui {
 	namespace eval item {
 		namespace export add delete get get_widget config cget enable_or_disable enable disable \
 			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection \
-			relocate_text_wrt moveto pages
+			relocate_text_wrt moveto moveby pages
 		namespace ensemble create
 	
 		# Stores the initial tap position when dragging dscale sliders. Array keys are <first_page>,<dscale_tag>, and
@@ -7348,6 +7348,54 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				} else {
 					set nx1 [expr {$nx0+($x1-$x0)}]
 					set ny1 [expr {$ny0+($y1-$y0)}]
+					$can coords $id $nx0 $ny0 $nx1 $ny1 
+				}
+			}
+		}
+
+		# Moves canvas items by x and/or y change. Accepts empty coordinates.
+		proc moveby { page_or_id_or_widget tags {x_change {}} {y_change {}} } {
+			set can [dui canvas]
+			set items [dui item get $page_or_id_or_widget $tags]
+			
+			if { $tags eq {} } {
+				set page [lindex [pages [lindex $items 0]] 0]
+			} else {
+				set page [lindex $page_or_id_or_widget 0]
+			}
+
+			if { $x_change ne {} } {
+				set x_change [dui::page::calc_x $page $x_change]
+			}
+			if { $y_change ne {} } {
+				set y_change [dui::page::calc_y $page $y_change]
+			}
+			
+			foreach id $items {
+				lassign [$can coords $id] x0 y0 x1 y1
+				if { $x_change eq {} } {
+					set nx0 $x0
+					set nx1 $x1
+				} else {
+					set nx0 [expr {$x0+$x_change}]
+					if { $x1 ne {} } {
+						set nx1 [expr {$x1+$x_change}]
+					}
+				}
+				
+				if { $y_change eq {} } {
+					set ny0 $y0
+					set ny1 $y1
+				} else {
+					set ny0 [expr {$y0+$y_change}]
+					if { $y1 ne {} } {
+						set ny1 [expr {$y1+$y_change}]
+					}
+				}
+				
+				if { $x1 eq {} || $y1 eq {} } {
+					$can coords $id $nx0 $ny0
+				} else {
 					$can coords $id $nx0 $ny0 $nx1 $ny1 
 				}
 			}
