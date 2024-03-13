@@ -1004,7 +1004,7 @@ proc translation_langs_array {} {
         ca Catalan \
         de Deutsch \
         de-ch Schwiizerd\u00FCtsch \
-        de-oe "\u00D6sterreichische" \
+        de-oe "\u00D6sterreichisch" \
         it italiano \
         ar "Arabic" \
         da "dansk" \
