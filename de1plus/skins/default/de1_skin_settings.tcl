@@ -184,7 +184,7 @@ add_de1_button "settings_1 settings_2a settings_2b" {say [translate {temperature
 
 
 add_de1_text "temperature_steps" 1280 290 -text [translate "Temperature Steps"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
-	add_de1_text "temperature_steps" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_text "temperature_steps" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 	add_de1_button "temperature_steps" {say [translate {Done}] $::settings(sound_button_in); set ::settings(espresso_temperature) $::settings(espresso_temperature_0); profile_has_changed_set; page_to_show_when_off $::settings(settings_profile_type); } 980 1210 1580 1410 ""
 	add_de1_widget "temperature_steps" scale 800 460 {} -from -30 -to 135 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_0) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon"
 	add_de1_widget "temperature_steps" scale 800 640 {} -from -30 -to 135 -background $::settings(color_stage_2) -borderwidth 1 -showvalue 0  -bigincrement 1 -resolution 0.5 -length [rescale_x_skin 970] -width [rescale_y_skin 150] -variable ::settings(espresso_temperature_1) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command "" -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -command "range_check_shot_variables; profile_has_changed_set; update_de1_explanation_chart_soon"
@@ -416,7 +416,7 @@ proc bevtype2stepdesc {} {
     return [translate [ifexists arr_bevtype2stepdesc($bevtype)]]
 }
 
-add_de1_text "bev_type" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+add_de1_text "bev_type" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 add_de1_button "bev_type" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off "settings_2c"}  980 1210 1580 1410
 add_de1_text "bev_type" 1280 90 -text [translate "Beverage type"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" 
 add_de1_text "bev_type" 800 650 -text [translate "What kind of beverage is this profile making?"] -font Helv_15_bold -width 1200 -fill "#444444" -anchor "center" -justify "center" -width [rescale_x_skin 1000]
@@ -1249,8 +1249,8 @@ proc calculate_screen_flip_value {} {
 				#add_de1_variable "measurements" 340 1110 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Once stable for:"] [days_text $::settings(app_update_delay_notification)]}
 
 	# "done" button for all these sub-pages.
-	add_de1_text "tabletstyles languages measurements extensions" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-	add_de1_button "tabletstyles languages measurements extensions" {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off settings_4;} 980 1210 1580 1410 ""
+	add_de1_text "tabletstyles languages measurements extensions" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_button "tabletstyles languages measurements extensions" {say [translate {Ok}] $::settings(sound_button_in); page_to_show_when_off settings_4;} 980 1210 1580 1410 ""
 ##############################################################################
 
 
@@ -1260,6 +1260,8 @@ add_de1_text "settings_4" 1310 820 -text [translate "Documentation"] -font Helv_
 
 if {[language] == "de"} {
 	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_de/"} 1290 820 2550 1100
+} elseif {[language] == "fr"} {
+	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_fr/"} 1290 820 2550 1100
 } elseif {[language] == "kr"} {
 	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_kr/"} 1290 820 2550 1100
 } elseif {[language] == "zh-hans"} {
@@ -1303,7 +1305,7 @@ proc fetch_possible_de1_sn {} {
 		add_de1_button "settings_3" {show_de1_sn_page} 500 544 1250 600
 
 
-	add_de1_text "enter_de1_sn" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_text "enter_de1_sn" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 	add_de1_button "enter_de1_sn" {say [translate {Ok}] $::settings(sound_button_in); save_hand_typed_de1_serial;}  980 1210 1580 1410
 	add_de1_text "enter_de1_sn" 1280 300 -text [translate "DE1 serial number"] -font Helv_17_bold -width 1280 -fill "#444444" -anchor "center" -justify "center" 
 	add_de1_text "enter_de1_sn" 1280 700 -text [translate "What is the serial number of this machine?"] -font Helv_10_bold -fill "#444444" -anchor "center" -justify "center" -width [rescale_x_skin 2000]
@@ -1564,7 +1566,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 	add_de1_variable "settings_4" 2520 220 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[decent_login_status_show]}
 	add_de1_button "settings_4" {decent_login_show} 1300 210 2560 280 
 
-	add_de1_text "decent_login" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_text "decent_login" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 	add_de1_button "decent_login" {say [translate {Ok}] $::settings(sound_button_in); decent_login_save}  980 1210 1580 1410
 	add_de1_text "decent_login" 1280 300 -text [translate "Link your Decent Espresso Account"] -font Helv_16_bold -width 1280 -fill "#444444" -anchor "center" -justify "center" 
 	add_de1_text "decent_login" 300 470 -text [translate "Email address"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
@@ -1578,7 +1580,7 @@ add_de1_text "settings_4" 55 970 -text [translate "Connect"] -font Helv_10_bold 
 	add_de1_button "decent_login" {say [translate "Email tech support"] $::settings(sound_button_in); page_to_show_when_off email_support; } 1600 880 2350 960
 
 
-	add_de1_text "email_support" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_text "email_support" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 	add_de1_button "email_support" {say [translate {Ok}] $::settings(sound_button_in); send_decent_tech_support_email}  980 1210 1580 1410
 	add_de1_text "email_support" 1280 300 -text [translate "Email Decent Espresso Tech Support"] -font Helv_16_bold -width 1280 -fill "#444444" -anchor "center" -justify "center" 
 	add_de1_text "email_support" 300 470 -text [translate "Subject"] -font Helv_10_bold -fill "#444444" -anchor "nw" -justify "left" -width [rescale_x_skin 2000]
@@ -1871,7 +1873,7 @@ if {[ifexists ::settings(read_only)] == 1} {return [translate "Pick a new name t
 		} -width [expr {int(35 * $::globals(entry_length_multiplier))}] -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(profile_title) -relief flat  -highlightthickness 1 -highlightcolor #000000 
 
 
-	add_de1_text "profile_notes" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_text "profile_notes" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 	add_de1_button "settings_1" {say [translate {Notes}] $::settings(sound_button_in); set ::global(previous_profile_notes) $::settings(profile_notes); page_to_show_when_off profile_notes}  1350 820 2530 1180
 
 	add_de1_button "profile_notes" {say [translate {Done}] $::settings(sound_button_in); if {$::global(previous_profile_notes) != $::settings(profile_notes)} { profile_has_changed_set} ; page_to_show_when_off settings_1;} 0 0 2560 1600 ""
@@ -2161,7 +2163,7 @@ proc send_refill_kit_override_from_gui {args} {
 		}
 
 
-	add_de1_text "calibrate calibrate2 calibrate3" 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
+	add_de1_text "calibrate calibrate2 calibrate3" 1280 1310 -text [translate "Ok"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
 		add_de1_button "calibrate calibrate2 calibrate3" {say [translate {Done}] $::settings(sound_button_in); 
 		if {[ifexists ::calibration_disabled_fahrenheit] == 1} {
 			set ::settings(enable_fahrenheit) 1

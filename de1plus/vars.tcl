@@ -3667,7 +3667,7 @@ proc firmware_uploaded_label {} {
 	set percentage [expr {(100.0 * $::de1(firmware_bytes_uploaded)) / $::de1(firmware_update_size)}]
 	if {$percentage >= 100 && $::de1(currently_updating_firmware) == 0} {
 		#return "[translate {Turn your machine off and on again}]"
-		return [translate "Done"]
+		return [translate "Ok"]
 	} else {
 		return "[round_to_one_digits $percentage]%"
 	}
