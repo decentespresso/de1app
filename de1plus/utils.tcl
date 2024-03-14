@@ -2086,7 +2086,7 @@ proc decent_login_status_show {} {
 		return [subst  {[translate "Logged in as:"] [ifexists ::settings(decent_login_email)]}]
 	} 
 	
-	return [subst {\[[translate "Link your Decent Espresso account"]\]}]
+	return [subst {\[[translate "Link your Decent Espresso Account"]\]}]
 }
 
 
