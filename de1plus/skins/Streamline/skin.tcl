@@ -1,6 +1,6 @@
 package require de1 1.0
 
-set ::settings(ghc_is_installed) 1
+set ::settings(ghc_is_installed) 0
 
 set ghc_pos_pffset 0
 if {$::settings(ghc_is_installed) == 0} { 
@@ -2314,7 +2314,7 @@ proc streamline_load_history_shot {current_shot_filename} {
 	#puts "ERROR streamline_load_history_shot"
 
 
-	array set past_shot_array [read_file "[homedir]/history/$current_shot_filename"]
+	array set past_shot_array [encoding convertfrom utf-8 [read_file "[homedir]/history/$current_shot_filename"]]
 	espresso_elapsed clear
 
 	espresso_elapsed set [ifexists past_shot_array(espresso_elapsed)]
