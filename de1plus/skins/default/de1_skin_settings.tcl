@@ -672,7 +672,7 @@ proc tap_flow_text_label {} {
 }
 proc tap_pressure_text_label {} {
 	if {$::current_adv_step(pump) != "pressure"} {
-		dui page open_dialog dui_number_editor ::current_adv_step(max_flow_or_pressure) -n_decimals 1 -min 0 -max $::de1(max_flowrate_v11) -default $::current_adv_step(max_flow_or_pressure) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Pressure limit"] -previous_values [::dui::pages::dui_number_editor::get_previous_values max_flow_or_pressure] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry max_flow_or_pressure"
+		dui page open_dialog dui_number_editor ::current_adv_step(max_flow_or_pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(max_flow_or_pressure) -smallincrement 1 -bigincrement 2 -use_biginc 0 -page_title [translate "Pressure limit"] -previous_values [::dui::pages::dui_number_editor::get_previous_values max_flow_or_pressure] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry max_flow_or_pressure"
 	} else {
 		dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -previous_values [::dui::pages::dui_number_editor::get_previous_values pressure] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry pressure"
 	}
