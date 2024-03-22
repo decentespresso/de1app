@@ -41,6 +41,7 @@ namespace eval ::dui {
 	# timer_interval: Number of milliseconds between updates of on-screen variables (in the active page)
 	array set settings {
 		debug_buttons 0
+		debug 0
 		create_page_namespaces 0
 		trim_entries 0
 		use_editor_pages 1
@@ -445,7 +446,7 @@ namespace eval ::dui {
 		
 		foreach key [array names opts] {
 			if { [info exists settings($key)] } {
-				if { $key in {debug_buttons create_page_namespaces trim_entries use_editor_pages use_finger_down_for_tap
+				if { $key in {debug debug_buttons create_page_namespaces trim_entries use_editor_pages use_finger_down_for_tap
 						disable_long_press enable_spoken_prompts} } {
 					set settings($key) [string is true -strict $opts($key)]
 				} elseif { $settings($key) ne $opts($key) }  {
@@ -727,7 +728,7 @@ namespace eval ::dui {
 		namespace ensemble create
 		
 		variable aspects
-
+		
 		array set aspects {
 			default.page.bg_img {}
 			default.page.bg_color "#d7d9e6"
@@ -769,7 +770,7 @@ namespace eval ::dui {
 			default.symbol.font_size.medium 40
 			default.symbol.font_size.big 55
 			
-			default.dbutton.debug_outline black
+			default.dbutton.debug_outline black	
 			default.dbutton.fill "#c0c5e3"
 			default.dbutton.disabledfill "#ddd"
 			default.dbutton.outline white
@@ -1067,7 +1068,7 @@ namespace eval ::dui {
 					if { $aspects($var) eq $value } {
 						#msg -INFO [namespace current] "aspect '$var' already exists, new value is equal to old"
 					} else {
-						msg -NOTICE [namespace current] "aspect '$var' already exists, old value='$aspects($var)', new value='$value'"
+						msg -DEBUG [namespace current] "aspect '$var' already exists, old value='$aspects($var)', new value='$value'"
 						#if { [ifexists ::debugging 0]} { msg -DEBUG [stacktrace] }
 					}
 				}
@@ -1077,8 +1078,9 @@ namespace eval ::dui {
 		
 		# Named options:
 		# 	-theme theme_name to get for a theme different than the current one
-		#	-style style_name to get only that style. If the aspect is not found in that style, the non-styled
-		#		value of the aspect is returned instead, if available
+		#	-style style_name list to get only that style. If the aspect is not found in that style, the non-styled
+		#		value of the aspect is returned instead, if available.
+		#		If a list is provided, the aspect is searched from the style list, right to left.
 		#	-default value to return in case the aspect is undefined
 		#	-default_type to search the same aspect in this type, in case it's not defined for the requested type
 		proc get { type aspect args } {
@@ -1094,8 +1096,10 @@ namespace eval ::dui {
 				::set i 0				
 				while { $i < [llength $type] } {
 					::set t [lindex $type $i]
-					if { [info exists aspects($theme.$t.$aspect.$style)] } {
-						return $aspects($theme.$t.$aspect.$style)
+					foreach s [lreverse $style] {
+						if { [info exists aspects($theme.$t.$aspect.$s)] } {
+							return $aspects($theme.$t.$aspect.$s)
+						}
 					}
 					incr i
 				}
@@ -1139,18 +1143,24 @@ namespace eval ::dui {
 			::set style [dui::args::get_option -style ""]
 			::set aspect_name "$theme.$type.$aspect"
 			if { $style ne "" } {
-				append aspect_name .$style
+				foreach s [lreverse $style] {
+					if { [info exists aspects(${aspect_name}.$s)] } {
+						return 1
+					}
+				}
+				return 0
+			} else {
+				return [info exists aspects($aspect_name)]
 			}
-			return [info exists aspects($aspect_name)]
 		}
 				
 		# Returns the defined aspect names according to the request parameters.
 		# Named options:
-		# 	-theme theme_name to return for a theme different than the current one. If not specified and -all_themes=0
+		# 	-theme <theme_name> to return for a theme different than the current one. If not specified and -all_themes=0
 		#		(the default), returns aspects for the currently active theme only.
-		#	-type to return only the aspects for that type (e.g. "entry", "text", etc.)
-		# 	-style to return only the aspects for that style 
-		#	-values if 1, returns {<aspect name> <aspect value>} pairs. Defaults to 0 for returning only the aspect names.
+		#	-type <type_list> to return only the aspects for that type (e.g. "entry", "text", etc.)
+		# 	-style <style_list> to return only the aspects for those styles 
+		#	-values <boolean> if 1, returns {<aspect name> <aspect value>} pairs. Defaults to 0 for returning only the aspect names.
 		#	-full_aspect 0 to return the full aspect name
 		#	-as_options 1 to return a list that can be directly used as argument options (e.g. {-fill black}).
 		#		Setting this to 1 automatically implies -values 1 and -full_aspect 0
@@ -1161,6 +1171,9 @@ namespace eval ::dui {
 			::set theme [dui::args::get_option -theme [dui theme get]]
 			if { $theme eq "default" } {
 				::set pattern "^default\\."
+			} elseif { "default" ni $theme } {
+				::set pattern "^(?:${theme}|default)\\."
+				::set theme [::list $theme default]
 			} else {
 				::set pattern "^(?:${theme}|default)\\."
 			}
@@ -1177,9 +1190,11 @@ namespace eval ::dui {
 			::set style [dui::args::get_option -style ""]
 			if { $style eq "" } {
 				append pattern "\[0-9a-zA-Z_\]+\$"
+				::set style [::list {}]
 			} else {
-				# Return aspects with the requested style AND with no style
-				append pattern "\[0-9a-zA-Z_\]+(\\.${style})?\$"
+				# Return aspects with any olf the requested styles AND with no style
+				append pattern "\[0-9a-zA-Z_\]+(\\.([join $style |]))?\$"
+				::set style [::list {} {*}$style]
 			}
 			
 			::set use_full_aspect [string is true [dui::args::get_option -full_aspect 0]]
@@ -1192,38 +1207,96 @@ namespace eval ::dui {
 			
 			# First iterate to find all unique aspects (which may come from either requested theme or default,
 			#	or from requested style or unstyled)
-			::set all_aspects {}
+#			::set all_aspects {}
+#			foreach full_aspect [array names aspects -regexp $pattern] {
+#				::set type_and_aspect [join [lrange [split $full_aspect .] 1 2] .]
+#				if { $type_and_aspect ni $all_aspects } {
+#					lappend all_aspects $type_and_aspect
+#				}
+#			}
+			::set all_aspects [::list]
+			::set all_types [::list]
 			foreach full_aspect [array names aspects -regexp $pattern] {
-				::set type_and_aspect [join [lrange [split $full_aspect .] 1 2] .]
-				if { $type_and_aspect ni $all_aspects } {
-					lappend all_aspects $type_and_aspect
-				}
+				::set aspect_parts [split $full_aspect .]
+				lappend all_types [lindex $aspect_parts 1]
+				lappend all_aspects [lindex $aspect_parts 2]
 			}
+			::set all_types [lunique $all_types]
+			::set all_aspects [lunique $all_aspects]
+												
+			::set full_aspect_names [::list]
 			
-			::set full_aspect_names {}
-			foreach aspect $all_aspects {
+			foreach a $all_aspects {
 				::set full_aspect ""
-				if { $theme ne "default" } {
-					if { $style ne "" && [info exists aspects(${theme}.${aspect}.${style})] } {
-						::set full_aspect ${theme}.${aspect}.${style}
-					} elseif { [info exists aspects(${theme}.${aspect})] } {
-						::set full_aspect ${theme}.${aspect}
+				::set theme_idx 0
+				while { $full_aspect eq "" && $theme_idx < [llength $theme] } {
+					::set th [lindex $theme $theme_idx]
+										
+					::set type_idx 0
+					while { $full_aspect eq "" && $type_idx < [llength $type] } {
+						::set t [lindex $type $type_idx]
+												
+						::set style_idx [expr {[llength $style]-1}]
+						# On styles, unlike on themes and types, we iterate in reverse order
+						while { $full_aspect eq "" && $style_idx > -1 } {
+							::set s [lindex $style $style_idx]
+							if { $s eq "" && [info exists aspects(${th}.${t}.${a})] } {
+								::set full_aspect "${th}.${t}.${a}"
+							} elseif { $s ne "" && [info exists aspects(${th}.${t}.${a}.${s})] } {
+								::set full_aspect "${th}.${t}.${a}.${s}"
+							} 
+							
+							incr style_idx -1
+						}
+							
+						incr type_idx 1
 					}
+					incr theme_idx 1
 				}
-				if { $full_aspect eq "" } {
-					if { $style ne "" && [info exists aspects(default.${aspect}.${style})] } {
-							::set full_aspect default.${aspect}.${style}
-					} elseif { [info exists aspects(default.${aspect})] } {
-						::set full_aspect default.${aspect}
-					}
-				}				
-				if { $full_aspect eq "" } {
-					# By construction, this should never happen
-					msg -ERROR [namespace current] list: "aspect '$aspect' not found for theme '$theme' and style '$style'"
-				} else {
+				
+				if { $full_aspect ne "" } {
 					lappend full_aspect_names $full_aspect
 				}
 			}
+				
+						
+#			::set full_aspect_names {}
+#			foreach aspect $matching_aspects {
+#				::set full_aspect ""
+#				if { $theme ne "default" } {
+#					foreach t $type {
+#						if { $style ne "" } {
+#							foreach s [lreverse $style] {
+#								if { $full_aspect eq "" && [info exists aspects(${theme}.${t}.$s)] } {
+#									::set full_aspect ${theme}.${t}.${aspect}.$s
+#								}
+#							}
+#						} elseif { [info exists aspects(${theme}.${t}.${aspect})] } {
+#							::set full_aspect ${theme}.${t}.${aspect}
+#						}
+#					}
+#				}
+#				if { $full_aspect eq "" } {
+#					foreach t $type {
+#						if { $style ne "" } {
+#								foreach s [lreverse $style] {
+#									if { $full_aspect eq "" && [info exists aspects(default.${t}.${aspect}.$s)] } {
+#										::set full_aspect default.${t}.${aspect}.$s
+#									}
+#								}
+#						} elseif { [info exists aspects(default.${t}.${aspect})] } {
+#							::set full_aspect default.${t}.${aspect}
+#						}
+#					}
+#				}
+#				if { $full_aspect eq "" } {
+#					# By construction, this should never happen
+#					# With multiple styles, this CAN happen, so we don't notify anymore
+#					#msg -ERROR [namespace current] list: "aspect '$aspect' not found for theme '$theme' and style '$style'"
+#				} else {
+#					lappend full_aspect_names $full_aspect
+#				}
+#			}
 
 			::set result {}
 			foreach full_aspect $full_aspect_names {
@@ -1241,7 +1314,7 @@ namespace eval ::dui {
 					lappend result $aspects($full_aspect)
 				}
 			}
-			
+						
 			if { $inc_values != 1 && ([llength $type] > 1 || $style ne "") } {
 				return [lunique $result]
 			} else {
@@ -5090,17 +5163,21 @@ namespace eval ::dui {
 		variable item_cnt 0
 				
 		# Adds a named option "-option_name option_value" to a named argument list if the option doesn't exist in the list.
-		# Returns the option value.
+		# NOTE: On 16/3/24, changed return value from the option value to a boolean of whether it
+		#	has been added (this allows easier tracking/debugging what aspects comes from themes)
+		# Returns whether it was actually added or not
 		proc add_option_if_not_exists { option_name option_value {args_name args} } {
-			upvar $args_name largs	
+			upvar $args_name largs
 			if { [string range $option_name 0 0] ne "-" } { set option_name "-$option_name" }
 			set opt_idx [lsearch $largs $option_name]
 			if {  $opt_idx == -1 } {
 				lappend largs $option_name $option_value
+				return 1
 			} else {
-				set option_value [lindex $largs [expr {$opt_idx+1}]]
+				return 0
+				#set option_value [lindex $largs [expr {$opt_idx+1}]]
 			}
-			return $option_value
+			#return $option_value
 		}
 		
 		# Removes the named option "-option_name" from the named argument list, if it exists.
@@ -5276,6 +5353,8 @@ namespace eval ::dui {
 		# TBD: Allow 'type' to be a list from higher to lower precedence in the aspect searching. 
 		proc process_aspects { type {style {}} {aspects {}} {exclude {}} {args_name args} } {
 			upvar $args_name largs
+			set added_options [list]
+			
 			set theme [dui::args::get_option -theme [dui theme get] 1 largs]
 			if { $theme eq "none" } {
 				return
@@ -5292,13 +5371,40 @@ namespace eval ::dui {
 				set types $type
 			}
 			
+			set debug [string is true [dui::args::get_option -debug 0 0 largs]]
 			if { $aspects eq "" } {
-				set aspects [dui aspect list -theme $theme -type $types -style $style]
+				set aspects [dui aspect list -theme $theme -type $types -style $style \
+					-full_aspect $debug -values $debug]
 			}
-			foreach aspect $aspects {
-				if { $aspect ni $exclude } {
-					add_option_if_not_exists -$aspect [dui aspect get $type $aspect -theme $theme -style $style \
-						-default_type $default_type] largs
+			
+			# TBD: The debug case may actually be more efficient as it's avoiding the second
+			#	call to dui::aspect::get for each aspect? Use it even if not debuggin???
+			if { $debug } {
+				set theme_aspects ""
+				foreach {fa v} $aspects {
+					lassign [split $fa .] th t a s 
+					if { $a ni $exclude } {
+						if { [add_option_if_not_exists -$a $v largs] } {
+							append theme_aspects "$fa="
+							if { [llength $v] == 1 } {
+								append theme_aspects "$v, "
+							} else {
+								append theme_aspects "\{$v\}, "
+							}
+						}
+					}
+				}
+				if { $theme_aspects ne "" } {
+					msg "DUI: inherited aspects for theme '$theme', type '$type' and style '$style': [string range $theme_aspects 0 end-2]"
+				} else {
+					msg "DUI: no inherited aspects for theme '$theme', type '$type' and style '$style'"
+				}
+			} else { 
+				foreach aspect $aspects {
+					if { $aspect ni $exclude } {
+						add_option_if_not_exists -$aspect [dui aspect get $type $aspect -theme $theme -style $style \
+							-default_type $default_type] largs
+					}
 				}
 			}
 		}
@@ -5372,6 +5478,7 @@ namespace eval ::dui {
 		# Returns the main tag of the created text.
 		proc process_label { pages x y type {style {}} {wrt_tag {}} {args_name args} } {
 			upvar $args_name largs
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0 largs]]
 			set label [get_option -label "" 1 largs]
 			set labelvar [get_option -labelvariable "" 1 largs]
 			if { $label eq "" && $labelvar eq "" } {
@@ -5409,6 +5516,8 @@ namespace eval ::dui {
 					set ylabel [expr {$y+$ylabel}]
 				}				
 			} else {
+				# xlabel & ylabel are just dummies for the initial painting position, but it 
+				# is modified at runtime whenever the page is shown.
 				set xlabel [expr {$x-20}]
 				set ylabel [expr {$y-3}]
 				set xlabel_offset 0
@@ -5420,18 +5529,19 @@ namespace eval ::dui {
 					set ylabel_offset [dui platform rescale_y [lindex $label_pos 2]] 
 				}				
 				foreach page $pages {
-					set after_show_cmd [list dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
-						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]]	
+					set after_show_cmd [list dui::item::relocate_text_wrt $page ${main_tag}-lbl \
+						$wrt_tag [lindex $label_pos 0] \
+						$xlabel_offset $ylabel_offset [get_option -anchor e 0 label_args]]	
 					dui page add_action $page show $after_show_cmd
 				}
 			}
 
 			if { $label ne "" } {
-				set id [dui add dtext $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label \
-					{*}$label_args]
+				set id [dui add dtext $pages $xlabel $ylabel -text $label -tags $label_tags \
+					-aspect_type ${type}_label -debug $debug {*}$label_args]
 			} elseif { $labelvar ne "" } {
 				set id [dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
-					-aspect_type ${type}_label {*}$label_args] 
+					-aspect_type ${type}_label -debug $debug {*}$label_args] 
 			}
 			return $id
 		}
@@ -8738,8 +8848,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		
 		# Adds canvas items (arcs, ovals, lines, etc.) to pages
 		proc canvas_item { type pages args } {
-			set can [dui canvas]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::canvas_item $type \{$pages\} $args"
+			}			
 			
+			set can [dui canvas]
 			set coords {}
 			set i 0
 			while { [llength $args] > 0 && [string is double [lindex $args 0]] } {
@@ -8758,16 +8872,19 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 	
 			set style [dui::args::get_option -style "" 1]
 			dui::args::process_aspects $type $style "" "pos"
-					
+			dui::args::remove_options debug
+			
 			try {
-				set w [[dui canvas] create $type {*}$coords -state hidden {*}$args]
+				set w [$can create $type {*}$coords -state hidden {*}$args]
 			} on error err {
 				set msg "can't add $type '$main_tag' in page(s) '$pages' to canvas: $err"
 				msg -ERROR [namespace current] $msg
 				error $msg
 				return
 			}
-
+			if { $debug } {
+				msg "DUI: $can create $type $coords -state hidden $args ==> $w"
+			}
 			set ns [dui page get_namespace $pages]
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $w
@@ -8793,6 +8910,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		proc dtext { pages x y args } {
 			global text_cnt
 			set can [dui canvas]
+
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "dui::add::dtext \{$pages\} $x $y $args"
+			}
 			
 			set first_page [lindex $pages 0]
 			set abs_coords [string is true [dui::args::get_option -_abs_coords 0 1]] 
@@ -8827,8 +8949,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				dui::args::remove_options pressfill
 			}
 			
+			dui::args::remove_options debug
 			try {
 				set id [$can create text $x $y -state hidden {*}$args]
+				if { $debug } {
+					msg "DUI: $can create text $x $y -state hidden $args ==> $id"
+				}
 			} on error err {
 				set msg "can't add dtext '$main_tag' in page(s) '$pages' to canvas: $err"
 				msg -ERROR [namespace current] dtext: $msg
@@ -8866,8 +8992,6 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#		Also in this case, if -tags is not specified, uses the textvariable name as tag.
 		#  All others passed through to the 'dui add dtext' command
 		proc variable { pages x y args } {
-			global variable_labels
-			
 			set tags [dui::args::process_tags_and_var $pages "variable" -textvariable]
 			set main_tag [lindex $tags 0]
 			set varcode [dui::args::get_option -textvariable "" 1]
@@ -8904,6 +9028,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# from several canvas items (rounded-corner rectangles, filled or unfilled, with our without an outline).
 		#
 		proc shape { shape pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::shape $shape \{$pages\} $args"
+			}						
 			set can [dui canvas]
 			set ns [dui page get_namespace $pages]
 			
@@ -9003,47 +9131,50 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	All others passed through to the respective visible button creation command.
 		#	-pressfill: Background color when pressing the button 
 		#	-pressoutline: Outline color when pressing the button
-		proc dbutton { pages x y args } { 			
+		proc dbutton { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dbutton \{$pages\} $x $y $args"
+			}
 			set debug_buttons [dui cget debug_buttons]
 			set can [dui canvas]
 			set ns [dui page get_namespace $pages]
 			set first_page [lindex $pages 0]
 			
 			set cmd [dui::args::get_option -command {} 1]
+			set tags [dui::args::process_tags_and_var $pages dbutton {} 1 args 1]
+			set main_tag [lindex $tags 0]
+			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
 			set longpress_cmd [dui::args::get_option -longpress_cmd {} 1]
 			set longpress_threshold [dui::args::get_option -longpress_threshold 0 1]
 			set style [dui::args::get_option -style "" 1]
-			set aspect_type [dui::args::get_option -aspect_type dbutton]
-			dui::args::process_aspects dbutton $style {} {use_biginc orient}
+			set aspect_type [dui::args::get_option -aspect_type dbutton]			
+			dui::args::process_aspects dbutton $style {} {use_biginc orient debug_outline}
 			
 			set x [dui::page::calc_x $first_page $x 0]
 			set y [dui::page::calc_y $first_page $y 0]
 			set x1 0
 			set y1 0
+			
+			# Direct coordinates have precedence over bwidth and bheight
 			set bwidth [dui::args::get_option -bwidth "" 1]
-			if { $bwidth ne "" } {
+			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
+				set x1 [dui::page::calc_x $first_page [lindex $args 0] 0]
+				set args [lrange $args 1 end]
+			} elseif { $bwidth ne "" } {
 				set bwidth [dui::page::calc_width $first_page $bwidth 0]
 				set x1 [expr {$x+$bwidth}]
 			}
+			
 			set bheight [dui::args::get_option -bheight "" 1]
-			if { $bheight ne "" } {
+			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
+				set y1 [dui::page::calc_y $first_page [lindex $args 0] 0]
+				set args [lrange $args 1 end]
+			} elseif { $bheight ne "" } {
 				set bheight [dui::page::calc_height $first_page $bheight 0]
 				set y1 [expr {$y+$bheight}]
-			}		 
+			}
 			
-			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
-				if { $x1 <= 0 } {
-					set x1 [dui::page::calc_x $first_page [lindex $args 0] 0]
-					set args [lrange $args 1 end]
-				}
-			}
-			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
-				if { $y1 <= 0 } {
-					set y1 [dui::page::calc_y $first_page [lindex $args 0] 0]
-					set args [lrange $args 1 end]
-				}				
-			}
-						
 			if { $x1 <= 0 } {
 				set x1 [expr {$x+100}]
 			}
@@ -9056,9 +9187,6 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				lassign [dui::item::anchor_coords $anchor $x $y [expr {$x1-$x}] [expr {$y1-$y}]] x y x1 y1
 			}
 			
-			set tags [dui::args::process_tags_and_var $pages dbutton {} 1 args 1]
-			set main_tag [lindex $tags 0]
-			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
 			lassign [lreplicate 4 [dui::args::get_option -tap_pad 0 1]] tp0 tp1 tp2 tp3
 			set tp0 [dui::platform::rescale_x $tp0]
 			set tp1 [dui::platform::rescale_y $tp1]
@@ -9069,7 +9197,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set rx1 [dui::platform::rescale_x $x1]
 			set ry [dui::platform::rescale_y $y]
 			set ry1 [dui::platform::rescale_y $y1]
-						
+			
+			dui::args::remove_options debug
+			
 			# Note this cannot be processed by 'dui item process_label' as this one processes the positioning of the
 			#	label differently (inside), also we need to extract label options from the args before painting the 
 			#	background button (as $args is passed to the painting proc) but not create the label until after that
@@ -9083,7 +9213,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set "label${suffix}_tags" [list "${main_tag}-lbl$suffix" {*}[lrange $tags 1 end]]	
 				set "label${suffix}_args" [dui::args::extract_prefixed "-label${suffix}_"]
 				
-				foreach aspect [dui aspect list -type [list "${aspect_type}_label$suffix" dtext] -style $style] {
+				# NO need to explicitly include dtext in -type, as the call below to dtext to create 
+				# the label already adds the dtext aspects if they are undefined.
+				foreach aspect [dui aspect list -type "${aspect_type}_label$suffix" -style $style] {
 					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_label$suffix" $aspect \
 						-style $style -default {} -default_type dtext] "label${suffix}_args"
 				}
@@ -9154,7 +9286,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set "image${suffix}_args" [dui::args::extract_prefixed "-image${suffix}_"]
 				
 				foreach aspect [dui aspect list -type [list "${aspect_type}_image$suffix" image] -style $style] {
-					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_image$suffix" $aspect -style $style \
+					dui::args::add_option_if_not_exists -$aspect \
+						[dui aspect get "${aspect_type}_image$suffix" $aspect -style $style \
 						-default {} -default_type image] "image{suffix}_args"
 				}
 				
@@ -9187,48 +9320,47 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			#} else {}
 			
 			set ids {}
-			if { ![dui::args::has_option -shape] } {
-				set ids [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $button_tags -state hidden]	
-			} else {
-				dui::args::remove_options -debug_outline
-				set shape [dui::args::get_option -shape [dui aspect get dbutton shape -style $style -default rect] 1]
+			dui::args::remove_options -debug_outline
+			set shape [dui::args::get_option -shape [dui aspect get dbutton shape -style $style -default {}] 1]
+			
+			if { $shape eq "round" } {
+				set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
+				lappend press_args -fill $fill
+				set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
+				set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
 				
-				if { $shape eq "round" } {
-					set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
-					lappend press_args -fill $fill
-					set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
-					set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
-					
-					set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
-				} elseif { $shape eq "outline" } {
-					set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
-					lappend press_args -outline $outline
-					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
-					set arc_offset [dui::args::get_option -arc_offset [dui aspect get dbutton arc_offset -style $style -default 50]]
-					set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
-					set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
-					
-					set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline $disabledoutline \
-						$width $button_tags]
-				} elseif { $shape eq "round_outline" } {
-					set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
-					lappend press_args -fill $fill
-					set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
-					set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
-					set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
-					lappend press_args -outline $outline
-					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
-					set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
-					
-					set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
-					set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
-					set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
-						$disabledoutline $width $outline_tags]
-				} elseif { $shape eq "oval" } {
-					set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
-				} else {
-					set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
-				}
+				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
+			} elseif { $shape eq "outline" } {
+				set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
+				lappend press_args -outline $outline
+				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
+				set arc_offset [dui::args::get_option -arc_offset [dui aspect get dbutton arc_offset -style $style -default 50]]
+				set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
+				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
+				
+				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline $disabledoutline \
+					$width $button_tags]
+			} elseif { $shape eq "round_outline" } {
+				set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
+				lappend press_args -fill $fill
+				set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
+				set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
+				set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
+				lappend press_args -outline $outline
+				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
+				set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
+				
+				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
+				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
+				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
+					$disabledoutline $width $outline_tags]
+			} elseif { $shape eq "oval" } {
+				set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
+			} elseif { $shape in {rect rectangle} } {
+				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
+			} else {
+				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden \
+					-fill {} -outline {} -width 0]
 			}
 			
 			if { $ids ne "" && $ns ne "" } {
@@ -9239,8 +9371,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set i 0
 			set suffix ""
 			while { [info exists image$suffix] && [subst \$image$suffix] ne "" } {
+				# No need to add -aspect_type "dbutton_image$suffix" as before, because
+				# the dbutton_label aspects have already been processed above				
 				dui add image $pages [subst \$ximage$suffix] [subst \$yimage$suffix] [subst \$image$suffix] \
-					-tags [subst \$image${suffix}_tags] -aspect_type "dbutton_image$suffix" \
+					-tags [subst \$image${suffix}_tags] -debug $debug \
 					-style $style {*}[subst \$image${suffix}_args]
 				set suffix [incr i]
 			}
@@ -9249,8 +9383,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set i 0
 			set suffix ""
 			while { [info exists symbol$suffix] && [subst \$symbol$suffix] ne "" } {
-				dui add symbol $pages [subst \$xsymbol$suffix] [subst \$ysymbol$suffix] -text [subst \$symbol$suffix] \
-					-tags [subst \$symbol${suffix}_tags] -aspect_type "dbutton_symbol$suffix" \
+				# No need to add -aspect_type "dbutton_symbol$suffix" as before, because
+				# the dbutton_label aspects have already been processed above				
+				dui add symbol $pages [subst \$xsymbol$suffix] [subst \$ysymbol$suffix] \
+					-text [subst \$symbol$suffix] -tags [subst \$symbol${suffix}_tags] -debug $debug \
 					-style $style -_abs_coords 1 {*}[subst \$symbol${suffix}_args]
 				set suffix [incr i]
 			}
@@ -9260,14 +9396,18 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set suffix ""
 			while { ([info exists label$suffix] && [subst \$label$suffix] ne "") || 
 					([info exists labelvar$suffix] && [subst \$labelvar$suffix] ne "") } {
+				# No need to add -aspect_type "dbutton_label$suffix" as before, because
+				# the dbutton_label aspects have already been processed above
 				if { [info exists label$suffix] && [subst \$label$suffix] ne "" } {
-					dui add dtext $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] -text [subst \$label$suffix] \
-						-tags [subst \$label${suffix}_tags] -aspect_type "dbutton_label$suffix" \
-						-style $style -_abs_coords 1 {*}[subst \$label${suffix}_args]
+					dui add dtext $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] \
+						-text [subst \$label$suffix] -tags [subst \$label${suffix}_tags] \
+						-style $style -debug $debug -_abs_coords 1 {*}[subst \$label${suffix}_args]
 				} elseif { [info exists labelvar$suffix] && [subst \$labelvar$suffix] ne "" } {
+					# No need to add -aspect_type "dbutton_label$suffix" as before, because
+					# the dbutton_label aspects have already been processed above
 					dui add variable $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] \
 						-textvariable [subst \$labelvar$suffix] -tags [subst \$label${suffix}_tags] \
-						-aspect_type "dbutton_label$suffix" -style $style -_abs_coords 1 {*}[subst \$label${suffix}_args] 
+						-style $style -debug $debug -_abs_coords 1 {*}[subst \$label${suffix}_args] 
 				}
 				set suffix [incr i]
 			}
@@ -9277,10 +9417,15 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set ry [expr {$ry-$tp1}] 
 			set rx1 [expr {$rx1+$tp2}] 
 			set ry1 [expr {$ry1+$tp3}]
-			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden]
+			# -outline black
+			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline {} -width 0 -tags $tags -state hidden]
+			if { $debug } {
+				msg "DUI: $can create rect $rx $ry $rx1 $ry1 -fill \{\} -outline \{\} -width 0 -tags \{$tags\} -state hidden ==> $id"
+			}
 			if { $longpress_cmd ne "" } {
 				if { $ns ne "" } { 
-					if { [string is wordchar $longpress_cmd] && [namespace which -command "${ns}::$longpress_cmd"] ne "" } {
+					if { [string is wordchar $longpress_cmd] && \
+							[namespace which -command "${ns}::$longpress_cmd"] ne "" } {
 						set longpress_cmd ${ns}::$longpress_cmd
 					}				
 					regsub -all {%NS} $longpress_cmd $ns longpress_cmd
@@ -9350,6 +9495,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-editor_*, passed through to the number editor page, e.g. -editor_page_title, -editor_callback_cmd, etc.
 		
 		proc dclicker { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dclicker \{$pages\} $args"
+			}			
+			
 			set tags [dui::args::process_tags_and_var $pages dclicker -variable 1]
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
@@ -9413,6 +9563,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# -symbols
 		# -symbols_selectedfill
 		proc dselector { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dselector \{$pages\} $x $y $args"
+			}
 			set can [dui::canvas]
 			set tags [dui::args::process_tags_and_var $pages dselector -variable 1]
 			set main_tag [lindex $tags 0]
@@ -9581,6 +9735,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# -disabledoutline fill color of the circle outline line, when disabled
 		# -label and -label_* options
 		proc dtoggle { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dtoggle \{$pages\} $args"
+			}						
 			set can [dui::canvas]
 			set tags [dui::args::process_tags_and_var $pages dtoggle -variable 1]
 			set main_tag [lindex $tags 0]
@@ -9626,6 +9784,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				-fill $background -disabledfill $disabledbackground -capstyle round \
 				-tags [list ${main_tag}-bck {*}$tags] -state hidden]
 			lappend ids $id
+			if { $debug } {
+				msg "DUI: $can create line [expr {$x+$sliderwidth/2.0}] [expr {$y+$sliderwidth/2.0}] [expr {$x1-$sliderwidth/2.0}] [expr {$y+$sliderwidth/2.0}] -width [expr {$y1-$y}] -fill $background -disabledfill $disabledbackground -capstyle round -tags [list ${main_tag}-bck {*}$tags] -state hidden ==> $id"
+			}
 			if { $ns ne "" } {
 				set "${ns}::widgets(${main_tag}-bck)" $id
 			}
@@ -9636,6 +9797,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				-disabledfill $disabledforeground -width $outline_width -outline $outline \
 				-tags [list {*}$tags ${main_tag}-crc] -state hidden]
 			lappend ids $id	
+			if { $debug } {
+				msg "DUI: $can create oval [expr {$x+$outline_width+2}] [expr {$y+$outline_width+2}] [expr {$x+$sliderwidth-$outline_width-2}] [expr {$y+$sliderwidth-$outline_width-2}] -fill $foreground -disabledfill $disabledforeground -width $outline_width -outline $outline -tags [list {*}$tags ${main_tag}-crc] -state hidden ==> $id"
+			}
 			if { $ns ne "" } {
 				set "${ns}::widgets(${main_tag}-crc)" $id
 			}
@@ -9644,6 +9808,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set id [$can create rect [expr {$x-6}] [expr {$y-12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} \
 				-tags $tags -state hidden]
 			lappend ids $id
+			if { $debug } {
+				msg "$can create rect [expr {$x-6}] [expr {$y-12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} -tags $tags -state hidden ==> $id"
+			}
 			if { $ns ne "" } {
 				set "${ns}::widgets($main_tag)" $ids
 			}
@@ -9681,6 +9848,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-type The type of image, defaults to 'photo'
 		#	-canvas_* Options to be passed through to the canvas create command
 		proc image { pages x y filename args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::image \{$pages\} $x $y $filename $args"
+			}						
+			
 			set can [dui canvas]
 
 			if { $filename ne "" } {
@@ -9703,7 +9875,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set canvas_args [dui::args::extract_prefixed -canvas_]
 			dui::args::add_option_if_not_exists -anchor nw canvas_args
 			
-			dui::args::remove_options -tags
+			dui::args::remove_options {-tags -debug}
 			
 			set preload_images [dui cget preload_images]
 			set img_name ""
@@ -9717,12 +9889,14 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			}
 			
 			try {
-				[dui canvas] create image $x $y -image $img_name -tags $tags -state hidden {*}$canvas_args
+				$can create image $x $y -image $img_name -tags $tags -state hidden {*}$canvas_args
 			} on error err {
 				msg -ERROR [namespace current] "image: can't add image '$filename' with tag '$main_tag' to canvas page(s) '$pages' : $err"
 				return
 			}
-			
+			if { $debug } {
+				msg "DUI: $can create image $x $y -image $img_name -tags $tags -state hidden $canvas_args"
+			}
 			set ns [dui page get_namespace $pages]
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $img_name
@@ -9748,11 +9922,16 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-process_aspects <boolean>, to query and apply all the aspects of the type. Usually set to "no" when
 		#		this is invoked from another 'dui add' command that has already processed the aspects.
 		proc widget { type pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::widget $type \{$pages\} $x $y $args"
+			}			
+			
 			set can [dui canvas]
 			set rx [dui::page::calc_x $pages $x]
 			set ry [dui::page::calc_y $pages $y]
-			
 			set ns [dui page get_namespace $pages]
+			
 			set tags [dui::args::process_tags_and_var $pages $type "" 0 args 0]
 			set main_tag [lindex $tags 0]
 			
@@ -9790,8 +9969,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			dui::args::process_label $pages $x $y $type $style
 			
-			dui::args::remove_options -tags
 			set tclcode [dui::args::get_option -tclcode "" 1]
+			dui::args::remove_options {-tags -debug} 
+						
 			try {
 				::$type $widget {*}$args
 			} on error err {
@@ -9800,6 +9980,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				error $msg
 				return			
 			}			
+			if { $debug } {
+				msg "DUI: \:\:$type $widget $args"
+			}
 			
 			# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
 			# TBD: Kept temporarily for backwards-compatibility when using 'add_de1_widget graph' or 'dui add widget graph'. 
@@ -9839,7 +10022,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				error $msg
 				return
 			}
-				
+			if { $debug } {
+				msg "DUI: $can create window  $rx $ry -window $widget -tags \{$tags\} -state hidden $canvas_args ==> $windowname"
+			}
+					
 			# TBD: Maintain this? I don't find any use of this array in the app code
 			#set ::tclwindows($widget) [list $x $y]
 			#msg -INFO [namespace current] widget "$type '$main_tag' to page(s) '$pages' with args '$args'"
@@ -9868,12 +10054,16 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#		editor if it defined for the -data_type. The first argument of that page must be the fully qualified name 
 		#		of the variable that holds the value.
 		proc entry { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::entry \{$pages\} $x $y $args"
+			}			
+			
 			set tags [dui::args::process_tags_and_var $pages entry -textvariable 1]
 			set main_tag [lindex $tags 0]
-	
 			set style [dui::args::get_option -style "" 0]
 			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
-			dui::args::process_aspects entry $style
+			dui::args::process_aspects entry $style {} {}
 			
 			# Data type and validation
 			set data_type [dui::args::get_option -data_type "text" 1]
@@ -10033,6 +10223,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#		control is returned to the combobox page.
 		
 		proc dcombobox { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dcombobox \{$pages\} $x $y $args"
+			}			
 			set tags [dui::args::process_tags_and_var $pages dcombobox -textvariable 1]
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
@@ -10047,7 +10241,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set textvariable [dui::args::get_option -textvariable {} 0]
 			set callback_cmd [dui::args::get_option -callback_cmd {} 1]
 			if { $callback_cmd ne "" } {
-				if { $ns ne "" && [string is wordchar $callback_cmd] && [namespace which -command "${ns}::$callback_cmd"] ne "" } {
+				if { $ns ne "" && [string is wordchar $callback_cmd] && \
+						[namespace which -command "${ns}::$callback_cmd"] ne "" } {
 					set callback_cmd "${ns}::$callback_cmd"
 				} else {
 					regsub -all {%NS} $callback_cmd $ns callback_cmd
@@ -10088,7 +10283,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			# Dropdown selection arrow
 			set arrow_tags [list ${main_tag}-dda {*}[lrange $tags 1 end]]
 			dui add dbutton $pages [expr {$x+650}] $y -tags $arrow_tags -aspect_type dbutton_dda -command $cmd \
-				-symbol sort-down -tap_pad $tap_pad
+				-symbol sort-down -tap_pad $tap_pad -debug $debug
 			bind $w <Configure> [list dui::item::relocate_dropdown_arrow [lindex $pages 0] $main_tag]
 			
 			return $w
@@ -10100,6 +10295,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-textvariable the name of the boolean variable to map the dcheckbox to.
 		#	-command optional tcl code to run when the dcheckbox is clicked. 
 		proc dcheckbox { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dcheckbox \{$pages\} $x $y $args"
+			}
 			set tags [dui::args::process_tags_and_var $pages dcheckbox -textvariable 1]
 			set main_tag [lindex $tags 0]
 			
@@ -10128,6 +10327,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		}
 		
 		proc listbox { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::listbox \{$pages\} $x $y $args"
+			}
 			set tags [dui::args::process_tags_and_var $pages listbox -listvariable 1]
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
@@ -10179,6 +10382,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# This is not normally invoked directly by client code, but from other 'add' commands like 'dui add listbox'.
 		# Tags should be those of the original scrolled widget.
 		proc yscrollbar { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::yscrollbar \{$pages\} $x $y $args"
+			}			
 			set tags [dui::args::get_option -tags {} 1]
 			set main_tag [lindex $tags 0]
 			if { $main_tag eq "" } return
@@ -10211,6 +10418,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		}		
 		
 		proc scale { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::scale \{$pages\} $x $y $args"
+			}
 			set can [dui canvas]			
 			set tags [dui::args::process_tags_and_var $pages scale -variable 1]
 			set main_tag [lindex $tags 0]
@@ -10313,6 +10524,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# -editor_page: 0, 1 (=use default number editor), or an editor page name.
 		# -editor_page_title: the page title to show on the page editor 
 		proc dscale { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::scale \{$pages\} $x $y $args"
+			}			
 			set can [dui canvas]			
 			set tags [dui::args::process_tags_and_var $pages dscale -variable 1]
 			set main_tag [lindex $tags 0]
@@ -10438,7 +10653,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 					-tags [list {*}$tags ${main_tag}-crc] -state hidden]
 				set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}
 				$can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag v %y]
-				$can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag v %y]                
+				$can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag v %y]
 				#$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
 				$can bind ${main_tag}-crc [dui platform button_motion] $moveto_cmd
 				lappend ids $id			
@@ -10570,6 +10785,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-max, default 10
 		#	-width, total width in pixels
 		proc drater { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::drater \{$pages\} $x $y $args"
+			}			
 			set ids {}
 			set tags [dui::args::process_tags_and_var $pages drater -variable 1 args 0]
 			set main_tag [lindex $tags 0]
@@ -10640,6 +10859,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		}
 
 		proc graph { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::graph \{$pages\} $x $y $args"
+			}
+			
 #			set tags [dui::args::process_tags_and_var $pages graph {} 1]
 #			set main_tag [lindex $tags 0]
 			
@@ -10657,10 +10881,13 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 #			dui::args::process_font listbox $style
 			
 			return [dui add widget graph $pages $x $y {*}$args]
-			
 		}
 		
 		proc text { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::text \{$pages\} $x $y $args"
+			}
 			set tags [dui::args::process_tags_and_var $pages tk_text {} 1]
 			set main_tag [lindex $tags 0]
 			
