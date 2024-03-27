@@ -6004,6 +6004,8 @@ namespace eval ::dui {
 		# Returns a boolean list telling which of the pages have been deleted.
 		proc delete { pages {keep_data 0} } {
 			variable pages_data
+			variable ::dui::item::vartraces
+			
 			set can [dui canvas]
 			set keep_data [string is true $keep_data]
 			set is_deleted [lrepeat [llength $pages] 0]
@@ -6023,6 +6025,23 @@ namespace eval ::dui {
 				foreach item $items_to_delete {
 					if { [$can type $item] eq "window" } {
 						destroy [$can itemcget $item -window]
+					} elseif { [info exists vartraces($item)] } {
+						# If a variable has been traced on a DUI visual element (only canvas items
+						# 	apply, e.g. a dselector), remove the trace. 
+						# If we don't do this, on a retheme we may be still running 
+						# 	commands suchs as dselector_draw with the old theme colors.
+						# Note that on Tcl >= 8.5 we could use commandPrefix to identify the
+						#	command, but on 8.4 it didn't exist and we have to manually locate
+						#	the command to delete.
+						set varname [lindex $vartraces($item) 0]
+						set first_cmd [lindex $vartraces($item) 1]
+						foreach trc [trace info variable $varname] {
+							lassign $trc op cmd
+							if { [lindex $cmd 0] eq $first_cmd } {
+								trace remove variable $varname $op $cmd
+							}
+						}
+						unset vartraces($item)
 					}
 				}
 				$can delete {*}$items_to_delete
@@ -7064,6 +7083,9 @@ namespace eval ::dui {
 		# Current longpress "after" event
 		variable longpress_timer {}
 	
+		variable vartraces
+		array set vartraces {}
+		
 		# Just a wrapper for the dui::add::<type> commands, for consistency of the API
 		proc add { type args } {
 			if { [info proc ::dui::add::$type] ne "" } {
@@ -9606,6 +9628,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# -symbols
 		# -symbols_selectedfill
 		proc dselector { pages x y args } {
+			::variable ::dui::item::vartraces
+			
 			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
 			if { $debug } {
 				msg "DUI: dui::add::dselector \{$pages\} $x $y $args"
@@ -9758,6 +9782,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			# Initialize the control
 			uplevel #0 $draw_cmd
 			trace add variable $var write $draw_cmd
+			# Keep track of the traced variable from this canvas ID so it can be removed if needed
+			# (e.g. when removing/retheming the page)
+			set vartraces($id) [list $var ::dui::item::dselector_draw]
 			
 			return $ids
 		}
@@ -9867,7 +9894,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			# Initialize the control
 			uplevel #0 $draw_cmd
 			trace add variable $var write $draw_cmd
-			
+			# Keep track of the traced variable from this canvas ID so it can be removed if needed
+			# (e.g. when removing/retheming the page)
+			set vartraces($id) [list $var ::dui::item::dtoggle_draw]
+
 			if { $user_cmd ne {} } {
 				if { $ns ne "" } { 
 					if { [string is wordchar $user_cmd] && [namespace which -command "${ns}::$user_cmd"] ne "" } {
@@ -10613,7 +10643,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			set x [dui::page::calc_x $pages $x]
 			set y [dui::page::calc_y $pages $y]
-			set moveto_cmd [list dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $resolution $n_decimals]
+			set moveto_cmd [list ::dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $resolution $n_decimals]
 			if { $orient eq "v" } {
 				# VERTICAL SCALE
 				if { $plus_minus } {
@@ -10798,6 +10828,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			set update_cmd [lreplace $moveto_cmd end-1 end {} {}]
 			trace add variable $var write $update_cmd
+			# Keep track of the traced variable from this canvas ID so it can be removed if needed
+			# (e.g. when removing/retheming the page)
+			set vartraces([lindex $ids 0]) [list $var ::dui::item::dscale_moveto]
+			
 			# Force initializing the slider position
 			dui page add_action $pages show $update_cmd
 			
@@ -10889,6 +10923,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 						
 			set draw_cmd [list ::dui::item::drater_draw [lindex $pages 0] $main_tag $ratingvar $n_ratings $use_halfs $min $max]
 			trace add variable $ratingvar write $draw_cmd
+			# Keep track of the traced variable from this canvas ID so it can be removed if needed
+			# (e.g. when removing/retheming the page)
+			set vartraces([lindex $ids 0]) [list $var ::dui::item::drater_draw]
+						
 			# Force drawing the stars correctly whenever we show the page (as all stars are shown in normal state 
 			#	when the page is shown).
 			foreach page $pages {
