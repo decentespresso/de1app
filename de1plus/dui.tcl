@@ -7465,7 +7465,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set y [dui::page::calc_y $page $y]
 			}
 			
-			if { [string range $tag end-1 end] eq "*" } {
+			if { [string range $tag end end] eq "*" } {
 				set refitem [dui item get $page_or_id_or_widget [string range $tag 0 end-1]]
 			} else {
 				set refitem [lindex $items end]
