@@ -9172,7 +9172,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set longpress_threshold [dui::args::get_option -longpress_threshold 0 1]
 			set style [dui::args::get_option -style "" 1]
 			set aspect_type [dui::args::get_option -aspect_type dbutton]			
-			dui::args::process_aspects {shape dbutton} $style {} {use_biginc orient debug_outline}
+			dui::args::process_aspects {dbutton shape} $style {} {use_biginc orient debug_outline}
 			
 			set x [dui::page::calc_x $first_page $x 0]
 			set y [dui::page::calc_y $first_page $y 0]
@@ -9344,62 +9344,78 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			set ids {}
 			dui::args::remove_options -debug_outline
-			set shape [dui::args::get_option -shape [dui aspect get {shape dbutton} shape -style $style -default {}] 1]
+			set shape [dui::args::get_option -shape [dui aspect get {dbutton shape} shape -style $style -default {}] 1]
 			
 			if { $shape eq "round" } {
-				set fill [dui::args::get_option -fill [dui aspect get {shape dbutton} fill -style $style]]
+				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style]]
 				lappend press_args -fill $fill
-				set disabledfill [dui::args::get_option -disabledfill [dui aspect get {shape dbutton} disabledfill -style $style]]
-				set radius [dui::args::get_option -radius [dui aspect get {shape dbutton} radius -style $style -default 40]]
+				set disabledfill [dui::args::get_option -disabledfill \
+						[dui aspect get {dbutton shape} disabledfill -style $style]]
+				set radius [dui::args::get_option -radius \
+						[dui aspect get {dbutton shape} radius -style $style -default 40]]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
 			} elseif { $shape eq "outline" } {
-				set outline [dui::args::get_option -outline [dui aspect get {shape dbutton} outline -style $style]]
+				set outline [dui::args::get_option -outline \
+						[dui aspect get {dbutton shape} outline -style $style]]
 				if { $outline eq {} } {
-					set outline [dui::args::get_option -fill [dui aspect get {shape dbutton} fill -style $style -default black]]
+					set outline [dui::args::get_option -fill \
+							[dui aspect get {dbutton shape} fill -style $style -default black]]
 				}
 				lappend press_args -outline $outline				
-				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get {shape dbutton} disabledoutline -style $style]]
+				set disabledoutline [dui::args::get_option -disabledoutline \
+						[dui aspect get {dbutton shape} disabledoutline -style $style]]
 				if { $disabledoutline eq {} } {
-					set disabledoutline [dui::args::get_option -disabledfill [dui aspect get {shape dbutton} disabledfill \
-						-style $style -default black]]
+					set disabledoutline [dui::args::get_option -disabledfill \
+						[dui aspect get {dbutton shape} disabledfill -style $style -default black]]
 				}
-				set arc_offset [dui::args::get_option -arc_offset [dui aspect get {shape dbutton} arc_offset -style $style -default {}]]
+				set arc_offset [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default {}]]
 				if { $arc_offset eq {} } {
-					set arc_offset [dui::args::get_option -radius [dui aspect get {shape dbutton} radius -style $style -default 40]]
+					set arc_offset [dui::args::get_option -radius \
+						[dui aspect get {dbutton shape} radius -style $style -default 40]]
 				}
-				set width [dui::args::get_option -width [dui aspect get {shape dbutton} width -style $style -default 3]]
+				set width [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 3]]
 				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
 				
-				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline $disabledoutline \
-					$width $button_tags]
+				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset \
+					$outline $disabledoutline $width $button_tags]
 			} elseif { $shape eq "round_outline" } {
-				set fill [dui::args::get_option -fill [dui aspect get {shape dbutton} fill -style $style]]
+				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style]]
 				lappend press_args -fill $fill
-				set disabledfill [dui::args::get_option -disabledfill [dui aspect get {shape dbutton} disabledfill -style $style]]
-				set radius [dui::args::get_option -radius [dui aspect get {shape dbutton} radius -style $style -default 40]]
-				set outline [dui::args::get_option -outline [dui aspect get {shape dbutton} outline -style $style]]
+				set disabledfill [dui::args::get_option -disabledfill \
+						[dui aspect get {dbutton shape} disabledfill -style $style]]
+				set radius [dui::args::get_option -radius [dui aspect get {dbutton shape} radius \
+						-style $style -default 40]]
+				set outline [dui::args::get_option -outline [dui aspect get {dbutton shape} outline \
+						-style $style]]
 				lappend press_args -outline $outline
-				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get {shape dbutton} disabledoutline -style $style]]
-				set width [dui::args::get_option -width [dui aspect get {shape dbutton} width -style $style -default 3]]
+				set disabledoutline [dui::args::get_option -disabledoutline \
+						[dui aspect get {dbutton shape} disabledoutline -style $style]]
+				set width [dui::args::get_option -width [dui aspect get {dbutton shape} width \
+						-style $style -default 3]]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
 				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
 				lappend ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
 					$disabledoutline $width $outline_tags]
 			} elseif { $shape eq "oval" } {
-				set fill [dui::args::get_option -fill [dui aspect get {shape dbutton} fill -style $style] 1]
-				set disabledfill [dui::args::get_option -disabledfill [dui aspect get {shape dbutton} disabledfill -style $style] 1]
+				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style] 1]
+				set disabledfill [dui::args::get_option -disabledfill \
+					[dui aspect get {dbutton shape} disabledfill -style $style] 1]
 				dui::args::remove_options {radius arc_offset}
 				
-				set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill -disabledfill $disabledfill -state hidden {*}$args]
+				set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill \
+						-disabledfill $disabledfill -state hidden {*}$args]
 			} elseif { $shape in {rect rectangle} } {
-				set fill [dui::args::get_option -fill [dui aspect get {shape dbutton} fill -style $style] 1]
-				set disabledfill [dui::args::get_option -disabledfill [dui aspect get {shape dbutton} disabledfill -style $style] 1]	
+				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style] 1]
+				set disabledfill [dui::args::get_option -disabledfill \
+						[dui aspect get {dbutton shape} disabledfill -style $style] 1]	
 				dui::args::remove_options {radius arc_offset}
 				
-				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill -disabledfill $disabledfill \
-					-state hidden {*}$args]
+				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill \
+					-disabledfill $disabledfill -state hidden {*}$args]
 			} else {
 				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden \
 					-fill {} -outline {} -width 0]
