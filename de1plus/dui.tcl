@@ -1177,6 +1177,8 @@ namespace eval ::dui {
 		#		Setting this to 1 automatically implies -values 1 and -full_aspect 0
 		proc list { args } {
 			variable aspects
+			::set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			
 			::set theme [dui::args::get_option -theme [dui theme get]]
 			if { $theme eq "default" } {
 				::set pattern "^default\\."
@@ -1189,23 +1191,28 @@ namespace eval ::dui {
 			
 			::set type [dui::args::get_option -type ""]
 			if { $type eq "" } {
-				append pattern "\[0-9a-zA-Z_\]+\\."
+				append pattern "\[0-9a-zA-Z_\]+"
 			} elseif { [llength $type] == 1 } {
-				append pattern "${type}\\."
+				append pattern "${type}"
 			} else {
-				append pattern "(?:[join $type |])\\."
+				append pattern "(?:[join $type |])"
 			}
+			
+			# Aspect
+			append pattern "\\.\[0-9a-zA-Z_\]+"
 			
 			::set style [dui::args::get_option -style ""]
 			if { $style eq "" } {
-				# TBD: This doesn't return the non-styled?
-				append pattern "\[0-9a-zA-Z_\]+\$"
+				# Return any style, and also non-styled 
+				append pattern "(\\.\[0-9a-zA-Z_\]+)?\$"
 				::set style [::list {}]
 			} else {
 				# Return aspects with any of the requested styles AND with no style
-				# TBD: What's the first part doing there?
-				append pattern "\[0-9a-zA-Z_\]+(\\.([join $style |]))?\$"
+				append pattern "(\\.(?:[join $style |]))?\$"
 				::set style [::list {} {*}$style]
+			}
+			if { $debug } {
+				msg "DUI: dui::aspect::list pattern=$pattern"
 			}
 			
 			::set use_full_aspect [string is true [dui::args::get_option -full_aspect 0]]
@@ -1220,6 +1227,7 @@ namespace eval ::dui {
 			#	or from requested style or unstyled)
 			::set all_aspects [::list]
 			::set all_types [::list]
+			
 			foreach full_aspect [array names aspects -regexp $pattern] {
 				::set aspect_parts [split $full_aspect .]
 				lappend all_types [lindex $aspect_parts 1]
@@ -5343,7 +5351,7 @@ namespace eval ::dui {
 			set debug [string is true [dui::args::get_option -debug 0 0 largs]]
 			if { $aspects eq "" } {
 				set aspects [dui aspect list -theme $theme -type $types -style $style \
-					-full_aspect 1 -values 1]
+					-full_aspect 1 -values 1 -debug $debug]
 			
 				set theme_aspects ""
 				foreach {fa v} $aspects {
@@ -5364,9 +5372,9 @@ namespace eval ::dui {
 			
 				if { $debug } {
 					if { $theme_aspects ne "" } {
-						msg "DUI: inherited aspects for theme '$theme', type '$type' and style '$style': [string range $theme_aspects 0 end-2]"
+						msg "DUI: inherited aspects for theme '$theme', type(s) \{$type\} and style(s) \{$style\}: [string range $theme_aspects 0 end-2]"
 					} else {
-						msg "DUI: no inherited aspects for theme '$theme', type '$type' and style '$style'"
+						msg "DUI: no inherited aspects for theme '$theme', type(s) \{$type\} and style(s) \{$style\}"
 					}
 				}
 			} else { 
