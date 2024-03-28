@@ -1076,59 +1076,65 @@ namespace eval ::dui {
 			}
 		}
 		
+		# type <list of types>, searched from left to right.
+		# aspect <aspect_name>, a single aspect, if a list is provided only the first one is used.
 		# Named options:
-		# 	-theme theme_name to get for a theme different than the current one
-		#	-style style_name list to get only that style. If the aspect is not found in that style, the non-styled
-		#		value of the aspect is returned instead, if available.
+		# 	-theme theme_name to get for a theme different than the current one. If the aspect is
+		#		not found on the specified/current theme, then the "default" theme is searched.
+		#	-style style_name list to get only that style. If the aspect is not found in that style, 
+		#		the non-styled value of the aspect is returned instead, if available.
 		#		If a list is provided, the aspect is searched from the style list, right to left.
-		#	-default value to return in case the aspect is undefined
-		#	-default_type to search the same aspect in this type, in case it's not defined for the requested type
+		#		Styles have precedence over types.
+		#	-default value to return in case the aspect is undefined.
+		#	-default_type to search the same aspect in this type, in case it's not defined for the 
+		#		requested type. This is a argument inherited from the first version of DUI, now
+		#		'type' can be a list, so not really needed anymore. 
 		proc get { type aspect args } {
 			variable aspects
-			::set theme [dui::args::get_option -theme [dui theme get] 1]
-			::set style [dui::args::get_option -style "" 0]			
-			::set default [dui::args::get_option -default "" 1]
-			# Inherited argument from first implementation of DUI. Now just append to the $type list.
-			lappend type [dui::args::get_option -default_type {} 0]
 			
+			lappend type [dui::args::get_option -default_type {} 0]
 			::set type [list_remove_element [lunique $type] ""]
-			if { $style ne "" } {
-				::set i 0				
-				while { $i < [llength $type] } {
-					::set t [lindex $type $i]
-					foreach s [lreverse $style] {
-						if { [info exists aspects($theme.$t.$aspect.$s)] } {
-							return $aspects($theme.$t.$aspect.$s)
+			
+			::set aspect [lindex $aspect 0]
+			::set is_font [expr {[string range $aspect 0 4] eq "font_"}]
+			
+			::set theme [dui::args::get_option -theme [dui theme get] 1]
+			if { "default" ni $theme } {
+				::set theme [::list {*}$theme default]
+			}
+			
+			::set style [dui::args::get_option -style "" 0]
+			if { $style eq "" } {
+				::set style [::list {}]
+			} else {
+				::set style [::list {} {*}$style]
+			}
+			
+			::set default [dui::args::get_option -default "" 1]
+			
+			foreach th $theme {
+				foreach s [lreverse $style] {
+					foreach t $type {
+						if { $s eq "" } {
+							if { [info exists aspects($th.$t.$aspect)] } {
+								return $aspects($th.$t.$aspect)
+							} elseif { $is_font && [info exists aspects($th.font.$aspect)] } {
+								return $aspects($th.font.$aspect)
+							}
+						} elseif { [info exists aspects($th.$t.$aspect.$s)] } {
+							return $aspects($th.$t.$aspect.$s)
+						} elseif { $is_font && [info exists aspects($th.font.$aspect.$s)] } {
+							return $aspects($th.font.$aspect.$s)
 						}
 					}
-					incr i
 				}
 			}
-			
-			::set i 0				
-			while { $i < [llength $type] } {
-				::set t [lindex $type $i]
-				if { [info exists aspects($theme.$t.$aspect)] } {
-					return $aspects($theme.$t.$aspect)
-				}
-				incr i
+
+			if { $default eq "" } {
+				msg -DEBUG [namespace current] "aspect '[join $theme |].[join $type |].$aspect.[join $style |]' not found and no alternative available"
 			}
 			
-			if { $default ne "" } {
-				return $default
-			} elseif { [string range $aspect 0 4] eq "font_" && [info exists aspects($theme.font.$aspect)] } {
-				return $aspects($theme.font.$aspect)
-			}
-			
-			if { $theme ne "default" } {
-				::set avalue [get $type $aspect -theme default {*}$args]
-				if { $avalue eq "" } {
-					msg -DEBUG [namespace current] "aspect '$theme.[join $type /].$aspect' not found and no alternative available"
-				}
-				return $avalue
-			}
-			
-			return ""
+			return $default
 		}
 		
 		# Check that an aspect exists EXACTLY as requested. That is, this doesn't search for non-style nor default theme,
@@ -1156,16 +1162,19 @@ namespace eval ::dui {
 				
 		# Returns the defined aspect names according to the request parameters.
 		# Named options:
-		# 	-theme <theme_name> to return for a theme different than the current one. If not specified and -all_themes=0
-		#		(the default), returns aspects for the currently active theme only.
-		#	-type <type_list> to return only the aspects for that type (e.g. "entry", "text", etc.)
-		# 	-style <style_list> to return only the aspects for those styles 
-		#	-values <boolean> if 1, returns {<aspect name> <aspect value>} pairs. Defaults to 0 for returning only the aspect names.
-		#	-full_aspect 0 to return the full aspect name
-		#	-as_options 1 to return a list that can be directly used as argument options (e.g. {-fill black}).
+		# 	-theme <theme_name> to return for the specified theme. By default, return aspects in the
+		#		currently active theme. If an aspect is not found in the theme for the type and style,
+		#		searches the "default" theme.
+		# 	-style <style_list> to return only the aspects for those styles. Styles are processed
+		#		before types, and from right to left.		
+		#	-type <type_list> to return only the aspects for that type (e.g. "entry", "dtext", etc.).
+		#		Types are processed after styles, and from left to right.
+		#	-values <boolean> if 1, returns {<aspect name> <aspect value>} pairs. Defaults to 0 for 
+		#		returning only the aspect names.
+		#	-full_aspect <boolean> to return the full aspect name, defaults to 0.
+		#	-as_options <boolean> to return a list that can be directly used as argument options 
+		#		(e.g. {-fill black}). Defaults to zero.
 		#		Setting this to 1 automatically implies -values 1 and -full_aspect 0
-		# If the returned values are for a single theme, the theme name prefix is not included, but if -all_themes is 1,
-		#	returns the full aspect name including the theme prefix.
 		proc list { args } {
 			variable aspects
 			::set theme [dui::args::get_option -theme [dui theme get]]
@@ -1189,10 +1198,12 @@ namespace eval ::dui {
 			
 			::set style [dui::args::get_option -style ""]
 			if { $style eq "" } {
+				# TBD: This doesn't return the non-styled?
 				append pattern "\[0-9a-zA-Z_\]+\$"
 				::set style [::list {}]
 			} else {
-				# Return aspects with any olf the requested styles AND with no style
+				# Return aspects with any of the requested styles AND with no style
+				# TBD: What's the first part doing there?
 				append pattern "\[0-9a-zA-Z_\]+(\\.([join $style |]))?\$"
 				::set style [::list {} {*}$style]
 			}
@@ -1207,13 +1218,6 @@ namespace eval ::dui {
 			
 			# First iterate to find all unique aspects (which may come from either requested theme or default,
 			#	or from requested style or unstyled)
-#			::set all_aspects {}
-#			foreach full_aspect [array names aspects -regexp $pattern] {
-#				::set type_and_aspect [join [lrange [split $full_aspect .] 1 2] .]
-#				if { $type_and_aspect ni $all_aspects } {
-#					lappend all_aspects $type_and_aspect
-#				}
-#			}
 			::set all_aspects [::list]
 			::set all_types [::list]
 			foreach full_aspect [array names aspects -regexp $pattern] {
@@ -1223,7 +1227,7 @@ namespace eval ::dui {
 			}
 			::set all_types [lunique $all_types]
 			::set all_aspects [lunique $all_aspects]
-												
+			
 			::set full_aspect_names [::list]
 			
 			foreach a $all_aspects {
@@ -1231,26 +1235,28 @@ namespace eval ::dui {
 				::set theme_idx 0
 				while { $full_aspect eq "" && $theme_idx < [llength $theme] } {
 					::set th [lindex $theme $theme_idx]
-										
-					::set type_idx 0
-					while { $full_aspect eq "" && $type_idx < [llength $type] } {
-						::set t [lindex $type $type_idx]
+					
+					::set style_idx [expr {[llength $style]-1}]
+					# On styles, unlike on themes and types, we iterate in reverse order
+					while { $full_aspect eq "" && $style_idx > -1 } {
+						::set s [lindex $style $style_idx]
+						
+						::set type_idx 0
+						while { $full_aspect eq "" && $type_idx < [llength $type] } {
+							::set t [lindex $type $type_idx]
 												
-						::set style_idx [expr {[llength $style]-1}]
-						# On styles, unlike on themes and types, we iterate in reverse order
-						while { $full_aspect eq "" && $style_idx > -1 } {
-							::set s [lindex $style $style_idx]
 							if { $s eq "" && [info exists aspects(${th}.${t}.${a})] } {
 								::set full_aspect "${th}.${t}.${a}"
 							} elseif { $s ne "" && [info exists aspects(${th}.${t}.${a}.${s})] } {
 								::set full_aspect "${th}.${t}.${a}.${s}"
 							} 
 							
-							incr style_idx -1
+							incr type_idx 1
 						}
-							
-						incr type_idx 1
+						
+						incr style_idx -1
 					}
+					
 					incr theme_idx 1
 				}
 				
@@ -1258,64 +1264,27 @@ namespace eval ::dui {
 					lappend full_aspect_names $full_aspect
 				}
 			}
-				
-						
-#			::set full_aspect_names {}
-#			foreach aspect $matching_aspects {
-#				::set full_aspect ""
-#				if { $theme ne "default" } {
-#					foreach t $type {
-#						if { $style ne "" } {
-#							foreach s [lreverse $style] {
-#								if { $full_aspect eq "" && [info exists aspects(${theme}.${t}.$s)] } {
-#									::set full_aspect ${theme}.${t}.${aspect}.$s
-#								}
-#							}
-#						} elseif { [info exists aspects(${theme}.${t}.${aspect})] } {
-#							::set full_aspect ${theme}.${t}.${aspect}
-#						}
-#					}
-#				}
-#				if { $full_aspect eq "" } {
-#					foreach t $type {
-#						if { $style ne "" } {
-#								foreach s [lreverse $style] {
-#									if { $full_aspect eq "" && [info exists aspects(default.${t}.${aspect}.$s)] } {
-#										::set full_aspect default.${t}.${aspect}.$s
-#									}
-#								}
-#						} elseif { [info exists aspects(default.${t}.${aspect})] } {
-#							::set full_aspect default.${t}.${aspect}
-#						}
-#					}
-#				}
-#				if { $full_aspect eq "" } {
-#					# By construction, this should never happen
-#					# With multiple styles, this CAN happen, so we don't notify anymore
-#					#msg -ERROR [namespace current] list: "aspect '$aspect' not found for theme '$theme' and style '$style'"
-#				} else {
-#					lappend full_aspect_names $full_aspect
-#				}
-#			}
-
-			::set result {}
-			foreach full_aspect $full_aspect_names {
-				::set aspect_parts [split $full_aspect .]
-				::set aspect_theme [lindex $aspect_parts 0]
-				
-				if { $use_full_aspect } {
-					lappend result $full_aspect
-				} elseif { $as_options } {
-					lappend result -[lindex [split $full_aspect .] 2]
-				} else {
-					lappend result [lindex [split $full_aspect .] 2]
-				}
-				if { $inc_values } {
-					lappend result $aspects($full_aspect)
+			
+			# Process the result
+			if { $use_full_aspect && !$as_options && !$inc_values } {
+				::set result $full_aspect_names
+			} else {
+				::set result {}
+				foreach full_aspect $full_aspect_names {
+					if { $use_full_aspect } {
+						lappend result $full_aspect
+					} elseif { $as_options } {
+						lappend result -[lindex [split $full_aspect .] 2]
+					} else {
+						lappend result [lindex [split $full_aspect .] 2]
+					}
+					if { $inc_values } {
+						lappend result $aspects($full_aspect)
+					}
 				}
 			}
-						
-			if { $inc_values != 1 && ([llength $type] > 1 || $style ne "") } {
+			
+			if { !$inc_values && ([llength $type] > 1 || $style ne "") } {
 				return [lunique $result]
 			} else {
 				return $result
