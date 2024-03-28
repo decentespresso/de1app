@@ -10895,7 +10895,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			trace add variable $ratingvar write $draw_cmd
 			# Keep track of the traced variable from this canvas ID so it can be removed if needed
 			# (e.g. when removing/retheming the page)
-			set vartraces([lindex $ids 0]) [list $var ::dui::item::drater_draw]
+			set vartraces([lindex $ids 0]) [list $ratingvar ::dui::item::drater_draw]
 						
 			# Force drawing the stars correctly whenever we show the page (as all stars are shown in normal state 
 			#	when the page is shown).
