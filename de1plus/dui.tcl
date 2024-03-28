@@ -488,8 +488,8 @@ namespace eval ::dui {
 	# System-related stuff
 	namespace eval platform {
 		namespace export hide_android_keyboard button_press button_long_press button_motion finger_down button_unpress \
-			xscale_factor yscale_factor rescale_x rescale_y translate_coordinates_finger_down_x translate_coordinates_finger_down_y \
-			is_fast_double_tap
+			xscale_factor yscale_factor rescale_x rescale_y unscale_x unscale_y \
+			translate_coordinates_finger_down_x translate_coordinates_finger_down_y is_fast_double_tap
 		namespace ensemble create
 		
 		variable last_click_time
@@ -565,6 +565,14 @@ namespace eval ::dui {
 
 		proc rescale_y {in} {
 			return [expr {int($in / [yscale_factor])}]
+		}
+
+		proc unscale_x {in} {
+			return [expr {int($in * [xscale_factor])}]
+		}
+
+		proc unscale_y {in} {
+			return [expr {int($in * [yscale_factor])}]
 		}
 		
 		# on android we track finger-down, instead of button-press, as it gives us lower latency by avoding having to distinguish a potential gesture from a tap
@@ -7034,7 +7042,7 @@ namespace eval ::dui {
 	### ITEMS SUB-ENSEMBLE ###
 	# Items are visual items added to the canvas, either canvas items (text, arcs, lines...) or Tk widgets.
 	namespace eval item {
-		namespace export add delete get get_widget config cget enable_or_disable enable disable \
+		namespace export add delete get get_widget config cget coords enable_or_disable enable disable \
 			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection \
 			relocate_text_wrt moveto moveby pages
 		namespace ensemble create
@@ -7263,6 +7271,31 @@ namespace eval ::dui {
 				return "disabled"
 			} else {
 				return "normal"
+			}
+		}
+		
+		proc coords { page_or_id_or_widget {tag {}} {rescaled 1} } {
+			set page_or_id_or_widget [lindex $page_or_id_or_widget 0]
+			if { $tag ne {} } {
+				set tag [lindex $tag 0]
+			}
+			
+			set item [get $page_or_id_or_widget $tag]
+			if { $item eq {} } {
+				return
+			} else {
+				set coords [[dui canvas] coords $item]
+
+				if { [string is true $rescaled] } {
+					return $coords
+				} else {
+					set nonscaled_coords [list]
+					foreach {x y} $coords {
+						lappend nonscaled_coords [dui::platform::unscale_x $x]
+						lappend nonscaled_coords [dui::platform::unscale_y $y]
+					}
+					return $nonscaled_coords
+				}
 			}
 		}
 		
