@@ -1077,7 +1077,6 @@ namespace eval ::dui {
 						#msg -INFO [namespace current] "aspect '$var' already exists, new value is equal to old"
 					} else {
 						msg -DEBUG [namespace current] "aspect '$var' already exists, old value='$aspects($var)', new value='$value'"
-						#if { [ifexists ::debugging 0]} { msg -DEBUG [stacktrace] }
 					}
 				}
 				::set aspects($var) $value
@@ -1099,14 +1098,17 @@ namespace eval ::dui {
 		#		'type' can be a list, so not really needed anymore. 
 		proc get { type aspect args } {
 			variable aspects
-			
-			lappend type [dui::args::get_option -default_type {} 0]
+			::set debug [string is true [dui::args::get_option -debug [dui::cget debug]]]
+			if { $debug } {
+				msg "DUI: dui::item::get \{$type\} $aspect $args"
+			}
+			lappend type [dui::args::get_option -default_type {}]
 			::set type [list_remove_element [lunique $type] ""]
 			
 			::set aspect [lindex $aspect 0]
 			::set is_font [expr {[string range $aspect 0 4] eq "font_"}]
 			
-			::set theme [dui::args::get_option -theme [dui theme get] 1]
+			::set theme [dui::args::get_option -theme [dui theme get]]
 			if { "default" ni $theme } {
 				::set theme [::list {*}$theme default]
 			}
@@ -1118,20 +1120,32 @@ namespace eval ::dui {
 				::set style [::list {} {*}$style]
 			}
 			
-			::set default [dui::args::get_option -default "" 1]
+			::set default [dui::args::get_option -default ""]
 			
 			foreach th $theme {
 				foreach s [lreverse $style] {
 					foreach t $type {
 						if { $s eq "" } {
 							if { [info exists aspects($th.$t.$aspect)] } {
+								if { $debug } {
+									msg "DUI: dui::item::get returning \$aspects($th.$t.$aspect)=$aspects($th.$t.$aspect)"
+								}
 								return $aspects($th.$t.$aspect)
 							} elseif { $is_font && [info exists aspects($th.font.$aspect)] } {
+								if { $debug } {
+									msg "DUI: dui::item::get returning \$aspects($th.font.$aspect)=$aspects($th.font.$aspect)"
+								}
 								return $aspects($th.font.$aspect)
 							}
 						} elseif { [info exists aspects($th.$t.$aspect.$s)] } {
+							if { $debug } {
+								msg "DUI: dui::item::get returning \$aspects($th.$t.$aspect.$s)=$aspects($th.$t.$aspect.$s)"
+							}
 							return $aspects($th.$t.$aspect.$s)
 						} elseif { $is_font && [info exists aspects($th.font.$aspect.$s)] } {
+							if { $debug } {
+								msg "DUI: dui::item::get returning \$aspects($th.font.$aspect.$s)=$aspects($th.font.$aspect.$s)"
+							}
 							return $aspects($th.font.$aspect.$s)
 						}
 					}
@@ -1140,6 +1154,9 @@ namespace eval ::dui {
 
 			if { $default eq "" } {
 				msg -DEBUG [namespace current] "aspect '[join $theme |].[join $type |].$aspect.[join $style |]' not found and no alternative available"
+			}
+			if { $debug } {
+				msg "DUI: dui::item::get returning default=$defatul"
 			}
 			
 			return $default
@@ -6447,7 +6464,7 @@ namespace eval ::dui {
 				} on error err {}
 				$can itemconfigure $item -state normal
 			}
-			set dlg_normal_widgets [::list]			
+			set dlg_normal_widgets [::list]	
 			foreach item $dlg_normal_items {
 				$can itemconfigure $item -state normal
 			}
@@ -7185,11 +7202,29 @@ namespace eval ::dui {
 			set can [dui canvas]
 			if { [string range [lindex $args 0] 0 0] eq "-" || [lindex $args 0] eq "" } {
 				set items [get $page_or_ids_or_widgets]
+				set pages [list]
+				set tags [list]
 			} else {
-				set items [get $page_or_ids_or_widgets [lindex $args 0]]
+				set pages $page_or_ids_or_widgets
+				set tags [lindex $args 0]
+				set items [get $page_or_ids_or_widgets $tags]
 				set args [lrange $args 1 end]
 			}
-				
+
+			set dui_type [dui::args::get_option -dui_type "" 1]
+			if { $dui_type ne "" } {
+				if { [namespace which -command "dui::item::_config_$dui_type"] ne "" } {
+					if { $tags eq {} } {
+						foreach id $items {
+							set item_tags [$can gettags $id]
+							lappend tags [lindex $item_tags 0]
+							lappend pages [lsearch -glob -inline $item_tags {p:*}]
+						}
+					}
+					_config_$dui_type [lindex $pages 0] $tags
+				}
+			}
+			
 			set istate [dui::args::get_option -initial_state "" 1]
 			
 			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, iterating
@@ -7230,6 +7265,58 @@ namespace eval ::dui {
 				$can addtag st:$state withtag $item
 			}
 		}
+
+		proc _config_dbutton { page tags } {
+			upvar args largs
+			set can [dui canvas]
+			
+			set btn_args [list]
+			if { [dui::args::has_option -fill largs] } {
+				lappend btn_args -fill [dui::args::get_option -fill {} 1 largs]
+			}
+			if { [dui::args::has_option -disabledfill largs] } {
+				lappend btn_args -disabledfill [dui::args::get_option -disabledfill {} 1 largs]
+			}
+			
+			if { $btn_args ne {} } {
+				set btn_tags [lmap x $tags {append x "-btn"}]
+				foreach id [get $page $btn_tags] {
+					$can itemconfigure $id {*}$btn_args
+				}
+			}
+			
+			set lines_args [list]
+			set corners_args [list]
+			if { [dui::args::has_option -outline largs] } {
+				set outcol [dui::args::get_option -outline {} 1 largs]
+				lappend corners_args -outline $outcol
+				lappend lines_args -fill $outcol
+			}
+			if { [dui::args::has_option -disabledoutline largs] } {
+				set outcol [dui::args::get_option -disabledoutline {} 1 largs]
+				lappend corners_args -disabledoutline $outcol
+				lappend lines_args -disabledfill $outcol
+			}
+			if { [dui::args::has_option -width largs] } {
+				set width [dui::args::get_option -width {} 1 largs]
+				lappend corners_args -width $width
+				lappend lines_args -width $width
+			}
+			
+			if { $lines_args ne {} } {
+				set lines_tags [lmap x $tags {append x "-out-lin"}]
+				foreach id [get $page $lines_tags] {
+					$can itemconfigure $id {*}$lines_args
+				}
+				
+				set corners_tags [lmap x $tags {append x "-out-cor"}]
+				foreach id [get $page $corners_tags] {
+					$can itemconfigure $id {*}$corners_args
+				}
+			}
+			
+		}
+		
 		
 		proc cget { page_or_ids_or_widgets args } {
 			set can [dui canvas]
@@ -9414,7 +9501,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
 				
 				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset \
-					$outline $disabledoutline $width $button_tags]
+					$outline $disabledoutline $width $outline_tags]
 			} elseif { $shape eq "round_outline" } {
 				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style]]
 				lappend press_args -fill $fill
