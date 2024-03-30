@@ -6848,15 +6848,39 @@ namespace eval ::dui {
 				}
 			}
 		}
-		
+
+		# Adds **or replaces** variables
 		proc add_variable { pages id tcl_code } {
 			variable pages_data
 			
 			if { $tcl_code ne "" } {
 				#msg [namespace current] add_variable "with id '$id' to pages '$pages'"
 				foreach page $pages {
-					lappend pages_data(${page},variables) $id $tcl_code
+					set pagevars [ifexists pages_data(${page},variables) {}]
+					set id_idx [lsearch $pagevars $id]
+					if { $id_idx > -1 } {
+						set pages_data(${page},variables) [lreplace $pagevars \
+								[expr {$id_idx+1}] [expr {$id_idx+1}] $tcl_code]
+					} else {
+						lappend pages_data(${page},variables) $id $tcl_code
+					}
 				}
+			}
+		}
+
+		proc rm_variable { pages id } {
+			variable pages_data
+			variable variables_cache
+			
+			foreach page $pages {
+				set pagevars [ifexists pages_data(${page},variables) {}]
+				set id_idx [lsearch $pagevars $id]
+				if { $id_idx > -1 } {
+					set pages_data(${page},variables) [lreplace $pagevars $id_idx [expr {$id_idx+1}]]
+				}
+			}
+			if { [info exists variables_cache($id)] } {
+				unset variables_cache($id)
 			}
 		}
 		
@@ -7367,11 +7391,18 @@ namespace eval ::dui {
 				regexp {^\-([0-9]?)_?([0-9a-zA-Z_]*)$} $lopt {} num_prefix opt
 				
 				if { $opt eq "" } {
-					foreach tag [lmap x $tags {append x "-$tag_suffix$num_prefix"}] {
-						$can itemconfigure $tag -text $lvalue
+					msg "_CONFIG_NUMBERED_PREFIXED, removing variable from page=$page, tags=[lmap x $tags {append x "-$tag_suffix$num_prefix"}]"
+					foreach id [get $page [lmap x $tags {append x "-$tag_suffix$num_prefix"}]] {
+						if { $type eq "label" } {
+							dui::page::rm_variable $page $id
+						}
+						$can itemconfigure $id -text "$lvalue"
 					}
 				} elseif { $type eq "label" && $opt eq "variable" } {
-					# TBD: Remake variables
+					msg "_CONFIG_NUMBERED_PREFIXED, adding variable to page=$page, tags=[lmap x $tags {append x "-$tag_suffix$num_prefix"}], tclcode=$lvalue"
+					foreach id [get $page [lmap x $tags {append x "-$tag_suffix$num_prefix"}]] {
+						dui::page::add_variable $page $id "$lvalue"
+					}
 				} elseif { ($type eq "label" || $type eq "symbol") && [string range $opt 0 4] eq "font_" } {
 					if { $num_prefix ni $font_num_prefixes } {
 						lappend font_num_prefixes $num_prefix
@@ -7395,6 +7426,24 @@ namespace eval ::dui {
 			}
 		}
 
+		proc _config_dtext { page tags } {
+			upvar args args
+
+			if { [dui::args::has_option -textvariable] } {
+				set varcode [dui::args::get_option -textvariable "" 1]
+				foreach id [get $page $tags] {
+					dui::page::add_variable $page $id $varcode
+				}
+			} elseif { [dui::args::has_option -text] } {
+				# In case we're turning a possible -textvariable into a plain -text, we remove
+				#	the possible variable.
+				# We don't have to actually process the text change, that's done on the calling proc
+				foreach id [get $page $tags] {
+					dui::page::rm_variable $page $id
+				}
+			}
+		}
+		
 		proc _config_dbutton { page tags } {
 			upvar args args
 
