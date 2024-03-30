@@ -4664,7 +4664,7 @@ namespace eval ::dui {
 
 	### FONTS SUB-ENSEMBLE ###
 	namespace eval font {
-		namespace export add_dirs dirs load get width list
+		namespace export add_dirs dirs load get width list default_size parse_size
 		namespace ensemble create
 
 		# A list of paths where to look for font files
@@ -4905,6 +4905,37 @@ namespace eval ::dui {
 				return [::font names]
 			}
 		}
+
+		proc default_size { {type {}} } {
+			set type [lunique [list_remove_element [::list $type dtext font] ""]]
+			
+			set default_size [dui::aspect::get $type font_size]
+			if { $default_size eq "" || [string range $default_size 0 0] in {- +} } {
+				set default_size [dui aspect get [list dtext font] font_size]
+				if { $default_size eq "" || [string range $default_size 0 0] in {- +} } {
+					set default_size [dui aspect get font font_size]
+					if { $default_size eq "" || [string range $default_size 0 0] in {- +} } {
+						set default_size 16
+					}
+				}
+			}
+			return $default_size
+		}
+
+		proc parse_size { font_size {type {}} } {
+			if { $font_size eq {} } {
+				set font_size [default_size $type]
+			} elseif { [string range $font_size 0 0] in {- +} && [string is double $font_size] } {
+				set font_size [expr int([default_size $type]$font_size)]
+			} elseif { [string is double $font_size] } {
+				set font_size [expr int($font_size)]
+			} else {
+				msg -NOTICE [namespace current] "::parse_size: font_size '$font_size' is not valid, using default"
+				set font_size [default_size $type]
+			}
+			return $font_size
+		}
+
 	}
 	
 	### IMAGES SUB-ENSEMBLE ###
@@ -5443,22 +5474,10 @@ namespace eval ::dui {
 					remove_options -font_$f largs
 				}
 			} elseif { $type ni {ProgressBar} } {
-				set font_family [get_option -font_family [dui aspect get [list $type dtext font] font_family -style $style] 1 largs]
+				set font_family [get_option -font_family [dui aspect get [list $type dtext font] \
+						font_family -style $style] 1 largs]
 				
-				set default_size [dui aspect get [list $type dtext font] font_size]
-				if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
-					set default_size [dui aspect get [list dtext font] font_size]
-					if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
-						set default_size [dui aspect get font font_size]
-						if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
-							set default_size 16
-						}
-					}
-				}				
-				set font_size [get_option -font_size $default_size 1 largs]	
-				if { [string range $font_size 0 0] in "- +" } {
-					set font_size [expr int($default_size$font_size)]
-				}
+				set font_size [dui::font::parse_size [get_option -font_size {} 1 largs] $type]
 				
 				set weight [get_option -font_weight normal 1 largs]
 				set slant [get_option -font_slant roman 1 largs]
@@ -7136,7 +7155,7 @@ namespace eval ::dui {
 				
 				set result {}
 				if { [string is integer [lindex $page_or_ids_or_widgets 0]] } {
-					foreach id $page_or_ids_or_widgets {						
+					foreach id $page_or_ids_or_widgets {
 						if { [$can find withtag $id] eq $id } {
 							lappend result $id
 						}
@@ -7154,13 +7173,12 @@ namespace eval ::dui {
 			set ids {}
 			set page [lindex $page_or_ids_or_widgets 0] 
 			foreach tag $tags {
-				if {  $page eq "" } {
-					set found [$can find withtag $tag]
+				if { $page eq "" } {
+					set found [$can find withtag "$tag"]
 				} elseif { $tag eq "*" || $tag eq "" || $tag eq "all"} {
 					set found [$can find withtag "p:$page"]
 				} else {
 					set found [$can find withtag "p:$page&&$tag"]
-					
 				}
 				if { $found eq "" } {
 					msg -DEBUG [namespace current] get: "no canvas tag matches '$tag' in page '$page'"
@@ -7202,10 +7220,10 @@ namespace eval ::dui {
 			set can [dui canvas]
 			if { [string range [lindex $args 0] 0 0] eq "-" || [lindex $args 0] eq "" } {
 				set items [get $page_or_ids_or_widgets]
-				set pages [list]
+				set page [list]
 				set tags [list]
 			} else {
-				set pages $page_or_ids_or_widgets
+				set page [lindex $page_or_ids_or_widgets 0]
 				set tags [lindex $args 0]
 				set items [get $page_or_ids_or_widgets $tags]
 				set args [lrange $args 1 end]
@@ -7214,21 +7232,25 @@ namespace eval ::dui {
 			set dui_type [dui::args::get_option -dui_type "" 1]
 			if { $dui_type ne "" } {
 				if { [namespace which -command "dui::item::_config_$dui_type"] ne "" } {
+					# _config_* procs for each type need tag names, need to get them if they were
+					# not specified in the arguments
 					if { $tags eq {} } {
 						foreach id $items {
 							set item_tags [$can gettags $id]
 							lappend tags [lindex $item_tags 0]
-							lappend pages [lsearch -glob -inline $item_tags {p:*}]
+							lappend page [lsearch -glob -inline $item_tags {p:*}]
 						}
+						set page [lindex $pages 0]
 					}
-					_config_$dui_type [lindex $pages 0] $tags
+					_config_$dui_type $page $tags
 				}
 			}
 			
+			_config_font $page $tags 
 			set istate [dui::args::get_option -initial_state "" 1]
 			
-			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, iterating
-			#	is often needed.
+			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, 
+			#	iterating is often needed.
 			foreach item $items {
 				#msg [namespace current] "config:" "item '$item' of type '[$can type $tag]' with '$args'"
 				if { $istate ne "" } {
@@ -7266,44 +7288,142 @@ namespace eval ::dui {
 			}
 		}
 
-		proc _config_dbutton { page tags } {
-			upvar args largs
-			set can [dui canvas]
+		# Processes font related configuration options in $args, if they exist, and replace them 
+		# with a single -font option with the correct values for font definition.
+		proc _config_font { page tags {args_name args} } {
+			upvar $args_name largs
 			
-			set btn_args [list]
-			if { [dui::args::has_option -fill largs] } {
-				lappend btn_args -fill [dui::args::get_option -fill {} 1 largs]
-			}
-			if { [dui::args::has_option -disabledfill largs] } {
-				lappend btn_args -disabledfill [dui::args::get_option -disabledfill {} 1 largs]
-			}
+			set font [dui::args::get_option -font "" 1 largs]
+			if { $font ne "" } {
+				if { [info exists ::dui::font::skin_fonts($font)] } {
+					set font $::dui::font::skin_fonts($font)
+				}
+				dui::args::add_option_if_not_exists -font $font largs
+				
+				foreach f {family size weight slant underline overstrike} {
+					dui::args::remove_options -font_$f largs
+				}
+			} else {
+				set family [dui::args::get_option -font_family {} 1 largs]
+				set size [dui::args::get_option -font_size {} 1 largs]
+				set weight [dui::args::get_option -font_weight {} 1 largs]
+				set slant [dui::args::get_option -font_slant {} 1 largs]
+				set underline [dui::args::get_option -font_underline {} 1 largs]
+				set overstrike [dui::args::get_option -font_overstrike {} 1 largs]
+				
+				if { $family ne {} || $size ne {} || $weight ne {} || $slant ne {} || \
+						$underline ne {} || $overstrike ne {} } {
+					set can [dui canvas]
+					foreach item [get $page $tags] {
+						set cfamily {}
+						lassign [$can itemcget $item -font] cfamily csize cweight cslant cunderline coverstrike
+						if { $cfamily ne {} } {
+							set family [first_non_empty $family $cfamily]
+							set size [dui::font::parse_size [first_non_empty $size $csize]]
+							set weight [first_non_empty $weight $cweight normal]
+							set slant [first_non_empty $slant $cslant roman]
+							set underline [first_non_empty $underline $cunderline false]
+							set overstrike [first_non_empty $overstrike $coverstrike false]
+							
+							set font [dui::font::get $family $size -weight $weight -slant $slant \
+								-underline $underline -overstrike $overstrike]
+							dui::args::add_option_if_not_exists -font $font largs
+						}
+					}
+				}
+			} 
 			
-			if { $btn_args ne {} } {
-				set btn_tags [lmap x $tags {append x "-btn"}]
-				foreach id [get $page $btn_tags] {
-					$can itemconfigure $id {*}$btn_args
+			return $font
+		}
+		
+		proc _config_compound_part { page tags options suffix {remove_options 1} } {
+			upvar args args
+			
+			set part_args [list]
+			foreach opt $options {
+				if { [dui::args::has_option -$opt args] } {
+					lappend part_args -$opt [dui::args::get_option -$opt {} $remove_options]
 				}
 			}
 			
+			if { $part_args ne {} } {
+				set can [dui canvas]
+				foreach id [get $page [lmap x $tags {append x $suffix}]] {
+					$can itemconfigure $id {*}$part_args
+				}
+			}
+		}
+		
+		proc _config_numbered_prefixed { page tags type tag_suffix } {
+			upvar args args
+			set can [dui canvas]
+			
+			set type_args [dui::args::extract_prefixed "-$type"]
+			set font_num_prefixes [list]
+			
+			foreach {lopt lvalue} $type_args {
+				set num_prefix ""
+				set opt ""
+				regexp {^\-([0-9]?)_?([0-9a-zA-Z_]*)$} $lopt {} num_prefix opt
+				
+				if { $opt eq "" } {
+					foreach tag [lmap x $tags {append x "-$tag_suffix$num_prefix"}] {
+						$can itemconfigure $tag -text $lvalue
+					}
+				} elseif { $type eq "label" && $opt eq "variable" } {
+					# TBD: Remake variables
+				} elseif { ($type eq "label" || $type eq "symbol") && [string range $opt 0 4] eq "font_" } {
+					if { $num_prefix ni $font_num_prefixes } {
+						lappend font_num_prefixes $num_prefix
+						set "font${num_prefix}_args" [list]
+					}
+					lappend "font${num_prefix}_args" -$opt $lvalue
+				} else {
+					foreach tag [lmap x $tags {append x "-$tag_suffix$num_prefix"}] {
+						$can itemconfigure $tag -$opt $lvalue
+					}
+				}
+			}
+			
+			if { $font_num_prefixes ne {} } {
+				foreach num_prefix $font_num_prefixes {
+					foreach tag [lmap x $tags {append x "-$tag_suffix$num_prefix"}] {
+						_config_font $page $tag "font${num_prefix}_args"
+						$can itemconfigure $tag {*}[subst \$font${num_prefix}_args]
+					}
+				}
+			}
+		}
+
+		proc _config_dbutton { page tags } {
+			upvar args args
+
+			_config_compound_part $page $tags {fill disabledfill} "-btn" 1
+			
+			# Can't use _config_compound_part here as lines and corners args are mix-matched
+			#_config_compound_part $page $tags {outline disabledoutline width} "-out-cor" 0
+			#_config_compound_part $page $tags {fill disabledfill width} "-out-lin" 1
 			set lines_args [list]
 			set corners_args [list]
-			if { [dui::args::has_option -outline largs] } {
-				set outcol [dui::args::get_option -outline {} 1 largs]
+			if { [dui::args::has_option -outline] } {
+				set outcol [dui::args::get_option -outline {} 1]
 				lappend corners_args -outline $outcol
 				lappend lines_args -fill $outcol
 			}
-			if { [dui::args::has_option -disabledoutline largs] } {
-				set outcol [dui::args::get_option -disabledoutline {} 1 largs]
+			if { [dui::args::has_option -disabledoutline] } {
+				set outcol [dui::args::get_option -disabledoutline {} 1]
 				lappend corners_args -disabledoutline $outcol
 				lappend lines_args -disabledfill $outcol
 			}
-			if { [dui::args::has_option -width largs] } {
-				set width [dui::args::get_option -width {} 1 largs]
+			if { [dui::args::has_option -width] } {
+				set width [dui::args::get_option -width {} 1]
 				lappend corners_args -width $width
 				lappend lines_args -width $width
 			}
 			
 			if { $lines_args ne {} } {
+				set can [dui canvas]
+				
 				set lines_tags [lmap x $tags {append x "-out-lin"}]
 				foreach id [get $page $lines_tags] {
 					$can itemconfigure $id {*}$lines_args
@@ -7315,6 +7435,9 @@ namespace eval ::dui {
 				}
 			}
 			
+			_config_numbered_prefixed $page $tags label lbl
+			_config_numbered_prefixed $page $tags symbol sym
+			_config_numbered_prefixed $page $tags image img
 		}
 		
 		
@@ -9474,8 +9597,13 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 						[dui aspect get {dbutton shape} disabledfill -style $style]]
 				set radius [dui::args::get_option -radius \
 						[dui aspect get {dbutton shape} radius -style $style -default 40]]
+
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
+				if { $debug } {
+					msg "DUI: dui::item::rounded_rectangle rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
+radius=$radius fill=$fill disabledfill=$disabledfill tags=\{$button_tags\} ==> $ids"
+				}
 			} elseif { $shape eq "outline" } {
 				set outline [dui::args::get_option -outline \
 						[dui aspect get {dbutton shape} outline -style $style]]
@@ -9483,7 +9611,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 					set outline [dui::args::get_option -fill \
 							[dui aspect get {dbutton shape} fill -style $style -default black]]
 				}
-				lappend press_args -outline $outline				
+				lappend press_args -outline $outline
 				set disabledoutline [dui::args::get_option -disabledoutline \
 						[dui aspect get {dbutton shape} disabledoutline -style $style]]
 				if { $disabledoutline eq {} } {
@@ -9502,6 +9630,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				
 				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset \
 					$outline $disabledoutline $width $outline_tags]
+				if { $debug } {
+					msg "DUI: dui::item::rounded_rectangle_outline rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
+arc_offset=$arc_offset outline=$outline disabledoutline=$disabledoutline width=$width tags=\{$outline_tags\} => $ids"
+				}				
 			} elseif { $shape eq "round_outline" } {
 				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style]]
 				lappend press_args -fill $fill
@@ -9518,9 +9650,19 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 						-style $style -default 3]]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
+				if { $debug } {
+					msg "DUI: dui::item::rounded_rectangle rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
+radius=$radius fill=$fill disabledfill=$disabledfill tags=\{$button_tags\} ==> $ids"
+				}
+				
 				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
-				lappend ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
+				set outline_ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
 					$disabledoutline $width $outline_tags]
+				lappend ids $outline_ids
+				if { $debug } {
+					msg "DUI: dui::item::rounded_rectangle_outline rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
+arc_offset=$arc_offset outline=$outline disabledoutline=$disabledoutline width=$width tags=\{$outline_tags\} => $outline_ids"
+				}
 			} elseif { $shape eq "oval" } {
 				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style] 1]
 				set disabledfill [dui::args::get_option -disabledfill \
@@ -9529,6 +9671,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				
 				set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill \
 						-disabledfill $disabledfill -state hidden {*}$args]
+				if { $debug } {
+					msg "DUI: $can create oval rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 -tags \{$button_tags\} \
+-fill $fill -disabledfill $disabledfill -state hidden {*}$args ==> $ids"
+				}
 			} elseif { $shape in {rect rectangle} } {
 				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style] 1]
 				set disabledfill [dui::args::get_option -disabledfill \
@@ -9537,9 +9683,17 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				
 				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill \
 					-disabledfill $disabledfill -state hidden {*}$args]
+				if { $debug } {
+					msg "DUI: $can create rect rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 -tags \{$button_tags\} \
+-fill $fill -disabledfill $disabledfill -state hidden {*}$args ==> $ids"
+				}
 			} else {
 				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden \
-					-fill {} -outline {} -width 0]
+					-fill {} -disabledfill {} -outline {} -disabledoutline {} -width 0]
+				if { $debug } {
+					msg "DUI: $can create rect rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 -tags \{$button_tags\} \
+-fill \{\} -disabledfill \{\} -outline \{\} -disabledoutline \{\} -width 0 -state hidden ==> $ids"
+				}
 			}
 			
 			if { $ids ne "" && $ns ne "" } {
@@ -9596,7 +9750,6 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set ry [expr {$ry-$tp1}] 
 			set rx1 [expr {$rx1+$tp2}] 
 			set ry1 [expr {$ry1+$tp3}]
-			# -outline black
 			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline {} -width 0 -tags $tags -state hidden]
 			if { $debug } {
 				msg "DUI: $can create rect $rx $ry $rx1 $ry1 -fill \{\} -outline \{\} -width 0 -tags \{$tags\} -state hidden ==> $id"
@@ -11326,6 +11479,15 @@ proc min { args } {
 		return {}
 	}	
 	lindex [lsort -real $args] 0
+}
+
+proc first_non_empty { args } {
+	foreach item [concat $args] {
+		if { $item ne {} } {
+			return $item
+		}
+	}
+	return {}
 }
 
 ### FULL-PAGE EDITORS ################################################################################################
