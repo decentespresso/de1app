@@ -677,7 +677,12 @@ proc parse_binary_shotframe {packed destarrname} {
 	set spec [spec_shotframe]
 	array set specarr $spec
 
-   	::fields::unpack $packed $spec ShotSample bigeendian
+	::fields::unpack $packed $spec ShotSample bigeendian
+
+	if {[info exists ShotSample(FrameToWrite)] != 1} {
+		return
+	}
+	
 	if {$ShotSample(FrameToWrite) >= 32} {
 		set spec [spec_extshotframe]
 		array unset specarr *
