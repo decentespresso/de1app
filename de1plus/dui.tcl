@@ -9182,6 +9182,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set main_tag [lindex $tags 0]
 	
 			set style [dui::args::get_option -style "" 1]
+			if { $type eq "arc" && [dui::args::has_option -arc_style] } {
+				dui::args::add_option_if_not_exists -style [dui::args::get_option -arc_style {} 1]
+			}
 			dui::args::process_aspects $type $style "" "pos"
 			dui::args::remove_options debug
 			
