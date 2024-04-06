@@ -9181,10 +9181,16 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set main_tag [lindex $tags 0]
 	
 			set style [dui::args::get_option -style "" 1]
+			dui::args::process_aspects [list $type canvas_item] $style "" "pos"
+			
 			if { $type eq "arc" && [dui::args::has_option -arc_style] } {
 				dui::args::add_option_if_not_exists -style [dui::args::get_option -arc_style {} 1]
 			}
-			dui::args::process_aspects $type $style "" "pos"
+			set width [dui::args::get_option -width {} 1]
+			if { $width ne {} } {
+				dui::args::add_option_if_not_exists -width [dui::platform::rescale_x $width]
+			}
+			
 			dui::args::remove_options debug
 			
 			try {
