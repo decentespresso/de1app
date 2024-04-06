@@ -8115,13 +8115,19 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set ids {}
 			set nradius [llength $radius]
 			set radius [lreplicate 4 $radius]
+			
+			# Restrict the radius to half the minimum of button width and height
+			set max_possible_radius [expr {int($x1-$x0)}]
+			if { [expr {int($y1-$y0)}] < $max_possible_radius } {
+				set max_possible_radius [expr {int($y1-$y0)}]
+			}
+			set radius [lmap x $radius {restrict_to_range $x 0 $max_possible_radius}]
 			lassign $radius radius1 radius2 radius3 radius4
-			set maxradius [::max {*}$radius]
 			
 			if { $radius1 > 0 } {
 				lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius1] [expr $y0 + $radius1] -fill $colour -disabledfill $disabled \
 					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
-			}
+			} 
 			if { $radius2 > 0 } {
 				lappend ids [$can create oval [expr $x1-$radius2] $y0 $x1 [expr $y0 + $radius2] -fill $colour -disabledfill $disabled \
 					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
@@ -8142,6 +8148,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
 			} else {
 				# Draw 5 rectangles to cover all possible combinations
+				set maxradius [::max {*}$radius]
+				
 				# Inner rectangle
 				lappend ids [$can create rectangle [expr {$x0+($maxradius/2.0)}] [expr {$y0+($maxradius/2.0)}] \
 					[expr {$x1-($maxradius/2.0)}] [expr {$y1-($maxradius/2.0)}] -fill $colour \
@@ -8180,10 +8188,17 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			set nradius [llength $radius]
 			set radius [lreplicate 4 $radius]
-			lassign $radius radius1 radius2 radius3 radius4
-			set maxradius [::max {*}$radius]
 			
-			# in discussion https://github.com/decentespresso/de1app/issues/246 decided to remove -1 width code in the arc drawing, as it looks better at the same width
+			# Restrict the radius to half the minimum of button width and height
+			set max_possible_radius [expr {int($x1-$x0)}]
+			if { [expr {int($y1-$y0)}] < $max_possible_radius } {
+				set max_possible_radius [expr {int($y1-$y0)}]
+			}
+			set radius [lmap x $radius {restrict_to_range $x 0 $max_possible_radius}]
+			lassign $radius radius1 radius2 radius3 radius4
+			
+			# in discussion https://github.com/decentespresso/de1app/issues/246 decided to remove -1 
+			# width code in the arc drawing, as it looks better at the same width
 			#if { $width > 1 } {
 				# Adjustment to look better under Android, that uses dithering
 			#	set arc_width [expr {$width-1}]
@@ -8193,20 +8208,24 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set arc_width $width
 
 			if { $radius1 > 0 } {
-				lappend ids [$can create arc $x0 [expr {$y0+$radius1+1.0}] [expr {$x0+$radius1+1.0}] $y0 -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-nw ${main_tag}-cor {*}$tags] -start 90 -disabledoutline $disabled -state "hidden"]
+				lappend ids [$can create arc $x0 [expr {$y0+$radius1+1.0}] [expr {$x0+$radius1+1.0}] $y0 \
+					-style arc -outline $colour -width $arc_width -start 90 -disabledoutline $disabled \
+					-tags [list ${main_tag}-nw ${main_tag}-cor {*}$tags] -state "hidden"]
 			}
 			if { $radius2 > 0 } {
-				lappend ids [$can create arc [expr {$x1-$radius2-1}] $y0 $x1 [expr {$y0+$radius2+1}] -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-ne ${main_tag}-cor {*}$tags] -start 0 -disabledoutline $disabled -state "hidden"]
+				lappend ids [$can create arc [expr {$x1-$radius2-1}] $y0 $x1 [expr {$y0+$radius2+1}] \
+					-style arc -outline $colour -width $arc_width  -start 0 -disabledoutline $disabled \
+					-tags [list ${main_tag}-ne ${main_tag}-cor {*}$tags] -state "hidden"]
 			}
 			if { $radius3 > 0 } {
-				lappend ids [$can create arc [expr {$x1-$radius3-1.0}] $y1 $x1 [expr {$y1-$radius3-1.0}] -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-se ${main_tag}-cor {*}$tags] -start -90 -disabledoutline $disabled -state "hidden"]
+				lappend ids [$can create arc [expr {$x1-$radius3-1.0}] $y1 $x1 [expr {$y1-$radius3-1.0}] \
+					-style arc -outline $colour -width $arc_width -start -90 -disabledoutline $disabled \
+					-tags [list ${main_tag}-se ${main_tag}-cor {*}$tags] -state "hidden"]
 			}			
 			if { $radius4 > 0 } {
-				lappend ids [$can create arc $x0 [expr {$y1-$radius4-1.0}] [expr {$x0+$radius4+1.0}] $y1 -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-sw ${main_tag}-cor {*}$tags] -start 180 -disabledoutline $disabled -state "hidden"]
+				lappend ids [$can create arc $x0 [expr {$y1-$radius4-1.0}] [expr {$x0+$radius4+1.0}] $y1 \
+					-style arc -outline $colour -width $arc_width -start 180 -disabledoutline $disabled \
+					-tags [list ${main_tag}-sw ${main_tag}-cor {*}$tags] -state "hidden"]
 			}
 
 			# Top line
@@ -9345,7 +9364,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			if { $shape eq "round" } {
 				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style]]
 				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill -style $style]]
-				set radius [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default 40]]
+				set radius [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default {}]]
+				if { $radius eq {} } {
+					set radius [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default 80]]
+				}
+				set radius [lmap x $radius {dui::platform::rescale_x $x}]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $tags]
 			} elseif { $shape eq "outline" } {
@@ -9361,9 +9385,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				}
 				set arc_offset [dui::args::get_option -arc_offset [dui aspect get $aspect_type arc_offset -style $style -default {}]]
 				if { $arc_offset eq {} } {
-					set arc_offset [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default 40]]
+					set arc_offset [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default 80]]
 				}
-				set width [dui::args::get_option -width [dui aspect get $aspect_type width -style $style -default 3]]
+				set arc_offset [lmap x $arc_offset {dui::platform::rescale_x $x}]
+				set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get $aspect_type width -style $style -default 4]]]
 				
 				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
 				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline $disabledoutline \
@@ -9371,10 +9397,16 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			} elseif { $shape eq "round_outline" } {
 				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style]]
 				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill -style $style]]
-				set radius [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default 40]]
+				set radius [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default {}]]
+				if { $radius eq {} } {
+					set radius [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default 80]]
+				}
+				set radius [lmap x $radius {dui::platform::rescale_x $x}]				
 				set outline [dui::args::get_option -outline [dui aspect get $aspect_type outline -style $style]]
 				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get $aspect_type disabledoutline -style $style]]
-				set width [dui::args::get_option -width [dui aspect get $aspect_type width -style $style -default 3]]
+				set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get $aspect_type width -style $style -default 4]]]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $tags]
 				
@@ -9385,6 +9417,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style] 1]
 				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill \
 					-style $style] 1]
+				if { [dui::args::has_option -width] } {
+					set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4] 1]]
+					dui::args::add_option_if_not_exists -width $width
+				}
 				dui::args::remove_options {radius arc_offset}
 				
 				set ids [$can create oval $rx $ry $rx1 $ry1 -tags $tags -fill $fill -disabledfill $disabledfill \
@@ -9396,6 +9433,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style] 1]
 				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill \
 					-style $style] 1]
+				if { [dui::args::has_option -width] } {
+					set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4] 1]]
+					dui::args::add_option_if_not_exists -width $width
+				}
 				dui::args::remove_options {radius arc_offset}
 				
 				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $tags -fill $fill -disabledfill $disabledfill \
@@ -9645,8 +9687,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set disabledfill [dui::args::get_option -disabledfill \
 						[dui aspect get {dbutton shape} disabledfill -style $style]]
 				set radius [dui::args::get_option -radius \
-						[dui aspect get {dbutton shape} radius -style $style -default 40]]
-
+						[dui aspect get {dbutton shape} radius -style $style -default {}]]
+				if { $radius eq {} } {
+					set radius [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default 80]]
+				}
+				set radius [lmap x $radius {dui::platform::rescale_x $x}]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
 				if { $debug } {
@@ -9671,32 +9717,39 @@ radius=$radius fill=$fill disabledfill=$disabledfill tags=\{$button_tags\} ==> $
 						[dui aspect get {dbutton shape} arc_offset -style $style -default {}]]
 				if { $arc_offset eq {} } {
 					set arc_offset [dui::args::get_option -radius \
-						[dui aspect get {dbutton shape} radius -style $style -default 40]]
+						[dui aspect get {dbutton shape} radius -style $style -default 80]]
 				}
-				set width [dui::args::get_option -width \
-						[dui aspect get {dbutton shape} width -style $style -default 3]]
+				set arc_offset [lmap x $arc_offset {dui::platform::rescale_x $x}]
+				set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4]]]
 				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
 				
 				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset \
 					$outline $disabledoutline $width $outline_tags]
 				if { $debug } {
 					msg "DUI: dui::item::rounded_rectangle_outline rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
-arc_offset=$arc_offset outline=$outline disabledoutline=$disabledoutline width=$width tags=\{$outline_tags\} => $ids"
+radius=$arc_offset outline=$outline disabledoutline=$disabledoutline width=$width tags=\{$outline_tags\} => $ids"
 				}				
 			} elseif { $shape eq "round_outline" } {
 				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style]]
 				lappend press_args -fill $fill
 				set disabledfill [dui::args::get_option -disabledfill \
 						[dui aspect get {dbutton shape} disabledfill -style $style]]
-				set radius [dui::args::get_option -radius [dui aspect get {dbutton shape} radius \
-						-style $style -default 40]]
+				set radius [dui::args::get_option -radius \
+						[dui aspect get {dbutton shape} radius -style $style -default {}]]
+				if { $radius eq {} } {
+					set radius [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default 80]]
+				}				
+				set radius [lmap x $radius {dui::platform::rescale_x $x}]
+				
 				set outline [dui::args::get_option -outline [dui aspect get {dbutton shape} outline \
 						-style $style]]
 				lappend press_args -outline $outline
 				set disabledoutline [dui::args::get_option -disabledoutline \
 						[dui aspect get {dbutton shape} disabledoutline -style $style]]
-				set width [dui::args::get_option -width [dui aspect get {dbutton shape} width \
-						-style $style -default 3]]
+				set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4]]]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
 				if { $debug } {
@@ -9710,12 +9763,17 @@ radius=$radius fill=$fill disabledfill=$disabledfill tags=\{$button_tags\} ==> $
 				lappend ids $outline_ids
 				if { $debug } {
 					msg "DUI: dui::item::rounded_rectangle_outline rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
-arc_offset=$arc_offset outline=$outline disabledoutline=$disabledoutline width=$width tags=\{$outline_tags\} => $outline_ids"
+radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width tags=\{$outline_tags\} => $outline_ids"
 				}
 			} elseif { $shape eq "oval" } {
 				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style] 1]
 				set disabledfill [dui::args::get_option -disabledfill \
 					[dui aspect get {dbutton shape} disabledfill -style $style] 1]
+				if { [dui::args::has_option -width] } {
+					set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4] 1]]
+					dui::args::add_option_if_not_exists -width $width
+				}
 				dui::args::remove_options {radius arc_offset}
 				
 				set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill \
@@ -9727,7 +9785,12 @@ arc_offset=$arc_offset outline=$outline disabledoutline=$disabledoutline width=$
 			} elseif { $shape in {rect rectangle} } {
 				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style] 1]
 				set disabledfill [dui::args::get_option -disabledfill \
-						[dui aspect get {dbutton shape} disabledfill -style $style] 1]	
+						[dui aspect get {dbutton shape} disabledfill -style $style] 1]
+				if { [dui::args::has_option -width] } {
+					set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4] 1]]
+					dui::args::add_option_if_not_exists -width $width
+				}				
 				dui::args::remove_options {radius arc_offset}
 				
 				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill \
@@ -11456,6 +11519,19 @@ proc lsequence { from to {step {}} } {
 	}
 	
 	return $seq
+}
+
+# Ensures a number falls inside a range, setting it to the min/max if needed.
+proc restrict_to_range { x min max } {
+	if { $max < $min } {
+		return $x 
+	} elseif { $x < $min } {
+		return $min
+	} elseif { $x > $max } {
+		return $max
+	} else {
+		return $x
+	}
 }
 
 # Sets or changes a numeric value within a valid range, using the given resolution, and formats it 
