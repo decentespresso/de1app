@@ -9192,6 +9192,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				dui::args::add_option_if_not_exists -width [dui::platform::rescale_x $width]
 			}
 			
+			if { $type eq "line" } {
+				dui::args::remove_options {outline disabledoutline}
+			}
 			dui::args::remove_options debug
 			
 			try {
