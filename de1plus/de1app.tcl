@@ -120,20 +120,22 @@ namespace eval ::app {
 					android.permission.ACCESS_COARSE_LOCATION \
 				]
 
-				set some_wanted 0
-				foreach perm $perms_wanted {
-					set p [borg checkpermission $perm]
-					if {$p != 1} {
-						msg -INFO "Asking for Android app permission : $perm "
-						borg checkpermission $perm 1
-						set some_wanted 1
+				catch {
+					set some_wanted 0
+					foreach perm $perms_wanted {
+						set p [borg checkpermission $perm]
+						if {$p != 1} {
+							msg -INFO "Asking for Android app permission : $perm "
+							borg checkpermission $perm 1
+							set some_wanted 1
+						}
 					}
-				}
 
-				set perms [borg checkpermission]
-				foreach perm [lsort $perms] {
-					set has [borg checkpermission $perm]
-					msg -INFO "Android app permission : $has : $perm "
+					set perms [borg checkpermission]
+					foreach perm [lsort $perms] {
+						set has [borg checkpermission $perm]
+						msg -INFO "Android app permission : $has : $perm "
+					}
 				}
 			}
 		}
