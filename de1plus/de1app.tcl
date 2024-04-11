@@ -107,6 +107,38 @@ namespace eval ::app {
 		} else {
 			set ::app::build_time_string [translate "Unknown"]
 		}
+
+		# ANDROID ONLY : if this androwish version allows us to scan and request Android permissions, then ask for what perms this app needs to properly function
+		if {$::android == 1} {
+			if {$::app::build_timestamp > 1710864000} {
+				set perms_wanted [list \
+					android.permission.READ_EXTERNAL_STORAGE \
+					android.permission.WRITE_EXTERNAL_STORAGE \
+					android.permission.BLUETOOTH_CONNECT \
+					android.permission.BLUETOOTH_SCAN \
+					android.permission.ACCESS_FINE_LOCATION \
+					android.permission.ACCESS_COARSE_LOCATION \
+				]
+
+				set some_wanted 0
+				foreach perm $perms_wanted {
+					set p [borg checkpermission $perm]
+					if {$p != 1} {
+						msg -INFO "Asking for Android app permission : $perm "
+						borg checkpermission $perm 1
+						set some_wanted 1
+					}
+				}
+
+				set perms [borg checkpermission]
+				foreach perm [lsort $perms] {
+					set has [borg checkpermission $perm]
+					msg -INFO "Android app permission : $has : $perm "
+				}
+			}
+		}
+
+
 	}
 
 }
