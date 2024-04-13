@@ -4814,6 +4814,32 @@ namespace eval ::dui {
 			return $font_key
 		}
 		
+		proc decode_key { key } {
+			array set result {
+				weight normal
+				slant regular
+				underline 0
+				overstrike 0
+			}
+			
+			if { $key ne {} && $key ne "nr00" } {
+				if { [string range $key 0 0] eq "b" } {
+					set result(weight) bold
+				}
+				if { [string range $key 1 1] eq "i" } {
+					set result(slant) italic
+				}
+				if { [string range $key 2 2] eq "1" } {
+					set result(underline) 1
+				}
+				if { [string range $key 3 3] eq "1" } {
+					set result(overstrike) 1
+				}
+			}
+			
+			return [array get result]
+		}
+		
 		# Based on Barney's load_font: 
 		#	https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
 		# filename can be either a font filename, or an added font family name. 
@@ -7313,7 +7339,7 @@ namespace eval ::dui {
 			set dui_type [dui::args::get_option -dui_type "" 1]
 			if { $dui_type eq {} } {
 				# Infer the DUI type(s) from the DUI type(s) of the first item being configurated
-				set dui_type [lindex [lindex [type [lindex $items 0]] 0] 0]
+				set dui_type [lindex [dui_type [lindex $items 0]] 0]
 			}
 			
 			if { $dui_type ne "" } {
@@ -7553,37 +7579,80 @@ namespace eval ::dui {
 			_config_numbered_prefixed $page $tags image img
 		}
 		
-		
+		# Note that, unlike 'get', this can only reference ONE item and ONE option
 		proc cget { page_or_ids_or_widgets args } {
 			set can [dui canvas]
+			set item_tags {}
+			
 			if { [string range [lindex $args 0] 0 0] eq "-" || [lindex $args 0] eq "" } {
-				set items [get $page_or_ids_or_widgets]
+				set item [lindex [get $page_or_ids_or_widgets] 0]
+				set page [list]
+				set tag [list]	
 			} else {
-				set items [get $page_or_ids_or_widgets [lindex $args 0]]
+				set page [lindex $page_or_ids_or_widgets 0]
+				set tag [lindex $args 0]
+				set item [lindex [get $page $tag] 0]
 				set args [lrange $args 1 end]
 			}
-				
-			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works,
-			#	 iterating is often needed.
-			set result {}
-			foreach item $items {
-				if { "-initial_state" in $args } {
-					set args [list_remove_element $args -initial_state]
-					lappend result [_cget_initial_state $item]
+
+			set dui_type [dui::args::get_option -dui_type "" 1]
+			if { $dui_type eq {} } {
+				# Infer the DUI type(s) from the DUI type(s) of the first item being configurated
+				set dui_type [lindex [dui_type $item] 0]
+			}
+			set rescaled [string is true [dui::args::get_option -rescaled 0 1]]
+			
+			if { [llength $args] == 0 } {
+				return {}
+			} else {
+				set option [lindex $args 0]
+				if { [string range $option 0 0] ne "-" } {
+					set option "-$option"
 				}
+			}
 				
-				if { [llength $args] > 0 } {
-					#msg [namespace current] "config:" "item '$item' of type '[$can type $tag]' with '$args'"
-					if { [winfo exists $item] } {
-						lappend result [$item cget {*}$args]
-					} elseif { [$can type $item] eq "window" } {
-						lappend result [[$can itemcget $item -window] cget {*}$args]
-					} else {
-						lappend result [$can itemcget $item {*}$args]
+			
+			if { $dui_type ne "" } {
+				foreach dtype $dui_type {
+					if { [namespace which -command "dui::item::_cget_$dtype"] ne "" } {
+						# _config_* procs for each type need tag names, need to get them if they were
+						# not specified in the arguments
+						if { $tag eq {} } {
+							set item_tags [$can gettags $item]
+							set tag [lindex $item_tags 0]
+							set page [lindex [lsearch -glob -inline $item_tags {p:*}] 0]
+						}
+						
+						set code [catch {_cget_$dtype $page $tag $option $rescaled} result] 
+						# 2 = TCL_RETURN, 1 = TCL_ERROR, others signal to continue 
+						if { $code eq 2 } {
+							return $result
+						} elseif { $code eq 1 } {
+							msg -ERROR [namespace current] "cget: _cget_$dtype has produced an error: $result"
+							return {}
+						}
 					}
 				}
 			}
-			return $result
+			
+			if { $option eq "-initial_state" } {
+				return [_cget_initial_state $item]
+			} elseif { [string range $option 0 5] eq "-font_" } {
+				return [_cget_font_part $item [string range $option 6 end]]
+			} elseif { [string range $option 0 5] eq "-label" } {
+				set suboption [string range $option 6 end]
+				if { $suboption eq "" || $suboption eq "variable" } {
+					return [$can [get $page ${tag}-lbl] itemcget text]
+				} else {
+					return [$can [get $page ${tag}-lbl] itemcget $suboption]
+				}
+			} elseif { [winfo exists $item] } {
+				return [$item cget $option]
+			} elseif { [$can type $item] eq "window" } {
+				return [[$can itemcget $item -window] cget $option]
+			} else {
+				return [$can itemcget $item $option]
+			}
 		}
 				
 		proc _cget_initial_state { item } {
@@ -7596,6 +7665,145 @@ namespace eval ::dui {
 			} else {
 				return "normal"
 			}
+		}
+		
+		proc _cget_font_part { item part } {
+			set can [dui canvas]
+			set suffix "nr00"
+			lassign [$can itemcget $item -font] family size suffix
+			
+			if { $part eq "family" } {
+				return $family
+			} elseif { $part eq "size" }  {
+				return $size
+			} else {
+				array set fontparts [dui::font::decode_key $suffix]
+				if { [info exists fontparts($part)] } {
+					return $fontparts($part)
+				} else {
+					msg -ERROR [namespace current] "_cget_font_part: font part '$part' is not valid"
+					return {}
+				}
+			}
+		}
+		
+		proc _cget_dbutton { page tag option {rescaled 0} } {
+			set can [dui canvas]
+			if { $option in {-fill -disabledfill} } {
+				set items [get $page ${tag}-btn]
+				if { $items eq {} } {
+					set items [get $page ${tag}-out-lin]
+				} 
+				return -code "return" [$can itemcget [lindex $items 0] $option]
+			} elseif { $option in {-outline -disabledoutline} } {
+				return -code "return" [$can itemcget [lindex [get $page ${tag}-out-cor] 0] $option]
+			} elseif { $option eq "-width" } {
+				set width [$can itemcget ${tag}-out -width]
+				if { $width eq {} } {
+					set width [$can itemcget ${tag} -width]
+				}
+				if { $width eq {} } {
+					return -code "return" {}
+				} elseif { !$rescaled } {
+					set width [dui::platform::unscale_x $width]
+					return -code "return" [expr {int($width)}]
+				}
+			} elseif { $option eq "-radius" || $option eq "-arc_offset" } {
+				set radius [list]
+				if { [get $page ${tag}-out] ne {} } {
+					set tag_start ${tag}-out
+				} elseif { [get $page ${tag}-btn] ne {} } {
+					set tag_start ${tag}-btn
+				} else {
+					return -code "return" {}
+				}
+			
+				foreach corner {nw ne se sw} {
+					lassign [$can coords ${tag_start}-$corner] x0 y0 x1 y1
+					if { $x0 eq {} } {
+						lappend radius 0
+					} else {
+						set corner_radius [expr {int($x1-$x0)}]
+						if { !$rescaled } {
+							set corner_radius [dui::platform::unscale_x $corner_radius]
+						}
+						lappend radius $corner_radius
+					}
+				}
+				return -code "return" $radius
+			} elseif { $option eq "-bwidth" || $option eq "-bheight" } {
+				set x0 {}
+				set has_outline 1
+				lassign [$can bbox ${tag}-out] x0 y0 x1 y1
+				if { $x0 eq {} } {
+					set has_outline 0
+					lassign [$can bbox ${tag}-btn] x0 y0 x1 y1
+					set width 0
+				} else {
+					set width [$can itemcget ${tag}-out -width]
+					if { $width eq {} } {
+						set width [$can itemcget ${tag} -width]
+						if { $width eq {} } {
+							set width 0
+						}
+					}
+				}
+				
+				if { $option eq "-bwidth" } {
+					set bwidth [expr {$x1-$x0}]
+					if { $has_outline } {
+						set bwidth [expr {$bwidth-$width*4}]
+					}
+					if { !$rescaled } {
+						set bwidth [dui::platform::unscale_x $bwidth]
+					}
+					return -code "return" [expr {int($bwidth)}]
+				} else {
+					set bheight [expr {$y1-$y0}]
+					if { $has_outline } {
+						set bheight [expr {$bheight-$width*4}]
+					}
+					if { !$rescaled } {
+						set bheight [dui::platform::unscale_y $bheight]
+					}
+					return -code "return" [expr {int($bheight)}]
+				}
+			} elseif { [string range $option 0 5] eq "-label" } {
+				regexp {^\-label([0-9]?)_?([0-9a-zA-Z_]*)$} $option {} num_prefix opt
+				if { $opt eq "" } {
+					set opt "text"
+				}
+				set item [lindex [get $page ${tag}-lbl$num_prefix] 0]
+				
+				if { [string range $opt 0 4] eq "font_" } {
+					return -code "return" [_cget_font_part $item [string range $opt 5 end]]
+				} else {
+					return -code "return" [$can itemcget $item -$opt]
+				}
+			} elseif { [string range $option 0 6] eq "-symbol" } {
+				regexp {^\-symbol([0-9]?)_?([0-9a-zA-Z_]*)$} $option {} num_prefix opt
+				if { $opt eq "" } {
+					set opt "text"
+				}
+				set item [lindex [get $page ${tag}-sym$num_prefix] 0]
+
+				if { [string range $opt 0 4] eq "font_" } {
+					return -code "return" [_cget_font_part $item [string range $opt 5 end]]
+				} else {
+					return -code "return" [$can itemcget $item -$opt]
+				}
+			} elseif { [string range $option 0 5] eq "-image" } {
+				regexp {^\-image([0-9]?)_?([0-9a-zA-Z_]*)$} $option {} num_prefix opt
+				if { $opt eq "" } {
+					set opt "image"
+				}
+				set item [lindex [get $page ${tag}-img$num_prefix] 0]
+				
+				return -code "return" [$can itemcget $item -$opt]
+			}
+			
+			# Signal to continue processing the option
+			return -code "ok"
 		}
 		
 		proc coords { page_or_id_or_widget {tag {}} {rescaled 1} } {
@@ -8179,6 +8387,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set ids {}
 			set nradius [llength $radius]
 			set radius [lreplicate 4 $radius]
+			set main_tag [lindex $tags 0]
 			
 			# Restrict the radius to half the minimum of button width and height
 			set max_possible_radius [expr {int($x1-$x0)}]
@@ -8189,27 +8398,35 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			lassign $radius radius1 radius2 radius3 radius4
 			
 			if { $radius1 > 0 } {
-				lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius1] [expr $y0 + $radius1] -fill $colour -disabledfill $disabled \
-					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius1] [expr $y0 + $radius1] \
+					-fill $colour -disabledfill $disabled -outline $colour -disabledoutline $disabled \
+					-width 0 -tags [concat ${main_tag}-nw $tags] -state "hidden"]
 			} 
 			if { $radius2 > 0 } {
-				lappend ids [$can create oval [expr $x1-$radius2] $y0 $x1 [expr $y0 + $radius2] -fill $colour -disabledfill $disabled \
-					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create oval [expr $x1-$radius2] $y0 $x1 [expr $y0 + $radius2] \
+					-fill $colour -disabledfill $disabled -outline $colour -disabledoutline $disabled \
+					-width 0 -tags [concat ${main_tag}-ne $tags] -state "hidden"]
 			}
 			if { $radius3 > 0 } {
-				lappend ids [$can create oval [expr $x1-$radius3] [expr $y1-$radius3] $x1 $y1 -fill $colour -disabledfill $disabled \
-					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create oval [expr $x1-$radius3] [expr $y1-$radius3] $x1 $y1 \
+					-fill $colour -disabledfill $disabled -outline $colour -disabledoutline $disabled \
+					-width 0 -tags [concat ${main_tag}-se $tags] -state "hidden"]
 			}			
 			if { $radius4 > 0 } {
-				lappend ids [$can create oval $x0 [expr $y1-$radius4] [expr $x0+$radius4] $y1 -fill $colour -disabledfill $disabled \
-					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create oval $x0 [expr $y1-$radius4] [expr $x0+$radius4] $y1 \
+					-fill $colour -disabledfill $disabled -outline $colour -disabledoutline $disabled \
+					-width 0 -tags [concat ${main_tag}-sw $tags] -state "hidden"]
 			}
 			
 			if { $nradius == 1 } {
-				lappend ids [$can create rectangle [expr $x0 + ($radius1/2.0)] $y0 [expr $x1-($radius1/2.0)] $y1 -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
-				lappend ids [$can create rectangle $x0 [expr $y0 + ($radius1/2.0)] $x1 [expr $y1-($radius1/2.0)] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create rectangle [expr $x0 + ($radius1/2.0)] \
+					$y0 [expr $x1-($radius1/2.0)] $y1 -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
+				lappend ids [$can create rectangle $x0 [expr $y0 + ($radius1/2.0)] \
+					$x1 [expr $y1-($radius1/2.0)] -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 			} else {
 				# Draw 5 rectangles to cover all possible combinations
 				set maxradius [::max {*}$radius]
@@ -8217,23 +8434,28 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				# Inner rectangle
 				lappend ids [$can create rectangle [expr {$x0+($maxradius/2.0)}] [expr {$y0+($maxradius/2.0)}] \
 					[expr {$x1-($maxradius/2.0)}] [expr {$y1-($maxradius/2.0)}] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 				# Top rectangle
 				lappend ids [$can create rectangle [expr {$x0+($radius1/2.0)}] $y0 \
 					[expr {$x1-($radius2/2.0)}] [expr {$y0+($maxradius/2.0)}] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 				# Bottom rectangle
 				lappend ids [$can create rectangle [expr {$x0+($radius4/2.0)}] [expr {$y1-($maxradius/2.0)}] \
 					[expr {$x1-($radius3/2.0)}] $y1 -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 				# Left rectangle
 				lappend ids [$can create rectangle $x0 [expr {$y0+($radius1/2.0)}] \
 					[expr {$x0+($maxradius/2.0)}] [expr {$y1-($radius4/2.0)}] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 				# Right rectangle
 				lappend ids [$can create rectangle [expr {$x1-($maxradius/2.0)}] [expr {$y0+($radius2/2.0)}] \
 					$x1 [expr {$y1-($radius3/2.0)}] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 			}
 			return $ids
 		}
