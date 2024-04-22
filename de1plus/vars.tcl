@@ -1653,7 +1653,7 @@ proc skin_directories {} {
 	set dd {}
 
 	# overriding settings to include Insight Dark now
-	set ::settings(most_popular_skins) [list Insight "Insight Dark" MimojaCafe Metric DSx SWDark4 MiniMetric]
+	set ::settings(most_popular_skins) [list Insight "Insight Dark" MimojaCafe Metric DSx SWDark4 MiniMetric DSx2]
 
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
@@ -4166,4 +4166,10 @@ proc dose_weight_ratio {} {
 	
 	}
 	return "1:$ratio"
+}
+
+proc open_random_simulation_file {} {
+	unset -nocomplain ::simulated
+    set fn [random_pick [glob -nocomplain -path "[homedir]/simulations/" {*.shot}]]
+    array set ::simulated [read_file $fn]
 }
