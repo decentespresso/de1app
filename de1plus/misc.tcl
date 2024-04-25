@@ -919,7 +919,6 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/web_api/plugin.tcl *
 
         plugins/mqtt/CHANGELOG.md *
-        plugins/mqtt/LICENSE *
         plugins/mqtt/README.md *
         plugins/mqtt/plugin.tcl *
         plugins/mqtt/settings.tdb *
