@@ -74,7 +74,7 @@ namespace eval ::plugins::${plugin_name} {
         variable settings
 
         if {![has_credentials]} {
-            #borg toast [translate_toast "Please configure your username and password in the settings"]
+            #popup [translate_toast "Please configure your username and password in the settings"]
             #set settings(last_upload_result) [translate "Please configure your username and password in the settings"]
             #plugins save_settings visualizer_upload
             return {}
@@ -82,7 +82,7 @@ namespace eval ::plugins::${plugin_name} {
 
 
         msg "uploading shot"
-        borg toast [translate_toast "Uploading Shot"]
+        popup [translate_toast "Uploading Shot"]
         
         set settings(last_action) "upload"
         set settings(last_upload_shot) $::settings(espresso_clock)
@@ -158,20 +158,20 @@ namespace eval ::plugins::${plugin_name} {
 
         if {$returncode == 401} {
             msg "Upload failed. Unauthorized"
-            borg toast [translate_toast "Upload failed! Authentication failed. Please check username / password"]
+            popup [translate_toast "Upload failed! Authentication failed. Please check username / password"]
             set settings(last_upload_result) [translate "Authentication failed. Please check username / password"]
             plugins save_settings visualizer_upload
             return
         }
         if {[string length $answer] == 0 || $returncode != 200} {
             msg "Upload failed: $returnfullcode"
-            borg toast [translate_toast "Upload failed!"]
+            popup [translate_toast "Upload failed!"]
             set settings(last_upload_result) "[translate {Upload failed!}] $returnfullcode"
             plugins save_settings visualizer_upload
             return
         }
 
-        borg toast [translate_toast "Upload successful"]
+        popup [translate_toast "Upload successful"]
         if {[catch {
             set response [::json::json2dict $answer]
             set uploaded_id [dict get $response id]

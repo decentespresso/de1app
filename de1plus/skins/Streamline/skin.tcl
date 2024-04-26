@@ -1221,7 +1221,7 @@ proc save_favorite_profile { slot } {
 	#refresh_favorite_profile_button_labels
 	refresh_favorite_profile_button_labels
 	save_settings
-	borg toast [translate "Saved"]
+	popup [translate "Saved"]
 }
 
 ############################################################################################################################################################################################################

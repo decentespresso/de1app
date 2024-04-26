@@ -981,7 +981,7 @@ proc smartchef_tare {} {
 		error "Smartchef Scale not connected, cannot send tare cmd"
 		return
 	}
-	borg toast "Press tare button on scale"
+	popup "Press tare button on scale"
 	# set tare [binary decode hex ""] 
 
 	# userdata_append "SCALE: smartchef tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_smartchef) $::sinstance($::de1(suuid_smartchef)) $::de1(cuuid_smartchef_cmd) $::cinstance($::de1(cuuid_smartchef_cmd)) $tare] 0

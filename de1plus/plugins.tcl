@@ -153,7 +153,7 @@ namespace eval ::plugins {
             if {[info proc ${plugin}::main] != ""} {
                 ${plugin}::main
             } else {
-                borg toast "loaded empty plugin $plugin"
+                popup "loaded empty plugin $plugin"
             }
             set ${plugin}::plugin_loaded 1
             msg -NOTICE "loaded plugin" $plugin 

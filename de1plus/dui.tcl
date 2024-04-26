@@ -153,7 +153,6 @@ namespace eval ::dui {
 				if {$width == 2960 && $height == 1730} {
 
 					# samsung a9 14" tablet custom resolution
-					borg toast $height
 					set screen_size_width 2960
 					set screen_size_height 1848
 					set fontm 0.70

@@ -97,7 +97,7 @@ namespace eval ::plugins::${plugin_name} {
         variable settings
 
         msg "uploading shot"
-        borg toast [translate "Uploading Shot"]
+        popup [translate "Uploading Shot"]
 
         set content [encoding convertto utf-8 $content]
 
@@ -121,7 +121,7 @@ namespace eval ::plugins::${plugin_name} {
             msg "answer $answer"
         } err] != 0} {
             msg "Could not upload log! $err"
-            borg toast [translate "Upload failed!"]
+            popup [translate "Upload failed!"]
             set settings(last_upload_result) "[translate {Upload failed!}] ERR $err"
             plugins save_settings log_upload
             catch { http::cleanup $token }
@@ -131,13 +131,13 @@ namespace eval ::plugins::${plugin_name} {
         http::cleanup $token
         if {[string length $answer] == 0 || $returncode != 200} {
             msg "Upload failed: $returnfullcode"
-            borg toast "Upload failed!"
+            popup "Upload failed!"
             set settings(last_upload_result) "[translate {Upload failed!}] $returnfullcode"
             plugins save_settings log_upload
             return
         }
 
-        borg toast "Upload successful"
+        popup "Upload successful"
         if {[catch {
             set response $answer
         } err] != 0} {
