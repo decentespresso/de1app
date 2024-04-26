@@ -1031,11 +1031,17 @@ proc translation_langs_array {} {
     ]
 }
 
+
+
 proc popup {msg} {
 
 	if {$::app::build_timestamp > 1714054164} {
 		# newer Androwish support HTML toasts, force them to be black to work around some tablets having incorrect toast colors
-		borg toast "<b><font color='#000000'>$msg" 1 1
+		if {[catch {
+			borg toast "<b><font color='#000000'>$msg" 1 1
+		} err] != 0} {
+			borg toast $msg 1
+		}
 	} else {
 		borg toast $msg 1
 	}	
