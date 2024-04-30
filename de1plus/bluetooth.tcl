@@ -477,17 +477,7 @@ proc bookoo_stop_timer {} {
 
 }
 
-set ::b1 0
 proc bookoo_parse_response { value } {
-
-	if {$::b1 == 0} {
-		popup "starting timer"
-		bookoo_tare
-		after 1000 bookoo_timer_reset
-		after 2000 bookoo_start_timer 
-		after 6000 bookoo_stop_timer
-		set ::b1 1
-	}
 
 	#msg -ERROR "bookoo_parse_response [string bytelength $value] : [::logging::format_asc_bin $value]"
 
