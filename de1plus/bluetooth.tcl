@@ -57,6 +57,8 @@ proc scale_timer_start {} {
 		after 500 decentscale_timer_start
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_start_timer
+	} elseif {$::settings(scale_type) == "bookoo"} {
+		bookoo_start_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_start_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -75,6 +77,8 @@ proc scale_timer_stop {} {
 		after 500 decentscale_timer_stop
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_stop_timer
+	} elseif {$::settings(scale_type) == "bookoo"} {
+		bookoo_stop_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_stop_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -96,6 +100,8 @@ proc scale_timer_reset {} {
 		after 500 decentscale_timer_reset
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_timer_reset
+	} elseif {$::settings(scale_type) == "bookoo"} {
+		bookoo_timer_reset
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_reset_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -122,6 +128,8 @@ proc scale_enable_weight_notifications {} {
 		#acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "bookoo"} {
+		bookoo_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "hiroiajimmy"} {
 		hiroia_enable_weight_notifications
 	}  elseif {$::settings(scale_type) == "eureka_precisa"} {
@@ -385,6 +393,123 @@ proc felicita_parse_response { value } {
 		}
 	}
 }
+
+
+
+
+#### bookoo
+proc bookoo_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable bookoo scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo) $::cinstance($::de1(cuuid_bookoo))] 1
+}
+
+proc bookoo_tare {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send tare cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A01000008"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+	# The tare is not yet confirmed to us, we can therefore assume it worked out
+}
+
+proc bookoo_timer_reset {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A0600000C"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+
+}
+proc bookoo_start_timer {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A0400000A"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+
+}
+proc bookoo_stop_timer {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A0500000D"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+
+}
+
+set ::b1 0
+proc bookoo_parse_response { value } {
+
+	if {$::b1 == 0} {
+		popup "starting timer"
+		bookoo_tare
+		after 1000 bookoo_timer_reset
+		after 2000 bookoo_start_timer 
+		after 6000 bookoo_stop_timer
+		set ::b1 1
+	}
+
+	#msg -ERROR "bookoo_parse_response [string bytelength $value] : [::logging::format_asc_bin $value]"
+
+	if {[string bytelength $value] >= 9} {
+		binary scan $value cucucucucucua1cucucu h1 h2 h3 h4 h5 h6 sign w1 w2 w3
+		if {[info exists w3]} {
+
+			# Combine the three bytes to get the weight (assuming big-endian order)
+			set weight100 [expr {(($w1 << 16) | ($w2 << 8) | $w3)/100.0}]
+			if {$sign == "-"} {
+				set weight100 [expr {-1 * $weight100}]
+			}
+
+			set weight [round_to_two_digits $weight100]
+			
+			#msg -ERROR "parsing: $h1 $h2 sign:$sign wight:$weight / $w1 $w2 $w3"
+
+			::device::scale::process_weight_update $weight
+		}
+	}
+}
+
 
 
 #### Hiroia Jimmy
@@ -1680,6 +1805,9 @@ proc de1_ble_handler { event data } {
  				} elseif {[string first "CFS-9002" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "eureka_precisa"
 
+ 				} elseif {[string first "BOOKOO_SC" $name] == 0} {
+					append_to_peripheral_list $address $name "ble" "scale" "bookoo"
+
  				} elseif {[string first "ACAIA" $name] == 0 \
  					|| [string first "PROCH" $name]    == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
@@ -1841,6 +1969,8 @@ proc de1_ble_handler { event data } {
 							after 2000 felicita_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "hiroiajimmy"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "hiroiajimmy"
+						} elseif {$::settings(scale_type) == "bookoo"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "bookoo"
 							after 200 hiroia_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "eureka_precisa"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "eureka_precisa"
@@ -2236,6 +2366,11 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_hiroiajimmy_status)} {
 							# hiroia jimmy scale
 							hiroia_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_bookoo)} {
+							# bookoo
+							#msg -ERROR "WEIGHT $full_data_for_log"
+							bookoo_parse_response $value
+							
 						} elseif {$cuuid eq $::de1(cuuid_eureka_precisa_status) && $::settings(scale_type) == "eureka_precisa"} {
 							# eureka precisa scale
 							eureka_precisa_parse_response $value

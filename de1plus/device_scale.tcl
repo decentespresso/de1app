@@ -173,6 +173,7 @@ namespace eval ::device::scale {
 			atomaxskale { expr { 0.38 } }
 			decentscale { expr { 0.38 } }
 			felicita    { expr { 0.50 } }
+			bookoo    { expr { 0.50 } }
 			acaiascale  { expr { 0.69 } }
 			default     { expr { 0.38 } }
 
@@ -351,6 +352,7 @@ namespace eval ::device::scale {
 
 
 			felicita { felicita_tare }
+			bookoo { bookoo_tare }
 
 			hiroiajimmy { hiroia_tare }
 
@@ -1435,6 +1437,9 @@ namespace eval ::device::scale::callbacks {
 				# (Here is a good place to select different weight-estimation algorithms)
 			}
 			felicita {
+				set ::device::scale::run_timer True
+			}
+			bookoo {
 				set ::device::scale::run_timer True
 			}
 			eureka_precisa {
