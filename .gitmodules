@@ -45,9 +45,6 @@
 [submodule "de1plus/skins/DSx2"]
 	path = de1plus/skins/DSx2
 	url = https://github.com/Damian-AU/DSx2
-[submodule "de1plus\\skins\\DSx2"]
-	path = de1plus\\skins\\DSx2
-	url = https://github.com/Damian-AU/DSx2
 [submodule "de1plus/plugins/mqtt"]
 	path = de1plus/plugins/mqtt
 	url = https://github.com/simpkins/de1plus-mqtt.git
