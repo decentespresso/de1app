@@ -117,10 +117,24 @@ proc run_next_userdata_cmd {} {
 
 		if {$result != 1} {
 			set ::de1(wrote) 0
-			msg -ERROR $::errorInfo
+			msg -ERROR "BLE error info $::errorInfo"
 
 			if {[string first "invalid handle" $::errorInfo] != -1 } {
-				::comms::msg -INFO "Not retrying this command because BLE handle for the device is now invalid"
+				::comms::msg -INFO "Not retrying this command because BLE handle for the device is now invalid, 1='[lindex $cmds 1]' 2='[lindex $cmds 2]' 3='[lindex $cmds 3]' vital='$vital'"				
+
+				if {[string first {$::de1(device_handle)} $::errorInfo] != -1 } {
+					::comms::msg -INFO "Processing DE1 disconnect/bad handle"
+					de1_disconnect_handler $::de1(device_handle)
+					set ::de1(device_handle) 0
+					#return
+				}
+
+				if {[string first {$::de1(scale_device_handle)} $::errorInfo] != -1 } {
+					::comms::msg -INFO "Processing scale disconnect/bad handle"
+					scale_disconnect_handler $::de1(scale_device_handle)
+					return
+				}
+
 				#after 500 run_next_userdata_cmd
 			} elseif {$vital != 1 } {
 				::comms::msg -NOTICE "Preceeding command failed; not retrying as not tagged as vital"
@@ -537,12 +551,58 @@ proc de1_event_handler { command_name value {update_received 0}} {
 	}
 }
 
+proc scale_disconnect_handler { handle } {
+	#catch {
+		ble close $handle
+	#}
+
+	# if the skale connection closed in the currentl one, then reset it
+	set ::de1(scale_device_handle) 0
+
+	if {$::currently_connecting_scale_handle == 0} {
+		#ble_connect_to_scale
+	}
+
+	catch {
+		ble close $::currently_connecting_scale_handle
+	}
+
+	set ::currently_connecting_scale_handle 0
+	# 2021-11-25 Johanna: Removed to see if it is the cause for the lunar connection issues
+	#remove_matching_ble_queue_entries {^SCALE:}
+
+	catch {
+		set event_dict [dict create \
+			event_time $event_time \
+			address $address \
+		]
+
+		::device::scale::event::apply::on_disconnect_callbacks $event_dict
+	}
+
+	if {$::de1(bluetooth_scale_connection_attempts_tried) < 20} {
+		incr ::de1(bluetooth_scale_connection_attempts_tried)
+		::bt::msg -INFO "Disconnected from scale, trying again automatically.  Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
+		ble_connect_to_scale
+	} else {
+		# after 5 minutes, reset the scale retrier count back to zero that when coming back 
+		# to the DE1 after some time away, we can again retry scale connection 
+		::bt::msg -INFO "Resetting scale connect retries back to zero, after 300 second waiting"
+		after 300000 "set ::de1(bluetooth_scale_connection_attempts_tried) 0"
+	}
+}
+
 proc de1_disconnect_handler { handle } {
 	set ::de1(wrote) 0
 	set ::de1(cmdstack) {}
 
 	# close the associated handle
-	ble close $handle
+	catch {
+		ble close $handle
+	}
+
+	set ::de1(device_handle) 0
+
 
 	catch {
 		# this should no longer be necessary since we're now explicitly closing the BLE handle associated with this disconnection notice
@@ -560,6 +620,10 @@ proc de1_disconnect_handler { handle } {
 	# temporarily disable this feature as it's not clear that it's needed.
 	#set ::settings(max_ble_connect_attempts) 99999999
 	set ::settings(max_ble_connect_attempts) 10
+
+	if {[android_8_or_newer] == 1} {
+		set ::settings(max_ble_connect_attempts) 99999999
+	}
 
 	incr ::failed_attempt_count_connecting_to_de1
 	if {$::failed_attempt_count_connecting_to_de1 > $::settings(max_ble_connect_attempts) && $::successful_de1_connection_count > 0} {

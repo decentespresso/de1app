@@ -1831,44 +1831,9 @@ proc de1_ble_handler { event data } {
 					} elseif {$address == $::settings(scale_bluetooth_address)} {
 						set ::de1(wrote) 0
 						::bt::msg -NOTICE "scale $::settings(scale_type) disconnected $data_for_log"
-						#catch {
-							ble close $handle
-						#}
 
-						# if the skale connection closed in the currentl one, then reset it
-						if {$handle == $::de1(scale_device_handle)} {
-							set ::de1(scale_device_handle) 0
-						}
+						scale_disconnect_handler $handle
 
-						if {$::currently_connecting_scale_handle == 0} {
-							#ble_connect_to_scale
-						}
-
-						catch {
-							ble close $::currently_connecting_scale_handle
-						}
-
-						set ::currently_connecting_scale_handle 0
-						# 2021-11-25 Johanna: Removed to see if it is the cause for the lunar connection issues
-						#remove_matching_ble_queue_entries {^SCALE:}
-
-						set event_dict [dict create \
-									event_time $event_time \
-									address $address \
-								       ]
-
-						::device::scale::event::apply::on_disconnect_callbacks $event_dict
-
-						if {$::de1(bluetooth_scale_connection_attempts_tried) < 20} {
-							incr ::de1(bluetooth_scale_connection_attempts_tried)
-							::bt::msg -INFO "Disconnected from scale, trying again automatically.  Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
-							ble_connect_to_scale
-						} else {
-							# after 5 minutes, reset the scale retrier count back to zero that when coming back 
-							# to the DE1 after some time away, we can again retry scale connection 
-							::bt::msg -INFO "Resetting scale connect retries back to zero, after 300 second waiting"
-							after 300000 "set ::de1(bluetooth_scale_connection_attempts_tried) 0"
-						}
 					}
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1
