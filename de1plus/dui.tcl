@@ -5326,6 +5326,7 @@ namespace eval ::dui {
 			upvar $args_name largs
 			set can [dui canvas]
 			
+			set is_inner_call [string is true [get_option -_inner_call 0 0 largs]]
 			set tags [get_option -tags {} 1 largs]
 			set initial_state [get_option -initial_state normal 1 largs]
 			set auto_assign_tag 0
@@ -5350,7 +5351,7 @@ namespace eval ::dui {
 				}
 			}
 			
-			if { $add_multi == 1 && "$main_tag*" ni $tags } {
+			if { $is_inner_call != 1 && $add_multi == 1 && "$main_tag*" ni $tags } {
 				lappend tags "$main_tag*"
 			}
 			if { $initial_state in {hidden disabled} } {
@@ -5359,16 +5360,18 @@ namespace eval ::dui {
 
 			# Store the DUI type(s) of the item. An item may have several types, e.g. a dselector
 			# may be {dselector dbutton round}
-			if { [info exists types([lindex $pages 0]:$main_tag)] } {
-				foreach t [concat $type $extra_types] {
-					if { $t ni $types([lindex $pages 0]:$main_tag) } {
-						lappend types([lindex $pages 0]:$main_tag) $t
+			if { $is_inner_call != 1 } {
+				if { [info exists types([lindex $pages 0]:$main_tag)] } {
+					foreach t [concat $type $extra_types] {
+						if { $t ni $types([lindex $pages 0]:$main_tag) } {
+							lappend types([lindex $pages 0]:$main_tag) $t
+						}
 					}
+				} else {
+					set types([lindex $pages 0]:$main_tag) [concat $type $extra_types]
 				}
-			} else {
-				set types([lindex $pages 0]:$main_tag) [concat $type $extra_types]
 			}
-			
+					
 			foreach p $pages {
 				if { "p:$p" ni $tags } { 
 					lappend tags "p:$p"
@@ -5602,10 +5605,10 @@ namespace eval ::dui {
 
 			if { $label ne "" } {
 				set id [dui add dtext $pages $xlabel $ylabel -text $label -tags $label_tags \
-					-aspect_type ${type}_label -debug $debug {*}$label_args]
+					-aspect_type ${type}_label -debug $debug -_inner_call 1 {*}$label_args]
 			} elseif { $labelvar ne "" } {
 				set id [dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
-					-aspect_type ${type}_label -debug $debug {*}$label_args] 
+					-aspect_type ${type}_label -debug $debug -_inner_call 1 {*}$label_args] 
 			}
 			return $id
 		}
@@ -7279,6 +7282,44 @@ namespace eval ::dui {
 			return ""
 		}
 
+		# Returns the MAIN page and the MAINs tag for each canvas ID.
+		# All items have to be on the same page, inferred from the first item, otherwise
+		#	an error is shown in the log. 
+		# Returns a list whose first element is the page, and the rest of the elements are the
+		#	main tag of each provided ID. Invalid IDs and items not on the same page return {} on 
+		#	its corresponding position.
+		# Not exported, for internal use only.
+		proc page_and_tag_from_ids { ids } {
+			if { $ids eq {} } {
+				return {}
+			}
+			
+			set can [dui::canvas]
+			set page {}
+			set tags [list]
+			
+			foreach id $ids {
+				set item_tags [$can gettags $id]
+				if { $item_tags eq {} } {
+					lappend tags {}
+				} else {
+					set item_pages [lsearch -inline -all $item_tags "p:*"]
+					if { $item_pages eq {} } {
+						lappend tags {}
+					} elseif { $page eq {} } {
+						set page [string range [lindex $item_pages 0] 2 end]
+						lappend tags [lindex $item_tags 0]
+					} elseif { $page in $item_pages }  {
+						lappend tags [lindex $item_tags 0]
+					} else {
+						msg -ERROR [namespace current] "page_and_tag_from_ids: item $id with tag '[lindex $item_tags 0]' is not on page '$page' like the first id [lindex $ids 0]"
+						lappend tags {}
+					}
+				}
+			}
+			return [concat $page $tags]
+		}
+			
 		# Returns a list of lists. The main list has as many elements as items in the arguments.
 		# Each main list element is itself a list with 3 components:
 		#	1. The DUI type of the item, e.g. "dbutton". Can be empty, and can also be a list 
@@ -7291,18 +7332,7 @@ namespace eval ::dui {
 			set result [list]
 			foreach id [get $page_or_ids_or_widget $tag] {
 				set item_types [list]
-				set item_tags [$can gettags $id]				
-				set type_tags [lsearch -inline -glob -all $item_tags "t:*"]
-				
-				if { $type_tags eq {} } {
-					lappend item_types ""
-				} else {
-					set dui_types [list]
-					foreach ttag $type_tags {
-						lappend dui_types [string range $ttag 2 end]
-					}
-					lappend item_types $dui_types
-				}
+				lappend item_types [dui_type $id]
 				
 				set can_type [$can type $id]
 				lappend item_types $can_type
@@ -7318,27 +7348,19 @@ namespace eval ::dui {
 			return $result
 		}
 		
+		# Returns a list of list with the DUI types of each provided tag or id.
+		# The list has the length of 'page_or_ids_or_widget' (if tag is undefined), or the
+		#	length of 'tag', and each item is itself a list with the DUI types of that item.
+		# Note that only main tags have a DUI type defined, subelements/parts of a compound
+		#	items do not.
 		proc dui_type { page_or_ids_or_widget {tag {}} } {
 			variable types
-			set can [dui canvas]
 			set result [list]
 			
 			if { $tag eq {} } {
-				set ids [get $page_or_ids_or_widget]
-				if { $ids eq {} } {
-					return {}
-				}
-				set page {}
-				foreach id $ids {
-					set item_tags [$can gettags $id]
-					if { $page eq {} } {
-						set page [lsearch -inline {p:*} $item_tags]
-						if { $page ne {} } {
-							set page [string range $page 2 end]
-						}
-					}
-					lappend tag [lindex $item_tags 0]
-				}
+				set page_and_tags [page_and_tag_from_ids $page_or_ids_or_widget]
+				set page [lindex $page_and_tags 0]
+				set tag [lrange $page_and_tags 1 end]
 			} else {
 				set page [lindex $page_or_ids_or_widget 0]
 			}
@@ -7346,29 +7368,18 @@ namespace eval ::dui {
 			foreach t $tag {
 				if { [info exists types($page:$tag)] } {
 					lappend result $types($page:$tag)
+				} else {
+					# Check if the item is indexed on a different maiin page
+					set item_pages [pages $page $tag]
+					if { $page in $item_pages && [info exists types([lindex $item_pages 0]:$tag)] } {
+						lappend result $types([lindex $item_pages 0]:$tag)
+					} else {
+						lappend result {}
+					}
 				}
 			}
 
 			return $result
-
-#			set can [dui canvas]
-#			set result [list]
-#			
-#			foreach id [get $page_or_ids_or_widget $tag] {
-#				set dui_types [list]
-#				set item_tags [$can gettags $id]
-#				set type_tags [lsearch -inline -glob -all $item_tags "t:*"]
-#				
-#				if { $type_tags ne {} } {
-#					foreach ttag $type_tags {
-#						lappend dui_types [string range $ttag 2 end]
-#					}
-#				}
-#				
-#				lappend result $dui_types
-#			}
-#			
-#			return $result
 		}
 		
 		# Provides a single interface to configure options for both canvas items (text, arcs...) 
@@ -7650,7 +7661,6 @@ namespace eval ::dui {
 			}
 
 			set dui_type [dui::args::get_option -dui_type "" 1]	
-if { "out_button" in $tag } { msg "OUT_BUTTON: \[dui_type $page_or_ids_or_widgets $tag\]=[dui_type $page_or_ids_or_widgets $tag]" }			
 			if { $dui_type eq {} } {
 				# Infer the DUI type(s) from the DUI type(s) of the first item being configurated
 				set dui_type [lindex [dui_type $page_or_ids_or_widgets $tag] 0]
@@ -7666,8 +7676,6 @@ if { "out_button" in $tag } { msg "OUT_BUTTON: \[dui_type $page_or_ids_or_widget
 				}
 			}
 				
-if { "out_button" in $tag } { msg "OUT_BUTTON: dui_type=$dui_type, \[dui_type $item\]=[dui_type $item]" }	
-	
 			if { $dui_type ne "" } {
 				foreach dtype $dui_type {
 					if { [namespace which -command "dui::item::_cget_$dtype"] ne "" } {
@@ -9592,7 +9600,6 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			}
 			
 			set tags [dui::args::process_tags_and_var $pages dtext "" 0 args 1]
-			lappend tags "t:dtext"
 			set main_tag [lindex $tags 0]
 			set cmd [dui::args::get_option -command {} 1]
 			
@@ -9615,7 +9622,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				dui::args::remove_options pressfill
 			}
 			
-			dui::args::remove_options debug
+			dui::args::remove_options {debug _inner_call}
 			try {
 				set id [$can create text $x $y -tags $tags -state hidden {*}$args]
 				if { $debug } {
@@ -10046,7 +10053,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			#} else {}
 			
 			set ids {}
-			dui::args::remove_options -debug_outline
+			dui::args::remove_options {-debug_outline -_inner_call}
 			
 			if { $shape eq "round" } {
 				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style]]
@@ -10199,7 +10206,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 				# the dbutton_label aspects have already been processed above				
 				dui add symbol $pages [subst \$xsymbol$suffix] [subst \$ysymbol$suffix] \
 					-text [subst \$symbol$suffix] -tags [subst \$symbol${suffix}_tags] -debug $debug \
-					-style $style -_abs_coords 1 {*}[subst \$symbol${suffix}_args]
+					-style $style -_abs_coords 1 -_inner_call 1 {*}[subst \$symbol${suffix}_args]
 				set suffix [incr i]
 			}
 			
@@ -10213,13 +10220,15 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 				if { [info exists label$suffix] && [subst \$label$suffix] ne "" } {
 					dui add dtext $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] \
 						-text [subst \$label$suffix] -tags [subst \$label${suffix}_tags] \
-						-style $style -debug $debug -_abs_coords 1 {*}[subst \$label${suffix}_args]
+						-style $style -debug $debug -_abs_coords 1 -_inner_call 1 \
+						{*}[subst \$label${suffix}_args]
 				} elseif { [info exists labelvar$suffix] && [subst \$labelvar$suffix] ne "" } {
 					# No need to add -aspect_type "dbutton_label$suffix" as before, because
 					# the dbutton_label aspects have already been processed above
 					dui add variable $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] \
 						-textvariable [subst \$labelvar$suffix] -tags [subst \$label${suffix}_tags] \
-						-style $style -debug $debug -_abs_coords 1 {*}[subst \$label${suffix}_args] 
+						-style $style -debug $debug -_abs_coords 1 -_inner_call 1 \
+						{*}[subst \$label${suffix}_args] 
 				}
 				set suffix [incr i]
 			}
@@ -10230,7 +10239,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			set rx1 [expr {$rx1+$tp2}] 
 			set ry1 [expr {$ry1+$tp3}]
 			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline {} -width 0 \
-				-tags [concat $tags t:dbutton t:$shape] -state hidden]
+				-tags $tags -state hidden]
 			if { $debug } {
 				msg "DUI: $can create rect $rx $ry $rx1 $ry1 -fill \{\} -outline \{\} -width 0 -tags \{$tags\} -state hidden ==> $id"
 			}
@@ -10313,7 +10322,6 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			}			
 			
 			set tags [dui::args::process_tags_and_var $pages dclicker -variable 1 args 1]
-			lappend tags "t:dclicker"
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
 				
@@ -10433,7 +10441,8 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 				set symbol_selectedfill [dui::args::get_option -symbol_selectedfill $fill 1]
 			}
 
-			# Don't pass the page here because the page top-left offset is already taken into the posterior call to dui::add::dbutton 
+			# Don't pass the page here because the page top-left offset is already taken into the 
+			# posterior call to dui::add::dbutton 
 			lassign [dui::args::process_sizes {} $x $y -bwidth 600 -bheight 100 0] x y x1 y1
 			
 			set lengths [dui::args::get_option -lengths {} 1]
@@ -10510,7 +10519,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 				
 				set cmd [::list ::dui::item::dselector_click $i1 $n $var [lindex $values $i] $multiple]
 				set id [dui::add::dbutton $pages $ix $iy $ix1 $iy1 -tags \
-					[concat ${main_tag}_$i1 [lrange $tags 1 end] t:dselector] -command $cmd {*}$iargs]
+					[concat ${main_tag}_$i1 [lrange $tags 1 end]] -_inner_call 1 -command $cmd {*}$iargs]
 				lappend ids $id
 				
 				if { $user_cmd ne {} } {
@@ -10624,10 +10633,10 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 
 			# Transparent tappable rectangle
 			set id [$can create rect [expr {$x-6}] [expr {$y-12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} \
-				-tags [concat $tags "t:dtoggle"] -state hidden]
+				-tags $tags -state hidden]
 			lappend ids $id
 			if { $debug } {
-				msg "$can create rect [expr {$x-6}] [expr {$y-12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} -tags \{$tags t:dtoggle\} -state hidden ==> $id"
+				msg "$can create rect [expr {$x-6}] [expr {$y-12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} -tags $tags -state hidden ==> $id"
 			}
 			if { $ns ne "" } {
 				set "${ns}::widgets($main_tag)" $ids
@@ -10791,7 +10800,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			dui::args::process_label $pages $x $y $type $style
 			
 			set tclcode [dui::args::get_option -tclcode "" 1]
-			dui::args::remove_options {-tags -debug} 
+			dui::args::remove_options {-tags -debug -_inner_call} 
 						
 			try {
 				::$type $widget {*}$args
@@ -10881,7 +10890,6 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			}			
 			
 			set tags [dui::args::process_tags_and_var $pages entry -textvariable 1 args 1]
-			lappend tags "t:entry"
 			set main_tag [lindex $tags 0]
 			set style [dui::args::get_option -style "" 0]
 			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
@@ -10997,8 +11005,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 #					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
 #			}
 							
-			set widget [dui::add::widget multiline_entry $pages $x $y \
-					-tags [concat $tags t:multiline_entry] {*}$args]
+			set widget [dui::add::widget multiline_entry $pages $x $y -tags $tags {*}$args]
 		
 			# Default actions on leaving a text entry: Trim text, format if needed, and hide_android_keyboard
 			bind $widget <Return> { dui platform hide_android_keyboard ; focus [tk_focusNext %W] }
@@ -11014,7 +11021,8 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			}
 			
 			if { [string is true $ysb] || [llength $sb_args] > 0 } {
-				dui add yscrollbar $pages $x $y -tags $tags -aspect_type multiline_entry_yscrollbar {*}$sb_args 
+				dui add yscrollbar $pages $x $y -tags $tags -aspect_type multiline_entry_yscrollbar \
+					-_inner_call 1 {*}$sb_args 
 			}
 			
 			# Double-tapping doesn't work on multiline entries. Think of an alternative way, e.g. show a "dropdown arrow"
@@ -11099,15 +11107,14 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			}
 #			dui::args::process_font dcombobox $style
 			
-			set w [dui add entry $pages $x $y -aspect_type dcombobox -tags [concat $tags t:dcombobox] \
-					{*}$args]
+			set w [dui add entry $pages $x $y -aspect_type dcombobox -tags $tags {*}$args]
 			regsub -all {%W} $cmd $w cmd
 			bind $w <Double-Button-1> $cmd
 			
 			# Dropdown selection arrow
 			set arrow_tags [list ${main_tag}-dda {*}[lrange $tags 1 end]]
 			dui add dbutton $pages [expr {$x+650}] $y -tags $arrow_tags -aspect_type dbutton_dda -command $cmd \
-				-symbol sort-down -tap_pad $tap_pad -debug $debug
+				-symbol sort-down -tap_pad $tap_pad -debug $debug -_inner_call 1
 			bind $w <Configure> [list dui::item::relocate_dropdown_arrow [lindex $pages 0] $main_tag]
 			
 			return $w
@@ -11123,8 +11130,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			if { $debug } {
 				msg "DUI: dui::add::dcheckbox \{$pages\} $x $y $args"
 			}
-			set tags [dui::args::process_tags_and_var $pages dcheckbox -textvariable 1 args 1]
-			lappend tags "t:dcheckbox"
+			set tags [dui::args::process_tags_and_var $pages dcheckbox -textvariable 1 args 0]
 			set main_tag [lindex $tags 0]
 			
 			set style [dui::args::get_option -style "" 0]
@@ -11183,8 +11189,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			
 			set cmd [dui::args::get_option -select_cmd {} 1]
 			
-			set widget [dui add widget listbox $pages $x $y -theme none -tags [concat $tags t:listbox] \
-					{*}$args]
+			set widget [dui add widget listbox $pages $x $y -theme none -tags $tags {*}$args]
 
 			if { $cmd ne "" } {
 				if { $ns ne "" && [string is wordchar $cmd] && [namespace which -command ${ns}::$cmd] ne "" } {
@@ -11197,7 +11202,8 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			}
 			
 			if { [string is true $ysb] || [llength $sb_args] > 0 } {
-				dui add yscrollbar $pages $x $y -tags $tags -aspect_type listbox_yscrollbar {*}$sb_args 
+				dui add yscrollbar $pages $x $y -tags $tags -aspect_type listbox_yscrollbar \
+					-_inner_call 1 {*}$sb_args 
 			}
 			
 			return $widget
@@ -11216,7 +11222,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			set main_tag [lindex $tags 0]
 			if { $main_tag eq "" } return
 			
-			set sb_tags [list ${main_tag}-ysb t:yscrollbar {*}[lrange $tags 1 end]]
+			set sb_tags [list ${main_tag}-ysb {*}[lrange $tags 1 end]]
 			
 			set var [dui::args::get_option -variable "" 1]
 			set first_page [lindex $pages 0]
@@ -11250,7 +11256,6 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			}
 			set can [dui canvas]
 			set tags [dui::args::process_tags_and_var $pages scale -variable 1 args 1]
-			append tags "t:scale"
 			set main_tag [lindex $tags 0]
 
 			set style [dui::args::get_option -style "" 0]
@@ -11351,9 +11356,6 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 		# -editor_page: 0, 1 (=use default number editor), or an editor page name.
 		# -editor_page_title: the page title to show on the page editor
 		#
-		# BEWARE about t:dscale tag, on most DUI items the clickable rect is the individual
-		#	item having the main tag, and so where we assign the t:<dui_type> tag, but here
-		#	it's the horizontal circle slider...		
 		proc dscale { pages x y args } {
 			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
 			if { $debug } {
@@ -11571,7 +11573,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 				set id [$can create oval [expr {$x1f-($sliderlength/2)}] [expr {$y1f-($sliderlength/2)}] \
 					[expr {$x1f+($sliderlength/2)}] [expr {$y1f+($sliderlength/2)}] -fill $foreground \
 					-disabledfill $disabledforeground -activefill $activeforeground -width 0 \
-					-tags [list {*}$tags ${main_tag}-crc t:dscale] -state hidden]
+					-tags [list {*}$tags ${main_tag}-crc] -state hidden]
 				set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}
 				$can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag h %x]
 				$can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag h %x]                
@@ -11619,8 +11621,6 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 		#	-min, default 0
 		#	-max, default 10
 		#	-width, total width in pixels
-		# BEWARE about t:drater tag, needs to be assigned to the mian tag, but there's no
-		#	individual item with that tag!
 		proc drater { pages x y args } {
 			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
 			if { $debug } {
@@ -11707,7 +11707,6 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			}
 			
 			set tags [dui::args::process_tags_and_var $pages graph {} 1 args 1]
-			lappend tags t:graph
 #			set main_tag [lindex $tags 0]
 			
 			#set style [dui::args::get_option -style "" 0]
@@ -11732,7 +11731,6 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 				msg "DUI: dui::add::text \{$pages\} $x $y $args"
 			}
 			set tags [dui::args::process_tags_and_var $pages tk_text {} 1 args 1]
-			lappend tags t:text
 			set main_tag [lindex $tags 0]
 			
 			#set style [dui::args::get_option -style "" 0]
@@ -11759,7 +11757,8 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			set widget [dui add widget tk::text $pages $x $y -theme none -tags $tags {*}$args]
 
 			if { [string is true $ysb] || [llength $sb_args] > 0 } {
-				dui add yscrollbar $pages $x $y -tags $tags -aspect_type tk_text_yscrollbar {*}$sb_args 
+				dui add yscrollbar $pages $x $y -tags $tags -aspect_type tk_text_yscrollbar \
+					-_inner_call 1 {*}$sb_args 
 			}
 			
 			return $widget
