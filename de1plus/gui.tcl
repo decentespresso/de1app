@@ -1990,6 +1990,25 @@ snit::widget multiline_entry {
     }
  }
 
+
+proc benchmark_gui  {} {
+
+	set ::time_start [clock milliseconds]
+
+	set pages [list "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1"]
+
+	foreach page $pages {
+		page_show $page
+		update
+	}
+
+	set ::time_end [clock milliseconds]
+
+	set elapsed [expr {$::time_end - $::time_start}]
+	popup "Elapsed: $elapsed"
+	puts "Elapsed: $elapsed"
+
+}
 proc canvas_hide { widgetlist } {
 	foreach widget $widgetlist {
 		.can itemconfigure $widget -state hidden
