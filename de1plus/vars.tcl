@@ -4105,7 +4105,7 @@ proc set_resolution_height_from_width { {discard {}} } {
 
 	# check the width and make sure it is a multiple of 160. If not, pick the nearest setting.
 	for {set x [expr {$::settings(screen_size_width) - 0}]} {$x <= 2800} {incr x} {
-		set ratio [expr {$x / 160.0}]
+		set ratio [expr {$x / 16.0}]
 		if {$ratio == int($ratio)} {
 			set ::settings(screen_size_width) $x
 			set ::settings(screen_size_height) [expr {int($::settings(screen_size_width)/1.6)}]
