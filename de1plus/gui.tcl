@@ -1879,10 +1879,13 @@ proc ui_startup {} {
 	}
 
 	schedule_app_update_check
-
 	tcl_introspection
-
 	run_de1_app
+
+	if {$::settings(benchmark_gui) == "1"} {
+		benchmark_gui
+	}
+
 	vwait forever
 }
 
