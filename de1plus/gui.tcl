@@ -1259,8 +1259,18 @@ proc page_to_show_when_off {page_to_show args} {
 }
 
 proc page_show {page_to_show args} {
-	dui page load $page_to_show {*}$args
-	check_if_should_send_user_present_notice
+
+	if {$::settings(show_elapsed_time_to_load_pages) == 1} {
+		set start [clock milliseconds]
+		dui page load $page_to_show {*}$args
+		check_if_should_send_user_present_notice
+		set end [clock milliseconds]
+		set elapsed [expr {$end - $start}]
+		popup "$page_to_show: $elapsed"
+	} else {
+		dui page load $page_to_show {*}$args
+		check_if_should_send_user_present_notice
+	}
 
 }
 

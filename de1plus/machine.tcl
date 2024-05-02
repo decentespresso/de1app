@@ -212,6 +212,7 @@ array set ::de1_command_names_to_cuuids [reverse_array ::de1_cuuids_to_command_n
 
 array set ::settings {
 	enable_rise 0
+	use_simulated_data 0
 	dim_screen_when_battery_low 1
 	smart_battery_charging 1
 	force_fw_update 0
@@ -227,6 +228,7 @@ array set ::settings {
 	refill_kit_override 2
 	mmr_enabled 0	
 	default_font_calibration 0.5
+	show_elapsed_time_to_load_pages 0
 	log_fast 0
 	use_finger_down_for_tap 1
 	linear_resistance_adjustment 1
