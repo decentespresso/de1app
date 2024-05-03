@@ -1116,14 +1116,14 @@ proc set_dummy_espresso_vars {} {
 	if { $::android } { return }
 
 	if {$::de1(state) == 4} {
-			
 		if {$::de1(substate) == 1} {
 			# espresso is starting
+			::device::scale::init
+			set ::de1(scale_device_handle) 1
 			set ::simindex  0
 
 			open_random_simulation_file				
 			update_de1_state "$::de1_state(Espresso)\x4"
-			set ::de1(scale_device_handle) 1
 		}
 
 		if {$::settings(do_realtime_espresso_simulation) != 1} {
@@ -1246,9 +1246,10 @@ proc set_dummy_espresso_vars {} {
 		}
 
 		catch {
-			set ::de1(scale_weight) [lindex $::simulated(espresso_weight) $::simindex]
-			set ::de1(scale_sensor_weight) $::de1(scale_weight)
-			::device::scale::process_weight_update $::de1(scale_weight)
+			#set ::de1(scale_weight) [lindex $::simulated(espresso_weight) $::simindex]
+			#set ::de1(scale_sensor_weight) $::de1(scale_weight)
+			#set ::settings(running_weight) $::de1(scale_weight)
+			::device::scale::process_weight_update [lindex $::simulated(espresso_weight) $::simindex]
 		}
 		if {[info exists ::de1(scale_weight)] != 1} {
 			set ::de1(scale_weight) 8.3
