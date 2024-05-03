@@ -1114,86 +1114,187 @@ proc update_onscreen_variables { {state {}} } {
 # Define fake / dummy espresso variables on workstations
 proc set_dummy_espresso_vars {} {
 	if { $::android } { return }
-	
-	if {[expr {int(rand() * 100)}] >= 99} {
-		set ::gui::state::_state_change_chart_value \
-			[expr {$::gui::state::_state_change_chart_value * -1}]
 
-		if {[expr {rand()}] > 0.5} {
-			set ::settings(current_frame_description) [translate "pouring"]
-		} else {
-			set ::settings(current_frame_description) [translate "preinfusion"]
+	if {$::de1(state) == 4} {
+			
+		if {$::de1(substate) == 1} {
+			# espresso is starting
+			set ::simindex  0
+
+			open_random_simulation_file				
+			update_de1_state "$::de1_state(Espresso)\x4"
 		}
-	}
 
-	if {$::de1(state) == 2} {
-		# idle
-		if {$::de1(substate) == 0} {
-			if {[expr {int(rand() * 100)}] > 92} {
-				# occasionally set the de1 to heating mode
-				#set ::de1(substate) 1
-				#update_de1_state "$::de1_state(Idle)\x1"
-			}
+		if {$::settings(do_realtime_espresso_simulation) != 1} {
+			incr ::simindex
 		} else {
-			#if {[expr {int(rand() * 100)}] > 90} {
-				# occasionally stop the espresso
-				# update_de1_state "$::de1_state(Idle)\x0"
-			#}
+
+			if {[llength [ifexists ::simulated(espresso_pressure)]] > 0} {
+
+				set t [expr {[espresso_millitimer] / 1000.0}]
+
+				set cnt 0
+				foreach i $::simulated(espresso_elapsed) {
+					incr cnt
+					#puts "compare $i > $t"
+					if {$i > $t} {
+						break
+					}
+				}
+
+
+				set ::simindex $cnt
+				if {$::simindex == [ifexists ::previous_simindex]} {
+					set ::previous_simindex $::simindex
+					return
+				}
+
+				set ::previous_simindex $::simindex
+
+
+				#puts "smindex: $::simindex"
+
+			}			
 		}
-	} elseif {$::de1(state) == 4} {
-		# espresso
-		if {$::de1(substate) == 0} {
-		} elseif {$::de1(substate) < 4} {
-			if {[expr {int(rand() * 100)}] > 80} {
-				# occasionally set the de1 to heating mode
-				#set ::de1(substate) 4
-				update_de1_state "$::de1_state(Espresso)\x4"
-			}
-		} elseif {$::de1(substate) == 4} {
-			if {[expr {int(rand() * 100)}] > 80} {
-				# occasionally set the de1 to heating mode
-				#set ::de1(substate) 5
-				update_de1_state "$::de1_state(Espresso)\x5"
-			}
-		} 
+
+		if {$::simindex >= [llength $::simulated(espresso_pressure)]} {
+			# end of data
+			 update_de1_state "$::de1_state(Idle)\x0"
+			 return
+		}
+
 	}
-
-	#set timerkey "$::de1(state)-$::de1(substate)"
-	#set ::timers($timerkey) [clock milliseconds]
-
-	#if {$::de1(substate) > 6} {
-	#	set ::de1(substate) 0
-	#}
 
 	# JB's GUI driver needs an event_dict
 
 	# NB: This seems to be getting called at a 10 Hz rate
 	#     which is faster than the DE1's 25/(2 * line frequency)
-
 	set _now [expr {[clock milliseconds] / 1000.0}]
+
 	# SampleTime is a 16-bit counter of zero crossings
-	set _de1_sample_time \
-		[expr { int( ( $_now - $::gui::_arbitrary_t0 ) \
-						/ $::gui::_st_period ) % 65536 }]
+	set _de1_sample_time [expr { int( ( $_now - $::gui::_arbitrary_t0 ) / $::gui::_st_period ) % 65536 }]
+
+
+	if {$::de1(substate) == 4} {
+		# track the end of preinfusion
+		#puts [array names ::simulated]
+		#exit
+		set x "timers(espresso_preinfusion_stop)"
+		set espresso_preinfusion_stop $::simulated($x)
+		set x "timers(espresso_preinfusion_start)"
+		set espresso_preinfusion_start $::simulated($x)
+		#set espresso_preinfusion_start $::simulated(timers(espresso_preinfusion_start))
+		#puts "pre $espresso_preinfusion_stop "
+		set diff_pre [expr {($espresso_preinfusion_stop - $espresso_preinfusion_start)/10}]
+		#puts "pre $espresso_preinfusion_stop / $espresso_preinfusion_start = $diff_pre > $_de1_sample_time"
+		#exit
+	}
+
+
+	if {$::de1(substate) == 4 || $::de1(substate) == 5} {
+		# espresso preinfusion or pouring, get data from simulation
+
+		catch {
+			set ::de1(pressure) [lindex $::simulated(espresso_pressure) $::simindex]
+		}
+		if {[info exists ::de1(pressure)] != 1} {
+			set ::de1(pressure) 8.1
+		}
+
+		catch {
+			set ::de1(flow) [lindex $::simulated(espresso_flow) $::simindex]
+		}
+		if {[info exists ::de1(flow)] != 1} {
+			set ::de1(flow) 1.1
+		}
+
+		catch {
+			set ::de1(mix_temperature) [lindex $::simulated(espresso_temperature_mix) $::simindex]
+		}
+		if {[info exists ::de1(mix_temperature)] != 1} {
+			set ::de1(mix_temperature) 90
+		}
+
+		catch {
+			set ::de1(head_temperature) [lindex $::simulated(espresso_temperature_basket) $::simindex]
+		}
+		if {[info exists ::de1(head_temperature)] != 1} {
+			set ::de1(head_temperature) 90
+		}
+
+		catch {
+			set ::de1(goal_temperature) [lindex $::simulated(espresso_temperature_goal) $::simindex]
+		}
+		if {[info exists ::de1(goal_temperature)] != 1} {
+			set ::de1(goal_temperature) 90
+		}
+
+
+		catch {
+			set ::de1(goal_pressure) [lindex $::simulated(espresso_pressure_goal) $::simindex]
+		}
+		if {[info exists ::de1(goal_pressure)] != 1} {
+			set ::de1(goal_pressure) 8.3
+		}
+
+		catch {
+			set ::de1(goal_flow) [lindex $::simulated(espresso_flow_goal) $::simindex]
+		}
+		if {[info exists ::de1(goal_flow)] != 1} {
+			set ::de1(goal_flow) 2.3
+		}
+
+		catch {
+			#set ::de1(scale_weight) [lindex $::simulated(espresso_weight) $::simindex]
+			::device::scale::process_weight_update $::de1(scale_weight)
+
+		}
+		if {[info exists ::de1(scale_weight)] != 1} {
+			set ::de1(scale_weight) 8.3
+		}
+
+		catch {
+			set ::de1(scale_weight_rate) [lindex $::simulated(espresso_flow_weight) $::simindex]
+		}
+		if {[info exists ::de1(scale_weight_rate)] != 1} {
+			set ::de1(scale_weight_rate) 1.4
+		}
+
+		if {$::simindex > 0} {
+			if {[lindex $::simulated(espresso_state_change) $::simindex] != [lindex $::simulated(espresso_state_change) $::simindex-1]} {
+				incr ::de1(current_frame_number)
+
+				if {$::simindex > 60 &&  $::de1(substate) == 4} {
+					update_de1_state "$::de1_state(Espresso)\x5"
+				}
+
+			}
+		}
+	}
+
+
 	set event_dict [dict create \
-				event_time 	$_now \
-				update_received	$_now \
-				SampleTime	$_de1_sample_time \
-				GroupPressure	$::de1(pressure) \
-				GroupFlow	$::de1(flow) \
-				MixTemp		$::de1(mix_temperature) \
-				HeadTemp	$::de1(head_temperature) \
-				SetHeadTemp	$::de1(goal_temperature) \
-				SetGroupPressure $::de1(goal_pressure) \
-				SetGroupFlow	$::de1(goal_flow) \
-				FrameNumber	$::de1(current_frame_number) \
-				SteamTemp	$::de1(steam_heater_temperature) \
-				this_state	[::de1::state::current_state] \
-				this_substate	[::de1::state::current_substate] \
-					]
+		event_time 	$_now \
+		update_received	$_now \
+		SampleTime	$_de1_sample_time \
+		GroupPressure	$::de1(pressure) \
+		scale_weight	$::de1(scale_weight) \
+		GroupFlow	$::de1(flow) \
+		MixTemp		$::de1(mix_temperature) \
+		HeadTemp	$::de1(head_temperature) \
+		SetHeadTemp	$::de1(goal_temperature) \
+		SetGroupPressure $::de1(goal_pressure) \
+		SetGroupFlow	$::de1(goal_flow) \
+		FrameNumber	$::de1(current_frame_number) \
+		SteamTemp	$::de1(steam_heater_temperature) \
+		this_state	[::de1::state::current_state] \
+		this_substate	[::de1::state::current_substate] \
+	]
+
 
 	if {$::de1(state) == 4} {
 		::de1::event::apply::on_shotvalue_available_callbacks $event_dict
+
 	} elseif {$::de1(state) == 5} {
 		#steaming
 		::de1::event::apply::on_shotvalue_available_callbacks $event_dict
@@ -3035,6 +3136,7 @@ namespace eval ::gui::update {
 		set this_substate [dict get $event_dict this_substate]
 		set this_flow [dict get $event_dict GroupFlow]
 		set this_pressure [dict get $event_dict GroupPressure]
+		set update_received [dict get $event_dict update_received]
 
 		# As this gets called every 4-5 times a second, and usually does nothing
 		# bail out early and simplify the logic that follows
@@ -3095,15 +3197,12 @@ namespace eval ::gui::update {
 						if {$::de1(scale_weight) == ""} {
 							set ::de1(scale_weight) 0
 						}
-						espresso_weight append \
-							[round_to_two_digits $::de1(scale_weight)]
-						espresso_weight_chartable append \
-							[round_to_two_digits [expr {0.10 * $::de1(scale_weight)}]]
+						espresso_weight append [round_to_two_digits $::de1(scale_weight)]
+						espresso_weight_chartable append [round_to_two_digits [expr {0.10 * $::de1(scale_weight)}]]
 
 						espresso_pressure append [round_to_two_digits $GroupPressure]
 						espresso_flow append [round_to_two_digits $GroupFlow]
-						espresso_flow_2x append [round_to_two_digits \
-										 [expr {2.0 * $GroupFlow}]]
+						espresso_flow_2x append [round_to_two_digits [expr {2.0 * $GroupFlow}]]
 
 						set resistance 0
 						catch {

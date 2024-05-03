@@ -642,8 +642,11 @@ proc steamtemp {} {
 }
 
 proc watertemp {} {
-	if {$::android == 0} {
-		#set ::de1(head_temperature) [expr {$::settings(espresso_temperature) - 2.0 + (rand() * 4)}]
+
+
+	if {$::android == 0 && $::settings(use_simulated_data) == 0} {
+
+		set ::de1(head_temperature) [expr {$::settings(espresso_temperature) - 2.0 + (rand() * 4)}]
 		set ::de1(goal_temperature) $::settings(espresso_temperature)
 
 		if {[ifexists ::de1(head_temperature)] == ""} {

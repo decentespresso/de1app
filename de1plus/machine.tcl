@@ -212,7 +212,8 @@ array set ::de1_command_names_to_cuuids [reverse_array ::de1_cuuids_to_command_n
 
 array set ::settings {
 	enable_rise 0
-	use_simulated_data 0
+	use_simulated_data 1
+	do_realtime_espresso_simulation 1
 	dim_screen_when_battery_low 1
 	smart_battery_charging 1
 	force_fw_update 0
