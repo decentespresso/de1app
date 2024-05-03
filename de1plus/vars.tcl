@@ -746,7 +746,9 @@ proc group_head_heater_temperature {} {
 	
 	if {$::android == 0} {
 		# slowly have the water level drift
-		set ::de1(head_temperature) [expr {$::de1(head_temperature) + (.1*(rand() - 0.5))}]
+		catch {
+			set ::de1(head_temperature) [expr {$::de1(head_temperature) + (.1*(rand() - 0.5))}]
+		}
 
 		if {$::de1(head_temperature) < 10} {
 			set ::de1(head_temperature) 80
