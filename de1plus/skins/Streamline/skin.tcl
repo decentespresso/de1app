@@ -1,6 +1,9 @@
 package require de1 1.0
 
-set ::settings(ghc_is_installed) 0
+set ::settings(ghc_is_installed) 1
+
+set ::off_page "off"
+#set ::off_page "off_zoomed"
 
 set ghc_pos_pffset 0
 if {$::settings(ghc_is_installed) == 0} { 
@@ -208,12 +211,12 @@ load_font "mono10" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 12
 load_font "mono10bold" "[homedir]/skins/Streamline/NotoSansMono-ExtraBold.ttf" 12
 
 set ::pages [list off steam espresso water flush info hotwaterrinse]
-set ::pages_not_off [list steam espresso water flush info hotwaterrinse]
+set ::all_pages [list off off_zoomed steam espresso water flush info hotwaterrinse]
+#set ::pages_not_off [list steam espresso water flush info hotwaterrinse]
 
 set ::streamline_hotwater_btn_mode "ml"
 
-dui page add $::pages -bg_color $::background_color
-#add_de1_page $::pages "pumijo3.jpg"
+dui page add $::all_pages -bg_color $::background_color
 
 # load a default profile if none is loaded
 if {[ifexists ::settings(profile_filename)] == ""} {
@@ -266,10 +269,11 @@ proc streamline_rounded_rectangle {contexts x1 y1 x2 y2 colour angle {tags {}}} 
 # draw the background shapes
 
 # white background
-streamline_rectangle $::pages 0 0 2560 1600 $::background_color
+streamline_rectangle $::all_pages 0 0 2560 1600 $::background_color
 
 # top grey box
-streamline_rectangle $::pages 0 0 2560 220 $::box_color
+streamline_rectangle $::all_pages 0 0 2560 220 $::box_color
+#streamline_rectangle "off_zoomed" 0 0 2560 220 $::box_color
 
 # left grey box
 streamline_rectangle $::pages 0 220 626 1600 $::box_color
@@ -286,6 +290,7 @@ streamline_rectangle $::pages 0 1365 626 1365 $::box_line_color
 
 # grey horizontal line 
 streamline_rectangle $::pages  626 418 2560 418 $::box_line_color
+streamline_rectangle "off_zoomed"  0 418 2560 418 $::box_line_color
 
 #  grey line on the bottom
 streamline_rectangle $::pages 626 1274 2560 1274 $::box_line_color
@@ -299,10 +304,12 @@ if {$::settings(ghc_is_installed) == 0} {
 	#
 	streamline_rectangle $::pages 2319 220 2600 1274 $::box_color
 	streamline_rectangle $::pages 2319 220 2319 1274 $::box_line_color
+	streamline_rectangle "off_zoomed" 2319 220 2600 1600 $::box_color
+	streamline_rectangle "off_zoomed" 2319 220 2319 1600 $::box_line_color
 }
 
 
-streamline_rectangle $::pages 0 220 2560 220 $::box_line_color
+streamline_rectangle $::all_pages 0 220 2560 220 $::box_line_color
 
 
 ############################################################################################################################################################################################################
@@ -336,6 +343,7 @@ if {[ifexists ::settings(grinder_setting)] == ""} {
 }
 
 add_de1_variable $::pages 690 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[ifexists settings(profile_title)]} 
+add_de1_variable "off_zoomed" 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[ifexists settings(profile_title)]} 
 
 
 ############################################################################################################################################################################################################
@@ -348,7 +356,7 @@ proc streamline_status_msg_click {} {
 	puts "ERROR TAPPED $::streamline_global(status_msg_clickable)"	
 }
 
-set streamline_status_msg [add_de1_rich_text $::pages [expr {2500 - $ghc_pos_pffset}] 305 right 0 1 40 $::background_color [list \
+set streamline_status_msg [add_de1_rich_text $::all_pages [expr {2500 - $ghc_pos_pffset}] 305 right 0 1 40 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_text)}  -font "Inter-Black18" -foreground $::scale_disconnected_color  ] \
 	[list -text "   " -font "Inter-Black18"] \
 	[list -text {$::streamline_global(status_msg_clickable)}  -font "Inter-Black18" -foreground $::status_clickable_text -exec "streamline_status_msg_click" ] \
@@ -395,6 +403,7 @@ lappend btns \
 	[list -text "   " -font "Inter-SemiBold18"] 
 
 set streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 60 $::background_color $btns ]
+set streamline_status_msg [add_de1_rich_text "off_zoomed" 50 330 left 1 2 60 $::background_color $btns ]
 
 ############################################################################################################################################################################################################
 
@@ -843,11 +852,11 @@ dui aspect set -theme default -type dbutton_label width 220
 
 
 #  -longpress_cmd { puts "ERRORlongpress" }
-dui add dbutton $::pages 50 50 360 170 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { streamline_profile_select 1 }
-dui add dbutton $::pages 380 50 710 170 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { streamline_profile_select 2 } 
-dui add dbutton $::pages 730 50 1050 170 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { streamline_profile_select 3 } 
-dui add dbutton $::pages 1070 50 1370 170 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { streamline_profile_select 4 } 
-dui add dbutton $::pages 1390 50 1690 170 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { streamline_profile_select 5 } 
+dui add dbutton $::all_pages 50 50 360 170 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { streamline_profile_select 1 }
+dui add dbutton $::all_pages 380 50 710 170 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { streamline_profile_select 2 } 
+dui add dbutton $::all_pages 730 50 1050 170 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { streamline_profile_select 3 } 
+dui add dbutton $::all_pages 1070 50 1370 170 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { streamline_profile_select 4 } 
+dui add dbutton $::all_pages 1390 50 1690 170 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { streamline_profile_select 5 } 
 
 
 
@@ -867,8 +876,8 @@ dui aspect set -theme default -type dbutton radius [rescale_y_skin 56]
 dui aspect set -theme default -type dbutton label_fill $::settings_sleep_button_text_color
 
 
-dui add dbutton $::pages 2100 66 2300 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_in); show_settings }
-dui add dbutton $::pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_in);start_sleep }
+dui add dbutton $::all_pages 2100 66 2300 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_in); show_settings }
+dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_in);start_sleep }
 
 
 
@@ -884,7 +893,7 @@ if { [plugins enabled DYE] } {
 	}
 	dui page load DYE current 
 
-	dui add dbutton $::pages 1900 76 2090 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
+	dui add dbutton $::all_pages 1900 76 2090 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
 
 }
 
@@ -901,10 +910,6 @@ proc show_DYE_page {} {
 
 # font color
 #dui aspect set -theme default -type dbutton label_fill "3c5782"
-
-#dui add dbutton $::pages 2120 76 2300 145 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_in); show_settings }
-#dui add dbutton $::pages 2330 76 2510 145 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_in);start_sleep }
-
 
 refresh_favorite_profile_button_labels
 
@@ -1194,7 +1199,7 @@ dui add dbutton "settings_1" 570 1452 680 1580  -tags profile_btn_5 -label "5"  
 
 proc streamline_profile_select { slot } {
 
-	if {[dui page current] != "off"} {
+	if {[dui page current] != "off" && [dui page current] != "off_zoomed"} {
 		return ""
 	}
 
@@ -1295,10 +1300,10 @@ if {$::settings(ghc_is_installed) == 0} {
 
 	if {$::settings(ghc_is_installed) == 0} { 
 
-		dui add dbutton "off" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn -label1 $s1 -label [translate "Coffee"]   -command {say [translate {Espresso}] $::settings(sound_button_in); start_espresso} 
-		dui add dbutton "off" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn -label1 $s3 -label [translate "Water"]   -command {say [translate {Water}] $::settings(sound_button_in); start_water} 
-		dui add dbutton "off" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn -label1 $s4 -label [translate "Flush"]  -command {say [translate {Flush}] $::settings(sound_button_in); start_flush} 
-		dui add dbutton "off" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn -label1 $s2 -label [translate "Steam"]   -command {say [translate {Steam}] $::settings(sound_button_in); start_steam} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn -label1 $s1 -label [translate "Coffee"]   -command {say [translate {Espresso}] $::settings(sound_button_in); start_espresso} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn -label1 $s3 -label [translate "Water"]   -command {say [translate {Water}] $::settings(sound_button_in); start_water} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn -label1 $s4 -label [translate "Flush"]  -command {say [translate {Flush}] $::settings(sound_button_in); start_flush} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn -label1 $s2 -label [translate "Steam"]   -command {say [translate {Steam}] $::settings(sound_button_in); start_steam} 
 		
 		dui aspect set -theme default -type dbutton outline $::ghc_disabled_button_outline 
 		dui aspect set -theme default -type dbutton fill $::ghc_disabled_button_fill 
@@ -1316,7 +1321,7 @@ if {$::settings(ghc_is_installed) == 0} {
 		dui aspect set -theme default -type dbutton fill $::ghc_enabled_stop_button_fill
 		dui aspect set -theme default -type dbutton label_fill $::ghc_disabled_stop_button_text_color
 		dui aspect set -theme default -type dbutton_symbol fill $::ghc_disabled_stop_button_text_color
-		dui add dbutton "off" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn_disabled -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn_disabled -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
 		dui aspect set -theme default -type dbutton fill $::ghc_enabled_stop_button_fill_color
 		dui aspect set -theme default -type dbutton label_fill $::ghc_enabled_stop_button_text_color
 		dui aspect set -theme default -type dbutton_symbol fill $::ghc_enabled_stop_button_text_color
@@ -2242,10 +2247,11 @@ set ::flow_goal_dashes "[rescale_x_skin 8] [rescale_x_skin 8]"
 
 
 set charts_width 1818
+set charts_width_zoomed 2500
+set charts_height 784
+set charts_height_zoomed 1090
 
-
-
-add_de1_widget $::pages graph 692 458 { 
+proc streamline_graph_smarts {widget} {
 
 	set ::streamline_chart $widget
 
@@ -2270,7 +2276,22 @@ add_de1_widget $::pages graph 692 458 {
 
 	$widget element create line_espresso_state_change_1 -xdata espresso_elapsed -ydata espresso_state_change -label "" -linewidth [rescale_x_skin 2] -color $::state_change_color  -pixels 0  -dashes $::state_change_dashes
 
-} -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width - $ghc_pos_pffset}]] -height [rescale_y_skin 784] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
+	bind $widget [platform_button_press] { 
+		if {$::de1(current_context) == "off"} {
+			set ::off_page "off_zoomed"
+		} else {
+			set ::off_page "off"
+		}
+		set_next_page off $::off_page
+		page_show off;
+	}	
+
+}
+
+
+add_de1_widget $::pages graph 692 458 { streamline_graph_smarts $widget } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
+add_de1_widget "off_zoomed" graph 22 458 { streamline_graph_smarts $widget } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width_zoomed - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height_zoomed] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
+
 ############################################################################################################################################################################################################
 
 
@@ -2307,7 +2328,7 @@ proc streamline_adjust_chart_x_axis_scheduled {} {
 
 streamline_adjust_chart_x_axis_scheduled
 
-add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off off; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
+add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
 
 
 proc streamline_load_history_shot {current_shot_filename} {
@@ -2579,4 +2600,9 @@ proc streamline_history_profile_fwd {} {
 
 streamline_init_history_files
 streamline_load_currently_selected_history_shot
+
+#after 1000 set_next_page off "off_zoomed"; page_show off_zoomed
+#set_next_page off "off_zoomed"
+#after 1000 page_show off_zoomed
+#after 100 page_show off_zoomed
 
