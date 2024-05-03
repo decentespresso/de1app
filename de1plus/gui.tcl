@@ -3016,6 +3016,26 @@ namespace eval ::gui::notify {
 				popup [translate_toast {Stopping for volume}]
 			}
 
+			not_connected {
+
+			    # With the ble reconnect logic
+			    # `ble` will report a connection event when attempting to connect.
+			    # When the connection fails, the disconnect logic fires.
+			    # This has been reported to cause "ticking" sounds every 30 seconds.
+
+			   # if { [::de1::state::current_state] == "Sleep" } { 
+			   # 	msg -ERROR "Reconnecting to espresso machine"
+			   # 	popup [translate_toast {Reconnecting to espresso machine}]
+			   # 	ble_connect_to_de1 
+			    #}
+
+				if { $::settings(show_scale_notifications) && $::de1(bluetooth_scale_connection_attempts_tried) < 1} {
+					set what [translate_toast {WARNING: Scale not connected}]
+					popup $what
+					say $what $::settings(sound_button_in)
+				}
+			}
+
 			default {
 
 				msg -ERROR "::gui::notify::de1_event called without matching event_id: $event_id $args"
