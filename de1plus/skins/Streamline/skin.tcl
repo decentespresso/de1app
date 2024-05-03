@@ -197,13 +197,9 @@ load_font "Inter-Thin14" "[homedir]/skins/Streamline/Inter-Thin.ttf" 14
 load_font "icomoon" "[homedir]/skins/Streamline/icomoon.ttf" 30
 
 # mono data card
-#load_font "mono10" "[homedir]/skins/Streamline/RobotoMono-Regular.ttf" 12
-#load_font "mono10" "[homedir]/skins/Streamline/IBMPlexMono-Regular.ttf" 12
 load_font "mono10" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 12
 
 # mono data card
-#load_font "mono10bold" "[homedir]/skins/Streamline/RobotoMono-SemiBold" 12
-#load_font "mono10bold" "[homedir]/skins/Streamline/IBMPlexMono-SemiBold.ttf" 12
 load_font "mono10bold" "[homedir]/skins/Streamline/NotoSansMono-ExtraBold.ttf" 12
 
 set ::pages [list off steam espresso water flush info hotwaterrinse]
