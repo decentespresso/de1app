@@ -2023,6 +2023,12 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				}
 
 				set_next_page off off; page_show off
+
+				if {[info exists ::settings_optional_callback] == 1} {
+					if {$::settings_optional_callback != ""} {
+						eval $::settings_optional_callback
+					}
+				}
 			}
 		} 2016 1430 2560 1600
 

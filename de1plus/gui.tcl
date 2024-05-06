@@ -1308,8 +1308,10 @@ proc set_next_page {machinepage guipage} {
 	set ::nextpage($key) $guipage
 }
 
-proc show_settings { {tab_to_show ""} } {
+proc show_settings { {tab_to_show ""} {optional_callback ""} } {
 	backup_settings; 
+
+	set ::settings_optional_callback $optional_callback
 
 	msg -INFO "show_settings"
 
