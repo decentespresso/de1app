@@ -1187,7 +1187,7 @@ proc finalwaterweight_text {} {
 
 # drink_weight is present for both espresso and hot water
 proc drink_weight_text {} {
-	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
+	if {$::de1(scale_weight) == ""} {
 		return ""
 	}
 
@@ -4124,6 +4124,7 @@ proc determine_final_weight { {tochange 0} } {
 	# SAW
 	set var ""
 	if {[::device::scale::expecting_present]} {
+
 		if {$::settings(settings_profile_type) == "settings_2c"} {
 			set var ::settings(final_desired_shot_weight_advanced)
 			set var_disable ::settings(final_desired_shot_volume_advanced)
@@ -4131,14 +4132,15 @@ proc determine_final_weight { {tochange 0} } {
 			set var ::settings(final_desired_shot_weight)
 			set var_disable ::settings(final_desired_shot_volume)
 		}
-	}
-	# SAV
-	if {$::settings(settings_profile_type) == "settings_2c"} {
-		set var ::settings(final_desired_shot_volume_advanced)
-		set var_weight ::settings(final_desired_shot_weight_advanced)
 	} else {
-		set var ::settings(final_desired_shot_volume)
-		set var_weight ::settings(final_desired_shot_weight)
+		# SAV
+		if {$::settings(settings_profile_type) == "settings_2c"} {
+			set var ::settings(final_desired_shot_volume_advanced)
+			set var_weight ::settings(final_desired_shot_weight_advanced)
+		} else {
+			set var ::settings(final_desired_shot_volume)
+			set var_weight ::settings(final_desired_shot_weight)
+		}
 	}
 
 	if {$tochange != 0} {
@@ -4155,6 +4157,7 @@ proc determine_final_weight { {tochange 0} } {
 		}
 
 	}
+
 	return [ifexists $var]
 }
 
