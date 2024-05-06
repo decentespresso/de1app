@@ -33,10 +33,18 @@ namespace eval ::shot {
 
         append espresso_data "espresso_elapsed {[espresso_elapsed range 0 end]}\n"
         append espresso_data "espresso_pressure {[espresso_pressure range 0 end]}\n"
-        append espresso_data "espresso_weight {[espresso_weight range 0 end]}\n"
+        catch {
+            append espresso_data "espresso_weight {[espresso_weight range 0 end]}\n"
+        }
         append espresso_data "espresso_flow {[espresso_flow range 0 end]}\n"
-        append espresso_data "espresso_flow_weight {[espresso_flow_weight range 0 end]}\n"
-        append espresso_data "espresso_flow_weight_raw {[espresso_flow_weight_raw range 0 end]}\n"
+        
+        catch {
+            append espresso_data "espresso_flow_weight {[espresso_flow_weight range 0 end]}\n"
+        }
+        catch {
+            append espresso_data "espresso_flow_weight_raw {[espresso_flow_weight_raw range 0 end]}\n"
+        }
+
         append espresso_data "espresso_temperature_basket {[espresso_temperature_basket range 0 end]}\n"
         append espresso_data "espresso_temperature_mix {[espresso_temperature_mix range 0 end]}\n"
         append espresso_data "espresso_water_dispensed {[espresso_water_dispensed range 0 end]}\n"
