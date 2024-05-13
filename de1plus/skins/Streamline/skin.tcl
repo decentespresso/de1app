@@ -350,7 +350,44 @@ proc back_from_settings {} {
 	refresh_favorite_profile_button_labels
 }
 
-add_de1_variable $::pages 690 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[ifexists settings(profile_title)]} 
+
+set ::streamline_needs_final_datacard_update 0
+proc streamline_profile_title {} {
+	set this_state [::de1::state::current_state]
+	set this_substate [::de1::state::current_substate]
+
+	#puts "ERROR set this_state [::de1::state::current_state]  - this_substate [::de1::state::current_substate]"
+	if {$this_state == "Espresso"} {
+		if {$this_substate == "preinfusion" || $this_substate == "pouring"} {
+			update_datacard_from_live_data
+			set ::streamline_needs_final_datacard_update 1
+		}
+
+		return "[ifexists ::settings(profile_title)]: [translate $this_substate]"
+
+	} elseif {$::streamline_needs_final_datacard_update == 1} {
+		set ::streamline_needs_final_datacard_update 0
+		 update_datacard_from_live_data		
+		
+	}
+
+	return [ifexists ::settings(profile_title)]
+}
+
+proc update_datacard_from_live_data {} {
+	set past_shot_array(espresso_elapsed) [espresso_elapsed range 0 end]
+	set past_shot_array(espresso_pressure) [espresso_pressure range 0 end]
+	set past_shot_array(espresso_weight) [espresso_weight range 0 end]
+	set past_shot_array(espresso_flow) [espresso_flow range 0 end]
+	set past_shot_array(espresso_flow_weight) [espresso_flow_weight range 0 end]
+	set past_shot_array(espresso_temperature_basket) [espresso_temperature_basket range 0 end]
+	set past_shot_array(espresso_water_dispensed) [espresso_water_dispensed range 0 end]
+	set past_shot_array(espresso_state_change) [espresso_state_change range 0 end]
+
+	update_data_card past_shot_array
+}
+
+add_de1_variable $::pages 690 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 add_de1_variable $::zoomed_pages 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[ifexists settings(profile_title)]} 
 
 
@@ -449,8 +486,8 @@ streamline_rounded_rectangle $::pages 360 282 478 325  $::box_color  20 grind_se
 
 # labels
 add_de1_text $::pages 50 282 -justify left -anchor "nw" -text [translate "Grind"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200] 
-add_de1_text $::pages 50 398 -justify left -anchor "nw" -text [translate "In"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
-add_de1_text $::pages 50 516 -justify left -anchor "nw" -text [translate "Out"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
+add_de1_text $::pages 50 398 -justify left -anchor "nw" -text [translate "Dose"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
+add_de1_text $::pages 50 516 -justify left -anchor "nw" -text [translate "Drink"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text $::pages 50 741 -justify left -anchor "nw" -text [translate "Temp"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text $::pages 50 967 -justify left -anchor "nw" -text [translate "Steam"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text $::pages 50 1194 -justify left -anchor "nw" -text [translate "Flush"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
@@ -540,6 +577,8 @@ proc start_streamline_espresso {} {
 	set_next_page espresso $::espresso_page
 	page_show espresso;
 
+	unset -nocomplain ::de1(espresso_elapsed)
+	update_data_card ::de1
 }
 
 set ::streamline_history_text_label [translate "HISTORY"] 
@@ -574,31 +613,36 @@ dui aspect set -theme default -type dbutton_symbol pos ".50 .5"
 
 if {$::android == 1 || $::undroid == 1} {
 	#dui aspect set -theme default -type dbutton fill "$::data_card_text_color"
-	dui add dbutton $::pages 628 1220 755 1465 -tags profile_back -symbol "arrow-left"  -command { streamline_history_profile_back } 
-	dui add dbutton $::pages 1055 1220 1121 1465 -tags profile_fwd -symbol "arrow-right"  -command { streamline_history_profile_fwd } 
+	dui add dbutton "off" 628 1220 755 1465 -tags profile_back -symbol "arrow-left"  -command { streamline_history_profile_back } 
+	dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd -symbol "arrow-right"  -command { streamline_history_profile_fwd } 
 } else {
-	dui add dbutton $::pages 690 1249 725 1435  -tags profile_back -label "<"  -command { streamline_history_profile_back } 
-	dui add dbutton $::pages 1065 1249 1101 1435  -tags profile_fwd -label ">"  -command { streamline_history_profile_fwd } 
+	dui add dbutton "off" 690 1249 725 1435  -tags profile_back -label "<"  -command { streamline_history_profile_back } 
+	dui add dbutton "off" 1065 1249 1101 1435  -tags profile_fwd -label ">"  -command { streamline_history_profile_fwd } 
 }
 
 
 add_de1_text $::pages 1416 1328 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages 1416 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[zero_pad [round_to_integer $::streamline_preinfusion_time] 2][translate "s"]} 
-add_de1_variable $::pages 1416 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[zero_pad [round_to_integer $::streamline_final_extraction_time] 2][translate "s"]}
-add_de1_variable $::pages 1416 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[zero_pad [round_to_integer $::streamline_shot_time] 2][translate "s"]}
+add_de1_variable $::pages 1416 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0][translate "s"]} 
+add_de1_variable $::pages 1416 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0][translate "s"]}
+add_de1_variable $::pages 1416 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0][translate "s"]}
 
 add_de1_text $::pages 1532 1328 -justify right -anchor "nw" -text [translate "Weight"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages 1532 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[zero_pad [round_one_digits $::streamline_preinfusion_weight] 2][translate "g"]} 
-add_de1_variable $::pages 1532 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[zero_pad [round_one_digits $::streamline_final_extraction_weight] 2][translate "g"]} 
-add_de1_variable $::pages 1532 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[zero_pad [round_one_digits $::streamline_shot_weight] 2][translate "g"]} 
+add_de1_variable $::pages 1532 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_weight 4 1][translate "g"]} 
+add_de1_variable $::pages 1532 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_weight 4 1][translate "g"]} 
+add_de1_variable $::pages 1532 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_weight 4 1][translate "g"]} 
+
+proc streamline_zero_pad {num dig prec} {
+ 	return [format "%00${dig}.${prec}f" $num]
+}
+
 
 set ::streamline_shot_volume 0
 set ::streamline_final_extraction_volume 0
 set ::streamline_preinfusion_volume 0
 add_de1_text $::pages 1690 1328 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 150]
-add_de1_variable $::pages 1690 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[zero_pad [round_to_integer $::streamline_preinfusion_volume] 2][translate "ml"]} 
-add_de1_variable $::pages 1690 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[zero_pad [round_to_integer $::streamline_final_extraction_volume] 2][translate "ml"]} 
-add_de1_variable $::pages 1690 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[zero_pad [round_to_integer $::streamline_shot_volume] 2][translate "ml"]} 
+add_de1_variable $::pages 1690 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_preinfusion_volume 2 0][translate "ml"]} 
+add_de1_variable $::pages 1690 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_final_extraction_volume 2 0][translate "ml"]} 
+add_de1_variable $::pages 1690 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_shot_volume 2 0][translate "ml"]} 
 
 set ::streamline_preinfusion_temp " "
 set ::streamline_extraction_temp " "
@@ -926,7 +970,7 @@ if { [plugins enabled DYE] } {
 	}
 	dui page load DYE current 
 
-	dui add dbutton $::all_pages 1900 76 2090 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
+	dui add dbutton $::all_pages 1880 76 2070 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
 
 }
 
@@ -2446,8 +2490,18 @@ proc streamline_load_history_shot {current_shot_filename} {
 
 	set ::streamline_current_history_profile_clock [ifexists past_shot_array(clock)]
 
-	array set profile_data [ifexists past_shot_array(settings)]
+
+	update_data_card past_shot_array
+}
+
+proc update_data_card { arrname } {
+
+	upvar $arrname past_shot_array
+
 	#puts "profile_data: [array get profile_data]"
+	#array set profile_data [ifexists past_shot_array(settings)]
+	array set profile_data [array get ::settings]
+
 	set ::streamline_current_history_profile_name [ifexists profile_data(profile_title)]
 
 	#####################################
@@ -2506,11 +2560,13 @@ proc streamline_load_history_shot {current_shot_filename} {
 
 	foreach t [ifexists past_shot_array(espresso_elapsed)] {
 
+		#puts "t is: $t of '$past_shot_array(espresso_elapsed)'"
+		#puts "espresso_pressure is '$past_shot_array(espresso_pressure)'"
 
 		set espresso_pressure [return_zero_if_blank [lindex $past_shot_array(espresso_pressure) $i]]
-		set espresso_weight [return_zero_if_blank [lindex $past_shot_array(espresso_weight) $i]]
+		set espresso_weight [return_zero_if_blank [lindex [ifexists past_shot_array(espresso_weight)] $i]]
 		set espresso_flow [return_zero_if_blank [lindex $past_shot_array(espresso_flow) $i]]
-		set espresso_flow_weight [return_zero_if_blank [lindex $past_shot_array(espresso_flow_weight) $i]]
+		set espresso_flow_weight [return_zero_if_blank [lindex [ifexists past_shot_array(espresso_flow_weight)] $i]]
 		set espresso_temperature_basket [return_zero_if_blank [lindex $past_shot_array(espresso_temperature_basket) $i]]
 		set espresso_water_dispensed [return_zero_if_blank [lindex $past_shot_array(espresso_water_dispensed) $i]]
 		set espresso_state_change [return_zero_if_blank [lindex $past_shot_array(espresso_state_change) $i]]
@@ -2529,6 +2585,8 @@ proc streamline_load_history_shot {current_shot_filename} {
 			}
 
 		}
+
+		#puts "ERROR preinfusion_end_step: $stepnum > $preinfusion_end_step"
 
 		set ::streamline_${state}_time $t
 		if {$espresso_weight > 0} {
@@ -2570,21 +2628,21 @@ proc streamline_load_history_shot {current_shot_filename} {
 		incr i
 	}
 
-	if {$state == "preinfusion"} {
-		# if there was no extraction, use blanks
-		set ::streamline_extraction_weight ""
-		set ::streamline_extraction_volume ""
-		set ::streamline_extraction_temp_high ""
-		set ::streamline_extraction_temp_low ""
-		set ::streamline_extraction_peak_flow ""
-		set ::streamline_extraction_peak_pressure ""
+
+
+	if {[info exists past_shot_array(espresso_elapsed)] != 1} {
+		set t 0
+		set espresso_weight 0
+		set espresso_water_dispensed 0
 	}
-	
+
 
 	set ::streamline_shot_time $t
 	set ::streamline_shot_weight $espresso_weight
 	set ::streamline_shot_volume [expr {10.0 * $espresso_water_dispensed}]
 	set ::streamline_final_extraction_time [expr {$t - $::streamline_preinfusion_time}]
+
+
 	set ::streamline_final_extraction_volume [expr {$::streamline_shot_volume - $::streamline_preinfusion_volume}]
 	set ::streamline_final_extraction_weight [expr {$::streamline_shot_weight - $::streamline_preinfusion_weight}]
 
@@ -2594,6 +2652,7 @@ proc streamline_load_history_shot {current_shot_filename} {
 	set ::streamline_extraction_peak_pressure [round_to_one_digits $::streamline_extraction_peak_pressure]
 
 
+	#puts "ERROR stat $state  			if {$::de1(state) == 4 || $::de1(substate) == 5} "
 	set ::streamline_preinfusion_temp ""
 	if {$::streamline_preinfusion_temp_high == 0} {
 		# no label
@@ -2621,6 +2680,51 @@ proc streamline_load_history_shot {current_shot_filename} {
 	set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_flow]–[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] [translate "ml/s"]"
 	set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_flow]–[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] [translate "ml/s"]"
 
+	#set ::streamline_preinfusion_low_peak_pressure_label ""
+	#set ::streamline_preinfusion_low_peak_flow_label ""
+
+	#set ::streamline_extraction_low_peak_pressure_label ""
+	#set ::streamline_extraction_low_peak_flow_label ""
+
+
+	if {$::de1(state) == 4} {
+		if {$state == "preinfusion"} {
+			# if there was no extraction, use blanks
+			set ::streamline_extraction_weight ""
+			set ::streamline_extraction_volume ""
+			set ::streamline_extraction_temp_high ""
+			set ::streamline_extraction_temp_low ""
+			set ::streamline_extraction_peak_flow ""
+			set ::streamline_extraction_peak_pressure ""
+
+			set ::streamline_final_extraction_volume ""
+			set ::streamline_final_extraction_weight ""
+			set ::streamline_final_extraction_time ""
+
+			set ::streamline_shot_time ""
+			set ::streamline_shot_weight ""
+			set ::streamline_shot_volume ""
+
+			set ::streamline_extraction_low_peak_pressure_label ""
+			set ::streamline_extraction_low_peak_flow_label ""
+
+			set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits $::de1(pressure)] [translate "bar"]"
+			set ::streamline_preinfusion_low_peak_flow_label "[round_to_one_digits $::de1(flow)] [translate "ml/s"]"
+			set ::streamline_preinfusion_temp [return_temperature_measurement $::de1(head_temperature)]
+
+		} else {
+			set ::streamline_shot_time ""
+			set ::streamline_shot_weight ""
+			set ::streamline_shot_volume ""
+
+			set ::streamline_extraction_low_peak_pressure_label "[round_one_digits $::de1(pressure)] [translate "bar"]"
+			set ::streamline_extraction_low_peak_flow_label "[round_to_one_digits $::de1(flow)] [translate "ml/s"]"
+			set ::streamline_extraction_temp [return_temperature_measurement $::de1(head_temperature)]
+
+		}
+	}
+
+	puts "ERROR $::de1(state) '$state'"
 
 	if {$::streamline_preinfusion_time == 0} {
 		set ::streamline_preinfusion_low_peak_pressure_label ""

@@ -587,7 +587,7 @@ proc waterflow {} {
 		return 0
 	}
 
-	if {$::android == 0} {
+	if {$::android == 0 && $::settings(use_simulated_data) == 0} {
 		if {[ifexists ::de1(flow)] == ""} {
 			set ::de1(flow) 3
 		}
@@ -598,11 +598,11 @@ proc waterflow {} {
 			set ::de1(flow) 1.5
 		}
 
-
 		set ::de1(flow) [expr {(.3 * (rand() - 0.5)) + $::de1(flow)}]		
 		set ::de1(goal_flow) [expr {(.3 * (rand() - 0.5)) + $::de1(goal_flow)}]		
 
 		if {$::de1_num_state($::de1(state)) == "Espresso"} {
+
 			if {[espresso_millitimer] < 5000} {	
 				set ::de1(preinfusion_volume) [expr {$::de1(preinfusion_volume) + ($::de1(flow) * .1) }]
 			} else {

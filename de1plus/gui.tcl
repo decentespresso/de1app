@@ -1115,6 +1115,10 @@ proc update_onscreen_variables { {state {}} } {
 proc set_dummy_espresso_vars {} {
 	if { $::android } { return }
 
+	if {$::de1(state) != 4} {
+		return
+	}
+
 	if {$::de1(state) == 4} {
 		if {$::de1(substate) == 1} {
 			# espresso is starting
@@ -1122,7 +1126,10 @@ proc set_dummy_espresso_vars {} {
 			set ::de1(scale_device_handle) 1
 			set ::simindex  0
 
-			open_random_simulation_file				
+			open_random_simulation_file	
+
+			# playing a random history item also means loading it as the current profile, otherwise it's weird and things don't line up
+			array set ::settings [array get $::simulated(settings)]			
 			update_de1_state "$::de1_state(Espresso)\x4"
 		}
 
@@ -1166,6 +1173,10 @@ proc set_dummy_espresso_vars {} {
 
 	}
 
+	if {[info exists ::simindex] != 1} {
+		set ::simindex 0
+	}
+
 	# JB's GUI driver needs an event_dict
 
 	# NB: This seems to be getting called at a 10 Hz rate
@@ -1191,6 +1202,7 @@ proc set_dummy_espresso_vars {} {
 		#exit
 	}
 
+	set espresso_water_dispensed 0
 
 	if {$::de1(substate) == 4 || $::de1(substate) == 5} {
 		# espresso preinfusion or pouring, get data from simulation
@@ -1261,6 +1273,25 @@ proc set_dummy_espresso_vars {} {
 		if {[info exists ::de1(scale_weight_rate)] != 1} {
 			set ::de1(scale_weight_rate) 1.4
 		}
+
+
+		#catch {
+			set espresso_water_dispensed [expr {10.0 * [lindex $::simulated(espresso_water_dispensed) $::simindex] }]
+		#}		
+
+		set this_state [::de1::state::current_state]
+		set this_substate [::de1::state::current_substate]
+
+		# track water volume
+		if {$this_state == "Espresso"} {
+			if {$this_substate == "preinfusion"} {
+				set ::de1(preinfusion_volume) [round_to_two_digits $espresso_water_dispensed]
+			} else {
+				set ::de1(pour_volume) [round_to_two_digits [expr {$espresso_water_dispensed - $::de1(preinfusion_volume)}]]
+			}
+		}
+
+		#puts "ERROR $::de1(state) espresso_water_dispensed: $::simindex : $espresso_water_dispensed ($this_state : $this_substate )  $::de1(preinfusion_volume)ml/$::de1(pour_volume)ml"
 
 		if {$::simindex > 0} {
 			if {[lindex $::simulated(espresso_state_change) $::simindex] != [lindex $::simulated(espresso_state_change) $::simindex-1]} {
