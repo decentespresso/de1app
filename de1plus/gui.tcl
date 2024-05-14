@@ -2794,29 +2794,22 @@ proc handle_keypress {keycode} {
 		start_sleep
 
 	} elseif {($::some_droid != 1 && $keycode == 50) || ($::some_droid == 1 && $keycode == 31)} {
-		# 2 = espresso (emulate GHC button press)
-		update_de1_state "$::de1_state(Espresso)\x0"
-		de1_send_state "make espresso" $::de1_state(Espresso)
+		start_espresso
 
 	} elseif {($::some_droid != 1 && $keycode == 48) || ($::some_droid == 1 && $keycode == 39)} {
 		# 0 = idle (emulate GHC button press)
-		update_de1_state "$::de1_state(Idle)\x0"
-		de1_send_state "go idle" $::de1_state(Idle)
+		start_sleep
 
 	} elseif {($::some_droid != 1 && $keycode == 49) || ($::some_droid == 1 && $keycode == 30)} {
-		# 1 = flush (emulate GHC button press)
-		update_de1_state "$::de1_state(HotWaterRinse)\x0"
-		de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
+		start_flush
 
 	} elseif {($::some_droid != 1 && $keycode == 51) || ($::some_droid == 1 && $keycode	== 32)} {
 		# 3 = steam (emulate GHC button press)
-		update_de1_state "$::de1_state(Steam)\x0"
-		de1_send_state "make steam" $::de1_state(Steam)
+		start_steam
 
 	} elseif {($::some_droid != 1 && $keycode == 52) || ($::some_droid == 1 && $keycode == 33)} {
 		# 4 = water (emulate GHC button press)
-		update_de1_state "$::de1_state(HotWater)\x0"
-		de1_send_state "make hot water" $::de1_state(HotWater)
+		start_water
 	}
 }
 

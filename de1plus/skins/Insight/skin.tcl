@@ -1344,10 +1344,31 @@ proc enabled_steam_eco_mode_label {} {
 
 		add_de1_button "steam_1 steam_3" {set ::de1(steam_disable_toggle) [expr {!$::de1(steam_disable_toggle)}] ; disable_steam_toggle } 1040 1160 1760 1400
 
+proc handle_insight_keypress {keycode} {
+
+	puts "dui page current=[dui page current] - ::de1(current_context)  $::de1(current_context)  "
+
+	set insight_pages [list off preheat steam water espresso]
+	set found 0
+	foreach insight_page $insight_pages {
+		if {[string first $insight_page $::de1(current_context)] != -1} {
+			set found 1
+			break
+		}
+	}
+
+	if {$found == 0} {
+		msg -ERROR "Ignoring keypress because not in an Insight page that accepts keypresses"
+		return
+	}
+
+	return [handle_keypress $keycode]
+}
 
 # optional keyboard bindings
 focus .can
-#bind Canvas <KeyPress> {handle_keypress %k}
+
+bind Canvas <KeyPress> {handle_insight_keypress %k}
 
 profile_has_changed_set_colors
 
