@@ -1764,8 +1764,8 @@ add_de1_text "descale_prepare" 70 50 -text [translate "Prepare to descale"] -fon
 
 add_de1_text "settings_3" 1304 1080  -text [translate "Water level"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	add_de1_widget "settings_3" scale 1304 1170 {} -from 3 -to 70 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1190] -width [rescale_y_skin 115] -variable ::settings(water_refill_point) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-	add_de1_variable "settings_3" 1304 1300 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] [water_tank_level_to_milliliters $::settings(water_refill_point)] [translate mL] ([expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}][translate mm])}
-	add_de1_variable "settings_3" 2488 1120 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[translate "Now:"] [water_tank_level_to_milliliters $::de1(water_level)] [translate mL] ([round_to_integer $::de1(water_level)][translate mm])}
+	add_de1_variable "settings_3" 1304 1300 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] [expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}][translate mm]}
+	add_de1_variable "settings_3" 2488 1120 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[translate "Now:"] [round_to_integer $::de1(water_level)][translate mm] (~[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]] [translate mL])}
 	#add_de1_button "settings_3" {start_refill_kit }  0 760 620 820
 
 	#add_de1_variable "settings_4" 50 760 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] $::settings(water_refill_point)[translate mm]}
