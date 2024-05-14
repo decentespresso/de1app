@@ -1451,8 +1451,8 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 
 proc update_de1_explanation_chart { {context {}} } {
 
-	if {[string range $::de1(current_context) 0 7] != "settings" && $::settings(skin) != "Insight" && $::settings(skin) != "Insight Dark"} {
-		# only Insight skin needs this feature, or if you are currently looking at a Settings tab
+	if {[string range $::de1(current_context) 0 7] != "settings" && $::settings(skin) != "Insight" && $::settings(skin) != "Insight Dark" && $::settings(skin) != "MimojaCafe"} {
+		# only Insight and MimojaCafe skin needs this feature, or if you are currently looking at a Settings tab
 		return {}
 	}
 
@@ -1492,7 +1492,7 @@ proc update_de1_explanation_chart { {context {}} } {
 		set ::settings(espresso_temperature_3) $::settings(espresso_temperature)
 	}
 
-	if {$::settings(skin) == "Insight" || $::settings(skin) == "Insight Dark"} {
+	if {$::settings(skin) == "Insight" || $::settings(skin) == "Insight Dark" || $::settings(skin) == "MimojaCafe"} {
 		clear_espresso_chart
 	}
 
