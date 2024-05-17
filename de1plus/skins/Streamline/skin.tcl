@@ -17,6 +17,8 @@ if {[info exists ::streamline_dark_mode] != 1} {
 	set ::streamline_dark_mode 0
 }
 
+::de1::event::listener::after_flow_complete_add [lambda {event_dict} { streamline_shot_ended } ]
+
 if {$::streamline_dark_mode == 0} {
 	set ::profile_title_color #385a92
 	set ::scale_disconnected_color #cd5360
@@ -368,28 +370,33 @@ proc streamline_profile_title {} {
 
 	} elseif {$::streamline_needs_final_datacard_update == 1} {
 		set ::streamline_needs_final_datacard_update 0
-		 update_datacard_from_live_data		
-		
+		 update_datacard_from_live_data				
 	}
 
 	return [ifexists ::settings(profile_title)]
 }
 
 proc update_datacard_from_live_data {} {
-	set past_shot_array(espresso_elapsed) [espresso_elapsed range 0 end]
-	set past_shot_array(espresso_pressure) [espresso_pressure range 0 end]
-	set past_shot_array(espresso_weight) [espresso_weight range 0 end]
-	set past_shot_array(espresso_flow) [espresso_flow range 0 end]
-	set past_shot_array(espresso_flow_weight) [espresso_flow_weight range 0 end]
-	set past_shot_array(espresso_temperature_basket) [espresso_temperature_basket range 0 end]
-	set past_shot_array(espresso_water_dispensed) [espresso_water_dispensed range 0 end]
-	set past_shot_array(espresso_state_change) [espresso_state_change range 0 end]
+	#puts "ERROR espresso_elapsed [espresso_state_change length]"
 
-	update_data_card past_shot_array
+	catch {
+		set past_shot_array(espresso_elapsed) [espresso_elapsed range 0 end]
+		set past_shot_array(espresso_pressure) [espresso_pressure range 0 end]
+		set past_shot_array(espresso_weight) [espresso_weight range 0 end]
+		set past_shot_array(espresso_flow) [espresso_flow range 0 end]
+		set past_shot_array(espresso_flow_weight) [espresso_flow_weight range 0 end]
+		set past_shot_array(espresso_temperature_basket) [espresso_temperature_basket range 0 end]
+		set past_shot_array(espresso_water_dispensed) [espresso_water_dispensed range 0 end]
+		set past_shot_array(espresso_state_change) [espresso_state_change range 0 end]
+	}
+
+	catch {
+		update_data_card past_shot_array
+	}
 }
 
 add_de1_variable $::pages 690 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
-add_de1_variable $::zoomed_pages 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[ifexists settings(profile_title)]} 
+add_de1_variable $::zoomed_pages 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 
 
 ############################################################################################################################################################################################################
@@ -420,13 +427,6 @@ trace add variable ::streamline_global(status_msg_clickable) write ::refresh_$st
 
 
 set btns ""
-if {$::settings(scale_bluetooth_address) != ""} {
-	lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::status_clickable_text  -exec "::device::scale::tare; popup [translate Tare]" ] 
-	lappend btns [list -text " " -font "Inter-Bold16"  -exec "puts tare" ]
-	lappend btns [list -text {[return_weight_measurement $::de1(scale_sensor_weight)]} -font "mono12" -foreground $::status_clickable_text  -exec "::device::scale::tare; popup [translate Tare]" ]
-	lappend btns [list -text "    " -font "Inter-Bold16"]
-}
-
 lappend btns \
 	[list -text "Mix" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
@@ -447,6 +447,15 @@ lappend btns \
 	[list -text "Time" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[time_format [clock seconds]]} -font "mono12" -foreground $::dataline_data_color   ] 
+
+if {$::settings(scale_bluetooth_address) != ""} {
+	lappend btns [list -text "    " -font "Inter-Bold16"] 
+	lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::status_clickable_text  -exec "::device::scale::tare; popup [translate Tare]" ] 
+	lappend btns [list -text " " -font "Inter-Bold16"  -exec "puts tare" ]
+	lappend btns [list -text {[return_weight_measurement $::de1(scale_sensor_weight)]} -font "mono12" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
+	lappend btns [list -text "    " -font "Inter-Bold16"]
+}
+
 
 set streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 [rescale_x_skin 146] $::background_color $btns ]
 set streamline_status_msg [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 [rescale_x_skin 170] $::background_color $btns ]
@@ -576,7 +585,7 @@ proc start_streamline_espresso {} {
 		set ::espresso_page "espresso_zoomed"
 	}
 	set_next_page espresso $::espresso_page
-	page_show espresso;
+	#page_show espresso;
 
 	unset -nocomplain ::de1(espresso_elapsed)
 	update_data_card ::de1
@@ -596,7 +605,37 @@ add_de1_text $::pages 1364 1454 -justify right -anchor "ne" -text [translate "Ex
 add_de1_text $::pages 1364 1516 -justify right -anchor "ne" -text [translate "Total"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 200]
 
 
-proc streamline_history_date_format {seconds} {
+proc streamline_history_date_format {shot_time} {
+
+	set seconds [expr {([clock seconds] - $shot_time)}]
+	set minutes [expr {([clock seconds] - $shot_time)/60}]
+	set hours [expr {([clock seconds] - $shot_time)/3600}]
+	set days [expr {([clock seconds] - $shot_time)/86400}]
+	set months [expr {([clock seconds] - $shot_time)/(30*86400)}]
+	set years [expr {([clock seconds] - $shot_time)/(365*86400)}]
+
+	if {$::de1(state) == 4} {
+		set t "now"
+	} elseif {$seconds < 120} {
+		set t "$seconds [translate {seconds ago}]"
+	} elseif {$minutes < 60} {
+		set t "${minutes} [translate {minutes ago}]"
+	} elseif {$hours < 2} {
+		set t [translate "1 hour ago"]
+	} elseif {$hours < 24} {
+		set t "${hours} [translate {hours ago}]"
+	} elseif {$days < 2} {
+		set t "[translate {yesterday}]"
+	} elseif {$days < 31} {
+		set t "${days} [translate {days ago}]"
+	} elseif {$months < 25} {
+		set t "$months [translate {months ago}]"
+	} else {
+		set t "$years [translate {years ago}]"
+	}
+
+	return $t
+
 	set crlftxt " "
 	if {$::settings(enable_ampm) == 1} {
 		return [subst {[string trimleft [clock format $seconds -format {%a, %d}] 0] [translate [clock format $seconds -format {%b}]],$crlftxt[string trim [clock format $seconds -format {%l:%M %p %Y}]]}]
@@ -623,27 +662,31 @@ if {$::android == 1 || $::undroid == 1} {
 
 
 add_de1_text $::pages 1416 1328 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages 1416 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0][translate "s"]} 
-add_de1_variable $::pages 1416 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0][translate "s"]}
-add_de1_variable $::pages 1416 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0][translate "s"]}
+add_de1_variable $::pages 1416 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0 [translate "s"]]} 
+add_de1_variable $::pages 1416 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0 [translate "s"]]}
+add_de1_variable $::pages 1416 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0 [translate "s"]]}
 
 add_de1_text $::pages 1532 1328 -justify right -anchor "nw" -text [translate "Weight"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages 1532 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_weight 4 1][translate "g"]} 
-add_de1_variable $::pages 1532 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_weight 4 1][translate "g"]} 
-add_de1_variable $::pages 1532 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_weight 4 1][translate "g"]} 
+add_de1_variable $::pages 1532 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_weight 4 1 [translate "g"]]} 
+add_de1_variable $::pages 1532 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_weight 4 1 [translate "g"]]} 
+add_de1_variable $::pages 1532 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_weight 4 1 [translate "g"]]} 
 
-proc streamline_zero_pad {num dig prec} {
- 	return [format "%00${dig}.${prec}f" $num]
+proc streamline_zero_pad {num dig prec {optional_label {}}} {
+	if {$num == ""} {
+		return ""
+	}
+ 	return [format "%00${dig}.${prec}f" $num]$optional_label
 }
+
 
 
 set ::streamline_shot_volume 0
 set ::streamline_final_extraction_volume 0
 set ::streamline_preinfusion_volume 0
 add_de1_text $::pages 1690 1328 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 150]
-add_de1_variable $::pages 1690 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_preinfusion_volume 2 0][translate "ml"]} 
-add_de1_variable $::pages 1690 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_final_extraction_volume 2 0][translate "ml"]} 
-add_de1_variable $::pages 1690 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_shot_volume 2 0][translate "ml"]} 
+add_de1_variable $::pages 1690 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_preinfusion_volume 2 0 [translate "ml"]]} 
+add_de1_variable $::pages 1690 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_final_extraction_volume 2 0 [translate "ml"]]} 
+add_de1_variable $::pages 1690 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_shot_volume 2 0 [translate "ml"]]} 
 
 set ::streamline_preinfusion_temp " "
 set ::streamline_extraction_temp " "
@@ -2499,6 +2542,8 @@ proc update_data_card { arrname } {
 
 	upvar $arrname past_shot_array
 
+	#puts "ERROR el: [ifexists past_shot_array(espresso_elapsed)]"
+
 	#puts "profile_data: [array get profile_data]"
 	#array set profile_data [ifexists past_shot_array(settings)]
 	array set profile_data [array get ::settings]
@@ -2725,7 +2770,7 @@ proc update_data_card { arrname } {
 		}
 	}
 
-	puts "ERROR $::de1(state) '$state'"
+	#puts "ERROR $::de1(state) '$state'"
 
 	if {$::streamline_preinfusion_time == 0} {
 		set ::streamline_preinfusion_low_peak_pressure_label ""
@@ -2789,6 +2834,15 @@ proc streamline_history_profile_fwd {} {
 		set ::streamline_history_file_selected_number 0
 	}
 	streamline_load_currently_selected_history_shot
+}
+
+proc streamline_shot_ended  {} {
+	#puts "ERROR ::settings(history_saved) $::settings(history_saved)"
+	#puts "ERROR ::settings(history_saved_shot_filename) $::settings(history_saved_shot_filename)"
+	#puts "ERROR $::streamline_history_file_selected_number"
+	lappend ::streamline_history_files [file tail $::settings(history_saved_shot_filename)]
+	set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] - 1}]
+	#set current_shot_filename [lindex $::streamline_history_files $::streamline_history_file_selected_number]
 }
 
 streamline_init_history_files
