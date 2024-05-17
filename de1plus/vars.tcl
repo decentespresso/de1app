@@ -3277,18 +3277,18 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 	if {!$::settings(history_saved) && [espresso_elapsed length] > 5 && [espresso_pressure length] > 5 && $::settings(should_save_history) == 1} {
 
 		#TODO disable once v2 shotfiles are stable
-		#if {$::settings(create_legacy_shotfiles) == 1} {
-			set espresso_data [::shot::create_legacy]
-			set fn "[homedir]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
-			write_file $fn $espresso_data
-		#}
+		set espresso_data [::shot::create_legacy]
+		set shotfn "[homedir]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
+		write_file $shotfn $espresso_data
 
 		set espresso_data [::shot::create]
-		set fn "[homedir]/history_v2/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].json"
-		write_file $fn $espresso_data
+		set jsonfn "[homedir]/history_v2/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].json"
+		write_file $jsonfn $espresso_data
 		msg -NOTICE "Saved this espresso to history"
 
 		set ::settings(history_saved) 1
+		set ::settings(history_saved_shot_filename) $shotfn
+
 	} else {
 		msg -NOTICE "Not saved to history:" \
 			"history_saved: $::settings(history_saved)" \

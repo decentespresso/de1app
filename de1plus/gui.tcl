@@ -1129,7 +1129,7 @@ proc set_dummy_espresso_vars {} {
 			open_random_simulation_file	
 
 			# playing a random history item also means loading it as the current profile, otherwise it's weird and things don't line up
-			array set ::settings [array get $::simulated(settings)]			
+			array set ::settings [array get [ifexists ::simulated(settings)]]
 			update_de1_state "$::de1_state(Espresso)\x4"
 		}
 

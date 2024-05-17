@@ -76,6 +76,10 @@ proc make_de1_dir {srcdir destdirs} {
         fonts/Dubai-Bold.otf *
         fonts/Dubai-Regular.otf *
 
+        "simulations/simulated_1.shot" *
+        "simulations/simulated_2.shot" *
+        "simulations/simulated_3.shot" *
+
         godshots/none.shot *
         godshots/import/readme.txt *
         godshots/import/common/readme.txt *
