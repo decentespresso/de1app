@@ -208,6 +208,7 @@ load_font "icomoon" "[homedir]/skins/Streamline/icomoon.ttf" 30
 
 # mono data card
 load_font "mono10" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 12
+load_font "mono12" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 13
 
 # mono data card
 load_font "mono10bold" "[homedir]/skins/Streamline/NotoSansMono-ExtraBold.ttf" 12
@@ -416,39 +417,39 @@ trace add variable ::streamline_global(status_msg_clickable) write ::refresh_$st
 ############################################################################################################################################################################################################
 # The Mix/Group/Steam/Tank status line
 
-set btns ""
 
+
+set btns ""
 if {$::settings(scale_bluetooth_address) != ""} {
-	lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::status_clickable_text  -exec "::device::scale::tare" ] 
+	lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::status_clickable_text  -exec "::device::scale::tare; popup [translate Tare]" ] 
 	lappend btns [list -text " " -font "Inter-Bold16"  -exec "puts tare" ]
-	lappend btns [list -text {[drink_weight_text]} -font "mono10" -foreground $::status_clickable_text  -exec "::device::scale::tare" ]
-	lappend btns [list -text "   " -font "Inter-Bold16"]
+	lappend btns [list -text {[return_weight_measurement $::de1(scale_sensor_weight)]} -font "mono12" -foreground $::status_clickable_text  -exec "::device::scale::tare; popup [translate Tare]" ]
+	lappend btns [list -text "    " -font "Inter-Bold16"]
 }
 
 lappend btns \
 	[list -text "Mix" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[string tolower [mixtemp_text 1]]} -font "mono10" -foreground $::dataline_data_color   ] \
-	[list -text "   " -font "Inter-SemiBold18"] \
+	[list -text {[string tolower [mixtemp_text 1]]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Group" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text {[string tolower [group_head_heater_temperature_text 1]]} -font "mono10" -foreground $::dataline_data_color  ] \
-	[list -text "   " -font "Inter-Bold16"] \
+	[list -text {[string tolower [group_head_heater_temperature_text 1]]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Steam" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text {[string tolower [steam_heater_temperature_text 1]]} -font "mono10" -foreground $::dataline_data_color ] \
-	[list -text "   " -font "Inter-Bold16"] \
+	[list -text {[string tolower [steam_heater_temperature_text 1]]} -font "mono12" -foreground $::dataline_data_color ] \
+	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Tank" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
-	[list -text {[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]] [translate ml]} -font "mono10" -foreground $::dataline_data_color  ] \
-	[list -text "   " -font "Inter-Bold16"] \
+	[list -text {[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]][translate ml]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Time" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[time_format [clock seconds]]} -font "mono10" -foreground $::dataline_data_color   ] \
-	[list -text "   " -font "Inter-SemiBold18"] 
+	[list -text {[time_format [clock seconds]]} -font "mono12" -foreground $::dataline_data_color   ] 
 
-set streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 60 $::background_color $btns ]
-set streamline_status_msg [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 60 $::background_color $btns ]
+set streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 [rescale_x_skin 146] $::background_color $btns ]
+set streamline_status_msg [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 [rescale_x_skin 170] $::background_color $btns ]
 
 ############################################################################################################################################################################################################
 
@@ -2659,7 +2660,7 @@ proc update_data_card { arrname } {
 	} elseif {[round_to_integer $::streamline_preinfusion_temp_low] == [round_to_integer $::streamline_preinfusion_temp_high]} {
 		set ::streamline_preinfusion_temp [string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]
 	} else {
-		set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_low]]–[string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]"
+		set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_low]]↗︎[string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]"
 	}
 
 	set ::streamline_extraction_temp ""
@@ -2669,16 +2670,16 @@ proc update_data_card { arrname } {
 	} elseif {[round_to_integer $::streamline_extraction_temp_low] == $::streamline_extraction_temp_high} {
 		set ::streamline_extraction_temp [string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]
 	} else {
-		set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]–[string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]"
+		set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]↗︎[string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]"
 	}
 
 
 
-	set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_pressure]–[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure] [translate "bar"]"
-	set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_pressure]–[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure] [translate "bar"]"
+	set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_pressure]↗︎[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure] [translate "bar"]"
+	set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_pressure]↗︎[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure] [translate "bar"]"
 
-	set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_flow]–[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] [translate "ml/s"]"
-	set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_flow]–[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] [translate "ml/s"]"
+	set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_flow]↗︎[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] [translate "ml/s"]"
+	set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_flow]↗︎[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] [translate "ml/s"]"
 
 	#set ::streamline_preinfusion_low_peak_pressure_label ""
 	#set ::streamline_preinfusion_low_peak_flow_label ""
