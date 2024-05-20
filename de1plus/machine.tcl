@@ -347,7 +347,7 @@ array set ::settings {
 	max_ble_connect_attempts 3
 	scheduler_wake 3600
 	scheduler_sleep 6000
-	timer_interval 100
+	timer_interval 200
 	screen_saver_delay 60
 	screen_saver_change_interval 10
 	enable_fluid_ounces 0
@@ -474,6 +474,9 @@ array set ::settings {
 
 # default de1plus skin
 set ::settings(skin) "Insight"
+
+	# experimentally try matching refresh rate to DE1 data rate, instead of 2x as fast
+	set ::settings(timer_interval) 200
 
 
 if {$::android != 1} {
