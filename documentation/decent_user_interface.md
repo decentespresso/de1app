@@ -113,6 +113,8 @@
   - [dui item delete](#dui_item_delete)
   - [dui item get](#dui_item_get)
   - [dui item get_widget](#dui_item_get_widget)
+  - [dui item dui_type](#dui_item_dui_type)
+  - [dui item type](#dui_item_type)
   - [dui item pages](#dui_item_pages)
   - [dui item config](#dui_item_config)
   - [dui item cget](#dui_item_cget)
@@ -1202,6 +1204,18 @@ The following commands form the exported API of `dui item`, but the ensemble inc
 
 >Return unique valid widget pathnames corresponding to the provided canvas IDs, widget pathnames, or page and tags combinations.
 
+<a name="dui_item_dui_type"></a>
+
+**dui item dui_type**  _page_or_id_or_widget ?tag?_
+
+>Return a list of lists of DUI types. The main list has the same length as UI controls are requested in the arguments, where each element is a list of the DUI types of the control. Only the main tag in each control gets a DUI type, and it can be a list (e.g. dbuttons have as second DUI type its shape).
+
+<a name="dui_item_type"></a>
+
+**dui item type**  _page_or_id_or_widget ?tag?_
+
+>Return a list of lists of types. The main list has the same length as UI controls are requested in the arguments, where each element is a list with 3 elements: 1) The DUI type of the control, as returned by <a href="#dui_item_dui_type">dui item dui_type</a>. An empty string if the page/tag/ID doesn't match a valid control main tag; 2) The canvas type of the item (e.g. "line" or "window"); 3) The window type of the item, in case the canvas type is "window" (e.g. "graph", or "text")
+
 
 <a name="dui_item_pages"></a>
 
@@ -1212,11 +1226,12 @@ The following commands form the exported API of `dui item`, but the ensemble inc
 
 <a name="dui_item_config"></a>
 
-**dui item config**  _page_or_ids_or_widgets ?tags? option value ?option value ...?_
+**dui item config**  _page_or_ids_or_widgets ?tags? ?-dui_type type? option value ?option value ...?_
 
 >Modify the configuration options of the canvas item or widget. 
 Items are selected in the same way as in **dui item get**.
 If it is a widget, the options are passed to the widget configure command, if it is a canvas item the options are passed to the canvas itemconfig command. 
+>DUI recognizes the DUI type of the main tag from calls to **dui item add**, and can modify some options smartly, but not all. You can force an item to be interpreted as a specific DUI type by defining  _-dui_type_ . DUI-specific options in compound items, such as dbuttons, are partially supported. You can modify fonts and colors, but not things like sizes. Please contact Enrique Bengoechea if you need to modify some option that is not yet supported.
 >You can also modify the DUI-specific option  _-initial_state_ .
 
 
@@ -1226,8 +1241,8 @@ If it is a widget, the options are passed to the widget configure command, if it
 
 >Return the current value of the configuration option for the specified canvas item or widget.
 Items are selected in the same way as in **dui item get**.
-Option may have any of the values accepted by the create widget command if it is a widget, or by the canvas create item
-command if it is a canvas item.
+Option may have any of the values accepted by the create widget command if it is a widget, or by the canvas create item command if it is a canvas item.
+>DUI-specific options in the **dui item add** command are partially supported. You can force an item to be interpreted as a specific DUI type by defining  _-dui_type_ . Please contact Enrique Bengoechea if you need to query some option that is not yet supported. 
 >You can also query the DUI-specific option  _-initial_state_ .
 
 <a name="dui_item_enable_or_disable"></a>
@@ -1585,6 +1600,12 @@ invisible clickable area) or any of the shape values accepted by [dui add shape]
 > >**%NS**: The page namespace, if defined.
 
 > >**%x0, %y0, %x1, %y1**: top-left and botton-right [coordinates](#dui_coordinates) of the button rectangle.
+
+>**-pressfill**  _color_and_times_list_
+
+>**-pressoutline**  _color_and_times_list_
+
+> >A sequence of consecutive fill/outline colors and times. Odd values are colors and even values are delay times in millisecons. When the button is pressed, the fill/outline color is changed to the first color in the list, then after the following delay the second color, and so on. If the last value is a time, reverts to the original color, if the last value is a color, that will be the final color.
 
 >**-label**  _text_
 
@@ -2331,3 +2352,4 @@ $widget element create ...
 $widget element create line_history_left_chart -xdata <xdata> -ydata <ydata> \
     {*}[dui aspect list -type graph_line -style hv_line -as_options yes]
 ```
+
