@@ -37,6 +37,8 @@
   - dui platform yscale_factor
   - dui platform rescale_x
   - dui platform rescale_y
+  - dui platform unscale_x
+  - dui platform unscale_y
   - dui platform translate_coordinates_finger_down_x
   - dui platform translate_coordinates_finger_down_y
   - dui platform is_fast_double_tap
@@ -101,6 +103,7 @@
   - [dui page moveto](#dui_page_moveto)
   - [dui page items](#dui_page_items)
   - [dui page has_item](#dui_page_has_item)
+  - [dui page add_items](#dui_page_add_items)
   - [dui page split_space](#dui_page_split_space)
   - dui page update_onscreen_variables
   - dui page calc_x, dui page calc_y, dui page calc_width, dui page calc_height
@@ -191,6 +194,7 @@ toolkit basics), and the [TkDocs online tutorial](https://tkdocs.com/).
 * 2021-10-27 - `dui::add::dbutton` gets a new `-longpress_cmd` option, by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-10-28 - Define the radius of each corner separately in rounded rectangles shapes and buttons, by [Enrique Bengoechea](https://github.com/ebengoechea)
 * 2021-11-08 - New controls `dselector` and `dtoggle`, by [Enrique Bengoechea](https://github.com/ebengoechea)
+* 2024-05-08 - General update: multistyle aspects, multiple types, and DUI items configuration using arguments similar to creation. By [Enrique Bengoechea](https://github.com/ebengoechea)
 
 
 
@@ -266,7 +270,9 @@ callbacks that run whenever a specific page is setup, loaded (after the `page sh
 
 ## Example
 
-(TBD)
+The best example of DUI usage is provided in the DSx2 plugin `dui_theme_demo.tcl`. It contains several pages demoing DUI features, and its source code has plenty of comments to clarify things.
+
+Also, almost every DUI feature is used in the DYE plugin, so that's the place to look for code examples.
 
 <a name="api"></a>
 
@@ -285,7 +291,7 @@ For theming and styling both the Tk [resource database](https://wiki.tcl-lang.or
 
 I also opted for building item/widget compound bundles in a very simple way: manipulate the **args** and wrap calls to create a  _facade_ . I considered other alternatives, like [overloading megawidgets](https://wiki.tcl-lang.org/page/Overloading+widgets), but that seemed to add unneeded complexity vs the simple design here, which is relatively easy to follow and still allows low-level access by client code to everything. Probably something like [snit](https://core.tcl-lang.org/tcllib/doc/tcllib-1-18/embedded/www/tcllib/files/modules/snit/snit.html) would have been a very good option, but I found it too late.
 
-Canvas-based new controls have their names prefixed by a "d" (**d**button, **d**slider, **d**checkbox, etc.) Currently they don't keep state internally, but depend on the global or namespace variable they reflect, and have all necessary parameters passed to them on the callbacks built at runtime when the are created and added to pages. This means that they are controlled indirectly by manipulating the variable, and there are no methods no modify their configuration (such as minimum and maximum values accepted) after creation. This shouldn't be hard to change in the future, if the need arises.
+Canvas-based new controls have their names prefixed by a "d" (**d**button, **d**slider, **d**checkbox, etc.) Currently they don't keep state internally, but depend on the global or namespace variable they reflect, and have all necessary parameters passed to them on the callbacks built at runtime when the are created and added to pages. This means that they are controlled indirectly by manipulating the variable or the Tk elements behind, and there are only limited methodsto modify their configuration at runtime, after creation. This shouldn't be hard to change in the future, if the need arises.
 
 It is highly recommended that code in skins and extensions use as little low-level Tk functionality as possible, and try to use DUI calls instead. This should make it much more future-proof. If you find needing to write code that tweaks how DUI makes things, please consider adding your extensions to the core DUI by making a GitHub Pull Request.
 
@@ -295,12 +301,8 @@ As an example, using a canvas as the topmost widget is at the heart of DUI, but 
 
 ### Environment setup
 
-In the current alpha version, DUI coexists with the previous GUI infrastructure code, sharing most of the startup
-configuration, so little setup is needed. As DUI replaces existing code in forthcoming versions, more of the
-environment setup will move here.
-
 At the moment, the only required initialization is the definition of the folders where to look for images and fonts 
-(DUI will look up files on each folder in the list starting by the first element until a match is found).
+(DUI will look up files on each folder in the list starting by the first element until a match is found) *in case your skin or plugin doesn't use default locations*.
 
 ```tcl
 dui font add_dirs "[homedir]/fonts"
@@ -316,9 +318,11 @@ true/false, etc. as accepted by `[string is true]`).
 
 **dui config**  _option value_   _?option value...?_
 
-	Sets the value of a global dui configuration option. Most options are boolean, and its value is coerced to 0/1 using `[string is true]`. Valid options are:
+>Sets the value of a global dui configuration option. Most options are boolean, and its value is coerced to 0/1 using `[string is true]`. Valid options are:
 
-- **debug_buttons** (default 1) Set to 1 while debugging to draw a border around "clickable" areas. May need to redefine the border color using aspect `<theme>.dbutton.debug_outline` to make it visible against the theme background.
+- **debug_buttons** (default 0) Set to 1 while debugging to draw a border around "clickable" areas. May need to redefine the border color using aspect `<theme>.dbutton.debug_outline` to make it visible against the theme background.
+
+- **debug** (default 0) Set to 1 to write debugging messages to the log file, especially about GUI elements creation (``dui add`` commands). This is *very* verbose, so in general it's a better idea to debug selectively by adding option ``-debug 1`` to the desired ``dui add`` command.
 
 - **create_page_namespaces** (default 0) Set to 1 to default to create a namespace ::dui::page::<page_name> for each new created page, unless a different namespace is provided in the `-namespace` option of `dui page add`.
 
@@ -338,29 +342,23 @@ true/false, etc. as accepted by `[string is true]`).
 
 ### Themes, aspects and styles
 
- A theme is just a name that serves as grouping for a set of aspect variables. Themes define a "visual identity", by
- setting default option values for all widgets (colors, fonts, anchoring, etc.) Each of these options is called an "aspect".
+DUI themes, aspects & styles are just a way of defining default arguments for `dui::add <widget>` commands, so they can be defined in a central "stylesheet" instead of doing it in the code that adds the widget, and thus can be mass changed more easily, e.g. when changing the skin or when changing the skin "theme". They separate the formatting part from the widget creation, and this allows using the same GUI code under different skins or skin themes, changing only the DUI theme definition, even changing the theme at runtime. The are akin to HTML CSS.
 
-Whenever a new visual item is added to a page, the default aspects will be automatically applied to the widget or canvas 
-item according to its type (text / variable / entry / listbox etc.), unless a different value is explicitly added on the 
-`gui add <item_type>` call.
+A **theme** is just a name that serves as grouping for a set of aspect variables. Themes define a "visual identity", by setting default option values for all widgets (colors, fonts, anchoring, etc.) In the DE1 app, the standard is to define a theme for each skin (e.g. Insight) or skin theme (e.g. InsightDark). A theme called *default* that provides default aspects comes included (and uses the Insight visual identity).
 
-Furthermore, each item or widget type can have any number of styles, which are sets of options with a specific appearance. 
-For example, we may define styles for text items like "tab_header", "page_title", etc. Client code only needs to add 
-argument `-style tab_header` to apply all the style aspects at once, and may overwrite any individual aspect 
-by just providing it using `dui add <item_type> (...) -option value`.
+Each of the options in a theme is called an **aspect**. Whenever a new visual item is added to a page, the default aspects will be automatically applied to the widget or canvas item according to its type (dtext / dbutton / entry / listbox etc.) and **style**, unless a different value is explicitly added on the `gui add <item_type>` call.
 
-A theme called *default* comes included. It provides default aspects corresponding to the Insight visual identity.
+Furthermore, each item type can have any number of styles, which are sets of options with a specific appearance. 
+For example, we may define styles for text items like "tab_header", "page_title", etc. Client code only needs to add argument `-style tab_header` to apply all the style aspects at once, and may overwrite any individual aspect by providing it on the creation call using `dui add <item_type> (...) -<option> <value>`.
 
-
-Aspects are stored using a 4-word syntax separated by dots, though the last word (&lt;style_name&gt;) is optional:
+Aspects are stored internally using a 4-word syntax separated by dots, though the last word (&lt;style_name&gt;) is optional:
 
 ```tcl
 <theme_name>.<type_name>.<option_name>.<style_name>
 ```
 
 Aspects are defined using `dui aspect add`. The full aspect can be provided, or, more often, the **-theme**,
-**-type** and **-style** options are applied to all given arguments. These three calls do the same:
+**-type** and **-style** options are applied to all given arguments. E.g. these three calls do the same:
 
 ```tcl
 dui aspect add -theme dark -type text -style \
@@ -471,21 +469,56 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 
 <a name="dui_aspect_get"></a>
 
-**dui aspect get**  _type aspect ?-option value ...?_
+**dui aspect get**  _types aspect ?-option value ...?_
 
->Return the value of the requested aspect, under the currently active theme unless the aspect name defines other theme or the **-theme** option is specified.  _type_  can be a list of types, in that case each type will be searched (from first to last in the list) until a matching aspect is found.
+>Return the value of the requested aspect, under the currently active theme unless the aspect name defines other theme or the **-theme** option is specified.  _types_  can be a list of types, in that case each type will be searched (from first to last in the list) until a matching aspect is found.
+
+>**Aspect searching:**
+
+>The following order is used to locate an aspect from the current active theme. This is the same logic applied for locating aspects when adding GUI elements to pages:
+
+>>If a list of styles is defined using option `-style`, searches the aspect for each style in the current theme *from right to left* in the styles list until a match is found. 
+
+>>For each style, it searches for each of the types in the current theme *from left to right* in the types list until a match is found. 
+
+>>If no match is found in this search, repeats the same search logic but using the "default" theme. If no aspect is found in this process, returns the value given by the `-default` option, or an empty string if no default was specified (in that case, also writes a message in the log file).
+
+>>The reasoning for searching the types list from left to right is that DUI types provide a loose inheritance mechanism. For example, a "dbutton" is also a "shape". Or a "dselector" is composed of several "dbuttons" each of which is a "shape". So, you can define default aspects for DUI shapes that would be applied unless a specific aspect for a dbutton is desired, like this:
+
+>>```
+>>dui aspect get {dbutton shape} fill
+>>```
+
+>>This is more useful when styles are added to the equation. For dbuttons, default styles are provided that match the shape's shape (round, outline, etc.), so we can do the following:
+
+>>```
+>>dui aspect get {dbutton shape} fill -style {round my_ok_button}
+>>```
+
+>>This last example shows why styles are searched from right to left. Here the notion is not "inheritance" but "composition" and "specialization": Styles on the right part of the `-style` list are searched first, so you can specialize custom styles by redefining only parts of them. In the above example, style "round" would be generic for all round-shape buttons, and "my_ok_button" would be a style that redefines only parts of it, like the colors or the font labels.
+
+>>One common usage of multiple styles is to compose parts of compound GUI elements, like dbuttons. In the following example, the "round" style would define the shape part, whereas the "my_button_text" style would override "round" style defaults only for the text labels of the button:
+
+>>```
+>>dui aspect get {dbutton shape} fill -style {round my_button_text}
+>>```
+
+>>Because tracking which aspects would apply to a widget creation call (or `dui aspect get` call) may become hard to track, the `-debug 1` option is supported on all `dui add` commands and on the `dui aspect get` command. It will write to the log some debugging info like the exact set of aspects to be used and from which theme definition they come from, plus most of the underlying Tk and canvas calls used to create the control. This can get very verbose, but comes handy for understanding what's happening inside DUI.
+
 
 >Named options:
 
 >**-theme**  _theme_name_ 
 
->**-style**  _style_name_
+>**-style**  _style_names_list_
 
 >**-default**  _option_value_
 
 > >Value to return in case the requested aspect is not defined.
 
 >**-default_type**  _type_
+
+>**-debug**  _boolean_ (default 0) If 1, writes debugging data to the log file that allows to understand which theme aspects are being matched.
 
 > >If the aspect is not defined for the requested type, try the same option for this type as default. Normally used internally and not so much for final user code. Now that  _type_  accepts a list of types this is no longer needed, but still kept for backwards-compatibility.
 
@@ -501,17 +534,17 @@ If not stated otherwise in the aspect name or the **-theme** option, the current
 
 **dui aspect list**  ?-option option_value ...?_
 
->Return a list of all requested aspects. 
+>Return a list of all requested aspects, using the same logic as `dui aspect get` above.
 
 >Named options:
 
 >**-theme**  _theme_name_ 
 
->**-type**  _type_name_
+>**-type**  _type_names_list_
 
->**-style**  _style_value_
+>**-style**  _style_values_list_
 
-> >Restricts to the requested  _theme_ ,  _type_ , or  _style_  names.
+> >Restricts to the requested  _theme_ ,  _types_ , or  _styles_  names.
 
 >**-values**  _boolean_
 
@@ -726,7 +759,7 @@ Although this code style is still supported, it is highly recommended that UI co
 
 DUI offers the base namespace **::dui::pages** where page namespaces can be created as children, and uses it as default, but doesn't require you to use it. Any namespace can be used, by declaring it with the **-namespace** option of the <a href="#dui_page_add">dui page add</a> command.
 
-Another advantage of using page namespaces is that pages can be completely rebuilt on the fly, for example to change their aspect to anooher skin. See commands [dui page recreate](#dui_page_recreate) and [dui page retheme](#dui_page_retheme).
+Another advantage of using page namespaces is that pages can be completely rebuilt on the fly, for example to change their aspect to another skin. See commands [dui page recreate](#dui_page_recreate) and [dui page retheme](#dui_page_retheme).
 
 
 <a name="page_actions"></a>
@@ -1035,6 +1068,12 @@ If  _x_  or  _y_  are between 0 and 1, they are interpreted as percentages of th
 **dui page has_item**  _page_name tag_
 
 >Returns whether  _tag_  corresponds to an item tag in page  _page_name_ .
+
+<a name="dui_page_add_items"></a>
+
+**dui page add_items**  _pages_names tags_
+
+>Adds the existing  _tags_  list to the existing  _pages_names_ .
 
 <a name="dui_page_split_space"></a>
 
@@ -1367,6 +1406,11 @@ that is the width or height of the page they are placed in.
 
 >When a **dui add** command creates a control  _compound_ , use the corresponding prefix on the option names to pass those options to the "sub-item" creation command.
 
+**-debug**  _boolean_
+
+>Set to 1 to write debugging information about the item creation to the log file. This shows details of the theme aspects that will be applied, and also show the low-level Tk calls that compose the item. Can be very verbose.
+
+
 ##### Synonym "convenience" commands
 
 **dui add theme**  _theme_name ?theme_name ...?_
@@ -1473,15 +1517,14 @@ like buttons or dialog pages.
 
 > >-**oval**: An oval. This accepts as formatting options those taken by **canvas create oval**.
 
-> >-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and **-radius** (determines how "round" the rectangle corners are).
+> >-**round**: A rounded-corners filled rectangle. This type of button cannot have a border (outline). It is the type of buttons used in the Metric and MimojaCafe skins. It accepts as formatting options **-fill** (button fill color), **-disabledfill** (button fill color when disabled) and -**radius** (or -**arc_offset**, determines how "round" the rectangle corners are).
 
->> **radius** can be a list of up to 4 elements, giving the radius of each of the 4 corners separately, starting top-left and going clockwards {top-left top-right bottom-right bottom-left}. If it has less than 4 elements, they are replicated until having 4 elements. A radius of 0 draws a 90º angle.
+>>>-**radius** or -**arc_offset** can be a list of up to 4 elements, giving the radius of each of the 4 corners separately, starting top-left and going clockwards {top-left top-right bottom-right bottom-left}. If it has less than 4 elements, they are replicated until having 4 elements. A radius of 0 draws a 90º angle.
 
-> >-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline), **-disabledoutline** (color of the outline when the button is disabled), **-arc_offset** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border). When using DUI styles it may sometimes be necessary to explicitly set **-fill {}** so it's not inherited from parent (such as "dbutton") defaults.
+> >-**outline**: A rounded-corners rectangle with a visible outline border. In this case, the fill color is that of the background, and cannot be modified. This is the type of button used in the DSx skin. It accepts as formatting options **-outline** (color of the outline, uses -**fill** if outline is undefined), **-disabledoutline** (color of the outline when the button is disabled, uses -**disabledfill** if disabledoutline is undefined), **-arc_offset** (determines how "round" the rectangle corners are, uses -**radius** if arc_offset is undfined) and **-width** (line width of the outline border). When using DUI styles it may sometimes be necessary to explicitly set **-fill {}** so it's not inherited from parent (such as "dbutton") defaults.
 
-> >-**round_outline**: A rounded-corners rectangle with a visible outline border which, unlike **outline**, can be filled with a color different from the background. This is actually built overlapping a "round" shape and an "outline" shape. It accepts as formatting options **-fill** (fill color), **-disabledfill** (fill color when disabled), **-outline** (color of the outline), **-disabledoutline** (color of the outline when the shape is disabled), **-radius** (determines how "round" the rectangle corners are) and **-width** (line width of the outline border).
+> >-**round_outline**: A rounded-corners rectangle with a visible outline border which, unlike **outline**, can be filled with a color different from the background. This is actually built overlapping a "round" shape and an "outline" shape. It accepts as formatting options **-fill** (fill color), **-disabledfill** (fill color when disabled), **-outline** (color of the outline), **-disabledoutline** (color of the outline when the shape is disabled), **-radius** (or **-arc_offset** if radius is undfined, determines how "round" the rectangle corners are) and **-width** (line width of the outline border).
 
->> **arc_offset** can be a list of up to 4 elements, giving the radius of each of the 4 corners separately, starting top-left and going clockwards {top-left top-right bottom-right bottom-left}. If it has less than 4 elements, they are replicated until having 4 elements. A radius of 0 draws a 90º angle.
 
 
 >Return a list with the canvas IDs of all the canvas items that conform the shape.
