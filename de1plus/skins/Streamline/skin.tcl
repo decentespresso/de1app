@@ -498,7 +498,7 @@ streamline_rounded_rectangle $::pages 360 282 478 325  $::box_color  20 grind_se
 add_de1_text $::pages 50 282 -justify left -anchor "nw" -text [translate "Grind"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200] 
 add_de1_text $::pages 50 398 -justify left -anchor "nw" -text [translate "Dose"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text $::pages 50 516 -justify left -anchor "nw" -text [translate "Drink"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
-add_de1_text $::pages 50 741 -justify left -anchor "nw" -text [translate "Temp"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
+add_de1_text $::pages 50 741 -justify left -anchor "nw" -text [translate "Brew ºC"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text $::pages 50 967 -justify left -anchor "nw" -text [translate "Steam"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text $::pages 50 1194 -justify left -anchor "nw" -text [translate "Flush"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text $::pages 50 1397 -justify left -anchor "nw" -text [translate "Hot Water"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
@@ -1177,13 +1177,15 @@ proc streamline_beverage_btn { args } {
 proc streamline_temp_btn { args } {
 	if {$args == "-"} {
 		if {$::settings(espresso_temperature) > 1} {
-			set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) - 1}]
+			#set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) - 1}]
+			change_espresso_temperature -1
 			flash_button "streamline_minus_temp_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 			save_profile_and_update_de1_soon
 		}
 	} elseif {$args == "+"} {
 		if {$::settings(espresso_temperature) < 110} {
-			set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + 1}]
+			#set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + 1}]
+			change_espresso_temperature 1
 			flash_button "streamline_plus_temp_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 			save_profile_and_update_de1_soon
 		}
@@ -2162,7 +2164,10 @@ proc streamline_temperature_select { slot } {
 		set temperatures [ifexists ::settings(favorite_temperatures)]
 
 		# set the setting
-		set ::settings(espresso_temperature) [dict get $temperatures $slot value]
+		#set ::settings(espresso_temperature) [dict get $temperatures $slot value]
+		set dest_temp [dict get $temperatures $slot value]
+		set diff_temp [expr {$dest_temp - $::settings(espresso_temperature)}]
+		change_espresso_temperature $diff_temp
 
 		# save the new selected button 
 		dict set temperatures selected number $slot
