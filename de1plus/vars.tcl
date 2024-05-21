@@ -1047,10 +1047,10 @@ proc preinfusion_pour_timer_text {} {
 
 proc seconds_text_very_abbreviated {in} {
     if {$::de1(language_rtl) == 1} {
-		return [subst {[translate "s"]$in }]
+		return [subst {[translate "s"][round_to_integer $in] }]
 	}
 
-	return [subst {$in[translate "s"] }]
+	return [subst {[round_to_integer $in][translate "s"] }]
 }
 
 
