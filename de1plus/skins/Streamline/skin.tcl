@@ -556,11 +556,6 @@ hw_temp_vol_flip
 
 
 # tap areas
-#add_de1_button "off" {puts "Dose"} 37 292 236 388 ""
-#add_de1_button "off" {puts "Beverage"} 37 407 236 503 ""
-#add_de1_button "off" {puts "Temp"} 37 628 236 724 ""
-#add_de1_button "off" {puts "Steam"} 37 866 236 962 ""
-#add_de1_button "off" {puts "Flush"} 37 1089 236 1185 ""
 add_de1_button "off" {hw_temp_vol_flip} 0 1376 222 1498 ""
 
 ############################################################################################################################################################################################################
@@ -1005,22 +1000,18 @@ dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -c
 ############################################################################################################################################################################################################
 # DYE support
 
+# DYE support
+
 set dyebtns ""
 
 if { [plugins enabled DYE] } {
-	package require sqlite3
-	if { [plugins available SDB] } {
-		plugins enable SDB
-	}
-	dui page load DYE current 
-
 	dui add dbutton $::all_pages 1880 76 2070 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
 
 }
 
 proc show_DYE_page {} {
 	if { [plugins enabled DYE] } {
-		plugins::DYE::open -which_shot default -theme MimojaCafe -coords {700 250} -anchor nw
+		plugins::DYE::open -which_shot default -coords {700 250} -anchor nw
 	}
 }
 ############################################################################################################################################################################################################
