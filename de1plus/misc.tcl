@@ -104,6 +104,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/Streamline/NotoSansMono-ExtraBold.ttf *
         skins/Streamline/icomoon.ttf *
         skins/Streamline/skin.tcl *
+        skins/Streamline/plugins/readme.txt *
         skins/Streamline/1280x800/icon.jpg *
         skins/Streamline/2560x1600/icon.jpg *
 

@@ -2840,9 +2840,17 @@ proc streamline_shot_ended  {} {
 	set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] - 1}]
 	#set current_shot_filename [lindex $::streamline_history_files $::streamline_history_file_selected_number]
 }
+proc join_streamline_plugins {dir} {
+    set file_name [lsort -dictionary [glob -nocomplain -tails -directory "[skin_directory]/$dir/" *.slp]]
+    foreach fn $file_name {
+        set fn [file rootname $fn]
+        source  [file join "[skin_directory]/$dir/" $fn.slp]
+    }
+}
 
 streamline_init_history_files
 streamline_load_currently_selected_history_shot
+join_streamline_plugins plugins
 
 #after 1000 set_next_page off $::zoomed_pages; page_show off_zoomed
 #set_next_page off "off_zoomed"
