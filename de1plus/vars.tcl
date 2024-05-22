@@ -2344,6 +2344,9 @@ proc highlight_extension {} {
 	fill_extensions_listbox
 	$::extensions_widget selection set $stepnum;
 	make_current_listbox_item_blue $::extensions_widget
+
+	$::extensions_widget yview moveto [lindex $originalyview 0]
+
 }
 
 proc fill_plugin_settings {} {
@@ -2386,18 +2389,6 @@ proc fill_extensions_listbox {} {
 				set p "\u2610 "
 			}
 		}
-
-		#####
-		# do not display extensions to the user, that have no version, as this indicates they were not able to be peeked, and so didn't load in the current context.  This can also allow some extensions to only be visible if other things are enabled (such as a skin).
-		set version ""
-		catch {
-			set version [subst \$::plugins::${plugin}::version]
-		}
-		if { $version == ""} {
-			set ::plugins::${plugin}::disabled 1
-		}
-		#####
-
 		
 		if { [info exists ::plugins::${plugin}::name ] && [subst \$::plugins::${plugin}::name] ne "" } {
 			set plugin_name [subst \$::plugins::${plugin}::name]
