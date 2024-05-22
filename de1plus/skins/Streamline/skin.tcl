@@ -570,9 +570,11 @@ set ::streamline_current_history_profile_clock ""
 
 
 proc start_streamline_espresso {} {
+	streamline_history_profile_fwd -1
 	set ::streamline_history_text_label [translate "CURRENT"] 
 	set ::streamline_current_history_profile_clock [clock seconds]
 	set ::streamline_current_history_profile_name $::settings(profile_title)
+
 
 	if {$::off_page == "off"} {
 		set ::espresso_page "espresso"
@@ -616,17 +618,17 @@ proc streamline_history_date_format {shot_time} {
 	} elseif {$minutes < 60} {
 		set t "${minutes} [translate {minutes ago}]"
 	} elseif {$hours < 2} {
-		set t [translate "1 hour ago"]
+		set t [translate "1 hour ago  ([time_format $shot_time])"]
 	} elseif {$hours < 24} {
-		set t "${hours} [translate {hours ago}]"
+		set t "${hours} [translate {hours ago}] ([time_format $shot_time])"
 	} elseif {$days < 2} {
-		set t "[translate {yesterday}]"
+		set t "[translate {yesterday}] ([time_format $shot_time])"
 	} elseif {$days < 31} {
-		set t "${days} [translate {days ago}]"
+		set t "${days} [translate {days ago}] ([time_format $shot_time])"
 	} elseif {$months < 25} {
-		set t "$months [translate {months ago}]"
+		set t "$months [translate {months ago}] ([time_format $shot_time])"
 	} else {
-		set t "$years [translate {years ago}]"
+		set t "$years [translate {years ago}] ([time_format $shot_time])"
 	}
 
 	return $t
@@ -648,11 +650,11 @@ dui aspect set -theme default -type dbutton_symbol pos ".50 .5"
 
 if {$::android == 1 || $::undroid == 1} {
 	#dui aspect set -theme default -type dbutton fill "$::data_card_text_color"
-	dui add dbutton "off" 628 1220 755 1465 -tags profile_back -symbol "arrow-left"  -command { streamline_history_profile_back } 
-	dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd -symbol "arrow-right"  -command { streamline_history_profile_fwd } 
+	dui add dbutton "off" 628 1220 755 1465 -tags profile_back -symbol "arrow-left"  -command { streamline_history_profile_back }  -longpress_cmd { streamline_history_profile_fwd 0 } 
+	dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd -symbol "arrow-right"  -command { streamline_history_profile_fwd } -longpress_cmd { streamline_history_profile_fwd 1 } 
 } else {
-	dui add dbutton "off" 690 1249 725 1435  -tags profile_back -label "<"  -command { streamline_history_profile_back } 
-	dui add dbutton "off" 1065 1249 1101 1435  -tags profile_fwd -label ">"  -command { streamline_history_profile_fwd } 
+	dui add dbutton "off" 690 1249 725 1435  -tags profile_back -label "<"  -command { streamline_history_profile_back }  -longpress_cmd { streamline_history_profile_fwd 0 } 
+	dui add dbutton "off" 1065 1249 1101 1435  -tags profile_fwd -label ">"  -command { streamline_history_profile_fwd }  -longpress_cmd { streamline_history_profile_fwd 1 } 
 }
 
 
@@ -2491,6 +2493,12 @@ proc streamline_load_history_shot {current_shot_filename} {
 
 	set ::streamline_history_text_label [translate "HISTORY"] 
 
+	if {$::streamline_history_file_selected_number == [expr {[llength $::streamline_history_files] -1}]} {
+		set ::streamline_history_text_label [translate "NEWEST"] 
+	} elseif {$::streamline_history_file_selected_number == 0} {
+		set ::streamline_history_text_label [translate "OLDEST"] 
+	}
+
 	#puts "ERROR streamline_load_history_shot"
 
 
@@ -2529,7 +2537,6 @@ proc streamline_load_history_shot {current_shot_filename} {
 	}
 
 	set ::streamline_current_history_profile_clock [ifexists past_shot_array(clock)]
-
 
 	update_data_card past_shot_array
 }
@@ -2611,7 +2618,11 @@ proc update_data_card { arrname } {
 		set espresso_flow_weight [return_zero_if_blank [lindex [ifexists past_shot_array(espresso_flow_weight)] $i]]
 		set espresso_temperature_basket [return_zero_if_blank [lindex $past_shot_array(espresso_temperature_basket) $i]]
 		set espresso_water_dispensed [return_zero_if_blank [lindex $past_shot_array(espresso_water_dispensed) $i]]
-		set espresso_state_change [return_zero_if_blank [lindex $past_shot_array(espresso_state_change) $i]]
+
+		set espresso_state_change 0
+		catch {
+			set espresso_state_change [return_zero_if_blank [lindex $past_shot_array(espresso_state_change) $i]]
+		}
 
 		if {$espresso_water_dispensed == 0 || $espresso_water_dispensed == ""} {
 			# ship shots 
@@ -2701,7 +2712,7 @@ proc update_data_card { arrname } {
 	} elseif {[round_to_integer $::streamline_preinfusion_temp_low] == [round_to_integer $::streamline_preinfusion_temp_high]} {
 		set ::streamline_preinfusion_temp [string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]
 	} else {
-		set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_low]]↗︎[string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]"
+		set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_low]]🡒[string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]"
 	}
 
 	set ::streamline_extraction_temp ""
@@ -2711,16 +2722,16 @@ proc update_data_card { arrname } {
 	} elseif {[round_to_integer $::streamline_extraction_temp_low] == $::streamline_extraction_temp_high} {
 		set ::streamline_extraction_temp [string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]
 	} else {
-		set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]↗︎[string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]"
+		set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]🡒[string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]"
 	}
 
 
 
-	set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_pressure]↗︎[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure] [translate "bar"]"
-	set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_pressure]↗︎[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure] [translate "bar"]"
+	set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_pressure]🡒[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure] [translate "bar"]"
+	set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_pressure]🡒[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure] [translate "bar"]"
 
-	set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_flow]↗︎[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] [translate "ml/s"]"
-	set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_flow]↗︎[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] [translate "ml/s"]"
+	set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_flow]🡒[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] [translate "ml/s"]"
+	set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_flow]🡒[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] [translate "ml/s"]"
 
 	#set ::streamline_preinfusion_low_peak_pressure_label ""
 	#set ::streamline_preinfusion_low_peak_flow_label ""
@@ -2824,10 +2835,22 @@ proc streamline_history_profile_back {} {
 	streamline_load_currently_selected_history_shot
 }
 
-proc streamline_history_profile_fwd {} {
-	set ::streamline_history_file_selected_number [expr {$::streamline_history_file_selected_number	 + 1}]
-	if {$::streamline_history_file_selected_number > [llength $::streamline_history_files]-1} {
+proc streamline_history_profile_fwd { {destination {}} } {
+
+	if {$destination == 0} {
 		set ::streamline_history_file_selected_number 0
+		#popup "Oldest"
+	} elseif {$destination == 1} {
+		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
+		#popup "Newest"
+	} else {
+
+		set ::streamline_history_file_selected_number [expr {$::streamline_history_file_selected_number	 + 1}]
+		if {$::streamline_history_file_selected_number > [llength $::streamline_history_files]-1} {
+			set ::streamline_history_file_selected_number 0
+		}
+
+
 	}
 	streamline_load_currently_selected_history_shot
 }
@@ -2836,21 +2859,18 @@ proc streamline_shot_ended  {} {
 	#puts "ERROR ::settings(history_saved) $::settings(history_saved)"
 	#puts "ERROR ::settings(history_saved_shot_filename) $::settings(history_saved_shot_filename)"
 	#puts "ERROR $::streamline_history_file_selected_number"
-	lappend ::streamline_history_files [file tail $::settings(history_saved_shot_filename)]
-	set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] - 1}]
+	if {[ifexists ::settings(history_saved_shot_filename)] != ""} {		
+		lappend ::streamline_history_files [file tail $::settings(history_saved_shot_filename)]
+		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] - 1}]
+
+		streamline_history_profile_fwd -1
+	}
 	#set current_shot_filename [lindex $::streamline_history_files $::streamline_history_file_selected_number]
-}
-proc join_streamline_plugins {dir} {
-    set file_name [lsort -dictionary [glob -nocomplain -tails -directory "[skin_directory]/$dir/" *.slp]]
-    foreach fn $file_name {
-        set fn [file rootname $fn]
-        source  [file join "[skin_directory]/$dir/" $fn.slp]
-    }
 }
 
 streamline_init_history_files
 streamline_load_currently_selected_history_shot
-join_streamline_plugins plugins
+
 
 #after 1000 set_next_page off $::zoomed_pages; page_show off_zoomed
 #set_next_page off "off_zoomed"
