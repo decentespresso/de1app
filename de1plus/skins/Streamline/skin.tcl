@@ -570,7 +570,6 @@ set ::streamline_current_history_profile_clock ""
 
 
 proc start_streamline_espresso {} {
-	streamline_history_profile_fwd -1
 	set ::streamline_history_text_label [translate "CURRENT"] 
 	set ::streamline_current_history_profile_clock [clock seconds]
 	set ::streamline_current_history_profile_name $::settings(profile_title)
@@ -2863,7 +2862,7 @@ proc streamline_shot_ended  {} {
 		lappend ::streamline_history_files [file tail $::settings(history_saved_shot_filename)]
 		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] - 1}]
 
-		streamline_history_profile_fwd -1
+		streamline_history_profile_fwd 1
 	}
 	#set current_shot_filename [lindex $::streamline_history_files $::streamline_history_file_selected_number]
 }
