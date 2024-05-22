@@ -2298,6 +2298,9 @@ proc fill_languages_listbox {} {
 }
 
 proc highlight_extension {} {
+
+	set originalyview [$::extensions_widget yview]
+
 	set stepnum [$::extensions_widget curselection]	
 	if {$stepnum == ""} {
 		set ::extension_highlighted -1
