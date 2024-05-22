@@ -183,6 +183,17 @@ namespace eval ::plugins {
                 continue
             }
 
+            ############################################################
+            # don't list extensions that failed to load metadata
+            set disabled ""
+            catch {
+                set disabled [subst \$::plugins::${fbasename}::disabled]            
+            }
+            if {$disabled == 1} {
+                continue
+            }
+            ############################################################
+
             if {[file exists "[homedir]/[plugin_directory]/$fbasename/plugin.tcl"] == 1} {
                 lappend plugins $fbasename
             }

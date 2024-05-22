@@ -2369,6 +2369,7 @@ proc fill_extensions_listbox {} {
 	set current 0
 
 	foreach {plugin} [available_plugins] {
+
 		if {[plugin_enabled $plugin]} {
 			if {[language] == "he"} {
 				set p "\[X\] "
@@ -2390,7 +2391,7 @@ proc fill_extensions_listbox {} {
 			set version [subst \$::plugins::${plugin}::version]
 		}
 		if { $version == ""} {
-			continue
+			set ::plugins::${plugin}::disabled 1
 		}
 		#####
 
@@ -2841,6 +2842,7 @@ proc select_profile { profile } {
 	set fn "[homedir]/profiles/${profile}.tcl"
 	set ::settings(profile) $profile
 	set ::settings(profile_notes) ""
+	set ::settings(advanced_shot_tcl) ""
 	
 	# for importing De1 profiles that don't have this feature.
 	set ::settings(preinfusion_flow_rate) 4
@@ -2875,6 +2877,10 @@ proc select_profile { profile } {
 
 	update_onscreen_variables
 	profile_has_not_changed_set
+
+	if {$::settings(advanced_shot_tcl) != ""} {
+		eval $::settings(advanced_shot_tcl)
+	}
 
 	# as of v1.3 people can start an espresso from the group head, which means their currently selected 
 	# profile needs to sent right away to the DE1, in case the person taps the GH button to start espresso w/o leaving settings
