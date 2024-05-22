@@ -3311,11 +3311,12 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 }
 
 proc ghc_required {} {
+	if {$::undroid == 1 || $::android == 0} {
+		# don't require the GHC if on a non-Android platform, or if running undroidwish
+		return 0
+	}
 	if {$::settings(ghc_is_installed) != 0 && $::settings(ghc_is_installed) != 1 && $::settings(ghc_is_installed) != 2 && $::settings(ghc_is_installed) != 4} {
 		return 1
-	}
-	if {$::undroid == 1 && $::android == 0} {
-		return 0
 	}
 	return 0
 }
