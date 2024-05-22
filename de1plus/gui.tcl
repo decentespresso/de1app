@@ -1074,16 +1074,21 @@ proc display_popup_android_message_if_necessary {msg} {
 	if {$msg != ""} {
 
 		# replace $weight with the weight
-		regsub {\$weight} $msg [drink_weight_text] msg
-		regsub {\$timer} $msg [espresso_timer_text] msg
-		regsub {\$pressure} $msg [pressure_text] msg
 
-		set msg [string trim $msg]
+		set weight [drink_weight_text]
+		set timer [espresso_timer_text]
+		set pressure [pressure_text]
+
+		if {[catch {
+			set msg [string trim [subst $msg]]
+		} err] != 0} {
+			msg -ERROR "display_popup_android_message_if_necessary failed because: '$err'"
+		}
 
 		# post the message 1 second after the start, so that there's a slight delay 
 		if {$msg != ""} {
 			after 1000 [list popup $msg]
-			msg -DEBUG "Popup: $msg"
+			#msg -DEBUG "Popup: $msg"
 		}
 	}
 	
@@ -1129,7 +1134,8 @@ proc set_dummy_espresso_vars {} {
 			open_random_simulation_file	
 
 			# playing a random history item also means loading it as the current profile, otherwise it's weird and things don't line up
-			array set ::settings [array get [ifexists ::simulated(settings)]]
+			array set temp_settings [ifexists ::simulated(settings)]
+			set ::settings(advanced_shot) [ifexists temp_settings(advanced_shot)]
 			update_de1_state "$::de1_state(Espresso)\x4"
 		}
 
@@ -1296,6 +1302,15 @@ proc set_dummy_espresso_vars {} {
 		if {$::simindex > 0} {
 			if {[lindex $::simulated(espresso_state_change) $::simindex] != [lindex $::simulated(espresso_state_change) $::simindex-1]} {
 				incr ::de1(current_frame_number)
+
+				if {$::settings(settings_profile_type) ==  "settings_2c"} {
+					array set parts [lindex $::settings(advanced_shot) $::de1(current_frame_number)]
+					if {[ifexists parts(popup)] != ""} {
+						msg -ERROR "profile has a popup message in frame $::de1(current_frame_number): '[ifexists parts(popup)]'"
+						display_popup_android_message_if_necessary $parts(popup)
+					}
+				}
+				
 
 				if {$::simindex > 60 &&  $::de1(substate) == 4} {
 					update_de1_state "$::de1_state(Espresso)\x5"
