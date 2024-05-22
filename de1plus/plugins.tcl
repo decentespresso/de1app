@@ -105,6 +105,7 @@ namespace eval ::plugins {
 
         array set ::plugins::${plugin}::settings {}
 
+        set ${plugin}::plugin_peeked 1
         plugins load_settings $plugin
 
         if {[catch {
@@ -128,7 +129,7 @@ namespace eval ::plugins {
                 if {[::plugins::read $plugin] != 1} {
                     error "sourcing failed"
                 }
-                set ${plugin}::plugin_peeked 1
+                
         } err opts_dict] != 0} {
             ::logging::log_error_result_opts_dict $err $opts_dict
             catch {
@@ -185,11 +186,15 @@ namespace eval ::plugins {
 
             ############################################################
             # don't list extensions that failed to load metadata
-            set disabled ""
+            set version ""
+            set peeked ""
             catch {
-                set disabled [subst \$::plugins::${fbasename}::disabled]            
+                #set disabled [subst \$::plugins::${fbasename}::disabled]            
+                set peeked [subst \$::plugins::[string trim $fbasename]::plugin_peeked]            
+                set version [subst \$::plugins::[string trim $fbasename]::version]            
             }
-            if {$disabled == 1} {
+            if {$peeked == 1 && $version == ""} {
+                #puts "ERROR skipping $fbasename because it was peeked but not successfully"
                 continue
             }
             ############################################################
