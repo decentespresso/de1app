@@ -1,3 +1,5 @@
+if { $::settings(skin) != "MimojaCafe" } { return }
+
 set plugin_name "hazard"
 
 namespace eval ::plugins::${plugin_name} {
@@ -9,8 +11,7 @@ namespace eval ::plugins::${plugin_name} {
     variable description "Hazard customizations for mimojacafe"
     variable name "Hazard customizations"
 
-    proc main {} {
-        if { $::settings(skin) != "MimojaCafe" } { return }
+    proc main {} {        
 
         set Purple "#785fd8"
         set Blue "#4e85f4"
