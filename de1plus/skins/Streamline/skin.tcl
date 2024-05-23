@@ -24,6 +24,10 @@ if {$::streamline_dark_mode == 0} {
 	set ::scale_disconnected_color #cd5360
 	set ::profile_button_background_selected_color #385992
 	set ::left_label_color2 #385992
+
+	set ::progress_bar_red "#DA515E"
+	set ::progress_bar_green "#0CA581"
+	set ::progress_bar_grey "#c2c2c2"
 	
 	set ::plus_minus_text_color #121212
 	set ::plus_minus_value_text_color #121212
@@ -86,9 +90,13 @@ if {$::streamline_dark_mode == 0} {
 
 } else {
 
+	set ::progress_bar_red "#DA515E"
+	set ::progress_bar_green "#0CA581"
+	set ::progress_bar_grey "#c2c2c2"
+
 	#set ::profile_title_color #415996
 	set ::profile_title_color #e8e8e8
-set ::scale_disconnected_color #cd5360
+	set ::scale_disconnected_color #cd5360
 	set ::profile_button_background_selected_color #415996
 	set ::left_label_color2 #415996
 
@@ -199,6 +207,8 @@ load_font "Inter-Regular12" "[homedir]/skins/Streamline/Inter-Regular.ttf" 12
 # X and Y axis font
 load_font "Inter-Regular10" "[homedir]/skins/Streamline/Inter-Regular.ttf" 10
 
+load_font "Inter-Regular6" "[homedir]/skins/Streamline/Inter-Regular.ttf" 6
+
 # Scale disconnected msg
 load_font "Inter-Black18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 14
 
@@ -209,13 +219,14 @@ load_font "Inter-Thin14" "[homedir]/skins/Streamline/Inter-Thin.ttf" 14
 load_font "icomoon" "[homedir]/skins/Streamline/icomoon.ttf" 30
 
 # mono data card
+load_font "mono8" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 10
 load_font "mono10" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 12
 load_font "mono12" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 13
 
 # mono data card
 load_font "mono10bold" "[homedir]/skins/Streamline/NotoSansMono-ExtraBold.ttf" 12
 
-set ::pages [list off steam espresso water flush info hotwaterrinse]
+set ::pages [list off espresso water flush steam hotwaterrinse info]
 set ::zoomed_pages [list off_zoomed espresso_zoomed]
 set ::all_pages [list off off_zoomed espresso_zoomed steam espresso water flush info hotwaterrinse]
 #set ::pages_not_off [list steam espresso water flush info hotwaterrinse]
@@ -356,6 +367,9 @@ proc back_from_settings {} {
 
 set ::streamline_needs_final_datacard_update 0
 proc streamline_profile_title {} {
+
+	update_streamline_status_message
+
 	set this_state [::de1::state::current_state]
 	set this_substate [::de1::state::current_substate]
 
@@ -399,23 +413,40 @@ add_de1_variable $::pages 690 256 -justify left -anchor "nw" -font Inter-HeavyBo
 add_de1_variable $::zoomed_pages 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 
 
+set ::streamline_global(status_msg_progress_red) "1"
+set ::streamline_global(status_msg_progress_green) "2"
+set ::streamline_global(status_msg_progress_grey) "3"
+
+set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 344 right 0 1 20 $::background_color [list \
+	[list -text {$::streamline_global(status_msg_progress_green)}  -font "Inter-Regular6" -foreground $::progress_bar_green  ] \
+	[list -text {$::streamline_global(status_msg_progress_red)}  -font "Inter-Regular6" -foreground $::progress_bar_red  ] \
+	[list -text {$::streamline_global(status_msg_progress_grey)}  -font "Inter-Regular6" -foreground $::progress_bar_grey ] \
+]]
+
+
 ############################################################################################################################################################################################################
 # The status message on the top right. Might be clickable.
 
-set ::streamline_global(status_msg_text) ""
+set ::streamline_global(status_msg_text_red) ""
+set ::streamline_global(status_msg_text_green) ""
 set ::streamline_global(status_msg_clickable) ""
+
 
 proc streamline_status_msg_click {} {
 	puts "ERROR TAPPED $::streamline_global(status_msg_clickable)"	
 }
 
-set streamline_status_msg [add_de1_rich_text $::all_pages [expr {2500 - $ghc_pos_pffset}] 305 right 0 1 40 $::background_color [list \
-	[list -text {$::streamline_global(status_msg_text)}  -font "Inter-Black18" -foreground $::scale_disconnected_color  ] \
+set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2516 - $ghc_pos_pffset}] 256 right 0 1 40 $::background_color [list \
+	[list -text {$::streamline_global(status_msg_text_green)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_green  ] \
+	[list -text {$::streamline_global(status_msg_text_red)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_red  ] \
 	[list -text "   " -font "Inter-Black18"] \
-	[list -text {$::streamline_global(status_msg_clickable)}  -font "Inter-Black18" -foreground $::status_clickable_text -exec "streamline_status_msg_click" ] \
+	[list -text {$::streamline_global(status_msg_clickable)}  -font "Inter-HeavyBold24" -foreground $::status_clickable_text -exec "streamline_status_msg_click" ] \
 ]]
 
-trace add variable ::streamline_global(status_msg_clickable) write ::refresh_$streamline_status_msg
+#trace add variable ::streamline_global(status_msg_text_green) write ::refresh_$::streamline_data_line
+#trace add variable ::streamline_global(status_msg_text_red) write ::refresh_$::streamline_data_line
+
+
 
 ############################################################################################################################################################################################################
 
@@ -430,19 +461,23 @@ set btns ""
 lappend btns \
 	[list -text "Mix" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[string tolower [mixtemp_text 1]]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement [water_mix_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement [water_mix_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_label_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Group" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text {[string tolower [group_head_heater_temperature_text 1]]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[lindex [return_temperature_measurement [group_head_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement [group_head_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_label_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Steam" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text {[string tolower [steam_heater_temperature_text 1]]} -font "mono12" -foreground $::dataline_data_color ] \
+	[list -text {[lindex [return_temperature_measurement [steam_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement [steam_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_label_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Tank" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
-	[list -text {[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]][translate ml]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[translate ml]} -font "mono8" -foreground $::dataline_label_color  ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Time" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
@@ -451,15 +486,206 @@ lappend btns \
 if {$::settings(scale_bluetooth_address) != ""} {
 	lappend btns [list -text "    " -font "Inter-Bold16"] 
 	lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::status_clickable_text  -exec "::device::scale::tare; popup [translate Tare]" ] 
-	lappend btns [list -text " " -font "Inter-Bold16"  -exec "puts tare" ]
-	lappend btns [list -text {[return_weight_measurement $::de1(scale_sensor_weight)]} -font "mono12" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
-	lappend btns [list -text "    " -font "Inter-Bold16"]
+	lappend btns [list -text " " -font "Inter-Bold16"  -exec "::device::scale::tare; popup [translate Tare]" ]
+	lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]} -font "mono12" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
+	lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]} -font "mono8" -foreground $::dataline_label_color  -exec "::device::scale::tare; popup [translate Tare]" ]
 }
 
 
-set streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 [rescale_x_skin 146] $::background_color $btns ]
-set streamline_status_msg [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 [rescale_x_skin 170] $::background_color $btns ]
+set ::streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 60 $::background_color $btns ]
+set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 60 $::background_color $btns ]
 
+proc percent_to_bar { perc } {
+	if {$delta_percent < 96} {
+		set red_msg [translate "Heating"]
+		set green_msg ""
+		set times_red [round_to_integer [expr {$delta_percent / 5}]]
+		set times_grey [expr {20 - $times_red}]
+
+		set red_progress [string repeat █ $times_red]
+		set green_progress ""
+		set grey_progress [string repeat █ $times_grey]
+		set updated 1
+	} else {
+		set green_msg [translate "Ready"]
+		set red_msg ""
+
+		set red_progress ""
+		set grey_progress ""
+		set green_progress ""
+		set updated 1
+	}
+
+}
+
+proc update_streamline_status_message {} {
+	#msg -ERROR "update_streamline_status_message [dui page current]"
+	set red_msg ""
+	set green_msg ""
+	set delta_percent 0
+
+	if {[dui page current] == "off" || [dui page current] == "off_zoomed"} {
+
+		set num $::de1(substate)
+		set substate_txt $::de1_substate_types($num)
+
+		if {$::de1(device_handle) == 0} {
+			set red_msg [translate "Wait"]
+		} elseif {$substate_txt == "ready"} {
+			set green_msg [translate "Ready"]
+		} else {
+			set red_msg [translate "Heating"]
+
+		}
+
+
+		set delta_percent [expr {int(100 * ((1.0*[group_head_heater_temperature]) / [setting_espresso_temperature]))}]
+		#set delta_percent 50
+		set green_progress ""
+		if {$delta_percent < 85} {
+			set times_red [round_to_integer [expr {$delta_percent / 5}]]
+			set times_grey [expr {20 - $times_red}]
+
+			set red_progress [string repeat █ $times_red]
+			set grey_progress [string repeat █ $times_grey]
+		} elseif {$delta_percent < 98} {
+			set times_red [round_to_integer [expr {$delta_percent / 5}]]
+			set times_grey [expr {20 - $times_red}]
+
+			set red_progress ""
+			set green_progress [string repeat █ $times_red]
+			set grey_progress [string repeat █ $times_grey]
+		} else {
+			set red_progress ""
+			set grey_progress ""
+		}
+
+		#msg -ERROR "current: [group_head_heater_temperature] / [setting_espresso_temperature]=delta_percent:$delta_percent"
+
+	} else {
+
+		if {[dui page current] == "espresso" || [dui page current] == "espresso_zoomed" } {
+
+			set green_msg [translate "Making"]
+			set final_target [determine_final_weight]
+			
+			if {$::settings(scale_bluetooth_address) != ""} {
+				set current_weight $::streamline_extraction_weight
+			} else {
+				set current_weight $::streamline_extraction_volume
+			}
+
+			if {$current_weight == ""} {
+				set current_weight 0
+			}
+
+			set delta_percent 0
+			catch {
+				set delta_percent [expr {int(100 * ((1.0*$current_weight) / $final_target))}]
+			}
+
+			msg -ERROR "current: $current_weight final_target:$final_target delta_percent:$delta_percent"
+		} elseif {[dui page current] == "hotwaterrinse" } {
+
+			set green_msg [translate "Flushing"]
+			set final_target $::settings(flush_seconds)
+			
+			set current [flush_pour_timer]		
+			if {$current == ""} {
+				set current 0
+			}
+
+			set delta_percent 0
+			catch {
+				set delta_percent [expr {int(100 * ((1.0*$current) / $final_target))}]
+			}
+			#puts "current: $current final_target:$final_target delta_percent:$delta_percent"
+			
+		} elseif {[dui page current] == "steam" } {
+
+			set green_msg [translate "Steaming"]
+			set final_target $::settings(steam_timeout)
+			
+			set current [steam_pour_timer]		
+			if {$current == ""} {
+				set current 0
+			}
+
+			set delta_percent 0
+			catch {
+				set delta_percent [expr {int(100 * ((1.0*$current) / $final_target))}]
+			}
+			#puts "current: $current final_target:$final_target delta_percent:$delta_percent"
+			
+		} elseif {[dui page current] == "water" } {
+
+			set green_msg [translate "Hot water"]
+			set final_target $::settings(water_volume)
+			
+			set current [watervolume]		
+			if {$current == ""} {
+				set current 0
+			}
+
+			set delta_percent 0
+			catch {
+				set delta_percent [expr {int(100 * ((1.0*$current) / $final_target))}]
+			}
+			#puts "current: $current final_target:$final_target delta_percent:$delta_percent"
+			
+		}
+
+
+		set bars [round_to_integer [expr {$delta_percent / 5}]]
+		if {$bars > 20} {
+			set bars 20
+		}
+		set bars_grey [expr {20 - $bars}]
+
+		if {$bars < 16} {
+			set green_progress ""
+			set red_progress [string repeat █ $bars]
+		} else {
+			set red_progress ""
+			set green_progress [string repeat █ $bars]
+		}
+		set grey_progress [string repeat █ $bars_grey]
+	}
+
+	set updated 0
+	if {$::streamline_global(status_msg_text_green) != $green_msg} {
+		set ::streamline_global(status_msg_text_green) $green_msg
+		set updated 1
+	}
+
+	if {$::streamline_global(status_msg_text_red) != $red_msg} {
+		set ::streamline_global(status_msg_text_red) $red_msg
+		set updated 1
+	}
+
+	if {$::streamline_global(status_msg_progress_green) != $green_progress} {
+		set ::streamline_global(status_msg_progress_green) $green_progress
+		set updated 1
+	}
+
+	if {$::streamline_global(status_msg_progress_grey) != $grey_progress} {
+		set ::streamline_global(status_msg_progress_grey) $grey_progress
+		set updated 1
+	}
+
+	if {$::streamline_global(status_msg_progress_red) != $red_progress} {
+		set ::streamline_global(status_msg_progress_red) $red_progress
+		set updated 1
+	}
+
+	if {$updated == 1} {
+		::refresh_$::streamline_data_line
+		::refresh_$::streamline_progress_line
+	}
+
+
+
+}
 ############################################################################################################################################################################################################
 
 
@@ -2859,13 +3085,24 @@ proc streamline_shot_ended  {} {
 	#puts "ERROR ::settings(history_saved_shot_filename) $::settings(history_saved_shot_filename)"
 	#puts "ERROR $::streamline_history_file_selected_number"
 	if {[ifexists ::settings(history_saved_shot_filename)] != ""} {		
+
+		# when saving the shot, update the onscreen weight with what the final weight on the scale was.
+
 		lappend ::streamline_history_files [file tail $::settings(history_saved_shot_filename)]
 		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] - 1}]
 
 		streamline_history_profile_fwd 1
+
+		#set ::streamline_shot_weight [expr {$::de1(scale_weight_rate_raw)+0.4}]
+		#set ::streamline_final_extraction_weight [expr {$::streamline_shot_weight - $::streamline_preinfusion_weight}]
+
 	}
 	#set current_shot_filename [lindex $::streamline_history_files $::streamline_history_file_selected_number]
 }
+
+# not needed in this skin
+proc update_temperature_charts_y_axis {} {}
+
 
 streamline_init_history_files
 streamline_load_currently_selected_history_shot

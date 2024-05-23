@@ -919,6 +919,35 @@ proc return_scale_timer {} {
 	return [round_to_one_digits [expr {$::de1(scale_timestamp) / 10.0}]]
 }
 
+
+
+proc return_weight_measurement_grams {in {integer 0} {returnlist 0} } {
+    if {$::de1(language_rtl) == 1} {
+    	if {$integer == 1 || ($integer == 2 && [round_to_one_digits $in] == [round_to_integer $in])} {
+			
+			if {$returnlist == 1} {
+				return [list [translate "g"] [round_to_integer $in]]
+			}
+			return [subst {[translate "g"][round_to_integer $in]}]
+    	}
+		if {$returnlist == 1} {
+			return [list [translate "g"] [round_to_one_digits $in]]
+		}
+		return [subst {[translate "g"][round_to_one_digits $in]}]
+    }
+
+	if {$integer == 1 || ($integer == 2 && [round_to_one_digits $in] == [round_to_integer $in])} {
+		if {$returnlist == 1} {
+			return [list [round_to_integer $in] [translate "g"]]
+		}
+		return [subst {[round_to_integer $in][translate "g"]}]
+	}
+	if {$returnlist == 1} {
+		return [list [round_to_one_digits $in] [translate "g"]]    
+	}
+	return [subst {[round_to_one_digits $in][translate "g"]}]    
+}
+
 # integer = 1 means always return an integer
 # integer = 2 means return an integer if the decimal value is .0
 proc return_weight_measurement {in {integer 0}} {
@@ -1412,12 +1441,21 @@ proc return_temperature_number {in} {
 # we were using the wrong unicode symbol for the degrees sign (should be \u00B0 not \u00BA).
 # http://www.fileformat.info/info/unicode/char/b0/index.htm
 # http://www.fileformat.info/info/unicode/char/ba/index.htm
-proc return_temperature_measurement {in {integer 0}} {
+proc return_temperature_measurement {in {integer 0} {returnlist 0} } {
 	if {$::settings(enable_fahrenheit) == 1} {
+		if {$returnlist == 1} {
+			return [list [round_to_integer [celsius_to_fahrenheit $in]] "\u00B0F"]
+		}
 		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 	} else {
 		if {$integer == 1} {
+			if {$returnlist == 1} {
+				return [list [round_to_integer $in] "\u00B0C"]
+			}
 			return [subst {[round_to_integer $in]\u00B0C}]
+		}
+		if {$returnlist == 1} {
+			return [list [round_to_one_digits $in] "\u00B0C"]
 		}
 		return [subst {[round_to_one_digits $in]\u00B0C}]
 	}
