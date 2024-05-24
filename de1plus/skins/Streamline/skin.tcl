@@ -2924,7 +2924,7 @@ proc update_data_card { arrname } {
 			incr stepnum
 			set state_change $espresso_state_change
 
-			if {$stepnum >= $preinfusion_end_step} {
+			if {$stepnum > $preinfusion_end_step} {
 
 				if {$state != "extraction"} {
 					set ::streamline_extraction_temp_start $espresso_temperature_basket
