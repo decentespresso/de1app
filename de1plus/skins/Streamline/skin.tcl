@@ -463,22 +463,22 @@ lappend btns \
 	[list -text "Mix" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[lindex [return_temperature_measurement [water_mix_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement [water_mix_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_label_color   ] \
+	[list -text {[lindex [return_temperature_measurement [water_mix_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Group" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
 	[list -text {[lindex [return_temperature_measurement [group_head_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement [group_head_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_label_color   ] \
+	[list -text {[lindex [return_temperature_measurement [group_head_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Steam" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
 	[list -text {[lindex [return_temperature_measurement [steam_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement [steam_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_label_color   ] \
+	[list -text {[lindex [return_temperature_measurement [steam_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Tank" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
 	[list -text {[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]]} -font "mono12" -foreground $::dataline_data_color  ] \
-	[list -text {[translate ml]} -font "mono8" -foreground $::dataline_label_color  ] \
+	[list -text {[translate ml]} -font "mono8" -foreground $::dataline_data_color  ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Time" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
@@ -489,7 +489,7 @@ if {$::settings(scale_bluetooth_address) != ""} {
 	lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::status_clickable_text  -exec "::device::scale::tare; popup [translate Tare]" ] 
 	lappend btns [list -text " " -font "Inter-Bold16"  -exec "::device::scale::tare; popup [translate Tare]" ]
 	lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]} -font "mono12" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
-	lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]} -font "mono8" -foreground $::dataline_label_color  -exec "::device::scale::tare; popup [translate Tare]" ]
+	lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]} -font "mono8" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
 }
 
 
@@ -638,19 +638,21 @@ proc update_streamline_status_message {} {
 		}
 		set bars_grey [expr {20 - $bars}]
 
-		if {$bars < 16} {
-			set green_progress ""
-			set red_progress [string repeat █ $bars]
+		#if {$bars < 16} {
+			#set green_progress ""
+			#set red_progress [string repeat █ $bars]
 
 			#msg -ERROR "green: 0   red: $bars"
 
-		} else {
-			set red_progress ""
-			set green_progress [string repeat █ $bars]
+		#} else {
+			#set red_progress ""
+			#set green_progress [string repeat █ $bars]
 
 			#msg -ERROR "red: 0   green: $bars"
 
-		}
+		#}
+
+		set green_progress [string repeat █ $bars]
 		set grey_progress [string repeat █ $bars_grey]
 
 		if {$final_target == 0} {
@@ -853,17 +855,17 @@ proc streamline_history_date_format {shot_time} {
 	} elseif {$minutes < 60} {
 		set t "${minutes} [translate {minutes ago}]"
 	} elseif {$hours < 2} {
-		set t [translate "1 hour ago  ([time_format $shot_time])"]
+		set t [translate "1 hour ago @ [time_format $shot_time]"]
 	} elseif {$hours < 24} {
-		set t "${hours} [translate {hours ago}] ([time_format $shot_time])"
+		set t "${hours} [translate {hours ago}] @ [time_format $shot_time]"
 	} elseif {$days < 2} {
-		set t "[translate {yesterday}] ([time_format $shot_time])"
+		set t "[translate {yesterday}] @ [time_format $shot_time]"
 	} elseif {$days < 31} {
-		set t "${days} [translate {days ago}] ([time_format $shot_time])"
+		set t "${days} [translate {days ago}] @ [time_format $shot_time]"
 	} elseif {$months < 25} {
-		set t "$months [translate {months ago}] ([time_format $shot_time])"
+		set t "$months [translate {months ago}] @ [time_format $shot_time]"
 	} else {
-		set t "$years [translate {years ago}] ([time_format $shot_time])"
+		set t "$years [translate {years ago}] @ [time_format $shot_time]"
 	}
 
 	return $t
@@ -883,14 +885,19 @@ dui aspect set -theme default -type dbutton label_fill $::data_card_text_color
 dui aspect set -theme default -type dbutton_symbol font_size 18
 dui aspect set -theme default -type dbutton_symbol pos ".50 .5"
 
+
 if {$::android == 1 || $::undroid == 1} {
-	#dui aspect set -theme default -type dbutton fill "$::data_card_text_color"
-	dui add dbutton "off" 628 1220 755 1465 -tags profile_back -symbol "arrow-left"  -command { streamline_history_profile_back }  -longpress_cmd { streamline_history_profile_fwd 0 } 
-	dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd -symbol "arrow-right"  -command { streamline_history_profile_fwd } -longpress_cmd { streamline_history_profile_fwd 1 } 
+	set ::streamline_history_cmd -label
+	set ::streamline_history_left "🡐"
+	set ::streamline_history_right "🡒"
 } else {
-	dui add dbutton "off" 690 1249 725 1435  -tags profile_back -label "<"  -command { streamline_history_profile_back }  -longpress_cmd { streamline_history_profile_fwd 0 } 
-	dui add dbutton "off" 1065 1249 1101 1435  -tags profile_fwd -label ">"  -command { streamline_history_profile_fwd }  -longpress_cmd { streamline_history_profile_fwd 1 } 
+	set ::streamline_history_cmd -label
+	set ::streamline_history_left "<"
+	set ::streamline_history_right ">"
 }
+
+dui add dbutton "off" 628 1220 755 1465 -tags profile_back $::streamline_history_cmd $::streamline_history_left  -command { streamline_history_profile_back }  -longpress_cmd { streamline_history_profile_fwd 0 } 
+dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd $::streamline_history_cmd " "  -command { streamline_history_profile_fwd } -longpress_cmd { streamline_history_profile_fwd 1 } 
 
 
 add_de1_text $::pages 1416 1328 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
@@ -3149,31 +3156,46 @@ proc streamline_init_history_files {} {
 	set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
 }
 
+proc streamline_history_profile_btns_refresh {} {
+
+	if {$::streamline_history_file_selected_number == 0} {
+		dui item config $::all_pages "profile_back" $::streamline_history_cmd ""
+	} else {
+		dui item config $::all_pages "profile_back" $::streamline_history_cmd $::streamline_history_left
+	}
+
+
+	if {$::streamline_history_file_selected_number == [llength $::streamline_history_files]-1} {
+		dui item config $::all_pages "profile_fwd" $::streamline_history_cmd ""
+	} else {
+		dui item config $::all_pages "profile_fwd" $::streamline_history_cmd $::streamline_history_right
+	}
+}
+
 proc streamline_history_profile_back {} {
 	set ::streamline_history_file_selected_number [expr {$::streamline_history_file_selected_number	 - 1}]
 	if {$::streamline_history_file_selected_number < 0} {
 		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
 	}
 	streamline_load_currently_selected_history_shot
+	streamline_history_profile_btns_refresh
 }
 
 proc streamline_history_profile_fwd { {destination {}} } {
 
 	if {$destination == 0} {
 		set ::streamline_history_file_selected_number 0
-		#popup "Oldest"
 	} elseif {$destination == 1} {
 		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
-		#popup "Newest"
 	} else {
 
 		set ::streamline_history_file_selected_number [expr {$::streamline_history_file_selected_number	 + 1}]
 		if {$::streamline_history_file_selected_number > [llength $::streamline_history_files]-1} {
 			set ::streamline_history_file_selected_number 0
 		}
-
-
 	}
+
+	streamline_history_profile_btns_refresh
 	streamline_load_currently_selected_history_shot
 }
 
