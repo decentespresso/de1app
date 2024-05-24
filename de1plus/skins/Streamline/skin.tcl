@@ -380,7 +380,8 @@ proc streamline_profile_title {} {
 			set ::streamline_needs_final_datacard_update 1
 		}
 
-		return "[ifexists ::settings(profile_title)]: [translate $this_substate]"
+		#return "[ifexists ::settings(profile_title)]: [translate $this_substate]"
+		#return "[ifexists ::settings(profile_title)]: [translate $this_substate]"
 
 	} elseif {$::streamline_needs_final_datacard_update == 1} {
 		set ::streamline_needs_final_datacard_update 0
@@ -566,7 +567,9 @@ proc update_streamline_status_message {} {
 
 		if {[dui page current] == "espresso" || [dui page current] == "espresso_zoomed" } {
 
-			set green_msg [translate "Making"]
+			set green_msg [translate [string totitle [::de1::state::current_substate]]]
+
+			
 			set final_target [determine_final_weight]
 			
 			if {$::settings(scale_bluetooth_address) != ""} {
