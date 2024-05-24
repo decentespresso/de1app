@@ -493,8 +493,8 @@ if {$::settings(scale_bluetooth_address) != ""} {
 }
 
 
-set ::streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 60 $::background_color $btns ]
-set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 60 $::background_color $btns ]
+set ::streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 65 $::background_color $btns ]
+set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 65 $::background_color $btns ]
 
 proc percent_to_bar { perc } {
 	if {$delta_percent < 96} {
@@ -569,7 +569,7 @@ proc update_streamline_status_message {} {
 
 			set green_msg [translate [string totitle [::de1::state::current_substate]]]
 
-			
+
 			set final_target [determine_final_weight]
 			
 			if {$::settings(scale_bluetooth_address) != ""} {
