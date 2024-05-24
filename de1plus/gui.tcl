@@ -1118,6 +1118,8 @@ proc update_onscreen_variables { {state {}} } {
 
 # Define fake / dummy espresso variables on workstations
 proc set_dummy_espresso_vars {} {
+
+	set ::settings(do_realtime_espresso_simulation) 1
 	if { $::android } { return }
 
 	if {$::de1(state) != 4} {
