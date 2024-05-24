@@ -414,9 +414,9 @@ add_de1_variable $::pages 690 256 -justify left -anchor "nw" -font Inter-HeavyBo
 add_de1_variable $::zoomed_pages 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 
 
-set ::streamline_global(status_msg_progress_red) "1"
-set ::streamline_global(status_msg_progress_green) "2"
-set ::streamline_global(status_msg_progress_grey) "3"
+set ::streamline_global(status_msg_progress_red) ""
+set ::streamline_global(status_msg_progress_green) ""
+set ::streamline_global(status_msg_progress_grey) ""
 
 set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 344 right 0 1 30 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_progress_green)}  -font "Inter-Regular6" -foreground $::progress_bar_green  ] \
@@ -527,47 +527,27 @@ proc update_streamline_status_message {} {
 
 	if {[dui page current] == "off" || [dui page current] == "off_zoomed"} {
 
+		set green_progress ""
+		set red_progress ""
+		set grey_progress ""		
+
 		set num $::de1(substate)
 		set substate_txt $::de1_substate_types($num)
+		set delta_percent [expr {int(100 * ((1.0*[group_head_heater_temperature]) / [setting_espresso_temperature]))}]
+		set bars [round_to_integer [expr {$delta_percent / 5}]]
 
 		if {$::de1(device_handle) == 0} {
 			set red_msg [translate "Wait"]
 		} elseif {$substate_txt == "ready"} {
 			set green_msg [translate "Ready"]
+			set green_progress [string repeat █ $bars]
 		} else {
 			set red_msg [translate "Heating"]
-
+			set red_progress [string repeat █ $bars]
 		}
 
-
-		set delta_percent [expr {int(100 * ((1.0*[group_head_heater_temperature]) / [setting_espresso_temperature]))}]
-		#set delta_percent 50
-		set green_progress ""
-		if {$delta_percent < 85} {
-			set times_red [round_to_integer [expr {$delta_percent / 5}]]
-			set times_grey [expr {20 - $times_red}]
-
-			set red_progress [string repeat █ $times_red]
-			set grey_progress [string repeat █ $times_grey]
-
-			#msg -ERROR "red: $red_progress   grey_progress: $grey_progress"
-
-		} elseif {$delta_percent < 98} {
-			set times_red [round_to_integer [expr {$delta_percent / 5}]]
-			set times_grey [expr {20 - $times_red}]
-
-			set red_progress ""
-			set green_progress [string repeat █ $times_red]
-			set grey_progress [string repeat █ $times_grey]
-
-			#msg -ERROR "green: $green_progress   grey_progress: $grey_progress"
-
-		} else {
-			set red_progress ""
-			set grey_progress ""
-		}
-
-
+		set bars_grey [expr {20 - $bars}]
+		set grey_progress [string repeat █ $bars_grey]
 
 		#msg -ERROR "current: [group_head_heater_temperature] / [setting_espresso_temperature]=delta_percent:$delta_percent"
 
@@ -601,6 +581,9 @@ proc update_streamline_status_message {} {
 			set final_target $::settings(flush_seconds)
 			
 			set current [flush_pour_timer]		
+
+			set green_msg [subst {[translate "Flushing:"] $current[translate s]}]
+
 			if {$current == ""} {
 				set current 0
 			}
@@ -612,11 +595,13 @@ proc update_streamline_status_message {} {
 			#puts "current: $current final_target:$final_target delta_percent:$delta_percent"
 			
 		} elseif {[dui page current] == "steam" } {
+			
 
-			set green_msg [translate "Steaming"]
+			set current [steam_pour_timer]		
+			
+			set green_msg [subst {[translate "Steaming:"] $current[translate s]}]
 			set final_target $::settings(steam_timeout)
 			
-			set current [steam_pour_timer]		
 			if {$current == ""} {
 				set current 0
 			}
@@ -629,10 +614,11 @@ proc update_streamline_status_message {} {
 			
 		} elseif {[dui page current] == "water" } {
 
-			set green_msg [translate "Hot water"]
+			set current [watervolume]		
+			set green_msg [subst {[translate "Hot water:"] $current[translate s]}]
+
 			set final_target $::settings(water_volume)
 			
-			set current [watervolume]		
 			if {$current == ""} {
 				set current 0
 			}
@@ -666,6 +652,13 @@ proc update_streamline_status_message {} {
 
 		}
 		set grey_progress [string repeat █ $bars_grey]
+
+		if {$final_target == 0} {
+			# display no bars if there is no target
+			set red_progress ""
+			set green_progress ""
+			set grey_progress ""
+		}
 
 	}
 
@@ -2835,6 +2828,14 @@ proc update_data_card { arrname } {
 	set ::streamline_preinfusion_low_pressure 15
 	set ::streamline_preinfusion_peak_pressure 0
 
+	set ::streamline_preinfusion_temp_start 100
+	set ::streamline_preinfusion_temp_end 0
+	set ::streamline_preinfusion_flow_start 15
+	set ::streamline_preinfusion_flow_end 0
+	set ::streamline_preinfusion_pressure_start 15
+	set ::streamline_preinfusion_pressure_end 0
+
+
 	set ::streamline_extraction_time 0
 	set ::streamline_extraction_weight 0
 	set ::streamline_extraction_volume 0
@@ -2844,6 +2845,15 @@ proc update_data_card { arrname } {
 	set ::streamline_extraction_peak_pressure 0
 	set ::streamline_extraction_low_flow 15
 	set ::streamline_extraction_low_pressure 15
+
+	set ::streamline_extraction_temp_start 100
+	set ::streamline_extraction_temp_end 0
+	set ::streamline_extraction_flow_start 15
+	set ::streamline_extraction_flow_end 0
+	set ::streamline_extraction_pressure_start 15
+	set ::streamline_extraction_pressure_end 0
+
+
 
 	set state "preinfusion"
 	set state_change 0
