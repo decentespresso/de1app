@@ -534,7 +534,7 @@ proc update_streamline_status_message {} {
 		set num $::de1(substate)
 		set substate_txt $::de1_substate_types($num)
 		set delta_percent [expr {int(100 * ((1.0*[group_head_heater_temperature]) / [setting_espresso_temperature]))}]
-		set bars [round_to_integer [expr {$delta_percent / 5}]]
+		set bars [round_to_integer [expr {1+ ($delta_percent / 5)}]]
 
 		if {$::de1(device_handle) == 0} {
 			set red_msg [translate "Wait"]
@@ -2881,15 +2881,44 @@ proc update_data_card { arrname } {
 			#continue
 		}
 
+		if {$state == "preinfusion"} {
+			set ::streamline_preinfusion_temp_end $espresso_temperature_basket
+			set ::streamline_preinfusion_flow_end $espresso_flow
+			set ::streamline_preinfusion_pressure_end $espresso_pressure
+
+
+		} elseif {$state == "extraction"} {
+			# keep track of final numbers 
+			set ::streamline_extraction_temp_end $espresso_temperature_basket
+			set ::streamline_extraction_flow_end $espresso_flow
+			set ::streamline_extraction_pressure_end $espresso_pressure
+		}
+
 		if {$state_change != $espresso_state_change} {
+
+			if {$stepnum == 0} {
+				set ::streamline_preinfusion_temp_start $espresso_temperature_basket
+				set ::streamline_preinfusion_flow_start $espresso_flow
+				set ::streamline_preinfusion_pressure_start $espresso_pressure
+			}
+
 			incr stepnum
 			set state_change $espresso_state_change
 
 			if {$stepnum > $preinfusion_end_step} {
+
+				if {$state != "extraction"} {
+					set ::streamline_extraction_temp_start $espresso_temperature_basket
+					set ::streamline_extraction_flow_start $espresso_flow
+					set ::streamline_extraction_pressure_start $espresso_pressure
+				}
+
 				set state "extraction"
 			}
 
+
 		}
+
 
 		#puts "ERROR preinfusion_end_step: $stepnum > $preinfusion_end_step"
 
@@ -2957,33 +2986,74 @@ proc update_data_card { arrname } {
 	set ::streamline_extraction_peak_pressure [round_to_one_digits $::streamline_extraction_peak_pressure]
 
 
-	#puts "ERROR stat $state  			if {$::de1(state) == 4 || $::de1(substate) == 5} "
+
+	if {$::android == 1 || $::undroid == 1} {
+		set arrow "🡒"
+	} else {
+		set arrow "->"
+	}
+
 	set ::streamline_preinfusion_temp ""
-	if {$::streamline_preinfusion_temp_high == 0} {
-		# no label
-	} elseif {[round_to_integer $::streamline_preinfusion_temp_low] == [round_to_integer $::streamline_preinfusion_temp_high]} {
-		set ::streamline_preinfusion_temp [string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]
-	} else {
-		set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_low]]🡒[string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]"
-	}
-
 	set ::streamline_extraction_temp ""
-	if {$::streamline_extraction_temp_high == 0} {
-		# no label
-		set ::streamline_extraction_temp ""
-	} elseif {[round_to_integer $::streamline_extraction_temp_low] == $::streamline_extraction_temp_high} {
-		set ::streamline_extraction_temp [string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]
+
+	set show_high_low 0
+
+	if {$show_high_low == 1} {
+		if {$::streamline_preinfusion_temp_high == 0} {
+			# no label
+		} elseif {[round_to_integer $::streamline_preinfusion_temp_low] == [round_to_integer $::streamline_preinfusion_temp_high]} {
+			set ::streamline_preinfusion_temp [string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]
+		} else {
+			set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_low]]$arrow[string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]"
+		}
+
+		if {$::streamline_extraction_temp_high == 0} {
+			# no label
+			set ::streamline_extraction_temp ""
+		} elseif {[round_to_integer $::streamline_extraction_temp_low] == [round_to_integer $::streamline_extraction_temp_high]} {
+			set ::streamline_extraction_temp [string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]
+		} else {
+			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]$arrow[string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]"
+		}
+
+
+
+		set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_pressure]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure] [translate "bar"]"
+		set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_pressure]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure] [translate "bar"]"
+
+		set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_flow]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] [translate "ml/s"]"
+		set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_flow]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] [translate "ml/s"]"
+
 	} else {
-		set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]🡒[string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]"
+
+		# show start/end numbers
+
+		if {$::streamline_preinfusion_temp_end == 0} {
+			# no label
+		} elseif {[round_to_integer $::streamline_preinfusion_temp_start] == [round_to_integer $::streamline_preinfusion_temp_end]} {
+			set ::streamline_preinfusion_temp [string tolower [return_temperature_measurement $::streamline_preinfusion_temp_end 1]]
+		} else {
+			set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_start]]$arrow[string tolower [return_temperature_measurement $::streamline_preinfusion_temp_end 1]]"
+		}
+
+		if {$::streamline_extraction_temp_end == 0} {
+			# no label
+			set ::streamline_extraction_temp ""
+		} elseif {[round_to_integer $::streamline_extraction_temp_end] == [round_to_integer $::streamline_extraction_temp_end]} {
+			set ::streamline_extraction_temp [string tolower [return_temperature_measurement $::streamline_extraction_temp_end 1]]
+		} else {
+			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_end]]$arrow[string tolower [return_temperature_measurement $::streamline_extraction_temp_end 1]]"
+		}
+
+
+
+		set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_end] [translate "bar"]"
+		set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_end] [translate "bar"]"
+
+		set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_end] [translate "ml/s"]"
+		set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_flow_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_flow_end] [translate "ml/s"]"
+
 	}
-
-
-
-	set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_pressure]🡒[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure] [translate "bar"]"
-	set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_pressure]🡒[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure] [translate "bar"]"
-
-	set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_flow]🡒[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] [translate "ml/s"]"
-	set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_flow]🡒[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] [translate "ml/s"]"
 
 	#set ::streamline_preinfusion_low_peak_pressure_label ""
 	#set ::streamline_preinfusion_low_peak_flow_label ""
