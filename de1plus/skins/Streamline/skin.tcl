@@ -187,7 +187,13 @@ load_font "Inter-Bold12" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
 load_font "Inter-Bold11" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
 
 # status
-load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
+
+if {$::undroid == 1} {
+	load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
+} else {
+	load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
+}
+
 
 # status bold
 load_font "Inter-SemiBold18" "[homedir]/skins/Streamline/Inter-Bold.ttf" 13
@@ -221,7 +227,12 @@ load_font "icomoon" "[homedir]/skins/Streamline/icomoon.ttf" 30
 # mono data card
 load_font "mono8" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 10
 load_font "mono10" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 12
-load_font "mono12" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 13
+
+if {$::undroid == 1} {
+	load_font "mono12" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 12
+} else {
+	load_font "mono12" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 13
+}
 
 # mono data card
 load_font "mono10bold" "[homedir]/skins/Streamline/NotoSansMono-ExtraBold.ttf" 12
@@ -418,7 +429,7 @@ set ::streamline_global(status_msg_progress_red) ""
 set ::streamline_global(status_msg_progress_green) ""
 set ::streamline_global(status_msg_progress_grey) ""
 
-set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 344 right 0 1 30 $::background_color [list \
+set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 344 right 0 1 45 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_progress_green)}  -font "Inter-Regular6" -foreground $::progress_bar_green  ] \
 	[list -text {$::streamline_global(status_msg_progress_red)}  -font "Inter-Regular6" -foreground $::progress_bar_red  ] \
 	[list -text {$::streamline_global(status_msg_progress_grey)}  -font "Inter-Regular6" -foreground $::progress_bar_grey ] \
@@ -521,6 +532,7 @@ proc percent_to_bar { perc } {
 
 proc update_streamline_status_message {} {
 	#msg -ERROR "update_streamline_status_message [dui page current]"
+	set red_progress ""
 	set red_msg ""
 	set green_msg ""
 	set delta_percent 0
@@ -2894,7 +2906,7 @@ proc update_data_card { arrname } {
 			set ::streamline_preinfusion_pressure_end $espresso_pressure
 
 
-		} elseif {$state == "extraction"} {
+		} else {
 			# keep track of final numbers 
 			set ::streamline_extraction_temp_end $espresso_temperature_basket
 			set ::streamline_extraction_flow_end $espresso_flow
@@ -2912,7 +2924,7 @@ proc update_data_card { arrname } {
 			incr stepnum
 			set state_change $espresso_state_change
 
-			if {$stepnum > $preinfusion_end_step} {
+			if {$stepnum >= $preinfusion_end_step} {
 
 				if {$state != "extraction"} {
 					set ::streamline_extraction_temp_start $espresso_temperature_basket
@@ -2927,8 +2939,9 @@ proc update_data_card { arrname } {
 		}
 
 
-		#puts "ERROR preinfusion_end_step: $stepnum > $preinfusion_end_step"
 
+		#puts "ERROR preinfusion_end_step: $stepnum > $preinfusion_end_step"
+		#puts "stat ${state} : $stepnum > $preinfusion_end_step"
 		set ::streamline_${state}_time $t
 		if {$espresso_weight > 0} {
 			set ::streamline_${state}_weight $espresso_weight
@@ -3200,9 +3213,6 @@ proc streamline_history_profile_fwd { {destination {}} } {
 }
 
 proc streamline_shot_ended  {} {
-	#puts "ERROR ::settings(history_saved) $::settings(history_saved)"
-	#puts "ERROR ::settings(history_saved_shot_filename) $::settings(history_saved_shot_filename)"
-	#puts "ERROR $::streamline_history_file_selected_number"
 	if {[ifexists ::settings(history_saved_shot_filename)] != ""} {		
 
 		# when saving the shot, update the onscreen weight with what the final weight on the scale was.
@@ -3210,9 +3220,9 @@ proc streamline_shot_ended  {} {
 		lappend ::streamline_history_files [file tail $::settings(history_saved_shot_filename)]
 		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] - 1}]
 
-		streamline_history_profile_fwd 1
+		#streamline_history_profile_fwd 1
 
-		#set ::streamline_shot_weight [expr {$::de1(scale_weight_rate_raw)+0.4}]
+		set ::streamline_shot_weight [expr {$::de1(scale_weight_rate_raw)}]
 		#set ::streamline_final_extraction_weight [expr {$::streamline_shot_weight - $::streamline_preinfusion_weight}]
 
 	}
