@@ -418,7 +418,7 @@ set ::streamline_global(status_msg_progress_red) "1"
 set ::streamline_global(status_msg_progress_green) "2"
 set ::streamline_global(status_msg_progress_grey) "3"
 
-set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 344 right 0 1 20 $::background_color [list \
+set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 344 right 0 1 30 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_progress_green)}  -font "Inter-Regular6" -foreground $::progress_bar_green  ] \
 	[list -text {$::streamline_global(status_msg_progress_red)}  -font "Inter-Regular6" -foreground $::progress_bar_red  ] \
 	[list -text {$::streamline_global(status_msg_progress_grey)}  -font "Inter-Regular6" -foreground $::progress_bar_grey ] \
@@ -437,7 +437,7 @@ proc streamline_status_msg_click {} {
 	puts "ERROR TAPPED $::streamline_global(status_msg_clickable)"	
 }
 
-set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2516 - $ghc_pos_pffset}] 256 right 0 1 40 $::background_color [list \
+set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2516 - $ghc_pos_pffset}] 256 right 0 1 30 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_text_green)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_green  ] \
 	[list -text {$::streamline_global(status_msg_text_red)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_red  ] \
 	[list -text "   " -font "Inter-Black18"] \
@@ -549,6 +549,9 @@ proc update_streamline_status_message {} {
 
 			set red_progress [string repeat █ $times_red]
 			set grey_progress [string repeat █ $times_grey]
+
+			#msg -ERROR "red: $red_progress   grey_progress: $grey_progress"
+
 		} elseif {$delta_percent < 98} {
 			set times_red [round_to_integer [expr {$delta_percent / 5}]]
 			set times_grey [expr {20 - $times_red}]
@@ -556,10 +559,15 @@ proc update_streamline_status_message {} {
 			set red_progress ""
 			set green_progress [string repeat █ $times_red]
 			set grey_progress [string repeat █ $times_grey]
+
+			#msg -ERROR "green: $green_progress   grey_progress: $grey_progress"
+
 		} else {
 			set red_progress ""
 			set grey_progress ""
 		}
+
+
 
 		#msg -ERROR "current: [group_head_heater_temperature] / [setting_espresso_temperature]=delta_percent:$delta_percent"
 
@@ -567,8 +575,7 @@ proc update_streamline_status_message {} {
 
 		if {[dui page current] == "espresso" || [dui page current] == "espresso_zoomed" } {
 
-			set green_msg [translate [string totitle [::de1::state::current_substate]]]
-
+			set green_msg [subst {[translate [string totitle [::de1::state::current_substate]]] ($::settings(current_frame_description))}]
 
 			set final_target [determine_final_weight]
 			
@@ -587,7 +594,7 @@ proc update_streamline_status_message {} {
 				set delta_percent [expr {int(100 * ((1.0*$current_weight) / $final_target))}]
 			}
 
-			msg -ERROR "current: $current_weight final_target:$final_target delta_percent:$delta_percent"
+			#msg -ERROR "current: $current_weight final_target:$final_target delta_percent:$delta_percent"
 		} elseif {[dui page current] == "hotwaterrinse" } {
 
 			set green_msg [translate "Flushing"]
@@ -648,11 +655,18 @@ proc update_streamline_status_message {} {
 		if {$bars < 16} {
 			set green_progress ""
 			set red_progress [string repeat █ $bars]
+
+			#msg -ERROR "green: 0   red: $bars"
+
 		} else {
 			set red_progress ""
 			set green_progress [string repeat █ $bars]
+
+			#msg -ERROR "red: 0   green: $bars"
+
 		}
 		set grey_progress [string repeat █ $bars_grey]
+
 	}
 
 	set updated 0
