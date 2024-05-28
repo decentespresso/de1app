@@ -7546,15 +7546,19 @@ namespace eval ::dui {
 				regexp {^\-([0-9]?)_?([0-9a-zA-Z_]*)$} $lopt {} num_prefix opt
 				
 				if { $opt eq "" } {
-					msg "_CONFIG_NUMBERED_PREFIXED, removing variable from page=$page, tags=[lmap x $tags {append x "-$tag_suffix$num_prefix"}]"
+					#msg "_CONFIG_NUMBERED_PREFIXED, removing variable from page=$page, tags=[lmap x $tags {append x "-$tag_suffix$num_prefix"}]"
 					foreach id [get $page [lmap x $tags {append x "-$tag_suffix$num_prefix"}]] {
 						if { $type eq "label" } {
 							dui::page::rm_variable $page $id
 						}
-						$can itemconfigure $id -text "$lvalue"
+						if { $type eq "symbol" } {
+							$can itemconfigure $id -text [dui::symbol::get $lvalue]
+						} else {
+							$can itemconfigure $id -text "$lvalue"
+						}
 					}
 				} elseif { $type eq "label" && $opt eq "variable" } {
-					msg "_CONFIG_NUMBERED_PREFIXED, adding variable to page=$page, tags=[lmap x $tags {append x "-$tag_suffix$num_prefix"}], tclcode=$lvalue"
+					#msg "_CONFIG_NUMBERED_PREFIXED, adding variable to page=$page, tags=[lmap x $tags {append x "-$tag_suffix$num_prefix"}], tclcode=$lvalue"
 					foreach id [get $page [lmap x $tags {append x "-$tag_suffix$num_prefix"}]] {
 						dui::page::add_variable $page $id "$lvalue"
 					}
@@ -7565,8 +7569,8 @@ namespace eval ::dui {
 					}
 					lappend "font${num_prefix}_args" -$opt $lvalue
 				} else {
-					foreach tag [lmap x $tags {append x "-$tag_suffix$num_prefix"}] {
-						$can itemconfigure $tag -$opt $lvalue
+					foreach id [get $page [lmap x $tags {append x "-$tag_suffix$num_prefix"}]] {
+						$can itemconfigure $id -$opt $lvalue
 					}
 				}
 			}

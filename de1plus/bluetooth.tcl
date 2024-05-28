@@ -392,6 +392,20 @@ proc felicita_parse_response { value } {
 			::device::scale::process_weight_update [expr $weight / 100.0] ;# $event_time
 		}
 	}
+
+  if {[string bytelength $value] >= 18} {
+    binary scan $value c15cu unused battery
+    if {[info exists battery]} {
+      # ::bt::msg -INFO "received batt: ${battery}"
+      set battery [scan $battery %u]
+      # ::bt::msg -INFO "felicita battery: ${battery}"
+      set batt_level [expr [expr [expr $battery - 129] / 29.0] * 10 ]; # my felicita batt level is jumping a lot from 158 to 157, causing jumps in %
+      set batt_level [expr {round($batt_level)}]; # therefore I decided to round the lower value so we only have 10% level changes
+      set batt_level [expr $batt_level * 10]
+      # ::bt::msg -INFO "felicita batt level: ${batt_level}"
+      set ::de1(scale_battery_level) $batt_level
+    }
+  }
 }
 
 
