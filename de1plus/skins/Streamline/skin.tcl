@@ -583,6 +583,11 @@ proc update_streamline_status_message {} {
 
 	if {[dui page current] == "off" || [dui page current] == "off_zoomed"} {
 
+	}
+
+
+	if {[dui page current] == "off" || [dui page current] == "off_zoomed"} {
+
 		set green_progress ""
 		set red_progress ""
 		set grey_progress ""		
@@ -592,7 +597,16 @@ proc update_streamline_status_message {} {
 		set delta_percent [expr {int(100 * ((1.0*[group_head_heater_temperature]) / [setting_espresso_temperature]))}]
 		set bars [round_to_integer [expr {1+ ($delta_percent / 5)}]]
 
-		if {$::de1(device_handle) == 0} {
+		if {[ifexists ::settings(scale_bluetooth_address)] != "" && [ifexists ::de1(scale_device_handle)] == "0"} {
+			set red_msg [subst {  [translate "Scale Disconnected"]}]
+			set green_msg ""
+
+			if {$::currently_connecting_scale_handle == 0} {
+				set clickable_msg $::reconnect_text_string
+			} else {
+				set clickable_msg [translate "Wait"]
+			}
+		} elseif {$::de1(device_handle) == 0} {
 			set red_msg [translate "Wait"]
 		} elseif {$substate_txt == "ready"} {
 			set green_msg [translate "Ready"]
@@ -604,6 +618,7 @@ proc update_streamline_status_message {} {
 
 		set bars_grey [expr {20 - $bars}]
 		set grey_progress [string repeat █ $bars_grey]
+
 
 		#msg -ERROR "current: [group_head_heater_temperature] / [setting_espresso_temperature]=delta_percent:$delta_percent"
 
@@ -721,24 +736,6 @@ proc update_streamline_status_message {} {
 
 	}
 
-	if {[dui page current] == "off"} {
-		if {[ifexists ::settings(scale_bluetooth_address)] != ""} {
-			if {$::de1(scale_device_handle) == "0"} {
-				set red_msg [subst {  [translate "Scale Disconnected"]}]
-				set green_msg ""
-
-				if {$::currently_connecting_scale_handle == 0} {
-					set clickable_msg $::reconnect_text_string
-				} else {
-					set clickable_msg [translate "Wait"]
-				}
-
-			} else {
-				set clickable_msg ""
-				set red_msg ""
-			}
-		}
-	}
 
 
 
@@ -1008,6 +1005,9 @@ proc streamline_zero_pad {num dig prec {optional_label {}}} {
 set ::streamline_shot_volume 0
 set ::streamline_final_extraction_volume 0
 set ::streamline_preinfusion_volume 0
+set ::streamline_flow_col_pos 2034
+set ::streamline_pressure_col_pos 2290
+
 add_de1_text $::pages 1690 1328 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 150]
 add_de1_variable $::pages 1690 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_preinfusion_volume 2 0 [translate "ml"]]} 
 add_de1_variable $::pages 1690 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_final_extraction_volume 2 0 [translate "ml"]]} 
@@ -1021,15 +1021,16 @@ add_de1_variable $::pages 1850 1452 -justify right -anchor "nw"  -font mono10 -f
 
 set ::streamline_extraction_low_peak_flow_label "-"
 set ::streamline_extraction_low_peak_flow_label "-"
-add_de1_text $::pages 2044 1328 -justify right -anchor "nw" -text [translate "Flow (ml/s)"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages 2044 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_low_peak_flow_label} 
-add_de1_variable $::pages 2044 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_low_peak_flow_label} 
+
+add_de1_text $::pages $::streamline_flow_col_pos 1328 -justify right -anchor "nw" -text [translate "Flow (ml/s)"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_variable $::pages $::streamline_flow_col_pos 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_low_peak_flow_label} 
+add_de1_variable $::pages $::streamline_flow_col_pos 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_low_peak_flow_label} 
 
 set ::streamline_preinfusion_low_peak_pressure_label "-"
 set ::streamline_extraction_low_peak_pressure_label "-"
-add_de1_text $::pages 2316 1328 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 230]
-add_de1_variable $::pages 2316 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 230] -textvariable {$::streamline_preinfusion_low_peak_pressure_label}
-add_de1_variable $::pages 2316 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 230] -textvariable {$::streamline_extraction_low_peak_pressure_label}
+add_de1_text $::pages $::streamline_pressure_col_pos 1328 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 230]
+add_de1_variable $::pages $::streamline_pressure_col_pos 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 230] -textvariable {$::streamline_preinfusion_low_peak_pressure_label}
+add_de1_variable $::pages $::streamline_pressure_col_pos 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 230] -textvariable {$::streamline_extraction_low_peak_pressure_label}
 
 
 ############################################################################################################################################################################################################
