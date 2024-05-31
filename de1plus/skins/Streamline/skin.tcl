@@ -318,7 +318,7 @@ streamline_rectangle $::pages 0 1365 626 1365 $::box_line_color
 
 # grey horizontal line 
 streamline_rectangle $::pages  626 418 2560 418 $::box_line_color
-streamline_rectangle $::zoomed_pages  0 418 2560 418 $::box_line_color
+streamline_rectangle $::zoomed_pages  0 490 2560 490 $::box_line_color
 
 #  grey line on the bottom
 streamline_rectangle $::pages 626 1274 2560 1274 $::box_line_color
@@ -505,7 +505,46 @@ if {$::settings(scale_bluetooth_address) != ""} {
 
 
 set ::streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 65 $::background_color $btns ]
-set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 65 $::background_color $btns ]
+set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 400 left 1 2 65 $::background_color $btns ]
+set ::streamline_hotwater_label_1st ""
+set ::streamline_hotwater_label_2nd ""
+
+set zoomed_btns ""
+lappend zoomed_btns \
+	[list -text "Grind" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {$::settings(grinder_setting)} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text "    " -font "Inter-SemiBold18"] \
+	[list -text "Dose" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-SemiBold18"] \
+	[list -text {$::settings(grinder_dose_weight)} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[translate "g"]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text "    " -font "Inter-Bold16"] \
+	[list -text "Drink" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-SemiBold18"] \
+	[list -text {[lindex [return_weight_measurement_grams [determine_final_weight] 0 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[translate "g"]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text "    " -font "Inter-Bold16"] \
+	[list -text "Brew" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold16"] \
+	[list -text {[setting_espresso_temperature_text 1]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text "    " -font "Inter-Bold16"] \
+	[list -text "Steam" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[seconds_text_very_abbreviated $::settings(steam_timeout)]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text "    " -font "Inter-Bold16"] \
+	[list -text "Flush" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[seconds_text_very_abbreviated $::settings(flush_seconds)]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text "    " -font "Inter-Bold16"] \
+	[list -text "Hot Water" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {$::streamline_hotwater_label_1st} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {$::streamline_hotwater_label_2nd} -font "mono12" -foreground $::dataline_data_color   ] 
+
+set ::streamline_status_msg_zoomed2 [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 85 $::background_color $zoomed_btns ]
+
 
 proc percent_to_bar { perc } {
 	if {$delta_percent < 96} {
@@ -2633,9 +2672,9 @@ set ::flow_goal_dashes "[rescale_x_skin 8] [rescale_x_skin 8]"
 
 
 set charts_width 1818
-set charts_width_zoomed 2500
+set charts_width_zoomed 2480
 set charts_height 784
-set charts_height_zoomed 1090
+set charts_height_zoomed 1040
 
 proc streamline_graph_smarts {widget {which ""} } {
 
@@ -2660,8 +2699,8 @@ proc streamline_graph_smarts {widget {which ""} } {
 	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular10 -linewidth [rescale_x_skin 1] -subdivisions 5 -majorticks {0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210 220 230 240 250} 
 	
 	if {[lsearch -exact $::zoomed_pages $which] != -1} {
-		set mticks {1 2 3 4 5 6 7 8 9 10 11 12} 
-		set max 12
+		set mticks {1 2 3 4 5 6 7 8 9 10 11 12 13 14} 
+		set max 14
 	} else {
 		set mticks {1 2 3 4 5 6 7 8 9 10} 
 		set max 10
@@ -2703,7 +2742,7 @@ proc streamline_graph_smarts {widget {which ""} } {
 
 
 add_de1_widget $::pages graph 692 458 { streamline_graph_smarts $widget } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
-add_de1_widget $::zoomed_pages graph 22 458 { streamline_graph_smarts $widget "off_zoomed" } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width_zoomed - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height_zoomed] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
+add_de1_widget $::zoomed_pages graph 22 520 { streamline_graph_smarts $widget "off_zoomed" } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width_zoomed - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height_zoomed] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
 
 ############################################################################################################################################################################################################
 
