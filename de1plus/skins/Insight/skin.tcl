@@ -543,7 +543,9 @@ proc update_temperature_charts_y_axis args {
 	}
 	#puts [stacktrace]
 }
-update_temperature_charts_y_axis
+catch {
+	update_temperature_charts_y_axis
+}
 
 #trace add variable ::settings(espresso_temperature) write update_temperature_charts_y_axis
 #trace add variable ::current_adv_step write update_temperature_charts_y_axis

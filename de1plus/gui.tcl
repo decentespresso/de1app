@@ -1119,7 +1119,8 @@ proc update_onscreen_variables { {state {}} } {
 # Define fake / dummy espresso variables on workstations
 proc set_dummy_espresso_vars {} {
 
-	set ::settings(do_realtime_espresso_simulation) 1
+	set ::settings(do_realtime_espresso_simulation) 0
+
 	if { $::android } { return }
 
 	if {$::de1(state) != 4} {
@@ -1136,15 +1137,20 @@ proc set_dummy_espresso_vars {} {
 			open_random_simulation_file	
 
 			# playing a random history item also means loading it as the current profile, otherwise it's weird and things don't line up
-			array set temp_settings [ifexists ::simulated(settings)]
-			set ::settings(advanced_shot) [ifexists temp_settings(advanced_shot)]
+			array set ::settings [ifexists ::simulated(settings)]
+
+			# this is the final drink weight, a few seconds after the shot stopped. We don't currently do anything with this for simulated shots.
+			# set ::de1(simulated_drink_weight) [ifexists ::settings(drink_weight)]
+
 			update_de1_state "$::de1_state(Espresso)\x4"
 		}
 
 		if {$::settings(do_realtime_espresso_simulation) != 1} {
 			incr ::simindex
+
 		} else {
 
+			
 			if {[llength [ifexists ::simulated(espresso_pressure)]] > 0} {
 
 				set t [expr {[espresso_millitimer] / 1000.0}]
@@ -1167,9 +1173,6 @@ proc set_dummy_espresso_vars {} {
 
 				set ::previous_simindex $::simindex
 
-
-				#puts "smindex: $::simindex"
-
 			}			
 		}
 
@@ -1184,6 +1187,8 @@ proc set_dummy_espresso_vars {} {
 	if {[info exists ::simindex] != 1} {
 		set ::simindex 0
 	}
+
+
 
 	# JB's GUI driver needs an event_dict
 
@@ -1283,9 +1288,11 @@ proc set_dummy_espresso_vars {} {
 		}
 
 
-		#catch {
+		catch {
 			set espresso_water_dispensed [expr {10.0 * [lindex $::simulated(espresso_water_dispensed) $::simindex] }]
-		#}		
+		}		
+
+		
 
 		set this_state [::de1::state::current_state]
 		set this_substate [::de1::state::current_substate]
@@ -1322,7 +1329,6 @@ proc set_dummy_espresso_vars {} {
 		}
 	}
 
-
 	set event_dict [dict create \
 		event_time 	$_now \
 		update_received	$_now \
@@ -1340,7 +1346,6 @@ proc set_dummy_espresso_vars {} {
 		this_state	[::de1::state::current_state] \
 		this_substate	[::de1::state::current_substate] \
 	]
-
 
 	if {$::de1(state) == 4} {
 		::de1::event::apply::on_shotvalue_available_callbacks $event_dict
