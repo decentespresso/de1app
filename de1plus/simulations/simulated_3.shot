@@ -151,9 +151,6 @@ settings {
 	god_espresso_name {}
 	god_espresso_pressure {}
 	god_espresso_temperature_basket {}
-	grinder_dose_weight 0
-	grinder_model {}
-	grinder_setting {}
 	has_refractometer 1
 	has_scale 1
 	heater_voltage 120
