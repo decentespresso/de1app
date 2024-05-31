@@ -395,6 +395,12 @@ proc streamline_profile_title {} {
 		#return "[ifexists ::settings(profile_title)]: [translate $this_substate]"
 		#return "[ifexists ::settings(profile_title)]: [translate $this_substate]"
 
+	} elseif {$this_state == "HotWaterRinse"} {
+		return [translate "Flush"]
+	} elseif {$this_state == "Steam"} {
+		return [translate "Steam"]
+	} elseif {$this_state == "HotWater"} {
+		return [translate "Hot Water"]
 	} elseif {$::streamline_needs_final_datacard_update == 1} {
 		set ::streamline_needs_final_datacard_update 0
 		 update_datacard_from_live_data				
@@ -453,10 +459,9 @@ proc streamline_status_msg_click {} {
 	}
 }
 
-set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2516 - $ghc_pos_pffset}] 256 right 0 1 30 $::background_color [list \
+set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 256 right 0 1 30 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_text_green)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_green  ] \
 	[list -text {$::streamline_global(status_msg_text_red)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_red  ] \
-	[list -text "   " -font "Inter-Black18"] \
 	[list -text {$::streamline_global(status_msg_text_clickable)}  -font "Inter-HeavyBold24" -foreground $::status_clickable_text -exec "streamline_status_msg_click" ] \
 ]]
 
@@ -509,8 +514,45 @@ if {$::settings(scale_bluetooth_address) != ""} {
 }
 
 
-set ::streamline_status_msg [add_de1_rich_text $::pages 690 330 left 1 2 65 $::background_color $btns ]
+set ::streamline_status_msg [add_de1_rich_text "off espresso" 690 330 left 1 2 65 $::background_color $btns ]
 set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 400 left 1 2 65 $::background_color $btns ]
+
+set flush_btns ""
+lappend flush_btns \
+	[list -text "Temp" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[lindex [return_temperature_measurement [watertemp] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement [watertemp] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text "    " -font "Inter-SemiBold18"] \
+	[list -text "Flow" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[round_to_integer $::settings(hotwater_flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] 
+
+set ::streamline_status_msg [add_de1_rich_text "hotwaterrinse water" 690 330 left 1 2 65 $::background_color $flush_btns ]
+
+
+set steam_btns ""
+lappend steam_btns \
+	[list -text "Temp" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[lindex [return_temperature_measurement [watertemp] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement [watertemp] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text "    " -font "Inter-SemiBold18"] \
+	[list -text "Pressure" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[round_one_digits [pressure]]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[translate bar]} -font "mono8" -foreground $::dataline_data_color  ] \
+	[list -text "    " -font "Inter-SemiBold18"] \
+	[list -text "Flow" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[round_to_integer $::settings(hotwater_flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] 
+
+set ::streamline_status_msg [add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns ]
+
+
+
 set ::streamline_hotwater_label_1st ""
 set ::streamline_hotwater_label_2nd ""
 
@@ -650,12 +692,13 @@ proc update_streamline_status_message {} {
 			#msg -ERROR "current: $current_weight final_target:$final_target delta_percent:$delta_percent"
 		} elseif {[dui page current] == "hotwaterrinse" } {
 
-			set green_msg [translate "Flushing"]
+			set green_msg [translate "Flushing:"]
+			set clickable_msg [subst { [flush_pour_timer][translate s]}]
 			set final_target $::settings(flush_seconds)
 			
 			set current [flush_pour_timer]		
 
-			set green_msg [subst {[translate "Flushing:"] $current[translate s]}]
+			#set green_msg [subst {[translate "Flushing:"] $current[translate s]}]
 
 			if {$current == ""} {
 				set current 0
@@ -672,7 +715,9 @@ proc update_streamline_status_message {} {
 
 			set current [steam_pour_timer]		
 			
-			set green_msg [subst {[translate "Steaming:"] $current[translate s]}]
+			set green_msg [subst {[translate "Steaming:"]}]
+			set clickable_msg [subst { [steam_pour_timer][translate s]}]
+		
 			set final_target $::settings(steam_timeout)
 			
 			if {$current == ""} {
@@ -688,7 +733,8 @@ proc update_streamline_status_message {} {
 		} elseif {[dui page current] == "water" } {
 
 			set current [watervolume]		
-			set green_msg [subst {[translate "Hot water:"] $current[translate s]}]
+			set green_msg [subst {[translate "Hot water:"]}]
+			set clickable_msg [subst { [water_pour_timer][translate s]}]
 
 			set final_target $::settings(water_volume)
 			
