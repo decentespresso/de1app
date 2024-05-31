@@ -918,9 +918,9 @@ add_de1_variable $::pages 890 1474 -justify center -anchor "center" -font Inter-
 add_de1_variable $::pages 890 1536 -justify center -anchor "center" -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 1000] -textvariable {$::streamline_current_history_third_line} 
 
 #add_de1_text $::pages 1364 1328 -justify right -anchor "ne" -text [translate "SHOT DATA"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 400]
-add_de1_text $::pages 1364 1390 -justify right -anchor "ne" -text [translate "Preinfusion"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 200]
-add_de1_text $::pages 1364 1454 -justify right -anchor "ne" -text [translate "Extraction"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 200]
-add_de1_text $::pages 1364 1516 -justify right -anchor "ne" -text [translate "Total"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 200]
+add_de1_text $::pages 1364 1390 -justify right -anchor "ne" -text [translate "Preinfusion"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 200]
+add_de1_text $::pages 1364 1454 -justify right -anchor "ne" -text [translate "Extraction"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 200]
+add_de1_text $::pages 1364 1516 -justify right -anchor "ne" -text [translate "Total"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 200]
 
 
 proc streamline_history_date_format {shot_time} {
