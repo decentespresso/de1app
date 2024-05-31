@@ -441,18 +441,22 @@ set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $gh
 
 set ::streamline_global(status_msg_text_red) ""
 set ::streamline_global(status_msg_text_green) ""
-set ::streamline_global(status_msg_clickable) ""
+set ::streamline_global(status_msg_text_clickable) ""
 
 
+set ::reconnect_text_string [subst {\[[translate "Reconnect"]\]}]
 proc streamline_status_msg_click {} {
-	puts "ERROR TAPPED $::streamline_global(status_msg_clickable)"	
+	#puts "ERROR TAPPED $::streamline_global(status_msg_text_clickable)"	
+	if {$::streamline_global(status_msg_text_clickable) == $::reconnect_text_string} {
+		ble_connect_to_scale
+	}
 }
 
 set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2516 - $ghc_pos_pffset}] 256 right 0 1 30 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_text_green)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_green  ] \
 	[list -text {$::streamline_global(status_msg_text_red)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_red  ] \
 	[list -text "   " -font "Inter-Black18"] \
-	[list -text {$::streamline_global(status_msg_clickable)}  -font "Inter-HeavyBold24" -foreground $::status_clickable_text -exec "streamline_status_msg_click" ] \
+	[list -text {$::streamline_global(status_msg_text_clickable)}  -font "Inter-HeavyBold24" -foreground $::status_clickable_text -exec "streamline_status_msg_click" ] \
 ]]
 
 #trace add variable ::streamline_global(status_msg_text_green) write ::refresh_$::streamline_data_line
@@ -573,6 +577,7 @@ proc update_streamline_status_message {} {
 	#msg -ERROR "update_streamline_status_message [dui page current]"
 	set red_progress ""
 	set red_msg ""
+	set clickable_msg ""
 	set green_msg ""
 	set delta_percent 0
 
@@ -716,6 +721,27 @@ proc update_streamline_status_message {} {
 
 	}
 
+	if {[dui page current] == "off"} {
+		if {[ifexists ::settings(scale_bluetooth_address)] != ""} {
+			if {$::de1(scale_device_handle) == "0"} {
+				set red_msg [subst {  [translate "Scale Disconnected"]}]
+				set green_msg ""
+
+				if {$::currently_connecting_scale_handle == 0} {
+					set clickable_msg $::reconnect_text_string
+				} else {
+					set clickable_msg [translate "Wait"]
+				}
+
+			} else {
+				set clickable_msg ""
+				set red_msg ""
+			}
+		}
+	}
+
+
+
 	set updated 0
 	if {$::streamline_global(status_msg_text_green) != $green_msg} {
 		set ::streamline_global(status_msg_text_green) $green_msg
@@ -726,6 +752,13 @@ proc update_streamline_status_message {} {
 		set ::streamline_global(status_msg_text_red) $red_msg
 		set updated 1
 	}
+
+	if {$::streamline_global(status_msg_text_clickable) != $clickable_msg} {
+		set ::streamline_global(status_msg_text_clickable) $clickable_msg
+		set updated 1
+	}
+
+
 
 	if {$::streamline_global(status_msg_progress_green) != $green_progress} {
 		set ::streamline_global(status_msg_progress_green) $green_progress
@@ -746,6 +779,7 @@ proc update_streamline_status_message {} {
 		::refresh_$::streamline_data_line
 		::refresh_$::streamline_progress_line
 	}
+
 
 
 
