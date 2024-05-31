@@ -188,11 +188,11 @@ load_font "Inter-Bold11" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
 
 # status
 
-if {$::undroid == 1} {
-	load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
-} else {
-	load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
-}
+load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
+#if {$::undroid == 1} {
+#} else {
+#	load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
+#}
 
 
 # status bold
