@@ -188,7 +188,8 @@ load_font "Inter-Bold11" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
 
 # status
 
-load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
+load_font "Inter-Bold17" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
+load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
 #if {$::undroid == 1} {
 #} else {
 #	load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
@@ -983,12 +984,12 @@ dui add dbutton "off" 628 1220 755 1465 -tags profile_back $::streamline_history
 dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd $::streamline_history_cmd " "  -command { streamline_history_profile_fwd } -longpress_cmd { streamline_history_profile_fwd 1 } 
 
 
-add_de1_text $::pages 1416 1328 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_text $::pages 1416 1328 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages 1416 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0 [translate "s"]]} 
 add_de1_variable $::pages 1416 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0 [translate "s"]]}
 add_de1_variable $::pages 1416 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0 [translate "s"]]}
 
-add_de1_text $::pages 1532 1328 -justify right -anchor "nw" -text [translate "Weight"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_text $::pages 1532 1328 -justify right -anchor "nw" -text [translate "Weight"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages 1532 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_weight 4 1 [translate "g"]]} 
 add_de1_variable $::pages 1532 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_weight 4 1 [translate "g"]]} 
 add_de1_variable $::pages 1532 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_weight 4 1 [translate "g"]]} 
@@ -1008,27 +1009,27 @@ set ::streamline_preinfusion_volume 0
 set ::streamline_flow_col_pos 2034
 set ::streamline_pressure_col_pos 2290
 
-add_de1_text $::pages 1690 1328 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 150]
+add_de1_text $::pages 1690 1328 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 150]
 add_de1_variable $::pages 1690 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_preinfusion_volume 2 0 [translate "ml"]]} 
 add_de1_variable $::pages 1690 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_final_extraction_volume 2 0 [translate "ml"]]} 
 add_de1_variable $::pages 1690 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_shot_volume 2 0 [translate "ml"]]} 
 
 set ::streamline_preinfusion_temp " "
 set ::streamline_extraction_temp " "
-add_de1_text $::pages 1850 1328 -justify right -anchor "nw" -text [translate "Temp"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_text $::pages 1850 1328 -justify right -anchor "nw" -text [translate "Temp"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages 1850 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_temp}
 add_de1_variable $::pages 1850 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_temp}
 
 set ::streamline_extraction_low_peak_flow_label "-"
 set ::streamline_extraction_low_peak_flow_label "-"
 
-add_de1_text $::pages $::streamline_flow_col_pos 1328 -justify right -anchor "nw" -text [translate "Flow (ml/s)"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_text $::pages $::streamline_flow_col_pos 1328 -justify right -anchor "nw" -text [translate "Flow (ml/s)"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages $::streamline_flow_col_pos 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_low_peak_flow_label} 
 add_de1_variable $::pages $::streamline_flow_col_pos 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_low_peak_flow_label} 
 
 set ::streamline_preinfusion_low_peak_pressure_label "-"
 set ::streamline_extraction_low_peak_pressure_label "-"
-add_de1_text $::pages $::streamline_pressure_col_pos 1328 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 230]
+add_de1_text $::pages $::streamline_pressure_col_pos 1328 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 230]
 add_de1_variable $::pages $::streamline_pressure_col_pos 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 230] -textvariable {$::streamline_preinfusion_low_peak_pressure_label}
 add_de1_variable $::pages $::streamline_pressure_col_pos 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 230] -textvariable {$::streamline_extraction_low_peak_pressure_label}
 
