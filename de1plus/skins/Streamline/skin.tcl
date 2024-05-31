@@ -417,7 +417,7 @@ proc update_datacard_from_live_data {} {
 	}
 
 	catch {
-		update_data_card past_shot_array
+		update_data_card past_shot_array ::settings
 	}
 }
 
@@ -567,7 +567,8 @@ proc update_streamline_status_message {} {
 
 		if {[dui page current] == "espresso" || [dui page current] == "espresso_zoomed" } {
 
-			set green_msg [subst {[translate [string totitle [::de1::state::current_substate]]] ($::settings(current_frame_description))}]
+			#set green_msg [subst {[translate [string totitle [::de1::state::current_substate]]] ($::settings(current_frame_description))}]
+			set green_msg [translate $::settings(current_frame_description)]
 
 			set final_target [determine_final_weight]
 			
@@ -834,7 +835,7 @@ proc start_streamline_espresso {} {
 	#page_show espresso;
 
 	unset -nocomplain ::de1(espresso_elapsed)
-	update_data_card ::de1
+	update_data_card ::de1 ::settings
 }
 
 set ::streamline_history_text_label [translate "HISTORY"] 
@@ -947,13 +948,13 @@ add_de1_variable $::pages 1850 1452 -justify right -anchor "nw"  -font mono10 -f
 
 set ::streamline_extraction_low_peak_flow_label "-"
 set ::streamline_extraction_low_peak_flow_label "-"
-add_de1_text $::pages 2044 1328 -justify right -anchor "nw" -text [translate "Flow"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_text $::pages 2044 1328 -justify right -anchor "nw" -text [translate "Flow (ml/s)"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages 2044 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_low_peak_flow_label} 
 add_de1_variable $::pages 2044 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_low_peak_flow_label} 
 
 set ::streamline_preinfusion_low_peak_pressure_label "-"
 set ::streamline_extraction_low_peak_pressure_label "-"
-add_de1_text $::pages 2316 1328 -justify right -anchor "nw" -text [translate "Pressure"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 230]
+add_de1_text $::pages 2316 1328 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 230]
 add_de1_variable $::pages 2316 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 230] -textvariable {$::streamline_preinfusion_low_peak_pressure_label}
 add_de1_variable $::pages 2316 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 230] -textvariable {$::streamline_extraction_low_peak_pressure_label}
 
@@ -2757,9 +2758,17 @@ proc streamline_load_history_shot {current_shot_filename} {
 
 
 	array set past_shot_array [encoding convertfrom utf-8 [read_file "[homedir]/history/$current_shot_filename"]]
+
+	array set profile_settings [ifexists past_shot_array(settings)]
+
+	# replace the final weight in the list, with the final drink weight that was calculated a few seconds later
+	lset past_shot_array(espresso_weight) end $profile_settings(drink_weight)
+
 	espresso_elapsed clear
 
-	espresso_elapsed set [ifexists past_shot_array(espresso_elapsed)]
+	# this trims off timed part of the shot that had no pressure data, so we don't want to chart that.  Shouldn't normally happen, unless the shot end was not properly recorded.
+	espresso_elapsed set [lrange [ifexists past_shot_array(espresso_elapsed)] 0 [llength [ifexists past_shot_array(espresso_pressure)]]]
+	# espresso_elapsed set [ifexists past_shot_array(espresso_elapsed)]
 
 	set ::de1(espresso_elapsed) [lindex [ifexists past_shot_array(espresso_elapsed)] end]
 
@@ -2792,50 +2801,86 @@ proc streamline_load_history_shot {current_shot_filename} {
 
 	set ::streamline_current_history_profile_clock [ifexists past_shot_array(clock)]
 
-	update_data_card past_shot_array
+	update_data_card past_shot_array profile_settings
 }
 
-proc update_data_card { arrname } {
+proc track_peak_low { state espresso_pressure espresso_flow espresso_temperature_basket } {
+
+
+	# peak pressure
+	if {$espresso_pressure > [subst "\$::streamline_${state}_peak_pressure"]} {
+		set ::streamline_${state}_peak_pressure $espresso_pressure
+	}
+
+	# low pressure
+	if {$espresso_pressure < [subst "\$::streamline_${state}_low_pressure"]} {
+		set ::streamline_${state}_low_pressure $espresso_pressure
+	}
+
+	# peak flow
+	if {$espresso_flow > [subst "\$::streamline_${state}_peak_flow"]} {
+		set ::streamline_${state}_peak_flow $espresso_flow
+	}
+	# low flow
+	if {$espresso_flow < [subst "\$::streamline_${state}_low_flow"]} {
+		set ::streamline_${state}_low_flow $espresso_flow
+	}
+
+
+	# high temp
+	if {$espresso_temperature_basket > [subst "\$::streamline_${state}_temp_high"]} {
+		set ::streamline_${state}_temp_high $espresso_temperature_basket
+	}
+
+	# low temp
+	if {$espresso_temperature_basket < [subst "\$::streamline_${state}_temp_low"]} {
+		set ::streamline_${state}_temp_low $espresso_temperature_basket
+	}
+
+}
+
+
+proc update_data_card { arrname settingsarr } {
 
 	upvar $arrname past_shot_array
+	upvar $settingsarr profile_settings
 
 	#puts "ERROR el: [ifexists past_shot_array(espresso_elapsed)]"
 
-	#puts "profile_data: [array get profile_data]"
+	#puts "profile_data: [array get past_shot_array]"
 	#array set profile_data [ifexists past_shot_array(settings)]
-	array set profile_data [array get ::settings]
 
-	set ::streamline_current_history_profile_name [ifexists profile_data(profile_title)]
+	set ::streamline_current_history_profile_name [ifexists profile_settings(profile_title)]
 
 	#####################################
 	set third_line_parts ""
 
-	if {[ifexists profile_data(grinder_dose_weight)] != ""} {
-		lappend third_line_parts "[translate "In"] $profile_data(grinder_dose_weight)[translate "g"]"
+	if {[ifexists profile_settings(grinder_dose_weight)] != "" && [ifexists profile_settings(grinder_dose_weight)] != "0"} {
+		lappend third_line_parts "[translate "In"] $profile_settings(grinder_dose_weight)[translate "g"]"
 	}
 	
-	if {[ifexists profile_data(grinder_setting)] != ""} {
-		lappend third_line_parts "[translate "Grind"] $profile_data(grinder_setting)"
+	if {[ifexists profile_settings(grinder_setting)] != "" && [ifexists profile_settings(grinder_setting)] != "0"} {
+		lappend third_line_parts "[translate "Grind"] $profile_settings(grinder_setting)"
 	}
 
 	set ::streamline_current_history_third_line [join $third_line_parts "  |  "]
 	#####################################
 	
 
-	set profile_type [::profile::fix_profile_type [ifexists profile_data(settings_profile_type)]]
+	set profile_type [::profile::fix_profile_type [ifexists profile_settings(settings_profile_type)]]
 	#puts "profile_type: $profile_type"
 
 	streamline_adjust_chart_x_axis
 
 
 	if { $profile_type eq "settings_2a" || $profile_type eq "settings_2b" } {
-		set preinfusion_end_step 2
+		set preinfusion_end_step 1
 	} else {
-		set preinfusion_end_step [ifexists profile_data(final_desired_shot_volume_advanced_count_start)]
+		set preinfusion_end_step [ifexists profile_settings(final_desired_shot_volume_advanced_count_start)]
 	}
 	#puts "preinfusion_end_step: $preinfusion_end_step"
 	
-	set i 0
+	set i 1
 
 	set ::streamline_preinfusion_time 0
 	set ::streamline_preinfusion_weight 0
@@ -2878,10 +2923,15 @@ proc update_data_card { arrname } {
 	set state_change 0
 	set stepnum 0
 
+	set c 0
 	foreach t [ifexists past_shot_array(espresso_elapsed)] {
 
-		#puts "t is: $t of '$past_shot_array(espresso_elapsed)'"
-		#puts "espresso_pressure is '$past_shot_array(espresso_pressure)'"
+		incr c
+
+		if {[lindex $past_shot_array(espresso_pressure) $i] == ""} {
+			# ignore end of shot data where no pressure is being sent
+			break
+		}
 
 		set espresso_pressure [return_zero_if_blank [lindex $past_shot_array(espresso_pressure) $i]]
 		set espresso_weight [return_zero_if_blank [lindex [ifexists past_shot_array(espresso_weight)] $i]]
@@ -2896,22 +2946,23 @@ proc update_data_card { arrname } {
 		}
 
 		if {$espresso_water_dispensed == 0 || $espresso_water_dispensed == ""} {
-			# ship shots 
-			#continue
+			# skip shots, but this is disabled for now as should no longer be needed thanks to check for data above
+			# continue
 		}
 
-		if {$state == "preinfusion"} {
-			set ::streamline_preinfusion_temp_end $espresso_temperature_basket
-			set ::streamline_preinfusion_flow_end $espresso_flow
-			set ::streamline_preinfusion_pressure_end $espresso_pressure
+		set ::streamline_${state}_temp_end $espresso_temperature_basket
+		set ::streamline_${state}_flow_end $espresso_flow
+		set ::streamline_${state}_pressure_end $espresso_pressure
 
+		track_peak_low $state $espresso_pressure $espresso_flow $espresso_temperature_basket
 
-		} else {
-			# keep track of final numbers 
-			set ::streamline_extraction_temp_end $espresso_temperature_basket
-			set ::streamline_extraction_flow_end $espresso_flow
-			set ::streamline_extraction_pressure_end $espresso_pressure
+		set ::streamline_${state}_time $t
+		if {$espresso_weight > 0} {
+			set ::streamline_${state}_weight $espresso_weight
 		}
+		set ::streamline_${state}_volume [expr {$espresso_water_dispensed * 10}]
+		
+
 
 		if {$state_change != $espresso_state_change} {
 
@@ -2924,7 +2975,7 @@ proc update_data_card { arrname } {
 			incr stepnum
 			set state_change $espresso_state_change
 
-			if {$stepnum >= $preinfusion_end_step} {
+			if {$stepnum > $preinfusion_end_step} {
 
 				if {$state != "extraction"} {
 					set ::streamline_extraction_temp_start $espresso_temperature_basket
@@ -2933,6 +2984,8 @@ proc update_data_card { arrname } {
 				}
 
 				set state "extraction"
+
+				track_peak_low $state $espresso_pressure $espresso_flow $espresso_temperature_basket
 			}
 
 
@@ -2940,48 +2993,9 @@ proc update_data_card { arrname } {
 
 
 
-		#puts "ERROR preinfusion_end_step: $stepnum > $preinfusion_end_step"
-		#puts "stat ${state} : $stepnum > $preinfusion_end_step"
-		set ::streamline_${state}_time $t
-		if {$espresso_weight > 0} {
-			set ::streamline_${state}_weight $espresso_weight
-		}
-		set ::streamline_${state}_volume [expr {$espresso_water_dispensed * 10}]
-		
-
-		# peak pressure
-		if {$espresso_pressure > [subst "\$::streamline_${state}_peak_pressure"]} {
-			set ::streamline_${state}_peak_pressure $espresso_pressure
-		}
-
-		# low pressure
-		if {$espresso_pressure < [subst "\$::streamline_${state}_low_pressure"]} {
-			set ::streamline_${state}_low_pressure $espresso_pressure
-		}
-
-		# peak flow
-		if {$espresso_flow > [subst "\$::streamline_${state}_peak_flow"]} {
-			set ::streamline_${state}_peak_flow $espresso_flow
-		}
-		# low flow
-		if {$espresso_flow < [subst "\$::streamline_${state}_low_flow"]} {
-			set ::streamline_${state}_low_flow $espresso_flow
-		}
-
-
-		# high temp
-		if {$espresso_temperature_basket > [subst "\$::streamline_${state}_temp_high"]} {
-			set ::streamline_${state}_temp_high $espresso_temperature_basket
-		}
-
-		# low temp
-		if {$espresso_temperature_basket < [subst "\$::streamline_${state}_temp_low"]} {
-			set ::streamline_${state}_temp_low $espresso_temperature_basket
-		}
 
 		incr i
 	}
-
 
 
 	if {[info exists past_shot_array(espresso_elapsed)] != 1} {
@@ -3038,11 +3052,13 @@ proc update_data_card { arrname } {
 
 
 
-		set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_pressure]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure] [translate "bar"]"
-		set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_pressure]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure] [translate "bar"]"
+		# [translate "bar"]
+		set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_pressure]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure]"
+		set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_pressure]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure]"
 
-		set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_flow]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] [translate "ml/s"]"
-		set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_flow]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] [translate "ml/s"]"
+		#[translate "ml/s"]
+		set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_low_flow]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow]"
+		set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_low_flow]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow]"
 
 	} else {
 
@@ -3067,11 +3083,27 @@ proc update_data_card { arrname } {
 
 
 
-		set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_end] [translate "bar"]"
-		set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_end] [translate "bar"]"
+		# [translate "bar"]
+		set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_end]"
+		set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_end]"
 
-		set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_end] [translate "ml/s"]"
-		set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_flow_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_flow_end] [translate "ml/s"]"
+		# start/peak/end, if different from start or end
+		if {[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure] != [round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_start] && [round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure] != [round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_end]} {
+			set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_pressure]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_pressure_end]"
+		}
+		if {[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure] != [round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_start] && [round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure] != [round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_end]} {
+			set ::streamline_extraction_low_peak_pressure_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_pressure]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_pressure_end]"
+		}
+
+		# [translate "ml/s"]
+		set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_end]"
+		set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_flow_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_flow_end]"
+		if {[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] != [round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_start] && [round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow] != [round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_end]} {
+			set ::streamline_preinfusion_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_peak_flow]$arrow[round_one_digits_or_integer_if_needed $::streamline_preinfusion_flow_end]"
+		}
+		if {[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] != [round_one_digits_or_integer_if_needed $::streamline_extraction_flow_start] && [round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow] != [round_one_digits_or_integer_if_needed $::streamline_extraction_flow_end]} {
+			set ::streamline_extraction_low_peak_flow_label "[round_one_digits_or_integer_if_needed $::streamline_extraction_flow_start]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_peak_flow]$arrow[round_one_digits_or_integer_if_needed $::streamline_extraction_flow_end]"
+		}
 
 	}
 
@@ -3220,13 +3252,9 @@ proc streamline_shot_ended  {} {
 		lappend ::streamline_history_files [file tail $::settings(history_saved_shot_filename)]
 		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] - 1}]
 
-		#streamline_history_profile_fwd 1
-
-		set ::streamline_shot_weight [expr {$::de1(scale_weight_rate_raw)}]
-		#set ::streamline_final_extraction_weight [expr {$::streamline_shot_weight - $::streamline_preinfusion_weight}]
+		streamline_history_profile_fwd 1
 
 	}
-	#set current_shot_filename [lindex $::streamline_history_files $::streamline_history_file_selected_number]
 }
 
 # not needed in this skin
