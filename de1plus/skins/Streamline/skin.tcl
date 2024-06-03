@@ -1168,10 +1168,10 @@ add_de1_variable $::pages $streamline_preset_pos_col2 616  -justify left -tags d
 add_de1_variable $::pages $streamline_preset_pos_col3 616  -justify left  -tags dose_btn_3 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_3)}
 add_de1_variable $::pages $streamline_preset_pos_col4 616  -justify right -tags dose_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_4)}
 
-dui add dbutton $::pages 0 594 148 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 1 } -theme none  -longpress_cmd { streamline_set_dosebev_preset 1 } 
-dui add dbutton $::pages 148 594 310 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 2 } -theme none  -longpress_cmd {streamline_set_dosebev_preset 2 } 
-dui add dbutton $::pages 310 594 474 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 3 } -theme none  -longpress_cmd {streamline_set_dosebev_preset 3 } 
-dui add dbutton $::pages 474 594 624 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 4 } -theme none  -longpress_cmd {streamline_set_dosebev_preset 4 } 
+dui add dbutton $::pages 0 610 148 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 1 } -theme none  -longpress_cmd { streamline_set_dosebev_preset 1 } 
+dui add dbutton $::pages 148 610 310 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 2 } -theme none  -longpress_cmd {streamline_set_dosebev_preset 2 } 
+dui add dbutton $::pages 310 610 474 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 3 } -theme none  -longpress_cmd {streamline_set_dosebev_preset 3 } 
+dui add dbutton $::pages 474 610 624 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 4 } -theme none  -longpress_cmd {streamline_set_dosebev_preset 4 } 
 
 
 
@@ -1182,10 +1182,10 @@ add_de1_variable $::pages $streamline_preset_pos_col2 842  -justify left -tags t
 add_de1_variable $::pages $streamline_preset_pos_col3 842  -justify left  -tags temp_btn_3 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_temperature_buttons(label_3)}
 add_de1_variable $::pages $streamline_preset_pos_col4 842  -justify right -tags temp_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_temperature_buttons(label_4)}
 
-dui add dbutton $::pages 0 822 148 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 1 } -theme none  -longpress_cmd { streamline_set_temperature_preset 1 } 
-dui add dbutton $::pages 148 822 310 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 2 } -theme none  -longpress_cmd {streamline_set_temperature_preset 2 } 
-dui add dbutton $::pages 310 822 474 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 3 } -theme none  -longpress_cmd {streamline_set_temperature_preset 3 } 
-dui add dbutton $::pages 474 822 624 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 4 } -theme none  -longpress_cmd {streamline_set_temperature_preset 4 } 
+dui add dbutton $::pages 0 838 148 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 1 } -theme none  -longpress_cmd { streamline_set_temperature_preset 1 } 
+dui add dbutton $::pages 148 838 310 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 2 } -theme none  -longpress_cmd {streamline_set_temperature_preset 2 } 
+dui add dbutton $::pages 310 838 474 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 3 } -theme none  -longpress_cmd {streamline_set_temperature_preset 3 } 
+dui add dbutton $::pages 474 838 624 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 4 } -theme none  -longpress_cmd {streamline_set_temperature_preset 4 } 
 
 
 
@@ -1199,10 +1199,10 @@ add_de1_variable $::pages $streamline_preset_pos_col3 1068  -justify left -tags 
 add_de1_variable $::pages $streamline_preset_pos_col4 1068  -justify right -tags steam_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_steam_buttons(label_4)}
 
 
-dui add dbutton $::pages 0 1050 148 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 1 } -theme none  -longpress_cmd { streamline_set_steam_preset 1 } 
-dui add dbutton $::pages 148 1050 310 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 2 } -theme none  -longpress_cmd {streamline_set_steam_preset 2 } 
-dui add dbutton $::pages 310 1050 474 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 3 } -theme none  -longpress_cmd {streamline_set_steam_preset 3 } 
-dui add dbutton $::pages 474 1050 624 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 4 } -theme none  -longpress_cmd {streamline_set_steam_preset 4 } 
+dui add dbutton $::pages 0 1066 148 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 1 } -theme none  -longpress_cmd { streamline_set_steam_preset 1 } 
+dui add dbutton $::pages 148 1066 310 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 2 } -theme none  -longpress_cmd {streamline_set_steam_preset 2 } 
+dui add dbutton $::pages 310 1066 474 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 3 } -theme none  -longpress_cmd {streamline_set_steam_preset 3 } 
+dui add dbutton $::pages 474 1066 624 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 4 } -theme none  -longpress_cmd {streamline_set_steam_preset 4 } 
 
 
 #########
@@ -1214,10 +1214,10 @@ add_de1_variable $::pages $streamline_preset_pos_col3 1296  -justify left -tags 
 add_de1_variable $::pages $streamline_preset_pos_col4 1296  -justify right -tags flush_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_flush_buttons(label_4)}
 
 
-dui add dbutton $::pages 0 1272 148 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 1 } -theme none  -longpress_cmd { streamline_set_flush_preset 1 } 
-dui add dbutton $::pages 148 1272 310 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 2 } -theme none  -longpress_cmd {streamline_set_flush_preset 2 } 
-dui add dbutton $::pages 310 1272 474 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 3 } -theme none  -longpress_cmd {streamline_set_flush_preset 3 } 
-dui add dbutton $::pages 474 1272 624 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 4 } -theme none  -longpress_cmd {streamline_set_flush_preset 4 } 
+dui add dbutton $::pages 0 1288 148 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 1 } -theme none  -longpress_cmd { streamline_set_flush_preset 1 } 
+dui add dbutton $::pages 148 1288 310 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 2 } -theme none  -longpress_cmd {streamline_set_flush_preset 2 } 
+dui add dbutton $::pages 310 1288 474 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 3 } -theme none  -longpress_cmd {streamline_set_flush_preset 3 } 
+dui add dbutton $::pages 474 1288 624 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 4 } -theme none  -longpress_cmd {streamline_set_flush_preset 4 } 
 
 
 #########
@@ -1228,10 +1228,10 @@ add_de1_variable $::pages $streamline_preset_pos_col2 1520  -justify left -tags 
 add_de1_variable $::pages $streamline_preset_pos_col3 1520  -justify left -tags hw_btn_3 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_hw_buttons(label_3)}
 add_de1_variable $::pages $streamline_preset_pos_col4 1520  -justify right -tags hw_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_hw_buttons(label_4)}
 
-dui add dbutton $::pages 0 1500 148 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 1 } -theme none  -longpress_cmd {streamline_set_hw_preset 1 } 
-dui add dbutton $::pages 148 1500 310 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 2 } -theme none  -longpress_cmd {streamline_set_hw_preset 2 } 
-dui add dbutton $::pages 310 1500 474 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 3 } -theme none  -longpress_cmd {streamline_set_hw_preset 3 } 
-dui add dbutton $::pages 474 1500 624 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 4 } -theme none  -longpress_cmd {streamline_set_hw_preset 4 } 
+dui add dbutton $::pages 0 1516 148 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 1 } -theme none  -longpress_cmd {streamline_set_hw_preset 1 } 
+dui add dbutton $::pages 148 1516 310 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 2 } -theme none  -longpress_cmd {streamline_set_hw_preset 2 } 
+dui add dbutton $::pages 310 1516 474 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 3 } -theme none  -longpress_cmd {streamline_set_hw_preset 3 } 
+dui add dbutton $::pages 474 1516 624 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 4 } -theme none  -longpress_cmd {streamline_set_hw_preset 4 } 
 
 #########
 
