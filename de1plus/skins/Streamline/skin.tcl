@@ -474,18 +474,18 @@ set btns ""
 lappend btns \
 	[list -text "Mix" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[lindex [return_temperature_measurement [water_mix_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement [water_mix_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [water_mix_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [water_mix_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Group" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text {[lindex [return_temperature_measurement [group_head_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement [group_head_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [group_head_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [group_head_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Steam" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text {[lindex [return_temperature_measurement [steam_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement [steam_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [steam_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [steam_heater_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Tank" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
@@ -512,8 +512,8 @@ set flush_btns ""
 lappend flush_btns \
 	[list -text "Temp" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[lindex [return_temperature_measurement [watertemp] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement [watertemp] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [watertemp] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [watertemp] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Flow" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
@@ -527,8 +527,8 @@ set steam_btns ""
 lappend steam_btns \
 	[list -text "Temp" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[lindex [return_temperature_measurement [steamtemp] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement [steamtemp] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [steamtemp] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [steamtemp] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Pressure" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
@@ -566,21 +566,28 @@ lappend zoomed_btns \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Brew" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
-	[list -text {[setting_espresso_temperature_text 1]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [setting_espresso_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement [setting_espresso_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Steam" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[seconds_text_very_abbreviated $::settings(steam_timeout)]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[round_to_integer $::settings(steam_timeout)]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text "[translate s]" -font "mono8"] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Flush" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[seconds_text_very_abbreviated $::settings(flush_seconds)]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[round_to_integer $::settings(flush_seconds)]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text "[translate s]" -font "mono8"] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Hot Water" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {$::streamline_hotwater_label_1st} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text " " -font "Inter-Bold18"] \
-	[list -text {$::streamline_hotwater_label_2nd} -font "mono12" -foreground $::dataline_data_color   ] 
+	[list -text {[round_to_integer $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text [translate "ml"] -font "mono8"] \
+	[list -text " (" -font "Inter-mono12"] \
+	[list -text {[lindex [return_lowercase_temperature_measurement $::settings(water_temperature) 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_lowercase_temperature_measurement $::settings(water_temperature) 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text ")" -font "Inter-mono12"] 
+	
 
 set ::streamline_status_msg_zoomed2 [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 85 $::background_color $zoomed_btns ]
 set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 400 left 1 2 65 $::background_color $btns ]
@@ -1046,18 +1053,18 @@ set ::streamline_datacard_col6 2220
 add_de1_text $::pages $::streamline_datacard_col1 1328 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages $::streamline_datacard_col1 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0 [translate "s"]]} 
 add_de1_variable $::pages $::streamline_datacard_col1 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0 [translate "s"]]}
-add_de1_variable $::pages $::streamline_datacard_col1 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0 [translate "s"]]}
+add_de1_variable $::pages $::streamline_datacard_col1 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0 [translate "s"]]}
 
 add_de1_text $::pages $::streamline_datacard_col2 1328 -justify right -anchor "nw" -text [translate "Weight"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages $::streamline_datacard_col2 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_weight 4 1 [translate "g"]]} 
 add_de1_variable $::pages $::streamline_datacard_col2 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_weight 4 1 [translate "g"]]} 
-add_de1_variable $::pages $::streamline_datacard_col2 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_weight 4 1 [translate "g"]]} 
+add_de1_variable $::pages $::streamline_datacard_col2 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_weight 4 1 [translate "g"]]} 
 
 
 add_de1_text $::pages $::streamline_datacard_col3 1328 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 150]
 add_de1_variable $::pages $::streamline_datacard_col3 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_preinfusion_volume 2 0 [translate "ml"]]} 
 add_de1_variable $::pages $::streamline_datacard_col3 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_final_extraction_volume 2 0 [translate "ml"]]} 
-add_de1_variable $::pages $::streamline_datacard_col3 1514 -justify right -anchor "nw" -font mono10bold -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_shot_volume 2 0 [translate "ml"]]} 
+add_de1_variable $::pages $::streamline_datacard_col3 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_shot_volume 2 0 [translate "ml"]]} 
 
 set ::streamline_preinfusion_temp " "
 set ::streamline_extraction_temp " "
@@ -1610,9 +1617,9 @@ proc streamline_hot_water_setting_change { } {
 	puts "streamline_hot_water_setting : ::streamline_hot_water_setting"
 	if {$::streamline_hotwater_btn_mode == "ml"} {
 		set ::streamline_hotwater_label_1st [return_liquid_measurement_ml $::settings(water_volume)]
-		set ::streamline_hotwater_label_2nd ([return_temperature_measurement $::settings(water_temperature) 1])
+		set ::streamline_hotwater_label_2nd ([return_lowercase_temperature_measurement $::settings(water_temperature) 1])
 	} else {
-		set ::streamline_hotwater_label_1st [return_temperature_measurement $::settings(water_temperature) 1]
+		set ::streamline_hotwater_label_1st [return_lowercase_temperature_measurement $::settings(water_temperature) 1]
 		set ::streamline_hotwater_label_2nd ([return_liquid_measurement_ml $::settings(water_volume)])
 	}
 }
@@ -1984,10 +1991,10 @@ proc refresh_favorite_temperature_button_labels {} {
 		
 	}
 
-	set ::streamline_favorite_temperature_buttons(label_1) [return_temperature_measurement $t1 1]
-	set ::streamline_favorite_temperature_buttons(label_2) [return_temperature_measurement $t2 1]
-	set ::streamline_favorite_temperature_buttons(label_3) [return_temperature_measurement $t3 1]
-	set ::streamline_favorite_temperature_buttons(label_4) [return_temperature_measurement $t4 1]
+	set ::streamline_favorite_temperature_buttons(label_1) [return_lowercase_temperature_measurement $t1 1]
+	set ::streamline_favorite_temperature_buttons(label_2) [return_lowercase_temperature_measurement $t2 1]
+	set ::streamline_favorite_temperature_buttons(label_3) [return_lowercase_temperature_measurement $t3 1]
+	set ::streamline_favorite_temperature_buttons(label_4) [return_lowercase_temperature_measurement $t4 1]
 
 
 
@@ -2235,10 +2242,10 @@ proc refresh_favorite_hw_button_labels {} {
 		set ::streamline_favorite_hw_buttons(label_3) "[return_liquid_measurement_ml $t3]"
 		set ::streamline_favorite_hw_buttons(label_4) "[return_liquid_measurement_ml $t4]"
 	} else {
-		set ::streamline_favorite_hw_buttons(label_1) "[return_temperature_measurement $bt1 1]"
-		set ::streamline_favorite_hw_buttons(label_2) "[return_temperature_measurement $bt2 1]"
-		set ::streamline_favorite_hw_buttons(label_3) "[return_temperature_measurement $bt3 1]"
-		set ::streamline_favorite_hw_buttons(label_4) "[return_temperature_measurement $bt4 1]"
+		set ::streamline_favorite_hw_buttons(label_1) "[return_lowercase_temperature_measurement $bt1 1]"
+		set ::streamline_favorite_hw_buttons(label_2) "[return_lowercase_temperature_measurement $bt2 1]"
+		set ::streamline_favorite_hw_buttons(label_3) "[return_lowercase_temperature_measurement $bt3 1]"
+		set ::streamline_favorite_hw_buttons(label_4) "[return_lowercase_temperature_measurement $bt4 1]"
 	}
 
 	set lb1c $::preset_value_color
@@ -3161,18 +3168,18 @@ proc update_data_card { arrname settingsarr } {
 		if {$::streamline_preinfusion_temp_high == 0} {
 			# no label
 		} elseif {[round_to_integer $::streamline_preinfusion_temp_low] == [round_to_integer $::streamline_preinfusion_temp_high]} {
-			set ::streamline_preinfusion_temp [string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]
+			set ::streamline_preinfusion_temp [string tolower [return_lowercase_temperature_measurement $::streamline_preinfusion_temp_high 1]]
 		} else {
-			set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_low]]$arrow[string tolower [return_temperature_measurement $::streamline_preinfusion_temp_high 1]]"
+			set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_low]]$arrow[string tolower [return_lowercase_temperature_measurement $::streamline_preinfusion_temp_high 1]]"
 		}
 
 		if {$::streamline_extraction_temp_high == 0} {
 			# no label
 			set ::streamline_extraction_temp ""
 		} elseif {[round_to_integer $::streamline_extraction_temp_low] == [round_to_integer $::streamline_extraction_temp_high]} {
-			set ::streamline_extraction_temp [string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]
+			set ::streamline_extraction_temp [string tolower [return_lowercase_temperature_measurement $::streamline_extraction_temp_high 1]]
 		} else {
-			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]$arrow[string tolower [return_temperature_measurement $::streamline_extraction_temp_high 1]]"
+			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]$arrow[string tolower [return_lowercase_temperature_measurement $::streamline_extraction_temp_high 1]]"
 		}
 
 
@@ -3192,18 +3199,18 @@ proc update_data_card { arrname settingsarr } {
 		if {$::streamline_preinfusion_temp_end == 0} {
 			# no label
 		} elseif {[round_to_integer $::streamline_preinfusion_temp_start] == [round_to_integer $::streamline_preinfusion_temp_end]} {
-			set ::streamline_preinfusion_temp [string tolower [return_temperature_measurement $::streamline_preinfusion_temp_end 1]]
+			set ::streamline_preinfusion_temp [string tolower [return_lowercase_temperature_measurement $::streamline_preinfusion_temp_end 1]]
 		} else {
-			set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_start]]$arrow[string tolower [return_temperature_measurement $::streamline_preinfusion_temp_end 1]]"
+			set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_start]]$arrow[string tolower [return_lowercase_temperature_measurement $::streamline_preinfusion_temp_end 1]]"
 		}
 
 		if {$::streamline_extraction_temp_end == 0} {
 			# no label
 			set ::streamline_extraction_temp ""
 		} elseif {[round_to_integer $::streamline_extraction_temp_end] == [round_to_integer $::streamline_extraction_temp_end]} {
-			set ::streamline_extraction_temp [string tolower [return_temperature_measurement $::streamline_extraction_temp_end 1]]
+			set ::streamline_extraction_temp [string tolower [return_lowercase_temperature_measurement $::streamline_extraction_temp_end 1]]
 		} else {
-			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_end]]$arrow[string tolower [return_temperature_measurement $::streamline_extraction_temp_end 1]]"
+			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_end]]$arrow[string tolower [return_lowercase_temperature_measurement $::streamline_extraction_temp_end 1]]"
 		}
 
 
@@ -3260,18 +3267,22 @@ proc update_data_card { arrname settingsarr } {
 			set ::streamline_extraction_low_peak_pressure_label ""
 			set ::streamline_extraction_low_peak_flow_label ""
 
-			set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits $::de1(pressure)] [translate "bar"]"
-			set ::streamline_preinfusion_low_peak_flow_label "[round_to_one_digits $::de1(flow)] [translate "ml/s"]"
-			set ::streamline_preinfusion_temp [return_temperature_measurement $::de1(head_temperature)]
+			set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits $::de1(pressure)]"
+			set ::streamline_preinfusion_low_peak_flow_label "[round_to_one_digits $::de1(flow)]"
+			#set ::streamline_preinfusion_low_peak_pressure_label "[round_one_digits $::de1(pressure)] [translate "bar"]"
+			#set ::streamline_preinfusion_low_peak_flow_label "[round_to_one_digits $::de1(flow)] [translate "ml/s"]"
+			set ::streamline_preinfusion_temp [return_lowercase_temperature_measurement $::de1(head_temperature)]
 
 		} else {
 			set ::streamline_shot_time ""
 			set ::streamline_shot_weight ""
 			set ::streamline_shot_volume ""
 
-			set ::streamline_extraction_low_peak_pressure_label "[round_one_digits $::de1(pressure)] [translate "bar"]"
-			set ::streamline_extraction_low_peak_flow_label "[round_to_one_digits $::de1(flow)] [translate "ml/s"]"
-			set ::streamline_extraction_temp [return_temperature_measurement $::de1(head_temperature)]
+			#set ::streamline_extraction_low_peak_pressure_label "[round_one_digits $::de1(pressure)] [translate "bar"]"
+			#set ::streamline_extraction_low_peak_flow_label "[round_to_one_digits $::de1(flow)] [translate "ml/s"]"
+			set ::streamline_extraction_low_peak_pressure_label "[round_one_digits $::de1(pressure)]"
+			set ::streamline_extraction_low_peak_flow_label "[round_to_one_digits $::de1(flow)]"
+			set ::streamline_extraction_temp [return_lowercase_temperature_measurement $::de1(head_temperature)]
 
 		}
 	}
@@ -3388,7 +3399,7 @@ set ::streamline_global(status_msg_progress_red) ""
 set ::streamline_global(status_msg_progress_green) ""
 set ::streamline_global(status_msg_progress_grey) ""
 
-set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 344 right 0 1 25 "#ff0000" [list \
+set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 344 right 0 1 25 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_progress_green)}  -font "Inter-Regular6" -foreground $::progress_bar_green  ] \
 	[list -text {$::streamline_global(status_msg_progress_red)}  -font "Inter-Regular6" -foreground $::progress_bar_red  ] \
 	[list -text {$::streamline_global(status_msg_progress_grey)}  -font "Inter-Regular6" -foreground $::progress_bar_grey ] \

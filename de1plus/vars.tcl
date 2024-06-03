@@ -1462,6 +1462,31 @@ proc return_temperature_measurement {in {integer 0} {returnlist 0} } {
 	}
 }
 
+# john 25-1-2020 fix
+# we were using the wrong unicode symbol for the degrees sign (should be \u00B0 not \u00BA).
+# http://www.fileformat.info/info/unicode/char/b0/index.htm
+# http://www.fileformat.info/info/unicode/char/ba/index.htm
+# not technically correct (according to global standards) but Designer Pulak prefers the lowercase ºc
+proc return_lowercase_temperature_measurement {in {integer 0} {returnlist 0} } {
+	if {$::settings(enable_fahrenheit) == 1} {
+		if {$returnlist == 1} {
+			return [list [round_to_integer [celsius_to_fahrenheit $in]] "\u00B0F"]
+		}
+		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0f}]
+	} else {
+		if {$integer == 1} {
+			if {$returnlist == 1} {
+				return [list [round_to_integer $in] "\u00B0c"]
+			}
+			return [subst {[round_to_integer $in]\u00B0c}]
+		}
+		if {$returnlist == 1} {
+			return [list [round_to_one_digits $in] "\u00B0c"]
+		}
+		return [subst {[round_to_one_digits $in]\u00B0c}]
+	}
+}
+
 proc return_steam_temperature_measurement {in {integer 0}} {
 	if {$::settings(enable_fahrenheit) == 1} {
 		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
