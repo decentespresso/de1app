@@ -2624,8 +2624,13 @@ proc streamline_dosebev_select { slot } {
 
 		if {[::device::scale::expecting_present]} {
 			# if they have a scale, then make the volumetric 10g more, so that it is there only as a safety in case the scale turns off
-			set ::settings(final_desired_shot_volume) [expr {$desired_weight + 10}]
-			set ::settings(final_desired_shot_volume_advanced)  [expr {$desired_weight + 10}]
+			#set ::settings(final_desired_shot_volume) [expr {$desired_weight + 10}]
+			#set ::settings(final_desired_shot_volume_advanced)  [expr {$desired_weight + 10}]
+
+			# john 6/3/2024 user feedback is that volumetric should be OFF if the scale is being used
+			set ::settings(final_desired_shot_volume) 0
+			set ::settings(final_desired_shot_volume_advanced) 0
+
 		}
 
 		puts "ERROR expecting_present [::device::scale::expecting_present]"
