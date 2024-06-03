@@ -1683,15 +1683,16 @@ dui aspect set -theme default -type dbutton label_font "Helv_10_bold"
 dui aspect set -theme default -type dbutton label_pos ".50 .5" 
 
 # font color
-dui aspect set -theme default -type dbutton label_fill $::profile_button_background_color
+dui aspect set -theme default -type dbutton label_fill "#fffeff"
 
 # rounded rectangle color 
-dui aspect set -theme default -type dbutton outline $::plus_minus_outline_color
+dui aspect set -theme default -type dbutton width 0
+dui aspect set -theme default -type dbutton outline "#3e5682"
 
 # inside button color
-dui aspect set -theme default -type dbutton fill $::profile_button_button_color
+dui aspect set -theme default -type dbutton fill "#3e5682"
 
-dui aspect set -theme default -type dbutton radius [rescale_y_skin 52]
+dui aspect set -theme default -type dbutton radius [rescale_y_skin 80]
 
 dui add dbutton "settings_1" 50 1452 160 1580  -tags profile_btn_1 -label "1"  -command { save_favorite_profile 1 } 
 dui add dbutton "settings_1" 180 1452 290 1580   -tags profile_btn_2 -label "2"  -command { save_favorite_profile 2 } 
