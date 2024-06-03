@@ -832,6 +832,7 @@ proc return_seconds_divided_by_ten {in} {
 
 }
 proc timer_text {} {
+	# obsolete, not likely to work as [timer] is not defined
 	return [subst {[timer] [translate "seconds"]}]
 }
 

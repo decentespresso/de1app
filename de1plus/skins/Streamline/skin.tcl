@@ -515,7 +515,7 @@ if {$::settings(scale_bluetooth_address) != ""} {
 
 
 set ::streamline_status_msg [add_de1_rich_text "off espresso" 690 330 left 1 2 65 $::background_color $btns ]
-set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 400 left 1 2 65 $::background_color $btns ]
+
 
 set flush_btns ""
 lappend flush_btns \
@@ -549,6 +549,7 @@ lappend steam_btns \
 	[list -text {[round_to_integer $::settings(hotwater_flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
 	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] 
 
+#set ::streamline_status_msg [add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns ]
 set ::streamline_status_msg [add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns ]
 
 
@@ -591,6 +592,7 @@ lappend zoomed_btns \
 	[list -text {$::streamline_hotwater_label_2nd} -font "mono12" -foreground $::dataline_data_color   ] 
 
 set ::streamline_status_msg_zoomed2 [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 85 $::background_color $zoomed_btns ]
+set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 400 left 1 2 65 $::background_color $btns ]
 
 
 proc percent_to_bar { perc } {
