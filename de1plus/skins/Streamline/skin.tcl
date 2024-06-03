@@ -526,7 +526,7 @@ lappend flush_btns \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Flow" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[round_to_integer $::settings(hotwater_flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[round_to_integer $::settings(flush_flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
 	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] 
 
 set ::streamline_status_msg [add_de1_rich_text "hotwaterrinse water" 690 330 left 1 2 65 $::background_color $flush_btns ]
@@ -536,8 +536,8 @@ set steam_btns ""
 lappend steam_btns \
 	[list -text "Temp" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[lindex [return_temperature_measurement [watertemp] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement [watertemp] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement [steamtemp] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement [steamtemp] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Pressure" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
@@ -546,7 +546,7 @@ lappend steam_btns \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Flow" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[round_to_integer $::settings(hotwater_flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[round_to_one_digits $::de1(flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
 	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] 
 
 #set ::streamline_status_msg [add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns ]
