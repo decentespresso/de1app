@@ -568,8 +568,8 @@ proc settings2c_flow_button {direction} {
 		if {$direction eq "up"} {
 			set ::current_adv_step(flow) [round_to_one_digits [expr {$::current_adv_step(flow) + 0.1}]];
 
-			if {$::current_adv_step(flow) > $::de1(max_flowrate)} {
-				set ::current_adv_step(flow) $::de1(max_flowrate)
+			if {$::current_adv_step(flow) > $::de1(max_flowrate_v11)} {
+				set ::current_adv_step(flow) $::de1(max_flowrate_v11)
 			}
 
 		} else {
@@ -579,8 +579,8 @@ proc settings2c_flow_button {direction} {
 		if {$direction eq "up"} {
 			set ::current_adv_step(max_flow_or_pressure) [round_to_one_digits [expr {$::current_adv_step(max_flow_or_pressure) + 0.1}]];
 
-			if {$::current_adv_step(max_flow_or_pressure) > $::de1(max_flowrate)} {
-				set ::current_adv_step(max_flow_or_pressure) $::de1(max_flowrate)
+			if {$::current_adv_step(max_flow_or_pressure) > $::de1(max_flowrate_v11)} {
+				set ::current_adv_step(max_flow_or_pressure) $::de1(max_flowrate_v11)
 			}
 
 		} else {
