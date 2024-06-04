@@ -1051,43 +1051,46 @@ set ::streamline_preinfusion_volume 0
 set ::streamline_datacard_col1 1416
 set ::streamline_datacard_col2 1532
 set ::streamline_datacard_col3 1680
-set ::streamline_datacard_col4 1820
+set ::streamline_datacard_col4 1800
 set ::streamline_datacard_col5 1970
 set ::streamline_datacard_col6 2220
 
 
 add_de1_text $::pages $::streamline_datacard_col1 1328 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages $::streamline_datacard_col1 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0 [translate "s"]]} 
-add_de1_variable $::pages $::streamline_datacard_col1 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0 [translate "s"]]}
-add_de1_variable $::pages $::streamline_datacard_col1 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0 [translate "s"]]}
+add_de1_variable $::pages $::streamline_datacard_col1 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0]} 
+add_de1_variable $::pages $::streamline_datacard_col1 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0]}
+add_de1_variable $::pages $::streamline_datacard_col1 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0]}
+#add_de1_variable $::pages $::streamline_datacard_col1 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0]} 
+#add_de1_variable $::pages $::streamline_datacard_col1 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0]}
+#add_de1_variable $::pages $::streamline_datacard_col1 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0]}
 
-add_de1_text $::pages $::streamline_datacard_col2 1328 -justify right -anchor "nw" -text [translate "Weight"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages $::streamline_datacard_col2 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_weight 4 1 [translate "g"]]} 
-add_de1_variable $::pages $::streamline_datacard_col2 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_weight 4 1 [translate "g"]]} 
-add_de1_variable $::pages $::streamline_datacard_col2 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_weight 4 1 [translate "g"]]} 
+add_de1_text $::pages $::streamline_datacard_col2 1328 -justify right -anchor "nw" -text [translate "Grams"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_variable $::pages $::streamline_datacard_col2 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_weight 4 1]} 
+add_de1_variable $::pages $::streamline_datacard_col2 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_weight 4 1]} 
+add_de1_variable $::pages $::streamline_datacard_col2 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_weight 4 1]} 
 
 
-add_de1_text $::pages $::streamline_datacard_col3 1328 -justify right -anchor "nw" -text [translate "Volume"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 150]
-add_de1_variable $::pages $::streamline_datacard_col3 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_preinfusion_volume 2 0 [translate "ml"]]} 
-add_de1_variable $::pages $::streamline_datacard_col3 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_final_extraction_volume 2 0 [translate "ml"]]} 
-add_de1_variable $::pages $::streamline_datacard_col3 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_shot_volume 2 0 [translate "ml"]]} 
+add_de1_text $::pages $::streamline_datacard_col3 1328 -justify right -anchor "nw" -text [translate "mL"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 150]
+add_de1_variable $::pages $::streamline_datacard_col3 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_preinfusion_volume 2 0]} 
+add_de1_variable $::pages $::streamline_datacard_col3 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_final_extraction_volume 2 0]} 
+add_de1_variable $::pages $::streamline_datacard_col3 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_shot_volume 2 0]} 
 
 set ::streamline_preinfusion_temp " "
 set ::streamline_extraction_temp " "
-add_de1_text $::pages $::streamline_datacard_col4 1328 -justify right -anchor "nw" -text [translate "Temp"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_text $::pages $::streamline_datacard_col4 1328 -justify right -anchor "nw" -text [string tolower [return_html_temperature_units]] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages $::streamline_datacard_col4 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_temp}
 add_de1_variable $::pages $::streamline_datacard_col4 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_temp}
 
 set ::streamline_extraction_low_peak_flow_label "-"
 set ::streamline_extraction_low_peak_flow_label "-"
 
-add_de1_text $::pages $::streamline_datacard_col5 1328 -justify right -anchor "nw" -text [translate "Flow (ml/s)"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_text $::pages $::streamline_datacard_col5 1328 -justify right -anchor "nw" -text [translate "mL/s"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages $::streamline_datacard_col5 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 260] -textvariable {$::streamline_preinfusion_low_peak_flow_label} 
 add_de1_variable $::pages $::streamline_datacard_col5 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 260] -textvariable {$::streamline_extraction_low_peak_flow_label} 
 
 set ::streamline_preinfusion_low_peak_pressure_label "-"
 set ::streamline_extraction_low_peak_pressure_label "-"
-add_de1_text $::pages $::streamline_datacard_col6 1328 -justify right -anchor "nw" -text [translate "Pressure (bar)"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 230]
+add_de1_text $::pages $::streamline_datacard_col6 1328 -justify right -anchor "nw" -text [translate "Pressure"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 230]
 add_de1_variable $::pages $::streamline_datacard_col6 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_low_peak_pressure_label}
 add_de1_variable $::pages $::streamline_datacard_col6 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_low_peak_pressure_label}
 
@@ -3188,18 +3191,18 @@ proc update_data_card { arrname settingsarr } {
 		if {$::streamline_preinfusion_temp_high == 0} {
 			# no label
 		} elseif {[round_to_integer $::streamline_preinfusion_temp_low] == [round_to_integer $::streamline_preinfusion_temp_high]} {
-			set ::streamline_preinfusion_temp [string tolower [return_lowercase_temperature_measurement $::streamline_preinfusion_temp_high 1]]
+			set ::streamline_preinfusion_temp [round_to_integer $::streamline_preinfusion_temp_high]
 		} else {
-			set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_low]]$arrow[string tolower [return_lowercase_temperature_measurement $::streamline_preinfusion_temp_high 1]]"
+			set ::streamline_preinfusion_temp "[round_to_integer $::streamline_preinfusion_temp_low]$arrow[round_to_integer $::streamline_preinfusion_temp_high]"
 		}
 
 		if {$::streamline_extraction_temp_high == 0} {
 			# no label
 			set ::streamline_extraction_temp ""
 		} elseif {[round_to_integer $::streamline_extraction_temp_low] == [round_to_integer $::streamline_extraction_temp_high]} {
-			set ::streamline_extraction_temp [string tolower [return_lowercase_temperature_measurement $::streamline_extraction_temp_high 1]]
+			set ::streamline_extraction_temp [string tolower [round_to_integer $::streamline_extraction_temp_high]
 		} else {
-			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]$arrow[string tolower [return_lowercase_temperature_measurement $::streamline_extraction_temp_high 1]]"
+			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_low]]$arrow[round_to_integer $::streamline_extraction_temp_high]"
 		}
 
 
@@ -3219,18 +3222,18 @@ proc update_data_card { arrname settingsarr } {
 		if {$::streamline_preinfusion_temp_end == 0} {
 			# no label
 		} elseif {[round_to_integer $::streamline_preinfusion_temp_start] == [round_to_integer $::streamline_preinfusion_temp_end]} {
-			set ::streamline_preinfusion_temp [string tolower [return_lowercase_temperature_measurement $::streamline_preinfusion_temp_end 1]]
+			set ::streamline_preinfusion_temp [round_to_integer $::streamline_preinfusion_temp_end]
 		} else {
-			set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_start]]$arrow[string tolower [return_lowercase_temperature_measurement $::streamline_preinfusion_temp_end 1]]"
+			set ::streamline_preinfusion_temp "[string tolower [round_to_integer $::streamline_preinfusion_temp_start]]$arrow[round_to_integer $::streamline_preinfusion_temp_end]"
 		}
 
 		if {$::streamline_extraction_temp_end == 0} {
 			# no label
 			set ::streamline_extraction_temp ""
 		} elseif {[round_to_integer $::streamline_extraction_temp_end] == [round_to_integer $::streamline_extraction_temp_end]} {
-			set ::streamline_extraction_temp [string tolower [return_lowercase_temperature_measurement $::streamline_extraction_temp_end 1]]
+			set ::streamline_extraction_temp [round_to_integer $::streamline_extraction_temp_end]
 		} else {
-			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_end]]$arrow[string tolower [return_lowercase_temperature_measurement $::streamline_extraction_temp_end 1]]"
+			set ::streamline_extraction_temp "[string tolower [round_to_integer $::streamline_extraction_temp_end]]$arrow[round_to_integer $::streamline_extraction_temp_end]"
 		}
 
 
