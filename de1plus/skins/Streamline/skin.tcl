@@ -348,12 +348,18 @@ proc streamline_adjust_grind { args } {
 	if {$args == "-"} {
 		if {$::settings(grinder_setting) > 0} {
 			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - .1}]]
-			#save_profile_and_update_de1_soon
 		}
 	} elseif {$args == "+"} {
 		if {$::settings(grinder_setting) < 1000} {
 			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + .1}]]
-			#save_profile_and_update_de1_soon
+		}
+	} elseif {$args == "--"} {
+		if {$::settings(grinder_setting) > 1} {
+			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - 1}]]
+		}
+	} elseif {$args == "++"} {
+		if {$::settings(grinder_setting) < 999} {
+			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + 1}]]
 		}
 	}
 
@@ -1448,25 +1454,25 @@ dui aspect set -theme default -type dbutton label_pos ".50 .22"
 
 
 # the - buttons
-dui add dbutton $::pages 254 257 346 349 -tags streamline_minus_grind_btn -label "_"  -command { streamline_adjust_grind - } 
-dui add dbutton $::pages 254 369 346 461 -tags streamline_minus_dose_btn -label "_"  -command { streamline_dose_btn - } 
-dui add dbutton $::pages 254 486 346 578 -tags streamline_minus_beverage_btn -label "_"  -command { streamline_beverage_btn - } 
-dui add dbutton $::pages 254 713 346 805 -tags streamline_minus_temp_btn -label "_"  -command { streamline_temp_btn - } 
-dui add dbutton $::pages 254 940 346 1032 -tags streamline_minus_steam_btn -label "_"  -command { streamline_steam_btn - } 
-dui add dbutton $::pages 254 1164 346 1256 -tags streamline_minus_flush_btn -label "_"  -command { streamline_flush_btn - } 
-dui add dbutton $::pages 254 1390 346 1482 -tags streamline_minus_hotwater_btn -label "_"  -command { streamline_hotwater_btn - } 
+dui add dbutton $::pages 254 257 346 349 -tags streamline_minus_grind_btn -label "_"  -command { streamline_adjust_grind -- } -longpress_cmd { streamline_adjust_grind - }
+dui add dbutton $::pages 254 369 346 461 -tags streamline_minus_dose_btn -label "_"  -command { streamline_dose_btn -- } -longpress_cmd { streamline_dose_btn - }
+dui add dbutton $::pages 254 486 346 578 -tags streamline_minus_beverage_btn -label "_"  -command { streamline_beverage_btn - } -longpress_cmd { streamline_beverage_btn - }
+dui add dbutton $::pages 254 713 346 805 -tags streamline_minus_temp_btn -label "_"  -command { streamline_temp_btn - } -longpress_cmd { streamline_temp_btn - }
+dui add dbutton $::pages 254 940 346 1032 -tags streamline_minus_steam_btn -label "_"  -command { streamline_steam_btn - } -longpress_cmd { streamline_steam_btn - }
+dui add dbutton $::pages 254 1164 346 1256 -tags streamline_minus_flush_btn -label "_"  -command { streamline_flush_btn - } -longpress_cmd { streamline_flush_btn - }
+dui add dbutton $::pages 254 1390 346 1482 -tags streamline_minus_hotwater_btn -label "_"  -command { streamline_hotwater_btn - } -longpress_cmd { streamline_hotwater_btn - }
 
 # label position
 dui aspect set -theme default -type dbutton label_pos ".49 .44" 
 
 # the + buttons
-dui add dbutton $::pages 486 259 578 351 -tags streamline_plus_grind_btn -label "+"  -command { streamline_adjust_grind + } 
-dui add dbutton $::pages 486 371 578 463 -tags streamline_plus_dose_btn -label "+"  -command { streamline_dose_btn + } 
-dui add dbutton $::pages 486 488 578 580 -tags streamline_plus_beverage_btn -label "+"  -command { streamline_beverage_btn + } 
-dui add dbutton $::pages 486 715 578 807 -tags streamline_plus_temp_btn -label "+"  -command { streamline_temp_btn + } 
-dui add dbutton $::pages 486 942 578 1034 -tags streamline_plus_steam_btn -label "+"  -command { streamline_steam_btn + } 
-dui add dbutton $::pages 486 1166 578 1258 -tags streamline_plus_flush_btn -label "+"  -command { streamline_flush_btn + } 
-dui add dbutton $::pages 486 1392 578 1484 -tags streamline_plus_hotwater_btn -label "+"  -command { streamline_hotwater_btn + } 
+dui add dbutton $::pages 486 259 578 351 -tags streamline_plus_grind_btn -label "+"  -command { streamline_adjust_grind ++ } -longpress_cmd { streamline_adjust_grind + }
+dui add dbutton $::pages 486 371 578 463 -tags streamline_plus_dose_btn -label "+"  -command { streamline_dose_btn ++ }  -longpress_cmd { streamline_dose_btn + }
+dui add dbutton $::pages 486 488 578 580 -tags streamline_plus_beverage_btn -label "+"  -command { streamline_beverage_btn + }  -longpress_cmd { streamline_beverage_btn + }
+dui add dbutton $::pages 486 715 578 807 -tags streamline_plus_temp_btn -label "+"  -command { streamline_temp_btn + }  -longpress_cmd { streamline_temp_btn + }
+dui add dbutton $::pages 486 942 578 1034 -tags streamline_plus_steam_btn -label "+"  -command { streamline_steam_btn + }  -longpress_cmd { streamline_steam_btn + }
+dui add dbutton $::pages 486 1166 578 1258 -tags streamline_plus_flush_btn -label "+"  -command { streamline_flush_btn + }  -longpress_cmd { streamline_flush_btn + }
+dui add dbutton $::pages 486 1392 578 1484 -tags streamline_plus_hotwater_btn -label "+"  -command { streamline_hotwater_btn + }  -longpress_cmd { streamline_hotwater_btn + }
 
 ############################################################################################################################################################################################################
 
@@ -1523,13 +1529,21 @@ proc streamline_dose_btn { args } {
 		if {$::settings(grinder_dose_weight) > 1} {
 			set ::settings(grinder_dose_weight) [round_to_one_digits [expr {$::settings(grinder_dose_weight) - .1}]]
 			flash_button "streamline_minus_dose_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-			#save_profile_and_update_de1_soon
 		}
 	} elseif {$args == "+"} {
 		if {$::settings(grinder_dose_weight) < 30} {
 			set ::settings(grinder_dose_weight) [round_to_one_digits [expr {$::settings(grinder_dose_weight) + .1}]]
 			flash_button "streamline_plus_dose_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-			#save_profile_and_update_de1_soon
+		}
+	} elseif {$args == "--"} {
+		if {$::settings(grinder_dose_weight) > 2} {
+			set ::settings(grinder_dose_weight) [round_to_one_digits [expr {$::settings(grinder_dose_weight) - 1}]]
+			flash_button "streamline_minus_dose_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
+		}
+	} elseif {$args == "++"} {
+		if {$::settings(grinder_dose_weight) < 29} {
+			set ::settings(grinder_dose_weight) [round_to_one_digits [expr {$::settings(grinder_dose_weight) + 1}]]
+			flash_button "streamline_plus_dose_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 		}
 	}
 	refresh_favorite_dosebev_button_labels
