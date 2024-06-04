@@ -1403,7 +1403,9 @@ dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -c
 set dyebtns ""
 
 if { [plugins enabled DYE] } {
-	dui add dbutton $::all_pages 1880 76 2070 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
+	plugins disable DYE
+# not yet available
+#	dui add dbutton $::all_pages 1880 76 2070 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
 
 }
 
