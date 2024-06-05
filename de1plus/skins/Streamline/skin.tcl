@@ -448,12 +448,12 @@ set ::streamline_global(status_msg_text_green) ""
 set ::streamline_global(status_msg_text_clickable) ""
 
 
-set ::reconnect_text_string [subst {\[[translate "Reconnect"]\]}]
+#set ::reconnect_text_string [subst {\[[translate "Reconnect"]\]}]
 proc streamline_status_msg_click {} {
 	#puts "ERROR TAPPED $::streamline_global(status_msg_text_clickable)"	
-	if {$::streamline_global(status_msg_text_clickable) == $::reconnect_text_string} {
-		ble_connect_to_scale
-	}
+	#if {$::streamline_global(status_msg_text_clickable) == $::reconnect_text_string} {
+	#	ble_connect_to_scale
+	#}
 }
 
 set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 256 right 0 1 30 $::background_color [list \
@@ -474,8 +474,40 @@ set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_po
 ############################################################################################################################################################################################################
 # The Mix/Group/Steam/Tank status line
 
+set ::streamline_dataline_weight_label_blue ""
+set ::streamline_dataline_weight_label_red ""
+set ::streamline_dataline_weight_value ""
+set ::streamline_dataline_weight_unit ""
+proc streamline_ui_weight_refresh {} {
+	if {$::de1(scale_device_handle) != 0} {
+		set ::streamline_dataline_weight_label_blue [translate "Weight"]
+		set ::streamline_dataline_weight_label_red ""
+		set ::streamline_dataline_weight_value [lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]
+		set ::streamline_dataline_weight_unit [lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]
+	} else {
+		set ::streamline_dataline_weight_label_blue [translate "Weight: ???"]
+		if {$::currently_connecting_scale_handle == 0} {
+			set ::streamline_dataline_weight_label_red " [translate (Connect)]"
+		} else {
+			set ::streamline_dataline_weight_label_red " [translate Wait]"
+		}
+		set ::streamline_dataline_weight_value ""
+		set ::streamline_dataline_weight_unit ""
+	}
+	return " "
+}
 
+proc scale_tare_or_reconnect {} {
 
+	if {$::de1(scale_device_handle) != 0} {
+		::device::scale::tare; 
+		popup [translate Tare]
+	} else {
+		if {$::currently_connecting_scale_handle == 0} {
+			ble_connect_to_scale
+		}
+	}
+}
 set btns ""
 lappend btns \
 	[list -text "Mix" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
@@ -504,14 +536,32 @@ lappend btns \
 
 if {$::settings(scale_bluetooth_address) != ""} {
 	lappend btns [list -text "    " -font "Inter-Bold16"] 
-	lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::status_clickable_text  -exec "::device::scale::tare; popup [translate Tare]" ] 
-	lappend btns [list -text " " -font "Inter-Bold16"  -exec "::device::scale::tare; popup [translate Tare]" ]
-	lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]} -font "mono12" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
-	lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]} -font "mono8" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
+	#lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::profile_title_color  -exec "::device::scale::tare; popup [translate Tare]" ] 
+	#lappend btns [list -text " " -font "Inter-Bold16"  -exec "::device::scale::tare; popup [translate Tare]" ]
+	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]} -font "mono12" -foreground $::profile_title_color  -exec "::device::scale::tare; popup [translate Tare]" ]
+	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]} -font "mono8" -foreground $::profile_title_color  -exec "::device::scale::tare; popup [translate Tare]" ]
+
+	lappend btns [list -text {$::streamline_dataline_weight_label_blue} -font "Inter-Bold18" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
+	lappend btns [list -text {$::streamline_dataline_weight_label_red} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "scale_tare_or_reconnect" ]
+	lappend btns [list -text {[streamline_ui_weight_refresh]} -font "Inter-Bold16"  -exec "scale_tare_or_reconnect" ]
+	lappend btns [list -text {$::streamline_dataline_weight_value} -font "mono12" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
+	lappend btns [list -text {$::streamline_dataline_weight_unit} -font "mono8" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
+
+
+	#set ::streamline_weight_dataline_label [translate "Weight"]
+	#set ::streamline_weight_dataline_red_label "Reconnect"
+
+	#lappend btns [list -text "    " -font "Inter-Bold16"] 
+	#lappend btns [list -text {$::streamline_weight_dataline_label} -font "Inter-Bold18" -foreground $::dataline_data_color" ] 
+	#lappend btns [list -text {$::streamline_weight_dataline_red_label} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "ble_connect_to_scale; popup [translate Connecting]" ] 
+	#lappend btns [list -text " " -font "Inter-Bold16"  -exec "::device::scale::tare; popup [translate Tare]" ]
+	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]} -font "mono12" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
+	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]} -font "mono8" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
+
 }
 
 
-set ::streamline_status_msg [add_de1_rich_text "off espresso" 690 330 left 1 2 65 $::background_color $btns ]
+set ::streamline_status_msg [add_de1_rich_text "off espresso" 690 330 left 1 2 72 $::background_color $btns ]
 
 
 set flush_btns ""
@@ -589,10 +639,10 @@ lappend zoomed_btns \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[round_to_integer $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text [translate "ml"] -font "mono8"] \
-	[list -text " (" -font "Inter-mono12"] \
+	[list -text " (" -font "mono12"] \
 	[list -text {[lindex [return_lowercase_temperature_measurement $::settings(water_temperature) 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text {[lindex [return_lowercase_temperature_measurement $::settings(water_temperature) 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
-	[list -text ")" -font "Inter-mono12"] 
+	[list -text ")" -font "mono12"] 
 	
 
 set ::streamline_status_msg_zoomed2 [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 85 $::background_color $zoomed_btns ]
@@ -646,16 +696,7 @@ proc update_streamline_status_message {} {
 		set delta_percent [expr {int(100 * ((1.0*[group_head_heater_temperature]) / [setting_espresso_temperature]))}]
 		set bars [round_to_integer [expr {1+ ($delta_percent / 5)}]]
 
-		if {[ifexists ::settings(scale_bluetooth_address)] != "" && [ifexists ::de1(scale_device_handle)] == "0"} {
-			set red_msg [subst {  [translate "Scale Disconnected"]}]
-			set green_msg ""
-
-			if {$::currently_connecting_scale_handle == 0} {
-				set clickable_msg $::reconnect_text_string
-			} else {
-				set clickable_msg [translate "Wait"]
-			}
-		} elseif {$::de1(device_handle) == 0} {
+		if {$::de1(device_handle) == 0} {
 			set red_msg [translate "Wait"]
 		} elseif {$substate_txt == "ready"} {
 			set green_msg [translate "Ready"]
