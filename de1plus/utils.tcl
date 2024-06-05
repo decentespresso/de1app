@@ -1035,6 +1035,10 @@ proc translation_langs_array {} {
 
 proc popup {msg} {
 
+	# complaints that some android themes use a black background theme, so these toast messages were not visible.  Reverting to using native toast messages based on the OS themes.
+	borg toast $msg 1
+	return
+	
 	if {$::app::build_timestamp > 1714054164} {
 		# newer Androwish support HTML toasts, force them to be black to work around some tablets having incorrect toast colors
 		if {[catch {
