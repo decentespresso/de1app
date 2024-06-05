@@ -757,11 +757,12 @@ proc update_streamline_status_message {} {
 		}
 
 
-		set bars [round_to_integer [expr {$delta_percent / 10}]]
-		if {$bars > 10} {
-			set bars 10
+		set width 20
+		set bars [round_to_integer [expr {$delta_percent / $width}]]
+		if {$bars > $width} {
+			set bars $width
 		}
-		set bars_grey [expr {10 - $bars}]
+		set bars_grey [expr {$width - $bars}]
 
 		#if {$bars < 16} {
 			#set green_progress ""
@@ -3424,7 +3425,7 @@ set ::streamline_global(status_msg_progress_red) ""
 set ::streamline_global(status_msg_progress_green) ""
 set ::streamline_global(status_msg_progress_grey) ""
 
-set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 344 right 0 1 25 $::background_color [list \
+set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 236 right 0 1 45 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_progress_green)}  -font "Inter-Regular6" -foreground $::progress_bar_green  ] \
 	[list -text {$::streamline_global(status_msg_progress_red)}  -font "Inter-Regular6" -foreground $::progress_bar_red  ] \
 	[list -text {$::streamline_global(status_msg_progress_grey)}  -font "Inter-Regular6" -foreground $::progress_bar_grey ] \
