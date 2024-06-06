@@ -44,7 +44,7 @@ if {$::streamline_dark_mode == 0} {
 	set ::button_inverted_text_color "#FFFFFF"
 	set ::status_clickable_text "#1967d4"
 	set ::box_color "#f6f8fa"
-	#set ::box_line_color #c9c9c9
+
 	set ::box_line_color #e8e8e8
 	set ::settings_sleep_button_outline_color "#3d5782"
 	set ::settings_sleep_button_color "#f6f8fa"
@@ -3466,7 +3466,7 @@ set ::streamline_global(status_msg_progress_red) ""
 set ::streamline_global(status_msg_progress_green) ""
 set ::streamline_global(status_msg_progress_grey) ""
 
-set ::streamline_progress_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 236 right 0 1 45 $::background_color [list \
+set ::streamline_progress_line [add_de1_rich_text "off off_zoomed" [expr {2490 - $ghc_pos_pffset}] 236 right 0 1 45 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_progress_green)}  -font "Inter-Regular6" -foreground $::progress_bar_green  ] \
 	[list -text {$::streamline_global(status_msg_progress_red)}  -font "Inter-Regular6" -foreground $::progress_bar_red  ] \
 	[list -text {$::streamline_global(status_msg_progress_grey)}  -font "Inter-Regular6" -foreground $::progress_bar_grey ] \
