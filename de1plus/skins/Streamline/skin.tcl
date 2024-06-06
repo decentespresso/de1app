@@ -17,6 +17,7 @@ if {[info exists ::streamline_dark_mode] != 1} {
 	set ::streamline_dark_mode 0
 }
 
+
 ::de1::event::listener::after_flow_complete_add [lambda {event_dict} { streamline_shot_ended } ]
 
 if {$::streamline_dark_mode == 0} {
@@ -376,6 +377,62 @@ proc streamline_adjust_grind { args } {
 if {[ifexists ::settings(grinder_setting)] == ""} {
 	set ::settings(grinder_setting) 0
 }
+
+proc streamline_init_history_files {} {
+	set ::streamline_history_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+	set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
+}
+
+
+
+proc array_incr {arrayname key {val 1}} {
+    upvar $arrayname arraydata
+	set x 1
+	#if {[catch {set x [incr arraydata($key) $val}]} then {set arraydata($key) $val}
+	if {[catch {set x [incr arraydata($key) $val]}]} then {set arraydata($key) $val}
+	return $x
+}
+
+proc array_keys_sorted_by_val {arrname {sort_order -increasing}} {
+	upvar $arrname arr
+	foreach k [array names arr] {
+		set k2 "$arr($k) $k"
+		set t($k2) $k
+	}
+	
+	set toreturn {}
+
+	set keys [lsort $sort_order -dictionary [array names t]]
+	foreach k $keys {
+		set v $t($k)
+		lappend toreturn $v
+	}
+	return $toreturn
+}
+
+proc streamline_history_most_common_profiles { {max 500} } {
+
+	set c 0
+	foreach current_shot_filename [lsort -dictionary -decreasing $::streamline_history_files] {
+		if {[incr c] > $max} {
+			break
+		}
+		array set past_shot_array [encoding convertfrom utf-8 [read_file "[homedir]/history/$current_shot_filename"]]
+		array set profile_settings [ifexists past_shot_array(settings)]
+		if {[ifexists profile_settings(profile_filename)] != ""} {
+			# only include the most common profiles that still actually exist on disk
+			if {[file exists "[homedir]/profiles/[ifexists profile_settings(profile_filename)].tcl"] == 1} {
+				array_incr count [ifexists profile_settings(profile_filename)]
+			}
+		}
+	}
+
+	return [array_keys_sorted_by_val count]
+}
+
+streamline_init_history_files
+
+puts "ERROR [streamline_history_most_common_profiles]"
 
 
 proc back_from_settings {} {
@@ -1311,7 +1368,20 @@ proc refresh_favorite_profile_button_labels {} {
 	set profiles [ifexists ::settings(favorite_profiles)]
 
 	set changed 0
-	set default_profile_buttons [list "" "default" "best_practice"	"rao_allonge" "80s_Espresso" "Cleaning_forward_flush_x5"]
+	set default_profile_buttons [list "" "default" "best_practice" "80s_Espresso" "rao_allonge" "Cleaning_forward_flush_x5"]
+
+	# replace the default profile types with the ones most recently used
+	set streamline_history_most_common_profiles [streamline_history_most_common_profiles]
+	for {set c 0} {$c < 5} {incr c} {
+		if {$c >= [llength $streamline_history_most_common_profiles]} {
+			# there are not enough commonly used to replace the defaults
+			break
+		}
+		set default_profile_buttons [lreplace $default_profile_buttons $c+1 $c+1 [lindex $streamline_history_most_common_profiles $c]]
+	}
+
+
+
 
 	for {set x 1} {$x <= 5}  {incr x} {
 		set b($x) ""
@@ -3391,17 +3461,11 @@ proc update_data_card { arrname settingsarr } {
 	puts "extraction_peak_pressure : $::streamline_extraction_peak_pressure"
 	puts "extraction_peak_flow : $::streamline_extraction_peak_flow"
 
-
-
 }
+
 proc streamline_load_currently_selected_history_shot {} {
 	set current_shot_filename [lindex $::streamline_history_files $::streamline_history_file_selected_number]
 	streamline_load_history_shot $current_shot_filename
-}
-
-proc streamline_init_history_files {} {
-	set ::streamline_history_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
-	set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
 }
 
 proc streamline_history_profile_btns_refresh {} {
@@ -3476,12 +3540,10 @@ set ::streamline_progress_line [add_de1_rich_text "off off_zoomed" [expr {2490 -
 
 # not needed in this skin
 proc update_temperature_charts_y_axis {} {}
-
-
-streamline_init_history_files
 streamline_load_currently_selected_history_shot
 
 
+#exit
 #after 1000 set_next_page off $::zoomed_pages; page_show off_zoomed
 #set_next_page off "off_zoomed"
 #after 1000 page_show off_zoomed
