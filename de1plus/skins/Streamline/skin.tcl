@@ -1368,20 +1368,19 @@ proc refresh_favorite_profile_button_labels {} {
 	set profiles [ifexists ::settings(favorite_profiles)]
 
 	set changed 0
-	set default_profile_buttons [list "" "default" "best_practice" "80s_Espresso" "rao_allonge" "Cleaning_forward_flush_x5"]
+	set default_profile_buttons [list "" "default" "best_practice" "80s_Espresso" "rao_allonge" "Gentle and sweet"]
 
-	# replace the default profile types with the ones most recently used
-	set streamline_history_most_common_profiles [streamline_history_most_common_profiles]
-	for {set c 0} {$c < 5} {incr c} {
-		if {$c >= [llength $streamline_history_most_common_profiles]} {
-			# there are not enough commonly used to replace the defaults
-			break
+	if {$profiles == ""} {
+		# replace the default profile types with the ones most recently used
+		set streamline_history_most_common_profiles [streamline_history_most_common_profiles]
+		for {set c 0} {$c < 5} {incr c} {
+			if {$c >= [llength $streamline_history_most_common_profiles]} {
+				# there are not enough commonly used to replace the defaults
+				break
+			}
+			set default_profile_buttons [lreplace $default_profile_buttons $c+1 $c+1 [lindex $streamline_history_most_common_profiles $c]]
 		}
-		set default_profile_buttons [lreplace $default_profile_buttons $c+1 $c+1 [lindex $streamline_history_most_common_profiles $c]]
 	}
-
-
-
 
 	for {set x 1} {$x <= 5}  {incr x} {
 		set b($x) ""
