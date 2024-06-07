@@ -96,6 +96,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/default/standard_stop_buttons.tcl *
 
         skins/Streamline/Inter-SemiBold.ttf *
+        skins/Streamline/Inter-Black.ttf *
         skins/Streamline/Inter-ExtraLight.ttf *
         skins/Streamline/Inter-Regular.ttf *
         skins/Streamline/Inter-Thin.ttf *

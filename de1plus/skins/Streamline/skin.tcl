@@ -40,6 +40,8 @@ if {$::streamline_dark_mode == 0} {
 	set ::profile_button_background_color "#FFFFFF"
 	set ::profile_button_button_color "#5f7ba8"
 	set ::profile_button_button_selected_color "#e8e8e8"
+	set ::dataentry_button_color "#BBBBBB"
+	set ::dataentry_favorites_border_color "#888888"
 	set ::profile_button_outline_color "#c5cdda"
 	set ::ghc_button_background_color "#FFFFFF"
 	set ::button_inverted_text_color "#FFFFFF"
@@ -115,6 +117,8 @@ if {$::streamline_dark_mode == 0} {
 	set ::profile_button_button_color "#e8e8e8"
 	set ::profile_button_button_selected_color "#e8e8e8"
 	set ::profile_button_outline_color $::box_color
+	set ::dataentry_button_color "#222222"
+	set ::dataentry_favorites_border_color "#666666"
 	set ::profile_button_not_selected_color "#e8e8e8"
 
 set ::ghc_button_background_color "#6576a0"
@@ -203,8 +207,24 @@ load_font "Inter-SemiBold18" "[homedir]/skins/Streamline/Inter-Bold.ttf" 13
 # +/- buttons
 load_font "Inter-Bold24" "[homedir]/skins/Streamline/Inter-ExtraLight.ttf" 29
 
+
+# data entry buttons
+load_font "Inter-Bold40" "[homedir]/skins/Streamline/Inter-Regular.ttf" 44
+
 # profile 
 load_font "Inter-HeavyBold24" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 17
+
+# data entry title 
+load_font "Inter-HeavyBold40" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 40
+
+# data entry data
+load_font "Inter-HeavyBold50" "[homedir]/skins/Streamline/Inter-Black.ttf" 44
+
+# data entry confirm and cancel
+load_font "Inter-HeavyBold30" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 18
+
+# data entry previous
+load_font "Inter-HeavyBold35" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 20
 
 # X and Y axis font
 load_font "Inter-Regular20" "[homedir]/skins/Streamline/Inter-Regular.ttf" 12
@@ -1207,7 +1227,6 @@ if {[ifexists ::settings(grinder_dose_weight)] == "" || [ifexists ::settings(gri
 	set ::settings(grinder_dose_weight) 15
 }
 
-
 # labels
 #set ::settings(grinder_setting) 1.4
 add_de1_variable $::pages 418 304 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
@@ -1221,6 +1240,24 @@ add_de1_variable $::pages 418 1417 -justify center -anchor "center" -text [trans
 add_de1_variable $::pages 418 1460 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
 
 
+
+add_de1_button "off off_zoomed" { ask_for_data_entry_number [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) 0 0 100 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting grind_setting_rectangle"]} 370 260 470 340  ""   
+add_de1_button "off off_zoomed" { ask_for_data_entry_number [ifexists ::settings(grinder_dose_weight)] ::settings(grinder_dose_weight) 0 0 30 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting dose_setting_rectangle dose_label_1st"]} 370 374 470 454  ""   
+add_de1_button "off off_zoomed" { ask_for_data_entry_number [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) 0 0 100 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
+
+add_de1_button "off off_zoomed" { ask_for_data_entry_number [ifexists ::settings(espresso_temperature)] ::settings(espresso_temperature) 1 0 250 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle temp_label_1st"]} 370 716 470 796  ""   
+add_de1_button "off off_zoomed" { ask_for_data_entry_number [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st"]} 370 944 470 1024  ""   
+add_de1_button "off off_zoomed" { ask_for_data_entry_number [ifexists ::settings(flush_seconds)] ::settings(flush_seconds) 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting flush_setting_rectangle flush_label_1st"]} 370 1172 470 1252  ""   
+add_de1_button "off off_zoomed" { choose_appropriate_data_entry_for_hot_water } 370 1400 470 1480  ""   
+
+
+proc choose_appropriate_data_entry_for_hot_water {} {
+	if {$::streamline_hotwater_btn_mode == "ml"} {
+		ask_for_data_entry_number [ifexists ::settings(water_volume)] ::settings(water_volume) 1 3 255 [list streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st"]
+	} else {
+		ask_for_data_entry_number [ifexists ::settings(water_temperature)] ::settings(water_temperature) 1 0 255 [list streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st"]
+	}
+}
 
 # highly rounded rectangles
 
@@ -1398,7 +1435,7 @@ proc refresh_favorite_profile_button_labels {} {
 			dict set profiles $x name $t($x)
 			dict set profiles $x title $b($x)
 			set changed 1
-			puts "ERROR set button $x to $b($x)"
+			#puts "ERROR set button $x to $b($x)"
 		}		
 
 	}
@@ -2828,11 +2865,14 @@ proc streamline_hw_preset_select { slot } {
 
 }
 
-proc streamline_blink_rounded_setting { rect txt } {
+proc streamline_blink_rounded_setting { rect {txt {}} } {
 	.can itemconfigure $rect -fill $::blink_button_color
-	.can itemconfigure $txt -fill $::button_inverted_text_color
 	after 400 .can itemconfigure $rect -fill $::box_color
-	after 400 .can itemconfigure $txt -fill $::plus_minus_value_text_color
+	if {$txt != ""} {
+		.can itemconfigure $txt -fill $::button_inverted_text_color
+	
+		after 400 .can itemconfigure $txt -fill $::plus_minus_value_text_color
+	}
 }
 
 
@@ -3536,6 +3576,231 @@ set ::streamline_progress_line [add_de1_rich_text "off off_zoomed" [expr {2490 -
 ]]
 ############################################################################################################################################################################################################
 
+proc streamline_entry_page_button {btn} {
+
+	set current $::streamline_data_entry_page_value 
+	if {$btn == "0" || $btn == "1" || $btn == "2" || $btn == "3" || $btn == "4" || $btn == "5" || $btn == "6" || $btn == "7" || $btn == "8" || $btn == "9"} {
+		append current $btn
+	} elseif {$::streamline_entry_integer_only != 1 && $btn == "." && [string first "." $::streamline_data_entry_page_value] == -1} {
+		append current $btn
+	} elseif {$btn == "c"} {
+		set current ""
+	} elseif {$btn == "<" && $::streamline_data_entry_page_value != ""} {
+		set current [string range $::streamline_data_entry_page_value 0 end-1]
+	}
+
+	if {$::streamline_entry_max != "" && $current != ""} {
+		if {$current > $::streamline_entry_max && $::streamline_entry_max != ""} {
+
+			set ::streamline_entry_hint ""
+			after 300 [list set ::streamline_entry_hint [streamline_entry_hint]]
+			return
+		}
+	}
+
+	#if {$::streamline_entry_min != "" && $current != ""} {
+	#	if {$current < $::streamline_entry_min && $::streamline_entry_min != ""} {
+	#		set ::streamline_entry_hint ""
+	#		after 300 [list set ::streamline_entry_hint [streamline_entry_hint]]
+	#		return
+	#	}
+	#}
+	set ::streamline_data_entry_page_value $current
+}
+
+proc streamline_entry_hint {} {
+	if {$::streamline_entry_min == "" || $::streamline_entry_max == ""} {
+		return ""
+	}
+	return "$::streamline_entry_min < x < $::streamline_entry_max"
+}
+
+# callback_success callback_failure
+proc ask_for_data_entry_number {current_value varname_to_store_in {integer_only 0} {min {}} {max {}} {callbacks {}} } {
+
+	#set ::streamline_data_entry_page_value $current_value
+	set ::streamline_data_entry_page_value ""
+
+	set ::streamline_entry_return_to_page [dui page current]
+	set ::streamline_entry_save_to_varname $varname_to_store_in
+	set ::streamline_entry_integer_only $integer_only
+
+	set ::streamline_entry_callbacks $callbacks
+
+	set ::streamline_entry_max $max
+	set ::streamline_entry_min $min	
+
+	page_show streamline_entry
+}
+
+# save this value if it's valid
+proc streamline_entry_save_value {} {
+
+	if {$::streamline_data_entry_page_value == ""} {
+		return
+	}
+
+	if {$::streamline_entry_min != ""} {
+		if {$::streamline_data_entry_page_value < $::streamline_entry_min} {
+			return
+		}
+	}
+
+	if {$::streamline_entry_max != ""} {
+		if {$::streamline_data_entry_page_value > $::streamline_entry_max} {
+			return
+		}
+	}
+
+ 	set $::streamline_entry_save_to_varname $::streamline_data_entry_page_value
+
+ 	foreach callback $::streamline_entry_callbacks {
+ 		eval $callback
+ 	}
+}
+
+proc streamline_entry_page_setup {} {
+
+	set ::streamline_entry_return_to_page "off"
+	set ::streamline_entry_save_to_varname "::none"
+	set ::streamline_entry_integer_only 0
+
+	set ::streamline_entry_max 15
+	set ::streamline_entry_min 1
+
+	#set ::streamline_callback_success $callback_success
+	#set ::streamline_callback_failure $callback_failure
+
+	dui page add "streamline_entry" -bg_color $::background_color
+
+	set ::streamline_data_entry_page_title [subst "DOSE"]
+	add_de1_variable "streamline_entry" 107 85 -justify left -anchor "nw" -font "Inter-HeavyBold40" -fill $::data_card_text_color -width [rescale_x_skin 1200] -textvariable {$::streamline_data_entry_page_title} 
+
+
+	set ::streamline_entry_hint [streamline_entry_hint]
+	add_de1_variable "streamline_entry" 650 800 -justify center -anchor "center" -font "Inter-HeavyBold30" -fill $::preset_label_selected_color -width [rescale_x_skin 1200] -textvariable { $::streamline_entry_hint } 
+
+	#add_de1_text "streamline_entry" 650 960 -justify center -anchor "center" -font "Inter-HeavyBold30" -fill $::data_card_text_color -width [rescale_x_skin 1200] -text [translate "Previous Values"]
+
+	# box where number appears
+	dui add canvas_item rect "streamline_entry" 345 494 949 738  -fill $::box_color -width 4 -outline $::ghc_button_color -fill $::background_color
+
+	set ::streamline_data_entry_page_value ""
+	add_de1_variable "streamline_entry" 650 610 -justify center -anchor "center" -font "Inter-HeavyBold50" -fill $::data_card_text_color -width [rescale_x_skin 1200] -textvariable {$::streamline_data_entry_page_value} 
+
+	# box line below entry box
+	streamline_rectangle "streamline_entry" 150 852 1150 852 $::box_line_color
+
+	# box line below entry title
+	streamline_rectangle "streamline_entry" 107 297 2463 297 $::box_line_color
+	streamline_rectangle "streamline_entry" 1279 302 1279 1600 $::box_line_color
+
+	# rounded rectangle color 
+	dui aspect set -theme default -type dbutton outline $::dataentry_button_color
+
+	# inside button color
+	dui aspect set -theme default -type dbutton fill $::dataentry_button_color
+
+	# font color
+	dui aspect set -theme default -type dbutton label_fill "$::plus_minus_text_color"
+
+	# font to use
+	dui aspect set -theme default -type dbutton label_font Inter-Bold40
+
+	# rounded retangle radius
+	dui aspect set -theme default -type dbutton radius [rescale_y_skin 200]
+
+	# rounded retangle line width
+	dui aspect set -theme default -type dbutton width 2 
+
+	# button shape
+	dui aspect set -theme default -type dbutton shape round_outline 
+
+	# label position is higher because we're using a _ as a minus symbol
+	dui aspect set -theme default -type dbutton label_pos ".50 .5" 
+
+
+	set entryheight 200
+	set entrywidth 300
+	
+	set row1 448
+	set row2 718
+	set row3 987
+	set row4 1259
+	set col1 1423
+	set col2 1770
+	set col3 2121
+
+	dui add dbutton "streamline_entry" $col1 $row1 [expr {$col1+$entrywidth}] [expr {$row1+$entryheight}] -tags streamline_plus_grind_btn1 -label "1"  -command { streamline_entry_page_button 1 }
+	dui add dbutton "streamline_entry" $col2 $row1 [expr {$col2+$entrywidth}] [expr {$row1+$entryheight}] -tags streamline_plus_grind_btn2 -label "2"  -command { streamline_entry_page_button 2 }
+	dui add dbutton "streamline_entry" $col3 $row1 [expr {$col3+$entrywidth}] [expr {$row1+$entryheight}] -tags streamline_plus_grind_btn3 -label "3"  -command { streamline_entry_page_button 3 }
+
+	dui add dbutton "streamline_entry" $col1 $row2 [expr {$col1+$entrywidth}] [expr {$row2+$entryheight}] -tags streamline_plus_grind_btn4 -label "4"  -command { streamline_entry_page_button 4 }
+	dui add dbutton "streamline_entry" $col2 $row2 [expr {$col2+$entrywidth}] [expr {$row2+$entryheight}] -tags streamline_plus_grind_btn5 -label "5"  -command { streamline_entry_page_button 5 }
+	dui add dbutton "streamline_entry" $col3 $row2 [expr {$col3+$entrywidth}] [expr {$row2+$entryheight}] -tags streamline_plus_grind_btn6 -label "6"  -command { streamline_entry_page_button 6 } 
+
+	dui add dbutton "streamline_entry" $col1 $row3 [expr {$col1+$entrywidth}] [expr {$row3+$entryheight}] -tags streamline_plus_grind_btn7 -label "7"  -command { streamline_entry_page_button 7 } 
+	dui add dbutton "streamline_entry" $col2 $row3 [expr {$col2+$entrywidth}] [expr {$row3+$entryheight}] -tags streamline_plus_grind_btn8 -label "8"  -command { streamline_entry_page_button 8 } 
+	dui add dbutton "streamline_entry" $col3 $row3 [expr {$col3+$entrywidth}] [expr {$row3+$entryheight}] -tags streamline_plus_grind_btn9 -label "9"  -command { streamline_entry_page_button 9 } 
+
+	if {$::streamline_entry_integer_only != 1} {
+		dui add dbutton "streamline_entry" $col1 $row4 [expr {$col1+$entrywidth}] [expr {$row4+$entryheight}] -tags streamline_plus_grind_btn_period -label "."  -command { streamline_entry_page_button . } 
+	} else {
+		dui add dbutton "streamline_entry" $col1 $row4 [expr {$col1+$entrywidth}] [expr {$row4+$entryheight}] -tags streamline_plus_grind_btn_period -label "C"  -command { streamline_entry_page_button c } 
+	}
+	dui add dbutton "streamline_entry" $col2 $row4 [expr {$col2+$entrywidth}] [expr {$row4+$entryheight}] -tags streamline_plus_grind_btn0 -label "0"  -command { streamline_entry_page_button 0 } 
+	dui add dbutton "streamline_entry" $col3 $row4 [expr {$col3+$entrywidth}] [expr {$row4+$entryheight}] -tags streamline_plus_grind_btn_bkac -label "⌫"  -command { streamline_entry_page_button < }
+
+
+	# font to use
+	dui aspect set -theme default -type dbutton label_font Inter-HeavyBold30
+
+	
+	dui aspect set -theme default -type dbutton fill $::background_color
+	dui aspect set -theme default -type dbutton outline $::background_color
+	dui aspect set -theme default -type dbutton width 0
+
+	set ::streamline_data_entry_label_cancel [subst "CANCEL"]
+	dui add dbutton "streamline_entry" 1650 65 1850 225 -tags streamline_plus_grind_btn_cancel -label $::streamline_data_entry_label_cancel  -command { page_show $::streamline_entry_return_to_page } 
+
+
+	# font color
+	dui aspect set -theme default -type dbutton label_fill "$::background_color"
+	dui aspect set -theme default -type dbutton fill $::ghc_button_color
+	dui aspect set -theme default -type dbutton outline $::ghc_button_color
+	set ::streamline_data_entry_label_confirm [subst "CONFIRM"]
+	dui add dbutton "streamline_entry" 1963 65 2463 225 -tags streamline_plus_grind_btn_confirm -label $::streamline_data_entry_label_confirm  -command { streamline_entry_save_value ; page_show $::streamline_entry_return_to_page } 
+
+
+	# inside button color
+	dui aspect set -theme default -type dbutton fill $::background_color
+	dui aspect set -theme default -type dbutton outline $::dataentry_favorites_border_color
+	dui aspect set -theme default -type dbutton label_fill "$::plus_minus_text_color"
+	dui aspect set -theme default -type dbutton label_font Inter-HeavyBold35
+
+	set pentryheight 160
+	set pentrywidth 200
+
+ 	set prow1 1067
+ 	set prow2 1297
+
+ 	set pcol1 135
+ 	set pcol2 404
+ 	set pcol3 676
+ 	set pcol4 946
+
+	#dui add dbutton "streamline_entry" $pcol1 $prow1 [expr {$pcol1+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_plus_grind_prev_1 -label "1"  -command { streamline_adjust_grind ++ } 
+	#dui add dbutton "streamline_entry" $pcol2 $prow1 [expr {$pcol2+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_plus_grind_prev_2 -label "2"  -command { streamline_adjust_grind ++ } 
+	#dui add dbutton "streamline_entry" $pcol3 $prow1 [expr {$pcol3+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_plus_grind_prev_3 -label "3"  -command { streamline_adjust_grind ++ } 
+	#dui add dbutton "streamline_entry" $pcol4 $prow1 [expr {$pcol4+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_plus_grind_prev_4 -label "4"  -command { streamline_adjust_grind ++ } 
+
+	#dui add dbutton "streamline_entry" $pcol1 $prow2 [expr {$pcol1+$pentrywidth}] [expr {$prow2+$pentryheight}] -tags streamline_plus_grind_prev_5 -label "5"  -command { streamline_adjust_grind ++ } 
+	#dui add dbutton "streamline_entry" $pcol2 $prow2 [expr {$pcol2+$pentrywidth}] [expr {$prow2+$pentryheight}] -tags streamline_plus_grind_prev_6 -label "6"  -command { streamline_adjust_grind ++ } 
+	#dui add dbutton "streamline_entry" $pcol3 $prow2 [expr {$pcol3+$pentrywidth}] [expr {$prow2+$pentryheight}] -tags streamline_plus_grind_prev_7 -label "7"  -command { streamline_adjust_grind ++ } 
+	#dui add dbutton "streamline_entry" $pcol4 $prow2 [expr {$pcol4+$pentrywidth}] [expr {$prow2+$pentryheight}] -tags streamline_plus_grind_prev_8 -label "8"  -command { streamline_adjust_grind ++ } 
+
+}
+streamline_entry_page_setup
 
 # not needed in this skin
 proc update_temperature_charts_y_axis {} {}
@@ -3546,5 +3811,5 @@ streamline_load_currently_selected_history_shot
 #after 1000 set_next_page off $::zoomed_pages; page_show off_zoomed
 #set_next_page off "off_zoomed"
 #after 1000 page_show off_zoomed
-#after 100 page_show off_zoomed
+#after 100 page_show streamline_entry
 
