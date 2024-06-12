@@ -842,6 +842,10 @@ proc update_streamline_status_message {} {
 				
 				set ETA [round_to_tens [expr {int(1.0*$elapsed/$progress)}]]
 
+				if {$ETA < 5} {
+					set ETA 5
+				}
+				
 				if {$ETA < $::streamline_start_heating_eta_previous} {
 					set msg [subst { $ETA[translate s]}]
 					set ::streamline_start_heating_eta_previous $ETA
