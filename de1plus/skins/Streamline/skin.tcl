@@ -60,7 +60,7 @@ if {$::streamline_dark_mode == 0} {
 	set ::data_card_previous_outline_color "#121212"
 
 	set ::box_line_color #e8e8e8
-	set ::datacard_box_line_color "#c3c3c3"
+	set ::datacard_box_line_color "#A5A5A5"
 	set ::settings_sleep_button_outline_color "#3d5782"
 	set ::settings_sleep_button_color "#f6f8fa"
 	set ::settings_sleep_button_text_color "#385a92"
@@ -129,7 +129,9 @@ if {$::streamline_dark_mode == 0} {
 	set ::dataline_label_color #707485
 	set ::dataline_data_color #e8e8e8
 	set ::background_color #0d0e14
-	set ::datacard_box_line_color #121212
+	set ::datacard_box_line_color #3D4255
+
+
 
 	set ::box_color "#17191e"
 
@@ -241,7 +243,7 @@ load_font "Inter-Bold30" "[homedir]/skins/Streamline/Inter-Regular.ttf" 24
 load_font "Inter-HeavyBold24" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 17
 
 # data entry title 
-load_font "Inter-HeavyBold40" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 32
+load_font "Inter-HeavyBold40" "[homedir]/skins/Streamline/Inter-Bold.ttf" 32 32 bold
 
 # data entry data
 load_font "Inter-HeavyBold50" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 40
@@ -253,7 +255,7 @@ load_font "Inter-HeavyBold30" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 16
 load_font "Inter-HeavyBold35" "[homedir]/skins/Streamline/Inter-Regular.ttf" 16
 
 # X and Y axis font
-load_font "Inter-Regular20" "[homedir]/skins/Streamline/Inter-Regular.ttf" 12
+load_font "Inter-Regular20" "[homedir]/skins/Streamline/Inter-Regular.ttf" 16
 
 # X and Y axis font
 load_font "Inter-Regular16" "[homedir]/skins/Streamline/Inter-Regular.ttf" 16
@@ -595,11 +597,13 @@ proc streamline_ui_weight_refresh {} {
 		set ::streamline_dataline_weight_value [lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]
 		set ::streamline_dataline_weight_unit [lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]
 	} else {
-		set ::streamline_dataline_weight_label_blue [translate "Weight: ???"]
+		#set ::streamline_dataline_weight_label_blue [translate "Weight: !!"]
+		#set ::streamline_dataline_weight_label_blue [translate "Weight: ..."]
+		set ::streamline_dataline_weight_label_red "[translate Weight:] !! "
 		if {$::currently_connecting_scale_handle == 0} {
-			set ::streamline_dataline_weight_label_red " [translate (Connect)]"
+			set ::streamline_dataline_weight_label_blue " [translate \[Reconnect\]]"
 		} else {
-			set ::streamline_dataline_weight_label_red " [translate Wait]"
+			set ::streamline_dataline_weight_label_blue " [translate Wait]"
 		}
 		set ::streamline_dataline_weight_value ""
 		set ::streamline_dataline_weight_unit ""
@@ -651,8 +655,8 @@ if {$::settings(scale_bluetooth_address) != ""} {
 	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]} -font "mono12" -foreground $::profile_title_color  -exec "::device::scale::tare; popup [translate Tare]" ]
 	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]} -font "mono8" -foreground $::profile_title_color  -exec "::device::scale::tare; popup [translate Tare]" ]
 
-	lappend btns [list -text {$::streamline_dataline_weight_label_blue} -font "Inter-Bold18" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {$::streamline_dataline_weight_label_red} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "scale_tare_or_reconnect" ]
+	lappend btns [list -text {$::streamline_dataline_weight_label_blue} -font "Inter-Bold18" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {[streamline_ui_weight_refresh]} -font "Inter-Bold16"  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {$::streamline_dataline_weight_value} -font "mono12" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {$::streamline_dataline_weight_unit} -font "mono8" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
@@ -782,6 +786,10 @@ proc percent_to_bar { perc } {
 
 }
 
+
+set ::streamline_start_heating_time [clock seconds]
+set ::streamline_start_heating_temp [group_head_heater_temperature]
+set ::streamline_start_heating_eta_previous 999
 proc update_streamline_status_message {} {
 	#msg -ERROR "update_streamline_status_message [dui page current]"
 	set red_progress ""
@@ -804,6 +812,7 @@ proc update_streamline_status_message {} {
 		set num $::de1(substate)
 		set substate_txt $::de1_substate_types($num)
 		set delta_percent [expr {int(100 * ((1.0*[group_head_heater_temperature]) / [setting_espresso_temperature]))}]
+
 		set bars [round_to_integer [expr {1+ ($delta_percent / 5)}]]
 
 		if {$::de1(device_handle) == 0} {
@@ -811,9 +820,45 @@ proc update_streamline_status_message {} {
 		} elseif {$substate_txt == "ready"} {
 			set green_msg [translate "Ready"]
 			set green_progress [string repeat █ $bars]
+			set ::streamline_start_heating_time [clock seconds]
+			set ::streamline_start_heating_temp [group_head_heater_temperature]
 		} else {
 			set red_msg [translate "Heating"]
 			set red_progress [string repeat █ $bars]
+
+			set elapsed [expr {[clock seconds] - $::streamline_start_heating_time}]
+
+			if {$elapsed == 0} {
+				set elapsed 1
+			}
+
+			if {[catch {
+				set warmed [expr {[group_head_heater_temperature] - $::streamline_start_heating_temp}]
+				if {$warmed < 1} {
+					set warmed 0
+				}
+				set togo [expr {([setting_espresso_temperature]-10) - [group_head_heater_temperature]}]
+				set progress [expr {1.0*$warmed/$togo}]
+				
+				set ETA [round_to_tens [expr {int(1.0*$elapsed/$progress)}]]
+
+				if {$ETA < $::streamline_start_heating_eta_previous} {
+					set msg [subst { $ETA[translate s]}]
+					set ::streamline_start_heating_eta_previous $ETA
+				} else {
+					set msg [subst { $::streamline_start_heating_eta_previous[translate s]}]
+				}
+				if {$warmed > 2 } {
+					set red_msg [translate "Heating ETA:"]
+					set clickable_msg $msg
+				}
+				#msg -ERROR $msg
+
+			} err] != 0} {
+				msg -ERROR "heating eta failed because: '$err'"
+			}
+
+
 		}
 
 		set bars_grey [expr {20 - $bars}]
@@ -979,7 +1024,7 @@ proc update_streamline_status_message {} {
 
 	if {$updated == 1} {
 		::refresh_$::streamline_data_line
-		::refresh_$::streamline_progress_line
+		#::refresh_$::streamline_progress_line
 	}
 
 
@@ -1229,7 +1274,7 @@ add_de1_variable $::pages $::streamline_datacard_col3 1514 -justify right -ancho
 
 set ::streamline_preinfusion_temp " "
 set ::streamline_extraction_temp " "
-add_de1_text $::pages $::streamline_datacard_col4 1328 -justify right -anchor "nw" -text [string tolower [return_html_temperature_units]] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_text $::pages $::streamline_datacard_col4 1328 -justify right -anchor "nw" -text [return_html_temperature_units] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages $::streamline_datacard_col4 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_temp}
 add_de1_variable $::pages $::streamline_datacard_col4 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_temp}
 
@@ -1302,11 +1347,11 @@ proc save_brew_temp {} {
 proc choose_appropriate_data_entry_for_brew_temp {} {
 	if {$::settings(enable_fahrenheit) == 1} {
 		set ::data_entry_brew_temperature [celsius_to_fahrenheit $::settings(espresso_temperature)]
-		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 1 0 212 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
+		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 1 0 221 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
 	} else {
 		# celsius
 		set ::data_entry_brew_temperature $::settings(espresso_temperature)
-		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 1 0 100 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
+		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 1 0 105 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
 	}
 }
 
@@ -3640,11 +3685,11 @@ set ::streamline_global(status_msg_progress_red) ""
 set ::streamline_global(status_msg_progress_green) ""
 set ::streamline_global(status_msg_progress_grey) ""
 
-set ::streamline_progress_line [add_de1_rich_text "off off_zoomed" [expr {2490 - $ghc_pos_pffset}] 236 right 0 1 45 $::background_color [list \
-	[list -text {$::streamline_global(status_msg_progress_green)}  -font "Inter-Regular6" -foreground $::progress_bar_green  ] \
-	[list -text {$::streamline_global(status_msg_progress_red)}  -font "Inter-Regular6" -foreground $::progress_bar_red  ] \
-	[list -text {$::streamline_global(status_msg_progress_grey)}  -font "Inter-Regular6" -foreground $::progress_bar_grey ] \
-]]
+#set ::streamline_progress_line [add_de1_rich_text "off off_zoomed" [expr {2490 - $ghc_pos_pffset}] 236 right 0 1 45 $::background_color [list \
+#	[list -text {$::streamline_global(status_msg_progress_green)}  -font "Inter-Regular6" -foreground $::progress_bar_green  ] \
+#	[list -text {$::streamline_global(status_msg_progress_red)}  -font "Inter-Regular6" -foreground $::progress_bar_red  ] \
+#	[list -text {$::streamline_global(status_msg_progress_grey)}  -font "Inter-Regular6" -foreground $::progress_bar_grey ] \
+#]]
 ############################################################################################################################################################################################################
 
 proc flash_dataentry_button {buttontag} {
@@ -3685,11 +3730,10 @@ proc streamline_entry_page_button {btn} {
 	if {$::streamline_entry_max != "" && $current != ""} {
 		if {$current > $::streamline_entry_max && $::streamline_entry_max != ""} {
 
-			.can itemconfigure streamline_entry_page_box -fill "#ff532d"
-			after 200 .can itemconfigure streamline_entry_page_box -fill $::background_color
-
-			#set ::streamline_entry_hint ""
-			#after 300 [list set ::streamline_entry_hint [streamline_entry_hint]]
+			.can itemconfigure streamline_entry_page_box -outline $::ghc_enabled_stop_button_fill_color
+			.can itemconfigure streamline_entry_hint -fill $::ghc_enabled_stop_button_fill_color
+			after 1000 .can itemconfigure streamline_entry_page_box -outline $::datacard_entry_box_color
+			after 1000 .can itemconfigure streamline_entry_hint -fill $::data_card_text_color
 			return
 		}
 	}
@@ -3722,8 +3766,6 @@ proc streamline_entry_hint {} {
 		return ""
 	}
 	return "[translate {Input a value between}] $::streamline_entry_min-$::streamline_entry_max$::streamline_entry_value_suffix"
-	#return "$::streamline_entry_min < x < $::streamline_entry_max"
-
 }
 
 # callback_success callback_failure
@@ -3744,7 +3786,8 @@ proc ask_for_data_entry_number {title current_value varname_to_store_in value_su
 	set ::streamline_entry_value_suffix $value_suffix
 
 	set ::streamline_entry_previous [::dui::pages::dui_number_editor::get_previous_values $varname_to_store_in]
-	puts "ERROR ::streamline_entry_previous $::streamline_entry_previous"
+
+	#puts "ERROR ::streamline_entry_previous $::streamline_entry_previous"
 
 	#set ::streamline_data_entry_page_value 20
 	#set ::streamline_entry_value_suffix "g"
@@ -3759,6 +3802,31 @@ proc ask_for_data_entry_number {title current_value varname_to_store_in value_su
 		page_show streamline_entry_integer
 	} else {
 		page_show streamline_entry
+	}
+
+	#####
+	# hide unset previous-value buttons
+	set hidden_count 0
+	for {set x 0} {$x < 4} { incr x} {
+		if {[lindex $::streamline_entry_previous $x] != ""} {
+			#.can itemconfigure streamline_data_entry_prev_[expr {1+$x}]-btn -state normal
+			#.can itemconfigure streamline_data_entry_prev_[expr {1+$x}]-out -state normal
+			dui item show [list streamline_entry_integer streamline_entry] streamline_data_entry_prev_[expr {1+$x}]*
+			#dui item show [list streamline_entry_integer streamline_entry] streamline_data_entry_prev_[expr {1+$x}]
+
+		} else {
+			#.can itemconfigure streamline_data_entry_prev_[expr {1+$x}]-btn -state hidden
+			#.can itemconfigure streamline_data_entry_prev_[expr {1+$x}]-out -state hidden
+			dui item hide [list streamline_entry_integer streamline_entry] streamline_data_entry_prev_[expr {1+$x}]*
+			#dui item hide [list streamline_entry_integer streamline_entry] streamline_data_entry_prev_[expr {1+$x}]-out
+			incr hidden_count
+		}		
+	}
+	if {$hidden_count == 4} {
+		#.can itemconfigure data_card_prev_values_label -state hidden
+		dui item hide [list streamline_entry_integer streamline_entry] data_card_prev_values_label
+	} else {
+		dui item show [list streamline_entry_integer streamline_entry] data_card_prev_values_label
 	}
 }
 
@@ -3840,11 +3908,11 @@ proc streamline_entry_page_setup {} {
 	#add_de1_page "streamline_entry streamline_entry_integer" "datalight.png"
 
 	set ::streamline_data_entry_page_title [subst "DOSE"]
-	add_de1_variable "streamline_entry streamline_entry_integer" 98 94 -justify left -anchor "nw" -font "Inter-HeavyBold40" -fill $::data_card_text_color -width [rescale_x_skin 1200] -textvariable {$::streamline_data_entry_page_title} 
+	add_de1_variable "streamline_entry streamline_entry_integer" 100 96 -justify left -anchor "nw" -font "Inter-HeavyBold40" -fill $::data_card_text_color -width [rescale_x_skin 1200] -textvariable {$::streamline_data_entry_page_title} 
 
-	add_de1_variable "streamline_entry streamline_entry_integer" 650 436 -justify center -anchor "center" -font "Inter-Regular20" -fill $::data_card_text_color -width [rescale_x_skin 1200] -textvariable { [streamline_entry_hint] } 
+	add_de1_variable "streamline_entry streamline_entry_integer" 646 430 -justify center -anchor "center" -font "Inter-Regular20" -fill $::data_card_text_color -tags streamline_entry_hint -width [rescale_x_skin 1200] -textvariable { [streamline_entry_hint] } 
 
-	add_de1_text "streamline_entry streamline_entry_integer" 636 990 -justify center -anchor "center" -font "Inter-Regular16" -fill $::data_card_text_color -width [rescale_x_skin 1200] -text [translate "Previous Values"]
+	add_de1_text "streamline_entry streamline_entry_integer" 636 990 -justify center -anchor "center" -font "Inter-Regular20" -fill $::data_card_text_color -tags data_card_prev_values_label -width [rescale_x_skin 1200] -text [translate "Previous Values"]
 
 	# box where number appears
 	dui add canvas_item rect "streamline_entry streamline_entry_integer" 345 494 949 738  -fill $::box_color -width 4 -outline $::datacard_entry_box_color -fill $::background_color -tags streamline_entry_page_box
@@ -3946,21 +4014,21 @@ proc streamline_entry_page_setup {} {
 	dui aspect set -theme default -type dbutton radius [rescale_y_skin 200]
 
 	set pentryheight 160
-	set pentrywidth 200
+	set pentrywidth 340
 
- 	set prow1 1074
- 	set prow2 1304
+ 	set prow1 1078
+ 	set prow2 1297
 
- 	set pcol1 135
- 	set pcol2 404
- 	set pcol3 676
- 	set pcol4 946
+ 	set pcol1 261
+ 	set pcol2 672
+ 	#set pcol3 676
+ 	#set pcol4 946
 	
 
-	dui add dbutton "streamline_entry streamline_entry_integer" $pcol1 $prow1 [expr {$pcol1+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_plus_grind_prev_1 -labelvariable {[lindex $::streamline_entry_previous 0]}  -command { streamline_previous 0 } 
-	dui add dbutton "streamline_entry streamline_entry_integer" $pcol2 $prow1 [expr {$pcol2+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_plus_grind_prev_2 -labelvariable {[lindex $::streamline_entry_previous 1]}  -command { streamline_previous 1 } 
-	dui add dbutton "streamline_entry streamline_entry_integer" $pcol3 $prow1 [expr {$pcol3+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_plus_grind_prev_3 -labelvariable {[lindex $::streamline_entry_previous 2]}  -command { streamline_previous 2 } 
-	dui add dbutton "streamline_entry streamline_entry_integer" $pcol4 $prow1 [expr {$pcol4+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_plus_grind_prev_4 -labelvariable {[lindex $::streamline_entry_previous 3]}  -command { streamline_previous 3 } 
+	dui add dbutton "streamline_entry streamline_entry_integer" $pcol1 $prow1 [expr {$pcol1+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_data_entry_prev_1 -labelvariable {[lindex $::streamline_entry_previous 0]}  -command { streamline_previous 0 } 
+	dui add dbutton [list streamline_entry streamline_entry_integer] $pcol2 $prow1 [expr {$pcol2+$pentrywidth}] [expr {$prow1+$pentryheight}] -tags streamline_data_entry_prev_2 -labelvariable {[lindex $::streamline_entry_previous 1]}  -command { streamline_previous 1 } 
+	dui add dbutton "streamline_entry streamline_entry_integer" $pcol1 $prow2 [expr {$pcol1+$pentrywidth}] [expr {$prow2+$pentryheight}] -tags streamline_data_entry_prev_3 -labelvariable {[lindex $::streamline_entry_previous 2]}  -command { streamline_previous 2 } 
+	dui add dbutton "streamline_entry streamline_entry_integer" $pcol2 $prow2 [expr {$pcol2+$pentrywidth}] [expr {$prow2+$pentryheight}] -tags streamline_data_entry_prev_4 -labelvariable {[lindex $::streamline_entry_previous 3]}  -command { streamline_previous 3 } 
 
 	#dui add dbutton "streamline_entry streamline_entry_integer" $pcol1 $prow2 [expr {$pcol1+$pentrywidth}] [expr {$prow2+$pentryheight}] -tags streamline_plus_grind_prev_5 -labelvariable {[lindex $::streamline_entry_previous 4]}  -command { streamline_previous 4 } 
 	#dui add dbutton "streamline_entry streamline_entry_integer" $pcol2 $prow2 [expr {$pcol2+$pentrywidth}] [expr {$prow2+$pentryheight}] -tags streamline_plus_grind_prev_6 -labelvariable {[lindex $::streamline_entry_previous 5]}  -command { streamline_previous 5 } 
