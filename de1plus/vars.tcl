@@ -1743,6 +1743,8 @@ proc skin_directories {} {
 	set dd {}
 
 	# overriding settings to include Insight Dark now
+	# SWDark4
+	set ::settings(most_popular_skins) [list Insight "Insight Dark" MimojaCafe Metric DSx MiniMetric DSx2 Streamline "Streamline Dark"]
 
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
