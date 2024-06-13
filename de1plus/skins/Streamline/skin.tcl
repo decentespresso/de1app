@@ -1657,7 +1657,7 @@ dui aspect set -theme default -type dbutton label_fill $::settings_sleep_button_
 
 
 dui add dbutton $::all_pages 2100 66 2300 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_in); show_settings "" "back_from_settings" }
-dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_in);start_sleep }
+dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_in);start_sleep }  -longpress_cmd { app_exit } 
 
 
 
@@ -1995,7 +1995,6 @@ proc streamline_profile_edit { slot } {
 
 	set profile_type [::profile::fix_profile_type [ifexists ::settings(settings_profile_type)]]
 
-	#update_de1_explanation_chart
 	show_settings $profile_type
 	fill_advanced_profile_steps_listbox
 
