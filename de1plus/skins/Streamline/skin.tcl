@@ -1,5 +1,9 @@
 package require de1 1.0
 
+
+dui theme add streamline
+dui theme set streamline
+
 if {$::android != 1} {
 	set ::settings(ghc_is_installed) 0
 }
@@ -17,8 +21,6 @@ if {[info exists ::streamline_dark_mode] != 1} {
 	set ::streamline_dark_mode 0
 }
 
-
-::de1::event::listener::after_flow_complete_add [lambda {event_dict} { streamline_shot_ended } ]
 
 if {$::streamline_dark_mode == 0} {
 	set ::profile_title_color #385a92
@@ -1215,12 +1217,12 @@ proc streamline_history_date_format {shot_time} {
 	}
 }
 
-dui aspect set -theme default -type dbutton fill $::profile_button_background_color
-dui aspect set -theme default -type dbutton outline $::profile_button_background_color
-dui aspect set -theme default -type dbutton_symbol fill $::data_card_text_color
-dui aspect set -theme default -type dbutton label_fill $::data_card_text_color
-dui aspect set -theme default -type dbutton_symbol font_size 18
-dui aspect set -theme default -type dbutton_symbol pos ".50 .5"
+dui aspect set -theme streamline -type dbutton fill $::profile_button_background_color
+dui aspect set -theme streamline -type dbutton outline $::profile_button_background_color
+dui aspect set -theme streamline -type dbutton_symbol fill $::data_card_text_color
+dui aspect set -theme streamline -type dbutton label_fill $::data_card_text_color
+dui aspect set -theme streamline -type dbutton_symbol font_size 18
+dui aspect set -theme streamline -type dbutton_symbol pos ".50 .5"
 
 
 if {$::android == 1 || $::undroid == 1} {
@@ -1601,32 +1603,32 @@ proc refresh_favorite_profile_button_labels {} {
 
 
 # font to use
-dui aspect set -theme default -type dbutton label_font Inter-Bold11
+dui aspect set -theme streamline -type dbutton label_font Inter-Bold11
 
 # rounded retangle radius
-dui aspect set -theme default -type dbutton radius [rescale_y_skin 36]
+dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 36]
 
 # rounded rectangle line width
-dui aspect set -theme default -type dbutton width 2
+dui aspect set -theme streamline -type dbutton width 2
 
 
 # width of the text, to enable auto-wrapping
-dui aspect set -theme default -type dbutton_label width [rescale_x_skin 480]
+dui aspect set -theme streamline -type dbutton_label width [rescale_x_skin 480]
 
 # button shape
-dui aspect set -theme default -type dbutton shape round_outline 
+dui aspect set -theme streamline -type dbutton shape round_outline 
 
 # label position
-dui aspect set -theme default -type dbutton label_pos ".50 .50" 
+dui aspect set -theme streamline -type dbutton label_pos ".50 .50" 
 
 ####
 # the selected profile button
 
 # font color
-dui aspect set -theme default -type dbutton label_fill $::profile_button_button_color
+dui aspect set -theme streamline -type dbutton label_fill $::profile_button_button_color
 
 # width of text of profile selection button
-dui aspect set -theme default -type dbutton_label width 220
+dui aspect set -theme streamline -type dbutton_label width 220
 
 
 
@@ -1641,19 +1643,19 @@ dui add dbutton $::all_pages 1390 50 1690 170 -tags profile_5_btn -labelvariable
 
 
 # button color
-dui aspect set -theme default -type dbutton fill $::settings_sleep_button_color
+dui aspect set -theme streamline -type dbutton fill $::settings_sleep_button_color
 
 # rounded rectangle color 
-dui aspect set -theme default -type dbutton outline $::settings_sleep_button_outline_color
+dui aspect set -theme streamline -type dbutton outline $::settings_sleep_button_outline_color
 
-dui aspect set -theme default -type dbutton width 2
+dui aspect set -theme streamline -type dbutton width 2
 
 # rounded retangle radius
-#dui aspect set -theme default -type dbutton radius 36
-dui aspect set -theme default -type dbutton radius [rescale_y_skin 56]
+#dui aspect set -theme streamline -type dbutton radius 36
+dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 56]
 
 # font color
-dui aspect set -theme default -type dbutton label_fill $::settings_sleep_button_text_color
+dui aspect set -theme streamline -type dbutton label_fill $::settings_sleep_button_text_color
 
 
 dui add dbutton $::all_pages 2100 66 2300 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_in); show_settings "" "back_from_settings" }
@@ -1684,10 +1686,10 @@ proc show_DYE_page {} {
 
 
 # button color
-#dui aspect set -theme default -type dbutton fill "d8d8d8"
+#dui aspect set -theme streamline -type dbutton fill "d8d8d8"
 
 # font color
-#dui aspect set -theme default -type dbutton label_fill "3c5782"
+#dui aspect set -theme streamline -type dbutton label_fill "3c5782"
 
 refresh_favorite_profile_button_labels
 
@@ -1698,30 +1700,30 @@ refresh_favorite_profile_button_labels
 # plus/minus +/- buttons on the left hand side for changing parameters
 
 # rounded rectangle color 
-dui aspect set -theme default -type dbutton outline $::plus_minus_outline_color
+dui aspect set -theme streamline -type dbutton outline $::plus_minus_outline_color
 
 
 # inside button color
 
-dui aspect set -theme default -type dbutton fill $::plus_minus_flash_off_color
+dui aspect set -theme streamline -type dbutton fill $::plus_minus_flash_off_color
 
 # font color
-dui aspect set -theme default -type dbutton label_fill "$::plus_minus_text_color"
+dui aspect set -theme streamline -type dbutton label_fill "$::plus_minus_text_color"
 
 # font to use
-dui aspect set -theme default -type dbutton label_font Inter-Bold24 
+dui aspect set -theme streamline -type dbutton label_font Inter-Bold24 
 
 # rounded retangle radius
-dui aspect set -theme default -type dbutton radius [rescale_y_skin 36]
+dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 36]
 
 # rounded retangle line width
-dui aspect set -theme default -type dbutton width 2 
+dui aspect set -theme streamline -type dbutton width 2 
 
 # button shape
-dui aspect set -theme default -type dbutton shape round_outline 
+dui aspect set -theme streamline -type dbutton shape round_outline 
 
 # label position is higher because we're using a _ as a minus symbol
-dui aspect set -theme default -type dbutton label_pos ".50 .22" 
+dui aspect set -theme streamline -type dbutton label_pos ".50 .22" 
 
 
 # the - buttons
@@ -1734,7 +1736,7 @@ dui add dbutton $::pages 254 1164 346 1256 -tags streamline_minus_flush_btn -lab
 dui add dbutton $::pages 254 1390 346 1482 -tags streamline_minus_hotwater_btn -label "_"  -command { streamline_hotwater_btn - } -longpress_cmd { streamline_hotwater_btn - }
 
 # label position
-dui aspect set -theme default -type dbutton label_pos ".49 .44" 
+dui aspect set -theme streamline -type dbutton label_pos ".49 .44" 
 
 # the + buttons
 dui add dbutton $::pages 486 259 578 351 -tags streamline_plus_grind_btn -label "+"  -command { streamline_adjust_grind ++ } -longpress_cmd { streamline_adjust_grind + }
@@ -1962,22 +1964,22 @@ streamline_hot_water_setting_change
 # Profile QuickSettings
 
 # font to use
-dui aspect set -theme default -type dbutton label_font "Helv_10_bold"
+dui aspect set -theme streamline -type dbutton label_font "Helv_10_bold"
 
 # label position
-dui aspect set -theme default -type dbutton label_pos ".50 .5" 
+dui aspect set -theme streamline -type dbutton label_pos ".50 .5" 
 
 # font color
-dui aspect set -theme default -type dbutton label_fill "#fffeff"
+dui aspect set -theme streamline -type dbutton label_fill "#fffeff"
 
 # rounded rectangle color 
-dui aspect set -theme default -type dbutton width 0
-dui aspect set -theme default -type dbutton outline "#3e5682"
+dui aspect set -theme streamline -type dbutton width 0
+dui aspect set -theme streamline -type dbutton outline "#3e5682"
 
 # inside button color
-dui aspect set -theme default -type dbutton fill "#3e5682"
+dui aspect set -theme streamline -type dbutton fill "#3e5682"
 
-dui aspect set -theme default -type dbutton radius [rescale_y_skin 80]
+dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 80]
 
 dui add dbutton "settings_1" 50 1452 160 1580  -tags profile_btn_1 -label "1"  -command { save_favorite_profile 1 } 
 dui add dbutton "settings_1" 180 1452 290 1580   -tags profile_btn_2 -label "2"  -command { save_favorite_profile 2 } 
@@ -2043,40 +2045,40 @@ proc save_favorite_profile { slot } {
 if {$::settings(ghc_is_installed) == 0} { 
 
 	# color of the button icons
-	dui aspect set -theme default -type dbutton_symbol fill $::ghc_button_color
+	dui aspect set -theme streamline -type dbutton_symbol fill $::ghc_button_color
 
 	# font size of the button icons
-	dui aspect set -theme default -type dbutton_symbol font_size 24
+	dui aspect set -theme streamline -type dbutton_symbol font_size 24
 
 	# position of the button icons
-	dui aspect set -theme default -type dbutton_symbol pos ".50 .38"
+	dui aspect set -theme streamline -type dbutton_symbol pos ".50 .38"
 
 	# rounded rectangle color 
-	dui aspect set -theme default -type dbutton outline $::ghc_button_outline
+	dui aspect set -theme streamline -type dbutton outline $::ghc_button_outline
 
 	# inside button color
-	dui aspect set -theme default -type dbutton fill $::ghc_button_background_color
+	dui aspect set -theme streamline -type dbutton fill $::ghc_button_background_color
 
 	# font color
-	dui aspect set -theme default -type dbutton label_fill $::ghc_button_color
-	dui aspect set -theme default -type dbutton label1_fill $::ghc_button_color
+	dui aspect set -theme streamline -type dbutton label_fill $::ghc_button_color
+	dui aspect set -theme streamline -type dbutton label1_fill $::ghc_button_color
 
 	# font to use
-	dui aspect set -theme default -type dbutton label_font Inter-Bold12 
+	dui aspect set -theme streamline -type dbutton label_font Inter-Bold12 
 	
-	dui aspect set -theme default -type dbutton label1_font icomoon
+	dui aspect set -theme streamline -type dbutton label1_font icomoon
 	# rounded retangle radius
-	dui aspect set -theme default -type dbutton radius [rescale_y_skin 36]
+	dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 36]
 
 	# rounded retangle line width
-	dui aspect set -theme default -type dbutton width 2 
+	dui aspect set -theme streamline -type dbutton width 2 
 
 	# button shape
-	dui aspect set -theme default -type dbutton shape round_outline 
+	dui aspect set -theme streamline -type dbutton shape round_outline 
 
 	# label position
-	dui aspect set -theme default -type dbutton label_pos ".50 .75" 
-	dui aspect set -theme default -type dbutton label1_pos ".50 .35" 
+	dui aspect set -theme streamline -type dbutton label_pos ".50 .75" 
+	dui aspect set -theme streamline -type dbutton label1_pos ".50 .35" 
 
 
 	# Four GHC buttons on bottom right
@@ -2108,11 +2110,11 @@ if {$::settings(ghc_is_installed) == 0} {
 		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn -label1 $s4 -label [translate "Flush"]  -command {say [translate {Flush}] $::settings(sound_button_in); start_flush} 
 		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn -label1 $s2 -label [translate "Steam"]   -command {say [translate {Steam}] $::settings(sound_button_in); start_steam} 
 		
-		dui aspect set -theme default -type dbutton outline $::ghc_disabled_button_outline 
-		dui aspect set -theme default -type dbutton fill $::ghc_disabled_button_fill 
-		dui aspect set -theme default -type dbutton label_fill $::ghc_disabled_button_text 
-		dui aspect set -theme default -type dbutton label1_fill $::ghc_disabled_button_text 
-		dui aspect set -theme default -type dbutton_symbol fill $::ghc_disabled_button_text 
+		dui aspect set -theme streamline -type dbutton outline $::ghc_disabled_button_outline 
+		dui aspect set -theme streamline -type dbutton fill $::ghc_disabled_button_fill 
+		dui aspect set -theme streamline -type dbutton label_fill $::ghc_disabled_button_text 
+		dui aspect set -theme streamline -type dbutton label1_fill $::ghc_disabled_button_text 
+		dui aspect set -theme streamline -type dbutton_symbol fill $::ghc_disabled_button_text 
 		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn_disabled -label1 $s1 -label [translate "Coffee"]  
 		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn_disabled -label1 $s3 -label [translate "Water"]  
 		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn_disabled -label1 $s4 -label [translate "Flush"]  
@@ -2120,14 +2122,14 @@ if {$::settings(ghc_is_installed) == 0} {
 
 		# stop button
 		#dui add dbutton "espresso water steam hotwaterrinse" 2159 1216 2494 1566 -tags espresso_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
-		dui aspect set -theme default -type dbutton outline $::ghc_enabled_stop_button_outline
-		dui aspect set -theme default -type dbutton fill $::ghc_enabled_stop_button_fill
-		dui aspect set -theme default -type dbutton label_fill $::ghc_disabled_stop_button_text_color
-		dui aspect set -theme default -type dbutton_symbol fill $::ghc_disabled_stop_button_text_color
+		dui aspect set -theme streamline -type dbutton outline $::ghc_enabled_stop_button_outline
+		dui aspect set -theme streamline -type dbutton fill $::ghc_enabled_stop_button_fill
+		dui aspect set -theme streamline -type dbutton label_fill $::ghc_disabled_stop_button_text_color
+		dui aspect set -theme streamline -type dbutton_symbol fill $::ghc_disabled_stop_button_text_color
 		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn_disabled -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
-		dui aspect set -theme default -type dbutton fill $::ghc_enabled_stop_button_fill_color
-		dui aspect set -theme default -type dbutton label_fill $::ghc_enabled_stop_button_text_color
-		dui aspect set -theme default -type dbutton_symbol fill $::ghc_enabled_stop_button_text_color
+		dui aspect set -theme streamline -type dbutton fill $::ghc_enabled_stop_button_fill_color
+		dui aspect set -theme streamline -type dbutton label_fill $::ghc_enabled_stop_button_text_color
+		dui aspect set -theme streamline -type dbutton_symbol fill $::ghc_enabled_stop_button_text_color
 		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
 	}
 }
@@ -3183,7 +3185,7 @@ proc streamline_adjust_chart_x_axis_scheduled {} {
 
 streamline_adjust_chart_x_axis_scheduled
 
-add_de1_button "saver descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
+add_de1_button "descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
 
 
 proc streamline_load_history_shot {current_shot_filename} {
@@ -3684,6 +3686,7 @@ proc streamline_history_profile_fwd { {destination {}} } {
 	streamline_load_currently_selected_history_shot
 }
 
+::de1::event::listener::after_flow_complete_add [lambda {event_dict} { streamline_shot_ended } ]
 proc streamline_shot_ended  {} {
 	if {[ifexists ::settings(history_saved_shot_filename)] != ""} {		
 
@@ -3946,28 +3949,28 @@ proc streamline_entry_page_setup {} {
 	streamline_rectangle "streamline_entry streamline_entry_integer" 1278 302 1282 1600 $::datacard_box_line_color
 
 	# rounded rectangle color 
-	dui aspect set -theme default -type dbutton outline $::dataentry_button_color
+	dui aspect set -theme streamline -type dbutton outline $::dataentry_button_color
 
 	# inside button color
-	dui aspect set -theme default -type dbutton fill $::dataentry_button_color
+	dui aspect set -theme streamline -type dbutton fill $::dataentry_button_color
 
 	# font color
-	dui aspect set -theme default -type dbutton label_fill $::datacard_number_text_color
+	dui aspect set -theme streamline -type dbutton label_fill $::datacard_number_text_color
 
 	# font to use
-	dui aspect set -theme default -type dbutton label_font Inter-Bold40
+	dui aspect set -theme streamline -type dbutton label_font Inter-Bold40
 
 	# rounded retangle radius
-	dui aspect set -theme default -type dbutton radius [rescale_y_skin 400]
+	dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 400]
 
 	# rounded retangle line width
-	dui aspect set -theme default -type dbutton width 2 
+	dui aspect set -theme streamline -type dbutton width 2 
 
 	# button shape
-	dui aspect set -theme default -type dbutton shape round_outline 
+	dui aspect set -theme streamline -type dbutton shape round_outline 
 
 	# label position is higher because we're using a _ as a minus symbol
-	dui aspect set -theme default -type dbutton label_pos ".50 .5" 
+	dui aspect set -theme streamline -type dbutton label_pos ".50 .5" 
 
 
 	set entryheight 200
@@ -4000,36 +4003,36 @@ proc streamline_entry_page_setup {} {
 	dui add dbutton "streamline_entry_integer" $col1 $row4 [expr {$col2+$entrywidth}] [expr {$row4+$entryheight}] -tags streamline_plus_grind_btn0 -label "0"  -command { streamline_entry_page_button 0 } 
 
 	# font to use
-	dui aspect set -theme default -type dbutton label_font Inter-Bold30
+	dui aspect set -theme streamline -type dbutton label_font Inter-Bold30
 	dui add dbutton "streamline_entry streamline_entry_integer" $col3 $row4 [expr {$col3+$entrywidth}] [expr {$row4+$entryheight}] -tags streamline_plus_grind_btn_back -label "⌫"  -command { streamline_entry_page_button < }  -longpress_cmd { streamline_entry_page_button c } 
 
 
 	# font to use
-	dui aspect set -theme default -type dbutton label_font Inter-HeavyBold30
+	dui aspect set -theme streamline -type dbutton label_font Inter-HeavyBold30
 
 	
-	dui aspect set -theme default -type dbutton fill $::data_card_background_color
-	dui aspect set -theme default -type dbutton outline $::data_card_background_color
-	dui aspect set -theme default -type dbutton width 0
+	dui aspect set -theme streamline -type dbutton fill $::data_card_background_color
+	dui aspect set -theme streamline -type dbutton outline $::data_card_background_color
+	dui aspect set -theme streamline -type dbutton width 0
 
 	set ::streamline_data_entry_label_cancel [subst "CANCEL"]
 	dui add dbutton "streamline_entry streamline_entry_integer" 1640 65 1850 225 -tags streamline_plus_grind_btn_cancel -label $::streamline_data_entry_label_cancel  -command { page_show $::streamline_entry_return_to_page } 
 
 
 	# font color
-	dui aspect set -theme default -type dbutton fill $::data_card_confirm_button
-	dui aspect set -theme default -type dbutton outline $::data_card_confirm_button
-	dui aspect set -theme default -type dbutton label_fill $::data_card_confirm_button_text
+	dui aspect set -theme streamline -type dbutton fill $::data_card_confirm_button
+	dui aspect set -theme streamline -type dbutton outline $::data_card_confirm_button
+	dui aspect set -theme streamline -type dbutton label_fill $::data_card_confirm_button_text
 	set ::streamline_data_entry_label_confirm [subst "CONFIRM"]
 	dui add dbutton "streamline_entry streamline_entry_integer" 1970 65 2460 225 -tags streamline_plus_grind_btn_confirm -label $::streamline_data_entry_label_confirm  -command { streamline_entry_save_value ; page_show $::streamline_entry_return_to_page } 
 
 
 	# inside button color
-	dui aspect set -theme default -type dbutton fill $::data_card_previous_color
-	dui aspect set -theme default -type dbutton outline $::data_card_previous_outline_color
-	dui aspect set -theme default -type dbutton label_fill $::datacard_number_text_color
-	dui aspect set -theme default -type dbutton label_font Inter-HeavyBold35
-	dui aspect set -theme default -type dbutton radius [rescale_y_skin 200]
+	dui aspect set -theme streamline -type dbutton fill $::data_card_previous_color
+	dui aspect set -theme streamline -type dbutton outline $::data_card_previous_outline_color
+	dui aspect set -theme streamline -type dbutton label_fill $::datacard_number_text_color
+	dui aspect set -theme streamline -type dbutton label_font Inter-HeavyBold35
+	dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 200]
 
 	set pentryheight 160
 	set pentrywidth 340
@@ -4067,3 +4070,6 @@ streamline_load_currently_selected_history_shot
 #after 1000 page_show off_zoomed
 #after 100 page_show streamline_entry
 
+# revert to default DUI theme, so that other code that relies on current theme=default does not break
+dui theme set default
+add_de1_button "saver" {say [translate {awake}] $::settings(sound_button_in); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
