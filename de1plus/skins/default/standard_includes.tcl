@@ -2,6 +2,8 @@
 
 ##############################################################################################################################################################################################################################################################################
 
+set ::settings(show_scale_notifications) 1
+
 # most skins will not bother replacing these graphics
 add_de1_page "sleep" "sleep.jpg" "default"
 add_de1_page "tankfilling" "filling_tank.jpg" "default"

@@ -207,6 +207,9 @@ set ::blink_button_color "#395ab9"
 # you should replace the JPG graphics in the 2560x1600/ directory with your own graphics. 
 source "[homedir]/skins/default/standard_includes.tcl"
 
+# disable the scale popup msgs
+set ::settings(show_scale_notifications) 0
+
 #load_font "Inter-Regular10" "[homedir]/Streamline/Inter-Regular.ttf" 11
 
 # Left column labels
