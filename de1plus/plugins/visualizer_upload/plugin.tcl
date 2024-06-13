@@ -137,7 +137,7 @@ namespace eval ::plugins::${plugin_name} {
                 } else {
                     # Increment retry counter if response code is not 200
                     incr retryCount
-                    after 100
+                    after 1000
                 }
             } err] != 0} {
                 # Increment retry counter in case of error
@@ -151,7 +151,7 @@ namespace eval ::plugins::${plugin_name} {
                 catch { http::cleanup $token }
 
                 if {$retryCount < $maxAttempts} {
-                    after [expr {150 * $retryCount}]
+                    after [expr {250 * $retryCount}]
                 }
             }
         }
