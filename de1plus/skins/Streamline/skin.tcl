@@ -1632,11 +1632,11 @@ dui aspect set -theme default -type dbutton_label width 220
 
 
 #  -longpress_cmd { puts "ERRORlongpress" }
-dui add dbutton $::all_pages 50 50 360 170 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { streamline_profile_select 1 }
-dui add dbutton $::all_pages 380 50 710 170 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { streamline_profile_select 2 } 
-dui add dbutton $::all_pages 730 50 1050 170 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { streamline_profile_select 3 } 
-dui add dbutton $::all_pages 1070 50 1370 170 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { streamline_profile_select 4 } 
-dui add dbutton $::all_pages 1390 50 1690 170 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { streamline_profile_select 5 } 
+dui add dbutton $::all_pages 50 50 360 170 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { streamline_profile_select 1 } -longpress_cmd { streamline_profile_edit 1 }
+dui add dbutton $::all_pages 380 50 710 170 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { streamline_profile_select 2 }  -longpress_cmd { streamline_profile_edit 2 }
+dui add dbutton $::all_pages 730 50 1050 170 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { streamline_profile_select 3 }  -longpress_cmd { streamline_profile_edit 3 }
+dui add dbutton $::all_pages 1070 50 1370 170 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { streamline_profile_select 4 }  -longpress_cmd { streamline_profile_edit 4 }
+dui add dbutton $::all_pages 1390 50 1690 170 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { streamline_profile_select 5 }  -longpress_cmd { streamline_profile_edit 5 }
 
 
 
@@ -1985,6 +1985,21 @@ dui add dbutton "settings_1" 310 1452 420 1580  -tags profile_btn_3 -label "3"  
 dui add dbutton "settings_1" 440 1452 550 1580  -tags profile_btn_4 -label "4"  -command { save_favorite_profile 4 } 
 dui add dbutton "settings_1" 570 1452 680 1580  -tags profile_btn_5 -label "5"  -command { save_favorite_profile 5 } 
 
+proc streamline_profile_edit { slot } {
+
+	if {[dui page current] != "off" && [dui page current] != "off_zoomed"} {
+		return ""
+	}
+
+	streamline_profile_select $slot
+
+	set profile_type [::profile::fix_profile_type [ifexists ::settings(settings_profile_type)]]
+
+	#update_de1_explanation_chart
+	show_settings $profile_type
+	fill_advanced_profile_steps_listbox
+
+}
 
 proc streamline_profile_select { slot } {
 
