@@ -49,7 +49,8 @@ proc page_change_due_to_de1_state_change {textstate} {
 	if {$textstate == "Idle"} {
 		page_display_change $::de1(current_context) "off"
 	} elseif {$textstate == "GoingToSleep"} {
-		page_display_change $::de1(current_context) "sleep" 
+		page_display_change $::de1(current_context) "saver" 
+		#page_display_change $::de1(current_context) "sleep" 
 	} elseif {$textstate == "Sleep"} {
 		page_display_change $::de1(current_context) "saver" 
 	} elseif {$textstate == "Steam"} {
@@ -905,7 +906,8 @@ proc show_going_to_sleep_page  {} {
  		return
  	}
 
-	page_display_change $::de1(current_context) "sleep"
+	page_display_change $::de1(current_context) "saver"
+	#page_display_change $::de1(current_context) "sleep"
 	start_sleep
 
 }
