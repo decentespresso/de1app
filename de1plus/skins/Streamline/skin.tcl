@@ -850,8 +850,9 @@ proc update_streamline_status_message {} {
 				if {$ETA < 5} {
 					set ETA 5
 				}
-				
-				if {$ETA < $::streamline_start_heating_eta_previous} {
+
+				set force_update 1				
+				if {$ETA < $::streamline_start_heating_eta_previous || $force_update == 1} {
 					set msg [subst { $ETA[translate s]}]
 					set ::streamline_start_heating_eta_previous $ETA
 				} else {
@@ -1674,10 +1675,9 @@ dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -c
 set dyebtns ""
 
 if { [plugins enabled DYE] } {
-	plugins disable DYE
-# not yet available
-#	dui add dbutton $::all_pages 1880 76 2070 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
-
+	# not yet available
+	# plugins disable DYE
+	dui add dbutton $::all_pages 1880 76 2070 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
 }
 
 proc show_DYE_page {} {
