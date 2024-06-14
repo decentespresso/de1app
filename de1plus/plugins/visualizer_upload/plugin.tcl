@@ -82,7 +82,7 @@ namespace eval ::plugins::${plugin_name} {
 
 
         msg "uploading shot"
-        popup [translate_toast "Uploading Shot"]
+        
         
         set settings(last_action) "upload"
         set settings(last_upload_shot) $::settings(espresso_clock)
@@ -110,7 +110,7 @@ namespace eval ::plugins::${plugin_name} {
 
         # Initialize retry counter
         set retryCount 0
-        set maxAttempts 4
+        set maxAttempts 24
         set success 0
 
         # modification by Tom Schmidt to retry visualizer uploads 3 times
@@ -119,6 +119,7 @@ namespace eval ::plugins::${plugin_name} {
         while {$retryCount < $maxAttempts && !$success} {
             if {[catch {
                 # Execute the HTTP POST request
+                popup [subst {[translate_toast "Uploading Shot"] #$retryCount}]
                 set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 30000]
                 msg $token
 
@@ -137,7 +138,7 @@ namespace eval ::plugins::${plugin_name} {
                 } else {
                     # Increment retry counter if response code is not 200
                     incr retryCount
-                    after 1000
+                    after 5000
                 }
             } err] != 0} {
                 # Increment retry counter in case of error
@@ -151,7 +152,8 @@ namespace eval ::plugins::${plugin_name} {
                 catch { http::cleanup $token }
 
                 if {$retryCount < $maxAttempts} {
-                    after [expr {250 * $retryCount}]
+                    #after [expr {5000 * $retryCount}]
+                    after 5000
                 }
             }
         }
@@ -328,6 +330,10 @@ namespace eval ::plugins::${plugin_name} {
             return
         }
         
+        catch {
+            http::unregister https
+        }
+
         if { $status eq "ok" && $ncode == 200 } {
             if {[catch {
                 if { $url_type eq "download_all_last_shared" } {
