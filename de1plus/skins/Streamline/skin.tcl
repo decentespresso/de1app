@@ -567,6 +567,12 @@ set ::streamline_global(status_msg_text_clickable) ""
 
 #set ::reconnect_text_string [subst {\[[translate "Reconnect"]\]}]
 proc streamline_status_msg_click {} {
+	puts "streamline_status_msg_click"
+	if {[dui page current] == "espresso" || [dui page current] == "espresso_zoomed" } {
+		say [translate {skip}] $::settings(sound_button_in)
+		popup [translate_toast "Moved to next step"]
+		start_next_step;
+	}
 	#puts "ERROR TAPPED $::streamline_global(status_msg_text_clickable)"	
 	#if {$::streamline_global(status_msg_text_clickable) == $::reconnect_text_string} {
 	#	ble_connect_to_scale
@@ -720,6 +726,13 @@ lappend steam_btns \
 set ::streamline_status_msg [add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns ]
 
 
+proc steam_timeout_seconds {} {
+	if {$::settings(steam_timeout) == 0} {
+		return [translate "off"]
+	}
+	return [round_to_integer $::settings(steam_timeout)]
+}
+
 
 set ::streamline_hotwater_label_1st ""
 set ::streamline_hotwater_label_2nd ""
@@ -747,7 +760,7 @@ lappend zoomed_btns \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Steam" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[round_to_integer $::settings(steam_timeout)]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[steam_timeout_seconds]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "[translate s]" -font "mono8"] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text "Flush" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
@@ -767,7 +780,6 @@ lappend zoomed_btns \
 
 set ::streamline_status_msg_zoomed2 [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 85 $::background_color $zoomed_btns ]
 set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 400 left 1 2 65 $::background_color $btns ]
-
 
 proc percent_to_bar { perc } {
 	if {$delta_percent < 96} {
@@ -884,6 +896,7 @@ proc update_streamline_status_message {} {
 
 			#set green_msg [subst {[translate [string totitle [::de1::state::current_substate]]] ($::settings(current_frame_description))}]
 			set green_msg [translate $::settings(current_frame_description)]
+			set clickable_msg " ⏩ " 
 
 			set final_target [determine_final_weight]
 			
@@ -1322,7 +1335,7 @@ add_de1_variable $::pages 418 418 -justify center -anchor "center" -text [transl
 add_de1_variable $::pages 418 512 -justify center -anchor "center" -text [translate "45g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags weight_label_1st -textvariable {[return_weight_measurement [determine_final_weight] 2]}
 add_de1_variable $::pages 418 558 -justify center -anchor "center" -text [translate "1:2.3"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
 add_de1_variable $::pages 418 761 -justify center -anchor "center" -text [translate "92"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags temp_label_1st -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 1]}   
-add_de1_variable $::pages 418 988 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {[seconds_text_very_abbreviated $::settings(steam_timeout)]}
+add_de1_variable $::pages 418 988 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {[steam_timeout_seconds]}
 add_de1_variable $::pages 418 1215 -justify center -anchor "center" -text [translate "5s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags flush_label_1st -textvariable {[seconds_text_very_abbreviated $::settings(flush_seconds)]}
 add_de1_variable $::pages 418 1417 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags hotwater_label_1st -textvariable {$::streamline_hotwater_label_1st}
 add_de1_variable $::pages 418 1460 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
@@ -1755,6 +1768,13 @@ dui add dbutton $::pages 486 1392 578 1484 -tags streamline_plus_hotwater_btn -l
 
 proc save_profile_and_update_de1 {} {
 
+
+	if {$::settings(steam_timeout) == 0} {
+		set ::settings(steam_disabled) 1
+	} else {
+		set ::settings(steam_disabled) 0
+	}
+
 	set current_title [ifexists ::settings(profile_title)]
 	set ::settings(original_profile_title) $current_title
 	save_profile 0
@@ -1785,6 +1805,7 @@ proc save_profile_and_update_de1 {} {
 }
 
 proc save_profile_and_update_de1_soon {} {
+
 
 	if {[info exists ::streamline_save_update_id] == 1} {
 		after cancel $::streamline_save_update_id; 
@@ -1866,7 +1887,7 @@ proc streamline_temp_btn { args } {
 
 proc streamline_steam_btn { args } {
 	if {$args == "-"} {
-		if {$::settings(steam_timeout) > 1} {
+		if {$::settings(steam_timeout) > 0} {
 			set ::settings(steam_timeout) [expr {$::settings(steam_timeout) - 1}]
 			flash_button "streamline_minus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 			save_profile_and_update_de1_soon
@@ -2366,7 +2387,7 @@ proc refresh_favorite_steam_button_labels {} {
 
 	set changed 0
 	if {$t1 == ""} {
-		set t1 "20"
+		set t1 "0"
 		dict set steams 1 value $t1
 		set changed 1
 	}
@@ -2400,6 +2421,19 @@ proc refresh_favorite_steam_button_labels {} {
 	set ::streamline_favorite_steam_buttons(label_2) [seconds_text_very_abbreviated $t2]
 	set ::streamline_favorite_steam_buttons(label_3) [seconds_text_very_abbreviated $t3]
 	set ::streamline_favorite_steam_buttons(label_4) [seconds_text_very_abbreviated $t4]
+
+	if {$t1 == "0"} {
+		set ::streamline_favorite_steam_buttons(label_1) [translate "off"]
+	}
+	if {$t2 == "0"} {
+		set ::streamline_favorite_steam_buttons(label_2) [translate "off"]
+	}
+	if {$t3 == "0"} {
+		set ::streamline_favorite_steam_buttons(label_3) [translate "off"]
+	}
+	if {$t4 == "0"} {
+		set ::streamline_favorite_steam_buttons(label_4) [translate "off"]
+	}
 
 
 	set lb1c $::preset_value_color
