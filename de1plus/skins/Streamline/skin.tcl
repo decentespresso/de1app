@@ -1115,10 +1115,9 @@ set ::hw_temp_vol [add_de1_rich_text $::pages 50 1444 left 0 1 8 $::box_color [l
 	[list -text {$::hw_temp_vol_part6} -font Inter-Bold11 -foreground $::left_label_color2 -exec hw_temp_vol_flip ] \
 ]]
 
+proc refresh_hw_temp_labels {} {
 
-proc hw_temp_vol_flip {} {
-	if {$::streamline_hotwater_btn_mode == "ml"} {
-		set ::streamline_hotwater_btn_mode "temp"
+	if {$::streamline_hotwater_btn_mode == "temp"} {
 
 		set ::hw_temp_vol_part1 "Temp"
 		set ::hw_temp_vol_part2 " | "
@@ -1127,7 +1126,6 @@ proc hw_temp_vol_flip {} {
 		set ::hw_temp_vol_part5 ""
 		set ::hw_temp_vol_part6 ""
 	} else {
-		set ::streamline_hotwater_btn_mode "ml"
 
 		set ::hw_temp_vol_part1 ""
 		set ::hw_temp_vol_part2 ""
@@ -1136,6 +1134,22 @@ proc hw_temp_vol_flip {} {
 		set ::hw_temp_vol_part5 " | "
 		set ::hw_temp_vol_part6 "Vol"
 	}
+
+	catch {
+		::refresh_$::hw_temp_vol
+	}
+
+}
+
+proc hw_temp_vol_flip {} {
+	if {$::streamline_hotwater_btn_mode == "ml"} {
+		set ::streamline_hotwater_btn_mode "temp"
+
+	} else {
+		set ::streamline_hotwater_btn_mode "ml"
+	}
+
+	refresh_hw_temp_labels
 
 	catch {
 		::refresh_$::hw_temp_vol
@@ -1381,19 +1395,20 @@ proc choose_appropriate_data_entry_for_brew_temp {} {
 
 proc choose_appropriate_data_entry_for_hot_water {} {
 	if {$::streamline_hotwater_btn_mode == "ml"} {
-		ask_for_data_entry_number [translate "VOLUME"] [ifexists ::settings(water_volume)] ::settings(water_volume) "ml" 1 3 255 [list streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st"]
+		ask_for_data_entry_number [translate "VOLUME"] [ifexists ::settings(water_volume)] ::settings(water_volume) "ml" 1 3 255 [list streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st" refresh_hw_temp_labels]
 	} else {
 
 		if {$::settings(enable_fahrenheit) == 1} {
 			set ::data_entry_water_temperature [celsius_to_fahrenheit $::settings(water_temperature)]
-			ask_for_data_entry_number [translate "TEMP"] $::data_entry_water_temperature ::data_entry_water_temperature "º" 1 0 212 [list save_fahrenheit_hot_water streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st"]
+			ask_for_data_entry_number [translate "TEMP"] $::data_entry_water_temperature ::data_entry_water_temperature "º" 1 0 212 [list save_fahrenheit_hot_water streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st" refresh_hw_temp_labels]
 		} else {
 			# celsius
 			
-			ask_for_data_entry_number [translate "TEMP"] [ifexists ::settings(water_temperature)] ::settings(water_temperature) "º" 1 0 100 [list streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st"]
+			ask_for_data_entry_number [translate "TEMP"] [ifexists ::settings(water_temperature)] ::settings(water_temperature) "º" 1 0 100 [list streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st" refresh_hw_temp_labels]
 		}
 
 	}
+	refresh_favorite_temperature_button_labels
 }
 
 
@@ -1948,7 +1963,7 @@ proc streamline_hotwater_btn { args } {
 				save_profile_and_update_de1_soon
 			}
 		} elseif {$args == "+"} {
-			if {$::settings(water_volume) < 1000} {
+			if {$::settings(water_volume) < 255} {
 				set ::settings(water_volume) [expr {$::settings(water_volume) + 1}]
 				flash_button "streamline_plus_hotwater_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 				save_profile_and_update_de1_soon
@@ -1963,7 +1978,7 @@ proc streamline_hotwater_btn { args } {
 				save_profile_and_update_de1_soon
 			}
 		} elseif {$args == "+"} {
-			if {$::settings(water_volume) < 110} {
+			if {$::settings(water_temperature) < 100} {
 				set ::settings(water_temperature) [expr {$::settings(water_temperature) + 1}]
 				flash_button "streamline_plus_hotwater_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 				save_profile_and_update_de1_soon
