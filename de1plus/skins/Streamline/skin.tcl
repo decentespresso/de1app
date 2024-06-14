@@ -617,6 +617,7 @@ proc streamline_ui_weight_refresh {} {
 }
 
 proc scale_tare_or_reconnect {} {
+	say [translate {Tare}] $::settings(sound_button_out); 
 
 	if {$::de1(scale_device_handle) != 0} {
 		::device::scale::tare; 
@@ -1239,8 +1240,8 @@ if {$::android == 1 || $::undroid == 1} {
 	set ::streamline_history_right ">"
 }
 
-dui add dbutton "off" 628 1220 755 1465 -tags profile_back $::streamline_history_cmd $::streamline_history_left  -command { streamline_history_profile_back }  -longpress_cmd { streamline_history_profile_fwd 0 } 
-dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd $::streamline_history_cmd " "  -command { streamline_history_profile_fwd } -longpress_cmd { streamline_history_profile_fwd 1 } 
+dui add dbutton "off" 628 1220 755 1465 -tags profile_back $::streamline_history_cmd $::streamline_history_left  -command { say [translate {Previous}] $::settings(sound_button_out); streamline_history_profile_back }  -longpress_cmd { say [translate {First}] $::settings(sound_button_out); streamline_history_profile_fwd 0 } 
+dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd $::streamline_history_cmd " "  -command { say [translate {Next}] $::settings(sound_button_out); streamline_history_profile_fwd } -longpress_cmd { say [translate {Newest}] $::settings(sound_button_out); streamline_history_profile_fwd 1 } 
 
 proc streamline_zero_pad {num dig prec {optional_label {}}} {
 	if {$num == ""} {
@@ -1437,10 +1438,10 @@ add_de1_variable $::pages $streamline_preset_pos_col2 616  -justify left -tags d
 add_de1_variable $::pages $streamline_preset_pos_col3 616  -justify left  -tags dose_btn_3 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_3)}
 add_de1_variable $::pages $streamline_preset_pos_col4 616  -justify right -tags dose_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_4)}
 
-dui add dbutton $::pages 0 610 148 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 1 } -theme none  -longpress_cmd { streamline_set_dosebev_preset 1 } 
-dui add dbutton $::pages 148 610 310 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 2 } -theme none  -longpress_cmd {streamline_set_dosebev_preset 2 } 
-dui add dbutton $::pages 310 610 474 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 3 } -theme none  -longpress_cmd {streamline_set_dosebev_preset 3 } 
-dui add dbutton $::pages 474 610 624 672 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_dosebev_select 4 } -theme none  -longpress_cmd {streamline_set_dosebev_preset 4 } 
+dui add dbutton $::pages 0 610 148 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 1 } -theme none  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 1 } 
+dui add dbutton $::pages 148 610 310 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 2 } 
+dui add dbutton $::pages 310 610 474 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 3 } 
+dui add dbutton $::pages 474 610 624 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 4 } 
 
 
 
@@ -1451,10 +1452,10 @@ add_de1_variable $::pages $streamline_preset_pos_col2 842  -justify left -tags t
 add_de1_variable $::pages $streamline_preset_pos_col3 842  -justify left  -tags temp_btn_3 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_temperature_buttons(label_3)}
 add_de1_variable $::pages $streamline_preset_pos_col4 842  -justify right -tags temp_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_temperature_buttons(label_4)}
 
-dui add dbutton $::pages 0 838 148 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 1 } -theme none  -longpress_cmd { streamline_set_temperature_preset 1 } 
-dui add dbutton $::pages 148 838 310 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 2 } -theme none  -longpress_cmd {streamline_set_temperature_preset 2 } 
-dui add dbutton $::pages 310 838 474 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 3 } -theme none  -longpress_cmd {streamline_set_temperature_preset 3 } 
-dui add dbutton $::pages 474 838 624 900 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_temperature_select 4 } -theme none  -longpress_cmd {streamline_set_temperature_preset 4 } 
+dui add dbutton $::pages 0 838 148 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 1 } -theme none  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 1 } 
+dui add dbutton $::pages 148 838 310 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 2 } 
+dui add dbutton $::pages 310 838 474 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 3 } 
+dui add dbutton $::pages 474 838 624 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 4 } 
 
 
 
@@ -1468,10 +1469,10 @@ add_de1_variable $::pages $streamline_preset_pos_col3 1068  -justify left -tags 
 add_de1_variable $::pages $streamline_preset_pos_col4 1068  -justify right -tags steam_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_steam_buttons(label_4)}
 
 
-dui add dbutton $::pages 0 1066 148 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 1 } -theme none  -longpress_cmd { streamline_set_steam_preset 1 } 
-dui add dbutton $::pages 148 1066 310 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 2 } -theme none  -longpress_cmd {streamline_set_steam_preset 2 } 
-dui add dbutton $::pages 310 1066 474 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 3 } -theme none  -longpress_cmd {streamline_set_steam_preset 3 } 
-dui add dbutton $::pages 474 1066 624 1128 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_steam_select 4 } -theme none  -longpress_cmd {streamline_set_steam_preset 4 } 
+dui add dbutton $::pages 0 1066 148 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 1 } -theme none  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 1 } 
+dui add dbutton $::pages 148 1066 310 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 2 } 
+dui add dbutton $::pages 310 1066 474 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 3 } 
+dui add dbutton $::pages 474 1066 624 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 4 } 
 
 
 #########
@@ -1483,10 +1484,10 @@ add_de1_variable $::pages $streamline_preset_pos_col3 1296  -justify left -tags 
 add_de1_variable $::pages $streamline_preset_pos_col4 1296  -justify right -tags flush_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_flush_buttons(label_4)}
 
 
-dui add dbutton $::pages 0 1288 148 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 1 } -theme none  -longpress_cmd { streamline_set_flush_preset 1 } 
-dui add dbutton $::pages 148 1288 310 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 2 } -theme none  -longpress_cmd {streamline_set_flush_preset 2 } 
-dui add dbutton $::pages 310 1288 474 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 3 } -theme none  -longpress_cmd {streamline_set_flush_preset 3 } 
-dui add dbutton $::pages 474 1288 624 1350 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_flush_select 4 } -theme none  -longpress_cmd {streamline_set_flush_preset 4 } 
+dui add dbutton $::pages 0 1288 148 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 1 } -theme none  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 1 } 
+dui add dbutton $::pages 148 1288 310 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 2 } 
+dui add dbutton $::pages 310 1288 474 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 3 } 
+dui add dbutton $::pages 474 1288 624 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 4 } 
 
 
 #########
@@ -1497,10 +1498,10 @@ add_de1_variable $::pages $streamline_preset_pos_col2 1520  -justify left -tags 
 add_de1_variable $::pages $streamline_preset_pos_col3 1520  -justify left -tags hw_btn_3 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_hw_buttons(label_3)}
 add_de1_variable $::pages $streamline_preset_pos_col4 1520  -justify right -tags hw_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_hw_buttons(label_4)}
 
-dui add dbutton $::pages 0 1516 148 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 1 } -theme none  -longpress_cmd {streamline_set_hw_preset 1 } 
-dui add dbutton $::pages 148 1516 310 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 2 } -theme none  -longpress_cmd {streamline_set_hw_preset 2 } 
-dui add dbutton $::pages 310 1516 474 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 3 } -theme none  -longpress_cmd {streamline_set_hw_preset 3 } 
-dui add dbutton $::pages 474 1516 624 1600 -command {say [translate {Preset}] $::settings(sound_button_in); streamline_hw_preset_select 4 } -theme none  -longpress_cmd {streamline_set_hw_preset 4 } 
+dui add dbutton $::pages 0 1516 148 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 1 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 1 } 
+dui add dbutton $::pages 148 1516 310 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 2 } 
+dui add dbutton $::pages 310 1516 474 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 3 } 
+dui add dbutton $::pages 474 1516 624 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 4 } 
 
 #########
 
@@ -1638,11 +1639,11 @@ dui aspect set -theme streamline -type dbutton_label width 220
 
 
 #  -longpress_cmd { puts "ERRORlongpress" }
-dui add dbutton $::all_pages 50 50 360 170 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { streamline_profile_select 1 } -longpress_cmd { streamline_profile_edit 1 }
-dui add dbutton $::all_pages 380 50 710 170 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { streamline_profile_select 2 }  -longpress_cmd { streamline_profile_edit 2 }
-dui add dbutton $::all_pages 730 50 1050 170 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { streamline_profile_select 3 }  -longpress_cmd { streamline_profile_edit 3 }
-dui add dbutton $::all_pages 1070 50 1370 170 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { streamline_profile_select 4 }  -longpress_cmd { streamline_profile_edit 4 }
-dui add dbutton $::all_pages 1390 50 1690 170 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { streamline_profile_select 5 }  -longpress_cmd { streamline_profile_edit 5 }
+dui add dbutton $::all_pages 50 50 360 170 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 1 } -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 1 }
+dui add dbutton $::all_pages 380 50 710 170 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 2 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 2 }
+dui add dbutton $::all_pages 730 50 1050 170 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 3 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 3 }
+dui add dbutton $::all_pages 1070 50 1370 170 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 4 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 4 }
+dui add dbutton $::all_pages 1390 50 1690 170 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 5 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 5 }
 
 
 
@@ -1662,8 +1663,8 @@ dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 56]
 dui aspect set -theme streamline -type dbutton label_fill $::settings_sleep_button_text_color
 
 
-dui add dbutton $::all_pages 2100 66 2300 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_in); show_settings "" "back_from_settings" }
-dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_in);start_sleep }  -longpress_cmd { app_exit } 
+dui add dbutton $::all_pages 2100 66 2300 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_out); show_settings "" "back_from_settings" }
+dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); app_exit } 
 
 
 
@@ -1677,7 +1678,7 @@ set dyebtns ""
 if { [plugins enabled DYE] } {
 	# not yet available
 	# plugins disable DYE
-	dui add dbutton $::all_pages 1880 76 2070 145 -tags dye_btn -label "DYE"  -command { show_DYE_page }
+	dui add dbutton $::all_pages 1880 66 2070 155 -tags dye_btn -label "DYE"  -command { show_DYE_page }
 }
 
 proc show_DYE_page {} {
@@ -1730,25 +1731,25 @@ dui aspect set -theme streamline -type dbutton label_pos ".50 .22"
 
 
 # the - buttons
-dui add dbutton $::pages 254 257 346 349 -tags streamline_minus_grind_btn -label "_"  -command { streamline_adjust_grind -- } -longpress_cmd { streamline_adjust_grind - }
-dui add dbutton $::pages 254 369 346 461 -tags streamline_minus_dose_btn -label "_"  -command { streamline_dose_btn -- } -longpress_cmd { streamline_dose_btn - }
-dui add dbutton $::pages 254 486 346 578 -tags streamline_minus_beverage_btn -label "_"  -command { streamline_beverage_btn - } -longpress_cmd { streamline_beverage_btn - }
-dui add dbutton $::pages 254 713 346 805 -tags streamline_minus_temp_btn -label "_"  -command { streamline_temp_btn - } -longpress_cmd { streamline_temp_btn - }
-dui add dbutton $::pages 254 940 346 1032 -tags streamline_minus_steam_btn -label "_"  -command { streamline_steam_btn - } -longpress_cmd { streamline_steam_btn - }
-dui add dbutton $::pages 254 1164 346 1256 -tags streamline_minus_flush_btn -label "_"  -command { streamline_flush_btn - } -longpress_cmd { streamline_flush_btn - }
-dui add dbutton $::pages 254 1390 346 1482 -tags streamline_minus_hotwater_btn -label "_"  -command { streamline_hotwater_btn - } -longpress_cmd { streamline_hotwater_btn - }
+dui add dbutton $::pages 254 257 346 349 -tags streamline_minus_grind_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_adjust_grind -- } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_adjust_grind - }
+dui add dbutton $::pages 254 369 346 461 -tags streamline_minus_dose_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_dose_btn -- } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_dose_btn - }
+dui add dbutton $::pages 254 486 346 578 -tags streamline_minus_beverage_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_beverage_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_beverage_btn - }
+dui add dbutton $::pages 254 713 346 805 -tags streamline_minus_temp_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_temp_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_temp_btn - }
+dui add dbutton $::pages 254 940 346 1032 -tags streamline_minus_steam_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_steam_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_steam_btn - }
+dui add dbutton $::pages 254 1164 346 1256 -tags streamline_minus_flush_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_flush_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_flush_btn - }
+dui add dbutton $::pages 254 1390 346 1482 -tags streamline_minus_hotwater_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_hotwater_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_hotwater_btn - }
 
 # label position
 dui aspect set -theme streamline -type dbutton label_pos ".49 .44" 
 
 # the + buttons
-dui add dbutton $::pages 486 259 578 351 -tags streamline_plus_grind_btn -label "+"  -command { streamline_adjust_grind ++ } -longpress_cmd { streamline_adjust_grind + }
-dui add dbutton $::pages 486 371 578 463 -tags streamline_plus_dose_btn -label "+"  -command { streamline_dose_btn ++ }  -longpress_cmd { streamline_dose_btn + }
-dui add dbutton $::pages 486 488 578 580 -tags streamline_plus_beverage_btn -label "+"  -command { streamline_beverage_btn + }  -longpress_cmd { streamline_beverage_btn + }
-dui add dbutton $::pages 486 715 578 807 -tags streamline_plus_temp_btn -label "+"  -command { streamline_temp_btn + }  -longpress_cmd { streamline_temp_btn + }
-dui add dbutton $::pages 486 942 578 1034 -tags streamline_plus_steam_btn -label "+"  -command { streamline_steam_btn + }  -longpress_cmd { streamline_steam_btn + }
-dui add dbutton $::pages 486 1166 578 1258 -tags streamline_plus_flush_btn -label "+"  -command { streamline_flush_btn + }  -longpress_cmd { streamline_flush_btn + }
-dui add dbutton $::pages 486 1392 578 1484 -tags streamline_plus_hotwater_btn -label "+"  -command { streamline_hotwater_btn + }  -longpress_cmd { streamline_hotwater_btn + }
+dui add dbutton $::pages 486 259 578 351 -tags streamline_plus_grind_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_adjust_grind ++ } -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_adjust_grind + }
+dui add dbutton $::pages 486 371 578 463 -tags streamline_plus_dose_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_dose_btn ++ }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_dose_btn + }
+dui add dbutton $::pages 486 488 578 580 -tags streamline_plus_beverage_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_beverage_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_beverage_btn + }
+dui add dbutton $::pages 486 715 578 807 -tags streamline_plus_temp_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_temp_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_temp_btn + }
+dui add dbutton $::pages 486 942 578 1034 -tags streamline_plus_steam_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_steam_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_steam_btn + }
+dui add dbutton $::pages 486 1166 578 1258 -tags streamline_plus_flush_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_flush_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_flush_btn + }
+dui add dbutton $::pages 486 1392 578 1484 -tags streamline_plus_hotwater_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_hotwater_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_hotwater_btn + }
 
 ############################################################################################################################################################################################################
 
@@ -1984,11 +1985,11 @@ dui aspect set -theme streamline -type dbutton fill "#3e5682"
 
 dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 80]
 
-dui add dbutton "settings_1" 50 1452 160 1580  -tags profile_btn_1 -label "1"  -command { save_favorite_profile 1 } 
-dui add dbutton "settings_1" 180 1452 290 1580   -tags profile_btn_2 -label "2"  -command { save_favorite_profile 2 } 
-dui add dbutton "settings_1" 310 1452 420 1580  -tags profile_btn_3 -label "3"  -command { save_favorite_profile 3} 
-dui add dbutton "settings_1" 440 1452 550 1580  -tags profile_btn_4 -label "4"  -command { save_favorite_profile 4 } 
-dui add dbutton "settings_1" 570 1452 680 1580  -tags profile_btn_5 -label "5"  -command { save_favorite_profile 5 } 
+dui add dbutton "settings_1" 50 1452 160 1580  -tags profile_btn_1 -label "1"  -command { say [translate {Preset}] $::settings(sound_button_out); save_favorite_profile 1 } 
+dui add dbutton "settings_1" 180 1452 290 1580   -tags profile_btn_2 -label "2"  -command { say [translate {Preset}] $::settings(sound_button_out); save_favorite_profile 2 } 
+dui add dbutton "settings_1" 310 1452 420 1580  -tags profile_btn_3 -label "3"  -command { say [translate {Preset}] $::settings(sound_button_out); save_favorite_profile 3} 
+dui add dbutton "settings_1" 440 1452 550 1580  -tags profile_btn_4 -label "4"  -command { say [translate {Preset}] $::settings(sound_button_out); save_favorite_profile 4 } 
+dui add dbutton "settings_1" 570 1452 680 1580  -tags profile_btn_5 -label "5"  -command { say [translate {Preset}] $::settings(sound_button_out); save_favorite_profile 5 } 
 
 proc streamline_profile_edit { slot } {
 
@@ -2108,10 +2109,10 @@ if {$::settings(ghc_is_installed) == 0} {
 
 	if {$::settings(ghc_is_installed) == 0} { 
 
-		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn -label1 $s1 -label [translate "Coffee"]   -command {say [translate {Espresso}] $::settings(sound_button_in); start_streamline_espresso; start_espresso} 
-		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn -label1 $s3 -label [translate "Water"]   -command {say [translate {Water}] $::settings(sound_button_in); start_water} 
-		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn -label1 $s4 -label [translate "Flush"]  -command {say [translate {Flush}] $::settings(sound_button_in); start_flush} 
-		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn -label1 $s2 -label [translate "Steam"]   -command {say [translate {Steam}] $::settings(sound_button_in); start_steam} 
+		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn -label1 $s1 -label [translate "Coffee"]   -command {say [translate {Espresso}] $::settings(sound_button_out); start_streamline_espresso; start_espresso} 
+		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn -label1 $s3 -label [translate "Water"]   -command {say [translate {Water}] $::settings(sound_button_out); start_water} 
+		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn -label1 $s4 -label [translate "Flush"]  -command {say [translate {Flush}] $::settings(sound_button_out); start_flush} 
+		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn -label1 $s2 -label [translate "Steam"]   -command {say [translate {Steam}] $::settings(sound_button_out); start_steam} 
 		
 		dui aspect set -theme streamline -type dbutton outline $::ghc_disabled_button_outline 
 		dui aspect set -theme streamline -type dbutton fill $::ghc_disabled_button_fill 
@@ -2124,16 +2125,16 @@ if {$::settings(ghc_is_installed) == 0} {
 		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn_disabled -label1 $s2 -label [translate "Steam"] 
 
 		# stop button
-		#dui add dbutton "espresso water steam hotwaterrinse" 2159 1216 2494 1566 -tags espresso_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
+		#dui add dbutton "espresso water steam hotwaterrinse" 2159 1216 2494 1566 -tags espresso_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_out); start_idle} 
 		dui aspect set -theme streamline -type dbutton outline $::ghc_enabled_stop_button_outline
 		dui aspect set -theme streamline -type dbutton fill $::ghc_enabled_stop_button_fill
 		dui aspect set -theme streamline -type dbutton label_fill $::ghc_disabled_stop_button_text_color
 		dui aspect set -theme streamline -type dbutton_symbol fill $::ghc_disabled_stop_button_text_color
-		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn_disabled -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn_disabled -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_out); start_idle} 
 		dui aspect set -theme streamline -type dbutton fill $::ghc_enabled_stop_button_fill_color
 		dui aspect set -theme streamline -type dbutton label_fill $::ghc_enabled_stop_button_text_color
 		dui aspect set -theme streamline -type dbutton_symbol fill $::ghc_enabled_stop_button_text_color
-		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_in); start_idle} 
+		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_out); start_idle} 
 	}
 }
 
@@ -3188,7 +3189,7 @@ proc streamline_adjust_chart_x_axis_scheduled {} {
 
 streamline_adjust_chart_x_axis_scheduled
 
-add_de1_button "descaling cleaning" {say [translate {awake}] $::settings(sound_button_in); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
+add_de1_button "descaling cleaning" {say [translate {awake}] $::settings(sound_button_out); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
 
 
 proc streamline_load_history_shot {current_shot_filename} {
@@ -3726,6 +3727,8 @@ proc flash_dataentry_button {buttontag} {
 
 proc streamline_entry_page_button {btn} {
 
+	say [translate {Tap}] $::settings(sound_button_out); 
+
 	set current $::streamline_data_entry_page_value 
 	if {$btn == "0" || $btn == "1" || $btn == "2" || $btn == "3" || $btn == "4" || $btn == "5" || $btn == "6" || $btn == "7" || $btn == "8" || $btn == "9"} {
 
@@ -3857,6 +3860,8 @@ proc ask_for_data_entry_number {title current_value varname_to_store_in value_su
 # save this value if it's valid
 proc streamline_entry_save_value {} {
 
+	say [translate {Save}] $::settings(sound_button_out); 
+
 	if {$::streamline_data_entry_page_value == ""} {
 		return
 	}
@@ -3909,6 +3914,8 @@ proc streamline_data_entry_page_value_formatted {} {
 }
 
 proc streamline_previous {num} {
+	say [translate {Preset}] $::settings(sound_button_out); 
+
 	set ::streamline_data_entry_page_value [lindex $::streamline_entry_previous $num]
 	streamline_entry_save_value 
 	page_show $::streamline_entry_return_to_page
@@ -4075,4 +4082,4 @@ streamline_load_currently_selected_history_shot
 
 # revert to default DUI theme, so that other code that relies on current theme=default does not break
 dui theme set default
-add_de1_button "saver" {say [translate {awake}] $::settings(sound_button_in); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
+add_de1_button "saver" {say [translate {awake}] $::settings(sound_button_out); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
