@@ -878,13 +878,13 @@ proc update_streamline_status_message {} {
 
 				set force_update 1				
 				if {$ETA < $::streamline_start_heating_eta_previous || $force_update == 1} {
-					set msg [subst { $ETA[translate s]}]
+					set msg [subst { $ETA[translate s] [translate remaining]}]
 					set ::streamline_start_heating_eta_previous $ETA
 				} else {
-					set msg [subst { $::streamline_start_heating_eta_previous[translate s]}]
+					set msg [subst { $::streamline_start_heating_eta_previous[translate s] [translate remaining]}]
 				}
 				if {$warmed > 2 } {
-					set red_msg [translate "Heating ETA:"]
+					set red_msg [translate "Heating:"]
 					set clickable_msg $msg
 				}
 				#msg -ERROR $msg
