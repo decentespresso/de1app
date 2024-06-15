@@ -305,8 +305,8 @@ if {$::undroid == 1} {
 load_font "mono10bold" "[homedir]/skins/Streamline/NotoSansMono-ExtraBold.ttf" 12
 
 set ::pages [list off espresso water flush steam hotwaterrinse info]
-set ::zoomed_pages [list off_zoomed espresso_zoomed]
-set ::all_pages [list off off_zoomed espresso_zoomed steam espresso water flush info hotwaterrinse]
+set ::zoomed_pages [list off_zoomed espresso_zoomed flush_zoomed hotwaterrinse_zoomed steam_zoomed water_zoomed]
+set ::all_pages [list off off_zoomed espresso_zoomed steam steam_zoomed espresso water water_zoomed flush flush_zoomed info hotwaterrinse hotwaterrinse_zoomed]
 #set ::pages_not_off [list steam espresso water flush info hotwaterrinse]
 
 set ::streamline_hotwater_btn_mode "ml"
@@ -517,15 +517,11 @@ proc streamline_profile_title {} {
 	set this_state [::de1::state::current_state]
 	set this_substate [::de1::state::current_substate]
 
-	#puts "ERROR set this_state [::de1::state::current_state]  - this_substate [::de1::state::current_substate]"
 	if {$this_state == "Espresso"} {
 		if {$this_substate == "preinfusion" || $this_substate == "pouring"} {
 			update_datacard_from_live_data
 			set ::streamline_needs_final_datacard_update 1
 		}
-
-		#return "[ifexists ::settings(profile_title)]: [translate $this_substate]"
-		#return "[ifexists ::settings(profile_title)]: [translate $this_substate]"
 
 	} elseif {$this_state == "HotWaterRinse"} {
 		return [translate "Flush"]
@@ -563,6 +559,7 @@ proc update_datacard_from_live_data {} {
 add_de1_variable $::pages 690 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 add_de1_variable $::zoomed_pages 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 
+add_de1_variable "water_zoomed" 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 
 
 
@@ -696,7 +693,7 @@ if {$::settings(scale_bluetooth_address) != ""} {
 }
 
 
-set ::streamline_status_msg [add_de1_rich_text "off espresso" 690 330 left 1 2 72 $::background_color $btns ]
+add_de1_rich_text "off espresso" 690 330 left 1 2 72 $::background_color $btns 
 
 
 set flush_btns ""
@@ -711,7 +708,8 @@ lappend flush_btns \
 	[list -text {[round_to_integer $::settings(flush_flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
 	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] 
 
-set ::streamline_status_msg [add_de1_rich_text "hotwaterrinse water" 690 330 left 1 2 65 $::background_color $flush_btns ]
+add_de1_rich_text "hotwaterrinse water" 690 330 left 1 2 65 $::background_color $flush_btns 
+add_de1_rich_text "hotwaterrinse_zoomed water_zoomed" 50 330 left 1 2 65 $::background_color $flush_btns 
 
 
 set steam_btns ""
@@ -732,7 +730,8 @@ lappend steam_btns \
 	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] 
 
 #set ::streamline_status_msg [add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns ]
-set ::streamline_status_msg [add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns ]
+add_de1_rich_text "steam" 690 330 left 1 2 65 $::background_color $steam_btns 
+add_de1_rich_text "steam_zoomed" 50 330 left 1 2 65 $::background_color $steam_btns 
 
 
 proc steam_timeout_seconds {} {
@@ -780,15 +779,15 @@ lappend zoomed_btns \
 	[list -text "Hot Water" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[round_to_integer $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text [translate "ml"] -font "mono8"] \
-	[list -text " (" -font "mono12"] \
+	[list -text [translate "ml"] -font "mono8"  -foreground $::dataline_data_color ] \
+	[list -text " (" -font "mono12"  -foreground $::dataline_data_color ] \
 	[list -text {[lindex [return_temperature_measurement_no_unit $::settings(water_temperature) 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text {[lindex [return_temperature_measurement_no_unit $::settings(water_temperature) 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
-	[list -text ")" -font "mono12"] 
+	[list -text ")" -font "mono12"  -foreground $::dataline_data_color ] 
 	
 
-set ::streamline_status_msg_zoomed2 [add_de1_rich_text $::zoomed_pages 50 330 left 1 2 85 $::background_color $zoomed_btns ]
-set ::streamline_status_msg_zoomed [add_de1_rich_text $::zoomed_pages 50 400 left 1 2 65 $::background_color $btns ]
+add_de1_rich_text "off_zoomed espresso_zoomed" 50 330 left 1 2 85 $::background_color $zoomed_btns 
+add_de1_rich_text "off_zoomed espresso_zoomed" 50 400 left 1 2 65 $::background_color $btns 
 
 proc percent_to_bar { perc } {
 	if {$delta_percent < 96} {
@@ -928,7 +927,7 @@ proc update_streamline_status_message {} {
 			}
 
 			#msg -ERROR "current: $current_weight final_target:$final_target delta_percent:$delta_percent"
-		} elseif {[dui page current] == "hotwaterrinse" } {
+		} elseif {[dui page current] == "hotwaterrinse" || [dui page current] == "hotwaterrinse_zoomed" } {
 
 			set green_msg [translate "Flushing:"]
 			set clickable_msg [subst { [flush_pour_timer][translate s]}]
@@ -948,7 +947,7 @@ proc update_streamline_status_message {} {
 			}
 			#puts "current: $current final_target:$final_target delta_percent:$delta_percent"
 			
-		} elseif {[dui page current] == "steam" } {
+		} elseif {[dui page current] == "steam" || [dui page current] == "steam_zoomed" } {
 			
 
 			set current [steam_pour_timer]		
@@ -968,7 +967,7 @@ proc update_streamline_status_message {} {
 			}
 			#puts "current: $current final_target:$final_target delta_percent:$delta_percent"
 			
-		} elseif {[dui page current] == "water" } {
+		} elseif {[dui page current] == "water" || [dui page current] == "water_zoomed" } {
 
 			set current [watervolume]		
 			set green_msg [subst {[translate "Hot water:"]}]
@@ -1366,15 +1365,15 @@ if {[ifexists ::settings(grinder_dose_weight)] == "" || [ifexists ::settings(gri
 }
 
 # labels
-add_de1_variable "off off_zoomed" 418 304 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
-add_de1_variable "off off_zoomed" 418 418 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags dose_label_1st -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
-add_de1_variable "off off_zoomed espresso" 418 512 -justify center -anchor "center" -text [translate "45g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags weight_label_1st -textvariable {[return_weight_measurement [determine_final_weight] 2]}
-add_de1_variable "off off_zoomed espresso" 418 558 -justify center -anchor "center" -text [translate "1:2.3"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
-add_de1_variable "off off_zoomed" 418 761 -justify center -anchor "center" -text [translate "92"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags temp_label_1st -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 1]}   
-add_de1_variable "off off_zoomed steam" 418 988 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {[steam_timeout_seconds]}
-add_de1_variable "off off_zoomed flush hotwaterrinse" 418 1215 -justify center -anchor "center" -text [translate "5s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags flush_label_1st -textvariable {[seconds_text_very_abbreviated $::settings(flush_seconds)]}
-add_de1_variable "off off_zoomed water" 418 1417 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags hotwater_label_1st -textvariable {$::streamline_hotwater_label_1st}
-add_de1_variable "off off_zoomed water" 418 1460 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
+add_de1_variable "off " 418 304 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
+add_de1_variable "off " 418 418 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags dose_label_1st -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
+add_de1_variable "off  espresso" 418 512 -justify center -anchor "center" -text [translate "45g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags weight_label_1st -textvariable {[return_weight_measurement [determine_final_weight] 2]}
+add_de1_variable "off  espresso" 418 558 -justify center -anchor "center" -text [translate "1:2.3"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
+add_de1_variable "off " 418 761 -justify center -anchor "center" -text [translate "92"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags temp_label_1st -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 1]}   
+add_de1_variable "off  steam" 418 988 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {[steam_timeout_seconds]}
+add_de1_variable "off  flush hotwaterrinse" 418 1215 -justify center -anchor "center" -text [translate "5s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags flush_label_1st -textvariable {[seconds_text_very_abbreviated $::settings(flush_seconds)]}
+add_de1_variable "off  water" 418 1417 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags hotwater_label_1st -textvariable {$::streamline_hotwater_label_1st}
+add_de1_variable "off  water" 418 1460 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
 
 #disabled labels
 add_de1_variable "espresso water flush hotwaterrinse steam" 418 304 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
@@ -1387,14 +1386,14 @@ add_de1_variable "espresso water   steam" 418 1215 -justify center -anchor "cent
 add_de1_variable "espresso  flush hotwaterrinse steam" 418 1417 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags hotwater_label_1st -textvariable {$::streamline_hotwater_label_1st}
 add_de1_variable "espresso  flush hotwaterrinse steam" 418 1460 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
 
-add_de1_button "off off_zoomed" { ask_for_data_entry_number [translate "GRIND"] [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) "" 0 0 100 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting grind_setting_rectangle"]} 370 260 470 340  ""   
-add_de1_button "off off_zoomed" { ask_for_data_entry_number [translate "DOSE"] [ifexists ::settings(grinder_dose_weight)] ::settings(grinder_dose_weight) [translate "g"] 0 0 30 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting dose_setting_rectangle dose_label_1st"]} 370 374 470 454  ""   
-add_de1_button "off off_zoomed" { ask_for_data_entry_number [translate "DRINK"] [ifexists ::settings(final_desired_shot_weight)] ::settings(final_desired_shot_weight) [translate "g"] 0 0 2000 [list {streamline_set_drink_weight $::settings(final_desired_shot_weight)} refresh_favorite_dosebev_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "GRIND"] [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) "" 0 0 100 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting grind_setting_rectangle"]} 370 260 470 340  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "DOSE"] [ifexists ::settings(grinder_dose_weight)] ::settings(grinder_dose_weight) [translate "g"] 0 0 30 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting dose_setting_rectangle dose_label_1st"]} 370 374 470 454  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "DRINK"] [ifexists ::settings(final_desired_shot_weight)] ::settings(final_desired_shot_weight) [translate "g"] 0 0 2000 [list {streamline_set_drink_weight $::settings(final_desired_shot_weight)} refresh_favorite_dosebev_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
 
-add_de1_button "off off_zoomed" { choose_appropriate_data_entry_for_brew_temp} 370 716 470 796  ""   
-add_de1_button "off off_zoomed" { ask_for_data_entry_number [translate "STEAM"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st"]} 370 944 470 1024  ""   
-add_de1_button "off off_zoomed" { ask_for_data_entry_number [translate "FLUSH"] [ifexists ::settings(flush_seconds)] ::settings(flush_seconds) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting flush_setting_rectangle flush_label_1st"]} 370 1172 470 1252  ""   
-add_de1_button "off off_zoomed" { choose_appropriate_data_entry_for_hot_water } 370 1400 470 1480  ""   
+add_de1_button "off " { choose_appropriate_data_entry_for_brew_temp} 370 716 470 796  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "STEAM"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st"]} 370 944 470 1024  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "FLUSH"] [ifexists ::settings(flush_seconds)] ::settings(flush_seconds) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting flush_setting_rectangle flush_label_1st"]} 370 1172 470 1252  ""   
+add_de1_button "off " { choose_appropriate_data_entry_for_hot_water } 370 1400 470 1480  ""   
 
 
 proc save_fahrenheit_hot_water {} {
@@ -2237,20 +2236,20 @@ if {$::settings(ghc_is_installed) == 0} {
 
 	if {$::settings(ghc_is_installed) == 0} { 
 
-		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn -label1 $s1 -label [translate "Coffee"]   -command {say [translate {Espresso}] $::settings(sound_button_out); start_streamline_espresso; start_espresso} 
-		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn -label1 $s3 -label [translate "Water"]   -command {say [translate {Water}] $::settings(sound_button_out); start_water} 
-		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn -label1 $s4 -label [translate "Flush"]  -command {say [translate {Flush}] $::settings(sound_button_out); start_flush} 
-		dui add dbutton "off off_zoomed espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn -label1 $s2 -label [translate "Steam"]   -command {say [translate {Steam}] $::settings(sound_button_out); start_steam} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn -label1 $s1 -label [translate "Coffee"]   -command {say [translate {Espresso}] $::settings(sound_button_out); start_streamline_espresso; start_espresso} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn -label1 $s3 -label [translate "Water"]   -command {say [translate {Water}] $::settings(sound_button_out); start_water} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn -label1 $s4 -label [translate "Flush"]  -command {say [translate {Flush}] $::settings(sound_button_out); start_flush} 
+		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn -label1 $s2 -label [translate "Steam"]   -command {say [translate {Steam}] $::settings(sound_button_out); start_steam} 
 		
 		dui aspect set -theme streamline -type dbutton outline $::ghc_disabled_button_outline 
 		dui aspect set -theme streamline -type dbutton fill $::ghc_disabled_button_fill 
 		dui aspect set -theme streamline -type dbutton label_fill $::ghc_disabled_button_text 
 		dui aspect set -theme streamline -type dbutton label1_fill $::ghc_disabled_button_text 
 		dui aspect set -theme streamline -type dbutton_symbol fill $::ghc_disabled_button_text 
-		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn_disabled -label1 $s1 -label [translate "Coffee"]  
-		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn_disabled -label1 $s3 -label [translate "Water"]  
-		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn_disabled -label1 $s4 -label [translate "Flush"]  
-		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn_disabled -label1 $s2 -label [translate "Steam"] 
+		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed steam_zoomed water_zoomed flush_zoomed hotwaterrinse_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn_disabled -label1 $s1 -label [translate "Coffee"]  
+		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed steam_zoomed water_zoomed flush_zoomed hotwaterrinse_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn_disabled -label1 $s3 -label [translate "Water"]  
+		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed steam_zoomed water_zoomed flush_zoomed hotwaterrinse_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 668 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 835 -tags flush_btn_disabled -label1 $s4 -label [translate "Flush"]  
+		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed steam_zoomed water_zoomed flush_zoomed hotwaterrinse_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 873 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1040 -tags steam_btn_disabled -label1 $s2 -label [translate "Steam"] 
 
 		# stop button
 		#dui add dbutton "espresso water steam hotwaterrinse" 2159 1216 2494 1566 -tags espresso_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_out); start_idle} 
@@ -2262,7 +2261,7 @@ if {$::settings(ghc_is_installed) == 0} {
 		dui aspect set -theme streamline -type dbutton fill $::ghc_enabled_stop_button_fill_color
 		dui aspect set -theme streamline -type dbutton label_fill $::ghc_enabled_stop_button_text_color
 		dui aspect set -theme streamline -type dbutton_symbol fill $::ghc_enabled_stop_button_text_color
-		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_out); start_idle} 
+		dui add dbutton "espresso water steam hotwaterrinse espresso_zoomed steam_zoomed water_zoomed flush_zoomed hotwaterrinse_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 1079 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 1246 -tags off_btn -symbol $s5  -label [translate "Stop"] -command {say [translate {Stop}] $::settings(sound_button_out); start_idle} 
 	}
 }
 
@@ -3264,30 +3263,135 @@ proc streamline_graph_smarts {widget {which ""} } {
 		if {$::de1(current_context) == "off"} {
 			set ::off_page "off_zoomed"
 			set ::espresso_page "espresso_zoomed"
+
+			set_next_page water "water_zoomed"
+			set_next_page flush "flush_zoomed"
+			set_next_page hotwaterrinse "hotwaterrinse_zoomed"
+			set_next_page steam "steam_zoomed"
+
 			set_next_page off $::off_page
 			set_next_page espresso $::espresso_page
+
 			page_show off;
+
 		} elseif {$::de1(current_context) == "off_zoomed"} {
 			set ::off_page "off"
 			set ::espresso_page "espresso"
+
+			set_next_page water "water"
+			set_next_page flush "flush"
+			set_next_page hotwaterrinse "hotwaterrinse"
+			set_next_page steam "steam"
+
 			set_next_page off $::off_page
 			set_next_page espresso $::espresso_page
 			page_show off;
+
 		} elseif {$::de1(current_context) == "espresso"} {
 			set ::off_page "off_zoomed"
 			set ::espresso_page "espresso_zoomed"
+
+			set_next_page water "water_zoomed"
+			set_next_page flush "flush_zoomed"
+			set_next_page hotwaterrinse "hotwaterrinse_zoomed"
+			set_next_page steam "steam_zoomed"
+
 			set_next_page off $::off_page
 			set_next_page espresso $::espresso_page
 			page_show espresso;
+
+		} elseif {$::de1(current_context) == "hotwaterrinse"} {
+			set ::off_page "off_zoomed"
+			set ::espresso_page "espresso_zoomed"
+
+			set_next_page water "water_zoomed"
+			set_next_page flush "flush_zoomed"
+			set_next_page hotwaterrinse "hotwaterrinse_zoomed"
+			set_next_page steam "steam_zoomed"
+
+			set_next_page off $::off_page
+			set_next_page espresso $::espresso_page
+			page_show hotwaterrinse;
+
+		} elseif {$::de1(current_context) == "water"} {
+			set ::off_page "off_zoomed"
+			set ::espresso_page "espresso_zoomed"
+
+			set_next_page water "water_zoomed"
+			set_next_page flush "flush_zoomed"
+			set_next_page hotwaterrinse "hotwaterrinse_zoomed"
+			set_next_page steam "steam_zoomed"
+
+			set_next_page off $::off_page
+			set_next_page espresso $::espresso_page
+			page_show water;
+
+		} elseif {$::de1(current_context) == "steam"} {
+			set ::off_page "off_zoomed"
+			set ::espresso_page "espresso_zoomed"
+
+			set_next_page water "water_zoomed"
+			set_next_page flush "flush_zoomed"
+			set_next_page hotwaterrinse "hotwaterrinse_zoomed"
+			set_next_page steam "steam_zoomed"
+
+			set_next_page off $::off_page
+			set_next_page espresso $::espresso_page
+			page_show steam;
+
 		} elseif {$::de1(current_context) == "espresso_zoomed"} {
 			set ::off_page "off"
 			set ::espresso_page "espresso"
 			set_next_page off $::off_page
 			set_next_page espresso $::espresso_page
+
+			set_next_page water "water"
+			set_next_page flush "flush"
+			set_next_page hotwaterrinse "hotwaterrinse"
+			set_next_page steam "steam"
+
 			page_show espresso;
+		
+		} elseif {$::de1(current_context) == "water_zoomed"} {
+			set ::off_page "off"
+			set ::espresso_page "espresso"
+			set_next_page off $::off_page
+			set_next_page espresso $::espresso_page
+
+			set_next_page water "water"
+			set_next_page flush "flush"
+			set_next_page hotwaterrinse "hotwaterrinse"
+			set_next_page steam "steam"
+
+			page_show water;
+
+		} elseif {$::de1(current_context) == "steam_zoomed"} {
+			set ::off_page "off"
+			set ::espresso_page "espresso"
+			set_next_page off $::off_page
+			set_next_page espresso $::espresso_page
+
+			set_next_page water "water"
+			set_next_page flush "flush"
+			set_next_page hotwaterrinse "hotwaterrinse"
+			set_next_page steam "steam"
+
+			page_show steam;
+
+		} elseif {$::de1(current_context) == "hotwaterrinse_zoomed"} {
+			set ::off_page "off"
+			set ::espresso_page "espresso"
+			set_next_page off $::off_page
+			set_next_page espresso $::espresso_page
+
+			set_next_page water "water"
+			set_next_page flush "flush"
+			set_next_page hotwaterrinse "hotwaterrinse"
+			set_next_page steam "steam"
+
+			page_show hotwaterrinse;
 		}
 	}	
-
 }
 
 
