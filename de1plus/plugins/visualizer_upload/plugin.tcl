@@ -120,7 +120,7 @@ namespace eval ::plugins::${plugin_name} {
             if {[catch {
                 # Execute the HTTP POST request
                 popup [subst {[translate_toast "Uploading Shot"] #$retryCount}]
-                set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 1000]
+                set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 2000]
                 msg $token
 
                 set status [http::status $token]
