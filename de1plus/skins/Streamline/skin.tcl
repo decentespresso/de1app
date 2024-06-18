@@ -486,7 +486,15 @@ proc streamline_history_most_common_profiles { {max 500} } {
 		if {[incr c] > $max} {
 			break
 		}
-		array set past_shot_array [encoding convertfrom utf-8 [read_file "[homedir]/history/$current_shot_filename"]]
+
+		unset -nocomplain past_shot_array
+		catch {
+			array set past_shot_array [encoding convertfrom utf-8 [read_file "[homedir]/history/$current_shot_filename"]]
+		}
+
+		if {[ifexists past_shot_array(settings)] == ""} {
+			continue
+		}
 		array set profile_settings [ifexists past_shot_array(settings)]
 		if {[ifexists profile_settings(profile_filename)] != ""} {
 			# only include the most common profiles that still actually exist on disk
@@ -1313,23 +1321,23 @@ set ::streamline_datacard_col6 2230
 
 
 add_de1_text $::pages $::streamline_datacard_col1 1328 -justify right -anchor "nw" -text [translate "Time"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages $::streamline_datacard_col1 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0]} 
-add_de1_variable $::pages $::streamline_datacard_col1 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0]}
-add_de1_variable $::pages $::streamline_datacard_col1 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0]}
+add_de1_variable $::pages $::streamline_datacard_col1 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad [ifexists ::streamline_preinfusion_time] 2 0]} 
+add_de1_variable $::pages $::streamline_datacard_col1 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad [ifexists ::streamline_final_extraction_time] 2 0]}
+add_de1_variable $::pages $::streamline_datacard_col1 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad [ifexists ::streamline_shot_time] 2 0]}
 #add_de1_variable $::pages $::streamline_datacard_col1 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_time 2 0]} 
 #add_de1_variable $::pages $::streamline_datacard_col1 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_time 2 0]}
 #add_de1_variable $::pages $::streamline_datacard_col1 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_time 2 0]}
 
 add_de1_text $::pages $::streamline_datacard_col2 1328 -justify right -anchor "nw" -text [translate "Grams"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages $::streamline_datacard_col2 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_preinfusion_weight 4 1]} 
-add_de1_variable $::pages $::streamline_datacard_col2 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_final_extraction_weight 4 1]} 
-add_de1_variable $::pages $::streamline_datacard_col2 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad $::streamline_shot_weight 4 1]} 
+add_de1_variable $::pages $::streamline_datacard_col2 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad [ifexists ::streamline_preinfusion_weight] 4 1]} 
+add_de1_variable $::pages $::streamline_datacard_col2 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad [ifexists ::streamline_final_extraction_weight] 4 1]} 
+add_de1_variable $::pages $::streamline_datacard_col2 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[streamline_zero_pad [ifexists ::streamline_shot_weight] 4 1]} 
 
 
 add_de1_text $::pages $::streamline_datacard_col3 1328 -justify right -anchor "nw" -text [translate "mL"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 150]
-add_de1_variable $::pages $::streamline_datacard_col3 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_preinfusion_volume 2 0]} 
-add_de1_variable $::pages $::streamline_datacard_col3 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_final_extraction_volume 2 0]} 
-add_de1_variable $::pages $::streamline_datacard_col3 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad $::streamline_shot_volume 2 0]} 
+add_de1_variable $::pages $::streamline_datacard_col3 1388 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad [ifexists ::streamline_preinfusion_volume] 2 0]} 
+add_de1_variable $::pages $::streamline_datacard_col3 1452 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad [ifexists ::streamline_final_extraction_volume] 2 0]} 
+add_de1_variable $::pages $::streamline_datacard_col3 1514 -justify right -anchor "nw" -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 150] -textvariable {[streamline_zero_pad [ifexists ::streamline_shot_volume] 2 0]} 
 
 set ::streamline_preinfusion_temp " "
 set ::streamline_extraction_temp " "
@@ -1341,14 +1349,14 @@ set ::streamline_extraction_low_peak_flow_label "-"
 set ::streamline_extraction_low_peak_flow_label "-"
 
 add_de1_text $::pages $::streamline_datacard_col5 1328 -justify right -anchor "nw" -text [translate "mL/s"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
-add_de1_variable $::pages $::streamline_datacard_col5 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 260] -textvariable {$::streamline_preinfusion_low_peak_flow_label} 
-add_de1_variable $::pages $::streamline_datacard_col5 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 260] -textvariable {$::streamline_extraction_low_peak_flow_label} 
+add_de1_variable $::pages $::streamline_datacard_col5 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 260] -textvariable {[ifexists ::streamline_preinfusion_low_peak_flow_label]} 
+add_de1_variable $::pages $::streamline_datacard_col5 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 260] -textvariable {[ifexists ::streamline_extraction_low_peak_flow_label]} 
 
 set ::streamline_preinfusion_low_peak_pressure_label "-"
 set ::streamline_extraction_low_peak_pressure_label "-"
 add_de1_text $::pages $::streamline_datacard_col6 1328 -justify right -anchor "nw" -text [translate "Pressure"] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 230]
-add_de1_variable $::pages $::streamline_datacard_col6 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_low_peak_pressure_label}
-add_de1_variable $::pages $::streamline_datacard_col6 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_low_peak_pressure_label}
+add_de1_variable $::pages $::streamline_datacard_col6 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[ifexists ::streamline_preinfusion_low_peak_pressure_label]}
+add_de1_variable $::pages $::streamline_datacard_col6 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {[ifexists ::streamline_extraction_low_peak_pressure_label]}
 
 
 ############################################################################################################################################################################################################
