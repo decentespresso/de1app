@@ -2918,6 +2918,10 @@ proc change_scale_bluetooth_device {} {
 proc select_profile { profile } {
 
 	msg -NOTICE "select_profile: '$profile'"
+	if {$profile == ""} {
+		return
+	}
+
 
 	set fn "[homedir]/profiles/${profile}.tcl"
 	set ::settings(profile) $profile

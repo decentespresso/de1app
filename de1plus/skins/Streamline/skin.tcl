@@ -28,6 +28,7 @@ if {$::streamline_dark_mode == 0} {
 	set ::data_card_confirm_button_text #FFFFFF
 	set ::scale_disconnected_color #cd5360
 	set ::profile_button_background_selected_color #385992
+	set ::profile_button_background_unused_color #f3f4f6
 	set ::left_label_color2 #385992
 	set ::left_label_color2_disabled #d0d8e5
 
@@ -122,6 +123,7 @@ if {$::streamline_dark_mode == 0} {
 	set ::profile_title_color #e8e8e8
 	set ::scale_disconnected_color #cd5360
 	set ::profile_button_background_selected_color #415996
+	set ::profile_button_background_unused_color #1d1f2b
 	set ::left_label_color2 #415996
 	set ::left_label_color2_disabled #202c4c
 
@@ -1241,6 +1243,10 @@ add_de1_text $::pages 1364 1516 -justify right -anchor "ne" -text [translate "To
 
 proc streamline_history_date_format {shot_time} {
 
+	if {$shot_time == ""} {
+		return ""
+	}
+
 	set seconds [expr {([clock seconds] - $shot_time)}]
 	set minutes [expr {([clock seconds] - $shot_time)/60}]
 	set hours [expr {([clock seconds] - $shot_time)/3600}]
@@ -1651,6 +1657,11 @@ proc refresh_favorite_profile_button_labels {} {
 
 		catch {
 			set b($x) [dict get $profiles $x title]
+
+			#if {$b($x) == " "} {
+				#set b($x) [translate "assign"]
+			#}
+
 		}
 
 		if {$b($x) == ""} {
@@ -1691,7 +1702,14 @@ proc refresh_favorite_profile_button_labels {} {
 	} 
 
 	for {set x 1} {$x <= 5}  {incr x} {
-		.can itemconfigure profile_${x}_btn-btn -fill $bc($x)
+		
+		if {[dict get $profiles $x title] == " "} {
+			# darken favorite-profile buttons that have no setting
+			.can itemconfigure profile_${x}_btn-btn -fill $::profile_button_background_unused_color
+		} else {
+			.can itemconfigure profile_${x}_btn-btn -fill $bc($x)
+		}
+
 		.can itemconfigure profile_${x}_btn-lbl -fill $lbc($x)
 		.can itemconfigure profile_${x}_btn-out -fill $obc($x)
 		dui item config "off" profile_${x}_btn-out-ne  -outline $obc($x)
@@ -1741,11 +1759,11 @@ dui aspect set -theme streamline -type dbutton_label width 220
 
 
 #  -longpress_cmd { puts "ERRORlongpress" }
-dui add dbutton $::all_pages 50 50 360 170 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 1 } -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 1 }
-dui add dbutton $::all_pages 380 50 710 170 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 2 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 2 }
-dui add dbutton $::all_pages 730 50 1050 170 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 3 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 3 }
-dui add dbutton $::all_pages 1070 50 1370 170 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 4 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 4 }
-dui add dbutton $::all_pages 1390 50 1690 170 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 5 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_edit 5 }
+dui add dbutton $::all_pages 50 50 360 170 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 1 } -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 1 }
+dui add dbutton $::all_pages 380 50 710 170 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 2 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 2 }
+dui add dbutton $::all_pages 730 50 1050 170 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 3 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 3 }
+dui add dbutton $::all_pages 1070 50 1370 170 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 4 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 4 }
+dui add dbutton $::all_pages 1390 50 1690 170 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 5 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 5 }
 
 
 
@@ -2134,12 +2152,40 @@ proc streamline_profile_edit { slot } {
 		return ""
 	}
 
-	streamline_profile_select $slot
+	set profiles [ifexists ::settings(favorite_profiles)]
+	set name [dict get $profiles $slot name]
+	if {$name == ""} {
+		msg -ERROR "streamline_profile_edit: attempted to profile edit an empty button"
+		return
+	}
+
+	#dict set profiles $slot name $::settings(profile_filename)
+	#streamline_profile_select $slot
 
 	set profile_type [::profile::fix_profile_type [ifexists ::settings(settings_profile_type)]]
 
 	show_settings $profile_type
 	fill_advanced_profile_steps_listbox
+
+}
+
+proc is_this_a_double_tap {context} {
+
+	set is_double_tap 0
+	if {[info exists ::double_tap_time_track($context)] == 1} {
+		set elapsed_since_last_tap [expr {[clock milliseconds] - $::double_tap_time_track($context)}]
+		if {$elapsed_since_last_tap < 500} {
+			set is_double_tap 1
+		}
+	}
+	set ::double_tap_time_track($context) [clock milliseconds]
+	return $is_double_tap
+}
+
+proc store_profile_choice_to_profile_preset_button {} {
+	if {$::streamline_double_tap_empty_preset_button_previous_profile_filename != $::settings(profile_filename)} {
+		save_favorite_profile $::streamline_double_tap_empty_preset_button_slot
+	}
 
 }
 
@@ -2149,8 +2195,29 @@ proc streamline_profile_select { slot } {
 		return ""
 	}
 
+	if {[is_this_a_double_tap "streamline_profile_select $slot"] == 1} {
+		puts "ERROR DOUBLE TAP"
+		say [translate {Edit}] $::settings(sound_button_out)
+		#clear_favorite_profile $slot
+		streamline_profile_edit $slot
+		return ""
+	}
+
 	set profiles [ifexists ::settings(favorite_profiles)]
-	select_profile [dict get $profiles $slot name]
+
+
+	set selected_profile [dict get $profiles $slot name]
+	if {$selected_profile == ""} {
+		# empty button
+		set ::streamline_double_tap_empty_preset_button_previous_profile_filename $::settings(profile_filename)
+		set ::streamline_double_tap_empty_preset_button_slot $slot
+		show_settings "settings_1" "store_profile_choice_to_profile_preset_button"
+		return
+	}
+
+	puts "ERROR select profile '[dict get $profiles $slot name]'"
+
+	select_profile $selected_profile
 	dict set profiles selected number $slot
 	set ::settings(favorite_profiles) $profiles
 
@@ -2175,6 +2242,22 @@ proc save_favorite_profile { slot } {
 	save_settings
 	popup [translate "Saved"]
 }
+
+
+proc clear_favorite_profile { slot } {
+	puts "ERROR clear_favorite_profile $slot"
+	set profiles [ifexists ::settings(favorite_profiles)]
+
+	dict set profiles $slot name ""
+	dict set profiles $slot title " "
+
+	set ::settings(favorite_profiles) $profiles
+	#refresh_favorite_profile_button_labels
+	refresh_favorite_profile_button_labels
+	save_settings
+	popup [translate "Cleared"]
+}
+
 
 ############################################################################################################################################################################################################
 
