@@ -110,16 +110,17 @@ namespace eval ::plugins::${plugin_name} {
 
         # Initialize retry counter
         set retryCount 0
-        set maxAttempts 10
+        set maxAttempts 20
         set success 0
 
         # modification by Tom Schmidt to retry visualizer uploads 3 times
         # https://3.basecamp.com/3671212/buckets/7351439/messages/6863865822#__recording_6880174537 
 
+        set attempts 0
         while {$retryCount < $maxAttempts && !$success} {
             if {[catch {
                 # Execute the HTTP POST request
-                popup [subst {[translate_toast "Uploading Shot"] #$retryCount}]
+                popup [subst {[translate_toast "Uploading to Visualizer, attempt"] #[incr attempts]}]
                 set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 2000]
                 msg $token
 
