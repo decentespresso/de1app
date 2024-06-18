@@ -3449,10 +3449,19 @@ proc streamline_load_history_shot {current_shot_filename} {
 
 	#puts "ERROR streamline_load_history_shot"
 
+	catch {
+		array set past_shot_array [encoding convertfrom utf-8 [read_file "[homedir]/history/$current_shot_filename"]]
+	}
 
-	array set past_shot_array [encoding convertfrom utf-8 [read_file "[homedir]/history/$current_shot_filename"]]
+	if {[ifexists past_shot_array(settings)] == ""} {
+		# corrupt hstorical shot
+		msg -ERROR "streamline_load_history_shot: '$current_shot_filename' is corrupted"
+		return
+	}
 
 	array set profile_settings [ifexists past_shot_array(settings)]
+
+
 
 	# replace the final weight in the list, with the final drink weight that was calculated a few seconds later
 	lset past_shot_array(espresso_weight) end $profile_settings(drink_weight)
