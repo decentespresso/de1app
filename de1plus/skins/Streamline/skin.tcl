@@ -422,12 +422,12 @@ proc streamline_adjust_grind { args } {
 			flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 		}
 	} elseif {$args == "--"} {
-		if {$::settings(grinder_setting) > 1} {
+		if {$::settings(grinder_setting) > 0} {
 			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - 1}]]
 			flash_button "streamline_minus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 		}
 	} elseif {$args == "++"} {
-		if {$::settings(grinder_setting) < 999} {
+		if {$::settings(grinder_setting) < 1000} {
 			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + 1}]]
 			flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 		}
@@ -1394,7 +1394,7 @@ add_de1_variable "espresso water   steam" 418 1215 -justify center -anchor "cent
 add_de1_variable "espresso  flush hotwaterrinse steam" 418 1417 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags hotwater_label_1st -textvariable {$::streamline_hotwater_label_1st}
 add_de1_variable "espresso  flush hotwaterrinse steam" 418 1460 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
 
-add_de1_button "off " { ask_for_data_entry_number [translate "GRIND"] [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) "" 0 0 100 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting grind_setting_rectangle"]} 370 260 470 340  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "GRIND"] [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) "" 0 0 1000 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting grind_setting_rectangle"]} 370 260 470 340  ""   
 add_de1_button "off " { ask_for_data_entry_number [translate "DOSE"] [ifexists ::settings(grinder_dose_weight)] ::settings(grinder_dose_weight) [translate "g"] 0 0 30 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting dose_setting_rectangle dose_label_1st"]} 370 374 470 454  ""   
 add_de1_button "off " { ask_for_data_entry_number [translate "DRINK"] [ifexists ::settings(final_desired_shot_weight)] ::settings(final_desired_shot_weight) [translate "g"] 0 0 2000 [list {streamline_set_drink_weight $::settings(final_desired_shot_weight)} refresh_favorite_dosebev_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
 
@@ -1402,6 +1402,8 @@ add_de1_button "off " { choose_appropriate_data_entry_for_brew_temp} 370 716 470
 add_de1_button "off " { ask_for_data_entry_number [translate "STEAM"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st"]} 370 944 470 1024  ""   
 add_de1_button "off " { ask_for_data_entry_number [translate "FLUSH"] [ifexists ::settings(flush_seconds)] ::settings(flush_seconds) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting flush_setting_rectangle flush_label_1st"]} 370 1172 470 1252  ""   
 add_de1_button "off " { choose_appropriate_data_entry_for_hot_water } 370 1400 470 1480  ""   
+
+# TODO add_de1_button "off " { choose_appropriate_data_entry_for_steam } 370 1400 470 1480  ""   
 
 
 proc save_fahrenheit_hot_water {} {
