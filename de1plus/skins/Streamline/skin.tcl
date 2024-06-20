@@ -1763,7 +1763,7 @@ dui aspect set -theme streamline -type dbutton label_fill $::profile_button_butt
 dui aspect set -theme streamline -type dbutton_label width 220
 
 
-set first_button_start 50
+set first_button_start 30
 set profile_button_width 350
 set profile_button_gap 20
 #  -longpress_cmd { puts "ERRORlongpress" }
@@ -1791,7 +1791,7 @@ dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 56]
 dui aspect set -theme streamline -type dbutton label_fill $::settings_sleep_button_text_color
 
 
-dui add dbutton $::all_pages 2100 66 2300 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_out); show_settings "" "back_from_settings" }
+dui add dbutton $::all_pages 2110 66 2310 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_out); show_settings "" "back_from_settings" }
 dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); app_exit } 
 
 
@@ -1806,7 +1806,7 @@ set dyebtns ""
 if { [plugins enabled DYE] } {
 	# not yet available
 	# plugins disable DYE
-	dui add dbutton $::all_pages 1880 66 2070 155 -tags dye_btn -label "DYE"  -command { show_DYE_page }
+	dui add dbutton $::all_pages 1960 66 2090 155 -tags dye_btn -label "DYE"  -command { show_DYE_page }
 }
 
 proc show_DYE_page {} {
