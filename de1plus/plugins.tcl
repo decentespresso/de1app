@@ -256,7 +256,7 @@ namespace eval ::plugins {
                 
             }
         }
-        msg -DEBUG [namespace current] "Settings file $fn not found"
+        #msg -DEBUG [namespace current] "Settings file $fn not found"
         return 0
     }
 
