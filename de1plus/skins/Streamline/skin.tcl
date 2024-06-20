@@ -4,6 +4,8 @@ package require de1 1.0
 dui theme add streamline
 dui theme set streamline
 
+set ::streamline_longpress_threshold 2000
+
 if {$::android != 1} {
 	set ::settings(ghc_is_installed) 0
 }
@@ -232,7 +234,7 @@ load_font "Inter-Bold12" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
 load_font "Inter-Bold11" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
 
 # Profile buttons
-load_font "Inter-Bold13" "[homedir]/skins/Streamline/Inter-Bold.ttf" 14 14 bold
+load_font "Inter-Bold13" "[homedir]/skins/Streamline/Inter-Bold.ttf" 15 15 bold
 
 # status
 
@@ -314,6 +316,7 @@ set ::all_pages [list off off_zoomed espresso_zoomed steam steam_zoomed espresso
 #set ::pages_not_off [list steam espresso water flush info hotwaterrinse]
 
 set ::streamline_hotwater_btn_mode "ml"
+set ::streamline_steam_btn_mode "time"
 
 dui page add $::all_pages -bg_color $::background_color
 
@@ -513,7 +516,7 @@ proc streamline_history_most_common_profiles { {max 500} } {
 
 streamline_init_history_files
 
-puts "ERROR [streamline_history_most_common_profiles]"
+	#puts "ERROR [streamline_history_most_common_profiles]"
 
 
 proc back_from_settings {} {
@@ -763,6 +766,9 @@ proc steam_timeout_seconds {} {
 
 set ::streamline_hotwater_label_1st ""
 set ::streamline_hotwater_label_2nd ""
+
+set ::streamline_steam_label_1st ""
+set ::streamline_steam_label_2nd ""
 
 set zoomed_btns ""
 lappend zoomed_btns \
@@ -1103,7 +1109,7 @@ streamline_rounded_rectangle $::pages 360 1396 478 1439  $::box_color  20 hotwat
 streamline_rounded_rectangle $::pages 360 1192 478 1235  $::box_color  20 flush_setting_rectangle
 
 # stream 
-streamline_rounded_rectangle $::pages 360 966 478 1008  $::box_color  20 steam_setting_rectangle
+streamline_rounded_rectangle $::pages 360 946 478 988  $::box_color  20 steam_setting_rectangle
 
 # temp 
 streamline_rounded_rectangle $::pages 360 738 478 781  $::box_color  20 temp_setting_rectangle
@@ -1124,7 +1130,7 @@ add_de1_text "off" 50 282 -justify left -anchor "nw" -text [translate "Grind"] -
 add_de1_text "off" 50 398 -justify left -anchor "nw" -text [translate "Dose"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text "off espresso" 50 516 -justify left -anchor "nw" -text [translate "Drink"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text "off" 50 741 -justify left -anchor "nw" -text [translate "Brew"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
-add_de1_text "off steam" 50 967 -justify left -anchor "nw" -text [translate "Steam"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
+add_de1_text "off steam" 50 947 -justify left -anchor "nw" -text [translate "Steam"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text "off flush hotwaterrinse" 50 1194 -justify left -anchor "nw" -text [translate "Flush"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 add_de1_text "off water" 50 1397 -justify left -anchor "nw" -text [translate "Hot Water"] -font Inter-Bold16 -fill $::left_label_color2 -width [rescale_x_skin 200]
 
@@ -1136,9 +1142,8 @@ add_de1_text "espresso water flush hotwaterrinse" 50 967 -justify left -anchor "
 add_de1_text "espresso steam water" 50 1194 -justify left -anchor "nw" -text [translate "Flush"] -font Inter-Bold16 -fill $::left_label_color2_disabled -width [rescale_x_skin 200]
 add_de1_text "espresso steam flush hotwaterrinse" 50 1397 -justify left -anchor "nw" -text [translate "Hot Water"] -font Inter-Bold16 -fill $::left_label_color2_disabled -width [rescale_x_skin 200]
 
-
-
-
+################################################################################################
+# two line hot water control over temp and vold
 set ::hw_temp_vol_part1 ""
 set ::hw_temp_vol_part2 ""
 set ::hw_temp_vol_part3 ""
@@ -1203,12 +1208,210 @@ proc hw_temp_vol_flip {} {
 }
 hw_temp_vol_flip
 
-
 # tap areas
 add_de1_button "off" {hw_temp_vol_flip} 0 1376 222 1498 ""
 
 ############################################################################################################################################################################################################
 
+
+################################################################################################
+# two line steam control over time and flow
+set ::steam_time_flow_part1 ""
+set ::steam_time_flow_part2 ""
+set ::steam_time_flow_part3 ""
+set ::steam_time_flow_part4 ""
+set ::steam_time_flow_part5 ""
+set ::steam_time_flow_part6 ""
+
+set ::steam_time_flow [add_de1_rich_text "off steam" 50 986 left 0 1 10 $::box_color [list \
+	[list -text {$::steam_time_flow_part1} -font Inter-Bold11 -foreground $::left_label_color2 -exec steam_time_flow_flip] \
+	[list -text {$::steam_time_flow_part2} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip] \
+	[list -text {$::steam_time_flow_part3} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip] \
+	[list -text {$::steam_time_flow_part4} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip ] \
+	[list -text {$::steam_time_flow_part5} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip ] \
+	[list -text {$::steam_time_flow_part6} -font Inter-Bold11 -foreground $::left_label_color2 -exec steam_time_flow_flip ] \
+]]
+
+proc refresh_steam_time_flow_labels {} {
+	
+	if {$::streamline_steam_btn_mode == "time"} {
+
+		set ::steam_time_flow_part1 "Time"
+		set ::steam_time_flow_part2 " | "
+		set ::steam_time_flow_part3 "Flow"
+		set ::steam_time_flow_part4 ""
+		set ::steam_time_flow_part5 ""
+		set ::steam_time_flow_part6 ""
+	} else {
+
+		set ::steam_time_flow_part1 ""
+		set ::steam_time_flow_part2 ""
+		set ::steam_time_flow_part3 ""
+		set ::steam_time_flow_part4 "Time"
+		set ::steam_time_flow_part5 " | "
+		set ::steam_time_flow_part6 "Flow"
+	}
+
+	catch {
+		::refresh_$::steam_time_flow
+	}
+
+
+	#puts "ERROR refresh_steam_time_flow_labelsrefresh_steam_time_flow_labelsrefresh_steam_time_flow_labelsrefresh_steam_time_flow_labels"
+
+}
+
+
+
+proc refresh_favorite_steam_button_labels {} {
+
+	puts "refresh_favorite_steam_button_labels"
+
+	set steams [ifexists ::settings(favorite_steams)]
+	set streamline_selected_favorite_steam ""
+	catch {
+		set streamline_selected_favorite_steam [dict get $steams selected number]
+	}
+
+	set steams [ifexists ::settings(favorite_steams)]
+
+	set t1 ""
+	set t2 ""
+	set t3 ""
+	set t4 ""
+
+	catch {
+		set t1 [dict get $steams 1 value]
+	}
+	catch {
+		set t2 [dict get $steams 2 value]
+	}
+	catch {
+		set t3 [dict get $steams 3 value]
+	}
+	catch {
+		set t4 [dict get $steams 4 value]
+	}
+
+	set changed 0
+	if {$t1 == ""} {
+		set t1 "0"
+		dict set steams 1 value $t1
+		set changed 1
+	}
+
+	if {$t2 == ""} {
+		set t2 "25"		
+		dict set steams 2 value $t2
+		set changed 1
+	}
+
+	if {$t3 == ""} {
+		set t3 "30"		
+		dict set steams 3 value $t3
+		set changed 1
+	}
+
+	if {$t4 == ""} {
+		set t4 "40"		
+		dict set steams 4 value $t4
+		set changed 1
+	}
+
+
+	if {$changed == 1} {
+		set ::settings(favorite_steams) $steams	
+		save_settings	
+		
+	}
+
+	set ::streamline_favorite_steam_buttons(label_1) [seconds_text_very_abbreviated $t1]
+	set ::streamline_favorite_steam_buttons(label_2) [seconds_text_very_abbreviated $t2]
+	set ::streamline_favorite_steam_buttons(label_3) [seconds_text_very_abbreviated $t3]
+	set ::streamline_favorite_steam_buttons(label_4) [seconds_text_very_abbreviated $t4]
+
+	if {$t1 == "0"} {
+		set ::streamline_favorite_steam_buttons(label_1) [translate "off"]
+	}
+	if {$t2 == "0"} {
+		set ::streamline_favorite_steam_buttons(label_2) [translate "off"]
+	}
+	if {$t3 == "0"} {
+		set ::streamline_favorite_steam_buttons(label_3) [translate "off"]
+	}
+	if {$t4 == "0"} {
+		set ::streamline_favorite_steam_buttons(label_4) [translate "off"]
+	}
+
+
+	set lb1c $::preset_value_color
+	set lb2c $::preset_value_color
+	set lb3c $::preset_value_color
+	set lb4c $::preset_value_color
+
+
+	if {$::settings(steam_timeout) == [dict get $steams 1 value]} {
+		set lb1c $::preset_label_selected_color
+	} 
+	if {$::settings(steam_timeout) == [dict get $steams 2 value]} {
+		set lb2c $::preset_label_selected_color
+	} 
+	if {$::settings(steam_timeout) == [dict get $steams 3 value]} {
+		set lb3c $::preset_label_selected_color
+	} 
+	if {$::settings(steam_timeout) == [dict get $steams 4 value]} {
+		set lb4c $::preset_label_selected_color
+	}
+
+	.can itemconfigure steam_btn_1 -fill $lb1c
+	.can itemconfigure steam_btn_2 -fill $lb2c
+	.can itemconfigure steam_btn_3 -fill $lb3c
+	.can itemconfigure steam_btn_4 -fill $lb4c
+}
+refresh_favorite_steam_button_labels
+
+
+proc streamline_steam_setting_change { } {
+
+	puts "streamline_steam_setting : $::streamline_steam_btn_mode"
+	if {$::streamline_steam_btn_mode == "time"} {
+		set ::streamline_steam_label_1st "$::settings(steam_timeout) [translate s]"
+		set ::streamline_steam_label_2nd "([round_to_one_digits [expr {$::settings(steam_flow) / 100.0}]])"
+	} else {
+		set ::streamline_steam_label_1st "[round_to_one_digits [expr {$::settings(steam_flow) / 100.0}]]"
+		set ::streamline_steam_label_2nd "($::settings(steam_timeout) [translate s])"
+	}
+}
+
+
+proc steam_time_flow_flip {} {
+
+	if {$::streamline_steam_btn_mode == "time"} {
+		set ::streamline_steam_btn_mode "flow"
+
+	} else {
+		set ::streamline_steam_btn_mode "time"
+	}
+
+	#puts "ERROR steam_time_flow_flip $::streamline_steam_btn_mode "
+	refresh_steam_time_flow_labels
+
+	#catch {
+	#	::refresh_$::steam_time_flow
+	#}
+
+	#catch {
+		refresh_favorite_steam_button_labels
+		streamline_steam_setting_change
+
+	#}
+}
+steam_time_flow_flip
+
+# tap areas
+add_de1_button "off" {hw_temp_vol_flip} 0 1376 222 1498 ""
+
+############################################################################################################################################################################################################
 
 ############################################################################################################################################################################################################
 # data card on the bottom center
@@ -1311,8 +1514,8 @@ if {$::android == 1 || $::undroid == 1} {
 	set ::streamline_history_right ">"
 }
 
-dui add dbutton "off" 628 1220 755 1465 -tags profile_back $::streamline_history_cmd $::streamline_history_left  -command { say [translate {Previous}] $::settings(sound_button_out); streamline_history_profile_back }  -longpress_cmd { say [translate {First}] $::settings(sound_button_out); streamline_history_profile_fwd 0 } 
-dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd $::streamline_history_cmd " "  -command { say [translate {Next}] $::settings(sound_button_out); streamline_history_profile_fwd } -longpress_cmd { say [translate {Newest}] $::settings(sound_button_out); streamline_history_profile_fwd 1 } 
+dui add dbutton "off" 628 1220 755 1465 -tags profile_back $::streamline_history_cmd $::streamline_history_left  -command { say [translate {Previous}] $::settings(sound_button_out); streamline_history_profile_back } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {First}] $::settings(sound_button_out); streamline_history_profile_fwd 0 } 
+dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd $::streamline_history_cmd " "  -command { say [translate {Next}] $::settings(sound_button_out); streamline_history_profile_fwd } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Newest}] $::settings(sound_button_out); streamline_history_profile_fwd 1 } 
 
 proc streamline_zero_pad {num dig prec {optional_label {}}} {
 	if {$num == ""} {
@@ -1392,8 +1595,11 @@ add_de1_variable "off " 418 304 -justify center -anchor "center" -text [translat
 add_de1_variable "off " 418 418 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags dose_label_1st -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
 add_de1_variable "off  espresso" 418 512 -justify center -anchor "center" -text [translate "45g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags weight_label_1st -textvariable {[return_weight_measurement [determine_final_weight] 2]}
 add_de1_variable "off  espresso" 418 558 -justify center -anchor "center" -text [translate "1:2.3"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
-add_de1_variable "off " 418 761 -justify center -anchor "center" -text [translate "92"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags temp_label_1st -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 1]}   
-add_de1_variable "off  steam" 418 988 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {[steam_timeout_seconds]}
+add_de1_variable "off " 418 761 -justify center -anchor "center" -text [translate "92"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags temp_label_1st -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 0]}   
+#add_de1_variable "off  steam" 418 988 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {[steam_timeout_seconds]}
+add_de1_variable "off  steam" 418 968 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {$::streamline_steam_label_1st}
+add_de1_variable "off  steam" 418 1011 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_steam_label_2nd}
+
 add_de1_variable "off  flush hotwaterrinse" 418 1215 -justify center -anchor "center" -text [translate "5s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags flush_label_1st -textvariable {[seconds_text_very_abbreviated $::settings(flush_seconds)]}
 add_de1_variable "off  water" 418 1417 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags hotwater_label_1st -textvariable {$::streamline_hotwater_label_1st}
 add_de1_variable "off  water" 418 1460 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
@@ -1414,7 +1620,7 @@ add_de1_button "off " { ask_for_data_entry_number [translate "DOSE"] [ifexists :
 add_de1_button "off " { ask_for_data_entry_number [translate "DRINK"] [ifexists ::settings(final_desired_shot_weight)] ::settings(final_desired_shot_weight) [translate "g"] 0 0 2000 [list {streamline_set_drink_weight $::settings(final_desired_shot_weight)} refresh_favorite_dosebev_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
 
 add_de1_button "off " { choose_appropriate_data_entry_for_brew_temp} 370 716 470 796  ""   
-add_de1_button "off " { ask_for_data_entry_number [translate "STEAM"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st"]} 370 944 470 1024  ""   
+add_de1_button "off " { choose_appropriate_data_entry_for_steam } 370 944 470 1024  ""   
 add_de1_button "off " { ask_for_data_entry_number [translate "FLUSH"] [ifexists ::settings(flush_seconds)] ::settings(flush_seconds) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting flush_setting_rectangle flush_label_1st"]} 370 1172 470 1252  ""   
 add_de1_button "off " { choose_appropriate_data_entry_for_hot_water } 370 1400 470 1480  ""   
 
@@ -1468,6 +1674,23 @@ proc choose_appropriate_data_entry_for_hot_water {} {
 	refresh_favorite_temperature_button_labels
 }
 
+proc save_steam_flow_rate {} {
+	set ::settings(steam_flow) [expr {int(100 * $::data_entry_steam_flow)}]
+
+}
+proc choose_appropriate_data_entry_for_steam {} {
+	if {$::streamline_steam_btn_mode == "time"} {
+		#ask_for_data_entry_number [translate "STEAM TIMEOUT"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st"]
+		ask_for_data_entry_number [translate "STEAM TIMEOUT"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 0 255 [list streamline_steam_setting_change refresh_favorite_steam_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st" refresh_steam_time_flow_labels]
+	} else {
+
+		set ::data_entry_steam_flow [round_to_two_digits [expr {.01 * $::settings(steam_flow)}]]
+		ask_for_data_entry_number [translate "STEAM FLOW"] [ifexists ::data_entry_steam_flow] ::data_entry_steam_flow "ml/s" 0 0.4 2.5 [list save_steam_flow_rate streamline_steam_setting_change refresh_favorite_steam_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st" refresh_steam_time_flow_labels]
+
+	}
+	refresh_favorite_steam_button_labels
+}
+
 
 # highly rounded rectangles
 
@@ -1511,9 +1734,9 @@ streamline_rounded_rectangle $::pages 487 1512 607 1562  $::box_color  20 hot_wa
 # draw current setting numbers on the left margin
 
 set streamline_preset_pos_col1 50
-set streamline_preset_pos_col2 196
-set streamline_preset_pos_col3 348
-set streamline_preset_pos_col4 580
+set streamline_preset_pos_col2 204
+set streamline_preset_pos_col3 356
+set streamline_preset_pos_col4 578 
 
 
 #########
@@ -1529,10 +1752,10 @@ add_de1_variable "steam water flush hotwaterrinse" $streamline_preset_pos_col2 6
 add_de1_variable "steam water flush hotwaterrinse" $streamline_preset_pos_col3 616  -justify left  -tags dose_btn_3d -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_3)}
 add_de1_variable "steam water flush hotwaterrinse" $streamline_preset_pos_col4 616  -justify right -tags dose_btn_4d -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_4)}
 
-dui add dbutton "off" 0 610 148 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 1 } -theme none  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 1 } 
-dui add dbutton "off" 148 610 310 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 2 } 
-dui add dbutton "off" 310 610 474 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 3 } 
-dui add dbutton "off" 474 610 624 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 4 } 
+dui add dbutton "off" 0 610 148 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 1 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 1 } 
+dui add dbutton "off" 148 610 310 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 2 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 2 } 
+dui add dbutton "off" 310 610 474 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 3 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 3 } 
+dui add dbutton "off" 474 610 624 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 4 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 4 } 
 
 
 
@@ -1548,10 +1771,10 @@ add_de1_variable "espresso steam water flush hotwaterrinse" $streamline_preset_p
 add_de1_variable "espresso steam water flush hotwaterrinse" $streamline_preset_pos_col3 842  -justify left  -tags temp_btn_3d -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_temperature_buttons(label_3)}
 add_de1_variable "espresso steam water flush hotwaterrinse" $streamline_preset_pos_col4 842  -justify right -tags temp_btn_4d -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_temperature_buttons(label_4)}
 
-dui add dbutton $::pages 0 838 148 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 1 } -theme none  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 1 } 
-dui add dbutton $::pages 148 838 310 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 2 } 
-dui add dbutton $::pages 310 838 474 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 3 } 
-dui add dbutton $::pages 474 838 624 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 4 } 
+dui add dbutton $::pages 0 838 148 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 1 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 1 } 
+dui add dbutton $::pages 148 838 310 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 2 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 2 } 
+dui add dbutton $::pages 310 838 474 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 3 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 3 } 
+dui add dbutton $::pages 474 838 624 900 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_temperature_select 4 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_temperature_preset 4 } 
 
 
 
@@ -1571,10 +1794,10 @@ add_de1_variable "espresso water flush hotwaterrinse" $streamline_preset_pos_col
 add_de1_variable "espresso water flush hotwaterrinse" $streamline_preset_pos_col4 1068  -justify right -tags steam_btn_4d -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_steam_buttons(label_4)}
 
 
-dui add dbutton "espresso water flush hotwaterrinse"  0 1066 148 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 1 } -theme none  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 1 } 
-dui add dbutton "espresso water flush hotwaterrinse" 148 1066 310 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 2 } 
-dui add dbutton "espresso water flush hotwaterrinse" 310 1066 474 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 3 } 
-dui add dbutton "espresso water flush hotwaterrinse" 474 1066 624 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 4 } 
+dui add dbutton "espresso water flush hotwaterrinse"  0 1066 148 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 1 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 1 } 
+dui add dbutton "espresso water flush hotwaterrinse" 148 1066 310 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 2 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 2 } 
+dui add dbutton "espresso water flush hotwaterrinse" 310 1066 474 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 3 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 3 } 
+dui add dbutton "espresso water flush hotwaterrinse" 474 1066 624 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 4 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 4 } 
 
 
 #########
@@ -1592,10 +1815,10 @@ add_de1_variable "espresso steam water" $streamline_preset_pos_col3 1296  -justi
 add_de1_variable "espresso steam water" $streamline_preset_pos_col4 1296  -justify right -tags flush_btn_4d -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_flush_buttons(label_4)}
 
 
-dui add dbutton "off flush hotwaterrinse" 0 1288 148 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 1 } -theme none  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 1 } 
-dui add dbutton "off flush hotwaterrinse" 148 1288 310 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 2 } 
-dui add dbutton "off flush hotwaterrinse" 310 1288 474 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 3 } 
-dui add dbutton "off flush hotwaterrinse" 474 1288 624 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 4 } 
+dui add dbutton "off flush hotwaterrinse" 0 1288 148 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 1 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 1 } 
+dui add dbutton "off flush hotwaterrinse" 148 1288 310 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 2 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 2 } 
+dui add dbutton "off flush hotwaterrinse" 310 1288 474 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 3 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 3 } 
+dui add dbutton "off flush hotwaterrinse" 474 1288 624 1350 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_flush_select 4 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_flush_preset 4 } 
 
 
 #########
@@ -1615,10 +1838,10 @@ add_de1_variable "espresso steam flush hotwaterrinse" $streamline_preset_pos_col
 add_de1_variable "espresso steam flush hotwaterrinse" $streamline_preset_pos_col3 1520  -justify left -tags hw_btn_3d -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_hw_buttons(label_3)}
 add_de1_variable "espresso steam flush hotwaterrinse" $streamline_preset_pos_col4 1520  -justify right -tags hw_btn_4d -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_hw_buttons(label_4)}
 
-dui add dbutton "off water" 0 1516 148 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 1 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 1 } 
-dui add dbutton "off water" 148 1516 310 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 2 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 2 } 
-dui add dbutton "off water" 310 1516 474 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 3 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 3 } 
-dui add dbutton "off water" 474 1516 624 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 4 } -theme none  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 4 } 
+dui add dbutton "off water" 0 1516 148 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 1 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 1 } 
+dui add dbutton "off water" 148 1516 310 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 2 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 2 } 
+dui add dbutton "off water" 310 1516 474 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 3 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 3 } 
+dui add dbutton "off water" 474 1516 624 1600 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_hw_preset_select 4 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_hw_preset 4 } 
 
 #########
 
@@ -1738,14 +1961,14 @@ proc refresh_favorite_profile_button_labels {} {
 dui aspect set -theme streamline -type dbutton label_font Inter-Bold13
 
 # rounded retangle radius
-dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 90]
+dui aspect set -theme streamline -type dbutton radius 45
 
 # rounded rectangle line width
 dui aspect set -theme streamline -type dbutton width 2
 
 
 # width of the text, to enable auto-wrapping
-dui aspect set -theme streamline -type dbutton_label width [rescale_x_skin 480]
+dui aspect set -theme streamline -type dbutton_label width 300
 
 # button shape
 dui aspect set -theme streamline -type dbutton shape round_outline 
@@ -1760,18 +1983,22 @@ dui aspect set -theme streamline -type dbutton label_pos ".50 .50"
 dui aspect set -theme streamline -type dbutton label_fill $::profile_button_button_color
 
 # width of text of profile selection button
-dui aspect set -theme streamline -type dbutton_label width 220
+#dui aspect set -theme streamline -type dbutton_label width 220
+#dui aspect set -theme streamline -type dbutton label_width [rescale_x_skin 480]
 
 
-set first_button_start 30
-set profile_button_width 350
+
+set first_button_start 40
+set profile_button_width 320
 set profile_button_gap 20
+set profile_button_top 45
+set profile_button_bottom 175
 #  -longpress_cmd { puts "ERRORlongpress" }
-dui add dbutton $::all_pages [expr {$first_button_start}] 40 [expr {$first_button_start + $profile_button_width}] 180 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 1 } -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 1 }
-dui add dbutton $::all_pages [expr {$first_button_start + $profile_button_width + $profile_button_gap}] 40 [expr {$first_button_start + (2*$profile_button_width) + $profile_button_gap}] 180 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 2 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 2 }
-dui add dbutton $::all_pages [expr {$first_button_start + (2*$profile_button_width) + (2*$profile_button_gap)}] 40 [expr {$first_button_start + (3*$profile_button_width) + (2*$profile_button_gap)}] 180 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 3 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 3 }
-dui add dbutton $::all_pages [expr {$first_button_start + (3*$profile_button_width) + (3*$profile_button_gap)}] 40 [expr {$first_button_start + (4*$profile_button_width) + (3*$profile_button_gap)}] 180 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 4 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 4 }
-dui add dbutton $::all_pages [expr {$first_button_start + (4*$profile_button_width) + (4*$profile_button_gap)}] 40 [expr {$first_button_start + (5*$profile_button_width) + (4*$profile_button_gap)}] 180 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 5 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 5 }
+dui add dbutton $::all_pages [expr {$first_button_start}] $profile_button_top [expr {$first_button_start + $profile_button_width}] $profile_button_bottom -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 1 } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 1 }
+dui add dbutton $::all_pages [expr {$first_button_start + $profile_button_width + $profile_button_gap}] $profile_button_top [expr {$first_button_start + (2*$profile_button_width) + $profile_button_gap}] $profile_button_bottom -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 2 } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 2 }
+dui add dbutton $::all_pages [expr {$first_button_start + (2*$profile_button_width) + (2*$profile_button_gap)}] $profile_button_top [expr {$first_button_start + (3*$profile_button_width) + (2*$profile_button_gap)}] $profile_button_bottom -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 3 } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 3 }
+dui add dbutton $::all_pages [expr {$first_button_start + (3*$profile_button_width) + (3*$profile_button_gap)}] $profile_button_top [expr {$first_button_start + (4*$profile_button_width) + (3*$profile_button_gap)}] $profile_button_bottom -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 4 } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 4 }
+dui add dbutton $::all_pages [expr {$first_button_start + (4*$profile_button_width) + (4*$profile_button_gap)}] $profile_button_top [expr {$first_button_start + (5*$profile_button_width) + (4*$profile_button_gap)}] $profile_button_bottom -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 5 } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 5 }
 
 
 
@@ -1785,14 +2012,14 @@ dui aspect set -theme streamline -type dbutton width 2
 
 # rounded retangle radius
 #dui aspect set -theme streamline -type dbutton radius 36
-dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 56]
+dui aspect set -theme streamline -type dbutton radius 45
 
 # font color
 dui aspect set -theme streamline -type dbutton label_fill $::settings_sleep_button_text_color
 
 
 dui add dbutton $::all_pages 2110 66 2310 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_out); show_settings "" "back_from_settings" }
-dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); app_exit } 
+dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); app_exit } 
 
 
 
@@ -1846,7 +2073,7 @@ dui aspect set -theme streamline -type dbutton label_fill "$::plus_minus_text_co
 dui aspect set -theme streamline -type dbutton label_font Inter-Bold24 
 
 # rounded retangle radius
-dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 36]
+dui aspect set -theme streamline -type dbutton radius 18
 
 # rounded retangle line width
 dui aspect set -theme streamline -type dbutton width 2 
@@ -1859,24 +2086,24 @@ dui aspect set -theme streamline -type dbutton shape round_outline
 # the - buttons
 # label position is higher because we're using a _ as a minus symbol
 dui aspect set -theme streamline -type dbutton label_pos ".50 .22" 
-dui add dbutton "off" 254 257 346 349 -tags streamline_minus_grind_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_adjust_grind -- } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_adjust_grind - }
-dui add dbutton "off" 254 369 346 461 -tags streamline_minus_dose_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_dose_btn -- } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_dose_btn - }
-dui add dbutton "off espresso" 254 486 346 578 -tags streamline_minus_beverage_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_beverage_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_beverage_btn - }
-dui add dbutton "off" 254 713 346 805 -tags streamline_minus_temp_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_temp_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_temp_btn - }
-dui add dbutton "off steam" 254 940 346 1032 -tags streamline_minus_steam_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_steam_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_steam_btn - }
-dui add dbutton "off flush hotwaterrinse" 254 1164 346 1256 -tags streamline_minus_flush_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_flush_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_flush_btn - }
-dui add dbutton "off water" 254 1390 346 1482 -tags streamline_minus_hotwater_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_hotwater_btn - } -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_hotwater_btn - }
+dui add dbutton "off" 254 257 346 349 -tags streamline_minus_grind_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_adjust_grind -- } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_adjust_grind - }
+dui add dbutton "off" 254 369 346 461 -tags streamline_minus_dose_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_dose_btn -- } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_dose_btn - }
+dui add dbutton "off espresso" 254 486 346 578 -tags streamline_minus_beverage_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_beverage_btn - } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_beverage_btn - }
+dui add dbutton "off" 254 713 346 805 -tags streamline_minus_temp_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_temp_btn - } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_temp_btn -- }
+dui add dbutton "off steam" 254 940 346 1032 -tags streamline_minus_steam_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_steam_btn - } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_steam_btn - }
+dui add dbutton "off flush hotwaterrinse" 254 1164 346 1256 -tags streamline_minus_flush_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_flush_btn - } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_flush_btn - }
+dui add dbutton "off water" 254 1390 346 1482 -tags streamline_minus_hotwater_btn -label "_"  -command { say [translate {Minus}] $::settings(sound_button_out); streamline_hotwater_btn - } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Minus}] $::settings(sound_button_out); streamline_hotwater_btn - }
 
 # the + buttons
 # label position for +
 dui aspect set -theme streamline -type dbutton label_pos ".49 .44" 
-dui add dbutton "off" 486 259 578 351 -tags streamline_plus_grind_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_adjust_grind ++ } -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_adjust_grind + }
-dui add dbutton "off" 486 371 578 463 -tags streamline_plus_dose_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_dose_btn ++ }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_dose_btn + }
-dui add dbutton "off espresso" 486 488 578 580 -tags streamline_plus_beverage_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_beverage_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_beverage_btn + }
-dui add dbutton "off" 486 715 578 807 -tags streamline_plus_temp_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_temp_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_temp_btn + }
-dui add dbutton "off steam" 486 942 578 1034 -tags streamline_plus_steam_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_steam_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_steam_btn + }
-dui add dbutton "off flush hotwaterrinse" 486 1166 578 1258 -tags streamline_plus_flush_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_flush_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_flush_btn + }
-dui add dbutton "off water" 486 1392 578 1484 -tags streamline_plus_hotwater_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_hotwater_btn + }  -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_hotwater_btn + }
+dui add dbutton "off" 486 259 578 351 -tags streamline_plus_grind_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_adjust_grind ++ } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_adjust_grind + }
+dui add dbutton "off" 486 371 578 463 -tags streamline_plus_dose_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_dose_btn ++ }  -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_dose_btn + }
+dui add dbutton "off espresso" 486 488 578 580 -tags streamline_plus_beverage_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_beverage_btn + }  -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_beverage_btn + }
+dui add dbutton "off" 486 715 578 807 -tags streamline_plus_temp_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_temp_btn + }  -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_temp_btn ++ }
+dui add dbutton "off steam" 486 942 578 1034 -tags streamline_plus_steam_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_steam_btn + }  -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_steam_btn + }
+dui add dbutton "off flush hotwaterrinse" 486 1166 578 1258 -tags streamline_plus_flush_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_flush_btn + }  -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_flush_btn + }
+dui add dbutton "off water" 486 1392 578 1484 -tags streamline_plus_hotwater_btn -label "+"  -command { say [translate {Plus}] $::settings(sound_button_out); streamline_hotwater_btn + }  -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Plus}] $::settings(sound_button_out); streamline_hotwater_btn + }
 
 ##### disabled versions of same
 dui aspect set -theme streamline -type dbutton fill $::plus_minus_flash_off_color_disabled
@@ -2023,11 +2250,25 @@ proc streamline_temp_btn { args } {
 			flash_button "streamline_plus_temp_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 			save_profile_and_update_de1_soon
 		}
+	} elseif {$args == "--"} {
+		if {$::settings(espresso_temperature) > 1} {
+			#set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) - 1}]
+			change_espresso_temperature -0.5
+			flash_button "streamline_minus_temp_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
+			save_profile_and_update_de1_soon
+		}
+	} elseif {$args == "++"} {
+		if {$::settings(espresso_temperature) < 110} {
+			#set ::settings(espresso_temperature) [expr {$::settings(espresso_temperature) + 1}]
+			change_espresso_temperature 0.5
+			flash_button "streamline_plus_temp_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
+			save_profile_and_update_de1_soon
+		}
 	}
 	refresh_favorite_temperature_button_labels
 }
 
-proc streamline_steam_btn { args } {
+proc streamline_steam_btn_obs { args } {
 	if {$args == "-"} {
 		if {$::settings(steam_timeout) > 0} {
 			set ::settings(steam_timeout) [expr {$::settings(steam_timeout) - 1}]
@@ -2068,7 +2309,7 @@ proc streamline_flush_btn { args } {
 
 proc streamline_hot_water_setting_change { } {
 
-	puts "streamline_hot_water_setting : ::streamline_hot_water_setting"
+	#puts "streamline_hot_water_setting : $::streamline_hot_water_setting"
 	if {$::streamline_hotwater_btn_mode == "ml"} {
 		set ::streamline_hotwater_label_1st [return_liquid_measurement_ml $::settings(water_volume)]
 		set ::streamline_hotwater_label_2nd ([return_temperature_measurement_no_unit $::settings(water_temperature) 1])
@@ -2116,16 +2357,56 @@ proc streamline_hotwater_btn { args } {
 	refresh_favorite_hw_button_labels
 }
 
-proc OBSOLETE_toggle_streamline_hot_water_setting {} {
-	puts toggle_streamline_hot_water_setting
-	if {$::streamline_hotwater_btn_mode == "ml"} {
-		set ::streamline_hotwater_btn_mode "temp"
-	} else {
-		set ::streamline_hotwater_btn_mode "ml"
-	}
-	streamline_hot_water_setting_change
-}
 streamline_hot_water_setting_change
+
+
+
+
+
+
+
+
+proc streamline_steam_btn { args } {
+
+	if {$::streamline_steam_btn_mode == "time"} {
+		if {$args == "-"} {
+			if {$::settings(steam_timeout) > 0} {
+				set ::settings(steam_timeout) [expr {$::settings(steam_timeout) - 1}]
+				flash_button "streamline_minus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
+				save_profile_and_update_de1_soon
+			}
+		} elseif {$args == "+"} {
+			if {$::settings(steam_timeout) < 254} {
+				set ::settings(steam_timeout) [expr {$::settings(steam_timeout) + 1}]
+				flash_button "streamline_plus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
+				save_profile_and_update_de1_soon
+			}
+		}
+		refresh_favorite_steam_button_labels
+
+	} else {
+		# the UI mode is set to change the temperature
+		if {$args == "-"} {
+			if {$::settings(steam_flow) > 0} {
+				set ::settings(steam_flow) [expr {$::settings(steam_flow) - 10}]
+				flash_button "streamline_minus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
+				save_profile_and_update_de1_soon
+			}
+		} elseif {$args == "+"} {
+			if {$::settings(steam_timeout) < 254} {
+				set ::settings(steam_flow) [expr {$::settings(steam_flow) + 10}]
+				flash_button "streamline_plus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
+				save_profile_and_update_de1_soon
+			}
+		}
+		refresh_favorite_steam_button_labels
+
+	}
+	streamline_steam_setting_change
+	refresh_favorite_steam_button_labels
+}
+
+streamline_steam_setting_change
 
 ############################################################################################################################################################################################################
 # Profile QuickSettings
@@ -2146,7 +2427,7 @@ dui aspect set -theme streamline -type dbutton outline "#3e5682"
 # inside button color
 dui aspect set -theme streamline -type dbutton fill "#3e5682"
 
-dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 80]
+dui aspect set -theme streamline -type dbutton radius 40
 
 dui add dbutton "settings_1" 50 1452 160 1580  -tags profile_btn_1 -label "1"  -command { say [translate {Preset}] $::settings(sound_button_out); save_favorite_profile 1 } 
 dui add dbutton "settings_1" 180 1452 290 1580   -tags profile_btn_2 -label "2"  -command { say [translate {Preset}] $::settings(sound_button_out); save_favorite_profile 2 } 
@@ -2300,7 +2581,7 @@ if {$::settings(ghc_is_installed) == 0} {
 	
 	dui aspect set -theme streamline -type dbutton label1_font icomoon
 	# rounded retangle radius
-	dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 36]
+	dui aspect set -theme streamline -type dbutton radius 18
 
 	# rounded retangle line width
 	dui aspect set -theme streamline -type dbutton width 2 
@@ -2560,113 +2841,6 @@ proc refresh_favorite_temperature_button_labels {} {
 	.can itemconfigure temp_btn_4 -fill $lb4c
 }
 
-
-
-proc refresh_favorite_steam_button_labels {} {
-
-	puts "refresh_favorite_steam_button_labels"
-
-	set steams [ifexists ::settings(favorite_steams)]
-	set streamline_selected_favorite_steam ""
-	catch {
-		set streamline_selected_favorite_steam [dict get $steams selected number]
-	}
-
-	set steams [ifexists ::settings(favorite_steams)]
-
-	set t1 ""
-	set t2 ""
-	set t3 ""
-	set t4 ""
-
-	catch {
-		set t1 [dict get $steams 1 value]
-	}
-	catch {
-		set t2 [dict get $steams 2 value]
-	}
-	catch {
-		set t3 [dict get $steams 3 value]
-	}
-	catch {
-		set t4 [dict get $steams 4 value]
-	}
-
-	set changed 0
-	if {$t1 == ""} {
-		set t1 "0"
-		dict set steams 1 value $t1
-		set changed 1
-	}
-
-	if {$t2 == ""} {
-		set t2 "25"		
-		dict set steams 2 value $t2
-		set changed 1
-	}
-
-	if {$t3 == ""} {
-		set t3 "30"		
-		dict set steams 3 value $t3
-		set changed 1
-	}
-
-	if {$t4 == ""} {
-		set t4 "40"		
-		dict set steams 4 value $t4
-		set changed 1
-	}
-
-
-	if {$changed == 1} {
-		set ::settings(favorite_steams) $steams	
-		save_settings	
-		
-	}
-
-	set ::streamline_favorite_steam_buttons(label_1) [seconds_text_very_abbreviated $t1]
-	set ::streamline_favorite_steam_buttons(label_2) [seconds_text_very_abbreviated $t2]
-	set ::streamline_favorite_steam_buttons(label_3) [seconds_text_very_abbreviated $t3]
-	set ::streamline_favorite_steam_buttons(label_4) [seconds_text_very_abbreviated $t4]
-
-	if {$t1 == "0"} {
-		set ::streamline_favorite_steam_buttons(label_1) [translate "off"]
-	}
-	if {$t2 == "0"} {
-		set ::streamline_favorite_steam_buttons(label_2) [translate "off"]
-	}
-	if {$t3 == "0"} {
-		set ::streamline_favorite_steam_buttons(label_3) [translate "off"]
-	}
-	if {$t4 == "0"} {
-		set ::streamline_favorite_steam_buttons(label_4) [translate "off"]
-	}
-
-
-	set lb1c $::preset_value_color
-	set lb2c $::preset_value_color
-	set lb3c $::preset_value_color
-	set lb4c $::preset_value_color
-
-
-	if {$::settings(steam_timeout) == [dict get $steams 1 value]} {
-		set lb1c $::preset_label_selected_color
-	} 
-	if {$::settings(steam_timeout) == [dict get $steams 2 value]} {
-		set lb2c $::preset_label_selected_color
-	} 
-	if {$::settings(steam_timeout) == [dict get $steams 3 value]} {
-		set lb3c $::preset_label_selected_color
-	} 
-	if {$::settings(steam_timeout) == [dict get $steams 4 value]} {
-		set lb4c $::preset_label_selected_color
-	}
-
-	.can itemconfigure steam_btn_1 -fill $lb1c
-	.can itemconfigure steam_btn_2 -fill $lb2c
-	.can itemconfigure steam_btn_3 -fill $lb3c
-	.can itemconfigure steam_btn_4 -fill $lb4c
-}
 
 
 proc refresh_favorite_hw_button_labels {} {
@@ -3144,7 +3318,7 @@ proc streamline_steam_select { slot } {
 	#streamline_blink_rounded_setting "" "steam_btn_$slot"
 }
 
-refresh_favorite_steam_button_labels
+
 
 proc streamline_set_drink_weight {desired_weight} {
 
@@ -4326,7 +4500,7 @@ proc streamline_entry_page_setup {} {
 	dui aspect set -theme streamline -type dbutton label_font Inter-Bold40
 
 	# rounded retangle radius
-	dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 400]
+	dui aspect set -theme streamline -type dbutton radius 200
 
 	# rounded retangle line width
 	dui aspect set -theme streamline -type dbutton width 2 
@@ -4369,7 +4543,7 @@ proc streamline_entry_page_setup {} {
 
 	# font to use
 	dui aspect set -theme streamline -type dbutton label_font Inter-Bold30
-	dui add dbutton "streamline_entry streamline_entry_integer" $col3 $row4 [expr {$col3+$entrywidth}] [expr {$row4+$entryheight}] -tags streamline_plus_grind_btn_back -label "⌫"  -command { streamline_entry_page_button < }  -longpress_cmd { streamline_entry_page_button c } 
+	dui add dbutton "streamline_entry streamline_entry_integer" $col3 $row4 [expr {$col3+$entrywidth}] [expr {$row4+$entryheight}] -tags streamline_plus_grind_btn_back -label "⌫"  -command { streamline_entry_page_button < }  -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { streamline_entry_page_button c } 
 
 
 	# font to use
@@ -4397,7 +4571,7 @@ proc streamline_entry_page_setup {} {
 	dui aspect set -theme streamline -type dbutton outline $::data_card_previous_outline_color
 	dui aspect set -theme streamline -type dbutton label_fill $::datacard_number_text_color
 	dui aspect set -theme streamline -type dbutton label_font Inter-HeavyBold35
-	dui aspect set -theme streamline -type dbutton radius [rescale_y_skin 200]
+	dui aspect set -theme streamline -type dbutton radius 100
 
 	set pentryheight 160
 	set pentrywidth 340
