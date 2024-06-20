@@ -229,8 +229,10 @@ load_font "Inter-Bold16" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 14
 # GHC buttons
 load_font "Inter-Bold12" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
 
-# Profile buttons
 load_font "Inter-Bold11" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
+
+# Profile buttons
+load_font "Inter-Bold13" "[homedir]/skins/Streamline/Inter-Bold.ttf" 14 14 bold
 
 # status
 
@@ -1756,14 +1758,15 @@ dui aspect set -theme streamline -type dbutton label_fill $::profile_button_butt
 dui aspect set -theme streamline -type dbutton_label width 220
 
 
-
-
+set first_button_start 50
+set profile_button_width 350
+set profile_button_gap 20
 #  -longpress_cmd { puts "ERRORlongpress" }
-dui add dbutton $::all_pages 50 50 360 170 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 1 } -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 1 }
-dui add dbutton $::all_pages 380 50 710 170 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 2 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 2 }
-dui add dbutton $::all_pages 730 50 1050 170 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 3 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 3 }
-dui add dbutton $::all_pages 1070 50 1370 170 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 4 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 4 }
-dui add dbutton $::all_pages 1390 50 1690 170 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 5 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 5 }
+dui add dbutton $::all_pages [expr {$first_button_start}] 35 [expr {$first_button_start + $profile_button_width}] 175 -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 1 } -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 1 }
+dui add dbutton $::all_pages [expr {$first_button_start + $profile_button_width + $profile_button_gap}] 35 [expr {$first_button_start + (2*$profile_button_width) + $profile_button_gap}] 175 -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 2 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 2 }
+dui add dbutton $::all_pages [expr {$first_button_start + (2*$profile_button_width) + (2*$profile_button_gap)}] 35 [expr {$first_button_start + (3*$profile_button_width) + (2*$profile_button_gap)}] 175 -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 3 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 3 }
+dui add dbutton $::all_pages [expr {$first_button_start + (3*$profile_button_width) + (3*$profile_button_gap)}] 35 [expr {$first_button_start + (4*$profile_button_width) + (3*$profile_button_gap)}] 175 -tags profile_4_btn -labelvariable {$::streamline_favorite_profile_buttons(label_4)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 4 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 4 }
+dui add dbutton $::all_pages [expr {$first_button_start + (4*$profile_button_width) + (4*$profile_button_gap)}] 35 [expr {$first_button_start + (5*$profile_button_width) + (4*$profile_button_gap)}] 175 -tags profile_5_btn -labelvariable {$::streamline_favorite_profile_buttons(label_5)}   -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 5 }  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 5 }
 
 
 
