@@ -702,6 +702,13 @@ namespace eval ::dui {
 		}
 		
 		proc make { sound_name } {
+
+
+			if {[ifexists ::settings(enable_sounds)] != 1} {
+				# sounds are disabled
+				return
+			}
+
 			::set path [get $sound_name]
 			if { $path ne "" } {
 				catch { borg beep $path } 

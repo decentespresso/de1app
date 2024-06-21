@@ -238,6 +238,7 @@ array set ::settings {
 	weight_detail_curve 0
 	language en
 	display_time_in_screen_saver 0
+	enable_sounds 0
 	insert_preinfusion_pause 0
 	eco_steam 0
 	steam_over_temp_threshold 180

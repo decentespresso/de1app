@@ -1122,9 +1122,13 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 				# note: we could likely replicate this feature in the future with a firmware requiest to repeat the command indefinitely, and this would be UL compliant as the first time would need to be GHC started.
 				#add_de1_widget "measurements" checkbutton 1800 80  {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-				dui add dtoggle "measurements"  1740 704 -height 60 -anchor nw -variable ::settings(stress_test) 
-				add_de1_text "measurements" 1880 704 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+				#dui add dtoggle "measurements"  1740 704 -height 60 -anchor nw -variable ::settings(stress_test) 
+				#add_de1_text "measurements" 1880 704 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 			}
+
+
+			dui add dtoggle "measurements"  1740 704 -height 60 -anchor nw -variable ::settings(enable_sounds) 
+			add_de1_text "measurements" 1880 704 -text [translate "Sounds"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 
 			#set ::_placebo_true 1
 			#add_de1_widget "measurements" checkbutton 1300 740  {} -text [translate "Logging is enabled"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable _placebo_true -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat  -state disabled
