@@ -2014,7 +2014,7 @@ proc refresh_favorite_profile_button_labels {} {
 		set obc($x) "$::profile_button_outline_color"
 	}
 
-	if {$streamline_selected_favorite_profile >= 1 && $streamline_selected_favorite_profile <= 5 && $::settings(profile_title) == $b($streamline_selected_favorite_profile)} {
+	if {$streamline_selected_favorite_profile >= 1 && $streamline_selected_favorite_profile <= 5 && [file tail $::settings(profile_title)] == $b($streamline_selected_favorite_profile)} {
 		set bc($streamline_selected_favorite_profile) $::profile_button_background_selected_color
 		set lbc($streamline_selected_favorite_profile) $::profile_button_button_selected_color
 		set obc($streamline_selected_favorite_profile) $::profile_button_background_selected_color
@@ -2605,7 +2605,12 @@ proc streamline_profile_select { slot } {
 
 	puts "ERROR select profile '[dict get $profiles $slot name]'"
 
-	select_profile $selected_profile
+	set result [select_profile $selected_profile]
+	if {$result == "-1"} {
+		# button points to a now deleted profile
+		return
+	}
+
 	dict set profiles selected number $slot
 	set ::settings(favorite_profiles) $profiles
 

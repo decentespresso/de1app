@@ -2938,7 +2938,9 @@ proc select_profile { profile } {
 	# 
 	unset -nocomplain ::settings(profile_video_help)
 
-	
+	if {[file exists $fn] != 1} {
+		return "-1"
+	}
 	load_settings_vars $fn
 
 	set ::settings(profile_filename) $profile
