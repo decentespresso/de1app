@@ -420,31 +420,27 @@ streamline_rectangle $::all_pages 0 220 2560 220 $::box_line_color
 proc streamline_adjust_grind { args } {
 
 	if {$args == "-"} {
-		if {$::settings(grinder_setting) > 0} {
-			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - .1}]]
-			flash_button "streamline_minus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-		}
+		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - .1}]]
+		flash_button "streamline_minus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	} elseif {$args == "+"} {
-		if {$::settings(grinder_setting) < 1000} {
-			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + .1}]]
-			flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-		}
+		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + .1}]]
+		flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	} elseif {$args == "--"} {
-		if {$::settings(grinder_setting) > 0} {
-			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - 1}]]
-			flash_button "streamline_minus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-		}
+		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - 1}]]
+		flash_button "streamline_minus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	} elseif {$args == "++"} {
-		if {$::settings(grinder_setting) < 1000} {
-			set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + 1}]]
-			flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-		}
+		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + 1}]]
+		flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	}
 
-	#save_profile 0
-	#puts "ERROR streamline_adjust_grind $args"
+	if {$::settings(grinder_setting) > 1000} {
+		set ::settings(grinder_setting) 1000
+	} elseif {$::settings(grinder_setting) < 0} {
+		set ::settings(grinder_setting) 0
+	}
 
-	#::refresh_$::toprightbtns
+	set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)
+	save_settings
 }
 
 ############################################################################################################################################################################################################
