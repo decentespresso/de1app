@@ -234,7 +234,7 @@ load_font "Inter-Bold12" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
 load_font "Inter-Bold11" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
 
 # Profile buttons
-load_font "Inter-Bold13" "[homedir]/skins/Streamline/Inter-Bold.ttf" 15 15 bold
+load_font "Inter-Bold13" "[homedir]/skins/Streamline/Inter-Bold.ttf" 13 13 bold
 
 # status
 
@@ -579,9 +579,9 @@ proc show_off_page_after_settings {} {
 	set_next_page off "off_zoomed"
 	page_show off
 }
-add_de1_variable $::zoomed_pages 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
+add_de1_variable $::zoomed_pages 52 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 
-add_de1_variable "water_zoomed" 50 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
+add_de1_variable "water_zoomed" 52 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 
 
 
@@ -2012,14 +2012,18 @@ dui aspect set -theme streamline -type dbutton width 2
 
 # rounded retangle radius
 #dui aspect set -theme streamline -type dbutton radius 36
-dui aspect set -theme streamline -type dbutton radius 45
+dui aspect set -theme streamline -type dbutton radius 60
 
 # font color
 dui aspect set -theme streamline -type dbutton label_fill $::settings_sleep_button_text_color
 
 
-dui add dbutton $::all_pages 2110 66 2310 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_out); show_settings "" "back_from_settings" }
-dui add dbutton $::all_pages 2330 66 2530 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); app_exit } 
+set right_buttons_start 2530
+set right_buttons_width 200
+set right_buttons_separation 20
+
+dui add dbutton $::all_pages [expr {$right_buttons_start - (2*$right_buttons_width) - (2*$right_buttons_separation)}] 66 [expr {$right_buttons_start - $right_buttons_width - $right_buttons_separation}] 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_out); show_settings "" "back_from_settings" }
+dui add dbutton $::all_pages [expr {$right_buttons_start - $right_buttons_width}] 66 $right_buttons_start 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); app_exit } 
 
 
 
@@ -2033,7 +2037,7 @@ set dyebtns ""
 if { [plugins enabled DYE] } {
 	# not yet available
 	# plugins disable DYE
-	dui add dbutton $::all_pages 1960 66 2090 155 -tags dye_btn -label "DYE"  -command { show_DYE_page }
+	dui add dbutton $::all_pages [expr {$right_buttons_start - (3*$right_buttons_width) - (3*$right_buttons_separation)}] 66 [expr {$right_buttons_start - (2*$right_buttons_width) - (3*$right_buttons_separation)}] 155 -tags dye_btn -label "DYE"  -command { show_DYE_page }
 }
 
 proc show_DYE_page {} {
