@@ -227,6 +227,7 @@ set ::settings(show_scale_notifications) 0
 
 # Left column labels
 load_font "Inter-Bold16" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 14
+#load_font "Inter-Bold15" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
 
 # GHC buttons
 load_font "Inter-Bold12" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
@@ -1208,8 +1209,8 @@ proc hw_temp_vol_flip {} {
 }
 hw_temp_vol_flip
 
-# tap areas
-add_de1_button "off" {hw_temp_vol_flip} 0 1376 222 1498 ""
+# tap area around hot water label to flip the setting between temp/vol
+add_de1_button "off water" {hw_temp_vol_flip} 0 1376 222 1498 ""
 
 ############################################################################################################################################################################################################
 
@@ -1223,7 +1224,7 @@ set ::steam_time_flow_part4 ""
 set ::steam_time_flow_part5 ""
 set ::steam_time_flow_part6 ""
 
-set ::steam_time_flow [add_de1_rich_text "off steam" 50 986 left 0 1 10 $::box_color [list \
+set ::steam_time_flow [add_de1_rich_text "off steam" 50 994 left 0 1 10 $::box_color [list \
 	[list -text {$::steam_time_flow_part1} -font Inter-Bold11 -foreground $::left_label_color2 -exec steam_time_flow_flip] \
 	[list -text {$::steam_time_flow_part2} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip] \
 	[list -text {$::steam_time_flow_part3} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip] \
@@ -1267,6 +1268,7 @@ proc refresh_favorite_steam_button_labels {} {
 
 	puts "refresh_favorite_steam_button_labels"
 
+	########## STEAM TIMEOUT
 	set steams [ifexists ::settings(favorite_steams)]
 	set streamline_selected_favorite_steam ""
 	catch {
@@ -1317,30 +1319,99 @@ proc refresh_favorite_steam_button_labels {} {
 		dict set steams 4 value $t4
 		set changed 1
 	}
+	##########
+
+
+	########## STEAM FLOW RATE
+	set steamflow [ifexists ::settings(favorite_steamflow)]
+	set streamline_selected_favorite_steamflow ""
+	catch {
+		set streamline_selected_favorite_steamflow [dict get $steamflow selected number]
+	}
+
+	set steamflow [ifexists ::settings(favorite_steamflow)]
+
+	set ft1 ""
+	set ft2 ""
+	set ft3 ""
+	set ft4 ""
+
+	catch {
+		set ft1 [dict get $steamflow 1 value]
+	}
+	catch {
+		set ft2 [dict get $steamflow 2 value]
+	}
+	catch {
+		set ft3 [dict get $steamflow 3 value]
+	}
+	catch {
+		set ft4 [dict get $steamflow 4 value]
+	}
+
+	
+	if {$ft1 == ""} {
+		set ft1 "40"
+		dict set steamflow 1 value $ft1
+		set changed 1
+	}
+
+	if {$ft2 == ""} {
+		set ft2 "50"		
+		dict set steamflow 2 value $ft2
+		set changed 1
+	}
+
+	if {$ft3 == ""} {
+		set ft3 "60"		
+		dict set steamflow 3 value $ft3
+		set changed 1
+	}
+
+	if {$ft4 == ""} {
+		set ft4 "80"		
+		dict set steamflow 4 value $ft4
+		set changed 1
+	}
+	##########
 
 
 	if {$changed == 1} {
 		set ::settings(favorite_steams) $steams	
+		set ::settings(favorite_steamflow) $steamflow
 		save_settings	
 		
 	}
 
-	set ::streamline_favorite_steam_buttons(label_1) [seconds_text_very_abbreviated $t1]
-	set ::streamline_favorite_steam_buttons(label_2) [seconds_text_very_abbreviated $t2]
-	set ::streamline_favorite_steam_buttons(label_3) [seconds_text_very_abbreviated $t3]
-	set ::streamline_favorite_steam_buttons(label_4) [seconds_text_very_abbreviated $t4]
+	if {$::streamline_steam_btn_mode == "time"} {
+		set ::streamline_favorite_steam_buttons(label_1) [seconds_text_very_abbreviated $t1]
+		set ::streamline_favorite_steam_buttons(label_2) [seconds_text_very_abbreviated $t2]
+		set ::streamline_favorite_steam_buttons(label_3) [seconds_text_very_abbreviated $t3]
+		set ::streamline_favorite_steam_buttons(label_4) [seconds_text_very_abbreviated $t4]
 
-	if {$t1 == "0"} {
-		set ::streamline_favorite_steam_buttons(label_1) [translate "off"]
-	}
-	if {$t2 == "0"} {
-		set ::streamline_favorite_steam_buttons(label_2) [translate "off"]
-	}
-	if {$t3 == "0"} {
-		set ::streamline_favorite_steam_buttons(label_3) [translate "off"]
-	}
-	if {$t4 == "0"} {
-		set ::streamline_favorite_steam_buttons(label_4) [translate "off"]
+		if {$t1 == "0"} {
+			set ::streamline_favorite_steam_buttons(label_1) [translate "off"]
+		}
+		if {$t2 == "0"} {
+			set ::streamline_favorite_steam_buttons(label_2) [translate "off"]
+		}
+		if {$t3 == "0"} {
+			set ::streamline_favorite_steam_buttons(label_3) [translate "off"]
+		}
+		if {$t4 == "0"} {
+			set ::streamline_favorite_steam_buttons(label_4) [translate "off"]
+		}
+
+
+	} else {
+		set ::streamline_favorite_steam_buttons(label_1) "[round_to_one_digits [expr {$ft1 / 100.0}]]"
+		set ::streamline_favorite_steam_buttons(label_2) "[round_to_one_digits [expr {$ft2 / 100.0}]]"
+		set ::streamline_favorite_steam_buttons(label_3) "[round_to_one_digits [expr {$ft3 / 100.0}]]"
+		set ::streamline_favorite_steam_buttons(label_4) "[round_to_one_digits [expr {$ft4 / 100.0}]]"
+		#set ::streamline_favorite_steam_buttons(label_1) "[round_to_one_digits [expr {$ft1 / 100.0}]][translate mL/s]"
+		#set ::streamline_favorite_steam_buttons(label_2) "[round_to_one_digits [expr {$ft2 / 100.0}]][translate mL/s]"
+		#set ::streamline_favorite_steam_buttons(label_3) "[round_to_one_digits [expr {$ft3 / 100.0}]][translate mL/s]"
+		#set ::streamline_favorite_steam_buttons(label_4) "[round_to_one_digits [expr {$ft4 / 100.0}]][translate mL/s]"
 	}
 
 
@@ -1349,18 +1420,32 @@ proc refresh_favorite_steam_button_labels {} {
 	set lb3c $::preset_value_color
 	set lb4c $::preset_value_color
 
-
-	if {$::settings(steam_timeout) == [dict get $steams 1 value]} {
-		set lb1c $::preset_label_selected_color
-	} 
-	if {$::settings(steam_timeout) == [dict get $steams 2 value]} {
-		set lb2c $::preset_label_selected_color
-	} 
-	if {$::settings(steam_timeout) == [dict get $steams 3 value]} {
-		set lb3c $::preset_label_selected_color
-	} 
-	if {$::settings(steam_timeout) == [dict get $steams 4 value]} {
-		set lb4c $::preset_label_selected_color
+	if {$::streamline_steam_btn_mode == "time"} {
+		if {$::settings(steam_timeout) == [dict get $steams 1 value]} {
+			set lb1c $::preset_label_selected_color
+		} 
+		if {$::settings(steam_timeout) == [dict get $steams 2 value]} {
+			set lb2c $::preset_label_selected_color
+		} 
+		if {$::settings(steam_timeout) == [dict get $steams 3 value]} {
+			set lb3c $::preset_label_selected_color
+		} 
+		if {$::settings(steam_timeout) == [dict get $steams 4 value]} {
+			set lb4c $::preset_label_selected_color
+		}
+	} else {
+		if {$::settings(steam_flow) == [dict get $steamflow 1 value]} {
+			set lb1c $::preset_label_selected_color
+		} 
+		if {$::settings(steam_flow) == [dict get $steamflow 2 value]} {
+			set lb2c $::preset_label_selected_color
+		} 
+		if {$::settings(steam_flow) == [dict get $steamflow 3 value]} {
+			set lb3c $::preset_label_selected_color
+		} 
+		if {$::settings(steam_flow) == [dict get $steamflow 4 value]} {
+			set lb4c $::preset_label_selected_color
+		}
 	}
 
 	.can itemconfigure steam_btn_1 -fill $lb1c
@@ -1368,21 +1453,28 @@ proc refresh_favorite_steam_button_labels {} {
 	.can itemconfigure steam_btn_3 -fill $lb3c
 	.can itemconfigure steam_btn_4 -fill $lb4c
 }
-refresh_favorite_steam_button_labels
+#refresh_favorite_steam_button_labels
 
 
 proc streamline_steam_setting_change { } {
 
+	if {$::settings(steam_timeout) == 0} {
+		set stimeout [translate off]
+	} else {
+		set stimeout "$::settings(steam_timeout)[translate s]"
+	}
+
+	#[translate mL/s]
 	puts "streamline_steam_setting : $::streamline_steam_btn_mode"
 	if {$::streamline_steam_btn_mode == "time"} {
-		set ::streamline_steam_label_1st "$::settings(steam_timeout) [translate s]"
+		set ::streamline_steam_label_1st $stimeout
 		set ::streamline_steam_label_2nd "([round_to_one_digits [expr {$::settings(steam_flow) / 100.0}]])"
 	} else {
 		set ::streamline_steam_label_1st "[round_to_one_digits [expr {$::settings(steam_flow) / 100.0}]]"
-		set ::streamline_steam_label_2nd "($::settings(steam_timeout) [translate s])"
+		set ::streamline_steam_label_2nd "($stimeout)"
 	}
 }
-
+streamline_steam_setting_change
 
 proc steam_time_flow_flip {} {
 
@@ -1409,7 +1501,8 @@ proc steam_time_flow_flip {} {
 steam_time_flow_flip
 
 # tap areas
-add_de1_button "off" {hw_temp_vol_flip} 0 1376 222 1498 ""
+add_de1_button "off steam" {steam_time_flow_flip} 0 947 222 1056 ""
+
 
 ############################################################################################################################################################################################################
 
@@ -1663,11 +1756,11 @@ proc choose_appropriate_data_entry_for_hot_water {} {
 
 		if {$::settings(enable_fahrenheit) == 1} {
 			set ::data_entry_water_temperature [celsius_to_fahrenheit $::settings(water_temperature)]
-			ask_for_data_entry_number [translate "TEMP"] $::data_entry_water_temperature ::data_entry_water_temperature "º" 1 0 212 [list save_fahrenheit_hot_water streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st" refresh_hw_temp_labels]
+			ask_for_data_entry_number [translate "TEMP"] $::data_entry_water_temperature ::data_entry_water_temperature "º" 1 0 212 [list save_fahrenheit_hot_water streamline_hot_water_setting_change refresh_favorite_hw_button_labels refresh_steam_time_flow_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st" refresh_hw_temp_labels]
 		} else {
 			# celsius
 			
-			ask_for_data_entry_number [translate "TEMP"] [ifexists ::settings(water_temperature)] ::settings(water_temperature) "º" 1 0 100 [list streamline_hot_water_setting_change refresh_favorite_hw_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st" refresh_hw_temp_labels]
+			ask_for_data_entry_number [translate "TEMP"] [ifexists ::settings(water_temperature)] ::settings(water_temperature) "º" 1 0 100 [list streamline_hot_water_setting_change refresh_favorite_hw_button_labels refresh_steam_time_flow_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting hotwater_setting_rectangle hotwater_label_1st" refresh_hw_temp_labels]
 		}
 
 	}
@@ -1681,11 +1774,11 @@ proc save_steam_flow_rate {} {
 proc choose_appropriate_data_entry_for_steam {} {
 	if {$::streamline_steam_btn_mode == "time"} {
 		#ask_for_data_entry_number [translate "STEAM TIMEOUT"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 3 255 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st"]
-		ask_for_data_entry_number [translate "STEAM TIMEOUT"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 0 255 [list streamline_steam_setting_change refresh_favorite_steam_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st" refresh_steam_time_flow_labels]
+		ask_for_data_entry_number [translate "STEAM TIMEOUT"] [ifexists ::settings(steam_timeout)] ::settings(steam_timeout) [translate "s"] 1 0 255 [list streamline_steam_setting_change refresh_favorite_steam_button_labels refresh_hw_temp_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st" refresh_steam_time_flow_labels]
 	} else {
 
 		set ::data_entry_steam_flow [round_to_two_digits [expr {.01 * $::settings(steam_flow)}]]
-		ask_for_data_entry_number [translate "STEAM FLOW"] [ifexists ::data_entry_steam_flow] ::data_entry_steam_flow "ml/s" 0 0.4 2.5 [list save_steam_flow_rate streamline_steam_setting_change refresh_favorite_steam_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st" refresh_steam_time_flow_labels]
+		ask_for_data_entry_number [translate "STEAM FLOW"] [ifexists ::data_entry_steam_flow] ::data_entry_steam_flow "ml/s" 0 0.4 2.5 [list save_steam_flow_rate streamline_steam_setting_change refresh_favorite_steam_button_labels refresh_hw_temp_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting steam_setting_rectangle steam_label_1st" refresh_steam_time_flow_labels]
 
 	}
 	refresh_favorite_steam_button_labels
@@ -1742,8 +1835,8 @@ set streamline_preset_pos_col4 578
 #########
 # dose/beverage presets
 add_de1_variable "off espresso" $streamline_preset_pos_col1 616  -justify left -tags dose_btn_1 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_1)}
-add_de1_variable "off espresso" $streamline_preset_pos_col2 616  -justify left -tags dose_btn_2 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_2)}
-add_de1_variable "off espresso" $streamline_preset_pos_col3 616  -justify left  -tags dose_btn_3 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_3)}
+add_de1_variable "off espresso" [expr {$streamline_preset_pos_col2-12}] 616  -justify left -tags dose_btn_2 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_2)}
+add_de1_variable "off espresso" [expr {$streamline_preset_pos_col3-12}] 616  -justify left  -tags dose_btn_3 -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_3)}
 add_de1_variable "off espresso" $streamline_preset_pos_col4 616  -justify right -tags dose_btn_4 -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_4)}
 
 # disabled versions of same
@@ -1794,10 +1887,10 @@ add_de1_variable "espresso water flush hotwaterrinse" $streamline_preset_pos_col
 add_de1_variable "espresso water flush hotwaterrinse" $streamline_preset_pos_col4 1068  -justify right -tags steam_btn_4d -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_steam_buttons(label_4)}
 
 
-dui add dbutton "espresso water flush hotwaterrinse"  0 1066 148 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 1 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 1 } 
-dui add dbutton "espresso water flush hotwaterrinse" 148 1066 310 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 2 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 2 } 
-dui add dbutton "espresso water flush hotwaterrinse" 310 1066 474 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 3 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 3 } 
-dui add dbutton "espresso water flush hotwaterrinse" 474 1066 624 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 4 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 4 } 
+dui add dbutton $::pages  0 1066 148 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 1 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 1 } 
+dui add dbutton $::pages 148 1066 310 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 2 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 2 } 
+dui add dbutton $::pages 310 1066 474 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 3 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 3 } 
+dui add dbutton $::pages 474 1066 624 1128 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_steam_select 4 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_steam_preset 4 } 
 
 
 #########
@@ -2322,7 +2415,7 @@ proc streamline_hot_water_setting_change { } {
 		set ::streamline_hotwater_label_2nd ([return_liquid_measurement_ml $::settings(water_volume)])
 	}
 }
-
+streamline_hot_water_setting_change
 
 proc streamline_hotwater_btn { args } {
 
@@ -2332,13 +2425,13 @@ proc streamline_hotwater_btn { args } {
 			if {$::settings(water_volume) > 1} {
 				set ::settings(water_volume) [expr {$::settings(water_volume) - 1}]
 				flash_button "streamline_minus_hotwater_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-				save_profile_and_update_de1_soon
+				#save_profile_and_update_de1_soon
 			}
 		} elseif {$args == "+"} {
 			if {$::settings(water_volume) < 255} {
 				set ::settings(water_volume) [expr {$::settings(water_volume) + 1}]
 				flash_button "streamline_plus_hotwater_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-				save_profile_and_update_de1_soon
+				#save_profile_and_update_de1_soon
 			}
 		}
 	} else {
@@ -2347,21 +2440,23 @@ proc streamline_hotwater_btn { args } {
 			if {$::settings(water_temperature) > 1} {
 				set ::settings(water_temperature) [expr {$::settings(water_temperature) - 1}]
 				flash_button "streamline_minus_hotwater_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-				save_profile_and_update_de1_soon
+				#save_profile_and_update_de1_soon
 			}
 		} elseif {$args == "+"} {
 			if {$::settings(water_temperature) < 100} {
 				set ::settings(water_temperature) [expr {$::settings(water_temperature) + 1}]
 				flash_button "streamline_plus_hotwater_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-				save_profile_and_update_de1_soon
+				#save_profile_and_update_de1_soon
 			}
 		}
 	}
-	streamline_hot_water_setting_change
+	#streamline_hot_water_setting_change
+	save_profile_and_update_de1_soon
 	refresh_favorite_hw_button_labels
+	streamline_hot_water_setting_change
+	
 }
 
-streamline_hot_water_setting_change
 
 
 
@@ -2377,16 +2472,16 @@ proc streamline_steam_btn { args } {
 			if {$::settings(steam_timeout) > 0} {
 				set ::settings(steam_timeout) [expr {$::settings(steam_timeout) - 1}]
 				flash_button "streamline_minus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-				save_profile_and_update_de1_soon
+				#save_profile_and_update_de1_soon
 			}
 		} elseif {$args == "+"} {
 			if {$::settings(steam_timeout) < 254} {
 				set ::settings(steam_timeout) [expr {$::settings(steam_timeout) + 1}]
 				flash_button "streamline_plus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-				save_profile_and_update_de1_soon
+				#save_profile_and_update_de1_soon
 			}
 		}
-		refresh_favorite_steam_button_labels
+		#refresh_favorite_steam_button_labels
 
 	} else {
 		# the UI mode is set to change the temperature
@@ -2394,23 +2489,27 @@ proc streamline_steam_btn { args } {
 			if {$::settings(steam_flow) > 0} {
 				set ::settings(steam_flow) [expr {$::settings(steam_flow) - 10}]
 				flash_button "streamline_minus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-				save_profile_and_update_de1_soon
+				#save_profile_and_update_de1_soon
 			}
 		} elseif {$args == "+"} {
 			if {$::settings(steam_timeout) < 254} {
 				set ::settings(steam_flow) [expr {$::settings(steam_flow) + 10}]
 				flash_button "streamline_plus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-				save_profile_and_update_de1_soon
+				#save_profile_and_update_de1_soon
 			}
 		}
-		refresh_favorite_steam_button_labels
+		#refresh_favorite_steam_button_labels
 
 	}
-	streamline_steam_setting_change
-	refresh_favorite_steam_button_labels
-}
+	#streamline_steam_setting_change
+	#refresh_favorite_steam_button_labels
 
-streamline_steam_setting_change
+	#refresh_steam_time_flow_labels 
+	save_profile_and_update_de1_soon
+	refresh_favorite_steam_button_labels
+	streamline_steam_setting_change
+
+}
 
 ############################################################################################################################################################################################################
 # Profile QuickSettings
@@ -2846,6 +2945,10 @@ proc refresh_favorite_temperature_button_labels {} {
 }
 
 
+set ::streamline_favorite_hw_buttons(label_1) ""
+set ::streamline_favorite_hw_buttons(label_2) ""
+set ::streamline_favorite_hw_buttons(label_3) ""
+set ::streamline_favorite_hw_buttons(label_4) ""
 
 proc refresh_favorite_hw_button_labels {} {
 
@@ -3021,7 +3124,7 @@ proc refresh_favorite_hw_button_labels {} {
 	.can itemconfigure hw_btn_4 -fill $lb4c
 
 }
-
+refresh_favorite_hw_button_labels
 
 
 proc refresh_favorite_dosebev_button_labels {} {
@@ -3293,36 +3396,55 @@ refresh_favorite_temperature_button_labels
 
 
 proc streamline_steam_select { slot } {
-	puts "streamline_steam_select { $slot } "
 
-	if {[dui page current] != "off"} {
+	if {[dui page current] != "off" && [dui page current] != "steam"} {
 		return ""
 	}
 
-	catch {
-		# get the favoritae button values
-		set steams [ifexists ::settings(favorite_steams)]
+	puts "streamline_steam_select { $slot } "
 
-		# set the setting
-		set ::settings(steam_timeout) [dict get $steams $slot value]
+#	catch {
 
-		# save the new selected button 
-		dict set steams selected number $slot
-		set ::settings(favorite_steams) $steams	
-		save_profile_and_update_de1_soon	
+		if {$::streamline_steam_btn_mode == "time"} {
+			# get the favoritae button values
+			set steams [ifexists ::settings(favorite_steams)]
+
+			# set the setting
+			set ::settings(steam_timeout) [dict get $steams $slot value]
+
+			# save the new selected button 
+			dict set steams selected number $slot
+			set ::settings(favorite_steams) $steams	
+		} else {
+
+			# get the favoritae button values
+			set steamflow [ifexists ::settings(favorite_steamflow)]
+
+			# set the setting
+			set ::settings(steam_flow) [dict get $steamflow $slot value]
+
+			# save the new selected button 
+			dict set steamflow selected number $slot
+			set ::settings(favorite_steamflow) $steamflow
+
+		}
+
+		
 
 
-	}
+	#}
 
+	save_profile_and_update_de1_soon	
 	refresh_favorite_steam_button_labels
-
+	streamline_steam_setting_change
 	
 	streamline_blink_rounded_setting "steam_setting_rectangle" "steam_label_1st"
 	#streamline_blink_rounded_setting "steam_preset_rectangle_$slot" "steam_btn_$slot"
 	#streamline_blink_rounded_setting "" "steam_btn_$slot"
+
 }
 
-
+	
 
 proc streamline_set_drink_weight {desired_weight} {
 
@@ -3460,7 +3582,7 @@ proc streamline_hwvol_select { slot } {
 	streamline_hot_water_setting_change
 	refresh_favorite_hw_button_labels
 }
-refresh_favorite_hw_button_labels
+#refresh_favorite_hw_button_labels
 
 
 proc streamline_hwtemp_select { slot } {
@@ -3488,7 +3610,7 @@ proc streamline_hwtemp_select { slot } {
 	streamline_hot_water_setting_change
 	refresh_favorite_hw_button_labels
 }
-refresh_favorite_hw_button_labels
+#refresh_favorite_hw_button_labels
 
 ############################################################################################################################################################################################################
 # the espresso chart
