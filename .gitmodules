@@ -49,3 +49,9 @@
 	path = de1plus/plugins/mqtt
 	url = https://github.com/simpkins/de1plus-mqtt.git
 	branch = main
+[submodule "plugins/skip_first_step_notice"]
+	path = plugins/skip_first_step_notice
+	url = https://github.com/Damian-AU/skip_first_step_notice
+[submodule "de1plus/plugins/skip_first_step_notice"]
+	path = de1plus/plugins/skip_first_step_notice
+	url = https://github.com/Damian-AU/skip_first_step_notice
