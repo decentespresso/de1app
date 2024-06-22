@@ -5,7 +5,7 @@ package require json
 try {
     package require zint
 } on error err {
-    msg -WARNING "::plugins::visualizer_upload can't generate QR codes: $err"
+    #msg -WARNING "::plugins::visualizer_upload can't generate QR codes: $err"
 }
 
 set plugin_name "visualizer_upload"
@@ -122,8 +122,8 @@ namespace eval ::plugins::${plugin_name} {
                 # Execute the HTTP POST request
                 if {$attempts == 0} {
                     incr attempts
-                    popup [subst {[translate_toast "Uploading to Visualizer"]}]
-                else {
+                    popup [translate_toast "Uploading to Visualizer"]
+                } else {
                     popup [subst {[translate_toast "Uploading to Visualizer, attempt"] #[incr attempts]}]
                 }
 
