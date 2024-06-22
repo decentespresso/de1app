@@ -120,9 +120,19 @@ namespace eval ::plugins::${plugin_name} {
         while {$retryCount < $maxAttempts && !$success} {
             if {[catch {
                 # Execute the HTTP POST request
-                popup [subst {[translate_toast "Uploading to Visualizer, attempt"] #[incr attempts]}]
-                set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 8000]
-                msg $token
+                if {$attempts == 0} {
+                    incr attempts
+                    popup [subst {[translate_toast "Uploading to Visualizer"]}]
+                else {
+                    popup [subst {[translate_toast "Uploading to Visualizer, attempt"] #[incr attempts]}]
+                }
+
+                # exponentially increasing timeout
+                #set timeout [expr {$attempts * 2000}]
+                
+                set timeout 8000
+                set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout $timeout]
+                #msg $token
 
                 set status [http::status $token]
                 set answer [http::data $token]
