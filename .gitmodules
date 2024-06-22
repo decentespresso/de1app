@@ -55,3 +55,6 @@
 [submodule "de1plus/plugins/skip_first_step_notice"]
 	path = de1plus/plugins/skip_first_step_notice
 	url = https://github.com/Damian-AU/skip_first_step_notice
+[submodule "de1plus/plugins/Graphical_Flow_Calibrator"]
+	path = de1plus/plugins/Graphical_Flow_Calibrator
+	url = https://github.com/Damian-AU/Graphical_Flow_Calibrator
