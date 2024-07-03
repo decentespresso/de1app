@@ -661,27 +661,27 @@ proc scale_tare_or_reconnect {} {
 }
 set btns ""
 lappend btns \
-	[list -text "Mix" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Mix"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[lindex [return_temperature_measurement_no_unit [water_mix_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text {[lindex [return_temperature_measurement_no_unit [water_mix_temperature] 1 1] 1]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
-	[list -text "Group" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Group"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
 	[list -text {[lindex [return_temperature_measurement_no_unit [group_head_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text {[lindex [return_temperature_measurement_no_unit [group_head_heater_temperature] 1 1] 1]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
-	[list -text "Steam" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Steam"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
 	[list -text {[lindex [return_temperature_measurement_no_unit [steam_heater_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text {[lindex [return_temperature_measurement_no_unit [steam_heater_temperature] 1 1] 1]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
-	[list -text "Tank" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Tank"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
 	[list -text {[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]]} -font "mono12" -foreground $::dataline_data_color  ] \
 	[list -text {[translate ml]} -font "mono8" -foreground $::dataline_data_color  ] \
 	[list -text "    " -font "Inter-Bold16"] \
-	[list -text "Time" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Time"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[time_format [clock seconds]]} -font "mono12" -foreground $::dataline_data_color   ] 
 
@@ -769,36 +769,36 @@ set ::streamline_steam_label_2nd ""
 
 set zoomed_btns ""
 lappend zoomed_btns \
-	[list -text "Grind" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Grind"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {$::settings(grinder_setting)} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
-	[list -text "Dose" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Dose"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
 	[list -text {$::settings(grinder_dose_weight)} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text {[translate "g"]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
-	[list -text "Drink" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Drink"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
 	[list -text {[lindex [return_weight_measurement_grams [determine_final_weight] 0 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text {[translate "g"]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
-	[list -text "Brew" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Brew"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
 	[list -text {[lindex [return_temperature_measurement_no_unit [setting_espresso_temperature] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text {[lindex [return_temperature_measurement_no_unit [setting_espresso_temperature] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
-	[list -text "Steam" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Steam"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[steam_timeout_seconds]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "[translate s]" -font "mono8"] \
 	[list -text "    " -font "Inter-Bold16"] \
-	[list -text "Flush" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Flush"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[round_to_integer $::settings(flush_seconds)]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "[translate s]" -font "mono8"] \
 	[list -text "    " -font "Inter-Bold16"] \
-	[list -text "Hot Water" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Hot Water"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[round_to_integer $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text [translate "ml"] -font "mono8"  -foreground $::dataline_data_color ] \
@@ -1161,9 +1161,9 @@ proc refresh_hw_temp_labels {} {
 
 	if {$::streamline_hotwater_btn_mode == "temp"} {
 
-		set ::hw_temp_vol_part1 "Temp"
+		set ::hw_temp_vol_part1 [translate "Temp"]
 		set ::hw_temp_vol_part2 " | "
-		set ::hw_temp_vol_part3 "Vol"
+		set ::hw_temp_vol_part3 [translate "Vol"]
 		set ::hw_temp_vol_part4 ""
 		set ::hw_temp_vol_part5 ""
 		set ::hw_temp_vol_part6 ""
@@ -1172,9 +1172,9 @@ proc refresh_hw_temp_labels {} {
 		set ::hw_temp_vol_part1 ""
 		set ::hw_temp_vol_part2 ""
 		set ::hw_temp_vol_part3 ""
-		set ::hw_temp_vol_part4 "Temp"
+		set ::hw_temp_vol_part4 [translate "Temp"]
 		set ::hw_temp_vol_part5 " | "
-		set ::hw_temp_vol_part6 "Vol"
+		set ::hw_temp_vol_part6 [translate "Vol"]
 	}
 
 	catch {
@@ -1233,9 +1233,9 @@ proc refresh_steam_time_flow_labels {} {
 	
 	if {$::streamline_steam_btn_mode == "time"} {
 
-		set ::steam_time_flow_part1 "Time"
+		set ::steam_time_flow_part1 [translate "Time"]
 		set ::steam_time_flow_part2 " | "
-		set ::steam_time_flow_part3 "Flow"
+		set ::steam_time_flow_part3 [translate "Flow"]
 		set ::steam_time_flow_part4 ""
 		set ::steam_time_flow_part5 ""
 		set ::steam_time_flow_part6 ""
@@ -1244,9 +1244,9 @@ proc refresh_steam_time_flow_labels {} {
 		set ::steam_time_flow_part1 ""
 		set ::steam_time_flow_part2 ""
 		set ::steam_time_flow_part3 ""
-		set ::steam_time_flow_part4 "Time"
+		set ::steam_time_flow_part4 [translate "Time"]
 		set ::steam_time_flow_part5 " | "
-		set ::steam_time_flow_part6 "Flow"
+		set ::steam_time_flow_part6 [translate "Flow"]
 	}
 
 	catch {
@@ -2111,8 +2111,8 @@ set right_buttons_start 2530
 set right_buttons_width 200
 set right_buttons_separation 20
 
-dui add dbutton $::all_pages [expr {$right_buttons_start - (2*$right_buttons_width) - (2*$right_buttons_separation)}] 66 [expr {$right_buttons_start - $right_buttons_width - $right_buttons_separation}] 155 -tags settings_btn -label "Settings"  -command { say [translate {settings}] $::settings(sound_button_out); show_settings "" "back_from_settings" }
-dui add dbutton $::all_pages [expr {$right_buttons_start - $right_buttons_width}] 66 $right_buttons_start 155 -tags sleep_btn -label "Sleep"  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); app_exit } 
+dui add dbutton $::all_pages [expr {$right_buttons_start - (2*$right_buttons_width) - (2*$right_buttons_separation)}] 66 [expr {$right_buttons_start - $right_buttons_width - $right_buttons_separation}] 155 -tags settings_btn -label [translate "Settings"]  -command { say [translate {settings}] $::settings(sound_button_out); show_settings "" "back_from_settings" }
+dui add dbutton $::all_pages [expr {$right_buttons_start - $right_buttons_width}] 66 $right_buttons_start 155 -tags sleep_btn -label [translate "Sleep"]  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); app_exit } 
 
 
 
