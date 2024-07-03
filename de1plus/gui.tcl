@@ -731,7 +731,7 @@ proc add_de1_rich_text {context x y justification autorefresh height width backg
 			append codetags [subst {\n\t$widget tag configure tag_$name$cnt $opts -justify $justification\n\t$widget tag add tag_$name$cnt 1.$startpos 1.$endpos\n}]
 
 			# insert the text as a separate step, so that we don't needlessly recreate tags when refreshing this
-			append codetext [subst {\t$widget insert end "$txt" tag_$name$cnt\n}]
+			append codetext [subst {\t$widget insert end {$txt} tag_$name$cnt\n}]			
 
 			if {$exec != ""} {
 				# if there's a tap action on this text, define it once as part of the tags
