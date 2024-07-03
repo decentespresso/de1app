@@ -730,8 +730,11 @@ proc add_de1_rich_text {context x y justification autorefresh height width backg
 			# create and configure the tags that define the look of this chunk of text
 			append codetags [subst {\n\t$widget tag configure tag_$name$cnt $opts -justify $justification\n\t$widget tag add tag_$name$cnt 1.$startpos 1.$endpos\n}]
 
+			# need to protect quotes since this is making code that will execute in the future, and the string itself is quoted
+			regsub -all {"} $txt {\\"} txt
+
 			# insert the text as a separate step, so that we don't needlessly recreate tags when refreshing this
-			append codetext [subst {\t$widget insert end {$txt} tag_$name$cnt\n}]			
+			append codetext [subst {\t$widget insert end "$txt" tag_$name$cnt\n}]			
 
 			if {$exec != ""} {
 				# if there's a tap action on this text, define it once as part of the tags
