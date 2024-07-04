@@ -546,7 +546,7 @@ proc streamline_profile_title {} {
 		 update_datacard_from_live_data				
 	}
 
-	return [ifexists ::settings(profile_title)]
+	return [translate [ifexists ::settings(profile_title)]]
 }
 
 proc update_datacard_from_live_data {} {
@@ -1513,7 +1513,7 @@ set ::streamline_current_history_profile_clock ""
 proc start_streamline_espresso {} {
 	set ::streamline_history_text_label [translate "CURRENT"] 
 	set ::streamline_current_history_profile_clock [clock seconds]
-	set ::streamline_current_history_profile_name $::settings(profile_title)
+	set ::streamline_current_history_profile_name [translate $::settings(profile_title)]
 
 
 	if {$::off_page == "off"} {
@@ -1533,7 +1533,7 @@ set ::streamline_current_history_third_line ""
 add_de1_variable $::pages 890 1348 -justify center -anchor "center" -text "" -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 400] -textvariable {$::streamline_history_text_label}
 
 add_de1_variable $::pages 890 1410 -justify center -anchor "center" -font Inter-Bold18 -fill $::data_card_text_color  -width [rescale_x_skin 500] -textvariable {[streamline_history_date_format $::streamline_current_history_profile_clock]}
-add_de1_variable $::pages 890 1474 -justify center -anchor "center" -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 1000] -textvariable {$::streamline_current_history_profile_name} 
+add_de1_variable $::pages 890 1474 -justify center -anchor "center" -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 1000] -textvariable {[translate $::streamline_current_history_profile_name]} 
 add_de1_variable $::pages 890 1536 -justify center -anchor "center" -font Inter-SemiBold18 -fill $::data_card_text_color -width [rescale_x_skin 1000] -textvariable {$::streamline_current_history_third_line} 
 
 #add_de1_text $::pages 1364 1328 -justify right -anchor "ne" -text [translate "SHOT DATA"] -font Inter-Bold18 -fill $::data_card_title_text_color -width [rescale_x_skin 400]
@@ -1648,7 +1648,7 @@ add_de1_variable $::pages $::streamline_datacard_col3 1514 -justify right -ancho
 
 set ::streamline_preinfusion_temp " "
 set ::streamline_extraction_temp " "
-add_de1_text $::pages $::streamline_datacard_col4 1328 -justify right -anchor "nw" -text [return_html_temperature_units] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
+add_de1_text $::pages $::streamline_datacard_col4 1328 -justify right -anchor "nw" -text [translate [return_html_temperature_units]] -font Inter-Bold17 -fill $::data_card_title_text_color -width [rescale_x_skin 300]
 add_de1_variable $::pages $::streamline_datacard_col4 1388 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_preinfusion_temp}
 add_de1_variable $::pages $::streamline_datacard_col4 1452 -justify right -anchor "nw"  -font mono10 -fill $::data_card_text_color -width [rescale_x_skin 300] -textvariable {$::streamline_extraction_temp}
 
@@ -2126,7 +2126,7 @@ set dyebtns ""
 if { [plugins enabled DYE] } {
 	# not yet available
 	# plugins disable DYE
-	dui add dbutton $::all_pages [expr {$right_buttons_start - (3*$right_buttons_width) - (3*$right_buttons_separation)}] 66 [expr {$right_buttons_start - (2*$right_buttons_width) - (3*$right_buttons_separation)}] 155 -tags dye_btn -label "DYE"  -command { show_DYE_page }
+	dui add dbutton $::all_pages [expr {$right_buttons_start - (3*$right_buttons_width) - (3*$right_buttons_separation)}] 66 [expr {$right_buttons_start - (2*$right_buttons_width) - (3*$right_buttons_separation)}] 155 -tags dye_btn -label [translate "DYE"]  -command { show_DYE_page }
 }
 
 proc show_DYE_page {} {
@@ -2685,7 +2685,7 @@ if {$::settings(ghc_is_installed) == 0} {
 	
 	dui aspect set -theme streamline -type dbutton label1_font icomoon
 	# rounded retangle radius
-	dui aspect set -theme streamline -type dbutton radius 18
+	dui aspect set -theme streamline -type dbutton radius 36
 
 	# rounded retangle line width
 	dui aspect set -theme streamline -type dbutton width 2 
