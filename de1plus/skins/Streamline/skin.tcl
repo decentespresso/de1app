@@ -776,12 +776,12 @@ lappend zoomed_btns \
 	[list -text [translate "Dose"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
 	[list -text {$::settings(grinder_dose_weight)} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[translate "g"]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[translate g]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text [translate "Drink"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
 	[list -text {[lindex [return_weight_measurement_grams [determine_final_weight] 0 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[translate "g"]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[translate g]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text [translate "Brew"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
@@ -1680,33 +1680,33 @@ if {[ifexists ::settings(grinder_dose_weight)] == "" || [ifexists ::settings(gri
 }
 
 # labels
-add_de1_variable "off " 418 304 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
-add_de1_variable "off " 418 418 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags dose_label_1st -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
-add_de1_variable "off  espresso" 418 512 -justify center -anchor "center" -text [translate "45g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags weight_label_1st -textvariable {[return_weight_measurement [determine_final_weight] 2]}
-add_de1_variable "off  espresso" 418 558 -justify center -anchor "center" -text [translate "1:2.3"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
-add_de1_variable "off " 418 761 -justify center -anchor "center" -text [translate "92"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags temp_label_1st -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 0]}   
+add_de1_variable "off " 418 304 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
+add_de1_variable "off " 418 418 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags dose_label_1st -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
+add_de1_variable "off  espresso" 418 512 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags weight_label_1st -textvariable {[return_weight_measurement [determine_final_weight] 2]}
+add_de1_variable "off  espresso" 418 558 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
+add_de1_variable "off " 418 761 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags temp_label_1st -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 0]}   
 #add_de1_variable "off  steam" 418 988 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {[steam_timeout_seconds]}
-add_de1_variable "off  steam" 418 968 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {$::streamline_steam_label_1st}
-add_de1_variable "off  steam" 418 1011 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_steam_label_2nd}
+add_de1_variable "off  steam" 418 968 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {$::streamline_steam_label_1st}
+add_de1_variable "off  steam" 418 1011 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_steam_label_2nd}
 
-add_de1_variable "off  flush hotwaterrinse" 418 1215 -justify center -anchor "center" -text [translate "5s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags flush_label_1st -textvariable {[seconds_text_very_abbreviated $::settings(flush_seconds)]}
-add_de1_variable "off  water" 418 1417 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags hotwater_label_1st -textvariable {$::streamline_hotwater_label_1st}
-add_de1_variable "off  water" 418 1460 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
+add_de1_variable "off  flush hotwaterrinse" 418 1215 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags flush_label_1st -textvariable {[seconds_text_very_abbreviated $::settings(flush_seconds)]}
+add_de1_variable "off  water" 418 1417 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags hotwater_label_1st -textvariable {$::streamline_hotwater_label_1st}
+add_de1_variable "off  water" 418 1460 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
 
 #disabled labels
-add_de1_variable "espresso water flush hotwaterrinse steam" 418 304 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
-add_de1_variable "espresso water flush hotwaterrinse steam" 418 418 -justify center -anchor "center" -text [translate "20g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags dose_label_1std -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
-add_de1_variable "water flush hotwaterrinse steam" 418 512 -justify center -anchor "center" -text [translate "45g"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags weight_label_1std -textvariable {[return_weight_measurement [determine_final_weight] 2]}
-add_de1_variable "water flush hotwaterrinse steam" 418 558 -justify center -anchor "center" -text [translate "1:2.3"] -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
-add_de1_variable "espresso water flush hotwaterrinse " 418 761 -justify center -anchor "center" -text [translate "92"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags temp_label_1std -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 1]}   
-add_de1_variable "espresso water flush hotwaterrinse" 418 988 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags steam_label_1std -textvariable {[steam_timeout_seconds]}
-add_de1_variable "espresso water   steam" 418 1215 -justify center -anchor "center" -text [translate "5s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags flush_label_1std -textvariable {[seconds_text_very_abbreviated $::settings(flush_seconds)]}
-add_de1_variable "espresso  flush hotwaterrinse steam" 418 1417 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags hotwater_label_1std -textvariable {$::streamline_hotwater_label_1st}
-add_de1_variable "espresso  flush hotwaterrinse steam" 418 1460 -justify center -anchor "center" -text [translate "75ml"] -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
+add_de1_variable "espresso water flush hotwaterrinse steam" 418 304 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
+add_de1_variable "espresso water flush hotwaterrinse steam" 418 418 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags dose_label_1std -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
+add_de1_variable "water flush hotwaterrinse steam" 418 512 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags weight_label_1std -textvariable {[return_weight_measurement [determine_final_weight] 2]}
+add_de1_variable "water flush hotwaterrinse steam" 418 558 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
+add_de1_variable "espresso water flush hotwaterrinse " 418 761 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags temp_label_1std -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 1]}   
+add_de1_variable "espresso water flush hotwaterrinse" 418 988 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags steam_label_1std -textvariable {[steam_timeout_seconds]}
+add_de1_variable "espresso water   steam" 418 1215 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags flush_label_1std -textvariable {[seconds_text_very_abbreviated $::settings(flush_seconds)]}
+add_de1_variable "espresso  flush hotwaterrinse steam" 418 1417 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags hotwater_label_1std -textvariable {$::streamline_hotwater_label_1st}
+add_de1_variable "espresso  flush hotwaterrinse steam" 418 1460 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
 
 add_de1_button "off " { ask_for_data_entry_number [translate "GRIND"] [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) "" 0 0 1000 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting grind_setting_rectangle"]} 370 260 470 340  ""   
-add_de1_button "off " { ask_for_data_entry_number [translate "DOSE"] [ifexists ::settings(grinder_dose_weight)] ::settings(grinder_dose_weight) [translate "g"] 0 0 30 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting dose_setting_rectangle dose_label_1st"]} 370 374 470 454  ""   
-add_de1_button "off " { ask_for_data_entry_number [translate "DRINK"] [ifexists ::settings(final_desired_shot_weight)] ::settings(final_desired_shot_weight) [translate "g"] 0 0 2000 [list {streamline_set_drink_weight $::settings(final_desired_shot_weight)} refresh_favorite_dosebev_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "DOSE"] [ifexists ::settings(grinder_dose_weight)] ::settings(grinder_dose_weight) [translate g] 0 0 30 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting dose_setting_rectangle dose_label_1st"]} 370 374 470 454  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "DRINK"] [ifexists ::settings(final_desired_shot_weight)] ::settings(final_desired_shot_weight) [translate g] 0 0 2000 [list {streamline_set_drink_weight $::settings(final_desired_shot_weight)} refresh_favorite_dosebev_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
 
 add_de1_button "off " { choose_appropriate_data_entry_for_brew_temp} 370 716 470 796  ""   
 add_de1_button "off " { choose_appropriate_data_entry_for_steam } 370 944 470 1024  ""   
@@ -3960,7 +3960,7 @@ proc update_data_card { arrname settingsarr } {
 	set third_line_parts ""
 
 	if {[ifexists profile_settings(grinder_dose_weight)] != "" && [ifexists profile_settings(grinder_dose_weight)] != "0"} {
-		lappend third_line_parts "[translate "In"] $profile_settings(grinder_dose_weight)[translate "g"]"
+		lappend third_line_parts "[translate "In"] $profile_settings(grinder_dose_weight)[translate g]"
 	}
 	
 	if {[ifexists profile_settings(grinder_setting)] != "" && [ifexists profile_settings(grinder_setting)] != "0"} {
