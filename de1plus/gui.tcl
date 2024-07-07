@@ -1181,7 +1181,7 @@ proc set_dummy_espresso_vars {} {
 			}			
 		}
 
-		if {$::simindex >= [llength $::simulated(espresso_pressure)]} {
+		if {$::simindex >= [llength [ifexists ::simulated(espresso_pressure)]]} {
 			# end of data
 			 update_de1_state "$::de1_state(Idle)\x0"
 			 return
