@@ -2317,7 +2317,7 @@ proc streamline_beverage_btn { args } {
 			save_profile_and_update_de1_soon
 		}
 	} elseif {$args == "+"} {
-		if {[determine_final_weight] < 1000} {
+		if {[determine_final_weight] < 2000} {
 			determine_final_weight 1
 			flash_button "streamline_plus_beverage_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 			save_profile_and_update_de1_soon

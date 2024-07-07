@@ -4128,9 +4128,9 @@ proc range_check_shot_variables {} {
 
 	range_check_variable ::settings(espresso_decline_time) 0 60
 	range_check_variable ::settings(pressure_end) 0 $::de1(maxpressure)
-	range_check_variable ::settings(final_desired_shot_volume) 0 100
+	range_check_variable ::settings(final_desired_shot_volume) 0 2000
 
-	range_check_variable ::settings(final_desired_shot_weight) 0 100
+	range_check_variable ::settings(final_desired_shot_weight) 0 2000
 	range_check_variable ::settings(final_desired_shot_weight_advanced) 0 2000
 	range_check_variable ::settings(final_desired_shot_volume) 0 2000
 	range_check_variable ::settings(final_desired_shot_volume_advanced) 0 2000
