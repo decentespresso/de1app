@@ -569,8 +569,6 @@ proc update_datacard_from_live_data {} {
 }
 
 add_de1_variable $::pages 690 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
-add_de1_button $::pages { after 1000 set_next_page off "off_zoomed" ; show_settings settings_1 } 670 240 1300 320  "off"   
-add_de1_button $::zoomed_pages { show_settings settings_1 show_off_page_after_settings ; set_next_page off "off_zoomed" } 0 240 1300 320 ""
 
 proc show_off_page_after_settings {} {
 	set_next_page off "off_zoomed"
@@ -579,6 +577,8 @@ proc show_off_page_after_settings {} {
 add_de1_variable $::zoomed_pages 52 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 
 add_de1_variable "water_zoomed" 52 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
+add_de1_button $::pages { after 1000 set_next_page off "off_zoomed" ; show_settings settings_1 } 670 240 1300 320  "off"   
+add_de1_button $::zoomed_pages { show_settings settings_1 show_off_page_after_settings ; set_next_page off "off_zoomed" } 0 240 1300 320 ""
 
 
 
