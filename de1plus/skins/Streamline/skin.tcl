@@ -577,8 +577,8 @@ proc show_off_page_after_settings {} {
 add_de1_variable $::zoomed_pages 52 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
 
 add_de1_variable "water_zoomed" 52 256 -justify left -anchor "nw" -font Inter-HeavyBold24 -fill $::profile_title_color -width [rescale_x_skin 1200] -textvariable {[streamline_profile_title]} 
-add_de1_button $::pages { after 1000 set_next_page off "off_zoomed" ; show_settings settings_1 } 670 240 1300 320  "off"   
-add_de1_button $::zoomed_pages { show_settings settings_1 show_off_page_after_settings ; set_next_page off "off_zoomed" } 0 240 1300 320 ""
+add_de1_button $::pages { after 1000 set_next_page off "off_zoomed" ; show_settings settings_1 back_from_settings} 670 240 1300 320  "off"   
+add_de1_button $::zoomed_pages { show_settings settings_1 "back_from_settings; show_off_page_after_settings" ; set_next_page off "off_zoomed" } 0 240 1300 320 ""
 
 
 
@@ -1956,6 +1956,7 @@ proc refresh_favorite_profile_button_labels {} {
 	}
 
 
+
 	set profiles [ifexists ::settings(favorite_profiles)]
 
 	set changed 0
@@ -1980,6 +1981,10 @@ proc refresh_favorite_profile_button_labels {} {
 			set b($x) [dict get $profiles $x title]
 
 			set b($x) [file tail $b($x)]
+
+			if {$::settings(profile_title) == $b($x)} {
+				set streamline_selected_favorite_profile $x
+			}
 
 		}
 
@@ -2082,7 +2087,7 @@ set profile_button_width 320
 set profile_button_gap 20
 set profile_button_top 45
 set profile_button_bottom 175
-#  -longpress_cmd { puts "ERRORlongpress" }
+
 dui add dbutton $::all_pages [expr {$first_button_start}] $profile_button_top [expr {$first_button_start + $profile_button_width}] $profile_button_bottom -tags profile_1_btn -labelvariable {$::streamline_favorite_profile_buttons(label_1)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 1 } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 1 }
 dui add dbutton $::all_pages [expr {$first_button_start + $profile_button_width + $profile_button_gap}] $profile_button_top [expr {$first_button_start + (2*$profile_button_width) + $profile_button_gap}] $profile_button_bottom -tags profile_2_btn -labelvariable {$::streamline_favorite_profile_buttons(label_2)}  -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 2 } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 2 }
 dui add dbutton $::all_pages [expr {$first_button_start + (2*$profile_button_width) + (2*$profile_button_gap)}] $profile_button_top [expr {$first_button_start + (3*$profile_button_width) + (2*$profile_button_gap)}] $profile_button_bottom -tags profile_3_btn -labelvariable {$::streamline_favorite_profile_buttons(label_3)} -command { say [translate {Edit}] $::settings(sound_button_out); streamline_profile_select 3 } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); clear_favorite_profile 3 }
@@ -2576,10 +2581,9 @@ proc is_this_a_double_tap {context} {
 }
 
 proc store_profile_choice_to_profile_preset_button {} {
-	if {$::streamline_double_tap_empty_preset_button_previous_profile_filename != $::settings(profile_filename)} {
-		save_favorite_profile $::streamline_double_tap_empty_preset_button_slot
-	}
-
+	#if {$::streamline_double_tap_empty_preset_button_previous_profile_filename != $::settings(profile_filename)} {
+	#}
+	save_favorite_profile $::streamline_double_tap_empty_preset_button_slot
 }
 
 proc streamline_profile_select { slot } {
