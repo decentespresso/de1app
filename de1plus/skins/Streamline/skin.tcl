@@ -883,9 +883,15 @@ proc update_streamline_status_message {} {
 			if {[catch {
 				set warmed [expr {[group_head_heater_temperature] - $::streamline_start_heating_temp}]
 				if {$warmed < 1} {
-					set warmed 0
+					set warmed 1
 				}
 				set togo [expr {([setting_espresso_temperature]-10) - [group_head_heater_temperature]}]
+				if {$togo > 100} {
+					set togo 100
+				}
+				if {$togo < 1} {
+					set togo 1
+				}
 				set progress [expr {1.0*$warmed/$togo}]
 				
 				set ETA 0
@@ -895,6 +901,9 @@ proc update_streamline_status_message {} {
 
 				if {$ETA < 5} {
 					set ETA 5
+				}
+				if {$ETA > 300} {
+					set ETA 300
 				}
 
 				set force_update 1				
