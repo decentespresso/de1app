@@ -58,3 +58,6 @@
 [submodule "de1plus/plugins/Graphical_Flow_Calibrator"]
 	path = de1plus/plugins/Graphical_Flow_Calibrator
 	url = https://github.com/Damian-AU/Graphical_Flow_Calibrator
+[submodule "de1plus/plugins/auto_load_profile"]
+	path = de1plus/plugins/auto_load_profile
+	url = https://github.com/Damian-AU/auto_load_profile
