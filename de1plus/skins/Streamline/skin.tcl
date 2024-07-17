@@ -2129,6 +2129,10 @@ dui add dbutton $::all_pages [expr {$right_buttons_start - (2*$right_buttons_wid
 dui add dbutton $::all_pages [expr {$right_buttons_start - $right_buttons_width}] 66 $right_buttons_start 155 -tags sleep_btn -label [translate "Sleep"]  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Edit}] $::settings(sound_button_out); streamline_app_exit_button } 
 
 proc streamline_app_exit_button {} {
+
+	# disabled for now as causes unwanted app exits accidentally on some tablets
+	return
+
 	# only exit if we are not in the sleep page : this is trying to work around a bug in DUI with long-press sometimes falsely firing
 	if {[dui page current] == "off" || [dui page current] == "off_zoomed"} {
 		app_exit
