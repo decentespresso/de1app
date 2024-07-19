@@ -425,36 +425,70 @@ proc bookoo_enable_weight_notifications {} {
 	userdata_append "SCALE: enable bookoo scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo) $::cinstance($::de1(cuuid_bookoo))] 1
 }
 
-proc booko_cmd {payload name} {
+proc bookoo_tare {} {
 
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
 		return
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
-		error "Eureka Precisa Scale not connected, cannot send $name cmd"
+		error "bookoo Scale not connected, cannot send tare cmd"
 		return
 	}
 
-	userdata_append "SCALE: bookoo $name" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $payload] 0
-}
-
-proc bookoo_tare {} {
 	set tare [binary decode hex "030A01000008"]
-	eureka_precisa_cmd $tare "tare"
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+	# The tare is not yet confirmed to us, we can therefore assume it worked out
 }
 
 proc bookoo_timer_reset {} {
-	set timer_reset [binary decode hex "030A0600000C"]
-	eureka_precisa_cmd $timer_reset "timer reset"
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A0600000C"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+
 }
 proc bookoo_start_timer {} {
-	set timer_start [binary decode hex "030A0400000A"]
-	eureka_precisa_cmd $timer_start "timer start"
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A0400000A"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+
 }
 proc bookoo_stop_timer {} {
-	set timer_stop [binary decode hex "030A0500000D"]
-	eureka_precisa_cmd $timer_stop "timer stop"
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A0500000D"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+
 }
 
 proc bookoo_parse_response { value } {
@@ -462,7 +496,7 @@ proc bookoo_parse_response { value } {
 	#msg -ERROR "bookoo_parse_response [string bytelength $value] : [::logging::format_asc_bin $value]"
 
 	if {[string bytelength $value] >= 9} {
-		binary scan $value cucucucucucua1cucucu h1 h2 timer1 timer2 timer3 h6 sign w1 w2 w3 flow_sign flow1 flow2 battery
+		binary scan $value cucucucucucua1cucucu h1 h2 h3 h4 h5 h6 sign w1 w2 w3
 		if {[info exists w3]} {
 
 			# Combine the three bytes to get the weight (assuming big-endian order)
@@ -476,15 +510,6 @@ proc bookoo_parse_response { value } {
 			#msg -ERROR "parsing: $h1 $h2 sign:$sign wight:$weight / $w1 $w2 $w3"
 
 			::device::scale::process_weight_update $weight
-
-			set timer_ms [expr {(($timer1 << 16) | ($timer2 << 8) | $timer3)/100.0}]
-			set flow100 [expr {(($flow1 << 8) | $flow2)/100.0}]
-			if {$flow_sign == "-"} {
-				set flow100 [expr {-1 * $weight100}]
-			}
-			set flow [round_to_two_digits $flow100]
-
-			set ::de1(scale_battery_level) $battery
 		}
 	}
 }
