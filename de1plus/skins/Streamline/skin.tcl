@@ -2620,6 +2620,10 @@ proc streamline_profile_select { slot } {
 
 	set selected_profile [dict get $profiles $slot name]
 	if {$selected_profile == ""} {
+		# if the profile is empty then do nothing when someone taps on it
+		return
+
+		# (obsolete)
 		# empty button
 		# john source of a potential bug where a button is cleared, need to investigate further 8/11/2024
 		set ::streamline_double_tap_empty_preset_button_previous_profile_filename $::settings(profile_filename)
@@ -2665,6 +2669,18 @@ proc save_favorite_profile { slot } {
 proc clear_favorite_profile { slot } {
 	puts "ERROR clear_favorite_profile $slot"
 	set profiles [ifexists ::settings(favorite_profiles)]
+
+	set selected_profile [dict get $profiles $slot name]
+	if {$selected_profile == ""} {
+		# empty button
+		# john source of a potential bug where a button is cleared, need to investigate further 8/11/2024
+		set ::streamline_double_tap_empty_preset_button_previous_profile_filename $::settings(profile_filename)
+		set ::streamline_double_tap_empty_preset_button_slot $slot
+		popup "Assign"
+		show_settings "settings_1" "store_profile_choice_to_profile_preset_button"
+		return
+	}
+
 
 	dict set profiles $slot name ""
 	dict set profiles $slot title " "
