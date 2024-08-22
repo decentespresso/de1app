@@ -1850,10 +1850,10 @@ add_de1_variable "steam water flush hotwaterrinse" $streamline_preset_pos_col2 6
 add_de1_variable "steam water flush hotwaterrinse" $streamline_preset_pos_col3 616  -justify left  -tags dose_btn_3d -anchor "nw" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_3)}
 add_de1_variable "steam water flush hotwaterrinse" $streamline_preset_pos_col4 616  -justify right -tags dose_btn_4d -anchor "ne" -font Inter-Bold11 -fill $::preset_value_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_favorite_dosebev_buttons(label_4)}
 
-dui add dbutton "off" 0 610 148 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 1 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 1 } 
-dui add dbutton "off" 148 610 310 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 2 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 2 } 
-dui add dbutton "off" 310 610 474 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 3 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 3 } 
-dui add dbutton "off" 474 610 624 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 4 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 4 } 
+dui add dbutton "off espresso" 0 610 148 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 1 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 1 } 
+dui add dbutton "off espresso" 148 610 310 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 2 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 2 } 
+dui add dbutton "off espresso" 310 610 474 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 3 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 3 } 
+dui add dbutton "off espresso" 474 610 624 672 -command {say [translate {Preset}] $::settings(sound_button_out); streamline_dosebev_select 4 } -theme none -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd {say [translate {Preset}] $::settings(sound_button_out); streamline_set_dosebev_preset 4 } 
 
 
 
@@ -3510,11 +3510,7 @@ proc streamline_set_drink_weight {desired_weight} {
 }
 
 proc streamline_dosebev_select { slot } {
-	puts "streamline_dosebev_select { $slot } "
-
-	if {[dui page current] != "off"} {
-		return ""
-	}
+	#puts "streamline_dosebev_select { $slot } "
 
 	#catch {
 		# get the favoritae button values
@@ -3544,11 +3540,6 @@ proc streamline_dosebev_select { slot } {
 refresh_favorite_dosebev_button_labels
 
 proc streamline_flush_select { slot } {
-	puts "streamline_flush_select { $slot } "
-
-	if {[dui page current] != "off"} {
-		return ""
-	}
 
 	catch {
 		# get the favoritae button values
