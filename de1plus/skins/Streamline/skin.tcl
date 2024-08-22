@@ -685,6 +685,15 @@ lappend btns \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[time_format [clock seconds]]} -font "mono12" -foreground $::dataline_data_color   ] 
 
+if { [plugins enabled Graphical_Flow_Calibrator] } {
+	# damian's graphics flow calibrator plugin
+	lappend btns [list -text "    " -font "Inter-Bold16"] 
+	lappend btns [list -text [translate "Calib"] -font "Inter-Bold18" -foreground $::dataline_label_color -exec "page_show GFC"  ] 
+	lappend btns [list -text " " -font "Inter-Bold18" -exec "page_show GFC"  ] 
+	lappend btns [list -text {[ifexists ::settings(calibration_flow_multiplier)]} -font "mono12" -foreground $::dataline_data_color  -exec "page_show GFC"] 
+}
+
+
 if {$::settings(scale_bluetooth_address) != ""} {
 	lappend btns [list -text "    " -font "Inter-Bold16"] 
 	#lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::profile_title_color  -exec "::device::scale::tare; popup [translate Tare]" ] 
