@@ -2973,6 +2973,29 @@ proc select_profile { profile } {
 	send_de1_settings_soon
 }
 
+
+proc hide_profile {fn} {
+	catch {
+		array set thisprofile [encoding convertfrom utf-8 [read_binary_file $fn]]
+	}
+
+	if {[info exists thisprofile(profile_title)] != 1} {
+		msg -WARNING "Corrupt profile file to preview: '$fn'"
+		return
+	}
+
+	set thisprofile(profile_hide) 1
+	save_array_to_file thisprofile $fn 
+
+	# need to save and restore the scrollbar value, because we're refilling the listbox to show hide/show state change
+	set oldscrollbarbalue [$::profiles_scrollbar get]
+	fill_profiles_listbox
+	unset -nocomplain ::filling_profiles 
+
+	$::profiles_scrollbar set $oldscrollbarbalue
+	listbox_moveto $::globals(profiles_listbox) $::profiles_slider $oldscrollbarbalue
+}
+
 proc hide_unhide_toggle_profile {fn} {
 	catch {
 		array set thisprofile [encoding convertfrom utf-8 [read_binary_file $fn]]
@@ -3271,33 +3294,6 @@ proc save_profile {  {do_saved_msg 1} } {
 	# if no name then give it a name which is just a number
 	set_profile_title_untitled
 
-	if {[ifexists ::settings(read_only)] == 1} {
-		# if a profile is read-only, give it a new name by adding a unique counter to the end of the title
-		# and then unmark it as read-only
-		set ::settings(read_only) 0
-		#unset -nocomplain ::settings(Author)
-
-		if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
-			incr profcnt 2
-
-			set profile_titles [string toupper [get_profile_titles]]
-			set newtitle [subst {$::settings(profile_title) $profcnt}]
-			puts "searching for '$newtitle' in '$profile_titles'"
-			while {[lsearch -exact $profile_titles [string toupper $newtitle]] != -1} {
-				incr profcnt
-				set newtitle [subst {$::settings(profile_title) $profcnt}]
-			}
-
-			set ::settings(profile_title) $newtitle
-			set ::settings(profile) $newtitle
-		}
-
-	}
-
-
-	#set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure}
-	#set profile_name_to_save $::settings(profile_to_save) 
-
 	if {$::settings(settings_profile_type) == "settings_2c2"} {
 		# if on the LIMITS tab, indicate that this is settings_2c (aka "advanced") shot as part of the OK button process
 		set ::settings(settings_profile_type) "settings_2c"
@@ -3305,19 +3301,38 @@ proc save_profile {  {do_saved_msg 1} } {
 	}
 
 
-	if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
-		set profile_filename $::settings(profile_filename) 
-	} else {
-		# if they change the description of the profile, then save it to a new name
-		# replace prior usage of unformatted seconds with sanitized profile name and append with formatted time if file exists
-		set profile_filename [::profile::filename_from_title $::settings(profile_title)]
-		set profile_timestamp [clock format [clock seconds] -format %Y%m%d_%H%M%S] 
-		if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] == 1} {
-			append profile_filename "_" $profile_timestamp
-		}
 
-		# save the new filename in settings
+	if {[ifexists ::settings(read_only)] == 1} {
+		
+		puts "hiding profile '[ifexists ::settings(profile_filename)]'"
+
+		set fn "[homedir]/profiles/[ifexists ::settings(profile_filename)].tcl"
+		hide_profile $fn
+
+		# if a profile is read-only, give it a new name by adding a * and then unmark it as read-only and hide the original read-only profile
+		set ::settings(read_only) 0
+		set newtitle [subst {$::settings(profile_title)*}]
+		set ::settings(profile_title) $newtitle
+		set ::settings(profile) $newtitle
+		set profile_filename [::profile::filename_from_title $::settings(profile_title)]_
 		set ::settings(profile_filename) $profile_filename
+		
+	} else {
+
+		if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
+			set profile_filename $::settings(profile_filename) 
+		} else {
+			# if they change the description of the profile, then save it to a new name
+			# replace prior usage of unformatted seconds with sanitized profile name and append with formatted time if file exists
+			set profile_filename [::profile::filename_from_title $::settings(profile_title)]
+			set profile_timestamp [clock format [clock seconds] -format %Y%m%d_%H%M%S] 
+			if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] == 1} {
+				append profile_filename "_" $profile_timestamp
+			}
+
+			# save the new filename in settings
+			set ::settings(profile_filename) $profile_filename
+		}
 	}
 	
 	set tclfile ${profile_filename}
