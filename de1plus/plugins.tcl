@@ -190,8 +190,12 @@ namespace eval ::plugins {
             set peeked ""
             catch {
                 #set disabled [subst \$::plugins::${fbasename}::disabled]            
-                set peeked [subst \$::plugins::[string trim $fbasename]::plugin_peeked]            
-                set version [subst \$::plugins::[string trim $fbasename]::version]            
+                if {[info exists ::plugins::[string trim $fbasename]::plugin_peeked]} {
+                    set peeked [subst \$::plugins::[string trim $fbasename]::plugin_peeked]            
+                }
+                if {[info exists ::plugins::[string trim $fbasename]::version]} {
+                    set version [subst \$::plugins::[string trim $fbasename]::version]            
+                }
             }
             if {$peeked == 1 && $version == ""} {
                 #puts "ERROR skipping $fbasename because it was peeked but not successfully"

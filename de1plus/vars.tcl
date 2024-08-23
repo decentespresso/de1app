@@ -3090,56 +3090,76 @@ proc profile_has_changed_set_colors {} {
 
 	if {$::settings(profile_has_changed) == 1} {
 		update_de1_explanation_chart
-		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
-			catch {
+		catch {
+			if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
 				$::globals(widget_profile_name_to_save) configure -bg #ffe3e3
 			}
 		}
 
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name1)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name2)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 		#catch {
 		#	.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill $::de1(widget_current_profile_name_color_normal)
 		#}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name_espresso1)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name_espresso2)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 	} else {
-		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
+		catch {
+			if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
 			# this indicates to the user that the profile has changed or not
-			catch {
 				$::globals(widget_profile_name_to_save) configure -bg #fbfaff
 			}
 		}
 
 		# this is displayed on the main Insight skin page
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name)]} {
+				.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name1)]} {
+				.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name2)]} {
+				.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 		#catch {
 		#	.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill $::de1(widget_current_profile_name_color_changed)
 		#}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name_espresso1)]} {
+				.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name_espresso2)]} {
+				.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 	}
 }
