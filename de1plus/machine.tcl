@@ -256,6 +256,7 @@ array set ::settings {
 	chart_total_shot_weight 1
 	calibration_flow_multiplier "1.000"
 	phase_1_flow_rate 20
+	espresso_clock 0
 	phase_2_flow_rate 40
 	dui_number_editor_previous_values {}
 	ghc_mode 0
