@@ -2927,6 +2927,8 @@ proc select_profile { profile } {
 	set ::settings(profile) $profile
 	set ::settings(profile_notes) ""
 	set ::settings(advanced_shot_tcl) ""
+	set ::settings(read_only) ""
+	set ::settings(read_only_backup) ""
 	
 	# for importing De1 profiles that don't have this feature.
 	set ::settings(preinfusion_flow_rate) 4
@@ -3286,7 +3288,7 @@ proc save_settings_vars {fn varlist} {
 }
 
 proc profile_vars {} {
- 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_pressure_range_advanced maximum_flow_range_advanced maximum_flow maximum_pressure_range_default maximum_flow_range_default }
+ 	return { advanced_shot espresso_temperature_steps_enabled author read_only read_only_backup espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_pressure_range_advanced maximum_flow_range_advanced maximum_flow maximum_pressure_range_default maximum_flow_range_default }
 }
 
 proc set_profile_title_untitled {} {
@@ -3304,7 +3306,18 @@ proc preset_counter_get_and_incr {} {
 	return $::settings(preset_counter)
 }
 
-proc save_profile {  {do_saved_msg 1} } {
+proc reset_default_profile {} {
+	if {[ifexists ::settings(read_only_backup)] == ""} {
+		return
+	}
+	array set ::settings $::settings(read_only_backup)
+	set ::settings(read_only) 2
+	save_profile
+	select_profile $::settings(profile_filename)
+	popup [translate_toast Reset]
+}
+
+proc save_profile { {do_saved_msg 1} } {
 	if {$::settings(profile_title) == [translate "Saved"]} {
 		return
 	}
@@ -3324,19 +3337,26 @@ proc save_profile {  {do_saved_msg 1} } {
 
 	if {[ifexists ::settings(read_only)] == 1} {
 		
-		puts "hiding profile '[ifexists ::settings(profile_filename)]'"
+		set profile_filename $::settings(profile_filename)
+		set fn "[homedir]/profiles/${profile_filename}.tcl"
 
-		set fn "[homedir]/profiles/[ifexists ::settings(profile_filename)].tcl"
-		hide_profile $fn
-
-		# if a profile is read-only, give it a new name by adding a * and then unmark it as read-only and hide the original read-only profile
+		# if a profile is read-only, save its current settings into a backup and mark it as no longer readonly
 		set ::settings(read_only) 0
-		set newtitle [subst {$::settings(profile_title)*}]
-		set ::settings(profile_title) $newtitle
-		set ::settings(profile) $newtitle
-		set profile_filename [::profile::filename_from_title $::settings(profile_title)]_
-		set ::settings(profile_filename) $profile_filename
+
+		# keep a backup of how the profile was when changed away from read-only, so it can be restored
+		set ::settings(read_only_backup) [encoding convertfrom utf-8 [read_binary_file $fn]]
+	
+	} elseif {[ifexists ::settings(read_only)] == 2} {
+		# number=2 means reset this profile
 		
+		# if a profile is read-only, save its current settings into a backup and mark it as no longer readonly
+		set ::settings(read_only) 1
+
+		# keep a backup of how the profile was when changed away from read-only, so it can be restored
+		unset ::settings(read_only_backup) 
+
+		set profile_filename $::settings(profile_filename)
+
 	} else {
 
 		if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {

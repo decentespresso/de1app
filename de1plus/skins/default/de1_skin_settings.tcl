@@ -1861,9 +1861,11 @@ add_de1_text "settings_1" 1360 830 -text [translate "Description"] -font Helv_10
 # removed this "helpful video about profile" feature as a button, as being too loud.
 # dui add dbutton "settings_1" 1140 1084 -tags [list xxx profile_video_help_button] -shape round -symbol_fill white -radius 32 -fill "#c0c5e2" -bwidth 126 -bheight 126 -symbol_pos {0.5 0.5} -symbol "photo-video"  -label_fill white -command {say [translate {video}] $::settings(sound_button_in); web_browser [ifexists ::settings(profile_video_help)]} 
 
-add_de1_variable "settings_1" 1360 1240 -text "" -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"  -textvariable {[profile_has_changed_set_colors; 
-if {[ifexists ::settings(read_only)] == 1} {return [translate "Pick a new name to save"]} else {return [translate "Save"]}]}
+add_de1_variable "settings_1" 1360 1240 -text "" -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"  -textvariable {[profile_has_changed_set_colors; if {[ifexists ::settings(read_only)] == 1} {return [translate "Pick a new name to save"]} else {return [translate "Save"]}]}
 
+add_de1_variable "settings_1" 2280 1240 -text "" -font Helv_6 -fill "#7f879a" -justify "left" -anchor "ne"  -textvariable {[if {[ifexists ::settings(read_only_backup)] != ""} {return \[[translate "Reset to default"]\]} ]}
+
+add_de1_button "settings_1" {say [translate {reset}] $::settings(sound_button_in); reset_default_profile; } 1800 1220 2280 1290
 
 	add_de1_variable "settings_1" 1360 900 -text "" -font Helv_6 -fill "#7f879a" -justify "left" -anchor "nw"  -width [rescale_y_skin 1150] -textvariable {[maxstring_with_crlf_count $::settings(profile_notes) 380 80 " \[[translate {Tap here for more}]\]" ]}
 	add_de1_widget "settings_1" entry 1360 1310  {
