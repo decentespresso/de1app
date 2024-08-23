@@ -2351,6 +2351,8 @@ proc streamline_dose_btn { args } {
 			flash_button "streamline_plus_dose_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 		}
 	}
+
+	save_settings
 	refresh_favorite_dosebev_button_labels
 }
 
@@ -2359,16 +2361,15 @@ proc streamline_beverage_btn { args } {
 		if {[determine_final_weight] > 0} {
 			determine_final_weight -1
 			flash_button "streamline_minus_beverage_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-			save_profile_and_update_de1_soon
 		}
 	} elseif {$args == "+"} {
 		if {[determine_final_weight] < 2000} {
 			determine_final_weight 1
 			flash_button "streamline_plus_beverage_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
-			save_profile_and_update_de1_soon
 		}
 	}
 
+	save_profile_and_update_de1_soon
 	refresh_favorite_dosebev_button_labels
 }
 
@@ -2663,7 +2664,6 @@ proc streamline_profile_select { slot } {
 	dict set profiles selected number $slot
 	set ::settings(favorite_profiles) $profiles
 
-	#streamline_adjust_chart_x_axis
 	refresh_favorite_profile_button_labels
 }
 
