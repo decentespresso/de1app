@@ -2000,8 +2000,10 @@ proc refresh_favorite_profile_button_labels {} {
 
 			set b($x) [file tail $b($x)]
 
-			if {$::settings(profile_title) == $b($x)} {
-				set streamline_selected_favorite_profile $x
+			if {$::settings(profile_title) == $b($x) && $streamline_selected_favorite_profile != $x} {
+				msg -ERROR "STREAMLINE: selected a profile manually that matches the same name"
+				after 500 streamline_profile_select $x
+				return
 			}
 
 		}
@@ -2010,12 +2012,9 @@ proc refresh_favorite_profile_button_labels {} {
 			set t($x) [lindex $default_profile_buttons $x]
 			set b($x) [profile_title [lindex $default_profile_buttons $x]]
 
-			#regsub "/" $b($x) "/ " b($x)
-
 			dict set profiles $x name $t($x)
 			dict set profiles $x title $b($x)
 			set changed 1
-			#puts "ERROR set button $x to $b($x)"
 		}		
 
 	}
@@ -2264,6 +2263,18 @@ dui add dbutton "espresso steam flush hotwaterrinse" 486 1392 578 1484 -tags str
 
 proc save_profile_and_update_de1 {} {
 
+	# if the currently loaded profile is not the currently selected button, don't save it automatically
+	set profiles [ifexists ::settings(favorite_profiles)]
+	set slot [dict get $profiles selected number]	
+	set selected_filename [dict get $profiles $slot name]
+	set selected_title [dict get $profiles $slot title]
+	if {$::settings(profile_filename) != $selected_filename} {
+		msg -ERROR "STREAMLINE: current profile is not from a streamline button, so not saving changes to disk, $selected_filename vs $::settings(profile_filename) / $selected_title vs $::settings(profile_title) "
+		save_settings_to_de1
+		return
+	}
+
+	msg "STREAMLINE: saving profile changes to disk"
 
 	if {$::settings(steam_timeout) == 0} {
 		set ::settings(steam_disabled) 1
