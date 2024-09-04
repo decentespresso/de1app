@@ -4,7 +4,7 @@ package require de1 1.0
 dui theme add streamline
 dui theme set streamline
 
-set ::streamline_longpress_threshold 500
+set ::streamline_longpress_threshold 1000
 
 if {$::android != 1} {
 	set ::settings(ghc_is_installed) 0
