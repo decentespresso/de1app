@@ -3296,6 +3296,7 @@ proc set_profile_title_untitled {} {
 	if {$::settings(profile_title) == ""} {
 		preset_counter_get_and_incr
 		set ::settings(profile_title) [subst {[translate "Untitled"] $::settings(preset_counter)}]
+		set ::settings(profile_filename) [::profile::filename_from_title $::settings(profile_title)]
 		set profile(profile_hide) 0
 	}
 }
