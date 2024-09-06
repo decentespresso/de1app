@@ -26,6 +26,5 @@ profile_notes {Professional baristas worldwide have found that slightly lowering
 profile_title {Gentler but still traditional 8.4 bar}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-water_temperature 86.0
 beverage_type {espresso}
 read_only 1

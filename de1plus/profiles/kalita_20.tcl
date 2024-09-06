@@ -34,5 +34,3 @@ profile_title {Pour over basket/Kalita 20g in, 340ml out}
 read_only 1
 settings_profile_type settings_2c
 tank_desired_water_temperature 30
-water_temperature 80
-

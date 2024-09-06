@@ -32,6 +32,5 @@ profile_notes {Put a blind (no hole) portafilter basket into your portafilter, a
 profile_title {Test/for a small leak}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-water_temperature 70.00
 beverage_type {calibrate}
 read_only 1

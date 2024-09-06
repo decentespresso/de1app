@@ -37,6 +37,5 @@ profile_notes {This profile requires a specially designed tea portafilter that o
 profile_title {Tea portafilter/white tea}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-water_temperature 80
 beverage_type {tea_portafilter}
 read_only 1

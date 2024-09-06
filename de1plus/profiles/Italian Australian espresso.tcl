@@ -26,6 +26,5 @@ profile_notes {Italians in Australia have a style all their own. They still use 
 profile_title {Italian Australian espresso}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-water_temperature 86.0
 beverage_type {espresso}
 read_only 1

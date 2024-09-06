@@ -26,6 +26,5 @@ profile_notes {An advanced spring lever profile by John Weiss that addresses a p
 profile_title {Advanced spring lever}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-water_temperature 80
 beverage_type {espresso}
 read_only 1

@@ -33,5 +33,4 @@ profile_notes {Put a pour over basket in your DE1.  Look for smooth temperature 
 profile_title {Test/temperature accuracy}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-water_temperature 70.00
 read_only 1
