@@ -1016,6 +1016,7 @@ proc reset_skin {} {
     array set ::settings [encoding convertfrom utf-8 [read_binary_file $s]]
     set ::settings(skin) "Insight"
     set ::settings(enabled_plugins) ""
+    unset -nocomplain ::settings(ghc_is_installed) 
 
     # also reset the screen resolution to default
     set ::settings(screen_size_height) "800"
