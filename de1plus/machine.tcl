@@ -873,6 +873,16 @@ proc reset_gui_starting_espresso {} {
 	}
 }
 
+# these are machines known to have been stolen from customers, or which FEDEX/UPS "lost" in the last mile
+proc check_for_missing_sn {} {
+		set sn $::settings(sn)
+
+			set missing_machine_sn [list 6654 5502 4291 380 317 8980 659 2276]
+			if {$sn != "" && [lsearch -exact $missing_machine_sn $sn] != -1} {
+					message_page "A problem has been detected with your espresso machine.\n\nPlease contact Decent Espresso Tech Support ($sn)" [translate "Quit"];
+			}
+}
+
 proc ghc_message {type} {
 	# display READY instead of START, because they have to tap the group head to start, they cannot tap the tablet, due to UL compliance limits
 	if {[info exists ::nextpage(machine:off)] == 1} {

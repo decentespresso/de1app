@@ -38,6 +38,7 @@ proc load_skin {} {
 		after 10000 exit
 	}
 
+	after 10000 check_for_missing_sn
 }
 
 proc strip_crlf {in} {
