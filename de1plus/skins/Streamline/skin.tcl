@@ -3915,10 +3915,11 @@ proc streamline_load_history_shot {current_shot_filename} {
 
 	array set profile_settings [ifexists past_shot_array(settings)]
 
-
-
-	# replace the final weight in the list, with the final drink weight that was calculated a few seconds later
-	lset past_shot_array(espresso_weight) end $profile_settings(drink_weight)
+	
+	catch {
+		# replace the final weight in the list, with the final drink weight that was calculated a few seconds later
+		lset past_shot_array(espresso_weight) end $profile_settings(drink_weight)
+	}
 
 	espresso_elapsed clear
 
