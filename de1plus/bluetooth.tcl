@@ -663,6 +663,8 @@ set ::acaia_command_buffer ""
 set ::acaia_msg_start 0
 set ::acaia_msg_end 0 
 
+set ::acaia_recieving_notifications 0
+
 proc acaia_encode {msgType payload} {
 
 	set HEADER1 [binary decode hex "EF"];
@@ -722,6 +724,14 @@ proc acaia_send_ident {suuid cuuid} {
 	set cinstance $::cinstance($cuuid)
 
 	userdata_append "SCALE: send acaia ident" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $ident] 1
+
+	if {$::acaia_recieving_notifications == 0} {
+		after 400 [list acaia_send_ident $suuid $cuuid]
+		after 1000 [list acaia_send_config $suuid $cuuid]
+	} else {
+		after 400 [list acaia_send_config $suuid $cuuid]
+		after 1500 [list acaia_send_heartbeat $suuid $cuuid]
+	}
 }
 
 proc acaia_send_config {suuid cuuid} {
@@ -789,6 +799,11 @@ proc acaia_scan_buffer_for_msg {h1 h2 msg_t len event_t} {
 			set length [lindex $::acaia_command_buffer [expr {$i + 3}]]
 			set event_type [lindex $::acaia_command_buffer [expr {$i + 4}]]
 			set ::acaia_msg_end [expr {$i + $::ACAIA_METADATA_LEN + $length}]
+
+			# the scales will start sending info messages if we dont identify
+			if {$msg_type != 7} {
+				set ::acaia_recieving_notifications 1
+			}
 
 			# msg -DEBUG "MSG_TYPE $msg_type LEN $length EVENT_TYPE $event_type"
 			# NOTE: while length threshold is arbitrary, could cause reporting issues the higher the threshold
@@ -1953,18 +1968,19 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
 							set ::settings(force_acaia_heartbeat) 0
+							set ::acaia_recieving_notifications 0
 
 							if { [string first "PROCH" $::settings(scale_bluetooth_name)] != -1 } {
 								set ::settings(force_acaia_heartbeat) 1
 							}
 
-							acaia_send_ident $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)
-							after 500 [list acaia_send_config $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
-							after 1000 [list acaia_enable_weight_notifications $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
-							after 2000 [list acaia_send_heartbeat $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
+							after 100 [list acaia_enable_weight_notifications $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
+							after 500 [list acaia_send_ident $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
 						} elseif {$::settings(scale_type) == "acaiapyxis"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiapyxis"
 							msg -INFO "Pyxis scale showed up"
+							set ::acaia_recieving_notifications 0
+
 
 							if {[ifexists ::sinstance($::de1(suuid_acaia_pyxis))] == {}} {
 								msg -NOTICE "fake connction to acaia scale. Closing handle again"
@@ -1976,10 +1992,8 @@ proc de1_ble_handler { event data } {
 							set ::settings(force_acaia_heartbeat) 1
 							set mtu1 [ble mtu $handle 247]
 							msg -INFO "MTU is $mtu1"
-							after 2000 [list acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)]
-							after 2500  [list acaia_send_ident $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
-							after 3000 [list acaia_send_config $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
-							after 4500 [list acaia_send_heartbeat $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
+							after 500 [list acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)]
+							after 1000  [list acaia_send_ident $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
