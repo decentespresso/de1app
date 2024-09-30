@@ -33,7 +33,7 @@ preinfusion_stop_pressure 4.0
 preinfusion_time 20
 pressure_end 6.0
 profile_hide 1
-profile_language kr
+profile_language en
 profile_notes {A convenient way to 5 times flush and clean your group head.  (1) Put a blind basket in your portafilter  (2) Put 3g (1/2 teaspoon) of espresso machine detergent in the blind basket  (3) Run this profile  (4) When it is done, remove the portafilter off Flush the DE1 until the water goes clear  (5) Put the portafilter back without detergent and run this profile again  (6) Finally, run FLUSH for 20 seconds.}
 profile_title {Cleaning/Forward Flush x5}
 read_only 1
