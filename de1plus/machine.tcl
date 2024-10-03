@@ -708,7 +708,7 @@ proc start_cleaning {} {
 	msg -NOTICE "Tell DE1 to start CLEANING"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send_state "descale" $::de1_state(Clean)
+	de1_send_state "clean" $::de1_state(Clean)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
