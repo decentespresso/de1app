@@ -319,7 +319,7 @@ set ::all_pages [list off off_zoomed espresso_zoomed steam steam_zoomed espresso
 #set ::pages_not_off [list steam espresso water flush info hotwaterrinse]
 
 set ::streamline_hotwater_btn_mode "ml"
-set ::streamline_steam_btn_mode "time"
+set ::streamline_steam_btn_mode "flow"
 
 dui page add $::all_pages -bg_color $::background_color
 
@@ -2829,10 +2829,21 @@ proc streamline_set_temperature_preset { slot } {
 }
 
 
+
 proc streamline_set_steam_preset { slot } {
-	set steams [ifexists ::settings(favorite_steams)]
-	dict set steams $slot value $::settings(steam_timeout)
-	set ::settings(favorite_steams) $steams	
+	if {$::streamline_steam_btn_mode == "time"} {
+
+		set steams [ifexists ::settings(favorite_steams)]
+		dict set steams $slot value $::settings(steam_timeout)
+		set ::settings(favorite_steams) $steams	
+
+	} else {
+
+		set steams [ifexists ::settings(favorite_steamflow)]
+		dict set steams $slot value $::settings(steam_flow)
+		set ::settings(favorite_steamflow) $steams	
+
+	}
 	save_settings	
 	refresh_favorite_steam_button_labels
 
