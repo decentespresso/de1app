@@ -3921,8 +3921,6 @@ proc streamline_adjust_chart_x_axis_scheduled {} {
 
 streamline_adjust_chart_x_axis_scheduled
 
-add_de1_button "descaling cleaning" {say [translate {awake}] $::settings(sound_button_out); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
-
 
 proc streamline_load_history_shot {current_shot_filename} {
 
@@ -4825,3 +4823,5 @@ streamline_load_currently_selected_history_shot
 # revert to default DUI theme, so that other code that relies on current theme=default does not break
 dui theme set default
 add_de1_button "saver" {say [translate {awake}] $::settings(sound_button_out); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
+add_de1_button "descaling cleaning" {say [translate {awake}] $::settings(sound_button_out); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
+
