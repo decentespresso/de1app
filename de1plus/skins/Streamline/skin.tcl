@@ -1623,8 +1623,8 @@ if {$::android == 1 || $::undroid == 1} {
 	set ::streamline_history_right ">"
 }
 
-dui add dbutton "off" 628 1220 755 1465 -tags profile_back $::streamline_history_cmd $::streamline_history_left  -command { say [translate {Previous}] $::settings(sound_button_out); streamline_history_profile_back } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {First}] $::settings(sound_button_out); streamline_history_profile_fwd 0 } 
-dui add dbutton "off" 1055 1220 1121 1465 -tags profile_fwd $::streamline_history_cmd " "  -command { say [translate {Next}] $::settings(sound_button_out); streamline_history_profile_fwd } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Newest}] $::settings(sound_button_out); streamline_history_profile_fwd 1 } 
+dui add dbutton "off" 628 1300 828 1500 -tags profile_back $::streamline_history_cmd $::streamline_history_left  -command { say [translate {Previous}] $::settings(sound_button_out); streamline_history_profile_back } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {First}] $::settings(sound_button_out); streamline_history_profile_fwd 0 } 
+dui add dbutton "off" 950 1300 1150 1500 -tags profile_fwd $::streamline_history_cmd " "  -command { say [translate {Next}] $::settings(sound_button_out); streamline_history_profile_fwd } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Newest}] $::settings(sound_button_out); streamline_history_profile_fwd 1 } 
 
 proc streamline_zero_pad {num dig prec {optional_label {}}} {
 	if {$num == ""} {
