@@ -1568,12 +1568,30 @@ proc streamline_history_date_format {shot_time} {
 		return ""
 	}
 
+	if {$::settings(enable_ampm) == 1} {
+		return [clock format $shot_time -format "%Y/%m/%d %l:%M %p"]
+	}
+
+	return [clock format $shot_time -format "%Y/%m/%d %H:%M"]
+
+	# all below is obsolete, the previous implementation , which suffered from many bugs due to overcomplexity
+
 	set seconds [expr {([clock seconds] - $shot_time)}]
 	set minutes [expr {([clock seconds] - $shot_time)/60}]
 	set hours [expr {([clock seconds] - $shot_time)/3600}]
 	set days [expr {([clock seconds] - $shot_time)/86400}]
 	set months [expr {([clock seconds] - $shot_time)/(30*86400)}]
 	set years [expr {([clock seconds] - $shot_time)/(365*86400)}]
+
+	set yesterday 0
+	set now_number [clock format [clock seconds] -format %w]
+	set then_number [clock format $shot_time -format %w]
+
+	if {($now_number == 0 && $then_number == 6) || ([expr {$now_number - $then_number}] == 1)} {
+		# sunday = 0, saturday is 6, so this is an exception case, 
+		# otherwise simply test for 1 day of difference
+		set yesterday 1
+	} 
 
 	if {$::de1(state) == 4} {
 		set t "now"
@@ -1583,6 +1601,8 @@ proc streamline_history_date_format {shot_time} {
 		set t "${minutes} [translate {minutes ago}]"
 	} elseif {$hours < 2} {
 		set t [translate "1 hour ago @ [time_format $shot_time]"]
+	} elseif {$yesterday == 1} {
+		set t "[translate {yesterday}] @ [time_format $shot_time]"
 	} elseif {$hours < 24} {
 		set t "${hours} [translate {hours ago}] @ [time_format $shot_time]"
 	} elseif {$days < 2} {
@@ -1623,8 +1643,8 @@ if {$::android == 1 || $::undroid == 1} {
 	set ::streamline_history_right ">"
 }
 
-dui add dbutton "off" 628 1300 828 1500 -tags profile_back $::streamline_history_cmd $::streamline_history_left  -command { say [translate {Previous}] $::settings(sound_button_out); streamline_history_profile_back } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {First}] $::settings(sound_button_out); streamline_history_profile_fwd 0 } 
-dui add dbutton "off" 950 1300 1150 1500 -tags profile_fwd $::streamline_history_cmd " "  -command { say [translate {Next}] $::settings(sound_button_out); streamline_history_profile_fwd } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Newest}] $::settings(sound_button_out); streamline_history_profile_fwd 1 } 
+dui add dbutton "off" 628 1280 728 1600 -tags profile_back $::streamline_history_cmd $::streamline_history_left  -command { say [translate {Previous}] $::settings(sound_button_out); streamline_history_profile_back } -longpress_threshold $::streamline_longpress_threshold  -longpress_cmd { say [translate {First}] $::settings(sound_button_out); streamline_history_profile_fwd 0 } 
+dui add dbutton "off" 1050 1280 1150 1600 -tags profile_fwd $::streamline_history_cmd " "  -command { say [translate {Next}] $::settings(sound_button_out); streamline_history_profile_fwd } -longpress_threshold $::streamline_longpress_threshold -longpress_cmd { say [translate {Newest}] $::settings(sound_button_out); streamline_history_profile_fwd 1 } 
 
 proc streamline_zero_pad {num dig prec {optional_label {}}} {
 	if {$num == ""} {
