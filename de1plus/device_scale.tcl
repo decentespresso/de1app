@@ -1490,7 +1490,9 @@ namespace eval ::device::scale::callbacks {
 		#}
 
 		# john 7-10-24 only saving drink weight if previously in espresso was causing a bug, when you steamed or hot watered, or flushed, immediately after making espresso, not letting the 5 seconds-after-espress timer run. The net result was that the final drink weight was then attempted to be saved after the steam/flush/hotwater was over but then ::settings(drink_weight) would not be set due to the if() state above.
-		set ::settings(drink_weight) [round_to_one_digits $::de1(final_espresso_weight)]
+		if {[info exists ::de1(final_espresso_weight)] == 1} {
+			set ::settings(drink_weight) [round_to_one_digits $::de1(final_espresso_weight)]
+		}
 	}
 
 	::de1::event::listener::on_major_state_change_add -noidle ::device::scale::callbacks::on_major_state_change
