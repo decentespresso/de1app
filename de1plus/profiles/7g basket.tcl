@@ -38,5 +38,4 @@ profile_notes {This profile is optimized for the 7g Decent Basket.  You should w
 profile_title {7g basket}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-water_temperature 80
 read_only 1

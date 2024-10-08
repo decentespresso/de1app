@@ -35,5 +35,3 @@ profile_video_help https://www.youtube.com/watch?v=zj-Ipuu6XGU
 read_only 1
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-water_temperature 80
-

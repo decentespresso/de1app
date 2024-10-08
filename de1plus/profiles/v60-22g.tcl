@@ -32,5 +32,4 @@ profile_notes {We use the highest flow rate for V60 brewing, to take advantage o
 profile_title {Pour over basket/V60 22g in, 375g out}
 settings_profile_type settings_2c
 tank_desired_water_temperature 30
-water_temperature 80
 read_only 1

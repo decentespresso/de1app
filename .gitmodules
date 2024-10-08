@@ -45,10 +45,19 @@
 [submodule "de1plus/skins/DSx2"]
 	path = de1plus/skins/DSx2
 	url = https://github.com/Damian-AU/DSx2
-[submodule "de1plus\\skins\\DSx2"]
-	path = de1plus\\skins\\DSx2
-	url = https://github.com/Damian-AU/DSx2
 [submodule "de1plus/plugins/mqtt"]
 	path = de1plus/plugins/mqtt
 	url = https://github.com/simpkins/de1plus-mqtt.git
 	branch = main
+[submodule "plugins/skip_first_step_notice"]
+	path = plugins/skip_first_step_notice
+	url = https://github.com/Damian-AU/skip_first_step_notice
+[submodule "de1plus/plugins/skip_first_step_notice"]
+	path = de1plus/plugins/skip_first_step_notice
+	url = https://github.com/Damian-AU/skip_first_step_notice
+[submodule "de1plus/plugins/Graphical_Flow_Calibrator"]
+	path = de1plus/plugins/Graphical_Flow_Calibrator
+	url = https://github.com/Damian-AU/Graphical_Flow_Calibrator
+[submodule "de1plus/plugins/auto_load_profile"]
+	path = de1plus/plugins/auto_load_profile
+	url = https://github.com/Damian-AU/auto_load_profile

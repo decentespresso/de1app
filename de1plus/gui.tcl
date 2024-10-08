@@ -38,6 +38,7 @@ proc load_skin {} {
 		after 10000 exit
 	}
 
+	after 10000 check_for_missing_sn
 }
 
 proc strip_crlf {in} {
@@ -49,7 +50,8 @@ proc page_change_due_to_de1_state_change {textstate} {
 	if {$textstate == "Idle"} {
 		page_display_change $::de1(current_context) "off"
 	} elseif {$textstate == "GoingToSleep"} {
-		page_display_change $::de1(current_context) "sleep" 
+		page_display_change $::de1(current_context) "saver" 
+		#page_display_change $::de1(current_context) "sleep" 
 	} elseif {$textstate == "Sleep"} {
 		page_display_change $::de1(current_context) "saver" 
 	} elseif {$textstate == "Steam"} {
@@ -729,8 +731,11 @@ proc add_de1_rich_text {context x y justification autorefresh height width backg
 			# create and configure the tags that define the look of this chunk of text
 			append codetags [subst {\n\t$widget tag configure tag_$name$cnt $opts -justify $justification\n\t$widget tag add tag_$name$cnt 1.$startpos 1.$endpos\n}]
 
+			# need to protect quotes since this is making code that will execute in the future, and the string itself is quoted
+			regsub -all {"} $txt {\\"} txt
+
 			# insert the text as a separate step, so that we don't needlessly recreate tags when refreshing this
-			append codetext [subst {\t$widget insert end "$txt" tag_$name$cnt\n}]
+			append codetext [subst {\t$widget insert end "$txt" tag_$name$cnt\n}]			
 
 			if {$exec != ""} {
 				# if there's a tap action on this text, define it once as part of the tags
@@ -905,7 +910,8 @@ proc show_going_to_sleep_page  {} {
  		return
  	}
 
-	page_display_change $::de1(current_context) "sleep"
+	page_display_change $::de1(current_context) "saver"
+	#page_display_change $::de1(current_context) "sleep"
 	start_sleep
 
 }
@@ -1074,16 +1080,21 @@ proc display_popup_android_message_if_necessary {msg} {
 	if {$msg != ""} {
 
 		# replace $weight with the weight
-		regsub {\$weight} $msg [drink_weight_text] msg
-		regsub {\$timer} $msg [espresso_timer_text] msg
-		regsub {\$pressure} $msg [pressure_text] msg
 
-		set msg [string trim $msg]
+		set weight [drink_weight_text]
+		set timer [espresso_timer_text]
+		set pressure [pressure_text]
+
+		if {[catch {
+			set msg [string trim [subst $msg]]
+		} err] != 0} {
+			msg -ERROR "display_popup_android_message_if_necessary failed because: '$err'"
+		}
 
 		# post the message 1 second after the start, so that there's a slight delay 
 		if {$msg != ""} {
-			after 1000 [list borg toast $msg 1]
-			msg -DEBUG "Popup: $msg"
+			after 1000 [list popup $msg]
+			#msg -DEBUG "Popup: $msg"
 		}
 	}
 	
@@ -1113,87 +1124,238 @@ proc update_onscreen_variables { {state {}} } {
 
 # Define fake / dummy espresso variables on workstations
 proc set_dummy_espresso_vars {} {
+
+	set ::settings(do_realtime_espresso_simulation) 0
+
 	if { $::android } { return }
-	
-	if {[expr {int(rand() * 100)}] >= 99} {
-		set ::gui::state::_state_change_chart_value \
-			[expr {$::gui::state::_state_change_chart_value * -1}]
 
-		if {[expr {rand()}] > 0.5} {
-			set ::settings(current_frame_description) [translate "pouring"]
-		} else {
-			set ::settings(current_frame_description) [translate "preinfusion"]
-		}
+	if {$::de1(state) != 4} {
+		return
 	}
 
-	if {$::de1(state) == 2} {
-		# idle
-		if {$::de1(substate) == 0} {
-			if {[expr {int(rand() * 100)}] > 92} {
-				# occasionally set the de1 to heating mode
-				#set ::de1(substate) 1
-				#update_de1_state "$::de1_state(Idle)\x1"
-			}
-		} else {
-			#if {[expr {int(rand() * 100)}] > 90} {
-				# occasionally stop the espresso
-				# update_de1_state "$::de1_state(Idle)\x0"
-			#}
+	if {$::de1(state) == 4} {
+		if {$::de1(substate) == 1} {
+			# espresso is starting
+			::device::scale::init
+			set ::de1(scale_device_handle) 1
+			set ::simindex  0
+
+			open_random_simulation_file	
+
+			# playing a random history item also means loading it as the current profile, otherwise it's weird and things don't line up
+			array set ::settings [ifexists ::simulated(settings)]
+
+			# this is the final drink weight, a few seconds after the shot stopped. We don't currently do anything with this for simulated shots.
+			# set ::de1(simulated_drink_weight) [ifexists ::settings(drink_weight)]
+
+			update_de1_state "$::de1_state(Espresso)\x4"
 		}
-	} elseif {$::de1(state) == 4} {
-		# espresso
-		if {$::de1(substate) == 0} {
-		} elseif {$::de1(substate) < 4} {
-			if {[expr {int(rand() * 100)}] > 80} {
-				# occasionally set the de1 to heating mode
-				#set ::de1(substate) 4
-				update_de1_state "$::de1_state(Espresso)\x4"
-			}
-		} elseif {$::de1(substate) == 4} {
-			if {[expr {int(rand() * 100)}] > 80} {
-				# occasionally set the de1 to heating mode
-				#set ::de1(substate) 5
-				update_de1_state "$::de1_state(Espresso)\x5"
-			}
-		} 
+
+		if {$::settings(do_realtime_espresso_simulation) != 1} {
+			incr ::simindex
+
+		} else {
+
+			
+			if {[llength [ifexists ::simulated(espresso_pressure)]] > 0} {
+
+				set t [expr {[espresso_millitimer] / 1000.0}]
+
+				set cnt 0
+				foreach i $::simulated(espresso_elapsed) {
+					incr cnt
+					#puts "compare $i > $t"
+					if {$i > $t} {
+						break
+					}
+				}
+
+
+				set ::simindex $cnt
+				if {$::simindex == [ifexists ::previous_simindex]} {
+					set ::previous_simindex $::simindex
+					return
+				}
+
+				set ::previous_simindex $::simindex
+
+			}			
+		}
+
+		if {$::simindex >= [llength [ifexists ::simulated(espresso_pressure)]]} {
+			# end of data
+			 update_de1_state "$::de1_state(Idle)\x0"
+			 return
+		}
+
 	}
 
-	#set timerkey "$::de1(state)-$::de1(substate)"
-	#set ::timers($timerkey) [clock milliseconds]
+	if {[info exists ::simindex] != 1} {
+		set ::simindex 0
+	}
 
-	#if {$::de1(substate) > 6} {
-	#	set ::de1(substate) 0
-	#}
+
 
 	# JB's GUI driver needs an event_dict
 
 	# NB: This seems to be getting called at a 10 Hz rate
 	#     which is faster than the DE1's 25/(2 * line frequency)
-
 	set _now [expr {[clock milliseconds] / 1000.0}]
+
 	# SampleTime is a 16-bit counter of zero crossings
-	set _de1_sample_time \
-		[expr { int( ( $_now - $::gui::_arbitrary_t0 ) \
-						/ $::gui::_st_period ) % 65536 }]
+	set _de1_sample_time [expr { int( ( $_now - $::gui::_arbitrary_t0 ) / $::gui::_st_period ) % 65536 }]
+
+
+	if {$::de1(substate) == 4} {
+		# track the end of preinfusion
+		#puts [array names ::simulated]
+		#exit
+		set x "timers(espresso_preinfusion_stop)"
+		set espresso_preinfusion_stop $::simulated($x)
+		set x "timers(espresso_preinfusion_start)"
+		set espresso_preinfusion_start $::simulated($x)
+		#set espresso_preinfusion_start $::simulated(timers(espresso_preinfusion_start))
+		#puts "pre $espresso_preinfusion_stop "
+		set diff_pre [expr {($espresso_preinfusion_stop - $espresso_preinfusion_start)/10}]
+		#puts "pre $espresso_preinfusion_stop / $espresso_preinfusion_start = $diff_pre > $_de1_sample_time"
+		#exit
+	}
+
+	set espresso_water_dispensed 0
+
+	if {$::de1(substate) == 4 || $::de1(substate) == 5} {
+		# espresso preinfusion or pouring, get data from simulation
+
+		catch {
+			set ::de1(pressure) [lindex $::simulated(espresso_pressure) $::simindex]
+		}
+		if {[info exists ::de1(pressure)] != 1} {
+			set ::de1(pressure) 8.1
+		}
+
+		catch {
+			set ::de1(flow) [lindex $::simulated(espresso_flow) $::simindex]
+		}
+		if {[info exists ::de1(flow)] != 1} {
+			set ::de1(flow) 1.1
+		}
+
+		catch {
+			set ::de1(mix_temperature) [lindex $::simulated(espresso_temperature_mix) $::simindex]
+		}
+		if {[info exists ::de1(mix_temperature)] != 1} {
+			set ::de1(mix_temperature) 90
+		}
+
+		catch {
+			set ::de1(head_temperature) [lindex $::simulated(espresso_temperature_basket) $::simindex]
+		}
+		if {[info exists ::de1(head_temperature)] != 1} {
+			set ::de1(head_temperature) 90
+		}
+
+		catch {
+			set ::de1(goal_temperature) [lindex $::simulated(espresso_temperature_goal) $::simindex]
+		}
+		if {[info exists ::de1(goal_temperature)] != 1} {
+			set ::de1(goal_temperature) 90
+		}
+
+
+		catch {
+			set ::de1(goal_pressure) [lindex $::simulated(espresso_pressure_goal) $::simindex]
+		}
+		if {[info exists ::de1(goal_pressure)] != 1} {
+			set ::de1(goal_pressure) 8.3
+		}
+
+		catch {
+			set ::de1(goal_flow) [lindex $::simulated(espresso_flow_goal) $::simindex]
+		}
+		if {[info exists ::de1(goal_flow)] != 1} {
+			set ::de1(goal_flow) 2.3
+		}
+
+		catch {
+			#set ::de1(scale_weight) [lindex $::simulated(espresso_weight) $::simindex]
+			#set ::de1(scale_sensor_weight) $::de1(scale_weight)
+			#set ::settings(running_weight) $::de1(scale_weight)
+			::device::scale::process_weight_update [lindex $::simulated(espresso_weight) $::simindex]
+		}
+		if {[info exists ::de1(scale_weight)] != 1} {
+			set ::de1(scale_weight) 8.3
+		}
+
+		catch {
+			set ::de1(scale_weight_rate) [lindex $::simulated(espresso_flow_weight) $::simindex]
+		}
+		if {[info exists ::de1(scale_weight_rate)] != 1} {
+			set ::de1(scale_weight_rate) 1.4
+		}
+
+
+		catch {
+			set espresso_water_dispensed [expr {10.0 * [lindex $::simulated(espresso_water_dispensed) $::simindex] }]
+		}		
+
+		
+
+		set this_state [::de1::state::current_state]
+		set this_substate [::de1::state::current_substate]
+
+		# track water volume
+		if {$this_state == "Espresso"} {
+			if {$this_substate == "preinfusion"} {
+				set ::de1(preinfusion_volume) [round_to_two_digits $espresso_water_dispensed]
+			} else {
+				set ::de1(pour_volume) [round_to_two_digits [expr {$espresso_water_dispensed - $::de1(preinfusion_volume)}]]
+			}
+		}
+
+		#puts "ERROR $::de1(state) espresso_water_dispensed: $::simindex : $espresso_water_dispensed ($this_state : $this_substate )  $::de1(preinfusion_volume)ml/$::de1(pour_volume)ml"
+
+		if {$::simindex > 0} {
+			if {[lindex $::simulated(espresso_state_change) $::simindex] != [lindex $::simulated(espresso_state_change) $::simindex-1]} {
+				incr ::de1(current_frame_number)
+
+				if {$::settings(settings_profile_type) ==  "settings_2c"} {
+					array set parts [lindex $::settings(advanced_shot) $::de1(current_frame_number)]
+					if {[ifexists parts(popup)] != ""} {
+						msg -ERROR "profile has a popup message in frame $::de1(current_frame_number): '[ifexists parts(popup)]'"
+						display_popup_android_message_if_necessary $parts(popup)
+					}
+				}
+				
+
+				if {$::simindex > 60 &&  $::de1(substate) == 4} {
+					update_de1_state "$::de1_state(Espresso)\x5"
+				}
+
+			}
+		}
+	}
+
 	set event_dict [dict create \
-				event_time 	$_now \
-				update_received	$_now \
-				SampleTime	$_de1_sample_time \
-				GroupPressure	$::de1(pressure) \
-				GroupFlow	$::de1(flow) \
-				MixTemp		$::de1(mix_temperature) \
-				HeadTemp	$::de1(head_temperature) \
-				SetHeadTemp	$::de1(goal_temperature) \
-				SetGroupPressure $::de1(goal_pressure) \
-				SetGroupFlow	$::de1(goal_flow) \
-				FrameNumber	$::de1(current_frame_number) \
-				SteamTemp	$::de1(steam_heater_temperature) \
-				this_state	[::de1::state::current_state] \
-				this_substate	[::de1::state::current_substate] \
-					]
+		event_time 	$_now \
+		update_received	$_now \
+		SampleTime	$_de1_sample_time \
+		GroupPressure	$::de1(pressure) \
+		scale_weight	$::de1(scale_weight) \
+		GroupFlow	$::de1(flow) \
+		MixTemp		$::de1(mix_temperature) \
+		HeadTemp	$::de1(head_temperature) \
+		SetHeadTemp	$::de1(goal_temperature) \
+		SetGroupPressure $::de1(goal_pressure) \
+		SetGroupFlow	$::de1(goal_flow) \
+		FrameNumber	$::de1(current_frame_number) \
+		SteamTemp	$::de1(steam_heater_temperature) \
+		this_state	[::de1::state::current_state] \
+		this_substate	[::de1::state::current_substate] \
+	]
 
 	if {$::de1(state) == 4} {
 		::de1::event::apply::on_shotvalue_available_callbacks $event_dict
+
 	} elseif {$::de1(state) == 5} {
 		#steaming
 		::de1::event::apply::on_shotvalue_available_callbacks $event_dict
@@ -1205,8 +1367,10 @@ proc set_next_page {machinepage guipage} {
 	set ::nextpage($key) $guipage
 }
 
-proc show_settings { {tab_to_show ""} } {
+proc show_settings { {tab_to_show ""} {optional_callback ""} } {
 	backup_settings; 
+
+	set ::settings_optional_callback $optional_callback
 
 	msg -INFO "show_settings"
 
@@ -1259,8 +1423,18 @@ proc page_to_show_when_off {page_to_show args} {
 }
 
 proc page_show {page_to_show args} {
-	dui page load $page_to_show {*}$args
-	check_if_should_send_user_present_notice
+
+	if {$::settings(show_elapsed_time_to_load_pages) == 1} {
+		set start [clock milliseconds]
+		dui page load $page_to_show {*}$args
+		check_if_should_send_user_present_notice
+		set end [clock milliseconds]
+		set elapsed [expr {$end - $start}]
+		popup "$page_to_show: $elapsed"
+	} else {
+		dui page load $page_to_show {*}$args
+		check_if_should_send_user_present_notice
+	}
 
 }
 
@@ -1305,8 +1479,8 @@ proc update_de1_explanation_chart_soon  { {context {}} } {
 
 proc update_de1_explanation_chart { {context {}} } {
 
-	if {[string range $::de1(current_context) 0 7] != "settings" && $::settings(skin) != "Insight" && $::settings(skin) != "Insight Dark"} {
-		# only Insight skin needs this feature, or if you are currently looking at a Settings tab
+	if {[string range $::de1(current_context) 0 7] != "settings" && $::settings(skin) != "Insight" && $::settings(skin) != "Insight Dark" && $::settings(skin) != "MimojaCafe"} {
+		# only Insight and MimojaCafe skin needs this feature, or if you are currently looking at a Settings tab
 		return {}
 	}
 
@@ -1346,7 +1520,7 @@ proc update_de1_explanation_chart { {context {}} } {
 		set ::settings(espresso_temperature_3) $::settings(espresso_temperature)
 	}
 
-	if {$::settings(skin) == "Insight" || $::settings(skin) == "Insight Dark"} {
+	if {$::settings(skin) == "Insight" || $::settings(skin) == "Insight Dark" || $::settings(skin) == "MimojaCafe"} {
 		clear_espresso_chart
 	}
 
@@ -1869,10 +2043,13 @@ proc ui_startup {} {
 	}
 
 	schedule_app_update_check
-
 	tcl_introspection
-
 	run_de1_app
+
+	if {$::settings(benchmark_gui) == "1"} {
+		benchmark_gui
+	}
+
 	vwait forever
 }
 
@@ -1980,6 +2157,25 @@ snit::widget multiline_entry {
     }
  }
 
+
+proc benchmark_gui  {} {
+
+	set ::time_start [clock milliseconds]
+
+	set pages [list "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1" "off" "steam_1" "water_1" "preheat_1"]
+
+	foreach page $pages {
+		page_show $page
+		update
+	}
+
+	set ::time_end [clock milliseconds]
+
+	set elapsed [expr {$::time_end - $::time_start}]
+	popup "Elapsed: $elapsed"
+	puts "Elapsed: $elapsed"
+
+}
 proc canvas_hide { widgetlist } {
 	foreach widget $widgetlist {
 		.can itemconfigure $widget -state hidden
@@ -2626,29 +2822,22 @@ proc handle_keypress {keycode} {
 		start_sleep
 
 	} elseif {($::some_droid != 1 && $keycode == 50) || ($::some_droid == 1 && $keycode == 31)} {
-		# 2 = espresso (emulate GHC button press)
-		update_de1_state "$::de1_state(Espresso)\x0"
-		de1_send_state "make espresso" $::de1_state(Espresso)
+		start_espresso
 
 	} elseif {($::some_droid != 1 && $keycode == 48) || ($::some_droid == 1 && $keycode == 39)} {
 		# 0 = idle (emulate GHC button press)
-		update_de1_state "$::de1_state(Idle)\x0"
-		de1_send_state "go idle" $::de1_state(Idle)
+		start_sleep
 
 	} elseif {($::some_droid != 1 && $keycode == 49) || ($::some_droid == 1 && $keycode == 30)} {
-		# 1 = flush (emulate GHC button press)
-		update_de1_state "$::de1_state(HotWaterRinse)\x0"
-		de1_send_state "hot water rinse" $::de1_state(HotWaterRinse)
+		start_flush
 
 	} elseif {($::some_droid != 1 && $keycode == 51) || ($::some_droid == 1 && $keycode	== 32)} {
 		# 3 = steam (emulate GHC button press)
-		update_de1_state "$::de1_state(Steam)\x0"
-		de1_send_state "make steam" $::de1_state(Steam)
+		start_steam
 
 	} elseif {($::some_droid != 1 && $keycode == 52) || ($::some_droid == 1 && $keycode == 33)} {
 		# 4 = water (emulate GHC button press)
-		update_de1_state "$::de1_state(HotWater)\x0"
-		de1_send_state "make hot water" $::de1_state(HotWater)
+		start_water
 	}
 }
 
@@ -2804,26 +2993,26 @@ namespace eval ::gui::notify {
 
 			abandoning_updates {
 				if { $::settings(show_scale_notifications) } {
-					borg toast [translate_toast {ABANDONING scale updates}]
+					popup [translate_toast {ABANDONING scale updates}]
 				}
 			}
 
 			retrying_updates {
 
 			    if { $::gui::notify::show_scale_update_watchdog_notifications } {
-				borg toast "[translate_toast {Retrying scale updates}] [join $args]"
+					popup "[translate_toast {Retrying scale updates}] [join $args]"
 			    }
 			}
 
 			timeout_updates {
 				if { $::settings(show_scale_notifications) } {
-					borg toast "[translate_toast {Check scale}]"
+					popup "[translate_toast {Check scale}]"
 				}
 			}
 
 			scale_reporting {
 				if { $::settings(show_scale_notifications) } {
-					borg toast "[translate_toast {Scale reporting}]"
+					popup "[translate_toast {Scale reporting}]"
 				}
 			}
 
@@ -2838,7 +3027,7 @@ namespace eval ::gui::notify {
 
 				if { $::settings(show_scale_notifications) && $::de1(bluetooth_scale_connection_attempts_tried) < 1} {
 					set what [translate_toast {WARNING: Scale not connected}]
-					borg toast $what
+					popup $what
 					say $what $::settings(sound_button_in)
 				}
 			}
@@ -2846,23 +3035,23 @@ namespace eval ::gui::notify {
 			no_updates {
 				if { $::settings(show_scale_notifications) } {
 					set what [translate_toast {WARNING: Scale not updating}]
-					borg toast $what
+					popup $what
 					say $what $::settings(sound_button_in)
 				}
 			}
 
 			record_complete {
 				set what [translate_toast {Shot complete}]
-				borg toast $what
+				popup $what
 				say $what $::settings(sound_button_in)
 			}
 
 			saw_stop {
-				borg toast [translate_toast {Stopping for weight}]
+				popup [translate_toast {Stopping for weight}]
 			}
 
 			saw_skip {
-				borg toast [translate_toast {Advancing to next step}]
+				popup [translate_toast {Advancing to next step}]
 			}
 
 			default {
@@ -2879,7 +3068,27 @@ namespace eval ::gui::notify {
 
 			sav_stop {
 
-				borg toast [translate_toast {Stopping for volume}]
+				popup [translate_toast {Stopping for volume}]
+			}
+
+			not_connected {
+
+			    # With the ble reconnect logic
+			    # `ble` will report a connection event when attempting to connect.
+			    # When the connection fails, the disconnect logic fires.
+			    # This has been reported to cause "ticking" sounds every 30 seconds.
+
+			   # if { [::de1::state::current_state] == "Sleep" } { 
+			   # 	msg -ERROR "Reconnecting to espresso machine"
+			   # 	popup [translate_toast {Reconnecting to espresso machine}]
+			   # 	ble_connect_to_de1 
+			    #}
+
+				if { $::settings(show_scale_notifications) && $::de1(bluetooth_scale_connection_attempts_tried) < 1} {
+					set what [translate_toast {WARNING: Scale not connected}]
+					popup $what
+					say $what $::settings(sound_button_in)
+				}
 			}
 
 			default {
@@ -3003,6 +3212,7 @@ namespace eval ::gui::update {
 		set this_substate [dict get $event_dict this_substate]
 		set this_flow [dict get $event_dict GroupFlow]
 		set this_pressure [dict get $event_dict GroupPressure]
+		set update_received [dict get $event_dict update_received]
 
 		# As this gets called every 4-5 times a second, and usually does nothing
 		# bail out early and simplify the logic that follows
@@ -3063,15 +3273,12 @@ namespace eval ::gui::update {
 						if {$::de1(scale_weight) == ""} {
 							set ::de1(scale_weight) 0
 						}
-						espresso_weight append \
-							[round_to_two_digits $::de1(scale_weight)]
-						espresso_weight_chartable append \
-							[round_to_two_digits [expr {0.10 * $::de1(scale_weight)}]]
+						espresso_weight append [round_to_two_digits $::de1(scale_weight)]
+						espresso_weight_chartable append [round_to_two_digits [expr {0.10 * $::de1(scale_weight)}]]
 
 						espresso_pressure append [round_to_two_digits $GroupPressure]
 						espresso_flow append [round_to_two_digits $GroupFlow]
-						espresso_flow_2x append [round_to_two_digits \
-										 [expr {2.0 * $GroupFlow}]]
+						espresso_flow_2x append [round_to_two_digits [expr {2.0 * $GroupFlow}]]
 
 						set resistance 0
 						catch {
@@ -3230,10 +3437,10 @@ namespace eval ::gui::update {
 						steam_pressure append [round_to_two_digits $GroupPressure]
 
 						if {$GroupPressure > $::settings(steam_over_pressure_threshold)} {
-							borg toast [translate_toast "Warning: steam pressure is too high"]
+							popup [translate_toast "Warning: steam pressure is too high"]
 						}
 						if {$SteamTemp > $::settings(steam_over_temp_threshold)} {
-							borg toast [translate_toast "Warning: steam temperature is too high"]
+							popup [translate_toast "Warning: steam temperature is too high"]
 						}
 
 						steam_flow append [round_to_two_digits $GroupFlow]

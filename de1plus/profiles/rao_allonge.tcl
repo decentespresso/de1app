@@ -38,5 +38,3 @@ profile_title {Rao Allongé}
 read_only 1
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-water_temperature 80
-

@@ -35,5 +35,3 @@ profile_title {Innovative long preinfusion}
 read_only 1
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
-water_temperature 80
-

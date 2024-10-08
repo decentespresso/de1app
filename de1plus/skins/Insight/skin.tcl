@@ -543,7 +543,9 @@ proc update_temperature_charts_y_axis args {
 	}
 	#puts [stacktrace]
 }
-update_temperature_charts_y_axis
+catch {
+	update_temperature_charts_y_axis
+}
 
 #trace add variable ::settings(espresso_temperature) write update_temperature_charts_y_axis
 #trace add variable ::current_adv_step write update_temperature_charts_y_axis
@@ -925,7 +927,7 @@ add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_tempera
 		add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column3_pos  [expr {$pos_top + (16 * $spacer)}] -justify left -anchor "ne" -text [translate "\[skip\]"] -font Helv_7 -fill "#8297be" -width [rescale_x_skin 440] 
 
 	# optionally skip this step by tapping on the page curl graphic (bottom right corner)
-	add_de1_button "espresso espresso_zoomed espresso_zoomed_temperature" {say [translate {skip}] $::settings(sound_button_in); borg toast [translate_toast "Moved to next step"]; start_next_step;} 2020 1204 2560 1600
+	add_de1_button "espresso espresso_zoomed espresso_zoomed_temperature" {say [translate {skip}] $::settings(sound_button_in); popup [translate_toast "Moved to next step"]; start_next_step;} 2020 1204 2560 1600
 
 
 
@@ -1344,10 +1346,31 @@ proc enabled_steam_eco_mode_label {} {
 
 		add_de1_button "steam_1 steam_3" {set ::de1(steam_disable_toggle) [expr {!$::de1(steam_disable_toggle)}] ; disable_steam_toggle } 1040 1160 1760 1400
 
+proc handle_insight_keypress {keycode} {
+
+	puts "dui page current=[dui page current] - ::de1(current_context)  $::de1(current_context)  "
+
+	set insight_pages [list off preheat steam water espresso]
+	set found 0
+	foreach insight_page $insight_pages {
+		if {[string first $insight_page $::de1(current_context)] != -1} {
+			set found 1
+			break
+		}
+	}
+
+	if {$found == 0} {
+		msg -ERROR "Ignoring keypress because not in an Insight page that accepts keypresses"
+		return
+	}
+
+	return [handle_keypress $keycode]
+}
 
 # optional keyboard bindings
 focus .can
-#bind Canvas <KeyPress> {handle_keypress %k}
+
+bind Canvas <KeyPress> {handle_insight_keypress %k}
 
 profile_has_changed_set_colors
 

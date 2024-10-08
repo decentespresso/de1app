@@ -41,6 +41,7 @@ namespace eval ::dui {
 	# timer_interval: Number of milliseconds between updates of on-screen variables (in the active page)
 	array set settings {
 		debug_buttons 0
+		debug 0
 		create_page_namespaces 0
 		trim_entries 0
 		use_editor_pages 1
@@ -153,7 +154,6 @@ namespace eval ::dui {
 				if {$width == 2960 && $height == 1730} {
 
 					# samsung a9 14" tablet custom resolution
-					borg toast $height
 					set screen_size_width 2960
 					set screen_size_height 1848
 					set fontm 0.70
@@ -445,7 +445,7 @@ namespace eval ::dui {
 		
 		foreach key [array names opts] {
 			if { [info exists settings($key)] } {
-				if { $key in {debug_buttons create_page_namespaces trim_entries use_editor_pages use_finger_down_for_tap
+				if { $key in {debug debug_buttons create_page_namespaces trim_entries use_editor_pages use_finger_down_for_tap
 						disable_long_press enable_spoken_prompts} } {
 					set settings($key) [string is true -strict $opts($key)]
 				} elseif { $settings($key) ne $opts($key) }  {
@@ -460,8 +460,8 @@ namespace eval ::dui {
 		}
 	}
 	
-	# Gets a dui configuration variable value. Returns an empty string if the variable is not recognized, and issues
-	#	a log notice.
+	# Gets a dui configuration variable value. Returns an empty string if the variable is not recognized, 
+	#	and issues a log notice.
 	proc cget { varname } {
 		variable settings
 		if { [info exists settings($varname)] } {
@@ -488,8 +488,8 @@ namespace eval ::dui {
 	# System-related stuff
 	namespace eval platform {
 		namespace export hide_android_keyboard button_press button_long_press button_motion finger_down button_unpress \
-			xscale_factor yscale_factor rescale_x rescale_y translate_coordinates_finger_down_x translate_coordinates_finger_down_y \
-			is_fast_double_tap
+			xscale_factor yscale_factor rescale_x rescale_y unscale_x unscale_y \
+			translate_coordinates_finger_down_x translate_coordinates_finger_down_y is_fast_double_tap
 		namespace ensemble create
 		
 		variable last_click_time
@@ -565,6 +565,14 @@ namespace eval ::dui {
 
 		proc rescale_y {in} {
 			return [expr {int($in / [yscale_factor])}]
+		}
+
+		proc unscale_x {in} {
+			return [expr {int($in * [xscale_factor])}]
+		}
+
+		proc unscale_y {in} {
+			return [expr {int($in * [yscale_factor])}]
 		}
 		
 		# on android we track finger-down, instead of button-press, as it gives us lower latency by avoding having to distinguish a potential gesture from a tap
@@ -694,6 +702,13 @@ namespace eval ::dui {
 		}
 		
 		proc make { sound_name } {
+
+
+			if {[ifexists ::settings(enable_sounds)] != 1} {
+				# sounds are disabled
+				return
+			}
+
 			::set path [get $sound_name]
 			if { $path ne "" } {
 				catch { borg beep $path } 
@@ -727,7 +742,7 @@ namespace eval ::dui {
 		namespace ensemble create
 		
 		variable aspects
-
+		
 		array set aspects {
 			default.page.bg_img {}
 			default.page.bg_color "#d7d9e6"
@@ -769,7 +784,7 @@ namespace eval ::dui {
 			default.symbol.font_size.medium 40
 			default.symbol.font_size.big 55
 			
-			default.dbutton.debug_outline black
+			default.dbutton.debug_outline black	
 			default.dbutton.fill "#c0c5e3"
 			default.dbutton.disabledfill "#ddd"
 			default.dbutton.outline white
@@ -1067,64 +1082,90 @@ namespace eval ::dui {
 					if { $aspects($var) eq $value } {
 						#msg -INFO [namespace current] "aspect '$var' already exists, new value is equal to old"
 					} else {
-						msg -NOTICE [namespace current] "aspect '$var' already exists, old value='$aspects($var)', new value='$value'"
-						#if { [ifexists ::debugging 0]} { msg -DEBUG [stacktrace] }
+						msg -DEBUG [namespace current] "aspect '$var' already exists, old value='$aspects($var)', new value='$value'"
 					}
 				}
 				::set aspects($var) $value
 			}
 		}
 		
+		# type <list of types>, searched from left to right.
+		# aspect <aspect_name>, a single aspect, if a list is provided only the first one is used.
 		# Named options:
-		# 	-theme theme_name to get for a theme different than the current one
-		#	-style style_name to get only that style. If the aspect is not found in that style, the non-styled
-		#		value of the aspect is returned instead, if available
-		#	-default value to return in case the aspect is undefined
-		#	-default_type to search the same aspect in this type, in case it's not defined for the requested type
+		# 	-theme theme_name to get for a theme different than the current one. If the aspect is
+		#		not found on the specified/current theme, then the "default" theme is searched.
+		#	-style style_name list to get only that style. If the aspect is not found in that style, 
+		#		the non-styled value of the aspect is returned instead, if available.
+		#		If a list is provided, the aspect is searched from the style list, right to left.
+		#		Styles have precedence over types.
+		#	-default value to return in case the aspect is undefined.
+		#	-default_type to search the same aspect in this type, in case it's not defined for the 
+		#		requested type. This is a argument inherited from the first version of DUI, now
+		#		'type' can be a list, so not really needed anymore. 
 		proc get { type aspect args } {
 			variable aspects
-			::set theme [dui::args::get_option -theme [dui theme get] 1]
-			::set style [dui::args::get_option -style "" 0]			
-			::set default [dui::args::get_option -default "" 1]
-			# Inherited argument from first implementation of DUI. Now just append to the $type list.
-			lappend type [dui::args::get_option -default_type {} 0]
-			
+			::set debug [string is true [dui::args::get_option -debug [dui::cget debug]]]
+			if { $debug } {
+				msg "DUI: dui::item::get \{$type\} $aspect $args"
+			}
+			lappend type [dui::args::get_option -default_type {}]
 			::set type [list_remove_element [lunique $type] ""]
-			if { $style ne "" } {
-				::set i 0				
-				while { $i < [llength $type] } {
-					::set t [lindex $type $i]
-					if { [info exists aspects($theme.$t.$aspect.$style)] } {
-						return $aspects($theme.$t.$aspect.$style)
+			
+			::set aspect [lindex $aspect 0]
+			::set is_font [expr {[string range $aspect 0 4] eq "font_"}]
+			
+			::set theme [dui::args::get_option -theme [dui theme get]]
+			if { "default" ni $theme } {
+				::set theme [::list {*}$theme default]
+			}
+			
+			::set style [dui::args::get_option -style "" 0]
+			if { $style eq "" } {
+				::set style [::list {}]
+			} else {
+				::set style [::list {} {*}$style]
+			}
+			
+			::set default [dui::args::get_option -default ""]
+			
+			foreach th $theme {
+				foreach s [lreverse $style] {
+					foreach t $type {
+						if { $s eq "" } {
+							if { [info exists aspects($th.$t.$aspect)] } {
+								if { $debug } {
+									msg "DUI: dui::item::get returning \$aspects($th.$t.$aspect)=$aspects($th.$t.$aspect)"
+								}
+								return $aspects($th.$t.$aspect)
+							} elseif { $is_font && [info exists aspects($th.font.$aspect)] } {
+								if { $debug } {
+									msg "DUI: dui::item::get returning \$aspects($th.font.$aspect)=$aspects($th.font.$aspect)"
+								}
+								return $aspects($th.font.$aspect)
+							}
+						} elseif { [info exists aspects($th.$t.$aspect.$s)] } {
+							if { $debug } {
+								msg "DUI: dui::item::get returning \$aspects($th.$t.$aspect.$s)=$aspects($th.$t.$aspect.$s)"
+							}
+							return $aspects($th.$t.$aspect.$s)
+						} elseif { $is_font && [info exists aspects($th.font.$aspect.$s)] } {
+							if { $debug } {
+								msg "DUI: dui::item::get returning \$aspects($th.font.$aspect.$s)=$aspects($th.font.$aspect.$s)"
+							}
+							return $aspects($th.font.$aspect.$s)
+						}
 					}
-					incr i
 				}
 			}
-			
-			::set i 0				
-			while { $i < [llength $type] } {
-				::set t [lindex $type $i]
-				if { [info exists aspects($theme.$t.$aspect)] } {
-					return $aspects($theme.$t.$aspect)
-				}
-				incr i
+
+			if { $default eq "" } {
+				msg -DEBUG [namespace current] "aspect '[join $theme |].[join $type |].$aspect.[join $style |]' not found and no alternative available"
+			}
+			if { $debug } {
+				msg "DUI: dui::item::get returning default=$defatul"
 			}
 			
-			if { $default ne "" } {
-				return $default
-			} elseif { [string range $aspect 0 4] eq "font_" && [info exists aspects($theme.font.$aspect)] } {
-				return $aspects($theme.font.$aspect)
-			}
-			
-			if { $theme ne "default" } {
-				::set avalue [get $type $aspect -theme default {*}$args]
-				if { $avalue eq "" } {
-					msg -DEBUG [namespace current] "aspect '$theme.[join $type /].$aspect' not found and no alternative available"
-				}
-				return $avalue
-			}
-			
-			return ""
+			return $default
 		}
 		
 		# Check that an aspect exists EXACTLY as requested. That is, this doesn't search for non-style nor default theme,
@@ -1139,47 +1180,70 @@ namespace eval ::dui {
 			::set style [dui::args::get_option -style ""]
 			::set aspect_name "$theme.$type.$aspect"
 			if { $style ne "" } {
-				append aspect_name .$style
+				foreach s [lreverse $style] {
+					if { [info exists aspects(${aspect_name}.$s)] } {
+						return 1
+					}
+				}
+				return 0
+			} else {
+				return [info exists aspects($aspect_name)]
 			}
-			return [info exists aspects($aspect_name)]
 		}
 				
 		# Returns the defined aspect names according to the request parameters.
 		# Named options:
-		# 	-theme theme_name to return for a theme different than the current one. If not specified and -all_themes=0
-		#		(the default), returns aspects for the currently active theme only.
-		#	-type to return only the aspects for that type (e.g. "entry", "text", etc.)
-		# 	-style to return only the aspects for that style 
-		#	-values if 1, returns {<aspect name> <aspect value>} pairs. Defaults to 0 for returning only the aspect names.
-		#	-full_aspect 0 to return the full aspect name
-		#	-as_options 1 to return a list that can be directly used as argument options (e.g. {-fill black}).
+		# 	-theme <theme_name> to return for the specified theme. By default, return aspects in the
+		#		currently active theme. If an aspect is not found in the theme for the type and style,
+		#		searches the "default" theme.
+		# 	-style <style_list> to return only the aspects for those styles. Styles are processed
+		#		before types, and from right to left.		
+		#	-type <type_list> to return only the aspects for that type (e.g. "entry", "dtext", etc.).
+		#		Types are processed after styles, and from left to right.
+		#	-values <boolean> if 1, returns {<aspect name> <aspect value>} pairs. Defaults to 0 for 
+		#		returning only the aspect names.
+		#	-full_aspect <boolean> to return the full aspect name, defaults to 0.
+		#	-as_options <boolean> to return a list that can be directly used as argument options 
+		#		(e.g. {-fill black}). Defaults to zero.
 		#		Setting this to 1 automatically implies -values 1 and -full_aspect 0
-		# If the returned values are for a single theme, the theme name prefix is not included, but if -all_themes is 1,
-		#	returns the full aspect name including the theme prefix.
 		proc list { args } {
 			variable aspects
+			::set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			
 			::set theme [dui::args::get_option -theme [dui theme get]]
 			if { $theme eq "default" } {
 				::set pattern "^default\\."
+			} elseif { "default" ni $theme } {
+				::set pattern "^(?:${theme}|default)\\."
+				::set theme [::list $theme default]
 			} else {
 				::set pattern "^(?:${theme}|default)\\."
 			}
 			
 			::set type [dui::args::get_option -type ""]
 			if { $type eq "" } {
-				append pattern "\[0-9a-zA-Z_\]+\\."
+				append pattern "\[0-9a-zA-Z_\]+"
 			} elseif { [llength $type] == 1 } {
-				append pattern "${type}\\."
+				append pattern "${type}"
 			} else {
-				append pattern "(?:[join $type |])\\."
+				append pattern "(?:[join $type |])"
 			}
+			
+			# Aspect
+			append pattern "\\.\[0-9a-zA-Z_\]+"
 			
 			::set style [dui::args::get_option -style ""]
 			if { $style eq "" } {
-				append pattern "\[0-9a-zA-Z_\]+\$"
+				# Return any style, and also non-styled 
+				append pattern "(\\.\[0-9a-zA-Z_\]+)?\$"
+				::set style [::list {}]
 			} else {
-				# Return aspects with the requested style AND with no style
-				append pattern "\[0-9a-zA-Z_\]+(\\.${style})?\$"
+				# Return aspects with any of the requested styles AND with no style
+				append pattern "(\\.(?:[join $style |]))?\$"
+				::set style [::list {} {*}$style]
+			}
+			if { $debug } {
+				msg "DUI: dui::aspect::list pattern=$pattern"
 			}
 			
 			::set use_full_aspect [string is true [dui::args::get_option -full_aspect 0]]
@@ -1192,57 +1256,74 @@ namespace eval ::dui {
 			
 			# First iterate to find all unique aspects (which may come from either requested theme or default,
 			#	or from requested style or unstyled)
-			::set all_aspects {}
-			foreach full_aspect [array names aspects -regexp $pattern] {
-				::set type_and_aspect [join [lrange [split $full_aspect .] 1 2] .]
-				if { $type_and_aspect ni $all_aspects } {
-					lappend all_aspects $type_and_aspect
-				}
-			}
+			::set all_aspects [::list]
+			::set all_types [::list]
 			
-			::set full_aspect_names {}
-			foreach aspect $all_aspects {
+			foreach full_aspect [array names aspects -regexp $pattern] {
+				::set aspect_parts [split $full_aspect .]
+				lappend all_types [lindex $aspect_parts 1]
+				lappend all_aspects [lindex $aspect_parts 2]
+			}
+			::set all_types [lunique $all_types]
+			::set all_aspects [lunique $all_aspects]
+			
+			::set full_aspect_names [::list]
+			
+			foreach a $all_aspects {
 				::set full_aspect ""
-				if { $theme ne "default" } {
-					if { $style ne "" && [info exists aspects(${theme}.${aspect}.${style})] } {
-						::set full_aspect ${theme}.${aspect}.${style}
-					} elseif { [info exists aspects(${theme}.${aspect})] } {
-						::set full_aspect ${theme}.${aspect}
+				::set theme_idx 0
+				while { $full_aspect eq "" && $theme_idx < [llength $theme] } {
+					::set th [lindex $theme $theme_idx]
+					
+					::set style_idx [expr {[llength $style]-1}]
+					# On styles, unlike on themes and types, we iterate in reverse order
+					while { $full_aspect eq "" && $style_idx > -1 } {
+						::set s [lindex $style $style_idx]
+						
+						::set type_idx 0
+						while { $full_aspect eq "" && $type_idx < [llength $type] } {
+							::set t [lindex $type $type_idx]
+												
+							if { $s eq "" && [info exists aspects(${th}.${t}.${a})] } {
+								::set full_aspect "${th}.${t}.${a}"
+							} elseif { $s ne "" && [info exists aspects(${th}.${t}.${a}.${s})] } {
+								::set full_aspect "${th}.${t}.${a}.${s}"
+							} 
+							
+							incr type_idx 1
+						}
+						
+						incr style_idx -1
 					}
+					
+					incr theme_idx 1
 				}
-				if { $full_aspect eq "" } {
-					if { $style ne "" && [info exists aspects(default.${aspect}.${style})] } {
-							::set full_aspect default.${aspect}.${style}
-					} elseif { [info exists aspects(default.${aspect})] } {
-						::set full_aspect default.${aspect}
-					}
-				}				
-				if { $full_aspect eq "" } {
-					# By construction, this should never happen
-					msg -ERROR [namespace current] list: "aspect '$aspect' not found for theme '$theme' and style '$style'"
-				} else {
+				
+				if { $full_aspect ne "" } {
 					lappend full_aspect_names $full_aspect
 				}
 			}
-
-			::set result {}
-			foreach full_aspect $full_aspect_names {
-				::set aspect_parts [split $full_aspect .]
-				::set aspect_theme [lindex $aspect_parts 0]
-				
-				if { $use_full_aspect } {
-					lappend result $full_aspect
-				} elseif { $as_options } {
-					lappend result -[lindex [split $full_aspect .] 2]
-				} else {
-					lappend result [lindex [split $full_aspect .] 2]
-				}
-				if { $inc_values } {
-					lappend result $aspects($full_aspect)
+			
+			# Process the result
+			if { $use_full_aspect && !$as_options && !$inc_values } {
+				::set result $full_aspect_names
+			} else {
+				::set result {}
+				foreach full_aspect $full_aspect_names {
+					if { $use_full_aspect } {
+						lappend result $full_aspect
+					} elseif { $as_options } {
+						lappend result -[lindex [split $full_aspect .] 2]
+					} else {
+						lappend result [lindex [split $full_aspect .] 2]
+					}
+					if { $inc_values } {
+						lappend result $aspects($full_aspect)
+					}
 				}
 			}
 			
-			if { $inc_values != 1 && ([llength $type] > 1 || $style ne "") } {
+			if { !$inc_values && ([llength $type] > 1 || $style ne "") } {
 				return [lunique $result]
 			} else {
 				return $result
@@ -1261,3278 +1342,3279 @@ namespace eval ::dui {
 		variable font_filename "Font Awesome 6 Pro-Regular-400.otf"
 		
 		variable symbols
+		array set symbols {	}
 		array set symbols {	
-		    "00" "\ue467"
-		    "360-degrees" "\ue2dc"
-		    "a" "\u41"
-		    "abacus" "\uf640"
-		    "accent-grave" "\u60"
-		    "acorn" "\uf6ae"
-		    "address-book" "\uf2b9"
-		    "address-card" "\uf2bb"
-		    "air-conditioner" "\uf8f4"
-		    "airplay" "\ue089"
-		    "alarm-clock" "\uf34e"
-		    "alarm-exclamation" "\uf843"
-		    "alarm-plus" "\uf844"
-		    "alarm-snooze" "\uf845"
-		    "album" "\uf89f"
-		    "album-circle-plus" "\ue48c"
-		    "album-circle-user" "\ue48d"
-		    "album-collection" "\uf8a0"
-		    "album-collection-circle-plus" "\ue48e"
-		    "album-collection-circle-user" "\ue48f"
-		    "alicorn" "\uf6b0"
-		    "alien" "\uf8f5"
-		    "alien-8bit" "\uf8f6"
-		    "align-center" "\uf037"
-		    "align-justify" "\uf039"
-		    "align-left" "\uf036"
-		    "align-right" "\uf038"
-		    "align-slash" "\uf846"
-		    "alt" "\ue08a"
-		    "amp-guitar" "\uf8a1"
-		    "ampersand" "\u26"
-		    "anchor" "\uf13d"
-		    "anchor-circle-check" "\ue4aa"
-		    "anchor-circle-exclamation" "\ue4ab"
-		    "anchor-circle-xmark" "\ue4ac"
-		    "anchor-lock" "\ue4ad"
-		    "angel" "\uf779"
-		    "angle" "\ue08c"
-		    "angle-90" "\ue08d"
-		    "angle-down" "\uf107"
-		    "angle-left" "\uf104"
-		    "angle-right" "\uf105"
-		    "angle-up" "\uf106"
-		    "angles-down" "\uf103"
-		    "angles-left" "\uf100"
-		    "angles-right" "\uf101"
-		    "angles-up" "\uf102"
-		    "angles-up-down" "\ue60d"
-		    "ankh" "\uf644"
-		    "apartment" "\ue468"
-		    "aperture" "\ue2df"
-		    "apostrophe" "\u27"
-		    "apple-core" "\ue08f"
-		    "apple-whole" "\uf5d1"
-		    "archway" "\uf557"
-		    "arrow-down" "\uf063"
-		    "arrow-down-1-9" "\uf162"
-		    "arrow-down-9-1" "\uf886"
-		    "arrow-down-a-z" "\uf15d"
-		    "arrow-down-arrow-up" "\uf883"
-		    "arrow-down-big-small" "\uf88c"
-		    "arrow-down-from-arc" "\ue614"
-		    "arrow-down-from-dotted-line" "\ue090"
-		    "arrow-down-from-line" "\uf345"
-		    "arrow-down-left" "\ue091"
-		    "arrow-down-left-and-arrow-up-right-to-center" "\ue092"
-		    "arrow-down-long" "\uf175"
-		    "arrow-down-right" "\ue093"
-		    "arrow-down-short-wide" "\uf884"
-		    "arrow-down-small-big" "\uf88d"
-		    "arrow-down-square-triangle" "\uf889"
-		    "arrow-down-to-arc" "\ue4ae"
-		    "arrow-down-to-bracket" "\ue094"
-		    "arrow-down-to-dotted-line" "\ue095"
-		    "arrow-down-to-line" "\uf33d"
-		    "arrow-down-to-square" "\ue096"
-		    "arrow-down-triangle-square" "\uf888"
-		    "arrow-down-up-across-line" "\ue4af"
-		    "arrow-down-up-lock" "\ue4b0"
-		    "arrow-down-wide-short" "\uf160"
-		    "arrow-down-z-a" "\uf881"
-		    "arrow-left" "\uf060"
-		    "arrow-left-from-arc" "\ue615"
-		    "arrow-left-from-line" "\uf344"
-		    "arrow-left-long" "\uf177"
-		    "arrow-left-long-to-line" "\ue3d4"
-		    "arrow-left-to-arc" "\ue616"
-		    "arrow-left-to-line" "\uf33e"
-		    "arrow-pointer" "\uf245"
-		    "arrow-progress" "\ue5df"
-		    "arrow-right" "\uf061"
-		    "arrow-right-arrow-left" "\uf0ec"
-		    "arrow-right-from-arc" "\ue4b1"
-		    "arrow-right-from-bracket" "\uf08b"
-		    "arrow-right-from-line" "\uf343"
-		    "arrow-right-long" "\uf178"
-		    "arrow-right-long-to-line" "\ue3d5"
-		    "arrow-right-to-arc" "\ue4b2"
-		    "arrow-right-to-bracket" "\uf090"
-		    "arrow-right-to-city" "\ue4b3"
-		    "arrow-right-to-line" "\uf340"
-		    "arrow-rotate-left" "\uf0e2"
-		    "arrow-rotate-right" "\uf01e"
-		    "arrow-trend-down" "\ue097"
-		    "arrow-trend-up" "\ue098"
-		    "arrow-turn-down" "\uf149"
-		    "arrow-turn-down-left" "\ue2e1"
-		    "arrow-turn-down-right" "\ue3d6"
-		    "arrow-turn-left" "\ue632"
-		    "arrow-turn-left-down" "\ue633"
-		    "arrow-turn-left-up" "\ue634"
-		    "arrow-turn-right" "\ue635"
-		    "arrow-turn-up" "\uf148"
-		    "arrow-up" "\uf062"
-		    "arrow-up-1-9" "\uf163"
-		    "arrow-up-9-1" "\uf887"
-		    "arrow-up-a-z" "\uf15e"
-		    "arrow-up-arrow-down" "\ue099"
-		    "arrow-up-big-small" "\uf88e"
-		    "arrow-up-from-arc" "\ue4b4"
-		    "arrow-up-from-bracket" "\ue09a"
-		    "arrow-up-from-dotted-line" "\ue09b"
-		    "arrow-up-from-ground-water" "\ue4b5"
-		    "arrow-up-from-line" "\uf342"
-		    "arrow-up-from-square" "\ue09c"
-		    "arrow-up-from-water-pump" "\ue4b6"
-		    "arrow-up-left" "\ue09d"
-		    "arrow-up-left-from-circle" "\ue09e"
-		    "arrow-up-long" "\uf176"
-		    "arrow-up-right" "\ue09f"
-		    "arrow-up-right-and-arrow-down-left-from-center" "\ue0a0"
-		    "arrow-up-right-dots" "\ue4b7"
-		    "arrow-up-right-from-square" "\uf08e"
-		    "arrow-up-short-wide" "\uf885"
-		    "arrow-up-small-big" "\uf88f"
-		    "arrow-up-square-triangle" "\uf88b"
-		    "arrow-up-to-arc" "\ue617"
-		    "arrow-up-to-dotted-line" "\ue0a1"
-		    "arrow-up-to-line" "\uf341"
-		    "arrow-up-triangle-square" "\uf88a"
-		    "arrow-up-wide-short" "\uf161"
-		    "arrow-up-z-a" "\uf882"
-		    "arrows-cross" "\ue0a2"
-		    "arrows-down-to-line" "\ue4b8"
-		    "arrows-down-to-people" "\ue4b9"
-		    "arrows-from-dotted-line" "\ue0a3"
-		    "arrows-from-line" "\ue0a4"
-		    "arrows-left-right" "\uf07e"
-		    "arrows-left-right-to-line" "\ue4ba"
-		    "arrows-maximize" "\uf31d"
-		    "arrows-minimize" "\ue0a5"
-		    "arrows-repeat" "\uf364"
-		    "arrows-repeat-1" "\uf366"
-		    "arrows-retweet" "\uf361"
-		    "arrows-rotate" "\uf021"
-		    "arrows-rotate-reverse" "\ue630"
-		    "arrows-spin" "\ue4bb"
-		    "arrows-split-up-and-left" "\ue4bc"
-		    "arrows-to-circle" "\ue4bd"
-		    "arrows-to-dot" "\ue4be"
-		    "arrows-to-dotted-line" "\ue0a6"
-		    "arrows-to-eye" "\ue4bf"
-		    "arrows-to-line" "\ue0a7"
-		    "arrows-turn-right" "\ue4c0"
-		    "arrows-turn-to-dots" "\ue4c1"
-		    "arrows-up-down" "\uf07d"
-		    "arrows-up-down-left-right" "\uf047"
-		    "arrows-up-to-line" "\ue4c2"
-		    "asterisk" "\u2a"
-		    "at" "\u40"
-		    "atom" "\uf5d2"
-		    "atom-simple" "\uf5d3"
-		    "audio-description" "\uf29e"
-		    "audio-description-slash" "\ue0a8"
-		    "austral-sign" "\ue0a9"
-		    "avocado" "\ue0aa"
-		    "award" "\uf559"
-		    "award-simple" "\ue0ab"
-		    "axe" "\uf6b2"
-		    "axe-battle" "\uf6b3"
-		    "b" "\u42"
-		    "baby" "\uf77c"
-		    "baby-carriage" "\uf77d"
-		    "backpack" "\uf5d4"
-		    "backward" "\uf04a"
-		    "backward-fast" "\uf049"
-		    "backward-step" "\uf048"
-		    "bacon" "\uf7e5"
-		    "bacteria" "\ue059"
-		    "bacterium" "\ue05a"
-		    "badge" "\uf335"
-		    "badge-check" "\uf336"
-		    "badge-dollar" "\uf645"
-		    "badge-percent" "\uf646"
-		    "badge-sheriff" "\uf8a2"
-		    "badger-honey" "\uf6b4"
-		    "badminton" "\ue33a"
-		    "bag-seedling" "\ue5f2"
-		    "bag-shopping" "\uf290"
-		    "bag-shopping-minus" "\ue650"
-		    "bag-shopping-plus" "\ue651"
-		    "bagel" "\ue3d7"
-		    "bags-shopping" "\uf847"
-		    "baguette" "\ue3d8"
-		    "bahai" "\uf666"
-		    "baht-sign" "\ue0ac"
-		    "ball-pile" "\uf77e"
-		    "balloon" "\ue2e3"
-		    "balloons" "\ue2e4"
-		    "ballot" "\uf732"
-		    "ballot-check" "\uf733"
-		    "ban" "\uf05e"
-		    "ban-bug" "\uf7f9"
-		    "ban-parking" "\uf616"
-		    "ban-smoking" "\uf54d"
-		    "banana" "\ue2e5"
-		    "bandage" "\uf462"
-		    "bangladeshi-taka-sign" "\ue2e6"
-		    "banjo" "\uf8a3"
-		    "barcode" "\uf02a"
-		    "barcode-read" "\uf464"
-		    "barcode-scan" "\uf465"
-		    "bars" "\uf0c9"
-		    "bars-filter" "\ue0ad"
-		    "bars-progress" "\uf828"
-		    "bars-sort" "\ue0ae"
-		    "bars-staggered" "\uf550"
-		    "baseball" "\uf433"
-		    "baseball-bat-ball" "\uf432"
-		    "basket-shopping" "\uf291"
-		    "basket-shopping-minus" "\ue652"
-		    "basket-shopping-plus" "\ue653"
-		    "basket-shopping-simple" "\ue0af"
-		    "basketball" "\uf434"
-		    "basketball-hoop" "\uf435"
-		    "bat" "\uf6b5"
-		    "bath" "\uf2cd"
-		    "battery-bolt" "\uf376"
-		    "battery-empty" "\uf244"
-		    "battery-exclamation" "\ue0b0"
-		    "battery-full" "\uf240"
-		    "battery-half" "\uf242"
-		    "battery-low" "\ue0b1"
-		    "battery-quarter" "\uf243"
-		    "battery-slash" "\uf377"
-		    "battery-three-quarters" "\uf241"
-		    "bed" "\uf236"
-		    "bed-bunk" "\uf8f8"
-		    "bed-empty" "\uf8f9"
-		    "bed-front" "\uf8f7"
-		    "bed-pulse" "\uf487"
-		    "bee" "\ue0b2"
-		    "beer-mug" "\ue0b3"
-		    "beer-mug-empty" "\uf0fc"
-		    "bell" "\uf0f3"
-		    "bell-concierge" "\uf562"
-		    "bell-exclamation" "\uf848"
-		    "bell-on" "\uf8fa"
-		    "bell-plus" "\uf849"
-		    "bell-ring" "\ue62c"
-		    "bell-school" "\uf5d5"
-		    "bell-school-slash" "\uf5d6"
-		    "bell-slash" "\uf1f6"
-		    "bells" "\uf77f"
-		    "bench-tree" "\ue2e7"
-		    "bezier-curve" "\uf55b"
-		    "bicycle" "\uf206"
-		    "billboard" "\ue5cd"
-		    "bin-bottles" "\ue5f5"
-		    "bin-bottles-recycle" "\ue5f6"
-		    "bin-recycle" "\ue5f7"
-		    "binary" "\ue33b"
-		    "binary-circle-check" "\ue33c"
-		    "binary-lock" "\ue33d"
-		    "binary-slash" "\ue33e"
-		    "binoculars" "\uf1e5"
-		    "biohazard" "\uf780"
-		    "bird" "\ue469"
-		    "bitcoin-sign" "\ue0b4"
-		    "blanket" "\uf498"
-		    "blanket-fire" "\ue3da"
-		    "blender" "\uf517"
-		    "blender-phone" "\uf6b6"
-		    "blinds" "\uf8fb"
-		    "blinds-open" "\uf8fc"
-		    "blinds-raised" "\uf8fd"
-		    "block" "\ue46a"
-		    "block-brick" "\ue3db"
-		    "block-brick-fire" "\ue3dc"
-		    "block-question" "\ue3dd"
-		    "block-quote" "\ue0b5"
-		    "blog" "\uf781"
-		    "blueberries" "\ue2e8"
-		    "bluetooth" "\uf293"
-		    "bold" "\uf032"
-		    "bolt" "\uf0e7"
-		    "bolt-auto" "\ue0b6"
-		    "bolt-lightning" "\ue0b7"
-		    "bolt-slash" "\ue0b8"
-		    "bomb" "\uf1e2"
-		    "bone" "\uf5d7"
-		    "bone-break" "\uf5d8"
-		    "bong" "\uf55c"
-		    "book" "\uf02d"
-		    "book-arrow-right" "\ue0b9"
-		    "book-arrow-up" "\ue0ba"
-		    "book-atlas" "\uf558"
-		    "book-bible" "\uf647"
-		    "book-blank" "\uf5d9"
-		    "book-bookmark" "\ue0bb"
-		    "book-circle-arrow-right" "\ue0bc"
-		    "book-circle-arrow-up" "\ue0bd"
-		    "book-copy" "\ue0be"
-		    "book-font" "\ue0bf"
-		    "book-heart" "\uf499"
-		    "book-journal-whills" "\uf66a"
-		    "book-medical" "\uf7e6"
-		    "book-open" "\uf518"
-		    "book-open-cover" "\ue0c0"
-		    "book-open-reader" "\uf5da"
-		    "book-quran" "\uf687"
-		    "book-section" "\ue0c1"
-		    "book-skull" "\uf6b7"
-		    "book-sparkles" "\uf6b8"
-		    "book-tanakh" "\uf827"
-		    "book-user" "\uf7e7"
-		    "bookmark" "\uf02e"
-		    "bookmark-slash" "\ue0c2"
-		    "books" "\uf5db"
-		    "books-medical" "\uf7e8"
-		    "boombox" "\uf8a5"
-		    "boot" "\uf782"
-		    "boot-heeled" "\ue33f"
-		    "booth-curtain" "\uf734"
-		    "border-all" "\uf84c"
-		    "border-bottom" "\uf84d"
-		    "border-bottom-right" "\uf854"
-		    "border-center-h" "\uf89c"
-		    "border-center-v" "\uf89d"
-		    "border-inner" "\uf84e"
-		    "border-left" "\uf84f"
-		    "border-none" "\uf850"
-		    "border-outer" "\uf851"
-		    "border-right" "\uf852"
-		    "border-top" "\uf855"
-		    "border-top-left" "\uf853"
-		    "bore-hole" "\ue4c3"
-		    "bottle-droplet" "\ue4c4"
-		    "bottle-water" "\ue4c5"
-		    "bow-arrow" "\uf6b9"
-		    "bowl-chopsticks" "\ue2e9"
-		    "bowl-chopsticks-noodles" "\ue2ea"
-		    "bowl-food" "\ue4c6"
-		    "bowl-hot" "\uf823"
-		    "bowl-rice" "\ue2eb"
-		    "bowl-scoop" "\ue3de"
-		    "bowl-scoops" "\ue3df"
-		    "bowl-soft-serve" "\ue46b"
-		    "bowl-spoon" "\ue3e0"
-		    "bowling-ball" "\uf436"
-		    "bowling-ball-pin" "\ue0c3"
-		    "bowling-pins" "\uf437"
-		    "box" "\uf466"
-		    "box-archive" "\uf187"
-		    "box-ballot" "\uf735"
-		    "box-check" "\uf467"
-		    "box-circle-check" "\ue0c4"
-		    "box-dollar" "\uf4a0"
-		    "box-heart" "\uf49d"
-		    "box-open" "\uf49e"
-		    "box-open-full" "\uf49c"
-		    "box-taped" "\uf49a"
-		    "box-tissue" "\ue05b"
-		    "boxes-packing" "\ue4c7"
-		    "boxes-stacked" "\uf468"
-		    "boxing-glove" "\uf438"
-		    "bracket-curly" "\u7b"
-		    "bracket-curly-right" "\u7d"
-		    "bracket-round" "\u28"
-		    "bracket-round-right" "\u29"
-		    "bracket-square" "\u5b"
-		    "bracket-square-right" "\u5d"
-		    "brackets-curly" "\uf7ea"
-		    "brackets-round" "\ue0c5"
-		    "brackets-square" "\uf7e9"
-		    "braille" "\uf2a1"
-		    "brain" "\uf5dc"
-		    "brain-arrow-curved-right" "\uf677"
-		    "brain-circuit" "\ue0c6"
-		    "brake-warning" "\ue0c7"
-		    "brazilian-real-sign" "\ue46c"
-		    "bread-loaf" "\uf7eb"
-		    "bread-slice" "\uf7ec"
-		    "bread-slice-butter" "\ue3e1"
-		    "bridge" "\ue4c8"
-		    "bridge-circle-check" "\ue4c9"
-		    "bridge-circle-exclamation" "\ue4ca"
-		    "bridge-circle-xmark" "\ue4cb"
-		    "bridge-lock" "\ue4cc"
-		    "bridge-suspension" "\ue4cd"
-		    "bridge-water" "\ue4ce"
-		    "briefcase" "\uf0b1"
-		    "briefcase-arrow-right" "\ue2f2"
-		    "briefcase-blank" "\ue0c8"
-		    "briefcase-medical" "\uf469"
-		    "brightness" "\ue0c9"
-		    "brightness-low" "\ue0ca"
-		    "bring-forward" "\uf856"
-		    "bring-front" "\uf857"
-		    "broccoli" "\ue3e2"
-		    "broom" "\uf51a"
-		    "broom-ball" "\uf458"
-		    "broom-wide" "\ue5d1"
-		    "browser" "\uf37e"
-		    "browsers" "\ue0cb"
-		    "brush" "\uf55d"
-		    "bucket" "\ue4cf"
-		    "bug" "\uf188"
-		    "bug-slash" "\ue490"
-		    "bugs" "\ue4d0"
-		    "building" "\uf1ad"
-		    "building-circle-arrow-right" "\ue4d1"
-		    "building-circle-check" "\ue4d2"
-		    "building-circle-exclamation" "\ue4d3"
-		    "building-circle-xmark" "\ue4d4"
-		    "building-columns" "\uf19c"
-		    "building-flag" "\ue4d5"
-		    "building-lock" "\ue4d6"
-		    "building-magnifying-glass" "\ue61c"
-		    "building-memo" "\ue61e"
-		    "building-ngo" "\ue4d7"
-		    "building-shield" "\ue4d8"
-		    "building-un" "\ue4d9"
-		    "building-user" "\ue4da"
-		    "building-wheat" "\ue4db"
-		    "buildings" "\ue0cc"
-		    "bulldozer" "\ue655"
-		    "bullhorn" "\uf0a1"
-		    "bullseye" "\uf140"
-		    "bullseye-arrow" "\uf648"
-		    "bullseye-pointer" "\uf649"
-		    "buoy" "\ue5b5"
-		    "buoy-mooring" "\ue5b6"
-		    "burger" "\uf805"
-		    "burger-cheese" "\uf7f1"
-		    "burger-fries" "\ue0cd"
-		    "burger-glass" "\ue0ce"
-		    "burger-lettuce" "\ue3e3"
-		    "burger-soda" "\uf858"
-		    "burrito" "\uf7ed"
-		    "burst" "\ue4dc"
-		    "bus" "\uf207"
-		    "bus-school" "\uf5dd"
-		    "bus-simple" "\uf55e"
-		    "business-time" "\uf64a"
-		    "butter" "\ue3e4"
-		    "c" "\u43"
-		    "cabin" "\ue46d"
-		    "cabinet-filing" "\uf64b"
-		    "cable-car" "\uf7da"
-		    "cactus" "\uf8a7"
-		    "cake-candles" "\uf1fd"
-		    "cake-slice" "\ue3e5"
-		    "calculator" "\uf1ec"
-		    "calculator-simple" "\uf64c"
-		    "calendar" "\uf133"
-		    "calendar-arrow-down" "\ue0d0"
-		    "calendar-arrow-up" "\ue0d1"
-		    "calendar-check" "\uf274"
-		    "calendar-circle-exclamation" "\ue46e"
-		    "calendar-circle-minus" "\ue46f"
-		    "calendar-circle-plus" "\ue470"
-		    "calendar-circle-user" "\ue471"
-		    "calendar-clock" "\ue0d2"
-		    "calendar-day" "\uf783"
-		    "calendar-days" "\uf073"
-		    "calendar-exclamation" "\uf334"
-		    "calendar-heart" "\ue0d3"
-		    "calendar-image" "\ue0d4"
-		    "calendar-lines" "\ue0d5"
-		    "calendar-lines-pen" "\ue472"
-		    "calendar-minus" "\uf272"
-		    "calendar-pen" "\uf333"
-		    "calendar-plus" "\uf271"
-		    "calendar-range" "\ue0d6"
-		    "calendar-star" "\uf736"
-		    "calendar-users" "\ue5e2"
-		    "calendar-week" "\uf784"
-		    "calendar-xmark" "\uf273"
-		    "calendars" "\ue0d7"
-		    "camcorder" "\uf8a8"
-		    "camera" "\uf030"
-		    "camera-cctv" "\uf8ac"
-		    "camera-movie" "\uf8a9"
-		    "camera-polaroid" "\uf8aa"
-		    "camera-retro" "\uf083"
-		    "camera-rotate" "\ue0d8"
-		    "camera-security" "\uf8fe"
-		    "camera-slash" "\ue0d9"
-		    "camera-viewfinder" "\ue0da"
-		    "camera-web" "\uf832"
-		    "camera-web-slash" "\uf833"
-		    "campfire" "\uf6ba"
-		    "campground" "\uf6bb"
-		    "can-food" "\ue3e6"
-		    "candle-holder" "\uf6bc"
-		    "candy" "\ue3e7"
-		    "candy-bar" "\ue3e8"
-		    "candy-cane" "\uf786"
-		    "candy-corn" "\uf6bd"
-		    "cannabis" "\uf55f"
-		    "cannon" "\ue642"
-		    "capsules" "\uf46b"
-		    "car" "\uf1b9"
-		    "car-battery" "\uf5df"
-		    "car-bolt" "\ue341"
-		    "car-building" "\uf859"
-		    "car-bump" "\uf5e0"
-		    "car-burst" "\uf5e1"
-		    "car-bus" "\uf85a"
-		    "car-circle-bolt" "\ue342"
-		    "car-garage" "\uf5e2"
-		    "car-mirrors" "\ue343"
-		    "car-on" "\ue4dd"
-		    "car-rear" "\uf5de"
-		    "car-side" "\uf5e4"
-		    "car-side-bolt" "\ue344"
-		    "car-tilt" "\uf5e5"
-		    "car-tunnel" "\ue4de"
-		    "car-wash" "\uf5e6"
-		    "car-wrench" "\uf5e3"
-		    "caravan" "\uf8ff"
-		    "caravan-simple" "\ue000"
-		    "card-club" "\ue3e9"
-		    "card-diamond" "\ue3ea"
-		    "card-heart" "\ue3eb"
-		    "card-spade" "\ue3ec"
-		    "cards" "\ue3ed"
-		    "cards-blank" "\ue4df"
-		    "caret-down" "\uf0d7"
-		    "caret-left" "\uf0d9"
-		    "caret-right" "\uf0da"
-		    "caret-up" "\uf0d8"
-		    "carrot" "\uf787"
-		    "cars" "\uf85b"
-		    "cart-arrow-down" "\uf218"
-		    "cart-arrow-up" "\ue3ee"
-		    "cart-circle-arrow-down" "\ue3ef"
-		    "cart-circle-arrow-up" "\ue3f0"
-		    "cart-circle-check" "\ue3f1"
-		    "cart-circle-exclamation" "\ue3f2"
-		    "cart-circle-plus" "\ue3f3"
-		    "cart-circle-xmark" "\ue3f4"
-		    "cart-flatbed" "\uf474"
-		    "cart-flatbed-boxes" "\uf475"
-		    "cart-flatbed-empty" "\uf476"
-		    "cart-flatbed-suitcase" "\uf59d"
-		    "cart-minus" "\ue0db"
-		    "cart-plus" "\uf217"
-		    "cart-shopping" "\uf07a"
-		    "cart-shopping-fast" "\ue0dc"
-		    "cart-xmark" "\ue0dd"
-		    "cash-register" "\uf788"
-		    "cassette-betamax" "\uf8a4"
-		    "cassette-tape" "\uf8ab"
-		    "cassette-vhs" "\uf8ec"
-		    "castle" "\ue0de"
-		    "cat" "\uf6be"
-		    "cat-space" "\ue001"
-		    "cauldron" "\uf6bf"
-		    "cedi-sign" "\ue0df"
-		    "cent-sign" "\ue3f5"
-		    "certificate" "\uf0a3"
-		    "chair" "\uf6c0"
-		    "chair-office" "\uf6c1"
-		    "chalkboard" "\uf51b"
-		    "chalkboard-user" "\uf51c"
-		    "champagne-glass" "\uf79e"
-		    "champagne-glasses" "\uf79f"
-		    "charging-station" "\uf5e7"
-		    "chart-area" "\uf1fe"
-		    "chart-bar" "\uf080"
-		    "chart-bullet" "\ue0e1"
-		    "chart-candlestick" "\ue0e2"
-		    "chart-column" "\ue0e3"
-		    "chart-gantt" "\ue0e4"
-		    "chart-kanban" "\ue64f"
-		    "chart-line" "\uf201"
-		    "chart-line-down" "\uf64d"
-		    "chart-line-up" "\ue0e5"
-		    "chart-line-up-down" "\ue5d7"
-		    "chart-mixed" "\uf643"
-		    "chart-mixed-up-circle-currency" "\ue5d8"
-		    "chart-mixed-up-circle-dollar" "\ue5d9"
-		    "chart-network" "\uf78a"
-		    "chart-pie" "\uf200"
-		    "chart-pie-simple" "\uf64e"
-		    "chart-pie-simple-circle-currency" "\ue604"
-		    "chart-pie-simple-circle-dollar" "\ue605"
-		    "chart-pyramid" "\ue0e6"
-		    "chart-radar" "\ue0e7"
-		    "chart-scatter" "\uf7ee"
-		    "chart-scatter-3d" "\ue0e8"
-		    "chart-scatter-bubble" "\ue0e9"
-		    "chart-simple" "\ue473"
-		    "chart-simple-horizontal" "\ue474"
-		    "chart-tree-map" "\ue0ea"
-		    "chart-user" "\uf6a3"
-		    "chart-waterfall" "\ue0eb"
-		    "check" "\uf00c"
-		    "check-double" "\uf560"
-		    "check-to-slot" "\uf772"
-		    "cheese" "\uf7ef"
-		    "cheese-swiss" "\uf7f0"
-		    "cherries" "\ue0ec"
-		    "chess" "\uf439"
-		    "chess-bishop" "\uf43a"
-		    "chess-bishop-piece" "\uf43b"
-		    "chess-board" "\uf43c"
-		    "chess-clock" "\uf43d"
-		    "chess-clock-flip" "\uf43e"
-		    "chess-king" "\uf43f"
-		    "chess-king-piece" "\uf440"
-		    "chess-knight" "\uf441"
-		    "chess-knight-piece" "\uf442"
-		    "chess-pawn" "\uf443"
-		    "chess-pawn-piece" "\uf444"
-		    "chess-queen" "\uf445"
-		    "chess-queen-piece" "\uf446"
-		    "chess-rook" "\uf447"
-		    "chess-rook-piece" "\uf448"
-		    "chestnut" "\ue3f6"
-		    "chevron-down" "\uf078"
-		    "chevron-left" "\uf053"
-		    "chevron-right" "\uf054"
-		    "chevron-up" "\uf077"
-		    "chevrons-down" "\uf322"
-		    "chevrons-left" "\uf323"
-		    "chevrons-right" "\uf324"
-		    "chevrons-up" "\uf325"
-		    "chf-sign" "\ue602"
-		    "child" "\uf1ae"
-		    "child-combatant" "\ue4e0"
-		    "child-dress" "\ue59c"
-		    "child-reaching" "\ue59d"
-		    "children" "\ue4e1"
-		    "chimney" "\uf78b"
-		    "chopsticks" "\ue3f7"
-		    "church" "\uf51d"
-		    "circle" "\uf111"
-		    "circle-0" "\ue0ed"
-		    "circle-1" "\ue0ee"
-		    "circle-2" "\ue0ef"
-		    "circle-3" "\ue0f0"
-		    "circle-4" "\ue0f1"
-		    "circle-5" "\ue0f2"
-		    "circle-6" "\ue0f3"
-		    "circle-7" "\ue0f4"
-		    "circle-8" "\ue0f5"
-		    "circle-9" "\ue0f6"
-		    "circle-a" "\ue0f7"
-		    "circle-ampersand" "\ue0f8"
-		    "circle-arrow-down" "\uf0ab"
-		    "circle-arrow-down-left" "\ue0f9"
-		    "circle-arrow-down-right" "\ue0fa"
-		    "circle-arrow-left" "\uf0a8"
-		    "circle-arrow-right" "\uf0a9"
-		    "circle-arrow-up" "\uf0aa"
-		    "circle-arrow-up-left" "\ue0fb"
-		    "circle-arrow-up-right" "\ue0fc"
-		    "circle-b" "\ue0fd"
-		    "circle-bolt" "\ue0fe"
-		    "circle-book-open" "\ue0ff"
-		    "circle-bookmark" "\ue100"
-		    "circle-c" "\ue101"
-		    "circle-calendar" "\ue102"
-		    "circle-camera" "\ue103"
-		    "circle-caret-down" "\uf32d"
-		    "circle-caret-left" "\uf32e"
-		    "circle-caret-right" "\uf330"
-		    "circle-caret-up" "\uf331"
-		    "circle-check" "\uf058"
-		    "circle-chevron-down" "\uf13a"
-		    "circle-chevron-left" "\uf137"
-		    "circle-chevron-right" "\uf138"
-		    "circle-chevron-up" "\uf139"
-		    "circle-d" "\ue104"
-		    "circle-dashed" "\ue105"
-		    "circle-divide" "\ue106"
-		    "circle-dollar" "\uf2e8"
-		    "circle-dollar-to-slot" "\uf4b9"
-		    "circle-dot" "\uf192"
-		    "circle-down" "\uf358"
-		    "circle-down-left" "\ue107"
-		    "circle-down-right" "\ue108"
-		    "circle-e" "\ue109"
-		    "circle-ellipsis" "\ue10a"
-		    "circle-ellipsis-vertical" "\ue10b"
-		    "circle-envelope" "\ue10c"
-		    "circle-euro" "\ue5ce"
-		    "circle-exclamation" "\uf06a"
-		    "circle-exclamation-check" "\ue10d"
-		    "circle-f" "\ue10e"
-		    "circle-g" "\ue10f"
-		    "circle-h" "\uf47e"
-		    "circle-half" "\ue110"
-		    "circle-half-stroke" "\uf042"
-		    "circle-heart" "\uf4c7"
-		    "circle-i" "\ue111"
-		    "circle-info" "\uf05a"
-		    "circle-j" "\ue112"
-		    "circle-k" "\ue113"
-		    "circle-l" "\ue114"
-		    "circle-left" "\uf359"
-		    "circle-location-arrow" "\uf602"
-		    "circle-m" "\ue115"
-		    "circle-microphone" "\ue116"
-		    "circle-microphone-lines" "\ue117"
-		    "circle-minus" "\uf056"
-		    "circle-n" "\ue118"
-		    "circle-nodes" "\ue4e2"
-		    "circle-notch" "\uf1ce"
-		    "circle-o" "\ue119"
-		    "circle-p" "\ue11a"
-		    "circle-parking" "\uf615"
-		    "circle-pause" "\uf28b"
-		    "circle-phone" "\ue11b"
-		    "circle-phone-flip" "\ue11c"
-		    "circle-phone-hangup" "\ue11d"
-		    "circle-play" "\uf144"
-		    "circle-plus" "\uf055"
-		    "circle-q" "\ue11e"
-		    "circle-quarter" "\ue11f"
-		    "circle-quarter-stroke" "\ue5d3"
-		    "circle-quarters" "\ue3f8"
-		    "circle-question" "\uf059"
-		    "circle-r" "\ue120"
-		    "circle-radiation" "\uf7ba"
-		    "circle-right" "\uf35a"
-		    "circle-s" "\ue121"
-		    "circle-small" "\ue122"
-		    "circle-sort" "\ue030"
-		    "circle-sort-down" "\ue031"
-		    "circle-sort-up" "\ue032"
-		    "circle-star" "\ue123"
-		    "circle-sterling" "\ue5cf"
-		    "circle-stop" "\uf28d"
-		    "circle-t" "\ue124"
-		    "circle-three-quarters" "\ue125"
-		    "circle-three-quarters-stroke" "\ue5d4"
-		    "circle-trash" "\ue126"
-		    "circle-u" "\ue127"
-		    "circle-up" "\uf35b"
-		    "circle-up-left" "\ue128"
-		    "circle-up-right" "\ue129"
-		    "circle-user" "\uf2bd"
-		    "circle-v" "\ue12a"
-		    "circle-video" "\ue12b"
-		    "circle-w" "\ue12c"
-		    "circle-waveform-lines" "\ue12d"
-		    "circle-x" "\ue12e"
-		    "circle-xmark" "\uf057"
-		    "circle-y" "\ue12f"
-		    "circle-yen" "\ue5d0"
-		    "circle-z" "\ue130"
-		    "circles-overlap" "\ue600"
-		    "citrus" "\ue2f4"
-		    "citrus-slice" "\ue2f5"
-		    "city" "\uf64f"
-		    "clapperboard" "\ue131"
-		    "clapperboard-play" "\ue132"
-		    "clarinet" "\uf8ad"
-		    "claw-marks" "\uf6c2"
-		    "clipboard" "\uf328"
-		    "clipboard-check" "\uf46c"
-		    "clipboard-list" "\uf46d"
-		    "clipboard-list-check" "\uf737"
-		    "clipboard-medical" "\ue133"
-		    "clipboard-prescription" "\uf5e8"
-		    "clipboard-question" "\ue4e3"
-		    "clipboard-user" "\uf7f3"
-		    "clock" "\uf017"
-		    "clock-desk" "\ue134"
-		    "clock-eight" "\ue345"
-		    "clock-eight-thirty" "\ue346"
-		    "clock-eleven" "\ue347"
-		    "clock-eleven-thirty" "\ue348"
-		    "clock-five" "\ue349"
-		    "clock-five-thirty" "\ue34a"
-		    "clock-four-thirty" "\ue34b"
-		    "clock-nine" "\ue34c"
-		    "clock-nine-thirty" "\ue34d"
-		    "clock-one" "\ue34e"
-		    "clock-one-thirty" "\ue34f"
-		    "clock-rotate-left" "\uf1da"
-		    "clock-seven" "\ue350"
-		    "clock-seven-thirty" "\ue351"
-		    "clock-six" "\ue352"
-		    "clock-six-thirty" "\ue353"
-		    "clock-ten" "\ue354"
-		    "clock-ten-thirty" "\ue355"
-		    "clock-three" "\ue356"
-		    "clock-three-thirty" "\ue357"
-		    "clock-twelve" "\ue358"
-		    "clock-twelve-thirty" "\ue359"
-		    "clock-two" "\ue35a"
-		    "clock-two-thirty" "\ue35b"
-		    "clone" "\uf24d"
-		    "closed-captioning" "\uf20a"
-		    "closed-captioning-slash" "\ue135"
-		    "clothes-hanger" "\ue136"
-		    "cloud" "\uf0c2"
-		    "cloud-arrow-down" "\uf0ed"
-		    "cloud-arrow-up" "\uf0ee"
-		    "cloud-binary" "\ue601"
-		    "cloud-bolt" "\uf76c"
-		    "cloud-bolt-moon" "\uf76d"
-		    "cloud-bolt-sun" "\uf76e"
-		    "cloud-check" "\ue35c"
-		    "cloud-drizzle" "\uf738"
-		    "cloud-exclamation" "\ue491"
-		    "cloud-fog" "\uf74e"
-		    "cloud-hail" "\uf739"
-		    "cloud-hail-mixed" "\uf73a"
-		    "cloud-meatball" "\uf73b"
-		    "cloud-minus" "\ue35d"
-		    "cloud-moon" "\uf6c3"
-		    "cloud-moon-rain" "\uf73c"
-		    "cloud-music" "\uf8ae"
-		    "cloud-plus" "\ue35e"
-		    "cloud-question" "\ue492"
-		    "cloud-rain" "\uf73d"
-		    "cloud-rainbow" "\uf73e"
-		    "cloud-showers" "\uf73f"
-		    "cloud-showers-heavy" "\uf740"
-		    "cloud-showers-water" "\ue4e4"
-		    "cloud-slash" "\ue137"
-		    "cloud-sleet" "\uf741"
-		    "cloud-snow" "\uf742"
-		    "cloud-sun" "\uf6c4"
-		    "cloud-sun-rain" "\uf743"
-		    "cloud-word" "\ue138"
-		    "cloud-xmark" "\ue35f"
-		    "clouds" "\uf744"
-		    "clouds-moon" "\uf745"
-		    "clouds-sun" "\uf746"
-		    "clover" "\ue139"
-		    "club" "\uf327"
-		    "coconut" "\ue2f6"
-		    "code" "\uf121"
-		    "code-branch" "\uf126"
-		    "code-commit" "\uf386"
-		    "code-compare" "\ue13a"
-		    "code-fork" "\ue13b"
-		    "code-merge" "\uf387"
-		    "code-pull-request" "\ue13c"
-		    "code-pull-request-closed" "\ue3f9"
-		    "code-pull-request-draft" "\ue3fa"
-		    "code-simple" "\ue13d"
-		    "coffee-bean" "\ue13e"
-		    "coffee-beans" "\ue13f"
-		    "coffee-pot" "\ue002"
-		    "coffin" "\uf6c6"
-		    "coffin-cross" "\ue051"
-		    "coin" "\uf85c"
-		    "coin-blank" "\ue3fb"
-		    "coin-front" "\ue3fc"
-		    "coin-vertical" "\ue3fd"
-		    "coins" "\uf51e"
-		    "colon" "\u3a"
-		    "colon-sign" "\ue140"
-		    "columns-3" "\ue361"
-		    "comet" "\ue003"
-		    "comma" "\u2c"
-		    "command" "\ue142"
-		    "comment" "\uf075"
-		    "comment-arrow-down" "\ue143"
-		    "comment-arrow-up" "\ue144"
-		    "comment-arrow-up-right" "\ue145"
-		    "comment-captions" "\ue146"
-		    "comment-check" "\uf4ac"
-		    "comment-code" "\ue147"
-		    "comment-dollar" "\uf651"
-		    "comment-dots" "\uf4ad"
-		    "comment-exclamation" "\uf4af"
-		    "comment-heart" "\ue5c8"
-		    "comment-image" "\ue148"
-		    "comment-lines" "\uf4b0"
-		    "comment-medical" "\uf7f5"
-		    "comment-middle" "\ue149"
-		    "comment-middle-top" "\ue14a"
-		    "comment-minus" "\uf4b1"
-		    "comment-music" "\uf8b0"
-		    "comment-pen" "\uf4ae"
-		    "comment-plus" "\uf4b2"
-		    "comment-question" "\ue14b"
-		    "comment-quote" "\ue14c"
-		    "comment-slash" "\uf4b3"
-		    "comment-smile" "\uf4b4"
-		    "comment-sms" "\uf7cd"
-		    "comment-text" "\ue14d"
-		    "comment-xmark" "\uf4b5"
-		    "comments" "\uf086"
-		    "comments-dollar" "\uf653"
-		    "comments-question" "\ue14e"
-		    "comments-question-check" "\ue14f"
-		    "compact-disc" "\uf51f"
-		    "compass" "\uf14e"
-		    "compass-drafting" "\uf568"
-		    "compass-slash" "\uf5e9"
-		    "compress" "\uf066"
-		    "compress-wide" "\uf326"
-		    "computer" "\ue4e5"
-		    "computer-classic" "\uf8b1"
-		    "computer-mouse" "\uf8cc"
-		    "computer-mouse-scrollwheel" "\uf8cd"
-		    "computer-speaker" "\uf8b2"
-		    "container-storage" "\uf4b7"
-		    "conveyor-belt" "\uf46e"
-		    "conveyor-belt-arm" "\ue5f8"
-		    "conveyor-belt-boxes" "\uf46f"
-		    "conveyor-belt-empty" "\ue150"
-		    "cookie" "\uf563"
-		    "cookie-bite" "\uf564"
-		    "copy" "\uf0c5"
-		    "copyright" "\uf1f9"
-		    "corn" "\uf6c7"
-		    "corner" "\ue3fe"
-		    "couch" "\uf4b8"
-		    "court-sport" "\ue643"
-		    "cow" "\uf6c8"
-		    "cowbell" "\uf8b3"
-		    "cowbell-circle-plus" "\uf8b4"
-		    "crab" "\ue3ff"
-		    "crate-apple" "\uf6b1"
-		    "crate-empty" "\ue151"
-		    "credit-card" "\uf09d"
-		    "credit-card-blank" "\uf389"
-		    "credit-card-front" "\uf38a"
-		    "cricket-bat-ball" "\uf449"
-		    "croissant" "\uf7f6"
-		    "crop" "\uf125"
-		    "crop-simple" "\uf565"
-		    "cross" "\uf654"
-		    "crosshairs" "\uf05b"
-		    "crosshairs-simple" "\ue59f"
-		    "crow" "\uf520"
-		    "crown" "\uf521"
-		    "crutch" "\uf7f7"
-		    "crutches" "\uf7f8"
-		    "cruzeiro-sign" "\ue152"
-		    "crystal-ball" "\ue362"
-		    "cube" "\uf1b2"
-		    "cubes" "\uf1b3"
-		    "cubes-stacked" "\ue4e6"
-		    "cucumber" "\ue401"
-		    "cup-straw" "\ue363"
-		    "cup-straw-swoosh" "\ue364"
-		    "cup-togo" "\uf6c5"
-		    "cupcake" "\ue402"
-		    "curling-stone" "\uf44a"
-		    "custard" "\ue403"
-		    "d" "\u44"
-		    "dagger" "\uf6cb"
-		    "dash" "\ue404"
-		    "database" "\uf1c0"
-		    "deer" "\uf78e"
-		    "deer-rudolph" "\uf78f"
-		    "delete-left" "\uf55a"
-		    "delete-right" "\ue154"
-		    "democrat" "\uf747"
-		    "desktop" "\uf390"
-		    "desktop-arrow-down" "\ue155"
-		    "dharmachakra" "\uf655"
-		    "diagram-cells" "\ue475"
-		    "diagram-lean-canvas" "\ue156"
-		    "diagram-nested" "\ue157"
-		    "diagram-next" "\ue476"
-		    "diagram-predecessor" "\ue477"
-		    "diagram-previous" "\ue478"
-		    "diagram-project" "\uf542"
-		    "diagram-sankey" "\ue158"
-		    "diagram-subtask" "\ue479"
-		    "diagram-successor" "\ue47a"
-		    "diagram-venn" "\ue15a"
-		    "dial" "\ue15b"
-		    "dial-high" "\ue15c"
-		    "dial-low" "\ue15d"
-		    "dial-max" "\ue15e"
-		    "dial-med" "\ue15f"
-		    "dial-med-low" "\ue160"
-		    "dial-min" "\ue161"
-		    "dial-off" "\ue162"
-		    "diamond" "\uf219"
-		    "diamond-exclamation" "\ue405"
-		    "diamond-half" "\ue5b7"
-		    "diamond-half-stroke" "\ue5b8"
-		    "diamond-turn-right" "\uf5eb"
-		    "dice" "\uf522"
-		    "dice-d10" "\uf6cd"
-		    "dice-d12" "\uf6ce"
-		    "dice-d20" "\uf6cf"
-		    "dice-d4" "\uf6d0"
-		    "dice-d6" "\uf6d1"
-		    "dice-d8" "\uf6d2"
-		    "dice-five" "\uf523"
-		    "dice-four" "\uf524"
-		    "dice-one" "\uf525"
-		    "dice-six" "\uf526"
-		    "dice-three" "\uf527"
-		    "dice-two" "\uf528"
-		    "dinosaur" "\ue5fe"
-		    "diploma" "\uf5ea"
-		    "disc-drive" "\uf8b5"
-		    "disease" "\uf7fa"
-		    "display" "\ue163"
-		    "display-arrow-down" "\ue164"
-		    "display-chart-up" "\ue5e3"
-		    "display-chart-up-circle-currency" "\ue5e5"
-		    "display-chart-up-circle-dollar" "\ue5e6"
-		    "display-code" "\ue165"
-		    "display-medical" "\ue166"
-		    "display-slash" "\ue2fa"
-		    "distribute-spacing-horizontal" "\ue365"
-		    "distribute-spacing-vertical" "\ue366"
-		    "ditto" "\u22"
-		    "divide" "\uf529"
-		    "dna" "\uf471"
-		    "do-not-enter" "\uf5ec"
-		    "dog" "\uf6d3"
-		    "dog-leashed" "\uf6d4"
-		    "dollar-sign" "\u24"
-		    "dolly" "\uf472"
-		    "dolly-empty" "\uf473"
-		    "dolphin" "\ue168"
-		    "dong-sign" "\ue169"
-		    "donut" "\ue406"
-		    "door-closed" "\uf52a"
-		    "door-open" "\uf52b"
-		    "dove" "\uf4ba"
-		    "down" "\uf354"
-		    "down-from-dotted-line" "\ue407"
-		    "down-from-line" "\uf349"
-		    "down-left" "\ue16a"
-		    "down-left-and-up-right-to-center" "\uf422"
-		    "down-long" "\uf309"
-		    "down-right" "\ue16b"
-		    "down-to-bracket" "\ue4e7"
-		    "down-to-dotted-line" "\ue408"
-		    "down-to-line" "\uf34a"
-		    "download" "\uf019"
-		    "dragon" "\uf6d5"
-		    "draw-circle" "\uf5ed"
-		    "draw-polygon" "\uf5ee"
-		    "draw-square" "\uf5ef"
-		    "dreidel" "\uf792"
-		    "drone" "\uf85f"
-		    "drone-front" "\uf860"
-		    "droplet" "\uf043"
-		    "droplet-degree" "\uf748"
-		    "droplet-percent" "\uf750"
-		    "droplet-slash" "\uf5c7"
-		    "drum" "\uf569"
-		    "drum-steelpan" "\uf56a"
-		    "drumstick" "\uf6d6"
-		    "drumstick-bite" "\uf6d7"
-		    "dryer" "\uf861"
-		    "dryer-heat" "\uf862"
-		    "duck" "\uf6d8"
-		    "dumbbell" "\uf44b"
-		    "dumpster" "\uf793"
-		    "dumpster-fire" "\uf794"
-		    "dungeon" "\uf6d9"
-		    "e" "\u45"
-		    "ear" "\uf5f0"
-		    "ear-deaf" "\uf2a4"
-		    "ear-listen" "\uf2a2"
-		    "ear-muffs" "\uf795"
-		    "earth-africa" "\uf57c"
-		    "earth-americas" "\uf57d"
-		    "earth-asia" "\uf57e"
-		    "earth-europe" "\uf7a2"
-		    "earth-oceania" "\ue47b"
-		    "eclipse" "\uf749"
-		    "egg" "\uf7fb"
-		    "egg-fried" "\uf7fc"
-		    "eggplant" "\ue16c"
-		    "eject" "\uf052"
-		    "elephant" "\uf6da"
-		    "elevator" "\ue16d"
-		    "ellipsis" "\uf141"
-		    "ellipsis-stroke" "\uf39b"
-		    "ellipsis-stroke-vertical" "\uf39c"
-		    "ellipsis-vertical" "\uf142"
-		    "empty-set" "\uf656"
-		    "engine" "\ue16e"
-		    "engine-warning" "\uf5f2"
-		    "envelope" "\uf0e0"
-		    "envelope-circle-check" "\ue4e8"
-		    "envelope-dot" "\ue16f"
-		    "envelope-open" "\uf2b6"
-		    "envelope-open-dollar" "\uf657"
-		    "envelope-open-text" "\uf658"
-		    "envelopes" "\ue170"
-		    "envelopes-bulk" "\uf674"
-		    "equals" "\u3d"
-		    "eraser" "\uf12d"
-		    "escalator" "\ue171"
-		    "ethernet" "\uf796"
-		    "euro-sign" "\uf153"
-		    "excavator" "\ue656"
-		    "exclamation" "\u21"
-		    "expand" "\uf065"
-		    "expand-wide" "\uf320"
-		    "explosion" "\ue4e9"
-		    "eye" "\uf06e"
-		    "eye-dropper" "\uf1fb"
-		    "eye-dropper-full" "\ue172"
-		    "eye-dropper-half" "\ue173"
-		    "eye-evil" "\uf6db"
-		    "eye-low-vision" "\uf2a8"
-		    "eye-slash" "\uf070"
-		    "eyes" "\ue367"
-		    "f" "\u46"
-		    "face-angry" "\uf556"
-		    "face-angry-horns" "\ue368"
-		    "face-anguished" "\ue369"
-		    "face-anxious-sweat" "\ue36a"
-		    "face-astonished" "\ue36b"
-		    "face-awesome" "\ue409"
-		    "face-beam-hand-over-mouth" "\ue47c"
-		    "face-clouds" "\ue47d"
-		    "face-confounded" "\ue36c"
-		    "face-confused" "\ue36d"
-		    "face-cowboy-hat" "\ue36e"
-		    "face-diagonal-mouth" "\ue47e"
-		    "face-disappointed" "\ue36f"
-		    "face-disguise" "\ue370"
-		    "face-dizzy" "\uf567"
-		    "face-dotted" "\ue47f"
-		    "face-downcast-sweat" "\ue371"
-		    "face-drooling" "\ue372"
-		    "face-exhaling" "\ue480"
-		    "face-explode" "\ue2fe"
-		    "face-expressionless" "\ue373"
-		    "face-eyes-xmarks" "\ue374"
-		    "face-fearful" "\ue375"
-		    "face-flushed" "\uf579"
-		    "face-frown" "\uf119"
-		    "face-frown-open" "\uf57a"
-		    "face-frown-slight" "\ue376"
-		    "face-glasses" "\ue377"
-		    "face-grimace" "\uf57f"
-		    "face-grin" "\uf580"
-		    "face-grin-beam" "\uf582"
-		    "face-grin-beam-sweat" "\uf583"
-		    "face-grin-hearts" "\uf584"
-		    "face-grin-squint" "\uf585"
-		    "face-grin-squint-tears" "\uf586"
-		    "face-grin-stars" "\uf587"
-		    "face-grin-tears" "\uf588"
-		    "face-grin-tongue" "\uf589"
-		    "face-grin-tongue-squint" "\uf58a"
-		    "face-grin-tongue-wink" "\uf58b"
-		    "face-grin-wide" "\uf581"
-		    "face-grin-wink" "\uf58c"
-		    "face-hand-over-mouth" "\ue378"
-		    "face-hand-peeking" "\ue481"
-		    "face-hand-yawn" "\ue379"
-		    "face-head-bandage" "\ue37a"
-		    "face-holding-back-tears" "\ue482"
-		    "face-hushed" "\ue37b"
-		    "face-icicles" "\ue37c"
-		    "face-kiss" "\uf596"
-		    "face-kiss-beam" "\uf597"
-		    "face-kiss-closed-eyes" "\ue37d"
-		    "face-kiss-wink-heart" "\uf598"
-		    "face-laugh" "\uf599"
-		    "face-laugh-beam" "\uf59a"
-		    "face-laugh-squint" "\uf59b"
-		    "face-laugh-wink" "\uf59c"
-		    "face-lying" "\ue37e"
-		    "face-mask" "\ue37f"
-		    "face-meh" "\uf11a"
-		    "face-meh-blank" "\uf5a4"
-		    "face-melting" "\ue483"
-		    "face-monocle" "\ue380"
-		    "face-nauseated" "\ue381"
-		    "face-nose-steam" "\ue382"
-		    "face-party" "\ue383"
-		    "face-pensive" "\ue384"
-		    "face-persevering" "\ue385"
-		    "face-pleading" "\ue386"
-		    "face-pouting" "\ue387"
-		    "face-raised-eyebrow" "\ue388"
-		    "face-relieved" "\ue389"
-		    "face-rolling-eyes" "\uf5a5"
-		    "face-sad-cry" "\uf5b3"
-		    "face-sad-sweat" "\ue38a"
-		    "face-sad-tear" "\uf5b4"
-		    "face-saluting" "\ue484"
-		    "face-scream" "\ue38b"
-		    "face-shush" "\ue38c"
-		    "face-sleeping" "\ue38d"
-		    "face-sleepy" "\ue38e"
-		    "face-smile" "\uf118"
-		    "face-smile-beam" "\uf5b8"
-		    "face-smile-halo" "\ue38f"
-		    "face-smile-hearts" "\ue390"
-		    "face-smile-horns" "\ue391"
-		    "face-smile-plus" "\uf5b9"
-		    "face-smile-relaxed" "\ue392"
-		    "face-smile-tear" "\ue393"
-		    "face-smile-tongue" "\ue394"
-		    "face-smile-upside-down" "\ue395"
-		    "face-smile-wink" "\uf4da"
-		    "face-smiling-hands" "\ue396"
-		    "face-smirking" "\ue397"
-		    "face-spiral-eyes" "\ue485"
-		    "face-sunglasses" "\ue398"
-		    "face-surprise" "\uf5c2"
-		    "face-swear" "\ue399"
-		    "face-thermometer" "\ue39a"
-		    "face-thinking" "\ue39b"
-		    "face-tired" "\uf5c8"
-		    "face-tissue" "\ue39c"
-		    "face-tongue-money" "\ue39d"
-		    "face-tongue-sweat" "\ue39e"
-		    "face-unamused" "\ue39f"
-		    "face-viewfinder" "\ue2ff"
-		    "face-vomit" "\ue3a0"
-		    "face-weary" "\ue3a1"
-		    "face-woozy" "\ue3a2"
-		    "face-worried" "\ue3a3"
-		    "face-zany" "\ue3a4"
-		    "face-zipper" "\ue3a5"
-		    "falafel" "\ue40a"
-		    "family" "\ue300"
-		    "family-dress" "\ue301"
-		    "family-pants" "\ue302"
-		    "fan" "\uf863"
-		    "fan-table" "\ue004"
-		    "farm" "\uf864"
-		    "faucet" "\ue005"
-		    "faucet-drip" "\ue006"
-		    "fax" "\uf1ac"
-		    "feather" "\uf52d"
-		    "feather-pointed" "\uf56b"
-		    "fence" "\ue303"
-		    "ferris-wheel" "\ue174"
-		    "ferry" "\ue4ea"
-		    "field-hockey-stick-ball" "\uf44c"
-		    "file" "\uf15b"
-		    "file-arrow-down" "\uf56d"
-		    "file-arrow-up" "\uf574"
-		    "file-audio" "\uf1c7"
-		    "file-binary" "\ue175"
-		    "file-certificate" "\uf5f3"
-		    "file-chart-column" "\uf659"
-		    "file-chart-pie" "\uf65a"
-		    "file-check" "\uf316"
-		    "file-circle-check" "\ue5a0"
-		    "file-circle-exclamation" "\ue4eb"
-		    "file-circle-info" "\ue493"
-		    "file-circle-minus" "\ue4ed"
-		    "file-circle-plus" "\ue494"
-		    "file-circle-question" "\ue4ef"
-		    "file-circle-xmark" "\ue5a1"
-		    "file-code" "\uf1c9"
-		    "file-contract" "\uf56c"
-		    "file-csv" "\uf6dd"
-		    "file-dashed-line" "\uf877"
-		    "file-doc" "\ue5ed"
-		    "file-eps" "\ue644"
-		    "file-excel" "\uf1c3"
-		    "file-exclamation" "\uf31a"
-		    "file-export" "\uf56e"
-		    "file-gif" "\ue645"
-		    "file-heart" "\ue176"
-		    "file-image" "\uf1c5"
-		    "file-import" "\uf56f"
-		    "file-invoice" "\uf570"
-		    "file-invoice-dollar" "\uf571"
-		    "file-jpg" "\ue646"
-		    "file-lines" "\uf15c"
-		    "file-lock" "\ue3a6"
-		    "file-magnifying-glass" "\uf865"
-		    "file-medical" "\uf477"
-		    "file-minus" "\uf318"
-		    "file-mov" "\ue647"
-		    "file-mp3" "\ue648"
-		    "file-mp4" "\ue649"
-		    "file-music" "\uf8b6"
-		    "file-pdf" "\uf1c1"
-		    "file-pen" "\uf31c"
-		    "file-plus" "\uf319"
-		    "file-plus-minus" "\ue177"
-		    "file-png" "\ue666"
-		    "file-powerpoint" "\uf1c4"
-		    "file-ppt" "\ue64a"
-		    "file-prescription" "\uf572"
-		    "file-shield" "\ue4f0"
-		    "file-signature" "\uf573"
-		    "file-slash" "\ue3a7"
-		    "file-spreadsheet" "\uf65b"
-		    "file-svg" "\ue64b"
-		    "file-user" "\uf65c"
-		    "file-vector" "\ue64c"
-		    "file-video" "\uf1c8"
-		    "file-waveform" "\uf478"
-		    "file-word" "\uf1c2"
-		    "file-xls" "\ue64d"
-		    "file-xmark" "\uf317"
-		    "file-xml" "\ue654"
-		    "file-zip" "\ue5ee"
-		    "file-zipper" "\uf1c6"
-		    "files" "\ue178"
-		    "files-medical" "\uf7fd"
-		    "fill" "\uf575"
-		    "fill-drip" "\uf576"
-		    "film" "\uf008"
-		    "film-canister" "\uf8b7"
-		    "film-simple" "\uf3a0"
-		    "film-slash" "\ue179"
-		    "films" "\ue17a"
-		    "filter" "\uf0b0"
-		    "filter-circle-dollar" "\uf662"
-		    "filter-circle-xmark" "\ue17b"
-		    "filter-list" "\ue17c"
-		    "filter-slash" "\ue17d"
-		    "filters" "\ue17e"
-		    "fingerprint" "\uf577"
-		    "fire" "\uf06d"
-		    "fire-burner" "\ue4f1"
-		    "fire-extinguisher" "\uf134"
-		    "fire-flame" "\uf6df"
-		    "fire-flame-curved" "\uf7e4"
-		    "fire-flame-simple" "\uf46a"
-		    "fire-hydrant" "\ue17f"
-		    "fire-smoke" "\uf74b"
-		    "fireplace" "\uf79a"
-		    "fish" "\uf578"
-		    "fish-bones" "\ue304"
-		    "fish-cooked" "\uf7fe"
-		    "fish-fins" "\ue4f2"
-		    "fishing-rod" "\ue3a8"
-		    "flag" "\uf024"
-		    "flag-checkered" "\uf11e"
-		    "flag-pennant" "\uf456"
-		    "flag-swallowtail" "\uf74c"
-		    "flag-usa" "\uf74d"
-		    "flashlight" "\uf8b8"
-		    "flask" "\uf0c3"
-		    "flask-gear" "\ue5f1"
-		    "flask-round-poison" "\uf6e0"
-		    "flask-round-potion" "\uf6e1"
-		    "flask-vial" "\ue4f3"
-		    "flatbread" "\ue40b"
-		    "flatbread-stuffed" "\ue40c"
-		    "floppy-disk" "\uf0c7"
-		    "floppy-disk-circle-arrow-right" "\ue180"
-		    "floppy-disk-circle-xmark" "\ue181"
-		    "floppy-disk-pen" "\ue182"
-		    "floppy-disks" "\ue183"
-		    "florin-sign" "\ue184"
-		    "flower" "\uf7ff"
-		    "flower-daffodil" "\uf800"
-		    "flower-tulip" "\uf801"
-		    "flute" "\uf8b9"
-		    "flux-capacitor" "\uf8ba"
-		    "flying-disc" "\ue3a9"
-		    "folder" "\uf07b"
-		    "folder-arrow-down" "\ue053"
-		    "folder-arrow-up" "\ue054"
-		    "folder-bookmark" "\ue186"
-		    "folder-check" "\ue64e"
-		    "folder-closed" "\ue185"
-		    "folder-gear" "\ue187"
-		    "folder-grid" "\ue188"
-		    "folder-heart" "\ue189"
-		    "folder-image" "\ue18a"
-		    "folder-magnifying-glass" "\ue18b"
-		    "folder-medical" "\ue18c"
-		    "folder-minus" "\uf65d"
-		    "folder-music" "\ue18d"
-		    "folder-open" "\uf07c"
-		    "folder-plus" "\uf65e"
-		    "folder-tree" "\uf802"
-		    "folder-user" "\ue18e"
-		    "folder-xmark" "\uf65f"
-		    "folders" "\uf660"
-		    "fondue-pot" "\ue40d"
-		    "font" "\uf031"
-		    "font-awesome" "\uf2b4"
-		    "font-case" "\uf866"
-		    "football" "\uf44e"
-		    "football-helmet" "\uf44f"
-		    "fork" "\uf2e3"
-		    "fork-knife" "\uf2e6"
-		    "forklift" "\uf47a"
-		    "fort" "\ue486"
-		    "forward" "\uf04e"
-		    "forward-fast" "\uf050"
-		    "forward-step" "\uf051"
-		    "frame" "\ue495"
-		    "franc-sign" "\ue18f"
-		    "french-fries" "\uf803"
-		    "frog" "\uf52e"
-		    "function" "\uf661"
-		    "futbol" "\uf1e3"
-		    "g" "\u47"
-		    "galaxy" "\ue008"
-		    "gallery-thumbnails" "\ue3aa"
-		    "game-board" "\uf867"
-		    "game-board-simple" "\uf868"
-		    "game-console-handheld" "\uf8bb"
-		    "game-console-handheld-crank" "\ue5b9"
-		    "gamepad" "\uf11b"
-		    "gamepad-modern" "\ue5a2"
-		    "garage" "\ue009"
-		    "garage-car" "\ue00a"
-		    "garage-open" "\ue00b"
-		    "garlic" "\ue40e"
-		    "gas-pump" "\uf52f"
-		    "gas-pump-slash" "\uf5f4"
-		    "gauge" "\uf624"
-		    "gauge-circle-bolt" "\ue496"
-		    "gauge-circle-minus" "\ue497"
-		    "gauge-circle-plus" "\ue498"
-		    "gauge-high" "\uf625"
-		    "gauge-low" "\uf627"
-		    "gauge-max" "\uf626"
-		    "gauge-min" "\uf628"
-		    "gauge-simple" "\uf629"
-		    "gauge-simple-high" "\uf62a"
-		    "gauge-simple-low" "\uf62c"
-		    "gauge-simple-max" "\uf62b"
-		    "gauge-simple-min" "\uf62d"
-		    "gavel" "\uf0e3"
-		    "gear" "\uf013"
-		    "gear-code" "\ue5e8"
-		    "gear-complex" "\ue5e9"
-		    "gear-complex-code" "\ue5eb"
-		    "gears" "\uf085"
-		    "gem" "\uf3a5"
-		    "genderless" "\uf22d"
-		    "ghost" "\uf6e2"
-		    "gif" "\ue190"
-		    "gift" "\uf06b"
-		    "gift-card" "\uf663"
-		    "gifts" "\uf79c"
-		    "gingerbread-man" "\uf79d"
-		    "glass" "\uf804"
-		    "glass-citrus" "\uf869"
-		    "glass-empty" "\ue191"
-		    "glass-half" "\ue192"
-		    "glass-water" "\ue4f4"
-		    "glass-water-droplet" "\ue4f5"
-		    "glasses" "\uf530"
-		    "glasses-round" "\uf5f5"
-		    "globe" "\uf0ac"
-		    "globe-pointer" "\ue60e"
-		    "globe-snow" "\uf7a3"
-		    "globe-stand" "\uf5f6"
-		    "goal-net" "\ue3ab"
-		    "golf-ball-tee" "\uf450"
-		    "golf-club" "\uf451"
-		    "golf-flag-hole" "\ue3ac"
-		    "gopuram" "\uf664"
-		    "graduation-cap" "\uf19d"
-		    "gramophone" "\uf8bd"
-		    "grapes" "\ue306"
-		    "grate" "\ue193"
-		    "grate-droplet" "\ue194"
-		    "greater-than" "\u3e"
-		    "greater-than-equal" "\uf532"
-		    "grid" "\ue195"
-		    "grid-2" "\ue196"
-		    "grid-2-plus" "\ue197"
-		    "grid-4" "\ue198"
-		    "grid-5" "\ue199"
-		    "grid-dividers" "\ue3ad"
-		    "grid-horizontal" "\ue307"
-		    "grid-round" "\ue5da"
-		    "grid-round-2" "\ue5db"
-		    "grid-round-2-plus" "\ue5dc"
-		    "grid-round-4" "\ue5dd"
-		    "grid-round-5" "\ue5de"
-		    "grill" "\ue5a3"
-		    "grill-fire" "\ue5a4"
-		    "grill-hot" "\ue5a5"
-		    "grip" "\uf58d"
-		    "grip-dots" "\ue410"
-		    "grip-dots-vertical" "\ue411"
-		    "grip-lines" "\uf7a4"
-		    "grip-lines-vertical" "\uf7a5"
-		    "grip-vertical" "\uf58e"
-		    "group-arrows-rotate" "\ue4f6"
-		    "guarani-sign" "\ue19a"
-		    "guitar" "\uf7a6"
-		    "guitar-electric" "\uf8be"
-		    "guitars" "\uf8bf"
-		    "gun" "\ue19b"
-		    "gun-slash" "\ue19c"
-		    "gun-squirt" "\ue19d"
-		    "h" "\u48"
-		    "h1" "\uf313"
-		    "h2" "\uf314"
-		    "h3" "\uf315"
-		    "h4" "\uf86a"
-		    "h5" "\ue412"
-		    "h6" "\ue413"
-		    "hammer" "\uf6e3"
-		    "hammer-brush" "\ue620"
-		    "hammer-crash" "\ue414"
-		    "hammer-war" "\uf6e4"
-		    "hamsa" "\uf665"
-		    "hand" "\uf256"
-		    "hand-back-fist" "\uf255"
-		    "hand-back-point-down" "\ue19e"
-		    "hand-back-point-left" "\ue19f"
-		    "hand-back-point-ribbon" "\ue1a0"
-		    "hand-back-point-right" "\ue1a1"
-		    "hand-back-point-up" "\ue1a2"
-		    "hand-dots" "\uf461"
-		    "hand-fingers-crossed" "\ue1a3"
-		    "hand-fist" "\uf6de"
-		    "hand-heart" "\uf4bc"
-		    "hand-holding" "\uf4bd"
-		    "hand-holding-box" "\uf47b"
-		    "hand-holding-circle-dollar" "\ue621"
-		    "hand-holding-dollar" "\uf4c0"
-		    "hand-holding-droplet" "\uf4c1"
-		    "hand-holding-hand" "\ue4f7"
-		    "hand-holding-heart" "\uf4be"
-		    "hand-holding-magic" "\uf6e5"
-		    "hand-holding-medical" "\ue05c"
-		    "hand-holding-seedling" "\uf4bf"
-		    "hand-holding-skull" "\ue1a4"
-		    "hand-horns" "\ue1a9"
-		    "hand-lizard" "\uf258"
-		    "hand-love" "\ue1a5"
-		    "hand-middle-finger" "\uf806"
-		    "hand-peace" "\uf25b"
-		    "hand-point-down" "\uf0a7"
-		    "hand-point-left" "\uf0a5"
-		    "hand-point-ribbon" "\ue1a6"
-		    "hand-point-right" "\uf0a4"
-		    "hand-point-up" "\uf0a6"
-		    "hand-pointer" "\uf25a"
-		    "hand-scissors" "\uf257"
-		    "hand-sparkles" "\ue05d"
-		    "hand-spock" "\uf259"
-		    "hand-wave" "\ue1a7"
-		    "handcuffs" "\ue4f8"
-		    "hands" "\uf2a7"
-		    "hands-asl-interpreting" "\uf2a3"
-		    "hands-bound" "\ue4f9"
-		    "hands-bubbles" "\ue05e"
-		    "hands-clapping" "\ue1a8"
-		    "hands-holding" "\uf4c2"
-		    "hands-holding-child" "\ue4fa"
-		    "hands-holding-circle" "\ue4fb"
-		    "hands-holding-diamond" "\uf47c"
-		    "hands-holding-dollar" "\uf4c5"
-		    "hands-holding-heart" "\uf4c3"
-		    "hands-praying" "\uf684"
-		    "handshake" "\uf2b5"
-		    "handshake-angle" "\uf4c4"
-		    "handshake-simple" "\uf4c6"
-		    "handshake-simple-slash" "\ue05f"
-		    "handshake-slash" "\ue060"
-		    "hanukiah" "\uf6e6"
-		    "hard-drive" "\uf0a0"
-		    "hashtag" "\u23"
-		    "hashtag-lock" "\ue415"
-		    "hat-beach" "\ue606"
-		    "hat-chef" "\uf86b"
-		    "hat-cowboy" "\uf8c0"
-		    "hat-cowboy-side" "\uf8c1"
-		    "hat-santa" "\uf7a7"
-		    "hat-winter" "\uf7a8"
-		    "hat-witch" "\uf6e7"
-		    "hat-wizard" "\uf6e8"
-		    "head-side" "\uf6e9"
-		    "head-side-brain" "\uf808"
-		    "head-side-cough" "\ue061"
-		    "head-side-cough-slash" "\ue062"
-		    "head-side-gear" "\ue611"
-		    "head-side-goggles" "\uf6ea"
-		    "head-side-headphones" "\uf8c2"
-		    "head-side-heart" "\ue1aa"
-		    "head-side-mask" "\ue063"
-		    "head-side-medical" "\uf809"
-		    "head-side-virus" "\ue064"
-		    "heading" "\uf1dc"
-		    "headphones" "\uf025"
-		    "headphones-simple" "\uf58f"
-		    "headset" "\uf590"
-		    "heart" "\uf004"
-		    "heart-circle-bolt" "\ue4fc"
-		    "heart-circle-check" "\ue4fd"
-		    "heart-circle-exclamation" "\ue4fe"
-		    "heart-circle-minus" "\ue4ff"
-		    "heart-circle-plus" "\ue500"
-		    "heart-circle-xmark" "\ue501"
-		    "heart-crack" "\uf7a9"
-		    "heart-half" "\ue1ab"
-		    "heart-half-stroke" "\ue1ac"
-		    "heart-pulse" "\uf21e"
-		    "heat" "\ue00c"
-		    "helicopter" "\uf533"
-		    "helicopter-symbol" "\ue502"
-		    "helmet-battle" "\uf6eb"
-		    "helmet-safety" "\uf807"
-		    "helmet-un" "\ue503"
-		    "hexagon" "\uf312"
-		    "hexagon-check" "\ue416"
-		    "hexagon-divide" "\ue1ad"
-		    "hexagon-exclamation" "\ue417"
-		    "hexagon-image" "\ue504"
-		    "hexagon-minus" "\uf307"
-		    "hexagon-plus" "\uf300"
-		    "hexagon-vertical-nft" "\ue505"
-		    "hexagon-vertical-nft-slanted" "\ue506"
-		    "hexagon-xmark" "\uf2ee"
-		    "high-definition" "\ue1ae"
-		    "highlighter" "\uf591"
-		    "highlighter-line" "\ue1af"
-		    "hill-avalanche" "\ue507"
-		    "hill-rockslide" "\ue508"
-		    "hippo" "\uf6ed"
-		    "hockey-mask" "\uf6ee"
-		    "hockey-puck" "\uf453"
-		    "hockey-stick-puck" "\ue3ae"
-		    "hockey-sticks" "\uf454"
-		    "holly-berry" "\uf7aa"
-		    "honey-pot" "\ue418"
-		    "hood-cloak" "\uf6ef"
-		    "horizontal-rule" "\uf86c"
-		    "horse" "\uf6f0"
-		    "horse-head" "\uf7ab"
-		    "horse-saddle" "\uf8c3"
-		    "hose" "\ue419"
-		    "hose-reel" "\ue41a"
-		    "hospital" "\uf0f8"
-		    "hospital-user" "\uf80d"
-		    "hospitals" "\uf80e"
-		    "hot-tub-person" "\uf593"
-		    "hotdog" "\uf80f"
-		    "hotel" "\uf594"
-		    "hourglass" "\uf254"
-		    "hourglass-clock" "\ue41b"
-		    "hourglass-end" "\uf253"
-		    "hourglass-half" "\uf252"
-		    "hourglass-start" "\uf251"
-		    "house" "\uf015"
-		    "house-blank" "\ue487"
-		    "house-building" "\ue1b1"
-		    "house-chimney" "\ue3af"
-		    "house-chimney-blank" "\ue3b0"
-		    "house-chimney-crack" "\uf6f1"
-		    "house-chimney-heart" "\ue1b2"
-		    "house-chimney-medical" "\uf7f2"
-		    "house-chimney-user" "\ue065"
-		    "house-chimney-window" "\ue00d"
-		    "house-circle-check" "\ue509"
-		    "house-circle-exclamation" "\ue50a"
-		    "house-circle-xmark" "\ue50b"
-		    "house-crack" "\ue3b1"
-		    "house-day" "\ue00e"
-		    "house-fire" "\ue50c"
-		    "house-flag" "\ue50d"
-		    "house-flood-water" "\ue50e"
-		    "house-flood-water-circle-arrow-right" "\ue50f"
-		    "house-heart" "\uf4c9"
-		    "house-laptop" "\ue066"
-		    "house-lock" "\ue510"
-		    "house-medical" "\ue3b2"
-		    "house-medical-circle-check" "\ue511"
-		    "house-medical-circle-exclamation" "\ue512"
-		    "house-medical-circle-xmark" "\ue513"
-		    "house-medical-flag" "\ue514"
-		    "house-night" "\ue010"
-		    "house-person-leave" "\ue00f"
-		    "house-person-return" "\ue011"
-		    "house-signal" "\ue012"
-		    "house-tree" "\ue1b3"
-		    "house-tsunami" "\ue515"
-		    "house-turret" "\ue1b4"
-		    "house-user" "\ue1b0"
-		    "house-water" "\uf74f"
-		    "house-window" "\ue3b3"
-		    "hryvnia-sign" "\uf6f2"
-		    "hundred-points" "\ue41c"
-		    "hurricane" "\uf751"
-		    "hyphen" "\u2d"
-		    "i" "\u49"
-		    "i-cursor" "\uf246"
-		    "ice-cream" "\uf810"
-		    "ice-skate" "\uf7ac"
-		    "icicles" "\uf7ad"
-		    "icons" "\uf86d"
-		    "id-badge" "\uf2c1"
-		    "id-card" "\uf2c2"
-		    "id-card-clip" "\uf47f"
-		    "igloo" "\uf7ae"
-		    "image" "\uf03e"
-		    "image-landscape" "\ue1b5"
-		    "image-polaroid" "\uf8c4"
-		    "image-polaroid-user" "\ue1b6"
-		    "image-portrait" "\uf3e0"
-		    "image-slash" "\ue1b7"
-		    "image-user" "\ue1b8"
-		    "images" "\uf302"
-		    "images-user" "\ue1b9"
-		    "inbox" "\uf01c"
-		    "inbox-full" "\ue1ba"
-		    "inbox-in" "\uf310"
-		    "inbox-out" "\uf311"
-		    "inboxes" "\ue1bb"
-		    "indent" "\uf03c"
-		    "indian-rupee-sign" "\ue1bc"
-		    "industry" "\uf275"
-		    "industry-windows" "\uf3b3"
-		    "infinity" "\uf534"
-		    "info" "\uf129"
-		    "inhaler" "\uf5f9"
-		    "input-numeric" "\ue1bd"
-		    "input-pipe" "\ue1be"
-		    "input-text" "\ue1bf"
-		    "integral" "\uf667"
-		    "interrobang" "\ue5ba"
-		    "intersection" "\uf668"
-		    "island-tropical" "\uf811"
-		    "italic" "\uf033"
-		    "j" "\u4a"
-		    "jack-o-lantern" "\uf30e"
-		    "jar" "\ue516"
-		    "jar-wheat" "\ue517"
-		    "jedi" "\uf669"
-		    "jet-fighter" "\uf0fb"
-		    "jet-fighter-up" "\ue518"
-		    "joint" "\uf595"
-		    "joystick" "\uf8c5"
-		    "jug" "\uf8c6"
-		    "jug-bottle" "\ue5fb"
-		    "jug-detergent" "\ue519"
-		    "k" "\u4b"
-		    "kaaba" "\uf66b"
-		    "kazoo" "\uf8c7"
-		    "kerning" "\uf86f"
-		    "key" "\uf084"
-		    "key-skeleton" "\uf6f3"
-		    "key-skeleton-left-right" "\ue3b4"
-		    "keyboard" "\uf11c"
-		    "keyboard-brightness" "\ue1c0"
-		    "keyboard-brightness-low" "\ue1c1"
-		    "keyboard-down" "\ue1c2"
-		    "keyboard-left" "\ue1c3"
-		    "keynote" "\uf66c"
-		    "khanda" "\uf66d"
-		    "kidneys" "\uf5fb"
-		    "kip-sign" "\ue1c4"
-		    "kit-medical" "\uf479"
-		    "kitchen-set" "\ue51a"
-		    "kite" "\uf6f4"
-		    "kiwi-bird" "\uf535"
-		    "kiwi-fruit" "\ue30c"
-		    "knife" "\uf2e4"
-		    "knife-kitchen" "\uf6f5"
-		    "l" "\u4c"
-		    "lacrosse-stick" "\ue3b5"
-		    "lacrosse-stick-ball" "\ue3b6"
-		    "lambda" "\uf66e"
-		    "lamp" "\uf4ca"
-		    "lamp-desk" "\ue014"
-		    "lamp-floor" "\ue015"
-		    "lamp-street" "\ue1c5"
-		    "land-mine-on" "\ue51b"
-		    "landmark" "\uf66f"
-		    "landmark-dome" "\uf752"
-		    "landmark-flag" "\ue51c"
-		    "landmark-magnifying-glass" "\ue622"
-		    "language" "\uf1ab"
-		    "laptop" "\uf109"
-		    "laptop-arrow-down" "\ue1c6"
-		    "laptop-binary" "\ue5e7"
-		    "laptop-code" "\uf5fc"
-		    "laptop-file" "\ue51d"
-		    "laptop-medical" "\uf812"
-		    "laptop-mobile" "\uf87a"
-		    "laptop-slash" "\ue1c7"
-		    "lari-sign" "\ue1c8"
-		    "lasso" "\uf8c8"
-		    "lasso-sparkles" "\ue1c9"
-		    "layer-group" "\uf5fd"
-		    "layer-minus" "\uf5fe"
-		    "layer-plus" "\uf5ff"
-		    "leaf" "\uf06c"
-		    "leaf-heart" "\uf4cb"
-		    "leaf-maple" "\uf6f6"
-		    "leaf-oak" "\uf6f7"
-		    "leafy-green" "\ue41d"
-		    "left" "\uf355"
-		    "left-from-line" "\uf348"
-		    "left-long" "\uf30a"
-		    "left-long-to-line" "\ue41e"
-		    "left-right" "\uf337"
-		    "left-to-line" "\uf34b"
-		    "lemon" "\uf094"
-		    "less-than" "\u3c"
-		    "less-than-equal" "\uf537"
-		    "life-ring" "\uf1cd"
-		    "light-ceiling" "\ue016"
-		    "light-emergency" "\ue41f"
-		    "light-emergency-on" "\ue420"
-		    "light-switch" "\ue017"
-		    "light-switch-off" "\ue018"
-		    "light-switch-on" "\ue019"
-		    "lightbulb" "\uf0eb"
-		    "lightbulb-cfl" "\ue5a6"
-		    "lightbulb-cfl-on" "\ue5a7"
-		    "lightbulb-dollar" "\uf670"
-		    "lightbulb-exclamation" "\uf671"
-		    "lightbulb-exclamation-on" "\ue1ca"
-		    "lightbulb-gear" "\ue5fd"
-		    "lightbulb-on" "\uf672"
-		    "lightbulb-slash" "\uf673"
-		    "lighthouse" "\ue612"
-		    "lights-holiday" "\uf7b2"
-		    "line-columns" "\uf870"
-		    "line-height" "\uf871"
-		    "lines-leaning" "\ue51e"
-		    "link" "\uf0c1"
-		    "link-horizontal" "\ue1cb"
-		    "link-horizontal-slash" "\ue1cc"
-		    "link-simple" "\ue1cd"
-		    "link-simple-slash" "\ue1ce"
-		    "link-slash" "\uf127"
-		    "lips" "\uf600"
-		    "lira-sign" "\uf195"
-		    "list" "\uf03a"
-		    "list-check" "\uf0ae"
-		    "list-dropdown" "\ue1cf"
-		    "list-music" "\uf8c9"
-		    "list-ol" "\uf0cb"
-		    "list-radio" "\ue1d0"
-		    "list-timeline" "\ue1d1"
-		    "list-tree" "\ue1d2"
-		    "list-ul" "\uf0ca"
-		    "litecoin-sign" "\ue1d3"
-		    "loader" "\ue1d4"
-		    "lobster" "\ue421"
-		    "location-arrow" "\uf124"
-		    "location-arrow-up" "\ue63a"
-		    "location-check" "\uf606"
-		    "location-crosshairs" "\uf601"
-		    "location-crosshairs-slash" "\uf603"
-		    "location-dot" "\uf3c5"
-		    "location-dot-slash" "\uf605"
-		    "location-exclamation" "\uf608"
-		    "location-minus" "\uf609"
-		    "location-pen" "\uf607"
-		    "location-pin" "\uf041"
-		    "location-pin-lock" "\ue51f"
-		    "location-pin-slash" "\uf60c"
-		    "location-plus" "\uf60a"
-		    "location-question" "\uf60b"
-		    "location-smile" "\uf60d"
-		    "location-xmark" "\uf60e"
-		    "lock" "\uf023"
-		    "lock-a" "\ue422"
-		    "lock-hashtag" "\ue423"
-		    "lock-keyhole" "\uf30d"
-		    "lock-keyhole-open" "\uf3c2"
-		    "lock-open" "\uf3c1"
-		    "locust" "\ue520"
-		    "lollipop" "\ue424"
-		    "loveseat" "\uf4cc"
-		    "luchador-mask" "\uf455"
-		    "lungs" "\uf604"
-		    "lungs-virus" "\ue067"
-		    "m" "\u4d"
-		    "mace" "\uf6f8"
-		    "magnet" "\uf076"
-		    "magnifying-glass" "\uf002"
-		    "magnifying-glass-arrow-right" "\ue521"
-		    "magnifying-glass-arrows-rotate" "\ue65e"
-		    "magnifying-glass-chart" "\ue522"
-		    "magnifying-glass-dollar" "\uf688"
-		    "magnifying-glass-location" "\uf689"
-		    "magnifying-glass-minus" "\uf010"
-		    "magnifying-glass-music" "\ue65f"
-		    "magnifying-glass-play" "\ue660"
-		    "magnifying-glass-plus" "\uf00e"
-		    "magnifying-glass-waveform" "\ue661"
-		    "mailbox" "\uf813"
-		    "mailbox-flag-up" "\ue5bb"
-		    "manat-sign" "\ue1d5"
-		    "mandolin" "\uf6f9"
-		    "mango" "\ue30f"
-		    "manhole" "\ue1d6"
-		    "map" "\uf279"
-		    "map-location" "\uf59f"
-		    "map-location-dot" "\uf5a0"
-		    "map-pin" "\uf276"
-		    "marker" "\uf5a1"
-		    "mars" "\uf222"
-		    "mars-and-venus" "\uf224"
-		    "mars-and-venus-burst" "\ue523"
-		    "mars-double" "\uf227"
-		    "mars-stroke" "\uf229"
-		    "mars-stroke-right" "\uf22b"
-		    "mars-stroke-up" "\uf22a"
-		    "martini-glass" "\uf57b"
-		    "martini-glass-citrus" "\uf561"
-		    "martini-glass-empty" "\uf000"
-		    "mask" "\uf6fa"
-		    "mask-face" "\ue1d7"
-		    "mask-snorkel" "\ue3b7"
-		    "mask-ventilator" "\ue524"
-		    "masks-theater" "\uf630"
-		    "mattress-pillow" "\ue525"
-		    "maximize" "\uf31e"
-		    "meat" "\uf814"
-		    "medal" "\uf5a2"
-		    "megaphone" "\uf675"
-		    "melon" "\ue310"
-		    "melon-slice" "\ue311"
-		    "memo" "\ue1d8"
-		    "memo-circle-check" "\ue1d9"
-		    "memo-circle-info" "\ue49a"
-		    "memo-pad" "\ue1da"
-		    "memory" "\uf538"
-		    "menorah" "\uf676"
-		    "mercury" "\uf223"
-		    "merge" "\ue526"
-		    "message" "\uf27a"
-		    "message-arrow-down" "\ue1db"
-		    "message-arrow-up" "\ue1dc"
-		    "message-arrow-up-right" "\ue1dd"
-		    "message-bot" "\ue3b8"
-		    "message-captions" "\ue1de"
-		    "message-check" "\uf4a2"
-		    "message-code" "\ue1df"
-		    "message-dollar" "\uf650"
-		    "message-dots" "\uf4a3"
-		    "message-exclamation" "\uf4a5"
-		    "message-heart" "\ue5c9"
-		    "message-image" "\ue1e0"
-		    "message-lines" "\uf4a6"
-		    "message-medical" "\uf7f4"
-		    "message-middle" "\ue1e1"
-		    "message-middle-top" "\ue1e2"
-		    "message-minus" "\uf4a7"
-		    "message-music" "\uf8af"
-		    "message-pen" "\uf4a4"
-		    "message-plus" "\uf4a8"
-		    "message-question" "\ue1e3"
-		    "message-quote" "\ue1e4"
-		    "message-slash" "\uf4a9"
-		    "message-smile" "\uf4aa"
-		    "message-sms" "\ue1e5"
-		    "message-text" "\ue1e6"
-		    "message-xmark" "\uf4ab"
-		    "messages" "\uf4b6"
-		    "messages-dollar" "\uf652"
-		    "messages-question" "\ue1e7"
-		    "meteor" "\uf753"
-		    "meter" "\ue1e8"
-		    "meter-bolt" "\ue1e9"
-		    "meter-droplet" "\ue1ea"
-		    "meter-fire" "\ue1eb"
-		    "microchip" "\uf2db"
-		    "microchip-ai" "\ue1ec"
-		    "microphone" "\uf130"
-		    "microphone-lines" "\uf3c9"
-		    "microphone-lines-slash" "\uf539"
-		    "microphone-slash" "\uf131"
-		    "microphone-stand" "\uf8cb"
-		    "microscope" "\uf610"
-		    "microwave" "\ue01b"
-		    "mill-sign" "\ue1ed"
-		    "minimize" "\uf78c"
-		    "minus" "\uf068"
-		    "mistletoe" "\uf7b4"
-		    "mitten" "\uf7b5"
-		    "mobile" "\uf3ce"
-		    "mobile-button" "\uf10b"
-		    "mobile-notch" "\ue1ee"
-		    "mobile-retro" "\ue527"
-		    "mobile-screen" "\uf3cf"
-		    "mobile-screen-button" "\uf3cd"
-		    "mobile-signal" "\ue1ef"
-		    "mobile-signal-out" "\ue1f0"
-		    "money-bill" "\uf0d6"
-		    "money-bill-1" "\uf3d1"
-		    "money-bill-1-wave" "\uf53b"
-		    "money-bill-simple" "\ue1f1"
-		    "money-bill-simple-wave" "\ue1f2"
-		    "money-bill-transfer" "\ue528"
-		    "money-bill-trend-up" "\ue529"
-		    "money-bill-wave" "\uf53a"
-		    "money-bill-wheat" "\ue52a"
-		    "money-bills" "\ue1f3"
-		    "money-bills-simple" "\ue1f4"
-		    "money-check" "\uf53c"
-		    "money-check-dollar" "\uf53d"
-		    "money-check-dollar-pen" "\uf873"
-		    "money-check-pen" "\uf872"
-		    "money-from-bracket" "\ue312"
-		    "money-simple-from-bracket" "\ue313"
-		    "monitor-waveform" "\uf611"
-		    "monkey" "\uf6fb"
-		    "monument" "\uf5a6"
-		    "moon" "\uf186"
-		    "moon-cloud" "\uf754"
-		    "moon-over-sun" "\uf74a"
-		    "moon-stars" "\uf755"
-		    "moped" "\ue3b9"
-		    "mortar-pestle" "\uf5a7"
-		    "mosque" "\uf678"
-		    "mosquito" "\ue52b"
-		    "mosquito-net" "\ue52c"
-		    "motorcycle" "\uf21c"
-		    "mound" "\ue52d"
-		    "mountain" "\uf6fc"
-		    "mountain-city" "\ue52e"
-		    "mountain-sun" "\ue52f"
-		    "mountains" "\uf6fd"
-		    "mouse-field" "\ue5a8"
-		    "mp3-player" "\uf8ce"
-		    "mug" "\uf874"
-		    "mug-hot" "\uf7b6"
-		    "mug-marshmallows" "\uf7b7"
-		    "mug-saucer" "\uf0f4"
-		    "mug-tea" "\uf875"
-		    "mug-tea-saucer" "\ue1f5"
-		    "mushroom" "\ue425"
-		    "music" "\uf001"
-		    "music-magnifying-glass" "\ue662"
-		    "music-note" "\uf8cf"
-		    "music-note-slash" "\uf8d0"
-		    "music-slash" "\uf8d1"
-		    "mustache" "\ue5bc"
-		    "n" "\u4e"
-		    "naira-sign" "\ue1f6"
-		    "narwhal" "\uf6fe"
-		    "nesting-dolls" "\ue3ba"
-		    "network-wired" "\uf6ff"
-		    "neuter" "\uf22c"
-		    "newspaper" "\uf1ea"
-		    "nfc" "\ue1f7"
-		    "nfc-lock" "\ue1f8"
-		    "nfc-magnifying-glass" "\ue1f9"
-		    "nfc-pen" "\ue1fa"
-		    "nfc-signal" "\ue1fb"
-		    "nfc-slash" "\ue1fc"
-		    "nfc-symbol" "\ue531"
-		    "nfc-trash" "\ue1fd"
-		    "nose" "\ue5bd"
-		    "not-equal" "\uf53e"
-		    "notdef" "\ue1fe"
-		    "note" "\ue1ff"
-		    "note-medical" "\ue200"
-		    "note-sticky" "\uf249"
-		    "notebook" "\ue201"
-		    "notes" "\ue202"
-		    "notes-medical" "\uf481"
-		    "o" "\u4f"
-		    "object-exclude" "\ue49c"
-		    "object-group" "\uf247"
-		    "object-intersect" "\ue49d"
-		    "object-subtract" "\ue49e"
-		    "object-ungroup" "\uf248"
-		    "object-union" "\ue49f"
-		    "objects-align-bottom" "\ue3bb"
-		    "objects-align-center-horizontal" "\ue3bc"
-		    "objects-align-center-vertical" "\ue3bd"
-		    "objects-align-left" "\ue3be"
-		    "objects-align-right" "\ue3bf"
-		    "objects-align-top" "\ue3c0"
-		    "objects-column" "\ue3c1"
-		    "octagon" "\uf306"
-		    "octagon-check" "\ue426"
-		    "octagon-divide" "\ue203"
-		    "octagon-exclamation" "\ue204"
-		    "octagon-minus" "\uf308"
-		    "octagon-plus" "\uf301"
-		    "octagon-xmark" "\uf2f0"
-		    "oil-can" "\uf613"
-		    "oil-can-drip" "\ue205"
-		    "oil-temperature" "\uf614"
-		    "oil-well" "\ue532"
-		    "olive" "\ue316"
-		    "olive-branch" "\ue317"
-		    "om" "\uf679"
-		    "omega" "\uf67a"
-		    "onion" "\ue427"
-		    "option" "\ue318"
-		    "ornament" "\uf7b8"
-		    "otter" "\uf700"
-		    "outdent" "\uf03b"
-		    "outlet" "\ue01c"
-		    "oven" "\ue01d"
-		    "overline" "\uf876"
-		    "p" "\u50"
-		    "page" "\ue428"
-		    "page-caret-down" "\ue429"
-		    "page-caret-up" "\ue42a"
-		    "pager" "\uf815"
-		    "paint-roller" "\uf5aa"
-		    "paintbrush" "\uf1fc"
-		    "paintbrush-fine" "\uf5a9"
-		    "paintbrush-pencil" "\ue206"
-		    "palette" "\uf53f"
-		    "pallet" "\uf482"
-		    "pallet-box" "\ue208"
-		    "pallet-boxes" "\uf483"
-		    "pan-food" "\ue42b"
-		    "pan-frying" "\ue42c"
-		    "pancakes" "\ue42d"
-		    "panel-ews" "\ue42e"
-		    "panel-fire" "\ue42f"
-		    "panorama" "\ue209"
-		    "paper-plane" "\uf1d8"
-		    "paper-plane-top" "\ue20a"
-		    "paperclip" "\uf0c6"
-		    "paperclip-vertical" "\ue3c2"
-		    "parachute-box" "\uf4cd"
-		    "paragraph" "\uf1dd"
-		    "paragraph-left" "\uf878"
-		    "party-bell" "\ue31a"
-		    "party-horn" "\ue31b"
-		    "passport" "\uf5ab"
-		    "paste" "\uf0ea"
-		    "pause" "\uf04c"
-		    "paw" "\uf1b0"
-		    "paw-claws" "\uf702"
-		    "paw-simple" "\uf701"
-		    "peace" "\uf67c"
-		    "peach" "\ue20b"
-		    "peanut" "\ue430"
-		    "peanuts" "\ue431"
-		    "peapod" "\ue31c"
-		    "pear" "\ue20c"
-		    "pedestal" "\ue20d"
-		    "pegasus" "\uf703"
-		    "pen" "\uf304"
-		    "pen-circle" "\ue20e"
-		    "pen-clip" "\uf305"
-		    "pen-clip-slash" "\ue20f"
-		    "pen-fancy" "\uf5ac"
-		    "pen-fancy-slash" "\ue210"
-		    "pen-field" "\ue211"
-		    "pen-line" "\ue212"
-		    "pen-nib" "\uf5ad"
-		    "pen-nib-slash" "\ue4a1"
-		    "pen-paintbrush" "\uf618"
-		    "pen-ruler" "\uf5ae"
-		    "pen-slash" "\ue213"
-		    "pen-swirl" "\ue214"
-		    "pen-to-square" "\uf044"
-		    "pencil" "\uf303"
-		    "pencil-mechanical" "\ue5ca"
-		    "pencil-slash" "\ue215"
-		    "people" "\ue216"
-		    "people-arrows" "\ue068"
-		    "people-carry-box" "\uf4ce"
-		    "people-dress" "\ue217"
-		    "people-dress-simple" "\ue218"
-		    "people-group" "\ue533"
-		    "people-line" "\ue534"
-		    "people-pants" "\ue219"
-		    "people-pants-simple" "\ue21a"
-		    "people-pulling" "\ue535"
-		    "people-robbery" "\ue536"
-		    "people-roof" "\ue537"
-		    "people-simple" "\ue21b"
-		    "pepper" "\ue432"
-		    "pepper-hot" "\uf816"
-		    "percent" "\u25"
-		    "period" "\u2e"
-		    "person" "\uf183"
-		    "person-arrow-down-to-line" "\ue538"
-		    "person-arrow-up-from-line" "\ue539"
-		    "person-biking" "\uf84a"
-		    "person-biking-mountain" "\uf84b"
-		    "person-booth" "\uf756"
-		    "person-breastfeeding" "\ue53a"
-		    "person-burst" "\ue53b"
-		    "person-cane" "\ue53c"
-		    "person-carry-box" "\uf4cf"
-		    "person-chalkboard" "\ue53d"
-		    "person-circle-check" "\ue53e"
-		    "person-circle-exclamation" "\ue53f"
-		    "person-circle-minus" "\ue540"
-		    "person-circle-plus" "\ue541"
-		    "person-circle-question" "\ue542"
-		    "person-circle-xmark" "\ue543"
-		    "person-digging" "\uf85e"
-		    "person-dolly" "\uf4d0"
-		    "person-dolly-empty" "\uf4d1"
-		    "person-dots-from-line" "\uf470"
-		    "person-dress" "\uf182"
-		    "person-dress-burst" "\ue544"
-		    "person-dress-fairy" "\ue607"
-		    "person-dress-simple" "\ue21c"
-		    "person-drowning" "\ue545"
-		    "person-fairy" "\ue608"
-		    "person-falling" "\ue546"
-		    "person-falling-burst" "\ue547"
-		    "person-from-portal" "\ue023"
-		    "person-half-dress" "\ue548"
-		    "person-harassing" "\ue549"
-		    "person-hiking" "\uf6ec"
-		    "person-military-pointing" "\ue54a"
-		    "person-military-rifle" "\ue54b"
-		    "person-military-to-person" "\ue54c"
-		    "person-pinball" "\ue21d"
-		    "person-praying" "\uf683"
-		    "person-pregnant" "\ue31e"
-		    "person-rays" "\ue54d"
-		    "person-rifle" "\ue54e"
-		    "person-running" "\uf70c"
-		    "person-running-fast" "\ue5ff"
-		    "person-seat" "\ue21e"
-		    "person-seat-reclined" "\ue21f"
-		    "person-shelter" "\ue54f"
-		    "person-sign" "\uf757"
-		    "person-simple" "\ue220"
-		    "person-skating" "\uf7c5"
-		    "person-ski-jumping" "\uf7c7"
-		    "person-ski-lift" "\uf7c8"
-		    "person-skiing" "\uf7c9"
-		    "person-skiing-nordic" "\uf7ca"
-		    "person-sledding" "\uf7cb"
-		    "person-snowboarding" "\uf7ce"
-		    "person-snowmobiling" "\uf7d1"
-		    "person-swimming" "\uf5c4"
-		    "person-through-window" "\ue5a9"
-		    "person-to-door" "\ue433"
-		    "person-to-portal" "\ue022"
-		    "person-walking" "\uf554"
-		    "person-walking-arrow-loop-left" "\ue551"
-		    "person-walking-arrow-right" "\ue552"
-		    "person-walking-dashed-line-arrow-right" "\ue553"
-		    "person-walking-luggage" "\ue554"
-		    "person-walking-with-cane" "\uf29d"
-		    "peseta-sign" "\ue221"
-		    "peso-sign" "\ue222"
-		    "phone" "\uf095"
-		    "phone-arrow-down-left" "\ue223"
-		    "phone-arrow-right" "\ue5be"
-		    "phone-arrow-up-right" "\ue224"
-		    "phone-flip" "\uf879"
-		    "phone-hangup" "\ue225"
-		    "phone-intercom" "\ue434"
-		    "phone-missed" "\ue226"
-		    "phone-office" "\uf67d"
-		    "phone-plus" "\uf4d2"
-		    "phone-rotary" "\uf8d3"
-		    "phone-slash" "\uf3dd"
-		    "phone-volume" "\uf2a0"
-		    "phone-xmark" "\ue227"
-		    "photo-film" "\uf87c"
-		    "photo-film-music" "\ue228"
-		    "pi" "\uf67e"
-		    "piano" "\uf8d4"
-		    "piano-keyboard" "\uf8d5"
-		    "pickaxe" "\ue5bf"
-		    "pickleball" "\ue435"
-		    "pie" "\uf705"
-		    "pig" "\uf706"
-		    "piggy-bank" "\uf4d3"
-		    "pills" "\uf484"
-		    "pinata" "\ue3c3"
-		    "pinball" "\ue229"
-		    "pineapple" "\ue31f"
-		    "pipe" "\u7c"
-		    "pipe-circle-check" "\ue436"
-		    "pipe-collar" "\ue437"
-		    "pipe-section" "\ue438"
-		    "pipe-smoking" "\ue3c4"
-		    "pipe-valve" "\ue439"
-		    "pizza" "\uf817"
-		    "pizza-slice" "\uf818"
-		    "place-of-worship" "\uf67f"
-		    "plane" "\uf072"
-		    "plane-arrival" "\uf5af"
-		    "plane-circle-check" "\ue555"
-		    "plane-circle-exclamation" "\ue556"
-		    "plane-circle-xmark" "\ue557"
-		    "plane-departure" "\uf5b0"
-		    "plane-engines" "\uf3de"
-		    "plane-lock" "\ue558"
-		    "plane-prop" "\ue22b"
-		    "plane-slash" "\ue069"
-		    "plane-tail" "\ue22c"
-		    "plane-up" "\ue22d"
-		    "plane-up-slash" "\ue22e"
-		    "planet-moon" "\ue01f"
-		    "planet-ringed" "\ue020"
-		    "plant-wilt" "\ue5aa"
-		    "plate-utensils" "\ue43b"
-		    "plate-wheat" "\ue55a"
-		    "play" "\uf04b"
-		    "play-pause" "\ue22f"
-		    "plug" "\uf1e6"
-		    "plug-circle-bolt" "\ue55b"
-		    "plug-circle-check" "\ue55c"
-		    "plug-circle-exclamation" "\ue55d"
-		    "plug-circle-minus" "\ue55e"
-		    "plug-circle-plus" "\ue55f"
-		    "plug-circle-xmark" "\ue560"
-		    "plus" "\u2b"
-		    "plus-large" "\ue59e"
-		    "plus-minus" "\ue43c"
-		    "podcast" "\uf2ce"
-		    "podium" "\uf680"
-		    "podium-star" "\uf758"
-		    "police-box" "\ue021"
-		    "poll-people" "\uf759"
-		    "pompebled" "\ue43d"
-		    "poo" "\uf2fe"
-		    "poo-storm" "\uf75a"
-		    "pool-8-ball" "\ue3c5"
-		    "poop" "\uf619"
-		    "popcorn" "\uf819"
-		    "popsicle" "\ue43e"
-		    "pot-food" "\ue43f"
-		    "potato" "\ue440"
-		    "power-off" "\uf011"
-		    "prescription" "\uf5b1"
-		    "prescription-bottle" "\uf485"
-		    "prescription-bottle-medical" "\uf486"
-		    "prescription-bottle-pill" "\ue5c0"
-		    "presentation-screen" "\uf685"
-		    "pretzel" "\ue441"
-		    "print" "\uf02f"
-		    "print-magnifying-glass" "\uf81a"
-		    "print-slash" "\uf686"
-		    "projector" "\uf8d6"
-		    "pump" "\ue442"
-		    "pump-medical" "\ue06a"
-		    "pump-soap" "\ue06b"
-		    "pumpkin" "\uf707"
-		    "puzzle" "\ue443"
-		    "puzzle-piece" "\uf12e"
-		    "puzzle-piece-simple" "\ue231"
-		    "q" "\u51"
-		    "qrcode" "\uf029"
-		    "question" "\u3f"
-		    "quote-left" "\uf10d"
-		    "quote-right" "\uf10e"
-		    "quotes" "\ue234"
-		    "r" "\u52"
-		    "rabbit" "\uf708"
-		    "rabbit-running" "\uf709"
-		    "raccoon" "\ue613"
-		    "racquet" "\uf45a"
-		    "radar" "\ue024"
-		    "radiation" "\uf7b9"
-		    "radio" "\uf8d7"
-		    "radio-tuner" "\uf8d8"
-		    "rainbow" "\uf75b"
-		    "raindrops" "\uf75c"
-		    "ram" "\uf70a"
-		    "ramp-loading" "\uf4d4"
-		    "ranking-star" "\ue561"
-		    "raygun" "\ue025"
-		    "receipt" "\uf543"
-		    "record-vinyl" "\uf8d9"
-		    "rectangle" "\uf2fa"
-		    "rectangle-ad" "\uf641"
-		    "rectangle-barcode" "\uf463"
-		    "rectangle-code" "\ue322"
-		    "rectangle-history" "\ue4a2"
-		    "rectangle-history-circle-plus" "\ue4a3"
-		    "rectangle-history-circle-user" "\ue4a4"
-		    "rectangle-list" "\uf022"
-		    "rectangle-pro" "\ue235"
-		    "rectangle-terminal" "\ue236"
-		    "rectangle-vertical" "\uf2fb"
-		    "rectangle-vertical-history" "\ue237"
-		    "rectangle-wide" "\uf2fc"
-		    "rectangle-xmark" "\uf410"
-		    "rectangles-mixed" "\ue323"
-		    "recycle" "\uf1b8"
-		    "reel" "\ue238"
-		    "reflect-horizontal" "\ue664"
-		    "reflect-vertical" "\ue665"
-		    "refrigerator" "\ue026"
-		    "registered" "\uf25d"
-		    "repeat" "\uf363"
-		    "repeat-1" "\uf365"
-		    "reply" "\uf3e5"
-		    "reply-all" "\uf122"
-		    "reply-clock" "\ue239"
-		    "republican" "\uf75e"
-		    "restroom" "\uf7bd"
-		    "restroom-simple" "\ue23a"
-		    "retweet" "\uf079"
-		    "rhombus" "\ue23b"
-		    "ribbon" "\uf4d6"
-		    "right" "\uf356"
-		    "right-from-bracket" "\uf2f5"
-		    "right-from-line" "\uf347"
-		    "right-left" "\uf362"
-		    "right-left-large" "\ue5e1"
-		    "right-long" "\uf30b"
-		    "right-long-to-line" "\ue444"
-		    "right-to-bracket" "\uf2f6"
-		    "right-to-line" "\uf34c"
-		    "ring" "\uf70b"
-		    "ring-diamond" "\ue5ab"
-		    "rings-wedding" "\uf81b"
-		    "road" "\uf018"
-		    "road-barrier" "\ue562"
-		    "road-bridge" "\ue563"
-		    "road-circle-check" "\ue564"
-		    "road-circle-exclamation" "\ue565"
-		    "road-circle-xmark" "\ue566"
-		    "road-lock" "\ue567"
-		    "road-spikes" "\ue568"
-		    "robot" "\uf544"
-		    "robot-astromech" "\ue2d2"
-		    "rocket" "\uf135"
-		    "rocket-launch" "\ue027"
-		    "roller-coaster" "\ue324"
-		    "rotate" "\uf2f1"
-		    "rotate-exclamation" "\ue23c"
-		    "rotate-left" "\uf2ea"
-		    "rotate-reverse" "\ue631"
-		    "rotate-right" "\uf2f9"
-		    "route" "\uf4d7"
-		    "route-highway" "\uf61a"
-		    "route-interstate" "\uf61b"
-		    "router" "\uf8da"
-		    "rss" "\uf09e"
-		    "ruble-sign" "\uf158"
-		    "rug" "\ue569"
-		    "rugby-ball" "\ue3c6"
-		    "ruler" "\uf545"
-		    "ruler-combined" "\uf546"
-		    "ruler-horizontal" "\uf547"
-		    "ruler-triangle" "\uf61c"
-		    "ruler-vertical" "\uf548"
-		    "rupee-sign" "\uf156"
-		    "rupiah-sign" "\ue23d"
-		    "rv" "\uf7be"
-		    "s" "\u53"
-		    "sack" "\uf81c"
-		    "sack-dollar" "\uf81d"
-		    "sack-xmark" "\ue56a"
-		    "sailboat" "\ue445"
-		    "salad" "\uf81e"
-		    "salt-shaker" "\ue446"
-		    "sandwich" "\uf81f"
-		    "satellite" "\uf7bf"
-		    "satellite-dish" "\uf7c0"
-		    "sausage" "\uf820"
-		    "saxophone" "\uf8dc"
-		    "saxophone-fire" "\uf8db"
-		    "scale-balanced" "\uf24e"
-		    "scale-unbalanced" "\uf515"
-		    "scale-unbalanced-flip" "\uf516"
-		    "scalpel" "\uf61d"
-		    "scalpel-line-dashed" "\uf61e"
-		    "scanner-gun" "\uf488"
-		    "scanner-image" "\uf8f3"
-		    "scanner-keyboard" "\uf489"
-		    "scanner-touchscreen" "\uf48a"
-		    "scarecrow" "\uf70d"
-		    "scarf" "\uf7c1"
-		    "school" "\uf549"
-		    "school-circle-check" "\ue56b"
-		    "school-circle-exclamation" "\ue56c"
-		    "school-circle-xmark" "\ue56d"
-		    "school-flag" "\ue56e"
-		    "school-lock" "\ue56f"
-		    "scissors" "\uf0c4"
-		    "screen-users" "\uf63d"
-		    "screencast" "\ue23e"
-		    "screwdriver" "\uf54a"
-		    "screwdriver-wrench" "\uf7d9"
-		    "scribble" "\ue23f"
-		    "scroll" "\uf70e"
-		    "scroll-old" "\uf70f"
-		    "scroll-torah" "\uf6a0"
-		    "scrubber" "\uf2f8"
-		    "scythe" "\uf710"
-		    "sd-card" "\uf7c2"
-		    "sd-cards" "\ue240"
-		    "seal" "\ue241"
-		    "seal-exclamation" "\ue242"
-		    "seal-question" "\ue243"
-		    "seat-airline" "\ue244"
-		    "section" "\ue447"
-		    "seedling" "\uf4d8"
-		    "semicolon" "\u3b"
-		    "send-back" "\uf87e"
-		    "send-backward" "\uf87f"
-		    "sensor" "\ue028"
-		    "sensor-cloud" "\ue02c"
-		    "sensor-fire" "\ue02a"
-		    "sensor-on" "\ue02b"
-		    "sensor-triangle-exclamation" "\ue029"
-		    "server" "\uf233"
-		    "shapes" "\uf61f"
-		    "share" "\uf064"
-		    "share-all" "\uf367"
-		    "share-from-square" "\uf14d"
-		    "share-nodes" "\uf1e0"
-		    "sheep" "\uf711"
-		    "sheet-plastic" "\ue571"
-		    "shekel-sign" "\uf20b"
-		    "shelves" "\uf480"
-		    "shelves-empty" "\ue246"
-		    "shield" "\uf132"
-		    "shield-cat" "\ue572"
-		    "shield-check" "\uf2f7"
-		    "shield-cross" "\uf712"
-		    "shield-dog" "\ue573"
-		    "shield-exclamation" "\ue247"
-		    "shield-halved" "\uf3ed"
-		    "shield-heart" "\ue574"
-		    "shield-keyhole" "\ue248"
-		    "shield-minus" "\ue249"
-		    "shield-plus" "\ue24a"
-		    "shield-quartered" "\ue575"
-		    "shield-slash" "\ue24b"
-		    "shield-virus" "\ue06c"
-		    "shield-xmark" "\ue24c"
-		    "ship" "\uf21a"
-		    "shirt" "\uf553"
-		    "shirt-long-sleeve" "\ue3c7"
-		    "shirt-running" "\ue3c8"
-		    "shirt-tank-top" "\ue3c9"
-		    "shish-kebab" "\uf821"
-		    "shoe-prints" "\uf54b"
-		    "shop" "\uf54f"
-		    "shop-lock" "\ue4a5"
-		    "shop-slash" "\ue070"
-		    "shovel" "\uf713"
-		    "shovel-snow" "\uf7c3"
-		    "shower" "\uf2cc"
-		    "shower-down" "\ue24d"
-		    "shredder" "\uf68a"
-		    "shrimp" "\ue448"
-		    "shuffle" "\uf074"
-		    "shutters" "\ue449"
-		    "shuttle-space" "\uf197"
-		    "shuttlecock" "\uf45b"
-		    "sickle" "\uf822"
-		    "sidebar" "\ue24e"
-		    "sidebar-flip" "\ue24f"
-		    "sigma" "\uf68b"
-		    "sign-hanging" "\uf4d9"
-		    "sign-post" "\ue624"
-		    "sign-posts" "\ue625"
-		    "sign-posts-wrench" "\ue626"
-		    "signal" "\uf012"
-		    "signal-bars" "\uf690"
-		    "signal-bars-fair" "\uf692"
-		    "signal-bars-good" "\uf693"
-		    "signal-bars-slash" "\uf694"
-		    "signal-bars-weak" "\uf691"
-		    "signal-fair" "\uf68d"
-		    "signal-good" "\uf68e"
-		    "signal-slash" "\uf695"
-		    "signal-stream" "\uf8dd"
-		    "signal-stream-slash" "\ue250"
-		    "signal-strong" "\uf68f"
-		    "signal-weak" "\uf68c"
-		    "signature" "\uf5b7"
-		    "signature-lock" "\ue3ca"
-		    "signature-slash" "\ue3cb"
-		    "signs-post" "\uf277"
-		    "sim-card" "\uf7c4"
-		    "sim-cards" "\ue251"
-		    "sink" "\ue06d"
-		    "siren" "\ue02d"
-		    "siren-on" "\ue02e"
-		    "sitemap" "\uf0e8"
-		    "skeleton" "\uf620"
-		    "skeleton-ribs" "\ue5cb"
-		    "ski-boot" "\ue3cc"
-		    "ski-boot-ski" "\ue3cd"
-		    "skull" "\uf54c"
-		    "skull-cow" "\uf8de"
-		    "skull-crossbones" "\uf714"
-		    "slash" "\uf715"
-		    "slash-back" "\u5c"
-		    "slash-forward" "\u2f"
-		    "sleigh" "\uf7cc"
-		    "slider" "\ue252"
-		    "sliders" "\uf1de"
-		    "sliders-simple" "\ue253"
-		    "sliders-up" "\uf3f1"
-		    "slot-machine" "\ue3ce"
-		    "smog" "\uf75f"
-		    "smoke" "\uf760"
-		    "smoking" "\uf48d"
-		    "snake" "\uf716"
-		    "snooze" "\uf880"
-		    "snow-blowing" "\uf761"
-		    "snowflake" "\uf2dc"
-		    "snowflake-droplets" "\ue5c1"
-		    "snowflakes" "\uf7cf"
-		    "snowman" "\uf7d0"
-		    "snowman-head" "\uf79b"
-		    "snowplow" "\uf7d2"
-		    "soap" "\ue06e"
-		    "socks" "\uf696"
-		    "soft-serve" "\ue400"
-		    "solar-panel" "\uf5ba"
-		    "solar-system" "\ue02f"
-		    "sort" "\uf0dc"
-		    "sort-down" "\uf0dd"
-		    "sort-up" "\uf0de"
-		    "spa" "\uf5bb"
-		    "space-station-moon" "\ue033"
-		    "space-station-moon-construction" "\ue034"
-		    "spade" "\uf2f4"
-		    "spaghetti-monster-flying" "\uf67b"
-		    "sparkle" "\ue5d6"
-		    "sparkles" "\uf890"
-		    "speaker" "\uf8df"
-		    "speakers" "\uf8e0"
-		    "spell-check" "\uf891"
-		    "spider" "\uf717"
-		    "spider-black-widow" "\uf718"
-		    "spider-web" "\uf719"
-		    "spinner" "\uf110"
-		    "spinner-scale" "\ue62a"
-		    "spinner-third" "\uf3f4"
-		    "split" "\ue254"
-		    "splotch" "\uf5bc"
-		    "spoon" "\uf2e5"
-		    "sportsball" "\ue44b"
-		    "spray-can" "\uf5bd"
-		    "spray-can-sparkles" "\uf5d0"
-		    "sprinkler" "\ue035"
-		    "sprinkler-ceiling" "\ue44c"
-		    "square" "\uf0c8"
-		    "square-0" "\ue255"
-		    "square-1" "\ue256"
-		    "square-2" "\ue257"
-		    "square-3" "\ue258"
-		    "square-4" "\ue259"
-		    "square-5" "\ue25a"
-		    "square-6" "\ue25b"
-		    "square-7" "\ue25c"
-		    "square-8" "\ue25d"
-		    "square-9" "\ue25e"
-		    "square-a" "\ue25f"
-		    "square-a-lock" "\ue44d"
-		    "square-ampersand" "\ue260"
-		    "square-arrow-down" "\uf339"
-		    "square-arrow-down-left" "\ue261"
-		    "square-arrow-down-right" "\ue262"
-		    "square-arrow-left" "\uf33a"
-		    "square-arrow-right" "\uf33b"
-		    "square-arrow-up" "\uf33c"
-		    "square-arrow-up-left" "\ue263"
-		    "square-arrow-up-right" "\uf14c"
-		    "square-b" "\ue264"
-		    "square-bolt" "\ue265"
-		    "square-c" "\ue266"
-		    "square-caret-down" "\uf150"
-		    "square-caret-left" "\uf191"
-		    "square-caret-right" "\uf152"
-		    "square-caret-up" "\uf151"
-		    "square-check" "\uf14a"
-		    "square-chevron-down" "\uf329"
-		    "square-chevron-left" "\uf32a"
-		    "square-chevron-right" "\uf32b"
-		    "square-chevron-up" "\uf32c"
-		    "square-code" "\ue267"
-		    "square-d" "\ue268"
-		    "square-dashed" "\ue269"
-		    "square-dashed-circle-plus" "\ue5c2"
-		    "square-divide" "\ue26a"
-		    "square-dollar" "\uf2e9"
-		    "square-down" "\uf350"
-		    "square-down-left" "\ue26b"
-		    "square-down-right" "\ue26c"
-		    "square-e" "\ue26d"
-		    "square-ellipsis" "\ue26e"
-		    "square-ellipsis-vertical" "\ue26f"
-		    "square-envelope" "\uf199"
-		    "square-exclamation" "\uf321"
-		    "square-f" "\ue270"
-		    "square-fragile" "\uf49b"
-		    "square-full" "\uf45c"
-		    "square-g" "\ue271"
-		    "square-h" "\uf0fd"
-		    "square-heart" "\uf4c8"
-		    "square-i" "\ue272"
-		    "square-info" "\uf30f"
-		    "square-j" "\ue273"
-		    "square-k" "\ue274"
-		    "square-kanban" "\ue488"
-		    "square-l" "\ue275"
-		    "square-left" "\uf351"
-		    "square-list" "\ue489"
-		    "square-m" "\ue276"
-		    "square-minus" "\uf146"
-		    "square-n" "\ue277"
-		    "square-nfi" "\ue576"
-		    "square-o" "\ue278"
-		    "square-p" "\ue279"
-		    "square-parking" "\uf540"
-		    "square-parking-slash" "\uf617"
-		    "square-pen" "\uf14b"
-		    "square-person-confined" "\ue577"
-		    "square-phone" "\uf098"
-		    "square-phone-flip" "\uf87b"
-		    "square-phone-hangup" "\ue27a"
-		    "square-plus" "\uf0fe"
-		    "square-poll-horizontal" "\uf682"
-		    "square-poll-vertical" "\uf681"
-		    "square-q" "\ue27b"
-		    "square-quarters" "\ue44e"
-		    "square-question" "\uf2fd"
-		    "square-quote" "\ue329"
-		    "square-r" "\ue27c"
-		    "square-right" "\uf352"
-		    "square-ring" "\ue44f"
-		    "square-root" "\uf697"
-		    "square-root-variable" "\uf698"
-		    "square-rss" "\uf143"
-		    "square-s" "\ue27d"
-		    "square-share-nodes" "\uf1e1"
-		    "square-sliders" "\uf3f0"
-		    "square-sliders-vertical" "\uf3f2"
-		    "square-small" "\ue27e"
-		    "square-star" "\ue27f"
-		    "square-t" "\ue280"
-		    "square-terminal" "\ue32a"
-		    "square-this-way-up" "\uf49f"
-		    "square-u" "\ue281"
-		    "square-up" "\uf353"
-		    "square-up-left" "\ue282"
-		    "square-up-right" "\uf360"
-		    "square-user" "\ue283"
-		    "square-v" "\ue284"
-		    "square-virus" "\ue578"
-		    "square-w" "\ue285"
-		    "square-x" "\ue286"
-		    "square-xmark" "\uf2d3"
-		    "square-y" "\ue287"
-		    "square-z" "\ue288"
-		    "squid" "\ue450"
-		    "squirrel" "\uf71a"
-		    "staff" "\uf71b"
-		    "staff-snake" "\ue579"
-		    "stairs" "\ue289"
-		    "stamp" "\uf5bf"
-		    "standard-definition" "\ue28a"
-		    "stapler" "\ue5af"
-		    "star" "\uf005"
-		    "star-and-crescent" "\uf699"
-		    "star-christmas" "\uf7d4"
-		    "star-exclamation" "\uf2f3"
-		    "star-half" "\uf089"
-		    "star-half-stroke" "\uf5c0"
-		    "star-of-david" "\uf69a"
-		    "star-of-life" "\uf621"
-		    "star-sharp" "\ue28b"
-		    "star-sharp-half" "\ue28c"
-		    "star-sharp-half-stroke" "\ue28d"
-		    "star-shooting" "\ue036"
-		    "starfighter" "\ue037"
-		    "starfighter-twin-ion-engine" "\ue038"
-		    "starfighter-twin-ion-engine-advanced" "\ue28e"
-		    "stars" "\uf762"
-		    "starship" "\ue039"
-		    "starship-freighter" "\ue03a"
-		    "steak" "\uf824"
-		    "steering-wheel" "\uf622"
-		    "sterling-sign" "\uf154"
-		    "stethoscope" "\uf0f1"
-		    "stocking" "\uf7d5"
-		    "stomach" "\uf623"
-		    "stop" "\uf04d"
-		    "stopwatch" "\uf2f2"
-		    "stopwatch-20" "\ue06f"
-		    "store" "\uf54e"
-		    "store-lock" "\ue4a6"
-		    "store-slash" "\ue071"
-		    "strawberry" "\ue32b"
-		    "street-view" "\uf21d"
-		    "stretcher" "\uf825"
-		    "strikethrough" "\uf0cc"
-		    "stroopwafel" "\uf551"
-		    "subscript" "\uf12c"
-		    "subtitles" "\ue60f"
-		    "subtitles-slash" "\ue610"
-		    "suitcase" "\uf0f2"
-		    "suitcase-medical" "\uf0fa"
-		    "suitcase-rolling" "\uf5c1"
-		    "sun" "\uf185"
-		    "sun-bright" "\ue28f"
-		    "sun-cloud" "\uf763"
-		    "sun-dust" "\uf764"
-		    "sun-haze" "\uf765"
-		    "sun-plant-wilt" "\ue57a"
-		    "sunglasses" "\uf892"
-		    "sunrise" "\uf766"
-		    "sunset" "\uf767"
-		    "superscript" "\uf12b"
-		    "sushi" "\ue48a"
-		    "sushi-roll" "\ue48b"
-		    "swap" "\ue609"
-		    "swap-arrows" "\ue60a"
-		    "swatchbook" "\uf5c3"
-		    "sword" "\uf71c"
-		    "sword-laser" "\ue03b"
-		    "sword-laser-alt" "\ue03c"
-		    "swords" "\uf71d"
-		    "swords-laser" "\ue03d"
-		    "symbols" "\uf86e"
-		    "synagogue" "\uf69b"
-		    "syringe" "\uf48e"
-		    "t" "\u54"
-		    "t-rex" "\ue629"
-		    "table" "\uf0ce"
-		    "table-cells" "\uf00a"
-		    "table-cells-large" "\uf009"
-		    "table-columns" "\uf0db"
-		    "table-layout" "\ue290"
-		    "table-list" "\uf00b"
-		    "table-picnic" "\ue32d"
-		    "table-pivot" "\ue291"
-		    "table-rows" "\ue292"
-		    "table-tennis-paddle-ball" "\uf45d"
-		    "table-tree" "\ue293"
-		    "tablet" "\uf3fb"
-		    "tablet-button" "\uf10a"
-		    "tablet-rugged" "\uf48f"
-		    "tablet-screen" "\uf3fc"
-		    "tablet-screen-button" "\uf3fa"
-		    "tablets" "\uf490"
-		    "tachograph-digital" "\uf566"
-		    "taco" "\uf826"
-		    "tag" "\uf02b"
-		    "tags" "\uf02c"
-		    "tally" "\uf69c"
-		    "tally-1" "\ue294"
-		    "tally-2" "\ue295"
-		    "tally-3" "\ue296"
-		    "tally-4" "\ue297"
-		    "tamale" "\ue451"
-		    "tank-water" "\ue452"
-		    "tape" "\uf4db"
-		    "tarp" "\ue57b"
-		    "tarp-droplet" "\ue57c"
-		    "taxi" "\uf1ba"
-		    "taxi-bus" "\ue298"
-		    "teddy-bear" "\ue3cf"
-		    "teeth" "\uf62e"
-		    "teeth-open" "\uf62f"
-		    "telescope" "\ue03e"
-		    "temperature-arrow-down" "\ue03f"
-		    "temperature-arrow-up" "\ue040"
-		    "temperature-empty" "\uf2cb"
-		    "temperature-full" "\uf2c7"
-		    "temperature-half" "\uf2c9"
-		    "temperature-high" "\uf769"
-		    "temperature-list" "\ue299"
-		    "temperature-low" "\uf76b"
-		    "temperature-quarter" "\uf2ca"
-		    "temperature-snow" "\uf768"
-		    "temperature-sun" "\uf76a"
-		    "temperature-three-quarters" "\uf2c8"
-		    "tenge-sign" "\uf7d7"
-		    "tennis-ball" "\uf45e"
-		    "tent" "\ue57d"
-		    "tent-arrow-down-to-line" "\ue57e"
-		    "tent-arrow-left-right" "\ue57f"
-		    "tent-arrow-turn-left" "\ue580"
-		    "tent-arrows-down" "\ue581"
-		    "tent-double-peak" "\ue627"
-		    "tents" "\ue582"
-		    "terminal" "\uf120"
-		    "text" "\uf893"
-		    "text-height" "\uf034"
-		    "text-size" "\uf894"
-		    "text-slash" "\uf87d"
-		    "text-width" "\uf035"
-		    "thermometer" "\uf491"
-		    "theta" "\uf69e"
-		    "thought-bubble" "\ue32e"
-		    "thumbs-down" "\uf165"
-		    "thumbs-up" "\uf164"
-		    "thumbtack" "\uf08d"
-		    "tick" "\ue32f"
-		    "ticket" "\uf145"
-		    "ticket-airline" "\ue29a"
-		    "ticket-perforated" "\ue63e"
-		    "ticket-simple" "\uf3ff"
-		    "tickets" "\ue658"
-		    "tickets-airline" "\ue29b"
-		    "tickets-perforated" "\ue63f"
-		    "tickets-simple" "\ue659"
-		    "tilde" "\u7e"
-		    "timeline" "\ue29c"
-		    "timeline-arrow" "\ue29d"
-		    "timer" "\ue29e"
-		    "tire" "\uf631"
-		    "tire-flat" "\uf632"
-		    "tire-pressure-warning" "\uf633"
-		    "tire-rugged" "\uf634"
-		    "toggle-large-off" "\ue5b0"
-		    "toggle-large-on" "\ue5b1"
-		    "toggle-off" "\uf204"
-		    "toggle-on" "\uf205"
-		    "toilet" "\uf7d8"
-		    "toilet-paper" "\uf71e"
-		    "toilet-paper-blank" "\uf71f"
-		    "toilet-paper-blank-under" "\ue29f"
-		    "toilet-paper-check" "\ue5b2"
-		    "toilet-paper-slash" "\ue072"
-		    "toilet-paper-under" "\ue2a0"
-		    "toilet-paper-under-slash" "\ue2a1"
-		    "toilet-paper-xmark" "\ue5b3"
-		    "toilet-portable" "\ue583"
-		    "toilets-portable" "\ue584"
-		    "tomato" "\ue330"
-		    "tombstone" "\uf720"
-		    "tombstone-blank" "\uf721"
-		    "toolbox" "\uf552"
-		    "tooth" "\uf5c9"
-		    "toothbrush" "\uf635"
-		    "torii-gate" "\uf6a1"
-		    "tornado" "\uf76f"
-		    "tower-broadcast" "\uf519"
-		    "tower-cell" "\ue585"
-		    "tower-control" "\ue2a2"
-		    "tower-observation" "\ue586"
-		    "tractor" "\uf722"
-		    "trademark" "\uf25c"
-		    "traffic-cone" "\uf636"
-		    "traffic-light" "\uf637"
-		    "traffic-light-go" "\uf638"
-		    "traffic-light-slow" "\uf639"
-		    "traffic-light-stop" "\uf63a"
-		    "trailer" "\ue041"
-		    "train" "\uf238"
-		    "train-subway" "\uf239"
-		    "train-subway-tunnel" "\ue2a3"
-		    "train-track" "\ue453"
-		    "train-tram" "\ue5b4"
-		    "train-tunnel" "\ue454"
-		    "transformer-bolt" "\ue2a4"
-		    "transgender" "\uf225"
-		    "transporter" "\ue042"
-		    "transporter-1" "\ue043"
-		    "transporter-2" "\ue044"
-		    "transporter-3" "\ue045"
-		    "transporter-4" "\ue2a5"
-		    "transporter-5" "\ue2a6"
-		    "transporter-6" "\ue2a7"
-		    "transporter-7" "\ue2a8"
-		    "transporter-empty" "\ue046"
-		    "trash" "\uf1f8"
-		    "trash-arrow-up" "\uf829"
-		    "trash-can" "\uf2ed"
-		    "trash-can-arrow-up" "\uf82a"
-		    "trash-can-check" "\ue2a9"
-		    "trash-can-clock" "\ue2aa"
-		    "trash-can-list" "\ue2ab"
-		    "trash-can-plus" "\ue2ac"
-		    "trash-can-slash" "\ue2ad"
-		    "trash-can-undo" "\uf896"
-		    "trash-can-xmark" "\ue2ae"
-		    "trash-check" "\ue2af"
-		    "trash-clock" "\ue2b0"
-		    "trash-list" "\ue2b1"
-		    "trash-plus" "\ue2b2"
-		    "trash-slash" "\ue2b3"
-		    "trash-undo" "\uf895"
-		    "trash-xmark" "\ue2b4"
-		    "treasure-chest" "\uf723"
-		    "tree" "\uf1bb"
-		    "tree-christmas" "\uf7db"
-		    "tree-city" "\ue587"
-		    "tree-deciduous" "\uf400"
-		    "tree-decorated" "\uf7dc"
-		    "tree-large" "\uf7dd"
-		    "tree-palm" "\uf82b"
-		    "trees" "\uf724"
-		    "triangle" "\uf2ec"
-		    "triangle-exclamation" "\uf071"
-		    "triangle-instrument" "\uf8e2"
-		    "triangle-person-digging" "\uf85d"
-		    "tricycle" "\ue5c3"
-		    "tricycle-adult" "\ue5c4"
-		    "trillium" "\ue588"
-		    "trophy" "\uf091"
-		    "trophy-star" "\uf2eb"
-		    "trowel" "\ue589"
-		    "trowel-bricks" "\ue58a"
-		    "truck" "\uf0d1"
-		    "truck-arrow-right" "\ue58b"
-		    "truck-bolt" "\ue3d0"
-		    "truck-clock" "\uf48c"
-		    "truck-container" "\uf4dc"
-		    "truck-container-empty" "\ue2b5"
-		    "truck-droplet" "\ue58c"
-		    "truck-fast" "\uf48b"
-		    "truck-field" "\ue58d"
-		    "truck-field-un" "\ue58e"
-		    "truck-fire" "\ue65a"
-		    "truck-flatbed" "\ue2b6"
-		    "truck-front" "\ue2b7"
-		    "truck-ladder" "\ue657"
-		    "truck-medical" "\uf0f9"
-		    "truck-monster" "\uf63b"
-		    "truck-moving" "\uf4df"
-		    "truck-pickup" "\uf63c"
-		    "truck-plane" "\ue58f"
-		    "truck-plow" "\uf7de"
-		    "truck-ramp" "\uf4e0"
-		    "truck-ramp-box" "\uf4de"
-		    "truck-ramp-couch" "\uf4dd"
-		    "truck-tow" "\ue2b8"
-		    "truck-utensils" "\ue628"
-		    "trumpet" "\uf8e3"
-		    "tty" "\uf1e4"
-		    "tty-answer" "\ue2b9"
-		    "tugrik-sign" "\ue2ba"
-		    "turkey" "\uf725"
-		    "turkish-lira-sign" "\ue2bb"
-		    "turn-down" "\uf3be"
-		    "turn-down-left" "\ue331"
-		    "turn-down-right" "\ue455"
-		    "turn-left" "\ue636"
-		    "turn-left-down" "\ue637"
-		    "turn-left-up" "\ue638"
-		    "turn-right" "\ue639"
-		    "turn-up" "\uf3bf"
-		    "turntable" "\uf8e4"
-		    "turtle" "\uf726"
-		    "tv" "\uf26c"
-		    "tv-music" "\uf8e6"
-		    "tv-retro" "\uf401"
-		    "typewriter" "\uf8e7"
-		    "u" "\u55"
-		    "ufo" "\ue047"
-		    "ufo-beam" "\ue048"
-		    "umbrella" "\uf0e9"
-		    "umbrella-beach" "\uf5ca"
-		    "umbrella-simple" "\ue2bc"
-		    "underline" "\uf0cd"
-		    "unicorn" "\uf727"
-		    "uniform-martial-arts" "\ue3d1"
-		    "union" "\uf6a2"
-		    "universal-access" "\uf29a"
-		    "unlock" "\uf09c"
-		    "unlock-keyhole" "\uf13e"
-		    "up" "\uf357"
-		    "up-down" "\uf338"
-		    "up-down-left-right" "\uf0b2"
-		    "up-from-bracket" "\ue590"
-		    "up-from-dotted-line" "\ue456"
-		    "up-from-line" "\uf346"
-		    "up-left" "\ue2bd"
-		    "up-long" "\uf30c"
-		    "up-right" "\ue2be"
-		    "up-right-and-down-left-from-center" "\uf424"
-		    "up-right-from-square" "\uf35d"
-		    "up-to-dotted-line" "\ue457"
-		    "up-to-line" "\uf34d"
-		    "upload" "\uf093"
-		    "usb-drive" "\uf8e9"
-		    "user" "\uf007"
-		    "user-alien" "\ue04a"
-		    "user-astronaut" "\uf4fb"
-		    "user-bounty-hunter" "\ue2bf"
-		    "user-check" "\uf4fc"
-		    "user-chef" "\ue3d2"
-		    "user-clock" "\uf4fd"
-		    "user-cowboy" "\uf8ea"
-		    "user-crown" "\uf6a4"
-		    "user-doctor" "\uf0f0"
-		    "user-doctor-hair" "\ue458"
-		    "user-doctor-hair-long" "\ue459"
-		    "user-doctor-message" "\uf82e"
-		    "user-gear" "\uf4fe"
-		    "user-graduate" "\uf501"
-		    "user-group" "\uf500"
-		    "user-group-crown" "\uf6a5"
-		    "user-group-simple" "\ue603"
-		    "user-hair" "\ue45a"
-		    "user-hair-buns" "\ue3d3"
-		    "user-hair-long" "\ue45b"
-		    "user-hair-mullet" "\ue45c"
-		    "user-headset" "\uf82d"
-		    "user-helmet-safety" "\uf82c"
-		    "user-injured" "\uf728"
-		    "user-large" "\uf406"
-		    "user-large-slash" "\uf4fa"
-		    "user-lock" "\uf502"
-		    "user-magnifying-glass" "\ue5c5"
-		    "user-minus" "\uf503"
-		    "user-music" "\uf8eb"
-		    "user-ninja" "\uf504"
-		    "user-nurse" "\uf82f"
-		    "user-nurse-hair" "\ue45d"
-		    "user-nurse-hair-long" "\ue45e"
-		    "user-pen" "\uf4ff"
-		    "user-pilot" "\ue2c0"
-		    "user-pilot-tie" "\ue2c1"
-		    "user-plus" "\uf234"
-		    "user-police" "\ue333"
-		    "user-police-tie" "\ue334"
-		    "user-robot" "\ue04b"
-		    "user-robot-xmarks" "\ue4a7"
-		    "user-secret" "\uf21b"
-		    "user-shakespeare" "\ue2c2"
-		    "user-shield" "\uf505"
-		    "user-slash" "\uf506"
-		    "user-tag" "\uf507"
-		    "user-tie" "\uf508"
-		    "user-tie-hair" "\ue45f"
-		    "user-tie-hair-long" "\ue460"
-		    "user-unlock" "\ue058"
-		    "user-visor" "\ue04c"
-		    "user-vneck" "\ue461"
-		    "user-vneck-hair" "\ue462"
-		    "user-vneck-hair-long" "\ue463"
-		    "user-xmark" "\uf235"
-		    "users" "\uf0c0"
-		    "users-between-lines" "\ue591"
-		    "users-gear" "\uf509"
-		    "users-line" "\ue592"
-		    "users-medical" "\uf830"
-		    "users-rays" "\ue593"
-		    "users-rectangle" "\ue594"
-		    "users-slash" "\ue073"
-		    "users-viewfinder" "\ue595"
-		    "utensils" "\uf2e7"
-		    "utensils-slash" "\ue464"
-		    "utility-pole" "\ue2c3"
-		    "utility-pole-double" "\ue2c4"
-		    "v" "\u56"
-		    "vacuum" "\ue04d"
-		    "vacuum-robot" "\ue04e"
-		    "value-absolute" "\uf6a6"
-		    "van-shuttle" "\uf5b6"
-		    "vault" "\ue2c5"
-		    "vector-circle" "\ue2c6"
-		    "vector-polygon" "\ue2c7"
-		    "vector-square" "\uf5cb"
-		    "vent-damper" "\ue465"
-		    "venus" "\uf221"
-		    "venus-double" "\uf226"
-		    "venus-mars" "\uf228"
-		    "vest" "\ue085"
-		    "vest-patches" "\ue086"
-		    "vial" "\uf492"
-		    "vial-circle-check" "\ue596"
-		    "vial-virus" "\ue597"
-		    "vials" "\uf493"
-		    "video" "\uf03d"
-		    "video-arrow-down-left" "\ue2c8"
-		    "video-arrow-up-right" "\ue2c9"
-		    "video-plus" "\uf4e1"
-		    "video-slash" "\uf4e2"
-		    "vihara" "\uf6a7"
-		    "violin" "\uf8ed"
-		    "virus" "\ue074"
-		    "virus-covid" "\ue4a8"
-		    "virus-covid-slash" "\ue4a9"
-		    "virus-slash" "\ue075"
-		    "viruses" "\ue076"
-		    "voicemail" "\uf897"
-		    "volcano" "\uf770"
-		    "volleyball" "\uf45f"
-		    "volume" "\uf6a8"
-		    "volume-high" "\uf028"
-		    "volume-low" "\uf027"
-		    "volume-off" "\uf026"
-		    "volume-slash" "\uf2e2"
-		    "volume-xmark" "\uf6a9"
-		    "vr-cardboard" "\uf729"
-		    "w" "\u57"
-		    "waffle" "\ue466"
-		    "wagon-covered" "\uf8ee"
-		    "walker" "\uf831"
-		    "walkie-talkie" "\uf8ef"
-		    "wallet" "\uf555"
-		    "wand" "\uf72a"
-		    "wand-magic" "\uf0d0"
-		    "wand-magic-sparkles" "\ue2ca"
-		    "wand-sparkles" "\uf72b"
-		    "warehouse" "\uf494"
-		    "warehouse-full" "\uf495"
-		    "washing-machine" "\uf898"
-		    "watch" "\uf2e1"
-		    "watch-apple" "\ue2cb"
-		    "watch-calculator" "\uf8f0"
-		    "watch-fitness" "\uf63e"
-		    "watch-smart" "\ue2cc"
-		    "water" "\uf773"
-		    "water-arrow-down" "\uf774"
-		    "water-arrow-up" "\uf775"
-		    "water-ladder" "\uf5c5"
-		    "watermelon-slice" "\ue337"
-		    "wave" "\ue65b"
-		    "wave-pulse" "\uf5f8"
-		    "wave-sine" "\uf899"
-		    "wave-square" "\uf83e"
-		    "wave-triangle" "\uf89a"
-		    "waveform" "\uf8f1"
-		    "waveform-lines" "\uf8f2"
-		    "waves-sine" "\ue65d"
-		    "webhook" "\ue5d5"
-		    "weight-hanging" "\uf5cd"
-		    "weight-scale" "\uf496"
-		    "whale" "\uf72c"
-		    "wheat" "\uf72d"
-		    "wheat-awn" "\ue2cd"
-		    "wheat-awn-circle-exclamation" "\ue598"
-		    "wheat-awn-slash" "\ue338"
-		    "wheat-slash" "\ue339"
-		    "wheelchair" "\uf193"
-		    "wheelchair-move" "\ue2ce"
-		    "whiskey-glass" "\uf7a0"
-		    "whiskey-glass-ice" "\uf7a1"
-		    "whistle" "\uf460"
-		    "wifi" "\uf1eb"
-		    "wifi-exclamation" "\ue2cf"
-		    "wifi-fair" "\uf6ab"
-		    "wifi-slash" "\uf6ac"
-		    "wifi-weak" "\uf6aa"
-		    "wind" "\uf72e"
-		    "wind-turbine" "\uf89b"
-		    "wind-warning" "\uf776"
-		    "window" "\uf40e"
-		    "window-flip" "\uf40f"
-		    "window-frame" "\ue04f"
-		    "window-frame-open" "\ue050"
-		    "window-maximize" "\uf2d0"
-		    "window-minimize" "\uf2d1"
-		    "window-restore" "\uf2d2"
-		    "windsock" "\uf777"
-		    "wine-bottle" "\uf72f"
-		    "wine-glass" "\uf4e3"
-		    "wine-glass-crack" "\uf4bb"
-		    "wine-glass-empty" "\uf5ce"
-		    "won-sign" "\uf159"
-		    "worm" "\ue599"
-		    "wreath" "\uf7e2"
-		    "wreath-laurel" "\ue5d2"
-		    "wrench" "\uf0ad"
-		    "wrench-simple" "\ue2d1"
-		    "x" "\u58"
-		    "x-ray" "\uf497"
-		    "xmark" "\uf00d"
-		    "xmark-large" "\ue59b"
-		    "xmark-to-slot" "\uf771"
-		    "xmarks-lines" "\ue59a"
-		    "y" "\u59"
-		    "yen-sign" "\uf157"
-		    "yin-yang" "\uf6ad"
-		    "z" "\u5a"
+			"00" "\ue467"
+			"360-degrees" "\ue2dc"
+			"a" "\u41"
+			"abacus" "\uf640"
+			"accent-grave" "\u60"
+			"acorn" "\uf6ae"
+			"address-book" "\uf2b9"
+			"address-card" "\uf2bb"
+			"air-conditioner" "\uf8f4"
+			"airplay" "\ue089"
+			"alarm-clock" "\uf34e"
+			"alarm-exclamation" "\uf843"
+			"alarm-plus" "\uf844"
+			"alarm-snooze" "\uf845"
+			"album" "\uf89f"
+			"album-circle-plus" "\ue48c"
+			"album-circle-user" "\ue48d"
+			"album-collection" "\uf8a0"
+			"album-collection-circle-plus" "\ue48e"
+			"album-collection-circle-user" "\ue48f"
+			"alicorn" "\uf6b0"
+			"alien" "\uf8f5"
+			"alien-8bit" "\uf8f6"
+			"align-center" "\uf037"
+			"align-justify" "\uf039"
+			"align-left" "\uf036"
+			"align-right" "\uf038"
+			"align-slash" "\uf846"
+			"alt" "\ue08a"
+			"amp-guitar" "\uf8a1"
+			"ampersand" "\u26"
+			"anchor" "\uf13d"
+			"anchor-circle-check" "\ue4aa"
+			"anchor-circle-exclamation" "\ue4ab"
+			"anchor-circle-xmark" "\ue4ac"
+			"anchor-lock" "\ue4ad"
+			"angel" "\uf779"
+			"angle" "\ue08c"
+			"angle-90" "\ue08d"
+			"angle-down" "\uf107"
+			"angle-left" "\uf104"
+			"angle-right" "\uf105"
+			"angle-up" "\uf106"
+			"angles-down" "\uf103"
+			"angles-left" "\uf100"
+			"angles-right" "\uf101"
+			"angles-up" "\uf102"
+			"angles-up-down" "\ue60d"
+			"ankh" "\uf644"
+			"apartment" "\ue468"
+			"aperture" "\ue2df"
+			"apostrophe" "\u27"
+			"apple-core" "\ue08f"
+			"apple-whole" "\uf5d1"
+			"archway" "\uf557"
+			"arrow-down" "\uf063"
+			"arrow-down-1-9" "\uf162"
+			"arrow-down-9-1" "\uf886"
+			"arrow-down-a-z" "\uf15d"
+			"arrow-down-arrow-up" "\uf883"
+			"arrow-down-big-small" "\uf88c"
+			"arrow-down-from-arc" "\ue614"
+			"arrow-down-from-dotted-line" "\ue090"
+			"arrow-down-from-line" "\uf345"
+			"arrow-down-left" "\ue091"
+			"arrow-down-left-and-arrow-up-right-to-center" "\ue092"
+			"arrow-down-long" "\uf175"
+			"arrow-down-right" "\ue093"
+			"arrow-down-short-wide" "\uf884"
+			"arrow-down-small-big" "\uf88d"
+			"arrow-down-square-triangle" "\uf889"
+			"arrow-down-to-arc" "\ue4ae"
+			"arrow-down-to-bracket" "\ue094"
+			"arrow-down-to-dotted-line" "\ue095"
+			"arrow-down-to-line" "\uf33d"
+			"arrow-down-to-square" "\ue096"
+			"arrow-down-triangle-square" "\uf888"
+			"arrow-down-up-across-line" "\ue4af"
+			"arrow-down-up-lock" "\ue4b0"
+			"arrow-down-wide-short" "\uf160"
+			"arrow-down-z-a" "\uf881"
+			"arrow-left" "\uf060"
+			"arrow-left-from-arc" "\ue615"
+			"arrow-left-from-line" "\uf344"
+			"arrow-left-long" "\uf177"
+			"arrow-left-long-to-line" "\ue3d4"
+			"arrow-left-to-arc" "\ue616"
+			"arrow-left-to-line" "\uf33e"
+			"arrow-pointer" "\uf245"
+			"arrow-progress" "\ue5df"
+			"arrow-right" "\uf061"
+			"arrow-right-arrow-left" "\uf0ec"
+			"arrow-right-from-arc" "\ue4b1"
+			"arrow-right-from-bracket" "\uf08b"
+			"arrow-right-from-line" "\uf343"
+			"arrow-right-long" "\uf178"
+			"arrow-right-long-to-line" "\ue3d5"
+			"arrow-right-to-arc" "\ue4b2"
+			"arrow-right-to-bracket" "\uf090"
+			"arrow-right-to-city" "\ue4b3"
+			"arrow-right-to-line" "\uf340"
+			"arrow-rotate-left" "\uf0e2"
+			"arrow-rotate-right" "\uf01e"
+			"arrow-trend-down" "\ue097"
+			"arrow-trend-up" "\ue098"
+			"arrow-turn-down" "\uf149"
+			"arrow-turn-down-left" "\ue2e1"
+			"arrow-turn-down-right" "\ue3d6"
+			"arrow-turn-left" "\ue632"
+			"arrow-turn-left-down" "\ue633"
+			"arrow-turn-left-up" "\ue634"
+			"arrow-turn-right" "\ue635"
+			"arrow-turn-up" "\uf148"
+			"arrow-up" "\uf062"
+			"arrow-up-1-9" "\uf163"
+			"arrow-up-9-1" "\uf887"
+			"arrow-up-a-z" "\uf15e"
+			"arrow-up-arrow-down" "\ue099"
+			"arrow-up-big-small" "\uf88e"
+			"arrow-up-from-arc" "\ue4b4"
+			"arrow-up-from-bracket" "\ue09a"
+			"arrow-up-from-dotted-line" "\ue09b"
+			"arrow-up-from-ground-water" "\ue4b5"
+			"arrow-up-from-line" "\uf342"
+			"arrow-up-from-square" "\ue09c"
+			"arrow-up-from-water-pump" "\ue4b6"
+			"arrow-up-left" "\ue09d"
+			"arrow-up-left-from-circle" "\ue09e"
+			"arrow-up-long" "\uf176"
+			"arrow-up-right" "\ue09f"
+			"arrow-up-right-and-arrow-down-left-from-center" "\ue0a0"
+			"arrow-up-right-dots" "\ue4b7"
+			"arrow-up-right-from-square" "\uf08e"
+			"arrow-up-short-wide" "\uf885"
+			"arrow-up-small-big" "\uf88f"
+			"arrow-up-square-triangle" "\uf88b"
+			"arrow-up-to-arc" "\ue617"
+			"arrow-up-to-dotted-line" "\ue0a1"
+			"arrow-up-to-line" "\uf341"
+			"arrow-up-triangle-square" "\uf88a"
+			"arrow-up-wide-short" "\uf161"
+			"arrow-up-z-a" "\uf882"
+			"arrows-cross" "\ue0a2"
+			"arrows-down-to-line" "\ue4b8"
+			"arrows-down-to-people" "\ue4b9"
+			"arrows-from-dotted-line" "\ue0a3"
+			"arrows-from-line" "\ue0a4"
+			"arrows-left-right" "\uf07e"
+			"arrows-left-right-to-line" "\ue4ba"
+			"arrows-maximize" "\uf31d"
+			"arrows-minimize" "\ue0a5"
+			"arrows-repeat" "\uf364"
+			"arrows-repeat-1" "\uf366"
+			"arrows-retweet" "\uf361"
+			"arrows-rotate" "\uf021"
+			"arrows-rotate-reverse" "\ue630"
+			"arrows-spin" "\ue4bb"
+			"arrows-split-up-and-left" "\ue4bc"
+			"arrows-to-circle" "\ue4bd"
+			"arrows-to-dot" "\ue4be"
+			"arrows-to-dotted-line" "\ue0a6"
+			"arrows-to-eye" "\ue4bf"
+			"arrows-to-line" "\ue0a7"
+			"arrows-turn-right" "\ue4c0"
+			"arrows-turn-to-dots" "\ue4c1"
+			"arrows-up-down" "\uf07d"
+			"arrows-up-down-left-right" "\uf047"
+			"arrows-up-to-line" "\ue4c2"
+			"asterisk" "\u2a"
+			"at" "\u40"
+			"atom" "\uf5d2"
+			"atom-simple" "\uf5d3"
+			"audio-description" "\uf29e"
+			"audio-description-slash" "\ue0a8"
+			"austral-sign" "\ue0a9"
+			"avocado" "\ue0aa"
+			"award" "\uf559"
+			"award-simple" "\ue0ab"
+			"axe" "\uf6b2"
+			"axe-battle" "\uf6b3"
+			"b" "\u42"
+			"baby" "\uf77c"
+			"baby-carriage" "\uf77d"
+			"backpack" "\uf5d4"
+			"backward" "\uf04a"
+			"backward-fast" "\uf049"
+			"backward-step" "\uf048"
+			"bacon" "\uf7e5"
+			"bacteria" "\ue059"
+			"bacterium" "\ue05a"
+			"badge" "\uf335"
+			"badge-check" "\uf336"
+			"badge-dollar" "\uf645"
+			"badge-percent" "\uf646"
+			"badge-sheriff" "\uf8a2"
+			"badger-honey" "\uf6b4"
+			"badminton" "\ue33a"
+			"bag-seedling" "\ue5f2"
+			"bag-shopping" "\uf290"
+			"bag-shopping-minus" "\ue650"
+			"bag-shopping-plus" "\ue651"
+			"bagel" "\ue3d7"
+			"bags-shopping" "\uf847"
+			"baguette" "\ue3d8"
+			"bahai" "\uf666"
+			"baht-sign" "\ue0ac"
+			"ball-pile" "\uf77e"
+			"balloon" "\ue2e3"
+			"balloons" "\ue2e4"
+			"ballot" "\uf732"
+			"ballot-check" "\uf733"
+			"ban" "\uf05e"
+			"ban-bug" "\uf7f9"
+			"ban-parking" "\uf616"
+			"ban-smoking" "\uf54d"
+			"banana" "\ue2e5"
+			"bandage" "\uf462"
+			"bangladeshi-taka-sign" "\ue2e6"
+			"banjo" "\uf8a3"
+			"barcode" "\uf02a"
+			"barcode-read" "\uf464"
+			"barcode-scan" "\uf465"
+			"bars" "\uf0c9"
+			"bars-filter" "\ue0ad"
+			"bars-progress" "\uf828"
+			"bars-sort" "\ue0ae"
+			"bars-staggered" "\uf550"
+			"baseball" "\uf433"
+			"baseball-bat-ball" "\uf432"
+			"basket-shopping" "\uf291"
+			"basket-shopping-minus" "\ue652"
+			"basket-shopping-plus" "\ue653"
+			"basket-shopping-simple" "\ue0af"
+			"basketball" "\uf434"
+			"basketball-hoop" "\uf435"
+			"bat" "\uf6b5"
+			"bath" "\uf2cd"
+			"battery-bolt" "\uf376"
+			"battery-empty" "\uf244"
+			"battery-exclamation" "\ue0b0"
+			"battery-full" "\uf240"
+			"battery-half" "\uf242"
+			"battery-low" "\ue0b1"
+			"battery-quarter" "\uf243"
+			"battery-slash" "\uf377"
+			"battery-three-quarters" "\uf241"
+			"bed" "\uf236"
+			"bed-bunk" "\uf8f8"
+			"bed-empty" "\uf8f9"
+			"bed-front" "\uf8f7"
+			"bed-pulse" "\uf487"
+			"bee" "\ue0b2"
+			"beer-mug" "\ue0b3"
+			"beer-mug-empty" "\uf0fc"
+			"bell" "\uf0f3"
+			"bell-concierge" "\uf562"
+			"bell-exclamation" "\uf848"
+			"bell-on" "\uf8fa"
+			"bell-plus" "\uf849"
+			"bell-ring" "\ue62c"
+			"bell-school" "\uf5d5"
+			"bell-school-slash" "\uf5d6"
+			"bell-slash" "\uf1f6"
+			"bells" "\uf77f"
+			"bench-tree" "\ue2e7"
+			"bezier-curve" "\uf55b"
+			"bicycle" "\uf206"
+			"billboard" "\ue5cd"
+			"bin-bottles" "\ue5f5"
+			"bin-bottles-recycle" "\ue5f6"
+			"bin-recycle" "\ue5f7"
+			"binary" "\ue33b"
+			"binary-circle-check" "\ue33c"
+			"binary-lock" "\ue33d"
+			"binary-slash" "\ue33e"
+			"binoculars" "\uf1e5"
+			"biohazard" "\uf780"
+			"bird" "\ue469"
+			"bitcoin-sign" "\ue0b4"
+			"blanket" "\uf498"
+			"blanket-fire" "\ue3da"
+			"blender" "\uf517"
+			"blender-phone" "\uf6b6"
+			"blinds" "\uf8fb"
+			"blinds-open" "\uf8fc"
+			"blinds-raised" "\uf8fd"
+			"block" "\ue46a"
+			"block-brick" "\ue3db"
+			"block-brick-fire" "\ue3dc"
+			"block-question" "\ue3dd"
+			"block-quote" "\ue0b5"
+			"blog" "\uf781"
+			"blueberries" "\ue2e8"
+			"bluetooth" "\uf293"
+			"bold" "\uf032"
+			"bolt" "\uf0e7"
+			"bolt-auto" "\ue0b6"
+			"bolt-lightning" "\ue0b7"
+			"bolt-slash" "\ue0b8"
+			"bomb" "\uf1e2"
+			"bone" "\uf5d7"
+			"bone-break" "\uf5d8"
+			"bong" "\uf55c"
+			"book" "\uf02d"
+			"book-arrow-right" "\ue0b9"
+			"book-arrow-up" "\ue0ba"
+			"book-atlas" "\uf558"
+			"book-bible" "\uf647"
+			"book-blank" "\uf5d9"
+			"book-bookmark" "\ue0bb"
+			"book-circle-arrow-right" "\ue0bc"
+			"book-circle-arrow-up" "\ue0bd"
+			"book-copy" "\ue0be"
+			"book-font" "\ue0bf"
+			"book-heart" "\uf499"
+			"book-journal-whills" "\uf66a"
+			"book-medical" "\uf7e6"
+			"book-open" "\uf518"
+			"book-open-cover" "\ue0c0"
+			"book-open-reader" "\uf5da"
+			"book-quran" "\uf687"
+			"book-section" "\ue0c1"
+			"book-skull" "\uf6b7"
+			"book-sparkles" "\uf6b8"
+			"book-tanakh" "\uf827"
+			"book-user" "\uf7e7"
+			"bookmark" "\uf02e"
+			"bookmark-slash" "\ue0c2"
+			"books" "\uf5db"
+			"books-medical" "\uf7e8"
+			"boombox" "\uf8a5"
+			"boot" "\uf782"
+			"boot-heeled" "\ue33f"
+			"booth-curtain" "\uf734"
+			"border-all" "\uf84c"
+			"border-bottom" "\uf84d"
+			"border-bottom-right" "\uf854"
+			"border-center-h" "\uf89c"
+			"border-center-v" "\uf89d"
+			"border-inner" "\uf84e"
+			"border-left" "\uf84f"
+			"border-none" "\uf850"
+			"border-outer" "\uf851"
+			"border-right" "\uf852"
+			"border-top" "\uf855"
+			"border-top-left" "\uf853"
+			"bore-hole" "\ue4c3"
+			"bottle-droplet" "\ue4c4"
+			"bottle-water" "\ue4c5"
+			"bow-arrow" "\uf6b9"
+			"bowl-chopsticks" "\ue2e9"
+			"bowl-chopsticks-noodles" "\ue2ea"
+			"bowl-food" "\ue4c6"
+			"bowl-hot" "\uf823"
+			"bowl-rice" "\ue2eb"
+			"bowl-scoop" "\ue3de"
+			"bowl-scoops" "\ue3df"
+			"bowl-soft-serve" "\ue46b"
+			"bowl-spoon" "\ue3e0"
+			"bowling-ball" "\uf436"
+			"bowling-ball-pin" "\ue0c3"
+			"bowling-pins" "\uf437"
+			"box" "\uf466"
+			"box-archive" "\uf187"
+			"box-ballot" "\uf735"
+			"box-check" "\uf467"
+			"box-circle-check" "\ue0c4"
+			"box-dollar" "\uf4a0"
+			"box-heart" "\uf49d"
+			"box-open" "\uf49e"
+			"box-open-full" "\uf49c"
+			"box-taped" "\uf49a"
+			"box-tissue" "\ue05b"
+			"boxes-packing" "\ue4c7"
+			"boxes-stacked" "\uf468"
+			"boxing-glove" "\uf438"
+			"bracket-curly" "\u7b"
+			"bracket-curly-right" "\u7d"
+			"bracket-round" "\u28"
+			"bracket-round-right" "\u29"
+			"bracket-square" "\u5b"
+			"bracket-square-right" "\u5d"
+			"brackets-curly" "\uf7ea"
+			"brackets-round" "\ue0c5"
+			"brackets-square" "\uf7e9"
+			"braille" "\uf2a1"
+			"brain" "\uf5dc"
+			"brain-arrow-curved-right" "\uf677"
+			"brain-circuit" "\ue0c6"
+			"brake-warning" "\ue0c7"
+			"brazilian-real-sign" "\ue46c"
+			"bread-loaf" "\uf7eb"
+			"bread-slice" "\uf7ec"
+			"bread-slice-butter" "\ue3e1"
+			"bridge" "\ue4c8"
+			"bridge-circle-check" "\ue4c9"
+			"bridge-circle-exclamation" "\ue4ca"
+			"bridge-circle-xmark" "\ue4cb"
+			"bridge-lock" "\ue4cc"
+			"bridge-suspension" "\ue4cd"
+			"bridge-water" "\ue4ce"
+			"briefcase" "\uf0b1"
+			"briefcase-arrow-right" "\ue2f2"
+			"briefcase-blank" "\ue0c8"
+			"briefcase-medical" "\uf469"
+			"brightness" "\ue0c9"
+			"brightness-low" "\ue0ca"
+			"bring-forward" "\uf856"
+			"bring-front" "\uf857"
+			"broccoli" "\ue3e2"
+			"broom" "\uf51a"
+			"broom-ball" "\uf458"
+			"broom-wide" "\ue5d1"
+			"browser" "\uf37e"
+			"browsers" "\ue0cb"
+			"brush" "\uf55d"
+			"bucket" "\ue4cf"
+			"bug" "\uf188"
+			"bug-slash" "\ue490"
+			"bugs" "\ue4d0"
+			"building" "\uf1ad"
+			"building-circle-arrow-right" "\ue4d1"
+			"building-circle-check" "\ue4d2"
+			"building-circle-exclamation" "\ue4d3"
+			"building-circle-xmark" "\ue4d4"
+			"building-columns" "\uf19c"
+			"building-flag" "\ue4d5"
+			"building-lock" "\ue4d6"
+			"building-magnifying-glass" "\ue61c"
+			"building-memo" "\ue61e"
+			"building-ngo" "\ue4d7"
+			"building-shield" "\ue4d8"
+			"building-un" "\ue4d9"
+			"building-user" "\ue4da"
+			"building-wheat" "\ue4db"
+			"buildings" "\ue0cc"
+			"bulldozer" "\ue655"
+			"bullhorn" "\uf0a1"
+			"bullseye" "\uf140"
+			"bullseye-arrow" "\uf648"
+			"bullseye-pointer" "\uf649"
+			"buoy" "\ue5b5"
+			"buoy-mooring" "\ue5b6"
+			"burger" "\uf805"
+			"burger-cheese" "\uf7f1"
+			"burger-fries" "\ue0cd"
+			"burger-glass" "\ue0ce"
+			"burger-lettuce" "\ue3e3"
+			"burger-soda" "\uf858"
+			"burrito" "\uf7ed"
+			"burst" "\ue4dc"
+			"bus" "\uf207"
+			"bus-school" "\uf5dd"
+			"bus-simple" "\uf55e"
+			"business-time" "\uf64a"
+			"butter" "\ue3e4"
+			"c" "\u43"
+			"cabin" "\ue46d"
+			"cabinet-filing" "\uf64b"
+			"cable-car" "\uf7da"
+			"cactus" "\uf8a7"
+			"cake-candles" "\uf1fd"
+			"cake-slice" "\ue3e5"
+			"calculator" "\uf1ec"
+			"calculator-simple" "\uf64c"
+			"calendar" "\uf133"
+			"calendar-arrow-down" "\ue0d0"
+			"calendar-arrow-up" "\ue0d1"
+			"calendar-check" "\uf274"
+			"calendar-circle-exclamation" "\ue46e"
+			"calendar-circle-minus" "\ue46f"
+			"calendar-circle-plus" "\ue470"
+			"calendar-circle-user" "\ue471"
+			"calendar-clock" "\ue0d2"
+			"calendar-day" "\uf783"
+			"calendar-days" "\uf073"
+			"calendar-exclamation" "\uf334"
+			"calendar-heart" "\ue0d3"
+			"calendar-image" "\ue0d4"
+			"calendar-lines" "\ue0d5"
+			"calendar-lines-pen" "\ue472"
+			"calendar-minus" "\uf272"
+			"calendar-pen" "\uf333"
+			"calendar-plus" "\uf271"
+			"calendar-range" "\ue0d6"
+			"calendar-star" "\uf736"
+			"calendar-users" "\ue5e2"
+			"calendar-week" "\uf784"
+			"calendar-xmark" "\uf273"
+			"calendars" "\ue0d7"
+			"camcorder" "\uf8a8"
+			"camera" "\uf030"
+			"camera-cctv" "\uf8ac"
+			"camera-movie" "\uf8a9"
+			"camera-polaroid" "\uf8aa"
+			"camera-retro" "\uf083"
+			"camera-rotate" "\ue0d8"
+			"camera-security" "\uf8fe"
+			"camera-slash" "\ue0d9"
+			"camera-viewfinder" "\ue0da"
+			"camera-web" "\uf832"
+			"camera-web-slash" "\uf833"
+			"campfire" "\uf6ba"
+			"campground" "\uf6bb"
+			"can-food" "\ue3e6"
+			"candle-holder" "\uf6bc"
+			"candy" "\ue3e7"
+			"candy-bar" "\ue3e8"
+			"candy-cane" "\uf786"
+			"candy-corn" "\uf6bd"
+			"cannabis" "\uf55f"
+			"cannon" "\ue642"
+			"capsules" "\uf46b"
+			"car" "\uf1b9"
+			"car-battery" "\uf5df"
+			"car-bolt" "\ue341"
+			"car-building" "\uf859"
+			"car-bump" "\uf5e0"
+			"car-burst" "\uf5e1"
+			"car-bus" "\uf85a"
+			"car-circle-bolt" "\ue342"
+			"car-garage" "\uf5e2"
+			"car-mirrors" "\ue343"
+			"car-on" "\ue4dd"
+			"car-rear" "\uf5de"
+			"car-side" "\uf5e4"
+			"car-side-bolt" "\ue344"
+			"car-tilt" "\uf5e5"
+			"car-tunnel" "\ue4de"
+			"car-wash" "\uf5e6"
+			"car-wrench" "\uf5e3"
+			"caravan" "\uf8ff"
+			"caravan-simple" "\ue000"
+			"card-club" "\ue3e9"
+			"card-diamond" "\ue3ea"
+			"card-heart" "\ue3eb"
+			"card-spade" "\ue3ec"
+			"cards" "\ue3ed"
+			"cards-blank" "\ue4df"
+			"caret-down" "\uf0d7"
+			"caret-left" "\uf0d9"
+			"caret-right" "\uf0da"
+			"caret-up" "\uf0d8"
+			"carrot" "\uf787"
+			"cars" "\uf85b"
+			"cart-arrow-down" "\uf218"
+			"cart-arrow-up" "\ue3ee"
+			"cart-circle-arrow-down" "\ue3ef"
+			"cart-circle-arrow-up" "\ue3f0"
+			"cart-circle-check" "\ue3f1"
+			"cart-circle-exclamation" "\ue3f2"
+			"cart-circle-plus" "\ue3f3"
+			"cart-circle-xmark" "\ue3f4"
+			"cart-flatbed" "\uf474"
+			"cart-flatbed-boxes" "\uf475"
+			"cart-flatbed-empty" "\uf476"
+			"cart-flatbed-suitcase" "\uf59d"
+			"cart-minus" "\ue0db"
+			"cart-plus" "\uf217"
+			"cart-shopping" "\uf07a"
+			"cart-shopping-fast" "\ue0dc"
+			"cart-xmark" "\ue0dd"
+			"cash-register" "\uf788"
+			"cassette-betamax" "\uf8a4"
+			"cassette-tape" "\uf8ab"
+			"cassette-vhs" "\uf8ec"
+			"castle" "\ue0de"
+			"cat" "\uf6be"
+			"cat-space" "\ue001"
+			"cauldron" "\uf6bf"
+			"cedi-sign" "\ue0df"
+			"cent-sign" "\ue3f5"
+			"certificate" "\uf0a3"
+			"chair" "\uf6c0"
+			"chair-office" "\uf6c1"
+			"chalkboard" "\uf51b"
+			"chalkboard-user" "\uf51c"
+			"champagne-glass" "\uf79e"
+			"champagne-glasses" "\uf79f"
+			"charging-station" "\uf5e7"
+			"chart-area" "\uf1fe"
+			"chart-bar" "\uf080"
+			"chart-bullet" "\ue0e1"
+			"chart-candlestick" "\ue0e2"
+			"chart-column" "\ue0e3"
+			"chart-gantt" "\ue0e4"
+			"chart-kanban" "\ue64f"
+			"chart-line" "\uf201"
+			"chart-line-down" "\uf64d"
+			"chart-line-up" "\ue0e5"
+			"chart-line-up-down" "\ue5d7"
+			"chart-mixed" "\uf643"
+			"chart-mixed-up-circle-currency" "\ue5d8"
+			"chart-mixed-up-circle-dollar" "\ue5d9"
+			"chart-network" "\uf78a"
+			"chart-pie" "\uf200"
+			"chart-pie-simple" "\uf64e"
+			"chart-pie-simple-circle-currency" "\ue604"
+			"chart-pie-simple-circle-dollar" "\ue605"
+			"chart-pyramid" "\ue0e6"
+			"chart-radar" "\ue0e7"
+			"chart-scatter" "\uf7ee"
+			"chart-scatter-3d" "\ue0e8"
+			"chart-scatter-bubble" "\ue0e9"
+			"chart-simple" "\ue473"
+			"chart-simple-horizontal" "\ue474"
+			"chart-tree-map" "\ue0ea"
+			"chart-user" "\uf6a3"
+			"chart-waterfall" "\ue0eb"
+			"check" "\uf00c"
+			"check-double" "\uf560"
+			"check-to-slot" "\uf772"
+			"cheese" "\uf7ef"
+			"cheese-swiss" "\uf7f0"
+			"cherries" "\ue0ec"
+			"chess" "\uf439"
+			"chess-bishop" "\uf43a"
+			"chess-bishop-piece" "\uf43b"
+			"chess-board" "\uf43c"
+			"chess-clock" "\uf43d"
+			"chess-clock-flip" "\uf43e"
+			"chess-king" "\uf43f"
+			"chess-king-piece" "\uf440"
+			"chess-knight" "\uf441"
+			"chess-knight-piece" "\uf442"
+			"chess-pawn" "\uf443"
+			"chess-pawn-piece" "\uf444"
+			"chess-queen" "\uf445"
+			"chess-queen-piece" "\uf446"
+			"chess-rook" "\uf447"
+			"chess-rook-piece" "\uf448"
+			"chestnut" "\ue3f6"
+			"chevron-down" "\uf078"
+			"chevron-left" "\uf053"
+			"chevron-right" "\uf054"
+			"chevron-up" "\uf077"
+			"chevrons-down" "\uf322"
+			"chevrons-left" "\uf323"
+			"chevrons-right" "\uf324"
+			"chevrons-up" "\uf325"
+			"chf-sign" "\ue602"
+			"child" "\uf1ae"
+			"child-combatant" "\ue4e0"
+			"child-dress" "\ue59c"
+			"child-reaching" "\ue59d"
+			"children" "\ue4e1"
+			"chimney" "\uf78b"
+			"chopsticks" "\ue3f7"
+			"church" "\uf51d"
+			"circle" "\uf111"
+			"circle-0" "\ue0ed"
+			"circle-1" "\ue0ee"
+			"circle-2" "\ue0ef"
+			"circle-3" "\ue0f0"
+			"circle-4" "\ue0f1"
+			"circle-5" "\ue0f2"
+			"circle-6" "\ue0f3"
+			"circle-7" "\ue0f4"
+			"circle-8" "\ue0f5"
+			"circle-9" "\ue0f6"
+			"circle-a" "\ue0f7"
+			"circle-ampersand" "\ue0f8"
+			"circle-arrow-down" "\uf0ab"
+			"circle-arrow-down-left" "\ue0f9"
+			"circle-arrow-down-right" "\ue0fa"
+			"circle-arrow-left" "\uf0a8"
+			"circle-arrow-right" "\uf0a9"
+			"circle-arrow-up" "\uf0aa"
+			"circle-arrow-up-left" "\ue0fb"
+			"circle-arrow-up-right" "\ue0fc"
+			"circle-b" "\ue0fd"
+			"circle-bolt" "\ue0fe"
+			"circle-book-open" "\ue0ff"
+			"circle-bookmark" "\ue100"
+			"circle-c" "\ue101"
+			"circle-calendar" "\ue102"
+			"circle-camera" "\ue103"
+			"circle-caret-down" "\uf32d"
+			"circle-caret-left" "\uf32e"
+			"circle-caret-right" "\uf330"
+			"circle-caret-up" "\uf331"
+			"circle-check" "\uf058"
+			"circle-chevron-down" "\uf13a"
+			"circle-chevron-left" "\uf137"
+			"circle-chevron-right" "\uf138"
+			"circle-chevron-up" "\uf139"
+			"circle-d" "\ue104"
+			"circle-dashed" "\ue105"
+			"circle-divide" "\ue106"
+			"circle-dollar" "\uf2e8"
+			"circle-dollar-to-slot" "\uf4b9"
+			"circle-dot" "\uf192"
+			"circle-down" "\uf358"
+			"circle-down-left" "\ue107"
+			"circle-down-right" "\ue108"
+			"circle-e" "\ue109"
+			"circle-ellipsis" "\ue10a"
+			"circle-ellipsis-vertical" "\ue10b"
+			"circle-envelope" "\ue10c"
+			"circle-euro" "\ue5ce"
+			"circle-exclamation" "\uf06a"
+			"circle-exclamation-check" "\ue10d"
+			"circle-f" "\ue10e"
+			"circle-g" "\ue10f"
+			"circle-h" "\uf47e"
+			"circle-half" "\ue110"
+			"circle-half-stroke" "\uf042"
+			"circle-heart" "\uf4c7"
+			"circle-i" "\ue111"
+			"circle-info" "\uf05a"
+			"circle-j" "\ue112"
+			"circle-k" "\ue113"
+			"circle-l" "\ue114"
+			"circle-left" "\uf359"
+			"circle-location-arrow" "\uf602"
+			"circle-m" "\ue115"
+			"circle-microphone" "\ue116"
+			"circle-microphone-lines" "\ue117"
+			"circle-minus" "\uf056"
+			"circle-n" "\ue118"
+			"circle-nodes" "\ue4e2"
+			"circle-notch" "\uf1ce"
+			"circle-o" "\ue119"
+			"circle-p" "\ue11a"
+			"circle-parking" "\uf615"
+			"circle-pause" "\uf28b"
+			"circle-phone" "\ue11b"
+			"circle-phone-flip" "\ue11c"
+			"circle-phone-hangup" "\ue11d"
+			"circle-play" "\uf144"
+			"circle-plus" "\uf055"
+			"circle-q" "\ue11e"
+			"circle-quarter" "\ue11f"
+			"circle-quarter-stroke" "\ue5d3"
+			"circle-quarters" "\ue3f8"
+			"circle-question" "\uf059"
+			"circle-r" "\ue120"
+			"circle-radiation" "\uf7ba"
+			"circle-right" "\uf35a"
+			"circle-s" "\ue121"
+			"circle-small" "\ue122"
+			"circle-sort" "\ue030"
+			"circle-sort-down" "\ue031"
+			"circle-sort-up" "\ue032"
+			"circle-star" "\ue123"
+			"circle-sterling" "\ue5cf"
+			"circle-stop" "\uf28d"
+			"circle-t" "\ue124"
+			"circle-three-quarters" "\ue125"
+			"circle-three-quarters-stroke" "\ue5d4"
+			"circle-trash" "\ue126"
+			"circle-u" "\ue127"
+			"circle-up" "\uf35b"
+			"circle-up-left" "\ue128"
+			"circle-up-right" "\ue129"
+			"circle-user" "\uf2bd"
+			"circle-v" "\ue12a"
+			"circle-video" "\ue12b"
+			"circle-w" "\ue12c"
+			"circle-waveform-lines" "\ue12d"
+			"circle-x" "\ue12e"
+			"circle-xmark" "\uf057"
+			"circle-y" "\ue12f"
+			"circle-yen" "\ue5d0"
+			"circle-z" "\ue130"
+			"circles-overlap" "\ue600"
+			"citrus" "\ue2f4"
+			"citrus-slice" "\ue2f5"
+			"city" "\uf64f"
+			"clapperboard" "\ue131"
+			"clapperboard-play" "\ue132"
+			"clarinet" "\uf8ad"
+			"claw-marks" "\uf6c2"
+			"clipboard" "\uf328"
+			"clipboard-check" "\uf46c"
+			"clipboard-list" "\uf46d"
+			"clipboard-list-check" "\uf737"
+			"clipboard-medical" "\ue133"
+			"clipboard-prescription" "\uf5e8"
+			"clipboard-question" "\ue4e3"
+			"clipboard-user" "\uf7f3"
+			"clock" "\uf017"
+			"clock-desk" "\ue134"
+			"clock-eight" "\ue345"
+			"clock-eight-thirty" "\ue346"
+			"clock-eleven" "\ue347"
+			"clock-eleven-thirty" "\ue348"
+			"clock-five" "\ue349"
+			"clock-five-thirty" "\ue34a"
+			"clock-four-thirty" "\ue34b"
+			"clock-nine" "\ue34c"
+			"clock-nine-thirty" "\ue34d"
+			"clock-one" "\ue34e"
+			"clock-one-thirty" "\ue34f"
+			"clock-rotate-left" "\uf1da"
+			"clock-seven" "\ue350"
+			"clock-seven-thirty" "\ue351"
+			"clock-six" "\ue352"
+			"clock-six-thirty" "\ue353"
+			"clock-ten" "\ue354"
+			"clock-ten-thirty" "\ue355"
+			"clock-three" "\ue356"
+			"clock-three-thirty" "\ue357"
+			"clock-twelve" "\ue358"
+			"clock-twelve-thirty" "\ue359"
+			"clock-two" "\ue35a"
+			"clock-two-thirty" "\ue35b"
+			"clone" "\uf24d"
+			"closed-captioning" "\uf20a"
+			"closed-captioning-slash" "\ue135"
+			"clothes-hanger" "\ue136"
+			"cloud" "\uf0c2"
+			"cloud-arrow-down" "\uf0ed"
+			"cloud-arrow-up" "\uf0ee"
+			"cloud-binary" "\ue601"
+			"cloud-bolt" "\uf76c"
+			"cloud-bolt-moon" "\uf76d"
+			"cloud-bolt-sun" "\uf76e"
+			"cloud-check" "\ue35c"
+			"cloud-drizzle" "\uf738"
+			"cloud-exclamation" "\ue491"
+			"cloud-fog" "\uf74e"
+			"cloud-hail" "\uf739"
+			"cloud-hail-mixed" "\uf73a"
+			"cloud-meatball" "\uf73b"
+			"cloud-minus" "\ue35d"
+			"cloud-moon" "\uf6c3"
+			"cloud-moon-rain" "\uf73c"
+			"cloud-music" "\uf8ae"
+			"cloud-plus" "\ue35e"
+			"cloud-question" "\ue492"
+			"cloud-rain" "\uf73d"
+			"cloud-rainbow" "\uf73e"
+			"cloud-showers" "\uf73f"
+			"cloud-showers-heavy" "\uf740"
+			"cloud-showers-water" "\ue4e4"
+			"cloud-slash" "\ue137"
+			"cloud-sleet" "\uf741"
+			"cloud-snow" "\uf742"
+			"cloud-sun" "\uf6c4"
+			"cloud-sun-rain" "\uf743"
+			"cloud-word" "\ue138"
+			"cloud-xmark" "\ue35f"
+			"clouds" "\uf744"
+			"clouds-moon" "\uf745"
+			"clouds-sun" "\uf746"
+			"clover" "\ue139"
+			"club" "\uf327"
+			"coconut" "\ue2f6"
+			"code" "\uf121"
+			"code-branch" "\uf126"
+			"code-commit" "\uf386"
+			"code-compare" "\ue13a"
+			"code-fork" "\ue13b"
+			"code-merge" "\uf387"
+			"code-pull-request" "\ue13c"
+			"code-pull-request-closed" "\ue3f9"
+			"code-pull-request-draft" "\ue3fa"
+			"code-simple" "\ue13d"
+			"coffee-bean" "\ue13e"
+			"coffee-beans" "\ue13f"
+			"coffee-pot" "\ue002"
+			"coffin" "\uf6c6"
+			"coffin-cross" "\ue051"
+			"coin" "\uf85c"
+			"coin-blank" "\ue3fb"
+			"coin-front" "\ue3fc"
+			"coin-vertical" "\ue3fd"
+			"coins" "\uf51e"
+			"colon" "\u3a"
+			"colon-sign" "\ue140"
+			"columns-3" "\ue361"
+			"comet" "\ue003"
+			"comma" "\u2c"
+			"command" "\ue142"
+			"comment" "\uf075"
+			"comment-arrow-down" "\ue143"
+			"comment-arrow-up" "\ue144"
+			"comment-arrow-up-right" "\ue145"
+			"comment-captions" "\ue146"
+			"comment-check" "\uf4ac"
+			"comment-code" "\ue147"
+			"comment-dollar" "\uf651"
+			"comment-dots" "\uf4ad"
+			"comment-exclamation" "\uf4af"
+			"comment-heart" "\ue5c8"
+			"comment-image" "\ue148"
+			"comment-lines" "\uf4b0"
+			"comment-medical" "\uf7f5"
+			"comment-middle" "\ue149"
+			"comment-middle-top" "\ue14a"
+			"comment-minus" "\uf4b1"
+			"comment-music" "\uf8b0"
+			"comment-pen" "\uf4ae"
+			"comment-plus" "\uf4b2"
+			"comment-question" "\ue14b"
+			"comment-quote" "\ue14c"
+			"comment-slash" "\uf4b3"
+			"comment-smile" "\uf4b4"
+			"comment-sms" "\uf7cd"
+			"comment-text" "\ue14d"
+			"comment-xmark" "\uf4b5"
+			"comments" "\uf086"
+			"comments-dollar" "\uf653"
+			"comments-question" "\ue14e"
+			"comments-question-check" "\ue14f"
+			"compact-disc" "\uf51f"
+			"compass" "\uf14e"
+			"compass-drafting" "\uf568"
+			"compass-slash" "\uf5e9"
+			"compress" "\uf066"
+			"compress-wide" "\uf326"
+			"computer" "\ue4e5"
+			"computer-classic" "\uf8b1"
+			"computer-mouse" "\uf8cc"
+			"computer-mouse-scrollwheel" "\uf8cd"
+			"computer-speaker" "\uf8b2"
+			"container-storage" "\uf4b7"
+			"conveyor-belt" "\uf46e"
+			"conveyor-belt-arm" "\ue5f8"
+			"conveyor-belt-boxes" "\uf46f"
+			"conveyor-belt-empty" "\ue150"
+			"cookie" "\uf563"
+			"cookie-bite" "\uf564"
+			"copy" "\uf0c5"
+			"copyright" "\uf1f9"
+			"corn" "\uf6c7"
+			"corner" "\ue3fe"
+			"couch" "\uf4b8"
+			"court-sport" "\ue643"
+			"cow" "\uf6c8"
+			"cowbell" "\uf8b3"
+			"cowbell-circle-plus" "\uf8b4"
+			"crab" "\ue3ff"
+			"crate-apple" "\uf6b1"
+			"crate-empty" "\ue151"
+			"credit-card" "\uf09d"
+			"credit-card-blank" "\uf389"
+			"credit-card-front" "\uf38a"
+			"cricket-bat-ball" "\uf449"
+			"croissant" "\uf7f6"
+			"crop" "\uf125"
+			"crop-simple" "\uf565"
+			"cross" "\uf654"
+			"crosshairs" "\uf05b"
+			"crosshairs-simple" "\ue59f"
+			"crow" "\uf520"
+			"crown" "\uf521"
+			"crutch" "\uf7f7"
+			"crutches" "\uf7f8"
+			"cruzeiro-sign" "\ue152"
+			"crystal-ball" "\ue362"
+			"cube" "\uf1b2"
+			"cubes" "\uf1b3"
+			"cubes-stacked" "\ue4e6"
+			"cucumber" "\ue401"
+			"cup-straw" "\ue363"
+			"cup-straw-swoosh" "\ue364"
+			"cup-togo" "\uf6c5"
+			"cupcake" "\ue402"
+			"curling-stone" "\uf44a"
+			"custard" "\ue403"
+			"d" "\u44"
+			"dagger" "\uf6cb"
+			"dash" "\ue404"
+			"database" "\uf1c0"
+			"deer" "\uf78e"
+			"deer-rudolph" "\uf78f"
+			"delete-left" "\uf55a"
+			"delete-right" "\ue154"
+			"democrat" "\uf747"
+			"desktop" "\uf390"
+			"desktop-arrow-down" "\ue155"
+			"dharmachakra" "\uf655"
+			"diagram-cells" "\ue475"
+			"diagram-lean-canvas" "\ue156"
+			"diagram-nested" "\ue157"
+			"diagram-next" "\ue476"
+			"diagram-predecessor" "\ue477"
+			"diagram-previous" "\ue478"
+			"diagram-project" "\uf542"
+			"diagram-sankey" "\ue158"
+			"diagram-subtask" "\ue479"
+			"diagram-successor" "\ue47a"
+			"diagram-venn" "\ue15a"
+			"dial" "\ue15b"
+			"dial-high" "\ue15c"
+			"dial-low" "\ue15d"
+			"dial-max" "\ue15e"
+			"dial-med" "\ue15f"
+			"dial-med-low" "\ue160"
+			"dial-min" "\ue161"
+			"dial-off" "\ue162"
+			"diamond" "\uf219"
+			"diamond-exclamation" "\ue405"
+			"diamond-half" "\ue5b7"
+			"diamond-half-stroke" "\ue5b8"
+			"diamond-turn-right" "\uf5eb"
+			"dice" "\uf522"
+			"dice-d10" "\uf6cd"
+			"dice-d12" "\uf6ce"
+			"dice-d20" "\uf6cf"
+			"dice-d4" "\uf6d0"
+			"dice-d6" "\uf6d1"
+			"dice-d8" "\uf6d2"
+			"dice-five" "\uf523"
+			"dice-four" "\uf524"
+			"dice-one" "\uf525"
+			"dice-six" "\uf526"
+			"dice-three" "\uf527"
+			"dice-two" "\uf528"
+			"dinosaur" "\ue5fe"
+			"diploma" "\uf5ea"
+			"disc-drive" "\uf8b5"
+			"disease" "\uf7fa"
+			"display" "\ue163"
+			"display-arrow-down" "\ue164"
+			"display-chart-up" "\ue5e3"
+			"display-chart-up-circle-currency" "\ue5e5"
+			"display-chart-up-circle-dollar" "\ue5e6"
+			"display-code" "\ue165"
+			"display-medical" "\ue166"
+			"display-slash" "\ue2fa"
+			"distribute-spacing-horizontal" "\ue365"
+			"distribute-spacing-vertical" "\ue366"
+			"ditto" "\u22"
+			"divide" "\uf529"
+			"dna" "\uf471"
+			"do-not-enter" "\uf5ec"
+			"dog" "\uf6d3"
+			"dog-leashed" "\uf6d4"
+			"dollar-sign" "\u24"
+			"dolly" "\uf472"
+			"dolly-empty" "\uf473"
+			"dolphin" "\ue168"
+			"dong-sign" "\ue169"
+			"donut" "\ue406"
+			"door-closed" "\uf52a"
+			"door-open" "\uf52b"
+			"dove" "\uf4ba"
+			"down" "\uf354"
+			"down-from-dotted-line" "\ue407"
+			"down-from-line" "\uf349"
+			"down-left" "\ue16a"
+			"down-left-and-up-right-to-center" "\uf422"
+			"down-long" "\uf309"
+			"down-right" "\ue16b"
+			"down-to-bracket" "\ue4e7"
+			"down-to-dotted-line" "\ue408"
+			"down-to-line" "\uf34a"
+			"download" "\uf019"
+			"dragon" "\uf6d5"
+			"draw-circle" "\uf5ed"
+			"draw-polygon" "\uf5ee"
+			"draw-square" "\uf5ef"
+			"dreidel" "\uf792"
+			"drone" "\uf85f"
+			"drone-front" "\uf860"
+			"droplet" "\uf043"
+			"droplet-degree" "\uf748"
+			"droplet-percent" "\uf750"
+			"droplet-slash" "\uf5c7"
+			"drum" "\uf569"
+			"drum-steelpan" "\uf56a"
+			"drumstick" "\uf6d6"
+			"drumstick-bite" "\uf6d7"
+			"dryer" "\uf861"
+			"dryer-heat" "\uf862"
+			"duck" "\uf6d8"
+			"dumbbell" "\uf44b"
+			"dumpster" "\uf793"
+			"dumpster-fire" "\uf794"
+			"dungeon" "\uf6d9"
+			"e" "\u45"
+			"ear" "\uf5f0"
+			"ear-deaf" "\uf2a4"
+			"ear-listen" "\uf2a2"
+			"ear-muffs" "\uf795"
+			"earth-africa" "\uf57c"
+			"earth-americas" "\uf57d"
+			"earth-asia" "\uf57e"
+			"earth-europe" "\uf7a2"
+			"earth-oceania" "\ue47b"
+			"eclipse" "\uf749"
+			"egg" "\uf7fb"
+			"egg-fried" "\uf7fc"
+			"eggplant" "\ue16c"
+			"eject" "\uf052"
+			"elephant" "\uf6da"
+			"elevator" "\ue16d"
+			"ellipsis" "\uf141"
+			"ellipsis-stroke" "\uf39b"
+			"ellipsis-stroke-vertical" "\uf39c"
+			"ellipsis-vertical" "\uf142"
+			"empty-set" "\uf656"
+			"engine" "\ue16e"
+			"engine-warning" "\uf5f2"
+			"envelope" "\uf0e0"
+			"envelope-circle-check" "\ue4e8"
+			"envelope-dot" "\ue16f"
+			"envelope-open" "\uf2b6"
+			"envelope-open-dollar" "\uf657"
+			"envelope-open-text" "\uf658"
+			"envelopes" "\ue170"
+			"envelopes-bulk" "\uf674"
+			"equals" "\u3d"
+			"eraser" "\uf12d"
+			"escalator" "\ue171"
+			"ethernet" "\uf796"
+			"euro-sign" "\uf153"
+			"excavator" "\ue656"
+			"exclamation" "\u21"
+			"expand" "\uf065"
+			"expand-wide" "\uf320"
+			"explosion" "\ue4e9"
+			"eye" "\uf06e"
+			"eye-dropper" "\uf1fb"
+			"eye-dropper-full" "\ue172"
+			"eye-dropper-half" "\ue173"
+			"eye-evil" "\uf6db"
+			"eye-low-vision" "\uf2a8"
+			"eye-slash" "\uf070"
+			"eyes" "\ue367"
+			"f" "\u46"
+			"face-angry" "\uf556"
+			"face-angry-horns" "\ue368"
+			"face-anguished" "\ue369"
+			"face-anxious-sweat" "\ue36a"
+			"face-astonished" "\ue36b"
+			"face-awesome" "\ue409"
+			"face-beam-hand-over-mouth" "\ue47c"
+			"face-clouds" "\ue47d"
+			"face-confounded" "\ue36c"
+			"face-confused" "\ue36d"
+			"face-cowboy-hat" "\ue36e"
+			"face-diagonal-mouth" "\ue47e"
+			"face-disappointed" "\ue36f"
+			"face-disguise" "\ue370"
+			"face-dizzy" "\uf567"
+			"face-dotted" "\ue47f"
+			"face-downcast-sweat" "\ue371"
+			"face-drooling" "\ue372"
+			"face-exhaling" "\ue480"
+			"face-explode" "\ue2fe"
+			"face-expressionless" "\ue373"
+			"face-eyes-xmarks" "\ue374"
+			"face-fearful" "\ue375"
+			"face-flushed" "\uf579"
+			"face-frown" "\uf119"
+			"face-frown-open" "\uf57a"
+			"face-frown-slight" "\ue376"
+			"face-glasses" "\ue377"
+			"face-grimace" "\uf57f"
+			"face-grin" "\uf580"
+			"face-grin-beam" "\uf582"
+			"face-grin-beam-sweat" "\uf583"
+			"face-grin-hearts" "\uf584"
+			"face-grin-squint" "\uf585"
+			"face-grin-squint-tears" "\uf586"
+			"face-grin-stars" "\uf587"
+			"face-grin-tears" "\uf588"
+			"face-grin-tongue" "\uf589"
+			"face-grin-tongue-squint" "\uf58a"
+			"face-grin-tongue-wink" "\uf58b"
+			"face-grin-wide" "\uf581"
+			"face-grin-wink" "\uf58c"
+			"face-hand-over-mouth" "\ue378"
+			"face-hand-peeking" "\ue481"
+			"face-hand-yawn" "\ue379"
+			"face-head-bandage" "\ue37a"
+			"face-holding-back-tears" "\ue482"
+			"face-hushed" "\ue37b"
+			"face-icicles" "\ue37c"
+			"face-kiss" "\uf596"
+			"face-kiss-beam" "\uf597"
+			"face-kiss-closed-eyes" "\ue37d"
+			"face-kiss-wink-heart" "\uf598"
+			"face-laugh" "\uf599"
+			"face-laugh-beam" "\uf59a"
+			"face-laugh-squint" "\uf59b"
+			"face-laugh-wink" "\uf59c"
+			"face-lying" "\ue37e"
+			"face-mask" "\ue37f"
+			"face-meh" "\uf11a"
+			"face-meh-blank" "\uf5a4"
+			"face-melting" "\ue483"
+			"face-monocle" "\ue380"
+			"face-nauseated" "\ue381"
+			"face-nose-steam" "\ue382"
+			"face-party" "\ue383"
+			"face-pensive" "\ue384"
+			"face-persevering" "\ue385"
+			"face-pleading" "\ue386"
+			"face-pouting" "\ue387"
+			"face-raised-eyebrow" "\ue388"
+			"face-relieved" "\ue389"
+			"face-rolling-eyes" "\uf5a5"
+			"face-sad-cry" "\uf5b3"
+			"face-sad-sweat" "\ue38a"
+			"face-sad-tear" "\uf5b4"
+			"face-saluting" "\ue484"
+			"face-scream" "\ue38b"
+			"face-shush" "\ue38c"
+			"face-sleeping" "\ue38d"
+			"face-sleepy" "\ue38e"
+			"face-smile" "\uf118"
+			"face-smile-beam" "\uf5b8"
+			"face-smile-halo" "\ue38f"
+			"face-smile-hearts" "\ue390"
+			"face-smile-horns" "\ue391"
+			"face-smile-plus" "\uf5b9"
+			"face-smile-relaxed" "\ue392"
+			"face-smile-tear" "\ue393"
+			"face-smile-tongue" "\ue394"
+			"face-smile-upside-down" "\ue395"
+			"face-smile-wink" "\uf4da"
+			"face-smiling-hands" "\ue396"
+			"face-smirking" "\ue397"
+			"face-spiral-eyes" "\ue485"
+			"face-sunglasses" "\ue398"
+			"face-surprise" "\uf5c2"
+			"face-swear" "\ue399"
+			"face-thermometer" "\ue39a"
+			"face-thinking" "\ue39b"
+			"face-tired" "\uf5c8"
+			"face-tissue" "\ue39c"
+			"face-tongue-money" "\ue39d"
+			"face-tongue-sweat" "\ue39e"
+			"face-unamused" "\ue39f"
+			"face-viewfinder" "\ue2ff"
+			"face-vomit" "\ue3a0"
+			"face-weary" "\ue3a1"
+			"face-woozy" "\ue3a2"
+			"face-worried" "\ue3a3"
+			"face-zany" "\ue3a4"
+			"face-zipper" "\ue3a5"
+			"falafel" "\ue40a"
+			"family" "\ue300"
+			"family-dress" "\ue301"
+			"family-pants" "\ue302"
+			"fan" "\uf863"
+			"fan-table" "\ue004"
+			"farm" "\uf864"
+			"faucet" "\ue005"
+			"faucet-drip" "\ue006"
+			"fax" "\uf1ac"
+			"feather" "\uf52d"
+			"feather-pointed" "\uf56b"
+			"fence" "\ue303"
+			"ferris-wheel" "\ue174"
+			"ferry" "\ue4ea"
+			"field-hockey-stick-ball" "\uf44c"
+			"file" "\uf15b"
+			"file-arrow-down" "\uf56d"
+			"file-arrow-up" "\uf574"
+			"file-audio" "\uf1c7"
+			"file-binary" "\ue175"
+			"file-certificate" "\uf5f3"
+			"file-chart-column" "\uf659"
+			"file-chart-pie" "\uf65a"
+			"file-check" "\uf316"
+			"file-circle-check" "\ue5a0"
+			"file-circle-exclamation" "\ue4eb"
+			"file-circle-info" "\ue493"
+			"file-circle-minus" "\ue4ed"
+			"file-circle-plus" "\ue494"
+			"file-circle-question" "\ue4ef"
+			"file-circle-xmark" "\ue5a1"
+			"file-code" "\uf1c9"
+			"file-contract" "\uf56c"
+			"file-csv" "\uf6dd"
+			"file-dashed-line" "\uf877"
+			"file-doc" "\ue5ed"
+			"file-eps" "\ue644"
+			"file-excel" "\uf1c3"
+			"file-exclamation" "\uf31a"
+			"file-export" "\uf56e"
+			"file-gif" "\ue645"
+			"file-heart" "\ue176"
+			"file-image" "\uf1c5"
+			"file-import" "\uf56f"
+			"file-invoice" "\uf570"
+			"file-invoice-dollar" "\uf571"
+			"file-jpg" "\ue646"
+			"file-lines" "\uf15c"
+			"file-lock" "\ue3a6"
+			"file-magnifying-glass" "\uf865"
+			"file-medical" "\uf477"
+			"file-minus" "\uf318"
+			"file-mov" "\ue647"
+			"file-mp3" "\ue648"
+			"file-mp4" "\ue649"
+			"file-music" "\uf8b6"
+			"file-pdf" "\uf1c1"
+			"file-pen" "\uf31c"
+			"file-plus" "\uf319"
+			"file-plus-minus" "\ue177"
+			"file-png" "\ue666"
+			"file-powerpoint" "\uf1c4"
+			"file-ppt" "\ue64a"
+			"file-prescription" "\uf572"
+			"file-shield" "\ue4f0"
+			"file-signature" "\uf573"
+			"file-slash" "\ue3a7"
+			"file-spreadsheet" "\uf65b"
+			"file-svg" "\ue64b"
+			"file-user" "\uf65c"
+			"file-vector" "\ue64c"
+			"file-video" "\uf1c8"
+			"file-waveform" "\uf478"
+			"file-word" "\uf1c2"
+			"file-xls" "\ue64d"
+			"file-xmark" "\uf317"
+			"file-xml" "\ue654"
+			"file-zip" "\ue5ee"
+			"file-zipper" "\uf1c6"
+			"files" "\ue178"
+			"files-medical" "\uf7fd"
+			"fill" "\uf575"
+			"fill-drip" "\uf576"
+			"film" "\uf008"
+			"film-canister" "\uf8b7"
+			"film-simple" "\uf3a0"
+			"film-slash" "\ue179"
+			"films" "\ue17a"
+			"filter" "\uf0b0"
+			"filter-circle-dollar" "\uf662"
+			"filter-circle-xmark" "\ue17b"
+			"filter-list" "\ue17c"
+			"filter-slash" "\ue17d"
+			"filters" "\ue17e"
+			"fingerprint" "\uf577"
+			"fire" "\uf06d"
+			"fire-burner" "\ue4f1"
+			"fire-extinguisher" "\uf134"
+			"fire-flame" "\uf6df"
+			"fire-flame-curved" "\uf7e4"
+			"fire-flame-simple" "\uf46a"
+			"fire-hydrant" "\ue17f"
+			"fire-smoke" "\uf74b"
+			"fireplace" "\uf79a"
+			"fish" "\uf578"
+			"fish-bones" "\ue304"
+			"fish-cooked" "\uf7fe"
+			"fish-fins" "\ue4f2"
+			"fishing-rod" "\ue3a8"
+			"flag" "\uf024"
+			"flag-checkered" "\uf11e"
+			"flag-pennant" "\uf456"
+			"flag-swallowtail" "\uf74c"
+			"flag-usa" "\uf74d"
+			"flashlight" "\uf8b8"
+			"flask" "\uf0c3"
+			"flask-gear" "\ue5f1"
+			"flask-round-poison" "\uf6e0"
+			"flask-round-potion" "\uf6e1"
+			"flask-vial" "\ue4f3"
+			"flatbread" "\ue40b"
+			"flatbread-stuffed" "\ue40c"
+			"floppy-disk" "\uf0c7"
+			"floppy-disk-circle-arrow-right" "\ue180"
+			"floppy-disk-circle-xmark" "\ue181"
+			"floppy-disk-pen" "\ue182"
+			"floppy-disks" "\ue183"
+			"florin-sign" "\ue184"
+			"flower" "\uf7ff"
+			"flower-daffodil" "\uf800"
+			"flower-tulip" "\uf801"
+			"flute" "\uf8b9"
+			"flux-capacitor" "\uf8ba"
+			"flying-disc" "\ue3a9"
+			"folder" "\uf07b"
+			"folder-arrow-down" "\ue053"
+			"folder-arrow-up" "\ue054"
+			"folder-bookmark" "\ue186"
+			"folder-check" "\ue64e"
+			"folder-closed" "\ue185"
+			"folder-gear" "\ue187"
+			"folder-grid" "\ue188"
+			"folder-heart" "\ue189"
+			"folder-image" "\ue18a"
+			"folder-magnifying-glass" "\ue18b"
+			"folder-medical" "\ue18c"
+			"folder-minus" "\uf65d"
+			"folder-music" "\ue18d"
+			"folder-open" "\uf07c"
+			"folder-plus" "\uf65e"
+			"folder-tree" "\uf802"
+			"folder-user" "\ue18e"
+			"folder-xmark" "\uf65f"
+			"folders" "\uf660"
+			"fondue-pot" "\ue40d"
+			"font" "\uf031"
+			"font-awesome" "\uf2b4"
+			"font-case" "\uf866"
+			"football" "\uf44e"
+			"football-helmet" "\uf44f"
+			"fork" "\uf2e3"
+			"fork-knife" "\uf2e6"
+			"forklift" "\uf47a"
+			"fort" "\ue486"
+			"forward" "\uf04e"
+			"forward-fast" "\uf050"
+			"forward-step" "\uf051"
+			"frame" "\ue495"
+			"franc-sign" "\ue18f"
+			"french-fries" "\uf803"
+			"frog" "\uf52e"
+			"function" "\uf661"
+			"futbol" "\uf1e3"
+			"g" "\u47"
+			"galaxy" "\ue008"
+			"gallery-thumbnails" "\ue3aa"
+			"game-board" "\uf867"
+			"game-board-simple" "\uf868"
+			"game-console-handheld" "\uf8bb"
+			"game-console-handheld-crank" "\ue5b9"
+			"gamepad" "\uf11b"
+			"gamepad-modern" "\ue5a2"
+			"garage" "\ue009"
+			"garage-car" "\ue00a"
+			"garage-open" "\ue00b"
+			"garlic" "\ue40e"
+			"gas-pump" "\uf52f"
+			"gas-pump-slash" "\uf5f4"
+			"gauge" "\uf624"
+			"gauge-circle-bolt" "\ue496"
+			"gauge-circle-minus" "\ue497"
+			"gauge-circle-plus" "\ue498"
+			"gauge-high" "\uf625"
+			"gauge-low" "\uf627"
+			"gauge-max" "\uf626"
+			"gauge-min" "\uf628"
+			"gauge-simple" "\uf629"
+			"gauge-simple-high" "\uf62a"
+			"gauge-simple-low" "\uf62c"
+			"gauge-simple-max" "\uf62b"
+			"gauge-simple-min" "\uf62d"
+			"gavel" "\uf0e3"
+			"gear" "\uf013"
+			"gear-code" "\ue5e8"
+			"gear-complex" "\ue5e9"
+			"gear-complex-code" "\ue5eb"
+			"gears" "\uf085"
+			"gem" "\uf3a5"
+			"genderless" "\uf22d"
+			"ghost" "\uf6e2"
+			"gif" "\ue190"
+			"gift" "\uf06b"
+			"gift-card" "\uf663"
+			"gifts" "\uf79c"
+			"gingerbread-man" "\uf79d"
+			"glass" "\uf804"
+			"glass-citrus" "\uf869"
+			"glass-empty" "\ue191"
+			"glass-half" "\ue192"
+			"glass-water" "\ue4f4"
+			"glass-water-droplet" "\ue4f5"
+			"glasses" "\uf530"
+			"glasses-round" "\uf5f5"
+			"globe" "\uf0ac"
+			"globe-pointer" "\ue60e"
+			"globe-snow" "\uf7a3"
+			"globe-stand" "\uf5f6"
+			"goal-net" "\ue3ab"
+			"golf-ball-tee" "\uf450"
+			"golf-club" "\uf451"
+			"golf-flag-hole" "\ue3ac"
+			"gopuram" "\uf664"
+			"graduation-cap" "\uf19d"
+			"gramophone" "\uf8bd"
+			"grapes" "\ue306"
+			"grate" "\ue193"
+			"grate-droplet" "\ue194"
+			"greater-than" "\u3e"
+			"greater-than-equal" "\uf532"
+			"grid" "\ue195"
+			"grid-2" "\ue196"
+			"grid-2-plus" "\ue197"
+			"grid-4" "\ue198"
+			"grid-5" "\ue199"
+			"grid-dividers" "\ue3ad"
+			"grid-horizontal" "\ue307"
+			"grid-round" "\ue5da"
+			"grid-round-2" "\ue5db"
+			"grid-round-2-plus" "\ue5dc"
+			"grid-round-4" "\ue5dd"
+			"grid-round-5" "\ue5de"
+			"grill" "\ue5a3"
+			"grill-fire" "\ue5a4"
+			"grill-hot" "\ue5a5"
+			"grip" "\uf58d"
+			"grip-dots" "\ue410"
+			"grip-dots-vertical" "\ue411"
+			"grip-lines" "\uf7a4"
+			"grip-lines-vertical" "\uf7a5"
+			"grip-vertical" "\uf58e"
+			"group-arrows-rotate" "\ue4f6"
+			"guarani-sign" "\ue19a"
+			"guitar" "\uf7a6"
+			"guitar-electric" "\uf8be"
+			"guitars" "\uf8bf"
+			"gun" "\ue19b"
+			"gun-slash" "\ue19c"
+			"gun-squirt" "\ue19d"
+			"h" "\u48"
+			"h1" "\uf313"
+			"h2" "\uf314"
+			"h3" "\uf315"
+			"h4" "\uf86a"
+			"h5" "\ue412"
+			"h6" "\ue413"
+			"hammer" "\uf6e3"
+			"hammer-brush" "\ue620"
+			"hammer-crash" "\ue414"
+			"hammer-war" "\uf6e4"
+			"hamsa" "\uf665"
+			"hand" "\uf256"
+			"hand-back-fist" "\uf255"
+			"hand-back-point-down" "\ue19e"
+			"hand-back-point-left" "\ue19f"
+			"hand-back-point-ribbon" "\ue1a0"
+			"hand-back-point-right" "\ue1a1"
+			"hand-back-point-up" "\ue1a2"
+			"hand-dots" "\uf461"
+			"hand-fingers-crossed" "\ue1a3"
+			"hand-fist" "\uf6de"
+			"hand-heart" "\uf4bc"
+			"hand-holding" "\uf4bd"
+			"hand-holding-box" "\uf47b"
+			"hand-holding-circle-dollar" "\ue621"
+			"hand-holding-dollar" "\uf4c0"
+			"hand-holding-droplet" "\uf4c1"
+			"hand-holding-hand" "\ue4f7"
+			"hand-holding-heart" "\uf4be"
+			"hand-holding-magic" "\uf6e5"
+			"hand-holding-medical" "\ue05c"
+			"hand-holding-seedling" "\uf4bf"
+			"hand-holding-skull" "\ue1a4"
+			"hand-horns" "\ue1a9"
+			"hand-lizard" "\uf258"
+			"hand-love" "\ue1a5"
+			"hand-middle-finger" "\uf806"
+			"hand-peace" "\uf25b"
+			"hand-point-down" "\uf0a7"
+			"hand-point-left" "\uf0a5"
+			"hand-point-ribbon" "\ue1a6"
+			"hand-point-right" "\uf0a4"
+			"hand-point-up" "\uf0a6"
+			"hand-pointer" "\uf25a"
+			"hand-scissors" "\uf257"
+			"hand-sparkles" "\ue05d"
+			"hand-spock" "\uf259"
+			"hand-wave" "\ue1a7"
+			"handcuffs" "\ue4f8"
+			"hands" "\uf2a7"
+			"hands-asl-interpreting" "\uf2a3"
+			"hands-bound" "\ue4f9"
+			"hands-bubbles" "\ue05e"
+			"hands-clapping" "\ue1a8"
+			"hands-holding" "\uf4c2"
+			"hands-holding-child" "\ue4fa"
+			"hands-holding-circle" "\ue4fb"
+			"hands-holding-diamond" "\uf47c"
+			"hands-holding-dollar" "\uf4c5"
+			"hands-holding-heart" "\uf4c3"
+			"hands-praying" "\uf684"
+			"handshake" "\uf2b5"
+			"handshake-angle" "\uf4c4"
+			"handshake-simple" "\uf4c6"
+			"handshake-simple-slash" "\ue05f"
+			"handshake-slash" "\ue060"
+			"hanukiah" "\uf6e6"
+			"hard-drive" "\uf0a0"
+			"hashtag" "\u23"
+			"hashtag-lock" "\ue415"
+			"hat-beach" "\ue606"
+			"hat-chef" "\uf86b"
+			"hat-cowboy" "\uf8c0"
+			"hat-cowboy-side" "\uf8c1"
+			"hat-santa" "\uf7a7"
+			"hat-winter" "\uf7a8"
+			"hat-witch" "\uf6e7"
+			"hat-wizard" "\uf6e8"
+			"head-side" "\uf6e9"
+			"head-side-brain" "\uf808"
+			"head-side-cough" "\ue061"
+			"head-side-cough-slash" "\ue062"
+			"head-side-gear" "\ue611"
+			"head-side-goggles" "\uf6ea"
+			"head-side-headphones" "\uf8c2"
+			"head-side-heart" "\ue1aa"
+			"head-side-mask" "\ue063"
+			"head-side-medical" "\uf809"
+			"head-side-virus" "\ue064"
+			"heading" "\uf1dc"
+			"headphones" "\uf025"
+			"headphones-simple" "\uf58f"
+			"headset" "\uf590"
+			"heart" "\uf004"
+			"heart-circle-bolt" "\ue4fc"
+			"heart-circle-check" "\ue4fd"
+			"heart-circle-exclamation" "\ue4fe"
+			"heart-circle-minus" "\ue4ff"
+			"heart-circle-plus" "\ue500"
+			"heart-circle-xmark" "\ue501"
+			"heart-crack" "\uf7a9"
+			"heart-half" "\ue1ab"
+			"heart-half-stroke" "\ue1ac"
+			"heart-pulse" "\uf21e"
+			"heat" "\ue00c"
+			"helicopter" "\uf533"
+			"helicopter-symbol" "\ue502"
+			"helmet-battle" "\uf6eb"
+			"helmet-safety" "\uf807"
+			"helmet-un" "\ue503"
+			"hexagon" "\uf312"
+			"hexagon-check" "\ue416"
+			"hexagon-divide" "\ue1ad"
+			"hexagon-exclamation" "\ue417"
+			"hexagon-image" "\ue504"
+			"hexagon-minus" "\uf307"
+			"hexagon-plus" "\uf300"
+			"hexagon-vertical-nft" "\ue505"
+			"hexagon-vertical-nft-slanted" "\ue506"
+			"hexagon-xmark" "\uf2ee"
+			"high-definition" "\ue1ae"
+			"highlighter" "\uf591"
+			"highlighter-line" "\ue1af"
+			"hill-avalanche" "\ue507"
+			"hill-rockslide" "\ue508"
+			"hippo" "\uf6ed"
+			"hockey-mask" "\uf6ee"
+			"hockey-puck" "\uf453"
+			"hockey-stick-puck" "\ue3ae"
+			"hockey-sticks" "\uf454"
+			"holly-berry" "\uf7aa"
+			"honey-pot" "\ue418"
+			"hood-cloak" "\uf6ef"
+			"horizontal-rule" "\uf86c"
+			"horse" "\uf6f0"
+			"horse-head" "\uf7ab"
+			"horse-saddle" "\uf8c3"
+			"hose" "\ue419"
+			"hose-reel" "\ue41a"
+			"hospital" "\uf0f8"
+			"hospital-user" "\uf80d"
+			"hospitals" "\uf80e"
+			"hot-tub-person" "\uf593"
+			"hotdog" "\uf80f"
+			"hotel" "\uf594"
+			"hourglass" "\uf254"
+			"hourglass-clock" "\ue41b"
+			"hourglass-end" "\uf253"
+			"hourglass-half" "\uf252"
+			"hourglass-start" "\uf251"
+			"house" "\uf015"
+			"house-blank" "\ue487"
+			"house-building" "\ue1b1"
+			"house-chimney" "\ue3af"
+			"house-chimney-blank" "\ue3b0"
+			"house-chimney-crack" "\uf6f1"
+			"house-chimney-heart" "\ue1b2"
+			"house-chimney-medical" "\uf7f2"
+			"house-chimney-user" "\ue065"
+			"house-chimney-window" "\ue00d"
+			"house-circle-check" "\ue509"
+			"house-circle-exclamation" "\ue50a"
+			"house-circle-xmark" "\ue50b"
+			"house-crack" "\ue3b1"
+			"house-day" "\ue00e"
+			"house-fire" "\ue50c"
+			"house-flag" "\ue50d"
+			"house-flood-water" "\ue50e"
+			"house-flood-water-circle-arrow-right" "\ue50f"
+			"house-heart" "\uf4c9"
+			"house-laptop" "\ue066"
+			"house-lock" "\ue510"
+			"house-medical" "\ue3b2"
+			"house-medical-circle-check" "\ue511"
+			"house-medical-circle-exclamation" "\ue512"
+			"house-medical-circle-xmark" "\ue513"
+			"house-medical-flag" "\ue514"
+			"house-night" "\ue010"
+			"house-person-leave" "\ue00f"
+			"house-person-return" "\ue011"
+			"house-signal" "\ue012"
+			"house-tree" "\ue1b3"
+			"house-tsunami" "\ue515"
+			"house-turret" "\ue1b4"
+			"house-user" "\ue1b0"
+			"house-water" "\uf74f"
+			"house-window" "\ue3b3"
+			"hryvnia-sign" "\uf6f2"
+			"hundred-points" "\ue41c"
+			"hurricane" "\uf751"
+			"hyphen" "\u2d"
+			"i" "\u49"
+			"i-cursor" "\uf246"
+			"ice-cream" "\uf810"
+			"ice-skate" "\uf7ac"
+			"icicles" "\uf7ad"
+			"icons" "\uf86d"
+			"id-badge" "\uf2c1"
+			"id-card" "\uf2c2"
+			"id-card-clip" "\uf47f"
+			"igloo" "\uf7ae"
+			"image" "\uf03e"
+			"image-landscape" "\ue1b5"
+			"image-polaroid" "\uf8c4"
+			"image-polaroid-user" "\ue1b6"
+			"image-portrait" "\uf3e0"
+			"image-slash" "\ue1b7"
+			"image-user" "\ue1b8"
+			"images" "\uf302"
+			"images-user" "\ue1b9"
+			"inbox" "\uf01c"
+			"inbox-full" "\ue1ba"
+			"inbox-in" "\uf310"
+			"inbox-out" "\uf311"
+			"inboxes" "\ue1bb"
+			"indent" "\uf03c"
+			"indian-rupee-sign" "\ue1bc"
+			"industry" "\uf275"
+			"industry-windows" "\uf3b3"
+			"infinity" "\uf534"
+			"info" "\uf129"
+			"inhaler" "\uf5f9"
+			"input-numeric" "\ue1bd"
+			"input-pipe" "\ue1be"
+			"input-text" "\ue1bf"
+			"integral" "\uf667"
+			"interrobang" "\ue5ba"
+			"intersection" "\uf668"
+			"island-tropical" "\uf811"
+			"italic" "\uf033"
+			"j" "\u4a"
+			"jack-o-lantern" "\uf30e"
+			"jar" "\ue516"
+			"jar-wheat" "\ue517"
+			"jedi" "\uf669"
+			"jet-fighter" "\uf0fb"
+			"jet-fighter-up" "\ue518"
+			"joint" "\uf595"
+			"joystick" "\uf8c5"
+			"jug" "\uf8c6"
+			"jug-bottle" "\ue5fb"
+			"jug-detergent" "\ue519"
+			"k" "\u4b"
+			"kaaba" "\uf66b"
+			"kazoo" "\uf8c7"
+			"kerning" "\uf86f"
+			"key" "\uf084"
+			"key-skeleton" "\uf6f3"
+			"key-skeleton-left-right" "\ue3b4"
+			"keyboard" "\uf11c"
+			"keyboard-brightness" "\ue1c0"
+			"keyboard-brightness-low" "\ue1c1"
+			"keyboard-down" "\ue1c2"
+			"keyboard-left" "\ue1c3"
+			"keynote" "\uf66c"
+			"khanda" "\uf66d"
+			"kidneys" "\uf5fb"
+			"kip-sign" "\ue1c4"
+			"kit-medical" "\uf479"
+			"kitchen-set" "\ue51a"
+			"kite" "\uf6f4"
+			"kiwi-bird" "\uf535"
+			"kiwi-fruit" "\ue30c"
+			"knife" "\uf2e4"
+			"knife-kitchen" "\uf6f5"
+			"l" "\u4c"
+			"lacrosse-stick" "\ue3b5"
+			"lacrosse-stick-ball" "\ue3b6"
+			"lambda" "\uf66e"
+			"lamp" "\uf4ca"
+			"lamp-desk" "\ue014"
+			"lamp-floor" "\ue015"
+			"lamp-street" "\ue1c5"
+			"land-mine-on" "\ue51b"
+			"landmark" "\uf66f"
+			"landmark-dome" "\uf752"
+			"landmark-flag" "\ue51c"
+			"landmark-magnifying-glass" "\ue622"
+			"language" "\uf1ab"
+			"laptop" "\uf109"
+			"laptop-arrow-down" "\ue1c6"
+			"laptop-binary" "\ue5e7"
+			"laptop-code" "\uf5fc"
+			"laptop-file" "\ue51d"
+			"laptop-medical" "\uf812"
+			"laptop-mobile" "\uf87a"
+			"laptop-slash" "\ue1c7"
+			"lari-sign" "\ue1c8"
+			"lasso" "\uf8c8"
+			"lasso-sparkles" "\ue1c9"
+			"layer-group" "\uf5fd"
+			"layer-minus" "\uf5fe"
+			"layer-plus" "\uf5ff"
+			"leaf" "\uf06c"
+			"leaf-heart" "\uf4cb"
+			"leaf-maple" "\uf6f6"
+			"leaf-oak" "\uf6f7"
+			"leafy-green" "\ue41d"
+			"left" "\uf355"
+			"left-from-line" "\uf348"
+			"left-long" "\uf30a"
+			"left-long-to-line" "\ue41e"
+			"left-right" "\uf337"
+			"left-to-line" "\uf34b"
+			"lemon" "\uf094"
+			"less-than" "\u3c"
+			"less-than-equal" "\uf537"
+			"life-ring" "\uf1cd"
+			"light-ceiling" "\ue016"
+			"light-emergency" "\ue41f"
+			"light-emergency-on" "\ue420"
+			"light-switch" "\ue017"
+			"light-switch-off" "\ue018"
+			"light-switch-on" "\ue019"
+			"lightbulb" "\uf0eb"
+			"lightbulb-cfl" "\ue5a6"
+			"lightbulb-cfl-on" "\ue5a7"
+			"lightbulb-dollar" "\uf670"
+			"lightbulb-exclamation" "\uf671"
+			"lightbulb-exclamation-on" "\ue1ca"
+			"lightbulb-gear" "\ue5fd"
+			"lightbulb-on" "\uf672"
+			"lightbulb-slash" "\uf673"
+			"lighthouse" "\ue612"
+			"lights-holiday" "\uf7b2"
+			"line-columns" "\uf870"
+			"line-height" "\uf871"
+			"lines-leaning" "\ue51e"
+			"link" "\uf0c1"
+			"link-horizontal" "\ue1cb"
+			"link-horizontal-slash" "\ue1cc"
+			"link-simple" "\ue1cd"
+			"link-simple-slash" "\ue1ce"
+			"link-slash" "\uf127"
+			"lips" "\uf600"
+			"lira-sign" "\uf195"
+			"list" "\uf03a"
+			"list-check" "\uf0ae"
+			"list-dropdown" "\ue1cf"
+			"list-music" "\uf8c9"
+			"list-ol" "\uf0cb"
+			"list-radio" "\ue1d0"
+			"list-timeline" "\ue1d1"
+			"list-tree" "\ue1d2"
+			"list-ul" "\uf0ca"
+			"litecoin-sign" "\ue1d3"
+			"loader" "\ue1d4"
+			"lobster" "\ue421"
+			"location-arrow" "\uf124"
+			"location-arrow-up" "\ue63a"
+			"location-check" "\uf606"
+			"location-crosshairs" "\uf601"
+			"location-crosshairs-slash" "\uf603"
+			"location-dot" "\uf3c5"
+			"location-dot-slash" "\uf605"
+			"location-exclamation" "\uf608"
+			"location-minus" "\uf609"
+			"location-pen" "\uf607"
+			"location-pin" "\uf041"
+			"location-pin-lock" "\ue51f"
+			"location-pin-slash" "\uf60c"
+			"location-plus" "\uf60a"
+			"location-question" "\uf60b"
+			"location-smile" "\uf60d"
+			"location-xmark" "\uf60e"
+			"lock" "\uf023"
+			"lock-a" "\ue422"
+			"lock-hashtag" "\ue423"
+			"lock-keyhole" "\uf30d"
+			"lock-keyhole-open" "\uf3c2"
+			"lock-open" "\uf3c1"
+			"locust" "\ue520"
+			"lollipop" "\ue424"
+			"loveseat" "\uf4cc"
+			"luchador-mask" "\uf455"
+			"lungs" "\uf604"
+			"lungs-virus" "\ue067"
+			"m" "\u4d"
+			"mace" "\uf6f8"
+			"magnet" "\uf076"
+			"magnifying-glass" "\uf002"
+			"magnifying-glass-arrow-right" "\ue521"
+			"magnifying-glass-arrows-rotate" "\ue65e"
+			"magnifying-glass-chart" "\ue522"
+			"magnifying-glass-dollar" "\uf688"
+			"magnifying-glass-location" "\uf689"
+			"magnifying-glass-minus" "\uf010"
+			"magnifying-glass-music" "\ue65f"
+			"magnifying-glass-play" "\ue660"
+			"magnifying-glass-plus" "\uf00e"
+			"magnifying-glass-waveform" "\ue661"
+			"mailbox" "\uf813"
+			"mailbox-flag-up" "\ue5bb"
+			"manat-sign" "\ue1d5"
+			"mandolin" "\uf6f9"
+			"mango" "\ue30f"
+			"manhole" "\ue1d6"
+			"map" "\uf279"
+			"map-location" "\uf59f"
+			"map-location-dot" "\uf5a0"
+			"map-pin" "\uf276"
+			"marker" "\uf5a1"
+			"mars" "\uf222"
+			"mars-and-venus" "\uf224"
+			"mars-and-venus-burst" "\ue523"
+			"mars-double" "\uf227"
+			"mars-stroke" "\uf229"
+			"mars-stroke-right" "\uf22b"
+			"mars-stroke-up" "\uf22a"
+			"martini-glass" "\uf57b"
+			"martini-glass-citrus" "\uf561"
+			"martini-glass-empty" "\uf000"
+			"mask" "\uf6fa"
+			"mask-face" "\ue1d7"
+			"mask-snorkel" "\ue3b7"
+			"mask-ventilator" "\ue524"
+			"masks-theater" "\uf630"
+			"mattress-pillow" "\ue525"
+			"maximize" "\uf31e"
+			"meat" "\uf814"
+			"medal" "\uf5a2"
+			"megaphone" "\uf675"
+			"melon" "\ue310"
+			"melon-slice" "\ue311"
+			"memo" "\ue1d8"
+			"memo-circle-check" "\ue1d9"
+			"memo-circle-info" "\ue49a"
+			"memo-pad" "\ue1da"
+			"memory" "\uf538"
+			"menorah" "\uf676"
+			"mercury" "\uf223"
+			"merge" "\ue526"
+			"message" "\uf27a"
+			"message-arrow-down" "\ue1db"
+			"message-arrow-up" "\ue1dc"
+			"message-arrow-up-right" "\ue1dd"
+			"message-bot" "\ue3b8"
+			"message-captions" "\ue1de"
+			"message-check" "\uf4a2"
+			"message-code" "\ue1df"
+			"message-dollar" "\uf650"
+			"message-dots" "\uf4a3"
+			"message-exclamation" "\uf4a5"
+			"message-heart" "\ue5c9"
+			"message-image" "\ue1e0"
+			"message-lines" "\uf4a6"
+			"message-medical" "\uf7f4"
+			"message-middle" "\ue1e1"
+			"message-middle-top" "\ue1e2"
+			"message-minus" "\uf4a7"
+			"message-music" "\uf8af"
+			"message-pen" "\uf4a4"
+			"message-plus" "\uf4a8"
+			"message-question" "\ue1e3"
+			"message-quote" "\ue1e4"
+			"message-slash" "\uf4a9"
+			"message-smile" "\uf4aa"
+			"message-sms" "\ue1e5"
+			"message-text" "\ue1e6"
+			"message-xmark" "\uf4ab"
+			"messages" "\uf4b6"
+			"messages-dollar" "\uf652"
+			"messages-question" "\ue1e7"
+			"meteor" "\uf753"
+			"meter" "\ue1e8"
+			"meter-bolt" "\ue1e9"
+			"meter-droplet" "\ue1ea"
+			"meter-fire" "\ue1eb"
+			"microchip" "\uf2db"
+			"microchip-ai" "\ue1ec"
+			"microphone" "\uf130"
+			"microphone-lines" "\uf3c9"
+			"microphone-lines-slash" "\uf539"
+			"microphone-slash" "\uf131"
+			"microphone-stand" "\uf8cb"
+			"microscope" "\uf610"
+			"microwave" "\ue01b"
+			"mill-sign" "\ue1ed"
+			"minimize" "\uf78c"
+			"minus" "\uf068"
+			"mistletoe" "\uf7b4"
+			"mitten" "\uf7b5"
+			"mobile" "\uf3ce"
+			"mobile-button" "\uf10b"
+			"mobile-notch" "\ue1ee"
+			"mobile-retro" "\ue527"
+			"mobile-screen" "\uf3cf"
+			"mobile-screen-button" "\uf3cd"
+			"mobile-signal" "\ue1ef"
+			"mobile-signal-out" "\ue1f0"
+			"money-bill" "\uf0d6"
+			"money-bill-1" "\uf3d1"
+			"money-bill-1-wave" "\uf53b"
+			"money-bill-simple" "\ue1f1"
+			"money-bill-simple-wave" "\ue1f2"
+			"money-bill-transfer" "\ue528"
+			"money-bill-trend-up" "\ue529"
+			"money-bill-wave" "\uf53a"
+			"money-bill-wheat" "\ue52a"
+			"money-bills" "\ue1f3"
+			"money-bills-simple" "\ue1f4"
+			"money-check" "\uf53c"
+			"money-check-dollar" "\uf53d"
+			"money-check-dollar-pen" "\uf873"
+			"money-check-pen" "\uf872"
+			"money-from-bracket" "\ue312"
+			"money-simple-from-bracket" "\ue313"
+			"monitor-waveform" "\uf611"
+			"monkey" "\uf6fb"
+			"monument" "\uf5a6"
+			"moon" "\uf186"
+			"moon-cloud" "\uf754"
+			"moon-over-sun" "\uf74a"
+			"moon-stars" "\uf755"
+			"moped" "\ue3b9"
+			"mortar-pestle" "\uf5a7"
+			"mosque" "\uf678"
+			"mosquito" "\ue52b"
+			"mosquito-net" "\ue52c"
+			"motorcycle" "\uf21c"
+			"mound" "\ue52d"
+			"mountain" "\uf6fc"
+			"mountain-city" "\ue52e"
+			"mountain-sun" "\ue52f"
+			"mountains" "\uf6fd"
+			"mouse-field" "\ue5a8"
+			"mp3-player" "\uf8ce"
+			"mug" "\uf874"
+			"mug-hot" "\uf7b6"
+			"mug-marshmallows" "\uf7b7"
+			"mug-saucer" "\uf0f4"
+			"mug-tea" "\uf875"
+			"mug-tea-saucer" "\ue1f5"
+			"mushroom" "\ue425"
+			"music" "\uf001"
+			"music-magnifying-glass" "\ue662"
+			"music-note" "\uf8cf"
+			"music-note-slash" "\uf8d0"
+			"music-slash" "\uf8d1"
+			"mustache" "\ue5bc"
+			"n" "\u4e"
+			"naira-sign" "\ue1f6"
+			"narwhal" "\uf6fe"
+			"nesting-dolls" "\ue3ba"
+			"network-wired" "\uf6ff"
+			"neuter" "\uf22c"
+			"newspaper" "\uf1ea"
+			"nfc" "\ue1f7"
+			"nfc-lock" "\ue1f8"
+			"nfc-magnifying-glass" "\ue1f9"
+			"nfc-pen" "\ue1fa"
+			"nfc-signal" "\ue1fb"
+			"nfc-slash" "\ue1fc"
+			"nfc-symbol" "\ue531"
+			"nfc-trash" "\ue1fd"
+			"nose" "\ue5bd"
+			"not-equal" "\uf53e"
+			"notdef" "\ue1fe"
+			"note" "\ue1ff"
+			"note-medical" "\ue200"
+			"note-sticky" "\uf249"
+			"notebook" "\ue201"
+			"notes" "\ue202"
+			"notes-medical" "\uf481"
+			"o" "\u4f"
+			"object-exclude" "\ue49c"
+			"object-group" "\uf247"
+			"object-intersect" "\ue49d"
+			"object-subtract" "\ue49e"
+			"object-ungroup" "\uf248"
+			"object-union" "\ue49f"
+			"objects-align-bottom" "\ue3bb"
+			"objects-align-center-horizontal" "\ue3bc"
+			"objects-align-center-vertical" "\ue3bd"
+			"objects-align-left" "\ue3be"
+			"objects-align-right" "\ue3bf"
+			"objects-align-top" "\ue3c0"
+			"objects-column" "\ue3c1"
+			"octagon" "\uf306"
+			"octagon-check" "\ue426"
+			"octagon-divide" "\ue203"
+			"octagon-exclamation" "\ue204"
+			"octagon-minus" "\uf308"
+			"octagon-plus" "\uf301"
+			"octagon-xmark" "\uf2f0"
+			"oil-can" "\uf613"
+			"oil-can-drip" "\ue205"
+			"oil-temperature" "\uf614"
+			"oil-well" "\ue532"
+			"olive" "\ue316"
+			"olive-branch" "\ue317"
+			"om" "\uf679"
+			"omega" "\uf67a"
+			"onion" "\ue427"
+			"option" "\ue318"
+			"ornament" "\uf7b8"
+			"otter" "\uf700"
+			"outdent" "\uf03b"
+			"outlet" "\ue01c"
+			"oven" "\ue01d"
+			"overline" "\uf876"
+			"p" "\u50"
+			"page" "\ue428"
+			"page-caret-down" "\ue429"
+			"page-caret-up" "\ue42a"
+			"pager" "\uf815"
+			"paint-roller" "\uf5aa"
+			"paintbrush" "\uf1fc"
+			"paintbrush-fine" "\uf5a9"
+			"paintbrush-pencil" "\ue206"
+			"palette" "\uf53f"
+			"pallet" "\uf482"
+			"pallet-box" "\ue208"
+			"pallet-boxes" "\uf483"
+			"pan-food" "\ue42b"
+			"pan-frying" "\ue42c"
+			"pancakes" "\ue42d"
+			"panel-ews" "\ue42e"
+			"panel-fire" "\ue42f"
+			"panorama" "\ue209"
+			"paper-plane" "\uf1d8"
+			"paper-plane-top" "\ue20a"
+			"paperclip" "\uf0c6"
+			"paperclip-vertical" "\ue3c2"
+			"parachute-box" "\uf4cd"
+			"paragraph" "\uf1dd"
+			"paragraph-left" "\uf878"
+			"party-bell" "\ue31a"
+			"party-horn" "\ue31b"
+			"passport" "\uf5ab"
+			"paste" "\uf0ea"
+			"pause" "\uf04c"
+			"paw" "\uf1b0"
+			"paw-claws" "\uf702"
+			"paw-simple" "\uf701"
+			"peace" "\uf67c"
+			"peach" "\ue20b"
+			"peanut" "\ue430"
+			"peanuts" "\ue431"
+			"peapod" "\ue31c"
+			"pear" "\ue20c"
+			"pedestal" "\ue20d"
+			"pegasus" "\uf703"
+			"pen" "\uf304"
+			"pen-circle" "\ue20e"
+			"pen-clip" "\uf305"
+			"pen-clip-slash" "\ue20f"
+			"pen-fancy" "\uf5ac"
+			"pen-fancy-slash" "\ue210"
+			"pen-field" "\ue211"
+			"pen-line" "\ue212"
+			"pen-nib" "\uf5ad"
+			"pen-nib-slash" "\ue4a1"
+			"pen-paintbrush" "\uf618"
+			"pen-ruler" "\uf5ae"
+			"pen-slash" "\ue213"
+			"pen-swirl" "\ue214"
+			"pen-to-square" "\uf044"
+			"pencil" "\uf303"
+			"pencil-mechanical" "\ue5ca"
+			"pencil-slash" "\ue215"
+			"people" "\ue216"
+			"people-arrows" "\ue068"
+			"people-carry-box" "\uf4ce"
+			"people-dress" "\ue217"
+			"people-dress-simple" "\ue218"
+			"people-group" "\ue533"
+			"people-line" "\ue534"
+			"people-pants" "\ue219"
+			"people-pants-simple" "\ue21a"
+			"people-pulling" "\ue535"
+			"people-robbery" "\ue536"
+			"people-roof" "\ue537"
+			"people-simple" "\ue21b"
+			"pepper" "\ue432"
+			"pepper-hot" "\uf816"
+			"percent" "\u25"
+			"period" "\u2e"
+			"person" "\uf183"
+			"person-arrow-down-to-line" "\ue538"
+			"person-arrow-up-from-line" "\ue539"
+			"person-biking" "\uf84a"
+			"person-biking-mountain" "\uf84b"
+			"person-booth" "\uf756"
+			"person-breastfeeding" "\ue53a"
+			"person-burst" "\ue53b"
+			"person-cane" "\ue53c"
+			"person-carry-box" "\uf4cf"
+			"person-chalkboard" "\ue53d"
+			"person-circle-check" "\ue53e"
+			"person-circle-exclamation" "\ue53f"
+			"person-circle-minus" "\ue540"
+			"person-circle-plus" "\ue541"
+			"person-circle-question" "\ue542"
+			"person-circle-xmark" "\ue543"
+			"person-digging" "\uf85e"
+			"person-dolly" "\uf4d0"
+			"person-dolly-empty" "\uf4d1"
+			"person-dots-from-line" "\uf470"
+			"person-dress" "\uf182"
+			"person-dress-burst" "\ue544"
+			"person-dress-fairy" "\ue607"
+			"person-dress-simple" "\ue21c"
+			"person-drowning" "\ue545"
+			"person-fairy" "\ue608"
+			"person-falling" "\ue546"
+			"person-falling-burst" "\ue547"
+			"person-from-portal" "\ue023"
+			"person-half-dress" "\ue548"
+			"person-harassing" "\ue549"
+			"person-hiking" "\uf6ec"
+			"person-military-pointing" "\ue54a"
+			"person-military-rifle" "\ue54b"
+			"person-military-to-person" "\ue54c"
+			"person-pinball" "\ue21d"
+			"person-praying" "\uf683"
+			"person-pregnant" "\ue31e"
+			"person-rays" "\ue54d"
+			"person-rifle" "\ue54e"
+			"person-running" "\uf70c"
+			"person-running-fast" "\ue5ff"
+			"person-seat" "\ue21e"
+			"person-seat-reclined" "\ue21f"
+			"person-shelter" "\ue54f"
+			"person-sign" "\uf757"
+			"person-simple" "\ue220"
+			"person-skating" "\uf7c5"
+			"person-ski-jumping" "\uf7c7"
+			"person-ski-lift" "\uf7c8"
+			"person-skiing" "\uf7c9"
+			"person-skiing-nordic" "\uf7ca"
+			"person-sledding" "\uf7cb"
+			"person-snowboarding" "\uf7ce"
+			"person-snowmobiling" "\uf7d1"
+			"person-swimming" "\uf5c4"
+			"person-through-window" "\ue5a9"
+			"person-to-door" "\ue433"
+			"person-to-portal" "\ue022"
+			"person-walking" "\uf554"
+			"person-walking-arrow-loop-left" "\ue551"
+			"person-walking-arrow-right" "\ue552"
+			"person-walking-dashed-line-arrow-right" "\ue553"
+			"person-walking-luggage" "\ue554"
+			"person-walking-with-cane" "\uf29d"
+			"peseta-sign" "\ue221"
+			"peso-sign" "\ue222"
+			"phone" "\uf095"
+			"phone-arrow-down-left" "\ue223"
+			"phone-arrow-right" "\ue5be"
+			"phone-arrow-up-right" "\ue224"
+			"phone-flip" "\uf879"
+			"phone-hangup" "\ue225"
+			"phone-intercom" "\ue434"
+			"phone-missed" "\ue226"
+			"phone-office" "\uf67d"
+			"phone-plus" "\uf4d2"
+			"phone-rotary" "\uf8d3"
+			"phone-slash" "\uf3dd"
+			"phone-volume" "\uf2a0"
+			"phone-xmark" "\ue227"
+			"photo-film" "\uf87c"
+			"photo-film-music" "\ue228"
+			"pi" "\uf67e"
+			"piano" "\uf8d4"
+			"piano-keyboard" "\uf8d5"
+			"pickaxe" "\ue5bf"
+			"pickleball" "\ue435"
+			"pie" "\uf705"
+			"pig" "\uf706"
+			"piggy-bank" "\uf4d3"
+			"pills" "\uf484"
+			"pinata" "\ue3c3"
+			"pinball" "\ue229"
+			"pineapple" "\ue31f"
+			"pipe" "\u7c"
+			"pipe-circle-check" "\ue436"
+			"pipe-collar" "\ue437"
+			"pipe-section" "\ue438"
+			"pipe-smoking" "\ue3c4"
+			"pipe-valve" "\ue439"
+			"pizza" "\uf817"
+			"pizza-slice" "\uf818"
+			"place-of-worship" "\uf67f"
+			"plane" "\uf072"
+			"plane-arrival" "\uf5af"
+			"plane-circle-check" "\ue555"
+			"plane-circle-exclamation" "\ue556"
+			"plane-circle-xmark" "\ue557"
+			"plane-departure" "\uf5b0"
+			"plane-engines" "\uf3de"
+			"plane-lock" "\ue558"
+			"plane-prop" "\ue22b"
+			"plane-slash" "\ue069"
+			"plane-tail" "\ue22c"
+			"plane-up" "\ue22d"
+			"plane-up-slash" "\ue22e"
+			"planet-moon" "\ue01f"
+			"planet-ringed" "\ue020"
+			"plant-wilt" "\ue5aa"
+			"plate-utensils" "\ue43b"
+			"plate-wheat" "\ue55a"
+			"play" "\uf04b"
+			"play-pause" "\ue22f"
+			"plug" "\uf1e6"
+			"plug-circle-bolt" "\ue55b"
+			"plug-circle-check" "\ue55c"
+			"plug-circle-exclamation" "\ue55d"
+			"plug-circle-minus" "\ue55e"
+			"plug-circle-plus" "\ue55f"
+			"plug-circle-xmark" "\ue560"
+			"plus" "\u2b"
+			"plus-large" "\ue59e"
+			"plus-minus" "\ue43c"
+			"podcast" "\uf2ce"
+			"podium" "\uf680"
+			"podium-star" "\uf758"
+			"police-box" "\ue021"
+			"poll-people" "\uf759"
+			"pompebled" "\ue43d"
+			"poo" "\uf2fe"
+			"poo-storm" "\uf75a"
+			"pool-8-ball" "\ue3c5"
+			"poop" "\uf619"
+			"popcorn" "\uf819"
+			"popsicle" "\ue43e"
+			"pot-food" "\ue43f"
+			"potato" "\ue440"
+			"power-off" "\uf011"
+			"prescription" "\uf5b1"
+			"prescription-bottle" "\uf485"
+			"prescription-bottle-medical" "\uf486"
+			"prescription-bottle-pill" "\ue5c0"
+			"presentation-screen" "\uf685"
+			"pretzel" "\ue441"
+			"print" "\uf02f"
+			"print-magnifying-glass" "\uf81a"
+			"print-slash" "\uf686"
+			"projector" "\uf8d6"
+			"pump" "\ue442"
+			"pump-medical" "\ue06a"
+			"pump-soap" "\ue06b"
+			"pumpkin" "\uf707"
+			"puzzle" "\ue443"
+			"puzzle-piece" "\uf12e"
+			"puzzle-piece-simple" "\ue231"
+			"q" "\u51"
+			"qrcode" "\uf029"
+			"question" "\u3f"
+			"quote-left" "\uf10d"
+			"quote-right" "\uf10e"
+			"quotes" "\ue234"
+			"r" "\u52"
+			"rabbit" "\uf708"
+			"rabbit-running" "\uf709"
+			"raccoon" "\ue613"
+			"racquet" "\uf45a"
+			"radar" "\ue024"
+			"radiation" "\uf7b9"
+			"radio" "\uf8d7"
+			"radio-tuner" "\uf8d8"
+			"rainbow" "\uf75b"
+			"raindrops" "\uf75c"
+			"ram" "\uf70a"
+			"ramp-loading" "\uf4d4"
+			"ranking-star" "\ue561"
+			"raygun" "\ue025"
+			"receipt" "\uf543"
+			"record-vinyl" "\uf8d9"
+			"rectangle" "\uf2fa"
+			"rectangle-ad" "\uf641"
+			"rectangle-barcode" "\uf463"
+			"rectangle-code" "\ue322"
+			"rectangle-history" "\ue4a2"
+			"rectangle-history-circle-plus" "\ue4a3"
+			"rectangle-history-circle-user" "\ue4a4"
+			"rectangle-list" "\uf022"
+			"rectangle-pro" "\ue235"
+			"rectangle-terminal" "\ue236"
+			"rectangle-vertical" "\uf2fb"
+			"rectangle-vertical-history" "\ue237"
+			"rectangle-wide" "\uf2fc"
+			"rectangle-xmark" "\uf410"
+			"rectangles-mixed" "\ue323"
+			"recycle" "\uf1b8"
+			"reel" "\ue238"
+			"reflect-horizontal" "\ue664"
+			"reflect-vertical" "\ue665"
+			"refrigerator" "\ue026"
+			"registered" "\uf25d"
+			"repeat" "\uf363"
+			"repeat-1" "\uf365"
+			"reply" "\uf3e5"
+			"reply-all" "\uf122"
+			"reply-clock" "\ue239"
+			"republican" "\uf75e"
+			"restroom" "\uf7bd"
+			"restroom-simple" "\ue23a"
+			"retweet" "\uf079"
+			"rhombus" "\ue23b"
+			"ribbon" "\uf4d6"
+			"right" "\uf356"
+			"right-from-bracket" "\uf2f5"
+			"right-from-line" "\uf347"
+			"right-left" "\uf362"
+			"right-left-large" "\ue5e1"
+			"right-long" "\uf30b"
+			"right-long-to-line" "\ue444"
+			"right-to-bracket" "\uf2f6"
+			"right-to-line" "\uf34c"
+			"ring" "\uf70b"
+			"ring-diamond" "\ue5ab"
+			"rings-wedding" "\uf81b"
+			"road" "\uf018"
+			"road-barrier" "\ue562"
+			"road-bridge" "\ue563"
+			"road-circle-check" "\ue564"
+			"road-circle-exclamation" "\ue565"
+			"road-circle-xmark" "\ue566"
+			"road-lock" "\ue567"
+			"road-spikes" "\ue568"
+			"robot" "\uf544"
+			"robot-astromech" "\ue2d2"
+			"rocket" "\uf135"
+			"rocket-launch" "\ue027"
+			"roller-coaster" "\ue324"
+			"rotate" "\uf2f1"
+			"rotate-exclamation" "\ue23c"
+			"rotate-left" "\uf2ea"
+			"rotate-reverse" "\ue631"
+			"rotate-right" "\uf2f9"
+			"route" "\uf4d7"
+			"route-highway" "\uf61a"
+			"route-interstate" "\uf61b"
+			"router" "\uf8da"
+			"rss" "\uf09e"
+			"ruble-sign" "\uf158"
+			"rug" "\ue569"
+			"rugby-ball" "\ue3c6"
+			"ruler" "\uf545"
+			"ruler-combined" "\uf546"
+			"ruler-horizontal" "\uf547"
+			"ruler-triangle" "\uf61c"
+			"ruler-vertical" "\uf548"
+			"rupee-sign" "\uf156"
+			"rupiah-sign" "\ue23d"
+			"rv" "\uf7be"
+			"s" "\u53"
+			"sack" "\uf81c"
+			"sack-dollar" "\uf81d"
+			"sack-xmark" "\ue56a"
+			"sailboat" "\ue445"
+			"salad" "\uf81e"
+			"salt-shaker" "\ue446"
+			"sandwich" "\uf81f"
+			"satellite" "\uf7bf"
+			"satellite-dish" "\uf7c0"
+			"sausage" "\uf820"
+			"saxophone" "\uf8dc"
+			"saxophone-fire" "\uf8db"
+			"scale-balanced" "\uf24e"
+			"scale-unbalanced" "\uf515"
+			"scale-unbalanced-flip" "\uf516"
+			"scalpel" "\uf61d"
+			"scalpel-line-dashed" "\uf61e"
+			"scanner-gun" "\uf488"
+			"scanner-image" "\uf8f3"
+			"scanner-keyboard" "\uf489"
+			"scanner-touchscreen" "\uf48a"
+			"scarecrow" "\uf70d"
+			"scarf" "\uf7c1"
+			"school" "\uf549"
+			"school-circle-check" "\ue56b"
+			"school-circle-exclamation" "\ue56c"
+			"school-circle-xmark" "\ue56d"
+			"school-flag" "\ue56e"
+			"school-lock" "\ue56f"
+			"scissors" "\uf0c4"
+			"screen-users" "\uf63d"
+			"screencast" "\ue23e"
+			"screwdriver" "\uf54a"
+			"screwdriver-wrench" "\uf7d9"
+			"scribble" "\ue23f"
+			"scroll" "\uf70e"
+			"scroll-old" "\uf70f"
+			"scroll-torah" "\uf6a0"
+			"scrubber" "\uf2f8"
+			"scythe" "\uf710"
+			"sd-card" "\uf7c2"
+			"sd-cards" "\ue240"
+			"seal" "\ue241"
+			"seal-exclamation" "\ue242"
+			"seal-question" "\ue243"
+			"seat-airline" "\ue244"
+			"section" "\ue447"
+			"seedling" "\uf4d8"
+			"semicolon" "\u3b"
+			"send-back" "\uf87e"
+			"send-backward" "\uf87f"
+			"sensor" "\ue028"
+			"sensor-cloud" "\ue02c"
+			"sensor-fire" "\ue02a"
+			"sensor-on" "\ue02b"
+			"sensor-triangle-exclamation" "\ue029"
+			"server" "\uf233"
+			"shapes" "\uf61f"
+			"share" "\uf064"
+			"share-all" "\uf367"
+			"share-from-square" "\uf14d"
+			"share-nodes" "\uf1e0"
+			"sheep" "\uf711"
+			"sheet-plastic" "\ue571"
+			"shekel-sign" "\uf20b"
+			"shelves" "\uf480"
+			"shelves-empty" "\ue246"
+			"shield" "\uf132"
+			"shield-cat" "\ue572"
+			"shield-check" "\uf2f7"
+			"shield-cross" "\uf712"
+			"shield-dog" "\ue573"
+			"shield-exclamation" "\ue247"
+			"shield-halved" "\uf3ed"
+			"shield-heart" "\ue574"
+			"shield-keyhole" "\ue248"
+			"shield-minus" "\ue249"
+			"shield-plus" "\ue24a"
+			"shield-quartered" "\ue575"
+			"shield-slash" "\ue24b"
+			"shield-virus" "\ue06c"
+			"shield-xmark" "\ue24c"
+			"ship" "\uf21a"
+			"shirt" "\uf553"
+			"shirt-long-sleeve" "\ue3c7"
+			"shirt-running" "\ue3c8"
+			"shirt-tank-top" "\ue3c9"
+			"shish-kebab" "\uf821"
+			"shoe-prints" "\uf54b"
+			"shop" "\uf54f"
+			"shop-lock" "\ue4a5"
+			"shop-slash" "\ue070"
+			"shovel" "\uf713"
+			"shovel-snow" "\uf7c3"
+			"shower" "\uf2cc"
+			"shower-down" "\ue24d"
+			"shredder" "\uf68a"
+			"shrimp" "\ue448"
+			"shuffle" "\uf074"
+			"shutters" "\ue449"
+			"shuttle-space" "\uf197"
+			"shuttlecock" "\uf45b"
+			"sickle" "\uf822"
+			"sidebar" "\ue24e"
+			"sidebar-flip" "\ue24f"
+			"sigma" "\uf68b"
+			"sign-hanging" "\uf4d9"
+			"sign-post" "\ue624"
+			"sign-posts" "\ue625"
+			"sign-posts-wrench" "\ue626"
+			"signal" "\uf012"
+			"signal-bars" "\uf690"
+			"signal-bars-fair" "\uf692"
+			"signal-bars-good" "\uf693"
+			"signal-bars-slash" "\uf694"
+			"signal-bars-weak" "\uf691"
+			"signal-fair" "\uf68d"
+			"signal-good" "\uf68e"
+			"signal-slash" "\uf695"
+			"signal-stream" "\uf8dd"
+			"signal-stream-slash" "\ue250"
+			"signal-strong" "\uf68f"
+			"signal-weak" "\uf68c"
+			"signature" "\uf5b7"
+			"signature-lock" "\ue3ca"
+			"signature-slash" "\ue3cb"
+			"signs-post" "\uf277"
+			"sim-card" "\uf7c4"
+			"sim-cards" "\ue251"
+			"sink" "\ue06d"
+			"siren" "\ue02d"
+			"siren-on" "\ue02e"
+			"sitemap" "\uf0e8"
+			"skeleton" "\uf620"
+			"skeleton-ribs" "\ue5cb"
+			"ski-boot" "\ue3cc"
+			"ski-boot-ski" "\ue3cd"
+			"skull" "\uf54c"
+			"skull-cow" "\uf8de"
+			"skull-crossbones" "\uf714"
+			"slash" "\uf715"
+			"slash-back" "\u5c"
+			"slash-forward" "\u2f"
+			"sleigh" "\uf7cc"
+			"slider" "\ue252"
+			"sliders" "\uf1de"
+			"sliders-simple" "\ue253"
+			"sliders-up" "\uf3f1"
+			"slot-machine" "\ue3ce"
+			"smog" "\uf75f"
+			"smoke" "\uf760"
+			"smoking" "\uf48d"
+			"snake" "\uf716"
+			"snooze" "\uf880"
+			"snow-blowing" "\uf761"
+			"snowflake" "\uf2dc"
+			"snowflake-droplets" "\ue5c1"
+			"snowflakes" "\uf7cf"
+			"snowman" "\uf7d0"
+			"snowman-head" "\uf79b"
+			"snowplow" "\uf7d2"
+			"soap" "\ue06e"
+			"socks" "\uf696"
+			"soft-serve" "\ue400"
+			"solar-panel" "\uf5ba"
+			"solar-system" "\ue02f"
+			"sort" "\uf0dc"
+			"sort-down" "\uf0dd"
+			"sort-up" "\uf0de"
+			"spa" "\uf5bb"
+			"space-station-moon" "\ue033"
+			"space-station-moon-construction" "\ue034"
+			"spade" "\uf2f4"
+			"spaghetti-monster-flying" "\uf67b"
+			"sparkle" "\ue5d6"
+			"sparkles" "\uf890"
+			"speaker" "\uf8df"
+			"speakers" "\uf8e0"
+			"spell-check" "\uf891"
+			"spider" "\uf717"
+			"spider-black-widow" "\uf718"
+			"spider-web" "\uf719"
+			"spinner" "\uf110"
+			"spinner-scale" "\ue62a"
+			"spinner-third" "\uf3f4"
+			"split" "\ue254"
+			"splotch" "\uf5bc"
+			"spoon" "\uf2e5"
+			"sportsball" "\ue44b"
+			"spray-can" "\uf5bd"
+			"spray-can-sparkles" "\uf5d0"
+			"sprinkler" "\ue035"
+			"sprinkler-ceiling" "\ue44c"
+			"square" "\uf0c8"
+			"square-0" "\ue255"
+			"square-1" "\ue256"
+			"square-2" "\ue257"
+			"square-3" "\ue258"
+			"square-4" "\ue259"
+			"square-5" "\ue25a"
+			"square-6" "\ue25b"
+			"square-7" "\ue25c"
+			"square-8" "\ue25d"
+			"square-9" "\ue25e"
+			"square-a" "\ue25f"
+			"square-a-lock" "\ue44d"
+			"square-ampersand" "\ue260"
+			"square-arrow-down" "\uf339"
+			"square-arrow-down-left" "\ue261"
+			"square-arrow-down-right" "\ue262"
+			"square-arrow-left" "\uf33a"
+			"square-arrow-right" "\uf33b"
+			"square-arrow-up" "\uf33c"
+			"square-arrow-up-left" "\ue263"
+			"square-arrow-up-right" "\uf14c"
+			"square-b" "\ue264"
+			"square-bolt" "\ue265"
+			"square-c" "\ue266"
+			"square-caret-down" "\uf150"
+			"square-caret-left" "\uf191"
+			"square-caret-right" "\uf152"
+			"square-caret-up" "\uf151"
+			"square-check" "\uf14a"
+			"square-chevron-down" "\uf329"
+			"square-chevron-left" "\uf32a"
+			"square-chevron-right" "\uf32b"
+			"square-chevron-up" "\uf32c"
+			"square-code" "\ue267"
+			"square-d" "\ue268"
+			"square-dashed" "\ue269"
+			"square-dashed-circle-plus" "\ue5c2"
+			"square-divide" "\ue26a"
+			"square-dollar" "\uf2e9"
+			"square-down" "\uf350"
+			"square-down-left" "\ue26b"
+			"square-down-right" "\ue26c"
+			"square-e" "\ue26d"
+			"square-ellipsis" "\ue26e"
+			"square-ellipsis-vertical" "\ue26f"
+			"square-envelope" "\uf199"
+			"square-exclamation" "\uf321"
+			"square-f" "\ue270"
+			"square-fragile" "\uf49b"
+			"square-full" "\uf45c"
+			"square-g" "\ue271"
+			"square-h" "\uf0fd"
+			"square-heart" "\uf4c8"
+			"square-i" "\ue272"
+			"square-info" "\uf30f"
+			"square-j" "\ue273"
+			"square-k" "\ue274"
+			"square-kanban" "\ue488"
+			"square-l" "\ue275"
+			"square-left" "\uf351"
+			"square-list" "\ue489"
+			"square-m" "\ue276"
+			"square-minus" "\uf146"
+			"square-n" "\ue277"
+			"square-nfi" "\ue576"
+			"square-o" "\ue278"
+			"square-p" "\ue279"
+			"square-parking" "\uf540"
+			"square-parking-slash" "\uf617"
+			"square-pen" "\uf14b"
+			"square-person-confined" "\ue577"
+			"square-phone" "\uf098"
+			"square-phone-flip" "\uf87b"
+			"square-phone-hangup" "\ue27a"
+			"square-plus" "\uf0fe"
+			"square-poll-horizontal" "\uf682"
+			"square-poll-vertical" "\uf681"
+			"square-q" "\ue27b"
+			"square-quarters" "\ue44e"
+			"square-question" "\uf2fd"
+			"square-quote" "\ue329"
+			"square-r" "\ue27c"
+			"square-right" "\uf352"
+			"square-ring" "\ue44f"
+			"square-root" "\uf697"
+			"square-root-variable" "\uf698"
+			"square-rss" "\uf143"
+			"square-s" "\ue27d"
+			"square-share-nodes" "\uf1e1"
+			"square-sliders" "\uf3f0"
+			"square-sliders-vertical" "\uf3f2"
+			"square-small" "\ue27e"
+			"square-star" "\ue27f"
+			"square-t" "\ue280"
+			"square-terminal" "\ue32a"
+			"square-this-way-up" "\uf49f"
+			"square-u" "\ue281"
+			"square-up" "\uf353"
+			"square-up-left" "\ue282"
+			"square-up-right" "\uf360"
+			"square-user" "\ue283"
+			"square-v" "\ue284"
+			"square-virus" "\ue578"
+			"square-w" "\ue285"
+			"square-x" "\ue286"
+			"square-xmark" "\uf2d3"
+			"square-y" "\ue287"
+			"square-z" "\ue288"
+			"squid" "\ue450"
+			"squirrel" "\uf71a"
+			"staff" "\uf71b"
+			"staff-snake" "\ue579"
+			"stairs" "\ue289"
+			"stamp" "\uf5bf"
+			"standard-definition" "\ue28a"
+			"stapler" "\ue5af"
+			"star" "\uf005"
+			"star-and-crescent" "\uf699"
+			"star-christmas" "\uf7d4"
+			"star-exclamation" "\uf2f3"
+			"star-half" "\uf089"
+			"star-half-stroke" "\uf5c0"
+			"star-of-david" "\uf69a"
+			"star-of-life" "\uf621"
+			"star-sharp" "\ue28b"
+			"star-sharp-half" "\ue28c"
+			"star-sharp-half-stroke" "\ue28d"
+			"star-shooting" "\ue036"
+			"starfighter" "\ue037"
+			"starfighter-twin-ion-engine" "\ue038"
+			"starfighter-twin-ion-engine-advanced" "\ue28e"
+			"stars" "\uf762"
+			"starship" "\ue039"
+			"starship-freighter" "\ue03a"
+			"steak" "\uf824"
+			"steering-wheel" "\uf622"
+			"sterling-sign" "\uf154"
+			"stethoscope" "\uf0f1"
+			"stocking" "\uf7d5"
+			"stomach" "\uf623"
+			"stop" "\uf04d"
+			"stopwatch" "\uf2f2"
+			"stopwatch-20" "\ue06f"
+			"store" "\uf54e"
+			"store-lock" "\ue4a6"
+			"store-slash" "\ue071"
+			"strawberry" "\ue32b"
+			"street-view" "\uf21d"
+			"stretcher" "\uf825"
+			"strikethrough" "\uf0cc"
+			"stroopwafel" "\uf551"
+			"subscript" "\uf12c"
+			"subtitles" "\ue60f"
+			"subtitles-slash" "\ue610"
+			"suitcase" "\uf0f2"
+			"suitcase-medical" "\uf0fa"
+			"suitcase-rolling" "\uf5c1"
+			"sun" "\uf185"
+			"sun-bright" "\ue28f"
+			"sun-cloud" "\uf763"
+			"sun-dust" "\uf764"
+			"sun-haze" "\uf765"
+			"sun-plant-wilt" "\ue57a"
+			"sunglasses" "\uf892"
+			"sunrise" "\uf766"
+			"sunset" "\uf767"
+			"superscript" "\uf12b"
+			"sushi" "\ue48a"
+			"sushi-roll" "\ue48b"
+			"swap" "\ue609"
+			"swap-arrows" "\ue60a"
+			"swatchbook" "\uf5c3"
+			"sword" "\uf71c"
+			"sword-laser" "\ue03b"
+			"sword-laser-alt" "\ue03c"
+			"swords" "\uf71d"
+			"swords-laser" "\ue03d"
+			"symbols" "\uf86e"
+			"synagogue" "\uf69b"
+			"syringe" "\uf48e"
+			"t" "\u54"
+			"t-rex" "\ue629"
+			"table" "\uf0ce"
+			"table-cells" "\uf00a"
+			"table-cells-large" "\uf009"
+			"table-columns" "\uf0db"
+			"table-layout" "\ue290"
+			"table-list" "\uf00b"
+			"table-picnic" "\ue32d"
+			"table-pivot" "\ue291"
+			"table-rows" "\ue292"
+			"table-tennis-paddle-ball" "\uf45d"
+			"table-tree" "\ue293"
+			"tablet" "\uf3fb"
+			"tablet-button" "\uf10a"
+			"tablet-rugged" "\uf48f"
+			"tablet-screen" "\uf3fc"
+			"tablet-screen-button" "\uf3fa"
+			"tablets" "\uf490"
+			"tachograph-digital" "\uf566"
+			"taco" "\uf826"
+			"tag" "\uf02b"
+			"tags" "\uf02c"
+			"tally" "\uf69c"
+			"tally-1" "\ue294"
+			"tally-2" "\ue295"
+			"tally-3" "\ue296"
+			"tally-4" "\ue297"
+			"tamale" "\ue451"
+			"tank-water" "\ue452"
+			"tape" "\uf4db"
+			"tarp" "\ue57b"
+			"tarp-droplet" "\ue57c"
+			"taxi" "\uf1ba"
+			"taxi-bus" "\ue298"
+			"teddy-bear" "\ue3cf"
+			"teeth" "\uf62e"
+			"teeth-open" "\uf62f"
+			"telescope" "\ue03e"
+			"temperature-arrow-down" "\ue03f"
+			"temperature-arrow-up" "\ue040"
+			"temperature-empty" "\uf2cb"
+			"temperature-full" "\uf2c7"
+			"temperature-half" "\uf2c9"
+			"temperature-high" "\uf769"
+			"temperature-list" "\ue299"
+			"temperature-low" "\uf76b"
+			"temperature-quarter" "\uf2ca"
+			"temperature-snow" "\uf768"
+			"temperature-sun" "\uf76a"
+			"temperature-three-quarters" "\uf2c8"
+			"tenge-sign" "\uf7d7"
+			"tennis-ball" "\uf45e"
+			"tent" "\ue57d"
+			"tent-arrow-down-to-line" "\ue57e"
+			"tent-arrow-left-right" "\ue57f"
+			"tent-arrow-turn-left" "\ue580"
+			"tent-arrows-down" "\ue581"
+			"tent-double-peak" "\ue627"
+			"tents" "\ue582"
+			"terminal" "\uf120"
+			"text" "\uf893"
+			"text-height" "\uf034"
+			"text-size" "\uf894"
+			"text-slash" "\uf87d"
+			"text-width" "\uf035"
+			"thermometer" "\uf491"
+			"theta" "\uf69e"
+			"thought-bubble" "\ue32e"
+			"thumbs-down" "\uf165"
+			"thumbs-up" "\uf164"
+			"thumbtack" "\uf08d"
+			"tick" "\ue32f"
+			"ticket" "\uf145"
+			"ticket-airline" "\ue29a"
+			"ticket-perforated" "\ue63e"
+			"ticket-simple" "\uf3ff"
+			"tickets" "\ue658"
+			"tickets-airline" "\ue29b"
+			"tickets-perforated" "\ue63f"
+			"tickets-simple" "\ue659"
+			"tilde" "\u7e"
+			"timeline" "\ue29c"
+			"timeline-arrow" "\ue29d"
+			"timer" "\ue29e"
+			"tire" "\uf631"
+			"tire-flat" "\uf632"
+			"tire-pressure-warning" "\uf633"
+			"tire-rugged" "\uf634"
+			"toggle-large-off" "\ue5b0"
+			"toggle-large-on" "\ue5b1"
+			"toggle-off" "\uf204"
+			"toggle-on" "\uf205"
+			"toilet" "\uf7d8"
+			"toilet-paper" "\uf71e"
+			"toilet-paper-blank" "\uf71f"
+			"toilet-paper-blank-under" "\ue29f"
+			"toilet-paper-check" "\ue5b2"
+			"toilet-paper-slash" "\ue072"
+			"toilet-paper-under" "\ue2a0"
+			"toilet-paper-under-slash" "\ue2a1"
+			"toilet-paper-xmark" "\ue5b3"
+			"toilet-portable" "\ue583"
+			"toilets-portable" "\ue584"
+			"tomato" "\ue330"
+			"tombstone" "\uf720"
+			"tombstone-blank" "\uf721"
+			"toolbox" "\uf552"
+			"tooth" "\uf5c9"
+			"toothbrush" "\uf635"
+			"torii-gate" "\uf6a1"
+			"tornado" "\uf76f"
+			"tower-broadcast" "\uf519"
+			"tower-cell" "\ue585"
+			"tower-control" "\ue2a2"
+			"tower-observation" "\ue586"
+			"tractor" "\uf722"
+			"trademark" "\uf25c"
+			"traffic-cone" "\uf636"
+			"traffic-light" "\uf637"
+			"traffic-light-go" "\uf638"
+			"traffic-light-slow" "\uf639"
+			"traffic-light-stop" "\uf63a"
+			"trailer" "\ue041"
+			"train" "\uf238"
+			"train-subway" "\uf239"
+			"train-subway-tunnel" "\ue2a3"
+			"train-track" "\ue453"
+			"train-tram" "\ue5b4"
+			"train-tunnel" "\ue454"
+			"transformer-bolt" "\ue2a4"
+			"transgender" "\uf225"
+			"transporter" "\ue042"
+			"transporter-1" "\ue043"
+			"transporter-2" "\ue044"
+			"transporter-3" "\ue045"
+			"transporter-4" "\ue2a5"
+			"transporter-5" "\ue2a6"
+			"transporter-6" "\ue2a7"
+			"transporter-7" "\ue2a8"
+			"transporter-empty" "\ue046"
+			"trash" "\uf1f8"
+			"trash-arrow-up" "\uf829"
+			"trash-can" "\uf2ed"
+			"trash-can-arrow-up" "\uf82a"
+			"trash-can-check" "\ue2a9"
+			"trash-can-clock" "\ue2aa"
+			"trash-can-list" "\ue2ab"
+			"trash-can-plus" "\ue2ac"
+			"trash-can-slash" "\ue2ad"
+			"trash-can-undo" "\uf896"
+			"trash-can-xmark" "\ue2ae"
+			"trash-check" "\ue2af"
+			"trash-clock" "\ue2b0"
+			"trash-list" "\ue2b1"
+			"trash-plus" "\ue2b2"
+			"trash-slash" "\ue2b3"
+			"trash-undo" "\uf895"
+			"trash-xmark" "\ue2b4"
+			"treasure-chest" "\uf723"
+			"tree" "\uf1bb"
+			"tree-christmas" "\uf7db"
+			"tree-city" "\ue587"
+			"tree-deciduous" "\uf400"
+			"tree-decorated" "\uf7dc"
+			"tree-large" "\uf7dd"
+			"tree-palm" "\uf82b"
+			"trees" "\uf724"
+			"triangle" "\uf2ec"
+			"triangle-exclamation" "\uf071"
+			"triangle-instrument" "\uf8e2"
+			"triangle-person-digging" "\uf85d"
+			"tricycle" "\ue5c3"
+			"tricycle-adult" "\ue5c4"
+			"trillium" "\ue588"
+			"trophy" "\uf091"
+			"trophy-star" "\uf2eb"
+			"trowel" "\ue589"
+			"trowel-bricks" "\ue58a"
+			"truck" "\uf0d1"
+			"truck-arrow-right" "\ue58b"
+			"truck-bolt" "\ue3d0"
+			"truck-clock" "\uf48c"
+			"truck-container" "\uf4dc"
+			"truck-container-empty" "\ue2b5"
+			"truck-droplet" "\ue58c"
+			"truck-fast" "\uf48b"
+			"truck-field" "\ue58d"
+			"truck-field-un" "\ue58e"
+			"truck-fire" "\ue65a"
+			"truck-flatbed" "\ue2b6"
+			"truck-front" "\ue2b7"
+			"truck-ladder" "\ue657"
+			"truck-medical" "\uf0f9"
+			"truck-monster" "\uf63b"
+			"truck-moving" "\uf4df"
+			"truck-pickup" "\uf63c"
+			"truck-plane" "\ue58f"
+			"truck-plow" "\uf7de"
+			"truck-ramp" "\uf4e0"
+			"truck-ramp-box" "\uf4de"
+			"truck-ramp-couch" "\uf4dd"
+			"truck-tow" "\ue2b8"
+			"truck-utensils" "\ue628"
+			"trumpet" "\uf8e3"
+			"tty" "\uf1e4"
+			"tty-answer" "\ue2b9"
+			"tugrik-sign" "\ue2ba"
+			"turkey" "\uf725"
+			"turkish-lira-sign" "\ue2bb"
+			"turn-down" "\uf3be"
+			"turn-down-left" "\ue331"
+			"turn-down-right" "\ue455"
+			"turn-left" "\ue636"
+			"turn-left-down" "\ue637"
+			"turn-left-up" "\ue638"
+			"turn-right" "\ue639"
+			"turn-up" "\uf3bf"
+			"turntable" "\uf8e4"
+			"turtle" "\uf726"
+			"tv" "\uf26c"
+			"tv-music" "\uf8e6"
+			"tv-retro" "\uf401"
+			"typewriter" "\uf8e7"
+			"u" "\u55"
+			"ufo" "\ue047"
+			"ufo-beam" "\ue048"
+			"umbrella" "\uf0e9"
+			"umbrella-beach" "\uf5ca"
+			"umbrella-simple" "\ue2bc"
+			"underline" "\uf0cd"
+			"unicorn" "\uf727"
+			"uniform-martial-arts" "\ue3d1"
+			"union" "\uf6a2"
+			"universal-access" "\uf29a"
+			"unlock" "\uf09c"
+			"unlock-keyhole" "\uf13e"
+			"up" "\uf357"
+			"up-down" "\uf338"
+			"up-down-left-right" "\uf0b2"
+			"up-from-bracket" "\ue590"
+			"up-from-dotted-line" "\ue456"
+			"up-from-line" "\uf346"
+			"up-left" "\ue2bd"
+			"up-long" "\uf30c"
+			"up-right" "\ue2be"
+			"up-right-and-down-left-from-center" "\uf424"
+			"up-right-from-square" "\uf35d"
+			"up-to-dotted-line" "\ue457"
+			"up-to-line" "\uf34d"
+			"upload" "\uf093"
+			"usb-drive" "\uf8e9"
+			"user" "\uf007"
+			"user-alien" "\ue04a"
+			"user-astronaut" "\uf4fb"
+			"user-bounty-hunter" "\ue2bf"
+			"user-check" "\uf4fc"
+			"user-chef" "\ue3d2"
+			"user-clock" "\uf4fd"
+			"user-cowboy" "\uf8ea"
+			"user-crown" "\uf6a4"
+			"user-doctor" "\uf0f0"
+			"user-doctor-hair" "\ue458"
+			"user-doctor-hair-long" "\ue459"
+			"user-doctor-message" "\uf82e"
+			"user-gear" "\uf4fe"
+			"user-graduate" "\uf501"
+			"user-group" "\uf500"
+			"user-group-crown" "\uf6a5"
+			"user-group-simple" "\ue603"
+			"user-hair" "\ue45a"
+			"user-hair-buns" "\ue3d3"
+			"user-hair-long" "\ue45b"
+			"user-hair-mullet" "\ue45c"
+			"user-headset" "\uf82d"
+			"user-helmet-safety" "\uf82c"
+			"user-injured" "\uf728"
+			"user-large" "\uf406"
+			"user-large-slash" "\uf4fa"
+			"user-lock" "\uf502"
+			"user-magnifying-glass" "\ue5c5"
+			"user-minus" "\uf503"
+			"user-music" "\uf8eb"
+			"user-ninja" "\uf504"
+			"user-nurse" "\uf82f"
+			"user-nurse-hair" "\ue45d"
+			"user-nurse-hair-long" "\ue45e"
+			"user-pen" "\uf4ff"
+			"user-pilot" "\ue2c0"
+			"user-pilot-tie" "\ue2c1"
+			"user-plus" "\uf234"
+			"user-police" "\ue333"
+			"user-police-tie" "\ue334"
+			"user-robot" "\ue04b"
+			"user-robot-xmarks" "\ue4a7"
+			"user-secret" "\uf21b"
+			"user-shakespeare" "\ue2c2"
+			"user-shield" "\uf505"
+			"user-slash" "\uf506"
+			"user-tag" "\uf507"
+			"user-tie" "\uf508"
+			"user-tie-hair" "\ue45f"
+			"user-tie-hair-long" "\ue460"
+			"user-unlock" "\ue058"
+			"user-visor" "\ue04c"
+			"user-vneck" "\ue461"
+			"user-vneck-hair" "\ue462"
+			"user-vneck-hair-long" "\ue463"
+			"user-xmark" "\uf235"
+			"users" "\uf0c0"
+			"users-between-lines" "\ue591"
+			"users-gear" "\uf509"
+			"users-line" "\ue592"
+			"users-medical" "\uf830"
+			"users-rays" "\ue593"
+			"users-rectangle" "\ue594"
+			"users-slash" "\ue073"
+			"users-viewfinder" "\ue595"
+			"utensils" "\uf2e7"
+			"utensils-slash" "\ue464"
+			"utility-pole" "\ue2c3"
+			"utility-pole-double" "\ue2c4"
+			"v" "\u56"
+			"vacuum" "\ue04d"
+			"vacuum-robot" "\ue04e"
+			"value-absolute" "\uf6a6"
+			"van-shuttle" "\uf5b6"
+			"vault" "\ue2c5"
+			"vector-circle" "\ue2c6"
+			"vector-polygon" "\ue2c7"
+			"vector-square" "\uf5cb"
+			"vent-damper" "\ue465"
+			"venus" "\uf221"
+			"venus-double" "\uf226"
+			"venus-mars" "\uf228"
+			"vest" "\ue085"
+			"vest-patches" "\ue086"
+			"vial" "\uf492"
+			"vial-circle-check" "\ue596"
+			"vial-virus" "\ue597"
+			"vials" "\uf493"
+			"video" "\uf03d"
+			"video-arrow-down-left" "\ue2c8"
+			"video-arrow-up-right" "\ue2c9"
+			"video-plus" "\uf4e1"
+			"video-slash" "\uf4e2"
+			"vihara" "\uf6a7"
+			"violin" "\uf8ed"
+			"virus" "\ue074"
+			"virus-covid" "\ue4a8"
+			"virus-covid-slash" "\ue4a9"
+			"virus-slash" "\ue075"
+			"viruses" "\ue076"
+			"voicemail" "\uf897"
+			"volcano" "\uf770"
+			"volleyball" "\uf45f"
+			"volume" "\uf6a8"
+			"volume-high" "\uf028"
+			"volume-low" "\uf027"
+			"volume-off" "\uf026"
+			"volume-slash" "\uf2e2"
+			"volume-xmark" "\uf6a9"
+			"vr-cardboard" "\uf729"
+			"w" "\u57"
+			"waffle" "\ue466"
+			"wagon-covered" "\uf8ee"
+			"walker" "\uf831"
+			"walkie-talkie" "\uf8ef"
+			"wallet" "\uf555"
+			"wand" "\uf72a"
+			"wand-magic" "\uf0d0"
+			"wand-magic-sparkles" "\ue2ca"
+			"wand-sparkles" "\uf72b"
+			"warehouse" "\uf494"
+			"warehouse-full" "\uf495"
+			"washing-machine" "\uf898"
+			"watch" "\uf2e1"
+			"watch-apple" "\ue2cb"
+			"watch-calculator" "\uf8f0"
+			"watch-fitness" "\uf63e"
+			"watch-smart" "\ue2cc"
+			"water" "\uf773"
+			"water-arrow-down" "\uf774"
+			"water-arrow-up" "\uf775"
+			"water-ladder" "\uf5c5"
+			"watermelon-slice" "\ue337"
+			"wave" "\ue65b"
+			"wave-pulse" "\uf5f8"
+			"wave-sine" "\uf899"
+			"wave-square" "\uf83e"
+			"wave-triangle" "\uf89a"
+			"waveform" "\uf8f1"
+			"waveform-lines" "\uf8f2"
+			"waves-sine" "\ue65d"
+			"webhook" "\ue5d5"
+			"weight-hanging" "\uf5cd"
+			"weight-scale" "\uf496"
+			"whale" "\uf72c"
+			"wheat" "\uf72d"
+			"wheat-awn" "\ue2cd"
+			"wheat-awn-circle-exclamation" "\ue598"
+			"wheat-awn-slash" "\ue338"
+			"wheat-slash" "\ue339"
+			"wheelchair" "\uf193"
+			"wheelchair-move" "\ue2ce"
+			"whiskey-glass" "\uf7a0"
+			"whiskey-glass-ice" "\uf7a1"
+			"whistle" "\uf460"
+			"wifi" "\uf1eb"
+			"wifi-exclamation" "\ue2cf"
+			"wifi-fair" "\uf6ab"
+			"wifi-slash" "\uf6ac"
+			"wifi-weak" "\uf6aa"
+			"wind" "\uf72e"
+			"wind-turbine" "\uf89b"
+			"wind-warning" "\uf776"
+			"window" "\uf40e"
+			"window-flip" "\uf40f"
+			"window-frame" "\ue04f"
+			"window-frame-open" "\ue050"
+			"window-maximize" "\uf2d0"
+			"window-minimize" "\uf2d1"
+			"window-restore" "\uf2d2"
+			"windsock" "\uf777"
+			"wine-bottle" "\uf72f"
+			"wine-glass" "\uf4e3"
+			"wine-glass-crack" "\uf4bb"
+			"wine-glass-empty" "\uf5ce"
+			"won-sign" "\uf159"
+			"worm" "\ue599"
+			"wreath" "\uf7e2"
+			"wreath-laurel" "\ue5d2"
+			"wrench" "\uf0ad"
+			"wrench-simple" "\ue2d1"
+			"x" "\u58"
+			"x-ray" "\uf497"
+			"xmark" "\uf00d"
+			"xmark-large" "\ue59b"
+			"xmark-to-slot" "\uf771"
+			"xmarks-lines" "\ue59a"
+			"y" "\u59"
+			"yen-sign" "\uf157"
+			"yin-yang" "\uf6ad"
+			"z" "\u5a"
 		}
 
 		# Used to map booleans to their dcheckbox representation (square/square-check) in fontawesome.
@@ -4589,7 +4671,7 @@ namespace eval ::dui {
 
 	### FONTS SUB-ENSEMBLE ###
 	namespace eval font {
-		namespace export add_dirs dirs load get width list
+		namespace export add_dirs dirs load get width list default_size parse_size
 		namespace ensemble create
 
 		# A list of paths where to look for font files
@@ -4740,6 +4822,32 @@ namespace eval ::dui {
 			return $font_key
 		}
 		
+		proc decode_key { key } {
+			array set result {
+				weight normal
+				slant regular
+				underline 0
+				overstrike 0
+			}
+			
+			if { $key ne {} && $key ne "nr00" } {
+				if { [string range $key 0 0] eq "b" } {
+					set result(weight) bold
+				}
+				if { [string range $key 1 1] eq "i" } {
+					set result(slant) italic
+				}
+				if { [string range $key 2 2] eq "1" } {
+					set result(underline) 1
+				}
+				if { [string range $key 3 3] eq "1" } {
+					set result(overstrike) 1
+				}
+			}
+			
+			return [array get result]
+		}
+		
 		# Based on Barney's load_font: 
 		#	https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
 		# filename can be either a font filename, or an added font family name. 
@@ -4830,6 +4938,37 @@ namespace eval ::dui {
 				return [::font names]
 			}
 		}
+
+		proc default_size { {type {}} } {
+			set type [lunique [list_remove_element [::list $type dtext font] ""]]
+			
+			set default_size [dui::aspect::get $type font_size]
+			if { $default_size eq "" || [string range $default_size 0 0] in {- +} } {
+				set default_size [dui aspect get [list dtext font] font_size]
+				if { $default_size eq "" || [string range $default_size 0 0] in {- +} } {
+					set default_size [dui aspect get font font_size]
+					if { $default_size eq "" || [string range $default_size 0 0] in {- +} } {
+						set default_size 16
+					}
+				}
+			}
+			return $default_size
+		}
+
+		proc parse_size { font_size {type {}} } {
+			if { $font_size eq {} } {
+				set font_size [default_size $type]
+			} elseif { [string range $font_size 0 0] in {- +} && [string is double $font_size] } {
+				set font_size [expr int([default_size $type]$font_size)]
+			} elseif { [string is double $font_size] } {
+				set font_size [expr int($font_size)]
+			} else {
+				msg -NOTICE [namespace current] "::parse_size: font_size '$font_size' is not valid, using default"
+				set font_size [default_size $type]
+			}
+			return $font_size
+		}
+
 	}
 	
 	### IMAGES SUB-ENSEMBLE ###
@@ -5090,17 +5229,21 @@ namespace eval ::dui {
 		variable item_cnt 0
 				
 		# Adds a named option "-option_name option_value" to a named argument list if the option doesn't exist in the list.
-		# Returns the option value.
+		# NOTE: On 16/3/24, changed return value from the option value to a boolean of whether it
+		#	has been added (this allows easier tracking/debugging what aspects comes from themes)
+		# Returns whether it was actually added or not
 		proc add_option_if_not_exists { option_name option_value {args_name args} } {
-			upvar $args_name largs	
+			upvar $args_name largs
 			if { [string range $option_name 0 0] ne "-" } { set option_name "-$option_name" }
 			set opt_idx [lsearch $largs $option_name]
 			if {  $opt_idx == -1 } {
 				lappend largs $option_name $option_value
+				return 1
 			} else {
-				set option_value [lindex $largs [expr {$opt_idx+1}]]
+				return 0
+				#set option_value [lindex $largs [expr {$opt_idx+1}]]
 			}
-			return $option_value
+			#return $option_value
 		}
 		
 		# Removes the named option "-option_name" from the named argument list, if it exists.
@@ -5180,12 +5323,17 @@ namespace eval ::dui {
 		#			"-textvariable pressure", uses the namespace variable data(<varoption>), e.g. data(pressure).
 		#		- otherwise, substitutes %NS in -textvariable by the page namespace, if one is used, or the empty 
 		#			string otherwise.
-		# -add_multi 1 instructs to add the "<main_tag>*" compound indicator to the list of tags.
-		proc process_tags_and_var { pages type {varoption {}} {add_multi 0} {args_name args} {rm_tags 0} } {
+		# 'add_multi 1' instructs to add the "<main_tag>*" compound indicator to the list of tags.
+		# Also stores the DUI type of the item in the ::dui::item::types array, with key 
+		#	<main_page:main_tag>. Several DUI types are allowed, using the 'extra_types' argument
+		proc process_tags_and_var { pages type {varoption {}} {add_multi 0} {args_name args} \
+				{rm_tags 0} {extra_types {}} } {
 			variable item_cnt
+			variable ::dui::item::types
 			upvar $args_name largs
 			set can [dui canvas]
 			
+			set is_inner_call [string is true [get_option -_inner_call 0 0 largs]]
 			set tags [get_option -tags {} 1 largs]
 			set initial_state [get_option -initial_state normal 1 largs]
 			set auto_assign_tag 0
@@ -5208,15 +5356,29 @@ namespace eval ::dui {
 					msg -ERROR [namespace current] $msg
 					return 0
 				}
-			}			
+			}
 			
-			if { $add_multi == 1 && "$main_tag*" ni $tags } {
+			if { $is_inner_call != 1 && $add_multi == 1 && "$main_tag*" ni $tags } {
 				lappend tags "$main_tag*"
 			}
 			if { $initial_state in {hidden disabled} } {
 				lappend tags st:$initial_state
 			}
 
+			# Store the DUI type(s) of the item. An item may have several types, e.g. a dselector
+			# may be {dselector dbutton round}
+			if { $is_inner_call != 1 } {
+				if { [info exists types([lindex $pages 0]:$main_tag)] } {
+					foreach t [concat $type $extra_types] {
+						if { $t ni $types([lindex $pages 0]:$main_tag) } {
+							lappend types([lindex $pages 0]:$main_tag) $t
+						}
+					}
+				} else {
+					set types([lindex $pages 0]:$main_tag) [concat $type $extra_types]
+				}
+			}
+					
 			foreach p $pages {
 				if { "p:$p" ni $tags } { 
 					lappend tags "p:$p"
@@ -5276,6 +5438,8 @@ namespace eval ::dui {
 		# TBD: Allow 'type' to be a list from higher to lower precedence in the aspect searching. 
 		proc process_aspects { type {style {}} {aspects {}} {exclude {}} {args_name args} } {
 			upvar $args_name largs
+			set added_options [list]
+			
 			set theme [dui::args::get_option -theme [dui theme get] 1 largs]
 			if { $theme eq "none" } {
 				return
@@ -5292,13 +5456,41 @@ namespace eval ::dui {
 				set types $type
 			}
 			
+			set debug [string is true [dui::args::get_option -debug 0 0 largs]]
 			if { $aspects eq "" } {
-				set aspects [dui aspect list -theme $theme -type $types -style $style]
-			}
-			foreach aspect $aspects {
-				if { $aspect ni $exclude } {
-					add_option_if_not_exists -$aspect [dui aspect get $type $aspect -theme $theme -style $style \
-						-default_type $default_type] largs
+				set aspects [dui aspect list -theme $theme -type $types -style $style \
+					-full_aspect 1 -values 1 -debug $debug]
+			
+				set theme_aspects ""
+				foreach {fa v} $aspects {
+					lassign [split $fa .] th t a s 
+					if { $a ni $exclude } {
+						if { [add_option_if_not_exists -$a $v largs] } {
+							if { $debug } {
+								append theme_aspects "$fa="
+								if { [llength $v] == 1 } {
+									append theme_aspects "$v, "
+								} else {
+									append theme_aspects "\{$v\}, "
+								}
+							}
+						}
+					}
+				}
+			
+				if { $debug } {
+					if { $theme_aspects ne "" } {
+						msg "DUI: inherited aspects for theme '$theme', type(s) \{$type\} and style(s) \{$style\}: [string range $theme_aspects 0 end-2]"
+					} else {
+						msg "DUI: no inherited aspects for theme '$theme', type(s) \{$type\} and style(s) \{$style\}"
+					}
+				}
+			} else { 
+				foreach aspect $aspects {
+					if { $aspect ni $exclude } {
+						add_option_if_not_exists -$aspect [dui aspect get $type $aspect -theme $theme -style $style \
+							-default_type $default_type] largs
+					}
 				}
 			}
 		}
@@ -5334,22 +5526,10 @@ namespace eval ::dui {
 					remove_options -font_$f largs
 				}
 			} elseif { $type ni {ProgressBar} } {
-				set font_family [get_option -font_family [dui aspect get [list $type dtext font] font_family -style $style] 1 largs]
+				set font_family [get_option -font_family [dui aspect get [list $type dtext font] \
+						font_family -style $style] 1 largs]
 				
-				set default_size [dui aspect get [list $type dtext font] font_size]
-				if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
-					set default_size [dui aspect get [list dtext font] font_size]
-					if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
-						set default_size [dui aspect get font font_size]
-						if { $default_size eq "" || [string range $default_size 0 0] in "- +" } {
-							set default_size 16
-						}
-					}
-				}				
-				set font_size [get_option -font_size $default_size 1 largs]	
-				if { [string range $font_size 0 0] in "- +" } {
-					set font_size [expr int($default_size$font_size)]
-				}
+				set font_size [dui::font::parse_size [get_option -font_size {} 1 largs] $type]
 				
 				set weight [get_option -font_weight normal 1 largs]
 				set slant [get_option -font_slant roman 1 largs]
@@ -5372,6 +5552,7 @@ namespace eval ::dui {
 		# Returns the main tag of the created text.
 		proc process_label { pages x y type {style {}} {wrt_tag {}} {args_name args} } {
 			upvar $args_name largs
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0 largs]]
 			set label [get_option -label "" 1 largs]
 			set labelvar [get_option -labelvariable "" 1 largs]
 			if { $label eq "" && $labelvar eq "" } {
@@ -5409,6 +5590,8 @@ namespace eval ::dui {
 					set ylabel [expr {$y+$ylabel}]
 				}				
 			} else {
+				# xlabel & ylabel are just dummies for the initial painting position, but it 
+				# is modified at runtime whenever the page is shown.
 				set xlabel [expr {$x-20}]
 				set ylabel [expr {$y-3}]
 				set xlabel_offset 0
@@ -5420,18 +5603,19 @@ namespace eval ::dui {
 					set ylabel_offset [dui platform rescale_y [lindex $label_pos 2]] 
 				}				
 				foreach page $pages {
-					set after_show_cmd [list dui::item::relocate_text_wrt $page ${main_tag}-lbl $wrt_tag [lindex $label_pos 0] \
-						$xlabel_offset $ylabel_offset [get_option -anchor nw 0 label_args]]	
+					set after_show_cmd [list dui::item::relocate_text_wrt $page ${main_tag}-lbl \
+						$wrt_tag [lindex $label_pos 0] \
+						$xlabel_offset $ylabel_offset [get_option -anchor e 0 label_args]]	
 					dui page add_action $page show $after_show_cmd
 				}
 			}
 
 			if { $label ne "" } {
-				set id [dui add dtext $pages $xlabel $ylabel -text $label -tags $label_tags -aspect_type ${type}_label \
-					{*}$label_args]
+				set id [dui add dtext $pages $xlabel $ylabel -text $label -tags $label_tags \
+					-aspect_type ${type}_label -debug $debug -_inner_call 1 {*}$label_args]
 			} elseif { $labelvar ne "" } {
 				set id [dui add variable $pages $xlabel $ylabel -textvariable $labelvar -tags $label_tags \
-					-aspect_type ${type}_label {*}$label_args] 
+					-aspect_type ${type}_label -debug $debug -_inner_call 1 {*}$label_args] 
 			}
 			return $id
 		}
@@ -5894,6 +6078,8 @@ namespace eval ::dui {
 		# Returns a boolean list telling which of the pages have been deleted.
 		proc delete { pages {keep_data 0} } {
 			variable pages_data
+			variable ::dui::item::vartraces
+			
 			set can [dui canvas]
 			set keep_data [string is true $keep_data]
 			set is_deleted [lrepeat [llength $pages] 0]
@@ -5913,6 +6099,23 @@ namespace eval ::dui {
 				foreach item $items_to_delete {
 					if { [$can type $item] eq "window" } {
 						destroy [$can itemcget $item -window]
+					} elseif { [info exists vartraces($item)] } {
+						# If a variable has been traced on a DUI visual element (only canvas items
+						# 	apply, e.g. a dselector), remove the trace. 
+						# If we don't do this, on a retheme we may be still running 
+						# 	commands suchs as dselector_draw with the old theme colors.
+						# Note that on Tcl >= 8.5 we could use commandPrefix to identify the
+						#	command, but on 8.4 it didn't exist and we have to manually locate
+						#	the command to delete.
+						set varname [lindex $vartraces($item) 0]
+						set first_cmd [lindex $vartraces($item) 1]
+						foreach trc [trace info variable $varname] {
+							lassign $trc op cmd
+							if { [lindex $cmd 0] eq $first_cmd } {
+								trace remove variable $varname $op $cmd
+							}
+						}
+						unset vartraces($item)
 					}
 				}
 				$can delete {*}$items_to_delete
@@ -6332,7 +6535,7 @@ namespace eval ::dui {
 				} on error err {}
 				$can itemconfigure $item -state normal
 			}
-			set dlg_normal_widgets [::list]			
+			set dlg_normal_widgets [::list]	
 			foreach item $dlg_normal_items {
 				$can itemconfigure $item -state normal
 			}
@@ -6697,15 +6900,39 @@ namespace eval ::dui {
 				}
 			}
 		}
-		
+
+		# Adds **or replaces** variables
 		proc add_variable { pages id tcl_code } {
 			variable pages_data
 			
 			if { $tcl_code ne "" } {
 				#msg [namespace current] add_variable "with id '$id' to pages '$pages'"
 				foreach page $pages {
-					lappend pages_data(${page},variables) $id $tcl_code
+					set pagevars [ifexists pages_data(${page},variables) {}]
+					set id_idx [lsearch $pagevars $id]
+					if { $id_idx > -1 } {
+						set pages_data(${page},variables) [lreplace $pagevars \
+								[expr {$id_idx+1}] [expr {$id_idx+1}] $tcl_code]
+					} else {
+						lappend pages_data(${page},variables) $id $tcl_code
+					}
 				}
+			}
+		}
+
+		proc rm_variable { pages id } {
+			variable pages_data
+			variable variables_cache
+			
+			foreach page $pages {
+				set pagevars [ifexists pages_data(${page},variables) {}]
+				set id_idx [lsearch $pagevars $id]
+				if { $id_idx > -1 } {
+					set pages_data(${page},variables) [lreplace $pagevars $id_idx [expr {$id_idx+1}]]
+				}
+			}
+			if { [info exists variables_cache($id)] } {
+				unset variables_cache($id)
 			}
 		}
 		
@@ -6928,9 +7155,9 @@ namespace eval ::dui {
 	### ITEMS SUB-ENSEMBLE ###
 	# Items are visual items added to the canvas, either canvas items (text, arcs, lines...) or Tk widgets.
 	namespace eval item {
-		namespace export add delete get get_widget config cget enable_or_disable enable disable \
-			show_or_hide show hide add_image_dirs image_dirs listbox_get_selection listbox_set_selection \
-			relocate_text_wrt moveto moveby pages
+		namespace export add delete get get_widget type dui_type config cget coords \
+			enable_or_disable enable disable show_or_hide show hide add_image_dirs image_dirs \
+			listbox_get_selection listbox_set_selection relocate_text_wrt moveto moveby pages
 		namespace ensemble create
 	
 		# Stores the initial tap position when dragging dscale sliders. Array keys are <first_page>,<dscale_tag>, and
@@ -6954,6 +7181,12 @@ namespace eval ::dui {
 		# Current longpress "after" event
 		variable longpress_timer {}
 	
+		variable vartraces
+		array set vartraces {}
+		
+		variable types
+		array set types {}
+		
 		# Just a wrapper for the dui::add::<type> commands, for consistency of the API
 		proc add { type args } {
 			if { [info proc ::dui::add::$type] ne "" } {
@@ -7001,7 +7234,7 @@ namespace eval ::dui {
 				
 				set result {}
 				if { [string is integer [lindex $page_or_ids_or_widgets 0]] } {
-					foreach id $page_or_ids_or_widgets {						
+					foreach id $page_or_ids_or_widgets {
 						if { [$can find withtag $id] eq $id } {
 							lappend result $id
 						}
@@ -7019,13 +7252,12 @@ namespace eval ::dui {
 			set ids {}
 			set page [lindex $page_or_ids_or_widgets 0] 
 			foreach tag $tags {
-				if {  $page eq "" } {
-					set found [$can find withtag $tag]
+				if { $page eq "" } {
+					set found [$can find withtag "$tag"]
 				} elseif { $tag eq "*" || $tag eq "" || $tag eq "all"} {
 					set found [$can find withtag "p:$page"]
 				} else {
 					set found [$can find withtag "p:$page&&$tag"]
-					
 				}
 				if { $found eq "" } {
 					msg -DEBUG [namespace current] get: "no canvas tag matches '$tag' in page '$page'"
@@ -7057,8 +7289,108 @@ namespace eval ::dui {
 			return ""
 		}
 
-		# Provides a single interface to configure options for both canvas items (text, arcs...) and canvas widgets 
-		#	(window entries, listboxes, etc.)
+		# Returns the MAIN page and the MAINs tag for each canvas ID.
+		# All items have to be on the same page, inferred from the first item, otherwise
+		#	an error is shown in the log. 
+		# Returns a list whose first element is the page, and the rest of the elements are the
+		#	main tag of each provided ID. Invalid IDs and items not on the same page return {} on 
+		#	its corresponding position.
+		# Not exported, for internal use only.
+		proc page_and_tag_from_ids { ids } {
+			if { $ids eq {} } {
+				return {}
+			}
+			
+			set can [dui::canvas]
+			set page {}
+			set tags [list]
+			
+			foreach id $ids {
+				set item_tags [$can gettags $id]
+				if { $item_tags eq {} } {
+					lappend tags {}
+				} else {
+					set item_pages [lsearch -inline -all $item_tags "p:*"]
+					if { $item_pages eq {} } {
+						lappend tags {}
+					} elseif { $page eq {} } {
+						set page [string range [lindex $item_pages 0] 2 end]
+						lappend tags [lindex $item_tags 0]
+					} elseif { $page in $item_pages }  {
+						lappend tags [lindex $item_tags 0]
+					} else {
+						msg -ERROR [namespace current] "page_and_tag_from_ids: item $id with tag '[lindex $item_tags 0]' is not on page '$page' like the first id [lindex $ids 0]"
+						lappend tags {}
+					}
+				}
+			}
+			return [concat $page $tags]
+		}
+			
+		# Returns a list of lists. The main list has as many elements as items in the arguments.
+		# Each main list element is itself a list with 3 components:
+		#	1. The DUI type of the item, e.g. "dbutton". Can be empty, and can also be a list 
+		#		(e.g. dselectors are both dselector and dbutton). Only the main item in a compound
+		#		has a DUI type defined.
+		#	2. The canvas type of the item, e.g. "line" or "window".
+		#	3. The window type of the item, in case the canvas type is "window". E.g. "graph".
+		proc type { page_or_ids_or_widget {tag {}} } {
+			set can [dui canvas]
+			set result [list]
+			foreach id [get $page_or_ids_or_widget $tag] {
+				set item_types [list]
+				lappend item_types [dui_type $id]
+				
+				set can_type [$can type $id]
+				lappend item_types $can_type
+				if { $can_type eq "window" } {
+					lappend item_types [winfo class [$can itemcget $id -window]]
+				} else {
+					lappend item_types ""
+				}
+				
+				lappend result $item_types
+			}
+			
+			return $result
+		}
+		
+		# Returns a list of list with the DUI types of each provided tag or id.
+		# The list has the length of 'page_or_ids_or_widget' (if tag is undefined), or the
+		#	length of 'tag', and each item is itself a list with the DUI types of that item.
+		# Note that only main tags have a DUI type defined, subelements/parts of a compound
+		#	items do not.
+		proc dui_type { page_or_ids_or_widget {tag {}} } {
+			variable types
+			set result [list]
+			
+			if { $tag eq {} } {
+				set page_and_tags [page_and_tag_from_ids $page_or_ids_or_widget]
+				set page [lindex $page_and_tags 0]
+				set tag [lrange $page_and_tags 1 end]
+			} else {
+				set page [lindex $page_or_ids_or_widget 0]
+			}
+			
+			foreach t $tag {
+				if { [info exists types($page:$tag)] } {
+					lappend result $types($page:$tag)
+				} else {
+					# Check if the item is indexed on a different maiin page
+					set item_pages [pages $page $tag]
+					if { $page in $item_pages && [info exists types([lindex $item_pages 0]:$tag)] } {
+						lappend result $types([lindex $item_pages 0]:$tag)
+					} else {
+						lappend result {}
+					}
+				}
+			}
+
+			return $result
+		}
+		
+		# Provides a single interface to configure options for both canvas items (text, arcs...) 
+		# and canvas widgets (window entries, listboxes, etc.)
 		# Allows specifiying items/widgets in 3 ways:
 		#	1) As a list of widgets pathnames (.can.my_entry, etc.)
 		#	2) As a list of canvas item IDs (integer numbers)
@@ -7067,15 +7399,44 @@ namespace eval ::dui {
 			set can [dui canvas]
 			if { [string range [lindex $args 0] 0 0] eq "-" || [lindex $args 0] eq "" } {
 				set items [get $page_or_ids_or_widgets]
+				set page [list]
+				set tags [list]
 			} else {
-				set items [get $page_or_ids_or_widgets [lindex $args 0]]
+				set page [lindex $page_or_ids_or_widgets 0]
+				set tags [lindex $args 0]
+				set items [get $page_or_ids_or_widgets $tags]
 				set args [lrange $args 1 end]
 			}
-				
+
+			set dui_type [dui::args::get_option -dui_type "" 1]
+			if { $dui_type eq {} } {
+				# Infer the DUI type(s) from the DUI type(s) of the first item being configurated
+				set dui_type [lindex [dui_type [lindex $items 0]] 0]
+			}
+#msg "DUI::ITEM::CONFIG page=$page, tags=$tags, dui_type=$dui_type"			
+			if { $dui_type ne "" } {
+				foreach dtype $dui_type {
+					if { [namespace which -command "dui::item::_config_$dtype"] ne "" } {
+						# _config_* procs for each type need tag names, need to get them if they were
+						# not specified in the arguments
+						if { $tags eq {} } {
+							foreach id $items {
+								set item_tags [$can gettags $id]
+								lappend tags [lindex $item_tags 0]
+								lappend page [lsearch -glob -inline $item_tags {p:*}]
+							}
+							set page [lindex $page 0]
+						}
+						_config_$dtype $page $tags
+					}
+				}
+			}
+			
+			_config_font $page $tags 
 			set istate [dui::args::get_option -initial_state "" 1]
 			
-			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, iterating
-			#	is often needed.
+			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, 
+			#	iterating is often needed.
 			foreach item $items {
 				#msg [namespace current] "config:" "item '$item' of type '[$can type $tag]' with '$args'"
 				if { $istate ne "" } {
@@ -7112,37 +7473,261 @@ namespace eval ::dui {
 				$can addtag st:$state withtag $item
 			}
 		}
-		
-		proc cget { page_or_ids_or_widgets args } {
-			set can [dui canvas]
-			if { [string range [lindex $args 0] 0 0] eq "-" || [lindex $args 0] eq "" } {
-				set items [get $page_or_ids_or_widgets]
-			} else {
-				set items [get $page_or_ids_or_widgets [lindex $args 0]]
-				set args [lrange $args 1 end]
-			}
-				
-			# Passing '$tags' directly to itemconfigure when it contains multiple tags not always works, iterating
-			#	is often needed.
-			set result {}
-			foreach item $items {
-				if { "-initial_state" in $args } {
-					set args [list_remove_element $args -initial_state]
-					lappend result [_cget_initial_state $item]
+
+		# Processes font related configuration options in $args, if they exist, and replace them 
+		# with a single -font option with the correct values for font definition.
+		proc _config_font { page tags {args_name args} } {
+			upvar $args_name largs
+			
+			set font [dui::args::get_option -font "" 1 largs]
+			if { $font ne "" } {
+				if { [info exists ::dui::font::skin_fonts($font)] } {
+					set font $::dui::font::skin_fonts($font)
 				}
+				dui::args::add_option_if_not_exists -font $font largs
 				
-				if { [llength $args] > 0 } {
-					#msg [namespace current] "config:" "item '$item' of type '[$can type $tag]' with '$args'"
-					if { [winfo exists $item] } {
-						lappend result [$item cget {*}$args]
-					} elseif { [$can type $item] eq "window" } {
-						lappend result [[$can itemcget $item -window] cget {*}$args]
-					} else {
-						lappend result [$can itemcget $item {*}$args]
+				foreach f {family size weight slant underline overstrike} {
+					dui::args::remove_options -font_$f largs
+				}
+			} else {
+				set family [dui::args::get_option -font_family {} 1 largs]
+				set size [dui::args::get_option -font_size {} 1 largs]
+				set weight [dui::args::get_option -font_weight {} 1 largs]
+				set slant [dui::args::get_option -font_slant {} 1 largs]
+				set underline [dui::args::get_option -font_underline {} 1 largs]
+				set overstrike [dui::args::get_option -font_overstrike {} 1 largs]
+				
+				if { $family ne {} || $size ne {} || $weight ne {} || $slant ne {} || \
+						$underline ne {} || $overstrike ne {} } {
+					set can [dui canvas]
+					foreach item [get $page $tags] {
+						set cfamily {}
+						lassign [$can itemcget $item -font] cfamily csize cweight cslant cunderline coverstrike
+						if { $cfamily ne {} } {
+							set family [first_non_empty $family $cfamily]
+							set size [dui::font::parse_size [first_non_empty $size $csize]]
+							set weight [first_non_empty $weight $cweight normal]
+							set slant [first_non_empty $slant $cslant roman]
+							set underline [first_non_empty $underline $cunderline false]
+							set overstrike [first_non_empty $overstrike $coverstrike false]
+							
+							set font [dui::font::get $family $size -weight $weight -slant $slant \
+								-underline $underline -overstrike $overstrike]
+							dui::args::add_option_if_not_exists -font $font largs
+						}
+					}
+				}
+			} 
+			
+			return $font
+		}
+		
+		proc _config_compound_part { page tags options suffix {remove_options 1} } {
+			upvar args args
+			
+			set part_args [list]
+			foreach opt $options {
+				if { [dui::args::has_option -$opt args] } {
+					lappend part_args -$opt [dui::args::get_option -$opt {} $remove_options]
+				}
+			}
+			
+			if { $part_args ne {} } {
+				set can [dui canvas]
+				foreach id [get $page [lmap x $tags {append x $suffix}]] {
+					$can itemconfigure $id {*}$part_args
+				}
+			}
+		}
+		
+		proc _config_numbered_prefixed { page tags type tag_suffix } {
+			upvar args args
+			set can [dui canvas]
+			
+			set type_args [dui::args::extract_prefixed "-$type"]
+			set font_num_prefixes [list]
+			
+			foreach {lopt lvalue} $type_args {
+				set num_prefix ""
+				set opt ""
+				regexp {^\-([0-9]?)_?([0-9a-zA-Z_]*)$} $lopt {} num_prefix opt
+				
+				if { $opt eq "" } {
+					#msg "_CONFIG_NUMBERED_PREFIXED, removing variable from page=$page, tags=[lmap x $tags {append x "-$tag_suffix$num_prefix"}]"
+					foreach id [get $page [lmap x $tags {append x "-$tag_suffix$num_prefix"}]] {
+						if { $type eq "label" } {
+							dui::page::rm_variable $page $id
+						}
+						if { $type eq "symbol" } {
+							$can itemconfigure $id -text [dui::symbol::get $lvalue]
+						} else {
+							$can itemconfigure $id -text "$lvalue"
+						}
+					}
+				} elseif { $type eq "label" && $opt eq "variable" } {
+					#msg "_CONFIG_NUMBERED_PREFIXED, adding variable to page=$page, tags=[lmap x $tags {append x "-$tag_suffix$num_prefix"}], tclcode=$lvalue"
+					foreach id [get $page [lmap x $tags {append x "-$tag_suffix$num_prefix"}]] {
+						dui::page::add_variable $page $id "$lvalue"
+					}
+				} elseif { ($type eq "label" || $type eq "symbol") && [string range $opt 0 4] eq "font_" } {
+					if { $num_prefix ni $font_num_prefixes } {
+						lappend font_num_prefixes $num_prefix
+						set "font${num_prefix}_args" [list]
+					}
+					lappend "font${num_prefix}_args" -$opt $lvalue
+				} else {
+					foreach id [get $page [lmap x $tags {append x "-$tag_suffix$num_prefix"}]] {
+						$can itemconfigure $id -$opt $lvalue
 					}
 				}
 			}
-			return $result
+			
+			if { $font_num_prefixes ne {} } {
+				foreach num_prefix $font_num_prefixes {
+					foreach tag [lmap x $tags {append x "-$tag_suffix$num_prefix"}] {
+						_config_font $page $tag "font${num_prefix}_args"
+						$can itemconfigure $tag {*}[subst \$font${num_prefix}_args]
+					}
+				}
+			}
+		}
+
+		proc _config_dtext { page tags } {
+			upvar args args
+
+			if { [dui::args::has_option -textvariable] } {
+				set varcode [dui::args::get_option -textvariable "" 1]
+				foreach id [get $page $tags] {
+					dui::page::add_variable $page $id $varcode
+				}
+			} elseif { [dui::args::has_option -text] } {
+				# In case we're turning a possible -textvariable into a plain -text, we remove
+				#	the possible variable.
+				# We don't have to actually process the text change, that's done on the calling proc
+				foreach id [get $page $tags] {
+					dui::page::rm_variable $page $id
+				}
+			}
+		}
+		
+		proc _config_dbutton { page tags } {
+			upvar args args
+
+			_config_compound_part $page $tags {fill disabledfill} "-btn" 1
+			
+			# Can't use _config_compound_part here as lines and corners args are mix-matched
+			#_config_compound_part $page $tags {outline disabledoutline width} "-out-cor" 0
+			#_config_compound_part $page $tags {fill disabledfill width} "-out-lin" 1
+			set lines_args [list]
+			set corners_args [list]
+			if { [dui::args::has_option -outline] } {
+				set outcol [dui::args::get_option -outline {} 1]
+				lappend corners_args -outline $outcol
+				lappend lines_args -fill $outcol
+			}
+			if { [dui::args::has_option -disabledoutline] } {
+				set outcol [dui::args::get_option -disabledoutline {} 1]
+				lappend corners_args -disabledoutline $outcol
+				lappend lines_args -disabledfill $outcol
+			}
+			if { [dui::args::has_option -width] } {
+				set width [dui::args::get_option -width {} 1]
+				lappend corners_args -width $width
+				lappend lines_args -width $width
+			}
+			
+			if { $lines_args ne {} } {
+				set can [dui canvas]
+				
+				set lines_tags [lmap x $tags {append x "-out-lin"}]
+				foreach id [get $page $lines_tags] {
+					$can itemconfigure $id {*}$lines_args
+				}
+				
+				set corners_tags [lmap x $tags {append x "-out-cor"}]
+				foreach id [get $page $corners_tags] {
+					$can itemconfigure $id {*}$corners_args
+				}
+			}
+			
+			_config_numbered_prefixed $page $tags label lbl
+			_config_numbered_prefixed $page $tags symbol sym
+			_config_numbered_prefixed $page $tags image img
+		}
+		
+		# Note that, unlike 'get', this can only reference ONE item and ONE option
+		proc cget { page_or_ids_or_widgets args } {
+			set can [dui canvas]
+			set item_tags {}
+			
+			if { [string range [lindex $args 0] 0 0] eq "-" || [lindex $args 0] eq "" } {
+				set item [lindex [get $page_or_ids_or_widgets] 0]
+				set page [list]
+				set tag [list]	
+			} else {
+				set page [lindex $page_or_ids_or_widgets 0]
+				set tag [lindex $args 0]
+				set item [lindex [get $page $tag] 0]
+				set args [lrange $args 1 end]
+			}
+
+			set dui_type [dui::args::get_option -dui_type "" 1]	
+			if { $dui_type eq {} } {
+				# Infer the DUI type(s) from the DUI type(s) of the first item being configurated
+				set dui_type [lindex [dui_type $page_or_ids_or_widgets $tag] 0]
+			}
+			set rescaled [string is true [dui::args::get_option -rescaled 0 1]]
+			
+			if { [llength $args] == 0 } {
+				return {}
+			} else {
+				set option [lindex $args 0]
+				if { [string range $option 0 0] ne "-" } {
+					set option "-$option"
+				}
+			}
+				
+			if { $dui_type ne "" } {
+				foreach dtype $dui_type {
+					if { [namespace which -command "dui::item::_cget_$dtype"] ne "" } {
+						# _config_* procs for each type need tag names, need to get them if they were
+						# not specified in the arguments
+						if { $tag eq {} } {
+							set item_tags [$can gettags $item]
+							set tag [lindex $item_tags 0]
+							set page [lindex [lsearch -glob -inline $item_tags {p:*}] 0]
+						}
+						
+						set code [catch {_cget_$dtype $page $tag $option $rescaled} result] 
+						# 2 = TCL_RETURN, 1 = TCL_ERROR, others signal to continue 
+						if { $code eq 2 } {
+							return $result
+						} elseif { $code eq 1 } {
+							msg -ERROR [namespace current] "cget: _cget_$dtype has produced an error: $result"
+							return {}
+						}
+					}
+				}
+			}
+			
+			if { $option eq "-initial_state" } {
+				return [_cget_initial_state $item]
+			} elseif { [string range $option 0 5] eq "-font_" } {
+				return [_cget_font_part $item [string range $option 6 end]]
+			} elseif { [string range $option 0 5] eq "-label" } {
+				set suboption [string range $option 6 end]
+				if { $suboption eq "" || $suboption eq "variable" } {
+					return [$can itemcget [get $page ${tag}-lbl] -text]
+				} else {
+					return [$can itemcget [get $page ${tag}-lbl] -[string range $suboption 1 end]]
+				}
+			} elseif { [winfo exists $item] } {
+				return [$item cget $option]
+			} elseif { [$can type $item] eq "window" } {
+				return [[$can itemcget $item -window] cget $option]
+			} else {
+				return [$can itemcget $item $option]
+			}
 		}
 				
 		proc _cget_initial_state { item } {
@@ -7154,6 +7739,170 @@ namespace eval ::dui {
 				return "disabled"
 			} else {
 				return "normal"
+			}
+		}
+		
+		proc _cget_font_part { item part } {
+			set can [dui canvas]
+			set suffix "nr00"
+			lassign [$can itemcget $item -font] family size suffix
+			
+			if { $part eq "family" } {
+				return $family
+			} elseif { $part eq "size" }  {
+				return $size
+			} else {
+				array set fontparts [dui::font::decode_key $suffix]
+				if { [info exists fontparts($part)] } {
+					return $fontparts($part)
+				} else {
+					msg -ERROR [namespace current] "_cget_font_part: font part '$part' is not valid"
+					return {}
+				}
+			}
+		}
+		
+		proc _cget_dbutton { page tag option {rescaled 0} } {
+			set can [dui canvas]
+			if { $option in {-fill -disabledfill} } {
+				set items [get $page ${tag}-btn]
+				if { $items eq {} } {
+					set items [get $page ${tag}-out-lin]
+				} 
+				return -code "return" [$can itemcget [lindex $items 0] $option]
+			} elseif { $option in {-outline -disabledoutline} } {
+				return -code "return" [$can itemcget [lindex [get $page ${tag}-out-cor] 0] $option]
+			} elseif { $option eq "-width" } {
+				set width [$can itemcget ${tag}-out -width]
+				if { $width eq {} } {
+					set width [$can itemcget ${tag} -width]
+				}
+				if { $width eq {} } {
+					return -code "return" {}
+				} elseif { !$rescaled } {
+					set width [dui::platform::unscale_x $width]
+					return -code "return" [expr {int($width)}]
+				}
+			} elseif { $option eq "-radius" || $option eq "-arc_offset" } {
+				set radius [list]
+				if { [get $page ${tag}-out] ne {} } {
+					set tag_start ${tag}-out
+				} elseif { [get $page ${tag}-btn] ne {} } {
+					set tag_start ${tag}-btn
+				} else {
+					return -code "return" {}
+				}
+			
+				foreach corner {nw ne se sw} {
+					lassign [$can coords ${tag_start}-$corner] x0 y0 x1 y1
+					if { $x0 eq {} } {
+						lappend radius 0
+					} else {
+						set corner_radius [expr {int($x1-$x0)}]
+						if { !$rescaled } {
+							set corner_radius [dui::platform::unscale_x $corner_radius]
+						}
+						lappend radius $corner_radius
+					}
+				}
+				return -code "return" $radius
+			} elseif { $option eq "-bwidth" || $option eq "-bheight" } {
+				set x0 {}
+				set has_outline 1
+				lassign [$can bbox ${tag}-out] x0 y0 x1 y1
+				if { $x0 eq {} } {
+					set has_outline 0
+					lassign [$can bbox ${tag}-btn] x0 y0 x1 y1
+					set width 0
+				} else {
+					set width [$can itemcget ${tag}-out -width]
+					if { $width eq {} } {
+						set width [$can itemcget ${tag} -width]
+						if { $width eq {} } {
+							set width 0
+						}
+					}
+				}
+				
+				if { $option eq "-bwidth" } {
+					set bwidth [expr {$x1-$x0}]
+					if { $has_outline } {
+						set bwidth [expr {$bwidth-$width*4}]
+					}
+					if { !$rescaled } {
+						set bwidth [dui::platform::unscale_x $bwidth]
+					}
+					return -code "return" [expr {int($bwidth)}]
+				} else {
+					set bheight [expr {$y1-$y0}]
+					if { $has_outline } {
+						set bheight [expr {$bheight-$width*4}]
+					}
+					if { !$rescaled } {
+						set bheight [dui::platform::unscale_y $bheight]
+					}
+					return -code "return" [expr {int($bheight)}]
+				}
+			} elseif { [string range $option 0 5] eq "-label" } {
+				regexp {^\-label([0-9]?)_?([0-9a-zA-Z_]*)$} $option {} num_prefix opt
+				if { $opt eq "" } {
+					set opt "text"
+				}
+				set item [lindex [get $page ${tag}-lbl$num_prefix] 0]
+				
+				if { [string range $opt 0 4] eq "font_" } {
+					return -code "return" [_cget_font_part $item [string range $opt 5 end]]
+				} else {
+					return -code "return" [$can itemcget $item -$opt]
+				}
+			} elseif { [string range $option 0 6] eq "-symbol" } {
+				regexp {^\-symbol([0-9]?)_?([0-9a-zA-Z_]*)$} $option {} num_prefix opt
+				if { $opt eq "" } {
+					set opt "text"
+				}
+				set item [lindex [get $page ${tag}-sym$num_prefix] 0]
+
+				if { [string range $opt 0 4] eq "font_" } {
+					return -code "return" [_cget_font_part $item [string range $opt 5 end]]
+				} else {
+					return -code "return" [$can itemcget $item -$opt]
+				}
+			} elseif { [string range $option 0 5] eq "-image" } {
+				regexp {^\-image([0-9]?)_?([0-9a-zA-Z_]*)$} $option {} num_prefix opt
+				if { $opt eq "" } {
+					set opt "image"
+				}
+				set item [lindex [get $page ${tag}-img$num_prefix] 0]
+				
+				return -code "return" [$can itemcget $item -$opt]
+			}
+			
+			# Signal to continue processing the option
+			return -code "ok"
+		}
+		
+		proc coords { page_or_id_or_widget {tag {}} {rescaled 1} } {
+			set page_or_id_or_widget [lindex $page_or_id_or_widget 0]
+			if { $tag ne {} } {
+				set tag [lindex $tag 0]
+			}
+			
+			set item [get $page_or_id_or_widget $tag]
+			if { $item eq {} } {
+				return
+			} else {
+				set coords [[dui canvas] coords $item]
+
+				if { [string is true $rescaled] } {
+					return $coords
+				} else {
+					set nonscaled_coords [list]
+					foreach {x y} $coords {
+						lappend nonscaled_coords [dui::platform::unscale_x $x]
+						lappend nonscaled_coords [dui::platform::unscale_y $y]
+					}
+					return $nonscaled_coords
+				}
 			}
 		}
 		
@@ -7322,7 +8071,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set y [dui::page::calc_y $page $y]
 			}
 			
-			if { [string range $tag end-1 end] eq "*" } {
+			if { [string range $tag end end] eq "*" } {
 				set refitem [dui item get $page_or_id_or_widget [string range $tag 0 end-1]]
 			} else {
 				set refitem [lindex $items end]
@@ -7713,53 +8462,75 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set ids {}
 			set nradius [llength $radius]
 			set radius [lreplicate 4 $radius]
+			set main_tag [lindex $tags 0]
+			
+			# Restrict the radius to half the minimum of button width and height
+			set max_possible_radius [expr {int($x1-$x0)}]
+			if { [expr {int($y1-$y0)}] < $max_possible_radius } {
+				set max_possible_radius [expr {int($y1-$y0)}]
+			}
+			set radius [lmap x $radius {restrict_to_range $x 0 $max_possible_radius}]
 			lassign $radius radius1 radius2 radius3 radius4
-			set maxradius [::max {*}$radius]
 			
 			if { $radius1 > 0 } {
-				lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius1] [expr $y0 + $radius1] -fill $colour -disabledfill $disabled \
-					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
-			}
+				lappend ids [$can create oval $x0 $y0 [expr $x0 + $radius1] [expr $y0 + $radius1] \
+					-fill $colour -disabledfill $disabled -outline $colour -disabledoutline $disabled \
+					-width 0 -tags [concat ${main_tag}-nw $tags] -state "hidden"]
+			} 
 			if { $radius2 > 0 } {
-				lappend ids [$can create oval [expr $x1-$radius2] $y0 $x1 [expr $y0 + $radius2] -fill $colour -disabledfill $disabled \
-					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create oval [expr $x1-$radius2] $y0 $x1 [expr $y0 + $radius2] \
+					-fill $colour -disabledfill $disabled -outline $colour -disabledoutline $disabled \
+					-width 0 -tags [concat ${main_tag}-ne $tags] -state "hidden"]
 			}
 			if { $radius3 > 0 } {
-				lappend ids [$can create oval [expr $x1-$radius3] [expr $y1-$radius3] $x1 $y1 -fill $colour -disabledfill $disabled \
-					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create oval [expr $x1-$radius3] [expr $y1-$radius3] $x1 $y1 \
+					-fill $colour -disabledfill $disabled -outline $colour -disabledoutline $disabled \
+					-width 0 -tags [concat ${main_tag}-se $tags] -state "hidden"]
 			}			
 			if { $radius4 > 0 } {
-				lappend ids [$can create oval $x0 [expr $y1-$radius4] [expr $x0+$radius4] $y1 -fill $colour -disabledfill $disabled \
-					-outline $colour -disabledoutline $disabled -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create oval $x0 [expr $y1-$radius4] [expr $x0+$radius4] $y1 \
+					-fill $colour -disabledfill $disabled -outline $colour -disabledoutline $disabled \
+					-width 0 -tags [concat ${main_tag}-sw $tags] -state "hidden"]
 			}
 			
 			if { $nradius == 1 } {
-				lappend ids [$can create rectangle [expr $x0 + ($radius1/2.0)] $y0 [expr $x1-($radius1/2.0)] $y1 -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
-				lappend ids [$can create rectangle $x0 [expr $y0 + ($radius1/2.0)] $x1 [expr $y1-($radius1/2.0)] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+				lappend ids [$can create rectangle [expr $x0 + ($radius1/2.0)] \
+					$y0 [expr $x1-($radius1/2.0)] $y1 -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
+				lappend ids [$can create rectangle $x0 [expr $y0 + ($radius1/2.0)] \
+					$x1 [expr $y1-($radius1/2.0)] -fill $colour \
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 			} else {
 				# Draw 5 rectangles to cover all possible combinations
+				set maxradius [::max {*}$radius]
+				
 				# Inner rectangle
 				lappend ids [$can create rectangle [expr {$x0+($maxradius/2.0)}] [expr {$y0+($maxradius/2.0)}] \
 					[expr {$x1-($maxradius/2.0)}] [expr {$y1-($maxradius/2.0)}] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 				# Top rectangle
 				lappend ids [$can create rectangle [expr {$x0+($radius1/2.0)}] $y0 \
 					[expr {$x1-($radius2/2.0)}] [expr {$y0+($maxradius/2.0)}] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 				# Bottom rectangle
 				lappend ids [$can create rectangle [expr {$x0+($radius4/2.0)}] [expr {$y1-($maxradius/2.0)}] \
 					[expr {$x1-($radius3/2.0)}] $y1 -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 				# Left rectangle
 				lappend ids [$can create rectangle $x0 [expr {$y0+($radius1/2.0)}] \
 					[expr {$x0+($maxradius/2.0)}] [expr {$y1-($radius4/2.0)}] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 				# Right rectangle
 				lappend ids [$can create rectangle [expr {$x1-($maxradius/2.0)}] [expr {$y0+($radius2/2.0)}] \
 					$x1 [expr {$y1-($radius3/2.0)}] -fill $colour \
-					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 -tags $tags -state "hidden"]
+					-disabledfill $disabled -disabledoutline $disabled -outline $colour -width 0 \
+					-tags $tags -state "hidden"]
 			}
 			return $ids
 		}
@@ -7778,10 +8549,17 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			set nradius [llength $radius]
 			set radius [lreplicate 4 $radius]
-			lassign $radius radius1 radius2 radius3 radius4
-			set maxradius [::max {*}$radius]
 			
-			# in discussion https://github.com/decentespresso/de1app/issues/246 decided to remove -1 width code in the arc drawing, as it looks better at the same width
+			# Restrict the radius to half the minimum of button width and height
+			set max_possible_radius [expr {int($x1-$x0)}]
+			if { [expr {int($y1-$y0)}] < $max_possible_radius } {
+				set max_possible_radius [expr {int($y1-$y0)}]
+			}
+			set radius [lmap x $radius {restrict_to_range $x 0 $max_possible_radius}]
+			lassign $radius radius1 radius2 radius3 radius4
+			
+			# in discussion https://github.com/decentespresso/de1app/issues/246 decided to remove -1 
+			# width code in the arc drawing, as it looks better at the same width
 			#if { $width > 1 } {
 				# Adjustment to look better under Android, that uses dithering
 			#	set arc_width [expr {$width-1}]
@@ -7791,20 +8569,24 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set arc_width $width
 
 			if { $radius1 > 0 } {
-				lappend ids [$can create arc $x0 [expr {$y0+$radius1+1.0}] [expr {$x0+$radius1+1.0}] $y0 -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-nw ${main_tag}-cor {*}$tags] -start 90 -disabledoutline $disabled -state "hidden"]
+				lappend ids [$can create arc $x0 [expr {$y0+$radius1+1.0}] [expr {$x0+$radius1+1.0}] $y0 \
+					-style arc -outline $colour -width $arc_width -start 90 -disabledoutline $disabled \
+					-tags [list ${main_tag}-nw ${main_tag}-cor {*}$tags] -state "hidden"]
 			}
 			if { $radius2 > 0 } {
-				lappend ids [$can create arc [expr {$x1-$radius2-1}] $y0 $x1 [expr {$y0+$radius2+1}] -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-ne ${main_tag}-cor {*}$tags] -start 0 -disabledoutline $disabled -state "hidden"]
+				lappend ids [$can create arc [expr {$x1-$radius2-1}] $y0 $x1 [expr {$y0+$radius2+1}] \
+					-style arc -outline $colour -width $arc_width  -start 0 -disabledoutline $disabled \
+					-tags [list ${main_tag}-ne ${main_tag}-cor {*}$tags] -state "hidden"]
 			}
 			if { $radius3 > 0 } {
-				lappend ids [$can create arc [expr {$x1-$radius3-1.0}] $y1 $x1 [expr {$y1-$radius3-1.0}] -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-se ${main_tag}-cor {*}$tags] -start -90 -disabledoutline $disabled -state "hidden"]
+				lappend ids [$can create arc [expr {$x1-$radius3-1.0}] $y1 $x1 [expr {$y1-$radius3-1.0}] \
+					-style arc -outline $colour -width $arc_width -start -90 -disabledoutline $disabled \
+					-tags [list ${main_tag}-se ${main_tag}-cor {*}$tags] -state "hidden"]
 			}			
 			if { $radius4 > 0 } {
-				lappend ids [$can create arc $x0 [expr {$y1-$radius4-1.0}] [expr {$x0+$radius4+1.0}] $y1 -style arc -outline $colour \
-					-width $arc_width -tags [list ${main_tag}-sw ${main_tag}-cor {*}$tags] -start 180 -disabledoutline $disabled -state "hidden"]
+				lappend ids [$can create arc $x0 [expr {$y1-$radius4-1.0}] [expr {$x0+$radius4+1.0}] $y1 \
+					-style arc -outline $colour -width $arc_width -start 180 -disabledoutline $disabled \
+					-tags [list ${main_tag}-sw ${main_tag}-cor {*}$tags] -state "hidden"]
 			}
 
 			# Top line
@@ -8738,8 +9520,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		
 		# Adds canvas items (arcs, ovals, lines, etc.) to pages
 		proc canvas_item { type pages args } {
-			set can [dui canvas]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::canvas_item $type \{$pages\} $args"
+			}			
 			
+			set can [dui canvas]
 			set coords {}
 			set i 0
 			while { [llength $args] > 0 && [string is double [lindex $args 0]] } {
@@ -8757,17 +9543,32 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set main_tag [lindex $tags 0]
 	
 			set style [dui::args::get_option -style "" 1]
-			dui::args::process_aspects $type $style "" "pos"
-					
+			dui::args::process_aspects [list $type canvas_item] $style "" "pos"
+			
+			if { $type eq "arc" && [dui::args::has_option -arc_style] } {
+				dui::args::add_option_if_not_exists -style [dui::args::get_option -arc_style {} 1]
+			}
+			set width [dui::args::get_option -width {} 1]
+			if { $width ne {} } {
+				dui::args::add_option_if_not_exists -width [dui::platform::rescale_x $width]
+			}
+			
+			if { $type eq "line" } {
+				dui::args::remove_options {outline disabledoutline}
+			}
+			dui::args::remove_options debug
+			
 			try {
-				set w [[dui canvas] create $type {*}$coords -state hidden {*}$args]
+				set w [$can create $type {*}$coords -state hidden {*}$args]
 			} on error err {
 				set msg "can't add $type '$main_tag' in page(s) '$pages' to canvas: $err"
 				msg -ERROR [namespace current] $msg
 				error $msg
 				return
 			}
-
+			if { $debug } {
+				msg "DUI: $can create $type $coords -state hidden $args ==> $w"
+			}
 			set ns [dui page get_namespace $pages]
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $w
@@ -8793,6 +9594,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		proc dtext { pages x y args } {
 			global text_cnt
 			set can [dui canvas]
+
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "dui::add::dtext \{$pages\} $x $y $args"
+			}
 			
 			set first_page [lindex $pages 0]
 			set abs_coords [string is true [dui::args::get_option -_abs_coords 0 1]] 
@@ -8804,7 +9610,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set y [dui::page::calc_y $first_page $y]
 			}
 			
-			set tags [dui::args::process_tags_and_var $pages dtext ""]
+			set tags [dui::args::process_tags_and_var $pages dtext "" 0 args 1]
 			set main_tag [lindex $tags 0]
 			set cmd [dui::args::get_option -command {} 1]
 			
@@ -8827,8 +9633,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				dui::args::remove_options pressfill
 			}
 			
+			dui::args::remove_options {debug _inner_call}
 			try {
-				set id [$can create text $x $y -state hidden {*}$args]
+				set id [$can create text $x $y -tags $tags -state hidden {*}$args]
+				if { $debug } {
+					msg "DUI: $can create text $x $y -state hidden $args ==> $id"
+				}
 			} on error err {
 				set msg "can't add dtext '$main_tag' in page(s) '$pages' to canvas: $err"
 				msg -ERROR [namespace current] dtext: $msg
@@ -8866,8 +9676,6 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#		Also in this case, if -tags is not specified, uses the textvariable name as tag.
 		#  All others passed through to the 'dui add dtext' command
 		proc variable { pages x y args } {
-			global variable_labels
-			
 			set tags [dui::args::process_tags_and_var $pages "variable" -textvariable]
 			set main_tag [lindex $tags 0]
 			set varcode [dui::args::get_option -textvariable "" 1]
@@ -8904,61 +9712,123 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# from several canvas items (rounded-corner rectangles, filled or unfilled, with our without an outline).
 		#
 		proc shape { shape pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::shape $shape \{$pages\} $args"
+			}
 			set can [dui canvas]
 			set ns [dui page get_namespace $pages]
 			
 			set tags [dui::args::process_tags_and_var $pages shape {} 1 args 1]
 			set main_tag [lindex $tags 0]
 			
-			lassign [dui::args::process_sizes $pages $x $y -bwidth 300 -bheight 300 1] rx ry rx1 ry1
+			set is_inner_call [string is true [dui::args::get_option -_inner_call 0 1]]
+			lassign [dui::args::process_sizes $pages $x $y -bwidth 300 -bheight 300 \
+				[expr {!$is_inner_call}]] rx ry rx1 ry1
 			
 			set style [dui::args::get_option -style "" 1]
 			set aspect_type [list [dui::args::get_option -aspect_type $shape 1] $shape shape]
 			dui::args::process_aspects $aspect_type $style {} {bg_img bg_color bg_shape}
 			
-			# As soon as the rect has a non-zero width (or maybe an outline or fill?), its "clickable" area becomes only
-			#	the border, so if a visible rectangular button is needed, we have to add an invisible clickable rect on 
-			#	top of it.
+			# As soon as the rect has a non-zero width (or maybe an outline or fill?), its "clickable" 
+			#	area becomes only the border, so if a visible rectangular button is needed, we have
+			#	to add an invisible clickable rect on top of it.
 			set ids {}
 			
 			if { $shape eq "round" } {
 				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style]]
-				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill -style $style]]
-				set radius [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default 40]]
+				set disabledfill [dui::args::get_option -disabledfill \
+						[dui aspect get $aspect_type disabledfill -style $style]]
+				set radius [dui::args::get_option -radius \
+						[dui aspect get $aspect_type radius -style $style -default {}]]
+				if { $radius eq {} } {
+					set radius [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default 80]]
+				}
+				set radius [lmap x $radius {dui::platform::rescale_x $x}]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $tags]
 			} elseif { $shape eq "outline" } {
-				set outline [dui::args::get_option -outline [dui aspect get $aspect_type outline -style $style]]
-				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get $aspect_type disabledoutline -style $style]]
-				set arc_offset [dui::args::get_option -arc_offset [dui aspect get $aspect_type arc_offset -style $style -default 50]]
-				set width [dui::args::get_option -width [dui aspect get $aspect_type width -style $style -default 3]]
+				set outline [dui::args::get_option -outline \
+						[dui aspect get $aspect_type outline -style $style -default {}]]
+				if { $outline eq {} } {
+					set outline [dui::args::get_option -fill \
+							[dui aspect get $aspect_type fill -style $style -default black]]
+				}
+				set disabledoutline [dui::args::get_option -disabledoutline \
+						[dui aspect get $aspect_type disabledoutline -style $style -default {}]]
+				if { $disabledoutline eq {} } {
+					set disabledoutline [dui::args::get_option -disabledfill \
+						[dui aspect get $aspect_type disabledfill -style $style -default black]]
+				}
+				set arc_offset [dui::args::get_option -arc_offset \
+						[dui aspect get $aspect_type arc_offset -style $style -default {}]]
+				if { $arc_offset eq {} } {
+					set arc_offset [dui::args::get_option -radius \
+							[dui aspect get $aspect_type radius -style $style -default 80]]
+				}
+				set arc_offset [lmap x $arc_offset {dui::platform::rescale_x $x}]
+				set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get $aspect_type width -style $style -default 4]]]
 				
 				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
-				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline $disabledoutline \
-					$width $outline_tags]
+				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline \
+					$disabledoutline $width $outline_tags]
 			} elseif { $shape eq "round_outline" } {
 				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style]]
-				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill -style $style]]
-				set radius [dui::args::get_option -radius [dui aspect get $aspect_type radius -style $style -default 40]]
-				set outline [dui::args::get_option -outline [dui aspect get $aspect_type outline -style $style]]
-				set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get $aspect_type disabledoutline -style $style]]
-				set width [dui::args::get_option -width [dui aspect get $aspect_type width -style $style -default 3]]
+				set disabledfill [dui::args::get_option -disabledfill \
+						[dui aspect get $aspect_type disabledfill -style $style]]
+				set radius [dui::args::get_option -radius \
+						[dui aspect get $aspect_type radius -style $style -default {}]]
+				if { $radius eq {} } {
+					set radius [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default 80]]
+				}
+				set radius [lmap x $radius {dui::platform::rescale_x $x}]				
+				set outline [dui::args::get_option -outline \
+						[dui aspect get $aspect_type outline -style $style]]
+				set disabledoutline [dui::args::get_option -disabledoutline \
+						[dui aspect get $aspect_type disabledoutline -style $style]]
+				set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get $aspect_type width -style $style -default 4]]]
 				
 				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $tags]
-				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
 				
-				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
+				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
+				lappend ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
 					$disabledoutline $width $outline_tags]
 			} elseif { $shape eq "oval" } {
-				set ids [$can create oval $rx $ry $rx1 $ry1 -tags $tags -state hidden {*}$args]
+				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style] 1]
+				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill \
+					-style $style] 1]
+				if { [dui::args::has_option -width] } {
+					set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4] 1]]
+					dui::args::add_option_if_not_exists -width $width
+				}
+				dui::args::remove_options {radius arc_offset}
+				
+				set ids [$can create oval $rx $ry $rx1 $ry1 -tags $tags -fill $fill -disabledfill $disabledfill \
+					-state hidden {*}$args]
 			} else {
 				if { $shape ne "rect" && $shape ne "rectangle" } {
 					msg -WARNING [namespace current] shape: "shape '$shape' not recognized, defaulting to 'rectangle'"
 				}
-				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $tags -state hidden {*}$args]
+				set fill [dui::args::get_option -fill [dui aspect get $aspect_type fill -style $style] 1]
+				set disabledfill [dui::args::get_option -disabledfill [dui aspect get $aspect_type disabledfill \
+					-style $style] 1]
+				if { [dui::args::has_option -width] } {
+					set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4] 1]]
+					dui::args::add_option_if_not_exists -width $width
+				}
+				dui::args::remove_options {radius arc_offset}
+				
+				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $tags -fill $fill -disabledfill $disabledfill \
+					-state hidden {*}$args]
 			}
 			
-			if { $ids ne "" && $ns ne "" } {
+			if { !$is_inner_call && $ids ne "" && $ns ne "" } {
 				set ${ns}::widgets($main_tag) $ids
 			}
 			
@@ -9003,47 +9873,52 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	All others passed through to the respective visible button creation command.
 		#	-pressfill: Background color when pressing the button 
 		#	-pressoutline: Outline color when pressing the button
-		proc dbutton { pages x y args } { 			
+		proc dbutton { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dbutton \{$pages\} $x $y $args"
+			}
 			set debug_buttons [dui cget debug_buttons]
 			set can [dui canvas]
 			set ns [dui page get_namespace $pages]
 			set first_page [lindex $pages 0]
 			
 			set cmd [dui::args::get_option -command {} 1]
+			set style [dui::args::get_option -style "" 1]
 			set longpress_cmd [dui::args::get_option -longpress_cmd {} 1]
 			set longpress_threshold [dui::args::get_option -longpress_threshold 0 1]
-			set style [dui::args::get_option -style "" 1]
 			set aspect_type [dui::args::get_option -aspect_type dbutton]
-			dui::args::process_aspects dbutton $style {} {use_biginc orient}
+			dui::args::process_aspects {dbutton shape} $style {} {use_biginc orient debug_outline}
+			set shape [dui::args::get_option -shape \
+					[dui::aspect::get {dbutton shape} shape -style $style -default {}] 1]
+			set tags [dui::args::process_tags_and_var $pages dbutton {} 1 args 1 $shape]
+			set main_tag [lindex $tags 0]
+			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
 			
 			set x [dui::page::calc_x $first_page $x 0]
 			set y [dui::page::calc_y $first_page $y 0]
 			set x1 0
 			set y1 0
+			
+			# Direct coordinates have precedence over bwidth and bheight
 			set bwidth [dui::args::get_option -bwidth "" 1]
-			if { $bwidth ne "" } {
+			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
+				set x1 [dui::page::calc_x $first_page [lindex $args 0] 0]
+				set args [lrange $args 1 end]
+			} elseif { $bwidth ne "" } {
 				set bwidth [dui::page::calc_width $first_page $bwidth 0]
 				set x1 [expr {$x+$bwidth}]
 			}
+			
 			set bheight [dui::args::get_option -bheight "" 1]
-			if { $bheight ne "" } {
+			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
+				set y1 [dui::page::calc_y $first_page [lindex $args 0] 0]
+				set args [lrange $args 1 end]
+			} elseif { $bheight ne "" } {
 				set bheight [dui::page::calc_height $first_page $bheight 0]
 				set y1 [expr {$y+$bheight}]
-			}		 
+			}
 			
-			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
-				if { $x1 <= 0 } {
-					set x1 [dui::page::calc_x $first_page [lindex $args 0] 0]
-					set args [lrange $args 1 end]
-				}
-			}
-			if { [llength $args] > 0 && [string is double [lindex $args 0]] } {
-				if { $y1 <= 0 } {
-					set y1 [dui::page::calc_y $first_page [lindex $args 0] 0]
-					set args [lrange $args 1 end]
-				}				
-			}
-						
 			if { $x1 <= 0 } {
 				set x1 [expr {$x+100}]
 			}
@@ -9056,9 +9931,6 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				lassign [dui::item::anchor_coords $anchor $x $y [expr {$x1-$x}] [expr {$y1-$y}]] x y x1 y1
 			}
 			
-			set tags [dui::args::process_tags_and_var $pages dbutton {} 1 args 1]
-			set main_tag [lindex $tags 0]
-			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
 			lassign [lreplicate 4 [dui::args::get_option -tap_pad 0 1]] tp0 tp1 tp2 tp3
 			set tp0 [dui::platform::rescale_x $tp0]
 			set tp1 [dui::platform::rescale_y $tp1]
@@ -9069,7 +9941,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set rx1 [dui::platform::rescale_x $x1]
 			set ry [dui::platform::rescale_y $y]
 			set ry1 [dui::platform::rescale_y $y1]
-						
+			
+			dui::args::remove_options debug
+			
 			# Note this cannot be processed by 'dui item process_label' as this one processes the positioning of the
 			#	label differently (inside), also we need to extract label options from the args before painting the 
 			#	background button (as $args is passed to the painting proc) but not create the label until after that
@@ -9083,7 +9957,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set "label${suffix}_tags" [list "${main_tag}-lbl$suffix" {*}[lrange $tags 1 end]]	
 				set "label${suffix}_args" [dui::args::extract_prefixed "-label${suffix}_"]
 				
-				foreach aspect [dui aspect list -type [list "${aspect_type}_label$suffix" dtext] -style $style] {
+				# NO need to explicitly include dtext in -type, as the call below to dtext to create 
+				# the label already adds the dtext aspects if they are undefined.
+				foreach aspect [dui aspect list -type "${aspect_type}_label$suffix" -style $style] {
 					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_label$suffix" $aspect \
 						-style $style -default {} -default_type dtext] "label${suffix}_args"
 				}
@@ -9154,7 +10030,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set "image${suffix}_args" [dui::args::extract_prefixed "-image${suffix}_"]
 				
 				foreach aspect [dui aspect list -type [list "${aspect_type}_image$suffix" image] -style $style] {
-					dui::args::add_option_if_not_exists -$aspect [dui aspect get "${aspect_type}_image$suffix" $aspect -style $style \
+					dui::args::add_option_if_not_exists -$aspect \
+						[dui aspect get "${aspect_type}_image$suffix" $aspect -style $style \
 						-default {} -default_type image] "image{suffix}_args"
 				}
 				
@@ -9187,47 +10064,132 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			#} else {}
 			
 			set ids {}
-			if { ![dui::args::has_option -shape] } {
-				set ids [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $button_tags -state hidden]	
-			} else {
-				dui::args::remove_options -debug_outline
-				set shape [dui::args::get_option -shape [dui aspect get dbutton shape -style $style -default rect] 1]
+			dui::args::remove_options {-debug_outline -_inner_call}
+			
+			if { $shape eq "round" } {
+				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style]]
+				lappend press_args -fill $fill
+				set disabledfill [dui::args::get_option -disabledfill \
+						[dui aspect get {dbutton shape} disabledfill -style $style]]
+				set radius [dui::args::get_option -radius \
+						[dui aspect get {dbutton shape} radius -style $style -default {}]]
+				if { $radius eq {} } {
+					set radius [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default 80]]
+				}
+				set radius [lmap x $radius {dui::platform::rescale_x $x}]
 				
-				if { $shape eq "round" } {
-					set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
-					lappend press_args -fill $fill
-					set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
-					set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
-					
-					set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
-				} elseif { $shape eq "outline" } {
-					set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
-					lappend press_args -outline $outline
-					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
-					set arc_offset [dui::args::get_option -arc_offset [dui aspect get dbutton arc_offset -style $style -default 50]]
-					set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
-					set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
-					
-					set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset $outline $disabledoutline \
-						$width $button_tags]
-				} elseif { $shape eq "round_outline" } {
-					set fill [dui::args::get_option -fill [dui aspect get dbutton fill -style $style]]
-					lappend press_args -fill $fill
-					set disabledfill [dui::args::get_option -disabledfill [dui aspect get dbutton disabledfill -style $style]]
-					set radius [dui::args::get_option -radius [dui aspect get dbutton radius -style $style -default 40]]
-					set outline [dui::args::get_option -outline [dui aspect get dbutton outline -style $style]]
-					lappend press_args -outline $outline
-					set disabledoutline [dui::args::get_option -disabledoutline [dui aspect get dbutton disabledoutline -style $style]]
-					set width [dui::args::get_option -width [dui aspect get dbutton width -style $style -default 3]]
-					
-					set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
-					set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
-					set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
-						$disabledoutline $width $outline_tags]
-				} elseif { $shape eq "oval" } {
-					set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
-				} else {
-					set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden {*}$args]
+				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
+				if { $debug } {
+					msg "DUI: dui::item::rounded_rectangle rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
+radius=$radius fill=$fill disabledfill=$disabledfill tags=\{$button_tags\} ==> $ids"
+				}
+			} elseif { $shape eq "outline" } {
+				set outline [dui::args::get_option -outline \
+						[dui aspect get {dbutton shape} outline -style $style]]
+				if { $outline eq {} } {
+					set outline [dui::args::get_option -fill \
+							[dui aspect get {dbutton shape} fill -style $style -default black]]
+				}
+				lappend press_args -outline $outline
+				set disabledoutline [dui::args::get_option -disabledoutline \
+						[dui aspect get {dbutton shape} disabledoutline -style $style]]
+				if { $disabledoutline eq {} } {
+					set disabledoutline [dui::args::get_option -disabledfill \
+						[dui aspect get {dbutton shape} disabledfill -style $style -default black]]
+				}
+				set arc_offset [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default {}]]
+				if { $arc_offset eq {} } {
+					set arc_offset [dui::args::get_option -radius \
+						[dui aspect get {dbutton shape} radius -style $style -default 80]]
+				}
+				set arc_offset [lmap x $arc_offset {dui::platform::rescale_x $x}]
+				set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4]]]
+				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
+				
+				set ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $arc_offset \
+					$outline $disabledoutline $width $outline_tags]
+				if { $debug } {
+					msg "DUI: dui::item::rounded_rectangle_outline rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
+radius=$arc_offset outline=$outline disabledoutline=$disabledoutline width=$width tags=\{$outline_tags\} => $ids"
+				}				
+			} elseif { $shape eq "round_outline" } {
+				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style]]
+				lappend press_args -fill $fill
+				set disabledfill [dui::args::get_option -disabledfill \
+						[dui aspect get {dbutton shape} disabledfill -style $style]]
+				set radius [dui::args::get_option -radius \
+						[dui aspect get {dbutton shape} radius -style $style -default {}]]
+				if { $radius eq {} } {
+					set radius [dui::args::get_option -arc_offset \
+						[dui aspect get {dbutton shape} arc_offset -style $style -default 80]]
+				}				
+				set radius [lmap x $radius {dui::platform::rescale_x $x}]
+				
+				set outline [dui::args::get_option -outline [dui aspect get {dbutton shape} outline \
+						-style $style]]
+				lappend press_args -outline $outline
+				set disabledoutline [dui::args::get_option -disabledoutline \
+						[dui aspect get {dbutton shape} disabledoutline -style $style]]
+				set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4]]]
+				
+				set ids [dui::item::rounded_rectangle $rx $ry $rx1 $ry1 $radius $fill $disabledfill $button_tags]
+				if { $debug } {
+					msg "DUI: dui::item::rounded_rectangle rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
+radius=$radius fill=$fill disabledfill=$disabledfill tags=\{$button_tags\} ==> $ids"
+				}
+				
+				set outline_tags [list ${main_tag}-out {*}[lrange $tags 1 end]]
+				set outline_ids [dui::item::rounded_rectangle_outline $rx $ry $rx1 $ry1 $radius $outline \
+					$disabledoutline $width $outline_tags]
+				lappend ids $outline_ids
+				if { $debug } {
+					msg "DUI: dui::item::rounded_rectangle_outline rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 \
+radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width tags=\{$outline_tags\} => $outline_ids"
+				}
+			} elseif { $shape eq "oval" } {
+				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style] 1]
+				set disabledfill [dui::args::get_option -disabledfill \
+					[dui aspect get {dbutton shape} disabledfill -style $style] 1]
+				if { [dui::args::has_option -width] } {
+					set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4] 1]]
+					dui::args::add_option_if_not_exists -width $width
+				}
+				dui::args::remove_options {radius arc_offset}
+				
+				set ids [$can create oval $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill \
+						-disabledfill $disabledfill -state hidden {*}$args]
+				if { $debug } {
+					msg "DUI: $can create oval rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 -tags \{$button_tags\} \
+-fill $fill -disabledfill $disabledfill -state hidden {*}$args ==> $ids"
+				}
+			} elseif { $shape in {rect rectangle} } {
+				set fill [dui::args::get_option -fill [dui aspect get {dbutton shape} fill -style $style] 1]
+				set disabledfill [dui::args::get_option -disabledfill \
+						[dui aspect get {dbutton shape} disabledfill -style $style] 1]
+				if { [dui::args::has_option -width] } {
+					set width [dui::platform::rescale_x [dui::args::get_option -width \
+						[dui aspect get {dbutton shape} width -style $style -default 4] 1]]
+					dui::args::add_option_if_not_exists -width $width
+				}				
+				dui::args::remove_options {radius arc_offset}
+				
+				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -fill $fill \
+					-disabledfill $disabledfill -state hidden {*}$args]
+				if { $debug } {
+					msg "DUI: $can create rect rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 -tags \{$button_tags\} \
+-fill $fill -disabledfill $disabledfill -state hidden {*}$args ==> $ids"
+				}
+			} else {
+				set ids [$can create rect $rx $ry $rx1 $ry1 -tags $button_tags -state hidden \
+					-fill {} -disabledfill {} -outline {} -disabledoutline {} -width 0]
+				if { $debug } {
+					msg "DUI: $can create rect rx=$rx ry=$ry rx1=$rx1 ry1=$ry1 -tags \{$button_tags\} \
+-fill \{\} -disabledfill \{\} -outline \{\} -disabledoutline \{\} -width 0 -state hidden ==> $ids"
 				}
 			}
 			
@@ -9239,8 +10201,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set i 0
 			set suffix ""
 			while { [info exists image$suffix] && [subst \$image$suffix] ne "" } {
+				# No need to add -aspect_type "dbutton_image$suffix" as before, because
+				# the dbutton_label aspects have already been processed above				
 				dui add image $pages [subst \$ximage$suffix] [subst \$yimage$suffix] [subst \$image$suffix] \
-					-tags [subst \$image${suffix}_tags] -aspect_type "dbutton_image$suffix" \
+					-tags [subst \$image${suffix}_tags] -debug $debug \
 					-style $style {*}[subst \$image${suffix}_args]
 				set suffix [incr i]
 			}
@@ -9249,9 +10213,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set i 0
 			set suffix ""
 			while { [info exists symbol$suffix] && [subst \$symbol$suffix] ne "" } {
-				dui add symbol $pages [subst \$xsymbol$suffix] [subst \$ysymbol$suffix] -text [subst \$symbol$suffix] \
-					-tags [subst \$symbol${suffix}_tags] -aspect_type "dbutton_symbol$suffix" \
-					-style $style -_abs_coords 1 {*}[subst \$symbol${suffix}_args]
+				# No need to add -aspect_type "dbutton_symbol$suffix" as before, because
+				# the dbutton_label aspects have already been processed above				
+				dui add symbol $pages [subst \$xsymbol$suffix] [subst \$ysymbol$suffix] \
+					-text [subst \$symbol$suffix] -tags [subst \$symbol${suffix}_tags] -debug $debug \
+					-style $style -_abs_coords 1 -_inner_call 1 {*}[subst \$symbol${suffix}_args]
 				set suffix [incr i]
 			}
 			
@@ -9260,14 +10226,20 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set suffix ""
 			while { ([info exists label$suffix] && [subst \$label$suffix] ne "") || 
 					([info exists labelvar$suffix] && [subst \$labelvar$suffix] ne "") } {
+				# No need to add -aspect_type "dbutton_label$suffix" as before, because
+				# the dbutton_label aspects have already been processed above
 				if { [info exists label$suffix] && [subst \$label$suffix] ne "" } {
-					dui add dtext $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] -text [subst \$label$suffix] \
-						-tags [subst \$label${suffix}_tags] -aspect_type "dbutton_label$suffix" \
-						-style $style -_abs_coords 1 {*}[subst \$label${suffix}_args]
+					dui add dtext $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] \
+						-text [subst \$label$suffix] -tags [subst \$label${suffix}_tags] \
+						-style $style -debug $debug -_abs_coords 1 -_inner_call 1 \
+						{*}[subst \$label${suffix}_args]
 				} elseif { [info exists labelvar$suffix] && [subst \$labelvar$suffix] ne "" } {
+					# No need to add -aspect_type "dbutton_label$suffix" as before, because
+					# the dbutton_label aspects have already been processed above
 					dui add variable $pages [subst \$xlabel$suffix] [subst \$ylabel$suffix] \
 						-textvariable [subst \$labelvar$suffix] -tags [subst \$label${suffix}_tags] \
-						-aspect_type "dbutton_label$suffix" -style $style -_abs_coords 1 {*}[subst \$label${suffix}_args] 
+						-style $style -debug $debug -_abs_coords 1 -_inner_call 1 \
+						{*}[subst \$label${suffix}_args] 
 				}
 				set suffix [incr i]
 			}
@@ -9277,10 +10249,15 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set ry [expr {$ry-$tp1}] 
 			set rx1 [expr {$rx1+$tp2}] 
 			set ry1 [expr {$ry1+$tp3}]
-			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline black -width 0 -tags $tags -state hidden]
+			set id [$can create rect $rx $ry $rx1 $ry1 -fill {} -outline {} -width 0 \
+				-tags $tags -state hidden]
+			if { $debug } {
+				msg "DUI: $can create rect $rx $ry $rx1 $ry1 -fill \{\} -outline \{\} -width 0 -tags \{$tags\} -state hidden ==> $id"
+			}
 			if { $longpress_cmd ne "" } {
 				if { $ns ne "" } { 
-					if { [string is wordchar $longpress_cmd] && [namespace which -command "${ns}::$longpress_cmd"] ne "" } {
+					if { [string is wordchar $longpress_cmd] && \
+							[namespace which -command "${ns}::$longpress_cmd"] ne "" } {
 						set longpress_cmd ${ns}::$longpress_cmd
 					}				
 					regsub -all {%NS} $longpress_cmd $ns longpress_cmd
@@ -9350,7 +10327,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-editor_*, passed through to the number editor page, e.g. -editor_page_title, -editor_callback_cmd, etc.
 		
 		proc dclicker { pages x y args } {
-			set tags [dui::args::process_tags_and_var $pages dclicker -variable 1]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dclicker \{$pages\} $args"
+			}			
+			
+			set tags [dui::args::process_tags_and_var $pages dclicker -variable 1 args 1]
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
 				
@@ -9393,7 +10375,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 					$n_decimals $use_biginc %x %y %%x0 %%y0 %%x1 %%y1 $editor_cmd $callback_cmd]
 			}
 
-			return [dui add dbutton $pages $x $y -command $cmd -aspect_type dclicker {*}$args]
+			return [dui::add::dbutton $pages $x $y -command $cmd -aspect_type dclicker -tags $tags {*}$args]
 		}
 
 		# A set of dbuttons joined in a row or column that allows selecting one or more elements. 
@@ -9413,6 +10395,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# -symbols
 		# -symbols_selectedfill
 		proc dselector { pages x y args } {
+			::variable ::dui::item::vartraces
+			
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dselector \{$pages\} $x $y $args"
+			}
 			set can [dui::canvas]
 			set tags [dui::args::process_tags_and_var $pages dselector -variable 1]
 			set main_tag [lindex $tags 0]
@@ -9464,7 +10452,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				set symbol_selectedfill [dui::args::get_option -symbol_selectedfill $fill 1]
 			}
 
-			# Don't pass the page here because the page top-left offset is already taken into the posterior call to dui::add::dbutton 
+			# Don't pass the page here because the page top-left offset is already taken into the 
+			# posterior call to dui::add::dbutton 
 			lassign [dui::args::process_sizes {} $x $y -bwidth 600 -bheight 100 0] x y x1 y1
 			
 			set lengths [dui::args::get_option -lengths {} 1]
@@ -9541,7 +10530,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				
 				set cmd [::list ::dui::item::dselector_click $i1 $n $var [lindex $values $i] $multiple]
 				set id [dui::add::dbutton $pages $ix $iy $ix1 $iy1 -tags \
-					[concat ${main_tag}_$i1 [lrange $tags 1 end]] -command $cmd {*}$iargs]
+					[concat ${main_tag}_$i1 [lrange $tags 1 end]] -_inner_call 1 -command $cmd {*}$iargs]
 				lappend ids $id
 				
 				if { $user_cmd ne {} } {
@@ -9561,6 +10550,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			# Initialize the control
 			uplevel #0 $draw_cmd
 			trace add variable $var write $draw_cmd
+			# Keep track of the traced variable from this canvas ID so it can be removed if needed
+			# (e.g. when removing/retheming the page)
+			set vartraces($id) [list $var ::dui::item::dselector_draw]
 			
 			return $ids
 		}
@@ -9581,6 +10573,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# -disabledoutline fill color of the circle outline line, when disabled
 		# -label and -label_* options
 		proc dtoggle { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dtoggle \{$pages\} $args"
+			}						
 			set can [dui::canvas]
 			set tags [dui::args::process_tags_and_var $pages dtoggle -variable 1]
 			set main_tag [lindex $tags 0]
@@ -9626,6 +10622,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				-fill $background -disabledfill $disabledbackground -capstyle round \
 				-tags [list ${main_tag}-bck {*}$tags] -state hidden]
 			lappend ids $id
+			if { $debug } {
+				msg "DUI: $can create line [expr {$x+$sliderwidth/2.0}] [expr {$y+$sliderwidth/2.0}] [expr {$x1-$sliderwidth/2.0}] [expr {$y+$sliderwidth/2.0}] -width [expr {$y1-$y}] -fill $background -disabledfill $disabledbackground -capstyle round -tags [list ${main_tag}-bck {*}$tags] -state hidden ==> $id"
+			}
 			if { $ns ne "" } {
 				set "${ns}::widgets(${main_tag}-bck)" $id
 			}
@@ -9636,6 +10635,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				-disabledfill $disabledforeground -width $outline_width -outline $outline \
 				-tags [list {*}$tags ${main_tag}-crc] -state hidden]
 			lappend ids $id	
+			if { $debug } {
+				msg "DUI: $can create oval [expr {$x+$outline_width+2}] [expr {$y+$outline_width+2}] [expr {$x+$sliderwidth-$outline_width-2}] [expr {$y+$sliderwidth-$outline_width-2}] -fill $foreground -disabledfill $disabledforeground -width $outline_width -outline $outline -tags [list {*}$tags ${main_tag}-crc] -state hidden ==> $id"
+			}
 			if { $ns ne "" } {
 				set "${ns}::widgets(${main_tag}-crc)" $id
 			}
@@ -9644,6 +10646,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set id [$can create rect [expr {$x-6}] [expr {$y-12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} \
 				-tags $tags -state hidden]
 			lappend ids $id
+			if { $debug } {
+				msg "$can create rect [expr {$x-6}] [expr {$y-12}] [expr {$x1+6}] [expr {$y1+12}] -width 0 -fill {} -tags $tags -state hidden ==> $id"
+			}
 			if { $ns ne "" } {
 				set "${ns}::widgets($main_tag)" $ids
 			}
@@ -9657,7 +10662,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			# Initialize the control
 			uplevel #0 $draw_cmd
 			trace add variable $var write $draw_cmd
-			
+			# Keep track of the traced variable from this canvas ID so it can be removed if needed
+			# (e.g. when removing/retheming the page)
+			set vartraces($id) [list $var ::dui::item::dtoggle_draw]
+
 			if { $user_cmd ne {} } {
 				if { $ns ne "" } { 
 					if { [string is wordchar $user_cmd] && [namespace which -command "${ns}::$user_cmd"] ne "" } {
@@ -9681,6 +10689,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-type The type of image, defaults to 'photo'
 		#	-canvas_* Options to be passed through to the canvas create command
 		proc image { pages x y filename args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::image \{$pages\} $x $y $filename $args"
+			}						
+			
 			set can [dui canvas]
 
 			if { $filename ne "" } {
@@ -9703,7 +10716,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set canvas_args [dui::args::extract_prefixed -canvas_]
 			dui::args::add_option_if_not_exists -anchor nw canvas_args
 			
-			dui::args::remove_options -tags
+			dui::args::remove_options {-tags -debug}
 			
 			set preload_images [dui cget preload_images]
 			set img_name ""
@@ -9717,12 +10730,14 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			}
 			
 			try {
-				[dui canvas] create image $x $y -image $img_name -tags $tags -state hidden {*}$canvas_args
+				$can create image $x $y -image $img_name -tags $tags -state hidden {*}$canvas_args
 			} on error err {
 				msg -ERROR [namespace current] "image: can't add image '$filename' with tag '$main_tag' to canvas page(s) '$pages' : $err"
 				return
 			}
-			
+			if { $debug } {
+				msg "DUI: $can create image $x $y -image $img_name -tags $tags -state hidden $canvas_args"
+			}
 			set ns [dui page get_namespace $pages]
 			if { $ns ne "" } {
 				set ${ns}::widgets($main_tag) $img_name
@@ -9748,11 +10763,16 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-process_aspects <boolean>, to query and apply all the aspects of the type. Usually set to "no" when
 		#		this is invoked from another 'dui add' command that has already processed the aspects.
 		proc widget { type pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::widget $type \{$pages\} $x $y $args"
+			}			
+			
 			set can [dui canvas]
 			set rx [dui::page::calc_x $pages $x]
 			set ry [dui::page::calc_y $pages $y]
-			
 			set ns [dui page get_namespace $pages]
+			
 			set tags [dui::args::process_tags_and_var $pages $type "" 0 args 0]
 			set main_tag [lindex $tags 0]
 			
@@ -9790,8 +10810,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			dui::args::process_label $pages $x $y $type $style
 			
-			dui::args::remove_options -tags
 			set tclcode [dui::args::get_option -tclcode "" 1]
+			dui::args::remove_options {-tags -debug -_inner_call} 
+						
 			try {
 				::$type $widget {*}$args
 			} on error err {
@@ -9800,6 +10821,9 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				error $msg
 				return			
 			}			
+			if { $debug } {
+				msg "DUI: \:\:$type $widget $args"
+			}
 			
 			# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
 			# TBD: Kept temporarily for backwards-compatibility when using 'add_de1_widget graph' or 'dui add widget graph'. 
@@ -9839,7 +10863,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				error $msg
 				return
 			}
-				
+			if { $debug } {
+				msg "DUI: $can create window  $rx $ry -window $widget -tags \{$tags\} -state hidden $canvas_args ==> $windowname"
+			}
+					
 			# TBD: Maintain this? I don't find any use of this array in the app code
 			#set ::tclwindows($widget) [list $x $y]
 			#msg -INFO [namespace current] widget "$type '$main_tag' to page(s) '$pages' with args '$args'"
@@ -9868,12 +10895,16 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#		editor if it defined for the -data_type. The first argument of that page must be the fully qualified name 
 		#		of the variable that holds the value.
 		proc entry { pages x y args } {
-			set tags [dui::args::process_tags_and_var $pages entry -textvariable 1]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::entry \{$pages\} $x $y $args"
+			}			
+			
+			set tags [dui::args::process_tags_and_var $pages entry -textvariable 1 args 1]
 			set main_tag [lindex $tags 0]
-	
 			set style [dui::args::get_option -style "" 0]
 			set theme [dui::args::get_option -theme [dui page theme [lindex $pages 0] "default"] 0]
-			dui::args::process_aspects entry $style
+			dui::args::process_aspects entry $style {} {}
 			
 			# Data type and validation
 			set data_type [dui::args::get_option -data_type "text" 1]
@@ -9915,7 +10946,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 				}
 			}
 					
-			set widget [dui add widget entry $pages $x $y {*}$args]
+			set widget [dui::add::widget entry $pages $x $y -tags $tags {*}$args]
 		
 			# Default actions on leaving a text entry: Trim text, format if needed, and hide_android_keyboard
 			bind $widget <Return> { dui platform hide_android_keyboard ; focus [tk_focusNext %W] }
@@ -9956,7 +10987,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		}
 
 		proc multiline_entry { pages x y args } {
-			set tags [dui::args::process_tags_and_var $pages multiline_entry -textvariable 1]
+			set tags [dui::args::process_tags_and_var $pages multiline_entry -textvariable 1 args 1]
 			set main_tag [lindex $tags 0]
 			
 			set style [dui::args::get_option -style "" 0]
@@ -9985,7 +11016,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 #					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
 #			}
 							
-			set widget [dui add widget multiline_entry $pages $x $y {*}$args]
+			set widget [dui::add::widget multiline_entry $pages $x $y -tags $tags {*}$args]
 		
 			# Default actions on leaving a text entry: Trim text, format if needed, and hide_android_keyboard
 			bind $widget <Return> { dui platform hide_android_keyboard ; focus [tk_focusNext %W] }
@@ -10001,7 +11032,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			}
 			
 			if { [string is true $ysb] || [llength $sb_args] > 0 } {
-				dui add yscrollbar $pages $x $y -tags $tags -aspect_type multiline_entry_yscrollbar {*}$sb_args 
+				dui add yscrollbar $pages $x $y -tags $tags -aspect_type multiline_entry_yscrollbar \
+					-_inner_call 1 {*}$sb_args 
 			}
 			
 			# Double-tapping doesn't work on multiline entries. Think of an alternative way, e.g. show a "dropdown arrow"
@@ -10033,7 +11065,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#		control is returned to the combobox page.
 		
 		proc dcombobox { pages x y args } {
-			set tags [dui::args::process_tags_and_var $pages dcombobox -textvariable 1]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dcombobox \{$pages\} $x $y $args"
+			}			
+			set tags [dui::args::process_tags_and_var $pages dcombobox -textvariable 1 args 1]
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
 			set style [dui::args::get_option -style "" 0]
@@ -10047,7 +11083,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set textvariable [dui::args::get_option -textvariable {} 0]
 			set callback_cmd [dui::args::get_option -callback_cmd {} 1]
 			if { $callback_cmd ne "" } {
-				if { $ns ne "" && [string is wordchar $callback_cmd] && [namespace which -command "${ns}::$callback_cmd"] ne "" } {
+				if { $ns ne "" && [string is wordchar $callback_cmd] && \
+						[namespace which -command "${ns}::$callback_cmd"] ne "" } {
 					set callback_cmd "${ns}::$callback_cmd"
 				} else {
 					regsub -all {%NS} $callback_cmd $ns callback_cmd
@@ -10081,14 +11118,14 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			}
 #			dui::args::process_font dcombobox $style
 			
-			set w [dui add entry $pages $x $y -aspect_type dcombobox {*}$args]
+			set w [dui add entry $pages $x $y -aspect_type dcombobox -tags $tags {*}$args]
 			regsub -all {%W} $cmd $w cmd
 			bind $w <Double-Button-1> $cmd
 			
 			# Dropdown selection arrow
 			set arrow_tags [list ${main_tag}-dda {*}[lrange $tags 1 end]]
 			dui add dbutton $pages [expr {$x+650}] $y -tags $arrow_tags -aspect_type dbutton_dda -command $cmd \
-				-symbol sort-down -tap_pad $tap_pad
+				-symbol sort-down -tap_pad $tap_pad -debug $debug -_inner_call 1
 			bind $w <Configure> [list dui::item::relocate_dropdown_arrow [lindex $pages 0] $main_tag]
 			
 			return $w
@@ -10100,7 +11137,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-textvariable the name of the boolean variable to map the dcheckbox to.
 		#	-command optional tcl code to run when the dcheckbox is clicked. 
 		proc dcheckbox { pages x y args } {
-			set tags [dui::args::process_tags_and_var $pages dcheckbox -textvariable 1]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::dcheckbox \{$pages\} $x $y $args"
+			}
+			set tags [dui::args::process_tags_and_var $pages dcheckbox -textvariable 1 args 0]
 			set main_tag [lindex $tags 0]
 			
 			set style [dui::args::get_option -style "" 0]
@@ -10128,7 +11169,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		}
 		
 		proc listbox { pages x y args } {
-			set tags [dui::args::process_tags_and_var $pages listbox -listvariable 1]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::listbox \{$pages\} $x $y $args"
+			}
+			set tags [dui::args::process_tags_and_var $pages listbox -listvariable 1 args 1]
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
 			
@@ -10155,7 +11200,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			set cmd [dui::args::get_option -select_cmd {} 1]
 			
-			set widget [dui add widget listbox $pages $x $y -theme none {*}$args]
+			set widget [dui add widget listbox $pages $x $y -theme none -tags $tags {*}$args]
 
 			if { $cmd ne "" } {
 				if { $ns ne "" && [string is wordchar $cmd] && [namespace which -command ${ns}::$cmd] ne "" } {
@@ -10168,7 +11213,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			}
 			
 			if { [string is true $ysb] || [llength $sb_args] > 0 } {
-				dui add yscrollbar $pages $x $y -tags $tags -aspect_type listbox_yscrollbar {*}$sb_args 
+				dui add yscrollbar $pages $x $y -tags $tags -aspect_type listbox_yscrollbar \
+					-_inner_call 1 {*}$sb_args 
 			}
 			
 			return $widget
@@ -10179,6 +11225,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# This is not normally invoked directly by client code, but from other 'add' commands like 'dui add listbox'.
 		# Tags should be those of the original scrolled widget.
 		proc yscrollbar { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::yscrollbar \{$pages\} $x $y $args"
+			}			
 			set tags [dui::args::get_option -tags {} 1]
 			set main_tag [lindex $tags 0]
 			if { $main_tag eq "" } return
@@ -10211,8 +11261,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		}		
 		
 		proc scale { pages x y args } {
-			set can [dui canvas]			
-			set tags [dui::args::process_tags_and_var $pages scale -variable 1]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::scale \{$pages\} $x $y $args"
+			}
+			set can [dui canvas]
+			set tags [dui::args::process_tags_and_var $pages scale -variable 1 args 1]
 			set main_tag [lindex $tags 0]
 
 			set style [dui::args::get_option -style "" 0]
@@ -10248,7 +11302,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set editor_page_title [dui::args::get_option -editor_page_title "" 1]
 			set n_decimals [dui::args::get_option -n_decimals "" 1]
 			
-			set widget [dui add widget scale $pages $x $y {*}$args]
+			set widget [dui add widget scale $pages $x $y -tags $tags {*}$args]
 			
 			# Invoke number editor page when the label is clicked
 			set label_id [$can find withtag ${main_tag}-lbl]
@@ -10311,10 +11365,15 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		# -default: default value when the variable is empty (used only by the page editor to assign an initial value
 		#	if we start from an empty string)
 		# -editor_page: 0, 1 (=use default number editor), or an editor page name.
-		# -editor_page_title: the page title to show on the page editor 
+		# -editor_page_title: the page title to show on the page editor
+		#
 		proc dscale { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::scale \{$pages\} $x $y $args"
+			}			
 			set can [dui canvas]			
-			set tags [dui::args::process_tags_and_var $pages dscale -variable 1]
+			set tags [dui::args::process_tags_and_var $pages dscale -variable 1 args 1]
 			set main_tag [lindex $tags 0]
 			set ns [dui page get_namespace $pages]
 												
@@ -10355,7 +11414,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			set x [dui::page::calc_x $pages $x]
 			set y [dui::page::calc_y $pages $y]
-			set moveto_cmd [list dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $resolution $n_decimals]
+			set moveto_cmd [list ::dui::item::dscale_moveto [lindex $pages 0] $main_tag $var $from $to $resolution $n_decimals]
 			if { $orient eq "v" } {
 				# VERTICAL SCALE
 				if { $plus_minus } {
@@ -10438,7 +11497,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 					-tags [list {*}$tags ${main_tag}-crc] -state hidden]
 				set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}
 				$can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag v %y]
-				$can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag v %y]                
+				$can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag v %y]
 				#$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
 				$can bind ${main_tag}-crc [dui platform button_motion] $moveto_cmd
 				lappend ids $id			
@@ -10514,8 +11573,8 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 					set "${ns}::widgets(${main_tag}-frn)" $id
 				}			
 				# Horizontal "clickable" rectangle. Use the "bounding" box that contains both lines and circle. 
-				set id [$can create rect  $x [expr {$y-$sliderlength/2}] $x1 [expr {$y1+$sliderlength/2}] -fill {} -width 0 \
-					-tags [list ${main_tag}-tap {*}$tags] -state hidden]			
+				set id [$can create rect  $x [expr {$y-$sliderlength/2}] $x1 [expr {$y1+$sliderlength/2}] \
+					-fill {} -width 0 -tags [list ${main_tag}-tap {*}$tags] -state hidden]
 				$can bind ${main_tag}-tap [dui platform button_press] $moveto_cmd
 				lappend ids $id
 				if { $ns ne "" } {
@@ -10526,7 +11585,7 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 					[expr {$x1f+($sliderlength/2)}] [expr {$y1f+($sliderlength/2)}] -fill $foreground \
 					-disabledfill $disabledforeground -activefill $activeforeground -width 0 \
 					-tags [list {*}$tags ${main_tag}-crc] -state hidden]
-				set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}                
+				set ::dui::item::sliders([lindex $pages 0],${main_tag}) {}
 				$can bind ${main_tag}-crc [dui platform button_press] [list ::dui::item::dscale_start_motion [lindex $pages 0] $main_tag h %x]
 				$can bind ${main_tag}-crc [dui platform button_unpress] [list ::dui::item::dscale_end_motion [lindex $pages 0] $main_tag h %x]                
 				#$can bind ${main_tag}-crc <B1-Motion> $moveto_cmd
@@ -10540,6 +11599,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			
 			set update_cmd [lreplace $moveto_cmd end-1 end {} {}]
 			trace add variable $var write $update_cmd
+			# Keep track of the traced variable from this canvas ID so it can be removed if needed
+			# (e.g. when removing/retheming the page)
+			set vartraces([lindex $ids 0]) [list $var ::dui::item::dscale_moveto]
+			
 			# Force initializing the slider position
 			dui page add_action $pages show $update_cmd
 			
@@ -10570,6 +11633,10 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		#	-max, default 10
 		#	-width, total width in pixels
 		proc drater { pages x y args } {
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::drater \{$pages\} $x $y $args"
+			}			
 			set ids {}
 			set tags [dui::args::process_tags_and_var $pages drater -variable 1 args 0]
 			set main_tag [lindex $tags 0]
@@ -10621,14 +11688,19 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			set rating_cmd [list ::dui::item::drater_clicker $ratingvar %x %y %%x0 %%y0 %%x1 %%y1 \
 				$n_ratings $use_halfs $min $max]				
 			set button_tags [list ${main_tag}-btn {*}[lrange $tags 1 end]]
-			set id [dui add dbutton $pages $x [expr {$y-15}] [expr {$x+$width}] [expr {$y+70}] -command $rating_cmd \
-				-tags $button_tags]
+			set id [dui add dbutton $pages $x [expr {$y-15}] [expr {$x+$width}] [expr {$y+70}] \
+				-command $rating_cmd -tags $button_tags]
 			lappend ids $id
 						
-			set draw_cmd [list ::dui::item::drater_draw [lindex $pages 0] $main_tag $ratingvar $n_ratings $use_halfs $min $max]
+			set draw_cmd [list ::dui::item::drater_draw [lindex $pages 0] $main_tag $ratingvar \
+					$n_ratings $use_halfs $min $max]
 			trace add variable $ratingvar write $draw_cmd
-			# Force drawing the stars correctly whenever we show the page (as all stars are shown in normal state 
-			#	when the page is shown).
+			# Keep track of the traced variable from this canvas ID so it can be removed if needed
+			# (e.g. when removing/retheming the page)
+			set vartraces([lindex $ids 0]) [list $ratingvar ::dui::item::drater_draw]
+						
+			# Force drawing the stars correctly whenever we show the page (as all stars are shown in  
+			#	normal state when the page is shown).
 			foreach page $pages {
 				dui page add_action $page show $draw_cmd
 			}
@@ -10640,7 +11712,12 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 		}
 
 		proc graph { pages x y args } {
-#			set tags [dui::args::process_tags_and_var $pages graph {} 1]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::graph \{$pages\} $x $y $args"
+			}
+			
+			set tags [dui::args::process_tags_and_var $pages graph {} 1 args 1]
 #			set main_tag [lindex $tags 0]
 			
 			#set style [dui::args::get_option -style "" 0]
@@ -10656,12 +11733,15 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 			}
 #			dui::args::process_font listbox $style
 			
-			return [dui add widget graph $pages $x $y {*}$args]
-			
+			return [dui add widget graph $pages $x $y -tags $tags {*}$args]
 		}
 		
 		proc text { pages x y args } {
-			set tags [dui::args::process_tags_and_var $pages tk_text {} 1]
+			set debug [string is true [dui::args::get_option -debug [dui::cget debug] 0]]
+			if { $debug } {
+				msg "DUI: dui::add::text \{$pages\} $x $y $args"
+			}
+			set tags [dui::args::process_tags_and_var $pages tk_text {} 1 args 1]
 			set main_tag [lindex $tags 0]
 			
 			#set style [dui::args::get_option -style "" 0]
@@ -10685,10 +11765,11 @@ if { $tags eq "selected_bev_type*"} { msg "SELECTED_BEV_TYPE id=$id, current_pag
 					[list ::dui::item::scale_scroll $first_page $main_tag ::dui::item::sliders($first_page,$main_tag)]
 			}
 						
-			set widget [dui add widget tk::text $pages $x $y -theme none {*}$args]
+			set widget [dui add widget tk::text $pages $x $y -theme none -tags $tags {*}$args]
 
 			if { [string is true $ysb] || [llength $sb_args] > 0 } {
-				dui add yscrollbar $pages $x $y -tags $tags -aspect_type tk_text_yscrollbar {*}$sb_args 
+				dui add yscrollbar $pages $x $y -tags $tags -aspect_type tk_text_yscrollbar \
+					-_inner_call 1 {*}$sb_args 
 			}
 			
 			return $widget
@@ -10834,6 +11915,19 @@ proc lsequence { from to {step {}} } {
 	return $seq
 }
 
+# Ensures a number falls inside a range, setting it to the min/max if needed.
+proc restrict_to_range { x min max } {
+	if { $max < $min } {
+		return $x 
+	} elseif { $x < $min } {
+		return $min
+	} elseif { $x > $max } {
+		return $max
+	} else {
+		return $x
+	}
+}
+
 # Sets or changes a numeric value within a valid range, using the given resolution, and formats it 
 #	with the given number of decimals.
 # This is normally used from scales or clickers.
@@ -10904,6 +11998,15 @@ proc min { args } {
 		return {}
 	}	
 	lindex [lsort -real $args] 0
+}
+
+proc first_non_empty { args } {
+	foreach item [concat $args] {
+		if { $item ne {} } {
+			return $item
+		}
+	}
+	return {}
 }
 
 ### FULL-PAGE EDITORS ################################################################################################

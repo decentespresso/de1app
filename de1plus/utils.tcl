@@ -746,7 +746,7 @@ proc random_saver_file {} {
             set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
             foreach fn [glob -nocomplain "[saver_directory]/2560x1600/*.jpg"] {
-                borg toast [subst {[translate_toast "Resizing image"]\n\n[file tail $fn]}]
+                popup [subst {[translate_toast "Resizing image"]\n\n[file tail $fn]}]
                 borg spinner on
                 msg -DEBUG "random_saver_file image create photo saver -file $fn"
                 image create photo saver -file $fn
@@ -902,7 +902,7 @@ proc random_splash_file {} {
             set rescale_images_y_ratio [expr {$::screen_size_width / 2560.0}]
 
             foreach fn [glob -nocomplain "[splash_directory]/2560x1600/*.jpg"] {
-                borg toast [subst {[translate_toast "Resizing image"]\n\n[file tail $fn]}]
+                popup [subst {[translate_toast "Resizing image"]\n\n[file tail $fn]}]
                 borg spinner on
                 msg -DEBUG "random_splash_file image create photo saver -file $fn"
                 image create photo saver -file $fn
@@ -1029,6 +1029,26 @@ proc translation_langs_array {} {
         nl "Nederlands" \
         ru "русский" 
     ]
+}
+
+
+
+proc popup {msg} {
+
+	# complaints that some android themes use a black background theme, so these toast messages were not visible.  Reverting to using native toast messages based on the OS themes.
+	borg toast $msg 1
+	return
+	
+	if {$::app::build_timestamp > 1714054164} {
+		# newer Androwish support HTML toasts, force them to be black to work around some tablets having incorrect toast colors
+		if {[catch {
+			borg toast "<b><font color='#000000'>$msg" 1 1
+		} err] != 0} {
+			borg toast $msg 1
+		}
+	} else {
+		borg toast $msg 1
+	}	
 }
 
 proc translate_toast {english} {
@@ -1705,11 +1725,15 @@ proc round_date_to_nearest_day {now} {
 }
 
 # from Barney  https://3.basecamp.com/3671212/buckets/7351439/documents/2208672342#__recording_2349428596
-proc load_font {name fn pcsize {androidsize {}} } {
+proc load_font {name fn pcsize {androidsize {}} {weight {}} } {
 #	if { $androidsize ne "" } {
 #		msg -WARNING "BEWARE load_font with non-empty androidsize"
 #	}
-	return [dui font load $fn $pcsize -name $name]
+	if {$weight != ""} {
+		return [dui font load $fn $pcsize -name $name -weight $weight]
+	} else {
+		return [dui font load $fn $pcsize -name $name]
+	}
 	
 #    # calculate font size
 #    set familyname ""

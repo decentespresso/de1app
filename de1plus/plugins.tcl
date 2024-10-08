@@ -105,6 +105,7 @@ namespace eval ::plugins {
 
         array set ::plugins::${plugin}::settings {}
 
+        set ${plugin}::plugin_peeked 1
         plugins load_settings $plugin
 
         if {[catch {
@@ -112,7 +113,8 @@ namespace eval ::plugins {
                 if {$plugin == "D_Flow_Espresso_Profile"} {
                     if {[plugin_enabled $plugin] != true} {
                         # don't peek into the D-Flow plugin code at all if not enabled, because it overwrites other code in the de1app.  Can undo this patch once D-Flow behaves like other extensions
-                        return 0
+                        # john 10/4/2024 removed this, as D-Flow seems to work correctly now when first enabled.
+                        #return 0
                     }
                 }
 
@@ -128,9 +130,9 @@ namespace eval ::plugins {
                 if {[::plugins::read $plugin] != 1} {
                     error "sourcing failed"
                 }
-                set ${plugin}::plugin_peeked 1
+                
         } err opts_dict] != 0} {
-            ::logging::log_error_result_opts_dict $err $opts_dict
+            #::logging::log_error_result_opts_dict $err $opts_dict
             catch {
                 info_page [subst {${plugin}:[translate "The plugin did not load correctly"]\n\n$err}] [translate "Ok"]
             }
@@ -153,7 +155,7 @@ namespace eval ::plugins {
             if {[info proc ${plugin}::main] != ""} {
                 ${plugin}::main
             } else {
-                borg toast "loaded empty plugin $plugin"
+                popup "loaded empty plugin $plugin"
             }
             set ${plugin}::plugin_loaded 1
             msg -NOTICE "loaded plugin" $plugin 
@@ -181,7 +183,29 @@ namespace eval ::plugins {
             if {[string tolower $fbasename] == "dpx_steam_stop"} {
                 # incommpatible with firmware v1330 and newer because this functionality is already in the firmware, so plugin not needed
                 continue
+            } elseif {[string tolower $fbasename] == "skip_first_step_notice"} {
+                # per Damian's suggestion, should not be part of STABLE
+                continue
             }
+
+            ############################################################
+            # don't list extensions that failed to load metadata
+            set version ""
+            set peeked ""
+            catch {
+                #set disabled [subst \$::plugins::${fbasename}::disabled]            
+                if {[info exists ::plugins::[string trim $fbasename]::plugin_peeked]} {
+                    set peeked [subst \$::plugins::[string trim $fbasename]::plugin_peeked]            
+                }
+                if {[info exists ::plugins::[string trim $fbasename]::version]} {
+                    set version [subst \$::plugins::[string trim $fbasename]::version]            
+                }
+            }
+            if {$peeked == 1 && $version == ""} {
+                #puts "ERROR skipping $fbasename because it was peeked but not successfully"
+                continue
+            }
+            ############################################################
 
             if {[file exists "[homedir]/[plugin_directory]/$fbasename/plugin.tcl"] == 1} {
                 lappend plugins $fbasename
@@ -240,7 +264,7 @@ namespace eval ::plugins {
                 
             }
         }
-        msg -DEBUG [namespace current] "Settings file $fn not found"
+        #msg -DEBUG [namespace current] "Settings file $fn not found"
         return 0
     }
 

@@ -5,7 +5,7 @@ package require json
 try {
     package require zint
 } on error err {
-    msg -WARNING "::plugins::visualizer_upload can't generate QR codes: $err"
+    #msg -WARNING "::plugins::visualizer_upload can't generate QR codes: $err"
 }
 
 set plugin_name "visualizer_upload"
@@ -74,7 +74,7 @@ namespace eval ::plugins::${plugin_name} {
         variable settings
 
         if {![has_credentials]} {
-            #borg toast [translate_toast "Please configure your username and password in the settings"]
+            #popup [translate_toast "Please configure your username and password in the settings"]
             #set settings(last_upload_result) [translate "Please configure your username and password in the settings"]
             #plugins save_settings visualizer_upload
             return {}
@@ -82,7 +82,7 @@ namespace eval ::plugins::${plugin_name} {
 
 
         msg "uploading shot"
-        borg toast [translate_toast "Uploading Shot"]
+        
         
         set settings(last_action) "upload"
         set settings(last_upload_shot) $::settings(espresso_clock)
@@ -110,17 +110,29 @@ namespace eval ::plugins::${plugin_name} {
 
         # Initialize retry counter
         set retryCount 0
-        set maxAttempts 4
+        set maxAttempts 20
         set success 0
 
         # modification by Tom Schmidt to retry visualizer uploads 3 times
         # https://3.basecamp.com/3671212/buckets/7351439/messages/6863865822#__recording_6880174537 
 
+        set attempts 0
         while {$retryCount < $maxAttempts && !$success} {
             if {[catch {
                 # Execute the HTTP POST request
-                set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout 30000]
-                msg $token
+                if {$attempts == 0} {
+                    incr attempts
+                    popup [translate_toast "Uploading to Visualizer"]
+                } else {
+                    popup [subst {[translate_toast "Uploading to Visualizer, attempt"] #[incr attempts]}]
+                }
+
+                # exponentially increasing timeout
+                #set timeout [expr {$attempts * 2000}]
+                
+                set timeout 8000
+                set token [http::geturl $url -headers $headerl -method POST -type $type -query $body -timeout $timeout]
+                #msg $token
 
                 set status [http::status $token]
                 set answer [http::data $token]
@@ -137,7 +149,7 @@ namespace eval ::plugins::${plugin_name} {
                 } else {
                     # Increment retry counter if response code is not 200
                     incr retryCount
-                    after 100
+                    after 1000
                 }
             } err] != 0} {
                 # Increment retry counter in case of error
@@ -151,27 +163,28 @@ namespace eval ::plugins::${plugin_name} {
                 catch { http::cleanup $token }
 
                 if {$retryCount < $maxAttempts} {
-                    after [expr {150 * $retryCount}]
+                    #after [expr {5000 * $retryCount}]
+                    after 1000
                 }
             }
         }
 
         if {$returncode == 401} {
             msg "Upload failed. Unauthorized"
-            borg toast [translate_toast "Upload failed! Authentication failed. Please check username / password"]
+            popup [translate_toast "Upload failed! Authentication failed. Please check username / password"]
             set settings(last_upload_result) [translate "Authentication failed. Please check username / password"]
             plugins save_settings visualizer_upload
             return
         }
         if {[string length $answer] == 0 || $returncode != 200} {
             msg "Upload failed: $returnfullcode"
-            borg toast [translate_toast "Upload failed!"]
+            popup [translate_toast "Upload failed!"]
             set settings(last_upload_result) "[translate {Upload failed!}] $returnfullcode"
             plugins save_settings visualizer_upload
             return
         }
 
-        borg toast [translate_toast "Upload successful"]
+        popup [translate_toast "Upload successful"]
         if {[catch {
             set response [::json::json2dict $answer]
             set uploaded_id [dict get $response id]
@@ -328,6 +341,10 @@ namespace eval ::plugins::${plugin_name} {
             return
         }
         
+        catch {
+            http::unregister https
+        }
+
         if { $status eq "ok" && $ncode == 200 } {
             if {[catch {
                 if { $url_type eq "download_all_last_shared" } {

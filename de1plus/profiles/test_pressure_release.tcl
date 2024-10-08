@@ -32,6 +32,5 @@ profile_notes {Put a blank (no hole) basket into a portafilter, and run this pro
 profile_title {Test/leakage stress test}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-water_temperature 70.00
 beverage_type {calibrate}
 read_only 1

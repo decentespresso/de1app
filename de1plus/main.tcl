@@ -6,7 +6,11 @@ package require snit
 package require sha256
 #package require md5
 package require crc32
-package require BWidget
+catch {
+    # john 6/17/2024 not sure why this is even included, as it's not used by any code I can find.
+    package require BWidget
+}
+
 
 package require http 2.5
 package require tls 1.6

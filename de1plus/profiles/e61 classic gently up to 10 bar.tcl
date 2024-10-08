@@ -26,6 +26,5 @@ profile_notes {This high tech variation on the classic E61 9 bar shot brings out
 profile_title {E61 classic gently up to 10 bar}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-water_temperature 80
 beverage_type {espresso}
 read_only 1
