@@ -57,6 +57,8 @@ proc scale_timer_start {} {
 		after 500 decentscale_timer_start
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_start_timer
+	} elseif {$::settings(scale_type) == "bookoo"} {
+		bookoo_start_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_start_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -75,6 +77,8 @@ proc scale_timer_stop {} {
 		after 500 decentscale_timer_stop
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_stop_timer
+	} elseif {$::settings(scale_type) == "bookoo"} {
+		bookoo_stop_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_stop_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -96,6 +100,8 @@ proc scale_timer_reset {} {
 		after 500 decentscale_timer_reset
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_timer_reset
+	} elseif {$::settings(scale_type) == "bookoo"} {
+		bookoo_timer_reset
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_reset_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -122,6 +128,8 @@ proc scale_enable_weight_notifications {} {
 		#acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)
 	} elseif {$::settings(scale_type) == "felicita"} {
 		felicita_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "bookoo"} {
+		bookoo_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "hiroiajimmy"} {
 		hiroia_enable_weight_notifications
 	}  elseif {$::settings(scale_type) == "eureka_precisa"} {
@@ -384,7 +392,128 @@ proc felicita_parse_response { value } {
 			::device::scale::process_weight_update [expr $weight / 100.0] ;# $event_time
 		}
 	}
+
+  if {[string bytelength $value] >= 18} {
+    binary scan $value c15cu unused battery
+    if {[info exists battery]} {
+      # ::bt::msg -INFO "received batt: ${battery}"
+      set battery [scan $battery %u]
+      # ::bt::msg -INFO "felicita battery: ${battery}"
+      set batt_level [expr [expr [expr $battery - 129] / 29.0] * 10 ]; # my felicita batt level is jumping a lot from 158 to 157, causing jumps in %
+      set batt_level [expr {round($batt_level)}]; # therefore I decided to round the lower value so we only have 10% level changes
+      set batt_level [expr $batt_level * 10]
+      # ::bt::msg -INFO "felicita batt level: ${batt_level}"
+      set ::de1(scale_battery_level) $batt_level
+    }
+  }
 }
+
+
+
+
+#### bookoo
+proc bookoo_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable bookoo scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo) $::cinstance($::de1(cuuid_bookoo))] 1
+}
+
+proc bookoo_tare {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send tare cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A01000008"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+	# The tare is not yet confirmed to us, we can therefore assume it worked out
+}
+
+proc bookoo_timer_reset {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A0600000C"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+
+}
+proc bookoo_start_timer {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A0400000A"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+
+}
+proc bookoo_stop_timer {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "bookoo"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_bookoo))] == ""} {
+		error "bookoo Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set tare [binary decode hex "030A0500000D"]
+
+	userdata_append "SCALE: bookoo tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_bookoo) $::sinstance($::de1(suuid_bookoo)) $::de1(cuuid_bookoo_cmd) $::cinstance($::de1(cuuid_bookoo_cmd)) $tare] 0
+
+}
+
+proc bookoo_parse_response { value } {
+
+	#msg -ERROR "bookoo_parse_response [string bytelength $value] : [::logging::format_asc_bin $value]"
+
+	if {[string bytelength $value] >= 9} {
+		binary scan $value cucucucucucua1cucucu h1 h2 h3 h4 h5 h6 sign w1 w2 w3
+		if {[info exists w3]} {
+
+			# Combine the three bytes to get the weight (assuming big-endian order)
+			set weight100 [expr {(($w1 << 16) | ($w2 << 8) | $w3)/100.0}]
+			if {$sign == "-"} {
+				set weight100 [expr {-1 * $weight100}]
+			}
+
+			set weight [round_to_two_digits $weight100]
+			
+			#msg -ERROR "parsing: $h1 $h2 sign:$sign wight:$weight / $w1 $w2 $w3"
+
+			::device::scale::process_weight_update $weight
+		}
+	}
+}
+
 
 
 #### Hiroia Jimmy
@@ -534,6 +663,8 @@ set ::acaia_command_buffer ""
 set ::acaia_msg_start 0
 set ::acaia_msg_end 0 
 
+set ::acaia_recieving_notifications 0
+
 proc acaia_encode {msgType payload} {
 
 	set HEADER1 [binary decode hex "EF"];
@@ -593,6 +724,14 @@ proc acaia_send_ident {suuid cuuid} {
 	set cinstance $::cinstance($cuuid)
 
 	userdata_append "SCALE: send acaia ident" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $ident] 1
+
+	if {$::acaia_recieving_notifications == 0} {
+		after 400 [list acaia_send_ident $suuid $cuuid]
+		after 1000 [list acaia_send_config $suuid $cuuid]
+	} else {
+		after 400 [list acaia_send_config $suuid $cuuid]
+		after 1500 [list acaia_send_heartbeat $suuid $cuuid]
+	}
 }
 
 proc acaia_send_config {suuid cuuid} {
@@ -660,6 +799,11 @@ proc acaia_scan_buffer_for_msg {h1 h2 msg_t len event_t} {
 			set length [lindex $::acaia_command_buffer [expr {$i + 3}]]
 			set event_type [lindex $::acaia_command_buffer [expr {$i + 4}]]
 			set ::acaia_msg_end [expr {$i + $::ACAIA_METADATA_LEN + $length}]
+
+			# the scales will start sending info messages if we dont identify
+			if {$msg_type != 7} {
+				set ::acaia_recieving_notifications 1
+			}
 
 			# msg -DEBUG "MSG_TYPE $msg_type LEN $length EVENT_TYPE $event_type"
 			# NOTE: while length threshold is arbitrary, could cause reporting issues the higher the threshold
@@ -981,7 +1125,7 @@ proc smartchef_tare {} {
 		error "Smartchef Scale not connected, cannot send tare cmd"
 		return
 	}
-	borg toast "Press tare button on scale"
+	popup "Press tare button on scale"
 	# set tare [binary decode hex ""] 
 
 	# userdata_append "SCALE: smartchef tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_smartchef) $::sinstance($::de1(suuid_smartchef)) $::de1(cuuid_smartchef_cmd) $::cinstance($::de1(cuuid_smartchef_cmd)) $tare] 0
@@ -1680,6 +1824,9 @@ proc de1_ble_handler { event data } {
  				} elseif {[string first "CFS-9002" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "eureka_precisa"
 
+ 				} elseif {[string first "BOOKOO_SC" $name] == 0} {
+					append_to_peripheral_list $address $name "ble" "scale" "bookoo"
+
  				} elseif {[string first "ACAIA" $name] == 0 \
  					|| [string first "PROCH" $name]    == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
@@ -1713,44 +1860,9 @@ proc de1_ble_handler { event data } {
 					} elseif {$address == $::settings(scale_bluetooth_address)} {
 						set ::de1(wrote) 0
 						::bt::msg -NOTICE "scale $::settings(scale_type) disconnected $data_for_log"
-						#catch {
-							ble close $handle
-						#}
 
-						# if the skale connection closed in the currentl one, then reset it
-						if {$handle == $::de1(scale_device_handle)} {
-							set ::de1(scale_device_handle) 0
-						}
+						scale_disconnect_handler $handle
 
-						if {$::currently_connecting_scale_handle == 0} {
-							#ble_connect_to_scale
-						}
-
-						catch {
-							ble close $::currently_connecting_scale_handle
-						}
-
-						set ::currently_connecting_scale_handle 0
-						# 2021-11-25 Johanna: Removed to see if it is the cause for the lunar connection issues
-						#remove_matching_ble_queue_entries {^SCALE:}
-
-						set event_dict [dict create \
-									event_time $event_time \
-									address $address \
-								       ]
-
-						::device::scale::event::apply::on_disconnect_callbacks $event_dict
-
-						if {$::de1(bluetooth_scale_connection_attempts_tried) < 20} {
-							incr ::de1(bluetooth_scale_connection_attempts_tried)
-							::bt::msg -INFO "Disconnected from scale, trying again automatically.  Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
-							ble_connect_to_scale
-						} else {
-							# after 5 minutes, reset the scale retrier count back to zero that when coming back 
-							# to the DE1 after some time away, we can again retry scale connection 
-							::bt::msg -INFO "Resetting scale connect retries back to zero, after 300 second waiting"
-							after 300000 "set ::de1(bluetooth_scale_connection_attempts_tried) 0"
-						}
 					}
 				} elseif {$state eq "scanning"} {
 					set ::scanning 1
@@ -1841,6 +1953,8 @@ proc de1_ble_handler { event data } {
 							after 2000 felicita_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "hiroiajimmy"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "hiroiajimmy"
+						} elseif {$::settings(scale_type) == "bookoo"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "bookoo"
 							after 200 hiroia_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "eureka_precisa"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "eureka_precisa"
@@ -1854,18 +1968,19 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
 							set ::settings(force_acaia_heartbeat) 0
+							set ::acaia_recieving_notifications 0
 
 							if { [string first "PROCH" $::settings(scale_bluetooth_name)] != -1 } {
 								set ::settings(force_acaia_heartbeat) 1
 							}
 
-							acaia_send_ident $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)
-							after 500 [list acaia_send_config $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
-							after 1000 [list acaia_enable_weight_notifications $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
-							after 2000 [list acaia_send_heartbeat $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
+							after 100 [list acaia_enable_weight_notifications $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
+							after 500 [list acaia_send_ident $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
 						} elseif {$::settings(scale_type) == "acaiapyxis"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiapyxis"
 							msg -INFO "Pyxis scale showed up"
+							set ::acaia_recieving_notifications 0
+
 
 							if {[ifexists ::sinstance($::de1(suuid_acaia_pyxis))] == {}} {
 								msg -NOTICE "fake connction to acaia scale. Closing handle again"
@@ -1877,10 +1992,8 @@ proc de1_ble_handler { event data } {
 							set ::settings(force_acaia_heartbeat) 1
 							set mtu1 [ble mtu $handle 247]
 							msg -INFO "MTU is $mtu1"
-							after 2000 [list acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)]
-							after 2500  [list acaia_send_ident $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
-							after 3000 [list acaia_send_config $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
-							after 4500 [list acaia_send_heartbeat $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
+							after 500 [list acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)]
+							after 1000  [list acaia_send_ident $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
@@ -2236,6 +2349,11 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_hiroiajimmy_status)} {
 							# hiroia jimmy scale
 							hiroia_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_bookoo)} {
+							# bookoo
+							#msg -ERROR "WEIGHT $full_data_for_log"
+							bookoo_parse_response $value
+							
 						} elseif {$cuuid eq $::de1(cuuid_eureka_precisa_status) && $::settings(scale_type) == "eureka_precisa"} {
 							# eureka precisa scale
 							eureka_precisa_parse_response $value

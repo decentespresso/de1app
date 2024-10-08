@@ -37,5 +37,4 @@ profile_notes {John Buckman, the founder of Decent Espresso, finds that this flo
 profile_title {Flow profile for straight espresso}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
-water_temperature 86.0
 read_only 1

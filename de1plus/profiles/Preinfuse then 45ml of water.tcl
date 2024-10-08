@@ -26,6 +26,5 @@ profile_notes {Australian barista Matt Perger suggested this technique to us. Th
 profile_title {Preinfuse then 45ml of water}
 settings_profile_type settings_2b
 tank_desired_water_temperature 0
-water_temperature 86.0
 beverage_type {espresso}
 read_only 1

@@ -37,5 +37,4 @@ profile_notes {This profile is gentle on the coffee puck and not too demanding o
 profile_title {Cleaning/Weber Spring Clean}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-water_temperature 80
 read_only 1

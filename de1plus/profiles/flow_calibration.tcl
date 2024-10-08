@@ -38,5 +38,4 @@ profile_notes {Put a 0.3mm puck simulator basket into a portafilter. Connect a b
 profile_title {Test/Flow calibration}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-water_temperature 70.00
 read_only 1

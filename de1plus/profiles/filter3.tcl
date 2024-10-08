@@ -38,4 +38,4 @@ profile_notes {Set your grinder as coarsely as it can be set (11am setting on a 
 profile_title Filter3
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-
+read_only 1

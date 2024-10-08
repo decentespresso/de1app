@@ -38,4 +38,4 @@ profile_notes {Fast heating of steam, not heating for espresso.   You might want
 profile_title {Steam only}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-
+read_only 1

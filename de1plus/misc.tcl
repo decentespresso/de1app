@@ -76,6 +76,10 @@ proc make_de1_dir {srcdir destdirs} {
         fonts/Dubai-Bold.otf *
         fonts/Dubai-Regular.otf *
 
+        "simulations/simulated_1.shot" *
+        "simulations/simulated_2.shot" *
+        "simulations/simulated_3.shot" *
+
         godshots/none.shot *
         godshots/import/readme.txt *
         godshots/import/common/readme.txt *
@@ -92,12 +96,16 @@ proc make_de1_dir {srcdir destdirs} {
         skins/default/standard_stop_buttons.tcl *
 
         skins/Streamline/Inter-SemiBold.ttf *
+        skins/Streamline/Inter-Black.ttf *
         skins/Streamline/Inter-ExtraLight.ttf *
         skins/Streamline/Inter-Regular.ttf *
         skins/Streamline/Inter-Thin.ttf *
         skins/Streamline/Inter-Bold.ttf *
+        skins/Streamline/NotoSansMono-SemiBold.ttf *
+        skins/Streamline/NotoSansMono-ExtraBold.ttf *
         skins/Streamline/icomoon.ttf *
         skins/Streamline/skin.tcl *
+        skins/Streamline/plugins/readme.txt *
         skins/Streamline/1280x800/icon.jpg *
         skins/Streamline/2560x1600/icon.jpg *
 
@@ -921,9 +929,9 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/mqtt/CHANGELOG.md *
         plugins/mqtt/README.md *
         plugins/mqtt/plugin.tcl *
-        plugins/mqtt/settings.tdb *
         plugins/mqtt/docs/topics.md *
         plugins/mqtt/docs/settings.md *
+        plugins/mqtt/docs/LICENSE.txt *
 
         allcerts.pem *
     }

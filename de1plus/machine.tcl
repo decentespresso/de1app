@@ -84,6 +84,9 @@ array set ::de1 {
 	suuid_acaia_pyxis "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
 	suuid_felicita "0000FFE0-0000-1000-8000-00805F9B34FB"
 	cuuid_felicita "0000FFE1-0000-1000-8000-00805F9B34FB"
+	cuuid_bookoo "0000FF11-0000-1000-8000-00805F9B34FB"
+	cuuid_bookoo_cmd "0000FF12-0000-1000-8000-00805F9B34FB"
+	suuid_bookoo "00000FFE-0000-1000-8000-00805F9B34FB"
 	suuid_hiroiajimmy "06C31822-8682-4744-9211-FEBC93E3BECE"
 	cuuid_hiroiajimmy_cmd "06C31823-8682-4744-9211-FEBC93E3BECE"
 	cuuid_hiroiajimmy_status "06C31824-8682-4744-9211-FEBC93E3BECE"
@@ -209,6 +212,8 @@ array set ::de1_command_names_to_cuuids [reverse_array ::de1_cuuids_to_command_n
 
 array set ::settings {
 	enable_rise 0
+	use_simulated_data 1
+	do_realtime_espresso_simulation 1
 	dim_screen_when_battery_low 1
 	smart_battery_charging 1
 	force_fw_update 0
@@ -224,6 +229,8 @@ array set ::settings {
 	refill_kit_override 2
 	mmr_enabled 0	
 	default_font_calibration 0.5
+	show_elapsed_time_to_load_pages 0
+	benchmark_gui 0
 	log_fast 0
 	use_finger_down_for_tap 1
 	linear_resistance_adjustment 1
@@ -231,6 +238,7 @@ array set ::settings {
 	weight_detail_curve 0
 	language en
 	display_time_in_screen_saver 0
+	enable_sounds 0
 	insert_preinfusion_pause 0
 	eco_steam 0
 	steam_over_temp_threshold 180
@@ -248,6 +256,7 @@ array set ::settings {
 	chart_total_shot_weight 1
 	calibration_flow_multiplier "1.000"
 	phase_1_flow_rate 20
+	espresso_clock 0
 	phase_2_flow_rate 40
 	dui_number_editor_previous_values {}
 	ghc_mode 0
@@ -340,7 +349,7 @@ array set ::settings {
 	max_ble_connect_attempts 3
 	scheduler_wake 3600
 	scheduler_sleep 6000
-	timer_interval 100
+	timer_interval 200
 	screen_saver_delay 60
 	screen_saver_change_interval 10
 	enable_fluid_ounces 0
@@ -467,6 +476,9 @@ array set ::settings {
 
 # default de1plus skin
 set ::settings(skin) "Insight"
+
+	# experimentally try matching refresh rate to DE1 data rate, instead of 2x as fast
+	set ::settings(timer_interval) 200
 
 
 if {$::android != 1} {
@@ -696,7 +708,7 @@ proc start_cleaning {} {
 	msg -NOTICE "Tell DE1 to start CLEANING"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send_state "descale" $::de1_state(Clean)
+	de1_send_state "clean" $::de1_state(Clean)
 
 	if {$::android == 0} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -859,6 +871,16 @@ proc reset_gui_starting_espresso {} {
 		# this will cease to work once the GHC is installed
 		set ::idle_next_step start_espresso
 	}
+}
+
+# these are machines known to have been stolen from customers, or which FEDEX/UPS "lost" in the last mile
+proc check_for_missing_sn {} {
+		set sn $::settings(sn)
+
+			set missing_machine_sn [list 6654 5502 4291 380 317 8980 659]
+			if {$sn != "" && [lsearch -exact $missing_machine_sn $sn] != -1} {
+					message_page "A problem has been detected with your espresso machine.\n\nPlease contact Decent Espresso Tech Support ($sn)" [translate "Quit"];
+			}
 }
 
 proc ghc_message {type} {

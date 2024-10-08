@@ -587,7 +587,7 @@ proc waterflow {} {
 		return 0
 	}
 
-	if {$::android == 0} {
+	if {$::android == 0 && $::settings(use_simulated_data) == 0} {
 		if {[ifexists ::de1(flow)] == ""} {
 			set ::de1(flow) 3
 		}
@@ -598,11 +598,11 @@ proc waterflow {} {
 			set ::de1(flow) 1.5
 		}
 
-
 		set ::de1(flow) [expr {(.3 * (rand() - 0.5)) + $::de1(flow)}]		
 		set ::de1(goal_flow) [expr {(.3 * (rand() - 0.5)) + $::de1(goal_flow)}]		
 
 		if {$::de1_num_state($::de1(state)) == "Espresso"} {
+
 			if {[espresso_millitimer] < 5000} {	
 				set ::de1(preinfusion_volume) [expr {$::de1(preinfusion_volume) + ($::de1(flow) * .1) }]
 			} else {
@@ -642,8 +642,11 @@ proc steamtemp {} {
 }
 
 proc watertemp {} {
-	if {$::android == 0} {
-		#set ::de1(head_temperature) [expr {$::settings(espresso_temperature) - 2.0 + (rand() * 4)}]
+
+
+	if {$::android == 0 && $::settings(use_simulated_data) == 0} {
+
+		set ::de1(head_temperature) [expr {$::settings(espresso_temperature) - 2.0 + (rand() * 4)}]
 		set ::de1(goal_temperature) $::settings(espresso_temperature)
 
 		if {[ifexists ::de1(head_temperature)] == ""} {
@@ -743,7 +746,9 @@ proc group_head_heater_temperature {} {
 	
 	if {$::android == 0} {
 		# slowly have the water level drift
-		set ::de1(head_temperature) [expr {$::de1(head_temperature) + (.1*(rand() - 0.5))}]
+		catch {
+			set ::de1(head_temperature) [expr {$::de1(head_temperature) + (.1*(rand() - 0.5))}]
+		}
 
 		if {$::de1(head_temperature) < 10} {
 			set ::de1(head_temperature) 80
@@ -827,6 +832,7 @@ proc return_seconds_divided_by_ten {in} {
 
 }
 proc timer_text {} {
+	# obsolete, not likely to work as [timer] is not defined
 	return [subst {[timer] [translate "seconds"]}]
 }
 
@@ -849,7 +855,7 @@ proc return_liquid_measurement_ml {in} {
     }
 
 	if {$::settings(enable_fluid_ounces) != 1} {
-		return [subst {[round_to_integer $in] [translate "ml"]}]
+		return [subst {[round_to_integer $in][translate "ml"]}]
 	} else {
 		return [subst {[round_to_integer [ml_to_oz $in]] oz}]
 	}
@@ -912,6 +918,35 @@ proc return_scale_timer {} {
 	}
 
 	return [round_to_one_digits [expr {$::de1(scale_timestamp) / 10.0}]]
+}
+
+
+
+proc return_weight_measurement_grams {in {integer 0} {returnlist 0} } {
+    if {$::de1(language_rtl) == 1} {
+    	if {$integer == 1 || ($integer == 2 && [round_to_one_digits $in] == [round_to_integer $in])} {
+			
+			if {$returnlist == 1} {
+				return [list [translate "g"] [round_to_integer $in]]
+			}
+			return [subst {[translate "g"][round_to_integer $in]}]
+    	}
+		if {$returnlist == 1} {
+			return [list [translate "g"] [round_to_one_digits $in]]
+		}
+		return [subst {[translate "g"][round_to_one_digits $in]}]
+    }
+
+	if {$integer == 1 || ($integer == 2 && [round_to_one_digits $in] == [round_to_integer $in])} {
+		if {$returnlist == 1} {
+			return [list [round_to_integer $in] [translate "g"]]
+		}
+		return [subst {[round_to_integer $in][translate "g"]}]
+	}
+	if {$returnlist == 1} {
+		return [list [round_to_one_digits $in] [translate "g"]]    
+	}
+	return [subst {[round_to_one_digits $in][translate "g"]}]    
 }
 
 # integer = 1 means always return an integer
@@ -1042,10 +1077,10 @@ proc preinfusion_pour_timer_text {} {
 
 proc seconds_text_very_abbreviated {in} {
     if {$::de1(language_rtl) == 1} {
-		return [subst {[translate "s"]$in }]
+		return [subst {[translate "s"][round_to_integer $in] }]
 	}
 
-	return [subst {$in[translate "s"] }]
+	return [subst {[round_to_integer $in][translate "s"] }]
 }
 
 
@@ -1182,7 +1217,7 @@ proc finalwaterweight_text {} {
 
 # drink_weight is present for both espresso and hot water
 proc drink_weight_text {} {
-	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
+	if {$::de1(scale_weight) == ""} {
 		return ""
 	}
 
@@ -1407,14 +1442,69 @@ proc return_temperature_number {in} {
 # we were using the wrong unicode symbol for the degrees sign (should be \u00B0 not \u00BA).
 # http://www.fileformat.info/info/unicode/char/b0/index.htm
 # http://www.fileformat.info/info/unicode/char/ba/index.htm
-proc return_temperature_measurement {in {integer 0}} {
+proc return_temperature_measurement {in {integer 0} {returnlist 0} } {
 	if {$::settings(enable_fahrenheit) == 1} {
+		if {$returnlist == 1} {
+			return [list [round_to_integer [celsius_to_fahrenheit $in]] "\u00B0F"]
+		}
 		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0F}]
 	} else {
 		if {$integer == 1} {
+			if {$returnlist == 1} {
+				return [list [round_to_integer $in] "\u00B0C"]
+			}
 			return [subst {[round_to_integer $in]\u00B0C}]
 		}
+		if {$returnlist == 1} {
+			return [list [round_to_one_digits $in] "\u00B0C"]
+		}
 		return [subst {[round_to_one_digits $in]\u00B0C}]
+	}
+}
+
+proc return_temperature_measurement_no_unit {in {integer 0} {returnlist 0} } {
+	if {$::settings(enable_fahrenheit) == 1} {
+		if {$returnlist == 1} {
+			return [list [round_to_integer [celsius_to_fahrenheit $in]] "\u00B0"]
+		}
+		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0}]
+	} else {
+		if {$integer == 1} {
+			if {$returnlist == 1} {
+				return [list [round_to_integer $in] "\u00B0"]
+			}
+			return [subst {[round_to_integer $in]\u00B0}]
+		}
+		if {$returnlist == 1} {
+			return [list [round_to_one_digits $in] "\u00B0"]
+		}
+		return [subst {[round_to_one_digits $in]\u00B0}]
+	}
+}
+
+
+# john 25-1-2020 fix
+# we were using the wrong unicode symbol for the degrees sign (should be \u00B0 not \u00BA).
+# http://www.fileformat.info/info/unicode/char/b0/index.htm
+# http://www.fileformat.info/info/unicode/char/ba/index.htm
+# not technically correct (according to global standards) but Designer Pulak prefers the lowercase ºc
+proc return_lowercase_temperature_measurement {in {integer 0} {returnlist 0} } {
+	if {$::settings(enable_fahrenheit) == 1} {
+		if {$returnlist == 1} {
+			return [list [round_to_integer [celsius_to_fahrenheit $in]] "\u00B0F"]
+		}
+		return [subst {[round_to_integer [celsius_to_fahrenheit $in]]\u00B0f}]
+	} else {
+		if {$integer == 1} {
+			if {$returnlist == 1} {
+				return [list [round_to_integer $in] "\u00B0c"]
+			}
+			return [subst {[round_to_integer $in]\u00B0c}]
+		}
+		if {$returnlist == 1} {
+			return [list [round_to_one_digits $in] "\u00B0c"]
+		}
+		return [subst {[round_to_one_digits $in]\u00B0c}]
 	}
 }
 
@@ -1653,7 +1743,8 @@ proc skin_directories {} {
 	set dd {}
 
 	# overriding settings to include Insight Dark now
-	set ::settings(most_popular_skins) [list Insight "Insight Dark" MimojaCafe Metric DSx SWDark4 MiniMetric DSx2]
+	# SWDark4
+	set ::settings(most_popular_skins) [list Insight "Insight Dark" MimojaCafe Metric DSx MiniMetric DSx2 Streamline "Streamline Dark"]
 
 	foreach d $dirs {
 		if {$d == "CVS" || $d == "example"} {
@@ -2293,6 +2384,9 @@ proc fill_languages_listbox {} {
 }
 
 proc highlight_extension {} {
+
+	set originalyview [$::extensions_widget yview]
+
 	set stepnum [$::extensions_widget curselection]	
 	if {$stepnum == ""} {
 		set ::extension_highlighted -1
@@ -2336,12 +2430,15 @@ proc highlight_extension {} {
 	fill_extensions_listbox
 	$::extensions_widget selection set $stepnum;
 	make_current_listbox_item_blue $::extensions_widget
+
+	$::extensions_widget yview moveto [lindex $originalyview 0]
+
 }
 
 proc fill_plugin_settings {} {
 	set stepnum [$::extensions_widget curselection]
 	if {$stepnum == ""} {
-		borg toast [translate_toast "No extension selected"]
+		popup [translate_toast "No extension selected"]
 		return
 	}
 
@@ -2364,6 +2461,7 @@ proc fill_extensions_listbox {} {
 	set current 0
 
 	foreach {plugin} [available_plugins] {
+
 		if {[plugin_enabled $plugin]} {
 			if {[language] == "he"} {
 				set p "\[X\] "
@@ -2820,10 +2918,17 @@ proc change_scale_bluetooth_device {} {
 proc select_profile { profile } {
 
 	msg -NOTICE "select_profile: '$profile'"
+	if {$profile == ""} {
+		return
+	}
+
 
 	set fn "[homedir]/profiles/${profile}.tcl"
 	set ::settings(profile) $profile
 	set ::settings(profile_notes) ""
+	set ::settings(advanced_shot_tcl) ""
+	set ::settings(read_only) ""
+	set ::settings(read_only_backup) ""
 	
 	# for importing De1 profiles that don't have this feature.
 	set ::settings(preinfusion_flow_rate) 4
@@ -2835,7 +2940,9 @@ proc select_profile { profile } {
 	# 
 	unset -nocomplain ::settings(profile_video_help)
 
-	
+	if {[file exists $fn] != 1} {
+		return "-1"
+	}
 	load_settings_vars $fn
 
 	set ::settings(profile_filename) $profile
@@ -2859,9 +2966,36 @@ proc select_profile { profile } {
 	update_onscreen_variables
 	profile_has_not_changed_set
 
+	if {$::settings(advanced_shot_tcl) != ""} {
+		eval $::settings(advanced_shot_tcl)
+	}
+
 	# as of v1.3 people can start an espresso from the group head, which means their currently selected 
 	# profile needs to sent right away to the DE1, in case the person taps the GH button to start espresso w/o leaving settings
 	send_de1_settings_soon
+}
+
+
+proc hide_profile {fn} {
+	catch {
+		array set thisprofile [encoding convertfrom utf-8 [read_binary_file $fn]]
+	}
+
+	if {[info exists thisprofile(profile_title)] != 1} {
+		msg -WARNING "Corrupt profile file to preview: '$fn'"
+		return
+	}
+
+	set thisprofile(profile_hide) 1
+	save_array_to_file thisprofile $fn 
+
+	# need to save and restore the scrollbar value, because we're refilling the listbox to show hide/show state change
+	set oldscrollbarbalue [$::profiles_scrollbar get]
+	fill_profiles_listbox
+	unset -nocomplain ::filling_profiles 
+
+	$::profiles_scrollbar set $oldscrollbarbalue
+	listbox_moveto $::globals(profiles_listbox) $::profiles_slider $oldscrollbarbalue
 }
 
 proc hide_unhide_toggle_profile {fn} {
@@ -2958,56 +3092,76 @@ proc profile_has_changed_set_colors {} {
 
 	if {$::settings(profile_has_changed) == 1} {
 		update_de1_explanation_chart
-		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
-			catch {
+		catch {
+			if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
 				$::globals(widget_profile_name_to_save) configure -bg #ffe3e3
 			}
 		}
 
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name1)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name2)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 		#catch {
 		#	.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill $::de1(widget_current_profile_name_color_normal)
 		#}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name_espresso1)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_normal)
+			if {[info exists ::globals(widget_current_profile_name_espresso2)]} {			
+				.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_normal)
+			}
 		}
 	} else {
-		if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
+		catch {
+			if {[info exists ::globals(widget_profile_name_to_save)] == 1} {		
 			# this indicates to the user that the profile has changed or not
-			catch {
 				$::globals(widget_profile_name_to_save) configure -bg #fbfaff
 			}
 		}
 
 		# this is displayed on the main Insight skin page
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name)]} {
+				.can itemconfigure $::globals(widget_current_profile_name) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name1)]} {
+				.can itemconfigure $::globals(widget_current_profile_name1) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name2)]} {
+				.can itemconfigure $::globals(widget_current_profile_name2) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 		#catch {
 		#	.can itemconfigure $::globals(widget_current_profile_name_espresso) -fill $::de1(widget_current_profile_name_color_changed)
 		#}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name_espresso1)]} {
+				.can itemconfigure $::globals(widget_current_profile_name_espresso1) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 		catch {
-			.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_changed)
+			if {[info exists ::globals(widget_current_profile_name_espresso2)]} {
+				.can itemconfigure $::globals(widget_current_profile_name_espresso2) -fill $::de1(widget_current_profile_name_color_changed)
+			}
 		}
 	}
 }
@@ -3134,7 +3288,7 @@ proc save_settings_vars {fn varlist} {
 }
 
 proc profile_vars {} {
- 	return { advanced_shot espresso_temperature_steps_enabled author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_pressure_range_advanced maximum_flow_range_advanced maximum_flow maximum_pressure_range_default maximum_flow_range_default }
+ 	return { advanced_shot espresso_temperature_steps_enabled author read_only read_only_backup espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature espresso_temperature_0 espresso_temperature_1 espresso_temperature_2 espresso_temperature_3 settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure profile_hide final_desired_shot_volume_advanced_count_start beverage_type maximum_pressure maximum_pressure_range_advanced maximum_flow_range_advanced maximum_flow maximum_pressure_range_default maximum_flow_range_default }
 }
 
 proc set_profile_title_untitled {} {
@@ -3142,6 +3296,7 @@ proc set_profile_title_untitled {} {
 	if {$::settings(profile_title) == ""} {
 		preset_counter_get_and_incr
 		set ::settings(profile_title) [subst {[translate "Untitled"] $::settings(preset_counter)}]
+		set ::settings(profile_filename) [::profile::filename_from_title $::settings(profile_title)]
 		set profile(profile_hide) 0
 	}
 }
@@ -3152,7 +3307,18 @@ proc preset_counter_get_and_incr {} {
 	return $::settings(preset_counter)
 }
 
-proc save_profile {  {do_saved_msg 1} } {
+proc reset_default_profile {} {
+	if {[ifexists ::settings(read_only_backup)] == ""} {
+		return
+	}
+	array set ::settings $::settings(read_only_backup)
+	set ::settings(read_only) 2
+	save_profile
+	select_profile $::settings(profile_filename)
+	popup [translate_toast Reset]
+}
+
+proc save_profile { {do_saved_msg 1} } {
 	if {$::settings(profile_title) == [translate "Saved"]} {
 		return
 	}
@@ -3162,33 +3328,6 @@ proc save_profile {  {do_saved_msg 1} } {
 	# if no name then give it a name which is just a number
 	set_profile_title_untitled
 
-	if {[ifexists ::settings(read_only)] == 1} {
-		# if a profile is read-only, give it a new name by adding a unique counter to the end of the title
-		# and then unmark it as read-only
-		set ::settings(read_only) 0
-		#unset -nocomplain ::settings(Author)
-
-		if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
-			incr profcnt 2
-
-			set profile_titles [string toupper [get_profile_titles]]
-			set newtitle [subst {$::settings(profile_title) $profcnt}]
-			puts "searching for '$newtitle' in '$profile_titles'"
-			while {[lsearch -exact $profile_titles [string toupper $newtitle]] != -1} {
-				incr profcnt
-				set newtitle [subst {$::settings(profile_title) $profcnt}]
-			}
-
-			set ::settings(profile_title) $newtitle
-			set ::settings(profile) $newtitle
-		}
-
-	}
-
-
-	#set profile_vars { advanced_shot author espresso_hold_time preinfusion_time espresso_pressure espresso_decline_time pressure_end espresso_temperature settings_profile_type flow_profile_preinfusion flow_profile_preinfusion_time flow_profile_hold flow_profile_hold_time flow_profile_decline flow_profile_decline_time flow_profile_minimum_pressure preinfusion_flow_rate profile_notes water_temperature final_desired_shot_volume final_desired_shot_weight final_desired_shot_weight_advanced tank_desired_water_temperature final_desired_shot_volume_advanced profile_title profile_language preinfusion_stop_pressure}
-	#set profile_name_to_save $::settings(profile_to_save) 
-
 	if {$::settings(settings_profile_type) == "settings_2c2"} {
 		# if on the LIMITS tab, indicate that this is settings_2c (aka "advanced") shot as part of the OK button process
 		set ::settings(settings_profile_type) "settings_2c"
@@ -3196,19 +3335,45 @@ proc save_profile {  {do_saved_msg 1} } {
 	}
 
 
-	if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
-		set profile_filename $::settings(profile_filename) 
-	} else {
-		# if they change the description of the profile, then save it to a new name
-		# replace prior usage of unformatted seconds with sanitized profile name and append with formatted time if file exists
-		set profile_filename [::profile::filename_from_title $::settings(profile_title)]
-		set profile_timestamp [clock format [clock seconds] -format %Y%m%d_%H%M%S] 
-		if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] == 1} {
-			append profile_filename "_" $profile_timestamp
-		}
 
-		# save the new filename in settings
-		set ::settings(profile_filename) $profile_filename
+	if {[ifexists ::settings(read_only)] == 1} {
+		
+		set profile_filename $::settings(profile_filename)
+		set fn "[homedir]/profiles/${profile_filename}.tcl"
+
+		# if a profile is read-only, save its current settings into a backup and mark it as no longer readonly
+		set ::settings(read_only) 0
+
+		# keep a backup of how the profile was when changed away from read-only, so it can be restored
+		set ::settings(read_only_backup) [encoding convertfrom utf-8 [read_binary_file $fn]]
+	
+	} elseif {[ifexists ::settings(read_only)] == 2} {
+		# number=2 means reset this profile
+		
+		# if a profile is read-only, save its current settings into a backup and mark it as no longer readonly
+		set ::settings(read_only) 1
+
+		# keep a backup of how the profile was when changed away from read-only, so it can be restored
+		unset ::settings(read_only_backup) 
+
+		set profile_filename $::settings(profile_filename)
+
+	} else {
+
+		if {[ifexists ::settings(original_profile_title)] == $::settings(profile_title)} {
+			set profile_filename $::settings(profile_filename) 
+		} else {
+			# if they change the description of the profile, then save it to a new name
+			# replace prior usage of unformatted seconds with sanitized profile name and append with formatted time if file exists
+			set profile_filename [::profile::filename_from_title $::settings(profile_title)]
+			set profile_timestamp [clock format [clock seconds] -format %Y%m%d_%H%M%S] 
+			if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] == 1} {
+				append profile_filename "_" $profile_timestamp
+			}
+
+			# save the new filename in settings
+			set ::settings(profile_filename) $profile_filename
+		}
 	}
 	
 	set tclfile ${profile_filename}
@@ -3272,18 +3437,18 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 	if {!$::settings(history_saved) && [espresso_elapsed length] > 5 && [espresso_pressure length] > 5 && $::settings(should_save_history) == 1} {
 
 		#TODO disable once v2 shotfiles are stable
-		#if {$::settings(create_legacy_shotfiles) == 1} {
-			set espresso_data [::shot::create_legacy]
-			set fn "[homedir]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
-			write_file $fn $espresso_data
-		#}
+		set espresso_data [::shot::create_legacy]
+		set shotfn "[homedir]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
+		write_file $shotfn $espresso_data
 
 		set espresso_data [::shot::create]
-		set fn "[homedir]/history_v2/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].json"
-		write_file $fn $espresso_data
+		set jsonfn "[homedir]/history_v2/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].json"
+		write_file $jsonfn $espresso_data
 		msg -NOTICE "Saved this espresso to history"
 
 		set ::settings(history_saved) 1
+		set ::settings(history_saved_shot_filename) $shotfn
+
 	} else {
 		msg -NOTICE "Not saved to history:" \
 			"history_saved: $::settings(history_saved)" \
@@ -3294,11 +3459,12 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 }
 
 proc ghc_required {} {
+	if {$::undroid == 1 || $::android == 0} {
+		# don't require the GHC if on a non-Android platform, or if running undroidwish
+		return 0
+	}
 	if {$::settings(ghc_is_installed) != 0 && $::settings(ghc_is_installed) != 1 && $::settings(ghc_is_installed) != 2 && $::settings(ghc_is_installed) != 4} {
 		return 1
-	}
-	if {$::undroid == 1 && $::android == 0} {
-		return 0
 	}
 	return 0
 }
@@ -4018,9 +4184,9 @@ proc range_check_shot_variables {} {
 
 	range_check_variable ::settings(espresso_decline_time) 0 60
 	range_check_variable ::settings(pressure_end) 0 $::de1(maxpressure)
-	range_check_variable ::settings(final_desired_shot_volume) 0 100
+	range_check_variable ::settings(final_desired_shot_volume) 0 2000
 
-	range_check_variable ::settings(final_desired_shot_weight) 0 100
+	range_check_variable ::settings(final_desired_shot_weight) 0 2000
 	range_check_variable ::settings(final_desired_shot_weight_advanced) 0 2000
 	range_check_variable ::settings(final_desired_shot_volume) 0 2000
 	range_check_variable ::settings(final_desired_shot_volume_advanced) 0 2000
@@ -4105,7 +4271,7 @@ proc set_resolution_height_from_width { {discard {}} } {
 
 	# check the width and make sure it is a multiple of 160. If not, pick the nearest setting.
 	for {set x [expr {$::settings(screen_size_width) - 0}]} {$x <= 2800} {incr x} {
-		set ratio [expr {$x / 160.0}]
+		set ratio [expr {$x / 16.0}]
 		if {$ratio == int($ratio)} {
 			set ::settings(screen_size_width) $x
 			set ::settings(screen_size_height) [expr {int($::settings(screen_size_width)/1.6)}]
@@ -4119,6 +4285,7 @@ proc determine_final_weight { {tochange 0} } {
 	# SAW
 	set var ""
 	if {[::device::scale::expecting_present]} {
+
 		if {$::settings(settings_profile_type) == "settings_2c"} {
 			set var ::settings(final_desired_shot_weight_advanced)
 			set var_disable ::settings(final_desired_shot_volume_advanced)
@@ -4126,14 +4293,15 @@ proc determine_final_weight { {tochange 0} } {
 			set var ::settings(final_desired_shot_weight)
 			set var_disable ::settings(final_desired_shot_volume)
 		}
-	}
-	# SAV
-	if {$::settings(settings_profile_type) == "settings_2c"} {
-		set var ::settings(final_desired_shot_volume_advanced)
-		set var_weight ::settings(final_desired_shot_weight_advanced)
 	} else {
-		set var ::settings(final_desired_shot_volume)
-		set var_weight ::settings(final_desired_shot_weight)
+		# SAV
+		if {$::settings(settings_profile_type) == "settings_2c"} {
+			set var ::settings(final_desired_shot_volume_advanced)
+			set var_weight ::settings(final_desired_shot_weight_advanced)
+		} else {
+			set var ::settings(final_desired_shot_volume)
+			set var_weight ::settings(final_desired_shot_weight)
+		}
 	}
 
 	if {$tochange != 0} {
@@ -4150,6 +4318,7 @@ proc determine_final_weight { {tochange 0} } {
 		}
 
 	}
+
 	return [ifexists $var]
 }
 

@@ -313,10 +313,10 @@ add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog du
 # (beta) weight based shot ending, only displayed if a skale is connected
 if {$::settings(scale_bluetooth_address) != ""} {
 	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "center"
-	add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 100 -from 0 -background $::settings(color_stage_3)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.2 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 2000 -from 0 -background $::settings(color_stage_3)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.2 -length [rescale_x_skin 546]  -width [rescale_y_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}
 
-	add_de1_button "settings_2a settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(final_desired_shot_weight) -n_decimals 1 -min 1 -max 100 -default $::settings(final_desired_shot_weight) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Stop at weight"] -previous_values [::dui::pages::dui_number_editor::get_previous_values final_desired_shot_weight] -return_callback "::dui::pages::dui_number_editor::save_previous_value profile_has_changed_set final_desired_shot_weight"  } 1720 1325 2110 1405 ""   
+	add_de1_button "settings_2a settings_2b" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(final_desired_shot_weight) -n_decimals 1 -min 1 -max 2000 -default $::settings(final_desired_shot_weight) -smallincrement .1 -bigincrement 1 -use_biginc 1 -page_title [translate "Stop at weight"] -previous_values [::dui::pages::dui_number_editor::get_previous_values final_desired_shot_weight] -return_callback "::dui::pages::dui_number_editor::save_previous_value profile_has_changed_set final_desired_shot_weight"  } 1720 1325 2110 1405 ""   
 
 
 	# 1/18/19 support for weight-bsaed ending of advanced shots
@@ -568,8 +568,8 @@ proc settings2c_flow_button {direction} {
 		if {$direction eq "up"} {
 			set ::current_adv_step(flow) [round_to_one_digits [expr {$::current_adv_step(flow) + 0.1}]];
 
-			if {$::current_adv_step(flow) > $::de1(max_flowrate)} {
-				set ::current_adv_step(flow) $::de1(max_flowrate)
+			if {$::current_adv_step(flow) > $::de1(max_flowrate_v11)} {
+				set ::current_adv_step(flow) $::de1(max_flowrate_v11)
 			}
 
 		} else {
@@ -579,8 +579,8 @@ proc settings2c_flow_button {direction} {
 		if {$direction eq "up"} {
 			set ::current_adv_step(max_flow_or_pressure) [round_to_one_digits [expr {$::current_adv_step(max_flow_or_pressure) + 0.1}]];
 
-			if {$::current_adv_step(max_flow_or_pressure) > $::de1(max_flowrate)} {
-				set ::current_adv_step(max_flow_or_pressure) $::de1(max_flowrate)
+			if {$::current_adv_step(max_flow_or_pressure) > $::de1(max_flowrate_v11)} {
+				set ::current_adv_step(max_flow_or_pressure) $::de1(max_flowrate_v11)
 			}
 
 		} else {
@@ -1122,9 +1122,13 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 				# note: we could likely replicate this feature in the future with a firmware requiest to repeat the command indefinitely, and this would be UL compliant as the first time would need to be GHC started.
 				#add_de1_widget "measurements" checkbutton 1800 80  {} -text [translate "Repeat last command"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::settings(stress_test)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-				dui add dtoggle "measurements"  1740 704 -height 60 -anchor nw -variable ::settings(stress_test) 
-				add_de1_text "measurements" 1880 704 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+				#dui add dtoggle "measurements"  1740 704 -height 60 -anchor nw -variable ::settings(stress_test) 
+				#add_de1_text "measurements" 1880 704 -text [translate "Repeat last command"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 			}
+
+
+			dui add dtoggle "measurements"  1740 704 -height 60 -anchor nw -variable ::settings(enable_sounds) 
+			add_de1_text "measurements" 1880 704 -text [translate "Sounds"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
 
 			#set ::_placebo_true 1
 			#add_de1_widget "measurements" checkbutton 1300 740  {} -text [translate "Logging is enabled"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable _placebo_true -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat  -state disabled
@@ -1685,7 +1689,7 @@ proc send_decent_tech_support_email {} {
 		# add_de1_variable "settings_4" 900 1050 -font Helv_7 -fill "#bec7db" -justify "left" -anchor "nw" -textvariable {[if {$::settings(scale_bluetooth_address) != ""} { return [return_scale_timer] } else {return "" } ] }
 		
 		add_de1_button "settings_4" {say [translate {Remove}] $::settings(sound_button_in); remove_peripheral $::settings(scale_bluetooth_address) ; set ::settings(scale_bluetooth_address) ""; fill_peripheral_listbox} 1030 1100 1250 1140 ""
-		add_de1_button "settings_4" {say [translate {Tare}] $::settings(sound_button_in); ::device::scale::tare; borg toast [translate_toast "Tare"]} 800 1100 1026 1140 ""
+		add_de1_button "settings_4" {say [translate {Tare}] $::settings(sound_button_in); ::device::scale::tare; popup [translate_toast "Tare"]} 800 1100 1026 1140 ""
 		add_de1_widget "settings_4" listbox 670 1150 { 
 				set ::ble_scale_listbox_widget $widget
 				bind $widget <<ListboxSelect>> ::change_scale_bluetooth_device
@@ -1764,8 +1768,8 @@ add_de1_text "descale_prepare" 70 50 -text [translate "Prepare to descale"] -fon
 
 add_de1_text "settings_3" 1304 1080  -text [translate "Water level"] -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"
 	add_de1_widget "settings_3" scale 1304 1170 {} -from 3 -to 70 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 1190] -width [rescale_y_skin 115] -variable ::settings(water_refill_point) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 
-	add_de1_variable "settings_3" 1304 1300 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] [water_tank_level_to_milliliters $::settings(water_refill_point)] [translate mL] ([expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}][translate mm])}
-	add_de1_variable "settings_3" 2488 1120 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[translate "Now:"] [water_tank_level_to_milliliters $::de1(water_level)] [translate mL] ([round_to_integer $::de1(water_level)][translate mm])}
+	add_de1_variable "settings_3" 1304 1300 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] [expr {$::settings(water_refill_point) + $::de1(water_level_mm_correction)}][translate mm]}
+	add_de1_variable "settings_3" 2488 1120 -text "" -font Helv_7 -fill "#7f879a" -anchor "ne" -width [rescale_y_skin 1000] -justify "right" -textvariable {[translate "Now:"] [round_to_integer $::de1(water_level)][translate mm] (~[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]] [translate mL])}
 	#add_de1_button "settings_3" {start_refill_kit }  0 760 620 820
 
 	#add_de1_variable "settings_4" 50 760 -text "" -font Helv_7 -fill "#4e85f4" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Refill at:"] $::settings(water_refill_point)[translate mm]}
@@ -1796,7 +1800,7 @@ add_de1_text "settings_3" 50 770 -text [translate "Energy saver"] -font Helv_10_
 	add_de1_variable "settings_3" 50 1020 -text "" -font Helv_7 -fill "#7f879a" -anchor "nw" -width 800 -justify "left" -textvariable {[translate "Cool down after:"] [minutes_text $::settings(screen_saver_delay)]}
 
 
-add_de1_button "settings_1" {say [translate {save}] $::settings(sound_button_in); borg toast [translate_toast "Saved"]; save_profile} 2300 1220 2550 1410
+add_de1_button "settings_1" {say [translate {save}] $::settings(sound_button_in); popup [translate_toast Saved]; save_profile} 2300 1220 2550 1410
 
 # trash can icon to delete a preset
 add_de1_button "settings_1" {say [translate {Cancel}] $::settings(sound_button_in); delete_selected_profile} 1120 280 1300 460
@@ -1857,14 +1861,16 @@ add_de1_text "settings_1" 1360 830 -text [translate "Description"] -font Helv_10
 # removed this "helpful video about profile" feature as a button, as being too loud.
 # dui add dbutton "settings_1" 1140 1084 -tags [list xxx profile_video_help_button] -shape round -symbol_fill white -radius 32 -fill "#c0c5e2" -bwidth 126 -bheight 126 -symbol_pos {0.5 0.5} -symbol "photo-video"  -label_fill white -command {say [translate {video}] $::settings(sound_button_in); web_browser [ifexists ::settings(profile_video_help)]} 
 
-add_de1_variable "settings_1" 1360 1240 -text "" -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"  -textvariable {[profile_has_changed_set_colors; 
-if {[ifexists ::settings(read_only)] == 1} {return [translate "Pick a new name to save"]} else {return [translate "Save"]}]}
+add_de1_variable "settings_1" 1360 1240 -text "" -font Helv_10_bold -fill "#7f879a" -justify "left" -anchor "nw"  -textvariable {[profile_has_changed_set_colors; if {[ifexists ::settings(read_only)] == 1} {return [translate "Pick a new name to save"]} else {return [translate "Save"]}]}
 
+add_de1_variable "settings_1" 2280 1240 -text "" -font Helv_6 -fill "#7f879a" -justify "left" -anchor "ne"  -textvariable {[if {[ifexists ::settings(read_only_backup)] != ""} {return \[[translate "Reset to default"]\]} ]}
+
+add_de1_button "settings_1" {say [translate {reset}] $::settings(sound_button_in); reset_default_profile; } 1800 1220 2280 1290
 
 	add_de1_variable "settings_1" 1360 900 -text "" -font Helv_6 -fill "#7f879a" -justify "left" -anchor "nw"  -width [rescale_y_skin 1150] -textvariable {[maxstring_with_crlf_count $::settings(profile_notes) 380 80 " \[[translate {Tap here for more}]\]" ]}
 	add_de1_widget "settings_1" entry 1360 1310  {
 			set ::globals(widget_profile_name_to_save) $widget
-			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate_toast "Saved"]; save_profile; hide_android_keyboard}
+			bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); popup [translate_toast "Saved"]; save_profile; hide_android_keyboard}
 			bind $widget <Leave> hide_android_keyboard
 
 			# this binding stops double-clicking of text inside entry, from doing something.
@@ -1969,7 +1975,7 @@ add_de1_text "settings_4" $pos_app_label 100 -text [translate "APP"] -font $sett
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
 add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::settings(active_settings_tab) "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
 add_de1_button "settings_1 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox; set_advsteps_scrollbar_dimensions} 642 0 1277 188 
-add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" {say [translate {save}] $::settings(sound_button_in); if {$::settings(profile_has_changed) == 1} { borg toast [translate_toast "Saved"]; save_profile } } 642 0 1277 188 
+add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" {say [translate {save}] $::settings(sound_button_in); if {$::settings(profile_has_changed) == 1} { popup [translate_toast "Saved"]; save_profile } } 642 0 1277 188 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"; set_ble_scrollbar_dimensions; set_ble_scale_scrollbar_dimensions} 1905 0 2560 188
 
@@ -2023,6 +2029,12 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				}
 
 				set_next_page off off; page_show off
+
+				if {[info exists ::settings_optional_callback] == 1} {
+					if {$::settings_optional_callback != ""} {
+						eval $::settings_optional_callback
+					}
+				}
 			}
 		} 2016 1430 2560 1600
 
@@ -2106,6 +2118,18 @@ proc show_page_calibrate_3 {} {
 		}
 		###############################################################################################
 
+		set disabled_trough_color "#888888"
+
+		if {$::settings(hot_water_idle_temp) == 850 && $::settings(espresso_warmup_timeout) == 100 && $::settings(phase_1_flow_rate) == 10 && $::settings(phase_2_flow_rate) == 40} {
+			# if currently on 'home' defaults, switch them to 'cafe' defaults
+			set ::settings(hot_water_idle_temp) 990; 
+			set ::settings(espresso_warmup_timeout) 10; 
+			set ::settings(phase_1_flow_rate) 20; 
+			set ::settings(phase_2_flow_rate) 10; 
+			#puts "ERROR upgrading defaults to 'cafe'"
+		}
+
+
 		add_de1_text "calibrate2" 350 610  -text [translate "Heater idle temperature"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -justify "left" 
 		add_de1_widget "calibrate2" scale 350 660  {} -to 990 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 5 -resolution 5 -length [rescale_x_skin 600]  -width [rescale_y_skin 90] -variable ::settings(hot_water_idle_temp) -font Helv_15_bold -sliderlength [rescale_x_skin 100] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "calibrate2" 970 680  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_temperature_setting [expr {0.1 * $::settings(hot_water_idle_temp)}]]}
@@ -2123,9 +2147,9 @@ proc show_page_calibrate_3 {} {
 		add_de1_variable "calibrate2" 1970 880  -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -textvariable {[return_flow_calibration_measurement $::settings(phase_2_flow_rate)]}
 
 		#add_de1_text "calibrate2" 350 1000  -text [translate "Presets:"] -font Helv_7_bold -fill "#7f879a" -anchor "nw" -justify "left" 
-		add_de1_text "calibrate2" 350 1000  -text "\[ [translate "Defaults for home"] \]" -font Helv_7_bold -fill "#4e85f4" -anchor "nw" -justify "left" 
+		#add_de1_text "calibrate2" 350 1000  -text "\[ [translate "Defaults for home"] \]" -font Helv_7_bold -fill "#4e85f4" -anchor "nw" -justify "left" 
 		add_de1_text "calibrate2" 350 1080 -text "\[ [translate "Defaults for cafe"] \]" -font Helv_7_bold -fill "#4e85f4" -anchor "nw" -justify "left" 
-		add_de1_button "calibrate2" {set ::settings(hot_water_idle_temp) 850; set ::settings(espresso_warmup_timeout) 100; set ::settings(phase_1_flow_rate) 10; set ::settings(phase_2_flow_rate) 40; } 300 980 840 1060 ""		
+		#add_de1_button "calibrate2" {set ::settings(hot_water_idle_temp) 850; set ::settings(espresso_warmup_timeout) 100; set ::settings(phase_1_flow_rate) 10; set ::settings(phase_2_flow_rate) 40; } 300 980 840 1060 ""		
 		add_de1_button "calibrate2" {set ::settings(hot_water_idle_temp) 990; set ::settings(espresso_warmup_timeout) 10; set ::settings(phase_1_flow_rate) 20; set ::settings(phase_2_flow_rate) 40; } 300 1070 840 1150 ""		
 		
 		dui add dtoggle "calibrate3" 1350 560 -height 60 -anchor nw -variable ::settings(steam_two_tap_stop) 

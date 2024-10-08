@@ -26,6 +26,5 @@ profile_notes {The E61 machine was invented by Faema in 1961 and is still the mo
 profile_title {E61 espresso machine}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-water_temperature 80
 beverage_type {espresso}
 read_only 1

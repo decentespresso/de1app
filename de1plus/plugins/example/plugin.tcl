@@ -37,11 +37,11 @@ namespace eval ::plugins::${plugin_name} {
     }
 
     proc on_espresso_end {old new} {
-        borg toast "espresso ended"
+        popup "espresso ended"
     }
 
     proc on_function_called {call code result op} {
-        borg toast "start_sleep called!"
+        popup "start_sleep called!"
     }
 
     # This file will be sourced to display meta-data. Dont put any code into the

@@ -26,6 +26,5 @@ profile_notes {For use with machines that have a group head controller (GHC).  H
 profile_title {GHC/manual pressure control}
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-water_temperature 80
 beverage_type {manual}
 read_only 1

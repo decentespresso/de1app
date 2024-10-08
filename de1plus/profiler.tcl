@@ -16,7 +16,7 @@ package provide de1_profiler 1.0
 # which you can then puts to the screen or to your html page
 
 proc profilerdata { {functionname {}}} {
-	puts "printing profiler results\n---"
+	msg -ERROR "printing profiler results\n---"
 	#::profiler::print
 	#set x [::profiler::sortFunctions totalRuntime]
 	
@@ -44,17 +44,23 @@ proc profilerdata { {functionname {}}} {
 	
 	set max_to_display 30
 	set cnt 0
-	puts "Total: [add_commas_to_number [expr {$totalproctime / 1000}]]ms"
+	msg -ERROR "Total: [add_commas_to_number [expr {$totalproctime / 1000}]]ms"
 	foreach k [array_keys_decr_sorted_by_number_val arr] {
 		if {[incr cnt] > $max_to_display} { append y "---"; break }
 		unset -nocomplain m
 		array set m [lindex [::profiler::dump $k] 1]
 		#puts "parts: [array get m]"
-		set more [subst {(calls: $m(callCount) calls, descendanttime: [add_commas_to_number [expr {$m(descendantTime) / 1000}]]ms, avgrun: [add_commas_to_number [expr {$m(averageRuntime) / 1000}]]ms)}]
+		set more ""
+		catch {
+			set more [subst {(calls: $m(callCount) calls, descendanttime: [add_commas_to_number [expr {$m(descendantTime) / 1000}]]ms, avgrun: [add_commas_to_number [expr {$m(averageRuntime) / 1000}]]ms)}]
+		}
 		#set nondesctime [expr {$m(totalRuntime) - $m(descendantTime)}]
 		#puts "$k : $nondesctime"
 		append y "[expr { (100 * $arr($k))  / $totalproctime}]% $k [add_commas_to_number [expr {$arr($k)  / 1000}]] $more\n"
 	}
+
+	msg -ERROR $y
+	puts $y
 	return $y
 
 }

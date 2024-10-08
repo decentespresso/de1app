@@ -102,6 +102,7 @@ namespace eval ::app {
 
 		# Use modified ISO 8601 (no T, add space before zone)
 
+		msg -INFO "Androwish build timestamp : $::app::build_timestamp "
 		if { $::app::build_timestamp } {
 			set ::app::build_time_string [clock format $::app::build_timestamp -format "%Y-%m-%d %H:%M:%S %z"]
 		} else {

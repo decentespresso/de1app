@@ -679,10 +679,11 @@ proc parse_binary_shotframe {packed destarrname} {
 
 	::fields::unpack $packed $spec ShotSample bigeendian
 
+	# invalid packets with no information, can sometimes be created.  	
 	if {[info exists ShotSample(FrameToWrite)] != 1} {
 		return
 	}
-	
+
 	if {$ShotSample(FrameToWrite) >= 32} {
 		set spec [spec_extshotframe]
 		array unset specarr *
