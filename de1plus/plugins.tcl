@@ -186,6 +186,9 @@ namespace eval ::plugins {
             } elseif {[string tolower $fbasename] == "skip_first_step_notice"} {
                 # per Damian's suggestion, should not be part of STABLE
                 continue
+            } elseif {$fbasename == "DPx_Flow_Calibrator"} {
+                # per Damian's suggestion, should not be part of the app
+                continue
             }
 
             ############################################################
