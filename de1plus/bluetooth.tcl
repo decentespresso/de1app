@@ -59,6 +59,8 @@ proc scale_timer_start {} {
 		felicita_start_timer
 	} elseif {$::settings(scale_type) == "bookoo"} {
 		bookoo_start_timer
+	} elseif {$::settings(scale_type) == "atomheart_eclair"} {
+		atomheart_eclair_start_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_start_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -79,6 +81,8 @@ proc scale_timer_stop {} {
 		felicita_stop_timer
 	} elseif {$::settings(scale_type) == "bookoo"} {
 		bookoo_stop_timer
+	} elseif {$::settings(scale_type) == "atomheart_eclair"} {
+		atomheart_eclair_stop_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_stop_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -102,6 +106,8 @@ proc scale_timer_reset {} {
 		felicita_timer_reset
 	} elseif {$::settings(scale_type) == "bookoo"} {
 		bookoo_timer_reset
+	} elseif {$::settings(scale_type) == "atomheart_eclair"} {
+		atomheart_eclair_timer_reset
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_reset_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -130,6 +136,8 @@ proc scale_enable_weight_notifications {} {
 		felicita_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "bookoo"} {
 		bookoo_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "atomheart_eclair"} {
+		atomheart_eclair_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "hiroiajimmy"} {
 		hiroia_enable_weight_notifications
 	}  elseif {$::settings(scale_type) == "eureka_precisa"} {
@@ -514,6 +522,127 @@ proc bookoo_parse_response { value } {
 	}
 }
 
+#### atomheart_eclair
+proc atomheart_eclair_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomheart_eclair"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_atomheart_eclair))] == ""} {
+		error "atomheart_eclair Scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable atomheart_eclair scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair) $::cinstance($::de1(cuuid_atomheart_eclair))] 1
+}
+
+proc atomheart_eclair_tare {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomheart_eclair"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_atomheart_eclair))] == ""} {
+		error "atomheart_eclair Scale not connected, cannot send tare cmd"
+		return
+	}
+
+	set tare [binary decode hex "540101"]
+
+	userdata_append "SCALE: atomheart_eclair tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair_cmd) $::cinstance($::de1(cuuid_atomheart_eclair_cmd)) $tare] 0
+	# The tare is not yet confirmed to us, we can therefore assume it worked out
+}
+
+proc atomheart_eclair_timer_reset {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomheart_eclair"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_atomheart_eclair))] == ""} {
+		error "atomheart_eclair Scale not connected, cannot send timer cmd"
+		return
+	}
+	# Eclair scale no dedicated timer reset command, timer will reset automatically after the scale receive the tare comand. So this comand is the same as the tare comand.
+	set timer_reset [binary decode hex "540101"]
+
+	userdata_append "SCALE: atomheart_eclair timer_reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair_cmd) $::cinstance($::de1(cuuid_atomheart_eclair_cmd)) $timer_reset] 0
+
+}
+proc atomheart_eclair_start_timer {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomheart_eclair"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_atomheart_eclair))] == ""} {
+		error "atomheart_eclair Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set timer_start [binary decode hex "430101"]
+
+	userdata_append "SCALE: atomheart_eclair timer_start" [list ble write $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair_cmd) $::cinstance($::de1(cuuid_atomheart_eclair_cmd)) $timer_start] 0
+
+}
+proc atomheart_eclair_stop_timer {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "atomheart_eclair"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_atomheart_eclair))] == ""} {
+		error "atomheart_eclair Scale not connected, cannot send timer cmd"
+		return
+	}
+
+	set timer_stop [binary decode hex "430000"]
+
+	userdata_append "SCALE: atomheart_eclair timer_stop" [list ble write $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair_cmd) $::cinstance($::de1(cuuid_atomheart_eclair_cmd)) $timer_stop] 0
+
+}
+
+proc atomheart_eclair_validate_xor {value} {
+    # Convert the value (byte array) to a list of bytes
+    binary scan $value c* byte_list
+    # Extract payload (excluding header and XOR byte)
+    set payload [lrange $byte_list 1 end-1]
+    # Get XOR validation byte (the last byte)
+    set xor_validation [lindex $byte_list end]
+    
+    # Calculate XOR of the payload
+    set xor_result 0
+    foreach byte $payload {
+        set xor_result [expr {$xor_result ^ $byte}]
+    }
+    
+    # Return whether XOR matches
+    return [expr {$xor_result == $xor_validation}]
+}
+
+proc atomheart_eclair_parse_response { value } {
+    if {[string bytelength $value] >= 9} {
+        # Extract the data fields from the value 
+        binary scan $value ciIc h1 weight_value timer_value xor_byte
+        
+        # Ensure the header is 'W' (0x57)
+        if {[format "%c" $h1] == "W"} {
+            # Validate XOR
+            if {[atomheart_eclair_validate_xor $value]} {
+                # Convert weight from milligrams (int32_t) to grams (with sign)
+                set weight [expr {$weight_value / 1000.0}]
+                
+                # Round the weight to two decimal places
+                set rounded_weight [format "%.2f" $weight]
+                
+                # Process the weight update
+                ::device::scale::process_weight_update $rounded_weight
+            } else {
+                error "Invalid XOR checksum get from atomheart_eclair scale"
+            }
+        }
+    }
+}
 
 
 #### Hiroia Jimmy
@@ -1827,6 +1956,9 @@ proc de1_ble_handler { event data } {
  				} elseif {[string first "BOOKOO_SC" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "bookoo"
 
+ 				} elseif {[string first "ECLAIR" $name] == 0} {
+					append_to_peripheral_list $address $name "ble" "scale" "atomheart_eclair"
+
  				} elseif {[string first "ACAIA" $name] == 0 \
  					|| [string first "PROCH" $name]    == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
@@ -1965,6 +2097,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "difluid"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "difluid"
 							after 100 difluid_enable_weight_notifications
+						} elseif {$::settings(scale_type) == "atomheart_eclair"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "atomheart_eclair"
+							after 200 atomheart_eclair_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
 							set ::settings(force_acaia_heartbeat) 0
@@ -2346,6 +2481,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_felicita)} {
 							# felicita scale
 							felicita_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_atomheart_eclair)} {
+							# atomheart_eclair scale
+							atomheart_eclair_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_hiroiajimmy_status)} {
 							# hiroia jimmy scale
 							hiroia_parse_response $value
