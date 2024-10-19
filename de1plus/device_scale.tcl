@@ -174,6 +174,7 @@ namespace eval ::device::scale {
 			decentscale { expr { 0.38 } }
 			felicita    { expr { 0.50 } }
 			bookoo    { expr { 0.50 } }
+			atomheart_eclair { expr { 0.50 } }
 			acaiascale  { expr { 0.69 } }
 			default     { expr { 0.38 } }
 
@@ -353,6 +354,8 @@ namespace eval ::device::scale {
 
 			felicita { felicita_tare }
 			bookoo { bookoo_tare }
+
+			atomheart_eclair { atomheart_eclair_tare }
 
 			hiroiajimmy { hiroia_tare }
 
@@ -1440,6 +1443,9 @@ namespace eval ::device::scale::callbacks {
 				set ::device::scale::run_timer True
 			}
 			bookoo {
+				set ::device::scale::run_timer True
+			}
+			atomheart_eclair {
 				set ::device::scale::run_timer True
 			}
 			eureka_precisa {
