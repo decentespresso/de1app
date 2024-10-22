@@ -4319,9 +4319,9 @@ proc update_data_card { arrname settingsarr } {
 			set ::streamline_final_extraction_weight ""
 			set ::streamline_final_extraction_time ""
 
-			set ::streamline_shot_time ""
-			set ::streamline_shot_weight ""
-			set ::streamline_shot_volume ""
+			#set ::streamline_shot_time ""
+			#set ::streamline_shot_weight ""
+			#set ::streamline_shot_volume ""
 
 			set ::streamline_extraction_low_peak_pressure_label ""
 			set ::streamline_extraction_low_peak_flow_label ""
@@ -4333,9 +4333,9 @@ proc update_data_card { arrname settingsarr } {
 			set ::streamline_preinfusion_temp [return_temperature_measurement_no_unit $::de1(head_temperature)]
 
 		} else {
-			set ::streamline_shot_time ""
-			set ::streamline_shot_weight ""
-			set ::streamline_shot_volume ""
+			#set ::streamline_shot_time ""
+			#set ::streamline_shot_weight ""
+			#set ::streamline_shot_volume ""
 
 			#set ::streamline_extraction_low_peak_pressure_label "[round_one_digits $::de1(pressure)] [translate "bar"]"
 			#set ::streamline_extraction_low_peak_flow_label "[round_to_one_digits $::de1(flow)] [translate "ml/s"]"
