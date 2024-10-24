@@ -3036,7 +3036,7 @@ proc refresh_favorite_temperature_button_labels {} {
 		set lb4c $::preset_label_selected_color
 	}
 
-	.can itemconfigure temp_f_btn_1 -fill $lb1c
+	.can itemconfigure temp_btn_1 -fill $lb1c
 	.can itemconfigure temp_btn_2 -fill $lb2c
 	.can itemconfigure temp_btn_3 -fill $lb3c
 	.can itemconfigure temp_btn_4 -fill $lb4c
