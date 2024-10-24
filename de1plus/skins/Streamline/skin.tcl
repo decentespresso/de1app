@@ -2018,6 +2018,23 @@ proc refresh_favorite_profile_button_labels {} {
 		}
 	}
 
+	# look for two buttons with the same profile.  If found, clear the 2nd incidence of that same button.
+	for {set x 1} {$x <= 5}  {incr x} {
+		set tt [dict get $profiles $x title]
+		if {[info exists profile_button_name_used($tt)] == 1} {
+
+			set t($x) ""
+			set b($x) " "
+
+			dict set profiles $x name $t($x)
+			dict set profiles $x title $b($x)
+			set changed 1
+
+		} else {
+			set profile_button_name_used($tt) 1
+		}
+	}
+
 	for {set x 1} {$x <= 5}  {incr x} {
 		set b($x) ""
 
