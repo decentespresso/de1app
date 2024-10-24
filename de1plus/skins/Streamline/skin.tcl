@@ -948,8 +948,9 @@ proc update_streamline_status_message {} {
 		if {[dui page current] == "espresso" || [dui page current] == "espresso_zoomed" } {
 
 			#set green_msg [subst {[translate [string totitle [::de1::state::current_substate]]] ($::settings(current_frame_description))}]
-			set green_msg [translate $::settings(current_frame_description)]
-			set clickable_msg " ⏩ " 
+			set green_msg "[translate $::settings(current_frame_description)] "
+			set red_msg "•"
+			set clickable_msg " [espresso_timer][translate s] ⏩ " 
 
 			set final_target [determine_final_weight]
 			
