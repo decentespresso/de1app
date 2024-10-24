@@ -2185,12 +2185,18 @@ set dyebtns ""
 if { [plugins enabled DYE] } {
 	# not yet available
 	# plugins disable DYE
-	dui add dbutton $::all_pages [expr {$right_buttons_start - (3*$right_buttons_width) - (3*$right_buttons_separation)}] 66 [expr {$right_buttons_start - (2*$right_buttons_width) - (3*$right_buttons_separation)}] 155 -tags dye_btn -label [translate "DYE"]  -command { show_DYE_page }
+	dui add dbutton $::all_pages [expr {$right_buttons_start - (3*$right_buttons_width) - (3*$right_buttons_separation)}] 66 [expr {$right_buttons_start - (2*$right_buttons_width) - (3*$right_buttons_separation)}] 155 -tags dye_btn -label [translate "DYE"]  -command { show_DYE_page } -longpress_cmd { DYE_longpress }
 }
 
 proc show_DYE_page {} {
 	if { [plugins enabled DYE] } {
-		plugins::DYE::open -which_shot default -coords {700 250} -anchor nw
+		plugins::DYE::open -which_shot default -coords {975 190} -anchor nw
+	}
+}
+
+proc DYE_longpress {} {
+	if { [plugins enabled DYE] } {
+		plugins::DYE::open -which_shot dialog -coords {975 190} -anchor nw
 	}
 }
 ############################################################################################################################################################################################################
