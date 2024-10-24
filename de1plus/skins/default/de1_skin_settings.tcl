@@ -1223,7 +1223,7 @@ proc calculate_screen_flip_value {} {
 		set ::extension_highlighted -1
 
 		# Old -fill "#444444"
-		set ::extensions_metadata [add_de1_text "extensions" 1200 480 -text  "" -font global_font -width 550 -fill "#7f879a" -anchor "nw" -justify "left" ]
+		set ::extensions_metadata [add_de1_text "extensions" 1200 480 -text  "" -font global_font -width [rescale_x_skin 1100] -fill "#7f879a" -anchor "nw" -justify "left" ]
 
 		set ::extensions_slider 0
 		set ::extensions_scrollbar [add_de1_widget "extensions" scale 10000 1 {} -from 0 -to 1.0 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::language_slider -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::extensions_widget $::extensions_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
