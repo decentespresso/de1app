@@ -2206,8 +2206,13 @@ if { [plugins enabled DYE] } {
 }
 
 proc show_DYE_page {} {
+
 	if { [plugins enabled DYE] } {
-		plugins::DYE::open -which_shot default -coords {975 190} -anchor nw
+		if {[info exists ::streamline_current_history_profile_clock] && $::streamline_history_file_selected_number != [expr {[llength $::streamline_history_files] -1}]} {
+			plugins::DYE::open -which_shot $::streamline_current_history_profile_clock
+		} else {
+			plugins::DYE::open -which_shot default -coords {975 190} -anchor nw
+		}
 	}
 }
 
