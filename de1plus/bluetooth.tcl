@@ -692,7 +692,7 @@ proc hiroia_parse_response { value } {
 	}
 }
 
-#### Eureka Precisa / Krell CFS-9002
+#### Eureka Precisa / Krell CFS-9002 / LSJ-001
 proc eureka_precisa_enable_weight_notifications {} {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "eureka_precisa"} {
 		return
@@ -1951,6 +1951,9 @@ proc de1_ble_handler { event data } {
 					append_to_peripheral_list $address $name "ble" "scale" "hiroiajimmy"
 
  				} elseif {[string first "CFS-9002" $name] == 0} {
+					append_to_peripheral_list $address $name "ble" "scale" "eureka_precisa"
+
+ 				} elseif {[string first "LSJ-001" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "eureka_precisa"
 
  				} elseif {[string first "BOOKOO_SC" $name] == 0} {
