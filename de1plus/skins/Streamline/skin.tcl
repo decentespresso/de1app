@@ -4858,7 +4858,7 @@ dui theme set default
 add_de1_button "saver" {say [translate {awake}] $::settings(sound_button_out); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
 add_de1_button "descaling cleaning" {say [translate {awake}] $::settings(sound_button_out); set_next_page off $::off_page; page_show off; start_idle; de1_send_waterlevel_settings;} 0 0 2560 1600 "buttonnativepress"
 
-proc patch_dye {} {
+proc patch_dye_obsolete {} {
 	namespace eval ::plugins::DYE::shots {
 
 		# patch DYE to not cause an error any more
@@ -4905,4 +4905,4 @@ proc patch_dye {} {
 	}
 
 }
-after 1000 patch_dye
+#after 1000 patch_dye
