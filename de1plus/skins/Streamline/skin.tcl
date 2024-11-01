@@ -310,6 +310,8 @@ if {$::undroid == 1} {
 	load_font "mono12" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 13
 }
 
+load_font "mono18" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 17
+
 # mono data card
 load_font "mono10bold" "[homedir]/skins/Streamline/NotoSansMono-ExtraBold.ttf" 12
 
@@ -609,7 +611,7 @@ proc streamline_status_msg_click {} {
 set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 256 right 0 1 30 $::background_color [list \
 	[list -text {$::streamline_global(status_msg_text_green)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_green  ] \
 	[list -text {$::streamline_global(status_msg_text_red)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_red  ] \
-	[list -text {$::streamline_global(status_msg_text_clickable)}  -font "Inter-HeavyBold24" -foreground $::status_clickable_text -exec "streamline_status_msg_click" ] \
+	[list -text {$::streamline_global(status_msg_text_clickable)}  -font "mono18" -foreground $::status_clickable_text -exec "streamline_status_msg_click" ] \
 ]]
 
 #trace add variable ::streamline_global(status_msg_text_green) write ::refresh_$::streamline_data_line
@@ -948,9 +950,9 @@ proc update_streamline_status_message {} {
 		if {[dui page current] == "espresso" || [dui page current] == "espresso_zoomed" } {
 
 			#set green_msg [subst {[translate [string totitle [::de1::state::current_substate]]] ($::settings(current_frame_description))}]
-			set green_msg "[translate $::settings(current_frame_description)] "
-			set red_msg "•"
-			set clickable_msg " [espresso_timer][translate s] ⏩ " 
+			set green_msg "[translate $::settings(current_frame_description)] | "
+			set red_msg ""
+			set clickable_msg "[espresso_timer][translate s] ⏩ " 
 
 			set final_target [determine_final_weight]
 			
@@ -972,8 +974,8 @@ proc update_streamline_status_message {} {
 			#msg -ERROR "current: $current_weight final_target:$final_target delta_percent:$delta_percent"
 		} elseif {[dui page current] == "hotwaterrinse" || [dui page current] == "hotwaterrinse_zoomed" } {
 
-			set green_msg [translate "Flushing:"]
-			set clickable_msg [subst { [flush_pour_timer][translate s]}]
+			set green_msg [subst {[translate "Flushing:"] }]
+			set clickable_msg [subst {[flush_pour_timer][translate s]}]
 			set final_target $::settings(flush_seconds)
 			
 			set current [flush_pour_timer]		
@@ -995,8 +997,8 @@ proc update_streamline_status_message {} {
 
 			set current [steam_pour_timer]		
 			
-			set green_msg [subst {[translate "Steaming:"]}]
-			set clickable_msg [subst { [steam_pour_timer][translate s]}]
+			set green_msg [subst {[translate "Steaming:"] }]
+			set clickable_msg [subst {[steam_pour_timer][translate s]}]
 		
 			set final_target $::settings(steam_timeout)
 			
@@ -1013,8 +1015,8 @@ proc update_streamline_status_message {} {
 		} elseif {[dui page current] == "water" || [dui page current] == "water_zoomed" } {
 
 			set current [watervolume]		
-			set green_msg [subst {[translate "Hot water:"]}]
-			set clickable_msg [subst { [water_pour_timer][translate s]}]
+			set green_msg [subst {[translate "Hot water:"] }]
+			set clickable_msg [subst {[water_pour_timer][translate s]}]
 
 			set final_target $::settings(water_volume)
 			
