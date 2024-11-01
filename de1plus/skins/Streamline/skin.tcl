@@ -348,23 +348,25 @@ if {$::android != 1} {
 ##################################################################################################
 # UI related convenience procs below, moved over from Mimoja Cafe so they can be generally used
 
-proc streamline_rectangle {contexts x1 y1 x2 y2 colour {tags {}}} {
+proc streamline_rectangle {contexts x1 y1 x2 y2 colour disabledcolour {tags {}}} {
 
 	if {$tags != ""} {
-		dui add canvas_item rect $contexts $x1 $y1 $x2 $y2 -fill $colour -width 0 -tags $tags
+		dui add canvas_item rect $contexts $x1 $y1 $x2 $y2 -fill $colour -width 0 -tags $tags -disabledfill $disabledcolour
 	} else {
-		dui add canvas_item rect $contexts $x1 $y1 $x2 $y2 -fill $colour -width 0
+		dui add canvas_item rect $contexts $x1 $y1 $x2 $y2 -fill $colour -width 0  -disabledfill $disabledcolour
 	}
 }
 
 
 
-proc streamline_rounded_rectangle {contexts x1 y1 x2 y2 colour angle {tags {}}} {
+proc streamline_rounded_rectangle {contexts x1 y1 x2 y2 colour disabledcolour angle {tags {}}} {
+
+
 
 	if {$tags != ""} {
-		dui add shape round $contexts $x1 $y1 -bwidth [expr {$x2 - $x1}] -bheight [expr {$y2 - $y1}] -radius "$angle $angle $angle $angle" -fill $colour -tags $tags
+		dui add shape round $contexts $x1 $y1 -bwidth [expr {$x2 - $x1}] -bheight [expr {$y2 - $y1}] -radius "$angle $angle $angle $angle" -fill $colour -tags $tags  -disabledfill $disabledcolour
 	} else {
-		dui add shape round $contexts $x1 $y1 -bwidth [expr {$x2 - $x1}] -bheight [expr {$y2 - $y1}] -radius "$angle $angle $angle $angle" -fill $colour 
+		dui add shape round $contexts $x1 $y1 -bwidth [expr {$x2 - $x1}] -bheight [expr {$y2 - $y1}] -radius "$angle $angle $angle $angle" -fill $colour  -disabledfill $disabledcolour
 	}
 }
 
@@ -376,47 +378,47 @@ proc streamline_rounded_rectangle {contexts x1 y1 x2 y2 colour angle {tags {}}} 
 # draw the background shapes
 
 # white background
-streamline_rectangle $::all_pages 0 0 2560 1600 $::background_color
+streamline_rectangle $::all_pages 0 0 2560 1600 $::background_color $::plus_minus_flash_off_color_disabled
 
 # top grey box
-streamline_rectangle $::all_pages 0 0 2560 220 $::box_color
+streamline_rectangle $::all_pages 0 0 2560 220 $::box_color $::plus_minus_flash_off_color_disabled
 #streamline_rectangle $::zoomed_pages 0 0 2560 220 $::box_color
 
 # left grey box
-streamline_rectangle $::pages 0 220 626 1600 $::box_color
+streamline_rectangle $::pages 0 220 626 1600 $::box_color $::plus_minus_flash_off_color_disabled
 
 #  grey line on the left
-streamline_rectangle $::pages 626 220 626 1600 $::box_line_color
+streamline_rectangle $::pages 626 220 626 1600 $::box_line_color $::plus_minus_flash_off_color_disabled
 
 # grey lines on the left bar
-streamline_rectangle $::pages 0 687 626 687 $::box_line_color
-streamline_rectangle $::pages 0 913 626 913 $::box_line_color
-streamline_rectangle $::pages 0 1139 626 1139 $::box_line_color
-streamline_rectangle $::pages 0 1365 626 1365 $::box_line_color
+streamline_rectangle $::pages 0 687 626 687 $::box_line_color $::plus_minus_flash_off_color_disabled
+streamline_rectangle $::pages 0 913 626 913 $::box_line_color $::plus_minus_flash_off_color_disabled
+streamline_rectangle $::pages 0 1139 626 1139 $::box_line_color $::plus_minus_flash_off_color_disabled
+streamline_rectangle $::pages 0 1365 626 1365 $::box_line_color $::plus_minus_flash_off_color_disabled
 
 
 # grey horizontal line 
-streamline_rectangle $::pages  626 418 2560 418 $::box_line_color
-streamline_rectangle $::zoomed_pages  0 490 2560 490 $::box_line_color
+streamline_rectangle $::pages  626 418 2560 418 $::box_line_color $::plus_minus_flash_off_color_disabled
+streamline_rectangle $::zoomed_pages  0 490 2560 490 $::box_line_color $::plus_minus_flash_off_color_disabled
 
 #  grey line on the bottom
-streamline_rectangle $::pages 626 1274 2560 1274 $::box_line_color
+streamline_rectangle $::pages 626 1274 2560 1274 $::box_line_color $::plus_minus_flash_off_color_disabled
 
 #  vertical grey line in data card
-streamline_rectangle $::pages 1151 1274 1151 1600 $::box_line_color
+streamline_rectangle $::pages 1151 1274 1151 1600 $::box_line_color $::plus_minus_flash_off_color_disabled
 
 
 
 if {$::settings(ghc_is_installed) == 0} { 
 	#
-	streamline_rectangle $::pages 2319 220 2600 1274 $::box_color
-	streamline_rectangle $::pages 2319 220 2319 1274 $::box_line_color
-	streamline_rectangle $::zoomed_pages 2319 220 2600 1600 $::box_color
-	streamline_rectangle $::zoomed_pages 2319 220 2319 1600 $::box_line_color
+	streamline_rectangle $::pages 2319 220 2600 1274 $::box_color $::plus_minus_flash_off_color_disabled
+	streamline_rectangle $::pages 2319 220 2319 1274 $::box_line_color $::plus_minus_flash_off_color_disabled
+	streamline_rectangle $::zoomed_pages 2319 220 2600 1600 $::box_color $::plus_minus_flash_off_color_disabled
+	streamline_rectangle $::zoomed_pages 2319 220 2319 1600 $::box_line_color $::plus_minus_flash_off_color_disabled
 }
 
 
-streamline_rectangle $::all_pages 0 220 2560 220 $::box_line_color
+streamline_rectangle $::all_pages 0 220 2560 220 $::box_line_color $::plus_minus_flash_off_color_disabled
 
 
 ############################################################################################################################################################################################################
@@ -1120,28 +1122,28 @@ proc update_streamline_status_message {} {
 
 
 # blink the hot water presets 
-streamline_rectangle $::pages 0 1521 626 1555  $::box_color hotwater_presets_rectangle
+streamline_rectangle $::pages 0 1521 626 1555  $::box_color $::plus_minus_flash_off_color_disabled hotwater_presets_rectangle
 
 # hot water
-streamline_rounded_rectangle $::pages 360 1396 478 1439  $::box_color  20 hotwater_setting_rectangle
+streamline_rounded_rectangle $::pages 360 1396 478 1439  $::box_color $::plus_minus_flash_off_color_disabled 20 hotwater_setting_rectangle
 
 # flush 
-streamline_rounded_rectangle $::pages 360 1192 478 1235  $::box_color  20 flush_setting_rectangle
+streamline_rounded_rectangle $::pages 360 1192 478 1235  $::box_color $::plus_minus_flash_off_color_disabled 20 flush_setting_rectangle
 
 # stream 
-streamline_rounded_rectangle $::pages 360 946 478 988  $::box_color  20 steam_setting_rectangle
+streamline_rounded_rectangle $::pages 360 946 478 988  $::box_color $::plus_minus_flash_off_color_disabled 20 steam_setting_rectangle
 
 # temp 
-streamline_rounded_rectangle $::pages 360 738 478 781  $::box_color  20 temp_setting_rectangle
+streamline_rounded_rectangle $::pages 360 738 478 781  $::box_color $::plus_minus_flash_off_color_disabled 20 temp_setting_rectangle
 
 # drink out
-streamline_rounded_rectangle $::pages 360 492 478 535  $::box_color  20 weight_setting_rectangle
+streamline_rounded_rectangle $::pages 360 492 478 535  $::box_color $::plus_minus_flash_off_color_disabled 20 weight_setting_rectangle
 
 # dose in
-streamline_rounded_rectangle $::pages 360 398 478 442  $::box_color  20 dose_setting_rectangle
+streamline_rounded_rectangle $::pages 360 398 478 442  $::box_color $::plus_minus_flash_off_color_disabled 20 dose_setting_rectangle
 
 # grind
-streamline_rounded_rectangle $::pages 360 282 478 325  $::box_color  20 grind_setting_rectangle
+streamline_rounded_rectangle $::pages 360 282 478 325  $::box_color $::plus_minus_flash_off_color_disabled 20 grind_setting_rectangle
 
 
 
@@ -1629,7 +1631,10 @@ proc streamline_history_date_format {shot_time} {
 }
 
 dui aspect set -theme streamline -type dbutton fill $::profile_button_background_color
+dui aspect set -theme streamline -type dbutton disabledfill $::plus_minus_flash_off_color_disabled
 dui aspect set -theme streamline -type dbutton outline $::profile_button_background_color
+dui aspect set -theme streamline -type dbutton disabledoutline $::profile_button_background_color
+
 dui aspect set -theme streamline -type dbutton_symbol fill $::data_card_text_color
 dui aspect set -theme streamline -type dbutton label_fill $::data_card_text_color
 dui aspect set -theme streamline -type dbutton_symbol font_size 18
@@ -1830,37 +1835,37 @@ proc choose_appropriate_data_entry_for_steam {} {
 # highly rounded rectangles
 
 # dose
-streamline_rounded_rectangle $::pages 25 606 145 656  $::box_color  20 dose_preset_rectangle_1
-streamline_rounded_rectangle $::pages 189 606 309 656  $::box_color  20 dose_preset_rectangle_2
-streamline_rounded_rectangle $::pages 343 606 463 656  $::box_color  20 dose_preset_rectangle_3
-streamline_rounded_rectangle $::pages 487 606 607 656  $::box_color  20 dose_preset_rectangle_4
+streamline_rounded_rectangle $::pages 25 606 145 656  $::box_color $::plus_minus_flash_off_color_disabled 20 dose_preset_rectangle_1
+streamline_rounded_rectangle $::pages 189 606 309 656  $::box_color $::plus_minus_flash_off_color_disabled 20 dose_preset_rectangle_2
+streamline_rounded_rectangle $::pages 343 606 463 656  $::box_color $::plus_minus_flash_off_color_disabled 20 dose_preset_rectangle_3
+streamline_rounded_rectangle $::pages 487 606 607 656  $::box_color $::plus_minus_flash_off_color_disabled 20 dose_preset_rectangle_4
 
 
 # temp
-streamline_rounded_rectangle $::pages 25 833 145 883  $::box_color  20 temp_preset_rectangle_1
-streamline_rounded_rectangle $::pages 189 833 309 883  $::box_color  20 temp_preset_rectangle_2
-streamline_rounded_rectangle $::pages 343 833 463 883  $::box_color  20 temp_preset_rectangle_3
-streamline_rounded_rectangle $::pages 487 833 607 883  $::box_color  20 temp_preset_rectangle_4
+streamline_rounded_rectangle $::pages 25 833 145 883  $::box_color $::plus_minus_flash_off_color_disabled 20 temp_preset_rectangle_1
+streamline_rounded_rectangle $::pages 189 833 309 883  $::box_color $::plus_minus_flash_off_color_disabled 20 temp_preset_rectangle_2
+streamline_rounded_rectangle $::pages 343 833 463 883  $::box_color $::plus_minus_flash_off_color_disabled 20 temp_preset_rectangle_3
+streamline_rounded_rectangle $::pages 487 833 607 883  $::box_color $::plus_minus_flash_off_color_disabled 20 temp_preset_rectangle_4
 
 # steam
-streamline_rounded_rectangle $::pages 25 1059 145 1109  $::box_color  20 steam_preset_rectangle_1
-streamline_rounded_rectangle $::pages 189 1059 309 1109  $::box_color  20 steam_preset_rectangle_2
-streamline_rounded_rectangle $::pages 343 1059 463 1109  $::box_color  20 steam_preset_rectangle_3
-streamline_rounded_rectangle $::pages 487 1059 607 1109  $::box_color  20 steam_preset_rectangle_4
+streamline_rounded_rectangle $::pages 25 1059 145 1109  $::box_color $::plus_minus_flash_off_color_disabled 20 steam_preset_rectangle_1
+streamline_rounded_rectangle $::pages 189 1059 309 1109  $::box_color $::plus_minus_flash_off_color_disabled 20 steam_preset_rectangle_2
+streamline_rounded_rectangle $::pages 343 1059 463 1109  $::box_color $::plus_minus_flash_off_color_disabled 20 steam_preset_rectangle_3
+streamline_rounded_rectangle $::pages 487 1059 607 1109  $::box_color $::plus_minus_flash_off_color_disabled 20 steam_preset_rectangle_4
 
 
 # flush
-streamline_rounded_rectangle $::pages 25 1289 145 1339  $::box_color  20 flush_preset_rectangle_1
-streamline_rounded_rectangle $::pages 189 1289 309 1339  $::box_color  20 flush_preset_rectangle_2
-streamline_rounded_rectangle $::pages 343 1289 463 1339  $::box_color  20 flush_preset_rectangle_3
-streamline_rounded_rectangle $::pages 487 1289 607 1339  $::box_color  20 flush_preset_rectangle_4
+streamline_rounded_rectangle $::pages 25 1289 145 1339  $::box_color $::plus_minus_flash_off_color_disabled 20 flush_preset_rectangle_1
+streamline_rounded_rectangle $::pages 189 1289 309 1339  $::box_color $::plus_minus_flash_off_color_disabled 20 flush_preset_rectangle_2
+streamline_rounded_rectangle $::pages 343 1289 463 1339  $::box_color $::plus_minus_flash_off_color_disabled 20 flush_preset_rectangle_3
+streamline_rounded_rectangle $::pages 487 1289 607 1339  $::box_color $::plus_minus_flash_off_color_disabled 20 flush_preset_rectangle_4
 
 
 # hotwater
-streamline_rounded_rectangle $::pages 25 1512 145 1562  $::box_color  20 hot_water_preset_rectangle_1
-streamline_rounded_rectangle $::pages 189 1512 309 1562  $::box_color  20 hot_water_preset_rectangle_2
-streamline_rounded_rectangle $::pages 343 1512 463 1562  $::box_color  20 hot_water_preset_rectangle_3
-streamline_rounded_rectangle $::pages 487 1512 607 1562  $::box_color  20 hot_water_preset_rectangle_4
+streamline_rounded_rectangle $::pages 25 1512 145 1562  $::box_color $::plus_minus_flash_off_color_disabled 20 hot_water_preset_rectangle_1
+streamline_rounded_rectangle $::pages 189 1512 309 1562  $::box_color $::plus_minus_flash_off_color_disabled 20 hot_water_preset_rectangle_2
+streamline_rounded_rectangle $::pages 343 1512 463 1562  $::box_color $::plus_minus_flash_off_color_disabled 20 hot_water_preset_rectangle_3
+streamline_rounded_rectangle $::pages 487 1512 607 1562  $::box_color $::plus_minus_flash_off_color_disabled 20 hot_water_preset_rectangle_4
 
 
 ############################################################################################################################################################################################################
@@ -2243,6 +2248,7 @@ refresh_favorite_profile_button_labels
 
 # rounded rectangle color 
 dui aspect set -theme streamline -type dbutton outline $::plus_minus_outline_color
+dui aspect set -theme streamline -type dbutton disabledoutline $::plus_minus_outline_color
 
 
 # inside button color
@@ -4727,11 +4733,11 @@ proc streamline_entry_page_setup {} {
 	add_de1_variable "streamline_entry streamline_entry_integer" 648 616 -justify center -anchor "center" -font "Inter-HeavyBold50" -fill $::data_card_text_color -width [rescale_x_skin 1200] -textvariable {[streamline_data_entry_page_value_formatted]} 
 
 	# line below entry box
-	streamline_rectangle "streamline_entry streamline_entry_integer" 150 854 1150 858 $::datacard_box_line_color
+	streamline_rectangle "streamline_entry streamline_entry_integer" 150 854 1150 858 $::datacard_box_line_color $::plus_minus_flash_off_color_disabled
 
 	# box line below entry title
-	streamline_rectangle "streamline_entry streamline_entry_integer" 104 298 2464 302 $::datacard_box_line_color
-	streamline_rectangle "streamline_entry streamline_entry_integer" 1278 302 1282 1600 $::datacard_box_line_color
+	streamline_rectangle "streamline_entry streamline_entry_integer" 104 298 2464 302 $::datacard_box_line_color $::plus_minus_flash_off_color_disabled
+	streamline_rectangle "streamline_entry streamline_entry_integer" 1278 302 1282 1600 $::datacard_box_line_color $::plus_minus_flash_off_color_disabled
 
 	# rounded rectangle color 
 	dui aspect set -theme streamline -type dbutton outline $::dataentry_button_color
