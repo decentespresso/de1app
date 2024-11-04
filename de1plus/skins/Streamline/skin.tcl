@@ -952,9 +952,14 @@ proc update_streamline_status_message {} {
 		if {[dui page current] == "espresso" || [dui page current] == "espresso_zoomed" } {
 
 			#set green_msg [subst {[translate [string totitle [::de1::state::current_substate]]] ($::settings(current_frame_description))}]
-			set green_msg "[translate $::settings(current_frame_description)] | "
 			set red_msg ""
-			set clickable_msg "[espresso_timer][translate s] ⏩ " 
+
+			set clickable_msg ""
+			set green_msg "[translate [string totitle $::settings(current_frame_description)]]"
+			if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
+				set clickable_msg "[espresso_timer][translate s] ⏩ " 
+				set green_msg "[translate [string totitle $::settings(current_frame_description)]] | "
+			} 
 
 			set final_target [determine_final_weight]
 			
