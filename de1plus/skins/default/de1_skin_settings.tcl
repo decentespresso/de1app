@@ -1755,7 +1755,7 @@ if {[is_r2l] == 1} {
 
 add_de1_text "descale_prepare" 70 50 -text [translate "Prepare to descale"] -font Helv_20_bold -fill "#a77171" -anchor "nw" -width 1000
 	add_de1_text "descale_prepare" $descalepos 280 -text [translate "1) Remove the drip tray and its cover."] -font Helv_8_bold -fill "#a77171" -anchor [r2l_anchor] -justify [r2l_justify] -width 400
-	add_de1_text "descale_prepare" $descalepos 670 -text [translate "2) In the water tank, mix 1.5 liter hot water with 300g citric acid powder."] -font Helv_8_bold -fill "#a77171" -anchor [r2l_anchor] -justify [r2l_justify] -width 400
+	add_de1_text "descale_prepare" $descalepos 670 -text [subst {[translate "2) In the water tank, mix 1.5 liter hot water with 300g citric acid powder."] [translate {Let the water cool to room temperature.}]}] -font Helv_8_bold -fill "#a77171" -anchor [r2l_anchor] -justify [r2l_justify] -width 400
 	add_de1_text "descale_prepare" $descalepos 970 -text [subst {[translate "3) Put a blind basket in the portafilter."] [translate "Lower the steam wand."]}] -font Helv_8_bold -fill "#a77171" -anchor [r2l_anchor] -justify [r2l_justify] -width 400
 	add_de1_text "descale_prepare" $descalepos 1350 -text [translate "4) Push back the water tank.  Place the drip tray back without its cover."] -font Helv_8_bold -fill "#a77171" -anchor [r2l_anchor] -justify [r2l_justify] -width 400
 	add_de1_text "descale_prepare" 340 1504 -text [translate "Cancel"] -font Helv_10_bold -fill "#444444" -anchor "center"
