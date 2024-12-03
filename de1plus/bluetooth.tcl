@@ -708,7 +708,7 @@ proc hiroia_parse_response { value } {
 	}
 }
 
-#### Eureka Precisa / Krell CFS-9002
+#### Eureka Precisa / Krell CFS-9002 / LSJ-001
 proc eureka_precisa_enable_weight_notifications {} {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "eureka_precisa"} {
 		return
