@@ -361,6 +361,8 @@ namespace eval ::device::scale {
 
 			eureka_precisa { eureka_precisa_tare }
 
+			solo_barista { solo_barista_tare }
+
 			smartchef {smartchef_tare}
 
 			difluid {difluid_tare}
@@ -1449,6 +1451,9 @@ namespace eval ::device::scale::callbacks {
 				set ::device::scale::run_timer True
 			}
 			eureka_precisa {
+				set ::device::scale::run_timer True
+			}
+			solo_barista {
 				set ::device::scale::run_timer True
 			}
 			atomaxskale {
