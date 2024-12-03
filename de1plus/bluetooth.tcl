@@ -63,6 +63,10 @@ proc scale_timer_start {} {
 		atomheart_eclair_start_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_start_timer
+	} elseif {$::settings(scale_type) == "solo_barista"} {
+		solo_barista_start_timer
+		# double-sending command, half a second later, because sometimes the solo barista scale command buffer has not finished the previous command and drops the next one
+		after 500 solo_barista_start_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
 		difluid_start_timer 
 	}
@@ -85,6 +89,10 @@ proc scale_timer_stop {} {
 		atomheart_eclair_stop_timer
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_stop_timer
+	} elseif {$::settings(scale_type) == "solo_barista"} {
+		solo_barista_stop_timer
+		# double-sending command, half a second later, because sometimes the solo barista scale command buffer has not finished the previous command and drops the next one
+		after 500 solo_barista_stop_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
 		difluid_stop_timer 
 		difluid_reset_timer
@@ -110,6 +118,10 @@ proc scale_timer_reset {} {
 		atomheart_eclair_timer_reset
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_reset_timer
+	} elseif {$::settings(scale_type) == "solo_barista"} {
+		solo_barista_reset_timer
+		# double-sending command, half a second later, because sometimes the solo barista scale command buffer has not finished the previous command and drops the next one
+		after 500 solo_barista_reset_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
 		# moved the reset to the stop function because stop is more like a pause 
 	}
@@ -142,6 +154,8 @@ proc scale_enable_weight_notifications {} {
 		hiroia_enable_weight_notifications
 	}  elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_enable_weight_notifications
+	}  elseif {$::settings(scale_type) == "solo_barista"} {
+		solo_barista_enable_weight_notifications
 	}  elseif {$::settings(scale_type) == "smartchef"} {
 		smartchef_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "difluid"} {
@@ -168,6 +182,8 @@ proc scale_enable_grams {} {
 		# nothing to do, as this is already set as part of LED on command
 	} elseif {$::settings(scale_type) == "eureka_precisa"} {
 		eureka_precisa_set_unit
+	} elseif {$::settings(scale_type) == "solo_barista"} {
+		solo_barista_set_unit
 	}
 }
 
@@ -692,7 +708,7 @@ proc hiroia_parse_response { value } {
 	}
 }
 
-#### Eureka Precisa / Krell CFS-9002 / LSJ-001
+#### Eureka Precisa / Krell CFS-9002
 proc eureka_precisa_enable_weight_notifications {} {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "eureka_precisa"} {
 		return
@@ -783,6 +799,97 @@ proc eureka_precisa_parse_response { value } {
 	}
 }
 
+
+#### Solo Barista  LSJ-001
+proc solo_barista_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "solo_barista"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_solo_barista))] == ""} {
+		error "Solo Barista Scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable solo barista scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_solo_barista) $::sinstance($::de1(suuid_solo_barista)) $::de1(cuuid_solo_barista_status) $::cinstance($::de1(cuuid_solo_barista_status))] 1
+}
+
+proc solo_barista_cmd {payload name} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "solo_barista"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_solo_barista))] == ""} {
+		error "Solo Barista Scale not connected, cannot send $name cmd"
+		return
+	}
+
+	userdata_append "SCALE: solo_barista $name" [list ble write $::de1(scale_device_handle) $::de1(suuid_solo_barista) $::sinstance($::de1(suuid_solo_barista)) $::de1(cuuid_solo_barista_cmd) $::cinstance($::de1(cuuid_solo_barista_cmd)) $payload] 0
+	# The tare is not yet confirmed to us, we can therefore assume it worked out
+}
+
+proc solo_barista_tare {} {
+
+	set tare [binary decode hex "AA023131"]
+
+	solo_barista_cmd $tare "tare"
+
+}
+
+proc solo_barista_turn_off {} {
+
+	set payload [binary decode hex "AA023232"]
+
+	solo_barista_cmd $payload "turn scale off"
+}
+
+proc solo_barista_start_timer {} {
+	set payload [binary decode hex "AA023333"]
+
+	solo_barista_cmd $payload "start timer"
+}
+
+proc solo_barista_stop_timer {} {
+	set payload [binary decode hex "AA023434"]
+
+	solo_barista_cmd $payload "stop timer"
+}
+
+proc solo_barista_reset_timer {} {
+	# also stops
+	set payload [binary decode hex "AA023535"]
+
+	solo_barista_cmd $payload "reset timer"
+}
+
+proc solo_barista_beep_twice {} {
+	set payload [binary decode hex "AA023737"]
+
+	solo_barista_cmd $payload "beep twice"
+}
+
+proc solo_barista_set_unit {} {
+	# also stops
+	set grams [binary decode hex "AA033600"]
+	set oz [binary decode hex "AA033601"]
+	set ml [binary decode hex "AA033602"]
+
+	solo_barista_cmd $grams "set unit"
+}
+
+proc solo_barista_parse_response { value } {
+	if {[string bytelength $value] >= 9} {
+		binary scan $value "cucucu cu su cu su" h1 h2 h3 timer_running timer sign weight
+		# AA (<- header) 09 (<- type) 14 (<-notification type)
+		if {[info exists weight] && $h1 == 170 && $h2 == 9 && $h3 == 65 } {
+			if {$sign == 1} {
+				set weight [expr $weight * -1]
+			}
+			::device::scale::process_weight_update [expr $weight / 10.0] ;# $event_time
+		}
+	}
+}
 
 
 #### Acaia
@@ -1954,7 +2061,7 @@ proc de1_ble_handler { event data } {
 					append_to_peripheral_list $address $name "ble" "scale" "eureka_precisa"
 
  				} elseif {[string first "LSJ-001" $name] == 0} {
-					append_to_peripheral_list $address $name "ble" "scale" "eureka_precisa"
+					append_to_peripheral_list $address $name "ble" "scale" "solo_barista"
 
  				} elseif {[string first "BOOKOO_SC" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "bookoo"
@@ -2094,6 +2201,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "eureka_precisa"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "eureka_precisa"
 							after 200 eureka_precisa_enable_weight_notifications
+						} elseif {$::settings(scale_type) == "solo_barista"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "solo_barista"
+							after 200 solo_barista_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "smartchef"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "smartchef"
 							after 100 smartchef_enable_weight_notifications
@@ -2498,6 +2608,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_eureka_precisa_status) && $::settings(scale_type) == "eureka_precisa"} {
 							# eureka precisa scale
 							eureka_precisa_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_solo_barista_status) && $::settings(scale_type) == "solo_barista"} {
+							# solo barista scale
+							solo_barista_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_smartchef_status) && $::settings(scale_type) == "smartchef"} {
 							# smartchef scale
 							smartchef_parse_response $value
