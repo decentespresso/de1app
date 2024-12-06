@@ -4267,7 +4267,34 @@ proc app_updates_policy_as_text {} {
 }
 
 proc set_resolution_height_from_width { {discard {}} } {
+
 	set ::settings(screen_size_height) [expr {int($::settings(screen_size_width)/1.6)}]
+
+	# samsung tab a7 lite 
+	if {$::settings(screen_size_width) == "1341"} {
+		set ::settings(screen_size_width) 1340
+		set ::settings(screen_size_height) 800
+		return
+	}
+
+	# samsung galaxy tab a9+
+	if {$::settings(screen_size_width) == "1921"} {
+		set ::settings(screen_size_width) 1920
+		set ::settings(screen_size_height) 1200
+		return
+	}
+
+	# samsung a9 14" tablet custom resolution
+	if {$::settings(screen_size_width) == "2961"} {
+		set ::settings(screen_size_width) 2960
+		set ::settings(screen_size_height) 1848
+		return
+	}
+
+	return
+
+	# john 6-12-2024 no longer forcing 16 resolution, so that other numbers can be chosen.
+	# this is temporary until we replace this UI with a list of all allowed resolutions.
 
 	# check the width and make sure it is a multiple of 160. If not, pick the nearest setting.
 	for {set x [expr {$::settings(screen_size_width) - 0}]} {$x <= 2800} {incr x} {
