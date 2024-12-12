@@ -2585,7 +2585,7 @@ proc streamline_steam_btn { args } {
 				#save_profile_and_update_de1_soon
 			}
 		} elseif {$args == "+"} {
-			if {$::settings(steam_timeout) < 254} {
+			if {$::settings(steam_timeout) < 255} {
 				set ::settings(steam_timeout) [expr {$::settings(steam_timeout) + 1}]
 				flash_button "streamline_plus_steam_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 				#save_profile_and_update_de1_soon
