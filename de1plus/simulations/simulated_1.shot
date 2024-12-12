@@ -279,7 +279,6 @@ settings {
 	tare_only_on_espresso_start 0
 	temp_bump_time_seconds 2
 	temperature_target portafilter
-	timer_interval 100
 	use_finger_down_for_tap 0
 	water_count 0
 	water_level_sensor_max 50
