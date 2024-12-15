@@ -61,3 +61,6 @@
 [submodule "de1plus/plugins/history_exclusion_filter"]
 	path = de1plus/plugins/history_exclusion_filter
 	url = https://github.com/Damian-AU/history_exclusion_filter
+[submodule "de1plus/plugins/A_Flow"]
+	path = de1plus/plugins/A_Flow
+	url = https://github.com/Jan3kJ/A_Flow.git
