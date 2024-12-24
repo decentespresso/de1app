@@ -53,7 +53,7 @@ namespace eval ::dui {
 		default_font_calibration 0.5
 		use_finger_down_for_tap 1
 		disable_long_press 0
-		timer_interval 100
+		timer_interval 200
 		enable_spoken_prompts 1
 		speaking_pitch 1.0
 		speaking_rate 1.5
