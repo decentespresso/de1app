@@ -427,7 +427,7 @@ array set ::settings {
 	water_speed_type "flow"
 	speaking_pitch 1.0
 	show_only_most_popular_skins 1
-	most_popular_skins {Insight MimojaCafe Metric DSx SWDark4 MiniMetric}
+	most_popular_skins {Insight MimojaCafe Metric DSx SWDark4 DSx2 MiniMetric}
 	sound_button_in 8
 	sound_button_out 11
 	profile_notes {}
@@ -462,7 +462,7 @@ array set ::settings {
 	comms_debugging 0
 	scale_stop_at_half_shot 0
 	lock_screen_during_screensaver 0
-	enabled_plugins {visualizer_upload D_Scheduler DPx_Flow_Calibrator D_Flow_Espresso_Profile}
+	enabled_plugins {visualizer_upload D_Scheduler Graphical_Flow_Calibrator D_Flow_Espresso_Profile}
 
 	maximum_flow 0
 	maximum_flow_range_default 1.0
