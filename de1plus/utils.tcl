@@ -1506,6 +1506,8 @@ proc load_settings {} {
     set osbuildinfo_string [borg osbuildinfo]
 
     set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]    
+
+
     if {[string length $settings_file_contents] == 0} {
        
         # if there are no settings, then set some based on what we know about this machine's settings
@@ -1529,6 +1531,12 @@ proc load_settings {} {
     if {[ifexists ::settings(language)] == "ar" || [ifexists ::settings(language)] == "arb" || [ifexists ::settings(language)] == "he" || [ifexists ::settings(language)] == "heb"} {
         set ::de1(language_rtl) 1
     }
+
+
+    # remove no-longer-supported extensions from settings
+	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "DPx_Flow_Calibrator"]
+	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "dpx_steam_stop"]
+	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "skip_first_step_notice"]
 
     #set ::de1(language_rtl) 1
     
