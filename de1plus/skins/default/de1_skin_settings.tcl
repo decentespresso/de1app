@@ -875,6 +875,8 @@ if {[language] == "de"} {
 	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_de/quickstart_de.html#pf22"} 1300 210 2560 280 
 } elseif {[language] == "fr"} {
 	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_fr/quickstart_fr.html#pf21"} 1300 210 2560 280 
+} elseif {[language] == "es"} {
+	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_es/quickstart_es.html#pf21"} 1300 210 2560 280 
 } elseif {[language] == "kr"} {
 	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_kr/quickstart_kr.html#pf21"} 1300 210 2560 280 
 } elseif {[language] == "zh-hans"} {
@@ -1266,6 +1268,8 @@ if {[language] == "de"} {
 	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_de/"} 1290 820 2550 1100
 } elseif {[language] == "fr"} {
 	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_fr/"} 1290 820 2550 1100
+} elseif {[language] == "es"} {
+	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_es/"} 1290 820 2550 1100
 } elseif {[language] == "kr"} {
 	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_kr/"} 1290 820 2550 1100
 } elseif {[language] == "zh-hans"} {
