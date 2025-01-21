@@ -2865,9 +2865,9 @@ proc change_scale_bluetooth_device {} {
 		return
 	}
 
-	puts "selection_index: $selection_index"
+	#puts "selection_index: $selection_index"
 
-	msg "selected item" 	
+	#msg "selected item" 	
 	set dic [lindex $::peripheral_device_list $selection_index]
 	set addr [dict get $dic address]
 	set name [dict get $dic name]
