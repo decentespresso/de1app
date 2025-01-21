@@ -2006,7 +2006,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				de1_send_steam_hotwater_settings
 				de1_enable_water_level_notifications
 			}
-			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
+			if {[array_item_difference ::settings ::settings_backup "scale_bluetooth_address enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 				.can itemconfigure $::message_button_label -text [translate "Wait"]
@@ -2015,6 +2015,11 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				after 200 app_exit
 
 			} elseif {[ifexists ::settings_backup(scale_bluetooth_address)] == "" && [ifexists ::settings(scale_bluetooth_address)] != ""} {
+
+				# john 21-1-25 if scale changes, for app restart when existing the SETTINGS section
+				# this is because often the live changing of the scale doesn't work reliably, and 
+				# the bugginess can frustrate the end user, making them think the scale is not working
+				
 				# if no scale was previously defined, and there is one now, then force an app restart
 				# but if there was a scale previously, and now there is a new one, let that be w/o an app restart
 
