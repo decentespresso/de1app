@@ -1,4 +1,8 @@
 advanced_shot {}
+espresso_temperature_steps_enabled 1
+author Decent
+read_only 0
+read_only_backup {advanced_shot {}
 author Decent
 beverage_type espresso
 espresso_decline_time 35
@@ -35,3 +39,42 @@ profile_video_help https://www.youtube.com/watch?v=zj-Ipuu6XGU
 read_only 1
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
+}
+espresso_hold_time 4
+preinfusion_time 20
+espresso_pressure 8.6
+espresso_decline_time 35
+pressure_end 6.0
+espresso_temperature 90.0
+espresso_temperature_0 90.0
+espresso_temperature_1 88.0
+espresso_temperature_2 88.0
+espresso_temperature_3 88.0
+settings_profile_type settings_2a
+flow_profile_preinfusion 4
+flow_profile_preinfusion_time 5
+flow_profile_hold 2
+flow_profile_hold_time 8
+flow_profile_decline 1.2
+flow_profile_decline_time 17
+flow_profile_minimum_pressure 4
+preinfusion_flow_rate 8.0
+profile_notes {This profile is gentle on the coffee puck and not too demanding on the barista.  Produces a very acceptable espresso in a wide variety of settings.}
+final_desired_shot_volume 36
+final_desired_shot_weight 36
+final_desired_shot_weight_advanced 36
+tank_desired_water_temperature 0
+final_desired_shot_volume_advanced 0
+profile_title Default
+profile_language en
+preinfusion_stop_pressure 4.0
+profile_hide 0
+final_desired_shot_volume_advanced_count_start 0
+beverage_type espresso
+maximum_pressure 0
+maximum_pressure_range_advanced 0.6
+maximum_flow_range_advanced 0.6
+maximum_flow 0
+maximum_pressure_range_default 0.9
+maximum_flow_range_default 1.0
+
