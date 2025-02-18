@@ -1,3 +1,4 @@
+# TESTING 
 package provide de1_bluetooth 1.1
 
 package require de1_comms
@@ -160,6 +161,8 @@ proc scale_enable_weight_notifications {} {
 		smartchef_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "difluid"} {
 		difluid_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "varia_aku"} {
+		varia_aku_enable_weight_notifications
 	}
 }
 
@@ -536,6 +539,20 @@ proc bookoo_parse_response { value } {
 			::device::scale::process_weight_update $weight
 		}
 	}
+}
+
+# Varia AKU (all scales)
+proc varia_aku_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "varia_aku"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_varia_aku))] == ""} {
+		error "Varia AKU scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable Varia AKU scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_varia_aku) $::sinstance($::de1(suuid_varia_aku)) $::de1(cuuid_varia_aku) $::cinstance($::de1(cuuid_varia_aku))] 1
 }
 
 #### atomheart_eclair
@@ -2048,6 +2065,10 @@ proc de1_ble_handler { event data } {
 				} elseif {[string first Skale $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "atomaxskale"
 
+				} elseif {[string first "AKU MINI" $name] == 0 \
+					|| [string first "Varia AKU" $name] == 0 } {
+					append_to_peripheral_list $address $name "ble" "scale" "varia_aku"
+
 				} elseif {[string first "Decent Scale" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "decentscale"
 
@@ -2242,6 +2263,9 @@ proc de1_ble_handler { event data } {
 							msg -INFO "MTU is $mtu1"
 							after 500 [list acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)]
 							after 1000  [list acaia_send_ident $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
+						} elseif {$::settings(scale_type) == "varia_aku"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "varia_aku"
+							after 200 varia_aku_enable_weight_notifications
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
