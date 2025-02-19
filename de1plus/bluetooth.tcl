@@ -1497,10 +1497,15 @@ proc varia_aku_enable_weight_notifications {} {
 
 proc varia_aku_parse_response { value } {
 	# msg -ERROR "varia_aku_parse_response [string bytelength $value] : [::logging::format_asc_bin $value]"
-	if {[string bytelength $value] >= 7} {
-		binary scan $value cucucucucucucu header cid length w1 w2 w3 xor
 
-    if {$cid == 0x01 && $length == 0x03} {
+	# Make sure that there are enough bytes to encode a full message
+	if {[string bytelength $value] >= 4} {
+		binary scan $value cucucua* header command length payload
+
+    # Command 0x01: weight notification
+    if {$command == 0x01 && $length == 0x03} {
+			binary scan $payload cucucucu w1 w2 w3 xor
+
 			# Pull out the sign via bitmask. As per the API docs, the sign is encoded in
 			# the highest bit.
 			set sign [expr {$w1 & 0x80}]
@@ -1518,6 +1523,10 @@ proc varia_aku_parse_response { value } {
 			#msg -ERROR "parsing: $h1 $h2 sign:$sign weight:$weight / $w1 $w2 $w3"
 
 			::device::scale::process_weight_update $weight
+		# Command 0x85: battery notification
+		} elseif {$command == 0x85 && $length == 0x01} {
+			binary scan $payload cucu battery xor
+			set ::de1(scale_battery_level) battery
 		}
 	}
 }
