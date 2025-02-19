@@ -1520,13 +1520,13 @@ proc varia_aku_parse_response { value } {
     if {$command == 0x01 && $length == 0x03} {
 			binary scan $payload cucucucu w1 w2 w3 xor
 
-			# Pull out the sign via bitmask. The Varia API docs say that the sign bit is in the highest
-			# bit, but from their docs (and empirically), it's actually the highest nibble. When the 
-			# highest nibble is 1, then it's negative. Otherwise, it's positive.
+			# Pull out the sign via bitmask. The Varia API docs say that the sign bit is encoded in the
+			# highest bit, but from their docs (and empirically), it's actually the highest nibble. When 
+			# the highest nibble is 1, then the weight is negative. Otherwise, it's positive.
 			set sign [expr {$w1 & 0x10}]
 
 			# Combine the three bytes to get the weight (assuming big-endian order)
-			# Also strip off the sign nibble from the largest digit.
+			# Also strip off the sign nibble.
 			set weight100 [expr {(([expr {$w1 & 0x0F}] << 16) | ($w2 << 8) | $w3)/100.0}]
 
 			if {$sign > 0} {
