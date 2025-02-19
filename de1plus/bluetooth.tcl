@@ -1,4 +1,3 @@
-# TESTING 
 package provide de1_bluetooth 1.1
 
 package require de1_comms
@@ -539,20 +538,6 @@ proc bookoo_parse_response { value } {
 			::device::scale::process_weight_update $weight
 		}
 	}
-}
-
-# Varia AKU (all scales)
-proc varia_aku_enable_weight_notifications {} {
-	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "varia_aku"} {
-		return
-	}
-
-	if {[ifexists ::sinstance($::de1(suuid_varia_aku))] == ""} {
-		error "Varia AKU scale not connected, cannot enable weight notifications"
-		return
-	}
-
-	userdata_append "SCALE: enable Varia AKU scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_varia_aku) $::sinstance($::de1(suuid_varia_aku)) $::de1(cuuid_varia_aku) $::cinstance($::de1(cuuid_varia_aku))] 1
 }
 
 #### atomheart_eclair
@@ -1494,6 +1479,49 @@ proc difluid_parse_response { value } {
 
 		}	
 }
+
+# Varia AKU (all scales)
+proc varia_aku_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "varia_aku"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_varia_aku))] == ""} {
+		error "Varia AKU scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable Varia AKU scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_varia_aku) $::sinstance($::de1(suuid_varia_aku)) $::de1(cuuid_varia_aku) $::cinstance($::de1(cuuid_varia_aku))] 1
+}
+
+
+proc varia_aku_parse_response { value } {
+	# msg -ERROR "varia_aku_parse_response [string bytelength $value] : [::logging::format_asc_bin $value]"
+	if {[string bytelength $value] >= 7} {
+		binary scan $value cucucucucucucu header cid length w1 w2 w3 xor
+
+    if {$cid == 0x01 && $length == 0x03} {
+			# Pull out the sign via bitmask. As per the API docs, the sign is encoded in
+			# the highest bit.
+			set sign [expr {$w1 & 0x80}]
+
+			# Combine the three bytes to get the weight (assuming big-endian order)
+			# Also strip off the sign bit from the largest digit
+			set weight100 [expr {(([expr {$w1 & 0x7F}] << 16) | ($w2 << 8) | $w3)/100.0}]
+
+			if {$sign > 0} {
+				set weight100 [expr {-1 * $weight100}]
+			}
+
+			set weight [round_to_two_digits $weight100]
+			
+			#msg -ERROR "parsing: $h1 $h2 sign:$sign weight:$weight / $w1 $w2 $w3"
+
+			::device::scale::process_weight_update $weight
+		}
+	}
+}
+
 
 proc close_all_ble_and_exit {} {
 	::bt::msg -NOTICE close_all_ble_and_exit
@@ -2612,6 +2640,8 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_acaia_ips_age)} {
 							# acaia scale (gen 1, fw 2)
 							acaia_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_varia_aku)} {
+						  varia_aku_parse_response $value 
 						} elseif {$cuuid eq $::de1(cuuid_acaia_pyxis_status)} {
 							# acaia scale (gen 2, fw 1)
 							acaia_parse_response $value
