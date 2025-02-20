@@ -106,7 +106,7 @@ array set ::de1 {
 	cuuid_difluid "0000AA01-0000-1000-8000-00805F9B34FB"
 	suuid_varia_aku "0000FFF0-0000-1000-8000-00805F9B34FB"
 	cuuid_varia_aku "0000FFF1-0000-1000-8000-00805F9B34FB"
-	cuuid_varia_aku_cmd "FFF2"
+	cuuid_varia_aku_cmd "0000FFF2-0000-1000-8000-00805F9B34FB"
 
 
 	cinstance 0
