@@ -383,13 +383,18 @@ proc verify_decent_tls_certificate {} {
 
 proc schedule_app_update_check {} {
     # 3am is when we check for an app update
-    set aftertime [next_alarm_time [expr {24 * 60 * 60}]]
-    msg -INFO "Scheduling next app update check for [clock format $aftertime]"
-    after $aftertime scheduled_app_update_check
+    set update_time [expr {3 * 60 * 60}]
+
+    set aftertime [next_alarm_time $update_time]
+    set delay_to_update [expr {($aftertime - [clock seconds]) * 1000}]
+
+    msg -INFO "Scheduling next app update check for [clock format $aftertime] (delay: $delay_to_update)"
+    after $delay_to_update scheduled_app_update_check
 }
 
 # every day, check to see if an app update is available
 proc scheduled_app_update_check {} {
+msg -NOTICE "scheduled_app_update_check"
 
     # async update check is enabled by default now, for testing in nightly build
     set ::settings(do_async_update_check) 1
@@ -403,7 +408,9 @@ proc scheduled_app_update_check {} {
 }
 
 
-proc check_timestamp_for_app_update_available_async { {check_only 0} } {
+proc check_timestamp_for_app_update_available_async {} {
+
+    set check_only [expr {![zero_if_empty [ifexists ::settings(app_auto_update)]]}]
 
     set host "http://decentespresso.com"
     set progname "de1plus"
@@ -430,7 +437,9 @@ proc check_timestamp_for_app_update_available_async { {check_only 0} } {
 
 }
 
-proc check_timestamp_for_app_update_available_async_part2 { remote_timestamp_in {check_only 0} } {
+proc check_timestamp_for_app_update_available_async_part2 { remote_timestamp_in } {
+
+    set check_only [expr {![zero_if_empty [ifexists ::settings(app_auto_update)]]}]
 
 	set remote_timestamp [string trim $remote_timestamp_in]
     msg -INFO "Remote timestamp: '$remote_timestamp'"
@@ -460,15 +469,18 @@ proc check_timestamp_for_app_update_available_async_part2 { remote_timestamp_in 
         msg -NOTICE "app update available"
     }
 
-    set ::app_update_available 1
+    #set ::app_update_available 1
 
     if {$check_only != 1} {
         set ::de1(app_update_button_label) [translate "Update available"];     
+
+        # only start the app updater if currently sleeping or screen savering
+        if {$::de1(current_context) == "sleep" || $::de1(current_context) == "saver"} {
+            start_app_update
+        }
     }
     # time stamps don't match, so update is useful
     return $remote_timestamp
-
-
 }
 
 
