@@ -104,6 +104,9 @@ array set ::de1 {
 	cuuid_smartchef_cmd "0000FFF2-0000-1000-8000-00805F9B34FB"
 	suuid_difluid "000000EE-0000-1000-8000-00805F9B34FB"
 	cuuid_difluid "0000AA01-0000-1000-8000-00805F9B34FB"
+	suuid_varia_aku "0000FFF0-0000-1000-8000-00805F9B34FB"
+	cuuid_varia_aku "0000FFF1-0000-1000-8000-00805F9B34FB"
+	cuuid_varia_aku_cmd "0000FFF2-0000-1000-8000-00805F9B34FB"
 
 
 	cinstance 0
@@ -251,6 +254,7 @@ array set ::settings {
 	disable_long_press 0
 	steam_over_pressure_threshold 8
 	chart_total_shot_flow 1
+	app_auto_update 0
 	steam_over_pressure_count_trigger 10
 	do_async_update_check 0
 	heater_voltage ""
@@ -462,7 +466,7 @@ array set ::settings {
 	comms_debugging 0
 	scale_stop_at_half_shot 0
 	lock_screen_during_screensaver 0
-	enabled_plugins {visualizer_upload D_Scheduler Graphical_Flow_Calibrator D_Flow_Espresso_Profile}
+	enabled_plugins {visualizer_upload Graphical_Flow_Calibrator D_Flow_Espresso_Profile A_Flow}
 
 	maximum_flow 0
 	maximum_flow_range_default 1.0

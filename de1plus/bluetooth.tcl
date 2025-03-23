@@ -160,6 +160,8 @@ proc scale_enable_weight_notifications {} {
 		smartchef_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "difluid"} {
 		difluid_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "varia_aku"} {
+		varia_aku_enable_weight_notifications
 	}
 }
 
@@ -1478,6 +1480,73 @@ proc difluid_parse_response { value } {
 		}	
 }
 
+# Varia AKU (AKU Pro, AKU Mini, AKU Plus, AKU Micro)
+proc varia_aku_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "varia_aku"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_varia_aku))] == ""} {
+		error "Varia AKU scale not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable Varia AKU scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_varia_aku) $::sinstance($::de1(suuid_varia_aku)) $::de1(cuuid_varia_aku) $::cinstance($::de1(cuuid_varia_aku))] 1
+}
+
+proc varia_aku_tare {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "varia_aku"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_varia_aku))] == ""} {
+		error "Varia AKU scale not connected, cannot send tare cmd"
+		return
+	}
+
+	set tare [binary decode hex "FA82010182"]
+
+	userdata_append "SCALE: Varia AKU tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_varia_aku) $::sinstance($::de1(suuid_varia_aku)) $::de1(cuuid_varia_aku_cmd) $::cinstance($::de1(cuuid_varia_aku_cmd)) $tare] 0
+}
+
+proc varia_aku_parse_response { value } {
+	# msg -ERROR "varia_aku_parse_response [string bytelength $value] : [::logging::format_asc_bin $value]"
+
+	# Make sure that there are enough bytes to encode a full message
+	if {[string bytelength $value] >= 4} {
+		binary scan $value cucucua* header command length payload
+
+    # Command 0x01: weight notification
+    if {$command == 0x01 && $length == 0x03} {
+			binary scan $payload cucucucu w1 w2 w3 xor
+
+			# Pull out the sign via bitmask. The Varia API docs say that the sign bit is encoded in the
+			# highest bit, but from their docs (and empirically), it's actually the highest nibble. When 
+			# the highest nibble is 1, then the weight is negative. Otherwise, it's positive.
+			set sign [expr {$w1 & 0x10}]
+
+			# Combine the three bytes to get the weight (assuming big-endian order)
+			# Also strip off the sign nibble.
+			set weight100 [expr {(([expr {$w1 & 0x0F}] << 16) | ($w2 << 8) | $w3)/100.0}]
+
+			if {$sign > 0} {
+				set weight100 [expr {-1 * $weight100}]
+			}
+
+			set weight [round_to_two_digits $weight100]
+			
+			#msg -ERROR "parsing: $h1 $h2 sign:$sign weight:$weight / $w1 $w2 $w3"
+
+			::device::scale::process_weight_update $weight
+		# Command 0x85: battery notification
+		} elseif {$command == 0x85 && $length == 0x01} {
+			binary scan $payload cucu battery xor
+			set ::de1(scale_battery_level) battery
+		}
+	}
+}
+
+
 proc close_all_ble_and_exit {} {
 	::bt::msg -NOTICE close_all_ble_and_exit
 
@@ -2048,6 +2117,10 @@ proc de1_ble_handler { event data } {
 				} elseif {[string first Skale $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "atomaxskale"
 
+				} elseif {[string first "AKU MINI" $name] == 0 \
+					|| [string first "Varia AKU" $name] == 0 } {
+					append_to_peripheral_list $address $name "ble" "scale" "varia_aku"
+
 				} elseif {[string first "Decent Scale" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "decentscale"
 
@@ -2242,6 +2315,9 @@ proc de1_ble_handler { event data } {
 							msg -INFO "MTU is $mtu1"
 							after 500 [list acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)]
 							after 1000  [list acaia_send_ident $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
+						} elseif {$::settings(scale_type) == "varia_aku"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "varia_aku"
+							after 200 varia_aku_enable_weight_notifications
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
@@ -2588,6 +2664,8 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_acaia_ips_age)} {
 							# acaia scale (gen 1, fw 2)
 							acaia_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_varia_aku)} {
+						  varia_aku_parse_response $value 
 						} elseif {$cuuid eq $::de1(cuuid_acaia_pyxis_status)} {
 							# acaia scale (gen 2, fw 1)
 							acaia_parse_response $value

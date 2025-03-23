@@ -1,5 +1,6 @@
 advanced_shot {}
 author Decent
+beverage_type espresso
 espresso_decline_time 0
 espresso_hold_time 35
 espresso_pressure 9.0
@@ -24,7 +25,7 @@ profile_hide 1
 profile_language en
 profile_notes {The E61 machine was invented by Faema in 1961 and is still the most classic and most copied espresso machine design.  It is likely what most people mean when they say Professional Italian Espresso Machine}
 profile_title {E61 espresso machine}
+read_only 1
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-beverage_type {espresso}
-read_only 1
+

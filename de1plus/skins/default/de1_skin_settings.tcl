@@ -875,6 +875,8 @@ if {[language] == "de"} {
 	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_de/quickstart_de.html#pf22"} 1300 210 2560 280 
 } elseif {[language] == "fr"} {
 	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_fr/quickstart_fr.html#pf21"} 1300 210 2560 280 
+} elseif {[language] == "es"} {
+	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_es/quickstart_es.html#pf21"} 1300 210 2560 280 
 } elseif {[language] == "kr"} {
 	add_de1_button "settings_3" {web_browser "https://decentespresso.com/doc/quickstart_kr/quickstart_kr.html#pf21"} 1300 210 2560 280 
 } elseif {[language] == "zh-hans"} {
@@ -1211,6 +1213,9 @@ proc calculate_screen_flip_value {} {
 			add_de1_text "measurements" 340 920 -text [translate "App version"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
 				dui add dselector "measurements" 340 980 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 
+			dui add dtoggle "measurements"  340 1080 -height 60 -anchor nw -variable ::settings(app_auto_update) 
+			add_de1_text "measurements" 480 1080 -text [translate "update automatically"] -font $optionfont -width [rescale_y_skin 440] -fill "#4e85f4" -anchor "nw" 
+			add_de1_button "measurements" { set ::settings(app_auto_update) [expr {!$::settings(app_auto_update)}] } 340 1080 1200 1140
 
 	add_de1_text "settings_4" 2290 616 -text [translate "Extensions"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
 	add_de1_button "settings_4" {say [translate {Extensions}] $::settings(sound_button_in); fill_extensions_listbox; page_to_show_when_off extensions; ; set_extensions_scrollbar_dimensions}  1910 520 2530 720
@@ -1266,6 +1271,8 @@ if {[language] == "de"} {
 	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_de/"} 1290 820 2550 1100
 } elseif {[language] == "fr"} {
 	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_fr/"} 1290 820 2550 1100
+} elseif {[language] == "es"} {
+	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_es/"} 1290 820 2550 1100
 } elseif {[language] == "kr"} {
 	add_de1_button "settings_4" {say [translate {Exit}] $::settings(sound_button_in); web_browser "https://decentespresso.com/doc/quickstart_kr/"} 1290 820 2550 1100
 } elseif {[language] == "zh-hans"} {
@@ -2002,7 +2009,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				de1_send_steam_hotwater_settings
 				de1_enable_water_level_notifications
 			}
-			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
+			if {[array_item_difference ::settings ::settings_backup "scale_bluetooth_address enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins app_auto_update plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
 				# changes that effect the skin require an app restart
 				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
 				.can itemconfigure $::message_button_label -text [translate "Wait"]
@@ -2011,6 +2018,11 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				after 200 app_exit
 
 			} elseif {[ifexists ::settings_backup(scale_bluetooth_address)] == "" && [ifexists ::settings(scale_bluetooth_address)] != ""} {
+
+				# john 21-1-25 if scale changes, for app restart when existing the SETTINGS section
+				# this is because often the live changing of the scale doesn't work reliably, and 
+				# the bugginess can frustrate the end user, making them think the scale is not working
+				
 				# if no scale was previously defined, and there is one now, then force an app restart
 				# but if there was a scale previously, and now there is a new one, let that be w/o an app restart
 

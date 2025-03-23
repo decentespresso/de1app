@@ -348,8 +348,8 @@ namespace eval ::device::scale {
 
 			decentscale { decentscale_tare }
 
-			acaiascale { acaia_tare $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)}
-			acaiapyxis { acaia_tare $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)}
+			acaiascale { acaia_tare $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age) }
+			acaiapyxis { acaia_tare $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd) }
 
 
 			felicita { felicita_tare }
@@ -363,9 +363,11 @@ namespace eval ::device::scale {
 
 			solo_barista { solo_barista_tare }
 
-			smartchef {smartchef_tare}
+			smartchef {smartchef_tare }
 
-			difluid {difluid_tare}
+			difluid {difluid_tare }
+
+			varia_aku { varia_aku_tare }
 		}
 
 		set ::device::scale::_tare_last_requested [clock milliseconds]
