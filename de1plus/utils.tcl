@@ -2846,3 +2846,23 @@ proc decent_espresso_website_url {} {
     return "http://decentespresso.com"
 }
 
+proc number_of_preinfusion_steps {} {
+
+	set profile_type [::profile::fix_profile_type [ifexists ::settings(settings_profile_type)]]
+
+	if { $profile_type eq "settings_2a" || $profile_type eq "settings_2b" } {
+		set preinfusion_end_step 1
+		if {[ifexists ::settings(insert_preinfusion_pause)] == 1} {
+			set preinfusion_end_step 2
+		}
+
+		if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+			incr preinfusion_end_step
+		}
+		
+	} else {
+		set preinfusion_end_step [ifexists ::settings(final_desired_shot_volume_advanced_count_start)]
+	}
+
+	return $preinfusion_end_step
+}
