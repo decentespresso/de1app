@@ -4109,9 +4109,25 @@ proc update_data_card { arrname settingsarr } {
 
 	if { $profile_type eq "settings_2a" || $profile_type eq "settings_2b" } {
 		set preinfusion_end_step 1
+
+		if {[ifexists profile_settings(insert_preinfusion_pause)] == 1} {
+			set preinfusion_end_step 2
+		}
+
+		if {[ifexists profile_settings(espresso_temperature_steps_enabled)] == 1} {
+			incr preinfusion_end_step
+		}
+		
+
 	} else {
 		set preinfusion_end_step [ifexists profile_settings(final_desired_shot_volume_advanced_count_start)]
+
+        if {[ifexists profile_settings(espresso_temperature_steps_enabled)] == 1} {
+        	incr preinfusion_end_step
+        }
+
 	}
+
 	#puts "preinfusion_end_step: $preinfusion_end_step"
 	
 	set i 1
