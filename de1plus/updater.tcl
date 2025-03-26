@@ -1031,8 +1031,8 @@ proc reset_skin {} {
     unset -nocomplain ::settings(ghc_is_installed) 
 
     # also reset the screen resolution to default
-    set ::settings(screen_size_height) "800"
-    set ::settings(screen_size_width) "1280"
+    unset -nocomplain ::settings(screen_size_height)
+    unset -nocomplain ::settings(screen_size_width) 
 
     save_array_to_file ::settings $s
 }
