@@ -1072,6 +1072,15 @@ proc display_popup_android_message_if_necessary {msg} {
 	if {[string first "*" $msg] != -1} {
 		# beep if a * is found in the description
 		borg beep
+		return
+	}
+
+	if {[string first "tare" $msg] != -1} {
+		if {$::de1(scale_weight) != ""} {
+			# tare command found in step message
+			::device::scale::tare
+			return
+		}
 	}
 
 	#set msg ""
