@@ -2032,7 +2032,14 @@ proc refresh_favorite_profile_button_labels {} {
 
 	# look for two buttons with the same profile.  If found, clear the 2nd incidence of that same button.
 	for {set x 1} {$x <= 5}  {incr x} {
-		set tt [dict get $profiles $x title]
+		set tt {}
+		catch {
+			set tt [dict get $profiles $x title]
+		}
+		if {$tt == ""} {
+			continue
+		}
+
 		if {[info exists profile_button_name_used($tt)] == 1} {
 
 			set t($x) ""
@@ -2098,8 +2105,14 @@ proc refresh_favorite_profile_button_labels {} {
 	} 
 
 	for {set x 1} {$x <= 5}  {incr x} {
-		
-		if {[dict get $profiles $x title] == " "} {
+		set dtt ""
+		catch {
+			set dtt [dict get $profiles $x title]
+		}
+		if {$dtt == ""} {
+			continue
+		}
+		if {$dtt == " "} {
 			# darken favorite-profile buttons that have no setting
 			.can itemconfigure profile_${x}_btn-btn -fill $::profile_button_background_unused_color
 		} else {
