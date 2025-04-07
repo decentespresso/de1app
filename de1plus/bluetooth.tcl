@@ -2664,8 +2664,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_acaia_ips_age)} {
 							# acaia scale (gen 1, fw 2)
 							acaia_parse_response $value
-						} elseif {$cuuid eq $::de1(cuuid_varia_aku)} {
-						  varia_aku_parse_response $value 
+						} elseif {$cuuid eq $::de1(cuuid_varia_aku) && $::settings(scale_type) == "varia_aku"} {
+      							# varia aku scale
+							varia_aku_parse_response $value 
 						} elseif {$cuuid eq $::de1(cuuid_acaia_pyxis_status)} {
 							# acaia scale (gen 2, fw 1)
 							acaia_parse_response $value
