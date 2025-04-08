@@ -552,9 +552,9 @@ proc de1_event_handler { command_name value {update_received 0}} {
 }
 
 proc scale_disconnect_handler { handle } {
-	#catch {
+	catch {
 		ble close $handle
-	#}
+	}
 
 	# if the skale connection closed in the currentl one, then reset it
 	set ::de1(scale_device_handle) 0
@@ -580,7 +580,7 @@ proc scale_disconnect_handler { handle } {
 		::device::scale::event::apply::on_disconnect_callbacks $event_dict
 	}
 
-	if {$::de1(bluetooth_scale_connection_attempts_tried) < 20} {
+	if {$::de1(bluetooth_scale_connection_attempts_tried) < $::de1(scale_max_connection_retry_attempts)} {
 		incr ::de1(bluetooth_scale_connection_attempts_tried)
 		::bt::msg -INFO "Disconnected from scale, trying again automatically.  Attempts=$::de1(bluetooth_scale_connection_attempts_tried)"
 		ble_connect_to_scale
