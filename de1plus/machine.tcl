@@ -37,6 +37,7 @@ array set ::de1 {
 	factory_calibration_pressure {}
 	factory_calibration_temperature {}
 	factory_calibration_flow {}
+	scale_max_connection_retry_attempts 20
 	advanced_shot_moveone_enabled 1
     found    0
     decentscale_timer_on 0

@@ -1226,12 +1226,25 @@ proc decentscale_disable_lcd {} {
 	}
 	set screenoff [decent_scale_make_command 0A 00 00]
 
+	set poweroff [decent_scale_make_command 0A 02]
+
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
 		::bt::msg -DEBUG "decentscale not connected, cannot disable LCD"
 		return
 	}
+			msg -INFO "power off decent scale"
 
-	userdata_append "SCALE: decentscale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenoff] 0
+	#userdata_append "SCALE: decentscale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenoff] 0
+	userdata_append "SCALE: decentscale : power off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $poweroff] 0
+
+	after 500 scale_disconnect_now
+	set ::de1(bluetooth_scale_connection_attempts_tried) $::de1(scale_max_connection_retry_attempts)
+	scale_disconnect_now
+}
+
+proc scale_disconnect_now {} {
+		scale_disconnect_handler $::de1(scale_device_handle)
+
 }
 
 proc decentscale_timer_start {} {
