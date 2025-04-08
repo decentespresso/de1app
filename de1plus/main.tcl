@@ -40,7 +40,7 @@ proc de1_ui_startup {} {
     msg -INFO "Tcl version $::tcl_patchLevel"
     # There are multiple reports of AndroWish 2020-11-05 causing crashes in early 2021
     if { $::tcl_patchLevel == "8.6.10" } {
-	msg -WARNING "AndroWish 2020-11-05 is not recommended at this time. 2019-06-22 (8.6.9) is preferred."
+	#msg -WARNING "AndroWish 2020-11-05 is not recommended at this time. 2019-06-22 (8.6.9) is preferred."
     }
 
     return [ui_startup]
