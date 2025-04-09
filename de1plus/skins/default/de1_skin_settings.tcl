@@ -1146,9 +1146,13 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 				# for tablets, allow "finger down" to be a "tap" instead of the default "mousedown" OS-defined action
 			#add_de1_widget "measurements" checkbutton 1300 800  {} -text [translate "Fast tap mode"] -indicatoron true  -font $optionfont -bg #FFFFFF -anchor ne -foreground #4e85f4 -variable ::settings(use_finger_down_for_tap)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF -bd 0 -activeforeground #4e85f4  -relief flat 
 
-			dui add dtoggle "measurements" 1280 704 -height 60 -anchor nw -variable ::settings(use_finger_down_for_tap) 
-			add_de1_text "measurements" 1420 704 -text [translate "Fast tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
-			add_de1_button "measurements" { set ::settings(use_finger_down_for_tap) [expr {!$::settings(use_finger_down_for_tap)}] } 1280 704 1700 764
+			#dui add dtoggle "measurements" 1280 704 -height 60 -anchor nw -variable ::settings(use_finger_down_for_tap) 
+			#add_de1_text "measurements" 1420 704 -text [translate "Fast tap mode"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+			#add_de1_button "measurements" { set ::settings(use_finger_down_for_tap) [expr {!$::settings(use_finger_down_for_tap)}] } 1280 704 1700 764
+
+			dui add dtoggle "measurements" 1280 704 -height 60 -anchor nw -variable ::settings(keep_scale_on) 
+			add_de1_text "measurements" 1420 704 -text [translate "Keep scale on"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+			add_de1_button "measurements" { set ::settings(keep_scale_on) [expr {!$::settings(keep_scale_on)}] } 1280 704 1700 764
 
 			#dui add dtoggle "measurements" 1280 804 -height 60 -anchor nw -variable ::settings(smart_battery_charging) 
 			#add_de1_text "measurements" 1420 804 -text [translate "Smart charging"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
