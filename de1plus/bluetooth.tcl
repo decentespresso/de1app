@@ -41,7 +41,7 @@ proc scale_disable_lcd {} {
 			# ideally in future firmware we can find out if they are on usb power, and disable LEDs if they are
 			decentscale_disable_lcd
 			# double-sending command, half a second later, because sometimes the decent scale command buffer has not finished the previous command and drops the next one
-			after 500 decentscale_disable_lcd
+			#after 500 decentscale_disable_lcd
 		}
 	}
 }
@@ -1224,25 +1224,25 @@ proc decentscale_disable_lcd {} {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
 	}
-	set screenoff [decent_scale_make_command 0A 00 00]
 
+	set screenoff [decent_scale_make_command 0A 00 00]
 	set poweroff [decent_scale_make_command 0A 02]
 
 	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
 		::bt::msg -DEBUG "decentscale not connected, cannot disable LCD"
 		return
 	}
-			msg -INFO "power off decent scale"
 
-	#userdata_append "SCALE: decentscale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenoff] 0
-	userdata_append "SCALE: decentscale : power off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $poweroff] 0
+	if {$::settings(keep_scale_on) == 1} {
+		userdata_append "SCALE: decentscale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenoff] 0
+	} else {
+		userdata_append "SCALE: decentscale : power off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $poweroff] 0
+	}
 
-	after 500 scale_disconnect_now
-	set ::de1(bluetooth_scale_connection_attempts_tried) $::de1(scale_max_connection_retry_attempts)
-	scale_disconnect_now
 }
 
 proc scale_disconnect_now {} {
+		set ::de1(bluetooth_scale_connection_attempts_tried) $::de1(scale_max_connection_retry_attempts)
 		scale_disconnect_handler $::de1(scale_device_handle)
 
 }

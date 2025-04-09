@@ -257,6 +257,7 @@ array set ::settings {
 	chart_total_shot_flow 1
 	app_auto_update 0
 	steam_over_pressure_count_trigger 10
+	keep_scale_on 0
 	do_async_update_check 0
 	heater_voltage ""
 	steam_over_temp_count_trigger 10
@@ -1141,10 +1142,12 @@ proc start_sleep {} {
 
 	if {$::de1(scale_device_handle) != 0} {
 
-		# of on usb power, then turn off the LCD when the tablet goes to sleep
-		if {[ifexists ::de1(scale_usb_powered)] == 1} {
-			scale_disable_lcd
+		scale_disable_lcd
+		if {$::settings(keep_scale_on) != 1} {			
+			userdata_append "SCALE: decentscale : disconnect" [list scale_disconnect_now] 0
+			popup [translate "Disconnecting from scale"]
 		}
+
 	}
 
 	
