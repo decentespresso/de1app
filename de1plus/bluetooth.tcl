@@ -2641,9 +2641,6 @@ proc de1_ble_handler { event data } {
 										# button 1 "O" pressed
 										::bt::msg -INFO "Decentscale TARE BUTTON pressed"
 										decentscale_tare
-										}
-
-
 									} elseif {[ifexists weightarray(data3)] == 2} {
 										# button 2 "[]" pressed
 										if {$::de1(decentscale_timer_on) == 1} {
@@ -2654,7 +2651,8 @@ proc de1_ble_handler { event data } {
 											decentscale_timer_reset
 											after 500 decentscale_timer_start
 										}
-									} 
+									}
+								} 
 							} elseif {[ifexists weightarray(command)] == 0x0A} {
 								::bt::msg -INFO "decentscale LED callback recv: [array get weightarray]"								
 								set ::de1(scale_fw_version) [ifexists weightarray(data6)]
