@@ -1220,7 +1220,7 @@ proc decentscale_enable_lcd {} {
 	userdata_append "SCALE: decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon] 0
 }
 
-proc decentscale_disable_lcd {} {
+proc decentscale_disable_lcd { {potentiallypoweroff 1} } {
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
 	}
@@ -1233,7 +1233,7 @@ proc decentscale_disable_lcd {} {
 		return
 	}
 
-	if {$::settings(keep_scale_on) == 1} {
+	if {$::settings(keep_scale_on) == 1 || $potentiallypoweroff != 1} {
 		userdata_append "SCALE: decentscale : disable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenoff] 0
 	} else {
 		userdata_append "SCALE: decentscale : power off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $poweroff] 0
@@ -2633,21 +2633,28 @@ proc de1_ble_handler { event data } {
 								return
 							} elseif {[ifexists weightarray(command)] == 0xAA} {
 								::bt::msg -INFO "Decentscale BUTTON $weightarray(data3) pressed ([array get weightarray])-([ifexists weightarray(data3)])"
-								if {[ifexists weightarray(data3)] == 1} {
-									# button 1 "O" pressed
-									::bt::msg -INFO "Decentscale TARE BUTTON pressed"
-									decentscale_tare
-								} elseif {[ifexists weightarray(data3)] == 2} {
-									# button 2 "[]" pressed
-									if {$::de1(decentscale_timer_on) == 1} {
-										::bt::msg -INFO "Decentscale TIMER STOP BUTTON pressed"
-										decentscale_timer_stop
-									} else {
-										::bt::msg -INFO "Decentscale TIMER RESET/START BUTTON pressed"
-										decentscale_timer_reset
-										after 500 decentscale_timer_start
-									}
-								} 
+								if { [::de1::state::current_state] == "Sleep" } { 
+									after 1000 decentscale_disable_lcd 0
+								} else {
+
+									if {[ifexists weightarray(data3)] == 1} {
+										# button 1 "O" pressed
+										::bt::msg -INFO "Decentscale TARE BUTTON pressed"
+										decentscale_tare
+										}
+
+
+									} elseif {[ifexists weightarray(data3)] == 2} {
+										# button 2 "[]" pressed
+										if {$::de1(decentscale_timer_on) == 1} {
+											::bt::msg -INFO "Decentscale TIMER STOP BUTTON pressed"
+											decentscale_timer_stop
+										} else {
+											::bt::msg -INFO "Decentscale TIMER RESET/START BUTTON pressed"
+											decentscale_timer_reset
+											after 500 decentscale_timer_start
+										}
+									} 
 							} elseif {[ifexists weightarray(command)] == 0x0A} {
 								::bt::msg -INFO "decentscale LED callback recv: [array get weightarray]"								
 								set ::de1(scale_fw_version) [ifexists weightarray(data6)]
