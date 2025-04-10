@@ -3137,6 +3137,8 @@ namespace eval ::gui::update {
 			}
 
 			set framepopup ""
+			set framedesc ""
+			
 			switch $::settings(settings_profile_type) {
 
 				settings_2a {
@@ -3182,7 +3184,11 @@ namespace eval ::gui::update {
 				preinfusion -
 				pouring {
 					set ::settings(current_frame_description) $framedesc
-					display_popup_android_message_if_necessary $framepopup
+
+					# only display a popup message for a frame if we're currently making espresso.
+					if {[::de1::state::current_state] == "Espresso"} {
+						display_popup_android_message_if_necessary $framepopup
+					}
 				}
 
 				default { set ::settings(current_frame_description) "" }
