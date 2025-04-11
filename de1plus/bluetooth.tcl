@@ -942,7 +942,7 @@ proc decentscale_send_heartbeat {} {
 		return
 	}
 
-	set heartbeat [decent_scale_make_command 0A FF FF ]
+	set heartbeat [decent_scale_make_command 0A 03 FF FF ]
 	#[decent_scale_make_command 0B 03 00]
 
 	::bt::msg -DEBUG "decent scale heartbeat: '[::logging::format_asc_bin $heartbeat]'"
