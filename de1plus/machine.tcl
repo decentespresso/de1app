@@ -1144,7 +1144,7 @@ proc start_sleep {} {
 
 		scale_disable_lcd
 		if {$::settings(keep_scale_on) != 1} {			
-			userdata_append "SCALE: decentscale : disconnect" [list scale_disconnect_now] 0
+			userdata_append "SCALE: decentscale : disconnect" [list after 1000 scale_disconnect_now] 0
 			popup [translate "Disconnecting from scale"]
 		}
 
