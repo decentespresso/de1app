@@ -931,6 +931,49 @@ proc acaia_tare {suuid cuuid} {
 	# The tare is not yet confirmed to us, we can therefore assume it worked out
 }
 
+proc decentscale_send_heartbeat {} {
+
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_decentscale))] == ""} {
+		::bt::msg -DEBUG "decent scale not connected, cannot send heartbeat"
+		return
+	}
+
+	set heartbeat [decent_scale_make_command 0A FF FF ]
+	#[decent_scale_make_command 0B 03 00]
+
+	::bt::msg -DEBUG "decent scale heartbeat: '[::logging::format_asc_bin $heartbeat]'"
+	userdata_append "SCALE: decentscale : send heartbeat" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $heartbeat] 0
+
+
+
+	set lcd_bright [decent_scale_make_command 0A 03 00]
+	set lcd_dim [decent_scale_make_command 0A 03 01]
+
+	if {[info exists ::decentscale_lcd_brightness_toggle] == 1} {
+		userdata_append "SCALE: decentscale : send lcd dim" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $lcd_dim] 0
+		unset ::decentscale_lcd_brightness_toggle
+	} else {
+		userdata_append "SCALE: decentscale : send lcd bright" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $lcd_bright] 0
+		set ::decentscale_lcd_brightness_toggle 1
+	}
+
+
+	####
+	# check to make sure there are no other heartbeat commands running
+	if {[info exists ::decentscale_send_heartbeat_id] == 1} {
+		after cancel $::decentscale_send_heartbeat_id 
+		unset ::decentscale_send_heartbeat_id
+	}
+
+	# schedule the next heartbeat
+	set ::decentscale_send_heartbeat_id [after 1000 decentscale_send_heartbeat]
+}
+
+
 proc acaia_send_heartbeat {suuid cuuid} {
 
 	if {[ifexists ::sinstance($suuid)] == "" || $::de1(scale_device_handle) == 0} {
@@ -2262,6 +2305,8 @@ proc de1_ble_handler { event data } {
 							
 							# in case the first request was dropped
 							after 400 decentscale_enable_lcd
+
+							after 500 decentscale_send_heartbeat
 
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "atomaxskale"
