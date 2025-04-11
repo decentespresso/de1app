@@ -77,7 +77,7 @@ namespace eval ::device::scale {
 	#     slightly more delay (500ms) with tare on espresso start,
 	#     to make sure we don't have a ble command splat with decent scale
 
-	variable _tare_holdoff	200
+	variable _tare_holdoff	1000
 
 	# Level in g over which will auto-tare before flow
 	# also used to detect a tare request returning "close enough" to zero
@@ -1416,7 +1416,7 @@ namespace eval ::device::scale::callbacks {
 		::device::scale::watchdog_first
 
 		set ::device::scale::run_timer	    False
-		set ::device::scale::_tare_holdoff  200
+		set ::device::scale::_tare_holdoff  1000
 
 		if { [info exists ::settings(high_vibration_scale_filtering) ] \
 			     && $::settings(high_vibration_scale_filtering) } {
