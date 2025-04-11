@@ -932,6 +932,7 @@ proc acaia_tare {suuid cuuid} {
 }
 
 proc decentscale_send_heartbeat {} {
+	
 
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
@@ -949,16 +950,18 @@ proc decentscale_send_heartbeat {} {
 	userdata_append "SCALE: decentscale : send heartbeat" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $heartbeat] 0
 
 
+	set do_lcd_toggle 0
+	if {$do_lcd_toggle == 1} {
+		set lcd_bright [decent_scale_make_command 0A 03 00]
+		set lcd_dim [decent_scale_make_command 0A 03 01]
 
-	set lcd_bright [decent_scale_make_command 0A 03 00]
-	set lcd_dim [decent_scale_make_command 0A 03 01]
-
-	if {[info exists ::decentscale_lcd_brightness_toggle] == 1} {
-		userdata_append "SCALE: decentscale : send lcd dim" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $lcd_dim] 0
-		unset ::decentscale_lcd_brightness_toggle
-	} else {
-		userdata_append "SCALE: decentscale : send lcd bright" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $lcd_bright] 0
-		set ::decentscale_lcd_brightness_toggle 1
+		if {[info exists ::decentscale_lcd_brightness_toggle] == 1} {
+			userdata_append "SCALE: decentscale : send lcd dim" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $lcd_dim] 0
+			unset ::decentscale_lcd_brightness_toggle
+		} else {
+			userdata_append "SCALE: decentscale : send lcd bright" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $lcd_bright] 0
+			set ::decentscale_lcd_brightness_toggle 1
+		}
 	}
 
 
@@ -1186,8 +1189,14 @@ proc decent_scale_calc_xor8 {cmdtype cmdddata1 cmdddata2 cmdddata3} {
 	return $xor
 }
 
-proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} {cmddata3 {}} } {
-	::bt::msg -DEBUG "decent_scale_make_command $cmdtype $cmdddata $cmddata2"
+proc decent_scale_calc_xor16 {cmdtype cmdddata1 cmdddata2 cmdddata3 cmdddata4} {
+	set xor [format %02X [expr {0x03 ^ $cmdtype ^ $cmdddata1 ^ $cmdddata2 ^ $cmdddata3 ^ $cmdddata4}]]
+	::bt::msg -DEBUG "decent_scale_calc_xor4 for '$cmdtype' '$cmdddata1' '$cmdddata2' '$cmdddata3' '$cmdddata4' is '$xor'"
+	return $xor
+}
+
+proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} {cmddata3 {}} {cmddata4 {}} } {
+	::bt::msg -DEBUG "decent_scale_make_command $cmdtype $cmdddata $cmddata2 $cmddata3 $cmddata4"
 	if {$cmddata2 == ""} {
 		# 1 command
 		::bt::msg -DEBUG "1 part decent scale command"
@@ -1197,12 +1206,15 @@ proc decent_scale_make_command {cmdtype cmdddata {cmddata2 {}} {cmddata3 {}} } {
 		# 2 commands
 		::bt::msg -DEBUG "2 part decent scale command"
 		set hex [subst {03${cmdtype}${cmdddata}${cmddata2}0000[decent_scale_calc_xor4 "0x$cmdtype" "0x$cmdddata" "0x$cmddata2"]}]
-	} else {
-		# 3 commands
+	} elseif {$cmddata4 == ""} {
 		::bt::msg -DEBUG "3 part decent scale command"
 		set hex [subst {03${cmdtype}${cmdddata}${cmddata2}${cmddata3}00[decent_scale_calc_xor8 "0x$cmdtype" "0x$cmdddata" "0x$cmddata2" "0x$cmddata3"]}]
+	} else {
+		# 4 commands
+		::bt::msg -DEBUG "4 part decent scale command"
+		set hex [subst {03${cmdtype}${cmdddata}${cmddata2}${cmddata3}${cmddata4}[decent_scale_calc_xor16 "0x$cmdtype" "0x$cmdddata" "0x$cmddata2" "0x$cmddata3" "0x$cmddata4"]}]
 	}
-	::bt::msg -DEBUG "hex is '$hex' for '$cmdtype' '$cmdddata' '$cmddata2' '$cmddata3'"
+	::bt::msg -DEBUG "hex is '$hex' for '$cmdtype' '$cmdddata' '$cmddata2' '$cmddata3' '$cmddata4'"
 	return [binary decode hex $hex]
 }
 
@@ -1252,12 +1264,13 @@ proc decentscale_enable_lcd {} {
 	}
 
 
+	# the 6th byte being 1 means "require heartbeat", with byte6=00 meaning "disable heartbeat", and this is so that older apps that don't know about the heartbeat, continue to work
 	if {$::settings(enable_fluid_ounces) != 1} {
 		# grams on display
-		set screenon [decent_scale_make_command 0A 01 01 00]
+		set screenon [decent_scale_make_command 0A 01 01 00 01]
 	} else {
 		# ounces on display
-		set screenon [decent_scale_make_command 0A 01 01 01]
+		set screenon [decent_scale_make_command 0A 01 01 01 01]
 	}
 	::bt::msg -DEBUG "decent scale screen on: '[::logging::format_asc_bin $screenon]'"
 	userdata_append "SCALE: decentscale : enable LCD" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $screenon] 0
@@ -2299,14 +2312,18 @@ proc de1_ble_handler { event data } {
 						if {$::settings(scale_type) == "decentscale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "decentscale"
 
-							after 100 decentscale_enable_lcd
-							after 200 decentscale_enable_notifications
+							decentscale_send_heartbeat
+							after 2000 decentscale_send_heartbeat
+
+							#after 100 decentscale_send_heartbeat
+							after 200 decentscale_enable_lcd
 							after 300 decentscale_enable_notifications
+							after 400 decentscale_enable_notifications
 							
 							# in case the first request was dropped
-							after 400 decentscale_enable_lcd
+							after 500 decentscale_enable_lcd
 
-							after 500 decentscale_send_heartbeat
+
 
 						} elseif {$::settings(scale_type) == "atomaxskale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "atomaxskale"
