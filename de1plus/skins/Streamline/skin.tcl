@@ -661,6 +661,7 @@ proc scale_tare_or_reconnect {} {
 		popup [translate Tare]
 	} else {
 		if {$::currently_connecting_scale_handle == 0} {
+			set ::de1(bluetooth_scale_connection_attempts_tried) 0
 			ble_connect_to_scale
 		}
 	}
