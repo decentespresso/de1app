@@ -1058,6 +1058,7 @@ proc start_idle {} {
 	# moved the scale reconnect to be after the other commands, because otherwise a scale disconnected would interrupt the IDLE command
 	if {$::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != "" && [ifexists ::currently_connecting_de1_handle] == 0} {
 		#ble_connect_to_scale
+		set ::de1(bluetooth_scale_connection_attempts_tried) 0
 	}
 }
 
