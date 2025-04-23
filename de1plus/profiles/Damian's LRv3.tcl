@@ -10,10 +10,10 @@ espresso_temperature_1 90.00
 espresso_temperature_2 90.00
 espresso_temperature_3 90.00
 final_desired_shot_volume 95
-final_desired_shot_volume_advanced 0
-final_desired_shot_volume_advanced_count_start 0
+final_desired_shot_volume_advanced 36
+final_desired_shot_volume_advanced_count_start 2
 final_desired_shot_weight 42
-final_desired_shot_weight_advanced 42
+final_desired_shot_weight_advanced 36.0
 flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_hold 2
@@ -35,6 +35,7 @@ profile_hide 1
 profile_language en
 profile_notes {This profile simulates a Londinium R machines extraction style. This is an advanced profile with some added steps to assist with less than ideal puck prep. Christee-Lee described it as like having a milkshake with extra syrup. Great body and flavour range. 3rd edition. By Damian Brakel https://www.diy.brakel.com.au/}
 profile_title {Damian's LRv3}
+read_only 1
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
-read_only 1
+
