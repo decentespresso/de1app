@@ -33,7 +33,7 @@ preinfusion_time 20
 pressure_end 6.0
 profile_hide 1
 profile_language en
-profile_notes {Damian wrote this profile to mimic a shot Gabor Laczko recorded on a La Marzocco Leva machine using his Smart Espresso Profiler. He feels that this is a great profile for non milk drinks, it highlights flavours in a smooth balanced way, with a more creamy body than the thicker chocolatey body of the LRv2 profile. By Damian Brakel https://www.diy.brakel.com.au/}
+profile_notes {Damian wrote this profile to mimic a shot Gabor Laczko recorded on a La Marzocco Leva machine using his Smart Espresso Profiler. He feels that this is a great profile for non milk drinks, it highlights flavours in a smooth balanced way, with a more creamy body than the thicker chocolatey body of the LRv2 profile. By Damian Brakel}
 profile_title {Damian's LM Leva}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
