@@ -1235,7 +1235,8 @@ proc tare_counter_incr {} {
 
 proc decent_scale_tare_cmd {} {
 	tare_counter_incr
-	set cmd [decent_scale_make_command "0F" [format %02X $::decent_scale_tare_counter]]
+	#set cmd [decent_scale_make_command "0F" [format %02X $::decent_scale_tare_counter]]
+	set cmd [decent_scale_make_command 0F [format %02X $::decent_scale_tare_counter] 00 00 01]
 	return $cmd
 }
 
@@ -1404,7 +1405,7 @@ proc decentscale_tare {} {
 	# So for now we send the same command twice. 
 	# In the future we'll check for the decent scale firmare version
 	# and only send the command twice if needed for the older decent scale firmware.
-	userdata_append "SCALE: decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare] 0
+	#userdata_append "SCALE: decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare] 0
 
 }
 
