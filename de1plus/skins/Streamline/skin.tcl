@@ -743,8 +743,28 @@ lappend flush_btns \
 	[list -text {[round_to_integer $::settings(flush_flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
 	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] 
 
-add_de1_rich_text "hotwaterrinse water" 690 330 left 1 2 65 $::background_color $flush_btns 
-add_de1_rich_text "hotwaterrinse_zoomed water_zoomed" 50 330 left 1 2 65 $::background_color $flush_btns 
+add_de1_rich_text "hotwaterrinse" 690 330 left 1 2 65 $::background_color $flush_btns
+add_de1_rich_text "hotwaterrinse_zoomed" 50 330 left 1 2 65 $::background_color $flush_btns
+
+set water_btns ""
+lappend water_btns \
+	[list -text "Temp" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[lindex [return_temperature_measurement_no_unit $::settings(water_temperature) 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement_no_unit $::settings(water_temperature) 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text "    " -font "Inter-SemiBold18"] \
+	[list -text "Flow" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[round_to_integer $::settings(hotwater_flow)]} -font "mono12" -foreground $::dataline_data_color  ] \
+	[list -text {[translate ml/s]} -font "mono8" -foreground $::dataline_data_color  ] \
+	[list -text "    " -font "Inter-SemiBold18"] \
+	[list -text "Volume" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text " " -font "Inter-Bold18"] \
+	[list -text {[round_to_integer $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text [translate "ml"] -font "mono8"  -foreground $::dataline_data_color ]
+
+add_de1_rich_text "water" 690 330 left 1 2 65 $::background_color $water_btns
+add_de1_rich_text "water_zoomed" 50 330 left 1 2 65 $::background_color $water_btns
 
 
 set steam_btns ""
