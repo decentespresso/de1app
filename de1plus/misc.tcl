@@ -838,6 +838,8 @@ proc make_de1_dir {srcdir destdirs} {
         saver/2560x1600/three_women.jpg *
         saver/2560x1600/rainbow_dj.jpg *
 
+        profiles/Damians_Q.tcl *
+        profiles/Weiss_advanced_spring_lever.tcl *
         profiles/I_got_your_back.tcl *
         profiles/80s_Espresso.tcl *
         profiles/Steam_only.tcl *        
