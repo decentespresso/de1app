@@ -34,7 +34,7 @@ preinfusion_time 20
 pressure_end 4.0
 profile_hide 1
 profile_language en
-profile_notes {A very popular profile made with D-Flow, spun out as its own profile.  Optimized for medium-light beans. By Damian Brakel https://www.diy.brakel.com.au/}
+profile_notes {A very popular profile made with D-Flow, spun out as its own profile.  Optimized for medium-light beans. By Damian Brakel}
 profile_title {Damian's Q}
 read_only 1
 read_only_backup {}

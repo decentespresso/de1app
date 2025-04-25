@@ -19,7 +19,7 @@ flow_profile_decline 1.2
 flow_profile_decline_time 17
 flow_profile_minimum_pressure 4
 preinfusion_flow_rate 4
-profile_notes {This profile simulates a Londinium R machines extraction style. This is an advanced profile with some added steps to assist with less than ideal puck prep. Christee-Lee described it as like having a milkshake with extra syrup. Great body and flavour range. 2nd edition.  This is identical to the LRv2 profile, but renamed to be easier to understand. By Damian Brakel https://www.diy.brakel.com.au/}
+profile_notes {This profile simulates a Londinium R machines extraction style. This is an advanced profile with some added steps to assist with less than ideal puck prep. Christee-Lee described it as like having a milkshake with extra syrup. Great body and flavour range. 2nd edition.  This is identical to the LRv2 profile, but renamed to be easier to understand. By Damian Brakel}
 final_desired_shot_volume 95
 final_desired_shot_weight 42
 final_desired_shot_weight_advanced 42
