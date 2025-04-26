@@ -1042,9 +1042,14 @@ proc update_streamline_status_message {} {
 			
 		} elseif {[dui page current] == "water" || [dui page current] == "water_zoomed" } {
 
-			set current [watervolume]		
 			set green_msg [subst {[translate "Hot water:"] }]
-			set clickable_msg [subst {[water_pour_timer][translate s]}]
+			if {$::de1(scale_device_handle) != 0} {
+				set current $::de1(scale_sensor_weight)
+				set clickable_msg [subst {[water_pour_timer][translate s] - [join [return_weight_measurement_grams $::de1(scale_sensor_weight) 1 1] ""]}]
+			} else {
+				set current [watervolume]
+				set clickable_msg [subst {[water_pour_timer][translate s]}]
+			}
 
 			set final_target $::settings(water_volume)
 			
