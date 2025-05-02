@@ -37,7 +37,6 @@ profile_language en
 profile_notes {advanced spring lever profile, with additional steps to salvage choked shots}
 profile_title {Weiss advanced spring lever}
 read_only 1
-read_only_backup {}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 

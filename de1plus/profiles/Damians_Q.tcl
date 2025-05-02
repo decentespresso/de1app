@@ -37,7 +37,6 @@ profile_language en
 profile_notes {A very popular profile made with D-Flow, spun out as its own profile.  Optimized for medium-light beans. By Damian Brakel}
 profile_title {Damian's Q}
 read_only 1
-read_only_backup {}
 settings_profile_type settings_2c
 tank_desired_water_temperature 0
 
