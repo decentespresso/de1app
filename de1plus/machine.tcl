@@ -255,7 +255,7 @@ array set ::settings {
 	disable_long_press 0
 	steam_over_pressure_threshold 8
 	chart_total_shot_flow 1
-	app_auto_update 0
+	app_auto_update 1
 	steam_over_pressure_count_trigger 10
 	keep_scale_on 0
 	do_async_update_check 0
