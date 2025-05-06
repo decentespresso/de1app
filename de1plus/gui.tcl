@@ -706,7 +706,7 @@ proc add_de1_rich_text {context x y justification autorefresh height width backg
 	}
 
 
-	set widget [add_de1_widget $context "text" $x $y "" -relief flat  -highlightthickness 0 -insertwidth 0 -height $height -background $backgroundcolor  -selectbackground $backgroundcolor -font $font -width $width ]
+	set widget [add_de1_widget $context "text" $x $y "" -relief flat  -highlightthickness 0 -insertwidth 0 -height $height -background $backgroundcolor  -selectbackground $backgroundcolor -highlightbackground $backgroundcolor  -inactiveselectbackground $backgroundcolor  -insertbackground $backgroundcolor -selectbackground $backgroundcolor -highlightbackground $backgroundcolor -font $font -width $width ]
 	
 	foreach text $textparts {
 		incr cnt
@@ -753,6 +753,8 @@ proc add_de1_rich_text {context x y justification autorefresh height width backg
 		.can itemconfigure $widget -anchor ne		
 	}
 
+	# this will list all parameters in the widget, useful for debugging
+	# msg -ERROR [join [lmap c [$widget configure ] {if {[llength $c] == 2} continue; lindex $c 0}] \n]
 
 	bindtags $widget [list SdlTkNoTextInput {*}[bindtags $widget]]
 
