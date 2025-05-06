@@ -595,10 +595,16 @@ set ::streamline_global(status_msg_text_red) ""
 set ::streamline_global(status_msg_text_green) ""
 set ::streamline_global(status_msg_text_clickable) ""
 
+proc streamline_green_msg_click {} {
+	#msg -ERROR "streamline_green_msg_click"
+	set ::streamline_global(status_msg_text_green) ""
+	::refresh_$::streamline_data_line
+}
+
 
 #set ::reconnect_text_string [subst {\[[translate "Reconnect"]\]}]
 proc streamline_status_msg_click {} {
-	puts "streamline_status_msg_click"
+	#msg -ERROR "streamline_status_msg_click"
 	if {[dui page current] == "espresso" || [dui page current] == "espresso_zoomed" } {
 		say [translate {skip}] $::settings(sound_button_in)
 		popup [translate_toast "Moved to next step"]
@@ -611,7 +617,7 @@ proc streamline_status_msg_click {} {
 }
 
 set ::streamline_data_line [add_de1_rich_text $::all_pages [expr {2490 - $ghc_pos_pffset}] 256 right 0 1 30 $::background_color [list \
-	[list -text {$::streamline_global(status_msg_text_green)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_green  ] \
+	[list -text {$::streamline_global(status_msg_text_green)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_green   -exec "streamline_green_msg_click" ] \
 	[list -text {$::streamline_global(status_msg_text_red)}  -font "Inter-HeavyBold24" -foreground $::progress_bar_red  ] \
 	[list -text {$::streamline_global(status_msg_text_clickable)}  -font "mono18" -foreground $::status_clickable_text -exec "streamline_status_msg_click" ] \
 ]]
