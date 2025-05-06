@@ -1528,6 +1528,16 @@ proc load_settings {} {
 
     }
 
+    # integrity check on some settings, that should only ever be integers.  Some FLOAT math logic in the software might set it to something non-integer by accident
+	foreach round_to_integer_setting [list steam_timeout flush_seconds water_volume water_temperature] {
+		if {[info exists ::settings($round_to_integer_setting)] == 1} {
+			set ::settings($round_to_integer_setting) [round_to_integer ::settings($round_to_integer_setting)]
+		}
+	}
+
+
+
+
     if {[ifexists ::settings(language)] == "ar" || [ifexists ::settings(language)] == "arb" || [ifexists ::settings(language)] == "he" || [ifexists ::settings(language)] == "heb"} {
         set ::de1(language_rtl) 1
     }
