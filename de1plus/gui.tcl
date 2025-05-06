@@ -1152,7 +1152,14 @@ proc set_dummy_espresso_vars {} {
 			open_random_simulation_file	
 
 			# playing a random history item also means loading it as the current profile, otherwise it's weird and things don't line up
-			array set ::settings [ifexists ::simulated(settings)]
+			array set simulation_settings [ifexists ::simulated(settings)]
+			
+			# only load the actually needed variables from the saved shot simulation, not the entire setting file therein.  
+			# previously loaded all settings from the simulation, and this caused bugs to occur in DYE since we'd clobbered some settings it was depending on
+			foreach varname [profile_vars] {
+				set ::settings($varname) [ifexists simulation_settings($varname)]
+			}
+			
 
 			# this is the final drink weight, a few seconds after the shot stopped. We don't currently do anything with this for simulated shots.
 			# set ::de1(simulated_drink_weight) [ifexists ::settings(drink_weight)]
