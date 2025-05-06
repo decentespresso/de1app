@@ -688,7 +688,7 @@ lappend btns \
 	[list -text {[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]]} -font "mono12" -foreground $::dataline_data_color  ] \
 	[list -text {[translate ml]} -font "mono8" -foreground $::dataline_data_color  ] \
 	[list -text "    " -font "Inter-Bold16"] \
-	[list -text [translate "Time"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
+	[list -text [translate "Clock"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[time_format [clock seconds]]} -font "mono12" -foreground $::dataline_data_color   ] 
 
