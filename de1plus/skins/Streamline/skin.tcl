@@ -770,10 +770,17 @@ add_de1_rich_text "steam_zoomed" 50 330 left 1 2 65 $::background_color $steam_b
 
 
 proc steam_timeout_seconds {} {
+
+	set ::settings(steam_timeout) [round_to_integer $::settings(steam_timeout)]
 	if {$::settings(steam_timeout) == 0} {
 		return [translate "off"]
 	}
-	return [round_to_integer $::settings(steam_timeout)]
+
+	if {$::settings(steam_timeout) > 255} {
+		set ::settings(steam_timeout) 255
+	}
+
+	return $::settings(steam_timeout)
 }
 
 
