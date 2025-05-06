@@ -2203,7 +2203,7 @@ set right_buttons_start 2530
 set right_buttons_width 200
 set right_buttons_separation 20
 
-dui add dbutton $::all_pages [expr {$right_buttons_start - (2*$right_buttons_width) - (2*$right_buttons_separation)}] 66 [expr {$right_buttons_start - $right_buttons_width - $right_buttons_separation}] 155 -tags settings_btn -label [translate "Settings"]  -command { say [translate {settings}] $::settings(sound_button_out); show_settings "" "back_from_settings" } -tap_pad {6 50 6 50}
+dui add dbutton $::all_pages [expr {$right_buttons_start - (2*$right_buttons_width) - (2*$right_buttons_separation)}] 66 [expr {$right_buttons_start - $right_buttons_width - $right_buttons_separation}] 155 -tags settings_btn -label [translate "Settings"]  -command { say [translate {settings}] $::settings(sound_button_out); show_settings [::profile::fix_profile_type [ifexists ::settings(settings_profile_type)]] "back_from_settings" } -tap_pad {6 50 6 50}
 dui add dbutton $::all_pages [expr {$right_buttons_start - $right_buttons_width}] 66 $right_buttons_start 155 -tags sleep_btn -label [translate "Sleep"]  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep } -longpress_cmd { say [translate {Exit}] $::settings(sound_button_out); streamline_app_exit_button }  -tap_pad {6 50 24 50}
 #-longpress_threshold $::streamline_longpress_threshold 
 #
@@ -2724,14 +2724,6 @@ proc streamline_profile_select { slot } {
 	set selected_profile [dict get $profiles $slot name]
 	if {$selected_profile == ""} {
 		# if the profile is empty then do nothing when someone taps on it
-		return
-
-		# (obsolete)
-		# empty button
-		# john source of a potential bug where a button is cleared, need to investigate further 8/11/2024
-		set ::streamline_double_tap_empty_preset_button_previous_profile_filename $::settings(profile_filename)
-		set ::streamline_double_tap_empty_preset_button_slot $slot
-		show_settings "settings_1" "store_profile_choice_to_profile_preset_button"
 		return
 	}
 
