@@ -644,6 +644,11 @@ proc streamline_ui_weight_refresh {} {
 		set ::streamline_dataline_weight_label_red ""
 		set ::streamline_dataline_weight_value [lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]
 		set ::streamline_dataline_weight_unit [lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]
+
+		if {$::de1(language_rtl) == 1} {	
+			# insert a space between the mL and number, in RTL languages
+			set ::streamline_dataline_weight_unit " $::streamline_dataline_weight_unit"
+		}
 	} else {
 		#set ::streamline_dataline_weight_label_blue [translate "Weight: !!"]
 		#set ::streamline_dataline_weight_label_blue [translate "Weight: ..."]

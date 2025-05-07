@@ -1069,7 +1069,7 @@ proc return_shot_weight_measurement {in} {
 
 proc preinfusion_pour_timer_text {} {
     if {$::de1(language_rtl) == 1} {
-		return [subst {[translate "s"][espresso_preinfusion_timer] [translate "preinfusion"] }]
+		return [subst {[translate "s"] [espresso_preinfusion_timer] [translate "preinfusion"] }]
 	}
 
 	return [subst {[espresso_preinfusion_timer][translate "s"] [translate "preinfusion"]}]
@@ -1077,7 +1077,7 @@ proc preinfusion_pour_timer_text {} {
 
 proc seconds_text_very_abbreviated {in} {
     if {$::de1(language_rtl) == 1} {
-		return [subst {[translate "s"][round_to_integer $in] }]
+		return [subst {[translate "s"] [round_to_integer $in] }]
 	}
 
 	return [subst {[round_to_integer $in][translate "s"] }]
