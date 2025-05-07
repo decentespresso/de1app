@@ -3796,7 +3796,7 @@ proc streamline_graph_smarts {widget {which ""} } {
 
 	gridconfigure $widget 
 
-	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular10 -linewidth [rescale_x_skin 1] -subdivisions 5 -majorticks {0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 210 220 230 240 250} 
+	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular10 -linewidth [rescale_x_skin 1] -subdivisions 5 -majorticks {0 30 60 90 120 150 180 210 240 270 300 330 360 390 420 450 480 510 540 570 600} 
 	
 	if {[lsearch -exact $::zoomed_pages $which] != -1} {
 		set mticks {1 2 3 4 5 6 7 8 9 10 11 12 13 14} 
