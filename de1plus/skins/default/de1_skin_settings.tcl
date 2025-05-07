@@ -1554,7 +1554,7 @@ proc scheduler_feature_hide_show_refresh {  } {
 add_de1_text "settings_3" 180 1134 -justify left -anchor "nw" -font $optionfont -text [translate "Keep hot"]  -fill "#4e85f4" -width [rescale_x_skin 1000] 
 dui add dtoggle "settings_3" 50 1140 -height 50 -width 100 -anchor nw -variable ::settings(scheduler_enable) -command scheduler_feature_hide_show_refresh 
 add_de1_button "settings_3" { set ::settings(scheduler_enable) [expr {! $::settings(scheduler_enable)}]; scheduler_feature_hide_show_refresh } 50 1140 500 1190
-
+scheduler_feature_hide_show_refresh
 
 
 # hack used because the -command to dtoggle command above is not working
