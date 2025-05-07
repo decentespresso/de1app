@@ -929,12 +929,12 @@ proc return_weight_measurement_grams {in {integer 0} {returnlist 0} } {
 			if {$returnlist == 1} {
 				return [list [translate "g"] [round_to_integer $in]]
 			}
-			return [subst {[translate "g"][round_to_integer $in]}]
+			return [subst {[translate "g"] [round_to_integer $in]}]
     	}
 		if {$returnlist == 1} {
 			return [list [translate "g"] [round_to_one_digits $in]]
 		}
-		return [subst {[translate "g"][round_to_one_digits $in]}]
+		return [subst {[translate "g"] [round_to_one_digits $in]}]
     }
 
 	if {$integer == 1 || ($integer == 2 && [round_to_one_digits $in] == [round_to_integer $in])} {
@@ -954,9 +954,9 @@ proc return_weight_measurement_grams {in {integer 0} {returnlist 0} } {
 proc return_weight_measurement {in {integer 0}} {
     if {$::de1(language_rtl) == 1} {
     	if {$integer == 1 || ($integer == 2 && [round_to_one_digits $in] == [round_to_integer $in])} {
-			return [subst {[translate "g"][round_to_integer $in]}]
+			return [subst {[translate "g"] [round_to_integer $in]}]
     	}
-		return [subst {[translate "g"][round_to_one_digits $in]}]
+		return [subst {[translate "g"] [round_to_one_digits $in]}]
     }
 
 	if {$::settings(enable_fluid_ounces) != 1} {
