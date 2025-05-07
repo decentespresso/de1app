@@ -1691,6 +1691,20 @@ proc round_to_one_digits {in} {
     return $x
 }
 
+
+# round to the nearest 0.5 of the given value
+proc round_one_digits_point_five {in} {
+	if {$in == ""} {
+		return ""
+	}
+	set x 0
+	catch {
+    	set x [expr {round($in * 2.0)/2.0}]
+    }
+    return [round_to_one_digits $x]
+}
+
+
 proc round_to_integer {in} {
 	set x 0
 	catch {
