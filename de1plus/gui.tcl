@@ -345,7 +345,7 @@ proc ifexists {fieldname2 {defvalue {}} } {
     upvar $fieldname2 fieldname
     
     if {[info exists fieldname] == 1} {
-	    return [subst "\$fieldname"]
+        return $fieldname
     } else {
     	if {$defvalue != ""} {
     		set fieldname $defvalue
