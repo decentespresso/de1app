@@ -1476,9 +1476,9 @@ proc return_temperature_measurement_no_unit {in {integer 0} {returnlist 0} } {
 			return [subst {[round_to_integer $in]\u00B0}]
 		}
 		if {$returnlist == 1} {
-			return [list [round_to_one_digits $in] "\u00B0"]
+			return [list [round_one_digits_or_integer_if_needed $in] "\u00B0"]
 		}
-		return [subst {[round_to_one_digits $in]\u00B0}]
+		return [subst {[round_one_digits_or_integer_if_needed $in]\u00B0}]
 	}
 }
 
