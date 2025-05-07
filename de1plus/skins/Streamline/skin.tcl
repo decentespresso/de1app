@@ -3796,8 +3796,12 @@ proc streamline_graph_smarts {widget {which ""} } {
 
 	gridconfigure $widget 
 
-	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular10 -linewidth [rescale_x_skin 1] -subdivisions 5 -majorticks {0 30 60 90 120 150 180 210 240 270 300 330 360 390 420 450 480 510 540 570 600} 
+	# let BLT set the axis on its own, as BLT was refusing to dynamically change the axis numbers
+	# -majorticks {0 30 60 90 120 150 180 210 240 270 300 330 360 390 420 450 480 510 540 570 600} 
 	
+	$widget axis configure x -color $::pressurelabelcolor -tickfont Inter-Regular10 -linewidth [rescale_x_skin 1] -subdivisions 5 
+
+
 	if {[lsearch -exact $::zoomed_pages $which] != -1} {
 		set mticks {1 2 3 4 5 6 7 8 9 10 11 12 13 14} 
 		set max 14
