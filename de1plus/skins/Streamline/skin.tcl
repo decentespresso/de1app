@@ -4109,11 +4109,11 @@ proc update_data_card { arrname settingsarr } {
 	set third_line_parts ""
 
 	if {[ifexists profile_settings(grinder_dose_weight)] != "" && [ifexists profile_settings(grinder_dose_weight)] != "0"} {
-		lappend third_line_parts "[translate "In"] $profile_settings(grinder_dose_weight)[translate g]"
+		lappend third_line_parts "[translate "In"] [round_one_digits_or_integer_if_needed $profile_settings(grinder_dose_weight)][translate g]"
 	}
 	
 	if {[ifexists profile_settings(grinder_setting)] != "" && [ifexists profile_settings(grinder_setting)] != "0"} {
-		lappend third_line_parts "[translate "Grind"] $profile_settings(grinder_setting)"
+		lappend third_line_parts "[translate "Grind"] [round_one_digits_or_integer_if_needed $profile_settings(grinder_setting)]"
 	}
 
 	set ::streamline_current_history_third_line [join $third_line_parts "  |  "]
