@@ -677,6 +677,10 @@ proc add_de1_text {args} {
 # 	[list -text " " -font "Inter-Bold11"] \
 # 	[list -text "fonts on one line." -font "Inter-Bold24" -foreground red -exec "puts 3" ] \
 # ]
+
+# justification can be left/right/middle and if it is a list, the 2nd parameter is the wrapping, ie char/word/none, ie:
+# add_de1_rich_text "off espresso" 690 330 [list left none] 1 2 74 $::background_color $btns
+
 proc add_de1_rich_text {context x y justification autorefresh height width backgroundcolor textparts args} {
 
 	set name "rich_${x}_${y}_"
@@ -706,7 +710,14 @@ proc add_de1_rich_text {context x y justification autorefresh height width backg
 	}
 
 
-	set widget [add_de1_widget $context "text" $x $y "" -relief flat  -highlightthickness 0 -insertwidth 0 -height $height -background $backgroundcolor  -selectbackground $backgroundcolor -highlightbackground $backgroundcolor  -inactiveselectbackground $backgroundcolor  -insertbackground $backgroundcolor -selectbackground $backgroundcolor -highlightbackground $backgroundcolor -font $font -width $width ]
+	#optional wrapping directive on the justification line
+	set wrap word
+	if {[lindex $justification 1] != ""} {
+		set wrap [lindex $justification 1]
+	}
+	set justification [lindex $justification 0]
+
+	set widget [add_de1_widget $context "text" $x $y "" -relief flat  -highlightthickness 0 -insertwidth 0 -height $height -background $backgroundcolor  -selectbackground $backgroundcolor -highlightbackground $backgroundcolor  -inactiveselectbackground $backgroundcolor  -insertbackground $backgroundcolor -selectbackground $backgroundcolor -highlightbackground $backgroundcolor -font $font -width $width -wrap $wrap]
 	
 	foreach text $textparts {
 		incr cnt
