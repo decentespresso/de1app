@@ -1751,7 +1751,7 @@ add_de1_variable "off " 418 304 -justify center -anchor "center" -text "" -font 
 add_de1_variable "off " 418 418 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags dose_label_1st -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
 add_de1_variable "off" 418 512 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags weight_label_1st -textvariable {[return_weight_measurement [determine_final_weight] 2]}
 add_de1_variable "off" 418 558 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
-add_de1_variable "off " 418 761 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags temp_label_1st -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 1]}   
+add_de1_variable "off " 418 761 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags temp_label_1st -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 0]}   
 #add_de1_variable "off  steam" 418 988 -justify center -anchor "center" -text [translate "31s"] -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {[steam_timeout_seconds]}
 add_de1_variable "off steam" 418 968 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags steam_label_1st -textvariable {$::streamline_steam_label_1st}
 add_de1_variable "off steam" 418 1011 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_steam_label_2nd}
@@ -1765,7 +1765,7 @@ add_de1_variable "espresso water flush hotwaterrinse steam" 418 304 -justify cen
 add_de1_variable "espresso water flush hotwaterrinse steam" 418 418 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags dose_label_1std -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
 add_de1_variable "espresso water flush hotwaterrinse steam" 418 512 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags weight_label_1std -textvariable {[return_weight_measurement [determine_final_weight] 2]}
 add_de1_variable "espresso water flush hotwaterrinse steam" 418 558 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
-add_de1_variable "espresso water flush hotwaterrinse " 418 761 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags temp_label_1std -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 1]}   
+add_de1_variable "espresso water flush hotwaterrinse " 418 761 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags temp_label_1std -textvariable {[return_temperature_measurement_no_unit $::settings(espresso_temperature) 0]}   
 #add_de1_variable "espresso water flush hotwaterrinse" 418 988 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags steam_label_1std -textvariable {[steam_timeout_seconds]}
 add_de1_variable "espresso water flush hotwaterrinse" 418 968 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags steam_label_1std -textvariable {$::streamline_steam_label_1st}
 add_de1_variable "espresso water flush hotwaterrinse" 418 1011 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags steam_label_2nd -textvariable {$::streamline_steam_label_2nd}
@@ -1792,9 +1792,11 @@ proc save_fahrenheit_hot_water {} {
 
 proc save_brew_temp {} {
 	if {$::settings(enable_fahrenheit) == 1} {
-		set dest_espresso_temperature [fahrenheit_to_celsius $::data_entry_brew_temperature]
+		set ::data_entry_brew_temperature [round_to_integer $::data_entry_brew_temperature]
+		set dest_espresso_temperature [fahrenheit_to_celsius [round_to_integer $::data_entry_brew_temperature]]
 	} else {
-		set dest_espresso_temperature $::data_entry_brew_temperature
+		set ::data_entry_brew_temperature [round_one_digits_point_five $::data_entry_brew_temperature]
+		set dest_espresso_temperature $::data_entry_brew_temperature		
 	}
 
 	set dest_temp $dest_espresso_temperature
@@ -1811,7 +1813,7 @@ proc choose_appropriate_data_entry_for_brew_temp {} {
 	} else {
 		# celsius
 		set ::data_entry_brew_temperature $::settings(espresso_temperature)
-		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 1 0 105 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
+		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 0 0 105 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
 	}
 }
 
