@@ -1552,6 +1552,9 @@ set ::streamline_current_history_profile_clock ""
 
 
 proc start_streamline_espresso {} {
+
+	set ::de1(streamline_shot_in_progress) 1
+
 	set ::streamline_history_text_label [translate "CURRENT"] 
 	set ::streamline_current_history_profile_clock [clock seconds]
 	set ::streamline_current_history_profile_name [translate $::settings(profile_title)]
@@ -4488,6 +4491,12 @@ proc streamline_history_profile_btns_refresh {} {
 }
 
 proc streamline_history_profile_back {} {
+
+	if {[info exists ::de1(streamline_shot_in_progress)] == 1} {
+		popup [translate "Wait until this shot is saved"]
+		return
+	}
+
 	set ::streamline_history_file_selected_number [expr {$::streamline_history_file_selected_number	 - 1}]
 	if {$::streamline_history_file_selected_number < 0} {
 		set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
@@ -4497,6 +4506,11 @@ proc streamline_history_profile_back {} {
 }
 
 proc streamline_history_profile_fwd { {destination {}} } {
+
+	if {[info exists ::de1(streamline_shot_in_progress)] == 1} {
+		popup [translate "Wait until this shot is saved"]
+		return
+	}
 
 	if {$destination == 0} {
 		set ::streamline_history_file_selected_number 0
@@ -4526,6 +4540,8 @@ proc streamline_shot_ended  {} {
 		streamline_history_profile_fwd 1
 
 	}
+
+	unset -nocomplain ::de1(streamline_shot_in_progress)
 }
 
 ############################################################################################################################################################################################################
