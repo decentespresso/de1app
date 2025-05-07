@@ -691,8 +691,7 @@ lappend btns \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text [translate "Tank"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
-	[list -text {[round_to_tens [water_tank_level_to_milliliters $::de1(water_level)]]} -font "mono12" -foreground $::dataline_data_color  ] \
-	[list -text {[translate ml]} -font "mono8" -foreground $::dataline_data_color  ] \
+	[list -text {[return_liquid_measurement_ml [water_tank_level_to_milliliters $::de1(water_level)]]} -font "mono12" -foreground $::dataline_data_color  ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text [translate "Clock"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
@@ -804,13 +803,11 @@ lappend zoomed_btns \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text [translate "Dose"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text {$::settings(grinder_dose_weight)} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[translate g]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[return_weight_measurement_grams $::settings(grinder_dose_weight)]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text [translate "Drink"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
-	[list -text {[lindex [return_weight_measurement_grams [determine_final_weight] 0 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[translate g]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[return_weight_measurement_grams [determine_final_weight]]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text [translate "Brew"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold16"] \
@@ -819,18 +816,15 @@ lappend zoomed_btns \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text [translate "Steam"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[steam_timeout_seconds]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text "[translate s]" -font "mono8"] \
+	[list -text {[seconds_text_very_abbreviated [steam_timeout_seconds]]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text [translate "Flush"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[round_to_integer $::settings(flush_seconds)]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text "[translate s]" -font "mono8"] \
+	[list -text {[seconds_text_very_abbreviated [round_to_integer $::settings(flush_seconds)]]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-Bold16"] \
 	[list -text [translate "Hot Water"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[round_to_integer $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text [translate "ml"] -font "mono8"  -foreground $::dataline_data_color ] \
+	[list -text {[return_liquid_measurement_ml $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text " (" -font "mono12"  -foreground $::dataline_data_color ] \
 	[list -text {[lindex [return_temperature_measurement_no_unit $::settings(water_temperature) 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text {[lindex [return_temperature_measurement_no_unit $::settings(water_temperature) 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
@@ -937,10 +931,10 @@ proc update_streamline_status_message {} {
 
 				set force_update 1				
 				if {$ETA < $::streamline_start_heating_eta_previous || $force_update == 1} {
-					set msg [subst { $ETA[translate s] [translate remaining]}]
+					set msg [subst { [seconds_text_very_abbreviated $ETA] [translate remaining]}]
 					set ::streamline_start_heating_eta_previous $ETA
 				} else {
-					set msg [subst { $::streamline_start_heating_eta_previous[translate s] [translate remaining]}]
+					set msg [subst { [seconds_text_very_abbreviated $::streamline_start_heating_eta_previous] [translate remaining]}]
 				}
 				if {$warmed > 2 } {
 					set red_msg [translate "Heating:"]
@@ -971,7 +965,7 @@ proc update_streamline_status_message {} {
 			set clickable_msg ""
 			set green_msg "[translate [string totitle $::settings(current_frame_description)]]"
 			if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
-				set clickable_msg "[espresso_timer][translate s] ⏩ " 
+				set clickable_msg "[seconds_text_very_abbreviated [espresso_timer]] ⏩ " 
 				set green_msg "[translate [string totitle $::settings(current_frame_description)]] | "
 			} 
 
@@ -996,12 +990,10 @@ proc update_streamline_status_message {} {
 		} elseif {[dui page current] == "hotwaterrinse" || [dui page current] == "hotwaterrinse_zoomed" } {
 
 			set green_msg [subst {[translate "Flushing:"] }]
-			set clickable_msg [subst {[flush_pour_timer][translate s]}]
+			set clickable_msg [subst {[seconds_text_very_abbreviated [flush_pour_timer]]}]
 			set final_target $::settings(flush_seconds)
 			
 			set current [flush_pour_timer]		
-
-			#set green_msg [subst {[translate "Flushing:"] $current[translate s]}]
 
 			if {$current == ""} {
 				set current 0
@@ -1019,7 +1011,7 @@ proc update_streamline_status_message {} {
 			set current [steam_pour_timer]		
 			
 			set green_msg [subst {[translate "Steaming:"] }]
-			set clickable_msg [subst {[steam_pour_timer][translate s]}]
+			set clickable_msg [subst {[seconds_text_very_abbreviated [steam_pour_timer]]}]
 		
 			set final_target $::settings(steam_timeout)
 			
@@ -1037,7 +1029,7 @@ proc update_streamline_status_message {} {
 
 			set current [watervolume]		
 			set green_msg [subst {[translate "Hot water:"] }]
-			set clickable_msg [subst {[water_pour_timer][translate s]}]
+			set clickable_msg [subst {[seconds_text_very_abbreviated [water_pour_timer]]}]
 
 			set final_target $::settings(water_volume)
 			
@@ -1501,7 +1493,7 @@ proc streamline_steam_setting_change { } {
 	if {$::settings(steam_timeout) == 0} {
 		set stimeout [translate off]
 	} else {
-		set stimeout "$::settings(steam_timeout)[translate s]"
+		set stimeout [seconds_text_very_abbreviated $::settings(steam_timeout)]
 	}
 
 	#[translate mL/s]
@@ -4111,7 +4103,7 @@ proc update_data_card { arrname settingsarr } {
 	set third_line_parts ""
 
 	if {[ifexists profile_settings(grinder_dose_weight)] != "" && [ifexists profile_settings(grinder_dose_weight)] != "0"} {
-		lappend third_line_parts "[translate "In"] [round_one_digits_or_integer_if_needed $profile_settings(grinder_dose_weight)][translate g]"
+		lappend third_line_parts "[translate "In"] [return_weight_measurement_grams [round_one_digits_or_integer_if_needed $profile_settings(grinder_dose_weight)]]"
 	}
 	
 	if {[ifexists profile_settings(grinder_setting)] != "" && [ifexists profile_settings(grinder_setting)] != "0"} {
@@ -4636,12 +4628,6 @@ proc ask_for_data_entry_number {title current_value varname_to_store_in value_su
 	set ::streamline_entry_value_suffix $value_suffix
 
 	set ::streamline_entry_previous [::dui::pages::dui_number_editor::get_previous_values $varname_to_store_in]
-
-	#puts "ERROR ::streamline_entry_previous $::streamline_entry_previous"
-
-	#set ::streamline_data_entry_page_value 20
-	#set ::streamline_entry_value_suffix "g"
-	#set ::streamline_data_entry_page_title DOSE
 
 	set ::streamline_entry_callbacks $callbacks
 
