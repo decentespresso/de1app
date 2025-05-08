@@ -4198,6 +4198,10 @@ proc update_data_card { arrname settingsarr } {
 	set state_change 0
 	set stepnum 0
 
+	set espresso_weight 0
+	set espresso_water_dispensed 0
+	
+
 	set c 0
 	foreach t [ifexists past_shot_array(espresso_elapsed)] {
 
