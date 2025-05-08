@@ -1191,10 +1191,10 @@ set ::hw_temp_vol_part6 ""
 
 set ::hw_temp_vol [add_de1_rich_text "off water" 50 1444 left 0 1 8 $::box_color [list \
 	[list -text {$::hw_temp_vol_part1} -font Inter-Bold11 -foreground $::left_label_color2 -exec hw_temp_vol_flip] \
-	[list -text {$::hw_temp_vol_part2} -font Inter-Bold11 -foreground $::preset_value_color -exec hw_temp_vol_flip] \
+	[list -text {$::hw_temp_vol_part2} -font Inter-Regular10 -foreground $::preset_value_color -exec hw_temp_vol_flip] \
 	[list -text {$::hw_temp_vol_part3} -font Inter-Bold11 -foreground $::preset_value_color -exec hw_temp_vol_flip] \
 	[list -text {$::hw_temp_vol_part4} -font Inter-Bold11 -foreground $::preset_value_color -exec hw_temp_vol_flip ] \
-	[list -text {$::hw_temp_vol_part5} -font Inter-Bold11 -foreground $::preset_value_color -exec hw_temp_vol_flip ] \
+	[list -text {$::hw_temp_vol_part5} -font Inter-Regular10 -foreground $::preset_value_color -exec hw_temp_vol_flip ] \
 	[list -text {$::hw_temp_vol_part6} -font Inter-Bold11 -foreground $::left_label_color2 -exec hw_temp_vol_flip ] \
 ]]
 
@@ -1261,12 +1261,12 @@ set ::steam_time_flow_part4 ""
 set ::steam_time_flow_part5 ""
 set ::steam_time_flow_part6 ""
 
-set ::steam_time_flow [add_de1_rich_text "off steam" 50 994 left 0 1 10 $::box_color [list \
+set ::steam_time_flow [add_de1_rich_text "off steam" 50 994 [list left none] 0 1 9 $::box_color [list \
 	[list -text {$::steam_time_flow_part1} -font Inter-Bold11 -foreground $::left_label_color2 -exec steam_time_flow_flip] \
-	[list -text {$::steam_time_flow_part2} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip] \
+	[list -text {$::steam_time_flow_part2} -font Inter-Regular10 -foreground $::preset_value_color -exec steam_time_flow_flip] \
 	[list -text {$::steam_time_flow_part3} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip] \
 	[list -text {$::steam_time_flow_part4} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip ] \
-	[list -text {$::steam_time_flow_part5} -font Inter-Bold11 -foreground $::preset_value_color -exec steam_time_flow_flip ] \
+	[list -text {$::steam_time_flow_part5} -font Inter-Regular10 -foreground $::preset_value_color -exec steam_time_flow_flip ] \
 	[list -text {$::steam_time_flow_part6} -font Inter-Bold11 -foreground $::left_label_color2 -exec steam_time_flow_flip ] \
 ]]
 
