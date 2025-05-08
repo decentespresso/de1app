@@ -297,7 +297,7 @@ array set ::settings {
 	enable_shot_history_export 0
 	advanced_shot_chart_temp_max 100
 	advanced_shot_chart_temp_min 80
-	final_desired_shot_volume_advanced 0
+	final_desired_shot_volume_advanced 36
 	show_mixtemp_during_espresso 0
 	enable_descale_steam_check 1
 	bean_notes {}
@@ -387,8 +387,8 @@ array set ::settings {
 	water_temperature 85
 	final_desired_shot_weight 36
 	final_desired_shot_volume 36
-	final_desired_shot_weight_advanced 0
-	final_desired_shot_volume_advanced 0
+	final_desired_shot_weight_advanced 36
+	final_desired_shot_volume_advanced 36
 	espresso_max_time 60
 	scale_button_starts_espresso 0
 	espresso_temperature 92
