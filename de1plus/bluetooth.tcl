@@ -2344,9 +2344,10 @@ proc de1_ble_handler { event data } {
 							after 2000 felicita_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "hiroiajimmy"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "hiroiajimmy"
+							after 200 hiroia_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "bookoo"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "bookoo"
-							after 200 hiroia_enable_weight_notifications
+							after 200 bookoo_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "eureka_precisa"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "eureka_precisa"
 							after 200 eureka_precisa_enable_weight_notifications
