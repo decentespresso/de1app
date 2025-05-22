@@ -10,7 +10,7 @@ espresso_temperature_1 90.00
 espresso_temperature_2 90.00
 espresso_temperature_3 90.00
 final_desired_shot_volume 95
-final_desired_shot_volume_advanced 36
+final_desired_shot_volume_advanced 0
 final_desired_shot_volume_advanced_count_start 2
 final_desired_shot_weight 42
 final_desired_shot_weight_advanced 36.0
