@@ -1,4 +1,5 @@
 advanced_shot {}
+espresso_temperature_steps_enabled 1
 author Decent
 read_only 1
 espresso_hold_time 16
