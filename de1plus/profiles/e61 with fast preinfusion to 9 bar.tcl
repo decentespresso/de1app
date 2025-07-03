@@ -9,6 +9,7 @@ espresso_temperature_0 92.0
 espresso_temperature_1 92.0
 espresso_temperature_2 92.0
 espresso_temperature_3 92.0
+espresso_temperature_steps_enabled 1
 final_desired_shot_volume 36
 final_desired_shot_volume_advanced 0
 final_desired_shot_volume_advanced_count_start 0

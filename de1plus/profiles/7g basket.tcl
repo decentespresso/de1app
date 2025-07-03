@@ -9,7 +9,7 @@ espresso_temperature_0 90.0
 espresso_temperature_1 90.0
 espresso_temperature_2 90.0
 espresso_temperature_3 90.0
-espresso_temperature_steps_enabled 0
+espresso_temperature_steps_enabled 1
 final_desired_shot_volume 36
 final_desired_shot_volume_advanced 36
 final_desired_shot_volume_advanced_count_start 2
@@ -23,11 +23,11 @@ flow_profile_minimum_pressure 6
 flow_profile_preinfusion 4.2
 flow_profile_preinfusion_time 6
 maximum_flow 6.0
-maximum_flow_range 0.6
 maximum_flow_range_advanced 0.6
+maximum_flow_range_default 1.0
 maximum_pressure 12.0
-maximum_pressure_range 0.6
 maximum_pressure_range_advanced 0.6
+maximum_pressure_range_default 0.9
 preinfusion_flow_rate 2.4
 preinfusion_stop_pressure 4.5
 preinfusion_time 8
@@ -36,6 +36,7 @@ profile_hide 1
 profile_language en
 profile_notes {This profile is optimized for the 7g Decent Basket.  You should weigh 7g of beans and dose them into the center mini-basket at the bottom.  You'll need a small 36mm tamper.  The flow rate is slowed down to prevent disturbing the puck.  A lower pressure is used to compensate for the lower puck integrity.  Final shot weight should be 18 to 28 grams.}
 profile_title {7g basket}
+read_only 1
 settings_profile_type settings_2a
 tank_desired_water_temperature 0
-read_only 1
+
