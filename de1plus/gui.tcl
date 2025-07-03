@@ -1421,6 +1421,8 @@ proc show_settings { {tab_to_show ""} {optional_callback ""} } {
 	}
 
 	update_de1_explanation_chart
+	fill_advanced_profile_steps_listbox
+	load_advanced_profile_step 1
 
 }
 
