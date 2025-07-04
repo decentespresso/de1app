@@ -4532,6 +4532,7 @@ proc streamline_history_profile_fwd { {destination {}} } {
 	streamline_load_currently_selected_history_shot
 }
 
+# after the shot has ended (finished)
 ::de1::event::listener::after_flow_complete_add [lambda {event_dict} { streamline_shot_ended } ]
 proc streamline_shot_ended  {} {
 	if {[ifexists ::settings(history_saved_shot_filename)] != ""} {		
@@ -4544,6 +4545,9 @@ proc streamline_shot_ended  {} {
 		streamline_history_profile_fwd 1
 
 	}
+
+	# reset the shot frame description to blank so that gui doesn't temporarily show it when the next shot starts
+	set ::settings(current_frame_description) ""
 
 	unset -nocomplain ::de1(streamline_shot_in_progress)
 }
