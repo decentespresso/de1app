@@ -1173,6 +1173,8 @@ proc set_dummy_espresso_vars {} {
 				set ::settings($varname) [ifexists simulation_settings($varname)]
 			}
 			
+			# reset the current_frame_number when we load the shot to simulate it, because it's not being correctly reset by a DE1 event
+			set ::de1(current_frame_number) -1
 
 			# this is the final drink weight, a few seconds after the shot stopped. We don't currently do anything with this for simulated shots.
 			# set ::de1(simulated_drink_weight) [ifexists ::settings(drink_weight)]
@@ -3160,26 +3162,70 @@ namespace eval ::gui::update {
 
 			set framepopup ""
 			set framedesc ""
+
+			set hold -1
+			set decline -1
 			
+			######
+			# the "slow start" and "temperature steps" features, both prefix the FLOW and PRESSURE profiles an an additional preinfusion step, and this has to be accounted for when we label the steps for human reading.
+			if { $::settings(settings_profile_type) eq "settings_2a"} {
+				# pressure profile shots have separate steps for RISE and HOLD even though the GUI only shows 1 step.
+				set rise 1
+				set hold 2
+				set decline 3
+
+				if {[ifexists ::settings(insert_preinfusion_pause)] == 1} {
+					incr hold
+					incr rise
+					incr decline
+				}
+
+				if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+					incr hold
+					incr rise
+					incr decline
+				}
+
+			} elseif {$::settings(settings_profile_type) eq "settings_2b" } {
+				set hold 1
+				set decline 2
+
+				if {[ifexists ::settings(insert_preinfusion_pause)] == 1} {
+					incr hold
+					incr decline
+				}
+
+				if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
+					incr hold
+					incr decline
+				}
+			}
+			######
+			
+
 			switch $::settings(settings_profile_type) {
 
 				settings_2a {
 
-					switch [::gui::state::current_framenumber] {
-						0 -
-						1 { set framedesc [translate "1: preinfuse"] }
-						2 { set framedesc [translate "2: rise and hold"] }
-						default { set framedesc [translate "3: decline"] }
+					if {[::gui::state::current_framenumber] == $rise} {
+						set framedesc [translate "2: rise"] 
+					} elseif {[::gui::state::current_framenumber] == $hold} {
+						set framedesc [translate "2: hold"] 
+					} elseif {[::gui::state::current_framenumber] == $decline} {
+						set framedesc [translate "3: decline"]						
+					} else {
+						set framedesc [translate "1: preinfuse"]
 					}
 				}
 
 				settings_2b {
 
-					switch [::gui::state::current_framenumber] {
-						0 -
-						1 { set framedesc [translate "1: preinfuse"] }
-						2 { set framedesc [translate "2: hold"] }
-						default { set framedesc [translate "3: decline"] }
+					if {[::gui::state::current_framenumber] == $hold} {
+						set framedesc [translate "2: hold"] 
+					} elseif {[::gui::state::current_framenumber] == $decline} {
+						set framedesc [translate "3: decline"] 
+					} else {
+						set framedesc [translate "1: preinfuse"] 
 					}
 				}
 
@@ -3200,6 +3246,9 @@ namespace eval ::gui::update {
 
 				default { set framedesc "-" }
 			}
+
+			#msg -ERROR "FRAMEDESC framedesc={$framedesc} / ::settings(settings_profile_type)=$::settings(settings_profile_type) / ::gui::state::current_framenumber = [::gui::state::current_framenumber] / hold=$hold decline=$decline / espresso_temperature_steps_enabled=[ifexists ::settings(espresso_temperature_steps_enabled)] / insert_preinfusion_pause]=[ifexists ::settings(insert_preinfusion_pause)] "
+
 
 			switch -- $this_substate {
 
