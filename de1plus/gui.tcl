@@ -3165,7 +3165,7 @@ namespace eval ::gui::update {
 
 			set hold -1
 			set decline -1
-			
+						
 			######
 			# the "slow start" and "temperature steps" features, both prefix the FLOW and PRESSURE profiles an an additional preinfusion step, and this has to be accounted for when we label the steps for human reading.
 			if { $::settings(settings_profile_type) eq "settings_2a"} {
