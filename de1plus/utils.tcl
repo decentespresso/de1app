@@ -1528,6 +1528,34 @@ proc load_settings {} {
 
     }
 
+	# disable smart charging on samsung tablets
+	if {[tablet_is_samsung_brand] == 1} {
+		if {$::settings(smart_battery_charging) == 1} {
+			popup [subst {[translate_toast "Smart charging has been automatically turned off"]}]
+			set ::settings(smart_battery_charging) 0
+		}
+
+		# set the resolution correctly for known Samsung tablets
+		array set displaymetrics [borg displaymetrics]
+		if {[ifexists displaymetrics(width)] == 1920 && [ifexists displaymetrics(height)] == 1128} {
+
+			# samsung a9+
+			if {$::settings(screen_size_width) != 1920 || $::settings(screen_size_height) != 1200} {
+				popup [subst {[translate_toast "Screen resolution reset"]}]
+				set ::settings(screen_size_width) 1920
+				set ::settings(screen_size_height) 1200
+			}
+
+			if {$::settings(default_font_calibration) < 0.6 || $::settings(default_font_calibration) > 0.8} {
+				popup [subst {[translate_toast "Font scale reset"]}]
+				set ::settings(default_font_calibration) 0.65
+			}
+
+		}
+	}
+
+
+
     # integrity check on some settings, that should only ever be integers.  Some FLOAT math logic in the software might set it to something non-integer by accident
 	foreach round_to_integer_setting [list steam_timeout flush_seconds water_volume water_temperature] {
 		if {[info exists ::settings($round_to_integer_setting)] == 1} {
@@ -2875,4 +2903,12 @@ proc number_of_preinfusion_steps {} {
 	}
 
 	return $preinfusion_end_step
+}
+
+
+proc tablet_is_samsung_brand {} {
+	if {[string first "samsung" [string tolower [borg osbuildinfo]]] == -1} {
+		return 0
+	}
+	return 1
 }
