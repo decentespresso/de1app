@@ -412,7 +412,7 @@ proc check_timestamp_for_app_update_available_async {} {
 
     set check_only [expr {![zero_if_empty [ifexists ::settings(app_auto_update)]]}]
 
-    set host "http://decentespresso.com"
+    set host "http://fast.decentespresso.com"
     set progname "de1plus"
     if {[ifexists ::settings(app_updates_beta_enabled)] == 1} {
         set progname "de1beta"
@@ -486,7 +486,7 @@ proc check_timestamp_for_app_update_available_async_part2 { remote_timestamp_in 
 
 proc check_timestamp_for_app_update_available { {check_only 0} } {
 
-    set host "http://decentespresso.com"
+    set host "http://fast.decentespresso.com"
     set progname "de1plus"
     if {[ifexists ::settings(app_updates_beta_enabled)] == 1} {
         set progname "de1beta"
@@ -587,8 +587,8 @@ proc start_app_update {} {
     #    return $::de1(app_update_button_label)
     #}
 
-    set host "https://decentespresso.com"
-    set host2 "https://decentespresso.com"
+    set host "https://fast.decentespresso.com"
+    set host2 "https://fast.decentespresso.com"
     #set host "http://10.0.1.200:8000"
 
     set has_tls 0
@@ -600,7 +600,7 @@ proc start_app_update {} {
 
     if {$has_tls != 1} {
         # undroid doesn't yet support https, so fallback to plain http in that case
-        set host "http://decentespresso.com"
+        set host "http://fast.decentespresso.com"
     }
 
     set progname "de1plus"
