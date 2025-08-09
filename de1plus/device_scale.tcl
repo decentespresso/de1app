@@ -676,10 +676,7 @@ namespace eval ::device::scale::history {
 
 	variable _is_recording_flag False
 
-	variable _lslr_state
-	array set _lslr_state [list valid False m 0 b 0]
-
-	# Used for finite-difference, LSLR, as well as most of median estimation
+	# Used for finite-difference, as well as most of median estimation
 	# 11 samples is 10 intervals, ~1 second
 
 	proc samples_for_estimate {} {
@@ -716,16 +713,12 @@ namespace eval ::device::scale::history {
 
 		variable _scale_raw_weight [lrepeat [samples_for_shift_register] 0]
 		variable _scale_raw_arrival [lrepeat [samples_for_shift_register] 0]
-
-		_lslr_clear
 	}
 
 	proc on_tare_seen {args} {
 
 		variable _scale_raw_weight [lrepeat [samples_for_shift_register] 0]
 		variable _scale_raw_arrival [lrepeat [samples_for_shift_register] 0]
-
-		_lslr_clear
 
 		msg -DEBUG "::device::scale::history::on_tare_seen"
 	}
@@ -751,8 +744,6 @@ namespace eval ::device::scale::history {
 		variable scale_raw_arrival_shot
 
 		variable _final_weight_name
-
-		_lslr_clear
 
 		shift_in _scale_raw_weight $mass
 		shift_in _scale_raw_arrival $t
@@ -807,100 +798,6 @@ namespace eval ::device::scale::history {
 
 
 	proc flow_time_fd {} {
-
-		# Center of window
-
-		variable _scale_raw_arrival
-
-		if {[llength $_scale_raw_arrival] < [samples_for_estimate]} {return 0}
-
-		set intervals [ expr { [samples_for_estimate] - 1 }]
-		expr { ( [lindex $_scale_raw_arrival end] + [lindex $_scale_raw_arrival end-$intervals] ) / 2.0 }
-	}
-
-
-	#
-	# Least squares linear regression
-	#
-	# Nominal delay mass: 0
-	# Nominal delay flow: 5 -- (samples_for_estimate - 1) / 2
-	#
-
-	proc _lslr_clear {} {
-
-		variable _lslr_state
-		array set _lslr_state [list valid False m 0 b 0]
-	}
-
-
-	proc _lslr_core {} {
-
-		#
-		# Least Squares Linear Regression
-		#
-		# m = (N * sum_xy - sum_x * sum_y) / (N * sum_xx - (sum_x)^2)
-		# b = (sum_y - m * sum_x) / N
-		#
-		# 1 through k
-		# sum of k = n(n+1)/2
-		# sum of k^2 = n(n+1)(2n+1)/6
-		#
-		# 0 through -(n-1)tau
-		# sum_x = -tau * n(n-1)/2
-		# sum_xx = tau^2 * (n)(n-1)(2n-1)/6
-		#
-
-		variable _scale_raw_weight
-		variable _lslr_state
-
-		# Tcl potentially leaks what should be locals over globals of the same name
-		# (there is no "local" declaration in Tcl either)
-
-		variable n_est [samples_for_estimate]
-		variable sum_n [expr { $n_est * ($n_est - 1) / 2 }]
-		variable sum_nn [expr { $n_est * ($n_est - 1) * (2 * $n_est - 1) / 6 }]
-
-		variable tau [::device::scale::period::estimate]
-
-		variable sum_x [expr { -$sum_n * $tau }]
-		variable sum_xx [expr { $sum_nn * $tau * $tau }]
-
-		variable sum_xy 0
-		variable sum_y 0
-
-		variable x
-		variable y
-
-		for {set x [expr { - ( $n_est - 1 ) }]} {$x <= 0} {incr x} {
-
-			set y [lindex $_scale_raw_weight end+${x}]
-			set sum_y [expr {$sum_y + $y}]
-			set sum_xy [expr {$sum_xy + ($x * $y)}]
-		}
-		set sum_xy [expr { $tau * $sum_xy }]
-
-		set _lslr_state(m) [expr { ($n_est * $sum_xy - $sum_x * $sum_y) / ($n_est * $sum_xx - $sum_x * $sum_x) }]
-		set _lslr_state(b) [expr { ($sum_y - $m * $sum_x) / $n_est }]
-		set _lslr_state(valid) True
-	}
-
-	proc weight_lslr {} {
-
-		variable _lslr_state
-
-		if { ! $_lslr_state(valid) } { _lslr_core }
-		return $_lslr_state(b)
-	}
-
-	proc flow_lslr {} {
-
-		variable _lslr_state
-
-		if { ! $_lslr_state(valid) } { _lslr_core }
-		return $_lslr_state(m)
-	}
-
-	proc flow_time_lslr {} {
 
 		# Center of window
 
