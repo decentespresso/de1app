@@ -796,12 +796,13 @@ namespace eval ::device::scale::history {
 	proc flow_fd {} {
 
 		variable _scale_raw_weight
+		variable _scale_raw_arrival
 
 		if {[llength $_scale_raw_weight] < [samples_for_estimate]} {return 0}
 
 		set intervals [ expr { [samples_for_estimate] - 1 }]
 		expr { ( [lindex $_scale_raw_weight end] - [lindex $_scale_raw_weight end-$intervals] ) \
-			       / ( [::device::scale::period::estimate] * $intervals ) }
+			       / ( [lindex $_scale_raw_arrival end] - [lindex $_scale_raw_arrival end-$intervals] ) }
 	}
 
 
