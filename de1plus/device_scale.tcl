@@ -122,7 +122,6 @@ namespace eval ::device::scale {
 
 	proc init {} {
 
-		period::init
 		history::init
 	}
 
@@ -209,7 +208,6 @@ namespace eval ::device::scale {
 
 		# Update the internal registers
 
-		::device::scale::period::estimate_update $event_time
 		::device::scale::history::push_mass $reported_weight $event_time
 
 		set ::device::scale::_last_weight_update_time $event_time
@@ -485,91 +483,6 @@ namespace eval ::device::scale {
 
 
 ###
-### ::device::scale::period
-###
-###	Estimate the actual scale reporting rate, rather than assume 10 Hz
-###
-
-namespace eval ::device::scale::period {
-
-	variable _estimate_state
-
-	array set _estimate_state {
-		last_arrival 		0.0
-		new_value_weight	0.0001
-		moving_average		0.100
-		threshold		0.350
-	}
-
-	# The Skale 2 seems to clock out weight updates on a ~150 ms clock
-	# There can be two updates sent in the same time slot, and a slot
-	# can be skipped. This behavior leads to 300 ms being "expected"
-	# See https://3.basecamp.com/3671212/buckets/7351439/messages/3331033233
-	# for a plot of inter-sample times
-
-	# A new_value_weight of 0.0001 is a tau of ~10,000 samples, ~17 minutes.
-	# The high variance of Skale 2 inter-arrival times requires long tau
-	# to increase the accuracy of the estimate. Setting the period
-	# for a new scale to 100 ms mitigates "cold start" issues.
-
-	variable _scale_period_name None
-
-	proc init {args} {
-
-		variable _estimate_state
-		variable _scale_period_name
-		variable _scale_period_update_weight_name
-
-		if { ! [::device::scale::is_connected] } {
-			msg -DEBUG "No scale to init [join $args {, }]"
-			return
-		}
-
-		set btaddr [::device::scale::bluetooth_address]
-
-		set _scale_period_name "scale_period_${btaddr}"
-		set _scale_period_update_weight_name "scale_period_update_weight_${btaddr}"
-
-		if { [info exists ::settings($_scale_period_name)] \
-			     && [string is double -strict $::settings($_scale_period_name)] } {
-			set _estimate_state(moving_average) $::settings($_scale_period_name)
-		}
-		if { [info exists ::settings($_scale_period_update_weight_name)] \
-			     && [string is double -strict $::settings($_scale_period_update_weight_name)] } {
-			set _estimate_state(new_value_weight) $::settings($_scale_period_update_weight_name)
-		}
-	}
-
-
-	proc estimate {} {
-
-		variable _estimate_state
-
-		expr { $_estimate_state(moving_average) }
-	}
-
-
-	proc estimate_update { arrival_time } {
-
-		variable _estimate_state
-		variable _scale_period_name
-		variable _scale_period_update_weight_name
-
-		set delta [expr { $arrival_time - $_estimate_state(last_arrival) }]
-		if { $delta < $_estimate_state(threshold) && $delta > 0 } {
-			set k $_estimate_state(new_value_weight)
-			set _estimate_state(moving_average) \
-				[expr { $_estimate_state(moving_average) * (1.0 -  $k) + $delta * $k }]
-		}
-		set _estimate_state(last_arrival) $arrival_time
-
-		set ::settings($_scale_period_name) $_estimate_state(moving_average)
-	}
-
-} ;# ::device::scale::period
-
-
-###
 ### ::device::scale::history
 ###
 ###	Estimate the weight and mass-flow rates from previous samples
@@ -676,10 +589,7 @@ namespace eval ::device::scale::history {
 
 	variable _is_recording_flag False
 
-	variable _lslr_state
-	array set _lslr_state [list valid False m 0 b 0]
-
-	# Used for finite-difference, LSLR, as well as most of median estimation
+	# Used for finite-difference, as well as most of median estimation
 	# 11 samples is 10 intervals, ~1 second
 
 	proc samples_for_estimate {} {
@@ -716,16 +626,12 @@ namespace eval ::device::scale::history {
 
 		variable _scale_raw_weight [lrepeat [samples_for_shift_register] 0]
 		variable _scale_raw_arrival [lrepeat [samples_for_shift_register] 0]
-
-		_lslr_clear
 	}
 
 	proc on_tare_seen {args} {
 
 		variable _scale_raw_weight [lrepeat [samples_for_shift_register] 0]
 		variable _scale_raw_arrival [lrepeat [samples_for_shift_register] 0]
-
-		_lslr_clear
 
 		msg -DEBUG "::device::scale::history::on_tare_seen"
 	}
@@ -751,8 +657,6 @@ namespace eval ::device::scale::history {
 		variable scale_raw_arrival_shot
 
 		variable _final_weight_name
-
-		_lslr_clear
 
 		shift_in _scale_raw_weight $mass
 		shift_in _scale_raw_arrival $t
@@ -796,110 +700,17 @@ namespace eval ::device::scale::history {
 	proc flow_fd {} {
 
 		variable _scale_raw_weight
+		variable _scale_raw_arrival
 
 		if {[llength $_scale_raw_weight] < [samples_for_estimate]} {return 0}
 
 		set intervals [ expr { [samples_for_estimate] - 1 }]
 		expr { ( [lindex $_scale_raw_weight end] - [lindex $_scale_raw_weight end-$intervals] ) \
-			       / ( [::device::scale::period::estimate] * $intervals ) }
+			       / ( [lindex $_scale_raw_arrival end] - [lindex $_scale_raw_arrival end-$intervals] ) }
 	}
 
 
 	proc flow_time_fd {} {
-
-		# Center of window
-
-		variable _scale_raw_arrival
-
-		if {[llength $_scale_raw_arrival] < [samples_for_estimate]} {return 0}
-
-		set intervals [ expr { [samples_for_estimate] - 1 }]
-		expr { ( [lindex $_scale_raw_arrival end] + [lindex $_scale_raw_arrival end-$intervals] ) / 2.0 }
-	}
-
-
-	#
-	# Least squares linear regression
-	#
-	# Nominal delay mass: 0
-	# Nominal delay flow: 5 -- (samples_for_estimate - 1) / 2
-	#
-
-	proc _lslr_clear {} {
-
-		variable _lslr_state
-		array set _lslr_state [list valid False m 0 b 0]
-	}
-
-
-	proc _lslr_core {} {
-
-		#
-		# Least Squares Linear Regression
-		#
-		# m = (N * sum_xy - sum_x * sum_y) / (N * sum_xx - (sum_x)^2)
-		# b = (sum_y - m * sum_x) / N
-		#
-		# 1 through k
-		# sum of k = n(n+1)/2
-		# sum of k^2 = n(n+1)(2n+1)/6
-		#
-		# 0 through -(n-1)tau
-		# sum_x = -tau * n(n-1)/2
-		# sum_xx = tau^2 * (n)(n-1)(2n-1)/6
-		#
-
-		variable _scale_raw_weight
-		variable _lslr_state
-
-		# Tcl potentially leaks what should be locals over globals of the same name
-		# (there is no "local" declaration in Tcl either)
-
-		variable n_est [samples_for_estimate]
-		variable sum_n [expr { $n_est * ($n_est - 1) / 2 }]
-		variable sum_nn [expr { $n_est * ($n_est - 1) * (2 * $n_est - 1) / 6 }]
-
-		variable tau [::device::scale::period::estimate]
-
-		variable sum_x [expr { -$sum_n * $tau }]
-		variable sum_xx [expr { $sum_nn * $tau * $tau }]
-
-		variable sum_xy 0
-		variable sum_y 0
-
-		variable x
-		variable y
-
-		for {set x [expr { - ( $n_est - 1 ) }]} {$x <= 0} {incr x} {
-
-			set y [lindex $_scale_raw_weight end+${x}]
-			set sum_y [expr {$sum_y + $y}]
-			set sum_xy [expr {$sum_xy + ($x * $y)}]
-		}
-		set sum_xy [expr { $tau * $sum_xy }]
-
-		set _lslr_state(m) [expr { ($n_est * $sum_xy - $sum_x * $sum_y) / ($n_est * $sum_xx - $sum_x * $sum_x) }]
-		set _lslr_state(b) [expr { ($sum_y - $m * $sum_x) / $n_est }]
-		set _lslr_state(valid) True
-	}
-
-	proc weight_lslr {} {
-
-		variable _lslr_state
-
-		if { ! $_lslr_state(valid) } { _lslr_core }
-		return $_lslr_state(b)
-	}
-
-	proc flow_lslr {} {
-
-		variable _lslr_state
-
-		if { ! $_lslr_state(valid) } { _lslr_core }
-		return $_lslr_state(m)
-	}
-
-	proc flow_time_lslr {} {
 
 		# Center of window
 
