@@ -122,7 +122,6 @@ namespace eval ::device::scale {
 
 	proc init {} {
 
-		period::init
 		history::init
 	}
 
@@ -209,7 +208,6 @@ namespace eval ::device::scale {
 
 		# Update the internal registers
 
-		::device::scale::period::estimate_update $event_time
 		::device::scale::history::push_mass $reported_weight $event_time
 
 		set ::device::scale::_last_weight_update_time $event_time
@@ -482,91 +480,6 @@ namespace eval ::device::scale {
 
 
 } ;# ::device::scale
-
-
-###
-### ::device::scale::period
-###
-###	Estimate the actual scale reporting rate, rather than assume 10 Hz
-###
-
-namespace eval ::device::scale::period {
-
-	variable _estimate_state
-
-	array set _estimate_state {
-		last_arrival 		0.0
-		new_value_weight	0.0001
-		moving_average		0.100
-		threshold		0.350
-	}
-
-	# The Skale 2 seems to clock out weight updates on a ~150 ms clock
-	# There can be two updates sent in the same time slot, and a slot
-	# can be skipped. This behavior leads to 300 ms being "expected"
-	# See https://3.basecamp.com/3671212/buckets/7351439/messages/3331033233
-	# for a plot of inter-sample times
-
-	# A new_value_weight of 0.0001 is a tau of ~10,000 samples, ~17 minutes.
-	# The high variance of Skale 2 inter-arrival times requires long tau
-	# to increase the accuracy of the estimate. Setting the period
-	# for a new scale to 100 ms mitigates "cold start" issues.
-
-	variable _scale_period_name None
-
-	proc init {args} {
-
-		variable _estimate_state
-		variable _scale_period_name
-		variable _scale_period_update_weight_name
-
-		if { ! [::device::scale::is_connected] } {
-			msg -DEBUG "No scale to init [join $args {, }]"
-			return
-		}
-
-		set btaddr [::device::scale::bluetooth_address]
-
-		set _scale_period_name "scale_period_${btaddr}"
-		set _scale_period_update_weight_name "scale_period_update_weight_${btaddr}"
-
-		if { [info exists ::settings($_scale_period_name)] \
-			     && [string is double -strict $::settings($_scale_period_name)] } {
-			set _estimate_state(moving_average) $::settings($_scale_period_name)
-		}
-		if { [info exists ::settings($_scale_period_update_weight_name)] \
-			     && [string is double -strict $::settings($_scale_period_update_weight_name)] } {
-			set _estimate_state(new_value_weight) $::settings($_scale_period_update_weight_name)
-		}
-	}
-
-
-	proc estimate {} {
-
-		variable _estimate_state
-
-		expr { $_estimate_state(moving_average) }
-	}
-
-
-	proc estimate_update { arrival_time } {
-
-		variable _estimate_state
-		variable _scale_period_name
-		variable _scale_period_update_weight_name
-
-		set delta [expr { $arrival_time - $_estimate_state(last_arrival) }]
-		if { $delta < $_estimate_state(threshold) && $delta > 0 } {
-			set k $_estimate_state(new_value_weight)
-			set _estimate_state(moving_average) \
-				[expr { $_estimate_state(moving_average) * (1.0 -  $k) + $delta * $k }]
-		}
-		set _estimate_state(last_arrival) $arrival_time
-
-		set ::settings($_scale_period_name) $_estimate_state(moving_average)
-	}
-
-} ;# ::device::scale::period
 
 
 ###
