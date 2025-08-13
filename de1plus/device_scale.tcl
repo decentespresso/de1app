@@ -494,12 +494,7 @@ namespace eval ::device::scale::period {
 
 	variable _estimate_state
 
-	array set _estimate_state {
-		last_arrival 		0.0
-		new_value_weight	0.0001
-		moving_average		0.100
-		threshold		0.350
-	}
+	# Defaults are initialized down inside init.
 
 	# The Skale 2 seems to clock out weight updates on a ~150 ms clock
 	# There can be two updates sent in the same time slot, and a slot
@@ -523,6 +518,23 @@ namespace eval ::device::scale::period {
 		if { ! [::device::scale::is_connected] } {
 			msg -DEBUG "No scale to init [join $args {, }]"
 			return
+		}
+
+		# Set the defaults, clearing any other scale's state if any
+		array set _estimate_state {
+			last_arrival 		0.0
+			new_value_weight	0.0001
+			moving_average		0.100
+			threshold		0.350
+		}
+
+		# Adjust defaults based on scale
+		switch -exact [::device::scale::type] {
+			difluid {
+				# The nominal reporting interval is 200 ms (https://discord.com/channels/994167114611044443/1008237482938224681/1404826724088156312)
+				set _estimate_state(moving_average) 0.200
+			}
+			default {}
 		}
 
 		set btaddr [::device::scale::bluetooth_address]
