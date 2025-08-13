@@ -528,6 +528,15 @@ namespace eval ::device::scale::period {
 			threshold		0.350
 		}
 
+		# Adjust defaults based on scale
+		switch -exact [::device::scale::type] {
+			difluid {
+				# The nominal reporting interval is 200 ms (https://discord.com/channels/994167114611044443/1008237482938224681/1404826724088156312)
+				set _estimate_state(moving_average) 0.200
+			}
+			default {}
+		}
+
 		set btaddr [::device::scale::bluetooth_address]
 
 		set _scale_period_name "scale_period_${btaddr}"
