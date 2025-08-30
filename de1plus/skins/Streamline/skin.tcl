@@ -713,28 +713,11 @@ if { [plugins enabled Graphical_Flow_Calibrator] } {
 
 if {$::settings(scale_bluetooth_address) != ""} {
 	lappend btns [list -text "    " -font "Inter-Bold16"] 
-	#lappend btns [list -text "Weight" -font "Inter-Bold18" -foreground $::profile_title_color  -exec "::device::scale::tare; popup [translate Tare]" ] 
-	#lappend btns [list -text " " -font "Inter-Bold16"  -exec "::device::scale::tare; popup [translate Tare]" ]
-	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]} -font "mono12" -foreground $::profile_title_color  -exec "::device::scale::tare; popup [translate Tare]" ]
-	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]} -font "mono8" -foreground $::profile_title_color  -exec "::device::scale::tare; popup [translate Tare]" ]
-
 	lappend btns [list -text {$::streamline_dataline_weight_label_red} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {$::streamline_dataline_weight_label_blue} -font "Inter-Bold18" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {[streamline_ui_weight_refresh]} -font "Inter-Bold16"  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {$::streamline_dataline_weight_value} -font "mono12" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {$::streamline_dataline_weight_unit} -font "mono8" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
-
-
-	#set ::streamline_weight_dataline_label [translate "Weight"]
-	#set ::streamline_weight_dataline_red_label "Reconnect"
-
-	#lappend btns [list -text "    " -font "Inter-Bold16"] 
-	#lappend btns [list -text {$::streamline_weight_dataline_label} -font "Inter-Bold18" -foreground $::dataline_data_color" ] 
-	#lappend btns [list -text {$::streamline_weight_dataline_red_label} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "ble_connect_to_scale; popup [translate Connecting]" ] 
-	#lappend btns [list -text " " -font "Inter-Bold16"  -exec "::device::scale::tare; popup [translate Tare]" ]
-	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]} -font "mono12" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
-	#lappend btns [list -text {[lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 1]} -font "mono8" -foreground $::dataline_data_color  -exec "::device::scale::tare; popup [translate Tare]" ]
-
 }
 
 
@@ -771,7 +754,17 @@ lappend water_btns \
 	[list -text "Volume" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
 	[list -text {[round_to_integer $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text [translate "ml"] -font "mono8"  -foreground $::dataline_data_color ]
+	[list -text [translate "ml"] -font "mono8"  -foreground $::dataline_data_color ] 
+
+if {$::settings(scale_bluetooth_address) != ""} {
+	lappend water_btns [list -text "    " -font "Inter-Bold16"] 
+	lappend water_btns [list -text {$::streamline_dataline_weight_label_red} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "scale_tare_or_reconnect" ]
+	lappend water_btns [list -text {$::streamline_dataline_weight_label_blue} -font "Inter-Bold18" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
+	lappend water_btns [list -text {[streamline_ui_weight_refresh]} -font "Inter-Bold16"  -exec "scale_tare_or_reconnect" ]
+	lappend water_btns [list -text {$::streamline_dataline_weight_value} -font "mono12" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
+	lappend water_btns [list -text {$::streamline_dataline_weight_unit} -font "mono8" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
+}
+	
 
 add_de1_rich_text "water" 690 330 left 1 2 65 $::background_color $water_btns
 add_de1_rich_text "water_zoomed" 50 330 left 1 2 65 $::background_color $water_btns
