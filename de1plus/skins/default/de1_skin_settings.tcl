@@ -2021,7 +2021,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				set_next_page off message; page_show message
 				after 200 app_exit
 
-			} elseif {[ifexists ::settings_backup(scale_bluetooth_address)] == "" && [ifexists ::settings(scale_bluetooth_address)] != ""} {
+			} elseif {[ifexists ::settings_backup(scale_bluetooth_address)] != [ifexists ::settings(scale_bluetooth_address)]} {
 
 				# john 21-1-25 if scale changes, for app restart when existing the SETTINGS section
 				# this is because often the live changing of the scale doesn't work reliably, and 
@@ -2035,7 +2035,7 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 				.can itemconfigure $::message_button_label -text [translate "Wait"]
 
 				set_next_page off message; page_show message
-				after 200 app_exit
+				after 2000 app_exit
 
 			} else {
 
