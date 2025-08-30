@@ -1505,6 +1505,12 @@ proc load_settings {} {
 
     set osbuildinfo_string [borg osbuildinfo]
 
+    catch {
+        array set osbuildinfo $osbuildinfo_string
+    }
+
+    set tablet_model "[ifexists osbuildinfo(manufacturer)] [ifexists osbuildinfo(model)]"
+
     set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]    
 
 
@@ -1512,9 +1518,6 @@ proc load_settings {} {
        
         # if there are no settings, then set some based on what we know about this machine's settings
         # nb : we could 
-        catch {
-            array set osbuildinfo $osbuildinfo_string
-        }
         if {[ifexists osbuildinfo(product)] == "P80X_EEA"} {
             # this "Teclast" tablet firmware version has an Android metadata configuration bug, and needs 20% larger fonts
             # other Teclast tablets do not have this error.
@@ -1528,29 +1531,61 @@ proc load_settings {} {
 
     }
 
-	# disable smart charging on samsung tablets
-	if {[tablet_is_samsung_brand] == 1} {
-		if {$::settings(smart_battery_charging) == 1} {
+    if {[ifexists ::settings(tablet_model)] != $tablet_model} {
+    	# tablet model has changed, so potentially reset settings.
+
+    	# save this tablet model in the settings, so we can detect if the tablet model changes in the future
+    	set ::settings(tablet_model) $tablet_model
+
+		
+		if {[tablet_is_samsung_brand] == 1} {
+
+			# disable smart charging on samsung tablets
 			popup [subst {[translate_toast "Smart charging has been automatically turned off"]}]
 			set ::settings(smart_battery_charging) 0
-		}
 
-		# set the resolution correctly for known Samsung tablets
-		array set displaymetrics [borg displaymetrics]
-		if {[ifexists displaymetrics(width)] == 1920 && [ifexists displaymetrics(height)] == 1128} {
-
-			# samsung a9+
-			if {$::settings(screen_size_width) != 1920 || $::settings(screen_size_height) != 1200} {
-				popup [subst {[translate_toast "Screen resolution reset"]}]
-				set ::settings(screen_size_width) 1920
-				set ::settings(screen_size_height) 1200
-			}
-
-			if {$::settings(default_font_calibration) < 0.6 || $::settings(default_font_calibration) > 0.8} {
+			# reset font size if it is out of bounds for samsung tablets
+			if {$::settings(default_font_calibration) < 0.5 || $::settings(default_font_calibration) > 0.8} {
 				popup [subst {[translate_toast "Font scale reset"]}]
-				set ::settings(default_font_calibration) 0.65
+				set ::settings(default_font_calibration) 0.5			
 			}
 
+			# set the resolution correctly for known Samsung tablets
+			array set displaymetrics [borg displaymetrics]
+			if {[ifexists displaymetrics(width)] == 1920 && [ifexists displaymetrics(height)] == 1128} {
+
+				# samsung a9+
+				if {$::settings(screen_size_width) != 1920 || $::settings(screen_size_height) != 1200} {
+					popup [subst {[translate_toast "Screen resolution reset"]}]
+					set ::settings(screen_size_width) 1920
+					set ::settings(screen_size_height) 1200
+
+					# a9+ needs a larger font scaling
+					set ::settings(default_font_calibration) 0.60
+				}
+
+			} elseif {[ifexists displaymetrics(width)] == 1920 && [ifexists displaymetrics(height)] == 1177} {
+
+				# samsung galaxy tab A 10.1 SM-T510
+				if {$::settings(screen_size_width) != 1920 || $::settings(screen_size_height) != 1200} {
+					popup [subst {[translate_toast "Screen resolution reset"]}]
+					set ::settings(screen_size_width) 1920
+					set ::settings(screen_size_height) 1200
+				}
+
+			
+			} elseif {[ifexists displaymetrics(width)] == 2800 && [ifexists displaymetrics(height)] == 1650} {
+
+				# samsung S8+ SM-X800 
+				if {$::settings(screen_size_width) != 2800 || $::settings(screen_size_height) != 1752} {
+					popup [subst {[translate_toast "Screen resolution reset"]}]
+					set ::settings(screen_size_width) 2800
+					set ::settings(screen_size_height) 1752
+				}
+
+			}
+		} else {
+			# smart defaults for other tablet brands can go here
 		}
 	}
 
