@@ -871,6 +871,18 @@ namespace eval ::de1::sav {
 				::de1::sav::on_hotwater_start
 			}
 
+			Steam {
+				if {[ifexists ::de1(steam_heater_temperature)] < 135} {
+
+					if {[ifexists ::de1(steam_heater_temperature)] < 120} {
+						popup [translate_toast "The steam heater is warming up. Please try again later."]
+						start_idle
+					} else {
+						popup [translate_toast "The steam heater is warming up. Please wait."]
+					}
+				}
+			}
+
 			default {
 				return
 			}
