@@ -1834,11 +1834,11 @@ proc save_brew_temp {} {
 proc choose_appropriate_data_entry_for_brew_temp {} {
 	if {$::settings(enable_fahrenheit) == 1} {
 		set ::data_entry_brew_temperature [celsius_to_fahrenheit $::settings(espresso_temperature)]
-		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 1 0 221 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
+		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 1 1 221 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
 	} else {
 		# celsius
 		set ::data_entry_brew_temperature $::settings(espresso_temperature)
-		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 0 0 105 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
+		ask_for_data_entry_number [translate "TEMP"] $::data_entry_brew_temperature ::data_entry_brew_temperature "º" 0 1 105 [list save_brew_temp save_profile_and_update_de1_soon "streamline_blink_rounded_setting temp_setting_rectangle"]
 	}
 }
 
