@@ -1213,22 +1213,40 @@ namespace eval ::device::scale::saw {
 
 			set stop_early_by [expr { $_early_by_grams + [flow_now] * $_early_by_flow }]
 
-			if {$_target > 0 \
-				&& [$_mode_timer] > $_ignore_first_seconds \
-				&& ! $::de1(app_autostop_triggered) \
-				&& [::gui::state::current_framenumber] >= [number_of_preinfusion_steps] \
-				&& [round_to_one_digits $thisweight] > \
+			set do_saw_stop 0
+			if {[::de1::state::current_state] == "Espresso"} {
+				if {$_target > 0 \
+					&& [$_mode_timer] > $_ignore_first_seconds \
+					&& [::gui::state::current_framenumber] >= [number_of_preinfusion_steps] \
+					&& ! $::de1(app_autostop_triggered) \
+					&& [round_to_one_digits $thisweight] > \
 					[round_to_one_digits [expr { $_target - $stop_early_by }]]} {
+
+					set do_saw_stop 1
+				}
+			} else {
+				# hot water stopping doesn't need to keep track of current frame step (ie no stop during preinfusion steps)
+				# we currently don't do SAW on flush, but we could...  it's timing based currently.
+				if {$_target > 0 \
+					&& [$_mode_timer] > $_ignore_first_seconds \
+					&& ! $::de1(app_autostop_triggered) \
+					&& [round_to_one_digits $thisweight] > \
+					[round_to_one_digits [expr { $_target - $stop_early_by }]]} {
+
+					set do_saw_stop 1
+				}
+			}
+
+			if {$do_saw_stop == 1} {
 
 				start_idle
 
 				# As there might be a delay between request and stop
 				# and weight updates keep arriving, don't ask twice
-
 				set ::de1(app_autostop_triggered) True
 
 				msg -INFO "Weight based stop was triggered at ${thisweight} g for ${_target} g target"
-				::gui::notify::scale_event saw_stop
+				::gui::notify::scale_event saw_stop			
 			}
 
 			if {$profile_target > 0 \
