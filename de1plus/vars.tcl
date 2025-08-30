@@ -4263,7 +4263,7 @@ proc when_to_start_pour_tracking_advanced {} {
 			array set steparr [lindex [ifexists ::settings(advanced_shot)] [expr {-1 + $::settings(final_desired_shot_volume_advanced_count_start)}]]
 			set stepdesc [ifexists steparr(name)]
 		}
-		return [subst {[translate "After step"] $::settings(final_desired_shot_volume_advanced_count_start) - [translate $stepdesc]}]
+		return [subst {[translate "Step"] $::settings(final_desired_shot_volume_advanced_count_start) - [translate $stepdesc]}]
 	} else {
 		return [translate "Immediately"]
 	}
