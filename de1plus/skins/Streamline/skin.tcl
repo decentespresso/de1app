@@ -760,8 +760,8 @@ set water_btns ""
 lappend water_btns \
 	[list -text "Temp" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {[lindex [return_temperature_measurement_no_unit $::settings(water_temperature) 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
-	[list -text {[lindex [return_temperature_measurement_no_unit $::settings(water_temperature) 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement_no_unit [watertemp] 1 1] 0]} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[lindex [return_temperature_measurement_no_unit [watertemp] 1 1] 1]} -font "mono8" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text "Flow" -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
