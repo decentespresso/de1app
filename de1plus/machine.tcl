@@ -39,20 +39,20 @@ array set ::de1 {
 	factory_calibration_flow {}
 	scale_max_connection_retry_attempts 20
 	advanced_shot_moveone_enabled 1
-    found    0
-    decentscale_timer_on 0
-    bluetooth_scale_connection_attempts_tried 0
-    battery_discharging 0
-    refill_kit_detected {}
-    scanning 1
-    usb_charger_on 1
-    device_handle 0
-    scale_battery_level 100
-    scale_fw_version 0
-    scale_usb_powered 0
-    language_rtl 0
-    scale_device_handle 0
-    decentscale_device_handle 0
+  found    0
+  decentscale_timer_on 0
+  bluetooth_scale_connection_attempts_tried 0
+  battery_discharging 0
+  refill_kit_detected {}
+  scanning 1
+  usb_charger_on 1
+  device_handle 0
+  scale_battery_level 100
+  scale_fw_version 0
+  scale_usb_powered 0
+  language_rtl 0
+  scale_device_handle 0
+  decentscale_device_handle 0
 	suuid "0000A000-0000-1000-8000-00805F9B34FB"
 	sinstance 12
 	cuuid "0000A002-0000-1000-8000-00805F9B34FB"

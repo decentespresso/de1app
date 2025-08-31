@@ -789,7 +789,7 @@ namespace eval ::de1::sav {
 
 		if { $state_text == "None" } { set state_text $::de1_num_state($::de1(state)) }
 
-		expr { $state_text in {{Espresso} {HotWater}} }
+		expr { $state_text in {{Espresso} {HotWater}} && $::de1(scale_device_handle) == 0 }
 	}
 
 	proc is_active {} {
