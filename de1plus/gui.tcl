@@ -1170,7 +1170,9 @@ proc set_dummy_espresso_vars {} {
 			# only load the actually needed variables from the saved shot simulation, not the entire setting file therein.  
 			# previously loaded all settings from the simulation, and this caused bugs to occur in DYE since we'd clobbered some settings it was depending on
 			foreach varname [profile_vars] {
-				set ::settings($varname) [ifexists simulation_settings($varname)]
+				if {[info exists simulation_settings($varname)] == 1} {
+					set ::settings($varname) $simulation_settings($varname)
+				}
 			}
 			
 			# reset the current_frame_number when we load the shot to simulate it, because it's not being correctly reset by a DE1 event
