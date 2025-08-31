@@ -51,6 +51,7 @@ add_de1_page "settings_4" "settings_4.png" "default"
 
 set ::settings(minimum_water_temperature) 1	
 
+# smaller font than default for dselectors, otherwise translated text doesn't fit.
 
 #set ::active_settings_tab settings_1
 
