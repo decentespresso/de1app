@@ -1,5 +1,5 @@
 advanced_shot {{exit_if 1 flow 8.0 volume 0 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 90.0 weight 0.0 name infuse pressure 0 sensor coffee pump flow exit_type pressure_over exit_flow_over 6 exit_pressure_over 6.0 max_flow_or_pressure 0 exit_pressure_under 0 seconds 10} {exit_if 0 flow 8.0 volume 0 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 90.0 weight 0.0 name {rise and hold} pressure 9.0 sensor coffee pump pressure exit_type pressure_over exit_flow_over 6 exit_pressure_over 11 max_flow_or_pressure 0 exit_pressure_under 0 seconds 3.00} {exit_if 1 flow 8.0 volume 0 max_flow_or_pressure_range 0.6 transition smooth popup {} exit_flow_under 0 temperature 90.0 weight 0.0 name decline pressure 6.0 pump pressure sensor coffee exit_type pressure_under exit_flow_over 1.2 exit_pressure_over 11 max_flow_or_pressure 1.5 seconds 30 exit_pressure_under 6.0} {exit_if 0 flow 1.5 volume 0 max_flow_or_pressure_range 0.6 transition smooth popup {} exit_flow_under 0 temperature 90.0 weight 0.0 name {flow limit} pressure 3.0 sensor coffee pump flow exit_type flow_over exit_flow_over 6 exit_pressure_over 11 max_flow_or_pressure 6.0 exit_pressure_under 0 seconds 30}}
-author JW
+author Decent
 beverage_type espresso
 espresso_decline_time 30
 espresso_hold_time 15
