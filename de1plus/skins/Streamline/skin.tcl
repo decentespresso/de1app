@@ -445,8 +445,9 @@ proc streamline_adjust_grind { args } {
 		set ::settings(grinder_setting) 0
 	}
 
-	set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)
-	save_settings
+	#copy_settings_from_streamline_to_profile
+	copy_streamline_settings_to_DYE
+	save_profile_and_update_de1 0
 }
 
 ############################################################################################################################################################################################################
@@ -1762,6 +1763,8 @@ add_de1_variable $::pages $::streamline_datacard_col6 1452 -justify right -ancho
 
 if {[ifexists ::settings(grinder_dose_weight)] == "" || [ifexists ::settings(grinder_dose_weight)] == "0"} {
 	set ::settings(grinder_dose_weight) 15
+	copy_streamline_settings_to_DYE 
+	#copy_settings_from_streamline_to_profile
 }
 
 # labels
@@ -1792,9 +1795,9 @@ add_de1_variable "espresso water steam" 418 1215 -justify center -anchor "center
 add_de1_variable "espresso  flush hotwaterrinse steam" 418 1417 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags hotwater_label_1std -textvariable {$::streamline_hotwater_label_1st}
 add_de1_variable "espresso  flush hotwaterrinse steam" 418 1460 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
 
-add_de1_button "off " { ask_for_data_entry_number [translate "GRIND"] [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) "" 0 0 1000 [list {set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)} save_profile_and_update_de1_soon "streamline_blink_rounded_setting grind_setting_rectangle"]} 370 260 470 340  ""   
-add_de1_button "off " { ask_for_data_entry_number [translate "DOSE"] [ifexists ::settings(grinder_dose_weight)] ::settings(grinder_dose_weight) [translate g] 0 0 30 [list save_profile_and_update_de1_soon "streamline_blink_rounded_setting dose_setting_rectangle dose_label_1st"]} 370 374 470 454  ""   
-add_de1_button "off " { ask_for_data_entry_number [translate "DRINK"] [ifexists ::settings(final_desired_shot_weight)] ::settings(final_desired_shot_weight) [translate g] 0 0 2000 [list {streamline_set_drink_weight $::settings(final_desired_shot_weight)} refresh_favorite_dosebev_button_labels save_profile_and_update_de1_soon "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "GRIND"] [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) "" 0 0 1000 [list copy_streamline_settings_to_DYE {save_profile_and_update_de1 0} "streamline_blink_rounded_setting grind_setting_rectangle"]} 370 260 470 340  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "DOSE"] [ifexists ::settings(grinder_dose_weight)] ::settings(grinder_dose_weight) [translate g] 0 0 30 [list copy_streamline_settings_to_DYE {save_profile_and_update_de1 0} "streamline_blink_rounded_setting dose_setting_rectangle dose_label_1st"]} 370 374 470 454  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "DRINK"] [ifexists ::settings(final_desired_shot_weight)] ::settings(final_desired_shot_weight) [translate g] 0 0 2000 [list copy_streamline_settings_to_DYE {streamline_set_drink_weight $::settings(final_desired_shot_weight)} refresh_favorite_dosebev_button_labels {save_profile_and_update_de1 0} "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
 
 add_de1_button "off " { choose_appropriate_data_entry_for_brew_temp} 370 716 470 796  ""   
 add_de1_button "off " { choose_appropriate_data_entry_for_steam } 370 944 470 1024  ""   
@@ -2376,7 +2379,9 @@ dui add dbutton "espresso steam flush hotwaterrinse" 486 1392 578 1484 -tags str
 
 ############################################################################################################################################################################################################
 
-proc save_profile_and_update_de1 {} {
+proc save_profile_and_update_de1 { {do_de1_update 1} } {
+
+	copy_settings_from_streamline_to_profile
 
 	# if the currently loaded profile is not the currently selected button, don't save it automatically
 	set profiles [ifexists ::settings(favorite_profiles)]
@@ -2423,12 +2428,12 @@ proc save_profile_and_update_de1 {} {
 
 	#puts "ERROR save_profile_and_update_de1 '$new_title' '$::settings(profile_filename)'"
 
-	save_settings_to_de1
+	if {$do_de1_update == 1} {
+		save_settings_to_de1
+	}
 }
 
 proc save_profile_and_update_de1_soon {} {
-
-	copy_streamline_settings_to_DYE 
 
 	if {[info exists ::streamline_save_update_id] == 1} {
 		after cancel $::streamline_save_update_id; 
@@ -2467,17 +2472,30 @@ proc streamline_dose_btn { args } {
 			flash_button "streamline_plus_dose_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 		}
 	}
-	
+
+	#copy_settings_from_streamline_to_profile
 	copy_streamline_settings_to_DYE
-	save_settings
+	save_profile_and_update_de1 0
 	refresh_favorite_dosebev_button_labels
+}
+
+proc copy_settings_from_profile_to_streamline {} {
+	set ::settings(grinder_dose_weight) $::settings(profile_grinder_dose_weight) 
+	set ::settings(grinder_setting) $::settings(profile_grinder_setting)
+}
+
+proc copy_settings_from_streamline_to_profile {} {
+	set ::settings(profile_grinder_dose_weight) $::settings(grinder_dose_weight) 
+	set ::settings(profile_grinder_setting) $::settings(grinder_setting)
 }
 
 proc copy_streamline_settings_to_DYE {} {
 
-	set ::plugins::DYE::settings(next_drink_weight) $::settings(final_desired_shot_weight) 
-	set ::plugins::DYE::settings(next_grinder_dose_weight) $::settings(grinder_dose_weight) 
-	set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)
+	if { [plugins enabled DYE] } {
+		set ::plugins::DYE::settings(next_drink_weight) $::settings(final_desired_shot_weight) 
+		set ::plugins::DYE::settings(next_grinder_dose_weight) $::settings(grinder_dose_weight) 
+		set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)
+	}
 }
 
 proc streamline_beverage_btn { args } {
@@ -2776,6 +2794,8 @@ proc streamline_profile_select { slot } {
 		# button points to a now deleted profile
 		return
 	}
+
+	copy_settings_from_profile_to_streamline
 
 	dict set profiles selected number $slot
 	set ::settings(favorite_profiles) $profiles
