@@ -2428,6 +2428,7 @@ proc save_profile_and_update_de1 {} {
 
 proc save_profile_and_update_de1_soon {} {
 
+	copy_streamline_settings_to_DYE 
 
 	if {[info exists ::streamline_save_update_id] == 1} {
 		after cancel $::streamline_save_update_id; 
@@ -2466,9 +2467,17 @@ proc streamline_dose_btn { args } {
 			flash_button "streamline_plus_dose_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 		}
 	}
-
+	
+	copy_streamline_settings_to_DYE
 	save_settings
 	refresh_favorite_dosebev_button_labels
+}
+
+proc copy_streamline_settings_to_DYE {} {
+
+	set ::plugins::DYE::settings(next_drink_weight) $::settings(final_desired_shot_weight) 
+	set ::plugins::DYE::settings(next_grinder_dose_weight) $::settings(grinder_dose_weight) 
+	set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)
 }
 
 proc streamline_beverage_btn { args } {
@@ -3672,7 +3681,8 @@ proc streamline_dosebev_select { slot } {
 	streamline_blink_rounded_setting "weight_setting_rectangle" "weight_label_1st"
 	#streamline_blink_rounded_setting "dose_preset_rectangle_$slot" "dose_btn_$slot"\
 	streamline_blink_rounded_setting "" "dose_btn_$slot"
-
+	
+	copy_streamline_settings_to_DYE
 	refresh_favorite_dosebev_button_labels
 }
 refresh_favorite_dosebev_button_labels
