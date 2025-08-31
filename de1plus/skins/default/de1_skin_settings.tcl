@@ -1153,7 +1153,8 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 			#add_de1_button "measurements" { set ::settings(use_finger_down_for_tap) [expr {!$::settings(use_finger_down_for_tap)}] } 1280 704 1700 764
 
 			dui add dtoggle "measurements" 1280 704 -height 60 -anchor nw -variable ::settings(keep_scale_on) 
-			add_de1_text "measurements" 1420 704 -text [translate "Keep scale on"] -font $optionfont -width 1200 -fill "#4e85f4" -anchor "nw" 
+			
+			add_de1_text "measurements" 1420 704 -text [translate "Keep scale on"] -font $optionfont -width [rescale_y_skin 300] -fill "#4e85f4" -anchor "nw" 
 			add_de1_button "measurements" { set ::settings(keep_scale_on) [expr {!$::settings(keep_scale_on)}] } 1280 704 1700 764
 
 			#dui add dtoggle "measurements" 1280 804 -height 60 -anchor nw -variable ::settings(smart_battery_charging) 
@@ -1220,7 +1221,8 @@ proc calculate_screen_flip_value {} {
 				dui add dselector "measurements" 340 980 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 
 			dui add dtoggle "measurements"  340 1080 -height 60 -anchor nw -variable ::settings(app_auto_update) 
-			add_de1_text "measurements" 480 1080 -text [translate "update automatically"] -font $optionfont -width [rescale_y_skin 440] -fill "#4e85f4" -anchor "nw" 
+			
+			add_de1_text "measurements" 480 1080 -text [translate "update automatically"]  -font $optionfont -width [rescale_y_skin 700] -fill "#4e85f4" -justify left -anchor "nw"
 			add_de1_button "measurements" { set ::settings(app_auto_update) [expr {!$::settings(app_auto_update)}] } 340 1080 1200 1140
 
 	add_de1_text "settings_4" 2290 616 -text [translate "Extensions"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
