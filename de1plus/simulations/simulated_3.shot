@@ -118,11 +118,6 @@ settings {
 	espresso_typical_volume 200
 	espresso_warmup_timeout 20
 	fan_threshold 60
-	final_desired_shot_volume 32
-	final_desired_shot_volume_advanced 0
-	final_desired_shot_volume_advanced_count_start 2
-	final_desired_shot_weight 32
-	final_desired_shot_weight_advanced 36
 	firmware_sha 1DCEA160
 	firmware_version_number 1265
 	flight_mode_angle 30
