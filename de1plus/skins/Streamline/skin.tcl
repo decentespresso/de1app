@@ -2480,8 +2480,8 @@ proc streamline_dose_btn { args } {
 }
 
 proc copy_settings_from_profile_to_streamline {} {
-	set ::settings(grinder_dose_weight) $::settings(profile_grinder_dose_weight) 
-	set ::settings(grinder_setting) $::settings(profile_grinder_setting)
+	set ::settings(grinder_dose_weight) [ifexists ::settings(profile_grinder_dose_weight)]
+	set ::settings(grinder_setting) [ifexists ::settings(profile_grinder_setting)]
 }
 
 proc copy_settings_from_streamline_to_profile {} {
