@@ -331,6 +331,7 @@ array set ::settings {
 	battery_very_low_brightness 10
 	orientation "landscape"
 	grinder_dose_weight 0
+	grinder_setting 0
 	scentone {}
 	after_flow_complete_delay 5
 	display_volumetric_usage 0
