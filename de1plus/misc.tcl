@@ -917,6 +917,11 @@ proc make_de1_dir {srcdir destdirs} {
         saver/2560x1600/three_women.jpg *
         saver/2560x1600/rainbow_dj.jpg *
 
+        profiles/A-Flow____default-dark.tcl *
+        profiles/A-Flow____default-like-dflow.tcl *
+        profiles/A-Flow____default-medium.tcl *
+        profiles/A-Flow____default-very-dark.tcl *
+
         profiles/Damians_Q.tcl *
         profiles/Weiss_advanced_spring_lever.tcl *
         profiles/I_got_your_back.tcl *
