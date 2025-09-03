@@ -773,7 +773,7 @@ add_de1_widget "settings_1" listbox 50 305 {
 	 	set ::globals(profiles_listbox) $widget
 		fill_profiles_listbox
 		bind $::globals(profiles_listbox) <<ListboxSelect>> ::preview_profile
-	} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::globals(profiles_listbox)} -yscrollcommand {scale_scroll_new $::globals(profiles_listbox) ::profiles_slider} -font $listbox_font -bd 0 -height $profiles_listbox_length -width 32 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1   -justify [justify_r2l]
+	} -background #fbfaff -xscrollcommand {scale_prevent_horiz_scroll $::globals(profiles_listbox)} -yscrollcommand {scale_scroll_new $::globals(profiles_listbox) ::profiles_slider} -font $listbox_font -bd 0 -height $profiles_listbox_length -width 32 -foreground #d3dbf3 -borderwidth 0 -selectborderwidth 0  -relief flat -highlightthickness 0 -selectmode single  -selectbackground #c0c4e1   -justify "left"
 
 set ::profiles_slider 0
 
