@@ -32,7 +32,7 @@ preinfusion_flow_rate 4.0
 preinfusion_stop_pressure 4.0
 preinfusion_time 20
 pressure_end 4.0
-profile_hide 0
+profile_hide 1
 profile_language en
 profile_notes {A-Flow: an alternative profile for D-Flow}
 profile_title {A-Flow / default-very-dark}
