@@ -423,6 +423,17 @@ streamline_rectangle $::all_pages 0 220 2560 220 $::box_line_color $::plus_minus
 
 ############################################################################################################################################################################################################
 
+
+proc copy_streamline_settings_to_DYE {} {
+
+	if { [plugins enabled DYE] } {
+		set ::plugins::DYE::settings(next_drink_weight) $::settings(final_desired_shot_weight) 
+		set ::plugins::DYE::settings(next_grinder_dose_weight) $::settings(grinder_dose_weight) 
+		set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)
+	}
+}
+
+
 proc streamline_adjust_grind { args } {
 
 	if {$args == "-"} {
@@ -2487,15 +2498,6 @@ proc copy_settings_from_profile_to_streamline {} {
 proc copy_settings_from_streamline_to_profile {} {
 	set ::settings(profile_grinder_dose_weight) $::settings(grinder_dose_weight) 
 	set ::settings(profile_grinder_setting) $::settings(grinder_setting)
-}
-
-proc copy_streamline_settings_to_DYE {} {
-
-	if { [plugins enabled DYE] } {
-		set ::plugins::DYE::settings(next_drink_weight) $::settings(final_desired_shot_weight) 
-		set ::plugins::DYE::settings(next_grinder_dose_weight) $::settings(grinder_dose_weight) 
-		set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)
-	}
 }
 
 proc streamline_beverage_btn { args } {
