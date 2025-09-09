@@ -29,7 +29,7 @@ preinfusion_time 20
 pressure_end 6.0
 profile_hide 1
 profile_language en
-profile_notes {We use a little lower flow rate for the Kalita than for the v60 to tame the turbulence. We have found that excessive turbulence chokes brews in the Kalita more readily than in the V60. We recommend giving the brewer a gentle spin after prewetting and after the last pulse of water has sprayed. }
+profile_notes {We use a little lower flow rate for the Kalita than for the v60 to tame the turbulence. We have found that excessive turbulence chokes brews in the Kalita more readily than in the V60. We recommend giving the brewer a gentle spin after prewetting and after the last pulse of water has sprayed.}
 profile_title {Pour over basket/Kalita 20g in, 340ml out}
 read_only 1
 settings_profile_type settings_2c
