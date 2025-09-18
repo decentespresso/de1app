@@ -901,6 +901,9 @@ set ::acaia_command_buffer ""
 set ::acaia_msg_start 0
 set ::acaia_msg_end 0 
 
+set ::ble_write_type_no_response 1
+set ::ble_write_type_default 2
+
 set ::acaia_recieving_notifications 0
 
 proc acaia_encode {msgType payload} {
@@ -914,7 +917,7 @@ proc acaia_encode {msgType payload} {
 	return $data
 }
 
-proc acaia_tare {suuid cuuid} {
+proc acaia_tare {suuid cuuid write_type} {
 
 	if {[ifexists ::sinstance($suuid)] == "" || $::de1(scale_device_handle) == 0} {
 		::bt::msg -DEBUG "Acaia Scale not connected, cannot send tare cmd"
@@ -926,7 +929,7 @@ proc acaia_tare {suuid cuuid} {
 
 	set tare [acaia_encode 04  0000000000000000000000000000000000]
 
-	userdata_append "SCALE: send acaia tare" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $tare] 1
+	userdata_append "SCALE: send acaia tare" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $write_type $tare] 1
 
 	# The tare is not yet confirmed to us, we can therefore assume it worked out
 }
@@ -977,7 +980,7 @@ proc decentscale_send_heartbeat {} {
 }
 
 
-proc acaia_send_heartbeat {suuid cuuid} {
+proc acaia_send_heartbeat {suuid cuuid write_type} {
 
 	if {[ifexists ::sinstance($suuid)] == "" || $::de1(scale_device_handle) == 0} {
 		::bt::msg -DEBUG "Acaia Scale not connected ($suuid), cannot send app heartbeat"
@@ -988,15 +991,15 @@ proc acaia_send_heartbeat {suuid cuuid} {
 	set sinstance $::sinstance($suuid)
 	set cinstance $::cinstance($cuuid)
 
-	userdata_append "SCALE: send acaia heartbeat" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $heartbeat] 1
+	userdata_append "SCALE: send acaia heartbeat" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $write_type $heartbeat] 1
 
 	if { $::settings(force_acaia_heartbeat) == 1 } {
-		after 1000 [list acaia_send_config $suuid $cuuid]
-		after 2000 [list acaia_send_heartbeat $suuid $cuuid]
+		after 1000 [list acaia_send_config $suuid $cuuid $write_type]
+		after 2000 [list acaia_send_heartbeat $suuid $cuuid $write_type]
 	}
 }
 
-proc acaia_send_ident {suuid cuuid} {
+proc acaia_send_ident {suuid cuuid write_type} {
 
 	if {[ifexists ::sinstance($suuid)] == "" || $::de1(scale_device_handle) == 0} {
 		::bt::msg -DEBUG "Acaia Scale not connected, cannot send app ident"
@@ -1007,18 +1010,18 @@ proc acaia_send_ident {suuid cuuid} {
 	set sinstance $::sinstance($suuid)
 	set cinstance $::cinstance($cuuid)
 
-	userdata_append "SCALE: send acaia ident" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $ident] 1
+	userdata_append "SCALE: send acaia ident" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $write_type $ident] 1
 
 	if {$::acaia_recieving_notifications == 0} {
-		after 400 [list acaia_send_ident $suuid $cuuid]
-		after 1000 [list acaia_send_config $suuid $cuuid]
+		after 400 [list acaia_send_ident $suuid $cuuid $write_type]
+		after 1000 [list acaia_send_config $suuid $cuuid $write_type]
 	} else {
-		after 400 [list acaia_send_config $suuid $cuuid]
-		after 1500 [list acaia_send_heartbeat $suuid $cuuid]
+		after 400 [list acaia_send_config $suuid $cuuid $write_type]
+		after 1500 [list acaia_send_heartbeat $suuid $cuuid $write_type]
 	}
 }
 
-proc acaia_send_config {suuid cuuid} {
+proc acaia_send_config {suuid cuuid write_type} {
 
 	if {[ifexists ::sinstance($suuid)] == "" || $::de1(scale_device_handle) == 0} {
 		::bt::msg -DEBUG "Acaia Scale not connected, cannot send app config"
@@ -1030,7 +1033,7 @@ proc acaia_send_config {suuid cuuid} {
 	set sinstance $::sinstance($suuid)
 	set cinstance $::cinstance($cuuid)
 
-	userdata_append "SCALE: send acaia config" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $ident] 1
+	userdata_append "SCALE: send acaia config" [list ble write $::de1(scale_device_handle) $suuid $sinstance $cuuid $cinstance $write_type $ident] 1
 }
 
 
@@ -2373,7 +2376,7 @@ proc de1_ble_handler { event data } {
 							}
 
 							after 100 [list acaia_enable_weight_notifications $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
-							after 500 [list acaia_send_ident $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age)]
+							after 500 [list acaia_send_ident $::de1(suuid_acaia_ips) $::de1(cuuid_acaia_ips_age) $::ble_write_type_no_response]
 						} elseif {$::settings(scale_type) == "acaiapyxis"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiapyxis"
 							msg -INFO "Pyxis scale showed up"
@@ -2391,7 +2394,7 @@ proc de1_ble_handler { event data } {
 							set mtu1 [ble mtu $handle 247]
 							msg -INFO "MTU is $mtu1"
 							after 500 [list acaia_enable_weight_notifications $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_status)]
-							after 1000  [list acaia_send_ident $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd)]
+							after 1000  [list acaia_send_ident $::de1(suuid_acaia_pyxis) $::de1(cuuid_acaia_pyxis_cmd) $::ble_write_type_default]
 						} elseif {$::settings(scale_type) == "varia_aku"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "varia_aku"
 							after 200 varia_aku_enable_weight_notifications
