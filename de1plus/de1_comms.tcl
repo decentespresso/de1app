@@ -1144,7 +1144,7 @@ proc toggle_usb_charger_on {} {
 }
 
 proc set_usb_charger_on {usbon} {
-	dump_stack
+	#dump_stack
 	set ::de1(usb_charger_on) $usbon
 	::comms::msg -NOTICE set_usb_charger_on "'$usbon'"
 	remove_matching_ble_queue_entries {^MMR set_usb_charger_on}
