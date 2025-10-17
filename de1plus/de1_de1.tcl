@@ -789,16 +789,21 @@ namespace eval ::de1::sav {
 
 		if { $state_text == "None" } { set state_text $::de1_num_state($::de1(state)) }
 
-		expr { $state_text in {{Espresso} {HotWater}} && $::de1(scale_device_handle) == 0 }
+		expr { $state_text in {{Espresso} {HotWater}}  }
 	}
 
 	proc is_active {} {
+
 
 		expr {$::de1::sav::_is_active_flag}
 	}
 
 
 	proc start_active {} {
+
+		if {$::de1(scale_device_handle) != 0} {
+			msg -NOTICE "::de1::sav::start_active: disabled SAV because scale is connected"
+		}
 
 		if { [::de1::sav::is_active] } {
 			msg -NOTICE "::de1::sav::start_active: already active"
