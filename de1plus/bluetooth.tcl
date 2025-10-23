@@ -2169,7 +2169,7 @@ proc de1_ble_handler { event data } {
 			scan {
 				::bt::msg -DEBUG "de1_ble_handler: Device $name found at address $address ($data_for_log)"
 
-				if {[string first DE1 $name] == 0} {
+				if {[string first DE1 $name] == 0 || [string first BENGLE [string toupper $name]] == 0} {
 					append_to_de1_list $address $name "ble"
 					#if {$address == $::settings(bluetooth_address) && $::scanning != 0} {
 						#ble stop $::ble_scanner
