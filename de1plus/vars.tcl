@@ -2943,6 +2943,7 @@ proc select_profile { profile } {
 	set ::settings(advanced_shot_tcl) ""
 	set ::settings(read_only) ""
 	set ::settings(read_only_backup) ""
+	set ::settings(profile_editor) ""
 	
 	# for importing De1 profiles that don't have this feature.
 	set ::settings(preinfusion_flow_rate) 4
