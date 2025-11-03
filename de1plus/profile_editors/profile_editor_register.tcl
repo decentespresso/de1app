@@ -27,4 +27,5 @@ register_profile_editors
 
 ## added code > set ::settings(profile_editor) "" < to vars.tcl select_profile proc.
 ToDo
+## get A-Flow submodule setup so the A-Flow extension doesnt cause a conflict.
 ## this page is joined at at the start of ../skins/default/de1_skin_settings.tcl
