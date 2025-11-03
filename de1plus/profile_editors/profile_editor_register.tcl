@@ -25,6 +25,6 @@ proc register_profile_editors {} {
 
 register_profile_editors
 
+## added code > set ::settings(profile_editor) "" < to vars.tcl select_profile proc.
 ToDo
 ## this page is joined at at the start of ../skins/default/de1_skin_settings.tcl
-## added code > set ::settings(profile_editor) "" < to vars.tcl select_profile proc.
