@@ -1002,7 +1002,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/Damian's\ LRv3.tcl *
 
         profile_editors/profile_editor_register.tcl *
-        profile_editor/readme.txt *
+        profile_editors/readme.txt *
         profile_editors/demo/test.tcl *
 
         plugins/decentscale_off/plugin.tcl *
