@@ -964,6 +964,7 @@ proc make_de1_dir {srcdir destdirs} {
         profiles/test_pressure_calibration.tcl *
         profiles/test_temperature_calibration.tcl *
         profiles/test_pressure_release.tcl *
+        profiles/Test_profile_editor_demo.tcl *
         profiles/Cremina.tcl *
         profiles/manual_flow.tcl *
         profiles/manual_pressure.tcl *
