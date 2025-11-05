@@ -67,3 +67,6 @@
 [submodule "de1plus/profile_editors/D_Flow"]
 	path = de1plus/profile_editors/D_Flow
 	url = https://github.com/Damian-AU/D_Flow
+[submodule "de1plus/profile_editors/A_Flow"]
+	path = de1plus/profile_editors/A_Flow
+	url = https://github.com/Jan3kJ/A_Flow.git
