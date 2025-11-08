@@ -2197,6 +2197,9 @@ proc de1_ble_handler { event data } {
 				} elseif {[string first "Decent Scale" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "decentscale"
 
+				} elseif {[string first "ButtsHaus Scale" $name] == 0} {
+					append_to_peripheral_list $address $name "ble" "scale" "decentscale"
+
 				} elseif {[string first "FELICITA" $name] == 0} {
 					append_to_peripheral_list $address $name "ble" "scale" "felicita"
 
