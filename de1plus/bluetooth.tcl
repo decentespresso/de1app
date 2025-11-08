@@ -34,7 +34,7 @@ proc scale_disable_lcd {} {
 			skale_disable_lcd
 		}
 	} elseif {$::settings(scale_type) == "decentscale"} {
-		
+
 		set do_this 1
 		if {$do_this == 1} {
 			# disabled the LCD off for Decent Scale, so that we don't give false impression tha the scale is off
@@ -68,7 +68,7 @@ proc scale_timer_start {} {
 		# double-sending command, half a second later, because sometimes the solo barista scale command buffer has not finished the previous command and drops the next one
 		after 500 solo_barista_start_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
-		difluid_start_timer 
+		difluid_start_timer
 	}
 }
 
@@ -94,7 +94,7 @@ proc scale_timer_stop {} {
 		# double-sending command, half a second later, because sometimes the solo barista scale command buffer has not finished the previous command and drops the next one
 		after 500 solo_barista_stop_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
-		difluid_stop_timer 
+		difluid_stop_timer
 		difluid_reset_timer
 	}
 }
@@ -123,7 +123,7 @@ proc scale_timer_reset {} {
 		# double-sending command, half a second later, because sometimes the solo barista scale command buffer has not finished the previous command and drops the next one
 		after 500 solo_barista_reset_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
-		# moved the reset to the stop function because stop is more like a pause 
+		# moved the reset to the stop function because stop is more like a pause
 	}
 }
 
@@ -532,7 +532,7 @@ proc bookoo_parse_response { value } {
 			}
 
 			set weight [round_to_two_digits $weight100]
-			
+
 			#msg -ERROR "parsing: $h1 $h2 sign:$sign wight:$weight / $w1 $w2 $w3"
 
 			::device::scale::process_weight_update $weight
@@ -627,32 +627,32 @@ proc atomheart_eclair_validate_xor {value} {
     set payload [lrange $byte_list 1 end-1]
     # Get XOR validation byte (the last byte)
     set xor_validation [lindex $byte_list end]
-    
+
     # Calculate XOR of the payload
     set xor_result 0
     foreach byte $payload {
         set xor_result [expr {$xor_result ^ $byte}]
     }
-    
+
     # Return whether XOR matches
     return [expr {$xor_result == $xor_validation}]
 }
 
 proc atomheart_eclair_parse_response { value } {
     if {[string bytelength $value] >= 9} {
-        # Extract the data fields from the value 
+        # Extract the data fields from the value
         binary scan $value ciIc h1 weight_value timer_value xor_byte
-        
+
         # Ensure the header is 'W' (0x57)
         if {[format "%c" $h1] == "W"} {
             # Validate XOR
             if {[atomheart_eclair_validate_xor $value]} {
                 # Convert weight from milligrams (int32_t) to grams (with sign)
                 set weight [expr {$weight_value / 1000.0}]
-                
+
                 # Round the weight to two decimal places
                 set rounded_weight [format "%.2f" $weight]
-                
+
                 # Process the weight update
                 ::device::scale::process_weight_update $rounded_weight
             } else {
@@ -899,7 +899,7 @@ set ::ACAIA_METADATA_LEN 5
 
 set ::acaia_command_buffer ""
 set ::acaia_msg_start 0
-set ::acaia_msg_end 0 
+set ::acaia_msg_end 0
 
 set ::ble_write_type_no_response 1
 set ::ble_write_type_default 2
@@ -935,7 +935,7 @@ proc acaia_tare {suuid cuuid write_type} {
 }
 
 proc decentscale_send_heartbeat {} {
-	
+
 
 	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "decentscale"} {
 		return
@@ -971,7 +971,7 @@ proc decentscale_send_heartbeat {} {
 	####
 	# check to make sure there are no other heartbeat commands running
 	if {[info exists ::decentscale_send_heartbeat_id] == 1} {
-		after cancel $::decentscale_send_heartbeat_id 
+		after cancel $::decentscale_send_heartbeat_id
 		unset ::decentscale_send_heartbeat_id
 	}
 
@@ -1079,7 +1079,7 @@ proc acaia_scan_buffer_for_msg {h1 h2 msg_t len event_t} {
 			if {![acaia_msg_at_minimum]} {
 				# valid msg - need more data before parsing
 				set has_metadata 1
-				break 
+				break
 			}
 			# at the minimum message length - grab metadata
 			set msg_type [lindex $::acaia_command_buffer [expr {$i + 2}]]
@@ -1095,13 +1095,13 @@ proc acaia_scan_buffer_for_msg {h1 h2 msg_t len event_t} {
 			# msg -DEBUG "MSG_TYPE $msg_type LEN $length EVENT_TYPE $event_type"
 			# NOTE: while length threshold is arbitrary, could cause reporting issues the higher the threshold
 			if {$msg_type != 12 || ($event_type != 5 && $event_type != 11) || $length > 64} {
-				# NOTE: This is the simplified version of the equation to skip an entire msg in the buffer 
+				# NOTE: This is the simplified version of the equation to skip an entire msg in the buffer
 				# length already incorporates 2 bytes of the metadata length, but the checksum is also 2 bytes, so it negates
 				# subtracting 1 due to index starting at 0
 				set i [expr {$i + $::ACAIA_METADATA_LEN + $length - 1}]
 				# not the messages we want - continue forward searching and skip the entire message
 				continue
-			} 
+			}
 			# success - found metadata
 			set has_metadata 1
 			break
@@ -1119,7 +1119,7 @@ proc acaia_parse_response {value} {
 		return
 	}
 	set has_metadata [acaia_scan_buffer_for_msg h1 h2 msg_t len event_t]
-	# scanning narrows the buffer, determine if we're still at the minimum msg length 
+	# scanning narrows the buffer, determine if we're still at the minimum msg length
 	set at_minimum [acaia_msg_at_minimum]
 	set is_ready [acaia_msg_ready]
 	if {$has_metadata && (!$at_minimum || !$is_ready)} {
@@ -1225,7 +1225,7 @@ proc tare_counter_incr {} {
 
 	# testing that tare counter can in fact be any not-recently-used integer
 	#set ::decent_scale_tare_counter [expr {int(rand() * 255)}]
-	#msg "tare counter is $::decent_scale_tare_counter"	
+	#msg "tare counter is $::decent_scale_tare_counter"
 
 	if {[info exists ::decent_scale_tare_counter] != 1} {
 		set ::decent_scale_tare_counter 253
@@ -1324,8 +1324,8 @@ proc decentscale_timer_start {} {
 	::bt::msg -DEBUG "decent scale timer on: '[::logging::format_asc_bin $timeron]'"
 	userdata_append "SCALE: decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron] 0
 
-	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.  
-	# So for now we send the same command twice. 
+	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.
+	# So for now we send the same command twice.
 	# In the future we'll check for the decent scale firmare version
 	# and only send the command twice if needed for the older decent scale firmware.
 	userdata_append "SCALE: decentscale : timer on" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeron] 0
@@ -1352,8 +1352,8 @@ proc decentscale_timer_stop {} {
 	userdata_append "SCALE: decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 
 
-	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.  
-	# So for now we send the same command twice. 
+	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.
+	# So for now we send the same command twice.
 	# In the future we'll check for the decent scale firmare version
 	# and only send the command twice if needed for the older decent scale firmware.
 	userdata_append "SCALE: decentscale : timer off" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
@@ -1378,8 +1378,8 @@ proc decentscale_timer_reset {} {
 	userdata_append "SCALE: decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
 
 
-	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.  
-	# So for now we send the same command twice. 
+	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.
+	# So for now we send the same command twice.
 	# In the future we'll check for the decent scale firmare version
 	# and only send the command twice if needed for the older decent scale firmware.
 	userdata_append "SCALE: decentscale : timer reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $timeroff] 0
@@ -1404,8 +1404,8 @@ proc decentscale_tare {} {
 	userdata_append "SCALE: decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare] 0
 
 
-	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.  
-	# So for now we send the same command twice. 
+	# decent scale v1.0 occasionally drops commands, which is being fixed in decent scale v1.1.
+	# So for now we send the same command twice.
 	# In the future we'll check for the decent scale firmare version
 	# and only send the command twice if needed for the older decent scale firmware.
 	userdata_append "SCALE: decentscale : tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_decentscale) $::sinstance($::de1(suuid_decentscale)) $::de1(cuuid_decentscale_write) $::cinstance($::de1(cuuid_decentscale_write)) $tare] 0
@@ -1437,7 +1437,7 @@ proc smartchef_tare {} {
 		return
 	}
 	popup "Press tare button on scale"
-	# set tare [binary decode hex ""] 
+	# set tare [binary decode hex ""]
 
 	# userdata_append "SCALE: smartchef tare" [list ble write $::de1(scale_device_handle) $::de1(suuid_smartchef) $::sinstance($::de1(suuid_smartchef)) $::de1(cuuid_smartchef_cmd) $::cinstance($::de1(cuuid_smartchef_cmd)) $tare] 0
 }
@@ -1462,7 +1462,7 @@ proc difluid_enable_weight_notifications {} {
 		return
 	}
 	## enable auto notifications to get messages
-	
+
 	set enableNotificationMessage [binary decode hex "DFDF01000101C1"]
 	userdata_append "SCALE: enable difluid scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid))] 0
 	userdata_append "SCALE: difluid automessage" [list ble write $::de1(scale_device_handle) $::de1(suuid_difluid) $::sinstance($::de1(suuid_difluid)) $::de1(cuuid_difluid) $::cinstance($::de1(cuuid_difluid)) $enableNotificationMessage] 0
@@ -1540,7 +1540,7 @@ proc difluid_set_to_grams {} {
 }
 
 proc difluid_parse_response { value } {
-	
+
 	if {[string bytelength $value] >= 19} {
 		 binary scan $value H* data
 		if {[info exists data] } {
@@ -1550,7 +1550,7 @@ proc difluid_parse_response { value } {
 			}
 	}
 
-		}	
+		}
 }
 
 # Varia AKU (AKU Pro, AKU Mini, AKU Plus, AKU Micro)
@@ -1594,7 +1594,7 @@ proc varia_aku_parse_response { value } {
 			binary scan $payload cucucucu w1 w2 w3 xor
 
 			# Pull out the sign via bitmask. The Varia API docs say that the sign bit is encoded in the
-			# highest bit, but from their docs (and empirically), it's actually the highest nibble. When 
+			# highest bit, but from their docs (and empirically), it's actually the highest nibble. When
 			# the highest nibble is 1, then the weight is negative. Otherwise, it's positive.
 			set sign [expr {$w1 & 0x10}]
 
@@ -1607,7 +1607,7 @@ proc varia_aku_parse_response { value } {
 			}
 
 			set weight [round_to_two_digits $weight100]
-			
+
 			#msg -ERROR "parsing: $h1 $h2 sign:$sign weight:$weight / $w1 $w2 $w3"
 
 			::device::scale::process_weight_update $weight
@@ -2003,8 +2003,8 @@ proc ble_connect_to_scale {} {
 	if {[llength $::de1(cmdstack)] > 2} {
 		::bt::msg -INFO "Too much backpressure, waiting with the connect"
 		::comms::msg -INFO "Current cmd: ([llength $::de1(cmdstack)]) >>>" \
-			[lindex [lindex $::de1(cmdstack) 0] 0] 
-		
+			[lindex [lindex $::de1(cmdstack) 0] 0]
+
 		run_next_userdata_cmd
 
 		after 1000 ble_connect_to_scale
@@ -2084,13 +2084,13 @@ proc later_new_de1_connection_setup {} {
 	get_sn
 
 	# if the refill kit auto detect should be overridden, do that at app launch, as well as later in the gui if they change the setting
-	if {$::settings(refill_kit_override) != -1} {	
+	if {$::settings(refill_kit_override) != -1} {
 		send_refill_kit_override
-	} 
+	}
 
 	################
 	# we send the flow calibration on app startup to the de1, so that we can calibration the DE1 at the decent factory without needing to power up the DE1.  We set the country-specific calibration in the tablet, and then it will be sent to the DE1 when it powers up
-	# 
+	#
 	# We have an exception here, which is if the settings on the app are set to 1, which is the app default, then it's possible the settings file was just recreated with defaults, and rather than decalibrating the DE1 with a default setting, in that case we
 	# fetch the current setting from the DE1
 	#
@@ -2221,7 +2221,7 @@ proc de1_ble_handler { event data } {
  				} elseif {[string first "ACAIA" $name] == 0 \
  					|| [string first "PROCH" $name]    == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "acaiascale"
-					
+
 				} elseif {[string first "PEARLS" $name] == 0 \
  					|| [string first "PEARL-" $name]   == 0 \
  					|| [string first "LUNAR" $name]    == 0 \
@@ -2273,11 +2273,11 @@ proc de1_ble_handler { event data } {
 				} elseif {$state eq "connected"} {
 
 					# testing "ble mtu" command http://www.androwish.org/index.html/info/d990702552f12a0a
-					# set mtu [ble mtu $handle] 
+					# set mtu [ble mtu $handle]
 					# ::bt::msg -NOTICE "DE1 BLE mtu is $mtu"
-					# set mtu1 [ble mtu $handle 4096] 
+					# set mtu1 [ble mtu $handle 4096]
 					# ::bt::msg -NOTICE "DE1 BLE mtu set result was $mtu1"
-					# set mtu2 [ble mtu $handle] 
+					# set mtu2 [ble mtu $handle]
 					# :bt::msg -NOTICE "DE1 BLE mtu is now $mtu2"
 
 
@@ -2326,7 +2326,7 @@ proc de1_ble_handler { event data } {
 							after 200 decentscale_enable_lcd
 							after 300 decentscale_enable_notifications
 							after 400 decentscale_enable_notifications
-							
+
 							# in case the first request was dropped
 							after 500 decentscale_enable_lcd
 
@@ -2703,7 +2703,7 @@ proc de1_ble_handler { event data } {
 								return
 							} elseif {[ifexists weightarray(command)] == 0xAA} {
 								::bt::msg -INFO "Decentscale BUTTON $weightarray(data3) pressed ([array get weightarray])-([ifexists weightarray(data3)])"
-								if { [::de1::state::current_state] == "Sleep" } { 
+								if { [::de1::state::current_state] == "Sleep" } {
 									after 1000 decentscale_disable_lcd 0
 								} else {
 
@@ -2722,9 +2722,9 @@ proc de1_ble_handler { event data } {
 											after 500 decentscale_timer_start
 										}
 									}
-								} 
+								}
 							} elseif {[ifexists weightarray(command)] == 0x0A} {
-								::bt::msg -INFO "decentscale LED callback recv: [array get weightarray]"								
+								::bt::msg -INFO "decentscale LED callback recv: [array get weightarray]"
 								set ::de1(scale_fw_version) [ifexists weightarray(data6)]
 								set ::de1(scale_battery_level) [ifexists weightarray(data5)]
 								if {$::de1(scale_battery_level) > 100} {
@@ -2732,18 +2732,18 @@ proc de1_ble_handler { event data } {
 									set ::de1(scale_usb_powered) 1
 								}
 
-								::bt::msg -INFO "decentscale battery: $::de1(scale_battery_level)"								
-								::bt::msg -INFO "decentscale usb powered: $::de1(scale_usb_powered)"								
-								::bt::msg -INFO "decentscale firmware version: $::de1(scale_fw_version)"								
+								::bt::msg -INFO "decentscale battery: $::de1(scale_battery_level)"
+								::bt::msg -INFO "decentscale usb powered: $::de1(scale_usb_powered)"
+								::bt::msg -INFO "decentscale firmware version: $::de1(scale_fw_version)"
 
 							} elseif {[info exists weightarray(weight)] == 1} {
 								set sensorweight [expr {$weightarray(weight) / 10.0}]
 								::device::scale::process_weight_update $sensorweight $event_time
 							 	if {[info exists weightarray(timestamp)] == 1} {
-									set ::de1(scale_timestamp) $weightarray(timestamp)				
-									#set ::de1(scale_minutes) $weightarray(minutes)				
-									#set ::de1(scale_seconds) $weightarray(seconds)				
-									#set ::de1(scale_milliseconds) $weightarray(milliseconds)				
+									set ::de1(scale_timestamp) $weightarray(timestamp)
+									#set ::de1(scale_minutes) $weightarray(minutes)
+									#set ::de1(scale_seconds) $weightarray(seconds)
+									#set ::de1(scale_milliseconds) $weightarray(milliseconds)
 									#::bt::msg -INFO "decentscale timestamp: $::de1(scale_timestamp) - $weightarray(minutes):$weightarray(minutes):$weightarray(milliseconds) [array get weightarray]"
 								}
 							} else {
@@ -2754,7 +2754,7 @@ proc de1_ble_handler { event data } {
 							acaia_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_varia_aku) && $::settings(scale_type) == "varia_aku"} {
       							# varia aku scale
-							varia_aku_parse_response $value 
+							varia_aku_parse_response $value
 						} elseif {$cuuid eq $::de1(cuuid_acaia_pyxis_status)} {
 							# acaia scale (gen 2, fw 1)
 							acaia_parse_response $value
@@ -2771,7 +2771,7 @@ proc de1_ble_handler { event data } {
 							# bookoo
 							#msg -ERROR "WEIGHT $full_data_for_log"
 							bookoo_parse_response $value
-							
+
 						} elseif {$cuuid eq $::de1(cuuid_eureka_precisa_status) && $::settings(scale_type) == "eureka_precisa"} {
 							# eureka precisa scale
 							eureka_precisa_parse_response $value
