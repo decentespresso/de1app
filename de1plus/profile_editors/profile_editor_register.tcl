@@ -1,3 +1,6 @@
+## added code > set ::settings(profile_editor) "" < to vars.tcl select_profile proc
+## this page is joined at the end of ../skins/default/standard_includes.tcl
+
 proc register_profile_editors {} {
     set editors [lsort -dictionary [glob -nocomplain -tails -type d -directory "[homedir]/profile_editors/" *]]
     foreach editor $editors {
@@ -24,8 +27,3 @@ proc register_profile_editors {} {
 }
 
 register_profile_editors
-
-## added code > set ::settings(profile_editor) "" < to vars.tcl select_profile proc.
-ToDo
-## get A-Flow submodule setup so the A-Flow extension doesnt cause a conflict.
-## this page is joined at at the start of ../skins/default/de1_skin_settings.tcl
