@@ -1,10 +1,155 @@
-
 ##############################################################################################################################################################################################################################################################################
 # DE1 SETTINGS pages
 
 ##############################################################################################################################################################################################################################################################################
 # the graphics for each of the main espresso machine modes
 
+### Add by Damian Nov 2025 - add profile_editor_register
+### changes to save, cancel and profile editor tab button commands, to use procs
+proc show_profile_editor { editor } {
+    if {$editor == ""} {
+        set editor $::settings(profile_editor)
+    }
+    if {[info procs ::${editor}::show_editor] eq "::${editor}::show_editor"} {
+        ::${editor}::show_editor
+    } else {
+        show_original_profile_editor
+    }
+}
+
+proc show_original_profile_editor {} {
+    after 500 update_de1_explanation_chart
+    say [translate {settings}] $::settings(sound_button_in)
+    set_next_page off $::settings(settings_profile_type)
+    page_show off
+    set ::settings(active_settings_tab) $::settings(settings_profile_type)
+    fill_advanced_profile_steps_listbox
+    set_advsteps_scrollbar_dimensions
+}
+
+proc exit_settings_pages {args} {
+    if {$args eq "ok" || $args eq "save"} {
+        save_settings_to_de1
+        set_alarms_for_de1_wake_sleep
+        say [translate {save}] $::settings(sound_button_in)
+        save_settings; profile_has_changed_set_colors
+        if {$::settings(skin) == "DSx"} {
+            DSx_add_to_profile_settings_ok_button_enter
+        }
+        if {[ifexists ::profiles_hide_mode] == 1} {
+            unset -nocomplain ::profiles_hide_mode
+            fill_profiles_listbox
+        }
+        if {[ifexists ::settings_backup(calibration_flow_multiplier)] != [ifexists ::settings(calibration_flow_multiplier)]} {
+            set_calibration_flow_multiplier $::settings(calibration_flow_multiplier)
+        }
+        if {[ifexists ::settings_backup(fan_threshold)] != [ifexists ::settings(fan_threshold)]} {
+            set_fan_temperature_threshold $::settings(fan_threshold)
+        }
+        if {[ifexists ::settings_backup(water_refill_point)] != [ifexists ::settings(water_refill_point)]} {
+            de1_send_waterlevel_settings
+        }
+        if {[array_item_difference ::settings ::settings_backup "steam_temperature steam_flow"] == 1} {
+            # resend the calibration settings if they were changed
+            de1_send_steam_hotwater_settings
+            de1_enable_water_level_notifications
+        }
+
+        if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins app_auto_update plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
+            # changes that effect the skin require an app restart
+            .can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+            .can itemconfigure $::message_button_label -text [translate "Wait"]
+
+            set_next_page off message; page_show message
+            after 200 app_exit
+
+        } elseif {[ifexists ::settings_backup(scale_bluetooth_address)] != [ifexists ::settings(scale_bluetooth_address)]} {
+
+            # john 21-1-25 if scale changes, for app restart when existing the SETTINGS section
+            # this is because often the live changing of the scale doesn't work reliably, and
+            # the bugginess can frustrate the end user, making them think the scale is not working
+
+            # if no scale was previously defined, and there is one now, then force an app restart
+            # but if there was a scale previously, and now there is a new one, let that be w/o an app restart
+
+            # changes that effect the skin require an app restart
+            .can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+            .can itemconfigure $::message_button_label -text [translate "Wait"]
+
+            set_next_page off message; page_show message
+            after 2000 app_exit
+
+        } else {
+
+            if {[ifexists ::settings(settings_profile_type)] == "settings_2c2"} {
+                # if they were on the LIMITS tab of the Advanced profiles, reset the ui back to the main tab
+                set ::settings(settings_profile_type) "settings_2c"
+            }
+
+            #set_next_page off off; page_show off
+            if {$::settings(skin) == "DSx"} {
+                DSx_add_to_profile_settings_ok_button_leave
+            } else {
+                set_next_page off off; page_show off
+            }
+
+            if {[info exists ::settings_optional_callback] == 1} {
+                if {$::settings_optional_callback != ""} {
+                    eval $::settings_optional_callback
+                }
+            }
+        }
+    } elseif {$args eq "cancel"} {
+        if {[ifexists ::profiles_hide_mode] == 1} {
+            unset -nocomplain ::profiles_hide_mode
+            fill_profiles_listbox
+        }
+        array unset ::settings {\*}
+        array set ::settings [array get ::settings_backup]
+        update_de1_explanation_chart
+        fill_skin_listbox; profile_has_changed_set_colors
+        say [translate {Cancel}] $::settings(sound_button_in)
+        set_next_page off off
+        page_show off
+        fill_advanced_profile_steps_listbox
+        restore_espresso_chart
+        save_settings_to_de1
+        fill_profiles_listbox
+        fill_extensions_listbox
+    } else {
+        set_next_page off off
+        page_show off
+    }
+}
+
+proc exit_profile_editor { args } {
+    if {$args eq "presets"} {
+        after 500 update_de1_explanation_chart
+        say [translate {settings}] $::settings(sound_button_in)
+        set_next_page off "settings_1"
+        page_show off
+        set ::settings(active_settings_tab) "settings_1"
+        set_profiles_scrollbar_dimensions
+    } elseif {$args eq "machine"} {
+        say [translate {settings}] $::settings(sound_button_in)
+        set_next_page off settings_3
+        page_show settings_3
+        scheduler_feature_hide_show_refresh
+        set ::settings(active_settings_tab) "settings_3"
+    } elseif {$args eq "app"} {
+        say [translate {settings}] $::settings(sound_button_in)
+        set_next_page off settings_4
+        page_show settings_4
+        set ::settings(active_settings_tab) "settings_4"
+        set_ble_scrollbar_dimensions
+        set_ble_scale_scrollbar_dimensions
+    } else {
+        exit_settings_pages $args
+    }
+}
+
+### Damian - end of procs. Additional changes to save, cancel and profile editor tab button commands below. replacing their commands with the above procs
+###
 
 set settings_tab_font "Helv_10_bold"
 set botton_button_font "Helv_10_bold"
@@ -795,7 +940,7 @@ add_de1_widget "settings_1" graph 1330 300 {
 		$::preview_graph_pressure axis configure x -color #5a5d75 -tickfont Helv_6 ; 
 		$::preview_graph_pressure axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 11.5 -stepsize 2 -majorticks {1 3 5 7 9 11} -title [translate "pressure (bar)"] -titlefont Helv_8 -titlecolor #5a5d75;
 		$::preview_graph_pressure element create line_espresso_de1_explanation_chart_temp2 -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_temperature_10  -label "" -linewidth [rescale_x_skin 10] -color #ff888c  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
-		bind $::preview_graph_pressure [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 
+		bind $::preview_graph_pressure [platform_button_press] { show_profile_editor {} }
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised -plotpady 0 -plotpadx 10
 
 add_de1_widget "settings_1b" graph 1330 300 { 
@@ -805,7 +950,7 @@ add_de1_widget "settings_1b" graph 1330 300 {
 		$::preview_graph_flow axis configure x -color #5a5d75 -tickfont Helv_6; 
 		$::preview_graph_flow axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 10 -majorticks {1 2 3 4 5 6 7 8 9 10} -title [translate "Flow rate"] -titlefont Helv_8 -titlecolor #5a5d75;
 		$::preview_graph_flow element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_temperature_10  -label "" -linewidth [rescale_x_skin 10] -color #ff888c  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
-		bind $::preview_graph_flow [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type) } 
+		bind $::preview_graph_flow [platform_button_press] { show_profile_editor {} }
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised  -plotpady 0 -plotpadx 10
 
 
@@ -822,7 +967,7 @@ add_de1_widget "settings_1c" graph 1330 300 {
 		#$::preview_graph_advanced element create line_espresso_de1_explanation_chart_adv -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #4e85f4  -smooth $::settings(profile_graph_smoothing_technique)$::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 		$::preview_graph_advanced axis configure x -color #5a5d75 -tickfont Helv_6; 
 		$::preview_graph_advanced axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 12 -majorticks {1 2 3 4 5 6 7 8 9 10 11 12} -title [translate "Advanced"] -titlefont Helv_8 -titlecolor #5a5d75;
-		bind $::preview_graph_advanced [platform_button_press] { after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox } 
+		bind $::preview_graph_advanced [platform_button_press] { show_profile_editor {} }
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised  -plotpady 0 -plotpadx 10
 
 
@@ -1989,77 +2134,84 @@ add_de1_text "settings_4" $pos_app_label 100 -text [translate "APP"] -font $sett
 
 # buttons for moving between tabs, available at all times that the espresso machine is not doing something hot
 add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::settings(active_settings_tab) "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
-add_de1_button "settings_1 settings_3 settings_4" {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off $::settings(settings_profile_type); page_show off; set ::settings(active_settings_tab) $::settings(settings_profile_type); fill_advanced_profile_steps_listbox; set_advsteps_scrollbar_dimensions} 642 0 1277 188 
+add_de1_button "settings_1 settings_3 settings_4" {show_profile_editor {} } 642 0 1277 188
 add_de1_button "settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2" {say [translate {save}] $::settings(sound_button_in); if {$::settings(profile_has_changed) == 1} { popup [translate_toast "Saved"]; save_profile } } 642 0 1277 188 
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_4" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"} 1278 0 1904 188
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3" {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"; set_ble_scrollbar_dimensions; set_ble_scale_scrollbar_dimensions} 1905 0 2560 188
 
 #wrapped_profile_title
 
+
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" 2275 1520 -text [translate "Ok"] -font $botton_button_font -fill "#FFFFFF" -anchor "center"
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font $botton_button_font -fill "#FFFFFF" -anchor "center"
-	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; profile_has_changed_set_colors;
-			if {[ifexists ::profiles_hide_mode] == 1} {
-				unset -nocomplain ::profiles_hide_mode 
-				fill_profiles_listbox
-			}
-			if {[ifexists ::settings_backup(calibration_flow_multiplier)] != [ifexists ::settings(calibration_flow_multiplier)]} {				
-				set_calibration_flow_multiplier $::settings(calibration_flow_multiplier)
-			}
-			if {[ifexists ::settings_backup(fan_threshold)] != [ifexists ::settings(fan_threshold)]} {				
-				set_fan_temperature_threshold $::settings(fan_threshold)
-			}
-			if {[ifexists ::settings_backup(water_refill_point)] != [ifexists ::settings(water_refill_point)]} {				
-				de1_send_waterlevel_settings
-			}
-			if {[array_item_difference ::settings ::settings_backup "steam_temperature steam_flow"] == 1} {
-				# resend the calibration settings if they were changed
-				de1_send_steam_hotwater_settings
-				de1_enable_water_level_notifications
-			}
-			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins app_auto_update plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
-				# changes that effect the skin require an app restart
-				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
-				.can itemconfigure $::message_button_label -text [translate "Wait"]
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {exit_settings_pages ok} 2016 1430 2560 1600
+add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {exit_settings_pages Cancel} 1505 1430 2015 1600
 
-				set_next_page off message; page_show message
-				after 200 app_exit
+# Damian - the save and cancel button commands have been to moved to proc exit_settings_pages
+#	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; profile_has_changed_set_colors;
+#			if {[ifexists ::profiles_hide_mode] == 1} {
+#				unset -nocomplain ::profiles_hide_mode
+#				fill_profiles_listbox
+#			}
+#			if {[ifexists ::settings_backup(calibration_flow_multiplier)] != [ifexists ::settings(calibration_flow_multiplier)]} {
+#				set_calibration_flow_multiplier $::settings(calibration_flow_multiplier)
+#			}
+#			if {[ifexists ::settings_backup(fan_threshold)] != [ifexists ::settings(fan_threshold)]} {
+#				set_fan_temperature_threshold $::settings(fan_threshold)
+#			}
+#			if {[ifexists ::settings_backup(water_refill_point)] != [ifexists ::settings(water_refill_point)]} {
+#				de1_send_waterlevel_settings
+#			}
+#
+#			if {[array_item_difference ::settings ::settings_backup "steam_temperature steam_flow"] == 1} {
+#				# resend the calibration settings if they were changed
+#				de1_send_steam_hotwater_settings
+#				de1_enable_water_level_notifications
+#			}
+#			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins app_auto_update plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
+#				# changes that effect the skin require an app restart
+#				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+#				.can itemconfigure $::message_button_label -text [translate "Wait"]
+#
+#				set_next_page off message; page_show message
+#				after 200 app_exit
+#
+#			} elseif {[ifexists ::settings_backup(scale_bluetooth_address)] != [ifexists ::settings(scale_bluetooth_address)]} {
+#
+#				# john 21-1-25 if scale changes, for app restart when existing the SETTINGS section
+#				# this is because often the live changing of the scale doesn't work reliably, and
+#				# the bugginess can frustrate the end user, making them think the scale is not working
+#
+#				# if no scale was previously defined, and there is one now, then force an app restart
+#				# but if there was a scale previously, and now there is a new one, let that be w/o an app restart
+#
+#				# changes that effect the skin require an app restart
+#				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+#				.can itemconfigure $::message_button_label -text [translate "Wait"]
+#
+#				set_next_page off message; page_show message
+#				after 2000 app_exit
+#
+#			} else {
+#
+#				if {[ifexists ::settings(settings_profile_type)] == "settings_2c2"} {
+#					# if they were on the LIMITS tab of the Advanced profiles, reset the ui back to the main tab
+#					set ::settings(settings_profile_type) "settings_2c"
+#				}
+#
+#				set_next_page off off; page_show off
+#
+#				if {[info exists ::settings_optional_callback] == 1} {
+#					if {$::settings_optional_callback != ""} {
+#						eval $::settings_optional_callback
+#					}
+#				}
+#			}
+#		} 2016 1430 2560 1600
+#
+#	# cancel button
+#	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {if {[ifexists ::profiles_hide_mode] == 1} { unset -nocomplain ::profiles_hide_mode; fill_profiles_listbox }; array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;restore_espresso_chart; save_settings_to_de1; fill_profiles_listbox ; fill_extensions_listbox} 1505 1430 2015 1600
 
-			} elseif {[ifexists ::settings_backup(scale_bluetooth_address)] != [ifexists ::settings(scale_bluetooth_address)]} {
-
-				# john 21-1-25 if scale changes, for app restart when existing the SETTINGS section
-				# this is because often the live changing of the scale doesn't work reliably, and 
-				# the bugginess can frustrate the end user, making them think the scale is not working
-				
-				# if no scale was previously defined, and there is one now, then force an app restart
-				# but if there was a scale previously, and now there is a new one, let that be w/o an app restart
-
-				# changes that effect the skin require an app restart
-				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
-				.can itemconfigure $::message_button_label -text [translate "Wait"]
-
-				set_next_page off message; page_show message
-				after 2000 app_exit
-
-			} else {
-
-				if {[ifexists ::settings(settings_profile_type)] == "settings_2c2"} {
-					# if they were on the LIMITS tab of the Advanced profiles, reset the ui back to the main tab
-					set ::settings(settings_profile_type) "settings_2c"
-				}
-
-				set_next_page off off; page_show off
-
-				if {[info exists ::settings_optional_callback] == 1} {
-					if {$::settings_optional_callback != ""} {
-						eval $::settings_optional_callback
-					}
-				}
-			}
-		} 2016 1430 2560 1600
-
-	# cancel button
-	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {if {[ifexists ::profiles_hide_mode] == 1} { unset -nocomplain ::profiles_hide_mode; fill_profiles_listbox }; array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;restore_espresso_chart; save_settings_to_de1; fill_profiles_listbox ; fill_extensions_listbox} 1505 1430 2015 1600
 
 set enable_flow_calibration 1
 if {[ifexists ::settings(firmware_version_number)] >= 1238} {
@@ -2346,7 +2498,10 @@ set ::settings(active_settings_tab) $::settings(settings_profile_type)
 proc setting_profile_type_to_text { } {
 
 	set in $::settings(settings_profile_type)
-	if {$in == "settings_2a"} {
+	set editor $::settings(profile_editor)
+	if {[info procs ::${editor}::show_editor] eq "::${editor}::show_editor"} {
+		return [translate $editor]
+	} elseif {$in == "settings_2a"} {
 		if {$::de1(current_context) == "settings_1"} {
 			.can itemconfigure $::preview_graph_flow -state hidden
 			.can itemconfigure $::preview_graph_pressure -state normal
