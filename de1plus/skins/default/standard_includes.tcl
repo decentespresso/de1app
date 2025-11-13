@@ -60,4 +60,4 @@ set_de1_screen_saver_directory "[homedir]/saver"
 
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/skins/default/de1_skin_settings.tcl"
-# source  [file join "[homedir]/profile_editors/profile_editor_register.tcl"]
+source  [file join "[homedir]/profile_editors/profile_editor_register.tcl"]
