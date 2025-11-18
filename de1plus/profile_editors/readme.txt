@@ -1,14 +1,15 @@
-To create a profile_editor, add a new directory within this /profile_editor/ directory with the name of whatever you want to name your new editor
+To create a profile_editor, add a new directory within this /de1plus/profile_editor/ directory with the name of whatever you want to name your new editor
 
 The directory name is automatically used as the namespace for each profile editor.
 Although you can use a hyphen"-" in the directory name, variables taking on the ::namespace::variable would then have a "-", the de1app -textvariable doesn't handle "-" well.
 There are work arounds, but it is easier to just use an undescore instead.
 
-Preference is given to button a command that declars an editor eg: "show_profile_editor declair_editor"
-If the button doesn't declare a profile_editor eg: "show_profile_editor {}", the profile is checked for a "profile_editor" setting.
-If there is no profile_editor setting matching and existing editor, the original editors are loaded
+Button -command to access profile editors, in most cases you would use "show_profile_editor {}"
+If you need to open a particular editor, you can do so like this "show_profile_editor declair_editor"
+When selecting a profile, $::settings(profile_editor) is first set to {}, if the profile file has a profile_editor variable, $::settings(profile_editor) is set to that value.
+The command "show_profile_editor {}" will check $::settings(profile_editor) first, if there is no valid profile_editor it will run the origianl button commands (checks, setup proc etc).  
 
-You can have any files and/or folders you like within your profile editors directory.
+You can have any number of files and/or folders you like within your profile editors directory.
 All and only .tcl files in the top directory will auto join at boot up.
 
 Your editor code should include the following proc
@@ -24,7 +25,7 @@ In my demo editor, I use "demo_editor_page" for my page name
 You don't need to create or set up a page, you can just add page items, although you can and/or config the page background colour if you like.
 
 Your editor_page will need a button/s to exit back to the app, you can of cause customise the cammands however you like,
-or use on of the following simplified options form new procs in ../skins/default/de1_skin_settings.tcl
+or use on of the following simplified options form the new procs found in ../skins/default/de1_skin_settings.tcl
 button -command options
         exit_profile_editor {presets}   go to Presets page
         exit_profile_editor {app}       go to Presets page
@@ -37,5 +38,5 @@ button -command options
 
 I have included a "demo" profile editor with a file "test.tcl which has some sample code
 
-Your .tcl pages are checked prior to joining. If they return an error they will not be joined and the app will load with out showing the error.
-You can search the log.txt file for "profile_editor" or you editor name to see if your files loaded ok or any error they returned.
+Your .tcl pages are checked prior to joining. If they return an error they will not be joined and the app will load without showing an error.
+You can search the log.txt file for "profile_editor" or your editor's name to check if your files loaded ok or find any error they may have returned.
