@@ -536,6 +536,7 @@ streamline_init_history_files
 
 proc back_from_settings {} {
 	refresh_favorite_profile_button_labels
+	fill_advanced_profile_steps_listbox
 }
 
 
@@ -2250,7 +2251,7 @@ set right_buttons_start 2530
 set right_buttons_width 200
 set right_buttons_separation 20
 
-dui add dbutton $::all_pages [expr {$right_buttons_start - (2*$right_buttons_width) - (2*$right_buttons_separation)}] 66 [expr {$right_buttons_start - $right_buttons_width - $right_buttons_separation}] 155 -tags settings_btn -label [translate "Settings"]  -command { say [translate {settings}] $::settings(sound_button_out); show_settings [::profile::fix_profile_type [ifexists ::settings(settings_profile_type)]] "back_from_settings" } -tap_pad {6 50 6 50}
+dui add dbutton $::all_pages [expr {$right_buttons_start - (2*$right_buttons_width) - (2*$right_buttons_separation)}] 66 [expr {$right_buttons_start - $right_buttons_width - $right_buttons_separation}] 155 -tags settings_btn -label [translate "Settings"]  -command { say [translate {settings}] $::settings(sound_button_out); show_profile_editor "" "back_from_settings" } -tap_pad {6 50 6 50}
 dui add dbutton $::all_pages [expr {$right_buttons_start - $right_buttons_width}] 66 $right_buttons_start 155 -tags sleep_btn -label [translate "Sleep"]  -command { say [translate {sleep}] $::settings(sound_button_out); start_sleep } -longpress_cmd { say [translate {Exit}] $::settings(sound_button_out); streamline_app_exit_button }  -tap_pad {6 50 24 50}
 #-longpress_threshold $::streamline_longpress_threshold 
 #
@@ -2742,8 +2743,9 @@ proc streamline_profile_edit { slot } {
 
 	set profile_type [::profile::fix_profile_type [ifexists ::settings(settings_profile_type)]]
 
-	show_settings $profile_type
-	fill_advanced_profile_steps_listbox
+	#show_settings $profile_type
+	show_profile_editor "" "back_from_settings"
+	#fill_advanced_profile_steps_listbox
 
 }
 

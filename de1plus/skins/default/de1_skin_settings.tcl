@@ -6,7 +6,12 @@
 
 ### Add by Damian Nov 2025 - add profile_editor_register
 ### changes to save, cancel and profile editor tab button commands, to use procs
-proc show_profile_editor { editor } {
+proc show_profile_editor { editor {optional_callback ""} } {
+
+    backup_settings
+
+    set ::settings_optional_callback $optional_callback
+
     if {$editor == ""} {
         set editor $::settings(profile_editor)
     }
