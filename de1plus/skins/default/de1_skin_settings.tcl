@@ -38,7 +38,7 @@ proc exit_settings_pages {args} {
         set_alarms_for_de1_wake_sleep
         say [translate {save}] $::settings(sound_button_in)
         save_settings; profile_has_changed_set_colors
-        if {$::settings(skin) == "DSx"} {
+        if {[info procs DSx_add_to_profile_settings_ok_button_enter] ne "" } {
             DSx_add_to_profile_settings_ok_button_enter
         }
         if {[ifexists ::profiles_hide_mode] == 1} {
@@ -100,7 +100,7 @@ proc exit_settings_pages {args} {
             }
 
             #set_next_page off off; page_show off
-            if {$::settings(skin) == "DSx"} {
+            if {[info procs DSx_add_to_profile_settings_ok_button_enter] ne "" } {
                 DSx_add_to_profile_settings_ok_button_leave
             } else {
                 set_next_page off off; page_show off
