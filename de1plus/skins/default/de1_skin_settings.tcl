@@ -60,9 +60,17 @@ proc exit_settings_pages {args} {
             de1_enable_water_level_notifications
         }
 
-        if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins app_auto_update plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
+        if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins app_auto_update plugin_tabs"] == 1} {
             # changes that effect the skin require an app restart
             .can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
+            .can itemconfigure $::message_button_label -text [translate "Wait"]
+
+            set_next_page off message; page_show message
+            after 200 app_exit
+
+        } elseif {[ifexists ::app_has_updated] == 1} {
+            # changes that effect the skin require an app restart
+            .can itemconfigure $::message_label -text [translate "The app is being updated."]
             .can itemconfigure $::message_button_label -text [translate "Wait"]
 
             set_next_page off message; page_show message
@@ -2151,72 +2159,6 @@ add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings
 add_de1_text "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" 1760 1520 -text [translate "Cancel"] -font $botton_button_font -fill "#FFFFFF" -anchor "center"
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {exit_settings_pages ok} 2016 1430 2560 1600
 add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {exit_settings_pages Cancel} 1505 1430 2015 1600
-
-# Damian - the save and cancel button commands have been to moved to proc exit_settings_pages
-#	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {save_settings_to_de1; set_alarms_for_de1_wake_sleep; say [translate {save}] $::settings(sound_button_in); save_settings; profile_has_changed_set_colors;
-#			if {[ifexists ::profiles_hide_mode] == 1} {
-#				unset -nocomplain ::profiles_hide_mode
-#				fill_profiles_listbox
-#			}
-#			if {[ifexists ::settings_backup(calibration_flow_multiplier)] != [ifexists ::settings(calibration_flow_multiplier)]} {
-#				set_calibration_flow_multiplier $::settings(calibration_flow_multiplier)
-#			}
-#			if {[ifexists ::settings_backup(fan_threshold)] != [ifexists ::settings(fan_threshold)]} {
-#				set_fan_temperature_threshold $::settings(fan_threshold)
-#			}
-#			if {[ifexists ::settings_backup(water_refill_point)] != [ifexists ::settings(water_refill_point)]} {
-#				de1_send_waterlevel_settings
-#			}
-#
-#			if {[array_item_difference ::settings ::settings_backup "steam_temperature steam_flow"] == 1} {
-#				# resend the calibration settings if they were changed
-#				de1_send_steam_hotwater_settings
-#				de1_enable_water_level_notifications
-#			}
-#			if {[array_item_difference ::settings ::settings_backup "enable_fahrenheit orientation screen_size_width saver_brightness use_finger_down_for_tap log_enabled hot_water_idle_temp espresso_warmup_timeout language skin waterlevel_indicator_on default_font_calibration waterlevel_indicator_blink display_rate_espresso display_espresso_water_delta_number display_group_head_delta_number display_pressure_delta_line display_flow_delta_line display_weight_delta_line allow_unheated_water display_time_in_screen_saver enabled_plugins app_auto_update plugin_tabs"] == 1  || [ifexists ::app_has_updated] == 1} {
-#				# changes that effect the skin require an app restart
-#				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
-#				.can itemconfigure $::message_button_label -text [translate "Wait"]
-#
-#				set_next_page off message; page_show message
-#				after 200 app_exit
-#
-#			} elseif {[ifexists ::settings_backup(scale_bluetooth_address)] != [ifexists ::settings(scale_bluetooth_address)]} {
-#
-#				# john 21-1-25 if scale changes, for app restart when existing the SETTINGS section
-#				# this is because often the live changing of the scale doesn't work reliably, and
-#				# the bugginess can frustrate the end user, making them think the scale is not working
-#
-#				# if no scale was previously defined, and there is one now, then force an app restart
-#				# but if there was a scale previously, and now there is a new one, let that be w/o an app restart
-#
-#				# changes that effect the skin require an app restart
-#				.can itemconfigure $::message_label -text [translate "Please quit and restart this app to apply your changes."]
-#				.can itemconfigure $::message_button_label -text [translate "Wait"]
-#
-#				set_next_page off message; page_show message
-#				after 2000 app_exit
-#
-#			} else {
-#
-#				if {[ifexists ::settings(settings_profile_type)] == "settings_2c2"} {
-#					# if they were on the LIMITS tab of the Advanced profiles, reset the ui back to the main tab
-#					set ::settings(settings_profile_type) "settings_2c"
-#				}
-#
-#				set_next_page off off; page_show off
-#
-#				if {[info exists ::settings_optional_callback] == 1} {
-#					if {$::settings_optional_callback != ""} {
-#						eval $::settings_optional_callback
-#					}
-#				}
-#			}
-#		} 2016 1430 2560 1600
-#
-#	# cancel button
-#	add_de1_button "settings_1 settings_2 settings_2a settings_2b settings_2c settings_2czoom settings_2c2 settings_3 settings_4" {if {[ifexists ::profiles_hide_mode] == 1} { unset -nocomplain ::profiles_hide_mode; fill_profiles_listbox }; array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox;restore_espresso_chart; save_settings_to_de1; fill_profiles_listbox ; fill_extensions_listbox} 1505 1430 2015 1600
-
 
 set enable_flow_calibration 1
 if {[ifexists ::settings(firmware_version_number)] >= 1238} {
