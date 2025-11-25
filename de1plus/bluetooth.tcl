@@ -2300,7 +2300,7 @@ proc de1_ble_handler { event data } {
 								msg -INFO "Espresso machine model found: '$espresso_machine_name'"
 							}
 						}
-						set ::de1(model) $espresso_machine_name
+						set ::settings(model) $espresso_machine_name
 
 						de1_connect_handler $handle $address $espresso_machine_name
 
