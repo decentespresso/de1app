@@ -1674,7 +1674,7 @@ proc de1_read_shot_frame {} {
 }
 
 proc is_bengle_model {} {
-	if {$::de1(model) == "BENGLE"} {
+	if {$::settings(model) == "BENGLE"} {
 		return 1
 	}
 	return 0

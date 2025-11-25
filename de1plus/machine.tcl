@@ -40,7 +40,6 @@ array set ::de1 {
 	scale_max_connection_retry_attempts 20
 	advanced_shot_moveone_enabled 1
   found    0
-  model "DE1"
   decentscale_timer_on 0
   bluetooth_scale_connection_attempts_tried 0
   battery_discharging 0
@@ -256,6 +255,7 @@ array set ::settings {
 	steam_over_temp_threshold 180
 	disable_long_press 0
 	steam_over_pressure_threshold 8
+  model "DE1"	
 	chart_total_shot_flow 1
 	app_auto_update 1
 	steam_over_pressure_count_trigger 10
@@ -503,7 +503,7 @@ if {$::android != 1} {
 
 set ::de1_device_list {}
 if { $settings(bluetooth_address) != ""} {
-	append_to_de1_list $settings(bluetooth_address) "DE1" "ble"
+	append_to_de1_list $settings(bluetooth_address) $settings(model) "ble"
 }
 
 array set ::de1_state {
