@@ -2293,7 +2293,16 @@ proc de1_ble_handler { event data } {
 						::de1::event::apply::on_connect_callbacks \
 							[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
 
-						de1_connect_handler $handle $address "DE1"
+						set espresso_machine_name "DE1"
+						foreach { entry } $::de1_device_list {
+							if { [dict get $entry address] eq $address} {								
+								set espresso_machine_name [dict get $entry name]
+								msg -INFO "Espresso machine model found: '$espresso_machine_name'"
+							}
+						}
+						set ::de1(model) $espresso_machine_name
+
+						de1_connect_handler $handle $address $espresso_machine_name
 
 						if {$::de1(scale_device_handle) != 0} {
 							# if we're connected to both the scale and the DE1, stop scanning (or if there is not scale to connect to and we're connected to the de1)
@@ -2600,6 +2609,9 @@ proc de1_ble_handler { event data } {
 							} elseif {$mmr_id == "80382C"} {
 								::bt::msg -INFO "MMR read: steam_highflow_start: '$mmr_val'"
 								set ::settings(steam_highflow_start) $mmr_val
+							} elseif {$mmr_id == "803874"} {
+								::bt::msg -INFO "MMR read: cupwarmer_temp: '$mmr_val'"
+								set ::de1(cupwarmer_temp) $mmr_val
 							} elseif {$mmr_id == "80385C"} {
 								::bt::msg -INFO "MMR read: steam_highflow_start: '$mmr_val'"
 								set ::de1(refill_kit_detected) $mmr_val

@@ -431,6 +431,10 @@ proc de1_event_handler { command_name value {update_received 0}} {
 			::comms::msg -INFO "MMRead: steam_highflow_start: '$mmr_val'"
 			set ::settings(steam_highflow_start) $mmr_val
 
+		} elseif {$mmr_id == "803874"} {
+			::comms::msg -INFO "MMRead: cupwarmer_temp: '$mmr_val'"
+			set ::de1(cupwarmer_temp) $mmr_val
+
 		} else {
 		    ::comms::msg -INFO "MMR read (undecoded): '[::logging::format_mmr $value]'"
 		}
@@ -1170,6 +1174,17 @@ proc set_hotwater_flow_rate {rate} {
 }
 
 
+proc set_cupwarmer_temperature {temp} {
+	if {[is_bengle_model] != 1} {
+		return 
+	}
+	::comms::msg -NOTICE set_cupwarmer_temperature "'$temp'"
+	remove_matching_ble_queue_entries {^MMR set_cupwarmer_temperature}
+	::comms::msg -INFO "Setting cup warmer temperature '$temp'"
+	mmr_write "set_cupwarmer_temperature" "803874" "04" [zero_pad [long_to_little_endian_hex $temp] 2]
+}
+
+
 proc set_flush_flow_rate {rate} {
 	::comms::msg -NOTICE set_flush_flow_rate "'$rate'"
 	remove_matching_ble_queue_entries {^MMR set_flush_flow_rate}
@@ -1561,6 +1576,9 @@ proc de1_send_steam_hotwater_settings {} {
 
 	set_flush_timeout $::settings(flush_seconds)
 	set_flush_flow_rate $::settings(flush_flow)
+
+	# only works on Bengle
+	set_cupwarmer_temperature $::settings(cupwarmer_temp)
 	
 }
 
@@ -1653,4 +1671,11 @@ proc de1_read_shot_frame {} {
 	::comms::msg -NOTICE de1_read_shot_frame
 
 	userdata_append "read shot frame" [list de1_comm read "FrameWrite"] 1
+}
+
+proc is_bengle_model {} {
+	if {$::de1(model) == "BENGLE"} {
+		return 1
+	}
+	return 0
 }
