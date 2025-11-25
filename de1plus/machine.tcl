@@ -40,6 +40,7 @@ array set ::de1 {
 	scale_max_connection_retry_attempts 20
 	advanced_shot_moveone_enabled 1
   found    0
+  model "DE1"
   decentscale_timer_on 0
   bluetooth_scale_connection_attempts_tried 0
   battery_discharging 0
@@ -231,6 +232,7 @@ array set ::settings {
 	screen_size_width {}
 	steam_two_tap_stop 0
 	ble_debug 0
+	cupwarmer_temp 70
 	tank_desired_water_temperature 0
 	screen_size_height {}
 	log_enabled True
