@@ -892,7 +892,7 @@ proc reset_gui_starting_espresso {} {
 proc check_for_missing_sn {} {
 		set sn $::settings(sn)
 
-			set missing_machine_sn [list 6654 5502 4291 380 317 8980 659 2276 2548 76]
+			set missing_machine_sn [list 6654 5502 4291 380 317 8980 659 2276 2548 76 5317]
 			if {$sn != "" && [lsearch -exact $missing_machine_sn $sn] != -1} {
 					message_page "A problem has been detected with your espresso machine.\n\nPlease contact Decent Espresso Tech Support ($sn)" [translate "Quit"];
 			}
