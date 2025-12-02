@@ -1224,7 +1224,7 @@ proc check_if_steam_clogged {} {
 		page_show descalewarning
 
 	} elseif {$bad_temp == 1} {
-		info_page [subst {[translate "Your steam is getting too hot."] [translate "Increase your steam flow rate or lower the steam temperature in the calibration settings."]}] [translate Ok] steam_3
+		info_page [subst {[translate "Your steam is getting too hot."] [translate "Increase your steam flow rate or lower the steam temperature in the calibration settings."]}] [translate Ok] 
 	} else {
 		#msg -DEBUG "check_if_steam_clogged found no problem"	
 	}
