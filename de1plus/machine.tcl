@@ -487,6 +487,8 @@ array set ::settings {
 
 	show_scale_notifications 1
 	scale_timer_espresso_only 0
+
+	profile_editor {}
 }
 
 # default de1plus skin
