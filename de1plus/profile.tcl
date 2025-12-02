@@ -371,6 +371,19 @@ namespace eval ::profile {
         set ::current_step_number 0
     }
 
+    proc escape_for_huddle {data} {
+        # Replace problematic characters
+        set data [string map {
+            \" \\\"
+            \\ \\\\
+            \t "\\t"
+            \n "\\n"
+            \r "\\r"
+        } $data]
+        
+        return $data
+    }
+
     proc legacy_profile_to_v2 {profile_list} {
         array set legacy_profile $profile_list
 
@@ -381,7 +394,7 @@ namespace eval ::profile {
             ifexists props(weight) 0
 
             set huddle_step [huddle create \
-                name [ifexists props(name)] \
+                name [escape_for_huddle [ifexists props(name)]] \
                 temperature [ifexists props(temperature)] \
                 sensor [ifexists props(sensor)] \
                 pump [ifexists props(pump)] \
@@ -428,9 +441,9 @@ namespace eval ::profile {
 
         # we are not using a huddle spec as we are renaming and removing fields
         set profile [huddle create \
-            title [ifexists legacy_profile(profile_title)]\
-            author [ifexists legacy_profile(author)] \
-            notes [ifexists legacy_profile(profile_notes)] \
+            title [escape_for_huddle [ifexists legacy_profile(profile_title)]] \
+            author [escape_for_huddle [ifexists legacy_profile(author)]] \
+            notes [escape_for_huddle [ifexists legacy_profile(profile_notes)]] \
             beverage_type [ifexists legacy_profile(beverage_type)] \
             steps [huddle list {*}$huddle_steps] \
             tank_temperature [ifexists legacy_profile(tank_desired_water_temperature)] \
