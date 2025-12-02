@@ -427,9 +427,12 @@ streamline_rectangle $::all_pages 0 220 2560 220 $::box_line_color $::plus_minus
 proc copy_streamline_settings_to_DYE {} {
 
 	if { [plugins enabled DYE] } {
-		set ::plugins::DYE::settings(next_drink_weight) $::settings(final_desired_shot_weight) 
-		set ::plugins::DYE::settings(next_grinder_dose_weight) $::settings(grinder_dose_weight) 
-		set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)
+		# wrap this in a catch statement because it seems that the first time running DYE, the namespace is not yet enabled, and these "set" commands would cause errors.
+		catch {
+			set ::plugins::DYE::settings(next_drink_weight) $::settings(final_desired_shot_weight) 
+			set ::plugins::DYE::settings(next_grinder_dose_weight) $::settings(grinder_dose_weight) 
+			set ::plugins::DYE::settings(next_grinder_setting) $::settings(grinder_setting)
+		}
 	}
 }
 
@@ -819,12 +822,31 @@ proc steam_timeout_seconds {} {
 	return $::settings(steam_timeout)
 }
 
+proc streamline_verify_sane_number_settings {} {
+
+	# if these settings have become blank or invalid somehow, then they will cause errors later with +/- buttons, so zero them if they are blank
+	foreach checkzero [list steam_timeout grinder_setting grinder_dose_weight espresso_temperature steam_flow flush_seconds water_volume water_temperature final_desired_shot_weight final_desired_shot_weight_advanced] {
+		set newval 0
+		catch {
+			if {$::settings($checkzero) != ""} {
+				set newval [expr {$::settings($checkzero) + 0}]
+			}
+		}
+
+		set ::settings($checkzero) $newval
+	}
+}
+
 
 set ::streamline_hotwater_label_1st ""
 set ::streamline_hotwater_label_2nd ""
 
 set ::streamline_steam_label_1st ""
 set ::streamline_steam_label_2nd ""
+
+streamline_verify_sane_number_settings
+
+
 
 set zoomed_btns ""
 lappend zoomed_btns \
