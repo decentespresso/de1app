@@ -3853,14 +3853,25 @@ set charts_width_zoomed 2480
 set charts_height 784
 set charts_height_zoomed 1040
 
+set ::streamline_enable_chart_labels 1
+
 proc streamline_graph_smarts {widget {which ""} } {
 
 	set ::streamline_chart $widget
 
+	if {$::streamline_enable_chart_labels == 1} {
+		set anchor nw
+		set labelfont Inter-Regular10
+		set yoffset -10
+		set xoffset 3
+		$widget marker create text -coords {-100 -100} -text [translate "pressure"] -anchor $anchor  -font $labelfont  -foreground $::pressurelinecolor -name "label_pressure" -xoffset $xoffset   -yoffset $yoffset
+		$widget marker create text -coords {-100 -100} -text [translate "flow"] -anchor $anchor  -font $labelfont  -foreground $::flow_line_color -name "label_flow"  -xoffset $xoffset  -yoffset $yoffset
+		$widget marker create text -coords {-100 -100} -text [translate "temperature"] -anchor $anchor  -font $labelfont  -foreground $::temperature_line_color -name "label_temperature"  -xoffset $xoffset  -yoffset $yoffset
+		$widget marker create text -coords {-100 -100} -text [translate "weight"] -anchor $anchor  -font $labelfont  -foreground $::weightlinecolor -name "label_weight"  -xoffset $xoffset -yoffset $yoffset
+	}
 
 	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 4] -color $::pressurelinecolor_goal  -smooth $::settings(live_graph_smoothing_technique)  -pixels 0 -dashes $::pressure_goal_dashes; 
 	$widget element create line_espresso_pressure -xdata espresso_elapsed -ydata espresso_pressure -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::pressurelinecolor  -smooth $::settings(live_graph_smoothing_technique) -pixels 0
-	
 
 	$widget element create line_espresso_flow_goal  -xdata espresso_elapsed -ydata espresso_flow_goal -symbol none -label "" -linewidth [rescale_x_skin 4] -color $::flow_line_color_goal -smooth $::settings(live_graph_smoothing_technique) -pixels 0  -dashes $::flow_goal_dashes; 
 	$widget element create line_espresso_flow  -xdata espresso_elapsed -ydata espresso_flow -symbol none -label "" -linewidth [rescale_x_skin 6] -color $::flow_line_color -smooth $::settings(live_graph_smoothing_technique) -pixels 0
@@ -4026,9 +4037,14 @@ proc streamline_graph_smarts {widget {which ""} } {
 	}	
 }
 
-
-add_de1_widget $::pages graph 692 458 { streamline_graph_smarts $widget } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
-add_de1_widget $::zoomed_pages graph 22 520 { streamline_graph_smarts $widget "off_zoomed" } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width_zoomed - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height_zoomed] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady 10 -plotpadx 10  
+set plotpadx 10
+set plotpady 10
+if {$::streamline_enable_chart_labels == 1} {
+	set plotpadx {0 70}
+	set plotpady 10
+}
+add_de1_widget $::zoomed_pages graph 22 520 { streamline_graph_smarts $widget "off_zoomed" } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width_zoomed - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height_zoomed] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady $plotpady -plotpadx $plotpadx
+add_de1_widget $::pages graph 692 458 { streamline_graph_smarts $widget } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady $plotpady -plotpadx $plotpadx
 
 ############################################################################################################################################################################################################
 
@@ -4177,6 +4193,20 @@ proc update_data_card { arrname settingsarr } {
 
 	upvar $arrname past_shot_array
 	upvar $settingsarr profile_settings
+
+	if {$::streamline_enable_chart_labels == 1} {
+		if {[espresso_elapsed range end end] > 5} {
+			$::streamline_chart marker configure "label_pressure" -coords [list [espresso_elapsed range end end] [espresso_pressure range end end]]
+			$::streamline_chart marker configure "label_flow" -coords [list [espresso_elapsed range end end] [espresso_flow range end end]]
+			$::streamline_chart marker configure "label_temperature" -coords [list [espresso_elapsed range end end] [espresso_temperature_basket10th range end end]]
+
+			if {[espresso_flow_weight length] > 0} {
+				$::streamline_chart marker configure "label_weight" -coords [list [espresso_elapsed range end end] [espresso_flow_weight range end end]]
+			} else {
+				$::streamline_chart marker configure "label_weight" -coords {-100 -100}
+			}
+		}
+	}
 
 	#puts "ERROR el: [ifexists past_shot_array(espresso_elapsed)]"
 
