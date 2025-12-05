@@ -587,6 +587,9 @@ proc update_datacard_from_live_data {} {
 
 	catch {
 		update_data_card past_shot_array ::settings
+
+		update_chart_label_position 1
+
 	}
 }
 
@@ -1606,6 +1609,7 @@ set ::streamline_current_history_profile_clock ""
 
 proc start_streamline_espresso {} {
 
+
 	set ::de1(streamline_shot_in_progress) 1
 
 	set ::streamline_history_text_label [translate "CURRENT"] 
@@ -1623,6 +1627,9 @@ proc start_streamline_espresso {} {
 
 	unset -nocomplain ::de1(espresso_elapsed)
 	update_data_card ::de1 ::settings
+
+	potentially_hide_chart_label_position
+
 }
 
 set ::streamline_history_text_label [translate "HISTORY"] 
@@ -3854,20 +3861,24 @@ set charts_height 784
 set charts_height_zoomed 1040
 
 set ::streamline_enable_chart_labels 1
+set ::streamline_enable_chart_labels_realtime 0
 
 proc streamline_graph_smarts {widget {which ""} } {
 
 	set ::streamline_chart $widget
 
 	if {$::streamline_enable_chart_labels == 1} {
-		set anchor nw
+		set anchor ne
 		set labelfont Inter-Regular10
-		set yoffset -10
-		set xoffset 3
-		$widget marker create text -coords {-100 -100} -text [translate "pressure"] -anchor $anchor  -font $labelfont  -foreground $::pressurelinecolor -name "label_pressure" -xoffset $xoffset   -yoffset $yoffset
-		$widget marker create text -coords {-100 -100} -text [translate "flow"] -anchor $anchor  -font $labelfont  -foreground $::flow_line_color -name "label_flow"  -xoffset $xoffset  -yoffset $yoffset
-		$widget marker create text -coords {-100 -100} -text [translate "temperature"] -anchor $anchor  -font $labelfont  -foreground $::temperature_line_color -name "label_temperature"  -xoffset $xoffset  -yoffset $yoffset
-		$widget marker create text -coords {-100 -100} -text [translate "weight"] -anchor $anchor  -font $labelfont  -foreground $::weightlinecolor -name "label_weight"  -xoffset $xoffset -yoffset $yoffset
+		set yoffset [rescale_x_skin -20]
+		set xoffset [rescale_x_skin 40]
+		set padx [rescale_x_skin 2]
+		set pady [rescale_x_skin 2]
+		set label_background $::chart_background
+		$widget marker create text -coords {-100 -100} -text [subst {\u00B0C}] -anchor $anchor  -font $labelfont  -foreground $::temperature_line_color -name "label_temperature"  -xoffset $xoffset  -yoffset $yoffset -background $label_background -padx $padx -pady $pady
+		$widget marker create text -coords {-100 -100} -text [subst {[translate "pressure"]}] -anchor $anchor  -font $labelfont  -foreground $::pressurelinecolor -name "label_pressure" -xoffset $xoffset   -yoffset $yoffset -background $label_background -padx $padx -pady $pady
+		$widget marker create text -coords {-100 -100} -text [subst {[translate "weight"]}] -anchor $anchor  -font $labelfont  -foreground $::weightlinecolor -name "label_weight"  -xoffset $xoffset -yoffset $yoffset -background $label_background -padx $padx -pady $pady
+		$widget marker create text -coords {-100 -100} -text [subst {[translate "flow"]}] -anchor $anchor  -font $labelfont  -foreground $::flow_line_color -name "label_flow"  -xoffset $xoffset  -yoffset $yoffset -background $label_background -padx $padx -pady $pady
 	}
 
 	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 4] -color $::pressurelinecolor_goal  -smooth $::settings(live_graph_smoothing_technique)  -pixels 0 -dashes $::pressure_goal_dashes; 
@@ -4037,14 +4048,15 @@ proc streamline_graph_smarts {widget {which ""} } {
 	}	
 }
 
-set plotpadx 10
-set plotpady 10
+set plotpadx [rescale_x_skin 20]
+set plotpady [rescale_x_skin 20]
 if {$::streamline_enable_chart_labels == 1} {
-	set plotpadx {0 70}
-	set plotpady 10
+	set plotpadx [list 0 [rescale_x_skin 40]]
+	set plotpady [rescale_x_skin 20]
 }
-add_de1_widget $::zoomed_pages graph 22 520 { streamline_graph_smarts $widget "off_zoomed" } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width_zoomed - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height_zoomed] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady $plotpady -plotpadx $plotpadx
-add_de1_widget $::pages graph 692 458 { streamline_graph_smarts $widget } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady $plotpady -plotpadx $plotpadx
+
+add_de1_widget $::zoomed_pages graph 22 520 { set ::streamline_chart_zoomed $widget; streamline_graph_smarts $widget "off_zoomed" } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width_zoomed - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height_zoomed] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady $plotpady -plotpadx $plotpadx
+add_de1_widget $::pages graph 692 458 { set ::streamline_chart $widget; streamline_graph_smarts $widget } -plotbackground $::chart_background -width [rescale_x_skin [expr {$charts_width - $ghc_pos_pffset}]] -height [rescale_y_skin $charts_height] -borderwidth 1 -background $::chart_background -plotrelief flat -plotpady $plotpady -plotpadx $plotpadx
 
 ############################################################################################################################################################################################################
 
@@ -4151,6 +4163,8 @@ proc streamline_load_history_shot {current_shot_filename} {
 	set ::streamline_current_history_profile_clock [ifexists past_shot_array(clock)]
 
 	update_data_card past_shot_array profile_settings
+
+	update_chart_label_position 0
 }
 
 proc track_peak_low { state espresso_pressure espresso_flow espresso_temperature_basket } {
@@ -4188,25 +4202,92 @@ proc track_peak_low { state espresso_pressure espresso_flow espresso_temperature
 
 }
 
+proc potentially_hide_chart_label_position {} {
+
+	if {$::streamline_enable_chart_labels_realtime == 0} {
+		$::streamline_chart marker configure "label_pressure" -coords {-100 -100}
+		$::streamline_chart marker configure "label_flow" -coords {-100 -100}
+		$::streamline_chart marker configure "label_temperature" -coords {-100 -100}
+		$::streamline_chart marker configure "label_weight" -coords {-100 -100}
+
+		$::streamline_chart_zoomed marker configure "label_pressure" -coords {-100 -100}
+		$::streamline_chart_zoomed marker configure "label_flow" -coords {-100 -100}
+		$::streamline_chart_zoomed marker configure "label_temperature" -coords {-100 -100}
+		$::streamline_chart_zoomed marker configure "label_weight" -coords {-100 -100}
+
+	} 
+}
+
+proc update_chart_label_position {in_realtime} {
+	if {$::streamline_enable_chart_labels == 1} {
+
+		if {$in_realtime == 1 && $::streamline_enable_chart_labels_realtime != 1} {
+			return 
+		}
+
+		if {[espresso_elapsed range end end] > 0} {
+
+			set elapsed [expr {[espresso_elapsed range end end]}]
+			#set elapsed1 [$::streamline_chart axis limits x]
+			#set elapsed [lindex $elapsed1 1]
+
+			set pressure_y [espresso_pressure range end end]
+			$::streamline_chart marker configure "label_pressure" -coords [list $elapsed $pressure_y]
+			$::streamline_chart_zoomed marker configure "label_pressure" -coords [list $elapsed $pressure_y]
+
+			set flow_y [espresso_flow range end end]
+			$::streamline_chart marker configure "label_flow" -coords [list $elapsed $flow_y]
+			$::streamline_chart_zoomed marker configure "label_flow" -coords [list $elapsed $flow_y]
+
+			set mindist 0.4
+
+			########################
+			# make sure pressure doesn't overwrite temp label
+			set temp_y [espresso_temperature_basket10th range end end]
+			set distance [expr {$temp_y - $pressure_y}]
+			if {$distance > 0 && $distance < $mindist} {
+				set temp_y [expr {$pressure_y + $mindist}]
+			}
+			if {$distance < 0 && $distance > -$mindist} {
+				set temp_y [expr {$pressure_y - $mindist}]
+			}
+			$::streamline_chart marker configure "label_temperature" -coords [list $elapsed $temp_y]
+			$::streamline_chart_zoomed marker configure "label_temperature" -coords [list $elapsed $temp_y]
+			########################
+
+			########################
+			# make sure weight label doesn't sit on top of the flow label
+			if {[espresso_flow_weight length] > 0} {
+				set weight_y [espresso_flow_weight range end end]
+				set distance [expr {$weight_y - $flow_y}]
+				if {$distance > 0 && $distance < $mindist} {
+					set weight_y [expr {$flow_y + $mindist}]
+				}
+				if {$distance < 0 && $distance > -$mindist} {
+					set weight_y [expr {$flow_y - $mindist}]
+				}
+
+				$::streamline_chart marker configure "label_weight" -coords [list $elapsed $weight_y]
+				$::streamline_chart_zoomed marker configure "label_weight" -coords [list $elapsed $weight_y]
+
+			} else {
+				#hide if not needed
+				$::streamline_chart marker configure "label_weight" -coords {-100 -100}
+				$::streamline_chart_zoomed marker configure "label_weight" -coords {-100 -100}
+			}
+			########################
+		}
+	}
+}
 
 proc update_data_card { arrname settingsarr } {
 
 	upvar $arrname past_shot_array
 	upvar $settingsarr profile_settings
 
-	if {$::streamline_enable_chart_labels == 1} {
-		if {[espresso_elapsed range end end] > 5} {
-			$::streamline_chart marker configure "label_pressure" -coords [list [espresso_elapsed range end end] [espresso_pressure range end end]]
-			$::streamline_chart marker configure "label_flow" -coords [list [espresso_elapsed range end end] [espresso_flow range end end]]
-			$::streamline_chart marker configure "label_temperature" -coords [list [espresso_elapsed range end end] [espresso_temperature_basket10th range end end]]
 
-			if {[espresso_flow_weight length] > 0} {
-				$::streamline_chart marker configure "label_weight" -coords [list [espresso_elapsed range end end] [espresso_flow_weight range end end]]
-			} else {
-				$::streamline_chart marker configure "label_weight" -coords {-100 -100}
-			}
-		}
-	}
+	
+
 
 	#puts "ERROR el: [ifexists past_shot_array(espresso_elapsed)]"
 
@@ -4654,6 +4735,8 @@ proc streamline_shot_ended  {} {
 	set ::settings(current_frame_description) ""
 
 	unset -nocomplain ::de1(streamline_shot_in_progress)
+
+	update_chart_label_position 0
 }
 
 ############################################################################################################################################################################################################
