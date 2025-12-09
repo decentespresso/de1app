@@ -107,6 +107,7 @@ if {$::streamline_dark_mode == 0} {
 	set ::temperature_line_color "#ff97a1"
 	set ::temperature_line_color_goal "#ffd1d5"
 	set ::weightlinecolor "#e9d3c3"
+	set ::weightlinecolor_label "#ac988a"
 	set ::state_change_color "#7c7c7c"
 	set ::chart_background $::background_color
 	set ::pressurelabelcolor "#959595"
@@ -203,6 +204,7 @@ set ::blink_button_color "#395ab9"
 	set ::temperature_line_color "#AE6D73"
 	set ::temperature_line_color_goal "#3e3233"
 	set ::weightlinecolor "#695f57"
+	set ::weightlinecolor_label "#847971"
 	set ::state_change_color "#7f8bbb"
 	set ::chart_background $::background_color
 	set ::pressurelabelcolor "#606579"
@@ -3877,7 +3879,7 @@ proc streamline_graph_smarts {widget {which ""} } {
 		set label_background $::chart_background
 		$widget marker create text -coords {-100 -100} -text [subst {\u00B0C}] -anchor $anchor  -font $labelfont  -foreground $::temperature_line_color -name "label_temperature"  -xoffset $xoffset  -yoffset $yoffset -background $label_background -padx $padx -pady $pady
 		$widget marker create text -coords {-100 -100} -text [subst {[translate "pressure"]}] -anchor $anchor  -font $labelfont  -foreground $::pressurelinecolor -name "label_pressure" -xoffset $xoffset   -yoffset $yoffset -background $label_background -padx $padx -pady $pady
-		$widget marker create text -coords {-100 -100} -text [subst {[translate "weight"]}] -anchor $anchor  -font $labelfont  -foreground $::weightlinecolor -name "label_weight"  -xoffset $xoffset -yoffset $yoffset -background $label_background -padx $padx -pady $pady
+		$widget marker create text -coords {-100 -100} -text [subst {[translate "weight"]}] -anchor $anchor  -font $labelfont  -foreground $::weightlinecolor_label -name "label_weight"  -xoffset $xoffset -yoffset $yoffset -background $label_background -padx $padx -pady $pady
 		$widget marker create text -coords {-100 -100} -text [subst {[translate "flow"]}] -anchor $anchor  -font $labelfont  -foreground $::flow_line_color -name "label_flow"  -xoffset $xoffset  -yoffset $yoffset -background $label_background -padx $padx -pady $pady
 	}
 
