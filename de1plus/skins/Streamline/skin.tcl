@@ -2079,6 +2079,7 @@ dui add dbutton "off water" 474 1516 624 1600 -command {say [translate {Preset}]
 
 proc refresh_favorite_profile_button_labels {} {
 
+	streamline_verify_sane_number_settings
 
 	set profiles [ifexists ::settings(favorite_profiles)]
 	set streamline_selected_favorite_profile ""
