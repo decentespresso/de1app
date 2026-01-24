@@ -7,6 +7,9 @@ dui theme add streamline
 dui theme set streamline
 
 set ::streamline_longpress_threshold 1000
+set ::streamline_adjust_grind_shortpress 1
+set ::streamline_adjust_grind_longpress .1
+
 
 if {$::android != 1} {
 	set ::settings(ghc_is_installed) 0
@@ -438,20 +441,18 @@ proc copy_streamline_settings_to_DYE {} {
 	}
 }
 
-
 proc streamline_adjust_grind { args } {
-
 	if {$args == "-"} {
-		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - .1}]]
+		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - $::streamline_adjust_grind_longpress}]]
 		flash_button "streamline_minus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	} elseif {$args == "+"} {
-		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + .1}]]
+		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + $::streamline_adjust_grind_longpress}]]
 		flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	} elseif {$args == "--"} {
-		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - 1}]]
+		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - $::streamline_adjust_grind_shortpress}]]
 		flash_button "streamline_minus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	} elseif {$args == "++"} {
-		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + 1}]]
+		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + $::streamline_adjust_grind_shortpress}]]
 		flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	}
 
