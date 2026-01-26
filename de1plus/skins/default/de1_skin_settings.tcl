@@ -108,6 +108,8 @@ proc exit_settings_pages {args} {
                 set_next_page off off; page_show off
             }
 
+            fill_advanced_profile_steps_listbox
+
             if {[info exists ::settings_optional_callback] == 1} {
                 if {$::settings_optional_callback != ""} {
                     eval $::settings_optional_callback

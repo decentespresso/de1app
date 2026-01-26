@@ -901,7 +901,15 @@ add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_tempera
 		}
 	
 		# scale ble reconnection button
-		add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" {say [translate {connect}] $::settings(sound_button_in); catch {set ::de1(bluetooth_scale_connection_attempts_tried) 0; ble_connect_to_scale}} 2040 1190 2400 1400
+		add_de1_button "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" { say [translate {connect}] $::settings(sound_button_in); catch {
+
+			if {$::de1(scale_sensor_weight) == ""} { 
+				set ::de1(bluetooth_scale_connection_attempts_tried) 0; 
+				ble_connect_to_scale
+			} else {
+				scale_tare
+			}
+		} } 2040 1190 2400 1400
 	}
 
 #######################

@@ -2925,8 +2925,14 @@ proc number_of_preinfusion_steps {} {
 
 	if { $profile_type eq "settings_2a" || $profile_type eq "settings_2b" } {
 		set preinfusion_end_step 1
+
+		if {[ifexists ::settings(preinfusion_time)] == 0} {
+			# if preinfusion is disabled then assume none
+			set preinfusion_end_step 0
+		}
+
 		if {[ifexists ::settings(insert_preinfusion_pause)] == 1} {
-			set preinfusion_end_step 2
+			incr preinfusion_end_step 
 		}
 
 		if {[ifexists ::settings(espresso_temperature_steps_enabled)] == 1} {
@@ -2937,9 +2943,10 @@ proc number_of_preinfusion_steps {} {
 		set preinfusion_end_step [ifexists ::settings(final_desired_shot_volume_advanced_count_start)]
 	}
 
+	#msg -INFO "number_of_preinfusion_steps: $preinfusion_end_step"
+
 	return $preinfusion_end_step
 }
-
 
 proc tablet_is_samsung_brand {} {
 	if {[string first "samsung" [string tolower [borg osbuildinfo]]] == -1} {
