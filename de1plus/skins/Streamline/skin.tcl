@@ -3874,11 +3874,12 @@ proc streamline_graph_smarts {widget {which ""} } {
 	if {$::streamline_enable_chart_labels == 1} {
 		set anchor ne
 		set labelfont Inter-Regular10
-		set yoffset [rescale_x_skin -20]
-		set xoffset [rescale_x_skin 40]
+		set yoffset [rescale_x_skin -40]
+		set xoffset [rescale_x_skin 30]
 		set padx [rescale_x_skin 2]
 		set pady [rescale_x_skin 2]
 		set label_background $::chart_background
+		set label_background ""
 		$widget marker create text -coords {-100 -100} -text [subst {\u00B0C}] -anchor $anchor  -font $labelfont  -foreground $::temperature_line_color -name "label_temperature"  -xoffset $xoffset  -yoffset $yoffset -background $label_background -padx $padx -pady $pady
 		$widget marker create text -coords {-100 -100} -text [subst {[translate "pressure"]}] -anchor $anchor  -font $labelfont  -foreground $::pressurelinecolor -name "label_pressure" -xoffset $xoffset   -yoffset $yoffset -background $label_background -padx $padx -pady $pady
 		$widget marker create text -coords {-100 -100} -text [subst {[translate "weight"]}] -anchor $anchor  -font $labelfont  -foreground $::weightlinecolor_label -name "label_weight"  -xoffset $xoffset -yoffset $yoffset -background $label_background -padx $padx -pady $pady
