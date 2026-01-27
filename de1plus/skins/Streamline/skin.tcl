@@ -4230,6 +4230,12 @@ proc update_chart_label_position {in_realtime} {
 			return 
 		}
 
+		if {$::de1_num_state($::de1(state)) != "Idle" && $::streamline_enable_chart_labels_realtime != 1} {
+			# 2nd test to make sure that the machine is idle when moving the line labels around, unless we're in realtime line labels enabled mode
+			return
+		}
+
+
 		if {[espresso_elapsed range end end] > 0} {
 
 			set elapsed [expr {[espresso_elapsed range end end]}]
