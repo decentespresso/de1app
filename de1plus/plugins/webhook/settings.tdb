@@ -1,0 +1,4 @@
+webhook_domain example.com
+webhook_endpoint /decent/webhook
+webhook_secret_key SecretKeyForSigning
+webhook_trigger_after 10
