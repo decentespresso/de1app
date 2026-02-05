@@ -3880,10 +3880,10 @@ proc streamline_graph_smarts {widget {which ""} } {
 		set pady [rescale_x_skin 2]
 		set label_background $::chart_background
 		set label_background ""
-		$widget marker create text -coords {-100 -100} -text [subst {\u00B0C}] -anchor $anchor  -font $labelfont  -foreground $::temperature_line_color -name "label_temperature"  -xoffset $xoffset  -yoffset $yoffset -background $label_background -padx $padx -pady $pady
-		$widget marker create text -coords {-100 -100} -text [subst {[translate "pressure"]}] -anchor $anchor  -font $labelfont  -foreground $::pressurelinecolor -name "label_pressure" -xoffset $xoffset   -yoffset $yoffset -background $label_background -padx $padx -pady $pady
-		$widget marker create text -coords {-100 -100} -text [subst {[translate "weight"]}] -anchor $anchor  -font $labelfont  -foreground $::weightlinecolor_label -name "label_weight"  -xoffset $xoffset -yoffset $yoffset -background $label_background -padx $padx -pady $pady
-		$widget marker create text -coords {-100 -100} -text [subst {[translate "flow"]}] -anchor $anchor  -font $labelfont  -foreground $::flow_line_color -name "label_flow"  -xoffset $xoffset  -yoffset $yoffset -background $label_background -padx $padx -pady $pady
+		$widget marker create text -coords {10000 1} -text [subst {\u00B0C}] -anchor $anchor  -font $labelfont  -foreground $::temperature_line_color -name "label_temperature"  -xoffset $xoffset  -yoffset $yoffset -background $label_background -padx $padx -pady $pady
+		$widget marker create text -coords {10000 1} -text [subst {[translate "pressure"]}] -anchor $anchor  -font $labelfont  -foreground $::pressurelinecolor -name "label_pressure" -xoffset $xoffset   -yoffset $yoffset -background $label_background -padx $padx -pady $pady
+		$widget marker create text -coords {10000 1} -text [subst {[translate "weight"]}] -anchor $anchor  -font $labelfont  -foreground $::weightlinecolor_label -name "label_weight"  -xoffset $xoffset -yoffset $yoffset -background $label_background -padx $padx -pady $pady
+		$widget marker create text -coords {10000 1} -text [subst {[translate "flow"]}] -anchor $anchor  -font $labelfont  -foreground $::flow_line_color -name "label_flow"  -xoffset $xoffset  -yoffset $yoffset -background $label_background -padx $padx -pady $pady
 	}
 
 	$widget element create line_espresso_pressure_goal -xdata espresso_elapsed -ydata espresso_pressure_goal -symbol none -label "" -linewidth [rescale_x_skin 4] -color $::pressurelinecolor_goal  -smooth $::settings(live_graph_smoothing_technique)  -pixels 0 -dashes $::pressure_goal_dashes; 
@@ -4210,16 +4210,15 @@ proc track_peak_low { state espresso_pressure espresso_flow espresso_temperature
 proc potentially_hide_chart_label_position {} {
 
 	if {$::streamline_enable_chart_labels_realtime == 0} {
-		$::streamline_chart marker configure "label_pressure" -coords {-100 -100}
-		$::streamline_chart marker configure "label_flow" -coords {-100 -100}
-		$::streamline_chart marker configure "label_temperature" -coords {-100 -100}
-		$::streamline_chart marker configure "label_weight" -coords {-100 -100}
+		$::streamline_chart marker configure "label_pressure" -coords {10000 1}
+		$::streamline_chart marker configure "label_flow" -coords {10000 1}
+		$::streamline_chart marker configure "label_temperature" -coords {10000 1}
+		$::streamline_chart marker configure "label_weight" -coords {10000 1}
 
-		$::streamline_chart_zoomed marker configure "label_pressure" -coords {-100 -100}
-		$::streamline_chart_zoomed marker configure "label_flow" -coords {-100 -100}
-		$::streamline_chart_zoomed marker configure "label_temperature" -coords {-100 -100}
-		$::streamline_chart_zoomed marker configure "label_weight" -coords {-100 -100}
-
+		$::streamline_chart_zoomed marker configure "label_pressure" -coords {10000 1}
+		$::streamline_chart_zoomed marker configure "label_flow" -coords {10000 1}
+		$::streamline_chart_zoomed marker configure "label_temperature" -coords {10000 1}
+		$::streamline_chart_zoomed marker configure "label_weight" -coords {10000 1}
 	} 
 }
 
