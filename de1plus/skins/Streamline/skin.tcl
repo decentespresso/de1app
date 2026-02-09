@@ -743,7 +743,7 @@ if {$::settings(scale_bluetooth_address) != ""} {
 }
 
 
-add_de1_rich_text "off espresso" 690 330 [list left none] 1 2 74 $::background_color $btns
+add_de1_rich_text "off espresso" 690 330 [list left none] 1 1 74 $::background_color $btns
 
 
 set flush_btns ""
