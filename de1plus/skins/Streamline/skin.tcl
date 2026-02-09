@@ -1609,9 +1609,17 @@ add_de1_button "off steam" {steam_time_flow_flip} 0 947 222 1056 ""
 set ::streamline_current_history_profile_name ""
 set ::streamline_current_history_profile_clock ""
 
+::de1::event::listener::on_major_state_change_add -noidle streamline_on_major_state_change
+proc streamline_on_major_state_change {event_dict} {
+	set this_state [dict get $event_dict this_state]
+
+	if { $this_state == "Espresso" } {
+		start_streamline_espresso
+	}
+}
+
 
 proc start_streamline_espresso {} {
-
 
 	set ::de1(streamline_shot_in_progress) 1
 
@@ -4229,10 +4237,10 @@ proc update_chart_label_position {in_realtime} {
 			return 
 		}
 
-		if {$::de1_num_state($::de1(state)) != "Idle" && $::de1_num_state($::de1(state)) != "Sleep" && $::streamline_enable_chart_labels_realtime != 1} {
+		#if {$::de1_num_state($::de1(state)) != "Idle" && $::de1_num_state($::de1(state)) != "Sleep" && $::streamline_enable_chart_labels_realtime != 1} {
 			# 2nd test to make sure that the machine is idle when moving the line labels around, unless we're in realtime line labels enabled mode
-			return
-		}
+			#return
+		#}
 
 		if {[espresso_elapsed range end end] > 0} {
 
