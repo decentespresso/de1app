@@ -230,77 +230,86 @@ source "[homedir]/skins/default/standard_includes.tcl"
 # disable the scale popup msgs
 set ::settings(show_scale_notifications) 0
 
-#load_font "Inter-Regular10" "[homedir]/Streamline/Inter-Regular.ttf" 11
+set InterSemiBold "[homedir]/skins/Streamline/Inter-SemiBold.ttf"
+set InterBold "[homedir]/skins/Streamline/Inter-Bold.ttf"
+set InterExtraLight "[homedir]/skins/Streamline/Inter-ExtraLight.ttf"
+set InterRegular "[homedir]/skins/Streamline/Inter-Regular.ttf"
+set InterThin "[homedir]/skins/Streamline/Inter-Thin.ttf"
+
+
+if {[ifexists ::settings(language)] == "ar" || [ifexists ::settings(language)] == "arb"} {
+	set InterSemiBold "[homedir]/fonts/NotoSansArabic-Regular.ttf"
+	set InterBold "[homedir]/fonts/NotoSansArabic-Regular.ttf"
+	set InterExtraLight "[homedir]/fonts/NotoSansArabic-Regular.ttf"
+	set InterRegular "[homedir]/fonts/NotoSansArabic-Regular.ttf"
+	set InterThin "[homedir]/fonts/NotoSansArabic-Regular.ttf"
+}
+
+
+
 
 # Left column labels
-load_font "Inter-Bold16" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 14
-#load_font "Inter-Bold15" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
+load_font "Inter-Bold16" "$InterSemiBold" 14
 
 # GHC buttons
-load_font "Inter-Bold12" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
+load_font "Inter-Bold12" "$InterSemiBold" 12
 
-load_font "Inter-Bold11" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
+load_font "Inter-Bold11" "$InterSemiBold" 12
 
 # Profile buttons
-load_font "Inter-Bold13" "[homedir]/skins/Streamline/Inter-Bold.ttf" 13 13 bold
+load_font "Inter-Bold13" "$InterBold" 13 13 bold
 
 # status
-
-load_font "Inter-Bold17" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 12
-load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
-#if {$::undroid == 1} {
-#} else {
-#	load_font "Inter-Bold18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 13
-#}
-
+load_font "Inter-Bold17" "$InterSemiBold" 12
+load_font "Inter-Bold18" "$InterSemiBold" 13
 
 # status bold
-load_font "Inter-SemiBold18" "[homedir]/skins/Streamline/Inter-Bold.ttf" 13
+load_font "Inter-SemiBold18" "$InterBold" 13
 
 # +/- buttons
-load_font "Inter-Bold24" "[homedir]/skins/Streamline/Inter-ExtraLight.ttf" 29
+load_font "Inter-Bold24" "$InterExtraLight" 29
 
 
 # data entry buttons
-load_font "Inter-Bold40" "[homedir]/skins/Streamline/Inter-Regular.ttf" 39
+load_font "Inter-Bold40" "$InterRegular" 39
 
 # data entry backspace button
-load_font "Inter-Bold30" "[homedir]/skins/Streamline/Inter-Regular.ttf" 24
+load_font "Inter-Bold30" "$InterRegular" 24
 
 # profile 
-load_font "Inter-HeavyBold24" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 17
+load_font "Inter-HeavyBold24" "$InterSemiBold" 17
 
 # data entry title 
-load_font "Inter-HeavyBold40" "[homedir]/skins/Streamline/Inter-Bold.ttf" 32 32 bold
+load_font "Inter-HeavyBold40" "$InterBold" 32 32 bold
 
 # data entry data
-load_font "Inter-HeavyBold50" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 40
+load_font "Inter-HeavyBold50" "$InterSemiBold" 40
 
 # data entry confirm and cancel
-load_font "Inter-HeavyBold30" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 16
+load_font "Inter-HeavyBold30" "$InterSemiBold" 16
 
 # data entry previous
-load_font "Inter-HeavyBold35" "[homedir]/skins/Streamline/Inter-Regular.ttf" 16
+load_font "Inter-HeavyBold35" "$InterRegular" 16
 
 # X and Y axis font
-load_font "Inter-Regular20" "[homedir]/skins/Streamline/Inter-Regular.ttf" 16
+load_font "Inter-Regular20" "$InterRegular" 16
 
 # X and Y axis font
-load_font "Inter-Regular16" "[homedir]/skins/Streamline/Inter-Regular.ttf" 16
+load_font "Inter-Regular16" "$InterRegular" 16
 
 # X and Y axis font
-load_font "Inter-Regular12" "[homedir]/skins/Streamline/Inter-Regular.ttf" 12
+load_font "Inter-Regular12" "$InterRegular" 12
 
 # X and Y axis font
-load_font "Inter-Regular10" "[homedir]/skins/Streamline/Inter-Regular.ttf" 10
+load_font "Inter-Regular10" "$InterRegular" 10
 
-load_font "Inter-Regular6" "[homedir]/skins/Streamline/Inter-Regular.ttf" 6
+load_font "Inter-Regular6" "$InterRegular" 6
 
 # Scale disconnected msg
-load_font "Inter-Black18" "[homedir]/skins/Streamline/Inter-SemiBold.ttf" 14
+load_font "Inter-Black18" "$InterSemiBold" 14
 
 # Vertical bar in top right buttons
-load_font "Inter-Thin14" "[homedir]/skins/Streamline/Inter-Thin.ttf" 14
+load_font "Inter-Thin14" "$InterThin" 14
 
 # button icon font
 load_font "icomoon" "[homedir]/skins/Streamline/icomoon.ttf" 30
