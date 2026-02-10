@@ -109,8 +109,8 @@ if {$::streamline_dark_mode == 0} {
 	set ::flow_line_color_goal "#bed9ff"
 	set ::temperature_line_color "#ff97a1"
 	set ::temperature_line_color_goal "#ffd1d5"
-	set ::weightlinecolor "#e9d3c3"
-	set ::weightlinecolor_label "#ac988a"
+	set ::weightlinecolor "#D8BDA8"
+	set ::weightlinecolor_label "#C7A58D"
 	set ::state_change_color "#7c7c7c"
 	set ::chart_background $::background_color
 	set ::pressurelabelcolor "#959595"
