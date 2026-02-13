@@ -999,10 +999,10 @@ proc update_streamline_status_message {} {
 
 				set force_update 1				
 				if {$ETA < $::streamline_start_heating_eta_previous || $force_update == 1} {
-					set msg [subst { [seconds_text_very_abbreviated $ETA][translate remaining]}]
+					set msg [subst { [seconds_text_very_abbreviated $ETA] [translate remaining]}]
 					set ::streamline_start_heating_eta_previous $ETA
 				} else {
-					set msg [subst { [seconds_text_very_abbreviated $::streamline_start_heating_eta_previous][translate remaining]}]
+					set msg [subst { [seconds_text_very_abbreviated $::streamline_start_heating_eta_previous] [translate remaining]}]
 				}
 				if {$warmed > 2 } {
 					set red_msg [translate "Heating:"]
