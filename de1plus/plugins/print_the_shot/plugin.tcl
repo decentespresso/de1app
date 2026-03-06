@@ -9,7 +9,7 @@ set plugin_name "print_the_shot"
 # Server deployment instructions: https://github.com/Sofronio/DecentEspressoPrintTheShot
 set ::plugins::print_the_shot::author "Sofronio Chen"
 set ::plugins::print_the_shot::contact "xbox2xbox@gmail.com" 
-set ::plugins::print_the_shot::version 1.0
+set ::plugins::print_the_shot::version 1.2
 set ::plugins::print_the_shot::description "Upload shots to local server and print it"
 set ::plugins::print_the_shot::name "Print The Shot"
 
@@ -18,7 +18,7 @@ namespace eval ::plugins::${plugin_name} {
     # Redefine variables inside the namespace (ensuring consistency)
     variable author "Sofronio Chen"
     variable contact "xbox2xbox@gmail.com"
-    variable version 1.0
+    variable version 1.2
     variable description "Upload shots to local server and print it"
     variable name "Print The Shot"
 
@@ -35,6 +35,7 @@ namespace eval ::plugins::${plugin_name} {
                 server_endpoint upload
                 server_url yourserverip:8000
                 use_http 1
+                machine_name ""
             }
             set needs_save_settings 1
         }
@@ -64,16 +65,43 @@ namespace eval ::plugins::${plugin_name} {
         }
     }
 
-    proc upload {content} {
+   proc upload {content} {
         variable settings
-
-        # 上传咖啡数据到本地服务器，数据长度：
-        # uploading shot to local server, data length:
-        msg "uploading shot to local server, data length: [string length $content]"
+        variable version
+        
+        # 获取机器名称
+        # Get machine name
+        set machine_name $settings(machine_name)
+        
+        # 处理机器名称，创建简洁的标识符
+        # Process machine name to create clean identifier
+        set machine_id ""
+        if {$machine_name ne ""} {
+            # 移除所有非字母数字字符，替换为空（直接删除）
+            # Remove all non-alphanumeric characters, replace with nothing (just delete)
+            set clean_name [regsub -all {[^a-zA-Z0-9]} $machine_name ""]
+            
+            # 如果处理后的名字为空，使用默认值
+            # If processed name is empty, use default
+            if {$clean_name eq ""} {
+                set clean_name "UNKNOWN"
+            }
+            
+            # 限制长度
+            # Limit length
+            if {[string length $clean_name] > 20} {
+                set clean_name [string range $clean_name 0 19]
+            }
+            
+            set machine_id $clean_name
+        } else {
+            set machine_id "UNKNOWN"
+        }
+        
+        msg "Machine name: '$machine_name', Clean ID: '$machine_id'"
+        msg "Original shot data length: [string length $content] bytes"
         
         if {[string length $content] < 100} {
-            # 警告：咖啡数据似乎太短：
-            # Warning: Shot data seems too short:
             msg "Warning: Shot data seems too short: [string length $content] bytes"
         }
         
@@ -84,7 +112,7 @@ namespace eval ::plugins::${plugin_name} {
         
         # 确保内容是 UTF-8 编码
         # Ensure content is UTF-8 encoded
-        set content [encoding convertto utf-8 $content]
+        set content_utf8 [encoding convertto utf-8 $content]
 
         # 确定协议
         # Determine protocol
@@ -95,13 +123,26 @@ namespace eval ::plugins::${plugin_name} {
             http::register https 443 [list ::tls::socket -servername $settings(server_url)]
         }
 
-        set url "$protocol://$settings(server_url)/$settings(server_endpoint)"
-        msg "Upload URL: $url"
+        # 生成时间戳
+        # Generate timestamp
+        set timestamp [clock format [clock seconds] -format "%Y%m%d_%H%M%S"]
         
-        # 使用简单的 JSON 上传，避免 multipart 问题
-        # Use simple JSON upload to avoid multipart issues
+        # 构建简洁的URL查询参数
+        # Build clean URL query parameters
+        set base_url "$protocol://$settings(server_url)/$settings(server_endpoint)"
+        
+        # 简洁的参数：只有 machine_id, timestamp, plugin_version
+        # Clean parameters: only machine_id, timestamp, plugin_version
+        set url "$base_url?machine_id=$machine_id&timestamp=$timestamp&plugin_version=$version"
+        
+        msg "Clean Upload URL: $url"
+        msg "Parameters: machine_id=$machine_id, timestamp=$timestamp, plugin_version=$version"
+        
+        # 使用简单的HTTP头
+        # Use simple HTTP headers
         set headerl [list "Content-Type" "application/json"]
-        set body $content
+        
+        set body $content_utf8
 
         set returncode 0
         set returnfullcode ""
@@ -134,7 +175,10 @@ namespace eval ::plugins::${plugin_name} {
                 
                 msg "Request status: $status"
                 msg "Response code: $returncode"
-                msg "Response: $answer"
+                msg "Response length: [string length $answer] bytes"
+                if {[string length $answer] < 200} {
+                    msg "Response: $answer"
+                }
 
                 http::cleanup $token
 
@@ -169,7 +213,11 @@ namespace eval ::plugins::${plugin_name} {
         }
 
         popup [translate_toast "Upload successful"]
-        set settings(last_upload_result) [translate "Upload successful!"]
+        if {$machine_id ne "" && $machine_id ne "UNKNOWN"} {
+            set settings(last_upload_result) "[translate {Upload successful!}] (ID: $machine_id)"
+        } else {
+            set settings(last_upload_result) "[translate {Upload successful!}]"
+        }
         
         plugins save_settings print_the_shot
         return $answer
@@ -299,43 +347,71 @@ namespace eval ::plugins::${plugin_name}::printshot_settings {
         
         # 服务器端点
         # Server Endpoint
-        dui add entry $page_name 280 720 -tags server_endpoint -width 38 -font Helv_8 -borderwidth 1 -bg #fbfaff -foreground #4e85f4 -textvariable ::plugins::print_the_shot::settings(server_endpoint) -relief flat -highlightthickness 1 -highlightcolor #000000 \
-            -label [translate "Server Endpoint"] -label_pos {280 660} -label_font Helv_8 -label_width 1000 -label_fill "#444444" 
+        dui add entry $page_name 280 680 -tags server_endpoint -width 38 -font Helv_8 -borderwidth 1 -bg #fbfaff -foreground #4e85f4 -textvariable ::plugins::print_the_shot::settings(server_endpoint) -relief flat -highlightthickness 1 -highlightcolor #000000 \
+            -label [translate "Server Endpoint"] -label_pos {280 620} -label_font Helv_8 -label_width 1000 -label_fill "#444444" 
         bind $widgets(server_endpoint) <Return> [namespace current]::save_settings
         
         # 紧凑的 checkbox 区域
         # Compact checkbox area
-        dui add dcheckbox $page_name 280 820 -tags use_http -textvariable ::plugins::print_the_shot::settings(use_http) -fill "#444444" \
+        dui add dcheckbox $page_name 280 760 -tags use_http -textvariable ::plugins::print_the_shot::settings(use_http) -fill "#444444" \
             -label [translate "Use HTTP (uncheck for HTTPS)"] -label_font Helv_8 -label_fill #4e85f4 -command save_settings 
         
-        dui add dcheckbox $page_name 280 880 -tags auto_upload -textvariable ::plugins::print_the_shot::settings(auto_upload) -fill "#444444" \
+        dui add dcheckbox $page_name 280 820 -tags auto_upload -textvariable ::plugins::print_the_shot::settings(auto_upload) -fill "#444444" \
             -label [translate "Auto-Upload"] -label_font Helv_8 -label_fill #4e85f4 -command save_settings 
         
         # 更长的 Manual Upload Button
         # Longer Manual Upload Button
-        dui add dbutton $page_name 280 950 -tags manual_upload -bwidth 600 -bheight 80 -label [translate "Manual Upload Last Shot"] \
+        dui add dbutton $page_name 280 1000 -tags manual_upload -bwidth 600 -bheight 80 -label [translate "Manual Upload Last Shot"] \
             -label_font Helv_9 -label_fill white -command [list ::plugins::print_the_shot::manual_upload] -style insight_ok
         
         # 最小时间输入框和说明文字在同一行，垂直对齐
         # Minimum time entry and description text on the same line, vertically aligned
-        dui add dtext $page_name 360 1055 -tags min_seconds_label -text [translate "S: Minimum duration"] -font Helv_8 -width 600 -fill "#888888" -anchor "nw"
-        dui add entry $page_name 280 1050 -tags auto_upload_min_seconds -textvariable ::plugins::print_the_shot::settings(auto_upload_min_seconds) -width 3 -font Helv_8 -borderwidth 1 -bg #fbfaff -foreground #4e85f4 -relief flat -highlightthickness 1 -highlightcolor #000000
-        #dui add dtext $page_name 400 1060 -tags min_seconds_desc -text [translate "(minimum shot duration)"] -font Helv_7 -width 500 -fill "#888888" -anchor "nw"
+        dui add dtext $page_name 360 885 -tags min_seconds_label -text [translate "S: Minimum duration"] -font Helv_8 -width 600 -fill "#888888" -anchor "nw"
+        dui add entry $page_name 280 880 -tags auto_upload_min_seconds -textvariable ::plugins::print_the_shot::settings(auto_upload_min_seconds) -width 3 -font Helv_8 -borderwidth 1 -bg #fbfaff -foreground #4e85f4 -relief flat -highlightthickness 1 -highlightcolor #000000
+        #dui add dtext $page_name 400 1260 -tags min_seconds_desc -text [translate "(minimum shot duration)"] -font Helv_7 -width 500 -fill "#888888" -anchor "nw"
                 
+        # 机器名称 (新增)
+        # Machine Name (new)
+        dui add entry $page_name 1350 540 -tags machine_name -width 38 -font Helv_8 -borderwidth 1 -bg #fbfaff -foreground #4e85f4 -textvariable ::plugins::print_the_shot::settings(machine_name) -relief flat -highlightthickness 1 -highlightcolor #000000 \
+            -label [translate "Machine Name"] -label_pos {1350 480} -label_font Helv_8 -label_width 1000 -label_fill "#444444"
+        bind $widgets(machine_name) <Return> [namespace current]::save_settings
+        
+        # 显示当前机器名称 (只读)
+        # Show current machine name (read-only)
+        dui add dtext $page_name 1350 620 -tags current_machine_label -text [translate "Current Machine:"] -font Helv_8 -width 900 -fill "#444444"
+        dui add dtext $page_name 1350 680 -tags current_machine_name -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left"
+    
         # 最后一次上传咖啡
         # Last upload shot
-        dui add dtext $page_name 1350 480 -tags last_action_label -text [translate "Last upload:"] -font Helv_8 -width 900 -fill "#444444"
-        dui add dtext $page_name 1350 540 -tags last_shot_time -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left" 
+        dui add dtext $page_name 1350 760 -tags last_action_label -text [translate "Last upload:"] -font Helv_8 -width 900 -fill "#444444"
+        dui add dtext $page_name 1350 820 -tags last_shot_time -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left" 
         
         # 最后上传结果
         # Last upload result
-        dui add dtext $page_name 1350 600 -tags last_upload_result -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left"
-    }
+        dui add dtext $page_name 1350 880 -tags last_upload_result -font Helv_8 -width 900 -fill "#4e85f4" -anchor "nw" -justify "left"
+        
+        }
 
     proc show { page_to_hide page_to_show } {
         dui item config $page_to_show last_action_label -text [translate "Last upload:"]
         dui item config $page_to_show last_shot_time -text [::plugins::print_the_shot::printshot_settings::format_shot_start]
         dui item config $page_to_show last_upload_result -text $::plugins::print_the_shot::settings(last_upload_result)
+        
+        # 显示机器名称
+        # Show machine name
+        set machine_name $::plugins::print_the_shot::settings(machine_name)
+        if {$machine_name eq ""} {
+            # 尝试获取 DE1 序列号作为默认机器名
+            # Try to get DE1 serial number as default machine name
+            catch {
+                if {[info exists ::de1(skin)] && [info exists ::de1(serial_number)]} {
+                    set machine_name "DE1-[string range $::de1(serial_number) end-3 end]"
+                } else {
+                    set machine_name "DE1-Unknown"
+                }
+            }
+        }
+        dui item config $page_to_show current_machine_name -text $machine_name
     }
 
     # 格式化咖啡开始时间
