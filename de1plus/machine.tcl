@@ -125,6 +125,7 @@ array set ::de1 {
 	timer 0
 	hertz 50
 	volume 0
+	shot_session_id 0
 	wrote 0
 	cmdstack {}
 	widget_current_profile_name_color_normal "#ff6b6b"
@@ -841,20 +842,29 @@ proc start_steam {} {
 	}
 }
 
-proc reset_gui_starting_espresso {} {
+proc begin_shot_session {{mode "unknown"}} {
 
-	set ::settings(history_saved) 0
+	incr ::de1(shot_session_id)
 
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 	set ::de1(final_water_weight) 0
 	set ::de1(preinfusion_volume) 0
 	set ::de1(pour_volume) 0
-	set ::de1(current_frame_number) 0
-	::de1::state::reset_framenumbers
-
-	# only works if a BLE scale is attached
 	set ::de1(final_espresso_weight) 0
+	set ::de1(app_autostop_triggered) False
+	set ::de1(app_stepskip_triggered) False
+
+	::de1::state::reset_shotsample_tracking $mode
+
+	msg -DEBUG "Starting shot session id=$::de1(shot_session_id) mode=$mode"
+}
+
+proc reset_gui_starting_espresso {} {
+
+	set ::settings(history_saved) 0
+
+	begin_shot_session espresso
 
 	############
 	# this sets the time the espresso starts, used for recording this espresso to a history file
@@ -972,9 +982,7 @@ proc start_next_step {} {
 
 
 proc reset_gui_starting_hotwater {} {
-	set ::de1(timer) 0
-	set ::de1(volume) 0
-	set ::de1(pour_volume) 0
+	begin_shot_session hotwater
 	incr ::settings(water_count)
 
 	save_settings
