@@ -104,48 +104,17 @@ proc ifexists {fieldname2 {defvalue {}} } {
 
 
 proc fast_write_open {fn parms} {
-    set success 0
-    set f 0
-    set errcode [catch {
-        set f [open $fn $parms]
-
-        # Michael argues that there's no need to go nonblocking if you have a write buffer defined.
-        # https://3.basecamp.com/3671212/buckets/7351439/messages/3033510129#__recording_3037579684
-        # so disabling for now, to see if he's right.
-        # fconfigure $f -blocking 0
-
-        # explicitly declare LF as the line feed character, as that's what it is on unix/android/macos - only windows doesn't and it causes issues
-        fconfigure $f -buffersize 1000000 -translation {lf lf}
-        set success 1
-    }]
-
-    if {$errcode != 0} {
-        catch {
-            msg -ERROR "fast_write_open $::errorInfo"
-        }
-    }
-
-    return $f
-    #return ""
+    # Defined in safe_write.tcl — this stub exists only if safe_write.tcl fails to load
+    error "fast_write_open: safe_write.tcl not loaded"
 }
 
 proc write_file {filename data} {
-    set success 0
-    set errcode [catch {
-        set fn [fast_write_open $filename w]
-        puts $fn $data 
-        close $fn
-        set success 1
-    }]
-
-    if {$errcode != 0} {
-        catch {
-            msg -ERROR "write_file '$filename' $::errorInfo"
-        }
-    }
-
-    return $success
+    # Defined in safe_write.tcl — this stub exists only if safe_write.tcl fails to load
+    error "write_file: safe_write.tcl not loaded"
 }
+
+# Load the real implementations from safe_write.tcl
+source [file join [file dirname [info script]] safe_write.tcl]
 
 proc percent20encode {in} {
     set out $in
