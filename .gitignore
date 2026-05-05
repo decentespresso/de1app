@@ -44,3 +44,8 @@ de1plus/plugins/log_upload/settings.tdb
 /de1plus/tmp/
 /de1plus/profiles_v2/*.json
 /de1plus/history_v2/*.json
+
+# Test artifacts
+/de1plus/tests/test_results.txt
+/de1plus/tests/test_error.txt
+/de1plus/tests/tmp_test_data/
