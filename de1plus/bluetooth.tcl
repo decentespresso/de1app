@@ -69,6 +69,8 @@ proc scale_timer_start {} {
 		after 500 solo_barista_start_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
 		difluid_start_timer
+	} elseif {$::settings(scale_type) == "timemore_dot"} {
+		timemore_dot_start_timer
 	}
 }
 
@@ -96,6 +98,8 @@ proc scale_timer_stop {} {
 	} elseif {$::settings(scale_type) == "difluid"} {
 		difluid_stop_timer
 		difluid_reset_timer
+	} elseif {$::settings(scale_type) == "timemore_dot"} {
+		timemore_dot_stop_timer
 	}
 }
 
@@ -124,6 +128,8 @@ proc scale_timer_reset {} {
 		after 500 solo_barista_reset_timer
 	} elseif {$::settings(scale_type) == "difluid"} {
 		# moved the reset to the stop function because stop is more like a pause
+	} elseif {$::settings(scale_type) == "timemore_dot"} {
+		timemore_dot_reset_timer
 	}
 }
 
@@ -162,6 +168,8 @@ proc scale_enable_weight_notifications {} {
 		difluid_enable_weight_notifications
 	} elseif {$::settings(scale_type) == "varia_aku"} {
 		varia_aku_enable_weight_notifications
+	} elseif {$::settings(scale_type) == "timemore_dot"} {
+		timemore_dot_enable_weight_notifications
 	}
 }
 
@@ -1620,6 +1628,226 @@ proc varia_aku_parse_response { value } {
 }
 
 
+#### Timemore Dot Scale
+# BLE Protocol: Service 0xFFF0, Notify 0xFFF1, Write 0xFFF2
+# Packet format: A5 5A [type] ... where type 0x01 = weight data
+# Weight: signed 16-bit big-endian at bytes[8:9], divide by 10.0 for grams
+# Requires init sequence after connection and periodic polling (~10s)
+
+proc timemore_dot_enable_weight_notifications {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_timemore_dot))] == ""} {
+		::bt::msg -DEBUG "Timemore Dot not connected, cannot enable weight notifications"
+		return
+	}
+
+	userdata_append "SCALE: enable Timemore Dot weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_timemore_dot) $::sinstance($::de1(suuid_timemore_dot)) $::de1(cuuid_timemore_dot_status) $::cinstance($::de1(cuuid_timemore_dot_status))] 1
+}
+
+proc timemore_dot_send_init_sequence {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_timemore_dot))] == ""} {
+		::bt::msg -DEBUG "Timemore Dot not connected, cannot send init sequence"
+		return
+	}
+
+	::bt::msg -NOTICE "Timemore Dot: sending init sequence"
+
+	# Init commands extracted from HCI snoop log of official Timemore app
+	# These are sent twice with delays, matching official app behavior
+	set init_cmds [list \
+		[binary decode hex "A55A021300000000"] \
+		[binary decode hex "A55A020800000000"] \
+		[binary decode hex "A55A020500000000"] \
+		[binary decode hex "A55A020200000000"] \
+		[binary decode hex "A55A020600000000"] \
+		[binary decode hex "A55A020C00000000"] \
+	]
+
+	# Send init commands (first pass)
+	set delay 100
+	foreach cmd $init_cmds {
+		after $delay [list timemore_dot_write_cmd $cmd]
+		incr delay 150
+	}
+
+	# Send init commands (second pass, matching official app)
+	incr delay 300
+	foreach cmd $init_cmds {
+		after $delay [list timemore_dot_write_cmd $cmd]
+		incr delay 150
+	}
+
+	# Send initial poll after init
+	incr delay 300
+	after $delay timemore_dot_send_poll
+
+	# Setup periodic polling every 10 seconds to keep connection alive
+	after [expr {$delay + 500}] timemore_dot_start_polling
+
+	::bt::msg -NOTICE "Timemore Dot: init sequence scheduled"
+}
+
+proc timemore_dot_write_cmd {cmd} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_timemore_dot))] == ""} {
+		return
+	}
+
+	userdata_append "SCALE: Timemore Dot write cmd" [list ble write $::de1(scale_device_handle) $::de1(suuid_timemore_dot) $::sinstance($::de1(suuid_timemore_dot)) $::de1(cuuid_timemore_dot_cmd) $::cinstance($::de1(cuuid_timemore_dot_cmd)) $cmd] 0
+}
+
+proc timemore_dot_send_poll {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_timemore_dot))] == ""} {
+		return
+	}
+
+	# Poll command: query state
+	set poll1 [binary decode hex "A55A020800000000"]
+	set poll2 [binary decode hex "A55A030800020100000025"]
+
+	timemore_dot_write_cmd $poll1
+	after 100 [list timemore_dot_write_cmd $poll2]
+}
+
+proc timemore_dot_start_polling {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	# Cancel any existing polling
+	catch {after cancel timemore_dot_poll_tick}
+
+	# Schedule recurring poll every 10 seconds
+	timemore_dot_poll_tick
+}
+
+proc timemore_dot_poll_tick {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	timemore_dot_send_poll
+	after 10000 timemore_dot_poll_tick
+}
+
+proc timemore_dot_tare {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_timemore_dot))] == ""} {
+		error "Timemore Dot not connected, cannot send tare cmd"
+		return
+	}
+
+	::bt::msg -NOTICE "Timemore Dot: sending tare command"
+
+	# Tare command: A5 5A 03 0D 00 02 00 00 00 71 (10 bytes, confirmed from HCI snoop log)
+	set tare [binary decode hex "A55A030D000200000071"]
+
+	# Send poll first to ensure scale is responsive, then tare
+	timemore_dot_send_poll
+	after 200 [list timemore_dot_write_cmd $tare]
+}
+
+proc timemore_dot_start_timer {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_timemore_dot))] == ""} {
+		::bt::msg -DEBUG "Timemore Dot not connected, cannot start timer"
+		return
+	}
+
+	# Timer start: A5 5A 03 02 00 01 01 00 20
+	set timer_start [binary decode hex "A55A03020001010020"]
+
+	timemore_dot_write_cmd $timer_start
+}
+
+proc timemore_dot_stop_timer {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_timemore_dot))] == ""} {
+		::bt::msg -DEBUG "Timemore Dot not connected, cannot stop timer"
+		return
+	}
+
+	# Timer stop: A5 5A 03 02 00 01 02 FF D0
+	set timer_stop [binary decode hex "A55A030200010200FFD0"]
+
+	timemore_dot_write_cmd $timer_stop
+}
+
+proc timemore_dot_reset_timer {} {
+	if {$::de1(scale_device_handle) == 0 || $::settings(scale_type) != "timemore_dot"} {
+		return
+	}
+
+	if {[ifexists ::sinstance($::de1(suuid_timemore_dot))] == ""} {
+		::bt::msg -DEBUG "Timemore Dot not connected, cannot reset timer"
+		return
+	}
+
+	# Timer reset: A5 5A 03 02 00 01 03 FF 81
+	set timer_reset [binary decode hex "A55A030200010300FF81"]
+
+	timemore_dot_write_cmd $timer_reset
+}
+
+proc timemore_dot_parse_response { value } {
+	# Packet format: A5 5A [type] [stat] .. .. .. .. [WH] [WL] [t0] [t1] [t2] [t3] ...
+	# type 0x01 = weight data, weight at bytes 8-9 as signed 16-bit big-endian, /10.0 for grams
+	# type 0x02 = command response, type 0x03 = ACK (both ignored for weight processing)
+
+	if {[string length $value] < 10} {
+		return
+	}
+
+	binary scan $value cucucucucucucucucucu b0 b1 pktType b3 b4 b5 b6 b7 wH wL
+
+	# Validate header: must start with A5 5A
+	if {$b0 != 0xA5 || $b1 != 0x5A} {
+		return
+	}
+
+	# Only process weight packets (type 0x01)
+	if {$pktType != 0x01} {
+		return
+	}
+
+	# Combine bytes 8-9 as signed 16-bit big-endian
+	set raw_weight [expr {($wH << 8) | $wL}]
+
+	# Handle signed 16-bit (two's complement)
+	if {$raw_weight > 32767} {
+		set raw_weight [expr {$raw_weight - 65536}]
+	}
+
+	# Convert to grams (raw value is in 0.1g units)
+	set weight [expr {$raw_weight / 10.0}]
+
+	::device::scale::process_weight_update $weight
+}
+
+
 proc close_all_ble_and_exit {} {
 	::bt::msg -NOTICE close_all_ble_and_exit
 
@@ -2231,6 +2459,8 @@ proc de1_ble_handler { event data } {
 					append_to_peripheral_list $address $name "ble" "scale" "smartchef"
 				} elseif {[string first "Microbalance" $name] == 0 } {
 					append_to_peripheral_list $address $name "ble" "scale" "difluid"
+				} elseif {[string first "TIMEMORE" $name] == 0 } {
+					append_to_peripheral_list $address $name "ble" "scale" "timemore_dot"
 				} else {
 					return
 				}
@@ -2410,6 +2640,10 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "varia_aku"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "varia_aku"
 							after 200 varia_aku_enable_weight_notifications
+						} elseif {$::settings(scale_type) == "timemore_dot"} {
+							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "timemore_dot"
+							after 200 timemore_dot_enable_weight_notifications
+							after 500 timemore_dot_send_init_sequence
 						} else {
 							error "unknown scale: '$::settings(scale_type)'"
 						}
@@ -2793,6 +3027,9 @@ proc de1_ble_handler { event data } {
 						} elseif {$cuuid eq $::de1(cuuid_smartchef_status) && $::settings(scale_type) == "smartchef"} {
 							# smartchef scale
 							smartchef_parse_response $value
+						} elseif {$cuuid eq $::de1(cuuid_timemore_dot_status) && $::settings(scale_type) == "timemore_dot"} {
+							# timemore dot scale
+							timemore_dot_parse_response $value
 							} elseif {$cuuid eq $::de1(cuuid_difluid)} {
 							# difluid scale
 							difluid_parse_response $value

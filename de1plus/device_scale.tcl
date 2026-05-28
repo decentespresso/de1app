@@ -176,6 +176,7 @@ namespace eval ::device::scale {
 			bookoo    { expr { 0.50 } }
 			atomheart_eclair { expr { 0.50 } }
 			acaiascale  { expr { 0.69 } }
+			timemore_dot { expr { 0.50 } }
 			default     { expr { 0.38 } }
 
 		}]
@@ -368,6 +369,7 @@ namespace eval ::device::scale {
 			difluid {difluid_tare }
 
 			varia_aku { varia_aku_tare }
+			timemore_dot { timemore_dot_tare }
 		}
 
 		set ::device::scale::_tare_last_requested [clock milliseconds]
