@@ -413,10 +413,19 @@ namespace eval ::de1::state {
 
 	proc init {} {
 
-		::de1::state::reset_framenumbers
-		unset -nocomplain ::de1::state::_previous_shotsample_update_time
+		::de1::state::reset_shotsample_tracking init
 
 		msg -DEBUG "::de1::state::init done"
+	}
+
+	proc reset_shotsample_tracking {{reason ""}} {
+
+		set ::de1(current_frame_number) 0
+		unset -nocomplain ::de1::_previous_shotsample_update_time
+
+		if { $reason ne "" } {
+			msg -DEBUG "::de1::state::reset_shotsample_tracking (${reason})"
+		}
 	}
 
 	proc current_state {} {
@@ -520,6 +529,7 @@ namespace eval ::de1::state::update {
 
 		set this_state [::de1::state::current_state]
 		set this_substate [::de1::state::current_substate]
+		set this_flow_phase [::de1::state::flow_phase $this_state $this_substate]
 
 		array set ShotSample {}
 
@@ -528,6 +538,16 @@ namespace eval ::de1::state::update {
 		if {[array size ShotSample] == 0} {
 			# shotsample_parse can return with a blank, if the packet is invalid
 			msg -WARN "Invalid shot sample received, ignoring"			
+			return
+		}
+
+		set previous_frame_number $::de1(current_frame_number)
+		if { $this_flow_phase == "during" \
+				&& $ShotSample(FrameNumber) < $previous_frame_number } {
+			msg -WARN "Ignoring stale ShotSample for session=$::de1(shot_session_id)" \
+				"state=$this_state substate=$this_substate" \
+				"frame=$ShotSample(FrameNumber) < current=$previous_frame_number" \
+				"sample_time=$ShotSample(SampleTime)"
 			return
 		}
 
@@ -555,7 +575,12 @@ namespace eval ::de1::state::update {
 		# Much of this proc could be refactored into ::de1 and ::gui
 		# Neither ::previous_timer nor ShotSample(Timer) were used elsewhere in prior code
 
-		if { [info exists ::de1::_previous_shotsample_update_time] } {
+		if { $this_flow_phase != "during" } {
+			unset -nocomplain ::de1::_previous_shotsample_update_time
+		}
+
+		if { $this_flow_phase == "during" \
+				&& [info exists ::de1::_previous_shotsample_update_time] } {
 
 			set dhc [expr { $ShotSample(SampleTime) \
 						- $::de1::_previous_shotsample_update_time }]
@@ -566,7 +591,9 @@ namespace eval ::de1::state::update {
 			set intersample_time 0.0
 		}
 
-		set ::de1::_previous_shotsample_update_time $ShotSample(SampleTime)
+		if { $this_flow_phase == "during" } {
+			set ::de1::_previous_shotsample_update_time $ShotSample(SampleTime)
+		}
 
 
 		set water_volume_dispensed_since_last_update \
@@ -801,6 +828,8 @@ namespace eval ::de1::sav {
 
 	proc start_active {} {
 
+		::de1::state::reset_shotsample_tracking flow_start
+
 		if {$::de1(scale_device_handle) != 0} {
 			msg -NOTICE "::de1::sav::start_active: disabled SAV because scale is connected"
 		}
@@ -965,12 +994,25 @@ namespace eval ::de1::sav {
 
 			if { $::de1(pour_volume) >= $_target } {
 
+				set total_volume \
+					[expr {$::de1(preinfusion_volume) + $::de1(pour_volume)}]
+				msg -NOTICE "AUTOSTOP volume reason=volume" \
+					"session=$::de1(shot_session_id)" \
+					"state=[::de1::state::current_state]" \
+					"substate=[::de1::state::current_substate]" \
+					"frame=$::de1(current_frame_number)" \
+					"current=$::de1(pour_volume)" \
+					"target=$_target" \
+					"preinfusion=$::de1(preinfusion_volume)" \
+					"total=$total_volume" \
+					"autostop=$::de1(app_autostop_triggered)"
+
 				start_idle
 				set ::de1(app_autostop_triggered) True
 
 				msg -INFO "Volume based stop was triggered at:" \
 					"${::de1(pour_volume)} ml for" \
-					"${_target} ml target"
+					"${_target} ml target in session $::de1(shot_session_id)"
 
 				::gui::notify::de1_event sav_stop
 			}
