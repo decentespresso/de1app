@@ -5,6 +5,9 @@ package require de1_metadata 1.0
 
 package require struct::set  
 
+# Load settings corruption recovery logic
+source [file join [file dirname [info script]] safe_load.tcl]
+
 proc setup_environment {} {
 	global android
 	global undroid
@@ -1197,24 +1200,24 @@ proc load_settings {} {
 
     set tablet_model "[ifexists osbuildinfo(manufacturer)] [ifexists osbuildinfo(model)]"
 
-    set settings_file_contents [encoding convertfrom utf-8 [read_binary_file [settings_filename]]]    
+    set fn [settings_filename]
+    set settings_file_contents [encoding convertfrom utf-8 [read_binary_file $fn]]
 
+    # Corruption detection and .bak recovery (defined in safe_load.tcl)
+    array set recovery_result [load_settings_recover $fn $settings_file_contents]
+    set corrupted $recovery_result(corrupted)
+    set settings_file_contents $recovery_result(contents)
 
-    if {[string length $settings_file_contents] == 0} {
-       
-        # if there are no settings, then set some based on what we know about this machine's settings
-        # nb : we could 
+    if {[string length $settings_file_contents] == 0 && !$corrupted} {
+        # No settings file exists (clean install) — set defaults based on hardware
         if {[ifexists osbuildinfo(product)] == "P80X_EEA"} {
             # this "Teclast" tablet firmware version has an Android metadata configuration bug, and needs 20% larger fonts
             # other Teclast tablets do not have this error.
             # set ::settings(default_font_calibration) 0.6
             # not clear if this is still needed
         }
-    } else {
-        array set ::settings $settings_file_contents
-
+    } elseif {!$corrupted} {
         msg -NOTICE "OS build info: $osbuildinfo_string"
-
     }
 
     if {[ifexists ::settings(tablet_model)] != $tablet_model} {
