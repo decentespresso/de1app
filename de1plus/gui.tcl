@@ -2019,8 +2019,22 @@ proc run_de1_app {} {
 package require de1_shot 2.0
 
 proc ui_startup {} {
-	
+
 	load_settings
+
+	# iWish (iPad / Catalyst): fill the device's native screen.  iWish reports the
+	# real display size via Tk's winfo; de1app's 0-10000 coordinate space scales to
+	# screen_size_{width,height}, so setting them to the live screen makes the UI
+	# fill any resolution.  Gated on $::iwish, so real DE1 tablets are untouched.
+	if {[info exists ::iwish] && $::iwish} {
+		set _sw [winfo screenwidth .]
+		set _sh [winfo screenheight .]
+		if {$_sw > 0 && $_sh > 0} {
+			set ::settings(screen_size_width) $_sw
+			set ::settings(screen_size_height) $_sh
+			catch {msg -NOTICE "iWish: auto-sized de1app to ${_sw}x${_sh} (native screen)"}
+		}
+	}
 
 	# Metric is now uppercase, so this is translation code
 	if { $::settings(skin) eq "metric" } {
