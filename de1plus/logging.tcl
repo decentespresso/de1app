@@ -69,6 +69,8 @@ namespace eval ::logging {
 	}
 
 	variable _log_fh ""
+	variable _log_bytes_written 0
+	variable _log_max_bytes 2097152
 
 	# To disable logging, set to Boolean True externally,
 	# prior to any `package require` of de1app code
@@ -153,9 +155,7 @@ namespace eval ::logging {
 				set ::supressing_log_msgs($message) 1
 				
 				if { $severity <= $::logging::severity_limit_logfile } {
-					catch {
-						puts $::logging::_log_fh $formatted_output
-					}
+					::logging::_log_to_file $formatted_output
 				}
 
 			}
@@ -166,9 +166,7 @@ namespace eval ::logging {
 			unset -nocomplain ::supressing_log_msgs($message)
 
 			if { $severity <= $::logging::severity_limit_logfile } {
-				catch {
-					puts $::logging::_log_fh $formatted_output
-				}
+				::logging::_log_to_file $formatted_output
 			}
 		}
 
@@ -190,7 +188,60 @@ namespace eval ::logging {
 		#####################
 	}
 
+	proc _log_to_file {output} {
+
+		catch {
+			puts $::logging::_log_fh $output
+			incr ::logging::_log_bytes_written [expr {[string length $output] + 1}]
+		}
+
+		if { $::logging::_log_bytes_written >= $::logging::_log_max_bytes } {
+			catch {
+				::flush $::logging::_log_fh
+				close $::logging::_log_fh
+			}
+			set ::logging::_log_fh ""
+			::logging::rotate_logfiles
+			::logging::open_logfile
+		}
+	}
+
 	# TODO: catch log-rotation and file-open errors and somehow report them
+
+	proc rotate_logfiles {} {
+
+		set de1root [file normalize [file dirname [info script]]]
+		set logfile "$::settings(logfile)"
+		set retain 10
+
+		set f_source [format "%s/%s.%i" $de1root $logfile $retain]
+		if {[file exists $f_source]} {
+			catch { file delete $f_source }
+		}
+		for {set n $retain} {$n > 1} {incr n -1} {
+			set f_source [format "%s/%s.%i" $de1root $logfile [expr {$n - 1}]]
+			set f_target [format "%s/%s.%i" $de1root $logfile $n]
+			if {[file exists $f_source]} {
+				catch { file rename $f_source $f_target }
+			}
+		}
+		set f_target [format "%s/%s.%i" $de1root $logfile 1]
+		set f_path [format "%s/%s" $de1root $logfile]
+		if {[file exists $f_path]} {
+			catch { file rename $f_path $f_target }
+		}
+	}
+
+	proc open_logfile {} {
+
+		set de1root [file normalize [file dirname [info script]]]
+
+		catch {
+			set ::logging::_log_fh [open "${de1root}/$::settings(logfile)" w]
+			fconfigure $::logging::_log_fh -buffersize 65536
+		}
+		set ::logging::_log_bytes_written 0
+	}
 
 	proc init {} {
 
@@ -222,35 +273,10 @@ namespace eval ::logging {
 			set ::settings(logfile) "log.txt"
 		}
 
-		# Try log rotation
+		# Rotate and open fresh log file
 
-		set to_rotate [list $::settings(logfile)]
-		set retain 10
-
-		foreach f $to_rotate {
-			set f_source [format "%s.%i" $f $retain]
-			if {[file exists $f_source]} {
-				catch { file delete $f_source }
-			}
-			for {set n $retain} {$n > 1} {incr n -1} {
-				set f_source [format "%s.%i" $f [expr {$n - 1}]]
-				set f_target [format "%s.%i" $f $n]
-				if {[file exists $f_source]} {
-					catch { file rename $f_source $f_target }
-				}
-			}
-			set f_target [format "%s.%i" $f 1]
-			if {[file exists $f]} {
-				catch { file rename $f  $f_target }
-			}
-		}
-
-		# Open the log, set to 64 kB buffering due to flash-wear concerns
-
-		catch {
-			set ::logging::_log_fh [open "${de1root}/$::settings(logfile)" w]
-			fconfigure $::logging::_log_fh -buffersize 65536
-		}
+		::logging::rotate_logfiles
+		::logging::open_logfile
 	}
 
 

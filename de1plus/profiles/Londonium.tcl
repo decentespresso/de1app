@@ -29,7 +29,7 @@ profile_title Londonium
 profile_language en
 preinfusion_stop_pressure 4.0
 profile_hide 0
-final_desired_shot_volume_advanced_count_start 0
+final_desired_shot_volume_advanced_count_start 2
 beverage_type espresso
 maximum_pressure 0
 maximum_pressure_range_advanced 0.6
