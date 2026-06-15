@@ -829,8 +829,14 @@ proc skin_directory {} {
 
 proc android_specific_stubs {} {
 
-    proc ble {args} { msg -DEBUG "ble $args"; return 1 }
-    
+    # Only stub `ble` when there is no real one.  On macOS the de1plus/ble
+    # package provides a genuine CoreBluetooth `ble` command (loaded earlier by
+    # determine_if_android), and this stub must NOT clobber it -- otherwise every
+    # `ble scanner`/`ble start` becomes a no-op that returns 1 and never scans.
+    if {[llength [info commands ble]] == 0} {
+        proc ble {args} { msg -DEBUG "ble $args"; return 1 }
+    }
+
     if {$::android != 1 && $::undroid != 1} {
         proc sdltk {args} {
             if {[lindex $args 0] == "powerinfo"} {

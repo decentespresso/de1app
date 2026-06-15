@@ -53,8 +53,8 @@ proc userdata_append {comment cmd {vital 0} } {
 
 
 proc run_next_userdata_cmd {} {
-	if {$::android == 1} {
-		# if running on android, only write one BLE command at a time
+	if {$::has_bluetooth} {
+		# with real BLE, only write one BLE command at a time
 		if {$::de1(wrote) == 1} {
 			return
 		}
@@ -663,7 +663,7 @@ proc poll_de1_state {} {
 
 proc read_de1_state {} {
 	::comms::msg -NOTICE "read_de1_state"
-	if {$::android != 1} {
+	if {!$::has_bluetooth} {
 		return
 	}
 	if {[catch {
@@ -843,7 +843,7 @@ proc start_firmware_update {} {
 	::comms::msg -NOTICE "start_firmware_update"
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
-		if {$::android == 1} {
+		if {$::has_bluetooth} {
 			::comms::msg -DEBUG "DE1 not connected, cannot send BLE command 10"
 			return
 		}
@@ -878,7 +878,7 @@ proc start_firmware_update {} {
 	set ::de1(firmware_bytes_uploaded) 0
 	set ::de1(firmware_update_size) [file size [fwfile]]
 
-	if {$::android != 1} {
+	if {!$::has_bluetooth} {
 		set ::sinstance($::de1(suuid)) 0
 		set ::de1(cuuid_09) 0
 		set ::de1(cuuid_06) 0
@@ -908,7 +908,7 @@ proc start_firmware_update {} {
 	#set ::de1(firmware_bytes_uploaded) 0
 
 
-	if {$::android == 1} {
+	if {$::has_bluetooth} {
 		userdata_append "Erase firmware do: [array get arr]" [list de1_comm  write "FWMapRequest" $data] 1
 		after 10000 write_firmware_now
 
@@ -953,7 +953,7 @@ proc firmware_upload_next {} {
 		set ::settings(firmware_crc) [crc::crc32 -filename [fwfile]]
 		save_settings
 
-		if {$::android != 1} {
+		if {!$::has_bluetooth} {
 			set ::de1(firmware_update_button_label) "Updated"
 			set ::de1(currently_updating_firmware) 0
 
@@ -988,7 +988,7 @@ proc firmware_upload_next {} {
 			[list de1_comm write "WriteToMMR" $data] 1
 
 		set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 16}]
-		if {$::android != 1} {
+		if {!$::has_bluetooth} {
 			set ::de1(firmware_bytes_uploaded) [expr {$::de1(firmware_bytes_uploaded) + 160}]
 			after 1 firmware_upload_next
 			#firmware_upload_next
@@ -1010,8 +1010,8 @@ proc mmr_read {note address length} {
 
 	set cmt "MMR Read: '$note': [::logging::format_mmr $data]"
 
-	if {$::android != 1} {
-		::comms::msg -DEBUG "Non-Android: $cmt"
+	if {!$::has_bluetooth} {
+		::comms::msg -DEBUG "No BLE: $cmt"
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
@@ -1045,8 +1045,8 @@ proc mmr_write { note address length value} {
 
 	set cmt "MMR Write: '$note': [::logging::format_mmr $data]"
 
-	if {$::android != 1} {
-		::comms::msg -DEBUG "Non-Android: $cmt"
+	if {!$::has_bluetooth} {
+		::comms::msg -DEBUG "No BLE: $cmt"
 	}
 
 	if {[ifexists ::sinstance($::de1(suuid))] == ""} {

@@ -11,7 +11,10 @@ set ::streamline_adjust_grind_shortpress 1
 set ::streamline_adjust_grind_longpress .1
 
 
-if {$::android != 1} {
+if {!$::has_bluetooth} {
+	# Only force "no group head controller" when there is no real Bluetooth.
+	# With real BLE (Android, iWish, macOS), honour the machine's actual GHC
+	# status so the on-screen start buttons aren't shown when a GHC is present.
 	set ::settings(ghc_is_installed) 0
 }
 

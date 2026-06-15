@@ -1758,8 +1758,10 @@ proc update_de1_state {statechar} {
 
 	if {[info exists msg(substate)] == 1} {
 
-		catch {
+		if {[catch {
 			skins_page_change_due_to_de1_state_change $this_state
+		} err]} {
+			msg -ERROR "page change for state '$this_state' failed: $err"
 		}
 	}
 }

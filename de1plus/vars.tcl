@@ -587,7 +587,7 @@ proc waterflow {} {
 		return 0
 	}
 
-	if {$::android == 0 && $::settings(use_simulated_data) == 0} {
+	if {!$::has_bluetooth && $::settings(use_simulated_data) == 0} {
 		if {[ifexists ::de1(flow)] == ""} {
 			set ::de1(flow) 3
 		}
@@ -625,7 +625,7 @@ proc watervolume {} {
 	}
 
 
-	if {$::android == 1} {
+	if {$::has_bluetooth} {
 		return $::de1(volume)
 	}
 	global start_timer
@@ -634,7 +634,7 @@ proc watervolume {} {
 
 proc steamtemp {} {
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 
 		set ::de1(steam_heater_temperature) [expr {(160+(rand() * 5))}]
 	}
@@ -644,7 +644,7 @@ proc steamtemp {} {
 proc watertemp {} {
 
 
-	if {$::android == 0 && $::settings(use_simulated_data) == 0} {
+	if {!$::has_bluetooth && $::settings(use_simulated_data) == 0} {
 
 		set ::de1(head_temperature) [expr {$::settings(espresso_temperature) - 2.0 + (rand() * 4)}]
 		set ::de1(goal_temperature) $::settings(espresso_temperature)
@@ -674,7 +674,7 @@ proc pressure {} {
 		return 0
 	}
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		if {$::de1(state) == 4} {
 			#espresso
 			if {[ifexists ::de1(pressure)] == ""} {
@@ -715,7 +715,7 @@ proc pressure {} {
 }
 
 proc accelerometer_angle {} {
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		set ::settings(accelerometer_angle) [expr {(rand() + $::settings(accelerometer_angle)) - 0.5}]
 	}
 	return [round_to_one_digits [expr {abs($::settings(accelerometer_angle))}]]
@@ -744,7 +744,7 @@ proc accelerometer_angle_text {} {
 proc group_head_heater_temperature {} {
 
 	
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		# slowly have the water level drift
 		catch {
 			set ::de1(head_temperature) [expr {$::de1(head_temperature) + (.1*(rand() - 0.5))}]
@@ -759,7 +759,7 @@ proc group_head_heater_temperature {} {
 }
 
 proc steam_heater_temperature {} {
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		set ::de1(steam_heater_temperature) [expr {140.0 + (rand() * 1)}]
 	}
 
@@ -767,7 +767,7 @@ proc steam_heater_temperature {} {
 
 }
 proc water_mix_temperature {} {
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
 			if {$::de1(mix_temperature) == "" || $::de1(mix_temperature) < 85 || $::de1(mix_temperature) > 99} {
 				set ::de1(mix_temperature) 94
@@ -1164,7 +1164,7 @@ proc waterflow_text {} {
 }
 
 proc watervolume_text {} {
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
 			if {$::de1(volume) == ""} {
 				set ::de1(volume) 0
@@ -1178,7 +1178,7 @@ proc watervolume_text {} {
 }
 
 proc waterweightflow_text {} {
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		if {$::de1(substate) == $::de1_substate_types_reversed(pouring) || $::de1(substate) == $::de1_substate_types_reversed(preinfusion)} {	
 			if {[espresso_millitimer] > 5000} {	
 				# no weight increase for 5s due to preinfusion
@@ -1239,7 +1239,7 @@ proc waterweight_text {} {
 		return ""
 	}
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		if {[espresso_millitimer] < 5000} {	
 			# no weight increase for 5s due to preinfusion
 			set ::de1(scale_weight) 0
@@ -1332,7 +1332,7 @@ proc diff_group_temp_from_goal_text {} {
 }
 
 proc diff_pressure {} {
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		return [expr {3 - (rand() * 6)}]
 	}
 
@@ -1340,7 +1340,7 @@ proc diff_pressure {} {
 }
 
 proc diff_flow_rate {} {
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		return [expr {3 - (rand() * 6)}]
 	}
 

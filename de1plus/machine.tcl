@@ -498,7 +498,9 @@ set ::settings(skin) "Insight"
 	set ::settings(timer_interval) 200
 
 
-if {$::android != 1} {
+if {!$::has_bluetooth} {
+	# Only force "no group head controller" when there is no real Bluetooth;
+	# with real BLE the actual GHC status comes from the machine (MMR read).
 	set ::settings(ghc_is_installed) 0
 }
 
@@ -674,7 +676,7 @@ proc start_refill_kit {} {
 	set ::de1(timer) 0
 	set ::de1(volume) 0
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		#after 200 "update_de1_state $::de1_state(Descale)"
 		after 200 [list update_de1_state "$::de1_state(Refill)\x5"]
@@ -696,7 +698,7 @@ proc start_decaling {} {
 	set ::de1(volume) 0
 	de1_send_state "descale" $::de1_state(Descale)
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		#after 200 "update_de1_state $::de1_state(Descale)"
 		after 200 [list update_de1_state "$::de1_state(Descale)\x5"]
@@ -711,7 +713,7 @@ proc start_air_purge {} {
 	set ::de1(volume) 0
 	de1_send_state "air purge" $::de1_state(AirPurge)
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		#after 200 "update_de1_state $::de1_state(Descale)"
 		after 200 [list update_de1_state "$::de1_state(AirPurge)\x5"]
@@ -727,7 +729,7 @@ proc start_cleaning {} {
 	set ::de1(volume) 0
 	de1_send_state "clean" $::de1_state(Clean)
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		#after 200 "update_de1_state $::de1_state(Descale)"
 		after 200 [list update_de1_state "$::de1_state(Clean)\x5"]
@@ -764,7 +766,7 @@ proc start_flush {} {
 	}
 
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		after 200 [list update_de1_state "$::de1_state(HotWaterRinse)\x5"]
 		after 10000 [list update_de1_state "$::de1_state(Idle)\x5"]
@@ -786,7 +788,7 @@ proc start_steam_rinse {} {
 	#after 1000 read_de1_state
 
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		after 200 [list update_de1_state "$::de1_state(SteamRinse)\x5"]
 	}
@@ -834,7 +836,7 @@ proc start_steam {} {
 		set ::idle_next_step start_steam
 	}
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
 		after 200 [list update_de1_state "$::de1_state(Steam)\x5"]
 		after 10000 [list update_de1_state "$::de1_state(Idle)\x5"]
@@ -942,7 +944,7 @@ proc start_espresso {} {
 	if {$::de1(scale_device_handle) != 0} {
 	}
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
 		after 200 [list update_de1_state "$::de1_state(Espresso)\x1"]
 		after 90000 [list update_de1_state "$::de1_state(Idle)\x5"]
@@ -999,7 +1001,7 @@ proc start_water {} {
 	}
 
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 [list update_de1_state "$::de1_state(HotWater)\x5"]
 		after 10000 [list update_de1_state "$::de1_state(Idle)\x5"]
@@ -1055,7 +1057,7 @@ proc start_idle {} {
 		scale_enable_lcd
 	}
 
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 [list update_de1_state "$::de1_state(Idle)\x0"]
 	}
@@ -1157,7 +1159,7 @@ proc start_sleep {} {
 	}
 
 	
-	if {$::android == 0} {
+	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(water_max_time)}] {page_display_change "water" "off"}
 		after 200 [list update_de1_state "$::de1_state(GoingToSleep)\x0"]
 		after 800 [list update_de1_state "$::de1_state(Sleep)\x0"]

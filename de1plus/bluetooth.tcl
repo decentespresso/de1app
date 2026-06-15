@@ -1677,7 +1677,7 @@ proc app_exit {} {
 
 	tcl_introspection
 
-	if {$::android != 1} {
+	if {!$::has_bluetooth} {
 		close_all_ble_and_exit
 	}
 
@@ -1775,7 +1775,7 @@ proc close_misc_bluetooth_handles {} {
 set ::ble_scanner {}
 set ::scanning -1
 
-if {$::android == 1} {
+if {$::has_bluetooth} {
 	# at startup, if we have any hanldes, close them
 	set blecount [close_misc_bluetooth_handles]
 	if {$blecount != 0} {
@@ -1891,7 +1891,7 @@ proc ble_connect_to_de1 {} {
 	::bt::msg -NOTICE "ble_connect_to_de1"
 	#return
 
-	if {$::android != 1} {
+	if {!$::has_bluetooth} {
 		::bt::msg -DEBUG "simulated DE1 connection"
 		set ::de1(connect_time) [clock seconds]
 		set ::de1(last_ping) [clock seconds]
@@ -3081,7 +3081,7 @@ proc scanning_restart {} {
 	if {$::scanning == 1} {
 		return
 	}
-	if {$::android != 1} {
+	if {$::android != 1 && ![llength [info commands ble]]} {
 
 		# insert enough dummy devices to overfill the list, to test whether scroll bars are working
 		set ::de1_device_list [list [dict create address "12:32:16:18:90" name "ble3" type "ble"] [dict create address "10.1.1.20" name "wifi1" type "wifi"] [dict create address "12:32:56:78:91" name "dummy_ble2" type "ble"] [dict create address "12:32:56:78:92" name "dummy_ble3" type "ble"] [dict create address "ttyS0" name "dummy_usb" type "usb"] [dict create address "192.168.0.1" name "dummy_wifi2" type "wifi"]]

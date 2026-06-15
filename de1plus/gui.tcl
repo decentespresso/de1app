@@ -1151,6 +1151,15 @@ proc set_dummy_espresso_vars {} {
 
 	if { $::android } { return }
 
+	# When a real Bluetooth machine is connected (now possible on undroidwish /
+	# iWish / OSX, not just Android), the DE1 itself drives the Espresso state.
+	# The workstation espresso *simulator* below must not run in that case, or it
+	# fights the real machine: it opens a random simulation file, immediately hits
+	# "end of data", and injects `update_de1_state Idle`, reverting every real
+	# Espresso notification (so the chart never stays up). This mirrors the
+	# `if {!$::has_bluetooth}` simulation gating in start_espresso (machine.tcl).
+	if { $::has_bluetooth } { return }
+
 	if {$::de1(state) != 4} {
 		return
 	}
@@ -2428,7 +2437,7 @@ proc calibration_gui_init {} {
 	# the *right* way to work around this is to build a spool and unspool each calibration read command as the previous
 	# one concludes. However, that's a lot of work, for this rarely used calibration feature, so we're being lazy
 	# for now and just issuing each command after a suitable delay, so they don't clobber each other
-	if {$::android != 1} {
+	if {!$::has_bluetooth} {
 
 		# do fake calibration reads
 		calibration_ble_received "\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\xFF\xFD\xB3\x34"

@@ -1,3 +1,12 @@
+# macOS-only: AndroWish-compatible `ble` command via CoreBluetooth (no-op on
+# platforms that ship a native `ble`, since determine_if_android requires it
+# inside a catch).  Lets `package require ble` succeed on the Mac.
+# NOT on iWish (Catalyst): it ships its own libble1.0.dylib (registered as
+# `ble 1.0` in lib-batteries/ble1.0); registering ble.tcl here would otherwise
+# override it with the x86_64/subprocess macOS package, which can't work on iOS.
+if {!([info exists ::iwish] && $::iwish)} {
+    package ifneeded ble 1.0 [list source [file join "./" ble ble.tcl]]
+}
 package ifneeded de1_vars 1.2 [list source [file join "./" vars.tcl]]
 package ifneeded de1_binary 1.1 [list source [file join "./" binary.tcl]]
 package ifneeded de1_bluetooth 1.1 [list source [file join "./" bluetooth.tcl]]

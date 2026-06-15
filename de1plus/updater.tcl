@@ -13,6 +13,16 @@ proc determine_if_android {} {
     set ::undroid 0
     set ::some_droid 0
 
+    # The ble package prefers an in-process native CoreBluetooth extension, but
+    # that needs the interpreter itself to hold Bluetooth (TCC) permission --
+    # impossible for the unsignable wish/undroidwish we run on macOS, where an
+    # in-process attempt can even wedge.  So on macOS (but NOT iWish, which is a
+    # signed app that CAN do in-process BLE) force the package's subprocess
+    # helper backend, which owns its own TCC identity and always works.
+    if {$::tcl_platform(os) eq "Darwin" && !([info exists ::iwish] && $::iwish)} {
+        set ::env(BLE_NO_NATIVE) 1
+    }
+
     catch {
         package require BLT
         namespace import blt::*
@@ -26,6 +36,34 @@ proc determine_if_android {} {
         set ::android 1
 
     }
+
+    # iWish (macOS Catalyst AndroWish): it HAS a real CoreBluetooth `ble` command
+    # (so the catch above flipped us to android=1), but it does NOT have borg/sdltk.
+    # Run it as 'undroid' (so those Android APIs get stubbed by dui.tcl) while keeping
+    # the real `ble` command available for a genuine Bluetooth scan.
+    if {[info exists ::iwish] && $::iwish} {
+        set ::android 0
+        set ::undroid 1
+    }
+
+    # macOS undroidwish: the de1plus/ble package gives a real CoreBluetooth `ble`
+    # command, so the catch above set android=1 -- but the Mac has no borg/sdltk
+    # Android APIs, so run as 'undroid' (dui.tcl stubs those) while keeping the
+    # real `ble` command for genuine Bluetooth scanning.
+    if {$::tcl_platform(os) eq "Darwin" && [llength [info commands ble]]} {
+        set ::android 0
+        set ::undroid 1
+    }
+
+    # Real Bluetooth (BLE) is available whenever a genuine `ble` command loaded
+    # above -- true on Android, iWish, and macOS undroidwish (via the de1plus/ble
+    # package), false on plain desktop builds.  Features that were historically
+    # gated to `$::android == 1` (because only Android had working BLE) should
+    # test `$::has_bluetooth` instead, so they also run on iWish and macOS.
+    # NB: computed HERE, before android_specific_stubs (machine.tcl / dui.tcl)
+    # defines a no-op `ble` stub on BLE-less platforms -- otherwise that stub
+    # would make this look true everywhere.
+    set ::has_bluetooth [expr {[llength [info commands ble]] > 0}]
 
     if {$::android == 1 || $::undroid == 1} {
         # turn the background window black as soon as possible
