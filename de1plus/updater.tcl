@@ -55,6 +55,17 @@ proc determine_if_android {} {
         set ::undroid 1
     }
 
+    # Whether the underlying OS is iOS. This is a distinct concept from $::iwish,
+    # which is merely the *build* we run on Apple platforms (the same iWish build
+    # also runs on Mac Catalyst, which is not iOS). A launcher that knows it is on
+    # a real iOS device or the iOS Simulator can set ::ios before sourcing de1app;
+    # otherwise default it from the iWish build, which today only targets the iOS
+    # family. We can't reliably tell iOS from Mac Catalyst at runtime (both report
+    # Darwin), so the launcher is the authoritative source.
+    if {![info exists ::ios]} {
+        set ::ios [expr {[info exists ::iwish] && $::iwish}]
+    }
+
     # Real Bluetooth (BLE) is available whenever a genuine `ble` command loaded
     # above -- true on Android, iWish, and macOS undroidwish (via the de1plus/ble
     # package), false on plain desktop builds.  Features that were historically
