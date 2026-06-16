@@ -121,3 +121,51 @@ proc ble_headless_test {} {
 }
 
 
+# ---------------------------------------------------------------------------
+# GUI Bluetooth search-and-exit:   wish de1plus.tcl --ble-search-and-exit
+#
+# Brings up the normal GUI (so macOS can present the Bluetooth permission
+# prompt -- unlike the headless --ble-test), then runs the SAME action as the
+# in-app BLE SEARCH button (scanning_restart), lets it scan for the usual
+# window, logs what it found, and exits cleanly.  Scheduled from de1app.tcl
+# alongside de1_ui_startup.  All output is tagged "BLESEARCH".
+# ---------------------------------------------------------------------------
+proc ::_bls {m} {
+	catch { msg -NOTICE "BLESEARCH $m" }
+	catch { puts stderr "BLESEARCH $m" ; flush stderr }
+}
+
+proc ble_search_and_exit {} {
+	if {![llength [info commands ble]]} {
+		::_bls "no ble command available; exiting"
+		after 200 { exit 1 }
+		return
+	}
+	# Wait (up to ~10s) for Bluetooth to power on before searching.
+	set st ""
+	catch { set st [ble state] }
+	if {$st ne "poweredOn" && [incr ::_bls_tries] <= 20} {
+		after 500 ble_search_and_exit
+		return
+	}
+	::_bls "ble state=$st; running scanning_restart (same as the in-app SEARCH button)"
+	catch { scanning_restart }
+	# The SEARCH button scans for ~10s (after 10000 stop_scanner). Give it a
+	# little longer, then report and exit -- we can't just wait for ::scanning
+	# to clear because stop_scanner defers forever when no DE1 is connected.
+	after 12000 ble_search_finish
+}
+
+proc ble_search_finish {} {
+	catch { set ::scanning 0 }
+	catch { ble stop $::ble_scanner }
+	set des  [ifexists ::de1_device_list]
+	set peris [ifexists ::peripheral_device_list]
+	::_bls "search complete: [llength $des] device(s), [llength $peris] peripheral(s) found"
+	foreach d $des   { catch { ::_bls "  device:     '[dict get $d name]'  [dict get $d address]" } }
+	foreach p $peris { catch { ::_bls "  peripheral: '[dict get $p name]'  [dict get $p address]" } }
+	catch { ::logging::flush_log }
+	after 500 { exit 0 }
+}
+
+

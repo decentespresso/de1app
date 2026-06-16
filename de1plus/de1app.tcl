@@ -158,6 +158,21 @@ if {[lsearch -exact $::argv "--ble-test"] >= 0} {
 	# (ends in `exit`), so the GUI is deliberately not started in this mode.
 	ble_headless_test
 
+} elseif {[lsearch -exact $::argv "--ble-search-and-exit"] >= 0} {
+
+	# Like --ble-test, but runs the FULL GUI (so macOS can present the
+	# Bluetooth permission prompt), then runs the same scan as the in-app BLE
+	# SEARCH button and exits cleanly once the scan completes.
+	after 3000 ble_search_and_exit
+	try {
+		de1_ui_startup
+	} on error {result ropts} {
+		msg -CRIT "Untrapped error running de1_ui_startup with result: $result"
+		msg -CRIT "$ropts"
+		msg -CRIT "Exiting"
+		exit
+	}
+
 } else {
 
 	try {
