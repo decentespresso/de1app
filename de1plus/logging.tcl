@@ -238,7 +238,20 @@ namespace eval ::logging {
 
 		catch {
 			set ::logging::_log_fh [open "${de1root}/$::settings(logfile)" w]
-			fconfigure $::logging::_log_fh -buffersize 65536
+
+			# On mobile (Android/iOS) keep a large write buffer: it spares the
+			# device's flash and battery, and real-time monitoring there is done
+			# via logcat anyway. On every other build (desktop wish, macOS
+			# undroidwish, etc.) leave the log completely unbuffered so log.txt
+			# is always current on disk for debugging.
+			# NB: ::android and ::ios are set later (determine_if_android), so the
+			# very first log file may be unbuffered until platform detection runs.
+			if { ([info exists ::android] && $::android == 1) \
+					|| ([info exists ::ios] && $::ios == 1) } {
+				fconfigure $::logging::_log_fh -buffersize 65536
+			} else {
+				fconfigure $::logging::_log_fh -buffering none
+			}
 		}
 		set ::logging::_log_bytes_written 0
 	}
