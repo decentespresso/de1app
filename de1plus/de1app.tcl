@@ -152,11 +152,20 @@ namespace eval ::app {
 msg -INFO "version_string: $::app::version_string"
 msg -INFO "build time: $::app::build_time_string"
 
-try {
-	de1_ui_startup
-} on error {result ropts} {
-	msg -CRIT "Untrapped error running de1_ui_startup with result: $result"
-	msg -CRIT "$ropts"
-	msg -CRIT "Exiting"
-	exit
+if {[lsearch -exact $::argv "--ble-test"] >= 0} {
+
+	# Headless Bluetooth self-test instead of the normal app. Never returns
+	# (ends in `exit`), so the GUI is deliberately not started in this mode.
+	ble_headless_test
+
+} else {
+
+	try {
+		de1_ui_startup
+	} on error {result ropts} {
+		msg -CRIT "Untrapped error running de1_ui_startup with result: $result"
+		msg -CRIT "$ropts"
+		msg -CRIT "Exiting"
+		exit
+	}
 }
