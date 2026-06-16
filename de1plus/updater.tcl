@@ -101,8 +101,13 @@ proc determine_if_android {} {
         # turn the background window black as soon as possible
         # and then make it full screen on android/undroid, so as to prepare for the loading of the splash screen
         # and also to remove the displaying of the Tcl/Tk app bar, which looks weird being on Android
-        . configure -bg black -bd 0
-        wm attributes . -fullscreen 1
+        # NB: only when a real Tk root exists. The OSX ble driver now loads under
+        # headless tclsh too (makede1.tcl build), where there is no "." root --
+        # without this guard these Tk calls crash the build.
+        if {[llength [info commands winfo]] && [winfo exists .]} {
+            . configure -bg black -bd 0
+            wm attributes . -fullscreen 1
+        }
         set ::some_droid 1
     }
 
