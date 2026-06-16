@@ -46,11 +46,16 @@ NOTARY_PROFILE="${NOTARY_PROFILE:-bping-notary}"
 [ -d "$SRC_DE1PLUS" ] || { echo "ERROR: de1plus payload not found: $SRC_DE1PLUS" >&2; exit 1; }
 
 # --- 1. Resolve the native-arm64, notarizable interpreter -------------------
+# Prefer an explicit override, then the copy committed in the repo (so the build
+# is self-contained like the other platforms' undroidwish binaries), then PATH.
+COMMITTED_WISH="$REPO/misc/desktop_app/osx_arm64/undroidwish-arm64"
 if [ -n "${DECENT_ARM64_WISH:-}" ]; then
     WISH="$DECENT_ARM64_WISH"
+elif [ -x "$COMMITTED_WISH" ]; then
+    WISH="$COMMITTED_WISH"
 else
     RAW="$(command -v undroidwish-arm64)" || {
-        echo "ERROR: 'undroidwish-arm64' not on PATH (set DECENT_ARM64_WISH=...)" >&2; exit 1; }
+        echo "ERROR: undroidwish-arm64 not found (no committed copy at $COMMITTED_WISH, not on PATH; set DECENT_ARM64_WISH=...)" >&2; exit 1; }
     WISH="$(readlink -f "$RAW" 2>/dev/null || perl -MCwd -le 'print Cwd::abs_path(shift)' "$RAW")"
 fi
 [ -x "$WISH" ] || { echo "ERROR: interpreter not found/executable: $WISH" >&2; exit 1; }
