@@ -946,9 +946,9 @@ proc start_app_update {} {
             # john 2-16-19 we copy instead of rename in case two files have an identical SHA (ie, identical content)
             file copy -force $fn $dest
 
-            # the macOS CoreBluetooth helper (ble/bin/ble_helper) must stay executable;
+            # the macOS CoreBluetooth helper (ble/bin/ble_helper.bin) must stay executable;
             # downloads land mode 0644, after which ble.tcl rejects it as "unsupported".
-            if {[file tail $dest] eq "ble_helper"} {
+            if {[file tail $dest] eq "ble_helper.bin"} {
                 catch { file attributes $dest -permission 0755 }
             }
 

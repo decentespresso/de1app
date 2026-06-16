@@ -44,7 +44,7 @@ proc make_de1_dir {srcdir destdirs} {
 
         ble/pkgIndex.tcl *
         ble/ble.tcl *
-        ble/bin/ble_helper *
+        ble/bin/ble_helper.bin *
 
         build-info.txt *
 

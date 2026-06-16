@@ -115,7 +115,7 @@ HARDEN=(--force --options runtime --timestamp --sign "$SIGN_ID")
 # 3a. The BLE helper (path-bound TCC identity). Re-sign only if it is not
 #     already a valid Dev-ID + hardened-runtime signature, so a normal build
 #     keeps the committed signature (and the user's Bluetooth grant).
-HELPER="$RES/ble/bin/ble_helper"
+HELPER="$RES/ble/bin/ble_helper.bin"
 if [ -f "$HELPER" ]; then
     chmod +x "$HELPER"
     if codesign -dvv "$HELPER" 2>&1 | grep -q "Authority=Developer ID Application: Vid Tadel" \
