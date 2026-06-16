@@ -18,9 +18,19 @@ proc determine_if_android {} {
     # impossible for the unsignable wish/undroidwish we run on macOS, where an
     # in-process attempt can even wedge.  So on macOS (but NOT iWish, which is a
     # signed app that CAN do in-process BLE) force the package's subprocess
-    # helper backend, which owns its own TCC identity and always works.
+    # helper backend.
+    #
+    # BLE_HELPER_NO_REEXEC=1 disables the helper's "disclaim" self-re-exec. WHY:
+    # the disclaim made the helper its OWN TCC responsible process
+    # (com.decentespresso.ble-helper), but macOS provides NO way for a user to
+    # grant Bluetooth to that loose-binary identity -- it never prompts, can't be
+    # added in System Settings (no slider), and tccutil can't reset it. Without
+    # the disclaim, the Bluetooth request attributes to the host app
+    # (Decent.app / com.tcltk.de1plus), which IS grantable (a normal .app entry
+    # in System Settings -> Privacy -> Bluetooth, and the prompt can appear).
     if {$::tcl_platform(os) eq "Darwin" && !([info exists ::iwish] && $::iwish)} {
         set ::env(BLE_NO_NATIVE) 1
+        set ::env(BLE_HELPER_NO_REEXEC) 1
     }
 
     # macOS: load the BUNDLED ble driver (de1plus/ble) DIRECTLY, before the BLT
