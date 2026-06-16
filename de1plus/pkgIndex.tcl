@@ -2,10 +2,11 @@
 # platforms that ship a native `ble`, since determine_if_android requires it
 # inside a catch).  Lets `package require ble` succeed on the Mac.
 #
-# The driver lives in the local `ble/` subdirectory (a symlink to the
-# tcl-ble-osx repo in dev, real files in a distribution).  We add it to
-# auto_path so Tcl loads it from that subdir via its own pkgIndex.tcl -- the
-# library travels with de1app and needs no system-wide install.
+# The driver lives in the local `ble/` subdirectory (a git submodule of the
+# tcl-ble-osx repo).  We add it to auto_path so Tcl can load it from that subdir
+# -- but determine_if_android (updater.tcl) sources the bundled ble.tcl
+# DIRECTLY on macOS so the local copy always wins over any system-wide install
+# (e.g. a /usr/local/lib/tcl-ble-osx symlink on auto_path).
 # NOT on iWish (Catalyst): it ships its own libble1.0.dylib (registered as
 # `ble 1.0` in lib-batteries/ble1.0); registering ble.tcl here would otherwise
 # override it with the x86_64/subprocess macOS package, which can't work on iOS.

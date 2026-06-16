@@ -23,6 +23,27 @@ proc determine_if_android {} {
         set ::env(BLE_NO_NATIVE) 1
     }
 
+    # macOS: load the BUNDLED ble driver (de1plus/ble) DIRECTLY, before the BLT
+    # block below.  Two reasons:
+    #  1) Plain `tclsh de1plus.tcl --ble-test` has no BLT, so the catch below
+    #     aborts at `package require BLT` and never reaches `package require ble`
+    #     -- the headless self-test would otherwise find nothing.
+    #  2) Sourcing it directly makes `ble` *provided*, so the BLT block's
+    #     `package require ble` returns immediately without scanning auto_path.
+    #     That guarantees the local submodule copy wins over any system-wide
+    #     install (e.g. a /usr/local/lib/tcl-ble-osx symlink on auto_path), which
+    #     a `package ifneeded` registration alone can't (a later auto_path scan
+    #     overwrites it).
+    # BLE_NO_NATIVE is already set above, so it uses the subprocess helper.
+    # Guarded to macOS-non-iWish: Android has a built-in ble, iWish its own dylib.
+    if {$::tcl_platform(os) eq "Darwin" && !([info exists ::iwish] && $::iwish)} {
+        set ::_de1_ble_tcl [file join [file dirname [info script]] ble ble.tcl]
+        if {[file exists $::_de1_ble_tcl]} {
+            catch { uplevel #0 [list source $::_de1_ble_tcl] }
+        }
+        unset -nocomplain ::_de1_ble_tcl
+    }
+
     catch {
         package require BLT
         namespace import blt::*
@@ -919,8 +940,15 @@ proc start_app_update {} {
 
             # john 2-16-19 we copy instead of rename in case two files have an identical SHA (ie, identical content)
             file copy -force $fn $dest
+
+            # the macOS CoreBluetooth helper (ble/bin/ble_helper) must stay executable;
+            # downloads land mode 0644, after which ble.tcl rejects it as "unsupported".
+            if {[file tail $dest] eq "ble_helper"} {
+                catch { file attributes $dest -permission 0755 }
+            }
+
             lappend files_to_delete $fn
-            incr files_moved 
+            incr files_moved
 
             # keep track of whether any graphics were updated
             set extension [file extension $dest]
