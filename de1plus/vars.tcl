@@ -3473,6 +3473,27 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 	}
 }
 
+# Returns 1 only if an espresso machine is connected via Bluetooth AND that
+# machine reports it has a Group Head Controller installed; otherwise 0.
+# If there is no current Bluetooth connection, this returns 0.
+#
+# Connection is tracked by the DE1 BLE device handle: 0 = not connected,
+# 1 = simulated/fake DE1 (no Bluetooth hardware), any other value = a real
+# connected machine. The machine's GHC presence arrives over Bluetooth as an
+# MMR read (80381C) stored in $::settings(ghc_is_installed): 0 = no GHC, any
+# non-zero value = GHC hardware present (1/2 = present but inactive, 3 = required).
+proc ghc_is_installed {} {
+	set handle [ifexists ::de1(device_handle) 0]
+	if {$handle == 0 || $handle == 1} {
+		# no real Bluetooth connection to a machine
+		return 0
+	}
+	if {[ifexists ::settings(ghc_is_installed) 0] != 0} {
+		return 1
+	}
+	return 0
+}
+
 proc ghc_required {} {
 	if {$::undroid == 1 || $::android == 0} {
 		# don't require the GHC if on a non-Android platform, or if running undroidwish

@@ -22,7 +22,7 @@ set ::off_page "off"
 set ::espresso_page "espresso"
 
 set ghc_pos_pffset 0
-if {$::settings(ghc_is_installed) == 0} { 
+if {[ghc_is_installed] == 0} {
 	set ghc_pos_pffset 217
 }
 
@@ -426,7 +426,7 @@ streamline_rectangle $::pages 1151 1274 1151 1600 $::box_line_color $::plus_minu
 
 
 
-if {$::settings(ghc_is_installed) == 0} { 
+if {[ghc_is_installed] == 0} {
 	#
 	streamline_rectangle $::pages 2319 220 2600 1274 $::box_color $::plus_minus_flash_off_color_disabled
 	streamline_rectangle $::pages 2319 220 2319 1274 $::box_line_color $::plus_minus_flash_off_color_disabled
@@ -2913,7 +2913,7 @@ proc clear_favorite_profile { slot } {
 ############################################################################################################################################################################################################
 # Four GHC buttons on bottom right
 
-if {$::settings(ghc_is_installed) == 0} { 
+if {[ghc_is_installed] == 0} {
 
 	# color of the button icons
 	dui aspect set -theme streamline -type dbutton_symbol fill $::ghc_button_color
@@ -2974,7 +2974,7 @@ if {$::settings(ghc_is_installed) == 0} {
 	}
 
 
-	if {$::settings(ghc_is_installed) == 0} { 
+	if {[ghc_is_installed] == 0} {
 
 		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 258 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 425 -tags espresso_btn -label1 $s1 -label [translate "Coffee"]   -command {say [translate {Espresso}] $::settings(sound_button_out); start_streamline_espresso; start_espresso} -tap_pad {40 16 30 16}
 		dui add dbutton "off off_zoomed" [expr {2560 - $ghc_pos_pffset + 20}] 463 [expr {2560 - $ghc_pos_pffset + 157 + 20}] 630 -tags water_btn -label1 $s3 -label [translate "Water"]   -command {say [translate {Water}] $::settings(sound_button_out); start_water}  -tap_pad {40 16 30 16}
