@@ -1701,7 +1701,11 @@ proc apk_install {path} {
 
 proc web_browser {url} {
     msg -INFO "Browser '$url'"
-	if { $::android == 1 } {
+	if { [ifexists ::iwish 0] } {
+		# iWish (iOS/iPadOS/simulator/Mac Catalyst): no `exec open` or Android
+		# intents in the sandbox; open the URL via the borg shim (UIApplication).
+		borg openurl $url
+	} elseif { $::android == 1 } {
 		#borg activity android.intent.action.VIEW $url text/html [list package com.android.chrome]
 		borg activity android.intent.action.VIEW $url text/html 
 	} elseif { $::tcl_platform(platform) eq "windows" } {
