@@ -18,19 +18,21 @@ proc determine_if_android {} {
     # impossible for the unsignable wish/undroidwish we run on macOS, where an
     # in-process attempt can even wedge.  So on macOS (but NOT iWish, which is a
     # signed app that CAN do in-process BLE) force the package's subprocess
-    # helper backend.
+    # helper backend via BLE_NO_NATIVE.
     #
-    # BLE_HELPER_NO_REEXEC=1 disables the helper's "disclaim" self-re-exec. WHY:
-    # the disclaim made the helper its OWN TCC responsible process
-    # (com.decentespresso.ble-helper), but macOS provides NO way for a user to
-    # grant Bluetooth to that loose-binary identity -- it never prompts, can't be
-    # added in System Settings (no slider), and tccutil can't reset it. Without
-    # the disclaim, the Bluetooth request attributes to the host app
-    # (Decent.app / com.tcltk.de1plus), which IS grantable (a normal .app entry
-    # in System Settings -> Privacy -> Bluetooth, and the prompt can appear).
+    # We deliberately do NOT set BLE_HELPER_NO_REEXEC: the helper's "disclaim"
+    # self-re-exec makes it its OWN TCC responsible process
+    # (com.decentespresso.ble-helper, Developer-ID signed, carrying its own
+    # NSBluetoothAlwaysUsageDescription). That gives ONE Bluetooth identity that
+    # is grantable (via the first-run prompt) and works identically in every
+    # launch mode -- the packaged Decent.app, unde1plus.sh, and
+    # unde1plus-arm64.sh. Routing Bluetooth to the host .app identity instead
+    # (the old BLE_HELPER_NO_REEXEC=1 path) worked only for the bundled .app and
+    # left the raw terminal launchers, which have no grantable .app identity,
+    # unable to scan. (The disclaim's posix_spawn must NOT dup fd 2 -- undroidwish's
+    # stderr is not a real fd; see ble/ble_helper.swift reexecOwningResponsibility.)
     if {$::tcl_platform(os) eq "Darwin" && !([info exists ::iwish] && $::iwish)} {
         set ::env(BLE_NO_NATIVE) 1
-        set ::env(BLE_HELPER_NO_REEXEC) 1
     }
 
     # macOS: load the BUNDLED ble driver (de1plus/ble) DIRECTLY, before the BLT
