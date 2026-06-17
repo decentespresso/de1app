@@ -898,8 +898,17 @@ proc get_set_tablet_brightness { {setting ""} } {
     }
 }
 
+proc running_on_ios {} {
+    # True only when the actual OS is iOS -- a real iPad/iPhone or the iOS
+    # simulator -- NOT the Mac Catalyst (iWish-on-Mac) build. Uses the iWish borg
+    # shim's "platform" subcommand; on Android/desktop/Catalyst (or if borg has
+    # no platform subcommand) this returns 0.
+    if {[catch {set p [borg platform]}]} { return 0 }
+    return [expr {$p eq "ios" || $p eq "iossimulator"}]
+}
 
-# Enrique: Not used anywhere in the code as of 25/06/2021, image directories now managed by DUI, so commenting 
+
+# Enrique: Not used anywhere in the code as of 25/06/2021, image directories now managed by DUI, so commenting
 #proc settings_directory_graphics {} {
 #    
 #    global screen_size_width
