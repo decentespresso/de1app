@@ -210,7 +210,7 @@ namespace eval ::logging {
 
 	proc rotate_logfiles {} {
 
-		set de1root [file normalize [file dirname [info script]]]
+		set de1root [expr {[info exists ::home] ? $::home : [file normalize [file dirname [info script]]]}]
 		set logfile "$::settings(logfile)"
 		set retain 10
 
@@ -234,7 +234,7 @@ namespace eval ::logging {
 
 	proc open_logfile {} {
 
-		set de1root [file normalize [file dirname [info script]]]
+		set de1root [expr {[info exists ::home] ? $::home : [file normalize [file dirname [info script]]]}]
 
 		catch {
 			set ::logging::_log_fh [open "${de1root}/$::settings(logfile)" w]
@@ -265,7 +265,7 @@ namespace eval ::logging {
 			set ::logging::severity_limit_logfile 6
 		}
 
-		set de1root [file normalize [file dirname [info script]]]
+		set de1root [expr {[info exists ::home] ? $::home : [file normalize [file dirname [info script]]]}]
 
 		# Get log-related parameters from settings.tdb
 
