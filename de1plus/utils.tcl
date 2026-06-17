@@ -851,7 +851,13 @@ proc android_specific_stubs {} {
             }
         }
     }
-    proc borg {args} { 
+    # Only stub `borg` when there is no real one. Under iWish the borg1.0 package
+    # provides a genuine borg command (brightness via UIScreen, platform, openurl,
+    # toast, etc.); this stub must NOT clobber it -- otherwise `borg brightness`
+    # becomes a no-op (screen brightness control dead) and `borg platform` returns
+    # "" so running_on_ios and all iOS gating silently break.
+    if {[llength [info commands borg]] == 0} {
+    proc borg {args} {
         if {[lindex $args 0] == "locale"} {
             return [list "language" "en"]
         } elseif {[lindex $args 0] == "log"} {
@@ -879,6 +885,7 @@ proc android_specific_stubs {} {
         } else {
             msg -ERROR "unknown 'borg $args'"
         }
+    }
     }
 }
 
