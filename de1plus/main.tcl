@@ -33,7 +33,14 @@ package require http 2.5
 
 proc de1_ui_startup {} {
 
-    cd [homedir]
+    # On iOS the code lives in the read-only app bundle (cwd is already there,
+    # set by de1app.tcl) and all data is addressed by absolute [homedir] paths
+    # (~/Documents/Decent). Do NOT cd to [homedir] there: it would move cwd off
+    # the bundle and break setup_environment's relative `source bluetooth.tcl` /
+    # `source app_metadata.tcl` -> white screen on launch.
+    if {[ifexists ::ios] != 1} {
+        cd [homedir]
+    }
 
 	http::register https 443 [list ::tls::socket -require true -cafile [homedir]/allcerts.pem]
 
