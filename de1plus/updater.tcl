@@ -642,7 +642,7 @@ proc start_app_update {} {
         set ::de1(app_update_button_label) [translate "Update"]
         catch { update_onscreen_variables }
         catch {
-            message_page [translate "On iOS, you must update using the App Store"] [translate "Ok"]
+            info_page [translate "On iOS, you must update using the App Store"] [translate "Ok"]
         }
         return
     }
