@@ -789,13 +789,13 @@ set column3_pos 2512
 if {$::settings(waterlevel_indicator_on) == 1} {
 	# water level sensor on espresso page
 
-	add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2546 190 {water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 10 -background $chart_background -foreground $chart_background -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_y_skin 496] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $water_level_widget_background_espresso -borderwidth 0  -highlightthickness 0
+	add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2546 190 {water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 10 -background $chart_background -foreground $chart_background -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_y_skin 496] -showvalue 0 -width [rescale_x_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $water_level_widget_background_espresso -borderwidth 0  -highlightthickness 0
 
 	# water level sensor on other tabs page (white background)
-	add_de1_widget "preheat_2 preheat_3 preheat_4 steam steam_3 steam_zoom steam_zoom_3 water water_3 water_4" scale 2510 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 10 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_y_skin 1166] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $water_level_widget_background -borderwidth 0  -highlightthickness 0
+	add_de1_widget "preheat_2 preheat_3 preheat_4 steam steam_3 steam_zoom steam_zoom_3 water water_3 water_4" scale 2510 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 10 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_y_skin 1166] -showvalue 0 -width [rescale_x_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $water_level_widget_background -borderwidth 0  -highlightthickness 0
 
 	# water level sensor on other tabs page (light blue background)
-	add_de1_widget "preheat_1 steam_1 water_1" scale 2510 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 10 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_y_skin 1166] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $water_level_widget_background -borderwidth 0  -highlightthickness 0
+	add_de1_widget "preheat_1 steam_1 water_1" scale 2510 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 10 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_y_skin 1166] -showvalue 0 -width [rescale_x_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $water_level_widget_background -borderwidth 0  -highlightthickness 0
 }
 
 
@@ -845,10 +845,10 @@ add_de1_text "espresso espresso_zoomed espresso_zoomed_temperature" $column1_pos
 		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column3_pos [expr {$pos_top + (6.5 * $spacer)}] -justify left -anchor "ne" -text "" -font Helv_7 -fill $lightest -width [rescale_x_skin 520] -textvariable {[return_delta_temperature_measurement [diff_espresso_temp_from_goal]]} 
 			add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column3_pos [expr {$pos_top + (7.5 * $spacer)}] -justify left -anchor "ne" -font Helv_7 -fill $lightest -width [rescale_x_skin 520] -textvariable {[return_delta_temperature_measurement [diff_brew_temp_from_goal] ]} 
 			# thermometer widget from http://core.tcl.tk/bwidget/doc/bwidget/BWman/index.html
-		    add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (8.7 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::positive_diff_brew_temp_from_goal -fg #ff8888 -bg $chart_background -maximum 10 -borderwidth 1 -relief flat
+		    add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (8.7 * $spacer)}] {} -width [rescale_x_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::positive_diff_brew_temp_from_goal -fg #ff8888 -bg $chart_background -maximum 10 -borderwidth 1 -relief flat
 	}
 #######################
-	#add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2528 694 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $chart_background -borderwidth 0  -highlightthickness 0
+	#add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2528 694 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 594] -showvalue 0 -width [rescale_x_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $chart_background -borderwidth 0  -highlightthickness 0
 
 
 
@@ -891,13 +891,13 @@ add_de1_variable "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_tempera
 
 
 		# progress bar docs http://npg.dl.ac.uk/MIDAS/manual/ActiveTcl8.5.7.0.290198-html/bwidget/ProgressBar.html
-		add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar $column1_pos 1310 {} -relief "flat" -troughcolor $chart_background -width [rescale_y_skin 420] -height [rescale_x_skin 2] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg $chart_background -maximum 6 -borderwidth 0 -relief flat
+		add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar $column1_pos 1310 {} -relief "flat" -troughcolor $chart_background -width [rescale_x_skin 420] -height [rescale_x_skin 2] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg $chart_background -maximum 6 -borderwidth 0 -relief flat
 	
 	if {$::settings(scale_bluetooth_address) != ""} {
 		set ::de1(scale_weight_rate) -1
 		
 		if {$::settings(insight_skin_show_weight_activity_bar) == 1} {
-			add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (12.3 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg $chart_background -maximum 6 -borderwidth 0 -relief flat
+			add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (12.3 * $spacer)}] {} -width [rescale_x_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #a2693d -bg $chart_background -maximum 6 -borderwidth 0 -relief flat
 		}
 	
 		# scale ble reconnection button
@@ -1020,7 +1020,7 @@ add_de1_button "preheat_1" {say "" $::settings(sound_button_in);vertical_clicker
 #add_de1_text "preheat_2 preheat_3 preheat_4" 364 1300  -text [translate "FLOW RATE"] -font Helv_7 -fill #7f879a -anchor "center" 
 #add_de1_variable "preheat_1" 364 1250 -text "" -font Helv_10_bold -fill $tappable_text_color -anchor "center"  -textvariable {[return_flow_measurement $::settings(flush_flow)]}
 #add_de1_variable "preheat_2 preheat_3 preheat_4" 364 1250 -text "" -font Helv_10_bold -fill #7f879a -anchor "center"  -textvariable {[return_flow_measurement $::settings(flush_flow)]}
-add_de1_widget "preheat_1 preheat_2 preheat_3 preheat_4" scale 10 1436 {} -from 1 -to 10 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 1  -resolution 1 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(flush_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard; change_water_steam_settings } -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
+add_de1_widget "preheat_1 preheat_2 preheat_3 preheat_4" scale 10 1436 {} -from 1 -to 10 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 1  -resolution 1 -length [rescale_x_skin 2000] -width [rescale_x_skin 150] -variable ::settings(flush_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard; change_water_steam_settings } -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
 
 add_de1_text "preheat_1 preheat_2 preheat_3 preheat_4" 1100 1300 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 	# hide the android toolbar if it is shown during steaming, because it obscures the flow rate slider
@@ -1152,7 +1152,7 @@ add_de1_variable "water_1" 755 1250 -text "" -font Helv_10_bold -fill $tappable_
 add_de1_text "water_1" 755 1300 -text [translate "TEMP"] -font Helv_7 -fill $tappable_text_color -anchor "center" 
 add_de1_button "water_1" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(water_temperature) -n_decimals 0 -min 20 -max 110 -default $::settings(water_temperature) -smallincrement .1 -previous_values [::dui::pages::dui_number_editor::get_previous_values water_temperature] -bigincrement 1 -use_biginc 1 -page_title [translate "Temperature"] -return_callback "::dui::pages::dui_number_editor::save_previous_value change_water_steam_settings water_temperature" } 590 1200 920 1380  ""   
 
-add_de1_widget "water water_1 water_3" scale 10 1436 {} -from 1 -to 10 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 1  -resolution 1 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(hotwater_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard;  save_settings; set_hotwater_flow_rate} -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
+add_de1_widget "water water_1 water_3" scale 10 1436 {} -from 1 -to 10 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 1  -resolution 1 -length [rescale_x_skin 2000] -width [rescale_x_skin 150] -variable ::settings(hotwater_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard;  save_settings; set_hotwater_flow_rate} -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
 
 add_de1_text "water water_1 water_3" 1100 1300 -justify right -anchor "nw" -text [translate "Flow rate max"] -font Helv_8 -fill "#969eb1" -width [rescale_x_skin 520]
 	# hide the android toolbar if it is shown during steaming, because it obscures the flow rate slider
@@ -1319,7 +1319,7 @@ add_de1_text "steam" 1840 250 -justify right -anchor "nw" -text [translate "Info
 
 
 	# realtime control over the steam flow rate
-	add_de1_widget "steam steam_1 steam_3" scale 10 1436 {} -from 40 -to 250 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 100 -resolution 10 -length [rescale_x_skin 2000] -width [rescale_y_skin 150] -variable ::settings(steam_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard; set_steam_flow} -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
+	add_de1_widget "steam steam_1 steam_3" scale 10 1436 {} -from 40 -to 250 -background $steam_control_foreground -borderwidth 1 -showvalue 0  -bigincrement 100 -resolution 10 -length [rescale_x_skin 2000] -width [rescale_x_skin 150] -variable ::settings(steam_flow) -font Helv_10_bold -sliderlength [rescale_x_skin 500] -relief flat -command {dui platform hide_android_keyboard; set_steam_flow} -orient horizontal -foreground #FFFFFF -troughcolor $steam_control_background  -borderwidth 0  -highlightthickness 0
 	#dui add dscale "steam steam_1 steam_3" 40 1510 {} -from 40 -to 250 -bigincrement 100 -smallincrement 10 -resolution 10 -length 1950 -width 14 -sliderlength 120 -variable ::settings(steam_flow) -command {set_steam_flow} -orient horizontal
 
 proc enabled_steam_eco_mode_label {} {

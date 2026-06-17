@@ -90,7 +90,7 @@ add_de1_widget "describe_espresso0" listbox 80 420 {
 set ::gotshots_slider 0
 
 # draw the scrollbar off screen so that it gets resized and moved to the right place on the first draw
-set ::god_shots_scrollbar [add_de1_widget "describe_espresso0" scale 1000 1000 {} -from 0 -to .50 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_y_skin 150] -variable ::advsteps -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(god_shots_widget) $::gotshots_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
+set ::god_shots_scrollbar [add_de1_widget "describe_espresso0" scale 1000 1000 {} -from 0 -to .50 -bigincrement 0.2 -background "#d3dbf3" -borderwidth 1 -showvalue 0 -resolution .01 -length [rescale_x_skin 400] -width [rescale_x_skin 150] -variable ::advsteps -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -command {listbox_moveto $::globals(god_shots_widget) $::gotshots_slider}  -foreground #FFFFFF -troughcolor "#f7f6fa" -borderwidth 0  -highlightthickness 0]
 
 proc set_god_shot_scrollbar_dimensions {} {
 	# set the height of the scrollbar to be the same as the listbox
@@ -117,7 +117,7 @@ set slider_trough_color2 #f3f3f3
 # from http://www.iconarchive.com/show/shiny-smiley-icons-by-iconicon.html
 lassign [metadata get espresso_enjoyment n_decimals min max bigincrement] n_dec min max biginc
 add_de1_text "describe_espresso" 80 360 -text [translate "Enjoyment"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-	add_de1_widget "describe_espresso" scale 300 450 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution 1 -length [rescale_x_skin 1000]  -width [rescale_y_skin 150] -variable ::settings(espresso_enjoyment) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color1 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_widget "describe_espresso" scale 300 450 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution 1 -length [rescale_x_skin 1000]  -width [rescale_x_skin 150] -variable ::settings(espresso_enjoyment) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color1 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "describe_espresso" 1300 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {$::settings(espresso_enjoyment)}
 
 
@@ -125,15 +125,15 @@ add_de1_text "describe_espresso" 80 360 -text [translate "Enjoyment"] -font Helv
 #add_de1_text "describe_espresso" 50 700 -text [translate "Details (optional):"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 
 #	add_de1_text "describe_espresso" 90 780 -text [translate "Sweetness:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-#	add_de1_widget "describe_espresso" scale 90 830 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_y_skin 150] -variable ::settings(espresso_sweetness) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+#	add_de1_widget "describe_espresso" scale 90 830 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_x_skin 150] -variable ::settings(espresso_sweetness) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 #	add_de1_variable "describe_espresso" 760 980 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_sweetness)]}
 
 #	add_de1_text "describe_espresso" 90 1010 -text [translate "Acidity:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-#	add_de1_widget "describe_espresso" scale 90 1060 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_y_skin 150] -variable ::settings(espresso_acidity) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+#	add_de1_widget "describe_espresso" scale 90 1060 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_x_skin 150] -variable ::settings(espresso_acidity) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 #	add_de1_variable "describe_espresso" 760 1210 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_acidity)]}
 
 #	add_de1_text "describe_espresso" 830 780 -text [translate "Aftertaste:"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-#	add_de1_widget "describe_espresso" scale 830 830 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_y_skin 150] -variable ::settings(espresso_aftertaste) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+#	add_de1_widget "describe_espresso" scale 830 830 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_x_skin 150] -variable ::settings(espresso_aftertaste) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 #	add_de1_variable "describe_espresso" 1500 980 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_aftertaste)]}
 
 	add_de1_text "describe_espresso" 80 740 -text [translate "Notes"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
@@ -158,7 +158,7 @@ add_de1_text "describe_espresso2" 80 360 -text [translate "Grinder"] -font Helv_
 	add_de1_text "describe_espresso2" 540 620 -text [translate "Dose weight"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
 	
 	lassign [metadata get grinder_dose_weight n_decimals min max bigincrement] n_dec min max biginc
-	add_de1_widget "describe_espresso2" scale 550 610 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 630]  -width [rescale_y_skin 150] -variable ::settings(grinder_dose_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_widget "describe_espresso2" scale 550 610 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 630]  -width [rescale_x_skin 150] -variable ::settings(grinder_dose_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "describe_espresso2" 1160 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement_precise $::settings(grinder_dose_weight)]}
 
 
@@ -219,7 +219,7 @@ if {$::settings(has_refractometer) == 1 || $::settings(has_scale) == 1} {
 	add_de1_text "describe_espresso" 1630 440 -text [translate "Weight"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 	
 	lassign [metadata get drink_weight n_decimals min max bigincrement] n_dec min max biginc
-	add_de1_widget "describe_espresso" scale 1630 500 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 850]  -width [rescale_y_skin 140] -variable ::settings(drink_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+	add_de1_widget "describe_espresso" scale 1630 500 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 850]  -width [rescale_x_skin 140] -variable ::settings(drink_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	
 	add_de1_variable "describe_espresso" 2480 640 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_shot_weight_measurement $::settings(drink_weight)]}
 	#add_de1_variable "describe_espresso" 2480 640 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {$::settings(drink_weight)}
@@ -228,13 +228,13 @@ if {$::settings(has_refractometer) == 1 || $::settings(has_scale) == 1} {
 		add_de1_text "describe_espresso" 1630 670 -text [translate "Total dissolved solids (TDS)"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 		
 		lassign [metadata get drink_tds n_decimals min max bigincrement] n_dec min max biginc
-		add_de1_widget "describe_espresso" scale 1630 730 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 850]  -width [rescale_y_skin 140] -variable ::settings(drink_tds) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "describe_espresso" scale 1630 730 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 850]  -width [rescale_x_skin 140] -variable ::settings(drink_tds) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "describe_espresso" 2480 870 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_tds)]}
 
 		add_de1_text "describe_espresso" 1630 900 -text [translate "Extraction yield (EY)"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
 		
 		lassign [metadata get drink_ey n_decimals min max bigincrement] n_dec min max biginc
-		add_de1_widget "describe_espresso" scale 1630 960 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 850]  -width [rescale_y_skin 140] -variable ::settings(drink_ey) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
+		add_de1_widget "describe_espresso" scale 1630 960 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 850]  -width [rescale_x_skin 140] -variable ::settings(drink_ey) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 		add_de1_variable "describe_espresso" 2480 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_ey)]}
 	}
 

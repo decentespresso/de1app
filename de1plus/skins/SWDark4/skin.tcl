@@ -980,13 +980,13 @@ set column3_pos 2220
 if {$::settings(waterlevel_indicator_on) == 1} {
 	# water level sensor on espresso page
 
-	add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2544 190 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1410] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $chartbackgroundcol -borderwidth 0  -highlightthickness 0
+	add_de1_widget "off espresso espresso_3 off_zoomed espresso_zoomed espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" scale 2544 190 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1410] -showvalue 0 -width [rescale_x_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $chartbackgroundcol -borderwidth 0  -highlightthickness 0
 
 	# water level sensor on other tabs page (white background)
-	add_de1_widget "preheat_2 preheat_3 preheat_4 steam steam_3 steam_zoom steam_zoom_3 water water_3 water_4" scale 2544 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1166] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $chartbackgroundcol -borderwidth 0  -highlightthickness 0
+	add_de1_widget "preheat_2 preheat_3 preheat_4 steam steam_3 steam_zoom steam_zoom_3 water water_3 water_4" scale 2544 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1166] -showvalue 0 -width [rescale_x_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $chartbackgroundcol -borderwidth 0  -highlightthickness 0
 
 	# water level sensor on other tabs page (light blue background)
-	add_de1_widget "preheat_1 steam_1 water_1" scale 2544 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1166] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $chartbackgroundcol -borderwidth 0  -highlightthickness 0
+	add_de1_widget "preheat_1 steam_1 water_1" scale 2544 226 {after 1000 water_level_color_check $widget} -from $::settings(water_level_sensor_max) -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1166] -showvalue 0 -width [rescale_x_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor $chartbackgroundcol -borderwidth 0  -highlightthickness 0
 }
 
 
@@ -1030,7 +1030,7 @@ add_de1_text "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (0 * $spa
 	if {$::settings(display_espresso_water_delta_number) == 1} {
 		add_de1_variable "espresso espresso_zoomed espresso_zoomed_temperature" $column3_pos [expr {$pos_top + (8 * $spacer)}] -justify left -anchor "ne" -font Helv_7 -fill $lightest -width [rescale_x_skin 520] -textvariable {[return_delta_temperature_measurement [diff_brew_temp_from_goal] ]} 
 		# thermometer widget from http://core.tcl.tk/bwidget/doc/bwidget/BWman/index.html
-	    add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (8.5 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::positive_diff_brew_temp_from_goal -fg #ff8888 -bg #FFFFFF -maximum 10 -borderwidth 1 -relief flat
+	    add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (8.5 * $spacer)}] {} -width [rescale_x_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::positive_diff_brew_temp_from_goal -fg #ff8888 -bg #FFFFFF -maximum 10 -borderwidth 1 -relief flat
 	}
 ##########################
 # data card volume when doing nothing
@@ -1095,9 +1095,9 @@ add_de1_variable "preheat_2 preheat_4 hotwaterrinse" $column1_pos [expr {$pos_to
 	if {$::settings(scale_bluetooth_address) != ""} {
 		set ::de1(scale_weight_rate) -1	
 		
-		add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar 2117 1360 {} -width [rescale_y_skin 95] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #FF6A00 -bg #4e4e4e -maximum 6 -borderwidth 1 -relief flat
+		add_de1_widget "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" ProgressBar 2117 1360 {} -width [rescale_x_skin 95] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #FF6A00 -bg #4e4e4e -maximum 6 -borderwidth 1 -relief flat
 		
-		add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (13 * $spacer)}] {} -width [rescale_y_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #FF6A00 -bg #4e4e4e -maximum 6 -borderwidth 1 -relief flat
+		add_de1_widget "espresso espresso_zoomed espresso_zoomed_temperature" ProgressBar 2390 [expr {$pos_top + (13 * $spacer)}] {} -width [rescale_x_skin 108] -height [rescale_x_skin 16] -type normal  -variable ::de1(scale_weight_rate) -fg #FF6A00 -bg #4e4e4e -maximum 6 -borderwidth 1 -relief flat
 		
 		add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (8.25 * $spacer)}] -justify left -anchor "nw" -text [translate "Recipe"] -font Helv_7_bold -fill #ffffff -width [rescale_x_skin 520]
 		

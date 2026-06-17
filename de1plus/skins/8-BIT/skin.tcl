@@ -71,7 +71,7 @@ add_de1_variable "off" 1320 100 -justify left -anchor "center" -text "" -font pi
 
 if {$::settings(waterlevel_indicator_on) == 1} {
 	# water level sensor 
-	add_de1_widget "off espresso steam hotwaterrinse water" scale 2544 0 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1600] -showvalue 0 -width [rescale_y_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #000000 -borderwidth 0  -highlightthickness 0
+	add_de1_widget "off espresso steam hotwaterrinse water" scale 2544 0 {after 1000 water_level_color_check $widget} -from 40 -to 5 -background #7ad2ff -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 1600] -showvalue 0 -width [rescale_x_skin 16] -variable ::de1(water_level) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 50] -relief flat -troughcolor #000000 -borderwidth 0  -highlightthickness 0
 }
 
 
@@ -155,9 +155,9 @@ add_de1_variable "espresso" $column3 [expr {$pos_top + (4.5 * $spacer)}] -justif
 
 	if {$::settings(skale_bluetooth_address) != ""} {
 		set ::de1(scale_weight_rate) -1
-		#add_de1_widget "off" ProgressBar 0 1580 {} -width [rescale_y_skin 2540] -height [rescale_x_skin 20] -type normal  -variable ::de1(scale_weight) -fg #6b2c03 -bg #894419 -maximum 2000 -borderwidth 1 -relief flat -troughcolor #894419
-		add_de1_widget "off" ProgressBar 0 1580 {} -width [rescale_y_skin 2540] -height [rescale_x_skin 20] -type normal  -variable ::de1(scale_weight_rate) -fg #6b2c03 -bg #894419 -maximum 1000 -borderwidth 1 -relief flat -troughcolor #894419
-		#add_de1_widget "off espresso" scale 306 656 {} -from $::de1(water_level_full_point) -to $::de1(water_level_empty_point) -background #ab6439 -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 78] -showvalue 0 -width [rescale_y_skin 286] -variable ::de1(scale_weight_rate) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 10] -relief flat -troughcolor #FFFFF0 -borderwidth 0  -highlightthickness 0
+		#add_de1_widget "off" ProgressBar 0 1580 {} -width [rescale_x_skin 2540] -height [rescale_x_skin 20] -type normal  -variable ::de1(scale_weight) -fg #6b2c03 -bg #894419 -maximum 2000 -borderwidth 1 -relief flat -troughcolor #894419
+		add_de1_widget "off" ProgressBar 0 1580 {} -width [rescale_x_skin 2540] -height [rescale_x_skin 20] -type normal  -variable ::de1(scale_weight_rate) -fg #6b2c03 -bg #894419 -maximum 1000 -borderwidth 1 -relief flat -troughcolor #894419
+		#add_de1_widget "off espresso" scale 306 656 {} -from $::de1(water_level_full_point) -to $::de1(water_level_empty_point) -background #ab6439 -foreground #0000FF -borderwidth 1 -bigincrement .1 -resolution .1 -length [rescale_x_skin 78] -showvalue 0 -width [rescale_x_skin 286] -variable ::de1(scale_weight_rate) -state disabled -sliderrelief flat -font Helv_10_bold -sliderlength [rescale_x_skin 10] -relief flat -troughcolor #FFFFF0 -borderwidth 0  -highlightthickness 0
 	}
 #######################
 
