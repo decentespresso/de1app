@@ -3,6 +3,19 @@
 encoding system utf-8
 cd "[file dirname [info script]]/"
 
+# iWish (iOS / iPadOS / Mac Catalyst) self-detection. The iWish borg shim ships a
+# `platform` subcommand that no other build has, so we can identify the platform
+# here in the de1app source instead of relying on the launcher to set flags.
+# Load Borg first (de1_logging uses `borg log` very early), then set ::iwish, and
+# ::ios for a real iOS device / the iOS simulator (NOT Mac Catalyst). The launcher
+# only sets up auto_path so `package require Borg` can find the battery package.
+if {![info exists ::iwish]} {
+	if {![catch {package require Borg}] && ![catch {borg platform} ::_iwish_platform]} {
+		set ::iwish 1
+		if {$::_iwish_platform in {ios iossimulator}} { set ::ios 1 }
+	}
+}
+
 # iOS ONLY: the app sandbox bundle is read-only, so writing into
 # Contents/Resources/de1plus (settings.tdb, log.txt, history/, profiles/, ...)
 # fails. Keep reading assets from the bundle (cwd, unchanged) but redirect the
