@@ -221,6 +221,8 @@ if {[lsearch -exact $::argv "--ble-test"] >= 0} {
 	try {
 		de1_ui_startup
 	} on error {result ropts} {
+		catch { exit_trace "de1_ui_startup ERROR: $result" }
+		catch { exit_trace "errorInfo: [dict get $ropts -errorinfo]" }
 		msg -CRIT "Untrapped error running de1_ui_startup with result: $result"
 		msg -CRIT "$ropts"
 		msg -CRIT "Exiting"

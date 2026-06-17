@@ -163,6 +163,7 @@ proc off_page_onload { page_to_hide page_to_show } {
 
 proc saver_page_onload { page_to_hide page_to_show } {
 	if {[ifexists ::exit_app_on_sleep] == 1} {
+		exit_trace "saver_page_onload: exit_app_on_sleep=1 -> get_set_tablet_brightness 0 + close_all_ble_and_exit"
 		get_set_tablet_brightness 0
 		close_all_ble_and_exit
 	} else {
@@ -898,6 +899,21 @@ proc get_set_tablet_brightness { {setting ""} } {
     }
 }
 
+# exit_trace: append an UNBUFFERED, timestamped line to de1_exit.log in the
+# writable home dir. Used to diagnose app-exit hangs -- the normal log.txt is
+# 64KB-buffered, so a stalled or incomplete exit loses its tail before it reaches
+# disk, whereas this flushes every line. Called from the exit path (app_exit,
+# saver_page_onload, close_all_ble_and_exit) and the iWish launcher's exit
+# wrapper. Harmless on every platform (any error is caught).
+proc exit_trace {msg} {
+    catch {
+        set f [open [file join [homedir] de1_exit.log] a]
+        fconfigure $f -buffering none
+        puts $f "[clock format [clock seconds] -format {%Y-%m-%d %H:%M:%S}] $msg"
+        close $f
+    }
+}
+
 proc running_on_ios {} {
     # True only when the actual OS is iOS -- a real iPad/iPhone or the iOS
     # simulator -- NOT the Mac Catalyst (iWish-on-Mac) build. Uses the iWish borg
@@ -906,6 +922,36 @@ proc running_on_ios {} {
     if {[catch {set p [borg platform]}]} { return 0 }
     return [expr {$p eq "ios" || $p eq "iossimulator"}]
 }
+
+proc ios_install_hardexit {} {
+    # iWish on real iOS: Tcl's exit (Tcl_Finalize) hangs and leaves a white
+    # window, so replace `exit` with an immediate _exit() via the hardexit dylib
+    # (shipped in the app bundle next to the executable). Also guard de1app's own
+    # startup exit() -- e.g. a transient bad battery reading -- for the first 25s
+    # so boot survives; the user's Settings "app exit" fires long after that.
+    # No-op anywhere except real iOS / the iOS simulator.
+    if {![running_on_ios]} return
+    if {[info exists ::_hardexit_installed]} return
+    set ::_hardexit_installed 1
+    set ::_launch_time [clock seconds]
+    catch { load [file join [file dirname [info nameofexecutable]] libhardexit.dylib] Hardexit }
+    exit_trace "ios_install_hardexit: hardexit_loaded=[llength [info commands hardexit]]"
+    rename exit ::_real_exit
+    proc exit {{code 0}} {
+        set since [expr {[clock seconds] - $::_launch_time}]
+        set he [llength [info commands hardexit]]
+        exit_trace "exit($code) entered; since_launch=${since}s hardexit_loaded=$he"
+        if {$since < 25} {
+            exit_trace "exit($code) SUPPRESSED by boot guard (<25s)"
+            return
+        }
+        exit_trace "exit($code) -> closing logfiles + terminating"
+        catch {::logging::close_logfiles}
+        # _exit() via hardexit terminates immediately; Tcl's exit hangs on iOS.
+        if {$he} { hardexit $code } else { ::_real_exit $code }
+    }
+}
+ios_install_hardexit
 
 
 # Enrique: Not used anywhere in the code as of 25/06/2021, image directories now managed by DUI, so commenting

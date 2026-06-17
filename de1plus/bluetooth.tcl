@@ -1622,6 +1622,7 @@ proc varia_aku_parse_response { value } {
 
 proc close_all_ble_and_exit {} {
 	::bt::msg -NOTICE close_all_ble_and_exit
+	exit_trace "close_all_ble_and_exit ENTER (handles=[catch {ble info} _bi; set _bi])"
 
 	###
 	### NB: Disconnect events are intentionally not called here
@@ -1629,37 +1630,50 @@ proc close_all_ble_and_exit {} {
 
 	::bt::msg -DEBUG "close_all_ble_and_exit, at entrance: [ble info]"
 	if {$::scanning == 1} {
+		exit_trace "stopping scanner $::ble_scanner"
 		catch {
 			ble stop $::ble_scanner
 		}
 	}
 
 	::bt::msg -DEBUG "Closing de1"
+	exit_trace "closing de1 handle=$::de1(device_handle)"
 	if {$::de1(device_handle) != 0} {
 		catch {
 			ble close $::de1(device_handle)
 		}
 	}
+	exit_trace "closed de1"
 
 	::bt::msg -DEBUG "Closing scale"
+	exit_trace "closing scale handle=$::de1(scale_device_handle)"
 	if {$::de1(scale_device_handle) != 0} {
 		catch {
 			ble close $::de1(scale_device_handle)
 		}
 	}
+	exit_trace "closed scale"
 
+	exit_trace "closing misc bluetooth handles"
 	close_misc_bluetooth_handles
+	exit_trace "closed misc bluetooth handles"
 
 	::bt::msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
 	foreach h [ble info] {
 		::bt::msg -INFO "Closing this open BLE handle: [ble info $h]"
-		ble close $h
+		exit_trace "force-closing leftover BLE handle $h"
+		# was an UNCAUGHT `ble close $h`; wrap in catch so a bad handle can't
+		# wedge the whole exit path (suspected cause of "exit sometimes hangs").
+		catch { ble close $h }
+		exit_trace "force-closed BLE handle $h"
 	}
 	::bt::msg -DEBUG "close_all_ble_and_exit, at exit: [ble info]"
 	foreach h [ble info] {
 		::bt::msg -WARNING "Open BLE handle: [ble info $h]"
+		exit_trace "STILL-OPEN BLE handle after close: $h"
 	}
 
+	exit_trace "close_all_ble_and_exit: closing logfiles, then exit 0"
 	::logging::close_logfiles
 
 	exit 0
@@ -1667,6 +1681,7 @@ proc close_all_ble_and_exit {} {
 
 proc app_exit {} {
 	::bt::msg -NOTICE app_exit
+	exit_trace "app_exit ENTER has_bluetooth=$::has_bluetooth de1_state=$::de1(state)"
 
 	if {$::de1(usb_charger_on) != 1} {
 		# always leave the app with the charger set to ON
@@ -1687,14 +1702,17 @@ proc app_exit {} {
 	}
 
 	set ::exit_app_on_sleep 1
+	exit_trace "app_exit: exit_app_on_sleep=1, calling start_sleep (waits for DE1 to sleep -> saver_page_onload exits)"
 	start_sleep
 
 	# fail-over, if the DE1 doesn't to to sleep
 	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
 	if {$since_last_ping > 10} {
 		# wait less time for the fail-over if we don't have any temperature pings from the DE1
+		exit_trace "app_exit: since_last_ping=${since_last_ping}s (>10) -> after 1000 close_all_ble_and_exit"
 		after 1000 close_all_ble_and_exit
 	} else {
+		exit_trace "app_exit: since_last_ping=${since_last_ping}s -> after 5000 close_all_ble_and_exit"
 		after 5000 close_all_ble_and_exit
 	}
 
