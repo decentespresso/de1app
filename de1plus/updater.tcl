@@ -635,6 +635,18 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
 
 proc start_app_update {} {
 
+    # On iOS the app is distributed through the App Store and cannot update
+    # itself in place. Instead of attempting a download, show the message page
+    # telling the user to update via the App Store.
+    if {[ifexists ::ios] == 1} {
+        set ::de1(app_update_button_label) [translate "Update"]
+        catch { update_onscreen_variables }
+        catch {
+            message_page [translate "On iOS, you must update using the App Store"] [translate "Ok"]
+        }
+        return
+    }
+
     if {[ifexists ::app_updating] == 1} {
         catch {
             msg -INFO "App is already updating, not going to run two processes"
