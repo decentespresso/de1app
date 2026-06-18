@@ -1673,6 +1673,13 @@ proc close_all_ble_and_exit {} {
 		exit_trace "STILL-OPEN BLE handle after close: $h"
 	}
 
+	# The exit path puts the DE1 to sleep, which makes saver_page_onload set the
+	# tablet brightness to 0. Restore the device-default brightness now, so we
+	# don't leave the screen black after the app is gone. -1 releases our override
+	# back to the OS/system brightness setting.
+	exit_trace "close_all_ble_and_exit: restoring device-default brightness (borg brightness -1)"
+	catch { get_set_tablet_brightness -1 }
+
 	exit_trace "close_all_ble_and_exit: closing logfiles, then exit 0"
 	::logging::close_logfiles
 
