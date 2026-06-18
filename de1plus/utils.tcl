@@ -882,6 +882,12 @@ proc android_specific_stubs {} {
                 msg -DEBUG "borg $args"
             }
 
+        } elseif {[lindex $args 0] == "platform"} {
+            # undroidwish runs the app as 'undroid' on a desktop OS. Report that
+            # real OS (never "ios"/"iossimulator") so running_on_ios() and any
+            # platform gating get a sane value instead of erroring.
+            if {$::tcl_platform(os) eq "Darwin"} { return "osx" }
+            return [string tolower $::tcl_platform(os)]
         } else {
             msg -ERROR "unknown 'borg $args'"
         }
