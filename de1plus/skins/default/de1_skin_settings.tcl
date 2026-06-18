@@ -1925,6 +1925,8 @@ add_de1_text "travel_prepare" 1280 120 -text [translate "Prepare your espresso m
 	add_de1_button "travel_prepare" {say [translate {Ok}] $::settings(sound_button_in); set_next_page off settings_3; start_air_purge} 1960 1200 2560 1600 ""
 	add_de1_text "travel_do" 1280 120 -text [translate "Now removing water from your espresso machine."] -font Helv_15_bold -fill "#a77171" -anchor "center" -width [rescale_x_skin 2000]
 	add_de1_text "travel_do" 1520 1000 -text [translate "You can turn your machine off once it is out of water. It will then be ready for transport."] -font Helv_10_bold -fill "#a77171" -anchor "nw" -width [rescale_x_skin 1000]
+    add_de1_button "travel_do" {say [translate {awake}] $::settings(sound_button_in);start_idle; de1_send_waterlevel_settings} 0 0 2560 1600 "buttonnativepress"
+
 	#add_de1_text "travel_do" 1280 1520 -text [translate "It will then be ready for transport."] -font Helv_10_bold -fill "#000000" -anchor "center" -width 1000
 
 
