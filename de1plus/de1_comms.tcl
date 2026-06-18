@@ -1485,6 +1485,19 @@ proc de1_send_shot_frames { {override {}} } {
 	return
 }
 
+proc de1_send_pre_maintenance_profile {} {
+
+	# Workaround for a DE1 firmware flaw: the machine refuses the Clean, Descale
+	# and AirPurge (travel) states while it is still cold, unless a profile has
+	# already been loaded. We load a harmless minimal 1-step profile whose goal
+	# temperature is 1°C (so it never actually heats), which satisfies the
+	# firmware's check. Because this rides the same FIFO BLE queue, calling it
+	# just before de1_send_state guarantees the profile is delivered (and ACKed)
+	# before the state-change request.
+	::comms::msg -NOTICE de1_send_pre_maintenance_profile
+	de1_send_shot_frames "onestep_cold"
+}
+
 proc confirm_de1_send_shot_frames_worked {parts} {
 
 	::comms::msg -NOTICE "confirm_de1_send_shot_frames_worked (frames acked: [llength [ifexists ::de1(shot_frames_sent)]]) (frames desired: [llength $parts])"

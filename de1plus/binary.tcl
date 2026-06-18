@@ -1020,6 +1020,28 @@ proc de1_packed_shot_wrapper { {override {}} } {
 		set coolsettings(espresso_temperature) 1
 		set coolsettings(espresso_temperature_0) 1
 		return [de1_packed_shot [::profile::pressure_to_advanced_list coolsettings]]
+	} elseif {$override == "onestep_cold"} {
+		# Minimal single-frame profile with a 1°C goal temperature. Used as a
+		# workaround so the DE1 firmware will accept the Clean/Descale/AirPurge
+		# states while the machine is still cold (see
+		# de1_send_pre_maintenance_profile). A 1°C goal means it never heats.
+		set frame [list \
+			name "cold maintenance" \
+			temperature 1 \
+			sensor "coffee" \
+			pump "pressure" \
+			transition "fast" \
+			pressure 0 \
+			flow 0 \
+			seconds 1 \
+			volume 0 \
+			exit_if 0 \
+			exit_pressure_over 0 \
+			exit_pressure_under 0 \
+			exit_flow_over 0 \
+			exit_flow_under 0 \
+		]
+		return [de1_packed_shot [list advanced_shot [list $frame]]]
 	} else {
 		if {[ifexists ::settings(settings_profile_type)] == "settings_2b"} {
 			return [de1_packed_shot [::profile::flow_to_advanced_list]]
@@ -1577,6 +1599,18 @@ proc update_de1_state {statechar} {
 
 	}
 
+
+
+	# When the machine ENTERS a maintenance state (Clean, Descale, or AirPurge /
+	# transport), re-send the current espresso profile. start_cleaning /
+	# start_decaling / start_air_purge first load a 1°C "maintenance" profile so
+	# the (cold) firmware accepts the request; re-sending the real profile now,
+	# while the cycle is already underway, keeps that 1°C goal from lingering
+	# afterwards. The firmware keeps running the maintenance cycle across the
+	# profile change.
+	if { $this_state in {Clean Descale AirPurge} && $previous_state ni {Clean Descale AirPurge} } {
+		de1_send_shot_frames
+	}
 
 
 	#

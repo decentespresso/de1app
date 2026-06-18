@@ -696,7 +696,11 @@ proc start_decaling {} {
 	msg -NOTICE "Tell DE1 to start DESCALING"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send_state "descale" $::de1_state(Descale)
+	# firmware refuses Descale when cold unless a profile is loaded first which sets the goal to cold, so the machine is now ready and no longer heating
+	de1_send_pre_maintenance_profile
+	# wait ~1s so the firmware has applied the 1°C goal before we request the
+	# state, otherwise the first (cold) Descale request is sometimes refused
+	after 1000 [list de1_send_state "descale" $::de1_state(Descale)]
 
 	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -711,7 +715,11 @@ proc start_air_purge {} {
 	msg -NOTICE "Tell DE1 to start TRAVEL DO"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send_state "air purge" $::de1_state(AirPurge)
+	# firmware refuses AirPurge (travel) when cold unless a profile is loaded first which sets the goal to cold, so the machine is now ready and no longer heating
+	de1_send_pre_maintenance_profile
+	# wait ~1s so the firmware has applied the 1°C goal before we request the
+	# state, otherwise the first (cold) AirPurge request is sometimes refused
+	after 1000 [list de1_send_state "air purge" $::de1_state(AirPurge)]
 
 	if {!$::has_bluetooth} {
 		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
@@ -727,11 +735,13 @@ proc start_cleaning {} {
 	msg -NOTICE "Tell DE1 to start CLEANING"
 	set ::de1(timer) 0
 	set ::de1(volume) 0
-	de1_send_state "clean" $::de1_state(Clean)
+	# firmware refuses Clean when cold unless a profile is loaded first which sets the goal to cold, so the machine is now ready and no longer heating
+	de1_send_pre_maintenance_profile
+	# wait ~1s so the firmware has applied the 1°C goal before we request the
+	# state, otherwise the first (cold) Clean request is sometimes refused
+	after 1000 [list de1_send_state "clean" $::de1_state(Clean)]
 
 	if {!$::has_bluetooth} {
-		#after [expr {1000 * $::settings(steam_max_time)}] {page_display_change "steam" "off"}
-		#after 200 "update_de1_state $::de1_state(Descale)"
 		after 200 [list update_de1_state "$::de1_state(Clean)\x5"]
 	}
 }
