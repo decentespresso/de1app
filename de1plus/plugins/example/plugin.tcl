@@ -23,10 +23,10 @@ namespace eval ::plugins::${plugin_name} {
         add_de1_button $page_name {say [translate {Done}] $::settings(sound_button_in); page_to_show_when_off extensions}  980 1210 1580 1410 ""
 
         # Headline
-        add_de1_text $page_name 1280 300 -text [translate "Example Plugin"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center"
+        add_de1_text $page_name 1280 300 -text [translate "Example Plugin"] -font Helv_20_bold -width [rescale_x_skin 2400] -fill "#444444" -anchor "center" -justify "center"
 
         # The actual content. Here a list of all settings for this plugin
-        set content_textfield [add_de1_text $page_name 600 380 -text  "" -font global_font -width 600 -fill "#444444" -anchor "nw" -justify "left" ]
+        set content_textfield [add_de1_text $page_name 600 380 -text  "" -font global_font -width [rescale_x_skin 1200] -fill "#444444" -anchor "nw" -justify "left" ]
         set description ""
         foreach {key value} [array get settings] {
             set description "$description\n$key: $value"

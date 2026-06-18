@@ -68,22 +68,22 @@ namespace eval ::plugins::${plugin_name} {
 
 
         # Headline
-        add_de1_text $page_name 1280 300 -text [translate "Log Upload"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center"
+        add_de1_text $page_name 1280 300 -text [translate "Log Upload"] -font Helv_20_bold -width [rescale_x_skin 2400] -fill "#444444" -anchor "center" -justify "center"
 
 
         # Upload Button
         create_button $page_name 400 480 1200 920 Helv_10_bold #822 #FFF {::plugins::log_upload::uploadLogfiles} {Upload!}
 
         # Last upload Log
-        add_de1_text $page_name 1450 480 -text [translate "Last upload:"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"	
-        add_de1_variable $page_name 1450 540 -font Helv_8 -width 400 -fill "#4e85f4" -anchor "nw" -justify "left" -textvariable {$::plugins::log_upload::settings(last_upload_log)} 	
+        add_de1_text $page_name 1450 480 -text [translate "Last upload:"] -font Helv_8 -width [rescale_x_skin 600] -fill "#444444" -anchor "nw" -justify "center"	
+        add_de1_variable $page_name 1450 540 -font Helv_8 -width [rescale_x_skin 800] -fill "#4e85f4" -anchor "nw" -justify "left" -textvariable {$::plugins::log_upload::settings(last_upload_log)} 	
 
         # Last upload result
-        add_de1_text $page_name 1450 660 -text [translate "Result:"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
-        add_de1_variable $page_name 1450 720 -font Helv_8 -width 400 -fill "#4e85f4" -anchor "nw" -justify "left" -textvariable {$::plugins::log_upload::settings(last_upload_result)}
+        add_de1_text $page_name 1450 660 -text [translate "Result:"] -font Helv_8 -width [rescale_x_skin 600] -fill "#444444" -anchor "nw" -justify "center"
+        add_de1_variable $page_name 1450 720 -font Helv_8 -width [rescale_x_skin 800] -fill "#4e85f4" -anchor "nw" -justify "left" -textvariable {$::plugins::log_upload::settings(last_upload_result)}
 
         # Browse last uploaded shot in 
-        add_de1_text $page_name 1450 920 -text "\[ [translate {Open log in Browser}] \]" -font Helv_8 -width 300 -fill "#4e85f4" -anchor "nw" -justify "left"
+        add_de1_text $page_name 1450 920 -text "\[ [translate {Open log in Browser}] \]" -font Helv_8 -width [rescale_x_skin 600] -fill "#4e85f4" -anchor "nw" -justify "left"
         add_de1_button $page_name ::plugins::log_upload::browse 1440 910 2200 990
 
         return $page_name

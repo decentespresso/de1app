@@ -41,7 +41,7 @@ add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start
 add_de1_button "off" {show_settings} 2000 800 2350 1350
 
 # show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
-add_de1_variable "off" 1310 760 -justify left -anchor "center" -text "" -font novocento -fill "#444444" -width 1520 -textvariable {[de1_connected_state 5]} 
+add_de1_variable "off" 1310 760 -justify left -anchor "center" -text "" -font novocento -fill "#444444" -width [rescale_x_skin 3040] -textvariable {[de1_connected_state 5]} 
 
 ##############################################################################################################################################################################################################################################################################
 

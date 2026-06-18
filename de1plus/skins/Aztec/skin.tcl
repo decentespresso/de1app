@@ -55,7 +55,7 @@ add_de1_variable "off" 2224 1470  -text [translate "SETTINGS"] -font {aztec} -fi
 add_de1_variable "off" 1750 430  -text [translate "SETTINGS"] -font {aztec} -fill "#554530" -anchor "center" -textvariable {$::off_label}
 
 # show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
-add_de1_variable "off" 20 1520 -justify left -anchor "nw" -text "" -font aztec -fill "#FFFFFF" -width 1520 -textvariable {[de1_connected_state 5]} 
+add_de1_variable "off" 20 1520 -justify left -anchor "nw" -text "" -font aztec -fill "#FFFFFF" -width [rescale_x_skin 3040] -textvariable {[de1_connected_state 5]} 
 
 
 

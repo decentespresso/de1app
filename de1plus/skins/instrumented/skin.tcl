@@ -14,11 +14,11 @@ source "[homedir]/skins/default/standard_stop_buttons.tcl"
 add_de1_button "off" "exit" 800 0 1750 500
 
 add_de1_text "off" 510 1076 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "off" 500 1156 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "off" 505 1156 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[setting_water_max_time_text]} 
-add_de1_text "off" 500 1206 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width 520
+add_de1_text "off" 500 1156 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "off" 505 1156 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 1040] -text "" -textvariable {[setting_water_max_time_text]} 
+add_de1_text "off" 500 1206 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
 add_de1_button "off" {backup_settings; page_to_show_when_off settings_1} 2000 0 2560 500
-add_de1_variable "off" 505 1206 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[setting_water_temperature_text]} 
+add_de1_variable "off" 505 1206 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 1040] -text "" -textvariable {[setting_water_temperature_text]} 
 
 add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start_water" 210 612 808 1416
 
@@ -34,10 +34,10 @@ add_de1_button "off" "say [translate {water}] $::settings(sound_button_in);start
 
 # STEAM related info to display when the espresso machine is idle
 add_de1_text "off" 2048 1076 -text [translate "STEAM"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "off" 2053 1156 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "off" 2058 1156 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 520 -textvariable {[setting_steam_max_time_text]} 
-add_de1_text "off" 2053 1206 -justify right -anchor "ne" -text [translate "Steam:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "off" 2058 1206 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 520 -textvariable {[setting_steam_temperature_text]} 
+add_de1_text "off" 2053 1156 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "off" 2058 1156 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[setting_steam_max_time_text]} 
+add_de1_text "off" 2053 1206 -justify right -anchor "ne" -text [translate "Steam:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "off" 2058 1206 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[setting_steam_temperature_text]} 
 #add_de1_variable "off" 2053 1256 -justify right -anchor "ne" -text "" -font Helv_8 -fill "#7f879a" -width 520 -textvariable {[steam_heater_action_text]} 
 #add_de1_variable "off" 2058 1256 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 520 -textvariable {[steam_heater_temperature_text]} 
 
@@ -46,17 +46,17 @@ add_de1_button "off" "say [translate {steam}] $::settings(sound_button_in);start
 
 
 add_de1_text "off" 1280 1076 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
-add_de1_text "off" 1275 1156 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "off" 1280 1156 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 520 -textvariable {[setting_espresso_max_time_text]} 
+add_de1_text "off" 1275 1156 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "off" 1280 1156 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[setting_espresso_max_time_text]} 
 
-add_de1_text "off" 1275 1206 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "off" 1280 1206 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[setting_espresso_pressure_text]} 
+add_de1_text "off" 1275 1206 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "off" 1280 1206 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[setting_espresso_pressure_text]} 
 
 
-add_de1_text "off" 1275 1256 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "off" 1280 1256 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 520 -textvariable {[setting_espresso_temperature_text]} 
+add_de1_text "off" 1275 1256 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "off" 1280 1256 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[setting_espresso_temperature_text]} 
 
-add_de1_variable "off" 1280 1350 -justify right -anchor "center" -text "" -font Helv_8 -fill "#Ff272a" -width 520 -textvariable {[group_head_heating_text]} 
+add_de1_variable "off" 1280 1350 -justify right -anchor "center" -text "" -font Helv_8 -fill "#Ff272a" -width [rescale_x_skin 1040] -textvariable {[group_head_heating_text]} 
 #add_de1_variable "off" 1305 1136 -justify right -anchor "ne" -text "" -font Helv_8 -fill "#7f879a" -width 520 -textvariable {[group_head_heater_action_text]} 
 #add_de1_variable "off" 1310 1136 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[group_head_heater_temperature_text]} 
 
@@ -77,12 +77,12 @@ add_de1_text "steam" 2048 1076 -text [translate "STEAM"] -font Helv_10_bold -fil
 add_de1_variable "steam" 2048 1136 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
 
 # variables to display during steam
-add_de1_text "steam" 2053 1176 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "steam" 2058 1176 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 520 -textvariable {[steam_pour_timer][translate "s"]} 
-add_de1_text "steam" 2053 1226 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "steam" 2058 1226 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 520 -textvariable {[setting_steam_max_time_text]} 
-add_de1_text "steam" 2053 1276 -justify right -anchor "ne" -text [translate "Steam:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "steam" 2058 1276 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width 520 -textvariable {[steamtemp_text]} 
+add_de1_text "steam" 2053 1176 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "steam" 2058 1176 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[steam_pour_timer][translate "s"]} 
+add_de1_text "steam" 2053 1226 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "steam" 2058 1226 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[setting_steam_max_time_text]} 
+add_de1_text "steam" 2053 1276 -justify right -anchor "ne" -text [translate "Steam:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "steam" 2058 1276 -justify left -anchor "nw" -font Helv_8 -text "" -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[steamtemp_text]} 
 
 # when in steam mode, tapping anywhere on the screen tells the DE1 to stop.
 #add_de1_button "steam" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0 0 2560 1600
@@ -94,17 +94,17 @@ add_de1_variable "steam" 2058 1276 -justify left -anchor "nw" -font Helv_8 -text
 add_de1_text "espresso" 1280 1076 -text [translate "ESPRESSO"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_variable "espresso" 1280 1136 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {"[translate [de1_substate_text]]"} 
 
-add_de1_text "espresso" 1280 1176 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "espresso" 1285 1176 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[espresso_pour_timer][translate "s"]} 
+add_de1_text "espresso" 1280 1176 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "espresso" 1285 1176 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[espresso_pour_timer][translate "s"]} 
 
-add_de1_text "espresso" 1280 1226 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "espresso" 1285 1226 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width 520 -textvariable {[setting_espresso_max_time_text]} 
+add_de1_text "espresso" 1280 1226 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "espresso" 1285 1226 -justify left -anchor "nw" -text "" -font Helv_8  -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[setting_espresso_max_time_text]} 
 
-add_de1_text "espresso" 1280 1276 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "espresso" 1285 1276 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[pressure_text]} 
+add_de1_text "espresso" 1280 1276 -justify right -anchor "ne" -text [translate "Pressure:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "espresso" 1285 1276 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[pressure_text]} 
 
-add_de1_text "espresso" 1280 1326 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "espresso" 1285 1326 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width 520 -textvariable {[watertemp_text]} 
+add_de1_text "espresso" 1280 1326 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "espresso" 1285 1326 -justify left -anchor "nw" -text "" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 1040] -textvariable {[watertemp_text]} 
 
 #add_de1_button "espresso" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0 0 2560 1600
 
@@ -114,12 +114,12 @@ add_de1_variable "espresso" 1285 1326 -justify left -anchor "nw" -text "" -font 
 add_de1_text "water hotwaterrinse" 510 1076 -text [translate "WATER"] -font Helv_10_bold -fill "#2d3046" -anchor "center" 
 add_de1_variable "water hotwaterrinse" 510 1136 -text "" -font Helv_9_bold -fill "#73768f" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
 
-add_de1_text "water hotwaterrinse" 500 1176 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "water hotwaterrinse" 505 1176 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[water_pour_timer][translate "s"]} 
-add_de1_text "water hotwaterrinse" 500 1226 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "water hotwaterrinse" 505 1226 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[setting_water_max_time_text]} 
-add_de1_text "water hotwaterrinse" 500 1276 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width 520
-add_de1_variable "water hotwaterrinse" 505 1276 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width 520 -text "" -textvariable {[watertemp_text]} 
+add_de1_text "water hotwaterrinse" 500 1176 -justify right -anchor "ne" -text [translate "Elapsed:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "water hotwaterrinse" 505 1176 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 1040] -text "" -textvariable {[water_pour_timer][translate "s"]} 
+add_de1_text "water hotwaterrinse" 500 1226 -justify right -anchor "ne" -text [translate "Auto stop:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "water hotwaterrinse" 505 1226 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 1040] -text "" -textvariable {[setting_water_max_time_text]} 
+add_de1_text "water hotwaterrinse" 500 1276 -justify right -anchor "ne" -text [translate "Water:"] -font Helv_8 -fill "#7f879a" -width [rescale_x_skin 1040]
+add_de1_variable "water hotwaterrinse" 505 1276 -justify left -anchor "nw" -font Helv_8 -fill "#42465c" -width [rescale_x_skin 1040] -text "" -textvariable {[watertemp_text]} 
 
 #add_de1_button "water" "say [translate {stop}] $::settings(sound_button_in);start_idle" 0 0 2560 1600
 

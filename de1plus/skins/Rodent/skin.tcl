@@ -51,6 +51,6 @@ add_de1_button "off" {show_settings} 1953 221 2483 1541
 
 
 # show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
-add_de1_variable "off" 1280 180 -justify left -anchor "center" -text "" -font {Heroes Legend} -fill "#888888" -width 1520 -textvariable {[de1_connected_state 5]} 
+add_de1_variable "off" 1280 180 -justify left -anchor "center" -text "" -font {Heroes Legend} -fill "#888888" -width [rescale_x_skin 3040] -textvariable {[de1_connected_state 5]} 
 
 ##############################################################################################################################################################################################################################################################################

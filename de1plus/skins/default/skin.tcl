@@ -34,13 +34,13 @@ add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);st
 # these 2 buttons are rectangular areas for putting the machine to sleep or starting settings.  Traditionally, tapping one of the corners of the screen puts it to sleep.
 add_de1_button "off" "say [translate {sleep}] $::settings(sound_button_in);start_sleep" 0 0 400 400
 add_de1_button "off" { say [translate {settings}] $::settings(sound_button_in); show_settings } 2000 0 2560 500
-add_de1_variable "off" 1280 1320 -justify right -anchor "center" -text "" -font Helv_9_bold -fill "#7f879a" -width 520 -textvariable {[group_head_heating_text]} 
+add_de1_variable "off" 1280 1320 -justify right -anchor "center" -text "" -font Helv_9_bold -fill "#7f879a" -width [rescale_x_skin 1040] -textvariable {[group_head_heating_text]} 
 
 # during espresso we show the current state of things (heating, waiting, flushing, etc)
 add_de1_variable "espresso" 1280 1320 -text "" -font Helv_9_bold -fill "#7f879a" -anchor "center" -textvariable {[translate [de1_substate_text]]} 
 
 # show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
-add_de1_variable "off" 20 1520 -justify left -anchor "nw" -text "" -font Helv_10 -fill "#666666" -width 1520 -textvariable {[de1_connected_state 5]} 
+add_de1_variable "off" 20 1520 -justify left -anchor "nw" -text "" -font Helv_10 -fill "#666666" -width [rescale_x_skin 3040] -textvariable {[de1_connected_state 5]} 
 
 ##############################################################################################################################################################################################################################################################################
 # text and buttons to display when the DE1 is doing steam, hot water or espresso

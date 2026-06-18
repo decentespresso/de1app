@@ -27,7 +27,7 @@ add_de1_text "off water" 2005 1250 -text [translate "WATER"] -font {moonflower} 
 
 
 # show whether the espresso machine is ready to make an espresso, or heating, or the tablet is disconnected
-add_de1_variable "off" 230 340 -justify left -anchor "center" -text "" -font moonflower -fill "#888888" -width 1520 -textvariable {[de1_connected_state 5]} 
+add_de1_variable "off" 230 340 -justify left -anchor "center" -text "" -font moonflower -fill "#888888" -width [rescale_x_skin 3040] -textvariable {[de1_connected_state 5]} 
 
 # these 3 buttons are rectangular areas, where tapping the rectangle causes a major DE1 action (steam/espresso/water)
 add_de1_button "off" "say [translate {espresso}] $::settings(sound_button_in);start_espresso" 240 450 900 1250
