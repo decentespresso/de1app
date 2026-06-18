@@ -47,7 +47,7 @@ if {[info exists ::ios] && $::ios} {
 		# writable data), so the seed must include everything it references there:
 		# profile_editors/ (sourced by skin standard_includes), fonts/, sounds/,
 		# translation.tcl, splash/, etc. Anything missing => white screen on boot.
-		set _seed [list settings.tdb profiles profiles_v2 godshots \
+		set _seed [list settings.tdb profiles profiles_v2 godshots plugins \
 			fonts sounds profile_editors translation.tcl allcerts.pem \
 			splash simulations fw manifest.tcl timestamp.tcl binary_db.tdb \
 			skins/default skins/Insight {skins/Insight Dark} \
