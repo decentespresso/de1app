@@ -192,7 +192,7 @@ add_de1_text "preheat preheat_2 hotwaterrinse" 2162.825 178.88  -text [translate
 
 
 # indicate whether we are connected to the DE1+ or not
-add_de1_variable "off off_zoomed off_zoomed_temperature" 2356 215 -justify center -anchor "center" -text "" -font Helv_6 -fill $::detailtextcol -width 520 -textvariable {[de1_connected_state]} 
+add_de1_variable "off off_zoomed off_zoomed_temperature" 2356 215 -justify center -anchor "center" -text "" -font Helv_6 -fill $::detailtextcol -width [rescale_x_skin 1040] -textvariable {[de1_connected_state]} 
 
 # labels for Power/Settings
 if { [language] == "de" || [language] == "da" || [language] == "sv" || [language] == "pt" || [language] == "nl" } {
@@ -1145,14 +1145,14 @@ if {$::settings(insight_skin_show_embedded_profile) == 1} {
 } else {
 	# we can display the profile name if the embedded chart is not displayed.
 	add_de1_variable "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (11.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7_bold -fill #ffffff -width [rescale_x_skin 520] -textvariable {[profile_type_text]} 
-	add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (17.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7_bold -fill #ffffff -width 730 -textvariable {[profile_type_text]} 
+	add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (17.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7_bold -fill #ffffff -width [rescale_x_skin 1460] -textvariable {[profile_type_text]} 
 	
 	set ::globals(widget_current_profile_name) [add_de1_variable "off off_zoomed off_zoomed_temperature espresso_3 espresso_3_zoomed espresso_3_zoomed_temperature" $column1_pos [expr {$pos_top + (12.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill #ffffff -width [rescale_x_skin 650] -textvariable {$::settings(profile_title)} ]
 	
 
-	set ::globals(widget_current_profile_name_espresso) [add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (18.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill #ffffff -width 730 -textvariable {$::settings(profile_title)} ]
+	set ::globals(widget_current_profile_name_espresso) [add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (18.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill #ffffff -width [rescale_x_skin 1460] -textvariable {$::settings(profile_title)} ]
 
-	add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (19.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#8297be" -width 730 -textvariable {$::settings(current_frame_description)} 
+	add_de1_variable "espresso espresso_zoomed" $column1_pos [expr {$pos_top + (19.5 * $spacer)}] -justify left -anchor "nw" -text "" -font Helv_7 -fill "#8297be" -width [rescale_x_skin 1460] -textvariable {$::settings(current_frame_description)} 
 
 }
 

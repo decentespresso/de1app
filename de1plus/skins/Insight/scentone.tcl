@@ -116,9 +116,9 @@ set slider_trough_color2 #f3f3f3
 
 # from http://www.iconarchive.com/show/shiny-smiley-icons-by-iconicon.html
 lassign [metadata get espresso_enjoyment n_decimals min max bigincrement] n_dec min max biginc
-add_de1_text "describe_espresso" 80 360 -text [translate "Enjoyment"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+add_de1_text "describe_espresso" 80 360 -text [translate "Enjoyment"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso" scale 300 450 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution 1 -length [rescale_x_skin 1000]  -width [rescale_x_skin 150] -variable ::settings(espresso_enjoyment) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color1 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "describe_espresso" 1300 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {$::settings(espresso_enjoyment)}
+	add_de1_variable "describe_espresso" 1300 600 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_x_skin 1200] -justify "left" -textvariable {$::settings(espresso_enjoyment)}
 
 
 
@@ -136,68 +136,68 @@ add_de1_text "describe_espresso" 80 360 -text [translate "Enjoyment"] -font Helv
 #	add_de1_widget "describe_espresso" scale 830 830 {} -to 100 -from 0 -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement 10 -resolution 1 -length [rescale_x_skin 670]  -width [rescale_x_skin 150] -variable ::settings(espresso_aftertaste) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 #	add_de1_variable "describe_espresso" 1500 980 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_off_if_zero $::settings(espresso_aftertaste)]}
 
-	add_de1_text "describe_espresso" 80 740 -text [translate "Notes"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+	add_de1_text "describe_espresso" 80 740 -text [translate "Notes"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso" multiline_entry 80 820 {
 			bind $widget <Leave> hide_android_keyboard
 	} -width 50 -height 8 -font Helv_8  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(espresso_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 
-add_de1_text "describe_espresso2" 80 360 -text [translate "Grinder"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+add_de1_text "describe_espresso2" 80 360 -text [translate "Grinder"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 
-	add_de1_text "describe_espresso2" 540 440 -text [translate "Model"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
+	add_de1_text "describe_espresso2" 540 440 -text [translate "Model"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1600] -justify "center"
 	add_de1_widget "describe_espresso2" entry 550 430 {
 			bind $widget <Leave> hide_android_keyboard
 	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_model) 
 
-	add_de1_text "describe_espresso2" 540 530 -text [translate "Setting"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_text "describe_espresso2" 540 530 -text [translate "Setting"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso2" entry 550 520 {
 		bind $widget <Leave> hide_android_keyboard
 	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(grinder_setting) 
 
 	#set slider_trough_color2 #EAEAEA
-	add_de1_text "describe_espresso2" 540 620 -text [translate "Dose weight"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "center"
+	add_de1_text "describe_espresso2" 540 620 -text [translate "Dose weight"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1600] -justify "center"
 	
 	lassign [metadata get grinder_dose_weight n_decimals min max bigincrement] n_dec min max biginc
 	add_de1_widget "describe_espresso2" scale 550 610 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 630]  -width [rescale_x_skin 150] -variable ::settings(grinder_dose_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-	add_de1_variable "describe_espresso2" 1160 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_stop_at_weight_measurement_precise $::settings(grinder_dose_weight)]}
+	add_de1_variable "describe_espresso2" 1160 760 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_x_skin 1200] -justify "left" -textvariable {[return_stop_at_weight_measurement_precise $::settings(grinder_dose_weight)]}
 
 
 
 
-add_de1_text "describe_espresso2" 80 790 -text [translate "Beans"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+add_de1_text "describe_espresso2" 80 790 -text [translate "Beans"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 
-	add_de1_text "describe_espresso2" 540 860 -text [translate "Brand"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_text "describe_espresso2" 540 860 -text [translate "Brand"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso2" entry 550 850 {
 		bind $widget <Leave> hide_android_keyboard		
 	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_brand) 
 
-	add_de1_text "describe_espresso2" 540 940 -text [translate "Type"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_text "describe_espresso2" 540 940 -text [translate "Type"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso2" entry 550 930 {
 		bind $widget <Leave> hide_android_keyboard
 	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(bean_type) 
 
-	add_de1_text "describe_espresso2" 540 1020 -text [translate "Roast date"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_text "describe_espresso2" 540 1020 -text [translate "Roast date"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso2" entry 550 1010 {
 		bind $widget <Leave> hide_android_keyboard		
 	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_date) 
 
-	add_de1_text "describe_espresso2" 540 1100 -text [translate "Roast level"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_text "describe_espresso2" 540 1100 -text [translate "Roast level"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso2" entry 550 1090 {
 		bind $widget <Leave> hide_android_keyboard		
 	} -width [expr {int(28 * $::globals(entry_length_multiplier))}] -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(roast_level) 
 
-	add_de1_text "describe_espresso2" 540 1180 -text [translate "Notes"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width 800 -justify "left"
+	add_de1_text "describe_espresso2" 540 1180 -text [translate "Notes"] -font Helv_8 -fill "#7f879a" -anchor "ne" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso2" multiline_entry 550 1180 {
 		bind $widget <Leave> hide_android_keyboard
 	} -width [expr {int(22 * $::globals(entry_length_multiplier))}] -height 3 -font Helv_8  -borderwidth 2 -bg #fbfaff  -foreground #4e85f4 -textvariable ::settings(bean_notes) -relief flat -highlightthickness 1 -highlightcolor #000000 
 
 
-	add_de1_text "describe_espresso2" 1340 360 -text [translate "Your name"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+	add_de1_text "describe_espresso2" 1340 360 -text [translate "Your name"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso2" entry 1340 430 {
 		bind $widget <Leave> hide_android_keyboard
 	} -width 40 -font Helv_8 -bg #FFFFFF  -foreground #4e85f4 -textvariable ::settings(my_name) 
 
-add_de1_text "describe_espresso2" 1340 560 -text [translate "Enable these features"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+add_de1_text "describe_espresso2" 1340 560 -text [translate "Enable these features"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 	add_de1_widget "describe_espresso2" checkbutton 1360 630 { } -command {} -padx 0 -pady 0 -bg #FFFFFF -text [translate "I weigh my drinks"] -indicatoron true -font Helv_8  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(has_scale)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 	add_de1_widget "describe_espresso2" checkbutton 1360 690 { } -command {} -padx 0 -pady 0 -bg #FFFFFF -text [translate "I use a refractometer"] -indicatoron true -font Helv_8  -anchor nw -foreground #4e85f4 -activeforeground #4e85f4 -variable ::settings(has_refractometer)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF
 
@@ -213,34 +213,34 @@ add_de1_text "describe_espresso2" 1340 560 -text [translate "Enable these featur
 
 
 if {$::settings(has_refractometer) == 1 || $::settings(has_scale) == 1} {
-	add_de1_text "describe_espresso" 1630 360 -text [translate "Technical: (optional)"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+	add_de1_text "describe_espresso" 1630 360 -text [translate "Technical: (optional)"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 }
 
-	add_de1_text "describe_espresso" 1630 440 -text [translate "Weight"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+	add_de1_text "describe_espresso" 1630 440 -text [translate "Weight"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 	
 	lassign [metadata get drink_weight n_decimals min max bigincrement] n_dec min max biginc
 	add_de1_widget "describe_espresso" scale 1630 500 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 850]  -width [rescale_x_skin 140] -variable ::settings(drink_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	
-	add_de1_variable "describe_espresso" 2480 640 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_shot_weight_measurement $::settings(drink_weight)]}
+	add_de1_variable "describe_espresso" 2480 640 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_x_skin 1200] -justify "left" -textvariable {[return_shot_weight_measurement $::settings(drink_weight)]}
 	#add_de1_variable "describe_espresso" 2480 640 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {$::settings(drink_weight)}
 
 	if {$::settings(has_refractometer) == 1} {
-		add_de1_text "describe_espresso" 1630 670 -text [translate "Total dissolved solids (TDS)"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+		add_de1_text "describe_espresso" 1630 670 -text [translate "Total dissolved solids (TDS)"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 		
 		lassign [metadata get drink_tds n_decimals min max bigincrement] n_dec min max biginc
 		add_de1_widget "describe_espresso" scale 1630 730 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 850]  -width [rescale_x_skin 140] -variable ::settings(drink_tds) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "describe_espresso" 2480 870 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_tds)]}
+		add_de1_variable "describe_espresso" 2480 870 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_x_skin 1200] -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_tds)]}
 
-		add_de1_text "describe_espresso" 1630 900 -text [translate "Extraction yield (EY)"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
+		add_de1_text "describe_espresso" 1630 900 -text [translate "Extraction yield (EY)"] -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
 		
 		lassign [metadata get drink_ey n_decimals min max bigincrement] n_dec min max biginc
 		add_de1_widget "describe_espresso" scale 1630 960 {} -to $max -from $min -background #e4d1c1 -showvalue 0 -borderwidth 1 -bigincrement $biginc -resolution [expr {1.0/(10.0*$n_dec)}] -length [rescale_x_skin 850]  -width [rescale_x_skin 140] -variable ::settings(drink_ey) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command {} -foreground #FFFFFF -troughcolor $slider_trough_color2 -borderwidth 0  -highlightthickness 0 -orient horizontal 
-		add_de1_variable "describe_espresso" 2480 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width 600 -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_ey)]}
+		add_de1_variable "describe_espresso" 2480 1100 -text "" -font Helv_8 -fill "#4e85f4" -anchor "ne" -width [rescale_x_skin 1200] -justify "left" -textvariable {[return_percent_off_if_zero $::settings(drink_ey)]}
 	}
 
 
-add_de1_text "describe_espresso" 1610 1230 -text [translate "Flavors"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width 800 -justify "left"
-add_de1_variable "describe_espresso" 1610 1280 -text "" -font Helv_6 -width 200 -fill "#7f879a" -anchor "nw" -textvariable {[scentone_translated_selection]} 
+add_de1_text "describe_espresso" 1610 1230 -text [translate "Flavors"] -font Helv_8_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left"
+add_de1_variable "describe_espresso" 1610 1280 -text "" -font Helv_6 -width [rescale_x_skin 400] -fill "#7f879a" -anchor "nw" -textvariable {[scentone_translated_selection]} 
 
 
 ##################################################################################################################################################################################################################
@@ -249,13 +249,13 @@ add_de1_variable "describe_espresso" 1610 1280 -text "" -font Helv_6 -width 200 
 ##################################################################################################################################################################################################################
 # describe your espresso
 
-add_de1_text "describe_espresso" 1330 230 -text [translate "This espresso"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
-add_de1_text "describe_espresso describe_espresso0" 2160 230 -text [translate "Your setup"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso" 1330 230 -text [translate "This espresso"] -font Helv_10_bold -width [rescale_x_skin 2400] -fill "#7f879a" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso describe_espresso0" 2160 230 -text [translate "Your setup"] -font Helv_10_bold -width [rescale_x_skin 2400] -fill "#BBBBBB" -anchor "center" -justify "center" 
 
-add_de1_text "describe_espresso2 describe_espresso0" 1330 230 -text [translate "This espresso"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
-add_de1_text "describe_espresso2" 2160 230 -text [translate "Your setup"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
-add_de1_text "describe_espresso0" 460 230 -text [translate "God shot"] -font Helv_10_bold -width 1200 -fill "#7f879a" -anchor "center" -justify "center" 
-add_de1_text "describe_espresso2 describe_espresso" 460 230 -text [translate "God shot"] -font Helv_10_bold -width 1200 -fill "#BBBBBB" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso2 describe_espresso0" 1330 230 -text [translate "This espresso"] -font Helv_10_bold -width [rescale_x_skin 2400] -fill "#BBBBBB" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso2" 2160 230 -text [translate "Your setup"] -font Helv_10_bold -width [rescale_x_skin 2400] -fill "#7f879a" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso0" 460 230 -text [translate "God shot"] -font Helv_10_bold -width [rescale_x_skin 2400] -fill "#7f879a" -anchor "center" -justify "center" 
+add_de1_text "describe_espresso2 describe_espresso" 460 230 -text [translate "God shot"] -font Helv_10_bold -width [rescale_x_skin 2400] -fill "#BBBBBB" -anchor "center" -justify "center" 
 
 #add_de1_text "describe_espresso" 1280 90 -text [translate "Describe this espresso"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
 #add_de1_text "describe_espresso2" 1280 90 -text [translate "Describe your setup"] -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" 
@@ -271,7 +271,7 @@ add_de1_button "describe_espresso describe_espresso2" {say [translate {God shot}
 
 
 
-add_de1_variable "scentone_1" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected]} 
+add_de1_variable "scentone_1" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected]} 
 
 set ::scentone(Tropical\ fruit) {"Guava" "Mangosteen" "Mango" "Banana" "Coconut" "Passion fruit" "Watermelon" "Papaya" "Tropical fruits" "Pineapple" "Melon" "Lychee"}
 set ::scentone(Berry) {"Strawberry" "Blueberry" "Raspberry" "Cranberry" "Blackberry" "Acai berry" "Black currant" "White grape" "Muscat grape" "Red grape"}
@@ -317,7 +317,7 @@ add_de1_button "scentone_1" {say [translate {Savory}] $::settings(sound_button_i
 # tropical fruits
 
 
-add_de1_variable "scentone_tropical" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Tropical fruit"]} 
+add_de1_variable "scentone_tropical" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Tropical fruit"]} 
 #add_de1_variable "scentone_1" 1280 150 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected]} 
 
 # row 1 text labels 
@@ -356,7 +356,7 @@ add_de1_button "scentone_tropical" {say [translate {Lychee}] $::settings(sound_b
 ##################################################################################################################################################################################################################
 # berry fruits
 
-add_de1_variable "scentone_berry" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Berry"]} 
+add_de1_variable "scentone_berry" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Berry"]} 
 
 # row 1 text labels 
 add_de1_variable "scentone_berry" 285 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Strawberry"]} 
@@ -391,7 +391,7 @@ add_de1_button "scentone_berry" {say [translate {Red grape}] $::settings(sound_b
 ##################################################################################################################################################################################################################
 # citrus fruits
 
-add_de1_variable "scentone_citrus" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Citrus"]} 
+add_de1_variable "scentone_citrus" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Citrus"]} 
 
 # row 1 text labels 
 add_de1_variable "scentone_citrus" 300 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Pomegranate"]} 
@@ -426,7 +426,7 @@ add_de1_button "scentone_citrus" {say [translate {Quince}] $::settings(sound_but
 ##################################################################################################################################################################################################################
 # stone fruits
 
-add_de1_variable "scentone_stone" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Stone fruit"]} 
+add_de1_variable "scentone_stone" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Stone fruit"]} 
 
 # row 1 text labels 
 add_de1_variable "scentone_stone" 500 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Acerola"]} 
@@ -453,7 +453,7 @@ add_de1_button "scentone_stone" {say [translate {Apricot}] $::settings(sound_but
 ##################################################################################################################################################################################################################
 # cereal and nuts
 
-add_de1_variable "scentone_cereal" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Nut & cereal"]} 
+add_de1_variable "scentone_cereal" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Nut & cereal"]} 
 
 # row 1 text labels 
 add_de1_variable "scentone_cereal" 275 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Hazelnut"]} 
@@ -490,7 +490,7 @@ add_de1_button "scentone_cereal" {say [translate {Roasted}] $::settings(sound_bu
 ##################################################################################################################################################################################################################
 # chocolate and caramel
 
-add_de1_variable "scentone_chocolate" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Chocolate\ &\ caramel"]} 
+add_de1_variable "scentone_chocolate" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Chocolate\ &\ caramel"]} 
 
 # row 1 text labels 
 add_de1_variable "scentone_chocolate" 218 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Dark chocolate"]} 
@@ -527,7 +527,7 @@ add_de1_button "scentone_chocolate" {say [translate {Vanilla}] $::settings(sound
 ##################################################################################################################################################################################################################
 # flower
 
-add_de1_variable "scentone_flower" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Flower & herb"]} 
+add_de1_variable "scentone_flower" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Flower & herb"]} 
 
 # row 1 text labels 
 add_de1_variable "scentone_flower" 200 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Pine"]} 
@@ -567,7 +567,7 @@ add_de1_button "scentone_flower" {say [translate {Eucalyptus}] $::settings(sound
 ##################################################################################################################################################################################################################
 # spice
 
-add_de1_variable "scentone_spice" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Spice"]} 
+add_de1_variable "scentone_spice" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Spice"]} 
 
 # row 1 text labels 
 add_de1_variable "scentone_spice" 240 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Basil"]} 
@@ -604,7 +604,7 @@ add_de1_button "scentone_spice" {say [translate {Ginger}] $::settings(sound_butt
 ##################################################################################################################################################################################################################
 # vegetable
 
-add_de1_variable "scentone_vegetable" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Vegetable"]} 
+add_de1_variable "scentone_vegetable" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Vegetable"]} 
 
 # row 1 text labels 
 add_de1_variable "scentone_vegetable" 300 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Date"]} 
@@ -638,7 +638,7 @@ add_de1_button "scentone_vegetable" {say [translate {Paprika}] $::settings(sound
 ##################################################################################################################################################################################################################
 # vegetable
 
-add_de1_variable "scentone_savory" 1280 140 -text "" -font Helv_15_bold -width 1200 -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Savory"]} 
+add_de1_variable "scentone_savory" 1280 140 -text "" -font Helv_15_bold -width [rescale_x_skin 2400] -fill "#595d78" -anchor "center" -justify "center" -textvariable {[scentone_selected "Savory"]} 
 
 # row 1 text labels 
 add_de1_variable "scentone_savory" 350 800 -text "" -font Helv_8_bold -fill "#BBBBBB" -anchor "center" -textvariable {[scentone_choice "Cheddar"]} 

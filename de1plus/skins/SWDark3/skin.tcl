@@ -601,7 +601,7 @@ add_de1_text "off off_zoomed espresso_3 espresso_3_zoomed espresso espresso_zoom
 add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2225 575 -text "" -font Helv_7 -fill "#999999" -anchor "center" -textvariable {[de1_substate_text]} 
 
 # indicate whether we are connected to the DE1+ or not
-add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2225 620 -justify center -anchor "center" -text "" -font Helv_6 -fill "#CCCCCC" -width 520 -textvariable {[de1_connected_state]} 
+add_de1_variable "off off_zoomed espresso espresso_zoomed espresso_3 espresso_3_zoomed off_zoomed_temperature espresso_zoomed_temperature espresso_3_zoomed_temperature" 2225 620 -justify center -anchor "center" -text "" -font Helv_6 -fill "#CCCCCC" -width [rescale_x_skin 1040] -textvariable {[de1_connected_state]} 
 
 
 add_de1_widget "steam" graph 50 640 { 
