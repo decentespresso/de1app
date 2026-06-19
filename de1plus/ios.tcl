@@ -5,19 +5,20 @@
 # free (core Tcl + the iWish `borg` shim only), since almost nothing else has
 # loaded yet. A no-op on every non-iWish platform.
 
-# iWish/AndroWish self-detection from borg's STANDARD `osbuildinfo` keys (no
-# non-standard subcommand): the iWish build reports product "iWish" (the macOS
-# desktop undroidwish build reports "undroidwish"); real iOS hardware reports an
-# iPad/iPhone/iPod model, while Mac Catalyst reports a "Mac.." model. Load Borg
-# first (de1_logging uses `borg log` very early), then set ::iwish (any iWish
-# build) and ::ios (real iOS device or simulator, NOT Mac Catalyst). The launcher
-# only sets up auto_path so `package require Borg` can find the battery package.
+# iWish/AndroWish self-detection from borg's STANDARD `osbuildinfo` keys: an
+# Apple `manufacturer` plus an iPad/iPhone/iPod `model` means we are the iWish
+# build on real iOS hardware. (iWish is iOS-only; the macOS desktop undroidwish
+# build reports a "Mac.." model and is neither ::iwish nor ::ios.) `product`
+# carries the friendly product name (iPad/iPhone/Mac), so detection uses model.
+# Load Borg first (de1_logging uses `borg log` very early). The launcher only
+# sets up auto_path so `package require Borg` can find the battery package.
 if {![info exists ::iwish]} {
 	if {![catch {package require Borg}] && ![catch {borg osbuildinfo} ::_bi]} {
-		if {[dict exists $::_bi product] && [dict get $::_bi product] eq "iWish"} {
+		set ::_mdl [expr {[dict exists $::_bi model] ? [dict get $::_bi model] : {}}]
+		if {[dict exists $::_bi manufacturer] && [dict get $::_bi manufacturer] eq "Apple" \
+		    && [regexp {^(iPad|iPhone|iPod)} $::_mdl]} {
 			set ::iwish 1
-			set ::_mdl [expr {[dict exists $::_bi model] ? [dict get $::_bi model] : {}}]
-			set ::ios [regexp {^(iPad|iPhone|iPod)} $::_mdl]
+			set ::ios 1
 		}
 	}
 }
