@@ -923,12 +923,14 @@ proc exit_trace {msg} {
 }
 
 proc running_on_ios {} {
-    # True only when the actual OS is iOS -- a real iPad/iPhone or the iOS
-    # simulator -- NOT the Mac Catalyst (iWish-on-Mac) build. Reads the "os" key
-    # from borg's osbuildinfo (ios / iossimulator / maccatalyst / osx); on
-    # Android (no "os" key) or desktop (osx) or Catalyst (maccatalyst) it is 0.
-    if {[catch {dict get [borg osbuildinfo] os} os]} { return 0 }
-    return [expr {$os eq "ios" || $os eq "iossimulator"}]
+    # True only on real iOS hardware -- iPad/iPhone/iPod -- NOT Mac Catalyst or
+    # the macOS desktop. Reads borg's STANDARD osbuildinfo keys: Apple
+    # manufacturer + an iOS-family model. Android (manufacturer != Apple),
+    # macOS/Catalyst ("Mac.." model), or no borg all return 0.
+    if {[catch {borg osbuildinfo} bi]} { return 0 }
+    if {![dict exists $bi manufacturer] || [dict get $bi manufacturer] ne "Apple"} { return 0 }
+    if {![dict exists $bi model]} { return 0 }
+    return [regexp {^(iPad|iPhone|iPod)} [dict get $bi model]]
 }
 
 proc ios_install_hardexit {} {
