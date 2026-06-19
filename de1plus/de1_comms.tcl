@@ -1565,7 +1565,7 @@ proc save_settings_to_de1 {} {
 	de1_send_steam_hotwater_settings
 }
 
-proc de1_send_steam_hotwater_settings {} {
+proc de1_send_steam_hotwater_settings { {temporarily_disable_steam 0} } {
 	::comms::msg -NOTICE de1_send_steam_hotwater_settings
 
 	###
@@ -1580,7 +1580,7 @@ proc de1_send_steam_hotwater_settings {} {
 
 	remove_matching_ble_queue_entries {^Set water/steam settings:}
 
-	set data [return_de1_packed_steam_hotwater_settings]
+	set data [return_de1_packed_steam_hotwater_settings $temporarily_disable_steam]
 	parse_binary_hotwater_desc $data arr2
 	userdata_append "Set water/steam settings: [array get arr2]" [list de1_comm write "ShotSettings" $data] 1
 

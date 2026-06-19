@@ -175,7 +175,7 @@ proc ::fields::format {spec endian args} {
 }
 
 
-proc return_de1_packed_steam_hotwater_settings {} {
+proc return_de1_packed_steam_hotwater_settings { {temporarily_disable_steam 0} } {
 
 	set arr(SteamSettings) [expr {0 & 0x80 & 0x40}]
 
@@ -185,7 +185,7 @@ proc return_de1_packed_steam_hotwater_settings {} {
 		set steam_temperature 0
 	}
 
-	if {$::settings(steam_disabled) != 1} {
+	if {$::settings(steam_disabled) != 1 && $temporarily_disable_steam == 0} {
 		if {$::de1(in_eco_steam_mode) == 1} {
 			set arr(TargetSteamTemp) [convert_float_to_U8P0 $::de1(steam_eco_temperature)]
 		} else {
@@ -1610,6 +1610,18 @@ proc update_de1_state {statechar} {
 	# profile change.
 	if { $this_state in {Clean Descale AirPurge} && $previous_state ni {Clean Descale AirPurge} } {
 		de1_send_shot_frames
+
+		# Turn the steam wand off for the duration of the maintenance cycle.
+		# Passing temporarily_disable_steam=1 forces TargetSteamTemp to 0 without
+		# touching the persistent ::settings(steam_disabled).
+		de1_send_steam_hotwater_settings 1
+	}
+
+	# When the machine LEAVES a maintenance state (cycle complete or tapped to
+	# abort), re-send normal steam settings so the wand returns to the user's
+	# real setting.
+	if { $this_state ni {Clean Descale AirPurge} && $previous_state in {Clean Descale AirPurge} } {
+		de1_send_steam_hotwater_settings
 	}
 
 
