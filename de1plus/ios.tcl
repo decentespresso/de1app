@@ -5,16 +5,20 @@
 # free (core Tcl + the iWish `borg` shim only), since almost nothing else has
 # loaded yet. A no-op on every non-iWish platform.
 
-# iWish self-detection. The iWish borg shim ships a `platform` subcommand that no
-# other build has, so we can identify the platform here in the de1app source
-# instead of relying on the launcher to set flags. Load Borg first (de1_logging
-# uses `borg log` very early), then set ::iwish, and ::ios for a real iOS device
-# or the iOS simulator (NOT Mac Catalyst). The launcher only sets up auto_path so
-# `package require Borg` can find the battery package.
+# iWish/AndroWish self-detection via the borg `osbuildinfo` "os" key. The iWish
+# iOS/Catalyst borg and the macOS undroidwish borg both report their OS there
+# (ios / iossimulator / maccatalyst / osx); Android's osbuildinfo has no "os"
+# key. This replaces the old non-standard `borg platform` subcommand. Load Borg
+# first (de1_logging uses `borg log` very early), then set ::iwish (any iWish
+# build) and ::ios (real iOS device or simulator, NOT Mac Catalyst). The launcher
+# only sets up auto_path so `package require Borg` can find the battery package.
 if {![info exists ::iwish]} {
-	if {![catch {package require Borg}] && ![catch {borg platform} ::_iwish_platform]} {
-		set ::iwish 1
-		if {$::_iwish_platform in {ios iossimulator}} { set ::ios 1 }
+	if {![catch {package require Borg}] && \
+	    ![catch {dict get [borg osbuildinfo] os} ::_borg_os]} {
+		if {$::_borg_os in {ios iossimulator maccatalyst}} {
+			set ::iwish 1
+			if {$::_borg_os in {ios iossimulator}} { set ::ios 1 }
+		}
 	}
 }
 

@@ -851,11 +851,12 @@ proc android_specific_stubs {} {
             }
         }
     }
-    # Only stub `borg` when there is no real one. Under iWish the borg1.0 package
-    # provides a genuine borg command (brightness via UIScreen, platform, openurl,
-    # toast, etc.); this stub must NOT clobber it -- otherwise `borg brightness`
-    # becomes a no-op (screen brightness control dead) and `borg platform` returns
-    # "" so running_on_ios and all iOS gating silently break.
+    # Only stub `borg` when there is no real one. Under iWish (and macOS
+    # undroidwish) the borg1.0 package provides a genuine borg command (brightness
+    # via UIScreen/DisplayServices, osbuildinfo, toast, etc.); this stub must NOT
+    # clobber it -- otherwise `borg brightness` becomes a no-op (screen brightness
+    # control dead) and `borg osbuildinfo` loses its "os" key, so running_on_ios
+    # and all iOS gating silently break.
     if {[llength [info commands borg]] == 0} {
     proc borg {args} {
         if {[lindex $args 0] == "locale"} {
@@ -882,12 +883,6 @@ proc android_specific_stubs {} {
                 msg -DEBUG "borg $args"
             }
 
-        } elseif {[lindex $args 0] == "platform"} {
-            # undroidwish runs the app as 'undroid' on a desktop OS. Report that
-            # real OS (never "ios"/"iossimulator") so running_on_ios() and any
-            # platform gating get a sane value instead of erroring.
-            if {$::tcl_platform(os) eq "Darwin"} { return "osx" }
-            return [string tolower $::tcl_platform(os)]
         } else {
             msg -ERROR "unknown 'borg $args'"
         }
@@ -929,11 +924,11 @@ proc exit_trace {msg} {
 
 proc running_on_ios {} {
     # True only when the actual OS is iOS -- a real iPad/iPhone or the iOS
-    # simulator -- NOT the Mac Catalyst (iWish-on-Mac) build. Uses the iWish borg
-    # shim's "platform" subcommand; on Android/desktop/Catalyst (or if borg has
-    # no platform subcommand) this returns 0.
-    if {[catch {set p [borg platform]}]} { return 0 }
-    return [expr {$p eq "ios" || $p eq "iossimulator"}]
+    # simulator -- NOT the Mac Catalyst (iWish-on-Mac) build. Reads the "os" key
+    # from borg's osbuildinfo (ios / iossimulator / maccatalyst / osx); on
+    # Android (no "os" key) or desktop (osx) or Catalyst (maccatalyst) it is 0.
+    if {[catch {dict get [borg osbuildinfo] os} os]} { return 0 }
+    return [expr {$os eq "ios" || $os eq "iossimulator"}]
 }
 
 proc ios_install_hardexit {} {
