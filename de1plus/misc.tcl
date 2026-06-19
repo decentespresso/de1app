@@ -16,6 +16,7 @@ proc make_de1_dir {srcdir destdirs} {
         app_metadata.tcl *
         machine.tcl *
         utils.tcl *
+        ios.tcl *
         main.tcl *
         plugins.tcl *
         vars.tcl *
