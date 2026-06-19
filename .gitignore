@@ -40,6 +40,8 @@ de1plus/plugins/log_upload/settings.tdb
 /de1plus/history/
 /de1plus/log.txt
 /de1plus/log.txt.*
+/de1plus/de1_exit.log
+/de1plus/de1_launch.log
 /de1plus/settings.tdb
 /de1plus/tmp/
 /de1plus/profiles_v2/*.json
