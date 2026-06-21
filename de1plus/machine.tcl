@@ -656,7 +656,10 @@ array set ::de1_substate_type_description {
 
 array set ::de1_substate_types_reversed [reverse_array ::de1_substate_types]
 
-array set translation [encoding convertfrom utf-8 [read_binary_file "[homedir]/translation.tcl"]]
+if {[catch {array set translation [encoding convertfrom utf-8 [read_binary_file "[homedir]/translation.tcl"]]}]} {
+    msg -ERROR "translation.tcl is corrupted or unreadable — using empty translations"
+    array set translation {}
+}
 
 proc de1_substate_text {} {
 	set num $::de1(substate)
