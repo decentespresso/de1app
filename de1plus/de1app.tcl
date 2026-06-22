@@ -8,6 +8,21 @@ cd "[file dirname [info script]]/"
 # bundle, before any package loads. No-op on every non-iWish platform.
 source "ios.tcl"
 
+# macOS notarized-bundle data-root redirect: copies the read-only bundle to a
+# writable ~/Documents/de1app on first run and cd's there, so [homedir] writes
+# and self-update work without breaking the code signature. No-op unless the
+# build dropped a notarized.flag marker. Must run after ios.tcl (it skips iOS)
+# and before pkgIndex.tcl (it cd's so packages load from the writable copy).
+source "osx.tcl"
+
+# Google Play Store Android build: mirrors osx.tcl -- on a Play-distributed build
+# (identified by a build-dropped google_play.flag marker) the de1plus tree ships
+# as read-only assets, so copy it to a writable ~/Documents/de1app on first run
+# and cd there, keeping [homedir] writes and in-app self-update working. (Unlike
+# iOS, Android may run its own scripts from writable storage.) No-op on a
+# sideloaded APK, macOS, and iOS. Must run after ios.tcl/osx.tcl (it skips iOS).
+source "google_play_store.tcl"
+
 source "pkgIndex.tcl"
 source "version.tcl"
 

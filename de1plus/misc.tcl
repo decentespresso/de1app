@@ -17,6 +17,8 @@ proc make_de1_dir {srcdir destdirs} {
         machine.tcl *
         utils.tcl *
         ios.tcl *
+        osx.tcl *
+        google_play_store.tcl *
         main.tcl *
         plugins.tcl *
         vars.tcl *
