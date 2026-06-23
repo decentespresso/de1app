@@ -47,6 +47,14 @@ proc strip_crlf {in} {
 }
 
 proc page_change_due_to_de1_state_change {textstate} {
+	# While the ultra-minimal first-run message is up, idle DE1 state-polls would
+	# otherwise re-show the 'off' page every few seconds and clobber it. Hold the
+	# page on the message until the user taps Ok (which clears the flag). If the
+	# machine becomes active, drop the message and proceed normally.
+	if {[ifexists ::ultra_minimal_pending] == 1} {
+		if {$textstate in {Idle GoingToSleep Sleep}} { return }
+		set ::ultra_minimal_pending 0
+	}
 	if {$textstate == "Idle"} {
 		page_display_change $::de1(current_context) "off"
 	} elseif {$textstate == "GoingToSleep"} {
@@ -2065,7 +2073,20 @@ proc ui_startup {} {
 
 	set app_version [package version de1app]
 
-	if {$::settings(last_version) != $app_version  && [ifexists ::settings(app_updates_beta_enabled)] < 2} {
+	# Ultra-minimal standalone build: on the FIRST launch after the bundle is copied
+	# to ~/Documents/de1app (the .ultra_minimal_shown sentinel is absent), explain
+	# how to self-update to the full version. Kept INDEPENDENT of the version/
+	# changelog check below so it fires reliably regardless of version stamping, and
+	# shows exactly once per fresh copy.
+	if {[file exists "[homedir]/ultra_minimal.flag"] && ![file exists "[homedir]/.ultra_minimal_shown"]} {
+		# Defer the display until AFTER de1_ui_startup finishes: showing it here
+		# (mid-startup) gets clobbered ~180ms later when run_de1_app shows the 'off'
+		# page. The `after` lands it on top of the settled page so it stays until Ok.
+		catch { close [open "[homedir]/.ultra_minimal_shown" w] }
+		set ::settings(last_version) $app_version
+		save_settings
+		after 2500 { set ::ultra_minimal_pending 1; info_page [translate "This is an ultra-minimal app which can self-update itself to the full version.\n\nGo to Settings > App > Update to upgrade to the full experience."] [translate "Ok"] }
+	} elseif {$::settings(last_version) != $app_version  && [ifexists ::settings(app_updates_beta_enabled)] < 2} {
 		if {$::settings(espresso_count) == 0} {
 			set message "You are running Version $app_version."
 		} else {

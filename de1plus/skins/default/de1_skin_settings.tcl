@@ -226,7 +226,7 @@ set ::message_button [add_de1_button "message" {say [translate {Quit}] $::settin
 
 set ::infopage_label [add_de1_text "infopage" 1280 800 -text "" -font Helv_10_bold -fill "#2d3046" -justify "center" -anchor "center" -width [rescale_x_skin 2000]]
 set ::infopage_button_label [add_de1_text "infopage" 1280 1310 -text "" -font Helv_10_bold -fill "#fAfBff" -anchor "center"  ]
-set ::infopage_button [add_de1_button "infopage" {say [translate {Ok}] $::settings(sound_button_in); page_show off} 980 1210 1580 1410 ""]
+set ::infopage_button [add_de1_button "infopage" {say [translate {Ok}] $::settings(sound_button_in); set ::ultra_minimal_pending 0; page_show off} 980 1210 1580 1410 ""]
 
 set ::versionpage_label [add_de1_text "versionpage" 1280 800 -text "" -font Helv_10_bold -fill "#2d3046" -justify "center" -anchor "center" -width [rescale_x_skin 1800]]
 set ::versionpage_button_label [add_de1_text "versionpage" 1280 1310 -text "" -font Helv_10_bold -fill "#fAfBff" -anchor "center"]
