@@ -25,6 +25,7 @@ namespace eval ::comms {
 
 	proc ::comms::msg {first args} {
 
+		if { ![::logging::ble_log_enabled $first] } return
 		::logging::default_logger $first "de1_comms:" {*}$args
 	}
 }

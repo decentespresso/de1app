@@ -8,6 +8,7 @@ namespace eval ::bt {
 
 	proc ::bt::msg {first args} {
 
+		if { ![::logging::ble_log_enabled $first] } return
 		::logging::default_logger $first "bluetooth:" {*}$args
 	}
 }

@@ -20,6 +20,12 @@ namespace eval ::logging {
 
 	variable severity_limit_android 7
 
+	# BLE / comms I/O logging (per-packet MMR reads/writes, ENQ/DEQ, ACKs via the
+	# ::bt::msg "bluetooth:" and ::comms::msg "de1_comms:" loggers) is extremely
+	# chatty. Suppress it below this level by DEFAULT so BLE debug logging is OFF
+	# for normal use; raise to 7 (DEBUG) to diagnose Bluetooth.
+	variable severity_limit_ble 4
+
 	variable android_logger_tag DE1
 
 	variable severity_default 6
@@ -90,6 +96,21 @@ namespace eval ::logging {
 	}
 
 
+
+	# True if a bt/comms log call at the given first-arg severity should be emitted
+	# under the current BLE log limit. Used to gate the chatty BLE loggers.
+	proc ble_log_enabled {first_arg} {
+		variable severity_limit_ble
+		variable severity_option_to_number
+		variable severity_default
+		set sevkey [string toupper $first_arg]
+		if { [info exists severity_option_to_number($sevkey)] } {
+			set severity $severity_option_to_number($sevkey)
+		} else {
+			set severity $severity_default
+		}
+		return [expr {$severity <= $severity_limit_ble}]
+	}
 
 	proc default_logger {args} {
 
