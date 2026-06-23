@@ -551,7 +551,26 @@ proc atomheart_eclair_enable_weight_notifications {} {
 		return
 	}
 
-	userdata_append "SCALE: enable atomheart_eclair scale weight notifications" [list ble enable $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair) $::cinstance($::de1(cuuid_atomheart_eclair))] 1
+	if {[::device::scale::is_reporting]} {
+		return
+	}
+
+	set comment "SCALE: enable atomheart_eclair scale weight notifications"
+	set cmd [list ble enable $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair) $::cinstance($::de1(cuuid_atomheart_eclair))]
+
+	foreach queued_cmd $::de1(cmdstack) {
+		if {[lindex $queued_cmd 0] == $comment} {
+			return
+		}
+	}
+
+	if {[llength $::de1(cmdstack)] > 0} {
+		set ::de1(cmdstack) [linsert $::de1(cmdstack) 0 [list $comment $cmd 1]]
+		after 1 run_next_userdata_cmd
+		return
+	}
+
+	userdata_append $comment $cmd 1
 }
 
 proc atomheart_eclair_tare {} {
@@ -581,8 +600,7 @@ proc atomheart_eclair_timer_reset {} {
 		error "atomheart_eclair Scale not connected, cannot send timer cmd"
 		return
 	}
-	# Eclair scale no dedicated timer reset command, timer will reset automatically after the scale receive the tare comand. So this comand is the same as the tare comand.
-	set timer_reset [binary decode hex "540101"]
+	set timer_reset [binary decode hex "520101"]
 
 	userdata_append "SCALE: atomheart_eclair timer_reset" [list ble write $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair_cmd) $::cinstance($::de1(cuuid_atomheart_eclair_cmd)) $timer_reset] 0
 
@@ -598,7 +616,7 @@ proc atomheart_eclair_start_timer {} {
 		return
 	}
 
-	set timer_start [binary decode hex "430101"]
+	set timer_start [binary decode hex "530101"]
 
 	userdata_append "SCALE: atomheart_eclair timer_start" [list ble write $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair_cmd) $::cinstance($::de1(cuuid_atomheart_eclair_cmd)) $timer_start] 0
 
@@ -614,7 +632,7 @@ proc atomheart_eclair_stop_timer {} {
 		return
 	}
 
-	set timer_stop [binary decode hex "430000"]
+	set timer_stop [binary decode hex "450101"]
 
 	userdata_append "SCALE: atomheart_eclair timer_stop" [list ble write $::de1(scale_device_handle) $::de1(suuid_atomheart_eclair) $::sinstance($::de1(suuid_atomheart_eclair)) $::de1(cuuid_atomheart_eclair_cmd) $::cinstance($::de1(cuuid_atomheart_eclair_cmd)) $timer_stop] 0
 
@@ -2025,7 +2043,7 @@ proc ble_connect_to_scale {} {
 		return 0
 	}
 
-	if {[llength $::de1(cmdstack)] > 2} {
+	if {[llength $::de1(cmdstack)] > 2 && $::settings(scale_type) != "atomheart_eclair"} {
 		::bt::msg -INFO "Too much backpressure, waiting with the connect"
 		::comms::msg -INFO "Current cmd: ([llength $::de1(cmdstack)]) >>>" \
 			[lindex [lindex $::de1(cmdstack) 0] 0]
@@ -2403,6 +2421,7 @@ proc de1_ble_handler { event data } {
 						} elseif {$::settings(scale_type) == "atomheart_eclair"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "atomheart_eclair"
 							after 200 atomheart_eclair_enable_weight_notifications
+							after 800 atomheart_eclair_enable_weight_notifications
 						} elseif {$::settings(scale_type) == "acaiascale"} {
 							append_to_peripheral_list $address $::settings(scale_bluetooth_name) "ble" "scale" "acaiascale"
 							set ::settings(force_acaia_heartbeat) 0
