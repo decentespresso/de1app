@@ -150,7 +150,17 @@ namespace eval ::plugins {
         if { [loaded $plugin] } {
             return
         }
-        
+
+        # A plugin enabled in settings but not actually present (e.g. pruned from a
+        # slim/minimal build) is never peeked, so its namespace was never created.
+        # Skip it cleanly instead of throwing "parent namespace doesn't exist" --
+        # which also pops a spurious "could not be loaded" info_page that covers
+        # whatever page (e.g. the first-run message) is meant to be showing.
+        if { ![peeked $plugin] } {
+            msg -NOTICE [namespace current] "not loading '$plugin': not present/peeked"
+            return
+        }
+
         if {[catch {
             if {[info proc ${plugin}::preload] != ""} {
                 set ${plugin}::ui_entry [${plugin}::preload]
