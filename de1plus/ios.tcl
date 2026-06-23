@@ -34,32 +34,29 @@ if {![info exists ::iwish]} {
 # move cwd off the bundle so it can't source bluetooth.tcl/translation.tcl.
 set _bundle [file normalize [file dirname [info script]]]
 if {[info exists ::ios] && $::ios} {
+	# iOS splits the single data root into a read-only CODE root and a writable
+	# DATA root. Apple guideline 2.5.2 forbids running interpreted code from a
+	# writable/user-visible location, so ALL code and read-only assets (skins,
+	# plugins, profile_editors, fonts, sounds, translation.tcl, fw, manifests,
+	# ...) stay in the read-only bundle and are read from there via
+	# [homedir]/source_directory. ONLY writable user data goes to ~/Documents/Decent
+	# (via data_directory). See updater.tcl source_directory/data_directory.
 	set _wdir [file join $::env(HOME) "Documents/Decent"]
+	set ::home $_bundle   ;# source_directory/homedir -> read-only bundle (code+assets)
 	if {![catch {file mkdir $_wdir}]} {
-		set ::home $_wdir   ;# homedir (updater.tcl) returns $::home once set
-		# Create history/ FIRST so it exists immediately -- it is NOT seeded from
-		# the bundle, and we don't want it to appear only after the (possibly slow,
-		# multi-hundred-MB) whole-skins copy below. (Only history needs this:
-		# pre-creating the seeded dirs would make the copy's [file exists] guard
-		# skip them, so their bundled defaults would never be copied.)
-		catch { file mkdir [file join $::home history] }
-		# Then seed defaults from the bundle on FIRST RUN only; never clobber
-		# existing user data on later launches: settings, the default profiles,
-		# godshots, and a curated set of skins (each copied whole, with all its
-		# subdirs -- the user can edit these under the data root; every other
-		# skin stays read-only in the bundle).
-		# de1app sources/reads both code AND assets through [homedir] (not just
-		# writable data), so the seed must include everything it references there:
-		# profile_editors/ (sourced by skin standard_includes), fonts/, sounds/,
-		# translation.tcl, splash/, etc. Anything missing => white screen on boot.
-		set _seed [list settings.tdb profiles profiles_v2 godshots plugins \
-			fonts sounds profile_editors translation.tcl allcerts.pem \
-			splash simulations fw manifest.tcl timestamp.tcl binary_db.tdb \
-			skins/default skins/Insight {skins/Insight Dark} \
-			skins/Streamline {skins/Streamline Dark} \
-			skins/DSx skins/DSx2 skins/MimojaCafe skins/Metric skins/MiniMetric]
+		set ::data_home $_wdir   ;# data_directory -> writable user data
+		# Create history/ FIRST so it exists immediately (it is NOT seeded).
+		catch { file mkdir [file join $::data_home history] }
+		# Seed writable DATA defaults from the bundle on FIRST RUN only; never
+		# clobber existing user data on later launches. Code/assets are NOT seeded
+		# -- they read directly from the bundle. `splash` is the one asset included,
+		# because its images are resized in place under the data root
+		# (splash_directory now resolves to [data_directory]/splash). Resized SKIN
+		# graphics are cached under the data root too (dui find / image_cache_dir_for),
+		# so skins themselves stay read-only in the bundle.
+		set _seed [list settings.tdb profiles profiles_v2 godshots splash]
 		foreach _item $_seed {
-			set _dst [file join $::home $_item]
+			set _dst [file join $::data_home $_item]
 			if {![file exists $_dst] && [file exists [file join $_bundle $_item]]} {
 				catch { file mkdir [file dirname $_dst] }
 				catch { file copy -- [file join $_bundle $_item] $_dst }
@@ -67,7 +64,7 @@ if {[info exists ::ios] && $::ios} {
 		}
 		# Fallback: ensure these exist even if the bundle had nothing to seed.
 		foreach _d {godshots profiles profiles_v2} {
-			catch { file mkdir [file join $::home $_d] }
+			catch { file mkdir [file join $::data_home $_d] }
 		}
 	}
 }

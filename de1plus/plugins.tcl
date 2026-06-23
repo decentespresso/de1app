@@ -6,8 +6,11 @@ proc plugin_directory {} {
     return "plugins"
 }
 
+# Plugin CODE loads from the (read-only on iOS) source tree via [plugin_directory],
+# but each plugin's SETTINGS are writable user data, so they live under the data
+# root. On iOS that means code in the bundle, settings in ~/Documents/Decent.
 proc plugin_settings_file {plugin} {
-    return "[homedir]/[plugin_directory]/${plugin}/settings.tdb"
+    return "[data_directory]/[plugin_directory]/${plugin}/settings.tdb"
 }
 
 proc plugin_settings {plugin} {
@@ -250,7 +253,11 @@ namespace eval ::plugins {
     }
 
     proc save_settings {plugin} {
-        save_array_to_file [plugin_settings $plugin] [plugin_settings_file $plugin]
+        set fn [plugin_settings_file $plugin]
+        # the per-plugin data dir may not exist on iOS (plugin code lives in the
+        # read-only bundle; only its settings go to the writable data root)
+        catch { file mkdir [file dirname $fn] }
+        save_array_to_file [plugin_settings $plugin] $fn
     }
 
 

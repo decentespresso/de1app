@@ -488,7 +488,7 @@ if {[ifexists ::settings(grinder_setting)] == ""} {
 }
 
 proc streamline_init_history_files {} {
-	set ::streamline_history_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+	set ::streamline_history_files [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/history/" *.shot]]
 	set ::streamline_history_file_selected_number [expr {[llength $::streamline_history_files] -1}]
 }
 
@@ -529,7 +529,7 @@ proc streamline_history_most_common_profiles { {max 500} } {
 
 		unset -nocomplain past_shot_array
 		catch {
-			array set past_shot_array [encoding convertfrom utf-8 [read_file "[homedir]/history/$current_shot_filename"]]
+			array set past_shot_array [encoding convertfrom utf-8 [read_file "[data_directory]/history/$current_shot_filename"]]
 		}
 
 		if {[ifexists past_shot_array(settings)] == ""} {
@@ -538,7 +538,7 @@ proc streamline_history_most_common_profiles { {max 500} } {
 		array set profile_settings [ifexists past_shot_array(settings)]
 		if {[ifexists profile_settings(profile_filename)] != ""} {
 			# only include the most common profiles that still actually exist on disk
-			if {[file exists "[homedir]/profiles/[ifexists profile_settings(profile_filename)].tcl"] == 1} {
+			if {[file exists "[data_directory]/profiles/[ifexists profile_settings(profile_filename)].tcl"] == 1} {
 				array_incr count [ifexists profile_settings(profile_filename)]
 			}
 		}
@@ -4155,7 +4155,7 @@ proc streamline_load_history_shot {current_shot_filename} {
 	#puts "ERROR streamline_load_history_shot"
 
 	catch {
-		array set past_shot_array [encoding convertfrom utf-8 [read_file "[homedir]/history/$current_shot_filename"]]
+		array set past_shot_array [encoding convertfrom utf-8 [read_file "[data_directory]/history/$current_shot_filename"]]
 	}
 
 	if {[ifexists past_shot_array(settings)] == ""} {

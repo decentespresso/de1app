@@ -168,12 +168,12 @@ namespace eval ::plugins::${plugin_name} {
             set log_file_contents "Unable to read $_logfile_name"
         }
 
-        set shotfiles [lsort -dictionary -decreasing [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+        set shotfiles [lsort -dictionary -decreasing [glob -nocomplain -tails -directory "[data_directory]/history/" *.shot]]
         if {[llength $shotfiles] < 1} {
             set shotfile_contents [format_espresso_for_history]
         } else {
             set shot_file [lindex $shotfiles 0]
-            set shotfile_contents [read_file "[homedir]/history/$shot_file"]
+            set shotfile_contents [read_file "[data_directory]/history/$shot_file"]
         }
 
         set settings_contents [array get ::settings]

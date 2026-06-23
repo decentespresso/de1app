@@ -29,7 +29,7 @@ source "[homedir]/skins/default/standard_stop_buttons.tcl"
 #add_de1_page "descaling" "descaling.jpg" "default"
 #add_de1_page "cleaning" "cleaning.jpg" "default"
 
-#set_de1_screen_saver_directory "[homedir]/saver"
+#set_de1_screen_saver_directory "[data_directory]/saver"
 
 # include the generic settings features for all DE1 skins.  
 #source "[homedir]/skins/default/de1_skin_settings.tcl"

@@ -172,7 +172,7 @@ proc set_de1_screen_saver_directory {{dirname {}}} {
 
 	# force use of our default saver directory if the black screen saver is enabled, otherwise use whatever the skin chooses
 	if {$::settings(screen_saver_change_interval) == 0} {
-		set dirname "[homedir]/saver"
+		set dirname "[data_directory]/saver"
 	}
 
 
@@ -2481,12 +2481,12 @@ proc calibration_gui_init {} {
 proc import_god_shots_from_common_format {} {
 
 
-	set import_files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/import/common/" *.csv]]
+	set import_files [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/godshots/import/common/" *.csv]]
 	foreach import_file $import_files {
 		set import_files_array($import_file) 1
 	}
 
-	set files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/" *.shot]]
+	set files [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/godshots/" *.shot]]
 	set dd {}
 	foreach f $files {
 		unset -nocomplain import_files_array($f)
@@ -2495,8 +2495,8 @@ proc import_god_shots_from_common_format {} {
 	set files_to_import [array names import_files_array]
 	if {$files_to_import != ""} {
 		foreach file_to_import $files_to_import {
-			set fn_import "[homedir]/godshots/import/common/$file_to_import"
-			set fn_export "[homedir]/godshots/[file rootname $file_to_import].shot"
+			set fn_import "[data_directory]/godshots/import/common/$file_to_import"
+			set fn_export "[data_directory]/godshots/[file rootname $file_to_import].shot"
 			if {[file exist $fn_export] == 1} {
 				continue
 			}
@@ -2621,11 +2621,11 @@ espresso_notes [list [join $notes_list { - }]]
 proc god_shot_files {} {
 	import_god_shots_from_common_format
 
-	set files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/" *.shot]]
+	set files [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/godshots/" *.shot]]
 	set dd {}
 	foreach f $files {
 	    
-	    set fn "[homedir]/godshots/$f"
+	    set fn "[data_directory]/godshots/$f"
 	    array unset -nocomplete godprops
 	    array set godprops [encoding convertfrom utf-8 [read_binary_file $fn]]
 
@@ -2633,13 +2633,13 @@ proc god_shot_files {} {
 	    if {$name == "None"} {
 	    	set name [translate "None"]
 	    } else {
-	    	set fnexport "[homedir]/godshots/export/columnar/[file rootname $f].csv"
+	    	set fnexport "[data_directory]/godshots/export/columnar/[file rootname $f].csv"
 			if {[file exists $fnexport] != 1} { 
 				msg -INFO "Exporting God Shot file from $fn to $fnexport" 
 				export_csv godprops $fnexport
 			}
 
-	    	set fnexport_common "[homedir]/godshots/export/common/[file rootname $f].csv"
+	    	set fnexport_common "[data_directory]/godshots/export/common/[file rootname $f].csv"
 			if {[file exists $fnexport_common] != 1} { 
 				msg -INFO "Exporting God Shot file from $fn to $fnexport_common" 
 				export_csv_common_format godprops $fnexport_common
@@ -2698,12 +2698,12 @@ proc save_to_god_shots {} {
 	set clock [clock seconds]
 	set filename [subst {[clock format $clock -format "%Y%m%dT%H%M%S"].shot}]
 
-	set files [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/godshots/" *.shot]]
+	set files [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/godshots/" *.shot]]
 	set dd {}
 	set msg [translate "Saved"]
 	set updated 0
 	foreach f $files {
-	    set fn "[homedir]/godshots/$f"
+	    set fn "[data_directory]/godshots/$f"
 	    array unset -nocomplete godprops
 	    array set godprops [encoding convertfrom utf-8[read_binary_file $fn]]
 	    if {[ifexists godprops(name)] == $::settings(god_espresso_name)} {
@@ -2734,7 +2734,7 @@ proc save_to_god_shots {} {
 	append espresso_data "espresso_temperature_mix {[espresso_temperature_mix range 0 end]}\n"
 	#append espresso_data "espresso_weight {[espresso_weight range 0 end]}\n"
 
-	set fn "[homedir]/godshots/$filename"
+	set fn "[data_directory]/godshots/$filename"
 	write_file $fn $espresso_data
 	
 	if {$updated != 1} {
@@ -2759,7 +2759,7 @@ proc delete_current_god_shot {} {
 		return
 	}
 
-	set fn "[homedir]/godshots/$f"
+	set fn "[data_directory]/godshots/$f"
 	file delete $fn
 	fill_god_shots_listbox
 
@@ -2781,7 +2781,7 @@ proc load_god_shot { {force 0} } {
 		return
 	}
 
-	set fn "[homedir]/godshots/$f"
+	set fn "[data_directory]/godshots/$f"
 	array unset -nocomplete godprops
 	#array set godprops [read_file $fn]
 	array set godprops [encoding convertfrom utf-8 [read_binary_file $fn]]
@@ -2830,7 +2830,7 @@ proc profile_title { {filename {}} } {
 
 	# or give it a filename to fetch the title 
 	catch {
-		set fn "[homedir]/profiles/${filename}.tcl"
+		set fn "[data_directory]/profiles/${filename}.tcl"
 		foreach {k v} [encoding convertfrom utf-8 [read_binary_file $fn]] {
 			set temp_settings($k) $v
 		}

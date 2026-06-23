@@ -402,12 +402,30 @@ proc read_file {filename} {
     return $data
 }
 
-proc homedir {} {
+# source_directory -- the CODE / read-only-asset root (skins, plugins, fonts, the
+# .tcl tree, ...). On macOS/Android this is the app tree (writable, so self-update
+# works); on iOS it is the read-only app bundle. Set explicitly by ios.tcl/osx.tcl/
+# google_play_store.tcl (via ::home); falls back to the de1plus dir.
+proc source_directory {} {
     global home
     if {[info exists home] != 1} {
         set home [file normalize [file dirname [info script]]]
     }
     return $home
+}
+
+# homedir -- historical name for the CODE root. Kept as an exact alias of
+# source_directory so the ~230 code call sites need no change.
+proc homedir {} { return [source_directory] }
+
+# data_directory -- the WRITABLE user-data root (settings, history, profiles,
+# godshots, logs, resized-image caches). On macOS/Android it equals
+# source_directory (one writable tree); on iOS ios.tcl points it at
+# ~/Documents/Decent while source_directory stays the read-only bundle. Every
+# data/write path resolves here instead of homedir.
+proc data_directory {} {
+    if {[info exists ::data_home]} { return $::data_home }
+    return [source_directory]
 }
 
 proc pause {time} {
@@ -815,7 +833,7 @@ proc start_app_update {} {
         }
     }
 
-    set tmpdir "[homedir]/tmp"
+    set tmpdir "[data_directory]/tmp"
     catch {
         # john experimenting with not deleting the tmp dir so we can recover from a failed or aborted app update
         # file delete -force $tmpdir
@@ -1018,7 +1036,7 @@ proc start_app_update {} {
             # if any graphics were updated, and this app is running at a nonstand resolution, then delete all cached local-resolution files, to force a remake of them all. 
             # this is inefficient, as it would be better to only delete the related files, and that would be a good improvement in a future version
             if {$this_resolution != "2560x1600" && $this_resolution != "1280x800"} {
-                set saver_directory "[homedir]/saver/${::screen_size_width}x${::screen_size_height}"
+                set saver_directory "[data_directory]/saver/${::screen_size_width}x${::screen_size_height}"
                 set splash_directory [glob -nocomplain "[splash_directory]/${::screen_size_width}x${::screen_size_height}"]
                 msg -DEBUG "deleting $saver_directory"
                 msg -DEBUG "deleting $splash_directory"
@@ -1119,7 +1137,7 @@ proc save_array_to_file {arrname fn} {
 }
 
 proc settings_filename {} {
-    set fn "[homedir]/settings.tdb"
+    set fn "[data_directory]/settings.tdb"
     return $fn
 }
 

@@ -210,7 +210,10 @@ namespace eval ::logging {
 
 	proc rotate_logfiles {} {
 
-		set de1root [expr {[info exists ::home] ? $::home : [file normalize [file dirname [info script]]]}]
+		# The log is writable data, so it goes to the data root (on iOS that is
+		# ~/Documents/Decent; $::home there is the read-only bundle). Guard on the
+		# proc existing in case logging runs before updater.tcl is loaded.
+		set de1root [expr {[llength [info commands data_directory]] ? [data_directory] : ([info exists ::home] ? $::home : [file normalize [file dirname [info script]]])}]
 		set logfile "$::settings(logfile)"
 		set retain 10
 
@@ -234,7 +237,10 @@ namespace eval ::logging {
 
 	proc open_logfile {} {
 
-		set de1root [expr {[info exists ::home] ? $::home : [file normalize [file dirname [info script]]]}]
+		# The log is writable data, so it goes to the data root (on iOS that is
+		# ~/Documents/Decent; $::home there is the read-only bundle). Guard on the
+		# proc existing in case logging runs before updater.tcl is loaded.
+		set de1root [expr {[llength [info commands data_directory]] ? [data_directory] : ([info exists ::home] ? $::home : [file normalize [file dirname [info script]]])}]
 
 		catch {
 			set ::logging::_log_fh [open "${de1root}/$::settings(logfile)" w]
@@ -265,7 +271,10 @@ namespace eval ::logging {
 			set ::logging::severity_limit_logfile 6
 		}
 
-		set de1root [expr {[info exists ::home] ? $::home : [file normalize [file dirname [info script]]]}]
+		# The log is writable data, so it goes to the data root (on iOS that is
+		# ~/Documents/Decent; $::home there is the read-only bundle). Guard on the
+		# proc existing in case logging runs before updater.tcl is loaded.
+		set de1root [expr {[llength [info commands data_directory]] ? [data_directory] : ([info exists ::home] ? $::home : [file normalize [file dirname [info script]]])}]
 
 		# Get log-related parameters from settings.tdb
 

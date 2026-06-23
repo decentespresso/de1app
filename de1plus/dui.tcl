@@ -5081,12 +5081,18 @@ namespace eval ::dui {
 			set screen_size_height [dui cget screen_size_height]
 			
 			foreach dir [dui image dirs] {
+				# resized images are cached under the writable data root (on iOS
+				# the source dir is the read-only bundle), so look there first
+				set cache_fn [file join [image_cache_dir_for $dir] "${screen_size_width}x${screen_size_height}" $filename]
+				if { [file exists $cache_fn] } {
+					return [file normalize $cache_fn]
+				}
 				set full_fn [file join $dir "${screen_size_width}x${screen_size_height}" $filename]
 				if { [file exists $full_fn] } {
 					return [file normalize $full_fn]
 				}
 			}
-			
+
 			if { [string is true $rescale] && [file pathtype $filename] in {relative volumerelative} } {
 				set src_filename ""
 				foreach dir [dui image dirs] {
@@ -5100,8 +5106,10 @@ namespace eval ::dui {
 				if { $src_filename eq "" } {
 					msg -WARNING [namespace current] "image file '$filename' not found"
 					return ""
-				} else {					
-					set filename [file join $dir "${screen_size_width}x${screen_size_height}" $filename]
+				} else {
+					# write the resized copy into the writable data-root cache, not
+					# back into $dir (the read-only bundle on iOS)
+					set filename [file join [image_cache_dir_for $dir] "${screen_size_width}x${screen_size_height}" $filename]
 					catch {
 						file mkdir [file dirname $filename]
 					}

@@ -481,10 +481,10 @@ namespace eval ::profile {
     }
 
     proc all {} {
-        set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/profiles_v2/" *.json]]
+        set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/profiles_v2/" *.json]]
         set profiles {}
         foreach fn $dirs {
-            set profile_contents [encoding convertfrom utf-8 [read_binary_file "[homedir]/profiles_v2/$fn"]]
+            set profile_contents [encoding convertfrom utf-8 [read_binary_file "[data_directory]/profiles_v2/$fn"]]
             set d2 [json::json2dict $profile_contents]
             lappend profiles [huddle create {*}$d2]
         }
@@ -492,14 +492,14 @@ namespace eval ::profile {
     }
 
     proc convert_all_legacy_to_v2 {} {
-        set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/profiles/" *.tcl]]
+        set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/profiles/" *.tcl]]
 
         foreach d $dirs {
             msg [namespace current] "Converting profile" $d "to version 2"
-            set fn "[homedir]/profiles/${d}"
+            set fn "[data_directory]/profiles/${d}"
 
             set fbasename [file rootname [file tail $d]]
-            set target_file "[homedir]/profiles_v2/${fbasename}.json"
+            set target_file "[data_directory]/profiles_v2/${fbasename}.json"
 
             if {[file exists $target_file]} {
                 continue

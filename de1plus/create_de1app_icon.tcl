@@ -14,7 +14,7 @@ package require de1_gui
 
 ## Added by Damian 1st Aug 2025
 ## Adjust the settings file when copying existing de1plus folders to new a tablet with a different screen sizes
-if {[file exists "[homedir]/settings.tdb"] == 1} {
+if {[file exists "[data_directory]/settings.tdb"] == 1} {
     ## find screen size and convert to DUI standards
     set width [winfo screenwidth .]
 	set height [winfo screenheight .]
@@ -71,7 +71,7 @@ if {[file exists "[homedir]/settings.tdb"] == 1} {
         }
 
     ## check if settings need changing
-    set fn "[homedir]/settings.tdb"
+    set fn "[data_directory]/settings.tdb"
     array set ::settings [encoding convertfrom utf-8 [read_binary_file $fn]]
     if {$screen_size_width != "$::settings(screen_size_width)" || $screen_size_height != $::settings(screen_size_height)} {
         unset -nocomplain ::settings(screen_size_height)

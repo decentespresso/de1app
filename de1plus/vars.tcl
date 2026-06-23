@@ -1872,7 +1872,7 @@ proc make_current_listbox_item_blue { widget} {
 
 
 proc history_directories {} {
-	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/history/" *.shot]]
 	set dd {}
 	foreach d $dirs {
 		lappend dd [file rootname $d]
@@ -1888,7 +1888,7 @@ proc profile_directories {} {
 		set show_hidden 1
 	}
 
-	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/profiles/" *.tcl]]
+	set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/profiles/" *.tcl]]
 	set dd {}
 	foreach d $dirs {
 		#if {$d == "CVS" || $d == "example"} {
@@ -1902,7 +1902,7 @@ proc profile_directories {} {
 			}
 		}
 
-		set filecontents [encoding convertfrom utf-8 [read_binary_file "[homedir]/profiles/$d"]]
+		set filecontents [encoding convertfrom utf-8 [read_binary_file "[data_directory]/profiles/$d"]]
 	    if {[string first "settings_profile_type settings_2b" $filecontents] != -1 || [string first "settings_profile_type settings_2c" $filecontents] != -1 || [string first "settings_profile_type settings_profile_flow" $filecontents] != -1 || [string first "settings_profile_type settings_profile_advanced" $filecontents] != -1} {
 
 		    # keep track of which skins are DE1PLUS so we can display them differently in the listbox
@@ -1945,7 +1945,7 @@ proc delete_selected_profile {} {
 	}
 	set profile $::profile_number_to_directory([$w curselection]) 
 
-	set fn "[homedir]/profiles/${profile}.tcl"
+	set fn "[data_directory]/profiles/${profile}.tcl"
 	msg -NOTICE "About to delete profile: '$fn'"
 
 	if {$profile == "default" || [ifexists ::settings(read_only)] == 1} {
@@ -2213,7 +2213,7 @@ proc get_profile_titles {} {
 
 		unset -nocomplain profile
 		catch {
-			set fn "[homedir]/profiles/$d.tcl"
+			set fn "[data_directory]/profiles/$d.tcl"
 
 			array set profile [encoding convertfrom utf-8 [read_binary_file $fn]]
 		}
@@ -2232,7 +2232,7 @@ proc get_profile_filenames {} {
 
 		unset -nocomplain profile
 		catch {
-			set fn "[homedir]/profiles/$d.tcl"
+			set fn "[data_directory]/profiles/$d.tcl"
 
 			array set profile [encoding convertfrom utf-8 [read_binary_file $fn]]
 		}
@@ -2259,7 +2259,7 @@ proc fill_specific_profiles_listbox { widget selected_profile_name hide_mode} {
 
 	foreach d $profiles {
 
-		set fn "[homedir]/profiles/${d}.tcl"
+		set fn "[data_directory]/profiles/${d}.tcl"
 		unset -nocomplain profile
 		catch {
 			array set profile [encoding convertfrom utf-8 [read_binary_file $fn]]
@@ -2738,7 +2738,7 @@ proc preview_history {w args} {
 		set profile [lindex [history_directories] [$w curselection] [$w curselection]]
 		msg -DEBUG "preview_history: history item: $profile [$w curselection]"
 
-		set fn "[homedir]/history/${profile}.tcl"
+		set fn "[data_directory]/history/${profile}.tcl"
 
 		# need to code this
 		array set props [encoding convertfrom utf-8 [read_binary_file $fn]]
@@ -2937,7 +2937,7 @@ proc select_profile { profile } {
 	}
 
 
-	set fn "[homedir]/profiles/${profile}.tcl"
+	set fn "[data_directory]/profiles/${profile}.tcl"
 	set ::settings(profile) $profile
 	set ::settings(profile_notes) ""
 	set ::settings(advanced_shot_tcl) ""
@@ -3070,7 +3070,7 @@ proc preview_profile {} {
 
 	#set profile [lindex [profile_directories] [$w curselection]]
 	set profile $::profile_number_to_directory([$w curselection]) 
-	set fn "[homedir]/profiles/${profile}.tcl"
+	set fn "[data_directory]/profiles/${profile}.tcl"
 
 	if {[ifexists ::profiles_hide_mode] == 1} {
 		hide_unhide_toggle_profile $fn
@@ -3354,7 +3354,7 @@ proc save_profile { {do_saved_msg 1} } {
 	if {[ifexists ::settings(read_only)] == 1} {
 		
 		set profile_filename $::settings(profile_filename)
-		set fn "[homedir]/profiles/${profile_filename}.tcl"
+		set fn "[data_directory]/profiles/${profile_filename}.tcl"
 
 		# if a profile is read-only, save its current settings into a backup and mark it as no longer readonly
 		set ::settings(read_only) 0
@@ -3382,7 +3382,7 @@ proc save_profile { {do_saved_msg 1} } {
 			# replace prior usage of unformatted seconds with sanitized profile name and append with formatted time if file exists
 			set profile_filename [::profile::filename_from_title $::settings(profile_title)]
 			set profile_timestamp [clock format [clock seconds] -format %Y%m%d_%H%M%S] 
-			if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] == 1} {
+			if {[file exists "[data_directory]/profiles/${profile_filename}.tcl"] == 1} {
 				append profile_filename "_" $profile_timestamp
 			}
 
@@ -3392,10 +3392,10 @@ proc save_profile { {do_saved_msg 1} } {
 	}
 	
 	set tclfile ${profile_filename}
-	set fn "[homedir]/profiles/${profile_filename}.tcl"
+	set fn "[data_directory]/profiles/${profile_filename}.tcl"
 	
 	if {[write_file $fn ""] == 0} {
-		set fn "[homedir]/profiles/${profile_timestamp}.tcl"
+		set fn "[data_directory]/profiles/${profile_timestamp}.tcl"
 		set tclfile ${profile_timestamp}
 	}
 
@@ -3408,7 +3408,7 @@ proc save_profile { {do_saved_msg 1} } {
 	}
 
 	# Save V2 of profiles in parallel
-	::profile::save "[homedir]/profiles_v2/${profile_filename}.json"
+	::profile::save "[data_directory]/profiles_v2/${profile_filename}.json"
 
 	if {[save_settings_vars $fn [profile_vars]] == 1} {
 		set ::settings(profile) $::settings(profile_title)
@@ -3453,11 +3453,11 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 
 		#TODO disable once v2 shotfiles are stable
 		set espresso_data [::shot::create_legacy]
-		set shotfn "[homedir]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
+		set shotfn "[data_directory]/history/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].shot"
 		write_file $shotfn $espresso_data
 
 		set espresso_data [::shot::create]
-		set jsonfn "[homedir]/history_v2/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].json"
+		set jsonfn "[data_directory]/history_v2/[clock format $::settings(espresso_clock) -format "%Y%m%dT%H%M%S"].json"
 		write_file $jsonfn $espresso_data
 		msg -NOTICE "Saved this espresso to history"
 

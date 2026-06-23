@@ -56,7 +56,7 @@ add_de1_button "sleep" {say [translate {sleep}] $::settings(sound_button_in); se
 add_de1_page "no_ac" "front_button.jpg" "default"
 add_de1_variable "no_ac" 1040 610 -text "" -font Helv_20_bold -fill "#fff" -anchor "center" -textvariable {[check_front_switch]}
 
-set_de1_screen_saver_directory "[homedir]/saver"
+set_de1_screen_saver_directory "[data_directory]/saver"
 
 # include the generic settings features for all DE1 skins.  
 source "[homedir]/skins/default/de1_skin_settings.tcl"

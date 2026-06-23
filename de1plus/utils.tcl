@@ -1025,13 +1025,27 @@ proc defaultskin_directory_graphics {} {
     return $dir
 }
 
+# Map an image SOURCE dir (under the read-only source root) to its writable
+# resized-image-cache equivalent under the data root, so runtime-resized images
+# are written to writable storage instead of back into the (read-only on iOS)
+# source. On platforms where the two roots are equal this returns $dir unchanged,
+# preserving today's in-place behaviour.
+proc image_cache_dir_for {dir} {
+    set src [source_directory]
+    if {[string first $src $dir] == 0} {
+        set rel [string trimleft [string range $dir [string length $src] end] "/"]
+        return [file join [data_directory] $rel]
+    }
+    return $dir
+}
+
 proc saver_directory {} {
 
-    global saver_directory 
+    global saver_directory
     if {[info exists saver_directory] != 1} {
         global screen_size_width
         global screen_size_height
-        set saver_directory "[homedir]/saver/${screen_size_width}x${screen_size_height}"
+        set saver_directory "[data_directory]/saver/${screen_size_width}x${screen_size_height}"
     }
     return $saver_directory 
 }
@@ -1039,7 +1053,7 @@ proc saver_directory {} {
 proc splash_directory {} {
     global screen_size_width
     global screen_size_height
-    set dir "[homedir]/splash"
+    set dir "[data_directory]/splash"
     return $dir
 }
 
@@ -1463,8 +1477,8 @@ proc rescale_font {in} {
 
 
 proc skin_convert_all {} {
-    skin_convert "[homedir]/saver/2560x1600"
-    skin_convert "[homedir]/splash/2560x1600"
+    skin_convert "[data_directory]/saver/2560x1600"
+    skin_convert "[data_directory]/splash/2560x1600"
     
     foreach d [lsort -increasing [skin_directories]] {
         skin_convert "[homedir]/skins/$d/2560x1600"
@@ -1816,7 +1830,7 @@ proc array_keyvalue_sorted_by_val_limited {arrname {sort_order -increasing} {lim
 
 proc shot_history_count_profile_use {} {
 
-    set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+    set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/history/" *.shot]]
     set dd {}
     foreach d $dirs {
         unset -nocomplain arr
@@ -1878,7 +1892,7 @@ proc shot_history_upload_to_decent {} {
 
 	set shots_uploaded_file "history/shots_uploaded_to_decent.tdb"
 	set previously_uploaded_shots [read_file $shots_uploaded_file]
-    set historical_shots [struct::set difference $previously_uploaded_shots [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+    set historical_shots [struct::set difference $previously_uploaded_shots [glob -nocomplain -tails -directory "[data_directory]/history/" *.shot]]
 
 
     set dirs $historical_shots
@@ -1964,7 +1978,7 @@ proc shot_history_export {} {
         return
     }
 
-    set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+    set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/history/" *.shot]]
     set dd {}
 
     foreach d $dirs {

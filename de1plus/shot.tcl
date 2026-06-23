@@ -243,7 +243,7 @@ namespace eval ::shot {
     proc parse_file {shot_file} {
         set shot {}
         catch {
-            set shot_file_contents [read_file "[homedir]/history_v2/$shot_file"]
+            set shot_file_contents [read_file "[data_directory]/history_v2/$shot_file"]
             set shot [json::json2dict $shot_file_contents]
 
             dict set shot filename $shot_file
@@ -253,7 +253,7 @@ namespace eval ::shot {
 
     proc list_last {{limit 100}} {
         set result {}
-        set files [lsort -dictionary -decreasing [glob -nocomplain -tails -directory "[homedir]/history_v2/" *.json]]
+        set files [lsort -dictionary -decreasing [glob -nocomplain -tails -directory "[data_directory]/history_v2/" *.json]]
         set cnt 0
 
         msg -INFO [namespace current] "Requesting $limit history items"
@@ -303,7 +303,7 @@ namespace eval ::shot {
     }
 
     proc convert_all_legacy_to_v2 {} {
-        set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[homedir]/history/" *.shot]]
+        set dirs [lsort -dictionary [glob -nocomplain -tails -directory "[data_directory]/history/" *.shot]]
 
         popup [translate_toast "Converting old shot files"]
 
@@ -318,13 +318,13 @@ namespace eval ::shot {
         backup_settings
 
         foreach d $dirs {
-            set fn "[homedir]/history/${d}"
+            set fn "[data_directory]/history/${d}"
             set fbasename [file rootname [file tail $d]]
-            if {[file exists "[homedir]/history_v2/${fbasename}.json"]} {
+            if {[file exists "[data_directory]/history_v2/${fbasename}.json"]} {
                 continue
             }
 
-            convert_legacy_to_v2 $fn "[homedir]/history_v2" "${fbasename}.json" 0
+            convert_legacy_to_v2 $fn "[data_directory]/history_v2" "${fbasename}.json" 0
         }
 
         array set ::settings [array get ::settings_backup]
@@ -341,8 +341,8 @@ namespace eval ::shot {
     proc convert_legacy_to_v2 { file {target_dir {}} {target_filename {}} {create_vectors 1} } {
         if { [file exists $file] } {
             set fn $file
-        } elseif { [file exists "[homedir]/history/$file"] } {
-            set fn "[homedir]/history/$file"
+        } elseif { [file exists "[data_directory]/history/$file"] } {
+            set fn "[data_directory]/history/$file"
         } else {
             msg -ERROR [namespace current] "can't find file '$file' to convert"
             return {}
@@ -360,7 +360,7 @@ namespace eval ::shot {
         }
         
         if { $target_dir eq {} } {
-            set target_dir "[homedir]/history_v2"
+            set target_dir "[data_directory]/history_v2"
         }
         if { $target_filename eq {} } {
             set target_filename "[file rootname [file tail $fn]].json"
