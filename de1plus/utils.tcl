@@ -828,6 +828,17 @@ proc skin_directory {} {
     return $dir
 }
 
+# Writable per-skin settings/state directory, under the DATA root -- so it works
+# on a read-only package (iOS, or an in-place notarized run). A skin keeps its
+# MUTABLE state (settings, caches, user sets, the enabled-plugins list) here,
+# instead of writing inside its own (read-only) skin directory. Skins seed it
+# from their shipped defaults on first run. The directory is created on demand.
+proc skin_settings_directory {skin_name} {
+    set d "[data_directory]/skin_settings/$skin_name"
+    catch { file mkdir $d }
+    return $d
+}
+
 proc android_specific_stubs {} {
 
     # Only stub `ble` when there is no real one.  On macOS the de1plus/ble
