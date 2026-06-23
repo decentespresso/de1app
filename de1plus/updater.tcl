@@ -130,26 +130,23 @@ proc calc_sha {source} {
     set sha 0
     set tries 0
 
-    set use_unix_sha 0
-    set shasum "/usr/bin/shasum"
-    if {$::android != 1} {
-        if {[file exists $shasum] == 1} {
-            set use_unix_sha 1
-        } 
-    }
+    # No file to hash (e.g. a download that failed/has not happened): return 0 at
+    # once so the caller re-fetches, instead of retrying the hash 10x (and, with
+    # the old exec path, throwing an uncaught "No such file" error dialog).
+    if {![file exists $source]} { return 0 }
+
+    # Use the tcllib SHA-256, which loads the C accelerator (tcllibc / critcl) when
+    # present -- as fast as `shasum` (~45ms for 8MB) but with NO subprocess. The old
+    # `exec /usr/bin/shasum` path needed a working `exec` (unavailable on iOS) and
+    # was what broke app-update on the macOS undroidwish build.
+    catch { package require sha256 }
 
     while {$sha == 0 && $tries < 10} {
 
-        if {$use_unix_sha == 1} {
-            #puts "Using fast Unix SHA256"
-            set sha [lindex [exec $shasum -a 256 $source] 0]
-        } else {
-            catch {
-                #puts "Using slow Tcl SHA256"
-                set sha [::sha2::sha256 -hex -filename $source]
-            }
+        catch {
+            set sha [::sha2::sha256 -hex -filename $source]
         }
-        
+
         # use this to test SHA failure once
         #if {$tries == 0} { set sha 0 }
 
@@ -349,30 +346,60 @@ proc decent_http_get {url {timeout 30000}} {
     return $body
 }
 
+# libcurl (TclCurl) progress callback fired during a download. Pump the Tk event
+# loop -- throttled to ~10x/sec -- so the GUI stays responsive (the clock/spinner
+# keep running, the window keeps redrawing) while a file streams in. Returning a
+# non-zero value would abort the transfer, so always return 0.
+proc decent_http_progress {dltotal dlnow ultotal ulnow} {
+    catch {
+        set now [clock milliseconds]
+        if {($now - $::_app_dl_last_update) >= 100} {
+            set ::_app_dl_last_update $now
+            update
+        }
+    }
+    return 0
+}
+
+# Download a URL straight to a file using libcurl (TclCurl) instead of
+# ::http::geturl. libcurl is faster, and the progress callback above keeps the
+# GUI responsive throughout -- the old `::http::geturl -channel` call blocked the
+# Tk event loop for the entire (potentially multi-MB) transfer, freezing the UI.
+# TLS is verified against the bundled allcerts.pem (same as the http transport).
+# `timeout` is accepted for call-site compatibility; libcurl uses connect + low-
+# speed timeouts so large files on a slow link are not cut off mid-transfer.
 proc decent_http_get_to_file {url fn {timeout 30000}} {
 
-    set body {}
-    set token {}    
-
-    set out [open $fn w]
-    fconfigure $out -blocking 1 -translation binary
-
-
-    ::http::config -useragent "mer454"
-    #set token [::http::geturl $url -binary 1 -timeout $timeout]
-    set token [::http::geturl $url -channel $out  -blocksize 4096 -binary 1 -keepalive 0]
-    close $out
-
-    #set body [::http::data $token]
-
-    if {[::http::error $token] != ""} {
-        msg -ERROR "http_get error: [::http::error $token]"
+    if {[catch {package require TclCurl}]} {
+        # Fallback to the old blocking http if libcurl is somehow unavailable.
+        set out [open $fn w]
+        fconfigure $out -blocking 1 -translation binary
+        ::http::config -useragent "mer454"
+        set token [::http::geturl $url -channel $out -blocksize 4096 -binary 1 -keepalive 0]
+        close $out
+        if {[::http::error $token] != ""} { msg -ERROR "http_get error: [::http::error $token]" }
+        if {$token != ""} { ::http::cleanup $token }
+        return ""
     }
-    if {$token != ""} {
-        ::http::cleanup $token
+
+    set ::_app_dl_last_update 0
+    set hdl [curl::init]
+    if {[catch {
+        $hdl configure -url $url -file $fn -useragent "mer454" \
+            -connecttimeout 20 -lowspeedlimit 1 -lowspeedtime 60 \
+            -followlocation 1 -failonerror 1 \
+            -noprogress 0 -progressproc decent_http_progress
+        set _ca "[homedir]/allcerts.pem"
+        if {[file exists $_ca]} {
+            $hdl configure -sslverifypeer 1 -cainfo $_ca
+        }
+        $hdl perform
+    } err]} {
+        catch { msg -ERROR "decent_http_get_to_file: curl error for '$url': $err" }
     }
-    
-    return $body
+    catch { $hdl cleanup }
+
+    return ""
 }
 
 
