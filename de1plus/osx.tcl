@@ -58,6 +58,47 @@ if {!([info exists ::ios] && $::ios) \
         }
     }
 
+    # If the copy already exists but this bundle is a NEWER build (build_id.txt
+    # differs), refresh the CODE in the copy so rebuilds actually take effect --
+    # otherwise the copy is frozen forever at whatever first dropped .complete, and
+    # a rebuilt Decent.app silently keeps running the old code. Overwrite-ONLY (it
+    # never deletes), and it only touches the trees that ship as code, so user data
+    # in the copy -- settings.tdb, history/, profiles/, skin_settings/, etc. -- is
+    # left completely alone. Runs before the cd + package load below, so the new
+    # code is what loads this launch. Wrapped in catch-everywhere to never wedge boot.
+    if {!$_firstrun && [file exists $_done]} {
+        set _bid_b [file join $_bundle "build_id.txt"]
+        set _bid_c [file join $_wdir "build_id.txt"]
+        set _vb ""; set _vc ""
+        catch { set _fh [open $_bid_b r]; set _vb [string trim [read $_fh]]; close $_fh }
+        catch { set _fh [open $_bid_c r]; set _vc [string trim [read $_fh]]; close $_fh }
+        if {[file exists $_bid_b] && $_vb ne "" && $_vb ne $_vc} {
+            proc ::_osx_refresh_tree {src dst} {
+                foreach _f [glob -nocomplain -directory $src -- *] {
+                    set _t [file join $dst [file tail $_f]]
+                    if {[file isdirectory $_f]} {
+                        if {![file exists $_t]} { catch { file mkdir $_t } }
+                        ::_osx_refresh_tree $_f $_t
+                    } else {
+                        catch { file copy -force -- $_f $_t }
+                    }
+                }
+            }
+            foreach _sub {skins lib plugins} {
+                set _s [file join $_bundle $_sub]
+                if {[file isdirectory $_s]} {
+                    if {![file exists [file join $_wdir $_sub]]} { catch { file mkdir [file join $_wdir $_sub] } }
+                    catch { ::_osx_refresh_tree $_s [file join $_wdir $_sub] }
+                }
+            }
+            foreach _f [glob -nocomplain -directory $_bundle -- *.tcl] {
+                catch { file copy -force -- $_f [file join $_wdir [file tail $_f]] }
+            }
+            catch { file copy -force -- $_bid_b $_bid_c }
+            catch { puts stderr "osx.tcl: refreshed code in copy to build $_vb" }
+        }
+    }
+
     # Redirect only if the writable copy is actually complete; otherwise fall
     # through and run (read-only) from the bundle rather than failing to boot.
     if {[file exists $_done]} {
