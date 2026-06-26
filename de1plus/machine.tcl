@@ -108,6 +108,9 @@ array set ::de1 {
 	suuid_varia_aku "0000FFF0-0000-1000-8000-00805F9B34FB"
 	cuuid_varia_aku "0000FFF1-0000-1000-8000-00805F9B34FB"
 	cuuid_varia_aku_cmd "0000FFF2-0000-1000-8000-00805F9B34FB"
+	suuid_timemore_dot "0000FFF0-0000-1000-8000-00805F9B34FB"
+	cuuid_timemore_dot_status "0000FFF1-0000-1000-8000-00805F9B34FB"
+	cuuid_timemore_dot_cmd "0000FFF2-0000-1000-8000-00805F9B34FB"
 
 
 	cinstance 0
