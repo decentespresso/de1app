@@ -5,6 +5,7 @@ package require lambda
 # Originally in gui.tcl
 proc msg {args} {
 
+	if { ![::logging::ns_log_enabled [uplevel 1 {namespace current}] [lindex $args 0]] } return
 	::logging::default_logger {*}$args
 }
 
@@ -25,6 +26,14 @@ namespace eval ::logging {
 	# chatty. Suppress it below this level by DEFAULT so BLE debug logging is OFF
 	# for normal use; raise to 7 (DEBUG) to diagnose Bluetooth.
 	variable severity_limit_ble 4
+
+	# DUI (the UI framework, namespaces ::dui*) emits a lot of routine
+	# INFO/NOTICE chatter on every run (page loads, image/font directory
+	# registration, theme/aspect bookkeeping, etc.). Suppress ::dui* logging
+	# below this level by DEFAULT so it is OFF for normal use; raise to 7
+	# (DEBUG) to see all DUI logging again. Warnings and errors (severity <= 4)
+	# always pass through regardless of this limit.
+	variable severity_limit_dui 4
 
 	variable android_logger_tag DE1
 
@@ -110,6 +119,24 @@ namespace eval ::logging {
 			set severity $severity_default
 		}
 		return [expr {$severity <= $severity_limit_ble}]
+	}
+
+	# True if a msg call originating from the given caller namespace at the
+	# given first-arg severity should be emitted. Gates the chatty ::dui*
+	# framework loggers below severity_limit_dui; every other namespace is
+	# always enabled (so this is a no-op for non-DUI logging).
+	proc ns_log_enabled {caller_ns first_arg} {
+		if { ![string match {::dui*} $caller_ns] } { return 1 }
+		variable severity_limit_dui
+		variable severity_option_to_number
+		variable severity_default
+		set sevkey [string toupper $first_arg]
+		if { [info exists severity_option_to_number($sevkey)] } {
+			set severity $severity_option_to_number($sevkey)
+		} else {
+			set severity $severity_default
+		}
+		return [expr {$severity <= $severity_limit_dui}]
 	}
 
 	proc default_logger {args} {
