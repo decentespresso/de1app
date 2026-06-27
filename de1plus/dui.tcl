@@ -11985,7 +11985,7 @@ proc value_or_default { var {default {}} } {
 	upvar $var thevar
 	
 	if { [info exists thevar] } {
-		return [subst "\$thevar"]
+		return [set thevar]
 	} else {
 		return $default
 	}
