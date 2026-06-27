@@ -175,4 +175,57 @@ proc ble_search_finish {} {
 	after 500 { exit 0 }
 }
 
+# Simulation screenshot harness:  undroidwish de1plus.tcl --sim-screenshot
+# Runs the full GUI, forces simulation mode (clears the DE1 bluetooth_address so
+# espresso_simulation_active is true), taps START to play back a random
+# simulations/ shot, waits ~3s, snapshots every blt::graph to PNG, logs vector
+# lengths (to tell "no data appended" apart from "data but no redraw"), exits.
+proc sim_screenshot_start {} {
+	# force simulation: no real DE1 configured
+	set ::settings(bluetooth_address) ""
+	msg -INFO "SIMSHOT: starting simulated espresso"
+	catch { start_espresso } err
+	if {$err ne ""} { msg -INFO "SIMSHOT: start_espresso err: $err" }
+	# force-show the espresso page so its live graph widget is built and visible
+	after 800 { catch { page_display_change $::de1(current_context) "espresso" } }
+	after 3000 sim_screenshot_capture
+}
+
+proc sim_screenshot_find_graphs {w listvar} {
+	upvar $listvar L
+	if {![catch {winfo class $w} cls] && ($cls eq "Graph" || $cls eq "Stripchart")} {
+		lappend L $w
+	}
+	foreach c [winfo children $w] { sim_screenshot_find_graphs $c L }
+}
+
+proc sim_screenshot_capture {} {
+	catch { msg -INFO "SIMSHOT: state=$::de1(state) substate=$::de1(substate) simindex=[ifexists ::simindex]" }
+	catch { msg -INFO "SIMSHOT: vectors  espresso_elapsed=[espresso_elapsed length]  espresso_pressure=[espresso_pressure length]  espresso_flow=[espresso_flow length]" }
+	set graphs {}
+	sim_screenshot_find_graphs . graphs
+	msg -INFO "SIMSHOT: found [llength $graphs] graph widget(s)"
+	catch { msg -INFO "SIMSHOT: streamline_chart=[ifexists ::streamline_chart] mapped=[catch {winfo ismapped $::streamline_chart}]" }
+	set i 0
+	foreach g $graphs {
+		incr i
+		set els [$g element names]
+		# is this a LIVE espresso graph? (has line_espresso_pressure)
+		set live [expr {[lsearch -glob $els line_espresso_pressure*] >= 0}]
+		set plen "-"
+		if {$live} { catch { set plen [llength [$g element cget line_espresso_pressure -ydata]] } }
+		set photo "simshot_photo_$i"
+		catch { image delete $photo }
+		if {[catch { image create photo $photo } e1]} { msg -INFO "SIMSHOT: photo create failed $g: $e1"; continue }
+		if {[catch { $g snap $photo } e2]} { msg -INFO "SIMSHOT: snap failed $g: $e2"; continue }
+		set dst "/tmp/sim_graph_$i.png"
+		catch { $photo write $dst -format png }
+		if {$live} { catch { $photo write "[file normalize ~]/Desktop/LIVE_espresso_graph.png" -format png } }
+		msg -INFO "SIMSHOT: snapped $g -> $dst  ([llength $els] elements) LIVE=$live line_espresso_pressure_ydata_len=$plen"
+	}
+	catch { ::logging::flush_log }
+	after 800 { exit 0 }
+}
+
+
 

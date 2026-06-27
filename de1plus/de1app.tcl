@@ -194,6 +194,20 @@ if {[lsearch -exact $::argv "--ble-test"] >= 0} {
 		exit
 	}
 
+} elseif {[lsearch -exact $::argv "--sim-screenshot"] >= 0} {
+
+	# Full GUI, then auto-start a simulated espresso and snapshot the chart.
+	# Used to diagnose the empty-live-graph regression headlessly.
+	after 4000 sim_screenshot_start
+	try {
+		de1_ui_startup
+	} on error {result ropts} {
+		msg -CRIT "Untrapped error running de1_ui_startup with result: $result"
+		msg -CRIT "$ropts"
+		msg -CRIT "Exiting"
+		exit
+	}
+
 } else {
 
 	try {
