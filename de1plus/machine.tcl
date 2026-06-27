@@ -925,6 +925,21 @@ proc ghc_message {type} {
 	after 1000 "set ::nextpage(machine:off) $currentpage"
 }
 
+# True when the on-screen espresso *simulator* should drive the shot: no real
+# DE1 is configured (empty bluetooth_address), on a desktop build (not Android,
+# not iOS). When a DE1 address is set, the real machine drives Espresso over BLE
+# and the simulator must stay off so it does not fight the machine.
+#
+# NB: this was previously gated on !$::has_bluetooth, but has_bluetooth became
+# true on every BLE-capable build (undroidwish / iWish / OSX) once the OSX BLE
+# package landed (updater.tcl sets it from [info commands ble]). That wrongly
+# disabled the workstation simulator even when no machine was configured.
+proc espresso_simulation_active {} {
+	if { $::android } { return 0 }
+	if { [info exists ::ios] && $::ios } { return 0 }
+	return [expr { $::settings(bluetooth_address) eq "" }]
+}
+
 proc start_espresso {} {
 
 	if {$::settings(start_espresso_only_if_scale_connected) == 1 && $::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
@@ -954,7 +969,9 @@ proc start_espresso {} {
 	if {$::de1(scale_device_handle) != 0} {
 	}
 
-	if {!$::has_bluetooth} {
+	if {[espresso_simulation_active]} {
+		# No real DE1 configured: drive the simulated Espresso state machine so
+		# set_dummy_espresso_vars can play back a random simulations/ shot.
 		#after [expr {1000 * $::settings(espresso_max_time)}] {page_display_change "espresso" "off"}
 		after 200 [list update_de1_state "$::de1_state(Espresso)\x1"]
 		after 90000 [list update_de1_state "$::de1_state(Idle)\x5"]

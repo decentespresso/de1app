@@ -1159,16 +1159,15 @@ proc set_dummy_espresso_vars {} {
 
 	set ::settings(do_realtime_espresso_simulation) 0
 
-	if { $::android } { return }
-
-	# When a real Bluetooth machine is connected (now possible on undroidwish /
-	# iWish / OSX, not just Android), the DE1 itself drives the Espresso state.
-	# The workstation espresso *simulator* below must not run in that case, or it
-	# fights the real machine: it opens a random simulation file, immediately hits
-	# "end of data", and injects `update_de1_state Idle`, reverting every real
-	# Espresso notification (so the chart never stays up). This mirrors the
-	# `if {!$::has_bluetooth}` simulation gating in start_espresso (machine.tcl).
-	if { $::has_bluetooth } { return }
+	# Only play back a simulations/ shot when no real DE1 is configured, on a
+	# desktop build. When a DE1 address is set, the machine drives the Espresso
+	# state over BLE and the simulator must not run, or it fights the machine: it
+	# opens a random simulation file, immediately hits "end of data", and injects
+	# update_de1_state Idle, reverting every real Espresso notification (so the
+	# chart never stays up). See espresso_simulation_active (machine.tcl) -- this
+	# was previously gated on $::has_bluetooth, which is now always true on any
+	# BLE-capable build and wrongly disabled the workstation simulator.
+	if { ![espresso_simulation_active] } { return }
 
 	if {$::de1(state) != 4} {
 		return
