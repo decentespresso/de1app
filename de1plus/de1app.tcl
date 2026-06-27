@@ -208,6 +208,20 @@ if {[lsearch -exact $::argv "--ble-test"] >= 0} {
 		exit
 	}
 
+} elseif {[lsearch -exact $::argv "--proc-profile"] >= 0} {
+
+	# Full GUI, simulated espresso, enter-count traces on every proc; dumps
+	# call counts after ~20s. Identifies hot procs for performance work.
+	after 4000 proc_profile_start
+	try {
+		de1_ui_startup
+	} on error {result ropts} {
+		msg -CRIT "Untrapped error running de1_ui_startup with result: $result"
+		msg -CRIT "$ropts"
+		msg -CRIT "Exiting"
+		exit
+	}
+
 } else {
 
 	try {

@@ -227,5 +227,57 @@ proc sim_screenshot_capture {} {
 	after 800 { exit 0 }
 }
 
+# Proc call-frequency profiler:  undroidwish de1plus.tcl --proc-profile
+# Runs the GUI, starts a simulated espresso, installs enter-count execution
+# traces on every user proc, runs ~20s, dumps call counts (sorted) to
+# /tmp/de1_proc_counts.txt, exits. Identifies which procs de1app actually calls
+# hot during a shot. Only user procs are traced (Tcl builtins like expr/lindex
+# are not procs), which is exactly the rewrite-candidate set.
+proc pp_all_namespaces {ns} {
+	set out [list $ns]
+	foreach k [namespace children $ns] { lappend out {*}[pp_all_namespaces $k] }
+	return $out
+}
+proc pp_all_procs {} {
+	set out {}
+	foreach ns [pp_all_namespaces ::] {
+		set pat [expr {$ns eq "::" ? "::*" : "${ns}::*"}]
+		foreach p [info procs $pat] { lappend out $p }
+	}
+	return $out
+}
+proc pp_count {p args} { incr ::pp_counts($p) }
+proc pp_install {} {
+	if {![info exists ::pp_counts]} { array set ::pp_counts {} }
+	set n 0
+	foreach p [pp_all_procs] {
+		# don't trace the profiler's own machinery (avoids recursion/noise)
+		if {[string match {::pp_*} $p] || [string match {*proc_profile*} $p]} { continue }
+		if {[catch { trace add execution $p enter [list pp_count $p] }]} { continue }
+		incr n
+	}
+	msg -INFO "PROCPROF: installed enter-traces on $n procs"
+}
+proc pp_dump {} {
+	set rows {}
+	foreach {p c} [array get ::pp_counts] { lappend rows [list $c $p] }
+	set rows [lsort -integer -decreasing -index 0 $rows]
+	catch {
+		set fh [open /tmp/de1_proc_counts.txt w]
+		puts $fh "# de1app proc call counts during ~20s simulated espresso"
+		puts $fh "# count   proc"
+		foreach r $rows { puts $fh "[format %9d [lindex $r 0]]  [lindex $r 1]" }
+		close $fh
+	}
+	msg -INFO "PROCPROF: dumped [llength $rows] procs to /tmp/de1_proc_counts.txt (top: [lrange $rows 0 4])"
+}
+proc proc_profile_start {} {
+	set ::settings(bluetooth_address) ""
+	catch { start_espresso } err
+	if {$err ne ""} { msg -INFO "PROCPROF: start_espresso err: $err" }
+	after 800  { catch { page_display_change $::de1(current_context) "espresso" } }
+	after 1500 { pp_install }
+	after 21500 { pp_dump; catch {::logging::flush_log}; after 600 { exit 0 } }
+}
 
 
