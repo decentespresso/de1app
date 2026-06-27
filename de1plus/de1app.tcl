@@ -1,7 +1,10 @@
 #!/usr/local/bin/tclsh
 
 encoding system utf-8
-cd "[file dirname [info script]]/"
+# No trailing slash: Tcl's zipfs (de1app bundled inside an AndroWish APK as
+# read-only assets) rejects `cd` to a trailing-slash path; real filesystems
+# accept both, so this is safe on desktop/tablet/iOS too.
+cd "[file dirname [info script]]"
 
 # iOS / iPadOS / Mac Catalyst (iWish) startup: platform self-detection and the
 # read-only-bundle data-root redirect. Must run here -- after `cd` into the
