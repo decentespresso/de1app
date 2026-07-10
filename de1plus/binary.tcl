@@ -1451,6 +1451,8 @@ proc parse_decent_scale_recv {packed destarrname} {
    		# feature not implemented in the firmware, removed from spec
 	   	set recv(parsed) "unknown"
    		msg -DEBUG "Decentscale unexpected timer data received: [array get recv]"
+     } else if {$recv(command) == 0x0A } {
+      set recv(parsed) "oled response"
    	} else {
    		#unset -nocomplain recv
 	   	#::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian
