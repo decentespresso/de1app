@@ -1310,6 +1310,25 @@ proc save_settings {} {
     #de1_read_hotwater
 }
 
+proc remove_retired_plugins_from_settings {} {
+	set enabled_plugins $::settings(enabled_plugins)
+	foreach retired_plugin {
+		DPx_Flow_Calibrator
+		dpx_steam_stop
+		skip_first_step_notice
+		decentscale_off
+	} {
+		set enabled_plugins [lsearch -all -inline -not -exact $enabled_plugins $retired_plugin]
+	}
+
+	if {$enabled_plugins eq $::settings(enabled_plugins)} {
+		return 0
+	}
+
+	set ::settings(enabled_plugins) $enabled_plugins
+	return 1
+}
+
 proc load_settings {} {
 
 
@@ -1416,10 +1435,7 @@ proc load_settings {} {
     }
 
 
-    # remove no-longer-supported extensions from settings
-	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "DPx_Flow_Calibrator"]
-	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "dpx_steam_stop"]
-	set ::settings(enabled_plugins) [lsearch -all -inline -not -exact $::settings(enabled_plugins) "skip_first_step_notice"]
+	set retired_plugins_removed [remove_retired_plugins_from_settings]
 
     #set ::de1(language_rtl) 1
     
@@ -1484,7 +1500,10 @@ proc load_settings {} {
 
     #espresso_temperature_goal append [expr {$::settings(espresso_temperature) - 5}]
     #espresso_elapsed append 0    
-    clear_espresso_chart
+	clear_espresso_chart
+	if {$retired_plugins_removed} {
+		save_settings
+	}
 }
 
 proc skin_xscale_factor {} {
