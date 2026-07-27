@@ -1247,6 +1247,9 @@ proc waterweight_text {} {
 	if {$::de1(scale_weight) == "" || (![::device::scale::expecting_present] && ![::de1::packet::use_ble_v2])} {
 		return ""
 	}
+	if { ! [::device::scale::is_operational] } {
+		return ""
+	}
 
 	if {!$::has_bluetooth} {
 		if {[espresso_millitimer] < 5000} {	
@@ -1287,6 +1290,9 @@ proc waterweight_label_text {} {
 	# for a USB-connected scale.
 	if {![::device::scale::expecting_present]} {
 		return ""
+	}
+	if { [::device::scale::is_connected] && ! [::device::scale::is_operational] } {
+		return [translate "Wait"]
 	}
 
 	if {$::de1(scale_device_handle) == "0"} {

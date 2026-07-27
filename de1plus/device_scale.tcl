@@ -137,6 +137,10 @@ namespace eval ::device::scale {
 		expr { [info exists ::de1(scale_device_handle)] == 1  &&  $::de1(scale_device_handle) != 0 }
 	}
 
+	proc is_operational {} {
+		expr { [::device::scale::is_connected] && $::device::scale::_watchdog_updates_seen }
+	}
+
 	proc bluetooth_address {}  {
 		expr { $::settings(scale_bluetooth_address) }
 	}
@@ -210,7 +214,9 @@ namespace eval ::device::scale {
 
 		if { $event_time == 0 } {set event_time [expr { [clock milliseconds] / 1000.0 }]}
 
-		::device::scale::watchdog_tickle
+		if { $::settings(scale_type) != "decentscale" } {
+			::device::scale::watchdog_tickle
+		}
 
 		if { [expr { abs($reported_weight) < $::device::scale::tare_threshold }] \
 			     && $::device::scale::_tare_awaiting_zero  \
@@ -438,13 +444,19 @@ namespace eval ::device::scale {
 		} else {
 			after cancel $::device::scale::_watchdog_id
 		}
+		set handle $::de1(scale_device_handle)
 		set ::device::scale::_watchdog_id \
 			[ after $::device::scale::_watchdog_timeout \
-				  [list ::device::scale::_watchdog_first_fire 1] ]
+				  [list ::device::scale::_watchdog_first_fire $handle 1] ]
 
 	}
 
-	proc _watchdog_first_fire {tries} {
+	proc _watchdog_first_fire {handle tries} {
+
+		if { ! [::device::scale::is_connected] || $handle != $::de1(scale_device_handle) } {
+			msg -DEBUG "Ignoring stale scale watchdog for handle $handle"
+			return
+		}
 
 		if { $tries >=	${::device::scale::_watchdog_update_tries} } {
 		    msg -ERROR "Scale updates not seen, $tries of" \
@@ -452,6 +464,7 @@ namespace eval ::device::scale {
 
 			::gui::notify::scale_event abandoning_updates
 			::device::scale::_watchdog_cancel
+			scale_disconnect_handler $handle
 		} else {
 		    msg -WARNING "Scale updates not seen, $tries of" \
 			    "${::device::scale::_watchdog_update_tries}"
@@ -462,11 +475,16 @@ namespace eval ::device::scale {
 
 			set ::device::scale::_watchdog_id \
 				[ after $::device::scale::_watchdog_timeout \
-					  [list ::device::scale::_watchdog_first_fire [incr tries]] ]
+					  [list ::device::scale::_watchdog_first_fire $handle [incr tries]] ]
 		}
 	}
 
-	proc watchdog_tickle {} {
+	proc watchdog_tickle {{handle ""}} {
+
+		if { $handle != "" && $handle != $::de1(scale_device_handle) } {
+			msg -DEBUG "Ignoring scale update for stale handle $handle"
+			return
+		}
 
 		if { ! $::device::scale::_watchdog_updates_seen } {
 
@@ -474,6 +492,7 @@ namespace eval ::device::scale {
 		    ::gui::notify::scale_event scale_reporting
 
 		    set ::device::scale::_watchdog_updates_seen True
+		    set ::blink_water_weight 0
 
 		}
 
@@ -1490,8 +1509,8 @@ namespace eval ::device::scale::callbacks {
 
 		::device::scale::init
 
+		::device::scale::_watchdog_cancel
 		set ::device::scale::_watchdog_updates_seen False
-		set ::device::scale::_watchdog_id ""
 		::device::scale::watchdog_first
 
 		set ::device::scale::run_timer	    False
