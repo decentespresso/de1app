@@ -830,7 +830,7 @@ namespace eval ::de1::sav {
 
 		::de1::state::reset_shotsample_tracking flow_start
 
-		if {$::de1(scale_device_handle) != 0} {
+		if {[::device::scale::is_operational]} {
 			msg -NOTICE "::de1::sav::start_active: disabled SAV because scale is connected"
 		}
 
@@ -873,7 +873,7 @@ namespace eval ::de1::sav {
 	proc on_hotwater_start {args} {
 
 		variable _target
-		if {$::de1(scale_device_handle) != 0} {
+		if {[::device::scale::is_operational]} {
 			# "hot water: stop on weight" feature. Works with the scale, so it's more accurate.
 			# we ask for more water than we need, so that we can definitely get enough
 			# to stop on weight.

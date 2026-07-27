@@ -585,6 +585,11 @@ proc de1_event_handler { command_name value {update_received 0}} {
 }
 
 proc scale_disconnect_handler { handle } {
+	if { ! [::device::scale::should_handle_disconnect $handle] } {
+		::bt::msg -DEBUG "Ignoring stale or duplicate scale disconnect for handle $handle"
+		return
+	}
+
 	catch {
 		ble close $handle
 	}

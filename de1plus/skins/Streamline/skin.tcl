@@ -701,9 +701,11 @@ proc streamline_ui_weight_refresh {} {
 proc scale_tare_or_reconnect {} {
 	say [translate {Tare}] $::settings(sound_button_out); 
 
-	if {$::de1(scale_device_handle) != 0} {
+	if {[::device::scale::is_operational]} {
 		::device::scale::tare; 
 		popup [translate Tare]
+	} elseif {[::device::scale::is_connected]} {
+		scale_disconnect_handler $::de1(scale_device_handle)
 	} else {
 		if {$::currently_connecting_scale_handle == 0} {
 			set ::de1(bluetooth_scale_connection_attempts_tried) 0

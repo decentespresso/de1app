@@ -101,6 +101,7 @@ namespace eval ::device::scale {
 
 	variable _watchdog_id ""
 	variable _watchdog_updates_seen False
+	variable _handled_disconnect_handle ""
 
 	variable _tare_last_requested 0
 
@@ -133,6 +134,26 @@ namespace eval ::device::scale {
 
 	proc is_operational {} {
 		expr { [::device::scale::is_connected] && $::device::scale::_watchdog_updates_seen }
+	}
+
+	proc should_handle_disconnect {handle} {
+		set active_handle 0
+		set connecting_handle 0
+		if { [info exists ::de1(scale_device_handle)] } {
+			set active_handle $::de1(scale_device_handle)
+		}
+		if { [info exists ::currently_connecting_scale_handle] } {
+			set connecting_handle $::currently_connecting_scale_handle
+		}
+
+		if { $handle == $::device::scale::_handled_disconnect_handle \
+				|| ($active_handle != 0 && $handle != $active_handle) \
+				|| ($active_handle == 0 && $connecting_handle != 0 && $handle != $connecting_handle) } {
+			return False
+		}
+
+		set ::device::scale::_handled_disconnect_handle $handle
+		return True
 	}
 
 	proc bluetooth_address {}  {
@@ -445,7 +466,11 @@ namespace eval ::device::scale {
 		}
 	}
 
-	proc watchdog_tickle {{handle ""}} {
+	proc watchdog_tickle {{handle ""} {command ""}} {
+
+		if { $command != "" && $command != 0xCE } {
+			return
+		}
 
 		if { $handle != "" && $handle != $::de1(scale_device_handle) } {
 			msg -DEBUG "Ignoring scale update for stale handle $handle"
@@ -459,6 +484,9 @@ namespace eval ::device::scale {
 
 		    set ::device::scale::_watchdog_updates_seen True
 		    set ::blink_water_weight 0
+		    if { [info commands de1_send_steam_hotwater_settings] != "" } {
+			    after 0 de1_send_steam_hotwater_settings
+		    }
 
 		}
 
@@ -1216,6 +1244,10 @@ namespace eval ::device::scale::saw {
 		variable _ignore_first_seconds
 		variable _mode_timer
 
+		if { ! [::device::scale::is_operational] } {
+			return
+		}
+
 		unset -nocomplain thisadvstep
 
 		array set thisadvstep \
@@ -1369,7 +1401,7 @@ namespace eval ::device::scale::saw {
 		variable _ignore_first_seconds
 		variable _mode_timer
 
-		if { $::settings(water_stop_on_scale) } {
+		if { $::settings(water_stop_on_scale) && [::device::scale::is_operational] } {
 			set _target $::settings(water_volume)
 		} else {
 			set _target 0
@@ -1464,6 +1496,7 @@ namespace eval ::device::scale::callbacks {
 
 		::device::scale::_watchdog_cancel
 		set ::device::scale::_watchdog_updates_seen False
+		set ::device::scale::_handled_disconnect_handle ""
 		::device::scale::watchdog_first
 
 		set ::device::scale::run_timer	    False
