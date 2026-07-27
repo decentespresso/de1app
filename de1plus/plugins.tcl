@@ -197,6 +197,8 @@ namespace eval ::plugins {
             if {[string tolower $fbasename] == "dpx_steam_stop"} {
                 # incommpatible with firmware v1330 and newer because this functionality is already in the firmware, so plugin not needed
                 continue
+            } elseif {[string tolower $fbasename] == "decentscale_off"} {
+                continue
             } elseif {[string tolower $fbasename] == "skip_first_step_notice"} {
                 # per Damian's suggestion, should not be part of STABLE
                 continue
