@@ -93,6 +93,16 @@ proc ::device::scale::process_weight_update {w {t 0}} {
     set ::de1(scale_weight) $w
     puts "    >>> SCALE WEIGHT: [format %.1f $w] g"
 }
+proc ::device::scale::process_decentscale_weight_update {handle command w {t 0}} {
+    if {$handle ne $::de1(scale_device_handle)} { return 0 }
+    ::device::scale::process_weight_update $w $t
+    return 1
+}
+proc ::device::scale::watchdog_tickle {args} {}
+proc ::device::scale::is_operational {} {
+    expr {$::de1(scale_device_handle) != 0}
+}
+proc ::device::scale::should_handle_disconnect {handle} { return 1 }
 proc ::device::scale::event::apply::on_connect_callbacks {args} {}
 proc ::device::scale::event::apply::on_disconnect_callbacks {args} {}
 namespace eval ::de1::state {}
