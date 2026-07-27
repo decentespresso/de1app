@@ -47,6 +47,11 @@ proc ble_connect_to_scale {} {
 source [file join [file dirname [info script]] .. de1plus device_scale.tcl]
 source [file join [file dirname [info script]] .. de1plus de1_comms.tcl]
 
+rename ::device::scale::process_weight_update ::device::scale::process_weight_update_real
+proc ::device::scale::process_weight_update {weight {event_time 0}} {
+	lappend ::processed_weights [list $weight $event_time]
+}
+
 rename after tcl_after
 proc after {args} {
 	if {[lindex $args 0] eq "cancel"} {
@@ -69,6 +74,7 @@ proc reset_watchdog {handle} {
 	set ::currently_connecting_scale_handle 0
 	set ::de1(bluetooth_scale_connection_attempts_tried) 0
 	set ::de1(scale_max_connection_retry_attempts) 10
+	set ::processed_weights {}
 }
 
 test scale-watchdog-exhaustion-1 {} -body {
@@ -114,20 +120,20 @@ test scale-disconnect-stale-connecting-handle-1 {} -body {
 
 test scale-cached-weight-1 {} -body {
 	reset_watchdog ble1
-	::device::scale::watchdog_tickle ble1 0xCA
-	list $::device::scale::_watchdog_updates_seen $::cancelled
-} -result {False {}}
+	set accepted [::device::scale::process_decentscale_weight_update ble1 0xCA 1.2 3.4]
+	list $accepted $::processed_weights $::device::scale::_watchdog_updates_seen
+} -result {True {{1.2 3.4}} False}
 
 test scale-stale-live-weight-1 {} -body {
 	reset_watchdog ble1
-	::device::scale::watchdog_tickle ble2 0xCE
-	list $::device::scale::_watchdog_updates_seen $::cancelled
-} -result {False {}}
+	set accepted [::device::scale::process_decentscale_weight_update ble2 0xCE 1.2 3.4]
+	list $accepted $::processed_weights $::device::scale::_watchdog_updates_seen
+} -result {False {} False}
 
 test scale-first-live-weight-1 {} -body {
 	reset_watchdog ble1
-	::device::scale::watchdog_tickle ble1 0xCE
-	list $::device::scale::_watchdog_updates_seen $::blink_water_weight $::scale_events $::cancelled
-} -result {True 0 scale_reporting watchdog-current}
+	set accepted [::device::scale::process_decentscale_weight_update ble1 0xCE 1.2 3.4]
+	list $accepted $::processed_weights $::device::scale::_watchdog_updates_seen $::blink_water_weight $::scale_events $::cancelled
+} -result {True {{1.2 3.4}} True 0 scale_reporting watchdog-current}
 
 cleanupTests

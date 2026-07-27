@@ -345,6 +345,17 @@ namespace eval ::device::scale {
 		::device::scale::event::apply::on_update_available_callbacks $event_dict
 	}
 
+	proc process_decentscale_weight_update {handle command reported_weight event_time} {
+		if { $handle != $::de1(scale_device_handle) } {
+			msg -DEBUG "Ignoring weight packet from stale scale handle $handle"
+			return False
+		}
+
+		::device::scale::watchdog_tickle $handle $command
+		::device::scale::process_weight_update $reported_weight $event_time
+		return True
+	}
+
 
 	proc tare {args} {
 
