@@ -3045,6 +3045,9 @@ proc de1_ble_handler { event data } {
 
 							} elseif {[info exists weightarray(weight)] == 1} {
 								set sensorweight [expr {$weightarray(weight) / 10.0}]
+								if {$weightarray(command) == 0xCE} {
+									::device::scale::watchdog_tickle $handle
+								}
 								::device::scale::process_weight_update $sensorweight $event_time
 							 	if {[info exists weightarray(timestamp)] == 1} {
 									set ::de1(scale_timestamp) $weightarray(timestamp)

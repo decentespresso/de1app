@@ -673,7 +673,7 @@ set ::streamline_dataline_weight_label_red ""
 set ::streamline_dataline_weight_value ""
 set ::streamline_dataline_weight_unit ""
 proc streamline_ui_weight_refresh {} {
-	if {$::de1(scale_device_handle) != 0} {
+	if {[::device::scale::is_operational]} {
 		set ::streamline_dataline_weight_label_blue [translate "Weight"]
 		set ::streamline_dataline_weight_label_red ""
 		set ::streamline_dataline_weight_value [lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]
@@ -687,7 +687,7 @@ proc streamline_ui_weight_refresh {} {
 		#set ::streamline_dataline_weight_label_blue [translate "Weight: !!"]
 		#set ::streamline_dataline_weight_label_blue [translate "Weight: ..."]
 		set ::streamline_dataline_weight_label_red "[translate Weight:] !! "
-		if {$::currently_connecting_scale_handle == 0} {
+		if {$::de1(scale_device_handle) == 0 && $::currently_connecting_scale_handle == 0} {
 			set ::streamline_dataline_weight_label_blue " [translate \[Reconnect\]]"
 		} else {
 			set ::streamline_dataline_weight_label_blue " [translate Wait]"

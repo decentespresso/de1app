@@ -1238,6 +1238,9 @@ proc waterweight_text {} {
 	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
 		return ""
 	}
+	if { ! [::device::scale::is_operational] } {
+		return ""
+	}
 
 	if {!$::has_bluetooth} {
 		if {[espresso_millitimer] < 5000} {	
@@ -1271,6 +1274,9 @@ proc waterweight_text {} {
 proc waterweight_label_text {} {
 	if {[ifexists ::settings(scale_bluetooth_address)] == ""} {
 		return ""
+	}
+	if { [::device::scale::is_connected] && ! [::device::scale::is_operational] } {
+		return [translate "Wait"]
 	}
 
 	if {$::de1(scale_device_handle) == "0"} {
