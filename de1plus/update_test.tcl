@@ -46,6 +46,16 @@ if {[file exists "de1plus.tcl"] == 1} {
 
 determine_if_android
 
+# Compatibility with OLD app installs whose updater.tcl predates the
+# source_directory / data_directory split (they only have homedir). This tool
+# is meant to run on exactly those old installs, so provide the missing procs.
+if {[llength [info commands data_directory]] == 0} {
+    proc data_directory {} { return [homedir] }
+}
+if {[llength [info commands source_directory]] == 0} {
+    proc source_directory {} { return [homedir] }
+}
+
 package require sha256
 catch { package require crc32 }
 package require http 2.5
@@ -150,7 +160,23 @@ proc ut_fetch {url fn} {
                  xcache "" age "" cfcache "" etag "" lastmod "" err ""}
     catch { file delete $fn }
 
-    if {![catch {package require TclCurl}]} {
+    # DE1_UT_APP_PROC=1 calls the INSTALLED app's own decent_http_get_to_file
+    # (whatever version/state it is in on this device) so we reproduce EXACTLY
+    # what the real update does -- including any bug/hack in the installed proc.
+    if {[info exists ::env(DE1_UT_APP_PROC)] && $::env(DE1_UT_APP_PROC) == 1
+            && [llength [info commands decent_http_get_to_file]]} {
+        set R(transport) "installed-app-proc"
+        if {[catch { decent_http_get_to_file $url $fn } err]} { set R(err) $err } else { set R(ok) 1 }
+        if {[file exists $fn]} { set R(bytes) [file size $fn] }
+        return [array get R]
+    }
+
+    # DE1_UT_FORCE_HTTP=1 skips TclCurl and uses ::http::geturl -channel -- the
+    # exact fallback path the installed (older) app uses, so we can reproduce
+    # what that path actually stores (e.g. a gzip/chunked/truncated body).
+    set force_http [expr {[info exists ::env(DE1_UT_FORCE_HTTP)] && $::env(DE1_UT_FORCE_HTTP) == 1}]
+
+    if {!$force_http && ![catch {package require TclCurl}]} {
         set R(transport) "TclCurl"
         set hdrs ""
         set hdl [curl::init]
@@ -231,6 +257,21 @@ proc _ut_head_bytes {fn n} {
     # make it one-line printable
     regsub -all {[[:cntrl:]]} $data " " data
     return [string range $data 0 [expr {$n-1}]]
+}
+
+# is a file gzip-compressed? (magic bytes 1f 8b) -- reveals a client that stored
+# a Content-Encoding: gzip body without decompressing it.
+proc _ut_is_gzip {fn} {
+    set is 0
+    catch {
+        set f [open $fn]
+        fconfigure $f -translation binary
+        set b [read $f 2]
+        close $f
+        binary scan $b H4 hex
+        if {$hex eq "1f8b"} { set is 1 }
+    }
+    return $is
 }
 
 ##############################################################################
@@ -422,7 +463,10 @@ foreach k $order {
                 ulog "   >> downloaded bytes ($F(bytes)) != Content-Length ($F(contentlength)): the transfer was TRUNCATED (flaky link / low-speed timeout)."
             }
             if {[string tolower $F(contentencoding)] eq "gzip" || [string tolower $F(contentencoding)] eq "br"} {
-                ulog "   >> Content-Encoding=$F(contentencoding): the client stored COMPRESSED bytes (server compressed a .tcl and TclCurl did not auto-decode) -> sha can never match. Fix: send no Accept-Encoding, or add --compressed / -encoding \"\"."
+                ulog "   >> Content-Encoding=$F(contentencoding): the client stored COMPRESSED bytes (server compressed a .tcl and the client did not auto-decode) -> sha can never match. Fix: send no Accept-Encoding, or add --compressed / -encoding \"\"."
+            }
+            if {[_ut_is_gzip $fn]} {
+                ulog "   >> the downloaded file BEGINS WITH GZIP MAGIC (1f 8b): the client stored a still-compressed body. This is the classic ::http::geturl -channel + gzip bug -- the raw gzip stream was written to disk without inflation. Fix server-side so /download/sync/ is never gzip-encoded, so even old clients verify."
             }
             # deterministic-vs-flaky probe: fetch a second time
             set fn2 "$tmpdir/dryrun_${cnt}_b"
@@ -471,3 +515,7 @@ if {[llength $bad_files] > 0} {
 }
 catch { file delete -force $tmpdir }
 catch { close $::_ut_logchan }
+
+# quit the interpreter so a headless/AndroWish run does not linger in the Tk
+# event loop after the dry run finishes.
+catch { exit 0 }
