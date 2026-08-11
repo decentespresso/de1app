@@ -321,11 +321,7 @@ load_font "icomoon" "[homedir]/skins/Streamline/icomoon.ttf" 30
 load_font "mono8" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 10
 load_font "mono10" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 12
 
-if {$::undroid == 1} {
-	load_font "mono12" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 12
-} else {
-	load_font "mono12" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 13
-}
+load_font "mono12" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 13
 
 load_font "mono18" "[homedir]/skins/Streamline/NotoSansMono-SemiBold.ttf" 17
 
@@ -348,7 +344,7 @@ if {[ifexists ::settings(profile_filename)] == ""} {
 
 }
 
-if {$::android != 1} {
+if {[espresso_simulation_active]} { ;# was $::android
 	proc cause_random_data {} {
 		set x [steamtemp]
 		set x [pressure]
@@ -1745,7 +1741,7 @@ dui aspect set -theme streamline -type dbutton_symbol font_size 18
 dui aspect set -theme streamline -type dbutton_symbol pos ".50 .5"
 
 
-if {$::android == 1 || $::undroid == 1} {
+if {$::some_droid} {
 	set ::streamline_history_cmd -label
 	set ::streamline_history_left "🡐"
 	set ::streamline_history_right "🡒"
@@ -2955,7 +2951,7 @@ if {[ghc_is_installed] == 0} {
 
 
 	# Four GHC buttons on bottom right
-	if {$::android == 1 || $::undroid == 1} {
+	if {$::some_droid} {
 
 		# custom characters in a font made by Pulak
 		set s1 "\uE915"
@@ -4552,7 +4548,7 @@ proc update_data_card { arrname settingsarr } {
 
 
 
-	if {$::android == 1 || $::undroid == 1} {
+	if {$::some_droid} {
 		set arrow "🡒"
 	} else {
 		set arrow "->"

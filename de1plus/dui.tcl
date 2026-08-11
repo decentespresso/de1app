@@ -275,6 +275,9 @@ namespace eval ::dui {
 	
 			wm maxsize . $screen_size_width $screen_size_height
 			wm minsize . $screen_size_width $screen_size_height
+			# Fullscreen fills the undroidwish SDL window (dropping sdl2tk chrome),
+			# it does NOT take over the desktop -- so it's wanted on every GUI host,
+			# desktop undroidwish included.
 			wm attributes . -fullscreen 1
 	
 			# flight mode, not yet debugged
@@ -505,14 +508,10 @@ namespace eval ::dui {
 		}
 		
 		proc button_press {} {
-			global android 
-			global undroid
-			#return {<Motion>}
-			if {$android == 1 && [dui cget use_finger_down_for_tap] == 1} {
-				return {<<FingerDown>>}
-				#return {<ButtonPress-1>}
-			}
-			#return {<Motion>}
+			# 1-tap "finger down" mode retired (it was Android-only and is being
+			# turned off in the field). Always use ButtonPress-1 -- it works for
+			# touch too (SDL synthesizes mouse events from touch) and for
+			# mouse/trackpad on iPad/Catalyst/desktop.
 			return {<ButtonPress-1>}
 		}
 		
@@ -526,10 +525,7 @@ namespace eval ::dui {
 		}
 		
 		proc finger_down {} {
-			global android 
-			if {$android == 1 && [dui cget use_finger_down_for_tap] == 1} {
-				return {<<FingerDown>>}
-			}
+			# 1-tap "finger down" mode retired; always ButtonPress-1.
 			return {<ButtonPress-1>}
 		}
 		
@@ -575,22 +571,17 @@ namespace eval ::dui {
 			return [expr {int($in * [yscale_factor])}]
 		}
 		
-		# on android we track finger-down, instead of button-press, as it gives us lower latency by avoding having to distinguish a potential gesture from a tap
-		# finger down gives a http://blog.tcl.tk/39474
+		# 1-tap "finger down" mode retired. These procs used to rescale the raw
+		# 0-10000 finger-event coordinates to pixels when that mode was on; with the
+		# mode gone the coordinates are already in widget space, so both are now
+		# pass-throughs. Kept (rather than deleted) because many slider/scale call
+		# sites invoke them; they can be inlined away in a later cleanup.
 		proc translate_coordinates_finger_down_x { x } {
-	
-			if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
-					return [expr {$x * [winfo screenwidth .] / 10000}]
-				}
-				return $x
+			return $x
 		}
-		
-		proc translate_coordinates_finger_down_y { y } {
 
-			if {$::android == 1 && $::settings(use_finger_down_for_tap) == 1} {
-					return [expr {$y * [winfo screenheight .] / 10000}]
-				}
-				return $y
+		proc translate_coordinates_finger_down_y { y } {
+			return $y
 		}
 		
 		proc is_fast_double_tap { key } {
@@ -4730,7 +4721,7 @@ namespace eval ::dui {
 				} else {
 					set familyname [lindex $loaded_fonts [expr $fontindex + 1]]
 				}
-			} elseif {($::android == 1 || $::undroid == 1) && $filename ne "" && [string is true $add_if_needed] } {
+			} elseif {$::some_droid && $filename ne "" && [string is true $add_if_needed] } {
 				set file_found 0
 				if { [file dirname $filename] eq "." } {
 					set ndirs [llength $font_dirs]
@@ -4921,11 +4912,8 @@ namespace eval ::dui {
 		
 		proc width {untranslated_txt font} {
 			set x [font measure $font -displayof [dui canvas] [translate $untranslated_txt]]
-			#if {$::android != 1} {    
-				# not sure why font measurements are half off on osx but not on android
-				return [expr {2 * $x}]
-			#}
-			#return $x
+			# not sure why font measurements are half off on osx but not on android
+			return [expr {2 * $x}]
 		}
 
 		proc list { {loaded 0} } {
@@ -5021,7 +5009,7 @@ namespace eval ::dui {
 				return;   # Nothing to do!
 			}
 					
-			if { $::android == 1 || $::undroid == 1 } {
+			if { $::some_droid } {
 				# create a new tmp image
 				set tmp [image create photo]
 			
@@ -6660,7 +6648,7 @@ namespace eval ::dui {
 					}
 						
 					if { $state in {normal disabled} } {
-						if { $::android == 1 && [dui cget use_finger_down_for_tap] } {
+						if { 0 } {  ;# retired: 1-tap finger-down window-disable dance -- the else branch (plain configure) is now always used
 							if { $item_type eq "window" } {
 								$can itemconfigure $item -state disabled
 									if { $state eq "normal" } {
@@ -10836,7 +10824,7 @@ radius=$radius outline=$outline disabledoutline=$disabledoutline width=$width ta
 			# BLT on android has non standard defaults, so we overrride them here, sending them back to documented defaults
 			# TBD: Kept temporarily for backwards-compatibility when using 'add_de1_widget graph' or 'dui add widget graph'. 
 			# Recommended current use is 'dui add graph'
-			if { $type eq "graph" && ($::android == 1 || $::undroid == 1) } {
+			if { $type eq "graph" && $::some_droid } {
 				$widget grid configure -dashes "" -color "#DDDDDD" -hide 0 -minor 1 
 				$widget configure -borderwidth 0
 				#$widget grid configure -hide 0

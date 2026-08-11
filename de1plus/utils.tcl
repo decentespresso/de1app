@@ -38,9 +38,11 @@ proc setup_environment {} {
 	dui page add_action saver load ::saver_page_onload
 	dui page add_action {} load ::adjust_machine_nextpage
 	dui page add_action {} load ::page_onload
-	if { $::android == 0 } {
-		dui page add_action {} update_vars ::set_dummy_espresso_vars
-	}
+	# Wire the espresso-machine simulator's playback updater on EVERY OS -- it
+	# self-guards via espresso_simulation_active (runs only when no BLE/USB machine
+	# is configured), so on first run the simulation works on desktop, Android and
+	# iPad alike. (Was gated to non-Android; that blocked the sim on tablets.)
+	dui page add_action {} update_vars ::set_dummy_espresso_vars
 	
 	# only calculate the tablet's dimensions once, then save it in settings for a faster app startup
 	set ::screen_size_width [dui cget screen_size_width]
@@ -770,14 +772,14 @@ proc translate {english {istoast 0} } {
 					# reverse text for right-to-left languages
 
 	                # if the translated version of the English is NOT blank, return it
-	                if {[language] == "ar" && ($::android == 1 || $::undroid == 1)} {
+	                if {[language] == "ar" && ($::some_droid)} {
 	                    # use the "arb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
 	                    if {[ifexists available(arb)] != ""} {
 	                        return $available(arb)
 	                    }
 	                }
 
-	                if {[language] == "he" && ($::android == 1 || $::undroid == 1)} {
+	                if {[language] == "he" && ($::some_droid)} {
 	                    # use the "heb" column on Android/Undroid because they do not correctly right-to-left text like OSX does
 	                    if {[ifexists available(heb)] != ""} {
 	                        return $available(heb)
@@ -839,17 +841,66 @@ proc skin_settings_directory {skin_name} {
     return $d
 }
 
+# BLE/USB transport loaders -- moved here from updater.tcl so the FAILSAFE updater
+# never loads BLE (determine_if_android now detects Android via `borg osbuildinfo`,
+# not the `ble` command). Called once by android_specific_stubs at app runtime.
+#
+# Obtain the AndroWish-compatible `ble` command WITHOUT any OS-specific branching.
+# Each platform ships BLE differently: Android -- a built-in `ble` (package `ble`);
+# iOS/iWish -- a libble dylib registered as package `Ble` (+ a lowercase shim on
+# newer builds); macOS desktop -- the bundled de1plus/ble subprocess driver. We
+# just try each known way to get a `ble` command and stop at the first that works.
+proc load_ble_command {} {
+
+    if {[llength [info commands ble]]} { return 1 }
+
+    foreach pkg {ble Ble} {
+        catch { package require $pkg }
+        if {[llength [info commands ble]]} { return 1 }
+    }
+
+    # Last resort: source the bundled driver by path (used even when it isn't on
+    # auto_path). On unsupported platforms it provides the package and returns
+    # without creating a command -- harmless.
+    set drv [file join [file dirname [info script]] ble ble.tcl]
+    if {[file exists $drv]} { catch { uplevel #0 [list source $drv] } }
+
+    return [expr {[llength [info commands ble]] > 0}]
+}
+
+# USB(-C) sibling of load_ble_command. No USB driver ships yet -- this is the seam:
+# add its `package require`/`source` here when it lands and $::has_usb fills in on
+# every OS with no OS branching. Expected to create a `usb` command, like `ble`.
+proc load_usb_command {} {
+    if {[llength [info commands usb]]} { return 1 }
+    # TODO(usb-c): add the USB transport driver here.
+    return [expr {[llength [info commands usb]] > 0}]
+}
+
 proc android_specific_stubs {} {
 
+    # Load the REAL BLE (and USB) transport drivers now, at app runtime -- NOT in
+    # determine_if_android, so the failsafe updater stays lean and never loads BLE.
+    # Done once (guarded), and BEFORE the no-op `ble` stub below, so $::has_bluetooth
+    # captures the genuine driver rather than the stub. A launcher may pre-set has_usb.
+    if {![info exists ::_transports_loaded]} {
+        set ::has_bluetooth [load_ble_command]
+        if {![info exists ::has_usb] || $::has_usb == 0} {
+            set ::has_usb [load_usb_command]
+        }
+        set ::can_connect_de1 [expr {$::has_bluetooth || $::has_usb}]
+        set ::_transports_loaded 1
+    }
+
     # Only stub `ble` when there is no real one.  On macOS the de1plus/ble
-    # package provides a genuine CoreBluetooth `ble` command (loaded earlier by
-    # determine_if_android), and this stub must NOT clobber it -- otherwise every
+    # package provides a genuine CoreBluetooth `ble` command (loaded just above by
+    # load_ble_command), and this stub must NOT clobber it -- otherwise every
     # `ble scanner`/`ble start` becomes a no-op that returns 1 and never scans.
     if {[llength [info commands ble]] == 0} {
         proc ble {args} { msg -DEBUG "ble $args"; return 1 }
     }
 
-    if {$::android != 1 && $::undroid != 1} {
+    if {!$::some_droid} {
         proc sdltk {args} {
             if {[lindex $args 0] == "powerinfo"} {
                 return [list "percent" 75]
@@ -1341,6 +1392,19 @@ proc load_settings {} {
 
     }
 
+    # ::has_bluetooth is computed at source time (determine_if_android in
+    # updater.tcl) purely from whether a real `ble` command loaded. On some
+    # platforms/launches that check can come up false even though the device is
+    # perfectly capable of BLE -- e.g. Bluetooth hasn't finished powering on yet.
+    # If settings.tdb already remembers a paired DE1 (a non-empty
+    # bluetooth_address), then this device demonstrably has Bluetooth, so force
+    # ::has_bluetooth true here now that settings.tdb has been read. We only ever
+    # promote false->true; we never clear a genuine `ble` command.
+    if {[ifexists ::settings(bluetooth_address)] ne "" && ![ifexists ::has_bluetooth 0]} {
+        msg -NOTICE "load_settings: forcing has_bluetooth=1 because settings.tdb has a paired DE1 bluetooth_address"
+        set ::has_bluetooth 1
+    }
+
     if {[ifexists ::settings(tablet_model)] != $tablet_model} {
     	# tablet model has changed, so potentially reset settings.
 
@@ -1629,7 +1693,7 @@ proc load_font {name fn pcsize {androidsize {}} {weight {}} } {
 #    # calculate font size
 #    set familyname ""
 #
-#    if {($::android == 1 || $::undroid == 1) && $androidsize != ""} {
+#    if {($::some_droid) && $androidsize != ""} {
 #        set pcsize $androidsize
 #    }
 #    set platform_font_size [expr {int(1.0 * $::fontm * $pcsize)}]
@@ -1647,7 +1711,7 @@ proc load_font {name fn pcsize {androidsize {}} {weight {}} } {
 #    set fontindex [lsearch $::loaded_fonts $fn]
 #    if {$fontindex != -1} {
 #        set familyname [lindex $::loaded_fonts [expr $fontindex + 1]]
-#    } elseif {($::android == 1 || $::undroid == 1) && $fn != ""} {
+#    } elseif {($::some_droid) && $fn != ""} {
 #        catch {
 #            set familyname [lindex [sdltk addfont $fn] 0]
 #        }
@@ -1713,7 +1777,7 @@ proc load_font_obsolete {name fn pcsize {androidsize {}} } {
  
     if {[language] == "zh-hant" || [language] == "zh-hans"} {
 
-        if {$::android == 1 || $::undroid == 1} {
+        if {$::some_droid} {
             font create $name -family $::helvetica_font -size [expr {int(1.0 * $::fontm * $androidsize)}]
         } else {
             font create "$name" -family $::helvetica_font -size [expr {int(1.0 * $pcsize * $::fontm)}]
@@ -1721,7 +1785,7 @@ proc load_font_obsolete {name fn pcsize {androidsize {}} } {
         return
     } elseif {[language] == "th"} {
 
-        if {$::android == 1 || $::undroid == 1} {
+        if {$::some_droid} {
             if {[info exists ::thai_fontname] != 1} {
                 set fn "[homedir]/fonts/sarabun.ttf"
                 set ::thai_fontname  [sdltk addfont $fn]
@@ -1732,7 +1796,7 @@ proc load_font_obsolete {name fn pcsize {androidsize {}} } {
         }
         return
     } else {
-        if {$::android == 1 || $::undroid == 1} {
+        if {$::some_droid} {
             set result ""
             catch {
                 set result [sdltk addfont $fn]

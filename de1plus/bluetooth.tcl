@@ -2125,7 +2125,12 @@ proc bluetooth_connect_to_devices {} {
 	#@return
 	::bt::msg -NOTICE "bluetooth_connect_to_devices"
 
-	if {$::android != 1} {
+	# When no transport can reach a real machine, kick ble_connect_to_de1 once so
+	# it establishes the *simulated* DE1 connection (its internal !$::has_bluetooth
+	# branch). When a transport IS available the real connect happens below, via
+	# the configured bluetooth_address (Android needs its scan-assisted dance).
+	# Keyed on capability, not on $::android, so it's correct for macOS/USB too.
+	if {!$::can_connect_de1} {
 		ble_connect_to_de1
 	}
 
@@ -3379,9 +3384,11 @@ proc scanning_restart {} {
 	if {$::scanning == 1} {
 		return
 	}
-	if {$::android != 1 && ![llength [info commands ble]]} {
+	if {!$::has_bluetooth} {
 
-		# insert enough dummy devices to overfill the list, to test whether scroll bars are working
+		# No BLE scanner available (was: "not Android and no ble command", which is
+		# exactly !has_bluetooth): insert enough dummy devices to overfill the list,
+		# to test whether scroll bars are working
 		set ::de1_device_list [list [dict create address "12:32:16:18:90" name "ble3" type "ble"] [dict create address "10.1.1.20" name "wifi1" type "wifi"] [dict create address "12:32:56:78:91" name "dummy_ble2" type "ble"] [dict create address "12:32:56:78:92" name "dummy_ble3" type "ble"] [dict create address "ttyS0" name "dummy_usb" type "usb"] [dict create address "192.168.0.1" name "dummy_wifi2" type "wifi"]]
 		set ::peripheral_device_list [list [dict create address "51:32:56:78:90" name "ACAIAxxx" connectiontype "ble" devicetype "scale" devicefamily "acaiascale"] [dict create address "12:32:56:78:93" name "Dummy123" connectiontype "ble" devicetype "scale" devicefamily "unknown"] ]
 

@@ -137,6 +137,57 @@ mkdir -p "$APP/Contents/MacOS"
 cp "$UNI_WISH" "$APP/Contents/MacOS/wish"
 chmod +x "$APP/Contents/MacOS/wish"
 
+# --- 3b. Native launcher stub (REQUIRED for a notarized bundle) --------------
+# CFBundleExecutable is "undroidwish"; the git skeleton ships it as a /bin/bash
+# script. That launches fine while UNSIGNED, but once the bundle is hardened +
+# notarized the OS tries to spawn /bin/bash as the app's main process, and macOS
+# Launch Constraints REJECT a system binary as a bundle main executable
+# ("AMFI: Launch Constraint Violation" / "Security policy would not allow
+# process" -> the Finder dialog: 'The application "Decent.app" can't be
+# opened.'). Fix: compile a tiny universal Mach-O that chdir()s to Contents and
+# execs wish with the SAME de1plus args the script used, and install it AS the
+# main executable (same name -> no Info.plist change). It is hardened-signed by
+# step 4 below like any other Mach-O.
+LSRC="$STAGE/launcher.c"
+cat > "$LSRC" <<'CEOF'
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <mach-o/dyld.h>
+/* NOTE: deliberately NOT using libgen dirname() — on macOS it can return a
+ * pointer to shared static storage, so calling it twice clobbers the first
+ * result. We slice the path by hand instead. */
+int main(int argc, char **argv) {
+    char exe[PATH_MAX]; uint32_t sz = sizeof(exe);
+    if (_NSGetExecutablePath(exe, &sz) != 0) return 71;
+    char macos[PATH_MAX];                          /* -> .../Contents/MacOS */
+    if (!realpath(exe, macos)) { strncpy(macos, exe, sizeof(macos)-1); macos[sizeof(macos)-1] = 0; }
+    char *s = strrchr(macos, '/');                 /* strip "/undroidwish" */
+    if (!s) return 74; *s = 0;
+    char contents[PATH_MAX];                        /* -> .../Contents */
+    strncpy(contents, macos, sizeof(contents)-1); contents[sizeof(contents)-1] = 0;
+    char *s2 = strrchr(contents, '/');             /* strip "/MacOS" */
+    if (!s2) return 75; *s2 = 0;
+    char wish[PATH_MAX];
+    snprintf(wish, sizeof(wish), "%s/wish", macos);
+    setenv("BLE_HELPER_NO_REEXEC", "1", 1);        /* match the old launcher */
+    if (chdir(contents) != 0) return 73;
+    char *args[] = { wish, "Resources/de1plus/de1plus.tcl",
+        "-sdlheight", "801", "-sdlwidth", "1280",
+        "-sdlrootheight", "800", "-sdlrootwidth", "1280",
+        "-name", "DE1", NULL };
+    execv(wish, args);
+    perror("execv wish");
+    return 72;
+}
+CEOF
+echo "Compiling universal launcher stub -> Contents/MacOS/undroidwish ..."
+cc -arch arm64 -arch x86_64 -mmacosx-version-min=10.13 -O2 -o "$APP/Contents/MacOS/undroidwish" "$LSRC"
+chmod +x "$APP/Contents/MacOS/undroidwish"
+echo "Launcher archs: $(lipo -archs "$APP/Contents/MacOS/undroidwish")"
+
 echo "Materialising de1plus payload ..."
 RES="$APP/Contents/Resources/de1plus"
 mkdir -p "$RES"
@@ -156,6 +207,10 @@ rsync -aL --delete \
 # 2560x1600 dir (the dui rescale base -> renders on ANY display) + 1280x800 (the
 # common desktop size); the updater fills every other resolution on first run.
 # That drops the bulk of each skin (its other-resolution image sets).
+# MINIMAL_SEED=1 (default) prunes skins/fonts to a bootable subset and relies on
+# the first-run self-updater to refill. MINIMAL_SEED=0 ships the COMPLETE curated
+# misc.tcl set (the make_de1_dir manifest) so the bundle is fully self-contained.
+if [ "${MINIMAL_SEED:-1}" = "1" ]; then
 SEED_SKINS="${SEED_SKINS:-default|Insight|Insight Dark|Streamline|Streamline Dark|DSx2}"
 SEED_SKIN_RES="${SEED_SKIN_RES:-2560x1600|1280x800}"
 if [ -d "$RES/skins" ]; then
@@ -213,6 +268,9 @@ if [ -d "$RES/fonts" ]; then
     done
     echo "Minimal seed: kept [$(echo "$SEED_FONTS" | tr '|' ' ' | wc -w | tr -d ' ')] boot fonts; pruned $pruned others."
 fi
+else
+    echo "MINIMAL_SEED=0 — shipping the complete misc.tcl payload set (self-contained; no prune)."
+fi
 
 # Mark this as the notarized, immutable bundle. osx.tcl keys off this marker to
 # redirect [homedir] to a writable ~/Documents/de1app on first launch, so the
@@ -221,6 +279,12 @@ fi
 # NOT in misc.tcl's self-update file list: a normal in-place (non-notarized)
 # build must never receive it, or it would wrongly redirect into Documents.
 : > "$RES/notarized.flag"
+
+# Enable the read-only write-guard (readonly_guard.tcl) in this TEST build: it
+# logs + redirects any write that targets the frozen, notarized bundle, giving a
+# canonical list of stragglers. Sealed in before signing; NOT in misc.tcl's update
+# list. Remove for a release build once the offender list is clean.
+: > "$RES/writeguard.flag"
 
 # Bake the update channel so osx.tcl's first-run fill (and the running session)
 # self-update from the SAME channel this package was built from. 0=stable
@@ -266,6 +330,7 @@ fi
 #     e.g. ble/lib/libtclble.dylib. `wish` is re-signed separately (step 4d).
 while IFS= read -r m; do
     [ "$m" = "$APP/Contents/MacOS/wish" ] && continue
+    [ "$m" = "$APP/Contents/MacOS/undroidwish" ] && continue   # main executable — signed last (step 4e)
     [ "$m" = "$HELPER" ] && continue
     echo "sign nested : ${m#$APP/}"
     codesign "${HARDEN[@]}" "$m"
@@ -277,6 +342,7 @@ done < <(find "$APP" -type f \( -perm -u+x -o -name '*.dylib' -o -name '*.so' \)
 for s in "$APP/Contents/MacOS/"*; do
     [ -f "$s" ] || continue
     [ "$s" = "$APP/Contents/MacOS/wish" ] && continue
+    [ "$s" = "$APP/Contents/MacOS/undroidwish" ] && continue   # main executable — signed last (step 4e)
     echo "sign script : ${s#$APP/}"
     codesign "${HARDEN[@]}" "$s"
 done
@@ -285,6 +351,13 @@ done
 #     library-validation entitlement it needs at runtime.
 echo "sign wish   : Contents/MacOS/wish (universal)"
 codesign "${HARDEN[@]}" --entitlements "$ENT" "$APP/Contents/MacOS/wish"
+
+# 4e. The MAIN executable (the launcher stub, CFBundleExecutable=undroidwish) —
+#     sign LAST, after every other Contents/MacOS component, so codesign does not
+#     reject it for having unsigned siblings. It just execs wish, so it needs no
+#     entitlements of its own.
+echo "sign main   : Contents/MacOS/undroidwish (launcher, universal)"
+codesign "${HARDEN[@]}" "$APP/Contents/MacOS/undroidwish"
 
 # --- 5. Seal the outer bundle -----------------------------------------------
 echo "Signing bundle ..."
@@ -316,8 +389,23 @@ case "$OUT" in
         DSTAGE="$STAGE/dmg"; mkdir -p "$DSTAGE"
         ditto "$APP" "$DSTAGE/Decent.app"
         ln -s /Applications "$DSTAGE/Applications"
+        # Detach any stale "Decent" volume still mounted (e.g. from inspecting a
+        # previous $OUT), else `hdiutil create` fails "Resource busy".
+        for _v in "/Volumes/Decent" /Volumes/Decent\ *; do
+            [ -e "$_v" ] && hdiutil detach "$_v" -force >/dev/null 2>&1 || true
+        done
         hdiutil create -volname "Decent" -srcfolder "$DSTAGE" \
             -fs HFS+ -format UDZO -ov "$OUT" >/dev/null
+        # Sign + notarize + staple the DMG container itself. The .app inside is
+        # already notarized+stapled; doing the DMG too makes the download trusted
+        # with no Gatekeeper prompt or "verifying..." delay.
+        codesign --force --timestamp --sign "$SIGN_ID" "$OUT"
+        if [ "${SKIP_NOTARIZE:-0}" != "1" ]; then
+            echo "Notarizing the DMG (contacts Apple; ~2-5 min) ..."
+            xcrun notarytool submit "$OUT" --keychain-profile "$NOTARY_PROFILE" --wait
+            xcrun stapler staple "$OUT"
+            spctl --assess --type open --context context:primary-signature -vv "$OUT" 2>&1 | sed 's/^/  spctl-dmg: /' || true
+        fi
         ;;
     *.app)
         ditto "$APP" "$OUT"

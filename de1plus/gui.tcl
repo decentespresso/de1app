@@ -109,13 +109,11 @@ proc Double2Fraction { dbl {eps 0.000001}} {
 
 proc photoscale {img sx {sy ""} } {
 
-	if {($::android == 1 && $::undroid != 1)} {
-		#photoscale_not_android $img $sx $sy
+	if {$::some_droid} {
+		# native AndroWish-family photo scaling ($tmp copy -scale); both Android
+		# and undroid (iPad / macOS undroidwish) use it -- it's a runtime API, not
+		# a form-factor trait.
 		photoscale_android $img $sx $sy
-	} elseif {$::undroid == 1} {
-		# no undroid support for this yet
-		photoscale_android $img $sx $sy
-		#photoscale_not_android $img $sx $sy
 	} else {
 		photoscale_not_android $img $sx $sy
 	}
@@ -1007,7 +1005,11 @@ proc de1_connected_state { {hide_delay 0} } {
 	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]
 	set elapsed [expr {[clock seconds] - $::de1(connect_time)}]
 
-	if {$::android == 0} {
+	# When simulating (no real machine), there are no live BLE pings, so use the
+	# simple elapsed-time display instead of the ping-recency path below. Keyed on
+	# simulation, not $::android -- so a macOS/desktop build connected to a REAL
+	# machine over BLE now correctly uses the live-ping path like Android does.
+	if {[espresso_simulation_active]} {
 
 		if {$elapsed > $hide_delay && $hide_delay != 0} {
 			if {$::de1(substate) != 0} {
@@ -1137,7 +1139,11 @@ proc display_popup_android_message_if_necessary {msg} {
 # ::settings() hasn't been loaded as this point, nor has ::machine(hertz)
 
 # With no viable information available, hard-wire 50 Hz for now
-
+# NB: deliberately OS-keyed, not capability-keyed. This runs at SOURCE time,
+# before settings.tdb (and thus espresso_simulation_active / the transport
+# capabilities) are available; and it's a harmless pre-init that a real DE1
+# connection overwrites. $::android == 0 is simply "the non-Android GUI-driver
+# path" -- the only signal we have this early.
 if {$::android == 0} {
 	namespace eval ::gui {
 		variable _arbitrary_t0 [expr { [clock milliseconds] / 1000.0 }]
@@ -2029,6 +2035,14 @@ package require de1_shot 2.0
 
 proc ui_startup {} {
 
+	# One-line snapshot of platform detection + transport capabilities, to read
+	# device-test logs at a glance. Expect: Android -> android=1 has_bluetooth=1;
+	# iPad/iWish -> undroid=1 ios=1 has_bluetooth=1; macOS/desktop -> undroid=1
+	# (has_bluetooth=1 if the OSX BLE driver loaded). Logged here (not in
+	# determine_if_android) because the real has_bluetooth is set later by
+	# android_specific_stubs, and because logging is fully up by ui_startup.
+	msg -INFO "Startup capabilities: android=$::android undroid=$::undroid ios=$::ios some_droid=$::some_droid has_bluetooth=$::has_bluetooth has_usb=$::has_usb can_connect_de1=$::can_connect_de1"
+
 	# Adaptive redraw pacing for the live BLT charts: after a redraw of D ms, the
 	# graph refuses to redraw again for D ms (duty factor 1.0 => ~50%), so on a
 	# slow tablet expensive redraws can't monopolise the CPU and starve BLE/touch.
@@ -2041,17 +2055,21 @@ proc ui_startup {} {
 
 	load_settings
 
-	# iWish (iPad / Catalyst): fill the device's native screen.  iWish reports the
-	# real display size via Tk's winfo; de1app's 0-10000 coordinate space scales to
-	# screen_size_{width,height}, so setting them to the live screen makes the UI
-	# fill any resolution.  Gated on $::iwish, so real DE1 tablets are untouched.
-	if {[info exists ::iwish] && $::iwish} {
+	# Auto-size the UI to the LIVE display.  de1app's 0-10000 coordinate space
+	# scales to screen_size_{width,height}, so setting them to the real screen
+	# makes the UI fit whatever resolution it runs at.  This is every non-Android
+	# GUI host -- i.e. all of $::undroid: desktop undroidwish (window pinned to
+	# screen_size, see dui.tcl wm min/maxsize) AND iWish iPad/Catalyst (fills the
+	# native screen).
+	# Real DE1 Android tablets are excluded: they size themselves from the
+	# hardcoded per-model resolution buckets in dui.tcl instead.
+	if {$::undroid} {
 		set _sw [winfo screenwidth .]
 		set _sh [winfo screenheight .]
 		if {$_sw > 0 && $_sh > 0} {
 			set ::settings(screen_size_width) $_sw
 			set ::settings(screen_size_height) $_sh
-			catch {msg -NOTICE "iWish: auto-sized de1app to ${_sw}x${_sh} (native screen)"}
+			catch {msg -NOTICE "auto-sized de1app to ${_sw}x${_sh} (live display)"}
 		}
 	}
 
@@ -2996,7 +3014,9 @@ namespace eval ::gui::state {
 
 # JB's off-line GUI driver needs some variables initialized
 # that are normally done on DE1 connect
-
+# NB: OS-keyed on purpose (same as the 50 Hz pre-init above) -- runs at source
+# time before settings/capabilities exist, and is a harmless pre-init overwritten
+# on a real DE1 connect.
 if {$::android == 0} {
 	::gui::state::reset_framenumbers
 	::gui::state::reset_shotsample_deltas

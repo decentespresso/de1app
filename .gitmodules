@@ -8,16 +8,16 @@
 	branch = main
 [submodule "de1plus/skins/MimojaCafe"]
 	path = de1plus/skins/MimojaCafe
-	url = https://github.com/Mimoja/de1app_skin_MimojaCafe
+	url = https://github.com/decentespresso/de1app_skin_MimojaCafe.git
 [submodule "de1plus/plugins/SDB"]
 	path = de1plus/plugins/SDB
-	url = https://github.com/ebengoechea/de1app_plugin_SDB
+	url = https://github.com/decentespresso/de1app_plugin_SDB.git
 [submodule "de1plus/plugins/keyboard_control"]
 	path = de1plus/plugins/keyboard_control
 	url = https://github.com/vjapolitzer/de1app_plugin_keyboard_control
 [submodule "de1plus/plugins/DYE"]
 	path = de1plus/plugins/DYE
-	url = https://github.com/ebengoechea/de1app_plugin_DYE
+	url = https://github.com/decentespresso/de1app_plugin_DYE.git
 [submodule "de1plus/skins/metric"]
 	path = de1plus/skins/Metric
 	url = https://github.com/barneyhawes/decent-metric/
@@ -26,7 +26,7 @@
 	url = https://github.com/Damian-AU/DSx
 [submodule "de1plus/plugins/DPx_Screen_Saver"]
 	path = de1plus/plugins/DPx_Screen_Saver
-	url = https://github.com/Damian-AU/DPx_Screen_Saver
+	url = https://github.com/decentespresso/DPx_Screen_Saver.git
 [submodule "de1plus/plugins/old_lcd_disable"]
 	path = de1plus/plugins/old_lcd_disable
 	url = https://github.com/bkeller2/old_lcd_disable
@@ -35,16 +35,16 @@
 	url = https://github.com/barneyhawes/mini-metric
 [submodule "de1plus/plugins/D_Flow_Espresso_Profile"]
 	path = de1plus/plugins/D_Flow_Espresso_Profile
-	url = https://github.com/Damian-AU/D_Flow_Espresso_Profile
+	url = https://github.com/decentespresso/D_Flow_Espresso_Profile.git
 [submodule "de1plus/plugins/D_Scheduler"]
 	path = de1plus/plugins/D_Scheduler
 	url = https://github.com/Damian-AU/D_Scheduler
 [submodule "de1plus/skins/DSx2"]
 	path = de1plus/skins/DSx2
-	url = https://github.com/Damian-AU/DSx2
+	url = https://github.com/decentespresso/DSx2.git
 [submodule "de1plus/plugins/mqtt"]
 	path = de1plus/plugins/mqtt
-	url = https://github.com/simpkins/de1plus-mqtt.git
+	url = https://github.com/decentespresso/de1plus-mqtt.git
 	branch = main
 [submodule "plugins/skip_first_step_notice"]
 	path = plugins/skip_first_step_notice
@@ -63,10 +63,10 @@
 	url = https://github.com/Damian-AU/history_exclusion_filter
 [submodule "de1plus/profile_editors/D_Flow"]
 	path = de1plus/profile_editors/D_Flow
-	url = https://github.com/Damian-AU/D_Flow
+	url = https://github.com/decentespresso/D_Flow.git
 [submodule "de1plus/profile_editors/A_Flow"]
 	path = de1plus/profile_editors/A_Flow
-	url = https://github.com/Jan3kJ/A_Flow.git
+	url = https://github.com/decentespresso/A_Flow.git
 [submodule "de1plus/plugins/ro_filter_monitor"]
 	path = de1plus/plugins/ro_filter_monitor
 	url = https://github.com/MiroStW/ro_filter_monitor
@@ -76,4 +76,6 @@
 	branch = main
 [submodule "de1plus/plugins/A_Flow"]
 	path = de1plus/plugins/A_Flow
-	url = https://github.com/Jan3kJ/A_Flow.git
+	url = https://github.com/decentespresso/A_Flow.git
+[submodule "de1plus/skins/Metric"]
+	url = https://github.com/decentespresso/decent-metric.git

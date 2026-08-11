@@ -1199,15 +1199,6 @@ add_de1_text "settings_4" 50 220 -text [translate "Update App"] -font Helv_10_bo
 		#add_de1_variable "firmware_update_4" 730 700 -text "" -font Helv_10_bold -fill "#222222" -anchor "ne" -width [rescale_x_skin 700] -justify "right" -textvariable {[if {$::de1(device_handle) == 0 && $::android == 1} { app_exit }; return [firmware_uploaded_label]]} 
 		#add_de1_text "firmware_update_4" 730 800 -text [subst {[translate "Turn your DE1 off. Wait a few seconds. Turn your DE1 on."]\n\n[translate "Please be patient. It can take several minutes for your DE1 to update."]}] -font Helv_8 -fill "#222222" -anchor "ne" -width [rescale_x_skin 700] -justify "right" 
 
-	if {$::android == 0} {
-		# cheat buttons when running on not-android, so as to be able to advance to the next screen
-		# purely for debugging the GUI
-		add_de1_button "firmware_update_1" {set ::de1(device_handle) 0} 0 1200 100 1600 ""
-		add_de1_button "firmware_update_2" {set ::de1(device_handle) 1 } 0 1200 100 1600 ""
-		add_de1_button "firmware_update_4" {set ::de1(device_handle) 0 } 0 1200 100 1600 ""
-		add_de1_button "firmware_update_5" {set ::de1(device_handle) 1 } 0 1200 100 1600 ""
-	}
-
 	
 	#set ::de1(currently_updating_firmware) 0
 
@@ -1385,9 +1376,9 @@ proc calculate_screen_flip_value {} {
 			add_de1_widget "measurements" scale 340 740 {} -from 0 -to 120 -background #e4d1c1 -borderwidth 1 -bigincrement 1 -showvalue 0 -resolution 1 -length [rescale_x_skin 800] -width [rescale_x_skin 100] -variable ::settings(screen_saver_change_interval) -font Helv_10_bold -sliderlength [rescale_x_skin 125] -relief flat -orient horizontal -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0
 			add_de1_variable "measurements" 340 840 -text "" -font Helv_8 -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "left" -textvariable {[screen_saver_change_minutes $::settings(screen_saver_change_interval)]}
 
-			# iOS: the app updates via the App Store, not de1app's self-updater,
-			# so hide the App version (stable/beta/nightly) channel + auto-update toggle
-			if {![running_on_ios]} {
+			# App version channel (stable/beta/nightly) + auto-update toggle.
+			# Shown on ALL platforms now: de1app self-updates everywhere. iOS ships via
+			# SideStep (not the App Store), so the old App-Store-only hide is removed.
 			add_de1_text "measurements" 340 920 -text [translate "App version"] -font Helv_8_bold -fill "#7f879a" -justify "left" -anchor "nw"
 				dui add dselector "measurements" 340 980 -bwidth 800 -bheight 80 -orient h -anchor nw -values {0 1 2} -variable ::settings(app_updates_beta_enabled) -labels [list [translate "stable"] [translate "beta"] [translate "nightly"]]  -width 2 -fill "#FAFAFA" -selectedfill "#4d85f4"
 
@@ -1395,7 +1386,6 @@ proc calculate_screen_flip_value {} {
 
 			add_de1_text "measurements" 480 1080 -text [translate "update automatically"]  -font $optionfont -width [rescale_x_skin 700] -fill "#4e85f4" -justify left -anchor "nw"
 			add_de1_button "measurements" { set ::settings(app_auto_update) [expr {!$::settings(app_auto_update)}] } 340 1080 1200 1140
-			}
 
 	add_de1_text "settings_4" 2290 616 -text [translate "Extensions"] -font Helv_10_bold -fill "#FFFFFF" -anchor "center" 
 	add_de1_button "settings_4" {say [translate {Extensions}] $::settings(sound_button_in); fill_extensions_listbox; page_to_show_when_off extensions; ; set_extensions_scrollbar_dimensions}  1910 520 2530 720
@@ -2238,8 +2228,8 @@ proc show_page_calibrate_3 {} {
 		add_de1_variable "calibrate2" 1000 450  -text "" -font Helv_9_bold -fill "#4e85f4" -anchor "nw" -textvariable {[if {$::settings(heater_voltage) != "1120" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { return [subst {\[ [translate "Set to 120V"] \]}] } else { return "" }]}
 		add_de1_variable "calibrate2" 1600 450  -text "" -font Helv_9_bold -fill "#4e85f4" -anchor "nw" -textvariable {[if {$::settings(heater_voltage) != "1230" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { return [subst {\[ [translate "Set to 230V"] \]}] } else { return "" }]}
 		
-		add_de1_button "calibrate2" {if {$::settings(heater_voltage) != "1120" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { if {$::android == 0} { set ::settings(heater_voltage) "1120" }; set_heater_voltage "120"; get_heater_voltage} } 1000 450 1450 600 ""
-		add_de1_button "calibrate2" {if {$::settings(heater_voltage) != "1230" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { if {$::android == 0} { set ::settings(heater_voltage) "1230" }; set_heater_voltage "230"; get_heater_voltage} } 1600 450 2050 600 ""
+		add_de1_button "calibrate2" {if {$::settings(heater_voltage) != "1120" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { if {![info exists ::settings(heater_voltage)] || $::settings(heater_voltage) == ""} { set ::settings(heater_voltage) "1120" }; set_heater_voltage "120"; get_heater_voltage} } 1000 450 1450 600 ""
+		add_de1_button "calibrate2" {if {$::settings(heater_voltage) != "1230" || $::settings(heater_voltage) == "0" || $::settings(heater_voltage) == "" } { if {![info exists ::settings(heater_voltage)] || $::settings(heater_voltage) == ""} { set ::settings(heater_voltage) "1230" }; set_heater_voltage "230"; get_heater_voltage} } 1600 450 2050 600 ""
 
 		add_de1_variable "calibrate2" 700 450  -text [translate "Voltage"] -font Helv_9_bold -fill "#7f879a" -anchor "nw" -justify "left"  -textvariable {[if {$::settings(heater_voltage) == "120" || $::settings(heater_voltage) == "1120"} {
 				return "120V"

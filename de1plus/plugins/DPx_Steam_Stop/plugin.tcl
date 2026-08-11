@@ -48,7 +48,7 @@ namespace eval ::plugins::${plugin_name} {
                 set_fan_temperature_threshold $::settings(fan_threshold)
             }
 
-            if {$::android == 0} {
+            if {[espresso_simulation_active]} { ;# was $::android
                 after 200 [list update_de1_state "$::de1_state(Idle)\x0"]
             }
         }

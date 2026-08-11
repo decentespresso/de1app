@@ -121,8 +121,8 @@ namespace eval ::plugins {
                     }
                 }
 
-                # these plugins don't work without Androwish/Undroidwish
-                if {$::android != 1 && $::undroid != 1} {
+                # these plugins don't work without the AndroWish/undroidwish runtime
+                if {!$::some_droid} {
                     if {$plugin == "SDB" || $plugin == "DYE"} {
                         # the DYE and SDB plugins require Androwish/Undroidwish, or it crashes the app on peeking
                         return 0

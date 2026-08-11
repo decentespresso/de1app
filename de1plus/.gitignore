@@ -1,0 +1,15 @@
+plugins/shot_upload/settings.tdb
+
+# Unused Font Awesome 6 weights — no code loads these (dui.tcl loads only Pro-Regular + Brands)
+/fonts/Font Awesome 6 Duotone-Solid-900.otf
+/fonts/Font Awesome 6 Pro-Light-300.otf
+/fonts/Font Awesome 6 Pro-Solid-900.otf
+/fonts/Font Awesome 6 Pro-Thin-100.otf
+/fonts/Font Awesome 6 Sharp-Light-300.otf
+/fonts/Font Awesome 6 Sharp-Regular-400.otf
+/fonts/Font Awesome 6 Sharp-Solid-900.otf
+# Hebrew UI faces not wired into dui.tcl (WIP)
+/fonts/notosansuibold_hebrew.ttf
+/fonts/notosansuiregular_hebrew.ttf
+# macOS cruft
+.DS_Store

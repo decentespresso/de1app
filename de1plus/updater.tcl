@@ -7,83 +7,45 @@ package provide de1_updater 1.1
 
 package require de1_logging 1.0
 
+# NB: the BLE/USB transport loaders (load_ble_command / load_usb_command) used to
+# live here, but were moved to utils.tcl so this failsafe updater never loads BLE
+# -- android detection below now uses `borg osbuildinfo`, not the `ble` command.
+# See android_specific_stubs (utils.tcl), which loads them at app runtime.
 proc determine_if_android {} {
 
     set ::android 0
     set ::undroid 0
     set ::some_droid 0
 
-    # The ble package prefers an in-process native CoreBluetooth extension, but
-    # that needs the interpreter itself to hold Bluetooth (TCC) permission --
-    # impossible for the unsignable wish/undroidwish we run on macOS, where an
-    # in-process attempt can even wedge.  So on macOS (but NOT iWish, which is a
-    # signed app that CAN do in-process BLE) force the package's subprocess
-    # helper backend via BLE_NO_NATIVE.
-    #
-    # We deliberately do NOT set BLE_HELPER_NO_REEXEC: the helper's "disclaim"
-    # self-re-exec makes it its OWN TCC responsible process
-    # (com.decentespresso.ble-helper, Developer-ID signed, carrying its own
-    # NSBluetoothAlwaysUsageDescription). That gives ONE Bluetooth identity that
-    # is grantable (via the first-run prompt) and works identically in every
-    # launch mode -- the packaged Decent.app, unde1plus.sh, and
-    # unde1plus-arm64.sh. Routing Bluetooth to the host .app identity instead
-    # (the old BLE_HELPER_NO_REEXEC=1 path) worked only for the bundled .app and
-    # left the raw terminal launchers, which have no grantable .app identity,
-    # unable to scan. (The disclaim's posix_spawn must NOT dup fd 2 -- undroidwish's
-    # stderr is not a real fd; see ble/ble_helper.swift reexecOwningResponsibility.)
-    if {$::tcl_platform(os) eq "Darwin" && !([info exists ::iwish] && $::iwish)} {
-        set ::env(BLE_NO_NATIVE) 1
-    }
-
-    # macOS: load the BUNDLED ble driver (de1plus/ble) DIRECTLY, before the BLT
-    # block below.  Two reasons:
-    #  1) Plain `tclsh de1plus.tcl --ble-test` has no BLT, so the catch below
-    #     aborts at `package require BLT` and never reaches `package require ble`
-    #     -- the headless self-test would otherwise find nothing.
-    #  2) Sourcing it directly makes `ble` *provided*, so the BLT block's
-    #     `package require ble` returns immediately without scanning auto_path.
-    #     That guarantees the local submodule copy wins over any system-wide
-    #     install (e.g. a /usr/local/lib/tcl-ble-osx symlink on auto_path), which
-    #     a `package ifneeded` registration alone can't (a later auto_path scan
-    #     overwrites it).
-    # BLE_NO_NATIVE is already set above, so it uses the subprocess helper.
-    # Guarded to macOS-non-iWish: Android has a built-in ble, iWish its own dylib.
-    if {$::tcl_platform(os) eq "Darwin" && !([info exists ::iwish] && $::iwish)} {
-        set ::_de1_ble_tcl [file join [file dirname [info script]] ble ble.tcl]
-        if {[file exists $::_de1_ble_tcl]} {
-            catch { uplevel #0 [list source $::_de1_ble_tcl] }
+    # Detect a real Android device via `borg osbuildinfo` (Android's
+    # android.os.Build.*): ONLY a genuine Android reports a positive version.sdk
+    # (the API level). Every other AndroWish-family build -- desktop undroidwish,
+    # iWish iPad/Catalyst -- reports 0, and a build without borg errors out (the
+    # catch leaves android=0). See BORG-OSX.md. This deliberately does NOT load
+    # BLE: the failsafe updater must stay lean, so the real BLE/USB drivers load
+    # later, in android_specific_stubs (utils.tcl), which the updater never runs.
+    catch {
+        set _bi [borg osbuildinfo]
+        if {[dict exists $_bi version.sdk] && [dict get $_bi version.sdk] > 0} {
+            set ::android 1
         }
-        unset -nocomplain ::_de1_ble_tcl
     }
 
+    # undroidwish family (desktop undroidwish OR iWish iPad/Catalyst): the sdl2tk /
+    # BLT Tk GUI stack is present but this is not a real Android device. The
+    # namespace import makes blt::graph etc. available to the app (on Android too).
+    # (catch: a plain headless tclsh has neither BLT nor the blt:: namespace.)
     catch {
         package require BLT
         namespace import blt::*
         namespace import -force blt::tile::*
-
-        #sdltk android
-        set ::undroid 1
-
-        package require ble
-        set ::undroid 0
-        set ::android 1
-
+        if {!$::android} { set ::undroid 1 }
     }
 
-    # iWish (macOS Catalyst AndroWish): it HAS a real CoreBluetooth `ble` command
-    # (so the catch above flipped us to android=1), but it does NOT have borg/sdltk.
-    # Run it as 'undroid' (so those Android APIs get stubbed by dui.tcl) while keeping
-    # the real `ble` command available for a genuine Bluetooth scan.
+    # Safety net: iWish is an Apple build, so borg should already have given
+    # android=0 -- but force it, so a surprising osbuildinfo can never mis-flag the
+    # iPad/Catalyst app as Android.
     if {[info exists ::iwish] && $::iwish} {
-        set ::android 0
-        set ::undroid 1
-    }
-
-    # macOS undroidwish: the de1plus/ble package gives a real CoreBluetooth `ble`
-    # command, so the catch above set android=1 -- but the Mac has no borg/sdltk
-    # Android APIs, so run as 'undroid' (dui.tcl stubs those) while keeping the
-    # real `ble` command for genuine Bluetooth scanning.
-    if {$::tcl_platform(os) eq "Darwin" && [llength [info commands ble]]} {
         set ::android 0
         set ::undroid 1
     }
@@ -99,15 +61,23 @@ proc determine_if_android {} {
         set ::ios [expr {[info exists ::iwish] && $::iwish}]
     }
 
-    # Real Bluetooth (BLE) is available whenever a genuine `ble` command loaded
-    # above -- true on Android, iWish, and macOS undroidwish (via the de1plus/ble
-    # package), false on plain desktop builds.  Features that were historically
-    # gated to `$::android == 1` (because only Android had working BLE) should
-    # test `$::has_bluetooth` instead, so they also run on iWish and macOS.
-    # NB: computed HERE, before android_specific_stubs (machine.tcl / dui.tcl)
-    # defines a no-op `ble` stub on BLE-less platforms -- otherwise that stub
-    # would make this look true everywhere.
-    set ::has_bluetooth [expr {[llength [info commands ble]] > 0}]
+    # Transport capabilities DEFAULT to "none" here. Their REAL values are set
+    # later, at app runtime, by android_specific_stubs (utils.tcl) once it loads
+    # the BLE / USB drivers -- which the failsafe updater never runs, so the
+    # updater never loads BLE. Set to safe defaults (not left unset) so any early
+    # reader sees 0. A launcher may still pre-set ::has_usb before startup, like
+    # ::ios. Connectivity decisions key on these capabilities, NOT on the OS flags.
+    # On Android `ble` is a built-in command, already present now (no loading) --
+    # capture it via a cheap [info commands] CHECK (not a load). Android is the one
+    # platform where android_specific_stubs is NOT called (it has real borg/ble),
+    # so this is where has_bluetooth gets its true value there. On macOS/desktop
+    # ble isn't loaded yet, so this is 0 and android_specific_stubs sets the real
+    # value after it loads the driver.
+    if {![info exists ::has_bluetooth]} {
+        set ::has_bluetooth [expr {[llength [info commands ble]] > 0}]
+    }
+    if {![info exists ::has_usb]}       { set ::has_usb 0 }
+    set ::can_connect_de1 [expr {$::has_bluetooth || $::has_usb}]
 
     if {$::android == 1 || $::undroid == 1} {
         # turn the background window black as soon as possible
@@ -118,6 +88,11 @@ proc determine_if_android {} {
         # without this guard these Tk calls crash the build.
         if {[llength [info commands winfo]] && [winfo exists .]} {
             . configure -bg black -bd 0
+            # `wm attributes -fullscreen` here is RELATIVE TO THE undroidwish SDL
+            # window -- it makes the app fill that window (dropping sdl2tk's window
+            # chrome), it does NOT take over the macOS/Windows/Linux desktop. So we
+            # want it on every GUI host (this whole block is gated on android ||
+            # undroid), desktop undroidwish included.
             wm attributes . -fullscreen 1
         }
         set ::some_droid 1

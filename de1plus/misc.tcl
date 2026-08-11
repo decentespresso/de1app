@@ -19,6 +19,7 @@ proc make_de1_dir {srcdir destdirs} {
         ios.tcl *
         osx.tcl *
         google_play_store.tcl *
+        readonly_guard.tcl *
         main.tcl *
         plugins.tcl *
         vars.tcl *
@@ -82,6 +83,8 @@ proc make_de1_dir {srcdir destdirs} {
         fonts/sarabunbold.ttf *
         fonts/Dubai-Bold.otf *
         fonts/Dubai-Regular.otf *
+        fonts/NotoSansArabic-Regular.ttf *
+        fonts/Roboto-Regular.ttf *
 
         "simulations/simulated_1.shot" *
         "simulations/simulated_2.shot" *

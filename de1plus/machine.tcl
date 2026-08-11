@@ -938,19 +938,20 @@ proc ghc_message {type} {
 	after 1000 "set ::nextpage(machine:off) $currentpage"
 }
 
-# True when the on-screen espresso *simulator* should drive the shot: no real
-# DE1 is configured (empty bluetooth_address), on a desktop build (not Android,
-# not iOS). When a DE1 address is set, the real machine drives Espresso over BLE
-# and the simulator must stay off so it does not fight the machine.
+# True when the on-screen espresso *simulator* should drive the shot.
 #
-# NB: this was previously gated on !$::has_bluetooth, but has_bluetooth became
-# true on every BLE-capable build (undroidwish / iWish / OSX) once the OSX BLE
-# package landed (updater.tcl sets it from [info commands ble]). That wrongly
-# disabled the workstation simulator even when no machine was configured.
+# The simulator can run on ANY OS -- but ONLY while NO real machine is CONFIGURED,
+# i.e. neither a Bluetooth address nor a USB connection is set in settings (even if
+# not currently connected). So on first run of de1app, with nothing paired, the
+# simulator is available everywhere (desktop, Android, iPad). The moment a
+# bluetooth_address or a USB connection is defined, the real machine owns Espresso
+# and the simulator is disabled so it cannot fight the hardware. This is purely a
+# CONFIGURATION test -- not OS, not BLE *capability* (a build with the OSX BLE
+# package still simulates until something is paired).
 proc espresso_simulation_active {} {
-	if { $::android } { return 0 }
-	if { [info exists ::ios] && $::ios } { return 0 }
-	return [expr { $::settings(bluetooth_address) eq "" }]
+	if { $::settings(bluetooth_address) ne "" } { return 0 }
+	if { [ifexists ::settings(usb_address)] ne "" } { return 0 }
+	return 1
 }
 
 proc start_espresso {} {

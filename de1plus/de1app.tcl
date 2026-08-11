@@ -6,20 +6,17 @@ encoding system utf-8
 # accept both, so this is safe on desktop/tablet/iOS too.
 cd "[file dirname [info script]]"
 
-# iOS / iPadOS / Mac Catalyst (iWish) startup: platform self-detection and the
-# read-only-bundle data-root redirect. Must run here -- after `cd` into the
-# bundle, before any package loads. No-op on every non-iWish platform.
-source "ios.tcl"
-
-# Shared read-only-package -> writable-copy redirect, used by BOTH osx.tcl (macOS
-# .app) and google_play_store.tcl (Android Play/sideload). A packaged build ships
-# its de1plus tree as read-only assets, but de1app writes log.txt/history/settings/
-# profiles + self-updates INTO its own tree via [homedir]; so on first launch we
-# copy the WHOLE bundle out to $wdir (~/Documents/Decent), then redirect there --
-# both the DATA root ($::home / homedir) AND the cwd (pkgIndex.tcl registers every
-# package with a `./`-relative path, so cd'ing before it loads makes all code load
-# from the writable copy too, keeping SELF-UPDATE working). iOS is the deliberate
-# exception (ios.tcl: code stays read-only in the bundle, Apple guideline 2.5.2).
+# Shared read-only-package -> writable-copy redirect, used by ALL THREE packaged
+# builds: ios.tcl (iOS/iWish via SideStep), osx.tcl (macOS .app) and
+# google_play_store.tcl (Android Play/sideload). A packaged build ships its de1plus
+# tree as read-only assets, but de1app writes log.txt/history/settings/profiles +
+# self-updates INTO its own tree via [homedir]; so on first launch we copy the
+# WHOLE bundle out to $wdir (~/Documents/Decent), then redirect there -- both the
+# DATA root ($::home / homedir) AND the cwd (pkgIndex.tcl registers every package
+# with a `./`-relative path, so cd'ing before it loads makes all code load from the
+# writable copy too, keeping SELF-UPDATE working). iOS used to be an exception
+# (code stayed read-only in the bundle for Apple guideline 2.5.2); since it ships
+# via SideStep now, it uses this same path -- see ios.tcl.
 #
 # Returns 1 on the first run (fresh copy just made), 0 on a later run, or "" if the
 # copy is incomplete (caller then stays on the read-only bundle rather than failing
@@ -82,10 +79,20 @@ proc ::de1_redirect_data_root {bundle wdir tag} {
     }
     # Redirect only if the writable copy is actually complete.
     if {![file exists $_done]} { return "" }
+    # Record the frozen read-only bundle path (before we cd away) so the optional
+    # readonly_guard.tcl can flag/redirect any write that targets it.
+    set ::_readonly_bundle [file normalize $bundle]
     set ::home $wdir   ;# homedir (updater.tcl) returns $::home once set
     cd $::home         ;# so pkgIndex.tcl + every package load from here
     return $_firstrun
 }
+
+# iOS / iPadOS (iWish, sideloaded via SideStep) startup: platform self-detection
+# (::iwish/::ios) AND the read-only-bundle redirect via the shared proc above. Must
+# run AFTER ::de1_redirect_data_root is defined, and BEFORE osx.tcl/
+# google_play_store.tcl (they bail out when ios.tcl has claimed ::ios) and before
+# pkgIndex.tcl (it cd's so packages load from the writable copy). No-op off iOS.
+source "ios.tcl"
 
 # macOS notarized-bundle data-root redirect: on a notarized.flag / standalone.flag
 # build, copy the read-only bundle to ~/Documents/Decent on first run and cd there
@@ -101,6 +108,16 @@ source "osx.tcl"
 # in-app self-update working. (Unlike iOS, Android may run its own scripts from
 # writable storage.) No-op on macOS and iOS. Must run after ios.tcl/osx.tcl.
 source "google_play_store.tcl"
+
+# The optional read-only write-guard: wraps `open`(write)/`file copy|rename|delete|
+# mkdir` so any write that resolves INSIDE the frozen read-only bundle is logged
+# (with a stack trace) and transparently redirected into the writable copy, instead
+# of silently failing or corrupting the signed/sealed package. A no-op unless a
+# `writeguard.flag` marker is present (dropped into the bundle by the packaging
+# scripts for the test builds). Must run AFTER all three platform redirects above
+# (whichever fired sets ::_readonly_bundle + cd's to the writable copy) and BEFORE
+# pkgIndex.tcl / any package load, so it wraps writes from the very first package.
+source "readonly_guard.tcl"
 
 source "pkgIndex.tcl"
 source "version.tcl"
