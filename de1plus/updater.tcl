@@ -712,14 +712,24 @@ proc check_timestamp_for_app_update_available { {check_only 0} } {
 
 proc start_app_update {} {
 
-    # On iOS the app is distributed through the App Store and cannot update
-    # itself in place. Instead of attempting a download, show the message page
-    # telling the user to update via the App Store.
-    if {[ifexists ::ios] == 1} {
+    # Some builds cannot rewrite themselves in place and must not self-update --
+    # they hand the user off to a store instead. This is a build property, NOT an
+    # OS: key it on the generic ::self_update_prohibited flag so any locked-down
+    # store build can just pre-set it (like ::ios / ::has_usb). If unset, derive it
+    # from the only case that exists today -- a hypothetical iOS App Store build,
+    # marked by `appstore.flag` in the read-only bundle. (The mainstream SideStep-
+    # sideloaded build runs from a writable copy in ~/Documents/Decent, so the
+    # marker is absent and it self-updates in place like the macOS .app / Android APK.)
+    if {![info exists ::self_update_prohibited]} {
+        set ::self_update_prohibited [expr {[ifexists ::ios] == 1 \
+                && [info exists ::_readonly_bundle] \
+                && [file exists [file join $::_readonly_bundle "appstore.flag"]]}]
+    }
+    if {$::self_update_prohibited} {
         set ::de1(app_update_button_label) [translate "Update"]
         catch { update_onscreen_variables }
         catch {
-            info_page [translate "On iOS, you must update using the App Store"] [translate "Ok"]
+            info_page [translate "This version must be updated through your app store"] [translate "Ok"]
         }
         return
     }
