@@ -319,8 +319,38 @@ proc decent_async_http_get {url cmd {timeout 30000}} {
 
 proc decent_http_get {url {timeout 30000}} {
 
+    # Prefer TclCurl (libcurl) for the fetch. On iWish/iOS the ::http::geturl path
+    # over the TclTLS channel errors while READING a larger HTTPS response ("error
+    # reading sockNNN: Unknown error ..."): the tiny timestamp.txt squeaks through
+    # but the ~57 KB manifest.gz fails, which aborts the whole app update with
+    # "Corrupt manifest". libcurl reads it correctly (and is already the transport
+    # for decent_http_get_to_file). This stays HTTPS -- it is NOT a downgrade; the
+    # cert is still verified against allcerts.pem when present. Falls back to
+    # ::http::geturl when TclCurl is unavailable (plain desktop tclsh).
+    if {![catch {package require TclCurl}]} {
+        set body ""
+        set ok 0
+        set hdl [::curl::init]
+        if {[catch {
+            $hdl configure -url $url -bodyvar body -useragent "mer454" \
+                -connecttimeout 20 -lowspeedlimit 1 -lowspeedtime 60 \
+                -followlocation 1 -failonerror 1
+            set _ca "[homedir]/allcerts.pem"
+            if {[file exists $_ca]} { $hdl configure -sslverifypeer 1 -cainfo $_ca }
+            $hdl perform
+            set ok 1
+        } curlerr]} {
+            catch { msg -DEBUG "decent_http_get: TclCurl failed for $url: $curlerr -- trying ::http" }
+        }
+        catch { $hdl cleanup }
+        if {$ok && [string length $body] > 0} {
+            return $body
+        }
+        # else fall through to the ::http::geturl path below
+    }
+
     set body {}
-    set token {}    
+    set token {}
     #catch {
         ::http::config -useragent "mer454"
         set token [::http::geturl $url -binary 1 -timeout $timeout]
@@ -334,7 +364,7 @@ proc decent_http_get {url {timeout 30000}} {
             set token [::http::geturl $url -binary 1 -timeout $timeout]
             set body [::http::data $token]
         }
-        
+
         if {[::http::error $token] != ""} {
 		msg -ERROR "http_get error: [::http::error $token]"
         }
@@ -342,7 +372,7 @@ proc decent_http_get {url {timeout 30000}} {
             ::http::cleanup $token
         }
     #}z
-    
+
     return $body
 }
 
