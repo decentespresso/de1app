@@ -1045,10 +1045,6 @@ proc make_de1_dir {srcdir destdirs} {
 
     foreach s $skin_folders {
         set fbasename [file rootname [file tail $s]]
-        # We skip the old metric folder when creating the manifest now. This might now work on windows... :(
-        if {$fbasename == "metric"} {
-            continue
-        }
 
         if {[file exists "$srcdir/skins/$fbasename/filelist.txt"] == 1} {
             set log_files {}
