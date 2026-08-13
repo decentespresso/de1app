@@ -14,7 +14,7 @@
 	url = https://github.com/decentespresso/de1app_plugin_SDB.git
 [submodule "de1plus/plugins/keyboard_control"]
 	path = de1plus/plugins/keyboard_control
-	url = https://github.com/vjapolitzer/de1app_plugin_keyboard_control
+	url = https://github.com/decentespresso/de1app_plugin_keyboard_control.git
 [submodule "de1plus/plugins/DYE"]
 	path = de1plus/plugins/DYE
 	url = https://github.com/decentespresso/de1app_plugin_DYE.git
@@ -66,7 +66,7 @@
 	url = https://github.com/decentespresso/A_Flow.git
 [submodule "de1plus/plugins/ro_filter_monitor"]
 	path = de1plus/plugins/ro_filter_monitor
-	url = https://github.com/MiroStW/ro_filter_monitor
+	url = https://github.com/decentespresso/de1app_plugin_ro_filter_monitor.git
 [submodule "de1plus/ble"]
 	path = de1plus/ble
 	url = https://github.com/johnbuckman/tcl-ble-osx
