@@ -70,8 +70,42 @@ proc save_swdark_settings {} {
     save_swdark_array_to_file ::swdark_settings [swdark_filename]
 }
 
+# Canonical default skin settings. userdata/swdark_usersettings.tdb used to ship via
+# the misc.tcl manifest, but it lived in the writable data root and captured the
+# developer's runtime state, so it was dropped from the manifest. Defaults now live
+# here in code; the user's own tdb (written under the data root) still overlays them
+# on returning installs. swdark4varscheck() fills the few remaining keys that depend
+# on the active profile/settings at runtime.
+proc swdark_default_settings {} {
+    return {
+        scale_display_state { }
+        scale_display_state_b .
+        skale_display_state { }
+        skale_display_state_b .
+        sw_y_axisscale 10
+        swbrewratio 1.8
+        swbrewsettings 0
+        swcoffeedose 20.0
+        swcoffeetargetweight 45.0
+        swcoffeetargetweightadv 32
+        swcoffeetargetweightcombined 55.0
+        swflushvol 50
+        swsteamoff 21
+        swstopatvol 32
+        swstopatvoladv 0
+        swvoltype {::settings(final_desired_shot_volume_advanced)}
+        swwatertemp 64
+        swwatervol 120
+        swweighttype {::settings(final_desired_shot_weight_advanced)}
+    }
+}
+
 proc load_swdark_settings {} {
-    array set ::swdark_settings [encoding convertfrom utf-8 [read_binary_file [swdark_filename]]]
+    array set ::swdark_settings [swdark_default_settings]
+    set stored [encoding convertfrom utf-8 [read_binary_file [swdark_filename]]]
+    if {[string length $stored] != 0} {
+        catch { array set ::swdark_settings $stored }
+    }
 }
 
 proc swdark4varscheck {} {

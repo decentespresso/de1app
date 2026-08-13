@@ -225,7 +225,6 @@ proc make_de1_dir {srcdir destdirs} {
         skins/SWDark4/2560x1600/saver-2.png *
         skins/SWDark4/2560x1600/saver-3.png *
         skins/SWDark4/2560x1600/swbrewsettings.png *
-        skins/SWDark4/userdata/swdark_usersettings.tdb *
         skins/SWDark4/1280x800/icon.jpg *
         skins/SWDark4/1280x800/sleep.png *
         skins/SWDark4/1280x800/fill_tank.png *
@@ -1025,7 +1024,6 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/DPx_Screen_Saver/plugin.tcl *
         plugins/D_Scheduler/plugin.tcl *
         plugins/keyboard_control/plugin.tcl *
-        plugins/keyboard_control/settings.tdb *
         plugins/log_debug/plugin.tcl *
         plugins/web_api/plugin.tcl *
 
