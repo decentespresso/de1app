@@ -46,12 +46,30 @@ proc ::de1_redirect_data_root {bundle wdir tag} {
     # Refresh the CODE in an existing copy when this bundle is a newer build, so a
     # rebuilt package actually takes effect instead of the copy staying frozen.
     if {!$_firstrun && [file exists $_done]} {
-        set _bid_b [file join $bundle "build_id.txt"]
-        set _bid_c [file join $wdir "build_id.txt"]
-        set _vb ""; set _vc ""
-        catch { set _fh [open $_bid_b r]; set _vb [string trim [read $_fh]]; close $_fh }
-        catch { set _fh [open $_bid_c r]; set _vc [string trim [read $_fh]]; close $_fh }
-        if {[file exists $_bid_b] && $_vb ne "" && $_vb ne $_vc} {
+        # Build identity for the "refresh code on a newer build" check. Prefer an
+        # explicit build_id.txt, but fall back to build-info.txt's version_string:
+        # build-info.txt is in the misc.tcl manifest so EVERY read-only build (ipa,
+        # apk, appimage, osx) ships it, giving them all a refresh trigger even
+        # without a separate build_id.txt file.
+        proc ::_de1_build_id {_dir} {
+            set _p [file join $_dir "build_id.txt"]
+            if {[file exists $_p] \
+                    && ![catch { set _h [open $_p r]; set _v [string trim [read $_h]]; close $_h }] \
+                    && $_v ne ""} {
+                return $_v
+            }
+            set _bi [file join $_dir "build-info.txt"]
+            if {[file exists $_bi] \
+                    && ![catch { set _h [open $_bi r]; set _t [read $_h]; close $_h }]} {
+                foreach _ln [split $_t "\n"] {
+                    if {[regexp {^\s*version_string\s+(.+?)\s*$} $_ln -> _vs]} { return [string trim $_vs] }
+                }
+            }
+            return ""
+        }
+        set _vb [::_de1_build_id $bundle]
+        set _vc [::_de1_build_id $wdir]
+        if {$_vb ne "" && $_vb ne $_vc} {
             proc ::_de1_refresh_tree {src dst} {
                 foreach _f [glob -nocomplain -directory $src -- *] {
                     set _t [file join $dst [file tail $_f]]
@@ -73,7 +91,10 @@ proc ::de1_redirect_data_root {bundle wdir tag} {
             foreach _f [glob -nocomplain -directory $bundle -- *.tcl] {
                 catch { file copy -force -- $_f [file join $wdir [file tail $_f]] }
             }
-            catch { file copy -force -- $_bid_b $_bid_c }
+            foreach _idf {build-info.txt build_id.txt} {
+                set _s2 [file join $bundle $_idf]
+                if {[file exists $_s2]} { catch { file copy -force -- $_s2 [file join $wdir $_idf] } }
+            }
             catch { puts stderr "$tag: refreshed code in copy to build $_vb" }
         }
     }

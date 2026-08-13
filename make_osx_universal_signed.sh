@@ -292,6 +292,22 @@ fi
 printf '%s\n' "$CHAN_NUM" > "$RES/osx_update_channel"
 echo "Channel: $DECENT_CHANNEL (app_updates_beta_enabled=$CHAN_NUM), payload $SRC_DE1PLUS"
 
+# Fresh build identity so the read-only redirect (de1app.tcl ::de1_redirect_data_root)
+# REFRESHES an existing ~/Documents/Decent copy on the next launch when this bundle is
+# newer — otherwise a returning user keeps running their old copy (missing new plugins
+# like shot_upload, stale version). build-info.txt (shipped by every read-only build via
+# the misc.tcl manifest) is the trigger; a stale copy in the seed would defeat it, so
+# regenerate it here against the de1app git repo, and drop an explicit build_id.txt too.
+# DE1PLUS=$RES so it stamps the SEED's version.tcl (the real X.Y.Z the app shows via
+# `package version de1app`, gui.tcl) AND writes the seed's build-info.txt — from the
+# de1app git repo's `git describe`.
+if [ -x "$REPO/misc/create_build_info.sh" ]; then
+    ( cd "$REPO" && DE1PLUS="$RES" bash misc/create_build_info.sh "$RES/build-info.txt" ) >/dev/null 2>&1 || true
+fi
+BID="$(awk -F'\t' '$1=="version_string"{print $2; exit}' "$RES/build-info.txt" 2>/dev/null)"
+printf '%s\n' "${BID:-osx-build}" > "$RES/build_id.txt"
+echo "Build version.tcl: $(head -1 "$RES/version.tcl" 2>/dev/null)   build_id: ${BID:-osx-build}"
+
 # Entitlement the wish process needs: it dlopen()s optional extensions from the
 # homebrew prefix, which the hardened runtime's library validation would block.
 ENT="$STAGE/decent_universal.entitlements"
