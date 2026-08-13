@@ -1937,6 +1937,12 @@ proc app_exit {} {
 	::bt::msg -NOTICE app_exit
 	exit_trace "app_exit ENTER has_bluetooth=$::has_bluetooth de1_state=$::de1(state)"
 
+	# Mark this as a deliberate user-initiated quit so the iOS hard-exit boot guard
+	# (ios_install_hardexit) lets exit() through even within the first 25s of launch.
+	# Without this, quitting shortly after launch is suppressed and the app lingers in
+	# the BLE-teardown/scale-reconnect loop instead of closing.
+	set ::user_requested_exit 1
+
 	if {$::de1(usb_charger_on) != 1} {
 		# always leave the app with the charger set to ON
 		set ::de1(usb_charger_on) 1

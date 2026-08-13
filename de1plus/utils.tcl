@@ -204,7 +204,17 @@ proc battery_percent {} {
 
     array set powerinfo [sdltk powerinfo]
     set percent [ifexists powerinfo(percent)]
-    if {$percent == ""} {
+    # sdltk/SDL_GetPowerInfo reports the charge as -1 when it cannot determine it, and
+    # omits the key (-> "") when there is no battery info at all. Both mean UNKNOWN, not
+    # empty. On the iOS9/armv7 SDL build `sdltk powerinfo` returns "percent -1"
+    # intermittently even while "state charged" (verified on an iPad mini 1, 2026-08-13:
+    # consecutive reads alternated 100 and -1). A bare -1 flowed straight into
+    # check_battery_low, where -1 < battery_very_low_trigger dimmed the screen to
+    # battery_very_low_brightness -- the screen went dim on a tap after a >5s pause (a
+    # fresh idle read happening to return -1), which the user saw as random dimming.
+    # Treat any non-integer or negative reading as full so the low-battery auto-dim only
+    # ever fires on a real, positive low percentage.
+    if {![string is integer -strict $percent] || $percent < 0} {
         set percent 100
     }
 
@@ -959,25 +969,43 @@ proc get_set_tablet_brightness { {setting ""} } {
         return $actual
     }
 
-    # macOS desktop fix: the exit path releases the brightness override with
-    # `get_set_tablet_brightness -1` (the Android way -- a negative value tells the
-    # OS to restore its own brightness). On macOS there is no such OS-managed
-    # override, and `borg brightness -1` clamps to 0, so it would leave the laptop
-    # screen BLACK after de1app quits. So on macOS: remember the user's brightness
-    # the first time we change it, and RESTORE that value when asked to release
-    # (negative setting), instead of passing the negative straight through to borg.
-    if {![info exists ::_is_macos_desktop]} { set ::_is_macos_desktop [running_on_macos_desktop] }
-    if {$::_is_macos_desktop} {
-        if {![info exists ::pre_de1_brightness] && [string is integer -strict $actual] && $actual >= 0} {
-            set ::pre_de1_brightness $actual
-        }
-        if {[string is integer -strict $setting] && $setting < 0} {
-            set setting [expr {[info exists ::pre_de1_brightness] ? $::pre_de1_brightness : 100}]
-        }
+    # Brightness restore on exit: the exit path releases the brightness override
+    # with `get_set_tablet_brightness -1` (the Android convention -- a negative
+    # value tells the OS to restore its own brightness). But before that, the exit
+    # path puts the DE1 to sleep, which makes the screensaver drop brightness to its
+    # low `saver_brightness`. On some platforms `borg brightness -1` does NOT undo
+    # that, so the app quits leaving the screen dim (iPad) or black (macOS, where -1
+    # clamps to 0). Android's OS happens to reset app brightness on exit by itself.
+    #
+    # So instead of relying on the -1 behavior, we remember the user's brightness the
+    # first time we change it (= the device brightness at app startup) and RESTORE
+    # that value whenever a negative setting is requested. This is platform-agnostic:
+    # on Android the OS resets brightness on exit anyway, so restoring the captured
+    # value right before exit is harmless. If we never captured a starting value,
+    # fall back to 70%.
+    #
+    # NB require a strictly POSITIVE reading to treat it as the real startup
+    # brightness: on real iOS the `borg brightness` GETTER is unreliable (verified on
+    # an iPad 2026-08-13 -- it returns a value decoupled from the live screen: 0 on a
+    # cold launch even with the screen lit, and it does NOT reflect a `borg brightness
+    # N` we just issued). A captured 0 would restore the screen to black/minimum on
+    # exit -- the very bug we're fixing -- so a 0 (or negative) reading means
+    # "unknown" and we fall back to 70% below.
+    set force_set 0
+    if {![info exists ::pre_de1_brightness] && [string is integer -strict $actual] && $actual > 0} {
+        set ::pre_de1_brightness $actual
+    }
+    if {[string is integer -strict $setting] && $setting < 0} {
+        set setting [expr {[info exists ::pre_de1_brightness] ? $::pre_de1_brightness : 70}]
+        # This is the exit-time restore. FORCE the borg call: because the iOS getter
+        # is unreliable, `$actual` may spuriously equal `$setting` and the
+        # optimization below would skip the restore, leaving the iPad dim (the bug).
+        set force_set 1
     }
 
-    # only call the Android setting if the setting needs to be changed.
-    if {$actual != $setting} {
+    # only call the Android setting if the setting needs to be changed (but always
+    # apply the exit-time restore -- see force_set above).
+    if {$force_set || $actual != $setting} {
         borg brightness $setting
 
         # hide the bar that is made visible by changing brightness
@@ -1041,8 +1069,15 @@ proc ios_install_hardexit {} {
         set since [expr {[clock seconds] - $::_launch_time}]
         set he [llength [info commands hardexit]]
         exit_trace "exit($code) entered; since_launch=${since}s hardexit_loaded=$he"
-        if {$since < 25} {
-            exit_trace "exit($code) SUPPRESSED by boot guard (<25s)"
+        # The <25s boot guard exists ONLY to swallow de1app's OWN accidental startup
+        # exit() (e.g. a transient bad battery reading) so boot survives. It must NOT
+        # block a DELIBERATE user quit: app_exit sets ::user_requested_exit, and a user
+        # who taps "app exit" a few seconds after launch expects the app to actually
+        # close -- otherwise it lingers, the exit fails over into the scale
+        # auto-reconnect loop, and the screen sits in a grey limbo with flickering
+        # "check scale" toasts (reported on iPad 2026-08-13).
+        if {$since < 25 && ![info exists ::user_requested_exit]} {
+            exit_trace "exit($code) SUPPRESSED by boot guard (<25s, not user-requested)"
             return
         }
         exit_trace "exit($code) -> closing logfiles + terminating"
