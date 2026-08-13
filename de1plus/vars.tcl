@@ -3482,15 +3482,40 @@ proc save_this_espresso_to_history {unused_old_state unused_new_state} {
 # MMR read (80381C) stored in $::settings(ghc_is_installed): 0 = no GHC, any
 # non-zero value = GHC hardware present (1/2 = present but inactive, 3 = required).
 proc ghc_is_installed {} {
-	set handle [ifexists ::de1(device_handle) 0]
-	if {$handle == 0 || $handle == 1} {
-		# no real Bluetooth connection to a machine
-		return 0
-	}
+	# Whether this machine has a Group Head Controller fitted is REMEMBERED in
+	# settings, persisted from the MMR 80381C read on a previous run (see
+	# set_ghc_is_installed_from_machine). We deliberately do NOT gate on a live
+	# Bluetooth connection: ~500 early machines shipped without a GHC, and the
+	# skin decides at build time -- before any machine has connected -- whether to
+	# draw the on-screen start buttons. Default is 0 (assume no GHC) until a
+	# connected machine has reported one and the app has restarted.
 	if {[ifexists ::settings(ghc_is_installed) 0] != 0} {
 		return 1
 	}
 	return 0
+}
+
+# Persist the GHC-installed status the machine reports via MMR 80381C. The fitted
+# status must survive across launches (the skin reads it at build time, before any
+# connection), so when the reported value differs from what we have stored, save it
+# and ask the user to restart -- on the next launch ghc_is_installed reads the truth.
+proc set_ghc_is_installed_from_machine {mmr_val} {
+	set previous [ifexists ::settings(ghc_is_installed) 0]
+	set ::settings(ghc_is_installed) $mmr_val
+
+	if {$mmr_val == 1 || $mmr_val == 2} {
+		# GHC present but not yet active (debug GHC mode): the DE1 lets the tablet
+		# start operations until the GHC is touched. Re-poll every 10 min to catch
+		# it becoming active.
+		after 600000 get_ghc_is_installed
+	}
+
+	if {$mmr_val != $previous} {
+		# fitted-GHC status changed vs. what we had stored -- persist and restart so
+		# the UI is rebuilt from the stored value
+		msg -INFO "GHC installed status changed: '$previous' -> '$mmr_val'; saving settings and asking to restart"
+		save_settings_and_ask_to_restart_app
+	}
 }
 
 proc ghc_required {} {

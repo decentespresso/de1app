@@ -502,11 +502,10 @@ set ::settings(skin) "Insight"
 	set ::settings(timer_interval) 200
 
 
-if {!$::has_bluetooth} {
-	# Only force "no group head controller" when there is no real Bluetooth;
-	# with real BLE the actual GHC status comes from the machine (MMR read).
-	set ::settings(ghc_is_installed) 0
-}
+# NB: do NOT force ghc_is_installed to 0 here based on has_bluetooth. Whether a GHC
+# is fitted is remembered in settings across launches (persisted from the MMR read,
+# see set_ghc_is_installed_from_machine) and must not be overwritten by connectivity
+# state -- ~500 early machines shipped without a GHC and rely on the stored value.
 
 
 set ::de1_device_list {}

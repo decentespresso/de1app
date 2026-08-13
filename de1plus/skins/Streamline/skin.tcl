@@ -11,12 +11,10 @@ set ::streamline_adjust_grind_shortpress 1
 set ::streamline_adjust_grind_longpress .1
 
 
-if {!$::has_bluetooth} {
-	# Only force "no group head controller" when there is no real Bluetooth.
-	# With real BLE (Android, iWish, macOS), honour the machine's actual GHC
-	# status so the on-screen start buttons aren't shown when a GHC is present.
-	set ::settings(ghc_is_installed) 0
-}
+# NB: do NOT force ghc_is_installed here. Whether a GHC is fitted is remembered in
+# settings across launches (persisted from the MMR read on a prior run) and read at
+# build time via [ghc_is_installed]. Overwriting it based on has_bluetooth would wipe
+# the stored value on macOS (where has_bluetooth is still 0 until the BLE driver loads).
 
 set ::off_page "off"
 set ::espresso_page "espresso"
