@@ -165,8 +165,16 @@ proc off_page_onload { page_to_hide page_to_show } {
 
 proc saver_page_onload { page_to_hide page_to_show } {
 	if {[ifexists ::exit_app_on_sleep] == 1} {
-		exit_trace "saver_page_onload: exit_app_on_sleep=1 -> get_set_tablet_brightness 0 + close_all_ble_and_exit"
-		get_set_tablet_brightness 0
+		# We are QUITTING (the DE1 was put to sleep as part of app_exit), not entering
+		# the screensaver -- so do NOT dim the screen. On iOS `borg brightness` is
+		# applied ASYNChronously and close_all_ble_and_exit calls _exit() moments later:
+		# a dim dispatched here gets flushed while the BLE teardown spins the run loop,
+		# but the restore dispatched right before _exit does not -- so dimming here would
+		# leave the iPad dark after the app is gone (the reported "screen dim on exit"
+		# bug). Instead RESTORE the startup brightness now, before the teardown, so the
+		# async set has time to take effect. close_all_ble_and_exit restores again too.
+		exit_trace "saver_page_onload: exit_app_on_sleep=1 -> restore brightness (-1) + close_all_ble_and_exit"
+		get_set_tablet_brightness -1
 		close_all_ble_and_exit
 	} else {
 		if {$::settings(screen_saver_change_interval) == 0} {
