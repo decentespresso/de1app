@@ -877,6 +877,20 @@ proc load_ble_command {} {
         if {[llength [info commands ble]]} { return 1 }
     }
 
+    # Linux desktop (undroidwish): only `blz` (BlueZ) ships, not `ble`. Load the
+    # bundled blz extension for this arch, then the blz_ble_shim package installs
+    # an AndroWish-compatible `ble` command on top of it. Inert on other OSes.
+    if {$::tcl_platform(os) eq "Linux"} {
+        set blzdir [file join [file dirname [info script]] blz]
+        set blzso  [file join $blzdir libblz-$::tcl_platform(machine).so]
+        if {[file exists $blzso]} {
+            catch { load $blzso Blz }
+            if {[lsearch -exact $::auto_path $blzdir] < 0} { lappend ::auto_path $blzdir }
+            catch { package require blz_ble_shim }
+            if {[llength [info commands ble]]} { return 1 }
+        }
+    }
+
     # Last resort: source the bundled driver by path (used even when it isn't on
     # auto_path). On unsupported platforms it provides the package and returns
     # without creating a command -- harmless.

@@ -50,6 +50,12 @@ proc make_de1_dir {srcdir destdirs} {
         ble/ble.tcl *
         ble/bin/ble_helper.bin *
 
+        blz/pkgIndex.tcl *
+        blz/blz_ble_shim.tcl *
+        blz/blz_sim.tcl *
+        blz/libblz-aarch64.so *
+        blz/libblz-x86_64.so *
+
         build-info.txt *
 
         profiles_v2/readme.txt *
