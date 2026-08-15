@@ -955,7 +955,7 @@ proc espresso_simulation_active {} {
 
 proc start_espresso {} {
 
-	if {$::settings(start_espresso_only_if_scale_connected) == 1 && $::de1(scale_device_handle) == 0 && $::settings(scale_bluetooth_address) != ""} {
+	if {$::settings(start_espresso_only_if_scale_connected) == 1 && ! [::device::scale::is_operational] && $::settings(scale_bluetooth_address) != ""} {
 		msg -WARNING "Refusing to START espresso without the scale being connected"
 		info_page [translate "Please connect your scale"] [translate "Ok"]
 		return
