@@ -676,7 +676,19 @@ proc read_de1_version {} {
 }
 
 # repeatedly request de1 state
+# DEAD CODE as of 2026-08-18: nothing in the tree calls this, and it must stay
+# that way. It re-reads StateInfo every second FOREVER (it re-arms itself and has
+# no stop condition), which on a real BLE connection means a permanent 1 Hz command
+# in the userdata queue competing with genuine traffic. The one-shot read at
+# connect (later_new_de1_connection_setup -> `after 5000 read_de1_state`) is what
+# the app actually needs. If this warning ever appears, find the caller and delete
+# it rather than letting the poll run.
 proc poll_de1_state {} {
+	set _caller "top level or after-timer"
+	catch { set _caller [info level -1] }
+	::comms::msg -WARNING "poll_de1_state: DEAD CODE CALLED --" \
+		"this starts a permanent 1 Hz StateInfo poll and should not be used." \
+		"Caller: '$_caller'"
 	::comms::msg -DEBUG "poll_de1_state"
 	read_de1_state
 	after 1000 poll_de1_state

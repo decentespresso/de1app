@@ -3526,8 +3526,15 @@ proc set_ghc_is_installed_from_machine {mmr_val} {
 }
 
 proc ghc_required {} {
-	if {$::undroid == 1 || $::android == 0} {
-		# don't require the GHC if on a non-Android platform, or if running undroidwish
+	# Whether operations MUST be started at the group head is a property of the
+	# MACHINE (UL compliance on GHC-equipped machines), not of the tablet's OS. The
+	# old test -- "not Android, or undroidwish" -- switched the requirement off on
+	# macOS desktop AND on the iWish iPad build, both of which now drive real
+	# machines over BLE.
+	#
+	# Config-based like ghc_is_installed, deliberately NOT gated on a live
+	# connection: this is read at skin-build time, before anything has connected.
+	if {[espresso_simulation_active]} {
 		return 0
 	}
 	if {$::settings(ghc_is_installed) != 0 && $::settings(ghc_is_installed) != 1 && $::settings(ghc_is_installed) != 2 && $::settings(ghc_is_installed) != 4} {
