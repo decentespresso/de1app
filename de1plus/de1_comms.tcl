@@ -46,7 +46,7 @@ proc userdata_append {comment cmd {vital 0} } {
 
 	::comms::msg -INFO "ENQ ($qlen): $comment"
 
-	if {$qlen >= 20} {
+	if {$qlen >= 50} {
 		::comms::msg -WARNING "Warning, BLE queue is $qlen long"
 	}
 	run_next_userdata_cmd
