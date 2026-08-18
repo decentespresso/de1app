@@ -99,6 +99,13 @@ namespace eval ::profile {
                     exit_flow_under 0 \
                 ]
                 lappend temp_advanced(advanced_shot) $pressure_up
+                # This frame drives pressure up before any coffee comes out -- it is
+                # filling the headspace, not pouring. Count it as preinfusion so
+                # Stop-at-Volume does not start counting during the rise (reported:
+                # 14 mL delivered during "Force Rise Without Limit" on a 40 mL SAV
+                # shot). Every preinfusion frame above increments this; these two
+                # rise frames were the only ones that did not.
+                incr temp_advanced(final_desired_shot_volume_advanced_count_start)
                 set temp_advanced(espresso_hold_time) [expr $temp_advanced(espresso_hold_time) - 3]
             }
             set hold [list \
@@ -145,6 +152,8 @@ namespace eval ::profile {
                     exit_flow_under 0 \
                 ]
                 lappend temp_advanced(advanced_shot) $pressure_up
+                # Same as the rise frame above: pressurising, not pouring.
+                incr temp_advanced(final_desired_shot_volume_advanced_count_start)
                 set temp_advanced(espresso_decline_time) [expr $temp_advanced(espresso_decline_time) - 3]
             }
 
@@ -691,9 +700,17 @@ namespace eval ::profile {
             settings_2a {
                 array set temp_profile [pressure_to_advanced_list profile]
                 set profile(advanced_shot) $temp_profile(advanced_shot)
+                # ...and the matching "where does the pour start" index. Copying only
+                # advanced_shot left this at the 0 defaulted above, so a basic profile
+                # loaded from disk claimed it had no preinfusion frames -- and if the
+                # user then saved it as advanced, that wrong 0 was written to the file.
+                set profile(final_desired_shot_volume_advanced_count_start) \
+                    $temp_profile(final_desired_shot_volume_advanced_count_start)
             } settings_2b {
                 array set temp_profile [flow_to_advanced_list profile]
                 set profile(advanced_shot) $temp_profile(advanced_shot)
+                set profile(final_desired_shot_volume_advanced_count_start) \
+                    $temp_profile(final_desired_shot_volume_advanced_count_start)
             }
         
         return [array get profile]

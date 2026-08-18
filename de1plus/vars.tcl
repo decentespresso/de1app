@@ -2947,6 +2947,13 @@ proc select_profile { profile } {
 	# for importing De1 profiles that don't have this feature.
 	set ::settings(preinfusion_flow_rate) 4
 
+	# Reset per-profile state that a profile file may legitimately omit. 7 of the
+	# shipped profiles carry no count_start at all, so without this the value LEAKED
+	# from whichever profile was selected before -- e.g. select an advanced profile
+	# that starts counting at step 2, then select one that omits the key, and its
+	# Stop-at-Volume silently ignores the first two frames.
+	set ::settings(final_desired_shot_volume_advanced_count_start) 0
+
 	# Disable limits by default
 	set ::settings(maximum_pressure) 0
 	set ::settings(maximum_flow) 0

@@ -830,8 +830,15 @@ namespace eval ::de1::sav {
 
 		::de1::state::reset_shotsample_tracking flow_start
 
-		if {$::de1(scale_device_handle) != 0} {
-			msg -NOTICE "::de1::sav::start_active: disabled SAV because scale is connected"
+		# NOTE: this used to log "disabled SAV because scale is connected" and then
+		# activate anyway -- there was no `return`, so the message described a
+		# disable that never happened. The real disable lives in skip_sav_check,
+		# which is the only thing gating check_for_sav, and it keys on
+		# expecting_present (a scale ADDRESS is configured) rather than on
+		# scale_device_handle (a scale is currently CONNECTED).
+		if {[::de1::sav::skip_sav_check]} {
+			msg -NOTICE "::de1::sav::start_active: SAV will be skipped for this shot" \
+				"(basic profile + scale expected; see skip_sav_check)"
 		}
 
 		if { [::de1::sav::is_active] } {
