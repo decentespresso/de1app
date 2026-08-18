@@ -1400,6 +1400,23 @@ proc register_state_change_handler {old_state_name new_state_name handler} {
 }
 
 
+# Log an unusual scale frame ONCE in full (with raw hex), then only a stable
+# short line for repeats. The logger's repeat-suppression (logging.tcl) is keyed
+# on the exact message text, so messages carrying volatile payload -- e.g.
+# "data4 251" / "data4 252" -- never matched and never got suppressed. That is
+# why a Half Decent Scale could emit hundreds of near-identical DEBUG lines.
+proc decentscale_log_frame_shape {kind packed shortdesc {detail ""}} {
+	set key "$kind/$shortdesc"
+	if {![info exists ::decentscale_seen_frame_shape($key)]} {
+		set ::decentscale_seen_frame_shape($key) 1
+		msg -DEBUG "Decentscale $kind ($shortdesc) first seen:" \
+			"[::logging::format_asc_bin $packed]" $detail
+	} else {
+		# Stable text -- repeats collapse under the existing 1/second suppressor.
+		msg -DEBUG "Decentscale $kind ($shortdesc)"
+	}
+}
+
 proc parse_decent_scale_recv {packed destarrname} {
 	upvar $destarrname recv
 	unset -nocomplain recv
@@ -1409,7 +1426,11 @@ proc parse_decent_scale_recv {packed destarrname} {
 	} elseif {[string length $packed] == 10} {
    		::fields::unpack $packed [decent_scale_generic_read_spec_v12] recv bigeendian
 	} else {
-		msg -DEBUG "Unexpected data length in Decentscale message: length=[string length $packed]"
+		# Third-party Decent-scale clones (e.g. the Half Decent Scale) frame
+		# differently and send 2/4/8/12/16-byte packets. Log each new length once
+		# with its raw bytes so it can be decoded, then stay quiet.
+		decentscale_log_frame_shape "unexpected length" $packed \
+			"length=[string length $packed]"
 		return 
 	}
 
@@ -1432,7 +1453,8 @@ proc parse_decent_scale_recv {packed destarrname} {
 		   	set timestamp [expr { ($recv(minutes) * 600) + ($recv(seconds) * 10) + $recv(milliseconds) }]
 		   	set recv(timestamp) $timestamp
 		} else {
-			msg -DEBUG "Unexpected data length in Decentscale weight message: length=[string length $packed]"
+			decentscale_log_frame_shape "unexpected weight length" $packed \
+				"length=[string length $packed]"
 			return 
 		}
 
@@ -1451,12 +1473,23 @@ proc parse_decent_scale_recv {packed destarrname} {
    		# feature not implemented in the firmware, removed from spec
 	   	set recv(parsed) "unknown"
    		msg -DEBUG "Decentscale unexpected timer data received: [array get recv]"
+   	} elseif {$recv(command) == 0x0A} {
+   		# 0x0A is the LED / heartbeat command class -- see decentscale_send_heartbeat
+   		# and decentscale_enable_lcd, which both build 0x0A commands. The scale echoes
+   		# the command back on the notify characteristic as an ACK. Normal
+   		# once-per-second traffic; it used to fall through to "unknown data received"
+   		# below and flood the log.
+	   	set recv(parsed) "led_ack"
+   		decentscale_log_frame_shape "LED/heartbeat ACK" $packed \
+   			"data3=[ifexists recv(data3) ?] data4=[ifexists recv(data4) ?]"
    	} else {
    		#unset -nocomplain recv
 	   	#::fields::unpack $packed [decent_scale_timing_read_spec] recv bigeendian
 	   	#set recv(command) "unknown"
 	   	set recv(parsed) "unknown"
-   		msg -DEBUG "Decentscale unknown data received: [array get recv]"
+   		decentscale_log_frame_shape "unknown data" $packed \
+   			"command=$recv(command) length=[string length $packed]" \
+   			"[array get recv]"
    	}
 
 }

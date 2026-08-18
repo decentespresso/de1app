@@ -3247,6 +3247,15 @@ proc de1_ble_handler { event data } {
 					    } elseif {$cuuid eq $::de1(cuuid_acaia_pyxis_status)} {
 						::bt::msg -INFO "ACK Acaia Pyxis notifications: $data_for_log"
 
+					    } elseif {$cuuid eq $::de1(cuuid_decentscale_read)} {
+						# Was missing, so enabling Decent-scale weight notifications
+						# logged a spurious ERROR ("unknown write: ... cuuid fff4")
+						# on every single scale connect.
+						::bt::msg -INFO "ACK Decent scale weight notifications: [::logging::format_ble_event_short $data]"
+
+					    } elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
+						::bt::msg -INFO "ACK Decent scale writeback notifications: [::logging::format_ble_event_short $data]"
+
 					    } else {
 						::bt::msg -ERROR "ACK Descriptor unknown write: [::logging::format_ble_event_short $data]"
 					    }
