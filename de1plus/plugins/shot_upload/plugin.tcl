@@ -147,7 +147,11 @@ proc ::plugins::shot_upload::post_json {url json} {
     set email   [ifexists ::settings(decent_login_email)]
     set pw      [ifexists ::settings(decent_login_password_encrypted)]
     set auth    "Basic [binary encode base64 $email:$pw]"
-    set body    [encoding convertto utf-8 $json]
+    # Pass the Tcl string through as-is. Both transports below already encode it
+    # as UTF-8 on the wire (TclCurl from the string rep, ::http from the charset
+    # in -type), so pre-encoding it with [encoding convertto utf-8] gets it
+    # encoded a SECOND time and every accented character ships as mojibake.
+    set body    $json
     set headers [list "Content-Type: application/json; charset=utf-8" "Authorization: $auth"]
 
     if {![catch {package require TclCurl}]} {
@@ -401,7 +405,16 @@ proc ::plugins::shot_upload::_drain_next {} {
     #   count     -> server 5xx: count toward the per-shot give-up budget
     set outcome "count"
     set txt ""
-    if {[catch { set txt [read_file $path] }]} {
+    # read_file (updater.tcl) opens with -translation binary, which in Tcl also
+    # forces -encoding binary -- so it returns the file's raw BYTES, not characters.
+    # A .shot file is UTF-8, so an accented title came back as its UTF-8 bytes read
+    # as Latin-1 (e -> U+00C3 U+00A9), and post_json's [encoding convertto utf-8]
+    # then encoded those AGAIN: "Rao Allonge" arrived at the server double-encoded.
+    # The live path is unaffected because it uses ::shot::create_legacy, which is
+    # already a proper Tcl string -- which is why only re-uploaded/backlog shots
+    # were mangled. Decode here so both paths hand identical characters to
+    # convert_data. (Mirrors converter.tcl's own reader, which uses -encoding utf-8.)
+    if {[catch { set txt [encoding convertfrom utf-8 [read_file $path]] }]} {
         set outcome "done"                       ;# unreadable file: skip it
     } elseif {[string trim $txt] eq ""} {
         set outcome "done"
