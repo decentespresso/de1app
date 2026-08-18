@@ -1271,25 +1271,105 @@ proc check_if_steam_clogged {} {
 
 }
 
+# The DE1 reports substate 217 (Error_NoAC, described as "Front button off")
+# while the standby switch on the front of the machine is cutting AC power. It is
+# a latching switch, so the condition persists until the user flips it back.
+#
+# Firmware v1337 is where this became trustworthy (it also drives the machine's
+# own "disco" warning lights), so we stay silent below that rather than warn
+# people on older firmware -- that spurious reporting is why the whole check was
+# disabled on 2024-09-01.
+proc front_switch_is_pressed {} {
+
+	set fw [ifexists ::settings(firmware_version_number)]
+	if {![string is integer -strict $fw] || $fw < 1337} {
+		return 0
+	}
+
+	# Only meaningful while we are actually talking to the machine.
+	# de1_disconnect_handler does NOT reset ::de1(substate), so after the DE1 powers
+	# off the last value -- Error_NoAC -- would linger forever and pin the warning
+	# page up. That page has no controls, so the tap that would normally wake the
+	# app and retry the connection went nowhere and the app never reconnected.
+	if {[ifexists ::de1(device_handle) 0] == 0} {
+		return 0
+	}
+
+	set substate_txt [ifexists ::de1_substate_types([ifexists ::de1(substate)])]
+	return [expr {$substate_txt eq "Error_NoAC"}]
+}
+
+# Label for the no_ac page's textvariable. Pure -- no side effects: it is
+# evaluated on every redraw of that page.
 proc check_front_switch {} {
 
-		# disabled 9-1-2024 by John as this is buggy in current firmware. Will re-enable once it is not buggy.
-		return ""
-
-
-    set num $::de1(substate)
-	set substate_txt $::de1_substate_types($num)
-	if {$substate_txt != "Error_NoAC" && $::de1(current_context) == "no_ac"} {
-	    page_show off
+	if {[front_switch_is_pressed]} {
+		return [translate "Push the switch on"]
 	}
-	if {$substate_txt == "Error_NoAC"} {
-	    page_show no_ac
+	return ""
+}
+
+# Tapping anywhere on the no_ac page dismisses it. The warning is advisory -- the
+# user may want to reach the rest of the UI (settings, sleep, or just to wake a
+# reconnect) without first walking over to the machine. Dismissal lasts until the
+# switch state actually changes, so we do not immediately redraw over the user.
+proc dismiss_front_switch_page {} {
+
+	set ::de1_front_switch_dismissed 1
+
+	set back [ifexists ::de1_front_switch_return_page]
+	if {$back eq "" || $back eq "no_ac"} {
+		set back "off"
 	}
-	if {$substate_txt == "Error_NoAC"} {
-	    return [translate "Turn the switch on"]
-    } else {
-        return ""
-    }
+	msg -NOTICE "no_ac page dismissed by tap: returning to page '$back'"
+	page_show $back
+}
+
+# Driven by DE1 state-change EVENTS, not by a skin's textvariable: the old code
+# hung off de1_connected_state, which only a handful of skins call at all --
+# Insight and Streamline never do -- so in those skins the warning page could
+# never appear. Routing it through the event listener makes it work in every skin
+# that includes skins/default's page set.
+proc update_front_switch_page {args} {
+
+	# Deferred to `after idle`: on a MAJOR state change binary.tcl runs
+	# on_all_state_change_callbacks (this one) and then
+	# on_major_state_change_callbacks (page_change_due_to_de1_state_change).
+	# Acting immediately meant our page was drawn and then instantly replaced.
+	after idle ::_update_front_switch_page_now
+}
+
+proc _update_front_switch_page_now {} {
+
+	set current [ifexists ::de1(current_context)]
+
+	if {[front_switch_is_pressed]} {
+
+		if {[ifexists ::de1_front_switch_dismissed 0]} {
+			return
+		}
+
+		if {$current ne "no_ac"} {
+			set ::de1_front_switch_return_page $current
+			msg -NOTICE "front switch off (substate Error_NoAC): showing no_ac page"
+			page_show no_ac
+		}
+
+	} else {
+
+		# Condition cleared (switch flipped back, or the DE1 disconnected): a new
+		# occurrence should warn again, so drop any earlier dismissal.
+		set ::de1_front_switch_dismissed 0
+
+		if {$current eq "no_ac"} {
+			set back [ifexists ::de1_front_switch_return_page]
+			if {$back eq "" || $back eq "no_ac"} {
+				set back "off"
+			}
+			msg -NOTICE "front switch on: returning to page '$back'"
+			page_show $back
+		}
+	}
 }
 
 proc has_flowmeter {} {

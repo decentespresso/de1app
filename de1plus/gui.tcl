@@ -56,7 +56,17 @@ proc page_change_due_to_de1_state_change {textstate} {
 		set ::ultra_minimal_pending 0
 	}
 	if {$textstate == "Idle"} {
-		page_display_change $::de1(current_context) "off"
+		# If the front standby switch is cutting AC, Idle means "cannot do anything"
+		# -- show the no_ac warning instead of the normal idle page. Decided HERE
+		# rather than in a separate page_show: on a major state change binary.tcl
+		# applies on_all_state_change_callbacks and THEN
+		# on_major_state_change_callbacks, so anything update_front_switch_page did
+		# was immediately overwritten by this mapping and the page blinked away.
+		if {[front_switch_is_pressed]} {
+			page_display_change $::de1(current_context) "no_ac"
+		} else {
+			page_display_change $::de1(current_context) "off"
+		}
 	} elseif {$textstate == "GoingToSleep"} {
 		page_display_change $::de1(current_context) "saver" 
 		#page_display_change $::de1(current_context) "sleep" 
@@ -999,7 +1009,11 @@ proc update_chart {} {
 
 proc de1_connected_state { {hide_delay 0} } {
 
-	check_front_switch
+	# check_front_switch used to be called here and used to change pages as a side
+	# effect. This proc is a skin TEXTVARIABLE, re-evaluated on every redraw, and
+	# most skins (Insight, Streamline) never call it -- so that was both the wrong
+	# place to drive a page change from and unreachable in the main skins. The
+	# no_ac page is now driven by update_front_switch_page off state-change events.
 	set hide_delay $::settings(display_connected_msg_seconds)
 
 	set since_last_ping [expr {[clock seconds] - $::de1(last_ping)}]

@@ -926,6 +926,23 @@ namespace eval ::de1::sav {
 	::de1::event::listener::on_major_state_change_add -noidle \
 		::de1::sav::on_major_state_change
 
+	# Front standby switch (substate Error_NoAC). Registered on ALL state changes,
+	# not just major ones, because flipping the switch only moves the SUBstate
+	# (e.g. "Idle, ready" => "Idle, Error_NoAC").
+	::de1::event::listener::on_all_state_change_add ::update_front_switch_page
+
+	# later_new_de1_connection_setup issues `after 5000 read_de1_state`, whose reply
+	# populates ::de1(substate). This is the belt-and-braces path for a machine that
+	# was ALREADY in Error_NoAC when the app launched -- StateInfo is event-driven,
+	# so no notification would ever arrive on its own.
+	::de1::event::listener::on_connect_add [list apply {{args} {
+		after 6000 ::update_front_switch_page
+	}}]
+
+	# ...and on DISCONNECT, so a machine powered off while the warning is up does
+	# not leave the app stranded on a page with no controls.
+	::de1::event::listener::on_disconnect_add ::update_front_switch_page
+
 
 	proc on_flow_change {event_dict} {
 

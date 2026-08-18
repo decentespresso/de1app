@@ -55,6 +55,10 @@ add_de1_button "sleep" {say [translate {sleep}] $::settings(sound_button_in); se
 # front button is off page
 add_de1_page "no_ac" "front_button.jpg" "default"
 add_de1_variable "no_ac" 1040 610 -text "" -font Helv_20_bold -fill "#fff" -anchor "center" -textvariable {[check_front_switch]}
+# Tap anywhere to dismiss the warning and get back to the UI. Without this the
+# page has no controls at all -- and if the DE1 is powered off while it is up, the
+# tap that would wake the app and retry the connection lands on a dead page.
+add_de1_button "no_ac" {say [translate {Ok}] $::settings(sound_button_in); dismiss_front_switch_page} 0 0 2560 1600
 
 set_de1_screen_saver_directory "[data_directory]/saver"
 
