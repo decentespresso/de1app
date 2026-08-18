@@ -46,6 +46,20 @@ proc ::plugins::shot_upload::_iso_ms {ms} {
     return [format "%s.%03dZ" [clock format $sec -format "%Y-%m-%dT%H:%M:%S" -gmt 1] $frac]
 }
 
+# Normalise a free-text roast date to ISO yyyy-mm-dd, or "" if it is not a date.
+# de1app's roast_date is whatever the user typed, so most of the work is
+# refusing the ones that are not dates rather than parsing the ones that are.
+proc ::plugins::shot_upload::_iso_date {s} {
+    set s [string trim $s]
+    if {$s eq "" || $s eq "{}"} { return "" }
+    if {[regexp {^(\d{4})-(\d{1,2})-(\d{1,2})} $s -> y m d]} {
+        if {$m < 1 || $m > 12 || $d < 1 || $d > 31} { return "" }
+        return [format "%04d-%02d-%02d" $y $m $d]
+    }
+    if {[catch {clock scan $s -gmt 1} t]} { return "" }
+    return [clock format $t -format "%Y-%m-%d" -gmt 1]
+}
+
 # dict get with default
 proc ::plugins::shot_upload::_dget {d key {dflt ""}} {
     if {[dict exists $d $key]} { return [dict get $d $key] }
@@ -178,6 +192,19 @@ proc ::plugins::shot_upload::convert_data {data {machine {}}} {
     _add_if ctx coffeeRoaster    [_dget $settings bean_brand]
     _add_if ctx baristaName      [_dget $settings my_name]
     _add_if ctx drinkerName      [_dget $settings drinker_name]
+
+    # Roast date and level have no home in decaid's WorkflowContext, but it has
+    # an `extras` map for exactly this. de1app has been recording both all
+    # along and simply never sent them; without the roast date you cannot ask
+    # the one question every bag raises -- when does it peak, and how long does
+    # it stay there. roastDate is ISO yyyy-mm-dd; de1app stores it free-text, so
+    # emit it only when it actually parses as a date.
+    set extras {}
+    _add_if extras roastDate  [_iso_date [_dget $settings roast_date]]
+    _add_if extras roastLevel [_dget $settings roast_level]
+    if {[llength $extras]} {
+        lappend ctx "[_jstr extras]:{[join $extras ,]}"
+    }
     set ctx_json "{[join $ctx ,]}"
 
     # ---- annotations ----
