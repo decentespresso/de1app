@@ -510,15 +510,21 @@ proc make_packed_shot_sample {arrname} {
 }
 
 proc convert_float_to_U8P4 {in} {
-	if {$in > 16} {
-		set in 16
+	# 15.9375 is 255/16, the largest value this format holds. Clamping at 16
+	# yields 256, which does not fit the byte and truncates to 0 -- so a flow
+	# or pressure command of 16 or more encoded as ZERO.
+	if {$in > 15.9375} {
+		set in 15.9375
 	}
 	return [expr {round($in * 16)}]
 }
 
 proc convert_float_to_U8P1 {in} {
-	if {$in > 128} {
-		set in 128
+	# Same defect as convert_float_to_U8P4 above: 127.5 is 255/2, and clamping
+	# at 128 yields 256, which truncates to 0. A temperature of 128 C or more
+	# encoded as 0 C.
+	if {$in > 127.5} {
+		set in 127.5
 	}
 	return [expr {round($in * 2)}]
 }
@@ -608,7 +614,7 @@ proc make_shot_flag {enabled_features} {
 		} elseif {$feature == "IgnoreLimit"} {
 			set num [expr {$num | 0x40}]
 		} else {
-			err "unknown shot flat: '$feature'"
+			error "unknown shot flag: '$feature'"
 		}
 	}
 	return $num
