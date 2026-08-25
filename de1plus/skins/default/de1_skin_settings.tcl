@@ -403,6 +403,12 @@ add_de1_widget "settings_2b" graph 24 220 {
 	$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 5] -color #888888  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 	$widget axis configure x -color #5a5d75 -tickfont Helv_6 -command graph_seconds_axis_format; 
 	$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 8.5 -majorticks {0 1 2 3 4 5 6 7 8} -title [translate "Flow rate"] -titlefont Helv_10 -titlecolor #5a5d75;
+	if {$::de1(max_flowrate_v11) >= 16} {
+		set _flow_ticks {0 4 8 12 16 20}
+	} else {
+		set _flow_ticks {0 1 2 3 4 5 6 7 8}
+	}
+	$widget axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max [expr {$::de1(max_flowrate_v11) + 0.5}] -majorticks $_flow_ticks -title [translate "Flow rate"] -titlefont Helv_10 -titlecolor #5a5d75;
 	$widget element create line_espresso_de1_explanation_chart_flow_part1 -xdata espresso_de1_explanation_chart_elapsed_flow_1 -ydata espresso_de1_explanation_chart_flow_1 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_1)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 	$widget element create line_espresso_de1_explanation_chart_flow_part2 -xdata espresso_de1_explanation_chart_elapsed_flow_2 -ydata espresso_de1_explanation_chart_flow_2 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_2)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
 	$widget element create line_espresso_de1_explanation_chart_flow_part3 -xdata espresso_de1_explanation_chart_elapsed_flow_3 -ydata espresso_de1_explanation_chart_flow_3 -symbol circle -label "" -linewidth [rescale_x_skin 50] -color $::settings(color_stage_3)  -smooth $::settings(profile_graph_smoothing_technique) -pixels [rescale_x_skin 30]; 
@@ -460,10 +466,10 @@ proc apply_range_to_all_steps {ignored} {
 
 # limits
 add_de1_text "settings_2c2" 70 830 -text [translate "Limit flow range"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "center"
-add_de1_widget "settings_2c2" scale 70 900  {} -from 0 -to 8  -background $::settings(color_stage_2)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_x_skin 120] -variable ::settings(maximum_flow_range_advanced)     -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
+add_de1_widget "settings_2c2" scale 70 900  {} -from 0 -to $::de1(max_flowrate_v11)  -background $::settings(color_stage_2)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.1 -length [rescale_x_skin 700] -width [rescale_x_skin 120] -variable ::settings(maximum_flow_range_advanced)     -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "apply_range_to_all_steps" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 add_de1_variable "settings_2c2" 70 1020 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width [rescale_x_skin 1200] -justify "left" -textvariable {$::settings(maximum_flow_range_advanced) [translate mL/s]}
 #add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_flow_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_flow_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit flow range"] -previous_values [::dui::pages::dui_number_editor::get_previous_values maximum_flow_range_advanced] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry maximum_flow_range_advanced"  } 50 830 600 894 ""   
-add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_flow_range_advanced) -n_decimals 1 -min 0.1 -max 8 -default $::settings(maximum_flow_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit flow range"] -previous_values [::dui::pages::dui_number_editor::get_previous_values maximum_flow_range_advanced] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry maximum_flow_range_advanced"  } 50 1024 600 1100 ""   
+add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog dui_number_editor ::settings(maximum_flow_range_advanced) -n_decimals 1 -min 0.1 -max $::de1(max_flowrate_v11) -default $::settings(maximum_flow_range_advanced) -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Limit flow range"] -previous_values [::dui::pages::dui_number_editor::get_previous_values maximum_flow_range_advanced] -return_callback "::dui::pages::dui_number_editor::save_previous_value callback_after_adv_profile_data_entry maximum_flow_range_advanced"  } 50 1024 600 1100 ""
 
 
 
@@ -966,6 +972,12 @@ add_de1_widget "settings_1b" graph 1330 300 {
 		$::preview_graph_flow element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_flow -symbol circle -label "" -linewidth [rescale_x_skin 10] -color #98c5ff  -smooth $::settings(profile_graph_smoothing_technique) -pixels 0; 
 		$::preview_graph_flow axis configure x -color #5a5d75 -tickfont Helv_6; 
 		$::preview_graph_flow axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 10 -majorticks {1 2 3 4 5 6 7 8 9 10} -title [translate "Flow rate"] -titlefont Helv_8 -titlecolor #5a5d75;
+		if {$::de1(max_flowrate_v11) >= 16} {
+			set _flow_ticks {0 4 8 12 16 20}
+		} else {
+			set _flow_ticks {1 2 3 4 5 6 7 8 9 10}
+		}
+		$::preview_graph_flow axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max [expr {$::de1(max_flowrate_v11) + 1}] -majorticks $_flow_ticks -title [translate "Flow rate"] -titlefont Helv_8 -titlecolor #5a5d75;
 		$::preview_graph_flow element create line_espresso_de1_explanation_chart_temp -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_temperature_10  -label "" -linewidth [rescale_x_skin 10] -color #ff888c  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0; 
 		bind $::preview_graph_flow [platform_button_press] { show_profile_editor {} }
 	} -plotbackground $chart_background_color -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised  -plotpady 0 -plotpadx 10

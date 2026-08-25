@@ -704,6 +704,65 @@ namespace eval ::de1::packet {
 	}
 
 
+	# ble_protocol_version 2 selects the Bengle wire formats:
+	#  - ShotSample (0xA00D) stays stock DE1 v1 (additive model).  The Bengle
+	#    high-resolution sample -- every scalar U16D2 (0.01 step) except Weight
+	#    (S16P4, SIGNED, 0.0625 g) and FrameNumber, plus integrated-scale GFlow and the
+	#    MilkTemp probe -- is carried on BengleShotSample (0xA013); see
+	#    bengleshotsample_parse.  On a Bengle the app charts from 0xA013 and
+	#    skips 0xA00D (the cuuid_0D dispatch is gated on use_ble_v2).
+	#  - HeaderWrite (0xA00F) / FrameWrite (0xA010): pressure/flow bytes become
+	#    U8D1 (0.1 step, max 25.5) instead of v1's U8P4, and HeaderV = 2.
+	# Together these raise the app's max_flowrate from 8 to 20 ml/s.
+	proc use_ble_v2 {} {
+		return [expr {[ifexists ::de1(ble_protocol_version) 1] >= 2}]
+	}
+
+	# Model 128 and above is Bengle hardware. It is a RANGE, not one value,
+	# so that later Bengle variants need no app change. This matches the
+	# isBengleModelValue rule already upstream in decentespresso/decaid.
+	proc is_bengle_model_value {m} {
+		if {![string is integer -strict $m]} { return 0 }
+		return [expr {$m >= 128}]
+	}
+
+	# Decides v1 vs v2 protocol from the machine_model MMR (v13Model at
+	# 0x0080000C). Authoritative — comes straight from the connected machine
+	# rather than the BLE-advertised name (which can be stale from a prior
+	# scan/persisted session).
+	proc detect_ble_protocol_version {} {
+		set m [ifexists ::settings(machine_model) ""]
+		if {$m eq ""} { return }
+		if {[::de1::packet::is_bengle_model_value $m]} {
+			::de1::packet::set_ble_protocol_version 2
+		} else {
+			::de1::packet::set_ble_protocol_version 1
+		}
+	}
+
+	proc set_ble_protocol_version {v} {
+		if {[ifexists ::de1(ble_protocol_version) 0] == $v} { return }
+		set ::de1(ble_protocol_version) $v
+		# max_flowrate_v11 is the live pump-flow ceiling: the default skin
+		# reads it for 16 slider/editor bounds, and vars.tcl range-checks
+		# against it. A Bengle raises it from 8 to 20 mL/s. The "_v11" name
+		# is upstream's and is now a misnomer; a rename would touch the
+		# default skin, so it is left for a separate change.
+		if {$v >= 2} {
+			set ::de1(max_flowrate_v11) 20
+		} else {
+			set ::de1(max_flowrate_v11) 8
+		}
+		::msg -INFO "BLE protocol version set to $v, max_flowrate_v11=$::de1(max_flowrate_v11)"
+	}
+
+	# Auto-run detection whenever ::settings(machine_model) is written. The
+	# MMR read in bluetooth.tcl / de1_comms.tcl assigns it on every connect,
+	# so one trace covers all reconnect paths and is robust against a stale
+	# persisted BLE-advertised name.
+	trace add variable ::settings(machine_model) write \
+		[list apply {{name1 name2 op} { ::de1::packet::detect_ble_protocol_version }}]
+
 	proc shotsample_parse {t_shotsample target_array_name} {
 
 		upvar $target_array_name ShotSample
