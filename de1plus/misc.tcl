@@ -1024,6 +1024,7 @@ proc make_de1_dir {srcdir destdirs} {
         plugins/visualizer_upload/plugin.tcl *
         plugins/shot_upload/plugin.tcl *
         plugins/shot_upload/converter.tcl *
+        plugins/applog_upload/plugin.tcl *
         plugins/D_Flow_Espresso_Profile/plugin.tcl *
         plugins/log_upload/plugin.tcl *
         plugins/old_lcd_disable/plugin.tcl *
