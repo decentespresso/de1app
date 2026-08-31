@@ -158,7 +158,7 @@ array set ::de1 {
 	has_plumbing_kit 0
 	max_pressure 12.0
 	max_flowrate 12.0
-	max_flowrate_v11 8
+	max_flowrate_v11 20
 	version ""
 	min_temperature 80
 	max_temperature 100
@@ -279,7 +279,7 @@ array set ::settings {
 	dui_number_editor_previous_values {}
 	ghc_mode 0
 	fan_threshold 60
-	steam_flow 700
+	steam_flow 70
 	hotwater_flow 10
 	flush_flow 6.0
 	steam_disabled 0
@@ -659,7 +659,19 @@ array set ::de1_substate_type_description {
 
 array set ::de1_substate_types_reversed [reverse_array ::de1_substate_types]
 
-array set translation [encoding convertfrom utf-8 [read_binary_file "[homedir]/translation.tcl"]]
+# A corrupt or truncated translation.tcl (for example a partial file left behind by
+# an interrupted app update) makes this array-set throw at load time, which crashed
+# the app silently on launch with no error message -- reported on several Samsung
+# tablets, diagnosed by Damian (see Basecamp "App update font size issue"). Guard it
+# so a bad translation file degrades to English-passthrough (translate returns the
+# English string when a key is missing) instead of preventing the app from starting.
+if {[catch {
+	array set translation [encoding convertfrom utf-8 [read_binary_file "[homedir]/translation.tcl"]]
+} translation_load_err]} {
+	catch { msg -ERROR "Could not load translation.tcl ($translation_load_err); starting with no translations" }
+	array unset translation
+	array set translation {}
+}
 
 proc de1_substate_text {} {
 	set num $::de1(substate)

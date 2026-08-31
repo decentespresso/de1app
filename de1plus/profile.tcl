@@ -8,6 +8,14 @@ namespace eval ::profile {
     variable current {}
     variable profile_version 2
 
+    # Default flow limit (mL/s) applied to unlimited pressure steps at load time.
+    # See apply_default_flow_limit_to_pressure_steps. Bengle's pump can push
+    # ~20 mL/s on an unlimited pressure step, vs the DE1's natural <8 mL/s; capping
+    # keeps profiles behaving the same on both machines. Shinguk noted 7-7.5 may
+    # match the DE1 even more closely, so this is overridable via
+    # ::settings(default_pressure_flow_limit).
+    variable default_pressure_flow_limit 8
+
     proc pressure_to_advanced_list { {settingsvar ::settings} } {
         upvar $settingsvar source_var
 
@@ -81,9 +89,12 @@ namespace eval ::profile {
 
         if {$temp_advanced(espresso_hold_time) > 0} {
             if {$temp_advanced(espresso_hold_time) > 3} {
-                # Second rise step without limiter
+                # Initial 3s pressure rise. Historically this frame was left
+                # unlimited (it was named "forced rise without limit"), but that lets
+                # a high-flow machine (Bengle) push huge flow during the rise. Apply
+                # the same flow limiter as the hold/decline pressure frames below.
                 set pressure_up [list \
-                    name "forced rise without limit" \
+                    name "forced rise" \
                     temperature $temp_advanced(espresso_temperature_2) \
                     sensor "coffee" \
                     pump "pressure" \
@@ -98,6 +109,17 @@ namespace eval ::profile {
                     exit_flow_over 0 \
                     exit_flow_under 0 \
                 ]
+                # Attach the flow limiter to this pressure frame, but only if the
+                # profile actually has a flow limit set (maximum_flow is the basic
+                # pressure-profile's single flow-limit knob; 0 or empty means "no
+                # limit"). On a pressure frame, max_flow_or_pressure IS the flow limit
+                # in mL/s, and max_flow_or_pressure_range is how gradually that limiter
+                # engages (the "range of action", from the profile's default range).
+                # These are the two values the DE1 needs to cap flow during the rise.
+                if {$temp_advanced(maximum_flow) != 0 && $temp_advanced(maximum_flow) != {}} {
+                    lappend pressure_up max_flow_or_pressure $temp_advanced(maximum_flow)
+                    lappend pressure_up max_flow_or_pressure_range $temp_advanced(maximum_flow_range_default)
+                }
                 lappend temp_advanced(advanced_shot) $pressure_up
                 # This frame drives pressure up before any coffee comes out -- it is
                 # filling the headspace, not pouring. Count it as preinfusion so
@@ -134,9 +156,11 @@ namespace eval ::profile {
         if {$temp_advanced(espresso_decline_time) > 0} {
             # If this is the firest pressurized step we forced the pressure up
             if {$temp_advanced(espresso_hold_time) < 3 && $temp_advanced(espresso_decline_time) > 3} {
-                # Second rise step without limiter
+                # Initial 3s pressure rise (decline-first profiles). Same as the rise
+                # frame in the hold branch: apply the flow limiter rather than leaving
+                # it unlimited, so high-flow machines honour the cap during the rise.
                 set pressure_up [list \
-                    name "forced rise without limit" \
+                    name "forced rise" \
                     temperature $temp_advanced(espresso_temperature_3) \
                     sensor "coffee" \
                     pump "pressure" \
@@ -151,6 +175,17 @@ namespace eval ::profile {
                     exit_flow_over 0 \
                     exit_flow_under 0 \
                 ]
+                # Attach the flow limiter to this pressure frame, but only if the
+                # profile actually has a flow limit set (maximum_flow is the basic
+                # pressure-profile's single flow-limit knob; 0 or empty means "no
+                # limit"). On a pressure frame, max_flow_or_pressure IS the flow limit
+                # in mL/s, and max_flow_or_pressure_range is how gradually that limiter
+                # engages (the "range of action", from the profile's default range).
+                # These are the two values the DE1 needs to cap flow during the rise.
+                if {$temp_advanced(maximum_flow) != 0 && $temp_advanced(maximum_flow) != {}} {
+                    lappend pressure_up max_flow_or_pressure $temp_advanced(maximum_flow)
+                    lappend pressure_up max_flow_or_pressure_range $temp_advanced(maximum_flow_range_default)
+                }
                 lappend temp_advanced(advanced_shot) $pressure_up
                 # Same as the rise frame above: pressurising, not pouring.
                 incr temp_advanced(final_desired_shot_volume_advanced_count_start)
@@ -469,6 +504,81 @@ namespace eval ::profile {
         ]
 
         return $profile
+    }
+
+    # Apply a default flow limit to every unlimited PRESSURE step of the currently
+    # loaded profile. Called from select_profile right after the profile file has
+    # been read and before sync_from_legacy, so the change flows into the machine
+    # frames, is visible in the profile editor, and is written to the user's copy
+    # if they save the profile. The shipped profile files themselves are NOT
+    # modified -- this is purely an in-memory (load-time) normalization.
+    #
+    #  - Advanced profiles (settings_2c / settings_2c2): each step is a dict; for a
+    #    pressure step (pump == pressure) with no flow limit (max_flow_or_pressure
+    #    missing or 0) we set max_flow_or_pressure to the default.
+    #  - Basic pressure profiles (settings_2a): the single flow-limit knob is the
+    #    scalar maximum_flow; if it is off (0) we set it to the default.
+    #  - Basic flow profiles (settings_2b) have no pressure steps, so nothing to do.
+    # Effective default flow limit (mL/s) for pressure steps -- the shipped default,
+    # overridable via ::settings(default_pressure_flow_limit). Used both by the
+    # load-time normalizer and by the profile editor (where entering 0 / clearing the
+    # flow limit on a pressure step snaps back to this value).
+    proc default_flow_limit {} {
+        variable default_pressure_flow_limit
+        set v [ifexists ::settings(default_pressure_flow_limit) $default_pressure_flow_limit]
+        if {$v <= 0} {
+            set v $default_pressure_flow_limit
+        }
+        return $v
+    }
+
+    proc apply_default_flow_limit_to_pressure_steps {} {
+        if {[ifexists ::settings(apply_default_pressure_flow_limit) 1] != 1} {
+            return
+        }
+        set limit [default_flow_limit]
+        if {$limit <= 0} {
+            return
+        }
+        set range_default [ifexists ::settings(maximum_flow_range_default) 1.0]
+        if {$range_default <= 0} {
+            set range_default 1.0
+        }
+
+        set ptype [ifexists ::settings(settings_profile_type)]
+
+        if {$ptype eq "settings_2c" || $ptype eq "settings_2c2"} {
+            set newshot {}
+            set changed 0
+            foreach step [ifexists ::settings(advanced_shot)] {
+                unset -nocomplain s
+                array set s $step
+                if {[ifexists s(pump)] eq "pressure"} {
+                    set cur [ifexists s(max_flow_or_pressure) 0]
+                    if {$cur == 0 || $cur == {}} {
+                        set s(max_flow_or_pressure) $limit
+                        if {[ifexists s(max_flow_or_pressure_range) 0] <= 0} {
+                            set s(max_flow_or_pressure_range) $range_default
+                        }
+                        set changed 1
+                    }
+                }
+                lappend newshot [array get s]
+            }
+            if {$changed} {
+                set ::settings(advanced_shot) $newshot
+            }
+        } elseif {$ptype eq "settings_2a"} {
+            if {[ifexists ::settings(maximum_flow) 0] == 0} {
+                set ::settings(maximum_flow) $limit
+                if {[ifexists ::settings(maximum_flow_range_default) 0] <= 0} {
+                    set ::settings(maximum_flow_range_default) $range_default
+                }
+                if {[ifexists ::settings(maximum_flow_range_advanced) 0] <= 0} {
+                    set ::settings(maximum_flow_range_advanced) $range_default
+                }
+            }
+        }
     }
 
     proc sync_from_legacy {} {

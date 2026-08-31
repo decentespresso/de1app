@@ -1917,7 +1917,11 @@ proc choose_appropriate_data_entry_for_hot_water {} {
 }
 
 proc save_steam_flow_rate {} {
-	set ::settings(steam_flow) [expr {int(100 * $::data_entry_steam_flow)}]
+	# steam_flow is stored in hundredths of mL/s (e.g. 0.6 mL/s -> 60). Use round(),
+	# not int(): int() truncates and floating-point makes several entries store one
+	# low -- e.g. 0.57 -> int(56.9999) = 56, which then displays back as 0.56. round()
+	# keeps the stored value consistent with what the user entered.
+	set ::settings(steam_flow) [expr {round(100 * $::data_entry_steam_flow)}]
 
 }
 proc choose_appropriate_data_entry_for_steam {} {
@@ -2457,11 +2461,9 @@ proc save_profile_and_update_de1 { {do_de1_update 1} } {
 
 	msg "STREAMLINE: saving profile changes to disk"
 
-	if {$::settings(steam_timeout) == 0} {
-		set ::settings(steam_disabled) 1
-	} else {
-		set ::settings(steam_disabled) 0
-	}
+	# steam_disabled is reconciled from steam_timeout in
+	# copy_settings_from_streamline_to_profile (called above), so it is already
+	# correct on every save path, including the early return above.
 
 	set current_title [ifexists ::settings(profile_title)]
 	set ::settings(original_profile_title) $current_title
@@ -2546,8 +2548,24 @@ proc copy_settings_from_profile_to_streamline {} {
 }
 
 proc copy_settings_from_streamline_to_profile {} {
-	set ::settings(profile_grinder_dose_weight) $::settings(grinder_dose_weight) 
+	set ::settings(profile_grinder_dose_weight) $::settings(grinder_dose_weight)
 	set ::settings(profile_grinder_setting) $::settings(grinder_setting)
+
+	# Keep the canonical steam on/off flag in sync with the timeout that Streamline
+	# edits. Streamline represents steam on/off purely as steam_timeout==0, whereas
+	# Insight keeps a separate ::settings(steam_disabled) flag (that is the value the
+	# DE1 steam packet actually uses). This reconciliation MUST run on every save
+	# path -- previously it lived further down in save_profile_and_update_de1, after
+	# an early "return" taken whenever the loaded profile is not one of Streamline's
+	# favorite buttons. In that (common) case -- e.g. right after switching from the
+	# Insight skin -- Streamline's steam on/off control changed steam_timeout but
+	# never updated steam_disabled, so turning steam on/off in Streamline had no
+	# effect on the machine. Reconciling here (before the early return) fixes that.
+	if {$::settings(steam_timeout) == 0} {
+		set ::settings(steam_disabled) 1
+	} else {
+		set ::settings(steam_disabled) 0
+	}
 }
 
 proc streamline_beverage_btn { args } {

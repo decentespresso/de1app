@@ -2980,7 +2980,12 @@ proc select_profile { profile } {
 	set ::settings(settings_profile_type) [::profile::fix_profile_type $::settings(settings_profile_type)]
 	set ::settings(profile) $::settings(profile_title)
 
-
+	# Cap any unlimited pressure step at the default flow limit (8 mL/s) so that
+	# profiles behave the same on the DE1 and on higher-flow machines (Bengle).
+	# In-memory only: shows in the editor and is saved if the user saves the
+	# profile, but leaves the shipped profile files untouched. Must run before
+	# sync_from_legacy so the machine frames pick up the limit.
+	::profile::apply_default_flow_limit_to_pressure_steps
 
 	::profile::sync_from_legacy
 

@@ -2069,6 +2069,14 @@ proc ui_startup {} {
 
 	load_settings
 
+	# Cap unlimited pressure steps at the default flow limit (8 mL/s) for the profile
+	# that is already selected at launch. select_profile does this for profiles the
+	# user actively selects, but at startup the profile is restored straight from
+	# settings.tdb without going through select_profile, so we apply it here too --
+	# otherwise the loaded profile (and the advanced editor) would still show
+	# "flow limit: off". In-memory only; the profile file is not modified.
+	::profile::apply_default_flow_limit_to_pressure_steps
+
 	# Auto-size the UI to the LIVE display.  de1app's 0-10000 coordinate space
 	# scales to screen_size_{width,height}, so setting them to the real screen
 	# makes the UI fit whatever resolution it runs at.  This is every non-Android

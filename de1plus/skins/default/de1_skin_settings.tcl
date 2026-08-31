@@ -752,7 +752,14 @@ proc settings2c_flow_button {direction} {
 		}
 	}
 
-	if {[ifexists ::current_adv_step(max_flow_or_pressure)] < 0} {
+	if {[ifexists ::current_adv_step(pump)] eq "pressure"} {
+		# Flow limit on a pressure step: the +/- buttons floor it at 0.1 mL/s so it
+		# can never be tapped down to 0 ("off").
+		if {[ifexists ::current_adv_step(max_flow_or_pressure)] < 0.1} {
+			set ::current_adv_step(max_flow_or_pressure) 0.1
+		}
+	} elseif {[ifexists ::current_adv_step(max_flow_or_pressure)] < 0} {
+		# Pressure limit on a flow step: may still be 0 ("off").
 		set ::current_adv_step(max_flow_or_pressure) 0
 	}
 
@@ -780,6 +787,20 @@ proc settings2c_flow_label {} {
 	return [translate "off"]
 }
 
+# The flow limit on a pressure step is never allowed to be "off":
+#  - typing 0 in the number editor snaps to the default limit (see below);
+#  - the +/- buttons floor the value at 0.1 (see settings2c_flow_button).
+# This is a data constraint on max_flow_or_pressure, not a display change, and only
+# applies to the flow limit on a pressure step (the pressure-limit on a flow step may
+# still be off). Called from the number-entry callback: 0 -> default limit.
+proc enforce_pressure_step_flow_limit {} {
+	if {[ifexists ::current_adv_step(pump)] eq "pressure"} {
+		if {[ifexists ::current_adv_step(max_flow_or_pressure) 0] <= 0} {
+			set ::current_adv_step(max_flow_or_pressure) [::profile::default_flow_limit]
+		}
+	}
+}
+
 
 
 add_de1_variable "settings_2c" 1710 680 -text ""  -font Helv_6 -fill "#7f879a" -anchor "center" -width [rescale_x_skin 800] -justify "center"  -textvariable {[if {[ifexists ::current_adv_step(pump)] == "flow"} {return [translate "flow"]} else { return [translate "flow limit"] }]}
@@ -793,15 +814,20 @@ add_de1_variable "settings_2c" 2010 680 -text ""  -font Helv_6 -fill "#7f879a" -
 proc tap_pressure_central_button {} {
 	say [translate {pressure}] $::settings(sound_button_in);
 	if {$::current_adv_step(pump) != "pressure"} {
-		set ::current_adv_step(pump) "pressure"; 
+		set ::current_adv_step(pump) "pressure";
+		# Switching a flow step to a pressure step reinterprets max_flow_or_pressure
+		# as the FLOW limit. On a flow step it held the (often "off") pressure limit,
+		# so without this the new pressure step would come up with its flow limit off.
+		# Snap a 0/off flow limit to the default.
+		enforce_pressure_step_flow_limit
 	} else {
 		# john disabled 2nd tap causing data entry page, because this is not consistently done in all icons on this page, so can cause confusion
 		#dui page open_dialog dui_number_editor ::current_adv_step(pressure) -n_decimals 1 -min 0 -max $::de1(max_pressure) -default $::current_adv_step(pressure) -smallincrement 1 -bigincrement 5 -use_biginc 0 -page_title [translate "Pressure goal"] -return_callback callback_after_adv_profile_data_entry
 	}
 
 	profile_has_changed_set
-	update_onscreen_variables; 
-	save_current_adv_shot_step; 
+	update_onscreen_variables;
+	save_current_adv_shot_step;
 	update_de1_explanation_chart
 }
 
@@ -863,6 +889,8 @@ proc temp_entry_callback { {discard {}} } {
 
 
 proc callback_after_adv_profile_data_entry  { {discard {}} } {
+	# If the flow limit on a pressure step was entered as 0, use the default limit.
+	enforce_pressure_step_flow_limit
 	save_current_adv_shot_step
 	profile_has_changed_set
 }
