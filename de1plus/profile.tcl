@@ -451,6 +451,10 @@ namespace eval ::profile {
             ]
             
             if {[ifexists props(exit_if)] == 1} {
+                # Cleared before the chain below: an unrecognised or missing
+                # exit_type would otherwise leave these three holding the
+                # PREVIOUS step's values, and write that stale triple here.
+                set exit_type ""
                 if {[ifexists props(exit_type)] == "pressure_under"} {
                     set exit_type "pressure"
                     set exit_condition "under"
@@ -468,7 +472,9 @@ namespace eval ::profile {
                     set exit_condition "over"
                     set exit_value $props(exit_flow_over)
                 }
-                huddle append huddle_step exit [huddle create type $exit_type condition $exit_condition value $exit_value]
+                if {$exit_type ne ""} {
+                    huddle append huddle_step exit [huddle create type $exit_type condition $exit_condition value $exit_value]
+                }
             }
             if {[ifexists props(max_flow_or_pressure)] >= 0 && [info exists props(max_flow_or_pressure_range)]} {
                 huddle append huddle_step limiter [huddle create value $props(max_flow_or_pressure) range $props(max_flow_or_pressure_range)]
@@ -1019,6 +1025,11 @@ namespace eval ::profile {
         set uses_limiters 0
 		
         foreach stepl $profile(advanced_shot) {
+            # Every profile step is an independent record. Tcl reuses this local
+            # array across iterations and [array set] merges rather than
+            # replaces, so an omitted optional key would otherwise inherit the
+            # preceding step's value.
+            unset -nocomplain step
             array set step $stepl
             if { $is_basic_profile } {
                 # Ignore the 2 seconds temperature ramp-up added when per-step temperatures are enabled 
