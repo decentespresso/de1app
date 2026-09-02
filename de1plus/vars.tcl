@@ -2855,8 +2855,22 @@ proc change_bluetooth_device {} {
 	after 5000 {set ::globals(changing_bluetooth_device) 0}
 
 	if {$addr != $::settings(bluetooth_address)} {
-		# if no change in setting, then disconnect/reconnect.
+		set previous_de1_address $::settings(bluetooth_address)
 		set ::settings(bluetooth_address) $addr
+
+		if {$previous_de1_address ne ""} {
+			# Switching from one espresso machine to a DIFFERENT one. Swapping
+			# machines live leaves machine-specific state stale (model number,
+			# BLE protocol version, GHC-installed status, cup-warmer gating,
+			# firmware version), which is why switching machines "doesn't work
+			# right". Force a clean restart -- like GHC status, machine identity
+			# is a setting that must be re-read from scratch. On relaunch the app
+			# auto-connects to the newly-selected machine and reads it all fresh.
+			save_settings_and_ask_to_restart_app
+			return
+		}
+
+		# first machine ever selected (was none): just connect, no restart needed
 		save_settings
 	}
 
