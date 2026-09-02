@@ -3945,6 +3945,10 @@ proc de1_version_string {} {
 	}
 	
 	array set modelarr [list 0 [translate "unknown"] 1 DE1 2 DE1+ 3 DE1PRO 4 DE1XL 5 DE1CAFE 6 DE1XXL 7 DE1XXXL]
+	# Model 128 and above is Bengle hardware (a range, not one value).
+	if {[::de1::packet::is_bengle_model_value [ifexists ::settings(machine_model) ""]]} {
+		set modelarr([ifexists ::settings(machine_model)]) "Bengle"
+	}
 
 	set brev ""
 	if {[ifexists ::settings(cpu_board_model)] != ""} {

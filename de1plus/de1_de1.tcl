@@ -704,6 +704,93 @@ namespace eval ::de1::packet {
 	}
 
 
+	# ble_protocol_version 2 selects the Bengle wire formats:
+	#  - ShotSample (0xA00D) stays stock DE1 v1 (additive model).  The Bengle
+	#    high-resolution sample -- every scalar U16D2 (0.01 step) except Weight
+	#    (S16P4, SIGNED, 0.0625 g) and FrameNumber, plus integrated-scale GFlow and the
+	#    MilkTemp probe -- is carried on BengleShotSample (0xA013); see
+	#    bengleshotsample_parse.  On a Bengle the app charts from 0xA013 and
+	#    skips 0xA00D (the cuuid_0D dispatch is gated on use_ble_v2).
+	#  - HeaderWrite (0xA00F) / FrameWrite (0xA010): pressure/flow bytes become
+	#    U8D1 (0.1 step, max 25.5) instead of v1's U8P4, and HeaderV = 2.
+	# Together these raise the app's max_flowrate from 8 to 20 ml/s.
+	proc use_ble_v2 {} {
+		return [expr {[ifexists ::de1(ble_protocol_version) 1] >= 2}]
+	}
+
+	# Model 128 and above is Bengle hardware. It is a RANGE, not one value,
+	# so that later Bengle variants need no app change. This matches the
+	# isBengleModelValue rule already upstream in decentespresso/decaid.
+	proc is_bengle_model_value {m} {
+		if {![string is integer -strict $m]} { return 0 }
+		return [expr {$m >= 128}]
+	}
+
+	# Decides v1 vs v2 protocol from the machine_model MMR (v13Model at
+	# 0x0080000C). Authoritative — comes straight from the connected machine
+	# rather than the BLE-advertised name (which can be stale from a prior
+	# scan/persisted session).
+	proc detect_ble_protocol_version {} {
+		set m [ifexists ::settings(machine_model) ""]
+		if {$m eq ""} { return }
+		if {[::de1::packet::is_bengle_model_value $m]} {
+			::de1::packet::set_ble_protocol_version 2
+			# The advertised BLE name is unreliable -- a Bengle whose firmware
+			# still advertises "DE1" would otherwise show as "DE1" in the connect
+			# list and settings. The model MMR is authoritative, so correct the
+			# display name from it here.
+			::de1::packet::normalize_bengle_display_name
+		} else {
+			::de1::packet::set_ble_protocol_version 1
+		}
+	}
+
+	# When the model MMR identifies a Bengle, set the display name to "Bengle"
+	# regardless of what the machine advertised over BLE. Updates ::settings(model)
+	# and the matching ::de1_device_list entry, then refreshes the connect list.
+	proc normalize_bengle_display_name {} {
+		if {[ifexists ::settings(model)] ne "Bengle"} {
+			set ::settings(model) "Bengle"
+		}
+		set addr [ifexists ::settings(bluetooth_address)]
+		if {$addr ne "" && [info exists ::de1_device_list]} {
+			set updated {}
+			set changed 0
+			foreach d $::de1_device_list {
+				if {[dict get $d address] eq $addr && [dict get $d name] ne "Bengle"} {
+					dict set d name "Bengle"
+					set changed 1
+				}
+				lappend updated $d
+			}
+			if {$changed} {
+				set ::de1_device_list $updated
+				catch { fill_ble_listbox }
+			}
+		}
+	}
+
+	proc set_ble_protocol_version {v} {
+		if {[ifexists ::de1(ble_protocol_version) 0] == $v} { return }
+		set ::de1(ble_protocol_version) $v
+		# Flow ceiling is uniform 20 mL/s for every machine (John's decision),
+		# so max_flowrate_v11 is NOT switched by protocol -- it stays at its
+		# machine.tcl default of 20 for both DE1 (v1) and Bengle (v2). This proc
+		# only selects the BLE wire format (v1 U8P4 shot frames / 0xA00D sample
+		# vs v2 U8D1 frames / 0xA013 BengleShotSample). NOTE: a DE1's v1 U8P4
+		# encoding physically caps flow/pressure at 15.9375, so a 20 mL/s UI on
+		# a DE1 is silently clamped to ~16 by the wire format; the Bengle's v2
+		# U8D1 (max 25.5) can honour the full 20.
+		::msg -INFO "BLE protocol version set to $v, max_flowrate_v11=[ifexists ::de1(max_flowrate_v11)]"
+	}
+
+	# Auto-run detection whenever ::settings(machine_model) is written. The
+	# MMR read in bluetooth.tcl / de1_comms.tcl assigns it on every connect,
+	# so one trace covers all reconnect paths and is robust against a stale
+	# persisted BLE-advertised name.
+	trace add variable ::settings(machine_model) write \
+		[list apply {{name1 name2 op} { ::de1::packet::detect_ble_protocol_version }}]
+
 	proc shotsample_parse {t_shotsample target_array_name} {
 
 		upvar $target_array_name ShotSample

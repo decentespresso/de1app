@@ -159,6 +159,7 @@ array set ::de1 {
 	max_pressure 12.0
 	max_flowrate 12.0
 	max_flowrate_v11 20
+	ble_protocol_version 1
 	version ""
 	min_temperature 80
 	max_temperature 100

@@ -2594,14 +2594,26 @@ proc de1_ble_handler { event data } {
 						::de1::event::apply::on_connect_callbacks \
 							[dict create event_time [expr {[clock milliseconds] / 1000.0}]]
 
+						# Look up the advertised name from the scan list. The list
+						# is runtime-only and empty on auto-reconnect (no fresh
+						# scan), so we only overwrite ::settings(model) when a
+						# real match is found. Otherwise whatever was persisted
+						# (e.g. "Bengle" from a prior scan) is preserved instead
+						# of being clobbered back to the default "DE1".
 						set espresso_machine_name "DE1"
+						set scan_name_found 0
 						foreach { entry } $::de1_device_list {
-							if { [dict get $entry address] eq $address} {								
+							if { [dict get $entry address] eq $address} {
 								set espresso_machine_name [dict get $entry name]
+								set scan_name_found 1
 								msg -INFO "Espresso machine model found: '$espresso_machine_name'"
 							}
 						}
-						set ::settings(model) $espresso_machine_name
+						if {$scan_name_found} {
+							set ::settings(model) $espresso_machine_name
+						} else {
+							msg -INFO "No scan entry for $address; preserving persisted model='[ifexists ::settings(model)]'"
+						}
 
 						de1_connect_handler $handle $address $espresso_machine_name
 

@@ -2,6 +2,7 @@ package provide de1_comms 1.1
 
 package require de1_bluetooth
 package require de1_logging 1.2
+package require lambda
 
 ### Globals
 set ::failed_attempt_count_connecting_to_de1 0
@@ -17,6 +18,17 @@ proc long_to_little_endian_hex {in} {
 	set i [format %04X $in]
 	set i2 "[string range $i 2 3][string range $i 0 1]"
 	return $i2
+}
+
+# 4-byte little-endian hex for a 32-bit unsigned int. Companion to
+# long_to_little_endian_hex above (which only handles 16 bits despite the name).
+proc long32_to_little_endian_hex {val} {
+	set v [expr {$val & 0xFFFFFFFF}]
+	set b0 [expr {$v & 0xFF}]
+	set b1 [expr {($v >> 8) & 0xFF}]
+	set b2 [expr {($v >> 16) & 0xFF}]
+	set b3 [expr {($v >> 24) & 0xFF}]
+	return [format "%02X%02X%02X%02X" $b0 $b1 $b2 $b3]
 }
 
 # msg -DEBUG "::comms exists: [namespace exists ::comms]" (no)
@@ -219,15 +231,22 @@ proc de1_comm {action command_name {data 0}} {
 
 proc append_to_de1_list {address name type} {
 
+	# Replace any existing entry for the same address rather than
+	# early-returning -- the legacy "duplicate skip" behaviour caused
+	# stale names to persist across firmware swaps (e.g. the Bengle_BLE
+	# Mynewt port renamed the advertised device "DE1" -> "Bengle", but
+	# the list was seeded from settings.tdb at startup with the old
+	# name and the scan never overwrote it, so settings(model) stayed
+	# "DE1" -> use_ble_v2 returned false -> v1 protocol decoding was
+	# applied to v2-encoded ShotSample fields).
+	set newlist {}
 	foreach { entry } $::de1_device_list {
-		if { [dict get $entry address] eq $address} {
-			return
+		if { [dict get $entry address] ne $address} {
+			lappend newlist $entry
 		}
 	}
-
-	set newlist $::de1_device_list
 	lappend newlist [dict create address $address name $name type $type]
-	::comms::msg -NOTICE "Scan found DE1: $address"
+	::comms::msg -NOTICE "Scan found DE1: $address ($name)"
 	set ::de1_device_list $newlist
 	catch {
 		fill_ble_listbox
@@ -1720,8 +1739,13 @@ proc de1_read_shot_frame {} {
 }
 
 proc is_bengle_model {} {
-	if {$::settings(model) == "BENGLE"} {
-		return 1
-	}
-	return 0
+	# Delegate to the canonical Bengle detection used by the BLE packet
+	# code (shot sample decoder, shot profile encoder, max_flowrate). See
+	# ::de1::packet::detect_ble_protocol_version in de1_de1.tcl — it
+	# watches ::settings(machine_model) (set from the v13Model MMR) and
+	# flips ble_protocol_version to 2 when it equals 128. Reading the var
+	# directly (rather than calling use_ble_v2) avoids depending on the
+	# proc being defined at file-load time, which matters for the skin's
+	# is_bengle_model gates.
+	return [expr {[ifexists ::de1(ble_protocol_version) 1] >= 2}]
 }
