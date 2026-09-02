@@ -3212,10 +3212,56 @@ proc profile_has_changed_set args {
 	if {[lsearch -exact [stackprocs] "page_show"] == -1 && [lsearch -exact [stackprocs] "update_onscreen_variables"] == -1} {
 		set ::settings(profile_has_changed) 1
 	} else {
-		# pass 
+		# pass
 	}
 
 	#profile_has_changed_set_colors
+}
+
+# dui_number_editor return-callback wrappers for the flow controls of the built-in
+# flow/pressure editors (settings_2a/2b) and the advanced editor (settings_2c):
+# run the normal commit callback, then warn if the value just entered exceeds 8.
+proc flow_number_entry_pf {newvalue} {
+	profile_has_changed_set $newvalue
+	warn_if_flow_exceeds_de1_max $newvalue
+}
+proc flow_number_entry_adv {newvalue} {
+	callback_after_adv_profile_data_entry $newvalue
+	warn_if_flow_exceeds_de1_max $newvalue
+}
+# Advanced editor's "Flow limit" full-screen editor (max_flow_or_pressure on a
+# pressure step): same as above -- the value entered is a flow limit in mL/s.
+proc flow_limit_number_entry_adv {newvalue} {
+	callback_after_adv_profile_data_entry $newvalue
+	warn_if_flow_exceeds_de1_max $newvalue
+}
+
+# On a non-Bengle machine (a DE1 can't reliably deliver more than 8 mL/s), toast a
+# note when the user moves a flow control ABOVE 8 mL/s. Checks only the value just
+# set (not the whole profile), so a control at/below 8 stays silent even if another
+# step is above 8. Wired into the built-in flow/advanced/pressure editors.
+proc warn_if_flow_exceeds_de1_max {args} {
+	if {[catch {is_bengle_model} bengle]} { set bengle 0 }
+	if {$bengle == 1} { return }
+
+	# The value just set. A Tk scale -command appends the slider's current value,
+	# so it arrives as $args; the advanced-editor button passes nothing, so fall
+	# back to the step's flow value it just changed.
+	if {[llength $args] > 0} {
+		set v [lindex $args 0]
+	} elseif {[ifexists ::current_adv_step(pump)] eq "flow"} {
+		set v [ifexists ::current_adv_step(flow) 0]
+	} else {
+		return
+	}
+	if {![string is double -strict $v] || $v <= 8} { return }
+
+	# throttle so a continuous drag above 8 shows the note once, not every step
+	set now [clock milliseconds]
+	if {![info exists ::last_flow_over8_warn_ms] || ($now - $::last_flow_over8_warn_ms) > 4000} {
+		set ::last_flow_over8_warn_ms $now
+		popup [translate "Note: this machine can't deliver more than 8 mL/s of flow"]
+	}
 }
 
 
