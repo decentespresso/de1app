@@ -519,6 +519,48 @@ proc convert_float_to_U8P4 {in} {
 	return [expr {round($in * 16)}]
 }
 
+# U8D1: unsigned 8-bit, scale ×0.1 — Bengle ShotSample v2 / FrameWrite v2 encoding
+# for pressure & flow fields. Range 0–25.5, step 0.1. See APP_CHANGES_ShotSample_v2.md.
+proc convert_float_to_U8D1 {in} {
+	if {$in > 25.5} {
+		set in 25.5
+	}
+	if {$in < 0} {
+		set in 0
+	}
+	return [expr {round($in * 10)}]
+}
+
+# S16P4: SIGNED 16-bit, 4 fractional bits (scale = 1/16) — Bengle integrated-scale
+# weight encoding. Net of tare, so a negative value is a real reading (platform
+# unloaded after a tare) and must not be clamped at 0.
+# Provided for symmetry; decoder uses it via the spec table.
+proc convert_float_to_S16P4 {in} {
+	if {$in > 2047.9375} {
+		set in 2047.9375
+	}
+	if {$in < -2048.0} {
+		set in -2048.0
+	}
+	return [expr {round($in * 16)}]
+}
+
+# Picks the correct flow/pressure byte encoder based on negotiated BLE protocol.
+# Old (v1): U8P4, max 15.9375, step 0.0625. New (v2): U8D1, max 25.5, step 0.1.
+proc convert_float_to_flow_pressure_byte {in} {
+	if {[::de1::packet::use_ble_v2]} {
+		return [convert_float_to_U8D1 $in]
+	}
+	return [convert_float_to_U8P4 $in]
+}
+
+proc convert_flow_pressure_byte_to_float {in} {
+	if {[::de1::packet::use_ble_v2]} {
+		return [expr {$in / 10.0}]
+	}
+	return [expr {$in / 16.0}]
+}
+
 proc convert_float_to_U8P1 {in} {
 	# Same defect as convert_float_to_U8P4 above: 127.5 is 255/2, and clamping
 	# at 128 yields 256, which truncates to 0. A temperature of 128 C or more
@@ -582,6 +624,7 @@ proc convert_float_to_U10P0 {in} {
 #  DoCompare   = 0x02, // Do a compare, early exit current frame if compare true
 #  DC_GT       = 0x04, // If we are doing a compare, then 0 = less than, 1 = greater than
 #  DC_CompF    = 0x08, // Compare Pressure or Flow?
+#  DC_ComparePower = 0x80, // Independent watts compare; intentionally does not set DoCompare
 #  TMixTemp    = 0x10, // Disable shower head temperature compensation. Target Mix Temp instead.
 #  Interpolate = 0x20, // Hard jump to target value, or ramp?
 #  IgnoreLimit = 0x40, // Ignore minimum pressure and max flow settings
@@ -613,6 +656,8 @@ proc make_shot_flag {enabled_features} {
 			set num [expr {$num | 0x20}]
 		} elseif {$feature == "IgnoreLimit"} {
 			set num [expr {$num | 0x40}]
+		} elseif {$feature == "DC_ComparePower"} {
+			set num [expr {$num | 0x80}]
 		} else {
 			error "unknown shot flag: '$feature'"
 		}
@@ -655,7 +700,84 @@ proc parse_shot_flag {num} {
 	if {[expr {$num & 0x40}] } {
 		lappend enabled_features "IgnoreLimit"
 	}
+
+	if {[expr {$num & 0x80}] } {
+		lappend enabled_features "DC_ComparePower"
+	}
 	return $enabled_features
+}
+
+# Per-frame pump mode stored in T_ShotExtFrame.Mode.  Keep the numeric Mode
+# alongside the symbolic display name when decoding: an older client must be
+# able to read and write back a future (unknown) value without changing it.
+proc shot_mode_to_wire {mode} {
+	set raw [string trim $mode]
+	if {[string is integer -strict $raw]} {
+		set raw [expr {$raw}]
+		if {$raw < 0 || $raw > 255} {
+			error "shot mode must fit in one byte (got '$mode')"
+		}
+		return $raw
+	}
+
+	set key [string toupper [string map {_ - " " -} $raw]]
+	switch -- $key {
+		LEGACY { return 0 }
+		POWER { return 1 }
+		LEVER { return 2 }
+		HOLD-P - HOLD-PRESSURE { return 3 }
+		HOLD-F - HOLD-FLOW { return 4 }
+		HOLD-W - HOLD-POWER { return 5 }
+		default {
+			error "unknown shot mode '$mode' (use legacy, power, lever, HOLD-P, HOLD-F, HOLD-W, or a raw byte)"
+		}
+	}
+}
+
+proc parse_shot_mode {mode} {
+	set raw [shot_mode_to_wire $mode]
+	switch -- $raw {
+		0 { return "legacy" }
+		1 { return "power" }
+		2 { return "lever" }
+		3 { return "HOLD-P" }
+		4 { return "HOLD-F" }
+		5 { return "HOLD-W" }
+		default { return $raw }
+	}
+}
+
+proc shot_mode_uses_mandatory_cap {mode} {
+	set raw [shot_mode_to_wire $mode]
+	return [expr {$raw == 1 || $raw == 2 || $raw == 5}]
+}
+
+# Validate authored semantic values before the fixed-point encoder sees them.
+# convert_float_to_U8D1 deliberately clamps telemetry/legacy callers, but a
+# profile editor must not silently turn Inf or an out-of-range command into a
+# different shot.
+proc require_finite_range {label value minimum maximum {strict_minimum 0}} {
+	if {![string is double -strict $value] ||
+		[catch {set number [expr {double($value)}]}] ||
+		!($number > -Inf && $number < Inf)} {
+		error "$label must be finite (got '$value')"
+	}
+	if {$strict_minimum} {
+		if {!($number > $minimum) || $number > $maximum} {
+			error "$label must be > $minimum and <= $maximum (got '$value')"
+		}
+	} elseif {$number < $minimum || $number > $maximum} {
+		error "$label must be between $minimum and $maximum (got '$value')"
+	}
+	return $number
+}
+
+# MaxFlowOrPressure and MaxFoPRange retain the negotiated protocol's legacy
+# flow/pressure encoding even in a v2 extension record.  Validate semantic
+# values before the clamping encoder can silently turn malformed input into a
+# different limiter.
+proc flow_pressure_wire_max {} {
+	return [expr {[::de1::packet::use_ble_v2] ? 25.5 : 15.9375}]
 }
 
 
@@ -703,6 +825,9 @@ proc parse_binary_shotframe {packed destarrname} {
 		if {$extra != ""} {
 			set ShotSample($field) [expr $extra]
 		}
+	}
+	if {[info exists ShotSample(Mode)]} {
+		set ShotSample(ModeName) [parse_shot_mode $ShotSample(Mode)]
 	}
 }
 
@@ -794,8 +919,8 @@ proc spec_shotdescheader {} {
 		HeaderV {char {} {} {unsigned} {}}
 		NumberOfFrames {char {} {} {unsigned} {}}
 		NumberOfPreinfuseFrames {char {} {} {unsigned} {}}
-		MinimumPressure {char {} {} {unsigned} {$val / 16.0}}
-		MaximumFlow {char {} {} {unsigned} {$val / 16.0}}
+		MinimumPressure {char {} {} {unsigned} {[convert_flow_pressure_byte_to_float $val]}}
+		MaximumFlow {char {} {} {unsigned} {[convert_flow_pressure_byte_to_float $val]}}
 	}
 
 }
@@ -804,10 +929,10 @@ proc spec_shotframe {} {
 	set spec {
 		FrameToWrite {char {} {} {unsigned} {}}
 		Flag {char {} {} {unsigned} {}}
-		SetVal {char {} {} {unsigned} {$val / 16.0}}
+		SetVal {char {} {} {unsigned} {[convert_flow_pressure_byte_to_float $val]}}
 		Temp {char {} {} {unsigned} {$val / 2.0}}
 		FrameLen {char {} {} {unsigned} {[convert_F8_1_7_to_float $val]}}
-		TriggerVal {char {} {} {unsigned} {$val / 16.0}}
+		TriggerVal {char {} {} {unsigned} {[convert_flow_pressure_byte_to_float $val]}}
 		MaxVol {Short {} {} {unsigned} {[convert_bottom_10_of_U10P0 $val]}}
 	}
 	return $spec
@@ -816,15 +941,65 @@ proc spec_shotframe {} {
 proc spec_extshotframe {} {
 	set spec {
 		FrameToWrite {char {} {} {unsigned} {$val}}
-		MaxFlowOrPressure {char {} {} {unsigned} {$val / 16.0}}
-		MaxFoPRange {char {} {} {unsigned} {$val / 16.0}}
-		Pad1  {char {} {} {unsigned} {$val}}
-		Pad2  {char {} {} {unsigned} {$val}}
-		Pad3  {char {} {} {unsigned} {$val}}
-		Pad4  {char {} {} {unsigned} {$val}}
-		Pad5  {char {} {} {unsigned} {$val}}
+		MaxFlowOrPressure {char {} {} {unsigned} {[convert_flow_pressure_byte_to_float $val]}}
+		MaxFoPRange {char {} {} {unsigned} {[convert_flow_pressure_byte_to_float $val]}}
+		Mode {char {} {} {unsigned} {$val}}
+		ModeMaxP {char {} {} {unsigned} {$val / 10.0}}
+		LeverSpring {char {} {} {unsigned} {$val / 10.0}}
+		LeverGive {char {} {} {unsigned} {$val / 10.0}}
+		Reserved {char {} {} {unsigned} {$val}}
 	}
 	return $spec
+}
+
+# Encode an ext-frame array containing the semantic values returned by
+# parse_binary_shotframe. This is intentionally separate from fields::pack,
+# whose callers historically pass pre-encoded integers. Keeping Mode numeric
+# makes unknown future values and Reserved lossless on a decode/re-encode.
+proc pack_binary_extshotframe {arrname} {
+	upvar $arrname Ext
+	if {![info exists Ext(FrameToWrite)]} {
+		error "extension frame is missing FrameToWrite"
+	}
+	if {![string is integer -strict $Ext(FrameToWrite)] ||
+		$Ext(FrameToWrite) < 0 || $Ext(FrameToWrite) > 255} {
+		error "FrameToWrite must fit in one byte (got '$Ext(FrameToWrite)')"
+	}
+	foreach {field maximum} {
+		ModeMaxP 25.5 LeverSpring 25.5 LeverGive 25.5
+	} {
+		if {[info exists Ext($field)]} {
+			require_finite_range $field $Ext($field) 0.0 $maximum
+		}
+	}
+	set limiter_max [flow_pressure_wire_max]
+	foreach field {MaxFlowOrPressure MaxFoPRange} {
+		if {[info exists Ext($field)]} {
+			require_finite_range $field $Ext($field) 0.0 $limiter_max
+		}
+	}
+
+	array set Wire {}
+	set Wire(FrameToWrite) $Ext(FrameToWrite)
+	set Wire(MaxFlowOrPressure) [convert_float_to_flow_pressure_byte \
+		[expr {[info exists Ext(MaxFlowOrPressure)] ? $Ext(MaxFlowOrPressure) : 0}]]
+	set Wire(MaxFoPRange) [convert_float_to_flow_pressure_byte \
+		[expr {[info exists Ext(MaxFoPRange)] ? $Ext(MaxFoPRange) : 0}]]
+	set Wire(Mode) [shot_mode_to_wire \
+		[expr {[info exists Ext(Mode)] ? $Ext(Mode) : "legacy"}]]
+	set Wire(ModeMaxP) [convert_float_to_U8D1 \
+		[expr {[info exists Ext(ModeMaxP)] ? $Ext(ModeMaxP) : 0}]]
+	set Wire(LeverSpring) [convert_float_to_U8D1 \
+		[expr {[info exists Ext(LeverSpring)] ? $Ext(LeverSpring) : 0}]]
+	set Wire(LeverGive) [convert_float_to_U8D1 \
+		[expr {[info exists Ext(LeverGive)] ? $Ext(LeverGive) : 0}]]
+	set Wire(Reserved) [expr {[info exists Ext(Reserved)] ? $Ext(Reserved) : 0}]
+	if {![string is integer -strict $Wire(Reserved)] ||
+		$Wire(Reserved) < 0 || $Wire(Reserved) > 255} {
+		error "Reserved must fit in one byte (got '$Wire(Reserved)')"
+	}
+
+	return [::fields::pack [spec_extshotframe] Wire bigeendian]
 }
 
 proc spec_shottail {} {
@@ -865,13 +1040,155 @@ proc make_chunked_packed_shot_sample {hdrarrname framenames extension_framenames
 	return [list $packed_header $packed_frames]
 }
 
+proc shot_step_value {arrname names {default {}}} {
+	upvar $arrname Step
+	foreach name $names {
+		if {[info exists Step($name)]} {
+			return $Step($name)
+		}
+	}
+	return $default
+}
+
+# New profiles may spell the mode explicitly with pump_mode.  Also accept the
+# model used by newer profile clients: pump=power/lever, or transition=hold on
+# a pressure/flow/power step. Existing pressure/flow profiles infer legacy.
+proc shot_mode_for_step {arrname} {
+	upvar $arrname Step
+	set explicit [shot_step_value Step {pump_mode PumpMode Mode} ""]
+	if {$explicit ne ""} {
+		return [shot_mode_to_wire $explicit]
+	}
+
+	set pump [string tolower [shot_step_value Step {pump} pressure]]
+	set transition [string tolower [shot_step_value Step {transition} fast]]
+	if {$transition eq "hold"} {
+		switch -- $pump {
+			pressure { return 3 }
+			flow { return 4 }
+			power { return 5 }
+			default { error "HOLD transition is not valid for pump '$pump'" }
+		}
+	}
+	switch -- $pump {
+		power { return 1 }
+		lever { return 2 }
+		default { return 0 }
+	}
+}
+
+proc shot_mode_cap_for_step {arrname mode} {
+	upvar $arrname Step
+	set explicit [shot_step_value Step {mode_max_pressure mode_max_p ModeMaxP} ""]
+	if {$explicit ne ""} {
+		return $explicit
+	}
+
+	switch -- $mode {
+		1 - 5 {
+			# Power and HOLD-power reuse the existing limiter value as their
+			# mandatory pressure cap when no explicit mode_max_pressure is set.
+			return [shot_step_value Step {max_flow_or_pressure} 0]
+		}
+		2 {
+			# Lever's ModeMaxP is P0, identical to its base pressure target.
+			return [shot_step_value Step {pressure} 0]
+		}
+		default { return 0 }
+	}
+}
+
+proc validate_shot_mode_step {arrname frame_index mode mode_cap} {
+	upvar $arrname Step
+	set limiter_max [flow_pressure_wire_max]
+	require_finite_range "MaxFlowOrPressure" \
+		[shot_step_value Step {max_flow_or_pressure MaxFlowOrPressure} 0] \
+		0.0 $limiter_max
+	require_finite_range "MaxFoPRange" \
+		[shot_step_value Step {max_flow_or_pressure_range MaxFoPRange} 0] \
+		0.0 $limiter_max
+	if {$frame_index == 0 && $mode >= 3 && $mode <= 5} {
+		error "HOLD mode is invalid in frame 0 because there is no prior measured value to latch"
+	}
+	if {[shot_mode_uses_mandatory_cap $mode]} {
+		if {[catch {
+			require_finite_range "[parse_shot_mode $mode] ModeMaxP pressure cap" \
+				$mode_cap 0.0 12.0 1
+		} message]} {
+			error "[parse_shot_mode $mode] mode requires a finite ModeMaxP pressure cap > 0 and <= 12.0 bar: $message"
+		}
+	} else {
+		set explicit_cap [shot_step_value Step {mode_max_pressure mode_max_p ModeMaxP} ""]
+		if {$explicit_cap ne ""} {
+			require_finite_range "ModeMaxP" $explicit_cap 0.0 25.5
+		}
+	}
+
+	set power [shot_step_value Step {power Power} 0]
+	if {$mode == 1} {
+		require_finite_range "power target" $power 0.0 10.0
+	}
+
+	set lever_spring [shot_step_value Step {lever_spring leverSpring LeverSpring} ""]
+	set lever_give [shot_step_value Step {lever_give leverGive LeverGive} ""]
+	if {$mode == 2} {
+		set lever_p0 [shot_step_value Step {pressure Pressure} 0]
+		require_finite_range "lever P0" $lever_p0 0.0 12.0
+		if {$lever_spring ne ""} {
+			require_finite_range "lever spring" $lever_spring 0.0 25.5
+		}
+		if {$lever_give ne ""} {
+			require_finite_range "lever give" $lever_give 0.0 20.0
+		}
+	} else {
+		# Unknown future modes retain their raw extension semantics, bounded only
+		# by the one-byte U8D1 wire representation.
+		if {$lever_spring ne ""} {
+			require_finite_range "LeverSpring" $lever_spring 0.0 25.5
+		}
+		if {$lever_give ne ""} {
+			require_finite_range "LeverGive" $lever_give 0.0 25.5
+		}
+	}
+
+	if {[shot_step_value Step {exit_if} 0] == 1} {
+		set exit_type [shot_step_value Step {exit_type} ""]
+		if {$exit_type eq "power_under"} {
+			require_finite_range "power-under threshold" \
+				[shot_step_value Step {exit_power_under} ""] 0.0 25.5
+		} elseif {$exit_type eq "power_over"} {
+			require_finite_range "power-over threshold" \
+				[shot_step_value Step {exit_power_over} ""] 0.0 25.5
+		}
+	}
+}
+
+proc validate_shot_protocol_compatibility {arrname mode mode_cap lever_spring lever_give reserved} {
+	upvar $arrname Step
+	if {[::de1::packet::use_ble_v2]} {
+		return
+	}
+
+	set exit_type [shot_step_value Step {exit_type} ""]
+	set power_exit [expr {[shot_step_value Step {exit_if} 0] == 1 &&
+		($exit_type eq "power_under" || $exit_type eq "power_over")}]
+	if {$mode != 0 || $mode_cap != 0 || $lever_spring != 0 ||
+		$lever_give != 0 || $reserved != 0 || $power_exit} {
+		error "extended pump modes and power exits require BLE shot protocol v2; refusing to encode them in HeaderV 1"
+	}
+}
+
 
 
 proc de1_packed_shot {shot_list} {
 
-	set hdr(HeaderV) 1
+	set hdr(HeaderV) [expr {[::de1::packet::use_ble_v2] ? 2 : 1}]
 	set hdr(MinimumPressure) 0
-	set hdr(MaximumFlow) [convert_float_to_U8P4 6]
+	# Header MaximumFlow. decaid (the working Flutter build) sends 12.0 mL/s for a
+	# Bengle; keeping the DE1's legacy 6.0 was the ONLY byte that differed from
+	# decaid's frames and left the Bengle refusing to pour. Match decaid on v2,
+	# preserve the DE1's historical 6.0 on v1.
+	set hdr(MaximumFlow) [convert_float_to_flow_pressure_byte [expr {[::de1::packet::use_ble_v2] ? 12 : 6}]]
 
 	set cnt 0
 
@@ -912,6 +1229,17 @@ proc de1_packed_shot {shot_list} {
 	foreach step $this_profile {
 		unset -nocomplain props
 		array set props $step
+		set mode [shot_mode_for_step props]
+		set mode_cap [shot_mode_cap_for_step props $mode]
+		set lever_spring [shot_step_value props {lever_spring leverSpring LeverSpring} 0]
+		set lever_give [shot_step_value props {lever_give leverGive LeverGive} 0]
+		set reserved [shot_step_value props {reserved Reserved} 0]
+		if {![string is integer -strict $reserved] || $reserved < 0 || $reserved > 255} {
+			error "Reserved must fit in one byte (got '$reserved')"
+		}
+		validate_shot_mode_step props $cnt $mode $mode_cap
+		validate_shot_protocol_compatibility props $mode $mode_cap \
+			$lever_spring $lever_give $reserved
 
 		set frame_name "frame_$cnt"
 		set extension_frame "ext_frame_$cnt"
@@ -919,12 +1247,31 @@ proc de1_packed_shot {shot_list} {
 
 		set features {IgnoreLimit}
 
-		# flow control
-		if {$props(pump) == "flow"} {
-			lappend features "CtrlF"
-			set SetVal $props(flow)
-		} else {
-			set SetVal $props(pressure)
+		# The base frame remains byte-compatible. Unknown raw modes deliberately
+		# retain the authored legacy pressure/flow command, which is also the
+		# firmware's safe fallback. HOLD targets are measured, never authored.
+		set pump [string tolower [shot_step_value props {pump} pressure]]
+		switch -- $mode {
+			1 {
+				set SetVal [shot_step_value props {power} 0]
+			}
+			2 {
+				set SetVal [shot_step_value props {pressure} 0]
+			}
+			3 - 4 - 5 {
+				set SetVal 0
+				if {$mode == 4} {
+					lappend features "CtrlF"
+				}
+			}
+			default {
+				if {$pump eq "flow"} {
+					lappend features "CtrlF"
+					set SetVal [shot_step_value props {flow} 0]
+				} else {
+					set SetVal [shot_step_value props {pressure} 0]
+				}
+			}
 		}
 
 		# use boiler water temperature as the goal
@@ -932,13 +1279,22 @@ proc de1_packed_shot {shot_list} {
 			lappend features "TMixTemp"
 		}
 
-		if {$props(transition) == "smooth"} {
+		if {[shot_step_value props {transition} fast] == "smooth" && !($mode >= 3 && $mode <= 5)} {
 			lappend features "Interpolate"
 		}
 
 		# "move on if...."
 		if {$props(exit_if) == 1} {
-			if {[ifexists props(exit_type)] == "pressure_under"} {
+			if {[ifexists props(exit_type)] == "power_under"} {
+				# Independent of DoCompare: old firmware must ignore the watts
+				# threshold rather than misread it as pressure or flow.
+				lappend features "DC_ComparePower"
+				set TriggerVal $props(exit_power_under)
+			} elseif {[ifexists props(exit_type)] == "power_over"} {
+				lappend features "DC_ComparePower"
+				lappend features "DC_GT"
+				set TriggerVal $props(exit_power_over)
+			} elseif {[ifexists props(exit_type)] == "pressure_under"} {
 				lappend features "DoCompare"
 				set TriggerVal $props(exit_pressure_under)
 			} elseif {[ifexists props(exit_type)] == "pressure_over"} {
@@ -965,24 +1321,46 @@ proc de1_packed_shot {shot_list} {
 
 		array set $frame_name [list FrameToWrite $cnt]
 		array set $frame_name [list Flag [make_shot_flag $features]]
-		array set $frame_name [list SetVal [convert_float_to_U8P4 $SetVal]]
+		if {$mode >= 1 && $mode <= 5} {
+			array set $frame_name [list SetVal [convert_float_to_U8D1 $SetVal]]
+		} else {
+			array set $frame_name [list SetVal [convert_float_to_flow_pressure_byte $SetVal]]
+		}
 		array set $frame_name [list Temp [convert_float_to_U8P1 $props(temperature)]]
 		array set $frame_name [list FrameLen [convert_float_to_F8_1_7 $props(seconds)]]
-		array set $frame_name [list TriggerVal [convert_float_to_U8P4 $TriggerVal]]
+		if {[ifexists props(exit_type)] eq "power_under" || [ifexists props(exit_type)] eq "power_over"} {
+			array set $frame_name [list TriggerVal [convert_float_to_U8D1 $TriggerVal]]
+		} else {
+			array set $frame_name [list TriggerVal [convert_float_to_flow_pressure_byte $TriggerVal]]
+		}
 
 		# max water volume feature, per-step
 		array set $frame_name [list MaxVol [convert_float_to_U10P0 $props(volume)]]
 
-		#Extension Frame
-		if {[ifexists props(max_flow_or_pressure)] != 0 && [ifexists props(max_flow_or_pressure)] != {}} {
+		# Extension frame. Power/HOLD-power consume the existing limiter as
+		# ModeMaxP; their legacy OPV bytes stay zero. Lever and HOLD-P/F keep
+		# the existing limiter bytes. Every omitted new field is explicitly 0.
+		set max_fop [shot_step_value props {max_flow_or_pressure MaxFlowOrPressure} 0]
+		set max_fop_range [shot_step_value props {max_flow_or_pressure_range MaxFoPRange} 0]
+		if {$mode == 1 || $mode == 5} {
+			set wire_max_fop 0
+			set wire_max_fop_range 0
+		} else {
+			set wire_max_fop $max_fop
+			set wire_max_fop_range $max_fop_range
+		}
+		set needs_extension [expr {$mode != 0 || $max_fop ne "" && $max_fop != 0 ||
+			$max_fop_range ne "" && $max_fop_range != 0 || $mode_cap != 0 ||
+			$lever_spring != 0 || $lever_give != 0 || $reserved != 0}]
+		if {$needs_extension} {
 			array set $extension_frame [list FrameToWrite [expr $cnt + 32]]
-			array set $extension_frame [list MaxFlowOrPressure [convert_float_to_U8P4 $props(max_flow_or_pressure)]]
-			array set $extension_frame [list MaxFoPRange [convert_float_to_U8P4 $props(max_flow_or_pressure_range)]]
-			array set $extension_frame [list Pad1 0]
-			array set $extension_frame [list Pad2 0]
-			array set $extension_frame [list Pad3 0]
-			array set $extension_frame [list Pad4 0]
-			array set $extension_frame [list Pad5 0]
+			array set $extension_frame [list MaxFlowOrPressure [convert_float_to_flow_pressure_byte $wire_max_fop]]
+			array set $extension_frame [list MaxFoPRange [convert_float_to_flow_pressure_byte $wire_max_fop_range]]
+			array set $extension_frame [list Mode $mode]
+			array set $extension_frame [list ModeMaxP [convert_float_to_U8D1 $mode_cap]]
+			array set $extension_frame [list LeverSpring [convert_float_to_U8D1 $lever_spring]]
+			array set $extension_frame [list LeverGive [convert_float_to_U8D1 $lever_give]]
+			array set $extension_frame [list Reserved $reserved]
 
 			lappend extension_frames $extension_frame
 			msg -DEBUG "Settings extension frame for " $cnt [array get $extension_frame]

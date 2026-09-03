@@ -120,12 +120,34 @@ namespace eval ::shot {
             goal [huddle list {*}[get_vector espresso_pressure_goal]] \
         ]
 
-        set flow [huddle create \
+        # Scale-source mapping for the Visualizer payload:
+        #   v1: a single scale exists (BLE if paired). by_weight/weight come
+        #       from the legacy series; no _external fields.
+        #   v2: Bengle's integrated scale is always primary -> by_weight/weight
+        #       come from the *_integrated series. If an external BLE scale
+        #       is *also* paired, emit by_weight_external/weight_external from
+        #       the legacy series (which the de1_de1 bridge leaves untouched
+        #       when an external handle is live, so it holds the BLE values).
+        if {[::de1::packet::use_ble_v2]} {
+            set _by_weight_series espresso_flow_weight_integrated
+            set _weight_series    espresso_weight_integrated
+            set _emit_external    [expr {$::settings(scale_bluetooth_address) != ""}]
+        } else {
+            set _by_weight_series espresso_flow_weight
+            set _weight_series    espresso_weight
+            set _emit_external    0
+        }
+
+        set _flow_pairs [list \
             flow [huddle list {*}[get_vector espresso_flow]] \
-            by_weight [huddle list {*}[get_vector espresso_flow_weight]] \
+            by_weight [huddle list {*}[get_vector $_by_weight_series]] \
             by_weight_raw [huddle list {*}[get_vector espresso_flow_weight_raw]] \
             goal [huddle list {*}[get_vector espresso_flow_goal]] \
         ]
+        if {$_emit_external} {
+            lappend _flow_pairs by_weight_external [huddle list {*}[get_vector espresso_flow_weight]]
+        }
+        set flow [huddle create {*}$_flow_pairs]
 
         set temperature [huddle create \
             basket [huddle list {*}[get_vector espresso_temperature_basket]] \
@@ -133,10 +155,14 @@ namespace eval ::shot {
             goal [huddle list {*}[get_vector espresso_temperature_goal]] \
         ]
 
-        set totals [huddle create \
-            weight [huddle list {*}[get_vector espresso_weight]] \
+        set _totals_pairs [list \
+            weight [huddle list {*}[get_vector $_weight_series]] \
             water_dispensed [huddle list {*}[get_vector espresso_water_dispensed]] \
         ]
+        if {$_emit_external} {
+            lappend _totals_pairs weight_external [huddle list {*}[get_vector espresso_weight]]
+        }
+        set totals [huddle create {*}$_totals_pairs]
 
         set resistance [huddle create \
             resistance [huddle list {*}[get_vector espresso_resistance]] \
@@ -307,7 +333,7 @@ namespace eval ::shot {
 
         popup [translate_toast "Converting old shot files"]
 
-        blt::vector create espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_temperature100th steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance
+        blt::vector create espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_temperature100th steam_flow steam_elapsed steam_milk_temperature espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance espresso_flow_weight_integrated espresso_weight_integrated espresso_weight_integrated_chartable
         blt::vector create espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow espresso_water_dispensed espresso_flow_weight_raw espresso_de1_explanation_chart_temperature  espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_selected_step
         blt::vector create espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
         blt::vector create espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3
@@ -329,7 +355,7 @@ namespace eval ::shot {
 
         array set ::settings [array get ::settings_backup]
         unset -nocomplain ::settings_backup
-        blt::vector destroy espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_temperature100th steam_flow steam_elapsed espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance
+        blt::vector destroy espresso_elapsed god_espresso_elapsed god_espresso_pressure steam_pressure steam_temperature steam_temperature100th steam_flow steam_elapsed steam_milk_temperature espresso_pressure espresso_flow god_espresso_flow espresso_flow_weight god_espresso_flow_weight espresso_flow_weight_2x god_espresso_flow_weight_2x espresso_flow_2x god_espresso_flow_2x espresso_flow_delta espresso_pressure_delta espresso_temperature_mix espresso_temperature_basket god_espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_weight espresso_weight_chartable espresso_resistance_weight espresso_resistance espresso_flow_weight_integrated espresso_weight_integrated espresso_weight_integrated_chartable
         blt::vector destroy espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_flow espresso_water_dispensed espresso_flow_weight_raw espresso_de1_explanation_chart_temperature  espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_selected_step
         blt::vector destroy espresso_de1_explanation_chart_flow_1 espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_flow_2 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_flow_3 espresso_de1_explanation_chart_elapsed_flow_3
         blt::vector destroy espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3

@@ -520,16 +520,11 @@ namespace eval ::de1::state::update {
 
 	proc from_shotvalue {packed {update_received 0}} {
 
+		# Stock DE1 v1 ShotSample (0xA00D).  On a Bengle (model 128) the chart is
+		# driven by from_bengleshotvalue (the 0xA013 superset) instead, and the
+		# bluetooth dispatch skips this path -- see use_ble_v2.
+
 		if { $update_received == 0 } { set update_received [expr {[clock milliseconds] / 1000.0}] }
-
-		# TODO: Consider capturing early (on packet arrival) along with update_received
-		#       in a generic way for all packets
-
-		# Capture for downstreaam consumers of events as well as local use
-
-		set this_state [::de1::state::current_state]
-		set this_substate [::de1::state::current_substate]
-		set this_flow_phase [::de1::state::flow_phase $this_state $this_substate]
 
 		array set ShotSample {}
 
@@ -537,10 +532,52 @@ namespace eval ::de1::state::update {
 
 		if {[array size ShotSample] == 0} {
 			# shotsample_parse can return with a blank, if the packet is invalid
-			msg -WARN "Invalid shot sample received, ignoring"			
+			msg -WARN "Invalid shot sample received, ignoring"
 			return
 		}
 
+		_apply_shotvalue ShotSample $update_received
+	}
+
+	# Additive BLE: the Bengle self-contained high-resolution superset
+	# (BengleShotSample, 0xA013) is the SOLE shot-sample source on a Bengle.
+	# Parse it into a ShotSample-shaped array and run the identical downstream
+	# pipeline as the stock v1 path; the shared body already handles the
+	# superset-only fields (GFlow / Weight / MilkTemp) via [info exists].
+	proc from_bengleshotvalue {packed {update_received 0}} {
+
+		if { $update_received == 0 } { set update_received [expr {[clock milliseconds] / 1000.0}] }
+
+		array set ShotSample {}
+
+		::de1::packet::bengleshotsample_parse $packed ShotSample
+
+		if {[array size ShotSample] == 0} {
+			msg -WARN "Invalid Bengle shot sample received, ignoring"
+			return
+		}
+
+		_apply_shotvalue ShotSample $update_received
+	}
+
+	# Shared post-parse pipeline for both shot-sample sources: drive the live
+	# chart vars, bridge integrated-scale weight/flow + milk into the scale
+	# pipeline, integrate dispensed volume, run stop-at-volume, and fire the
+	# shotvalue callbacks.  The parsed sample array is passed by name.
+	proc _apply_shotvalue {arrName {update_received 0}} {
+
+		upvar 1 $arrName ShotSample
+
+		if { $update_received == 0 } { set update_received [expr {[clock milliseconds] / 1000.0}] }
+
+		# Capture for downstreaam consumers of events as well as local use
+
+		set this_state [::de1::state::current_state]
+		set this_substate [::de1::state::current_substate]
+		set this_flow_phase [::de1::state::flow_phase $this_state $this_substate]
+
+		# Stale-sample guard (upstream). Lives in the shared body so it
+		# protects the Bengle 0xA013 path as well as the stock 0xA00D one.
 		set previous_frame_number $::de1(current_frame_number)
 		if { $this_flow_phase == "during" \
 				&& $ShotSample(FrameNumber) < $previous_frame_number } {
@@ -562,6 +599,52 @@ namespace eval ::de1::state::update {
 		set ::de1(goal_flow)			$ShotSample(SetGroupFlow)
 		set ::de1(current_frame_number)		$ShotSample(FrameNumber)
 		set ::de1(steam_heater_temperature)	$ShotSample(SteamTemp)
+
+		# Bengle ShotSample v2 only: milk temperature probe.
+		# U16D2 (x0.01 C), 0 = no probe attached. Matches the spec table in
+		# bengleshotsample_parse below and decodeBengleShotSample in
+		# decentespresso/decaid, both of which scale by 1/100.
+		if {[info exists ShotSample(MilkTemp)]} {
+			set ::de1(milk_temperature) $ShotSample(MilkTemp)
+		}
+
+
+		# Bengle ShotSample v2 only: integrated-scale fields.
+		# Always stored on their own names for dual-trace charting.
+		if {[info exists ShotSample(GFlow)]} {
+			set ::de1(integrated_scale_flow) $ShotSample(GFlow)
+		}
+		if {[info exists ShotSample(Weight)]} {
+			set ::de1(integrated_scale_weight) $ShotSample(Weight)
+		}
+		# Feed the integrated scale through the SAME pipeline every BLE
+		# scale uses, rather than writing that pipeline's output variables
+		# directly. process_weight_update owns the weight history, the
+		# filtered weight and flow estimates, the scale_stop_at_half_shot
+		# two-cup scaling, tare-completion detection, the watchdog, the
+		# app-side stop-at-weight check and the drink-weight recording.
+		# Assigning ::de1(scale_weight) here instead would skip all of it.
+		#
+		# Skipped when an external BLE scale is connected -- that scale is
+		# already driving the same pipeline and must keep priority.
+		#
+		# NOTE: the pipeline derives flow from the weight history, so the
+		# firmware's own gravimetric GFlow is NOT used for
+		# ::de1(scale_weight_rate). GFlow is kept on
+		# ::de1(integrated_scale_flow) above for the comparison chart
+		# series. Switching the app to the firmware estimate is a separate
+		# change and needs a bench comparison first.
+		if {[info exists ShotSample(Weight)] && $::de1(scale_device_handle) == 0} {
+			# The integrated scale never fires a BLE-scale connect event, so the
+			# period estimator (::device::scale::period::_estimate_state) is never
+			# initialised -- process_weight_update -> estimate_update then throws on
+			# the unset last_arrival, dropping every Bengle weight sample. Initialise
+			# it once here (is_connected is already true on v2, so period::init runs).
+			if {![info exists ::device::scale::period::_estimate_state(last_arrival)]} {
+				::device::scale::init
+			}
+			::device::scale::process_weight_update $ShotSample(Weight) $update_received
+		}
 
 
 
@@ -666,6 +749,7 @@ namespace eval ::de1::state::update {
 					volume_dispensed \
 					    [expr { $::de1(preinfusion_volume) \
 							+ $::de1(pour_volume) }] \
+					intersample_time $intersample_time \
 					this_state $this_state \
 					this_substate $this_substate \
 				       ]
@@ -674,7 +758,7 @@ namespace eval ::de1::state::update {
 
 		return
 
-	} ;# from_shotvalue
+	} ;# _apply_shotvalue
 
 } ;# ::de1::state::update
 
@@ -839,6 +923,11 @@ namespace eval ::de1::packet {
 			SteamTemp {char {} {} {unsigned} {}}
 		}
 
+		# Additive BLE: ShotSample (0xA00D) is ALWAYS the stock DE1 v1 layout --
+		# the Bengle high-resolution scale/milk data rides on its own
+		# characteristic (BengleShotSample, 0xA013; see bengleshotsample_parse),
+		# never by redefining 0xA00D.  So even a Bengle (use_ble_v2 == 1, which
+		# now only selects the v2 profile encoding) reads ShotSample as v1 here.
 		if {[use_old_ble_spec] == 1} {
 			array set specarr $spec_old
 			::fields::unpack $t_shotsample $spec_old ShotSample bigeendian
@@ -876,6 +965,70 @@ namespace eval ::de1::packet {
 		}
 
 	} ;# shotsample_parse
+
+	# Additive BLE: parse the BengleShotSample characteristic (0xA013) -- the
+	# Bengle self-contained high-resolution shot sample.  This SUPERSET carries
+	# every ShotSample field plus the integrated-scale gravimetric flow (GFlow),
+	# the milk probe, and a Flags byte, at the v2 precision.  Wire layout
+	# (big-endian, 28 bytes) MUST match the firmware T_BengleShotSample.  Layout
+	# (the v2 precision: U16D2 scalars, S16P4 SIGNED weight) with a trailing Flags byte:
+	#   SampleTime       U16    halfcycles since shot start
+	#   GroupPressure    U16D2  bar  (*0.01)
+	#   SetGroupPressure U16D2  bar  (*0.01)
+	#   GroupFlow        U16D2  ml/s (*0.01)
+	#   SetGroupFlow     U16D2  ml/s (*0.01)
+	#   GFlow            U16D2  g/s  (*0.01, gravimetric from integrated scale)
+	#   MixTemp          U16D2  C    (*0.01)
+	#   HeadTemp         U16D2  C    (*0.01)
+	#   SetMixTemp       U16D2  C    (*0.01)
+	#   SetHeadTemp      U16D2  C    (*0.01)
+	#   Weight           S16P4  g    (*0.0625, SIGNED -- net of tare, may be negative)
+	#   FrameNumber      U8
+	#   SteamTemp        U16D2  C    (*0.01)
+	#   MilkTemp         U16D2  C    (*0.01, 0 = no probe)
+	#   Flags            U8     bit0 = firmware TAREd
+	# Populates the SAME array keys as shotsample_parse so _apply_shotvalue
+	# consumes it unchanged (the superset-only keys GFlow/Weight/MilkTemp are
+	# picked up there via [info exists]).
+	proc bengleshotsample_parse {packet target_array_name} {
+		upvar $target_array_name ShotSample
+		if {[string length $packet] < 28} {
+			msg -ERROR "bengleshotsample_parse: short packet [string length $packet] < 28"
+			return
+		}
+		# NB: this spec is consumed as a Tcl list (array set / fields::unpack), so it
+		# must NOT contain "#" comment lines -- inside braces "#" is literal, and the
+		# extra words make the list odd-length ("list must have an even number of
+		# elements"), which throws and drops every Bengle sample.  Keep notes here,
+		# outside the braces.
+		#   Weight's modifier column (4th) MUST be empty: fields::2form only strips
+		#   the "s" modifier for type I, so {signed} on a Short emits "Ss" -- two
+		#   binary specifiers -- shifting FrameNumber/SteamTemp/MilkTemp/Flags off
+		#   their bytes. Tcl's S is already signed; Su is the unsigned one.
+		set spec {
+			SampleTime       {Short {} {} {unsigned} {}}
+			GroupPressure    {Short {} {} {unsigned} {$val * 0.01}}
+			SetGroupPressure {Short {} {} {unsigned} {$val * 0.01}}
+			GroupFlow        {Short {} {} {unsigned} {$val * 0.01}}
+			SetGroupFlow     {Short {} {} {unsigned} {$val * 0.01}}
+			GFlow            {Short {} {} {unsigned} {$val * 0.01}}
+			MixTemp          {Short {} {} {unsigned} {$val * 0.01}}
+			HeadTemp         {Short {} {} {unsigned} {$val * 0.01}}
+			SetMixTemp       {Short {} {} {unsigned} {$val * 0.01}}
+			SetHeadTemp      {Short {} {} {unsigned} {$val * 0.01}}
+			Weight           {Short {} {} {} {$val * 0.0625}}
+			FrameNumber      {char  {} {} {unsigned} {}}
+			SteamTemp        {Short {} {} {unsigned} {$val * 0.01}}
+			MilkTemp         {Short {} {} {unsigned} {$val * 0.01}}
+			Flags            {char  {} {} {unsigned} {}}
+		}
+		array set specarr $spec
+		::fields::unpack $packet $spec ShotSample bigeendian
+		foreach {field val} [array get ShotSample] {
+			set extra [lindex $specarr($field) 4]
+			if {$extra != ""} { set ShotSample($field) [expr $extra] }
+		}
+	}
 
 } ;# ::de1::packet
 

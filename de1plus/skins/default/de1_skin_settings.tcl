@@ -484,7 +484,9 @@ add_de1_button "settings_2c2" { profile_has_changed_set; dui page open_dialog du
 
 
 # (beta) weight based shot ending, only displayed if a skale is connected
-if {$::settings(scale_bluetooth_address) != ""} {
+# Stop-at-weight needs a scale of some kind: a paired BLE scale,
+# or a Bengle integrated scale reached over the v2 protocol.
+if {$::settings(scale_bluetooth_address) != "" || [::de1::packet::use_ble_v2]} {
 	add_de1_text "settings_2a settings_2b" 1730 1100 -text [translate "4: stop at weight:"] -font Helv_10_bold -fill "#7f879a" -anchor "nw" -width [rescale_x_skin 1600] -justify "center"
 	add_de1_widget "settings_2a settings_2b" scale 1730 1175 {} -to 2000 -from 0 -background $::settings(color_stage_3)  -showvalue 0 -borderwidth 1 -bigincrement 1 -resolution 0.2 -length [rescale_x_skin 546]  -width [rescale_x_skin 150] -variable ::settings(final_desired_shot_weight) -font Helv_15_bold -sliderlength [rescale_x_skin 125] -relief flat -command "profile_has_changed_set; update_de1_explanation_chart_soon" -foreground #FFFFFF -troughcolor $slider_trough_color -borderwidth 0  -highlightthickness 0 -orient horizontal 
 	add_de1_variable "settings_2a settings_2b" 1730 1325 -text "" -font Helv_8 -fill "#4e85f4" -anchor "nw" -width [rescale_x_skin 1200] -justify "left" -textvariable {[return_stop_at_weight_measurement $::settings(final_desired_shot_weight)]}

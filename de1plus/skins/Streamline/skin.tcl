@@ -667,7 +667,7 @@ set ::streamline_dataline_weight_label_red ""
 set ::streamline_dataline_weight_value ""
 set ::streamline_dataline_weight_unit ""
 proc streamline_ui_weight_refresh {} {
-	if {$::de1(scale_device_handle) != 0} {
+	if {[::device::scale::is_connected]} {
 		set ::streamline_dataline_weight_label_blue [translate "Weight"]
 		set ::streamline_dataline_weight_label_red ""
 		set ::streamline_dataline_weight_value [lindex [return_weight_measurement_grams $::de1(scale_sensor_weight) 0 1] 0]
@@ -695,7 +695,7 @@ proc streamline_ui_weight_refresh {} {
 proc scale_tare_or_reconnect {} {
 	say [translate {Tare}] $::settings(sound_button_out); 
 
-	if {$::de1(scale_device_handle) != 0} {
+	if {[::device::scale::is_connected]} {
 		::device::scale::tare; 
 		popup [translate Tare]
 	} else {
@@ -741,7 +741,7 @@ if { [plugins enabled Graphical_Flow_Calibrator] } {
 }
 
 
-if {$::settings(scale_bluetooth_address) != ""} {
+if {$::settings(scale_bluetooth_address) != "" || [::device::scale::is_connected]} {
 	lappend btns [list -text "    " -font "Inter-Bold16"] 
 	lappend btns [list -text {$::streamline_dataline_weight_label_red} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "scale_tare_or_reconnect" ]
 	lappend btns [list -text {$::streamline_dataline_weight_label_blue} -font "Inter-Bold18" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
@@ -786,7 +786,7 @@ lappend water_btns \
 	[list -text {[round_to_integer $::settings(water_volume)]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text [translate "ml"] -font "mono8"  -foreground $::dataline_data_color ] 
 
-if {$::settings(scale_bluetooth_address) != ""} {
+if {$::settings(scale_bluetooth_address) != "" || [::device::scale::is_connected]} {
 	lappend water_btns [list -text "    " -font "Inter-Bold16"] 
 	lappend water_btns [list -text {$::streamline_dataline_weight_label_red} -font "Inter-Bold18" -foreground $::progress_bar_red  -exec "scale_tare_or_reconnect" ]
 	lappend water_btns [list -text {$::streamline_dataline_weight_label_blue} -font "Inter-Bold18" -foreground $::profile_title_color  -exec "scale_tare_or_reconnect" ]
@@ -1038,7 +1038,7 @@ proc update_streamline_status_message {} {
 
 			set final_target [determine_final_weight]
 			
-			if {$::settings(scale_bluetooth_address) != ""} {
+			if {$::settings(scale_bluetooth_address) != "" || [::device::scale::is_connected]} {
 				set current_weight $::streamline_extraction_weight
 			} else {
 				set current_weight $::streamline_extraction_volume
@@ -1095,7 +1095,7 @@ proc update_streamline_status_message {} {
 		} elseif {[dui page current] == "water" || [dui page current] == "water_zoomed" } {
 
 			set green_msg [subst {[translate "Pouring:"] }]
-			if {$::de1(scale_device_handle) != 0} {
+			if {[::device::scale::is_connected]} {
 				set current $::de1(scale_sensor_weight)
 				set clickable_msg [subst {[streamline_zero_pad [round_to_integer $::de1(scale_sensor_weight)] 2 0][translate "ml"]}]
 			} else {

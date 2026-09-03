@@ -16,6 +16,76 @@ namespace eval ::profile {
     # ::settings(default_pressure_flow_limit).
     variable default_pressure_flow_limit 8
 
+    # Profile-side copies of the shot-mode normalization helpers. profile.tcl
+    # is loaded before binary.tcl, so save/load/display cannot depend on the
+    # packet encoder already being present.
+    proc step_value {arrname names {default {}}} {
+        upvar $arrname Step
+        foreach name $names {
+            if {[info exists Step($name)]} {
+                return $Step($name)
+            }
+        }
+        return $default
+    }
+
+    proc mode_to_wire {mode} {
+        set raw [string trim $mode]
+        if {[string is integer -strict $raw]} {
+            set raw [expr {$raw}]
+            if {$raw < 0 || $raw > 255} {
+                error "shot mode must fit in one byte (got '$mode')"
+            }
+            return $raw
+        }
+        set key [string toupper [string map {_ - " " -} $raw]]
+        switch -- $key {
+            LEGACY { return 0 }
+            POWER { return 1 }
+            LEVER { return 2 }
+            HOLD-P - HOLD-PRESSURE { return 3 }
+            HOLD-F - HOLD-FLOW { return 4 }
+            HOLD-W - HOLD-POWER { return 5 }
+            default { error "unknown shot mode '$mode'" }
+        }
+    }
+
+    proc mode_for_step {arrname} {
+        upvar $arrname Step
+        set explicit [step_value Step {pump_mode PumpMode Mode} ""]
+        if {$explicit ne ""} {
+            return [mode_to_wire $explicit]
+        }
+        set pump [string tolower [step_value Step {pump} pressure]]
+        set transition [string tolower [step_value Step {transition} fast]]
+        if {$transition eq "hold"} {
+            switch -- $pump {
+                pressure { return 3 }
+                flow { return 4 }
+                power { return 5 }
+                default { error "HOLD transition is not valid for pump '$pump'" }
+            }
+        }
+        switch -- $pump {
+            power { return 1 }
+            lever { return 2 }
+            default { return 0 }
+        }
+    }
+
+    proc mode_cap_for_step {arrname mode} {
+        upvar $arrname Step
+        set explicit [step_value Step {mode_max_pressure mode_max_p ModeMaxP} ""]
+        if {$explicit ne ""} {
+            return $explicit
+        }
+        switch -- $mode {
+            1 - 5 { return [step_value Step {max_flow_or_pressure MaxFlowOrPressure} 0] }
+            2 { return [step_value Step {pressure Pressure} 0] }
+            default { return 0 }
+        }
+    }
+
     proc pressure_to_advanced_list { {settingsvar ::settings} } {
         upvar $settingsvar source_var
 
@@ -449,6 +519,26 @@ namespace eval ::profile {
                 volume [ifexists props(volume)] \
                 weight [ifexists props(weight)] \
             ]
+
+            # V2 JSON is written in parallel with the live legacy profile.
+            # Preserve every extension semantic under one canonical key so a
+            # save/load cannot silently turn a power profile into zero watts,
+            # erase an explicit/unknown mode, or destroy future Reserved data.
+            foreach {outname innames} [list \
+                pump_mode {pump_mode PumpMode Mode} \
+                power {power Power} \
+                mode_max_pressure {mode_max_pressure mode_max_p ModeMaxP} \
+                lever_spring {lever_spring leverSpring LeverSpring} \
+                lever_give {lever_give leverGive LeverGive} \
+                reserved {reserved Reserved} \
+            ] {
+                foreach inname $innames {
+                    if {[info exists props($inname)]} {
+                        huddle append huddle_step $outname $props($inname)
+                        break
+                    }
+                }
+            }
             
             if {[ifexists props(exit_if)] == 1} {
                 # Cleared before the chain below: an unrecognised or missing
@@ -471,13 +561,23 @@ namespace eval ::profile {
                     set exit_type "flow"
                     set exit_condition "over"
                     set exit_value $props(exit_flow_over)
+                } elseif {[ifexists props(exit_type)] == "power_under"} {
+                    set exit_type "power"
+                    set exit_condition "under"
+                    set exit_value $props(exit_power_under)
+                } elseif {[ifexists props(exit_type)] == "power_over"} {
+                    set exit_type "power"
+                    set exit_condition "over"
+                    set exit_value $props(exit_power_over)
                 }
                 if {$exit_type ne ""} {
                     huddle append huddle_step exit [huddle create type $exit_type condition $exit_condition value $exit_value]
                 }
             }
-            if {[ifexists props(max_flow_or_pressure)] >= 0 && [info exists props(max_flow_or_pressure_range)]} {
-                huddle append huddle_step limiter [huddle create value $props(max_flow_or_pressure) range $props(max_flow_or_pressure_range)]
+            set limiter_value [step_value props {max_flow_or_pressure MaxFlowOrPressure} ""]
+            set limiter_range [step_value props {max_flow_or_pressure_range MaxFoPRange} ""]
+            if {$limiter_value ne "" && $limiter_range ne "" && $limiter_value >= 0} {
+                huddle append huddle_step limiter [huddle create value $limiter_value range $limiter_range]
             }
             lappend huddle_steps $huddle_step
         }
@@ -1064,7 +1164,7 @@ namespace eval ::profile {
                 dict set pdict $stepn temp [list "Decrease \\1 temperature to \\2 ºC" $step(sensor) [round_to_one_digits $step(temperature)]]
             }
             
-            # Flow or pressure
+            # Flow, pressure, or an extended pump-mode semantic.
             ifexists step(max_flow_or_pressure) 0
             if { $step(transition) eq "smooth" } {
                 set step(transition) "gradually"
@@ -1074,7 +1174,29 @@ namespace eval ::profile {
             
             set txt ""
             set items {}
-            if { $step(pump) eq "flow" } {
+            set shot_mode [mode_for_step step]
+            set mode_cap [mode_cap_for_step step $shot_mode]
+            if {$shot_mode == 1} {
+                set txt "Deliver \\1 W hydraulic power with a pressure cap of \\2 bar"
+                lappend items [round_to_one_digits [step_value step {power Power} 0]] \
+                    [round_to_one_digits $mode_cap]
+            } elseif {$shot_mode == 2} {
+                set txt "Apply lever control at P0 \\1 bar, spring \\2 bar/10 mL, give \\3 bar*s/mL, capped at \\4 bar"
+                lappend items [round_to_one_digits [step_value step {pressure Pressure} 0]] \
+                    [round_to_one_digits [step_value step {lever_spring leverSpring LeverSpring} 0]] \
+                    [round_to_one_digits [step_value step {lever_give leverGive LeverGive} 0]] \
+                    [round_to_one_digits $mode_cap]
+            } elseif {$shot_mode == 3} {
+                set txt "Hold the measured pressure from the preceding frame"
+            } elseif {$shot_mode == 4} {
+                set txt "Hold the measured flow from the preceding frame"
+            } elseif {$shot_mode == 5} {
+                set txt "Hold the measured hydraulic power from the preceding frame with a pressure cap of \\1 bar"
+                lappend items [round_to_one_digits $mode_cap]
+            } elseif {$shot_mode >= 6} {
+                set txt "Unknown pump mode \\1; firmware falls back to the authored legacy \\2 command"
+                lappend items $shot_mode [step_value step {pump} pressure]
+            } elseif { $step(pump) eq "flow" } {
                 set txt "Pour \\1 at a rate of \\2 mL/s"
                 lappend items $step(transition) [round_to_one_digits $step(flow)]
                 
@@ -1147,6 +1269,10 @@ namespace eval ::profile {
                     dict set pdict $stepn exit_if "Move on if pressure is \\1 \\2 bar" "over" [round_to_one_digits $step(exit_pressure_over)]
                 } elseif { $step(exit_type) eq "pressure_under" } {
                     dict set pdict $stepn exit_if "Move on if pressure is \\1 \\2 mL/s" "under" [round_to_one_digits $step(exit_pressure_under)]
+                } elseif { $step(exit_type) eq "power_over" } {
+                    dict set pdict $stepn exit_if "Move on if hydraulic power is \\1 \\2 W" "over" [round_to_one_digits $step(exit_power_over)]
+                } elseif { $step(exit_type) eq "power_under" } {
+                    dict set pdict $stepn exit_if "Move on if hydraulic power is \\1 \\2 W" "under" [round_to_one_digits $step(exit_power_under)]
                 }
             }
             

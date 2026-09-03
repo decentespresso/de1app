@@ -3401,6 +3401,7 @@ namespace eval ::gui::update {
 		set this_pressure [dict get $event_dict GroupPressure]
 		set update_received [dict get $event_dict update_received]
 
+
 		# As this gets called every 4-5 times a second, and usually does nothing
 		# bail out early and simplify the logic that follows
 
@@ -3418,10 +3419,31 @@ namespace eval ::gui::update {
 			# TODO: Decide how to make these dimensionally meaningful
 			#       Probably should be "per second", which would divide by 4 or about 5 (50/60 Hz)
 
-			set ::gui::state::_delta_flow \
-				[expr { $this_flow - $::gui::state::_previous_flow }]
-			set ::gui::state::_delta_pressure \
-				[expr { $this_pressure - $::gui::state::_previous_pressure }]
+			# Normalise sample-to-sample deltas to "5 Hz-equivalent
+			# magnitude" so that downstream chart math (e.g. the
+			# (10.0 * $flow_delta) negative-flow chart constant) and
+			# the diff_flow_rate_text display read identically
+			# regardless of the firmware's BLE notify rate.
+			# intersample_time is the actual elapsed time between
+			# samples (computed in de1_de1.tcl::from_shotvalue from
+			# ShotSample(SampleTime), the DE1's hardware tick counter).
+			# 0.2 s is the legacy 5 Hz period the chart code was
+			# implicitly tuned for.  Guards: first sample has
+			# intersample_time = 0; treat as zero delta.  Backwards-
+			# compat: if event_dict lacks the key (older firmware),
+			# fall back to raw delta (legacy behaviour).
+			set _ist [expr {[dict exists $event_dict intersample_time] \
+				? [dict get $event_dict intersample_time] : 0.2}]
+			if { $_ist > 0 } {
+				set _scale [expr { 0.2 / $_ist }]
+				set ::gui::state::_delta_flow \
+					[expr { ($this_flow - $::gui::state::_previous_flow) * $_scale }]
+				set ::gui::state::_delta_pressure \
+					[expr { ($this_pressure - $::gui::state::_previous_pressure) * $_scale }]
+			} else {
+				set ::gui::state::_delta_flow 0
+				set ::gui::state::_delta_pressure 0
+			}
 
 			set ::gui::state::_previous_flow $this_flow
 			set ::gui::state::_previous_pressure $this_pressure
@@ -3462,6 +3484,18 @@ namespace eval ::gui::update {
 						}
 						espresso_weight append [round_to_two_digits $::de1(scale_weight)]
 						espresso_weight_chartable append [round_to_two_digits [expr {0.10 * $::de1(scale_weight)}]]
+
+						# Bengle integrated-scale series: recorded side-by-side with
+						# the external-BLE-scale data so noise/reliability can be
+						# compared. Only populated on v2 — on v1 (DE1) the vars stay
+						# at 0 and the Insight skin hides the chart lines.
+						if {[::de1::packet::use_ble_v2]} {
+							set _iw [ifexists ::de1(integrated_scale_weight) 0]
+							set _if [ifexists ::de1(integrated_scale_flow) 0]
+							espresso_weight_integrated append [round_to_two_digits $_iw]
+							espresso_weight_integrated_chartable append [round_to_two_digits [expr {0.10 * $_iw}]]
+							espresso_flow_weight_integrated append [round_to_two_digits $_if]
+						}
 
 						espresso_pressure append [round_to_two_digits $GroupPressure]
 						espresso_flow append [round_to_two_digits $GroupFlow]
@@ -3643,6 +3677,10 @@ namespace eval ::gui::update {
 						}
 
 						steam_elapsed append [expr {[steam_pour_millitimer $update_received]/1000.0}]
+
+						# Milk temperature probe (Bengle v2 only, 0 = no probe)
+						set _mt [ifexists ::de1(milk_temperature) 0]
+						steam_milk_temperature append [round_to_two_digits $_mt]
 					}
 				}
 

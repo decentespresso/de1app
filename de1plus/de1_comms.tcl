@@ -284,6 +284,7 @@ proc de1_connect_handler { handle address name} {
 		set dothis 1
 		if {$dothis == 1} {
 			de1_enable_temp_notifications
+			de1_enable_bengleshotsample_notifications ;# Additive: 0xA013 (no-op on a stock DE1)
 
 			if {[info exists ::de1(first_connection_was_made)] != 1} {
 				# on app startup, wake the machine up
@@ -756,6 +757,28 @@ proc de1_enable_temp_notifications {} {
 	userdata_append "enable de1 temp notifications" [list de1_comm  enable "ShotSample"] 1
 }
 
+# Additive BLE: subscribe to the Bengle high-resolution shot sample
+# characteristic (BengleShotSample, 0xA013).  Only a Bengle exposes it; a stock
+# DE1 does not, so we must NOT enqueue the enable there.  The enable is vital,
+# and on a stock DE1 de1_ble would throw on the unset ::cinstance(0xA013); the
+# vital-retry path then re-runs it every 500ms WITHOUT advancing the FIFO,
+# permanently stalling the whole BLE command queue (blocking the version/state
+# reads, profile/MMR writes, etc.).  Gate on the discovered characteristic
+# instance -- discovery populates ::cinstance for present characteristics before
+# this connect-time enable runs (the temp/state enables rely on the same).
+proc de1_enable_bengleshotsample_notifications {} {
+	::comms::msg -NOTICE de1_enable_bengleshotsample_notifications
+	if {[ifexists ::sinstance($::de1(suuid))] == ""} {
+		::comms::msg -DEBUG "DE1 not connected, cannot enable BengleShotSample notifications"
+		return
+	}
+	if {![info exists ::cinstance($::de1(cuuid_13))]} {
+		::comms::msg -DEBUG "BengleShotSample (0xA013) not present on this machine (stock DE1); skipping enable"
+		return
+	}
+	userdata_append "enable de1 bengleshotsample notifications" [list de1_comm  enable "BengleShotSample"] 1
+}
+
 # status changes
 proc de1_enable_state_notifications {} {
 	::comms::msg -NOTICE de1_enable_state_notifications
@@ -1109,6 +1132,35 @@ proc mmr_write { note address length value} {
 	userdata_append "$note" [list de1_comm write "WriteToMMR" $data] 1
 }
 
+# Bengle-only: target weight at which the machine auto-ends the shot using
+# its integrated scale. 0 disables. Value persists to disk in the firmware,
+# so we always write on shot start to keep it aligned with the app setting.
+proc set_end_of_shot_weight {weight_grams} {
+	if {![::de1::packet::use_ble_v2]} { return }
+
+	if {$weight_grams eq "" || ![string is double -strict $weight_grams] || $weight_grams < 0} {
+		set weight_grams 0
+	}
+	# MMR value = grams * 100; firmware clamps to 0..1_000_000 (10 kg).
+	set scaled [expr {int(round($weight_grams * 100))}]
+	if {$scaled < 0}        { set scaled 0 }
+	if {$scaled > 1000000}  { set scaled 1000000 }
+
+	::comms::msg -NOTICE "set_end_of_shot_weight '${weight_grams}g' (raw=${scaled})"
+	remove_matching_ble_queue_entries {^MMR set_end_of_shot_weight}
+	mmr_write "set_end_of_shot_weight ${weight_grams}g" "803864" "04" [long32_to_little_endian_hex $scaled]
+}
+
+# Bengle integrated-scale instant tare (ScaleTare, 0x0080388C). Lives here
+# rather than in the calibration wizard so the ordinary scale tare path can
+# reach it without loading the wizard. Matches tareIntegratedScale in
+# decentespresso/decaid, which writes the same value to the same register.
+proc set_bengle_scale_tare {} {
+	if {![::de1::packet::use_ble_v2]} { return }
+	::comms::msg -NOTICE set_bengle_scale_tare
+	mmr_write "ScaleTare" "80388C" "04" [long32_to_little_endian_hex 1]
+}
+
 proc set_tank_temperature_threshold {temp} {
 	::comms::msg -NOTICE set_tank_temperature_threshold "'$temp'"
 
@@ -1264,6 +1316,21 @@ proc set_steam_flow {desired_flow} {
 	remove_matching_ble_queue_entries {^MMR set_steam_flow}
 	::comms::msg -INFO "Setting steam flow rate to '$desired_flow'"
 	mmr_write "set_steam_flow" "803828" "04" [zero_pad [int_to_hex $desired_flow] 2]
+}
+
+# Milk auto-stop target in C (stored on firmware as C*10). 0 disables.
+# Gated and clamped to match the reaprime/decaid contract for this register
+# (TargetMilkTemp 0x008038A8, raw 0..850).
+proc set_target_milk_temp {temp_c} {
+	if {[is_bengle_model] != 1} {
+		return
+	}
+	set raw [expr {int(round($temp_c * 10))}]
+	if {$raw < 0}   { set raw 0 }
+	if {$raw > 850} { set raw 850 }
+	::comms::msg -NOTICE set_target_milk_temp "'$temp_c' (raw $raw)"
+	remove_matching_ble_queue_entries {^MMR set_target_milk_temp}
+	mmr_write "set_target_milk_temp" "8038A8" "04" [zero_pad [long_to_little_endian_hex $raw] 2]
 }
 
 proc send_refill_kit_override {} {
@@ -1533,6 +1600,18 @@ proc de1_send_shot_frames { {override {}} } {
 		set_tank_temperature_threshold 0
 	}
 
+	# Bengle integrated-scale stop-at-weight. Each profile carries its own
+	# final_desired_shot_weight[_advanced]; push it to MMR 0x00803864 every
+	# time we upload frames so the machine-side target stays aligned with
+	# the profile currently on the app. Writing 0 when the profile has no
+	# target clears any value left persisted on disk by a prior profile.
+	if {$::settings(settings_profile_type) == "settings_2c"} {
+		set _saw_target [ifexists ::settings(final_desired_shot_weight_advanced) 0]
+	} else {
+		set _saw_target [ifexists ::settings(final_desired_shot_weight) 0]
+	}
+	set_end_of_shot_weight $_saw_target
+
 	userdata_append "Confirm that all shot frames were correctly sent"  [list confirm_de1_send_shot_frames_worked [lindex $parts 1]] 1
 	return
 }
@@ -1644,6 +1723,15 @@ proc de1_send_steam_hotwater_settings { {temporarily_disable_steam 0} } {
 
 	# only works on Bengle
 	set_cupwarmer_temperature $::settings(cupwarmer_temp)
+
+	# Milk temp auto-stop: write the target, or 0 to disable. Both settings
+	# are read with ifexists -- there is no UI for them in this series, so a
+	# tablet that has never set them must not throw here.
+	if {[ifexists ::settings(steam_stop_mode)] eq "temp"} {
+		set_target_milk_temp [ifexists ::settings(target_milk_temp) 0]
+	} else {
+		set_target_milk_temp 0
+	}
 	
 }
 

@@ -2358,6 +2358,7 @@ proc later_new_de1_connection_setup {} {
 	de1_enable_water_level_notifications
 	de1_enable_state_notifications
 	de1_enable_temp_notifications
+	de1_enable_bengleshotsample_notifications ;# Additive: 0xA013 high-res sample (no-op on a stock DE1). This (bluetooth.tcl) is the active connect path on the osx/arm64 build.
 
 	# not yet ready to implement this, as need to constantly tell the DE1 when user is present, if we do enable this, and also need to show something useful in the UI
 	#set_feature_flags 1
@@ -2781,7 +2782,15 @@ proc de1_ble_handler { event data } {
 
 						if {$cuuid eq $::de1(cuuid_0D)} {
 							set ::de1(last_ping) [clock seconds]
-							::de1::state::update::from_shotvalue $value $event_time
+							# Additive BLE: on a Bengle the high-resolution superset
+							# (BengleShotSample, 0xA013) is the sole shot-sample source
+							# and drives the chart.  The stock 0xA00D still streams (so a
+							# stock DE1 app works), but we must NOT also chart it here or
+							# the chart would be double-sampled at 2x with broken
+							# intersample timing.
+							if {![::de1::packet::use_ble_v2]} {
+								::de1::state::update::from_shotvalue $value $event_time
+							}
 							set do_this 0
 							if {$do_this == 1} {
 								# this tries to handle bad write situations, but it might have side effects if it is not working correctly.
@@ -2793,6 +2802,22 @@ proc de1_ble_handler { event data } {
 									return
 								}
 							}
+					} elseif {$cuuid eq $::de1(cuuid_13)} {
+							# Additive BLE: BengleShotSample (0xA013) -- the Bengle
+							# self-contained high-resolution superset.  On a Bengle this
+							# is the SOLE shot-sample source: it drives the pressure/flow/
+							# temp chart AND bridges integrated-scale weight/flow + milk
+							# into the scale pipeline (chart / SAW / display).  All of that
+							# lives in _apply_shotvalue, shared with the stock v1 path.
+							set ::de1(last_ping) [clock seconds]
+							# Receiving 0xA013 is definitive proof this is a Bengle, so
+							# pin the protocol to v2 now.  This gates off the stock 0xA00D
+							# charting path (use_ble_v2) from the very first sample,
+							# closing the connect-time window -- before the model MMR read
+							# lands -- where both 0xA00D and 0xA013 would otherwise chart.
+							# set_ble_protocol_version short-circuits once already at 2.
+							::de1::packet::set_ble_protocol_version 2
+							::de1::state::update::from_bengleshotvalue $value $event_time
 					} elseif {$cuuid eq $::de1(cuuid_05)} {
 							# MMR read
 					    ::bt::msg -INFO "MMR read: [::logging::format_mmr $value]"
@@ -3267,6 +3292,11 @@ proc de1_ble_handler { event data } {
 
 					    } elseif {$cuuid eq $::de1(cuuid_decentscale_writeback)} {
 						::bt::msg -INFO "ACK Decent scale writeback notifications: [::logging::format_ble_event_short $data]"
+
+					    } elseif {$cuuid eq $::de1(cuuid_13)} {
+						# Was missing, so enabling BengleShotSample (0xA013)
+						# notifications logged a spurious ERROR on every Bengle connect.
+						::bt::msg -INFO "ACK BengleShotSample notifications: [::logging::format_ble_event_short $data]"
 
 					    } else {
 						::bt::msg -ERROR "ACK Descriptor unknown write: [::logging::format_ble_event_short $data]"

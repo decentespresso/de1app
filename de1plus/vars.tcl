@@ -39,6 +39,9 @@ proc clear_espresso_chart {} {
 	espresso_flow_goal_2x length 0
 	espresso_temperature_goal length 0
 	espresso_temperature_goal10th length 0
+	espresso_flow_weight_integrated length 0
+	espresso_weight_integrated length 0
+	espresso_weight_integrated_chartable length 0
 
 	espresso_de1_explanation_chart_elapsed length 0
 	espresso_de1_explanation_chart_elapsed_1 length 0
@@ -77,6 +80,10 @@ proc clear_espresso_chart {} {
 	espresso_temperature_goal append [return_temperature_number $::settings(espresso_temperature)]
 	espresso_temperature_goal10th append [round_to_two_digits [expr {[return_temperature_number $::settings(espresso_temperature)] / 10.0}]]
 
+	espresso_flow_weight_integrated append 0
+	espresso_weight_integrated append 0
+	espresso_weight_integrated_chartable append 0
+
 	god_shot_reference_reset
 	
 	catch {
@@ -87,7 +94,7 @@ proc clear_espresso_chart {} {
 }	
 
 proc espresso_chart_structures {} {
-	return [list espresso_elapsed espresso_pressure espresso_weight espresso_weight_chartable espresso_flow espresso_flow_weight espresso_flow_weight_raw espresso_water_dispensed espresso_flow_weight_2x espresso_flow_2x espresso_resistance espresso_resistance_weight espresso_pressure_delta espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_temperature_goal10th espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_temperature espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3 espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_elapsed_flow_3 espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3]
+	return [list espresso_elapsed espresso_pressure espresso_weight espresso_weight_chartable espresso_flow espresso_flow_weight espresso_flow_weight_raw espresso_water_dispensed espresso_flow_weight_2x espresso_flow_2x espresso_resistance espresso_resistance_weight espresso_pressure_delta espresso_flow_delta espresso_flow_delta_negative espresso_flow_delta_negative_2x espresso_temperature_mix espresso_temperature_basket espresso_state_change espresso_pressure_goal espresso_flow_goal espresso_flow_goal_2x espresso_temperature_goal espresso_temperature_goal10th espresso_flow_weight_integrated espresso_weight_integrated espresso_weight_integrated_chartable espresso_de1_explanation_chart_flow espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_flow_2x espresso_de1_explanation_chart_flow_1_2x espresso_de1_explanation_chart_flow_2_2x espresso_de1_explanation_chart_flow_3_2x espresso_de1_explanation_chart_pressure espresso_de1_explanation_chart_temperature espresso_de1_explanation_chart_temperature_10 espresso_de1_explanation_chart_pressure_1 espresso_de1_explanation_chart_pressure_2 espresso_de1_explanation_chart_pressure_3 espresso_de1_explanation_chart_elapsed_flow espresso_de1_explanation_chart_elapsed_flow_1 espresso_de1_explanation_chart_elapsed_flow_2 espresso_de1_explanation_chart_elapsed_flow_3 espresso_de1_explanation_chart_elapsed espresso_de1_explanation_chart_elapsed_1 espresso_de1_explanation_chart_elapsed_2 espresso_de1_explanation_chart_elapsed_3]
 }
 
 proc backup_espresso_chart {} {
@@ -1112,7 +1119,9 @@ proc pouring_timer_text {} {
 			return "[return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]] < [translate {pouring}] [translate {s}][espresso_elapsed_timer]"
 		}
 
-		if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
+		# Volume-based fallback only when there's no scale AT ALL
+		# (no external BLE scale AND no Bengle integrated scale).
+		if {$::settings(scale_bluetooth_address) == "" && ![::de1::packet::use_ble_v2] && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
 			return "[translate {s}][espresso_pour_timer] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
 
 		} else {
@@ -1124,7 +1133,7 @@ proc pouring_timer_text {} {
 		return "[espresso_elapsed_timer][translate {s}] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume_advanced)]]"
 	}
 
-	if {$::settings(scale_bluetooth_address) == "" && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
+	if {$::settings(scale_bluetooth_address) == "" && ![::de1::packet::use_ble_v2] && $::settings(final_desired_shot_volume) > 0 && ($::settings(settings_profile_type) == "settings_2a" || $::settings(settings_profile_type) == "settings_2b")} {
 		return "[espresso_pour_timer][translate {s}] [translate {pouring}] < [return_liquid_measurement [round_to_integer $::settings(final_desired_shot_volume)]]"
 	}
 	return "[espresso_pour_timer][translate {s}] [translate {pouring}]"
@@ -1197,14 +1206,14 @@ proc waterweightflow_text {} {
 			#return [return_flow_weight_measurement [expr {(rand() * 6)}]]
 	}
 
-	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
+	if {$::de1(scale_weight) == "" || ([ifexists ::settings(scale_bluetooth_address)] == "" && ![::de1::packet::use_ble_v2])} {
 		return ""
 	}
 	return [return_flow_weight_measurement $::de1(scale_weight_rate)]
 }
 
 proc finalwaterweight_text {} {
-	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
+	if {$::de1(scale_weight) == "" || ([ifexists ::settings(scale_bluetooth_address)] == "" && ![::de1::packet::use_ble_v2])} {
 		return ""
 	}
 
@@ -1235,7 +1244,7 @@ proc dump_stack {args} {
 #trace add variable de1(final_water_weight) write dump_stack
 
 proc waterweight_text {} {
-	if {$::de1(scale_weight) == "" || [ifexists ::settings(scale_bluetooth_address)] == ""} {
+	if {$::de1(scale_weight) == "" || ([ifexists ::settings(scale_bluetooth_address)] == "" && ![::de1::packet::use_ble_v2])} {
 		return ""
 	}
 
@@ -1259,7 +1268,7 @@ proc waterweight_text {} {
 		#return [return_weight_measurement [expr {round((rand() * 20))}]]
 	}
 
-	if {$::de1(scale_device_handle) == "0"} {
+	if {$::de1(scale_device_handle) == "0" && ![::de1::packet::use_ble_v2]} {
 		return [translate "Disconnected"]
 	}
 
@@ -1269,6 +1278,10 @@ proc waterweight_text {} {
 }
 
 proc waterweight_label_text {} {
+	# Bengle v2: integrated scale is always present — skip BLE-scale checks
+	if {[::de1::packet::use_ble_v2]} {
+		return [translate "Weight"]
+	}
 	if {[ifexists ::settings(scale_bluetooth_address)] == ""} {
 		return ""
 	}
@@ -1363,6 +1376,18 @@ proc watertemp_text {{integer 0}} {
 
 proc steamtemp_text {{integer 0}} {
 	return [return_temperature_measurement [steamtemp] $integer]
+}
+
+proc milktemp {} {
+	return [ifexists ::de1(milk_temperature)]
+}
+
+proc milktemp_text {{integer 0}} {
+	set t [milktemp]
+	if {$t == "" || $t == 0} {
+		return ""
+	}
+	return [return_temperature_measurement $t $integer]
 }
 
 proc pressure_text {} {

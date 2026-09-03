@@ -128,6 +128,12 @@ namespace eval ::device::scale {
 
 
 	proc is_connected {} {
+		# Bengle v2 has an integrated scale that is always available
+		# (no separate BLE peripheral, no handle to manage).  Treat the
+		# v2 protocol being active as "scale connected" so all
+		# scale-aware UI (SAW slider, weight readouts, scale-derived
+		# notifications) and SAW vs SAV mode-picking work naturally.
+		if { [::de1::packet::use_ble_v2] } { return 1 }
 		expr { [info exists ::de1(scale_device_handle)] == 1  &&  $::de1(scale_device_handle) != 0 }
 	}
 
@@ -138,6 +144,8 @@ namespace eval ::device::scale {
 	# Boolean to determine if should be a "problem" that the scale isn't connected and reporting
 
 	proc expecting_present {} {
+		# True if a BLE scale address is paired (no v2 special case
+		# needed -- is_connected handles that).
 		expr { [::device::scale::bluetooth_address] != "" }
 	}
 
@@ -343,6 +351,16 @@ namespace eval ::device::scale {
 			msg -INFO "tare request"
 		}
 
+		# Bengle integrated scale: no BLE peripheral and no scale_type, so
+		# the switch below cannot reach it. Tare over MMR instead. Without
+		# this the auto-tare before every pour silently does nothing while
+		# still arming _tare_awaiting_zero.
+		if { [::de1::packet::use_ble_v2] && $::de1(scale_device_handle) == 0 } {
+
+			set_bengle_scale_tare
+
+		} else {
+
 		switch -exact $::settings(scale_type) {
 
 			atomaxskale { skale_tare }
@@ -370,6 +388,8 @@ namespace eval ::device::scale {
 
 			varia_aku { varia_aku_tare }
 			timemore_dot { timemore_dot_tare }
+		}
+
 		}
 
 		set ::device::scale::_tare_last_requested [clock milliseconds]

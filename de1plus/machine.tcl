@@ -70,6 +70,7 @@ array set ::de1 {
 	cuuid_10 "0000A010-0000-1000-8000-00805F9B34FB"
 	cuuid_11 "0000A011-0000-1000-8000-00805F9B34FB"
 	cuuid_12 "0000A012-0000-1000-8000-00805F9B34FB"
+	cuuid_13 "0000A013-0000-1000-8000-00805F9B34FB"
 	cuuid_skale_EF80 "0000EF80-0000-1000-8000-00805F9B34FB"
 	cuuid_skale_EF81 "0000EF81-0000-1000-8000-00805F9B34FB"
 	cuuid_skale_EF82 "0000EF82-0000-1000-8000-00805F9B34FB"
@@ -152,6 +153,8 @@ array set ::de1 {
 	scale_timestamp 0
 	scale_weight_rate 0
 	scale_weight_rate_raw 0
+	integrated_scale_flow 0
+	integrated_scale_weight 0
 	final_water_weight 0
 	voltage 110
 	has_catering_kit 0
@@ -221,6 +224,7 @@ array set ::de1_cuuids_to_command_names {
 	$::de1(cuuid_10) FrameWrite
 	$::de1(cuuid_11) WaterLevels
 	$::de1(cuuid_12) Calibration
+	$::de1(cuuid_13) BengleShotSample
 }
 
 array set ::de1_command_names_to_cuuids [reverse_array ::de1_cuuids_to_command_names]
@@ -237,6 +241,8 @@ array set ::settings {
 	steam_two_tap_stop 0
 	ble_debug 0
 	cupwarmer_temp 70
+	steam_stop_mode "time"
+	target_milk_temp 60
 	tank_desired_water_temperature 0
 	screen_size_height {}
 	log_enabled True
@@ -835,6 +841,7 @@ proc reset_gui_starting_steam {} {
 	steam_flow length 0
 	steam_flow_goal length 0
 	steam_temperature length 0
+	steam_milk_temperature length 0	;# Bengle v2 milk probe: truncate on reset like the other steam vectors
 	#steam_pressure append 0
 	#steam_elapsed append 0
 }
