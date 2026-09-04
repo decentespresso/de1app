@@ -134,6 +134,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/default/1280x800/firmware_upgrade.jpg *
         skins/default/1280x800/firmware_upgrade_on.jpg *
         skins/default/1280x800/firmware_upgrade_off.jpg *
+        skins/default/1280x800/bengle_fw_update.jpg *
         skins/default/1280x800/espresso_on.png *
         skins/default/1280x800/steam_on.png *
         skins/default/1280x800/tea_on.png *
@@ -165,6 +166,7 @@ proc make_de1_dir {srcdir destdirs} {
         skins/default/2560x1600/firmware_upgrade.jpg *
         skins/default/2560x1600/firmware_upgrade_on.jpg *
         skins/default/2560x1600/firmware_upgrade_off.jpg *
+        skins/default/2560x1600/bengle_fw_update.jpg *
         skins/default/2560x1600/nothing_on.png *
         skins/default/2560x1600/espresso_on.png *
         skins/default/2560x1600/steam_on.png *
