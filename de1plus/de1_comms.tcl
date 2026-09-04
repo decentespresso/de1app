@@ -914,35 +914,31 @@ proc de1_enable_maprequest_notifications {} {
 
 proc fwfile {} {
 	::comms::msg -NOTICE fwfile
-	set fw "[homedir]/fw/bootfwupdate.dat"
+	# Pick the firmware image for the connected machine model. Bengle (BLE
+	# protocol v2) uses benglefw.dat; the DE1 uses bootfwupdate.dat.
+	if {[is_bengle_model]} {
+		set fw "[homedir]/fw/benglefw.dat"
+	} else {
+		set fw "[homedir]/fw/bootfwupdate.dat"
+	}
 
-	if {[info exists ::de1(Firmware_file_Version)] != 1} {
-		::comms::msg -INFO "reading firmware file metadata"
+	# Parse the header for Firmware_file_Version (drives the "firmware update
+	# available" comparison) whenever the target file changes — so switching
+	# between a DE1 and a Bengle re-reads the version of the image we'd upload,
+	# rather than keeping the first machine's cached value.
+	if {![info exists ::de1(Firmware_file_path)] || $::de1(Firmware_file_path) ne $fw \
+			|| [info exists ::de1(Firmware_file_Version)] != 1} {
+		set ::de1(Firmware_file_path) $fw
+		::comms::msg -INFO "reading firmware file metadata: $fw"
 		parse_firmware_file_header [read_binary_file $fw] arr
 		foreach {k v} [array get arr] {
 			set varname "Firmware_file_$k"
-			set varvalue $arr($k)
-			::comms::msg -INFO "$varname : $varvalue"
-			set ::de1($varname) $varvalue
+			set ::de1($varname) $v
+			::comms::msg -INFO "$varname : $v"
 		}
 	}
 
 	return $fw
-
-	# obsolete as of 6-6-20 a only using one firmware file again now
-
-	if {$::settings(ghc_is_installed) != 0} {
-		# new firmware for v1.3 machines and newer, that have a GHC.
-		# this dual firmware aspect is temporary, only until we have improved the firmware to be able to correctly migrate v1.0 v1.1 hardware machines to the new calibration settings.
-		# please do not bypass this test and load the new firmware on your v1.0 v1.1 machines yet.  Once we have new firmware is known to work on those older machines, we'll get rid of the 2nd firmware image.
-
-		# note that ghc_is_installed=1 ghc hw is there but unused, whereas ghc_is_installed=3 ghc hw is required.
-		::comms::msg -NOTICE "using v1.3 firmware"
-		return "[homedir]/fw/bootfwupdate2.dat"
-	} else {
-		::comms::msg -NOTICE "using v1.1 firmware"
-		return "[homedir]/fw/bootfwupdate.dat"
-	}
 }
 
 

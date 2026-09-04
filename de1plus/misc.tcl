@@ -66,6 +66,7 @@ proc make_de1_dir {srcdir destdirs} {
         history_v2/readme.txt *
 
         fw/bootfwupdate.dat *
+        fw/benglefw.dat *
         wallpaper/spy_1280x800.jpg *
         wallpaper/spy_2560x1600.jpg *
         sounds/KeypressStandard_120.ogg *
